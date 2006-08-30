@@ -427,6 +427,7 @@ validate_policy()
     local synparams
     local parents
     local default
+    local var
 
     print_policy() # $1 = source zone, $2 = destination zone
     {
@@ -435,6 +436,21 @@ validate_policy()
 	[ $2 = all ] || \
 	progress_message "   Policy for $1 to $2 is $policy using chain $chain"
     }
+
+    for var in DROP_DEFAULT REJECT_DEFAULT; do
+	eval default=\$$var
+
+	case $default in
+	    none)
+		;;
+	    *)
+		if ! list_search $default USEDACTIONS; then
+		    if [ ! -f $(find_file macro.$default) ]; then
+			fatal_error "Default Action/Macro $var=$default not found"
+		    fi
+		fi
+	esac
+    done
 
     ALL_POLICY_CHAINS=
 
@@ -519,11 +535,11 @@ validate_policy()
 	case ${policy%:*} in
 	    ACCEPT|CONTINUE|QUEUE)
 		;;
-	    REJECT|DROP)
-		if [ -n "$default" ]; then
-		    error_message "WARNING: Policy has no default action or macro:  $client $server $policy $loglevel $synparams"
-		    error_message "         Please see http://www.shorewall.net/DefaultActionsandMacros.html"
-		fi
+	    DROP)
+		[ -n "${default:=$DROP_DEFAULT}" ]
+		;;
+	    REJECT)
+		[ -n "${default:=$REJECT_DEFAULT}" ]
 		;;
 	    NONE)
 		[ "$client" = "$FW" -o "$server" = "$FW" ] && \
@@ -989,7 +1005,7 @@ __EOF__
 	save_progress_message "Refreshing Traffic Shaping"
 	run_user_exit $TC_SCRIPT
     elif [ -n "$TC_ENABLED" ]; then
-	setup_traffic_shaping
+	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
     fi
 }
 
@@ -3091,28 +3107,6 @@ policy_rules() # $1 = chain to add rules to
 
     if [ -n "$default" ]; then
 	[ "$default" = none ] || run_iptables -A $1 -j $default
-    else
-	case "$target" in
-	    ACCEPT)
-		[ -n "$ACCEPT_default" ] && run_iptables -A $1 -j $ACCEPT_default
-		;;
-	    DROP)
-		[ -n "$DROP_default" ] && run_iptables -A $1 -j $DROP_default
-		;;
-	    REJECT)
-		[ -n "$REJECT_default" ] && run_iptables -A $1 -j $REJECT_default
-		target=reject
-		;;
-	    QUEUE)
-		[ -n "$QUEUE_default" ] && run_iptables -A $1 -j $QUEUE_default
-		;;
-	    CONTINUE)
-		target=
-		;;
-	    *)
-		fatal_error "Invalid policy ($policy) for $1"
-		;;
-	esac
     fi
 
     if [ $# -eq 3 -a "x${3}" != "x-" ]; then

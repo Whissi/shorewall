@@ -2916,6 +2916,8 @@ do_initialize() {
     MACLIST_TABLE=
     FASTACCEPT=
     USE_ACTIONS=
+    DROP_DEFAULT=
+    REJECT_DEFAULT=
 
     LOGLIMIT=
     LOGPARMS=
@@ -3175,6 +3177,18 @@ do_initialize() {
 
     [ "x${SHOREWALL_DIR}" = "x." ] && SHOREWALL_DIR="$PWD"
     [ -n "${RESTOREFILE:=restore}" ]
+
+    case "${DROP_DEFAULT:=Drop}" in
+	None)
+	    DROP_DEFAULT=none
+	    ;;
+    esac
+
+    case "${REJECT_DEFAULT:=Reject}" in
+	None)
+	    REJECT_DEFAULT=none
+	    ;;
+    esac
 
     #
     # Strip the files that we use often

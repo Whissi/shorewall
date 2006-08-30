@@ -71,49 +71,16 @@ Migration Considerations:
        Features section below), we need a way to define default rules
        for a policy.
 
-    The solution is to extend the POLICY column in
-    /etc/shorewall/policy and to remove the specification of 
-    a default action in /etc/shorewall/actions.std.
-
-    When the POLICY is ACCEPT, DROP, REJECT or QUEUE then the policy
-    may be followed by ":" and one of the following:
-			
-	a) The word "None" or "none". This causes any default
-	   action define in /etc/shorewall/actions to be omitted for
-	   this policy.
-	b) The name of an action (requires that USE_ACTIONS=Yes
-	   in shorewall.conf). That action will be invoked 
-	   before the policy is enforced.
-	c) The name of a macro. The rules in that macro will
-	   be applied before the policy is enforced. This
-	   does not require USE_ACTIONS=Yes.
-
-    Example:
-
-	#SOURCE		DEST		POLICY		LOG
-	#						LEVEL
-	loc		net		ACCEPT
-	net		all		DROP:Drop	info
-	#
-	# THE FOLLOWING POLICY MUST BE LAST
-	#
-	all		all		REJECT:Reject	info
-
-    With USE_ACTIONS=Yes, the above will work the same way that the
-    pre-3.3 setup did. The 'Drop' and 'Reject' actions will be invoked
-    before the DROP and REJECT policies are enforced.
-
-    With USE_ACTION=No, there will be no Drop or Reject actions so 
-    Shorewall will look for macros by that name; as described in item
-    2) above, these macros are provided as part of the Shorewall 3.3
-    release.
-
     If you are happy with the way that things worked in prior releases,
-    then simply add these two lines to your /etc/shorewall/actions:
+    then simply add these two lines to your /etc/shorewall/actions file
+    if they are not already there (and you have not defined different
+    default actions for DROP and/or REJECT):
 
 	 Drop:DROP
 	 Reject:REJECT
-  	 
+
+    Otherwise, please read item 3) in the New Features section below.
+
 New Features:
 
 1)  In order to accomodate small embedded applications, Shorewall 3.3

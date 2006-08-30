@@ -3464,241 +3464,6 @@ validate_blacklist() {
 }
 
 #
-# Perform Initialization
-#	- Delete all old rules
-#	- Delete all user chains
-#	- Set the POLICY on all standard chains and add a rule to allow packets
-#	  that are part of established connections
-#	- Determine the zones
-#
-initialize_netfilter () {
-    setup_mss()
-    {
-	case $CLAMPMSS in
-	    Yes)
-		option="--clamp-mss-to-pmtu"
-		;;
-	    *)
-		option="--set-mss $CLAMPMSS"
-		;;
-	esac
-
-	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
-    }
-
-    report_capabilities
-
-    if [ -n "$BRIDGING" ]; then
-	[ -n "$PHYSDEV_MATCH" ] || fatal_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
-    fi
-
-    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
-
-    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	fatal_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
-    fi
-
-    [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
-	fatal_error "RFC1918_STRICT=Yes requires Connection Tracking match"
-
-    progress_message2 "Determining Zones..."
-
-    determine_zones
-
-    if [ $VERBOSE -ge 1 ]; then
-	display_list "IPv4 Zones:" $IPV4_ZONES
-	[ -n "$IPSEC_ZONES" ] && \
-	    display_list "IPSEC Zones:" $IPSEC_ZONES
-	display_list "Firewall Zone:" $FW
-    fi
-
-    progress_message2 "Validating interfaces file..."
-
-    validate_interfaces_file
-
-    progress_message2 "Validating hosts file..."
-
-    validate_hosts_file
-
-    define_builtin_actions
-
-    if [ -n "$USE_ACTIONS" ]; then
-	progress_message2 "Pre-processing Actions..."
-	process_actions1
-    fi
-
-    progress_message2 "Validating Policy file..."
-
-    validate_policy
-
-    progress_message2 "Determining Hosts in Zones..."
-
-    determine_interfaces
-    determine_hosts
-
-    append_file init
-
-    strip_file rules
-    strip_file maclist
-
-    TERMINATOR=fatal_error
-
-    deletechain shorewall
-
-    if [ -n "$NAT_ENABLED" ]; then
-	delete_nat
-	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    qt_iptables -t nat -P $chain ACCEPT
-	done
-    fi
-
-    delete_proxy_arp
-
-    if [ -n "$MANGLE_ENABLED" ]; then
-	run_iptables -t mangle -F
-	run_iptables -t mangle -X
-	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    qt_iptables -t mangle -P $chain ACCEPT
-	done
-    fi
-
-    if [ -n "$RAW_TABLE" ]; then
-	run_iptables -t raw -F
-	run_iptables -t raw -X
-	for chain in PREROUTING OUTPUT; do
-	    qt_iptables -t raw -P $chain ACCEPT
-	done
-    fi
-
-    [ -n "$CLEAR_TC" ] && delete_tc
-
-    progress_message2 "Deleting user chains..."
-
-    save_progress_message "Deleting user chains..."
-
-    exists_INPUT=Yes
-    exists_OUTPUT=Yes
-    exists_FORWARD=Yes
-
-    process_criticalhosts
-
-    if [ -n "$CRITICALHOSTS" ]; then
-
-	setpolicy INPUT ACCEPT
-	setpolicy OUTPUT ACCEPT
-	setpolicy FORWARD DROP
-
-	deleteallchains
-
-	enable_critical_hosts
-
-	setpolicy INPUT DROP
-	setpolicy OUTPUT DROP
-
-	[ -n "$CLAMPMSS" ] && setup_mss
-
-	setcontinue FORWARD
-	setcontinue INPUT
-	setcontinue OUTPUT
-    else
-
-	setpolicy INPUT DROP
-	setpolicy OUTPUT DROP
-	setpolicy FORWARD DROP
-
-	deleteallchains
-
-	[ -n "$CLAMPMSS" ] && setup_mss
-
-	setcontinue FORWARD
-	setcontinue INPUT
-	setcontinue OUTPUT
-    fi
-
-    f=$(find_file ipsets)
-
-    if [ -f $f ]; then
-	progress_message2 "Processing $f ..."
-	save_progress_message "Restoring IPSETS..."
-	save_command "ipset -U :all: :all:"
-	save_command "ipset -F"
-	save_command "ipset -X"
-	save_command "ipset -R < $f"
-    fi
-
-    append_file continue
-
-    f=$(find_file routestopped)
-
-    progress_message2 "$DOING $f ..."
-
-    strip_file routestopped $f
-
-    process_routestopped -A
-
-    if [ -n "$DISABLE_IPV6" ]; then
-	save_command disable_ipv6
-    fi
-
-    save_progress_message "Enabling Loopback and DNS Lookups"
-
-    #
-    # Enable the Loopback interface for now
-    #
-    run_iptables -A INPUT  -i lo -j ACCEPT
-    run_iptables -A OUTPUT -o lo -j ACCEPT
-
-    #
-    # Allow DNS lookups during startup for FQDNs
-    #
-
-    for chain in INPUT OUTPUT FORWARD; do
-	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
-    done
-
-    strip_file_and_lib_load accounting accounting && setup_accounting $(find_file accounting)
-    
-    createchain reject	no
-    createchain dynamic no
-    createchain logdrop no
-    createchain logreject no
-    createchain smurfs no
-
-    log_rule ${BLACKLIST_LOGLEVEL:-info} logdrop DROP
-    log_rule ${BLACKLIST_LOGLEVEL:-info} logreject REJECT
-
-    run_iptables -A logdrop   -j DROP
-    run_iptables -A logreject -j reject
-
-    indent >&3 << __EOF__
-
-if [ -f \${VARDIR}/save ]; then
-    progress_message2 "Setting up dynamic rules..."
-    while read target ignore1 ignore2 address rest; do
-        case \$target in
-            DROP|reject|logdrop|logreject)
-                run_iptables -A dynamic -s \$address -j \$target
-                ;;
-        esac
-    done < \${VARDIR}/save
-fi
-__EOF__
-
-    [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
-
-    progress_message2 "Creating Interface Chains..."
-
-    save_progress_message "Creating Interface Chains..."
-
-    for interface in $ALL_INTERFACES; do
-	for chain in $(input_chain $interface) $(forward_chain $interface); do
-	    createchain $chain no
-	    run_iptables -A $chain $state -j dynamic
-	done
-    done
-}
-
-#
 # Construct zone-independent rules
 #
 add_common_rules() {
@@ -4814,6 +4579,20 @@ compile_firewall() # $1 = File Name
     local INDENT=""
     local checking=
 
+    setup_mss()
+    {
+	case $CLAMPMSS in
+	    Yes)
+		option="--clamp-mss-to-pmtu"
+		;;
+	    *)
+		option="--set-mss $CLAMPMSS"
+		;;
+	esac
+
+	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
+    }
+
     outfile=$1 dir=
     #
     # Overload a function from the library
@@ -5145,7 +4924,216 @@ __EOF__
     progress_message2 "Initializing..."
     save_progress_message "Initializing..."
 
-    initialize_netfilter
+    report_capabilities
+
+    if [ -n "$BRIDGING" ]; then
+	[ -n "$PHYSDEV_MATCH" ] || fatal_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
+    fi
+
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	fatal_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
+
+    [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
+	fatal_error "RFC1918_STRICT=Yes requires Connection Tracking match"
+
+    progress_message2 "Determining Zones..."
+
+    determine_zones
+
+    if [ $VERBOSE -ge 1 ]; then
+	display_list "IPv4 Zones:" $IPV4_ZONES
+	[ -n "$IPSEC_ZONES" ] && \
+	    display_list "IPSEC Zones:" $IPSEC_ZONES
+	display_list "Firewall Zone:" $FW
+    fi
+
+    progress_message2 "Validating interfaces file..."
+
+    validate_interfaces_file
+
+    progress_message2 "Validating hosts file..."
+
+    validate_hosts_file
+
+    define_builtin_actions
+
+    if [ -n "$USE_ACTIONS" ]; then
+	progress_message2 "Pre-processing Actions..."
+	process_actions1
+    fi
+
+    progress_message2 "Validating Policy file..."
+
+    validate_policy
+
+    progress_message2 "Determining Hosts in Zones..."
+
+    determine_interfaces
+    determine_hosts
+
+    append_file init
+
+    strip_file rules
+    strip_file maclist
+
+    TERMINATOR=fatal_error
+
+    deletechain shorewall
+
+    if [ -n "$NAT_ENABLED" ]; then
+	delete_nat
+	for chain in PREROUTING POSTROUTING OUTPUT; do
+	    qt_iptables -t nat -P $chain ACCEPT
+	done
+    fi
+
+    delete_proxy_arp
+
+    if [ -n "$MANGLE_ENABLED" ]; then
+	run_iptables -t mangle -F
+	run_iptables -t mangle -X
+	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	    qt_iptables -t mangle -P $chain ACCEPT
+	done
+    fi
+
+    if [ -n "$RAW_TABLE" ]; then
+	run_iptables -t raw -F
+	run_iptables -t raw -X
+	for chain in PREROUTING OUTPUT; do
+	    qt_iptables -t raw -P $chain ACCEPT
+	done
+    fi
+
+    [ -n "$CLEAR_TC" ] && delete_tc
+
+    progress_message2 "Deleting user chains..."
+
+    save_progress_message "Deleting user chains..."
+
+    exists_INPUT=Yes
+    exists_OUTPUT=Yes
+    exists_FORWARD=Yes
+
+    process_criticalhosts
+
+    if [ -n "$CRITICALHOSTS" ]; then
+
+	setpolicy INPUT ACCEPT
+	setpolicy OUTPUT ACCEPT
+	setpolicy FORWARD DROP
+
+	deleteallchains
+
+	enable_critical_hosts
+
+	setpolicy INPUT DROP
+	setpolicy OUTPUT DROP
+
+	[ -n "$CLAMPMSS" ] && setup_mss
+
+	setcontinue FORWARD
+	setcontinue INPUT
+	setcontinue OUTPUT
+    else
+
+	setpolicy INPUT DROP
+	setpolicy OUTPUT DROP
+	setpolicy FORWARD DROP
+
+	deleteallchains
+
+	[ -n "$CLAMPMSS" ] && setup_mss
+
+	setcontinue FORWARD
+	setcontinue INPUT
+	setcontinue OUTPUT
+    fi
+
+    f=$(find_file ipsets)
+
+    if [ -f $f ]; then
+	progress_message2 "Processing $f ..."
+	save_progress_message "Restoring IPSETS..."
+	save_command "ipset -U :all: :all:"
+	save_command "ipset -F"
+	save_command "ipset -X"
+	save_command "ipset -R < $f"
+    fi
+
+    append_file continue
+
+    f=$(find_file routestopped)
+
+    progress_message2 "$DOING $f ..."
+
+    strip_file routestopped $f
+
+    process_routestopped -A
+
+    if [ -n "$DISABLE_IPV6" ]; then
+	save_command disable_ipv6
+    fi
+
+    save_progress_message "Enabling Loopback and DNS Lookups"
+
+    #
+    # Enable the Loopback interface for now
+    #
+    run_iptables -A INPUT  -i lo -j ACCEPT
+    run_iptables -A OUTPUT -o lo -j ACCEPT
+
+    #
+    # Allow DNS lookups during startup for FQDNs
+    #
+
+    for chain in INPUT OUTPUT FORWARD; do
+	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
+    done
+
+    strip_file_and_lib_load accounting accounting && setup_accounting $(find_file accounting)
+    
+    createchain reject	no
+    createchain dynamic no
+    createchain logdrop no
+    createchain logreject no
+    createchain smurfs no
+
+    log_rule ${BLACKLIST_LOGLEVEL:-info} logdrop DROP
+    log_rule ${BLACKLIST_LOGLEVEL:-info} logreject REJECT
+
+    run_iptables -A logdrop   -j DROP
+    run_iptables -A logreject -j reject
+
+    indent >&3 << __EOF__
+
+if [ -f \${VARDIR}/save ]; then
+    progress_message2 "Setting up dynamic rules..."
+    while read target ignore1 ignore2 address rest; do
+        case \$target in
+            DROP|reject|logdrop|logreject)
+                run_iptables -A dynamic -s \$address -j \$target
+                ;;
+        esac
+    done < \${VARDIR}/save
+fi
+__EOF__
+
+    [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
+
+    progress_message2 "Creating Interface Chains..."
+
+    save_progress_message "Creating Interface Chains..."
+
+    for interface in $ALL_INTERFACES; do
+	for chain in $(input_chain $interface) $(forward_chain $interface); do
+	    createchain $chain no
+	    run_iptables -A $chain $state -j dynamic
+	done
+    done
 
     if strip_file_and_lib_load proxyarp proxyarp; then
 	progress_message2 "$DOING Proxy ARP"

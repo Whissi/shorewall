@@ -495,18 +495,31 @@ validate_policy()
 	esac
 
 	case $policy in
-	ACCEPT|REJECT|DROP|CONTINUE|QUEUE)
-	    ;;
-	NONE)
-	    [ "$client" = "$FW" -o "$server" = "$FW" ] && \
-		fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
+	    *:*)
+		macro=${policy#*:}
+		if ! list_search $macro $DEFAULT_MACROS;
+		    [ -f find_file macro.${macro} ] || fatal_error "$client $server $policy $loglevel $synparams: Default Macro $macro not found"
+		    DEFAULT_MACROS="$DEFAULT_MACROS $macro"
+		fi
+		;;
+	    *)
+		macro=
+		;;
+	esac
 
-	    [ -n "$clientwild" -o -n "$serverwild" ] && \
-		fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
-	    ;;
-	*)
-	    fatal_error "Invalid policy $policy"
-	    ;;
+	case ${policy%:*} in
+	    ACCEPT|REJECT|DROP|CONTINUE|QUEUE)
+		;;
+	    NONE)
+		[ "$client" = "$FW" -o "$server" = "$FW" ] && \
+		    fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
+		
+		[ -n "$clientwild" -o -n "$serverwild" ] && \
+		    fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
+		;;
+	    *)
+		fatal_error "Invalid policy $policy"
+		;;
 	esac
 
 	chain=${client}2${server}
@@ -522,12 +535,15 @@ validate_policy()
 	[ "x$loglevel"   = "x-" ] && loglevel=
 	[ "x$synparams"  = "x-" ] && synparams=
 
+	policy=${policy%:*}
+	
 	[ $policy = NONE ] || ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
 
 	eval ${chain}_is_policy=Yes
 	eval ${chain}_policy=$policy
 	eval ${chain}_loglevel=$loglevel
 	eval ${chain}_synparams=$synparams
+	eval ${chain}_macro=$macro
 
 	if [ -n "${clientwild}" ]; then
 	    if [ -n "${serverwild}" ]; then
@@ -2707,6 +2723,120 @@ process_rules()
 }
 
 #
+# Expand an entry in a default macro
+#
+expand_macro() {
+    local chain=$1
+    local target=$2
+    local protocol=$3
+    local port=$4
+    local cport=$5
+    local rule=
+
+    if [ "x$protocol" != x- -a -n "$protocol" ]; then
+	rule="-p $protocol"
+
+	case $protocol in
+	    6|tcp|TCP|17|udp|UDP)
+		if [ "x$port" != x- -a -n "$port" ]; then
+		    rule="$rule -m multiport --dports $port"
+		    [ "x$cport" != x- -a -n "$cport" ] && rule="$rule --sports $cport"
+		else
+		    [ "x$cport" != x- -a -n "$cport" ] && rule="$rule -m multiport --sports $cport"
+		fi
+		;;
+	    icmp|ICMP|0)
+		[ "x$port" != x- -a -n "$port" ]   && rule="$rule --icmp-type $port"
+		;;
+		;;
+	    *)
+		[ "x$port" != x- -a -n "$port" ]   && fatal_error "DEST PORT(S) not allowed with protocol $protocol"
+		[ "x$cport" != x- -a -n "$cport" ] && fatal_error "SOURCE PORT(S) not allowed with protocol $protocol"
+		;;
+	esac
+    fi
+		
+    run_iptables -A $chain $rule -j $target
+}
+
+#
+# Process a default macro
+#
+process_default_macro() # $1 = macro name
+{
+    local macro=$1
+
+    havechain $macro && fatal_error "Illegal duplicate default macro name: $macro"
+
+    createchain $macro
+    strip_file macro.${macro}
+    progress_message "..Expanding Macro $(find_file macro.${macro})..."
+
+    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+	expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
+
+	case $mtarget in
+	    PARAM|PARAM:*)
+		fatal_error "Invalid target ($mtarget) in default macro $macro"
+		;;
+	esac
+
+	case ${mtarget} in
+	    ACCEPT|DROP|REJECT)
+		;;
+	    *)
+		if list_search ${mtarget%%:*} $ACTIONS; then
+		    if ! list_search $mtarget $USEDACTIONS; then
+			createactionchain $mtarget
+			USEDACTIONS="$USEDACTIONS $mtarget"
+		    fi
+
+		    mtarget=$(find_logactionchain $mtarget)
+		else
+		    fatal_error "Invalid Action in rule \"$mtarget ${mclients:--} ${mservers:--} ${mprotocol:--} ${mports:--} ${mcports:--} ${xaddress:--} ${mratelimit:--} ${muserspec:--}\""
+		fi
+		;;
+	esac
+
+	if [ -n "$mclients" ]; then
+	    case $mclients in
+		-|SOURCE)
+		    ;;
+		*)
+		    fatal_error "Invalid SOURCE ($mclients) in default macro $macro"
+		    ;;
+	    esac
+	fi
+
+	if [ -n "$mservers" ]; then
+	    case $mservers in
+		-|DEST)
+		    ;;
+		*)
+		    fatal_error "Invalid DEST ($mservers) in default macro $macro"
+		    ;;
+	    esac
+	fi
+
+	case ${mports}${mcports} in 
+	    *,*)
+		fatal_error "Port lists not allowed in default macro"
+		;;
+	esac
+
+	[ "x$mratelimit" != "x-" -a -n "$mratelimit"  ] && fatal_error "Invalid Rate Limit ($mratelimit) in default macro $macro"
+	[ "x$muserspec" != "x-"  -a -n "$muserspec"   ] && fatal_error "Invalid USER/GROUP ($muserspec) in default macro $macro"
+
+	expand_macro $1 $target $mprotocol $mports $mcports $mratelimit $muserspec
+	progress_message "Rule \"$target $mprotocol $mports $mcports $mratelimit $muserspec\" $DONE"
+	
+    done < $TMP_DIR/macro.${itarget%%:*}
+
+    progress_message "..End Macro"
+
+}
+    
+#
 # Process a record from the tos file
 #
 # The caller has loaded the column contents from the record into the following
@@ -2913,28 +3043,35 @@ policy_rules() # $1 = chain to add rules to
 	       # $3 = loglevel
 {
     local target="$2"
+    local macro
 
-    case "$target" in
-	ACCEPT)
-	    [ -n "$ACCEPT_default" ] && run_iptables -A $1 -j $ACCEPT_default
-	    ;;
-	DROP)
-	    [ -n "$DROP_default" ] && run_iptables -A $1 -j $DROP_default
-	    ;;
-	REJECT)
-	    [ -n "$REJECT_default" ] && run_iptables -A $1 -j $REJECT_default
-	    target=reject
-	    ;;
-	QUEUE)
-	    [ -n "$QUEUE_default" ] && run_iptables -A $1 -j $QUEUE_default
-	    ;;
-	CONTINUE)
-	    target=
-	    ;;
-	*)
-	    fatal_error "Invalid policy ($policy) for $1"
-	    ;;
-    esac
+    eval macro=\$${1}_macro
+
+    if [ -n "$macro" ]; then
+	run_iptables -A $1 -j $macro
+    else
+	case "$target" in
+	    ACCEPT)
+		[ -n "$ACCEPT_default" ] && run_iptables -A $1 -j $ACCEPT_default
+		;;
+	    DROP)
+		[ -n "$DROP_default" ] && run_iptables -A $1 -j $DROP_default
+		;;
+	    REJECT)
+		[ -n "$REJECT_default" ] && run_iptables -A $1 -j $REJECT_default
+		target=reject
+		;;
+	    QUEUE)
+		[ -n "$QUEUE_default" ] && run_iptables -A $1 -j $QUEUE_default
+		;;
+	    CONTINUE)
+		target=
+		;;
+	    *)
+		fatal_error "Invalid policy ($policy) for $1"
+		;;
+	esac
+    fi
 
     if [ $# -eq 3 -a "x${3}" != "x-" ]; then
 	log_rule $3 $1 $2
@@ -5033,6 +5170,13 @@ __EOF__
 	progress_message2 "$DOING $tunnels..."
 	save_progress_message "Setting up Tunnels..."
 	setup_tunnels $tunnels
+    fi
+
+    if [ -n "$DEFAULT_MACROS" ]; then
+	progress_message2 "$DOING default macros..."
+	for macro in $DEFAULT_MACROS; do
+	    process_default_macro $macro
+	done
     fi
 
     if [ -n "$USEDACTIONS" ]; then

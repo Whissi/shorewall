@@ -395,7 +395,8 @@ ensurenatchain() # $1 = chain name
 }
 
 #
-# Add a rule to a nat chain creating the chain if necessary
+# Add a rule to a nat chain creating the chain if necessary%attr(0444,root,root) /usr/share/shorewall/lib.accounting
+
 #
 addnatrule() # $1 = chain name, remainder of arguments specify the rule
 {
@@ -444,7 +445,7 @@ validate_policy()
 	    none)
 		;;
 	    *)
-		if ! list_search $default USEDACTIONS; then
+		if ! list_search $default $USEDACTIONS; then
 		    if ! list_search $default $DEFAULT_MACROS; then
 			if [ ! -f $(find_file macro.$default) ]; then
 			    fatal_error "Default Action/Macro $var=$default not found"

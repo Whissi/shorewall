@@ -114,6 +114,7 @@ fi
 %attr(0555,root,root) /usr/share/shorewall/firewall
 %attr(0555,root,root) /usr/share/shorewall/help
 %attr(0444,root,root) /usr/share/shorewall/lib.accounting
+%attr(0444,root,root) /usr/share/shorewall/lib.actions
 %attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
 %attr(0444,root,root) /usr/share/shorewall/lib.maclist
 %attr(0444,root,root) /usr/share/shorewall/lib.nat

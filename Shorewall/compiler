@@ -1521,7 +1521,7 @@ __EOF__
 		#
 		# Not a builtin
 		#
-		process_actions3a
+		process_action3
 		;;
 	esac
     done
@@ -2072,89 +2072,13 @@ __EOF__
 	fi
     fi
 }
+
 #
-# Process a record from the rules file
+# Process the contents of the USER/GROUP column
 #
-process_rule() # $1 = target
-               # $2 = clients
-               # $3 = servers
-               # $4 = protocol
-               # $5 = ports
-               # $6 = cports
-               # $7 = address
-               # $8 = ratelimit
-               # $9 = userspec
+process_userspec()
 {
-    local target="$1"
-    local clients="$2"
-    local servers="$3"
-    local protocol="$4"
-    local ports="$5"
-    local cports="$6"
-    local address="$7"
-    local ratelimit="$8"
-    local userspec="$9"
-    local userandgroup=
-    local logtag=
-    local nonat=
-
-    # # # # # F u n c t i o n   B o d y # # # # #
-
-    [ "x$ratelimit" = "x-" ] && ratelimit=
-
-    if [ -n "$ratelimit" ]; then
-	case $ratelimit in
-	    *:*)
-		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
-		;;
-	    *)
-		ratelimit="-m limit --limit $ratelimit"
-		;;
-	esac
-    fi
-
-    # Isolate log level
-
-    if [ "$target" = "${target%:*}" ]; then
-	loglevel=
-    else
-	loglevel="${target#*:}"
-	target="${target%%:*}"
-	expandv loglevel
-	if [ "$loglevel" != "${loglevel%:*}" ]; then
-	    logtag="${loglevel#*:}"
-	    loglevel="${loglevel%:*}"
-	    expandv logtag
-	fi
-
-	case $loglevel in
-	    none*)
-		loglevel=
-		[ $target = LOG ] && return
-		;;
-	esac
-
-	loglevel=${loglevel%\!}
-    fi
-    #
-    # Save the original target in 'logtarget' for logging rules
-    #
-    logtarget=${target%-}
-    #
-    # Targets ending in "-" only apply to the nat table
-    #
-    [ $target = $logtarget ] && dnat_only= || dnat_only=Yes
-
-    # Tranform the rule:
-    #
-    # - parse the user specification
-    # - set 'target' to the filter table target.
-    # - make $FW the destination for REDIRECT
-    # - remove '-' suffix from logtargets while setting 'dnat_only'
-    # - clear 'address' if it has been set to '-'
-
     [ "x$userspec" = x- ]   && userspec=
-    [ "x$address" = "x-" ] && address=
 
     if [ -n "$userspec" ]; then
 
@@ -2203,6 +2127,99 @@ process_rule() # $1 = target
 
 	[ "$userandgroup" = "-m owner" ] && userandgroup=
     fi
+}
+
+#
+# Process the RATE/LIMIT column contents
+#
+process_ratelimit() {
+    [ "x$ratelimit" = "x-" ] && ratelimit=
+
+    if [ -n "$ratelimit" ]; then
+	case $ratelimit in
+	    *:*)
+		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+		;;
+	    *)
+		ratelimit="-m limit --limit $ratelimit"
+		;;
+	esac
+    fi
+}
+
+#
+# Process a record from the rules file
+#
+process_rule() # $1 = target
+               # $2 = clients
+               # $3 = servers
+               # $4 = protocol
+               # $5 = ports
+               # $6 = cports
+               # $7 = address
+               # $8 = ratelimit
+               # $9 = userspec
+{
+    local target="$1"
+    local clients="$2"
+    local servers="$3"
+    local protocol="$4"
+    local ports="$5"
+    local cports="$6"
+    local address="$7"
+    local ratelimit="$8"
+    local userspec="$9"
+    local userandgroup=
+    local logtag=
+    local nonat=
+
+    # # # # # F u n c t i o n   B o d y # # # # #
+
+    process_ratelimit
+
+    # Isolate log level
+
+    if [ "$target" = "${target%:*}" ]; then
+	loglevel=
+    else
+	loglevel="${target#*:}"
+	target="${target%%:*}"
+	expandv loglevel
+	if [ "$loglevel" != "${loglevel%:*}" ]; then
+	    logtag="${loglevel#*:}"
+	    loglevel="${loglevel%:*}"
+	    expandv logtag
+	fi
+
+	case $loglevel in
+	    none*)
+		loglevel=
+		[ $target = LOG ] && return
+		;;
+	esac
+
+	loglevel=${loglevel%\!}
+    fi
+    #
+    # Save the original target in 'logtarget' for logging rules
+    #
+    logtarget=${target%-}
+    #
+    # Targets ending in "-" only apply to the nat table
+    #
+    [ $target = $logtarget ] && dnat_only= || dnat_only=Yes
+
+    # Tranform the rule:
+    #
+    # - parse the user specification
+    # - set 'target' to the filter table target.
+    # - make $FW the destination for REDIRECT
+    # - remove '-' suffix from logtargets while setting 'dnat_only'
+    # - clear 'address' if it has been set to '-'
+
+    [ "x$address" = "x-" ] && address=
+
+    process_userspec
 
     case $target in
 	ACCEPT+|NONAT)
@@ -2844,68 +2861,9 @@ process_default_macro() # $1 = macro name
 	    esac
 	fi
 
-	[ "x$userspec" = "x-" ] && userspec=
+	process_userspec
 
-	if [ -n "$userspec" ]; then
-
-	    userandgroup="-m owner"
-
-	    case "$userspec" in
-		!*+*)
-		    if [ -n "${userspec#*+}" ]; then
-			userandgroup="$userandgroup ! --cmd-owner ${userspec#*+}"
-		    fi
-		    userspec=${userspec%+*}
-		    ;;
-		*+*)
-		    if [ -n "${userspec#*+}" ]; then
-			userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
-		    fi
-		    userspec=${userspec%+*}
-		    ;;
-	    esac
-
-	    case "$userspec" in
-		!*:*)
-		    if [ "$userspec" != "!:" ]; then
-			temp="${userspec#!}"
-			temp="${temp%:*}"
-			[ -n "$temp" ] && userandgroup="$userandgroup ! --uid-owner $temp"
-			temp="${userspec#*:}"
-			[ -n "$temp" ] && userandgroup="$userandgroup ! --gid-owner $temp"
-		    fi
-		    ;;
-		*:*)
-		    if [ "$userspec" != ":" ]; then
-			temp="${userspec%:*}"
-			[ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp"
-			temp="${userspec#*:}"
-			[ -n "$temp" ] && userandgroup="$userandgroup --gid-owner $temp"
-		    fi
-		    ;;
-		!*)
-		    [ "$userspec" != "!" ] && userandgroup="$userandgroup ! --uid-owner ${userspec#!}"
-		    ;;
-		*)
-		    [ -n "$userspec" ] && userandgroup="$userandgroup --uid-owner $userspec"
-		    ;;
-	    esac
-
-	    [ "$userandgroup" = "-m owner" ] && userandgroup=
-	fi
-
-	[ "x$ratelimit" = "x-" ] && ratelimit=
-
-	if [ -n "$ratelimit" ]; then
-	    case $ratelimit in
-		*:*)
-		    ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
-		    ;;
-		*)
-		    ratelimit="-m limit --limit $ratelimit"
-		    ;;
-	    esac
-	fi
+	process_ratelimit
 
 	add_a_rule
 	progress_message "Rule \"$target $protocol $port $cport $ratelimit $userspec\" $DONE"

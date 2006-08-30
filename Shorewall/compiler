@@ -1335,6 +1335,10 @@ substitute_action() # $1 = parameter, $2 = action
     esac
 }
 
+#
+# Third phase of action processing. It needs to be here in the compiler because
+#                                   it handles builtin actions.
+#
 process_actions3()
 {    
     for xaction in $USEDACTIONS; do

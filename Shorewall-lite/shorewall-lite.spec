@@ -1,5 +1,5 @@
 %define name shorewall-lite
-%define version 3.3.0
+%define version 3.3.1
 %define release 1
 %define prefix /usr
 
@@ -84,24 +84,11 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Wed Aug 30 2006 Tom Eastep tom@shorewall.net
+- Updated to 3.3.1-1
 * Wed Aug 09 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.3.0-1
-* Sat Jul 08 2006 Tom Eastep tom@shorewall.net
-- Updated to 3.2.0-1
-* Thu Jun 29 2006 Tom Eastep tom@shorewall.net
-- Updated to 3.2.0-0RC6
-* Mon Jun 19 2006 Tom Eastep tom@shorewall.net
-- Version 3.2.0-RC5
-* Sun Jun 18 2006 Tom Eastep tom@shorewall.net
-- Version 3.2.0-RC4
-* Mon Jun 12 2006 Tom Eastep tom@shorewall.net
-- Change control program to /sbin/shorewall-lite
-- Version 3.2.0-RC3
-* Fri Jun 09 2006 Tom Eastep tom@shorewall.net
-- Install Shorewall-lite in its own directories
-* Wed Jun 07 2006 Tom Eastep tom@shorewall.net
-- Version 3.2.0-RC2
-* Tue Apr 18 2006 Tom Eastep tom@shorewall.net
-- Initial Version
+* Wed Aug 09 2006 Tom Eastep tom@shorewall.net
+- Updated to 3.3.0-1
 
 

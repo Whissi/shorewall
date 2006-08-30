@@ -445,8 +445,11 @@ validate_policy()
 		;;
 	    *)
 		if ! list_search $default USEDACTIONS; then
-		    if [ ! -f $(find_file macro.$default) ]; then
-			fatal_error "Default Action/Macro $var=$default not found"
+		    if ! list_search $default $DEFAULT_MACROS; then
+			if [ ! -f $(find_file macro.$default) ]; then
+			    fatal_error "Default Action/Macro $var=$default not found"
+			fi
+			DEFAULT_MACROS="$DEFAULT_MACROS $default"
 		    fi
 		fi
 	esac

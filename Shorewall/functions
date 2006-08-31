@@ -2918,6 +2918,8 @@ do_initialize() {
     USE_ACTIONS=
     DROP_DEFAULT=
     REJECT_DEFAULT=
+    ACCEPT_DEFAULT=
+    QUEUE_DEFAULT=
 
     LOGLIMIT=
     LOGPARMS=
@@ -3187,6 +3189,18 @@ do_initialize() {
     case "${REJECT_DEFAULT:=Reject}" in
 	None)
 	    REJECT_DEFAULT=none
+	    ;;
+    esac
+
+    case "${QUEUE_DEFAULT:=none}" in
+	None)
+	    QUEUE_DEFAULT=none
+	    ;;
+    esac
+
+    case "${ACCEPT_DEFAULT:=none}" in
+	None)
+	    ACCEPT_DEFAULT=none
 	    ;;
     esac
 

@@ -161,16 +161,18 @@ New Features:
 
     The solution is two-fold:
 
-    - Two new options have been added to the
+    - Four new options have been added to the
       /etc/shorewall/shorewall.conf file that allow specifying the
-       default action for DROP and REJECT.
+       default action for DROP, REJECT, ACCEPT and QUEUE.
 
-       The options are DROP_DEFAULT and REJECT_DEFAULT.
+       The options are DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT and
+       QUEUE_DEFAULT.
 
        DROP_DEFAULT describes the rules to be applied before a
        connection request is dropped by a DROP policy; REJECT_DEFAULT
        describes the rules to be applied if a connection request is
-       rejected by a REJECT policy.
+       rejected by a REJECT policy. The other two are similar for
+       ACCEPT and QUEUE policies.
 
        The value assigned to these may be:
 
@@ -182,6 +184,8 @@ New Features:
 
 	DROP_DEFAULT="Drop"
 	REJECT_DEFAULT="Reject"
+	ACCEPT_DEFAULT=none
+	QUEUE_DEFAULT=none
 
        If USE_ACTIONS=Yes, then these values refer to action.Drop and
        action.Reject respectively. If USE_ACTIONS=No, then these values
@@ -193,8 +197,9 @@ New Features:
 
     - The POLICY column in /etc/shorewall/policy has been extended.
 
-       In /etc/shorewall/policy, when the POLICY is DROP or REJECT then
-       the policy may be followed by ":" and one of the following:
+       In /etc/shorewall/policy, when the POLICY is DROP, REJECT,
+       ACCEPT or QUEUE then the policy may be followed by ":" and one
+       of the following:
 			
 	a) The word "None" or "none". This causes any default
 	   action define in /etc/shorewall/actions.std or

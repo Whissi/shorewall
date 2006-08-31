@@ -537,8 +537,6 @@ validate_policy()
 	esac
 
 	case ${policy%:*} in
-	    ACCEPT|CONTINUE|QUEUE)
-		;;
 	    DROP)
 		[ -n "${default:=$DROP_DEFAULT}" ]
 		;;
@@ -547,6 +545,8 @@ validate_policy()
 		;;
 	    ACCEPT)
 		[ -n "${default:=$ACCEPTT_DEFAULT}" ]
+		;;
+	    CONTINUE)
 		;;
 	    QUEUE)
 		[ -n "${default:=$QUEUE_DEFAULT}" ]

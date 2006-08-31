@@ -409,7 +409,7 @@ addnatrule() # $1 = chain name, remainder of arguments specify the rule
 #
 deletechain() # $1 = name of chain
 {
-    save_command "qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1"
+    save_command "qt \$IPTABLES -L $1 -n && qt \$IPTABLES -F $1 && qt \$IPTABLES -X $1"
 }
 
 #
@@ -3149,7 +3149,7 @@ default_policy() # $1 = client $2 = server
     apply_default()
     {
 	#
-	# Generate policy file column values from the policy chain
+	# Generate policy file column values for the policy chain
 	#
 	eval policy=\$${chain1}_policy
 	eval loglevel=\$${chain1}_loglevel
@@ -4574,13 +4574,13 @@ __EOF__
 }	
 
 #
-# Compile a Restore Script
+# Compile a Firewall Script
 #
 compile_firewall() # $1 = File Name
 {
     local IPTABLES_COMMAND=run_iptables
     local INDENT=""
-    local checking=
+    local checking= outfile=$1 dir=
 
     setup_mss()
     {
@@ -4595,18 +4595,6 @@ compile_firewall() # $1 = File Name
 
 	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
     }
-
-    outfile=$1 dir=
-    #
-    # Overload a function from the library
-    #
-    deletechain() # $1 = name of chain
-    {
-	save_command "qt \$IPTABLES -L $1 -n && qt \$IPTABLES -F $1 && qt \$IPTABLES -X $1"
-    }
-    #
-    # END OVERLOADED FUNCTIONS
-    #
 
     #
     # So that mktempdir doesn't have to jump through hoops when there isn't a working 'mktemp',

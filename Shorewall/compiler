@@ -4771,37 +4771,6 @@ ensure_and_save_command() {
     eval \$@ || fatal_error "Command \"\$@\" failed"
 }
 
-__EOF__
-    #
-    # The following function(s) can be removed when we require version 30192 (below)
-    #
-    cat >&3 << __EOF__
-#
-# Undo the effect of 'separate_list()'
-#
-combine_list()
-{ 
-    local f o=
-
-    for f in \$* ; do 
-        o="\${o:+\$o,}\$f"
-    done
- 
-    echo \$o
-}
-__EOF__
-
-    #
-    # The following function(s) can be removed when we require version 30200 (below)
-    #
-    cat >&3 << __EOF__
-#
-# Determine if an interface is up
-#
-interface_is_up() {
-    [ -n "\$(ip link ls dev \$1 |grep -e '[<,]UP[,>]')" ]
-}
-
 #
 # Initialize environment
 #
@@ -4817,8 +4786,8 @@ __EOF__
 
     local version=\$(cat \${SHAREDIR}/version)
 
-    if [ \${LIBVERSION:-0} -lt 30191 ]; then
-	fatal_error "This script requires Shorewall Lite version 3.2.0-RC2 or later; current version is \$version"
+    if [ \${LIBVERSION:-0} -lt 30200 ]; then
+	fatal_error "This script requires Shorewall Lite version 3.2.3 or later; current version is \$version"
     fi
     #
     # These variables are required by the library functions called in this script
@@ -4833,8 +4802,8 @@ __EOF__
 
     local version=\$(cat \${SHAREDIR}/version)
 
-    if [ \${LIBVERSION:-0} -lt 30191 ]; then
-	fatal_error "This script requires Shorewall version 3.2.0-Beta7 or later; current version is \$version"
+    if [ \${LIBVERSION:-0} -lt 30200 ]; then
+	fatal_error "This script requires Shorewall version 3.2.3 or later; current version is \$version"
     fi
     #
     # These variables are required by the library functions called in this script

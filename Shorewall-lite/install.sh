@@ -290,9 +290,10 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall-lite/c
 # Install the functions file
 #
 
-install_file functions ${PREFIX}/usr/share/shorewall-lite/functions 0444
+install_file lib.base ${PREFIX}/usr/share/shorewall-lite/lib.base 0444
+ln -s lib.base ${PREFIX}/usr/share/shorewall-lite/functions
 
-echo "Common functions installed in ${PREFIX}/usr/share/shorewall-lite/functions"
+echo "Common functions linked through ${PREFIX}/usr/share/shorewall-lite/functions"
 
 #
 # Install Shorecap

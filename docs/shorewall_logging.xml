@@ -202,32 +202,6 @@
         which still go to syslog).</para>
       </note>
 
-      <para>Once you have installed ulogd, edit /etc/ulogd.conf
-      (<filename>/usr/local/etc/ulogd.conf</filename> if you built ulogd
-      yourself) and set:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>syslogfile &lt;<emphasis>the file that you wish to log
-          to</emphasis>&gt;</para>
-        </listitem>
-
-        <listitem>
-          <para>syslogsync 1</para>
-        </listitem>
-      </orderedlist>
-
-      <para>Also on the firewall system:</para>
-
-      <simplelist>
-        <member>touch &lt;<emphasis>the file that you wish to log
-        to</emphasis>&gt;</member>
-      </simplelist>
-
-      <para>Your distribution's ulogd package may include a logrotate file in
-      /etc/logrotate.d. If you change the log file location, be sure to change
-      that logrotate file accordingly.</para>
-
       <para>You will need to change all instances of log levels (usually
       <quote>info</quote>) in your Shorewall configuration files to
       <quote>ULOG</quote> - this includes entries in the policy, rules and

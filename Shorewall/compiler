@@ -4651,7 +4651,7 @@ __EOF__
 
     cat >&3 << __EOF__
 
-. \${SHAREDIR}/functions
+. \${SHAREDIR}/lib.base
 __EOF__
 
     compile_stop_firewall
@@ -5365,7 +5365,7 @@ SHAREDIR=/usr/share/shorewall
 VARDIR=/var/lib/shorewall
 [ -z "$EXPORT" ] && CONFDIR=/etc/shorewall || CONFDIR=${SHAREDIR}/configfiles
 
-FUNCTIONS=${SHAREDIR}/functions
+FUNCTIONS=${SHAREDIR}/lib.base
 
 [ -n "${VERBOSE:=2}" ]
 

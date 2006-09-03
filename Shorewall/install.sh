@@ -288,14 +288,6 @@ if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
 fi
 
 #
-# Install the functions file
-#
-
-install_file functions ${PREFIX}/usr/share/shorewall/functions 0444
-
-echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
-
-#
 # Install the Compiler
 #
 

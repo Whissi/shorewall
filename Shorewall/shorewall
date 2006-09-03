@@ -473,7 +473,7 @@ save_config() {
 					echo "#!/bin/sh" > $f
 					echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
 					echo  >> $f
-					echo ". ${SHAREDIR}/functions" >> $f
+					echo ". ${SHAREDIR}/lib.base" >> $f
 					echo  >> $f
 					grep '^MODULE' ${VARDIR}/restore-base >>  $f
 					echo "reload_kernel_modules << __EOF__" >> $f
@@ -1744,7 +1744,7 @@ CONFDIR=/etc/shorewall
 export PRODUCT="Shorewall"
 
 FIREWALL=$SHAREDIR/firewall
-FUNCTIONS=$SHAREDIR/functions
+FUNCTIONS=$SHAREDIR/lib.base
 VERSION_FILE=$SHAREDIR/version
 HELP=$SHAREDIR/help
 

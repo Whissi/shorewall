@@ -299,7 +299,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$HASLITE" ]; then
 	progress_message "Exporting $LITESVNBRANCH from SVN..."
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
-	do_or_die "cp $SHOREWALLDIR/functions $SHOREWALLDIR/modules $SHOREWALLDIR/xmodules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALLDIR/lib.base $SHOREWALLDIR/modules $SHOREWALLDIR/xmodules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     fi
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"

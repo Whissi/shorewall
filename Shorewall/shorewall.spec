@@ -110,7 +110,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(0555,root,root) /usr/share/shorewall/compiler
-%attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0555,root,root) /usr/share/shorewall/help
 %attr(0444,root,root) /usr/share/shorewall/lib.accounting
 %attr(0444,root,root) /usr/share/shorewall/lib.actions

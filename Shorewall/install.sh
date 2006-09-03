@@ -472,7 +472,10 @@ delete_file ${PREFIX}/usr/share/shorewall/tcstart
 #
 delete_file ${PREFIX}/usr/share/shorewall/action.Limit
 delete_file ${PREFIX}/usr/share/shorewall/Limit
-
+#
+# Delete the functions file
+#
+delete_file ${PREFIX}/usr/share/shorewall/functions
 #
 # Install the Providers file
 #

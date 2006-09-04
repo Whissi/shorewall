@@ -339,10 +339,32 @@
                         <para>There will be those of you who will say "Those
                         idiots at shorewall.net don't understand. I don't want
                         my traffic balanced so I'm not going to set that
-                        option!" When you can't get your second interface to
-                        work, check the mailing list archives -- there have
-                        been others before you who thought we were fools
-                        too".</para>
+                        option!" If you are one of those users, then when you
+                        can't get your second interface to work, check the
+                        mailing list archives -- there have been others before
+                        you who thought we were fools too.</para>
+                      </note><note>
+                        <para>"Oh Tom -- I can't figure out how to use
+                        <filename>/etc/shorewall/tcrules</filename> to avoid
+                        balancing if I set 'balance' on my interfaces".</para>
+
+                        <para>I know -- this is only slightly less complex
+                        than brain surgery but let me try to
+                        help:<itemizedlist>
+                            <listitem>
+                              <para>Your first tcrule should mark the traffic so
+                              that it goes out the "default" provider.</para>
+                            </listitem>
+
+                            <listitem>
+                              <para>Your remaining rules should be the "exception"
+                              rules that mark traffic to go out the other
+                              providers.</para>
+                            </listitem>
+                          </itemizedlist></para>
+
+                        <para>I hope your brain isn't swimming too badly from
+                        those intricate instructions.</para>
                       </note></para>
                   </important>
 

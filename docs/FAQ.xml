@@ -1628,11 +1628,12 @@ iptables: Invalid argument
       the second one, it doesn't work.</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The Multi-ISP
-      Documentation strongly recommends that you use the 'balance' option on
-      all providers even if you want to manually specify which ISP to use. If
-      you don't do that so that your main routing table only has one default
-      route, then you must disable route filtering. Do not specify the
-      'routefilter' option on the other interface(s) in
+      Documentation strongly recommends that you use the <emphasis
+      role="bold">balance</emphasis> option on all providers even if you want
+      to manually specify which ISP to use. If you don't do that so that your
+      main routing table only has one default route, then you must disable
+      route filtering. Do not specify the <emphasis
+      role="bold">routefilter</emphasis> option on the other interface(s) in
       <filename>/etc/shorewall/interfaces</filename> and disable any
       <emphasis>IP Address Spoofing</emphasis> protection that your
       distribution supplies.</para>
@@ -1649,12 +1650,13 @@ iptables: Invalid argument
       <filename>/etc/shorewall/tcrules</filename> file:</para>
 
       <programlisting>#MARK         SOURCE           DEST
-1             eth0
-1             $FW
+1:P           eth0
+1:P           $FW
 &lt;other MARK rules&gt;</programlisting>
 
       <para>Now any traffic that isn't marked by one of your other MARK rules
-      will have mark = 1 and will be sent via ISP1.</para>
+      will have mark = 1 and will be sent via ISP1. That will work whether
+      <emphasis role="bold">balance</emphasis> is specified or not!</para>
     </section>
   </section>
 

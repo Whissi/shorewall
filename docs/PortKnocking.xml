@@ -133,115 +133,42 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
   <section>
     <title>Limiting Per-IP Connection Rate</title>
 
-    <para>Suppose that you wish to limit the number of connections to port 22
-    to 3/minute from individual internet hosts to the firewall.</para>
+    <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' action.
+    Limit is invoked with a comma-separated list in place of a logging tag.
+    The list has three elements:</para>
 
     <orderedlist>
       <listitem>
-        <para>Add an action named SSHLimit (see the <ulink
-        url="Actions.html">Action documentation</ulink>). Leave the
-        <filename>action.SSHLimit</filename> file empty.</para>
+        <para>The name of a 'recent' set; you select the set name which must
+        conform to the rules for a valid chain name. Different rules that
+        specify the same set name will use the same set of counters.</para>
       </listitem>
 
       <listitem>
-        <para>Create /etc/shorewall/SSHLimit with the following
-        contents:</para>
-
-        <programlisting>run_iptables -A $CHAIN -m recent --name SSHA --set
-if [ -n "$LEVEL" ]; then
-    run_iptables -N $CHAIN%
-    log_rule_limit $LEVEL $CHAIN% SSHLimit REJECT "" "" -A
-    run_iptables -A $CHAIN% -j reject
-    run_iptables -A $CHAIN -m recent --name SSHA --update --seconds 60 --hitcount 4 -j $CHAIN%
-else
-    run_iptables -A $CHAIN -m recent --update --name SSHA --seconds 60 --hitcount 4 -j reject
-fi
-run_iptables -A $CHAIN -j ACCEPT</programlisting>
+        <para>The number of connections permitted in a specified time
+        period.</para>
       </listitem>
 
       <listitem>
-        <para>Add this rule to /etc/shorewall/rules:</para>
-
-        <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
-SSHLimit         net               $FW            tcp         22</programlisting>
-
-        <para>If you wish to log the rejects at the 'info' level then use this
-        rule instead:</para>
-
-        <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
-SSHLimit:info    net               $FW            tcp         22</programlisting>
-      </listitem>
-
-      <listitem>
-        <para>If you wish to use SSHLimit with a forwarded connection, you
-        must be using Shorewall 2.3.1 or later for fullest protection. Assume
-        that you forward port 22 from external IP address 206.124.146.178 to
-        internal system 192.168.1.5. In /etc/shorewall/rules:</para>
-
-        <programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
-#                                                                            PORT(S)     DEST
-DNAT-            net               loc:192.168.1.5 tcp         22            -           206.124.146.178
-SSHLimit         net               loc:192.168.1.5 tcp         22            -           206.124.146.178</programlisting>
-
-        <note>
-          <para>You can use SSHLimit with DNAT on earlier releases provided
-          that you omit the ORIGINAL DEST entry on the second SSHLimit rule.
-          This rule will be quite secure provided that you specify 'norfc1918'
-          on your external interface.</para>
-        </note>
+        <para>The time period, expressed in seconds.</para>
       </listitem>
     </orderedlist>
 
-    <para id="Limit">The above can be generalized into a flexible 'Limit'
-    target.</para>
+    <para>Connections that exceed the specified rate are dropped.</para>
 
-    <note>
-      <para>'Limit' as described here is included as a standard part of
-      Shorewall beginning with version 3.0.4. The following is included to
-      show how 'Limit' is implemented; if you are running Shorewall 3.0.4 or
-      later, you can omit the following two steps.</para>
-    </note>
-
-    <orderedlist>
-      <listitem>
-        <para>Add an action named Limit. Leave the action.Limit file
-        empty.</para>
-      </listitem>
-
-      <listitem>
-        <para>Create /etc/shorewall/Limit with the following contents:</para>
-
-        <programlisting>set -- $(separate_list $TAG)
-
-run_iptables -A $CHAIN -m recent --name $1 --set
-
-if [ -n "$LEVEL" ]; then
-    run_iptables -N $CHAIN%
-    log_rule_limit $LEVEL $CHAIN% $1 REJECT "" "" -A
-    run_iptables -A $CHAIN% -j reject
-    run_iptables -A $CHAIN -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $CHAIN%
-else
-    run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j reject
-fi
-
-run_iptables -A $CHAIN -j ACCEPT</programlisting>
-      </listitem>
-    </orderedlist>
-
-    <para>Now if you want to limit the number of connections to port 22 to
-    3/minute from individual internet hosts to the firewall, you can add this
-    rule:</para>
+    <para>For example,to use a recent set name of <emphasis
+    role="bold">SSHA</emphasis>, and to limiting SSH to 3 per minute:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
 
-    <para>If you want rejected connections to be logged at the info level, use
+    <para>If you want dropped connections to be logged at the info level, use
     this rule instead:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit:info:SSHA,3,60   net               $FW            tcp         22</programlisting>
 
-    <para>As you can see, you pass four pieces of information to the Limit
+    <para>To summarize, you pass four pieces of information to the Limit
     action:</para>
 
     <itemizedlist>

@@ -4640,23 +4640,22 @@ __EOF__
 SHAREDIR=/usr/share/shorewall-lite
 CONFDIR=/etc/shorewall-lite
 VARDIR=/var/lib/shorewall-lite
+
+. \${SHAREDIR}/functions
 __EOF__
     else
 	cat >&3 << __EOF__
 SHAREDIR=/usr/share/shorewall
 CONFDIR=/etc/shorewall
 VARDIR=/var/lib/shorewall
+
+. \${SHAREDIR}/lib.base
 __EOF__
     fi
 
-    cat >&3 << __EOF__
-
-. \${SHAREDIR}/functions
-__EOF__
-
     compile_stop_firewall
 
-cat >&3 << __EOF__
+    cat >&3 << __EOF__
 
 #
 # Set policy of chain \$1 to \$2

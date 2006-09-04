@@ -1,4 +1,4 @@
-Shorewall 3.3.1
+Shorewall 3.3.2
 	  	 
  Note to users upgrading from Shorewall 3.0 or 3.2	 
   	 
@@ -31,7 +31,7 @@ Shorewall 3.3.1
     Please see the "Migration Considerations" below for additional upgrade 	 
     information. 	 
   	 
-Problems Corrected in 3.3.1
+Problems Corrected in 3.3.2
 
 1)  The 'proxyarp' option in /etc/shorewall/interfaces was not
     triggering the loading of lib.proxyarp with the result that the
@@ -43,9 +43,11 @@ Problems Corrected in 3.3.1
 
 	  setup_traffic_shaping: command not found
 
-Other changes in 3.3.1
+Other changes in 3.3.2
 
-None. 
+1)  /etc/shorewall/functions has been renamed
+    /etc/shorewall/lib.base. If you soure the 'functions' file in any
+    of your own scripts, please modify them accordingly. 
 
 Migration Considerations:
 
@@ -81,6 +83,11 @@ Migration Considerations:
     /etc/shorewall/actions then you need make no changes to migrate to
     Shorewall version 3.3. Otherwise, please see item 3) in the New
     Features below.
+
+2)  The 'Limit' action is now a builtin. If you have 'Limit' liarws in
+    /etc/shorewall/actions, remove the entry. Also remove the files
+    /etc/shorewall/action.Limit and /etc/shorewall/Limit if you have
+    them.
 
 New Features:
 

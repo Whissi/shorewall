@@ -399,7 +399,9 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       192.168.1.0/24, then:<warning>
           <para>All traffic redirected through use of this hack will look to
           the server as if it came from the firewall (192.168.1.254) rather
-          than from the original client!</para>
+          than from the original client! So the server's access logs will be
+          useless for determining which local hosts are accessing the
+          server.</para>
         </warning></para>
 
       <itemizedlist>
@@ -605,8 +607,8 @@ to debug/develop the newnat interface.</programlisting></para>
   <section>
     <title>Open Ports</title>
 
-    <section id="faq0">
-      <title>(FAQ 0) How do I Open Ports in Shorewall?</title>
+    <section id="faq51">
+      <title>(FAQ 51) How do I Open Ports in Shorewall?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> No one who has installed
       Shorewall using one of the <ulink
@@ -665,11 +667,11 @@ to debug/develop the newnat interface.</programlisting></para>
       <filename>/usr/share/shorewall/action.Drop</filename> which in turn
       invokes the <emphasis role="bold">Auth</emphasis> macro (defined in
       <filename>/usr/share/shorewall/macro.Auth</filename>) specifying the
-      <emphasis role="bold">DROP</emphasis> action (i.e., <emphasis
-      role="bold">Auth/DROP</emphasis>). This is necessary to prevent outgoing
-      connection problems to services that use the <quote>Auth</quote>
-      mechanism for identifying requesting users. That is the only service
-      which the default setup rejects.</para>
+      <emphasis role="bold">REJECT</emphasis> action (i.e., <emphasis
+      role="bold">Auth/REJECT</emphasis>). This is necessary to prevent
+      outgoing connection problems to services that use the
+      <quote>Auth</quote> mechanism for identifying requesting users. That is
+      the only service which the default setup rejects.</para>
 
       <para>If you are seeing closed TCP ports other than 113 (auth) then
       either you have added rules to REJECT those ports or a router outside of
@@ -711,26 +713,6 @@ to debug/develop the newnat interface.</programlisting></para>
         a writeup</ulink> describing a nice integration of Shorewall and
         PortSentry.</para>
       </section>
-    </section>
-
-    <section id="faq51">
-      <title>(FAQ 51) How do I "Open a Port" with Shorewall</title>
-
-      <para><emphasis role="bold">Answer</emphasis>: It depends…</para>
-
-      <para>If the application serving the port is running on the same system
-      as Shorewall then add this rule:</para>
-
-      <programlisting>#ACTION       SOURCE         DEST        PROTO         DEST PORT(S)
-ACCEPT        net            $FW         &lt;protocol&gt;    &lt;port number&gt;</programlisting>
-
-      <para>Where &lt;protocol&gt; is either <emphasis>tcp</emphasis> or
-      <emphasis>udp</emphasis> and &lt;port number&gt; is the port that you
-      wish to "open".</para>
-
-      <para>If the application serving the port is running on one of the
-      systems in your local network then please see <link linkend="faq1">FAQ
-      1</link>.</para>
     </section>
   </section>
 
@@ -1618,6 +1600,16 @@ iptables: Invalid argument
         </listitem>
       </orderedlist>
     </section>
+
+    <section id="faq59">
+      <title>(FAQ 59) After I start Shorewall, there are lots of unused
+      Netfilter modules loaded. How do I avoid that?</title>
+
+      <para>Answer: Copy <filename>/usr/share/shorewall/modules</filename> (or
+      <filename>/usr/share/shorewall/xmodules</filename> if appropriate) to
+      <filename>/etc/shorewall/modules </filename>and modify the copy to
+      include only the modules that you need.</para>
+    </section>
   </section>
 
   <section>
@@ -1664,7 +1656,7 @@ iptables: Invalid argument
     <title>About Shorewall</title>
 
     <section id="faq10">
-      <title>(FAQ 10) What Distributions does it work with?</title>
+      <title>(FAQ 10) What Distributions does Shorewall work with?</title>
 
       <para>Shorewall works with any GNU/Linux distribution that includes the
       <ulink url="shorewall_prerequisites.htm">proper
@@ -1672,7 +1664,7 @@ iptables: Invalid argument
     </section>
 
     <section id="faq11">
-      <title>(FAQ 11) What Features does it have?</title>
+      <title>(FAQ 11) What Features does Shorewall have?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> See the <ulink
       url="shorewall_features.htm">Shorewall Feature List</ulink>.</para>
@@ -1681,8 +1673,9 @@ iptables: Invalid argument
     <section id="faq12">
       <title>(FAQ 12) Is there a GUI?</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> Yes. Shorewall support is
-      included in Webmin 1.060 and later versions. See <ulink
+      <para><emphasis role="bold">Answer:</emphasis> Yes and No. Shorewall
+      support is included in Webmin 1.060 and later versions but the support
+      is woefully out of date. See <ulink
       url="http://www.webmin.com">http://www.webmin.com</ulink></para>
     </section>
 
@@ -1707,7 +1700,7 @@ iptables: Invalid argument
     </section>
 
     <section id="faq25">
-      <title>(FAQ 25) How to I tell which version of Shorewall or Shorewall
+      <title>(FAQ 25) How do I tell which version of Shorewall or Shorewall
       Lite I am running?</title>
 
       <para>At the shell prompt, type:</para>
@@ -1859,10 +1852,10 @@ iptables: Invalid argument
         <programlisting>Mar  1 18:20:07 Mail kernel: Shorewall:OUTPUT:REJECT:IN= OUT=eth0 SRC=192.168.1.2 DST=192.168.1.1 LEN=60
 TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES=0x00 SYN URGP=0 </programlisting>
 
-        <para>Answer: The fact that the message is being logged from the
-        OUTPUT chain means that the destination IP address is not in any
-        defined zone (see <link linkend="faq17">FAQ 17</link>). You need
-        to:</para>
+        <para><emphasis role="bold">Answer</emphasis>: The fact that the
+        message is being logged from the OUTPUT chain means that the
+        destination IP address is not in any defined zone (see <link
+        linkend="faq17">FAQ 17</link>). You need to:</para>
 
         <orderedlist>
           <listitem>
@@ -1907,7 +1900,7 @@ ACCEPT     loc         modem     tcp       80</programlisting>
 eth0               eth1                        # eth1 = interface to local network</programlisting>
 
         <para>For an example of this when the ADSL/Cable modem is bridged, see
-        <ulink url="myfiles.htm">my configuration</ulink>. In that case, I
+        <ulink url="XenMyWay.html">my configuration</ulink>. In that case, I
         masquerade using the IP address of my local interface!</para>
       </section>
     </section>
@@ -1962,7 +1955,7 @@ eth0               eth1                        # eth1 = interface to local netwo
       shorewall.net, the two laptop systems have the full Shorewall product
       installed as does my personal Linux desktop system. All other Linux
       systems that run a firewall use Shorewall Lite and have their
-      configuration directories on my desktop.</para>
+      configuration directories on my desktop system.</para>
     </section>
   </section>
 
@@ -2095,13 +2088,13 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       name-based multiple hosting is a common practice (another example:
       lists.shorewall.net and www1.shorewall.net are both hosted on the same
       system with a single IP address), it is not possible to filter
-      connections to a particular name by examiniation of protocol headers
+      connections to a particular name by examination of protocol headers
       alone. While some protocols such as <ulink url="FTP.html">FTP</ulink>
       require the firewall to examine and possibly modify packet payload,
       parsing the payload of individual packets doesn't always work because
       the application-level data stream can be split across packets in
       arbitrary ways. This is one of the weaknesses of the 'string match'
-      Netfilter extension available in Patch-O-Matic. The only sure way to
+      Netfilter extension available in Patch-O-Matic-ng. The only sure way to
       filter on packet content is to proxy the connections in question -- in
       the case of HTTP, this means running something like <ulink
       url="Shorewall_Squid_Usage.html">Squid</ulink>. Proxying allows the

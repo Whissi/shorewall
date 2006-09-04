@@ -375,6 +375,14 @@ combine_list()
 }
 
 #
+# Display elements of a list with leading white space
+#
+display_list() # $1 = List Title, rest of $* = list to display
+{
+    [ $# -gt 1 ] && echo "   $*"
+}
+
+#
 # Determine if a chain is a policy chain
 #
 is_policy_chain() # $1 = name of chain

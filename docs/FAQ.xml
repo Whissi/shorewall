@@ -1621,6 +1621,44 @@ iptables: Invalid argument
   </section>
 
   <section>
+    <title>Multiple ISPs</title>
+
+    <section id="faq57">
+      <title>(FAQ 57) I configured two ISPs in Shorewall but when I try to use
+      the second one, it doesn't work.</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> The Multi-ISP
+      Documentation strongly recommends that you use the 'balance' option on
+      all providers even if you want to manually specify which ISP to use. If
+      you don't do that so that your main routing table only has one default
+      route, then you must disable route filtering. Do not specify the
+      'routefilter' option on the other interface(s) in
+      <filename>/etc/shorewall/interfaces</filename> and disable any
+      <emphasis>IP Address Spoofing</emphasis> protection that your
+      distribution supplies.</para>
+    </section>
+
+    <section id="faq58">
+      <title>(FAQ 58) But if I specify 'balance' then won't Shorewall balance
+      the traffic between the interfaces? I don't want that!</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: Suppose that you want all
+      traffic to go out through ISP1 (mark 1) unless you specify otherwise;
+      your internal interface is <filename class="devicefile">eth0</filename>.
+      Then simply add these two rules as the first marking rules in your
+      <filename>/etc/shorewall/tcrules</filename> file:</para>
+
+      <programlisting>#MARK         SOURCE           DEST
+1             eth0
+1             $FW
+&lt;other MARK rules&gt;</programlisting>
+
+      <para>Now any traffic that isn't marked by one of your other MARK rules
+      will have mark = 1 and will be sent via ISP1.</para>
+    </section>
+  </section>
+
+  <section>
     <title>About Shorewall</title>
 
     <section id="faq10">

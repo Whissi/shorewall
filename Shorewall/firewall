@@ -504,25 +504,6 @@ delete_nat() {
 }
 
 #
-# Verify that kernel has netfilter support
-#
-verify_os_version() {
-
-    osversion=$(uname -r)
-
-    case $osversion in
-    2.4.*|2.5.*|2.6.*)
-	;;
-    *)
-	startup_error "Shorewall version $VERSION does not work with kernel version $osversion"
-	;;
-    esac
-
-    [ $COMMAND = start -a -n "$(lsmod 2> /dev/null | grep '^ipchains')" ] && \
-	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
-}
-
-#
 # Check for disabled startup
 #
 check_disabled_startup() {

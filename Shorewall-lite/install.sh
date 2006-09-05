@@ -291,6 +291,9 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall-lite/c
 #
 
 install_file lib.base ${PREFIX}/usr/share/shorewall-lite/lib.base 0444
+
+echo "Common functions installed as ${PREFIX}/usr/share/shorewall-lite/lib.base"
+
 ln -sf lib.base ${PREFIX}/usr/share/shorewall-lite/functions
 
 echo "Common functions linked through ${PREFIX}/usr/share/shorewall-lite/functions"

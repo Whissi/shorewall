@@ -712,9 +712,17 @@ to debug/develop the newnat interface.</programlisting></para>
         <title>(FAQ 4c) How do I use Shorewall with PortSentry?</title>
 
         <para><ulink
-        url="http://www.shorewall.net/pub/shorewall/contrib/PortsentryHOWTO.txt">Here's
-        a writeup</ulink> describing a nice integration of Shorewall and
-        PortSentry.</para>
+        url="http://www.shorewall.net/pub/shorewall/contrib/PortsentryHOWTO.txt"><emphasis
+        role="bold">Answer:</emphasis> Here's a writeup</ulink> describing a
+        nice integration of Shorewall and PortSentry.</para>
+      </section>
+
+      <section>
+        <title>(FAQ 4d) How do I use Shorewall with Snort-Inline?</title>
+
+        <para><emphasis role="bold">Answer:</emphasis> <ulink
+        url="http://www.catherders.com/tiki-view_blog_post.php?blogId=1&amp;postId=71">Here
+        is a writeup</ulink> contributed by Michael Cooke.</para>
       </section>
     </section>
   </section>
@@ -1647,13 +1655,12 @@ iptables: Invalid argument
       the traffic between the interfaces? I don't want that!</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Suppose that you want all
-      traffic to go out through ISP1 (mark 1) unless you specify otherwise;
-      your internal interface is <filename class="devicefile">eth0</filename>.
+      traffic to go out through ISP1 (mark 1) unless you specify otherwise.
       Then simply add these two rules as the first marking rules in your
       <filename>/etc/shorewall/tcrules</filename> file:</para>
 
       <programlisting>#MARK         SOURCE           DEST
-1:P           eth0
+1:P           0.0.0.0/0
 1:P           $FW
 &lt;other MARK rules&gt;</programlisting>
 

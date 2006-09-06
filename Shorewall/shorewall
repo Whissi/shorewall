@@ -409,7 +409,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	echo "$banner $(date)"
 	echo
 
-	echo "Dropped/Rejected Packet Log"
+	echo "Dropped/Rejected Packet Log ($LOGFILE)"
 	echo
 
 	show_reset
@@ -976,7 +976,7 @@ show_command() {
 	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
+	    echo "Shorewall-$version Log ($LOGFILE) at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    host=$(echo $HOSTNAME | sed 's/\..*$//')

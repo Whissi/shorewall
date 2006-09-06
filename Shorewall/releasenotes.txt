@@ -47,7 +47,10 @@ Other changes in 3.3.2
 
 1)  /etc/shorewall/functions has been renamed
     /etc/shorewall/lib.base. If you soure the 'functions' file in any
-    of your own scripts, please modify them accordingly. 
+    of your own scripts, please modify them accordingly.
+
+2)  The output of "shorewall show log" and "shorewall logwatch" now
+    include the name of the log file being accessed. 
 
 Migration Considerations:
 
@@ -84,9 +87,9 @@ Migration Considerations:
     Shorewall version 3.3. Otherwise, please see item 3) in the New
     Features below.
 
-2)  The 'Limit' action is now a builtin. If you have 'Limit' liarws in
+2)  The 'Limit' action is now a builtin. If you have 'Limit' listed in
     /etc/shorewall/actions, remove the entry. Also remove the files
-    /etc/shorewall/action.Limit and /etc/shorewall/Limit if you have
+    /etc/shorewall/action.Limit and/or /etc/shorewall/Limit if you have
     them.
 
 New Features:

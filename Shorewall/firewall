@@ -545,14 +545,16 @@ SHAREDIR=/usr/share/shorewall
 VARDIR=/var/lib/shorewall
 CONFDIR=/etc/shorewall
 
-FUNCTIONS=${SHAREDIR}/lib.base
+for library in lib.base lib.common; do
+    FUNCTIONS=${SHAREDIR}/${library}
 
-if [ -f $FUNCTIONS ]; then
-    [ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
-    . $FUNCTIONS
-else
-    startup_error "$FUNCTIONS does not exist!"
-fi
+    if [ -f $FUNCTIONS ]; then
+	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
+	. $FUNCTIONS
+    else
+	fatal_error "$FUNCTIONS does not exist!"
+    fi
+done
 
 PROGRAM=firewall
 

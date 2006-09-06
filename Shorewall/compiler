@@ -5325,16 +5325,18 @@ SHAREDIR=/usr/share/shorewall
 VARDIR=/var/lib/shorewall
 [ -z "$EXPORT" ] && CONFDIR=/etc/shorewall || CONFDIR=${SHAREDIR}/configfiles
 
-FUNCTIONS=${SHAREDIR}/lib.base
-
 [ -n "${VERBOSE:=2}" ]
 
-if [ -f $FUNCTIONS ]; then
-    [ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
-    . $FUNCTIONS
-else
-    fatal_error "$FUNCTIONS does not exist!"
-fi
+for library in lib.base lib.common; do
+    FUNCTIONS=${SHAREDIR}/${library}
+
+    if [ -f $FUNCTIONS ]; then
+	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
+	. $FUNCTIONS
+    else
+	fatal_error "$FUNCTIONS does not exist!"
+    fi
+done
 
 PROGRAM=compiler
 

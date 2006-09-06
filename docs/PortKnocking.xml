@@ -133,6 +133,14 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
   <section id="Limit">
     <title>Limiting Per-IP Connection Rate</title>
 
+    <important>
+      <para>Debian users. This feature is broken in the Debian version 3.0.7
+      of Shorewall (and possibly in other versions). The file
+      <filename>/usr/share/shorewall/Limit</filename> was inadvertently
+      dropped from the .deb. That file may be obtained from <ulink
+      url="???">Shorewall SVN</ulink> and installed manually.</para>
+    </important>
+
     <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' action.
     Limit is invoked with a comma-separated list in place of a logging tag.
     The list has three elements:</para>
@@ -191,5 +199,47 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
         many connections (60 in this example).</para>
       </listitem>
     </itemizedlist>
+
+    <section>
+      <title>How Limit is Implemented</title>
+
+      <para>For those who are curious, the Limit action is implemented in
+      Shorewall 3.0 and Shorewall 3.2 as follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The file
+          <filename>/usr/share/shorewall/action</filename>.Limit is
+          empty.</para>
+        </listitem>
+
+        <listitem>
+          <para>The file <filename>/usr/share/shorewall/Limit</filename> is as
+          follows:</para>
+
+          <programlisting>set -- $(separate_list $TAG)
+
+[ $# -eq 3 ] || fatal_error "Rule must include &lt;set name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag"
+
+run_iptables -A $CHAIN -m recent --name $1 --set
+
+if [ -n "$LEVEL" ]; then
+    run_iptables -N $CHAIN%
+    log_rule_limit $LEVEL $CHAIN% $1 DROP "" "" -A
+    run_iptables -A $CHAIN% -j DROP
+    run_iptables -A $CHAIN -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $CHAIN%
+else
+    run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j DROP
+fi
+
+run_iptables -A $CHAIN -j ACCEPT
+</programlisting>
+        </listitem>
+      </itemizedlist>
+
+      <para>In Shorewall 3.3, Limit is made into a built-in action; basically
+      that means that the above code now lives inside of Shorewall rather than
+      in a separate file.</para>
+    </section>
   </section>
 </article>

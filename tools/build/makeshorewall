@@ -299,7 +299,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$HASLITE" ]; then
 	progress_message "Exporting $LITESVNBRANCH from SVN..."
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
-	do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLDIR/xmodules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	if [ -f $SHOREWALLDIR/lib.base ]; then
 	    do_or_die "cp $SHOREWALLDIR/lib.base $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	else

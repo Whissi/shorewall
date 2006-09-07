@@ -172,54 +172,31 @@ deleteallchains() {
 }
 
 #
-# Load a Kernel Module
+# Reload the Modules
 #
-loadmodule() # $1 = module name, $2 - * arguments
-{
-    local modulename=$1
-    local modulefile
-    local suffix
-    moduleloader=modprobe
+reload_kernel_modules() {
+
+    local save_modules_dir=$MODULESDIR
+    local directory
+    local moduledirectories=
+    local moduleloader=modprobe
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
     fi
 
-    if ! list_search $modulename $MODULES ; then
-	shift
-
-	for suffix in $MODULE_SUFFIX ; do
-	    modulefile=$MODULESDIR/${modulename}.${suffix}
-
-	    if [ -f $modulefile ]; then
-		case $moduleloader in
-		    insmod)
-			insmod $modulefile $*
-			;;
-		    *)
-			modprobe $modulename $*
-			;;
-		esac
-
-		MODULES=$(lsmod | cut -d ' ' -f1)
-		break
-	    fi
-	done
-    fi
-}
-
-#
-# Reload the Modules
-#
-reload_kernel_modules() {
-
-    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
     MODULES=$(lsmod | cut -d ' ' -f1)
+
+    for directory in $(split $MODULESDIR); do
+	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
+    done
 
     while read command; do
 	eval $command
     done
 
+    MODULESDIR=$save_modules_dir
 }
 
 #
@@ -227,14 +204,25 @@ reload_kernel_modules() {
 #
 load_kernel_modules()
 {
-    save_modules_dir=$MODULESDIR
+    local save_modules_dir=$MODULESDIR
+    local directory
+    local moduledirectories=
+    local moduleloader=modprobe
+
+    if ! qt mywhich modprobe; then
+	moduleloader=insmod
+    fi
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+
+    for directory in $(split $MODULESDIR); do
+	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
+    done
 
     modules=$(find_file modules)
 
-    if [ -f $modules -a -d $MODULESDIR ]; then
+    if [ -f $modules -a -n "$moduledirectories" ]; then
 	MODULES=$(lsmod | cut -d ' ' -f1)
 	progress_message "Loading Modules..."
 	. $modules

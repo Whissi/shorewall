@@ -4633,8 +4633,9 @@ SHAREDIR=/usr/share/shorewall-lite
 CONFDIR=/etc/shorewall-lite
 VARDIR=/var/lib/shorewall-lite
 
-. \${SHAREDIR}/functions
 __EOF__
+
+	cat ${SHAREDIR}/lib.base >&3
     else
 	cat >&3 << __EOF__
 SHAREDIR=/usr/share/shorewall
@@ -4771,15 +4772,6 @@ __EOF__
 
     if [ -n "$EXPORT" ]; then
 	cat >&3 << __EOF__
-    if [ ! -f \${SHAREDIR}/version ]; then
-	fatal_error "This script requires Shorewall Lite which do not appear to be installed on this system"
-    fi
-
-    local version=\$(cat \${SHAREDIR}/version)
-
-    if [ \${LIBVERSION:-0} -lt 30200 ]; then
-	fatal_error "This script requires Shorewall Lite version 3.2.3 or later; current version is \$version"
-    fi
     #
     # These variables are required by the library functions called in this script
     #

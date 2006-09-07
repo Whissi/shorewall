@@ -234,6 +234,8 @@ else
     rm -rf ${PREFIX}/var/lib/shorewall-lite
 fi
 
+delete_file ${PREFIX}/usr/share/shorewall-lite/xmodules
+
 install_file_with_backup shorewall-lite ${PREFIX}/sbin/shorewall-lite 0544 ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
 
 echo "Shorewall Lite control program installed in ${PREFIX}/sbin/shorewall-lite"
@@ -315,13 +317,10 @@ install_file help ${PREFIX}/usr/share/shorewall-lite/help 0544
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall-lite/help"
 
 #
-# Install the Modules files
+# Install the Modules file
 #
 run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/modules
 echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
-
-run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall-lite/xmodules
-echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall-lite/xmodules"
 
 #
 # Create the version file

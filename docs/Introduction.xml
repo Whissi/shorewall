@@ -222,14 +222,15 @@ dmz        eth2          detect</programlisting>
     file. If no rule in that file matches the connection request then the
     first policy in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
-    that matches the request is applied. If there is a common action defined
+    that matches the request is applied. If there is a default action defined
     for the policy in /etc/shorewall/actions (or
     <filename>/usr/share/shorewall/actions.std</filename>) then that action is
-    invoked before the policy is enforces. In the standard Shorewall
-    distribution, the DROP policy has a common action called <emphasis
-    role="bold">Drop</emphasis> and the REJECT policy has a common action
-    called <emphasis role="bold">Reject</emphasis>. Common actions are used
-    primarily to discard</para>
+    invoked before the policy is enforced. In the standard Shorewall
+    distribution, the DROP policy has a default action called <emphasis
+    role="bold">Drop</emphasis> and the REJECT policy has a default action
+    called <emphasis role="bold">Reject</emphasis>. Default actions are used
+    primarily to discard packets silently so that they don't clutter up your
+    log.</para>
 
     <para>The <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>

@@ -3375,10 +3375,13 @@ $FW      chld               ACCEPT</programlisting>
         <term>MODULESDIR</term>
 
         <listitem>
-          <para>This parameter specifies the directory where your kernel
-          netfilter modules may be found. If you leave the variable empty,
-          Shorewall will supply the value "/lib/modules/`uname
-          -r`/kernel/net/ipv4/netfilter.</para>
+          <para>This parameter specifies the directory/directories where your
+          kernel netfilter modules may be found. If you leave the variable
+          empty, Shorewall will supply the value "/lib/modules/`uname
+          -r`/kernel/net/ipv4/netfilter" in versions of Shorewall prior to
+          3.2.4 and "/lib/modules/`uname
+          -r`/kernel/net/ipv4/netfilter:/lib/modules/`uname
+          -r`/kernel/net/ipv4/netfilter" in later versions.</para>
         </listitem>
       </varlistentry>
 
@@ -3626,6 +3629,16 @@ LOGBURST=5</programlisting>
     firewall rules. Shorewall will source this file during start/restart
     provided that it exists and that the directory specified by the MODULESDIR
     parameter exists (see <xref linkend="Conf" /> above).</para>
+
+    <important>
+      <para>This file was moved to <filename
+      class="directory">/usr/share/shorewall</filename> in Shorewall version
+      3.2.0.</para>
+
+      <para>If you have an earlier kernel but need to modify the modules file,
+      then copy <filename>/usr/share/shorewall/modules</filename> to
+      <filename>/etc/shorewall/modules</filename> and modify the copy.</para>
+    </important>
 
     <para>The file that is released with Shorewall calls the Shorewall
     function <quote>loadmodule</quote> for the set of modules that I

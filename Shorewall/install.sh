@@ -412,13 +412,10 @@ if [ ! -f ${PREFIX}/etc/shorewall/masq ]; then
     echo "Masquerade file installed as ${PREFIX}/etc/shorewall/masq"
 fi
 #
-# Install the Modules files
+# Install the Modules file
 #
 run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/modules
 echo "Modules file installed as ${PREFIX}/usr/share/shorewall/modules"
-
-run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall/xmodules
-echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall/xmodules"
 
 #
 # Install the TC Rules file
@@ -476,6 +473,10 @@ delete_file ${PREFIX}/usr/share/shorewall/Limit
 # Delete the functions file
 #
 delete_file ${PREFIX}/usr/share/shorewall/functions
+#
+# Delete the xmodules file
+#
+delete_file ${PREFIX}/usr/share/shorewall/xmodules
 #
 # Install the Providers file
 #

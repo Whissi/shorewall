@@ -192,7 +192,7 @@ reload_kernel_modules() {
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
     done
 
-    while read command; do
+    [ -n "$moduledirectories" ] && while read command; do
 	eval $command
     done
 

@@ -4011,6 +4011,45 @@ all      all     tcp         ftp-data          -               8</programlisting
           or supplied as <quote>-</quote> then 0.0.0.0/0 is assumed.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>OPTIONS - (Optional)</term>
+
+        <listitem>
+          <para>A comma-separated list of options. The currently-supported
+          options are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>routeback - Set up a rule to ACCEPT traffic from these
+              hosts back to themselves.</para>
+            </listitem>
+
+            <listitem>
+              <para>source - Allow traffic from these hosts to ANY
+              destination. Without this option or the 'dest' option, only
+              traffic from this host to other listed hosts (and the firewall)
+              is allowed. If 'source' is specified then 'routeback' is
+              redundant.</para>
+            </listitem>
+
+            <listitem>
+              <para>dest - Allow traffic to these hosts from ANY source.
+              Without this option or the 'source' option, only traffic from
+              this host to other listed hosts (and the firewall) is allowed.
+              If 'dest' is specified then 'routeback' is redundant.</para>
+            </listitem>
+
+            <listitem>
+              <para>critical - Allow traffic between the firewall and these
+              hosts throughout '[re]start', 'stop' and 'clear'. Specifying
+              'critical' on one or more entries will cause your firewall to be
+              "totally open" for a brief window during each of those
+              operations.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
     </variablelist>
 
     <example>

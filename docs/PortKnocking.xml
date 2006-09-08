@@ -36,6 +36,13 @@
     </legalnotice>
   </articleinfo>
 
+  <note>
+    <para>The feature described in this article require '<ulink
+    url="http://snowman.net/projects/ipt_recent/">Recent Match</ulink>' in
+    your iptables and kernel. See the output of <command>shorewall show
+    capabilities</command> to see if you have that match. </para>
+  </note>
+
   <section>
     <title>What is Port Knocking?</title>
 
@@ -141,9 +148,9 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
       url="???">Shorewall SVN</ulink> and installed manually.</para>
     </important>
 
-    <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' action.
-    Limit is invoked with a comma-separated list in place of a logging tag.
-    The list has three elements:</para>
+    <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' <ulink
+    url="Actions.html">action</ulink>. Limit is invoked with a comma-separated
+    list in place of a logging tag. The list has three elements:</para>
 
     <orderedlist>
       <listitem>
@@ -165,7 +172,8 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
     <para>Connections that exceed the specified rate are dropped.</para>
 
     <para>For example,to use a recent set name of <emphasis
-    role="bold">SSHA</emphasis>, and to limiting SSH to 3 per minute:</para>
+    role="bold">SSHA</emphasis>, and to limiting SSH to 3 per minute, use this
+    entry in <filename>/etc/shorewall/rules</filename>:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>

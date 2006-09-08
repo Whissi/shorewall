@@ -172,6 +172,41 @@ deleteallchains() {
 }
 
 #
+# Load a Kernel Module -- assumes that the variable 'moduledirectories' contains 
+#                         a space-separated list of directories to search for
+#                         the module and that 'moduleloader' contains the 
+#                         module loader command.
+#
+loadmodule() # $1 = module name, $2 - * arguments
+{
+    local modulename=$1
+    local modulefile
+    local suffix
+
+    if ! list_search $modulename $MODULES ; then
+	shift
+
+	for suffix in $MODULE_SUFFIX ; do
+	    for directory in $moduledirectories; do
+		modulefile=$directory/${modulename}.${suffix}
+
+		if [ -f $modulefile ]; then
+		    case $moduleloader in
+			insmod)
+			    insmod $modulefile $*
+			    ;;
+			*)
+			    modprobe $modulename $*
+			    ;;
+		    esac
+		    break 2
+		fi
+	    done
+	done
+    fi
+}
+
+#
 # Reload the Modules
 #
 reload_kernel_modules() {
@@ -454,7 +489,6 @@ ip_network() {
 # The following hack is supplied to compensate for the fact that many of
 # the popular light-weight Bourne shell derivatives don't support XOR ("^").
 #
-
 ip_broadcast() {
     local x=$(( 32 - ${1#*/} ))
 

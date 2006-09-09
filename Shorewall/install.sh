@@ -470,10 +470,6 @@ delete_file ${PREFIX}/usr/share/shorewall/tcstart
 delete_file ${PREFIX}/usr/share/shorewall/action.Limit
 delete_file ${PREFIX}/usr/share/shorewall/Limit
 #
-# Delete the functions file
-#
-delete_file ${PREFIX}/usr/share/shorewall/functions
-#
 # Delete the xmodules file
 #
 delete_file ${PREFIX}/usr/share/shorewall/xmodules
@@ -654,6 +650,10 @@ for f in lib.* ; do
 	echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
     fi
 done
+#
+# Symbolically link 'functions' to lib.base
+#
+ln -sf lib.base ${PREFIX}/usr/share/shorewall/functions
 #
 # Install the program skeleton files
 #

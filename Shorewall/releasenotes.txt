@@ -45,11 +45,22 @@ Problems Corrected in 3.3.2
 
 Other changes in 3.3.2
 
-1)  /etc/shorewall/functions has been renamed
-    /etc/shorewall/lib.base. If you soure the 'functions' file in any
-    of your own scripts, please modify them accordingly.
+1)  /usr/share/shorewall/functions has been renamed
+    /usr/share/shorewall/lib.base. It remains symbolically linked by
+    its old name so that existing scripts that source this file will
+    continue to work.
 
-2)  The output of "shorewall show log" and "shorewall logwatch" now
+2)  /usr/share/shorewall/lib.base (formerly /etc/shorewall/functions)
+    has been split into two libraries:
+
+    - /usr/share/shorewall/lib.base -- code common to all Shorewall
+      components. This file is also released as part of Shorewall Lite.
+
+    - /usr/share/shorewall/lib.conf -- configuration file parsing code 
+      common to /usr/share/shorewall/compiler and
+      /usr/share/shorewall/firewall.
+
+3)  The output of "shorewall show log" and "shorewall logwatch" now
     include the name of the log file being accessed. 
 
 Migration Considerations:

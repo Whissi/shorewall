@@ -80,7 +80,7 @@ Migration Considerations:
 
     b) Now that we have modularized action processing (see the New
        Features section below), we need a way to define default rules
-       for a policy.
+       for a policy that does not involve actions.
 
     If you have not overridden the defaults using entries in
     /etc/shorewall/actions then you need make no changes to migrate to
@@ -166,8 +166,9 @@ New Features:
     a) All DROP policies must use the same default action and all
        REJECT policies must use the same default action.
 
-    b) Now that we have modularized action processing, we need a way to
-       define default rules for a policy.
+    b) Now that we have modularized action processing (see the New
+       Features section below), we need a way to define default rules
+       for a policy that does not involve actions.
 
     The solution is two-fold:
 
@@ -212,9 +213,8 @@ New Features:
        of the following:
 			
 	a) The word "None" or "none". This causes any default
-	   action define in /etc/shorewall/actions.std or
-	   /etc/shorewall/actions to be omitted for this
-	   policy.
+	   action defined in /etc/shorewall/shorewall.conf
+	   to be omitted for this policy.
 	b) The name of an action (requires that USE_ACTIONS=Yes
 	   in shorewall.conf). That action will be invoked 
 	   before the policy is enforced.
@@ -227,8 +227,8 @@ New Features:
 	#SOURCE		DEST		POLICY		LOG
 	#						LEVEL
 	loc		net		ACCEPT
-	net		all		DROP:Drop	info
+	net		all		DROP:MyDrop	info
 	#
 	# THE FOLLOWING POLICY MUST BE LAST
 	#
-	all		all		REJECT:Reject	info
+	all		all		REJECT:MyReject	info

@@ -395,7 +395,7 @@ ensurenatchain() # $1 = chain name
 }
 
 #
-# Add a rule to a nat chain creating the chain if necessary%attr(0444,root,root) /usr/share/shorewall/lib.accounting
+# Add a rule to a nat chain creating the chain if necessary
 
 #
 addnatrule() # $1 = chain name, remainder of arguments specify the rule
@@ -4656,6 +4656,11 @@ __EOF__
 setpolicy() {
     \$IPTABLES -P \$1 \$2
 }
+__EOF__
+
+    compile_stop_firewall
+
+    cat >&3 << __EOF__
 
 #
 # Remove all Shorewall-added rules

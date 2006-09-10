@@ -2300,17 +2300,13 @@ process_rule() # $1 = target
 
     validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
 
-    # Parse and validate destination
-
     source=$clientzone
 
-    if [ $source = $FW ]; then
-	source_hosts=
-    elif [ -n "$userspec" ]; then
+    if [ $source != $FW -a -n "$userspec" ]; then
 	fatal_error "Invalid use of a user-qualification: rule \"$rule\""
-    else
-	eval source_hosts=\"\$${source}_hosts\"
     fi
+
+    # Parse and validate destination
 
     if [ "$servers" = "${servers%:*}" ] ; then
 	serverzone="$servers"
@@ -3021,7 +3017,7 @@ process_tos_rule() {
     esac
 
     for dest in $dst; do
-	dest="$(dest_ip_range $dest)"
+	dest=$(match_dest $dest)
 
 	case $srczone in
 	$FW)
@@ -3039,10 +3035,10 @@ process_tos_rule() {
 		run_iptables2 -t mangle -A pretos $src \
 		    $protocol $dest $dports $sports $tos
 	    else
-		eval interfaces=\$${srczone}_interfaces
+		eval hosts=\$${srczone}_hosts
 
-		for interface in $interfaces; do
-		    run_iptables2 -t mangle -A pretos -i $interface \
+		for host in $hosts; do
+		    run_iptables2 -t mangle -A pretos $(match_source $host) \
 			$protocol $dest $dports $sports $tos
 		done
 	    fi

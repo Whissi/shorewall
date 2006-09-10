@@ -921,7 +921,7 @@ setup_tc1() {
     if [ -n "$TC_SCRIPT" ]; then
         save_progress_message "Setting up Traffic Control..."
 	append_file $TC_SCRIPT
-    elif [ -n "$TC_ENABLED" ]; then
+    elif [ "$TC_ENABLED" = Internal ]; then
 	strip_file_and_lib_load tcdevices tc
 	strip_file_and_lib_load tcclasses tc && setup_traffic_shaping
     fi
@@ -1014,7 +1014,7 @@ __EOF__
     if [ -n "$TC_SCRIPT" ]; then
 	save_progress_message "Refreshing Traffic Shaping"
 	run_user_exit $TC_SCRIPT
-    elif [ -n "$TC_ENABLED" ]; then
+    elif [ "$TC_ENABLED" = Internal ]; then
 	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
     fi
 }
@@ -5278,7 +5278,7 @@ __EOF__
 # Shorewall auxiliary configuration file created by Shorewall version $VERSION - $(date)
 #
 __EOF__
-	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE; do
+	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE TC_ENABLED; do
 		conditionally_add_option $option
 	    done
 	    exec 3>&-	    

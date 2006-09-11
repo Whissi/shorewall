@@ -4561,6 +4561,18 @@ __EOF__
     fi
 }	
 
+conditionally_add_option1() { # $1 = option name
+    local value
+
+    eval value=\"\$$1\"
+
+    if [ -n "$value" ]; then
+	    cat >&3 << __EOF__
+$1="$value"
+__EOF__
+    fi
+}	
+
 #
 # Compile a Firewall Script
 #
@@ -5278,9 +5290,12 @@ __EOF__
 # Shorewall auxiliary configuration file created by Shorewall version $VERSION - $(date)
 #
 __EOF__
-	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE TC_ENABLED; do
+	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE; do
 		conditionally_add_option $option
 	    done
+	    
+	    conditionally_add_option1 TC_ENABLED
+
 	    exec 3>&-	    
 	fi
 

@@ -103,10 +103,10 @@
     <para>As I state in the answer to <ulink url="FAQ.htm#faq2">Shorewall FAQ
     2</ulink>, I object to running servers in a local zone because if the
     server becomes compromised then there is no protection between that
-    compromised server and the other local systems. Xen allows me to safely
-    run Internet-accessible servers in my local zone by creating a firewall in
-    (the Extended) Dom0 to isolate the server(s) from the other local systems
-    (including Dom0).</para>
+    compromised server and the other local systems. Xen allows you to safely
+    run Internet-accessible servers in your local zone by creating a firewall
+    in (the Extended) Dom0 to isolate the server(s) from the other local
+    systems (including Dom0).</para>
 
     <caution>
       <para>I find Xen Domain 0 to be an arcane environment in which to try to
@@ -121,7 +121,9 @@
       <para>I know of no case where a user has successfully used NAT
       (including Masquerade) in a bridged Xen Dom0. So if you want to create a
       masquerading firewall/gateway using Xen, you need to do so in a DomU
-      (see <ulink url="XenMyWay.html">how I do it</ulink>).</para>
+      (see <ulink url="XenMyWay.html">how I do it</ulink>) or you must
+      configure Xen to use routing and NAT rather than the default
+      bridging.</para>
     </warning>
 
     <para>Here is an example. In this example, we will assume that the system
@@ -147,10 +149,11 @@
       is that Dom0 is defined as two different zones. It is defined as the
       firewall zone and it is also defined as "all systems connected to
       <filename class="devicefile">xenbr0:vif0.0</filename>. In this case, I
-      call this second zone <emphasis role="bold">ursa</emphasis> (which is
-      the name given to the virtual system running in Dom0); that zone
-      corresponds to Dom0 as seen from the outside in the diagram above (see
-      more <link linkend="zones">below</link>).</para>
+      call this second zone <emphasis role="bold">ursa</emphasis> (which was
+      the name given to the virtual system running in Dom0 when I ran this
+      configuration); that zone corresponds to Dom0 as seen from the outside
+      in the diagram above (see more <link
+      linkend="zones">below</link>).</para>
 
       <blockquote>
         <programlisting>#                                       OPTIONS                 OPTIONS
@@ -242,7 +245,7 @@ Ping/ACCEPT     dmz                net
 Ping/ACCEPT     dmz                ursa</programlisting>
       </blockquote>
 
-      <para>Here, 192.168.0.0/22 comprises my local network.</para>
+      <para>Here, 192.168.0.0/22 comprises the local network.</para>
 
       <para id="zones">From the point of view of Shorewall, the zone diagram
       is as shown in the following diagram.</para>

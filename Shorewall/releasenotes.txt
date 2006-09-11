@@ -43,6 +43,33 @@ Problems Corrected in 3.3.2
 
 	  setup_traffic_shaping: command not found
 
+3)  Previously, the directory name in the command "shorewall start
+    <directory name>" was being dropped by "/sbin/shorewall".
+
+4)  Previous, when /usr/share/shorewall/xmodules had been copied to
+    /etc/shorewall/modules, Shorewall was not looking in the correct
+    directory for the "xt_..." modules. There are two parts to the fix:
+
+    - The /usr/share/shorewall/xmodules file has been removed. The
+      /usr/share/shorewall/modules file will now load all required
+      modules regardless of which kernel version you are running.
+    - The MODULESDIR option can now contain a colon-separated list of
+      directories to search for modules with the default being:
+
+      /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+
+5)  Rules in /etc/shorewall/tos which specify zones defined
+    using entries in /etc/shorewall/hosts applied to all traffic
+    to/from the zone interfaces (the bridge port, ipset or IP
+    address(es) in the zone definition were ignored).
+
+6)  Previously, 'shorewall-lite dump' did not report traffic shaping
+    information even if TC_ENABLED was set to Yes or Internal in the
+    shorewall.conf file used to compile the exported firewall script.
+
+    To correct this problem, the firewall script must be recompiled and
+    re-exported.
+
 Other changes in 3.3.2
 
 1)  /usr/share/shorewall/functions has been renamed
@@ -56,12 +83,12 @@ Other changes in 3.3.2
     - /usr/share/shorewall/lib.base -- code common to all Shorewall
       components. This file is also released as part of Shorewall Lite.
 
-    - /usr/share/shorewall/lib.conf -- configuration file parsing code 
-      common to /usr/share/shorewall/compiler and
+    - /usr/share/shorewall/lib.config -- configuration file parsing
+      code common to /usr/share/shorewall/compiler and
       /usr/share/shorewall/firewall.
 
 3)  The output of "shorewall show log" and "shorewall logwatch" now
-    include the name of the log file being accessed. 
+    include the name of the log file being accessed.
 
 Migration Considerations:
 

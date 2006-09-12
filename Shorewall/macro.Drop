@@ -4,8 +4,7 @@
 # /usr/share/shorewall/macro.Drop
 #
 #	This macro generates the same rules as the Drop default action
-#       You can use it at the end of the rules file to simulate a Drop
-#	default action when USE_ACTIONS=No.
+#	It is used in place of action.Drop when USE_ACTIONS=No.
 #
 #	Example:
 #
@@ -29,13 +28,13 @@ dropBcast
 ACCEPT	-	-	icmp	fragmentation-needed
 ACCEPT	-	-	icmp	time-exceeded
 #
-# Drop packets that in the INVALID state -- these are usually ICMP packets
+# Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
 # rejected).
 #
 dropInvalid
 #
-# Drop Microsoft noise so that it doesn't clutter up the lot.
+# Drop Microsoft noise so that it doesn't clutter up the log.
 #
 DROP	-	-	udp	135,445
 DROP	-	-	udp	137:139

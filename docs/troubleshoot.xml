@@ -33,37 +33,6 @@
   </articleinfo>
 
   <section>
-    <title>First Steps</title>
-
-    <para>Some problems are easily solved by checking one of the resources
-    described in the following sections.</para>
-
-    <section>
-      <title>Check the FAQs.</title>
-
-      <para>Check the <ulink url="FAQ.htm">FAQs</ulink> for solutions to over
-      50 common problems.</para>
-    </section>
-
-    <section>
-      <title>Check the Errata</title>
-
-      <para>Check the <ulink url="errata.htm">Shorewall Errata</ulink> to be
-      sure that there isn't an update that you are missing for your version of
-      the firewall.</para>
-    </section>
-
-    <section>
-      <title>Try Searching the Shorewall Site and Mailing List
-      Archives</title>
-
-      <para>The <ulink url="http://shorewall.net/search.html">Site and Mailing
-      List Archives search facility</ulink> can locate documents and posts
-      about similar problems.</para>
-    </section>
-  </section>
-
-  <section>
     <title><quote>shorewall start</quote> and <quote>shorewall restart</quote>
     Errors</title>
 
@@ -122,62 +91,6 @@ iptables: No chain/target/match by that name
   </section>
 
   <section>
-    <title>Some Things to Keep in Mind</title>
-
-    <itemizedlist>
-      <listitem>
-        <para><emphasis role="bold">You cannot test your firewall from the
-        inside</emphasis>. Just because you send requests to your firewall
-        external IP address does not mean that the request will be associated
-        with the external interface or the <quote>net</quote> zone. Any
-        traffic that you generate from the local network will be associated
-        with your local interface and will be treated as loc-&gt;fw
-        traffic.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">IP addresses are properties of systems,
-        not of interfaces</emphasis>. It is a mistake to believe that your
-        firewall is able to forward packets just because you can ping the IP
-        address of all of the firewall's interfaces from the local network.
-        The only conclusion you can draw from such pinging success is that the
-        link between the local system and the firewall works and that you
-        probably have the local system's default gateway set correctly.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">All IP addresses configured on firewall
-        interfaces are in the $FW (fw) zone</emphasis>. If 192.168.1.254 is
-        the IP address of your internal interface then you can write
-        <quote><emphasis role="bold">$FW:192.168.1.254</emphasis></quote> in a
-        rule but you may not write <quote><emphasis
-        role="bold">loc:192.168.1.254</emphasis></quote>. Similarly, it is
-        nonsensical to add 192.168.1.254 to the <emphasis
-        role="bold">loc</emphasis> zone using an entry in
-        <filename>/etc/shorewall/hosts</filename>.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">Reply packets do NOT automatically follow
-        the reverse path of the one taken by the original request</emphasis>.
-        All packets are routed according to the routing table of the host at
-        each step of the way. This issue commonly comes up when people install
-        a Shorewall firewall parallel to an existing gateway and try to use
-        DNAT through Shorewall without changing the default gateway of the
-        system receiving the forwarded requests. Requests come in through the
-        Shorewall firewall where the destination IP address gets rewritten but
-        replies go out unmodified through the old gateway.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">Shorewall itself has no notion of inside
-        or outside</emphasis>. These concepts are embodied in how Shorewall is
-        configured.</para>
-      </listitem>
-    </itemizedlist>
-  </section>
-
-  <section>
     <title>Your Network Environment</title>
 
     <para>Many times when people have problems with Shorewall, the problem is
@@ -187,7 +100,7 @@ iptables: No chain/target/match by that name
     <itemizedlist>
       <listitem>
         <para>Port Forwarding where client and server are in the same subnet.
-        See FAQ 2.</para>
+        See <ulink url="FAQ.htm#faq2">FAQ 2</ulink>.</para>
       </listitem>
 
       <listitem>
@@ -228,11 +141,35 @@ iptables: No chain/target/match by that name
   <section>
     <title>Connection Problems</title>
 
-    <para>If the appropriate policy for the connection that you are trying to
-    make is ACCEPT, please DO NOT ADD ADDITIONAL ACCEPT RULES TRYING TO MAKE
-    IT WORK. Such additional rules will NEVER make it work, they add clutter
-    to your rule set and they represent a big security hole in the event that
-    you forget to remove them later.</para>
+    <para>One very important thing to remember is that not all connection
+    problems are Shorewall configuration problems. If the connection that is
+    giving you problems is to or from the firewall system or if it doesn't
+    rely on NAT or Proxy ARP then you can often eliminate Shorewall using a
+    simple test:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><command>/sbin/shorewall clear</command></para>
+      </listitem>
+
+      <listitem>
+        <para>Try the connection. If it works then the problem is in your
+        Shorewall configuration; if the connection still doesn't work then the
+        problem is not with Shorewall or the way that it is configured.</para>
+      </listitem>
+
+      <listitem>
+        <para>Be sure to <command>/sbin/shorewall start</command> after the
+        test.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you still suspect Shorewall and the appropriate policy for the
+    connection that you are trying to make is ACCEPT, please DO NOT ADD
+    ADDITIONAL ACCEPT RULES TRYING TO MAKE IT WORK. Such additional rules will
+    NEVER make it work, they add clutter to your rule set and they represent a
+    big security hole in the event that you forget to remove them
+    later.</para>
 
     <para>I also recommend against setting all of your policies to ACCEPT in
     an effort to make something work. That robs you of one of your best
@@ -355,6 +292,62 @@ Ping/DROP net             all</programlisting>
   </section>
 
   <section>
+    <title>Some Things to Keep in Mind</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">You cannot test your firewall from the
+        inside</emphasis>. Just because you send requests to your firewall
+        external IP address does not mean that the request will be associated
+        with the external interface or the <quote>net</quote> zone. Any
+        traffic that you generate from the local network will be associated
+        with your local interface and will be treated as loc-&gt;fw
+        traffic.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">IP addresses are properties of systems,
+        not of interfaces</emphasis>. It is a mistake to believe that your
+        firewall is able to forward packets just because you can ping the IP
+        address of all of the firewall's interfaces from the local network.
+        The only conclusion you can draw from such pinging success is that the
+        link between the local system and the firewall works and that you
+        probably have the local system's default gateway set correctly.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">All IP addresses configured on firewall
+        interfaces are in the $FW (fw) zone</emphasis>. If 192.168.1.254 is
+        the IP address of your internal interface then you can write
+        <quote><emphasis role="bold">$FW:192.168.1.254</emphasis></quote> in a
+        rule but you may not write <quote><emphasis
+        role="bold">loc:192.168.1.254</emphasis></quote>. Similarly, it is
+        nonsensical to add 192.168.1.254 to the <emphasis
+        role="bold">loc</emphasis> zone using an entry in
+        <filename>/etc/shorewall/hosts</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Reply packets do NOT automatically follow
+        the reverse path of the one taken by the original request</emphasis>.
+        All packets are routed according to the routing table of the host at
+        each step of the way. This issue commonly comes up when people install
+        a Shorewall firewall parallel to an existing gateway and try to use
+        DNAT through Shorewall without changing the default gateway of the
+        system receiving the forwarded requests. Requests come in through the
+        Shorewall firewall where the destination IP address gets rewritten but
+        replies go out unmodified through the old gateway.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall itself has no notion of inside
+        or outside</emphasis>. These concepts are embodied in how Shorewall is
+        configured.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>Other Gotchas</title>
 
     <itemizedlist>
@@ -379,6 +372,11 @@ Ping/DROP net             all</programlisting>
             interface in <ulink
             url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
           </listitem>
+
+          <listitem>
+            <para>You have connected two firewall interfaces (from different
+            zones) to the same hub or switch.</para>
+          </listitem>
         </orderedlist>
       </listitem>
 
@@ -396,14 +394,8 @@ Ping/DROP net             all</programlisting>
         directions</emphasis>. So when setting up routing between <emphasis
         role="bold">A</emphasis> and <emphasis role="bold">B</emphasis>, be
         sure to verify that the route from <emphasis role="bold">B</emphasis>
-        back to <emphasis role="bold">A</emphasis> is defined.</para>
-      </listitem>
-
-      <listitem>
-        <para>Some versions of LRP (EigerStein2Beta for example) have a shell
-        with broken variable expansion. You can get a corrected shell from the
-        <ulink url="ftp://ftp.shorewall.net/pub/shorewall/ash.gz">Shorewall
-        Errata download site</ulink>.</para>
+        back to <emphasis role="bold">A</emphasis> is defined and
+        correct.</para>
       </listitem>
 
       <listitem>
@@ -437,84 +429,4 @@ Ping/DROP net             all</programlisting>
     <para>See the <ulink url="support.htm">Shorewall Support
     Page</ulink>.</para>
   </section>
-
-  <appendix>
-    <title>Revision History</title>
-
-    <para><revhistory>
-        <revision>
-          <revnumber>2.0</revnumber>
-
-          <date>2005-09-11</date>
-
-          <authorinitials>CR</authorinitials>
-
-          <revremark>Updated for Shorewall 3.0</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.9</revnumber>
-
-          <date>2004-08-25</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Advice for the networking-challenged.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.8</revnumber>
-
-          <date>2004-04-03</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Point out that firewall addresses are in the $FW
-          zone.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.7</revnumber>
-
-          <date>2004-02-02</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add hint about testing from inside the
-          firewall.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.6</revnumber>
-
-          <date>2004-01-06</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add pointer to Site and Mailing List Archives
-          Searches.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.5</revnumber>
-
-          <date>2004-01-01</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Added information about eliminating ping-generated log
-          messages.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.4</revnumber>
-
-          <date>2003-12-22</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Initial Docbook Conversion</revremark>
-        </revision>
-      </revhistory></para>
-  </appendix>
 </article>

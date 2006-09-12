@@ -104,9 +104,9 @@ iptables: No chain/target/match by that name
       </listitem>
 
       <listitem>
-        <para>Changing the IP address of a local system to be in the external
-        subnet, thinking that Shorewall will suddenly believe that the system
-        is in the <quote>net</quote> zone.</para>
+        <para>Trying to test net-&gt;loc DNAT rules from inside your firewall.
+        You must test these rules from <emphasis
+        role="bold">outside</emphasis> your firewall.</para>
       </listitem>
 
       <listitem>
@@ -400,25 +400,8 @@ Ping/DROP net             all</programlisting>
 
       <listitem>
         <para>Do you have your kernel properly configured? <ulink
-        url="kernel.htm">Click here to see my kernel
-        configuration</ulink>.</para>
-      </listitem>
-
-      <listitem>
-        <para>Shorewall requires the <quote>ip</quote> program. That program
-        is generally included in the <quote>iproute</quote> package which
-        should be included with your distribution (though many distributions
-        don't install iproute by default). You may also download the latest
-        source tarball from <ulink
-        url="http://developer.osdl.org/dev/iproute2/download/">http://developer.osdl.org/dev/iproute2/download/</ulink>
-        .</para>
-      </listitem>
-
-      <listitem>
-        <para>Problems with NAT? Be sure that you let Shorewall add all
-        external addresses to be use with NAT unless you have set <ulink
-        url="Shorewall_and_Aliased_Interfaces.html">ADD_IP_ALIASES</ulink> =No
-        in <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+        url="kernel.htm">Click here to see kernel configuration
+        information</ulink>.</para>
       </listitem>
     </itemizedlist>
   </section>

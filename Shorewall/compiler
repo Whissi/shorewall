@@ -3008,16 +3008,21 @@ process_tos_rule() {
     tos="-j TOS --set-tos $tos"
 
     case "$dstzone" in
-    all|ALL)
-	dst=0.0.0.0/0
-	;;
-    *)
-	[ -z "$dst" ] && eval dst=\$${dstzone}_hosts
+	all|ALL)
+	    dst=0.0.0.0/0
+	    ;;
+	*)
+	    if [ -z "$MANGLE_FORWARD" ]; then
+		error_message "WARNING: A zone name in the DEST column requires Mangle FORWARD Chain support in your kernel and iptables: rule \"$rule\" ignored"
+		return
+	    fi
+
+	    [ -z "$dst" ] && eval dst=\$${dstzone}_hosts
 	;;
     esac
 
     for dest in $dst; do
-	dest=$(match_dest $dest)
+	dest="$(match_dest $dest)"
 
 	case $srczone in
 	$FW)
@@ -3027,18 +3032,18 @@ process_tos_rule() {
 	all|ALL)
 	    run_iptables2 -t mangle -A outtos \
 		$protocol $dest $dports $sports $tos
-	    run_iptables2 -t mangle -A pretos \
+	    run_iptables2 -t mangle -A $chain \
 		$protocol $dest $dports $sports $tos
 	    ;;
 	*)
 	    if [ -n "$src" ]; then
-		run_iptables2 -t mangle -A pretos $src \
+		run_iptables2 -t mangle -A $chain $src \
 		    $protocol $dest $dports $sports $tos
 	    else
 		eval hosts=\$${srczone}_hosts
 
 		for host in $hosts; do
-		    run_iptables2 -t mangle -A pretos $(match_source $host) \
+		    run_iptables2 -t mangle -A $chain $(match_source $host) \
 			$protocol $dest $dports $sports $tos
 		done
 	    fi
@@ -3055,12 +3060,19 @@ process_tos_rule() {
 #
 process_tos() # $1 = name of tos file
 {
+    local chain=pretos stdchain=PREROUTING
+
+    if [ -n "$MANGLE_FORWARD" ]; then
+	chain=fortos
+	stdchain=FORWARD
+    fi
+    
     progress_message2 "$DOING $1..."
 
     strip_file tos $1
 
     if [ -s $TMP_DIR/tos ] ; then
-	createmanglechain pretos
+	createmanglechain $chain
 	createmanglechain outtos
 
 	while read src dst protocol sport dport tos; do
@@ -3069,7 +3081,7 @@ process_tos() # $1 = name of tos file
 	    process_tos_rule
 	done < $TMP_DIR/tos
 
-	run_iptables -t mangle -A PREROUTING -j pretos
+	run_iptables -t mangle -A $stdchain  -j $chain
 	run_iptables -t mangle -A OUTPUT     -j outtos
     fi
 }

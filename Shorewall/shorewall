@@ -1039,11 +1039,11 @@ show_command() {
 	macros)
 	    [ $# -gt 1 ] && usage 1
 	    for macro in ${SHAREDIR}/macro.*; do
-		foo=`grep 'This macro' $macro | head -n 1`
+		foo=`grep 'This macro' $macro | sed 's/This macro //'`
 		if [ -n "$foo" ]; then
 		    macro=${macro#*.}
 		    foo=${foo%.*}
-		    echo "   $macro  ${foo#\#}" | sed 's/This macro //'
+		    echo "   $macro  ${foo#\#}"
 		fi
 	    done
 	    ;;

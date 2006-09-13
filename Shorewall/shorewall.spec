@@ -136,6 +136,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.DropDNSrep
 %attr(0644,root,root) /usr/share/shorewall/macro.DropUPnP
 %attr(0644,root,root) /usr/share/shorewall/macro.Edonkey
+%attr(0644,root,root) /usr/share/shorewall/macro.Finger
 %attr(0644,root,root) /usr/share/shorewall/macro.FTP
 %attr(0644,root,root) /usr/share/shorewall/macro.Gnutella
 %attr(0644,root,root) /usr/share/shorewall/macro.HTTP
@@ -170,6 +171,8 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.SVN
 %attr(0644,root,root) /usr/share/shorewall/macro.Syslog
 %attr(0644,root,root) /usr/share/shorewall/macro.Telnet
+%attr(0644,root,root) /usr/share/shorewall/macro.Telnets
+%attr(0644,root,root) /usr/share/shorewall/macro.Time
 %attr(0644,root,root) /usr/share/shorewall/macro.template
 %attr(0644,root,root) /usr/share/shorewall/macro.Trcrt
 %attr(0644,root,root) /usr/share/shorewall/macro.VNC

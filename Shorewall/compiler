@@ -2888,7 +2888,9 @@ process_default_macro() # $1 = macro name
 #
 #    src dst protocol sport dport tos
 #
-# and has loaded a space-separated list of their values in "rule".
+# and has loaded a space-separated list of their values in "rule". The caller
+# has also set the variable 'chain' to contain the name of the mangle table
+# chain where forward rules are to be in placed in.
 #
 process_tos_rule() {
     #

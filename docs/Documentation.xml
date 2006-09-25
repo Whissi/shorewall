@@ -3699,6 +3699,35 @@ LOGBURST=5</programlisting>
   <section id="TOS" xreflabel="/etc/shorewall/tos">
     <title>/etc/shorewall/tos Configuration</title>
 
+    <warning>
+      <para>This Shorewall feature is somewhat broken -- while it shouldn't
+      hurt anything to use it, it may not do what you want either.</para>
+
+      <para>In versions of Shorewall prior to 3.2.4, it is only safe to
+      specify "all" in the SOURCE and DEST columns. In 3.2.4 and later
+      versions:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>It continues to work fine if you specify "all" in both the
+          SOURCE and DEST columns.</para>
+        </listitem>
+
+        <listitem>
+          <para>It mostly works when you specify zone names in either column
+          (provided that you have Mangle table FORWARD chain support in your
+          kernel) but it doesn't work with dynamic zones and it doesn't work
+          with IPSEC zones.</para>
+        </listitem>
+
+        <listitem>
+          <para>If you specify a zone name together with an address in the
+          SOURCE or DEST column, the generated rule ignores the zone name and
+          simply matches on the source or destination address.</para>
+        </listitem>
+      </itemizedlist>
+    </warning>
+
     <para>The <filename>/etc/shorewall/tos</filename> file allows you to set
     the Type of Service field in packet headers based on packet source, packet
     destination, protocol, source port and destination port. In order for this
@@ -3728,9 +3757,8 @@ LOGBURST=5</programlisting>
         <listitem>
           <para>The destination zone. May be qualified by following the zone
           name with a colon (<quote>:</quote>) and either an IP address or an
-          IP subnet. Because packets are marked prior to routing, you may not
-          specify the name of an interface. This column may also contain
-          <quote>all</quote> to indicate any destination.</para>
+          IP subnet. This column may also contain <quote>all</quote> to
+          indicate any destination.</para>
         </listitem>
       </varlistentry>
 

@@ -342,9 +342,11 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       to go the opposite direction from SNAT/MASQUERADE. So if you masquerade
       or use SNAT from your local network to the internet then you will need
       to use DNAT rules to allow connections from the internet to your local
-      network. In all other cases, you use ACCEPT unless you need to hijack
-      connections as they go through your firewall and handle them on the
-      firewall box itself; in that case, you use a REDIRECT rule.</para>
+      network. You also want to use DNAT rules when you intentionally want to
+      rewrite the destination IP address or port number. In all other cases,
+      you use ACCEPT unless you need to hijack connections as they go through
+      your firewall and handle them on the firewall box itself; in that case,
+      you use a REDIRECT rule.</para>
     </section>
 
     <section>

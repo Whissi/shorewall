@@ -522,15 +522,21 @@ start_command() {
     local finished=0
 
     do_it() {
+	local rc=0
+
 	[ -n "$nolock" ] || mutex_on
 
 	progress_message3 "Compiling..."
 
 	if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.start; then
 	    ${VARDIR}/.start $debugging start
+	    rc=$?
+	else
+	    rc=$?
 	fi
 
 	[ -n "$nolock" ] || mutex_off
+	exit $rc
     }
 
     if shorewall_is_started; then
@@ -774,7 +780,7 @@ check_command() {
 # Restart Command Executor
 #
 restart_command() {
-    local finished=0
+    local finished=0 rc=0
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -840,9 +846,13 @@ restart_command() {
 
     if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.restart; then
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+	rc=$?
+    else
+	rc=$?
     fi
 
     [ -n "$nolock" ] || mutex_off
+    return $rc
 }
 
 #

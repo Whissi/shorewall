@@ -481,15 +481,19 @@ start_command() {
     local finished=0
 
     do_it() {
+	local rc=0
 	[ -n "$nolock" ] || mutex_on
 
 	if [ -x ${LITEDIR}/firewall ]; then
 	    ${LITEDIR}/firewall $debugging start
+	    rc=$?
 	else
 	    error_message "${LITEDIR}/firewall is missing or is not executable"
+	    rc=2
 	fi
 
 	[ -n "$nolock" ] || mutex_off
+	exit $rc
     }
 
     verify_firewall_script
@@ -595,7 +599,7 @@ start_command() {
 # Restart Command Executor
 #
 restart_command() {
-    local finished=0
+    local finished=0 rc=0
 
     verify_firewall_script
 
@@ -656,11 +660,14 @@ restart_command() {
 
     if [ -x ${LITEDIR}/firewall ]; then
 	$SHOREWALL_SHELL ${LITEDIR}/firewall $debugging restart
+	rc=$?
     else
 	error_message "${LITEDIR}/firewall is missing or is not executable"
+	rc=2
     fi
 
     [ -n "$nolock" ] || mutex_off
+    return $rc
 }
 
 #

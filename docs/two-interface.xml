@@ -251,7 +251,21 @@ loc     ipv4</programlisting>Zones are defined in the <ulink
     url="shorewall_extension_scripts.htm">comon action</ulink> defined for the
     policy in <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    peformed before the action is applied.</para>
+    peformed before the action is applied. The purpose of the common action is
+    two-fold:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It silently drops or rejects harmless common traffic that would
+        otherwise clutter up your log — Broadcasts for example.</para>
+      </listitem>
+
+      <listitem>
+        <para>If ensures that traffic critical to correct operation is allowed
+        through the firewall — ICMP <emphasis>fragmentation-needed</emphasis>
+        for example.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>The <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>

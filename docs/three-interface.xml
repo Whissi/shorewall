@@ -270,7 +270,21 @@ dmz     ipv4</programlisting>Zone names are defined in
     url="shorewall_extension_scripts.htm">comon action</ulink> defined for the
     policy in <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    peformed before the action is applied.</para>
+    peformed before the action is applied. The purpose of the common action is
+    two-fold:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It silently drops or rejects harmless common traffic that would
+        otherwise clutter up your log — Broadcasts for example.</para>
+      </listitem>
+
+      <listitem>
+        <para>If ensures that traffic critical to correct operation is allowed
+        through the firewall — ICMP <emphasis>fragmentation-needed</emphasis>
+        for example.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>The <filename>/etc/shorewall/policy</filename> file included with
     the three-interface sample has the following policies:</para>

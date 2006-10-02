@@ -15,13 +15,24 @@
 #
 #		If you use multiple internet providers with the 'track' option,
 #		in /etc/shorewall/providers be sure to read the restrictions at
-#		http://shorewall.net/Shorewall_and_Routing.html.
+#		http://shorewall.net/MultiISP.html.
 #
 # Columns are:
 #
 #
 #	MARK/		a) A mark value which is an integer in the range 1-255.
 #	CLASSIFY
+#			   Normally will set the mark value. If preceded by
+#			   a vertical bar ("|"), the mark value will be
+#			   logically ORed with the current mark value to
+#			   produce a new mark value. If preceded by an
+#			   ampersand ("&"), will be logically ANDed with the
+#			   current mark value to produce a new mark value.
+#
+#			   Both "|" and "&" require Extended MARK Target 
+#			   support in your kernel and iptables; neither may
+#			   be used with connection marks (see below).
+#
 #			   If HIGH_ROUTE_MARKS=Yes in shorewall.conf then
 #			   you may also specify a value in the range 0x0100-
 #			   0xFF00 with the low-order byte being zero. Such
@@ -89,26 +100,6 @@
 #
 #			d) CONTINUE -- don't process any more marking rules in
 #			   the table.
-#
-#			   As in a) above, may be followed by ":P" or ":F".
-#
-#			d) OR <mark>[/<mask>].
-#
-#			   Requires Extended MARK Target support in your kernel
-#			   and iptables.
-#
-#			   Logically or the <mark> value into the current
-#			   packet mark.
-#
-#			   As in a) above, may be followed by ":P" or ":F".
-#
-#			d) AND <mark>[/<mask>].
-#
-#			   Requires Extended MARK Target support in your kernel
-#			   and iptables.
-#
-#			   Logically and the <mark> value with the current
-#			   packet mark.
 #
 #			   As in a) above, may be followed by ":P" or ":F".
 #

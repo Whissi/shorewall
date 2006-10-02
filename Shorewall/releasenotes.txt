@@ -1,4 +1,4 @@
-Shorewall 3.3.2
+Shorewall 3.3.3
 	  	 
  Note to users upgrading from Shorewall 3.0 or 3.2	 
   	 
@@ -31,64 +31,22 @@ Shorewall 3.3.2
     Please see the "Migration Considerations" below for additional upgrade 	 
     information. 	 
   	 
-Problems Corrected in 3.3.2
+Problems Corrected in 3.3.3
 
-1)  The 'proxyarp' option in /etc/shorewall/interfaces was not
-    triggering the loading of lib.proxyarp with the result that the
-    option was ignored unless there were also entries in
-    /etc/shorewall/proxyarp.
-
-2)  If both /etc/shorewall/tcdevices and /etc/shorewall/tcclasses were
-    empty then the compiler would fail with:
-
-	  setup_traffic_shaping: command not found
-
-3)  Previously, the directory name in the command "shorewall start
-    <directory name>" was being dropped by "/sbin/shorewall".
-
-4)  Previous, when /usr/share/shorewall/xmodules had been copied to
-    /etc/shorewall/modules, Shorewall was not looking in the correct
-    directory for the "xt_..." modules. There are two parts to the fix:
-
-    - The /usr/share/shorewall/xmodules file has been removed. The
-      /usr/share/shorewall/modules file will now load all required
-      modules regardless of which kernel version you are running.
-    - The MODULESDIR option can now contain a colon-separated list of
-      directories to search for modules with the default being:
-
-      /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
-
-5)  Rules in /etc/shorewall/tos which specify zones defined
-    using entries in /etc/shorewall/hosts applied to all traffic
-    to/from the zone interfaces (the bridge port, ipset or IP
-    address(es) in the zone definition were ignored).
-
-6)  Previously, 'shorewall-lite dump' did not report traffic shaping
-    information even if TC_ENABLED was set to Yes or Internal in the
-    shorewall.conf file used to compile the exported firewall script.
-
-    To correct this problem, the firewall script must be recompiled and
-    re-exported.
+None.
 
 Other changes in 3.3.2
 
-1)  /usr/share/shorewall/functions has been renamed
-    /usr/share/shorewall/lib.base. It remains symbolically linked by
-    its old name so that existing scripts that source this file will
-    continue to work.
+1)  For users whose kernel and iptables have Extended MARK Target
+    support, it is now possible to logically AND or OR a value into the
+    current packet mark by preceding the mark value (and optional mask)
+    with an ampersand ("&") or vertical bar ("|") respectively.
 
-2)  /usr/share/shorewall/lib.base (formerly /etc/shorewall/functions)
-    has been split into two libraries:
+    Example: To logically OR the value 4 into the mark value for
+    packets from 192.168.1.1:
 
-    - /usr/share/shorewall/lib.base -- code common to all Shorewall
-      components. This file is also released as part of Shorewall Lite.
-
-    - /usr/share/shorewall/lib.config -- configuration file parsing
-      code common to /usr/share/shorewall/compiler and
-      /usr/share/shorewall/firewall.
-
-3)  The output of "shorewall show log" and "shorewall logwatch" now
-    include the name of the log file being accessed.
+    #MARK   SOURCE
+    |4	    192.168.1.1
 
 Migration Considerations:
 

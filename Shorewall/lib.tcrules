@@ -264,15 +264,25 @@ process_tc_rule()
 	    target=RETURN
 	    mark=
 	    ;;
-	OR)
+	\|*)
+	    [ $chain = tcpost ] && fatal_error "Invalid class ID: $mark"
 	    [ -n "$did_connmark" ] && fatal_error "OR not valid with :C[FP]"
 	    target="MARK --or-mark"
+	    mark=${mark#|}
 	    validate_mark $mark
+	    if [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
+	    fi
 	    ;;
-	AND)
+	\&*)
+	    [ $chain = tcpost ] && fatal_error "Invalid class ID: $mark"
 	    [ -n "$did_connmark" ] && fatal_error "AND not valid with :C[FP]"
 	    target="MARK --and-mark"
+	    mark=${mark#&}
 	    validate_mark $mark
+	    if [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
+	    fi
 	    ;;
 	*)
 	    if [ "$chain" != tcpost ]; then

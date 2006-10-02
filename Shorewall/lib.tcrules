@@ -264,6 +264,16 @@ process_tc_rule()
 	    target=RETURN
 	    mark=
 	    ;;
+	OR)
+	    [ -n "$did_connmark" ] && fatal_error "OR not valid with :C[FP]"
+	    target="MARK --or-mark"
+	    validate_mark $mark
+	    ;;
+	AND)
+	    [ -n "$did_connmark" ] && fatal_error "AND not valid with :C[FP]"
+	    target="MARK --and-mark"
+	    validate_mark $mark
+	    ;;
 	*)
 	    if [ "$chain" != tcpost ]; then
 		validate_mark $mark

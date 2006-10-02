@@ -236,6 +236,7 @@ __EOF__
 		proto=
 		ports=
 		policy=
+		detectinterface=
 
 		[ -n "$nomasq" ] && source="$source except $nomasq"
 		;;
@@ -260,7 +261,7 @@ for network in \$networks; do
 __EOF__
 			for destnet in $(separate_list $destnets); do
 			    indent >&3 << __EOF__
-    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
 __EOF__
 			done
 			indent >&3 << __EOF__
@@ -279,6 +280,7 @@ __EOF__
 		    proto=
 		    ports=
 		    policy=
+		    detectinterface=
 		    source="$source except $nomasq"
 		fi
 

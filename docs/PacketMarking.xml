@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Packet Marking using /etc/shorewall/tcrules</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2006</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <caution>
+    <para>This article includes information that applies to Shorewall version
+    3.2.5 and later. Not all features described here will be available in
+    earlier releases.</para>
+  </caution>
+
+  <section>
+    <title>Packet and Connection Marks</title>
+
+    <para>Perhaps no aspect of Shorewall causes more confusion than packet
+    marking. This article will attempt to clear up some of that
+    confusion.</para>
+
+    <para>Each packet has a mark whose value is initially 0. Mark values are
+    stored in the <emphasis>skb</emphasis> (socket buffer) structure used by
+    the Linux kernel to track packets; the mark value is not part of the
+    packet itself and cannot be seen with <command>tcpdump</command>,
+    <command>ethereal</command> or any other packet sniffing program.</para>
+
+    <para>Each active connection (even those that are not yet in ESTABLISHED
+    state) has a mark value that is distinct from the packet marks. Connection
+    mark values can be seen using the <command>shorewall show
+    connections</command> command. The default connection mark value is
+    0.</para>
+
+    <para>Example (output has been folded for display ):</para>
+
+    <programlisting><command>shorewall show connections</command>
+Shorewall 3.3.2 Connections at gateway - Mon Oct  2 09:08:18 PDT 2006
+
+tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=80
+         packets=23 bytes=4623 src=192.136.34.98 dst=206.124.146.176 sport=80 dport=58597
+         packets=23 bytes=22532 [ASSURED] <emphasis role="bold">mark=256</emphasis> use=1
+…</programlisting>
+
+    <para>Packet marks are valid only while the packet is being processed by
+    the firewall. Once the packet has been given to a local process or sent on
+    to another system, the packet's mark value is no longer available.
+    Connection mark values, on the other hand, persist for the life of the
+    connection.</para>
+  </section>
+
+  <section>
+    <title>Packet Marking "Programs"</title>
+
+    <para>Packet marking occurs in Netfilter's <emphasis>mangle</emphasis>
+    table. See the <ulink url="NetfilterOverview.html">Netfilter
+    Overview</ulink> article.</para>
+
+    <para>You can think of entries in the tcrules file like instructions in a
+    program coded in a crude assembly language. The program gets executed for
+    each packet.</para>
+
+    <para>That is another way of saying that <emphasis role="bold">if you
+    don't program, you may have difficulty making full use of
+    Netfilter/Shorewall's Packet Marking</emphasis>.</para>
+
+    <para>Actually, the tcrules define several programs. Each program
+    corresponds to one of the built-in chains in the mangle table.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>PREROUTING program — If MARK_IN_FORWARD_CHAIN=No in
+        <filename>shorewall.conf</filename>, then by default entries in
+        <filename>/etc/shorewall/tcrules</filename> are part of the PREROUTING
+        program. Entries specifying the ":P" suffix in the MARK column are
+        also part of the PREROUTING program. The PREROUTING program gets
+        executed for each packet entering the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>FORWARD program — If MARK_IN_FORWARD_CHAIN=Yes in
+        <filename>shorewall.conf</filename>, then by default entries in
+        <filename>/etc/shorewall/tcrules</filename> are part of the FORWARD
+        program. Entries specifying the ":F" suffix in the MARK column are
+        also part of the FORWARD program. The FORWARD program gets executed
+        for each packet forwarded by the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>OUTPUT program — Entries with $FW in the SOURCE column are part
+        of the OUTPUT program. The OUTPUT program is executed for each packet
+        originating on the firewall itself.</para>
+      </listitem>
+
+      <listitem>
+        <para>POSTROUTING program — Entries with a class-id in the MARK column
+        (and that don't specify $FW in the SOURCE column) are part of the
+        POSTROUTING program. These rules are executed for each packet leaving
+        the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>INPUT program — No entries in tcrules will add entries to this
+        program. It is executed for each packet that is targeted to the
+        firewall itself.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Note that a packet being forwarded by your firewall actually gets
+    processed by three different programs: PREROUTING, FORWARD and
+    POSTROUTING. Similarly, packets address to the firewall itself are
+    processed by two programs (PREROUTING and INPUT) while packets originating
+    on the firewall are likewise processed by two programs (OUTPUT and
+    POSTROUTING).</para>
+
+    <para>Rules in each program are <emphasis>executed</emphasis> as
+    follows:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Rules are conditionally executed based on whether the current
+        packet matches the contents of the SOURCE, DEST, PROTO, PORT(S),
+        CLIENT PORT(S_, USER, TEST, LENGTH and TOS columns.</para>
+      </listitem>
+
+      <listitem>
+        <para>When a rule is executed, either:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>the current packet receives a new mark value; or</para>
+          </listitem>
+
+          <listitem>
+            <para>the connection to which the current packet belongs receives
+            a new mark value (":C", ":CF" or ":CP" suffix in the MARK column);
+            or</para>
+          </listitem>
+
+          <listitem>
+            <para>the packet is classified for traffic shaping (class-id in
+            the MARK column); or</para>
+          </listitem>
+
+          <listitem>
+            <para>the packet mark in the current packet is moved to the
+            connection mark for the connection that the current packet is part
+            of ("SAVE" in the MARK column); or</para>
+          </listitem>
+
+          <listitem>
+            <para>the connection mark value for the connection that the
+            current packet is part of is moved to the current packet's mark
+            ("RESTORE" in the MARK column); or</para>
+          </listitem>
+
+          <listitem>
+            <para>jump to a subroutine (another chain in the mangle table).
+            These jumps are generated by Shorewall; or</para>
+          </listitem>
+
+          <listitem>
+            <para>exit the current subroutine ("CONTINUE" in the MARK
+            column).</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>Unless the subroutine is exited using CONTINUE, <emphasis
+        role="bold">the current packet is always passed to the next tcrule in
+        the subroutine</emphasis>.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Mark and Mask Values</title>
+
+    <para>The mark value is held in a 32-bit field. Because packet marking is
+    the Netfilter <emphasis>kludge of last resort</emphasis> for solving many
+    hard technical problems, Shorewall reserves half of this field (16 bits)
+    for future use. The remainder is split into two 8-bit values:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The low-order eight bits are used for traffic shaping marks.
+        These eight bits are also used for selecting among multiple providers
+        when HIGH_ROUTE_MARKS=No in <filename>shorewall.conf</filename>. Some
+        rules that deal with only these bits use a mask value of 0xff.</para>
+      </listitem>
+
+      <listitem>
+        <para>The next 8 bits are used for selecting among multiple providers
+        when HIGH_ROUTE_MARKS=Yes in <filename>shorewall.conf</filename>.
+        These bits are manipulated using a mask value of 0xff00.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>As hinted above, marking rules can specify both a mark value and a
+    mask. The mask determines the subset of the 32 bits in the mark are to be
+    used in the operation — only those bits that are on in the mask are
+    manipulated when the rule is executed. For entries in tcrules,
+    Shorewall-generated rules use a mask value that depends on which program
+    the rule is part of, what the rule does, and the setting of
+    HIGH_ROUTE_MARKS.</para>
+
+    <para>For entries in tcrules, the default mask value is 0xffff except in
+    these cases:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>RESTORE rules use a default mask value of 0xff.</para>
+      </listitem>
+
+      <listitem>
+        <para>SAVE rules use a default mask value of 0xff.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Shorewall-defined Chains in the Mangle Table</title>
+
+    <para>Shorewall creates a set of chains in the mangle table to hold rules
+    defined in your <firstterm>/etc/shorewall/tcrules</firstterm> file. As
+    mentioned above, chains are like subroutines in the packet marking
+    programming language. By placing all of your rules in subroutines,
+    CONTINUE (which generates a Netfilter RETURN rule) can be used to stop
+    processing your rules while still allowing following Shorewall-generated
+    rules to be executed.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>tcpre</term>
+
+        <listitem>
+          <para>PREROUTING rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>tcfor</term>
+
+        <listitem>
+          <para>FORWARD rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>tcout</term>
+
+        <listitem>
+          <para>OUTPUT rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>tcpost</term>
+
+        <listitem>
+          <para>POSTROUTING rules.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>Shorewall generates jumps to these chains from the built-in chains
+    (PREROUTING, FORWARD, etc.).</para>
+  </section>
+
+  <section>
+    <title>Examining the Marking Programs on a Running System</title>
+
+    <para>You can see the tcrules in action using the <command>shorewall show
+    mangle</command> command. </para>
+
+    <para>The sample output from that command shown below has the following in
+    <filename>/etc/shorewall/providers</filename>:</para>
+
+    <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS         COPY
+Blarg   1       0x100   main            eth3            206.124.146.254 track,balance   br0,eth1
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+</programlisting>
+
+    <para>Here is <filename>/etc/shorewall/tcrules</filename>:</para>
+
+    <programlisting>#MARK   SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                       PORT(S)
+1:110   192.168.0.0/22  eth3                                            #Our internel nets get priority
+                                                                        #over the server
+1:130   206.124.146.177 eth3            tcp     -       873
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+
+    <para>And here is <filename>/etc/shorewall/tcdevices</filename> and
+    <filename>/etc/shorewall/tcclasses</filename>:</para>
+
+    <programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH
+eth3            1.3mbit         384kbit
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+
+#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
+eth3            10      full            full            1               tcp-ack,tos-minimize-delay
+eth3            20      9*full/10       9*full/10       2               default
+eth3            30      6*full/10       6*full/10       3
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+
+    <para>I've annotated the following output with comments beginning with
+    "&lt;&lt;&lt;&lt;" and ending with "&gt;&gt;&gt;&gt;". This example uses
+    HIGH_ROUTE_MARKS=Yes and TC_EXPERT=No in
+    <filename>shorewall.conf</filename>.</para>
+
+    <programlisting>gateway:~ # <command>shorewall show mangle</command>
+Shorewall 3.3.2 Mangle Table at gateway - Mon Oct  2 15:07:32 PDT 2006
+
+Counters reset Mon Oct  2 07:49:52 PDT 2006
+
+&lt;&lt;&lt;&lt; The PREROUTING Program &gt;&gt;&gt;&gt;
+
+Chain PREROUTING (policy ACCEPT 409K packets, 122M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+&lt;&lt;&lt;&lt; Restore the provider mark from the connection, if any &gt;&gt;&gt;&gt;
+
+ 185K   77M CONNMARK   all  --  *      *       0.0.0.0/0            0.0.0.0/0           CONNMARK match !0x0/0xff00 CONNMARK restore mask 0xff00
+
+&lt;&lt;&lt;&lt; If there is no mark in the connection and the packet came in on eth3, then jump to the <emphasis
+        role="bold">routemark</emphasis> chain 
+     This rule is generated as a result of 'track' being specified in the providers file entry for eth3 &gt;&gt;&gt;&gt;
+
+ 8804 1396K routemark  all  --  eth3   *       0.0.0.0/0            0.0.0.0/0           MARK match 0x0/0xff00
+
+&lt;&lt;&lt;&lt; If the packet came in on eth3, jump the the <emphasis
+        role="bold">tcpre</emphasis> chain -- packets entering on a 'track'ed interface can have their mark set to zero there &gt;&gt;&gt;&gt;
+
+ 102K   52M tcpre      all  --  eth3   *       0.0.0.0/0            0.0.0.0/0
+
+&lt;&lt;&lt;&lt; Otherwise, jump to the tcpre chain if there is no current provider mark -- 
+     if we would have had TC_EXPERT=Yes, this jump would have been unconditional&gt;&gt;&gt;&gt;
+
+ 215K   44M tcpre      all  --  *      *       0.0.0.0/0            0.0.0.0/0           MARK match 0x0/0xff00
+
+&lt;&lt;&lt;&lt; End of PREROUTING program &gt;&gt;&gt;&gt;
+
+&lt;&lt;&lt;&lt; INPUT Program -- Shorewall generates the single rule here which turns off the provider mark in the packet after routing
+                      The rule does that by logically ANDing the mark value with 0xff which will turn off all but the low-order 8 bits &gt;&gt;&gt;&gt;
+
+Chain INPUT (policy ACCEPT 98238 packets, 16M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+98234   16M MARK       all  --  *      *       0.0.0.0/0            0.0.0.0/0           MARK and 0xff
+
+&lt;&lt;&lt;&lt; End of INPUT program &gt;&gt;&gt;&gt;
+
+&lt;&lt;&lt;&lt; FORWARD Program -- Shorewall generates the first rule here which turns off the provider mark in the packet after routing &gt;&gt;&gt;&gt;
+
+Chain FORWARD (policy ACCEPT 312K packets, 106M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 312K  106M MARK       all  --  *      *       0.0.0.0/0            0.0.0.0/0           MARK and 0xff
+
+&lt;&lt;&lt;&lt; Jump unconditionally to the <emphasis role="bold">tcfor</emphasis> chain &gt;&gt;&gt;&gt;
+
+ 312K  106M tcfor      all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+&lt;&lt;&lt;&lt; End of FORWARD program &gt;&gt;&gt;&gt;
+
+&lt;&lt;&lt;&lt; OUTPUT Program &gt;&gt;&gt;&gt;
+
+Chain OUTPUT (policy ACCEPT 1462K packets, 396M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+&lt;&lt;&lt;&lt; Restore the provider mark from the connection -- this rule was generated by Shorewall because of the 'track' option &gt;&gt;&gt;&gt;
+
+ 3339  615K CONNMARK   all  --  *      *       0.0.0.0/0            0.0.0.0/0           CONNMARK match !0x0/0xff00 CONNMARK restore mask 0xff00
+
+&lt;&lt;&lt;&lt; If there is no provider mark, then jump to the <emphasis
+        role="bold">tcout</emphasis> chain -- 
+     if we would have had TC_EXPERT=Yes, this jump would have been unconditional &gt;&gt;&gt;&gt;
+
+92747   28M tcout      all  --  *      *       0.0.0.0/0            0.0.0.0/0           MARK match 0x0/0xff00
+
+&lt;&lt;&lt;&lt; End of FORWARD program &gt;&gt;&gt;&gt;
+
+&lt;&lt;&lt;&lt; POSTROUTING Program -- Unconditionally jump to the <emphasis
+        role="bold">tcpost</emphasis> chain &gt;&gt;&gt;&gt;
+
+Chain POSTROUTING (policy ACCEPT 407K packets, 135M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 407K  135M tcpost     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+&lt;&lt;&lt;&lt; End of FORWARD program &gt;&gt;&gt;&gt;
+
+Chain <emphasis role="bold">routemark</emphasis> (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+
+&lt;&lt;&lt;&lt; Set connection 'track' mark for packets coming in on eth3 &gt;&gt;&gt;&gt;
+
+ 8804 1396K MARK       all  --  eth3   *       0.0.0.0/0            0.0.0.0/0           MARK or 0x100
+
+&lt;&lt;&lt;&lt; Save any mark added above in the connection mark &gt;&gt;&gt;&gt;
+
+ 8804 1396K CONNMARK   all  --  *      *       0.0.0.0/0            0.0.0.0/0           MARK match !0x0/0xff00 CONNMARK save mask 0xff00
+
+Chain <emphasis role="bold">tcfor</emphasis> (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain <emphasis role="bold">tcout</emphasis> (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain <emphasis role="bold">tcpost</emphasis> (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+
+&lt;&lt;&lt;&lt; The next two rules are the entries in the /etc/shorewall/tcrules file &gt;&gt;&gt;&gt;
+
+65061   11M CLASSIFY   all  --  *      eth3    192.168.0.0/22       0.0.0.0/0           CLASSIFY set 1:110
+ 2224 2272K CLASSIFY   tcp  --  *      eth3    206.124.146.177      0.0.0.0/0           tcp spt:873 CLASSIFY set 1:130
+
+&lt;&lt;&lt;&lt; These rules are generated by Shorewall and classify the traffic according to the marks in /etc/shorewall/classes &gt;&gt;&gt;&gt;
+
+    0     0 CLASSIFY   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           MARK match 0xa/0xff CLASSIFY set 1:110
+    0     0 CLASSIFY   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           MARK match 0x14/0xff CLASSIFY set 1:120
+    0     0 CLASSIFY   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           MARK match 0x1e/0xff CLASSIFY set 1:130
+
+Chain <emphasis role="bold">tcpre</emphasis> (2 references)
+ pkts bytes target     prot opt in     out     source               destination
+gateway:~ #</programlisting>
+  </section>
+</article>

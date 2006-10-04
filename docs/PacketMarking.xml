@@ -298,18 +298,20 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
   <section>
     <title>An Example</title>
 
-    <para>Here's the example from the comments at the top of the
-    <filename>/etc/shorewall/tcrules</filename> file.</para>
+    <para>Here's the example (slightly expanded) from the comments at the top
+    of the <filename>/etc/shorewall/tcrules</filename> file.</para>
 
     <programlisting>#MARK    SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST    LENGTH  TOS
 #                                                        PORT(S)
 1        0.0.0.0/0       0.0.0.0/0       icmp    echo-request                 #Rule 1
 1        0.0.0.0/0       0.0.0.0/0       icmp    echo-reply                   #Rule 2
+1        $FW             0.0.0.0/0       icmp    echo-request                 #Rule 3
+1        $FW             0.0.0.0/0       icmp    echo-reply                   #Rule 4
 
-RESTORE  0.0.0.0/0       0.0.0.0/0       all     -       -       -       0    #Rule 3
-CONTINUE 0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 4
-4        0.0.0.0/0       0.0.0.0/0       ipp2p:all                            #Rule 5
-SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 6
+RESTORE  0.0.0.0/0       0.0.0.0/0       all     -       -       -       0    #Rule 5
+CONTINUE 0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 6
+4        0.0.0.0/0       0.0.0.0/0       ipp2p:all                            #Rule 7
+SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 8
 ##LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
     <para>Let's take a look at each rule:</para>
@@ -318,9 +320,7 @@ SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #R
       <listitem>
         <para>This straight-forward rule simply marks all 'ping' requests
         passing through the firewall with mark value 1. Note that it does not
-        mark pings that originate on the firewall itself; if we wanted that,
-        we would have to add another rule that had "$FW" in the SOURCE
-        column.</para>
+        mark pings that originate on the firewall itself.</para>
       </listitem>
 
       <listitem>
@@ -328,19 +328,31 @@ SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #R
       </listitem>
 
       <listitem>
+        <para>This rule marks 'ping' requests that originate on the firewall.
+        This rule and the next ones are part of the OUTPUT program.</para>
+      </listitem>
+
+      <listitem>
+        <para>Similarly, this rule marks 'ping' replies from the firewall
+        itself.</para>
+      </listitem>
+
+      <listitem>
         <para>Remember that even though 'ping' packets were marked in one of
-        the first two rules, they are still passed on to rule 3. That rule
-        moves the connection mark to the packet mark, <emphasis>if the packet
-        mark is still zero</emphasis> (note the '0' in the TEST column).
-        Without the '0' in the TEST column, this rule would overwrite the
-        marks assigned in the first two rules.</para>
+        the first two rules, they are still passed on to rule 3 (note that
+        packets marked by rules 3 and 4 are not processed by this rule since
+        it is in a different program). That rule moves the connection mark to
+        the packet mark, <emphasis>if the packet mark is still zero</emphasis>
+        (note the '0' in the TEST column). Without the '0' in the TEST column,
+        this rule would overwrite the marks assigned in the first two
+        rules.</para>
       </listitem>
 
       <listitem>
         <para>If the packet mark is non-zero (note the '!0' in the TEST
         column), then exit — The remaining rules will not be executed in this
         case. The packet mark will be non-zero if this is a 'ping' packet, or
-        if the connection mark restored in rule 3 was non-zero.</para>
+        if the connection mark restored in rule 5 was non-zero.</para>
       </listitem>
 
       <listitem>
@@ -350,8 +362,8 @@ SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #R
 
       <listitem>
         <para>If the packet mark is non-zero (meaning that it was set to 4 in
-        rule 5), then save the value (4) in the connection. The next time that
-        a packet from this same connection comes through this program, rule 4
+        rule 7), then save the value (4) in the connection. The next time that
+        a packet from this same connection comes through this program, rule 6
         will be executed and the P2P check will be avoided.</para>
       </listitem>
     </orderedlist>

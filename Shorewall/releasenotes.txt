@@ -48,6 +48,23 @@ Other changes in 3.3.2
     #MARK   SOURCE
     |4	    192.168.1.1
 
+2)  Previously, zone names were restricted to five characters in
+    length. That length derives from the --log-prefix in Netfilter log
+    messages which must be 29 bytes or less in length. With the
+    standard Shorewall LOGFORMAT, 11 characters are left for the
+    chain name; since many chain names are of the form
+    <zone1>2<zone2>, we have a maximum zone name length of 5.
+
+    Beginning with this release, the maximum length of a zone name is
+    dependent on the LOGFORMAT (the maximum length may never be less
+    than 5 but it may be greater than 5). For example, setting
+    LOGFORMAT="FW:%s:%s:" will allow zone names of up to 8 characters.
+
+    As part of this change, /sbin/shorewall[-lite] no longer uses the
+    LOGFORMAT to select Shorewall messages from log files. Instead, it
+    uses the regular expression /IN=.* OUT=/ which will match any
+    netfilter-generated log message.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default
@@ -228,3 +245,27 @@ New Features:
 	# THE FOLLOWING POLICY MUST BE LAST
 	#
 	all		all		REJECT:MyReject	info
+
+4)  For users whose kernel and iptables have Extended MARK Target
+    support, it is now possible to logically AND or OR a value into the
+    current packet mark by preceding the mark value (and optional mask)
+    with an ampersand ("&") or vertical bar ("|") respectively.
+
+    Example: To logically OR the value 4 into the mark value for
+    packets from 192.168.1.1:
+
+    #MARK   SOURCE
+    |4	    192.168.1.1
+
+5)  Previously, zone names were restricted to five characters in
+    length. That length derives from the --log-prefix in Netfilter log
+    messages which must be 29 bytes or less in length. With the
+    standard Shorewall LOGFORMAT, that leaves 11 characters for the
+    chain name; given that many chain names are of the form
+    <zone1>2<zone2>, that gives a maximum zone name length of 11.
+
+    Beginning with this release, the maximum length of a zone name is
+    dependent on the LOGFORMAT (the maximum length may never be less
+    than 5 but it may be greater than 5). For example, setting
+    LOGFORMAT="FW:%s:%s:" will allow zone names of up to 8 characters.
+

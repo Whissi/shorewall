@@ -225,12 +225,11 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     </itemizedlist>
 
     <para>As hinted above, marking rules can specify both a mark value and a
-    mask. The mask determines the subset of the 32 bits in the mark are to be
-    used in the operation — only those bits that are on in the mask are
-    manipulated when the rule is executed. For entries in tcrules,
-    Shorewall-generated rules use a mask value that depends on which program
-    the rule is part of, what the rule does, and the setting of
-    HIGH_ROUTE_MARKS.</para>
+    mask. The mask determines the subset of the 32 bits in the mark to be used
+    in the operation — only those bits that are on in the mask are manipulated
+    when the rule is executed. For entries in tcrules, Shorewall-generated
+    rules use a mask value that depends on which program the rule is part of,
+    what the rule does, and the setting of HIGH_ROUTE_MARKS.</para>
 
     <para>For entries in tcrules, the default mask value is 0xffff except in
     these cases:</para>

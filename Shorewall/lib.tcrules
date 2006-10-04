@@ -266,7 +266,7 @@ process_tc_rule()
 	    ;;
 	\|*)
 	    [ $chain = tcpost ] && fatal_error "Invalid class ID: $mark"
-	    [ -n "$did_connmark" ] && fatal_error "OR not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "Logical OR not valid with :C[FP]"
 	    target="MARK --or-mark"
 	    mark=${mark#|}
 	    validate_mark $mark
@@ -276,7 +276,7 @@ process_tc_rule()
 	    ;;
 	\&*)
 	    [ $chain = tcpost ] && fatal_error "Invalid class ID: $mark"
-	    [ -n "$did_connmark" ] && fatal_error "AND not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "Logical AND not valid with :C[FP]"
 	    target="MARK --and-mark"
 	    mark=${mark#&}
 	    validate_mark $mark

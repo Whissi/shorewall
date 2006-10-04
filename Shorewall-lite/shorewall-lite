@@ -252,12 +252,12 @@ packet_log() # $1 = number of messages
     [ -n "$realtail" ] && options="-n$1"
 
     if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
-	grep "${LOGFORMAT}" $LOGFILE | \
+	grep 'IN=.* OUT=' $LOGFILE | \
 	    sed s/" kernel:"// | \
 	    sed s/" $host $LOGFORMAT"/" "/ | \
 	    tail $options
     else
-	grep "${LOGFORMAT}" $LOGFILE | \
+	grep 'IN=.* OUT=' $LOGFILE | \
 	    sed s/" kernel:"// | \
 	    sed s/" $host $LOGFORMAT"/" "/ | \
 	    sed 's/MAC=.* SRC=/SRC=/' | \

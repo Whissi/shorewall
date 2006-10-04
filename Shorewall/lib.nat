@@ -393,7 +393,6 @@ networks="\$(get_routed_networks $detectinterface)"
 for network in \$networks; do
 __EOF__
 	    for destnet in $(separate_list $destnets); do
-
 		indent >&3 << __EOF__
     run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
 __EOF__

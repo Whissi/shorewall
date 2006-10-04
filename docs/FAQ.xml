@@ -1631,6 +1631,28 @@ iptables: Invalid argument
       <filename>/etc/shorewall/modules </filename>and modify the copy to
       include only the modules that you need.</para>
     </section>
+
+    <section id="faq61">
+      <title>(FAQ 61) I just installed the latest Debian kernel and now
+      "shorewall start" fails with the message "ipt_policy: matchsize 116 !=
+      308". What's wrong?</title>
+
+      <para>Answer: Your iptables is incompatible with your kernel. Either
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>rebuild iptables using the kernel headers that match your new
+          kernel; or</para>
+        </listitem>
+
+        <listitem>
+          <para>if you don't need policy match support (you are not using the
+          IPSEC implementation built into the 2.6 kernel) then you can rename
+          <filename>/lib/iptables/libipt_policy.so</filename>.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </section>
 
   <section>

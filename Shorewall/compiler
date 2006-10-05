@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall Compiler - V3.2
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall Compiler - V3.3
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -3069,11 +3069,12 @@ process_tos() # $1 = name of tos file
 	stdchain=FORWARD
     fi
     
-    progress_message2 "$DOING $1..."
-
     strip_file tos $1
 
     if [ -s $TMP_DIR/tos ] ; then
+	
+	progress_message2 "$DOING $1..."
+
 	createmanglechain $chain
 	createmanglechain outtos
 
@@ -4813,7 +4814,7 @@ __EOF__
     local version=\$(cat \${SHAREDIR}/version)
 
     if [ \${SHOREWALL_LIBVERSION:-0} -lt 30200 ]; then
-	fatal_error "This script requires Shorewall version 3.3.2 or later; current version is \$version"
+	fatal_error "This script requires Shorewall version 3.3.3 or later; current version is \$version"
     fi
     #
     # These variables are required by the library functions called in this script

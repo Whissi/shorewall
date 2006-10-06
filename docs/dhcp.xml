@@ -67,6 +67,13 @@
         interfaces on the run line. On a RedHat system, this is done by
         modifying <filename>/etc/sysconfig/dhcpd</filename>.</para>
       </listitem>
+
+      <listitem>
+        <para>If you set 'ping-check' true in your
+        <filename>/etc/shorewall/dhcpd.conf</filename> file then you will want
+        to <ulink url="ping.htm">accept 'ping'</ulink> from your firewall to
+        the zone(s) served by the firewall's DHCP server.</para>
+      </listitem>
     </itemizedlist>
   </section>
 
@@ -105,6 +112,13 @@
         gets assigned to the interface. Check your DHCP client's
         documentation.</para>
       </listitem>
+
+      <listitem>
+        <para>It is a good idea to <ulink url="ping.htm">accept 'ping'</ulink>
+        on any interface that gets it's IP address via DHCP. That way, if the
+        DHCP server is configured with 'ping-check' true, you won't be
+        blocking its 'ping' requests.</para>
+      </listitem>
     </itemizedlist>
   </section>
 
@@ -119,6 +133,25 @@
         url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
         file.&nbsp;This will generate rules that will allow DHCP to and from
         your firewall system as well as through the bridge.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Running dhcrelay on the firewall</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Specify the "dhcp" option (in <filename><ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>)
+        on the interface facing the DHCP server and on the interfaces to be
+        relayed.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the server is configured with 'ping-check' true, then you
+        must <ulink url="ping.htm">allow 'ping'</ulink> from the server's zone
+        to the zone(s) served by dhcrelay.</para>
       </listitem>
     </itemizedlist>
   </section>

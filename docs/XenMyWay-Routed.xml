@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Xen and the Art of Consolidation</title>
+    <title>Strong Firewall in a Routed Xen Dom0</title>
 
     <authorgroup>
       <author>
@@ -107,11 +107,6 @@
     the first section of the companion <ulink url="Xen.html">Xen and
     Shorewall</ulink> article.</para>
 
-    <para>This configuration uses a bridged Xen Networking configuration; if
-    you want to see how to accomplish a similar configuration using a Routed
-    Xen configuration then please see <ulink url="XenMyWay-Routed.xml">this
-    article</ulink>.</para>
-
     <para>Here is a high-level diagram of our network.</para>
 
     <graphic align="center" fileref="images/Xen5.png" />
@@ -121,16 +116,16 @@
 
     <itemizedlist>
       <listitem>
-        <para><filename class="devicefile">eth0</filename> -- connected to the
+        <para><filename class="devicefile">eth0</filename> -- connected to our
+        DSL "Modem".</para>
+      </listitem>
+
+      <listitem>
+        <para><filename class="devicefile">eth1</filename> -- connected to the
         switch in my office. That switch is cabled to a second switch in my
         wife's office where my wife has her desktop and networked printer (I
         sure wish that there had been wireless back when I strung that CAT-5
         cable halfway across the house).</para>
-      </listitem>
-
-      <listitem>
-        <para><filename class="devicefile">eth1</filename> -- connected to our
-        DSL "Modem".</para>
       </listitem>
 
       <listitem>
@@ -140,41 +135,36 @@
       </listitem>
     </itemizedlist>
 
-    <para>There are three Xen domains.</para>
+    <para>There are Two Xen domains.</para>
 
     <orderedlist>
       <listitem>
-        <para>Dom0 (DNS name ursa.shorewall.net) is used as a local file
-        server (NFS and Samba).</para>
+        <para>Dom0 (DNS name gateway.shorewall.net) is used as our main
+        firewall and wireless gateway as well as a local file server.</para>
       </listitem>
 
       <listitem>
-        <para>The first DomU (Dom name <emphasis
-        role="bold">firewall</emphasis>, DNS name gateway.shorewall.net) is
-        used as our main firewall and wireless gateway.</para>
-      </listitem>
-
-      <listitem>
-        <para>The second DomU (Dom name <emphasis
-        role="bold">lists</emphasis>, DNS name lists.shorewall.net) is used as
-        a public Web/FTP/Mail/DNS server.</para>
+        <para>The DomU (Dom name <emphasis role="bold">lists</emphasis>, DNS
+        name lists.shorewall.net) is used as a public Web/FTP/Mail/DNS
+        server.</para>
       </listitem>
     </orderedlist>
 
-    <para>Shorewall runs in Dom0 and in the firewall domain.</para>
+    <para>Shorewall runs in Dom0.</para>
 
     <caution>
       <para>As the developer of Shorewall, I have enough experience to be very
       comfortable with Linux networking and Shorewall/iptables. I arrived at
       this configuration after a fair amount of trial and error
-      experimentation (see <ulink url="Xen.html">Xen and Shorewall</ulink>).
-      If you are a Linux networking novice, I recommend that you do not
-      attempt a configuration like this one for your first Shorewall
-      installation. You are very likely to frustrate both yourself and the
-      Shorewall support team. Rather I suggest that you start with something
-      simple like a <ulink url="standalone.htm">standalone
-      installation</ulink> in a domU; once you are comfortable with that then
-      you will be ready to try something more substantial.</para>
+      experimentation (see <ulink url="Xen.html">Xen and Shorewall</ulink> and
+      <ulink url="XenMyWay.html">Xen and the art of Consolidation</ulink>). If
+      you are a Linux networking novice, I recommend that you do not attempt a
+      configuration like this one for your first Shorewall installation. You
+      are very likely to frustrate both yourself and the Shorewall support
+      team. Rather I suggest that you start with something simple like a
+      <ulink url="standalone.htm">standalone installation</ulink> in a domU;
+      once you are comfortable with that then you will be ready to try
+      something more substantial.</para>
 
       <para>As Paul Gear says: <emphasis>Shorewall might make iptables easy,
       but it doesn't make understanding fundamental networking principles,
@@ -201,48 +191,7 @@
 
         <para><filename>/etc/modprobe.conf.local</filename></para>
 
-        <para><filename class="devicefile">eth1</filename> (PCI 00:09.0) and
-        <filename class="devicefile">eth2</filename> (PCI 00:0a.0) are
-        delegated to the firewall DomU where they become <filename
-        class="devicefile">eth3</filename> and <filename
-        class="devicefile">eth4</filename> respectively. The SuSE 10.1 Xen
-        kernel compiles pciback as a module so the instructions for PCI
-        delegation in the Xen Users Manual can't be followed directly (see
-        <ulink
-        url="http://wiki.xensource.com/xenwiki/Assign_hardware_to_DomU_with_PCIBack_as_module">http://wiki.xensource.com/xenwiki/Assign_hardware_to_DomU_with_PCIBack_as_module</ulink>).</para>
-
-        <programlisting>options pciback hide=(00:09.0)(00:0a.0)
-install tulip /sbin/modprobe pciback ; /sbin/modprobe --first-time --ignore-install tulip
-options netloop nloopbacks=1</programlisting>
-
-        <para><filename>/etc/xen/auto/01-firewall</filename> — configuration
-        file for the firewall domain</para>
-
-        <programlisting>#  -*- mode: python; -*-
-
-# configuration name:
-name     = "firewall"
-
-# usable ram:
-memory   = 384
-
-# kernel and initrd:
-kernel   = "/xen2/vmlinuz-xen"
-ramdisk  = "/xen2/initrd-xen"
-
-# boot device:
-root     = "/dev/hdb2"
-
-# boot to run level:
-extra    = "3"
-
-# network interface:
-vif      = [ 'mac=aa:cc:00:00:00:02, bridge=xenbr0', 'mac=aa:cc:00:00:00:03, bridge=xenbr1' ]
-# Interfaces deletgated from Dom0
-pci=[ '00:09.0' , '00:0a.0' ]
-
-# storage devices:
-disk     = [ 'phy:hdb2,hdb2,w' ]</programlisting>
+        <programlisting>options netloop nloopbacks=1 #Stop netloop from creating 8 vifs</programlisting>
 
         <para><filename>/etc/xen/auto/02-lists</filename> — configuration file
         for the lists domain</para>
@@ -266,28 +215,19 @@ root     = "/dev/hda3"
 extra    = "3"
 
 # network interface:
-vif      = [ 'mac=aa:cc:00:00:00:01, bridge=xenbr1' ]
-hostname = name
+vif      = [ 'mac=aa:cc:00:00:00:01, ip=206.124.146.177, vifname=eth3' ]
 
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
       </blockquote>
 
-      <para>With all three Xen domains up and running, the system looks as
-      shown in the following diagram.</para>
+      <para>With both Xen domains up and running, the system looks as shown in
+      the following diagram.</para>
 
-      <graphic align="center" fileref="images/Xen4.png" />
+      <graphic align="center" fileref="images/Xen4a.png" />
 
-      <para>The zones correspond to the Shorewall zones in the firewall DomU
+      <para>The zones correspond to the Shorewall zones in the firewall Dom0
       configuration.</para>
-
-      <note>
-        <para>If you want to run a simple NAT gateway in a Xen DomU, just omit
-        the second bridge (xenbr1), the second delegated interface, and the
-        second DomU from the above configuration. You can then install the
-        <ulink url="two-interface.htm">normal Shorewall two-interface sample
-        configuration</ulink> in the DomU.</para>
-      </note>
 
       <caution>
         <para>Under some circumstances, UDP and/or TCP communication from a
@@ -324,91 +264,12 @@ fi</programlisting>
          netmask 255.255.255.0
          post-up ethtool -K eth0 tx off</programlisting>
       </caution>
-
-      <para>SuSE 10.1 includes Xen 3.0.2 which supports PCI delegation. The
-      network interfaces that connect to the net and wifi zones are delegated
-      to the firewall DomU.</para>
-
-      <para>When Shorewall starts during bootup of Dom0, it creates the two
-      bridges using this <filename>/etc/shorewall/init</filename> extension
-      script:</para>
-
-      <blockquote>
-        <programlisting>for bridge in xenbr0 xenbr1; do
-    if [ -z "$(/sbin/brctl show 2&gt; /dev/null | fgrep $bridge)" ]; then
-         /sbin/brctl addbr $bridge
-         /sbin/ip link set dev $bridge up
-   fi
-done</programlisting>
-      </blockquote>
-    </section>
-
-    <section id="Dom0">
-      <title>Dom0 Configuration</title>
-
-      <para>The goals for the Shorewall configuration in Dom0 are as
-      follows:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Allow traffic to flow unrestricted through the two bridges.
-          This is done by configuring the hosts connected to each bridge as a
-          separate zone and relying on Shorewall's implicit intra-zone ACCEPT
-          policy to permit traffic through the bridge.</para>
-        </listitem>
-
-        <listitem>
-          <para>Ensure that there is no stray traffic between the zones. This
-          is a "belt+suspenders" measure since there should be no routing
-          between the bridges (because they don't have IP addresses).</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>The configuration is a simple one:</para>
-
-      <blockquote>
-        <para><filename>/etc/shorewall/zones</filename>:</para>
-
-        <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
-#                                       OPTIONS                 OPTIONS
-fw      firewall
-loc     ipv4
-dmz     ipv4
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
-
-        <para><filename>/etc/shorewall/policy</filename> (Note the unusual use
-        of an ACCEPT all-&gt;all policy):</para>
-
-        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
-#                                               LEVEL
-dmz             all             REJECT          info
-all             dmz             REJECT          info
-all             all             ACCEPT
-#LAST LINE -- DO NOT REMOVE</programlisting>
-
-        <para><filename>/etc/shorewall/interfaces</filename>:</para>
-
-        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-loc     xenbr0          192.168.1.255   dhcp,routeback
-dmz     xenbr1          -               routeback
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-
-        <para><filename>/etc/shorewall/rules</filename>:</para>
-
-        <programlisting>#ACTION         SOURCE                          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/
-#                                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
-#SECTION ESTABLISHED
-#SECTION RELATED
-SECTION NEW
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
     </section>
 
     <section id="Firewall">
-      <title>Firewall DomU Configuration</title>
+      <title>Firewall Dom0 Configuration</title>
 
-      <para>In the firewall DomU, I run a conventional three-interface
+      <para>In the firewall Dom0, I run a conventional three-interface
       firewall with Proxy ARP DMZ -- it is very similar to the firewall
       described in the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
       Guide</ulink> with the exception that I've added a fourth interface for
@@ -417,7 +278,7 @@ SECTION NEW
       for our two laptops and a bridged OpenVPN server for the wireless
       network in our home. Here is the firewall's view of the network:</para>
 
-      <graphic align="center" fileref="images/network4.png" />
+      <graphic align="center" fileref="images/network4a.png" />
 
       <para>The two laptops can be directly attached to the LAN as shown above
       or they can be attached wirelessly -- their IP addresses are the same in
@@ -430,12 +291,12 @@ SECTION NEW
       configuration.</para>
 
       <blockquote>
-        <para>/etc/shorewall/shorewall.conf:</para>
+        <para>/etc/shorewall/shorewall.conf</para>
 
         <programlisting>STARTUP_ENABLED=Yes
 VERBOSITY=0
 LOGFILE=/var/log/firewall
-LOGFORMAT="Shorewall:%s:%s:"
+LOGFORMAT="FW:%s:%s:"
 LOGTAGONLY=No
 LOGRATE=
 LOGBURST=
@@ -446,19 +307,19 @@ TCP_FLAGS_LOG_LEVEL=$LOG
 RFC1918_LOG_LEVEL=$LOG
 SMURF_LOG_LEVEL=$LOG
 LOG_MARTIANS=No
-IPTABLES=/usr/sbin/iptables
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-SHOREWALL_SHELL=/bin/bash
-SUBSYSLOCK=
+SHOREWALL_SHELL=/bin/ash
+SUBSYSLOCK=/var/lock/subsys/shorewall-lite
 MODULESDIR=
-CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
-RESTOREFILE=standard
+CONFIG_PATH=/usr/share/shorewall-lite:/usr/share/shorewall/configfiles:/usr/share/shorewall
+RESTOREFILE=restore
 IPSECFILE=zones
 IP_FORWARDING=On
 ADD_IP_ALIASES=No
 ADD_SNAT_ALIASES=No
 RETAIN_ALIASES=No
 TC_ENABLED=Internal
+TC_EXPERT=No
 CLEAR_TC=Yes
 MARK_IN_FORWARD_CHAIN=Yes
 CLAMPMSS=Yes
@@ -467,7 +328,7 @@ DETECT_DNAT_IPADDRS=Yes
 MUTEX_TIMEOUT=60
 ADMINISABSENTMINDED=Yes
 BLACKLISTNEWONLY=Yes
-DELAYBLACKLISTLOAD=No
+DELAYBLACKLISTLOAD=Yes
 MODULE_SUFFIX=
 DISABLE_IPV6=Yes
 BRIDGING=No
@@ -478,6 +339,7 @@ MACLIST_TTL=60
 SAVE_IPSETS=No
 MAPOLDACTIONS=No
 FASTACCEPT=Yes
+HIGH_ROUTE_MARKS=Yes
 BLACKLIST_DISPOSITION=DROP
 MACLIST_TABLE=mangle
 MACLIST_DISPOSITION=DROP
@@ -508,8 +370,8 @@ vpn             net             ACCEPT
 vpn             loc             ACCEPT
 loc             vpn             ACCEPT
 $FW             loc             ACCEPT
+loc             $FW             ACCEPT
 wifi            all             REJECT          $LOG
-loc             $FW             REJECT          $LOG
 net             $FW             DROP            $LOG            1/sec:2
 net             loc             DROP            $LOG            2/sec:4
 net             dmz             DROP            $LOG            8/sec:30
@@ -527,10 +389,10 @@ POPSERVERS=&lt;comma-separated list of server IP addresses&gt;
 
 LOG=info
 
-INT_IF=eth0
-DMZ_IF=eth1
-EXT_IF=eth3
-WIFI_IF=eth4
+INT_IF=br0
+DMZ_IF=eth3
+EXT_IF=eth0
+WIFI_IF=eth2
 
 OMAK=&lt;IP address at our second home&gt;
 
@@ -619,14 +481,7 @@ DROP            loc:!192.168.0.0/22             net
 ###############################################################################################################################################################################
 # Local Network to Firewall
 #
-DROP            loc:!192.168.0.0/22             fw                      # Silently drop traffic with an HP source IP from my XP box
-ACCEPT          loc                             fw                      tcp     22
-ACCEPT          loc                             fw                      tcp     time,631,8080
-ACCEPT          loc                             fw                      udp     161,ntp,631
-ACCEPT          loc:192.168.1.5                 fw                      udp     111
-DROP            loc                             fw                      tcp     3185          #SUSE Meta pppd
-Ping/ACCEPT     loc                             fw
-REDIRECT        loc                             3128                    tcp     80                                      -               !206.124.146.177
+REDIRECT-       loc                             3128                    tcp     80                                      -               !192.168.1.1,192.168.0.7,206.124.146.177,155.98.64.80
 ###############################################################################################################################################################################
 # Road Warriors to Firewall
 #
@@ -650,12 +505,13 @@ Trcrt/ACCEPT    loc                             dmz
 # Internet to ALL -- drop NewNotSyn packets
 #
 dropNotSyn      net             fw              tcp
-dropNotSyn      net             loc             tcp
+#dropNotSyn     net             loc             tcp
 dropNotSyn      net             dmz             tcp
 ###############################################################################################################################################################################
 # Internet to DMZ
 #
 ACCEPT          net                             dmz                     udp     domain
+LOG:$LOG        net:64.126.128.0/18             dmz                     tcp     smtp
 ACCEPT          net                             dmz                     tcp     smtps,www,ftp,imaps,domain,https        -
 ACCEPT          net                             dmz                     tcp     smtp                                    -               206.124.146.177,206.124.146.178
 ACCEPT          net                             dmz                     udp     33434:33454
@@ -672,7 +528,7 @@ Trcrt/ACCEPT    net                             dmz
 DNAT            net                             loc:192.168.1.4         tcp     1729
 DNAT            net                             loc:192.168.1.4         gre
 #
-# Roadwarrior access to Wookie
+# Roadwarrior access to Ursa
 #
 ACCEPT          net:$OMAK                       loc                     tcp     22
 Limit:$LOG:SSHA,3,60\
@@ -688,6 +544,19 @@ ACCEPT          net                             loc:192.168.1.3         tcp     
 ACCEPT          net                             loc:192.168.1.3         tcp     6881:6889,6969
 ACCEPT          net                             loc:192.168.1.3         udp     6881:6889,6969
 #
+# Real Audio
+#
+ACCEPT          net                             loc:192.168.1.3         udp     6970:7170
+#
+# Overnet
+#
+#ACCEPT         net                             loc:192.168.1.3         tcp     4662
+#ACCEPT         net                             loc:192.168.1.3         udp     12112
+#
+# OpenVPN
+#
+ACCEPT          net                             loc:192.168.1.3         udp     1194
+ACCEPT          net                             loc:192.168.1.6         udp     1194
 # Skype
 #
 ACCEPT          net                             loc:192.168.1.6         tcp     1194
@@ -729,8 +598,68 @@ Ping/ACCEPT     dmz                             loc
 ###############################################################################################################################################################################
 # DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
 #
+#ACCEPT         net                             loc:192.168.1.3         udp     12112
+#
+# OpenVPN
+#
+ACCEPT          net                             loc:192.168.1.3         udp     1194
+ACCEPT          net                             loc:192.168.1.6         udp     1194
+# Skype
+#
+ACCEPT          net                             loc:192.168.1.6         tcp     1194
+#
+# Traceroute
+#
+Trcrt/ACCEPT    net                             loc:192.168.1.3
+#
+# Silently Handle common probes
+#
+REJECT          net                             loc                     tcp     www,ftp,https
+DROP            net                             loc                     icmp    8
+###############################################################################################################################################################################
+# DMZ to Internet
+#
+ACCEPT          dmz                             net                     udp     domain,ntp
+ACCEPT          dmz                             net                     tcp     echo,ftp,ssh,smtp,whois,domain,www,81,https,cvspserver,2702,2703,8080
+ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
+Ping/ACCEPT     dmz                             net
+#
+# Some FTP clients seem prone to sending the PORT command split over two packets. This prevents the FTP connection tracking
+# code from processing the command  and setting up the proper expectation. The following rule allows active FTP to work in these cases
+# but logs the connection so I can keep an eye on this potential security hole.
+#
+ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
+###############################################################################################################################################################################
+# Local to DMZ
+#
+ACCEPT          loc                             dmz                     udp     domain,xdmcp
+ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,rsync,https,imaps,ftp,10023,pop3,3128
+Trcrt/ACCEPT    loc                             dmz
+###############################################################################################################################################################################
+# DMZ to Local
+#
+ACCEPT          dmz                             loc:192.168.1.5         udp     123
+ACCEPT          dmz                             loc:192.168.1.5         tcp     21
+Ping/ACCEPT     dmz                             loc
+
+###############################################################################################################################################################################
+# DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
+#
+ACCEPT          loc                             dmz                     udp     domain,xdmcp
+ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,rsync,https,imaps,ftp,10023,pop3,3128
+Trcrt/ACCEPT    loc                             dmz
+###############################################################################################################################################################################
+# DMZ to Local
+#
+ACCEPT          dmz                             loc:192.168.1.5         udp     123
+ACCEPT          dmz                             loc:192.168.1.5         tcp     21
+Ping/ACCEPT     dmz                             loc
+
+###############################################################################################################################################################################
+# DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
+#
 ACCEPT          dmz                             fw                      tcp     161,ssh
-ACCEPT          dmz                             fw                      udp     161
+ACCEPT          dmz                             fw                      udp     161,ntp
 REJECT          dmz                             fw                      tcp     auth
 Ping/ACCEPT     dmz                             fw
 ###############################################################################################################################################################################
@@ -745,6 +674,11 @@ ACCEPT          net:$OMAK                       fw                      tcp     
 Limit:$LOG:SSHA,3,60\
                 net                             fw                      tcp     22
 Trcrt/ACCEPT    net                             fw
+#
+# Bittorrent
+#
+ACCEPT          net                             fw                      tcp     6881:6889,6969
+ACCEPT          net                             fw                      udp     6881:6889,6969
 ###############################################################################################################################################################################
 # Firewall to DMZ
 #
@@ -836,7 +770,7 @@ $EXT_IF         30      6*full/10       6*full/10       3
 ################################################################################
 # Interfaces to be bridged -- may be listed by device name or by MAC
 #
-INTERFACES="eth0"
+INTERFACES="eth1"
 
 #
 # Tap Devices

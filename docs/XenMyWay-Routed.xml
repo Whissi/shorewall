@@ -179,6 +179,10 @@
       <para>Below are the relevant configuration files for the three domains.
       I use partitions on my hard drives for DomU storage devices.</para>
 
+      <para>There is not much documentation about how to configure Xen for
+      routed operation. I've tried to mark the relevant parts with <emphasis
+      role="bold">bold font</emphasis>.</para>
+
       <blockquote>
         <para><filename>/boot/grub/menu.lst</filename> — here is the entry
         that boots Xen in Dom0.</para>
@@ -191,11 +195,11 @@
 
         <para><filename>/etc/modprobe.conf.local</filename></para>
 
-        <programlisting>options netloop nloopbacks=1 #Stop netloop from creating 8 vifs</programlisting>
+        <programlisting><emphasis role="bold">options netloop nloopbacks=1</emphasis> #Stop netloop from creating 8 vifs</programlisting>
 
         <para><filename>/etc/xen/auto/02-lists</filename> — configuration file
         for the lists domain. Note that the vifname is set to 'eth3' for the
-        virtual interface to this vm.</para>
+        virtual interface to this domU.</para>
 
         <programlisting>#  -*- mode: python; -*-
 
@@ -216,10 +220,34 @@ root     = "/dev/hda3"
 extra    = "3"
 
 # network interface:
-vif      = [ 'mac=aa:cc:00:00:00:01, ip=206.124.146.177, vifname=eth3' ]
+vif      = [ 'mac=aa:cc:00:00:00:01, <emphasis role="bold">ip=206.124.146.177, vifname=eth3</emphasis>' ]
 
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
+
+        <para>Excerpt from
+        <filename>/etc/xen/xend-config.sxp</filename>:<programlisting>…
+
+# It is possible to use the network-bridge script in more complicated
+# scenarios, such as having two outgoing interfaces, with two bridges, and
+# two fake interfaces per guest domain.  To do things like this, write
+# yourself a wrapper script, and call network-bridge from it, as appropriate.
+#
+<emphasis role="bold">#</emphasis>(network-script network-bridge)
+
+…
+
+# If you are using only one bridge, the vif-bridge script will discover that,
+# so there is no need to specify it explicitly.
+#
+<emphasis role="bold">#</emphasis>(vif-script vif-bridge)
+
+## Use the following if network traffic is routed, as an alternative to the
+# settings for bridged networking given above.
+<emphasis role="bold">(network-script network-route)
+(vif-script     vif-route)</emphasis>
+
+</programlisting></para>
       </blockquote>
 
       <para>With both Xen domains up and running, the system looks as shown in

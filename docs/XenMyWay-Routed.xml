@@ -194,7 +194,8 @@
         <programlisting>options netloop nloopbacks=1 #Stop netloop from creating 8 vifs</programlisting>
 
         <para><filename>/etc/xen/auto/02-lists</filename> — configuration file
-        for the lists domain</para>
+        for the lists domain. Note that the vifname is set to 'eth3' for the
+        virtual interface to this vm.</para>
 
         <programlisting>#  -*- mode: python; -*-
 
@@ -349,7 +350,7 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
 
         <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
 #                                       OPTIONS                 OPTIONS
-fw      firewall
+fw      firewall        #The firewall itself.
 net     ipv4            #Internet
 loc     ipv4            #Local wired Zone
 dmz     ipv4            #DMZ
@@ -378,6 +379,10 @@ net             dmz             DROP            $LOG            8/sec:30
 net             vpn             DROP            $LOG
 all             all             REJECT          $LOG
 #LAST LINE -- DO NOT REMOVE</programlisting>
+
+        <para><filename>Note that the firewall&lt;-&gt;local network interface
+        is wide open so from a security point of view, the firewall system is
+        part of the local zone.</filename></para>
 
         <para><filename>/etc/shorewall/params (edited)</filename>:</para>
 

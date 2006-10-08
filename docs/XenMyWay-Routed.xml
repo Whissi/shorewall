@@ -255,20 +255,20 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
       <graphic align="center" fileref="images/Xen4a.png" />
 
-      <para>The zones correspond to the Shorewall zones in the firewall Dom0
+      <para>The zones correspond to the Shorewall zones in the Dom0
       configuration.</para>
 
       <caution>
         <para>Under some circumstances, UDP and/or TCP communication from a
         domU won't work for no obvious reason. That happened with the
         <emphasis role="bold">lists</emphasis> domain in my setup. Looking at
-        the IP traffic with <command>tcpdump -nvvi eth1</command> in the
-        <emphasis role="bold">firewall</emphasis> domU showed that UDP packets
-        from the <emphasis role="bold">lists</emphasis> domU had incorrect
-        checksums. That problem was corrected by arranging for the following
-        command to be executed in the <emphasis role="bold">lists</emphasis>
-        domain when its <filename class="devicefile">eth0</filename> device
-        was brought up:</para>
+        the IP traffic with <command>tcpdump -nvvi eth1</command> in dom0
+        showed that UDP packets from the <emphasis
+        role="bold">lists</emphasis> domU had incorrect checksums. That
+        problem was corrected by arranging for the following command to be
+        executed in the <emphasis role="bold">lists</emphasis> domain when its
+        <filename class="devicefile">eth0</filename> device was brought
+        up:</para>
 
         <para><command>ethtool -K eth0 tx off</command></para>
 
@@ -296,16 +296,16 @@ fi</programlisting>
     </section>
 
     <section id="Firewall">
-      <title>Firewall Dom0 Configuration</title>
+      <title>Dom0 Shorewall Configuration</title>
 
-      <para>In the firewall Dom0, I run a conventional three-interface
-      firewall with Proxy ARP DMZ -- it is very similar to the firewall
-      described in the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
-      Guide</ulink> with the exception that I've added a fourth interface for
-      our wireless network. The firewall runs a routed <ulink
-      url="OPENVPN.html">OpenVPN server</ulink> to provide roadwarrior access
-      for our two laptops and a bridged OpenVPN server for the wireless
-      network in our home. Here is the firewall's view of the network:</para>
+      <para>In Dom0, I run a conventional three-interface firewall with Proxy
+      ARP DMZ -- it is very similar to the firewall described in the <ulink
+      url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> with the
+      exception that I've added a fourth interface for our wireless network.
+      The firewall runs a routed <ulink url="OPENVPN.html">OpenVPN
+      server</ulink> to provide roadwarrior access for our two laptops and a
+      bridged OpenVPN server for the wireless network in our home. Here is the
+      firewall's view of the network:</para>
 
       <graphic align="center" fileref="images/network4a.png" />
 

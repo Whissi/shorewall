@@ -187,21 +187,23 @@
         <para><filename>/boot/grub/menu.lst</filename> — here is the entry
         that boots Xen in Dom0.</para>
 
-        <programlisting>title XEN
+        <blockquote>
+          <programlisting>title XEN
     root (hd0,1)
     kernel /boot/xen.gz dom0_mem=458752 sched=bvt
     module /boot/vmlinuz-xen root=/dev/hda2 vga=0x31a selinux=0    resume=/dev/hda1  splash=silent showopts 
     module /boot/initrd-xen</programlisting>
+        </blockquote>
 
-        <para><filename>/etc/modprobe.conf.local</filename></para>
-
-        <programlisting><emphasis role="bold">options netloop nloopbacks=1</emphasis> #Stop netloop from creating 8 vifs</programlisting>
+        <para><filename>/etc/modprobe.conf.local</filename><blockquote>
+            <programlisting><emphasis role="bold">options netloop nloopbacks=0</emphasis> #Stop netloop from creating 8 useless vifs</programlisting>
+          </blockquote></para>
 
         <para><filename>/etc/xen/auto/02-lists</filename> — configuration file
-        for the lists domain. Note that the vifname is set to 'eth3' for the
-        virtual interface to this domU.</para>
+        for the lists domain.</para>
 
-        <programlisting>#  -*- mode: python; -*-
+        <blockquote>
+          <programlisting>#  -*- mode: python; -*-
 
 # configuration name:
 name     = "lists"
@@ -225,8 +227,26 @@ vif      = [ 'mac=aa:cc:00:00:00:01, <emphasis role="bold">ip=206.124.146.177, v
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
+          <para>Note that the vifname is set to 'eth3' for the virtual
+          interface to this domU. This will cause the dom0 interface to the
+          server to have a fixed name (<filename
+          class="devicefile">eth3</filename>) which makes it a lot easier to
+          deal with in Shorewall and elsewhere.</para>
+
+          <para>Specifying an IP address (ip=206.124.146.177) causes the
+          vif-route script to create a host route to that IP address on
+          <filename class="devicefile">eth3</filename>.</para>
+
+          <blockquote>
+            <programlisting>gateway:~ # <command>ip route ls dev eth3</command>
+206.124.146.177  scope link  src 206.124.146.176
+gateway:~ #</programlisting>
+          </blockquote>
+        </blockquote>
+
         <para>Excerpt from
-        <filename>/etc/xen/xend-config.sxp</filename>:<programlisting>…
+        <filename>/etc/xen/xend-config.sxp</filename>:<blockquote>
+            <programlisting>…
 
 # It is possible to use the network-bridge script in more complicated
 # scenarios, such as having two outgoing interfaces, with two bridges, and
@@ -247,7 +267,8 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 <emphasis role="bold">(network-script network-route)
 (vif-script     vif-route)</emphasis>
 
-</programlisting></para>
+</programlisting>
+          </blockquote></para>
       </blockquote>
 
       <para>With both Xen domains up and running, the system looks as shown in

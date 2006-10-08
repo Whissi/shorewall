@@ -913,7 +913,7 @@ setup_tc1() {
     fi
 
     if [ -n "$HIGH_ROUTE_MARKS" ]; then
-	for chain in INPUT FORWARD; do
+	for chain in INPUT FORWARD POSTROUTING; do
 	    run_iptables -t mangle -I $chain -j MARK --and-mark 0xFF
 	done
     fi

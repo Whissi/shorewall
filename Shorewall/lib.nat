@@ -435,10 +435,8 @@ __EOF__
 	    if [ -n "$NAT_ENABLED" ]; then
 		if [ "x$fullinterface" = xCOMMENT ]; then
 		    if [ -n "$COMMENTS" ]; then
-			echo $networks $addresses $proto $ports $ipsec | while read COMMENT; do
-			    save_command COMMENT=\"$COMMENT\"
-			done
-			comment=Yes
+			comment=$(echo $networks $addresses $proto $ports $ipsec)
+			save_command COMMENT=\"${comment% }\"
 		    else
 			error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		    fi

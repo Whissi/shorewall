@@ -884,10 +884,8 @@ setup_tc1() {
 	    expandv mark sources dests proto ports sports user testval length tos
 	    if [ "x$mark" = xCOMMENT ]; then
 		if [ -n "$COMMENTS" ]; then
-		    echo $sources $dests $proto $ports $sports $user $testval $length $tos | while read COMMENT; do
-			save_command COMMENT=\"$COMMENT\"
-		    done
-		    comment=Yes
+		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
+		    save_command COMMENT=\"${comment% }\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		fi
@@ -1023,11 +1021,8 @@ __EOF__
 	while read mark sources dests proto ports sports user testval; do
 	    if [ "x$mark" = xCOMMENT ]; then
 		if [ -n "$COMMENTS" ]; then
-		    [ -n "$COMMENTS" ] || fatal_error "COMMENT requires comment support in iptables/Netfilter"
-		    echo $sources $dests $proto $ports $sports $user $testval $length $tos | while read COMMENT; do
-			save_command COMMENT=\"$COMMENT\"
-		    done
-		    comment=Yes
+		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
+		    save_command COMMENT=\"${comment% }\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		fi
@@ -2753,10 +2748,8 @@ process_rules()
 		;;
 	    COMMENT)
 		if [ -n "$COMMENTS" ]; then
-		    echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec | while read COMMENT; do
-			save_command COMMENT=\"$COMMENT\"
-		    done
-		    comment=Yes
+		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
+		    save_command COMMENT=\"${comment% }\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		fi

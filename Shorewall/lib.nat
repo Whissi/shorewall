@@ -30,6 +30,8 @@
 #
 setup_masq()
 {
+    local comment=
+
     do_ipsec_options() {
 	local options="$(separate_list $ipsec)" option
 	policy="-m policy --pol ipsec --dir out"
@@ -431,7 +433,22 @@ __EOF__
 	while read fullinterface networks addresses proto ports ipsec; do
 	    expandv fullinterface networks addresses proto ports ipsec
 	    if [ -n "$NAT_ENABLED" ]; then
-		setup_one
+		if [ "x$fullinterface" = xCOMMENT ]; then
+		    if [ -n "$COMMENTS" ]; then
+			echo $networks $addresses $proto $ports $ipsec | while read COMMENT; do
+			    save_command COMMENT=\"$COMMENT\"
+			done
+			comment=Yes
+		    else
+			error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+		    fi
+		else
+		    setup_one
+		    if [ -n "$comment" ]; then
+			comment=
+			save_command COMMENT=
+		    fi
+		fi
 	    else
 		error_message "WARNING: NAT disabled; masq rule ignored"
 	    fi

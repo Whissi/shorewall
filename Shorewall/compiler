@@ -863,7 +863,7 @@ build_exclusion_chain() # $1 = variable to store chain name into $2 = table, $3 
 # Setup queuing and classes
 #
 setup_tc1() {
-    local mark_part=
+    local mark_part= comment=
     #
     # Create the TC mangle chains
     #
@@ -882,8 +882,23 @@ setup_tc1() {
     if strip_file_and_lib_load tcrules tcrules; then
 	while read mark sources dests proto ports sports user testval length tos; do
 	    expandv mark sources dests proto ports sports user testval length tos
-	    rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
-	    process_tc_rule
+	    if [ "x$mark" = xCOMMENT ]; then
+		if [ -n "$COMMENTS" ]; then
+		    echo $sources $dests $proto $ports $sports $user $testval $length $tos | while read COMMENT; do
+			save_command COMMENT=\"$COMMENT\"
+		    done
+		    comment=Yes
+		else
+		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+		fi
+	    else
+		rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
+		process_tc_rule
+		if [ -n "$comment" ]; then
+		    comment=
+		    save_command COMMENT=
+		fi
+	    fi
 	done < $TMP_DIR/tcrules
     fi
     #
@@ -968,6 +983,7 @@ __EOF__
 #
 refresh_tc() {
 
+    local comment=
 
     if [ -n "$CLEAR_TC" ]; then
 	delete_tc
@@ -1005,9 +1021,25 @@ __EOF__
 	save_progress_message "Refreshing Traffic Control Rules..."
 
 	while read mark sources dests proto ports sports user testval; do
-	    expandv mark sources dests proto ports sports user testval tos
-	    rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
-	    process_tc_rule
+	    if [ "x$mark" = xCOMMENT ]; then
+		if [ -n "$COMMENTS" ]; then
+		    [ -n "$COMMENTS" ] || fatal_error "COMMENT requires comment support in iptables/Netfilter"
+		    echo $sources $dests $proto $ports $sports $user $testval $length $tos | while read COMMENT; do
+			save_command COMMENT=\"$COMMENT\"
+		    done
+		    comment=Yes
+		else
+		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+		fi
+	    else
+		expandv mark sources dests proto ports sports user testval tos
+		rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
+		process_tc_rule
+		if [ -n "$comment" ]; then
+		    comment=
+		    save_command COMMENT=
+		fi
+	    fi
 	done < $TMP_DIR/tcrules
     fi
 
@@ -2616,6 +2648,7 @@ process_macro() # $1 = target
 #
 process_rules()
 {
+    local comment=
     #
     # Process a rule where the source or destination is "all"
     #
@@ -2718,6 +2751,17 @@ process_rules()
 	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
 		do_it No
 		;;
+	    COMMENT)
+		if [ -n "$COMMENTS" ]; then
+		    echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec | while read COMMENT; do
+			save_command COMMENT=\"$COMMENT\"
+		    done
+		    comment=Yes
+		else
+		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+		fi
+		continue
+		;;
 	    SECTION)
 		list_search $xclients $SECTIONS && fatal_error "Duplicate or out of order SECTION $xclients"
 
@@ -2784,6 +2828,12 @@ process_rules()
 		;;
 
 	esac
+
+	if [ -n "$comment" ]; then
+	    comment=
+	    save_command COMMENT=
+	fi
+
     done < $TMP_DIR/rules
 
     case $SECTION in
@@ -4745,10 +4795,16 @@ startup_error() # \$* = Error Message
 #
 run_iptables()
 {
-    if ! \$IPTABLES \$@; then
-	error_message "ERROR: Command \"\$IPTABLES \$@\" Failed"
+    if [ -n "\$COMMENT" ]; then
+        \$IPTABLES \$@ -m comment --comment "\$COMMENT"
+    else
+        \$IPTABLES \$@
+    fi
+    
+    if [ $? -ne 0 ]; then
+        error_message "ERROR: Command \"\$IPTABLES \$@\" Failed"
 	stop_firewall
-	exit 2
+        exit 2
     fi
 }
 

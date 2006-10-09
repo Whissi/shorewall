@@ -914,6 +914,7 @@ determine_capabilities() {
     MARK=
     XMARK=
     MANGLE_FORWARD=
+    COMMENTS=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -943,6 +944,8 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT            && IPP2P_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
+
+    qt $IPTABLES -A fooX1234 -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
 
     if [ -n "$MANGLE_ENABLED" ]; then
 	qt $IPTABLES -t mangle -N fooX1234
@@ -1020,6 +1023,7 @@ report_capabilities() {
 	report_capability "MARK Target" $MARK
 	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
 	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
+	report_capability "Comments" $COMMENTS
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1060,6 +1064,7 @@ report_capabilities1() {
     report_capability1 MARK
     report_capability1 XMARK
     report_capability1 MANGLE_FORWARD
+    report_capability1 COMMENTS
 }
 
 #

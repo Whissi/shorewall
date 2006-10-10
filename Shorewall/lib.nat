@@ -436,7 +436,7 @@ __EOF__
 		if [ "x$fullinterface" = xCOMMENT ]; then
 		    if [ -n "$COMMENTS" ]; then
 			comment=$(echo $networks $addresses $proto $ports $ipsec)
-			save_command COMMENT=\"${comment% }\"
+			save_command COMMENT=\"$comment\"
 		    else
 			error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		    fi

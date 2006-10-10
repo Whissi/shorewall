@@ -885,7 +885,7 @@ setup_tc1() {
 	    if [ "x$mark" = xCOMMENT ]; then
 		if [ -n "$COMMENTS" ]; then
 		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
-		    save_command COMMENT=\"${comment% }\"
+		    save_command COMMENT=\"$comment\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		fi
@@ -1022,7 +1022,7 @@ __EOF__
 	    if [ "x$mark" = xCOMMENT ]; then
 		if [ -n "$COMMENTS" ]; then
 		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
-		    save_command COMMENT=\"${comment% }\"
+		    save_command COMMENT=\"$comment\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		fi
@@ -2749,7 +2749,7 @@ process_rules()
 	    COMMENT)
 		if [ -n "$COMMENTS" ]; then
 		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
-		    save_command COMMENT=\"${comment% }\"
+		    save_command COMMENT=\"$comment\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
 		fi

@@ -900,6 +900,11 @@ setup_tc1() {
 	done < $TMP_DIR/tcrules
     fi
     #
+    # Just in case the file ended with a comment
+    #
+    [ -n "$COMMENTS" ] && save_command COMMENT=
+   
+    #
     # Link to the TC mangle chains from the main chains
     #
 
@@ -1037,6 +1042,10 @@ __EOF__
 	    fi
 	done < $TMP_DIR/tcrules
     fi
+    #
+    # Just in case the file ended with a comment
+    #
+    [ -n "$COMMENTS" ] && save_command COMMENT=
 
     if [ -n "$TC_SCRIPT" ]; then
 	save_progress_message "Refreshing Traffic Shaping"
@@ -2828,6 +2837,10 @@ process_rules()
 	fi
 
     done < $TMP_DIR/rules
+    #
+    # Just in case the file ended with a comment
+    #
+    [ -n "$COMMENTS" ] && save_command COMMENT=
 
     case $SECTION in
 	ESTABLISHED)
@@ -4919,6 +4932,7 @@ __EOF__
     cat >&3 << __EOF__
 
     STOPPING=
+    COMMENT=
     #
     # The library requires that ${VARDIR} exist
     #

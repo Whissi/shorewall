@@ -451,6 +451,10 @@ __EOF__
 		error_message "WARNING: NAT disabled; masq rule ignored"
 	    fi
 	done < $TMP_DIR/masq
+        #
+        # Just in case the file ended with a comment
+        #
+	[ -n "$COMMENTS" ] && save_command COMMENT=
     fi
 }
 
@@ -458,7 +462,7 @@ __EOF__
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local external= interface= internal= allints= localnat= policyin= policyout=
+    local external= interface= internal= allints= localnat= policyin= policyout= comment=
 
     validate_one() #1 = Variable Name, $2 = Column name, $3 = value
     {
@@ -527,11 +531,26 @@ setup_nat() {
 	while read external interface internal allints localnat; do
 	    expandv external interface internal allints localnat
 	    
-	    do_one_nat
-
+	    if [ "x$external" = xCOMMENT ]; then
+		if [ -n "$COMMENTS" ]; then
+		    comment=$(echo $interface $internal $allints $localnat)
+		    save_command COMMENT=\"$comment\"
+		else
+		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+		fi
+	    else
+		do_one_nat
+		if [ -n "$comment" ]; then
+		    comment=
+		    save_command COMMENT=
+		fi
+	    fi
 	    progress_message_and_save "   Host $internal NAT $external on $interface"
 	done < $TMP_DIR/nat
+	
+	[ -n "$COMMENTS" ] && save_command COMMENT=
     fi
+    
 }
 
 #

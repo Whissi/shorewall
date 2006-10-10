@@ -442,10 +442,6 @@ __EOF__
 		    fi
 		else
 		    setup_one
-		    if [ -n "$comment" ]; then
-			comment=
-			save_command COMMENT=
-		    fi
 		fi
 	    else
 		error_message "WARNING: NAT disabled; masq rule ignored"
@@ -540,10 +536,6 @@ setup_nat() {
 		fi
 	    else
 		do_one_nat
-		if [ -n "$comment" ]; then
-		    comment=
-		    save_command COMMENT=
-		fi
 	    fi
 	    progress_message_and_save "   Host $internal NAT $external on $interface"
 	done < $TMP_DIR/nat

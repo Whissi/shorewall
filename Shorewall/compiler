@@ -892,10 +892,6 @@ setup_tc1() {
 	    else
 		rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
 		process_tc_rule
-		if [ -n "$comment" ]; then
-		    comment=
-		    save_command COMMENT=
-		fi
 	    fi
 	done < $TMP_DIR/tcrules
     fi
@@ -1035,10 +1031,6 @@ __EOF__
 		expandv mark sources dests proto ports sports user testval tos
 		rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
 		process_tc_rule
-		if [ -n "$comment" ]; then
-		    comment=
-		    save_command COMMENT=
-		fi
 	    fi
 	done < $TMP_DIR/tcrules
     fi
@@ -2830,11 +2822,6 @@ process_rules()
 		;;
 
 	esac
-
-	if [ -n "$comment" ]; then
-	    comment=
-	    save_command COMMENT=
-	fi
 
     done < $TMP_DIR/rules
     #

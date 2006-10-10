@@ -593,6 +593,8 @@ process_actions1() {
 			case "$temp" in
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 				;;
+			    COMMENT)
+				;;
 			    *)
 				if list_search $temp $ACTIONS; then
 				    eval requiredby=\"\$requiredby_${xaction}\"
@@ -719,7 +721,7 @@ process_actions2() {
 
 process_action3() {
 
-    local f=action.$xaction1
+    local f=action.$xaction1 comment=
 
     progress_message2 "$DOING $(find_file $f) for Chain $xchain..."
 
@@ -740,6 +742,15 @@ process_action3() {
 		#
 		# Builtin target -- Nothing to do
 		#
+		;;
+	    COMMENT)
+		if [ -n "$COMMENTS" ]; then
+		    comment=($xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
+		    save_command COMMENT=\"$comment\"
+		else
+		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+		fi
+		continue
 		;;
 	    *)
 		if list_search $xtarget1 $ACTIONS ; then
@@ -829,4 +840,7 @@ process_action3() {
 	    process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
 	fi
     done < $TMP_DIR/$f
+    
+    [ -n "$COMMENTS" ] && save_command COMMENT=
+    
 }

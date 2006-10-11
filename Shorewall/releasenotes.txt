@@ -82,7 +82,9 @@ Other changes in 3.3.3
 
     Note: Do not prefix the comment with "#". Shorewall's two-pass
     compiler strips off "#" comments in the first pass and processes
-    COMMENT lines in the second pass.
+    COMMENT lines in the second pass. So by the time that COMMENT is
+    processed, the "#" and everything after it has been removed (see
+    example below).
 
     To stop the current comment from being attached to further
     rules, simply include COMMENT on a line by itself (so that the
@@ -103,9 +105,7 @@ Other changes in 3.3.3
 	    REJECT       loc        net        tcp   137,445
 	    REJECT       loc        net        udp   137:139
 	    
-	    # Stop comment from being attached to rules below
-	    
-	    COMMENT
+	    COMMENT  # Stop comment from being attached to rules below
 
     The output of "shorewall show loc2net" includes (folded):
 

@@ -156,6 +156,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.POP3
 %attr(0644,root,root) /usr/share/shorewall/macro.POP3S
 %attr(0644,root,root) /usr/share/shorewall/macro.PostgreSQL
+%attr(0644,root,root) /usr/share/shorewall/macro.RDP
 %attr(0644,root,root) /usr/share/shorewall/macro.Rdate
 %attr(0644,root,root) /usr/share/shorewall/macro.Reject
 %attr(0644,root,root) /usr/share/shorewall/macro.Rsync

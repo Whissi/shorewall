@@ -72,7 +72,7 @@ process_tc_rule()
 	mark=$mark/0xff
 	did_connmark=Yes
     }
-
+    
     validate_mark()
     {
 	case $1 in
@@ -86,7 +86,7 @@ process_tc_rule()
 	esac
     }
 
-   add_a_tc_rule() {
+    add_a_tc_rule() {
 	r=
 
 	if [ "x$source" != "x-"	 ]; then
@@ -205,6 +205,12 @@ process_tc_rule()
 	fi
 
     }
+
+    case $sources in
+	$FW|$FW:*)
+	    chain=tcout
+	    ;;
+    esac
 
     if [ "$mark" != "${mark%:*}" ]; then
 	case "${mark#*:}" in

@@ -41,7 +41,7 @@ setup_mac_lists() {
     local ipsec
     local policy=
 
-    create_mac_chain()
+    create_mac_chain()			
     {
 	case $MACLIST_TABLE in
 	    filter)
@@ -198,7 +198,7 @@ setup_mac_lists() {
     for interface in $maclist_interfaces; do
 
 	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
-
+	    
 	if [ -n "$MACLIST_LOG_LEVEL" -o $MACLIST_DISPOSITION != ACCEPT ]; then
 	    indent >&3 << __EOF__
 
@@ -221,20 +221,45 @@ __EOF__
 	fi
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
+	    if [ $MACLIST_DISPOSITION != ACCEPT -a -z "$MACLIST_LOG_BROADCASTS" ]; then
+		#
+		# Don't log broadcasts
+	        #
+	        if [ -n "$USEPKTTYPE" ]; then
+		    run_iptables -t $MACLIST_TABLE -A $chain -m pkttype --pkt-type broadcast -j DROP
+		    run_iptables -t $MACLIST_TABLE -A $chain -m pkttype --pkt-type multicast -j DROP
+		else
+		    for interface in $(find_bcastdetect_interfaces); do
+			indent >&3 << __EOF__
+
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+    run_iptables -t $MACLIST_TABLE -A $chain -d \$address -j DROP
+done
+
+__EOF__
+		    done
+
+		    for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+			run_iptables -t $MACLIST_TABLE -A $chain -d $address -j DROP
+		    done
+		fi
+	    fi
+	    
 	    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
 	fi
 
 	if [ $MACLIST_DISPOSITION != ACCEPT ]; then
-	    run_iptables -A $chain -t $MACLIST_TABLE -j $maclist_target
+	    run_iptables -A $chain -t $MACLIST_TABLE -j $MACLIST_TARGET
 	fi
     done
     #
     # Generate jumps from the input and forward chains
     #
+    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
+    
     for hosts in $maclist_hosts; do
 	ipsec=${hosts%^*}
 	hosts=${hosts#*^}
-	[ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	case $MACLIST_TABLE in

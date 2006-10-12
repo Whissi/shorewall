@@ -30,6 +30,19 @@
 # Process a TC Rule - $MARKING_CHAIN is assumed to contain the name of the
 #                     default marking chain
 #
+# The caller has established values for the following variables:
+#
+# mark     - MARK column
+# sources  - SOURCE column
+# dests    - DEST column
+# proto    - PROTO column
+# ports    - PORT(S) column
+# sports   - CLIENT PORT(S) column
+# user     - USER column
+# testval  - TEST column
+# length   - LENGTH column
+# tos      - TOS column
+#
 process_tc_rule()
 {
     local did_connmark=
@@ -92,7 +105,6 @@ process_tc_rule()
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
 		$FW:*)
-		    [ $chain = tcpost ] || chain=tcout
 		    r="$(source_ip_range ${source#*:}) "
 		    ;;
 		*:*)
@@ -107,7 +119,6 @@ process_tc_rule()
 		    r="$(mac_match $source) "
 		    ;;
 		$FW)
-		    [ $chain = tcpost ] || chain=tcout
 		    ;;
 		*)
 		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
@@ -205,7 +216,9 @@ process_tc_rule()
 	fi
 
     }
-
+    #
+    # E x e c u t i o n  B e g i n s  H e r e
+    #
     case $sources in
 	$FW|$FW:*)
 	    chain=tcout

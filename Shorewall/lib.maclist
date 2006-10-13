@@ -28,7 +28,8 @@
 #
 # Set up MAC Verification
 #
-setup_mac_lists() {
+setup_mac_lists() # $1 = Phase Number
+{
     local interface
     local mac
     local addresses
@@ -85,50 +86,50 @@ setup_mac_lists() {
 	fi
     done
 
-    progress_message "$DOING MAC Verification on $maclist_interfaces..."
+    progress_message "$DOING MAC Verification on $maclist_interfaces -- Phase $1..."
     #
     # Create chains.
     #
-    for interface in $maclist_interfaces; do
-	chain=$(mac_chain $interface)
-	create_mac_chain $chain
-	#
-	# If we're using the mangle table and the interface is DHCP-enabled then we need to accept DHCP broadcasts from 0.0.0.0
-	#
-	if [ $MACLIST_TABLE = mangle ] && interface_has_option $interface dhcp; then
-	    run_iptables -t mangle -A $chain -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN
-	fi
+    if [ $1 -eq 1 ]; then
+	for interface in $maclist_interfaces; do
+	    chain=$(mac_chain $interface)
+		create_mac_chain $chain
+	        #
+	        # If we're using the mangle table and the interface is DHCP-enabled then we need to accept DHCP broadcasts from 0.0.0.0
+	        #
+		if [ $MACLIST_TABLE = mangle ] && interface_has_option $interface dhcp; then
+		    run_iptables -t mangle -A $chain -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN
+		fi
+		
+		if [ -n "$MACLIST_TTL" ]; then
+		    chain1=$(macrecent_target $interface)
+		    create_mac_chain $chain1
+		    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
+		    run_iptables -A $chain  -t $MACLIST_TABLE                                                         -j $chain1
+		    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --update                        --name $chain -j RETURN
+		    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --set                           --name $chain
+		fi
+	done
+        #
+        # Process the maclist file producing the verification rules
+        #
+	while read disposition interface mac addresses; do
+	    expandv disposition interface mac addresses
 
-	if [ -n "$MACLIST_TTL" ]; then
-	    chain1=$(macrecent_target $interface)
-	    create_mac_chain $chain1
-	    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
-	    run_iptables -A $chain  -t $MACLIST_TABLE                                                         -j $chain1
-	    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --update                        --name $chain -j RETURN
-	    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --set                           --name $chain
-	fi
-    done
-
-    #
-    # Process the maclist file producing the verification rules
-    #
-    while read disposition interface mac addresses; do
-	expandv disposition interface mac addresses
-
-	level=
-
-	case $disposition in
-	    ACCEPT:*)
-		level=${disposition#*:}
-		disposition=ACCEPT
-		target=RETURN
-		;;
-	    ACCEPT)
-		target=RETURN
-		;;
-	    REJECT:*)
-		[ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
-		target=reject
+	    level=
+	    
+	    case $disposition in
+		ACCEPT:*)
+		    level=${disposition#*:}
+		    disposition=ACCEPT
+		    target=RETURN
+		    ;;
+		ACCEPT)
+		    target=RETURN
+		    ;;
+		REJECT:*)
+		    [ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
+		    target=reject
 		disposition=REJECT
 		;;
 	    REJECT)
@@ -150,57 +151,81 @@ setup_mac_lists() {
 		disposition=ACCEPT
 		target=RETURN
 		;;
-	esac
+	    esac
 
-	physdev_part=
+	    physdev_part=
 
-	if [ -n "$BRIDGING" ]; then
-	    case $interface in
-		*:*)
-		    physdev_part="-m physdev --physdev-in ${interface#*:}"
-		    interface=${interface%:*}
+	    if [ -n "$BRIDGING" ]; then
+		case $interface in
+		    *:*)
+			physdev_part="-m physdev --physdev-in ${interface#*:}"
+			interface=${interface%:*}
+		    ;;
+		esac
+	    fi
+
+	    [ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
+		
+		if ! have_mac_chain $chain ; then
+		    fatal_error "No hosts on $interface have the maclist option specified"
+		fi
+		
+		if [ x${mac:=-} = x- ]; then
+		    if [ -z "$addresses" ]; then
+			fatal_error "You must specify a MAC address or an IP address"
+		    else
+			macpart=
+		    fi
+		else
+		    macpart=$(mac_match $mac)
+		fi
+
+		if [ -z "$addresses" ]; then
+		    [ -n "$level" ] && \
+			log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
+			run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
+		else
+		    for address in $(separate_list $addresses) ; do
+			[ -n "$level" ] && \
+			    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart -s $address $physdev_part
+			    run_iptables2 -A $chain -t $MACLIST_TABLE $macpart -s $address $physdev_part -j $target
+		    done
+		fi
+	done < $TMP_DIR/maclist
+        #
+        # Generate jumps from the input and forward chains
+        #
+        [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
+    
+        for hosts in $maclist_hosts; do
+	    ipsec=${hosts%^*}
+	    hosts=${hosts#*^}
+	    interface=${hosts%%:*}
+	    hosts=${hosts#*:}
+	    case $MACLIST_TABLE in
+		filter)
+		    for chain in $(first_chains $interface) ; do
+			run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
+			    $policy -j $(mac_chain $interface)
+		    done
+		    ;;
+		*)
+		    run_iptables -t mangle -A PREROUTING -i $interface $(match_source_hosts $hosts) -m state --state NEW \
+			$policy -j $(mac_chain $interface)
 		    ;;
 	    esac
-	fi
+	done
+    else
+        #
+        # Must take care of our own broadcasts and multicasts then terminate the verification
+        # chains
+        #
+	for interface in $maclist_interfaces; do
 
-	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
-
-	if ! have_mac_chain $chain ; then
-	    fatal_error "No hosts on $interface have the maclist option specified"
-	fi
-
-	if [ x${mac:=-} = x- ]; then
-	    if [ -z "$addresses" ]; then
-		fatal_error "You must specify a MAC address or an IP address"
-	    else
-		macpart=
-	    fi
-	else
-	    macpart=$(mac_match $mac)
-	fi
-
-	if [ -z "$addresses" ]; then
-	    [ -n "$level" ] && \
-		log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
-	    run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
-	else
-	    for address in $(separate_list $addresses) ; do
-		[ -n "$level" ] && \
-		    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart -s $address $physdev_part
-		run_iptables2 -A $chain -t $MACLIST_TABLE $macpart -s $address $physdev_part -j $target
-	    done
-	fi
-    done < $TMP_DIR/maclist
-    #
-    # Must take care of our own broadcasts and multicasts then terminate the verification
-    # chains
-    #
-    for interface in $maclist_interfaces; do
-
-	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
-	    
-	if [ -n "$MACLIST_LOG_LEVEL" -o $MACLIST_DISPOSITION != ACCEPT ]; then
-	    indent >&3 << __EOF__
+	    [ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
+		
+		if [ -n "$MACLIST_LOG_LEVEL" -o $MACLIST_DISPOSITION != ACCEPT ]; then
+		    indent >&3 << __EOF__
 
 blob=\$(ip link show $interface 2> /dev/null)
 
@@ -218,62 +243,20 @@ ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //
 done
 
 __EOF__
-	fi
-
-	if [ -n "$MACLIST_LOG_LEVEL" ]; then
-	    if [ $MACLIST_DISPOSITION != ACCEPT -a -z "$MACLIST_LOG_BROADCASTS" ]; then
-		#
-		# Don't log broadcasts
-	        #
-	        if [ -n "$USEPKTTYPE" ]; then
-		    run_iptables -t $MACLIST_TABLE -A $chain -m pkttype --pkt-type broadcast -j DROP
-		    run_iptables -t $MACLIST_TABLE -A $chain -m pkttype --pkt-type multicast -j DROP
-		else
-		    for interface in $(find_bcastdetect_interfaces); do
-			indent >&3 << __EOF__
-
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
-    run_iptables -t $MACLIST_TABLE -A $chain -d \$address -j DROP
-done
-
-__EOF__
-		    done
-
-		    for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-			run_iptables -t $MACLIST_TABLE -A $chain -d $address -j DROP
-		    done
 		fi
-	    fi
-	    
-	    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
-	fi
 
-	if [ $MACLIST_DISPOSITION != ACCEPT ]; then
-	    run_iptables -A $chain -t $MACLIST_TABLE -j $MACLIST_TARGET
-	fi
-    done
-    #
-    # Generate jumps from the input and forward chains
-    #
-    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
-    
-    for hosts in $maclist_hosts; do
-	ipsec=${hosts%^*}
-	hosts=${hosts#*^}
-	interface=${hosts%%:*}
-	hosts=${hosts#*:}
-	case $MACLIST_TABLE in
-	    filter)
-		for chain in $(first_chains $interface) ; do
-		    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
-			$policy -j $(mac_chain $interface)
-		done
-		;;
-	    *)
-		run_iptables -t mangle -A PREROUTING -i $interface $(match_source_hosts $hosts) -m state --state NEW \
-			$policy -j $(mac_chain $interface)
-		;;
-	esac
-    done
+		CHAIN=$chain
+
+		append_file maclog
+		
+		if [ -n "$MACLIST_LOG_LEVEL" ]; then
+		    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
+		fi
+		
+		if [ $MACLIST_DISPOSITION != ACCEPT ]; then
+		    run_iptables -A $chain -t $MACLIST_TABLE -j $MACLIST_TARGET
+		fi
+	done
+    fi
 }
 

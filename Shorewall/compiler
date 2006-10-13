@@ -5196,8 +5196,8 @@ __EOF__
     maclist_hosts=$(find_hosts_by_option maclist)
 
     if [ -n "$maclist_hosts" ]; then
-	save_progress_message "Setting up MAC Filtration..."
-	setup_mac_lists
+	save_progress_message "Setting up MAC Filtration -- Phase 1..."
+	setup_mac_lists 1
     fi
 
     progress_message2 "$DOING $(find_file rules)..."
@@ -5225,6 +5225,11 @@ __EOF__
 	progress_message2 "$DOING Actions...";
 	[ -n "$USE_ACTIONS" ] && process_actions2
 	process_actions3
+    fi
+
+    if [ -n "$maclist_hosts" ]; then
+	save_progress_message "Setting up MAC Filtration -- Phase 2..."
+	setup_mac_lists 2
     fi
 
     save_progress_message "Applying Policies..."

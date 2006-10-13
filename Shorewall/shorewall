@@ -1111,6 +1111,8 @@ dump_command() {
 	esac
     done
 
+    [ $VERBOSE -lt 2 ] && VERBOSE=2
+
     [ -n "$debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
     clear_term

@@ -117,13 +117,12 @@ Other changes in 3.3.3
 4)  A new macro (macro.RDP) has been added for Microsoft Remote
     Desktop. This macro was contributed by Tuomo Soini.
 
-5)  A new MACLIST_LOG_BROADCASTS option has been added to
-    shorewall.conf. When set to 'No', suppresses logging of broadcast
-    and multicast traffic as a result of MACLIST_LOG_LEVEL having been
-    set to a non-empty value.
-
-    The default is MACLIST_LOG_BROADCASTS=Yes which is compatible with
-    the traditional behavior of MACLIST_LOG_LEVEL.
+5)  A new 'maclog' extension file has been added. This file is
+    processed just before logging based on the setting of
+    MACLIST_LOG_LEVEL is done. When invoked, the CHAIN variable will
+    contain the name of the chain where rules should be inserted.
+    Remember that if you have specified MACLIST_TABLE=mangle, then your
+    run_iptables commands should include "-t mangle".
 
 Migration Considerations:
 

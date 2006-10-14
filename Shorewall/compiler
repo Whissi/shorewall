@@ -3517,22 +3517,6 @@ validate_blacklist() {
 add_common_rules() {
     local savelogparms="$LOGPARMS"
     local broadcasts="$(find_broadcasts) 255.255.255.255 224.0.0.0/4"
-
-    drop_broadcasts() {
-	for interface in $(find_bcastdetect_interfaces); do
-	    indent >&3 << __EOF__
-
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
-    run_iptables -A reject -d \$address -j DROP
-done
-
-__EOF__
-	done
-
-	for address in $broadcasts ; do
-	    run_iptables -A reject -d $address -j DROP
-	done
-    }
     #
     # Populate the smurf chain
     #
@@ -3566,7 +3550,19 @@ __EOF__
 	run_iptables -A reject -m pkttype --pkt-type broadcast -j DROP
 	run_iptables -A reject -m pkttype --pkt-type multicast -j DROP
     else
-	drop_broadcasts
+	for interface in $(find_bcastdetect_interfaces); do
+	    indent >&3 << __EOF__
+
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+    run_iptables -A reject -d \$address -j DROP
+done
+
+__EOF__
+	done
+
+	for address in $broadcasts ; do
+	    run_iptables -A reject -d $address -j DROP
+	done
     fi
     #
     # Don't feed the smurfs
@@ -5183,7 +5179,8 @@ __EOF__
 	setup_netmap
     fi
 
-    progress_message2 "$DOING Common Rules";            add_common_rules
+    progress_message2 "$DOING Common Rules"
+    add_common_rules
 
     save_progress_message "Setting up SYN Flood Protection..."
 

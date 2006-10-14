@@ -103,10 +103,6 @@
     personal Linux desktop system and our Linux Laptop run
     <trademark>Ubuntu</trademark> "Dapper Drake".</para>
 
-    <para>If you are unfamiliar with Xen networking, I recommend that you read
-    the first section of the companion <ulink url="Xen.html">Xen and
-    Shorewall</ulink> article.</para>
-
     <para>Here is a high-level diagram of our network.</para>
 
     <graphic align="center" fileref="images/Xen5.png" />
@@ -139,14 +135,15 @@
 
     <orderedlist>
       <listitem>
-        <para>Dom0 (DNS name gateway.shorewall.net) is used as our main
+        <para>Dom0 (DNS name <emphasis
+        role="bold">gateway.shorewall.net</emphasis>) is used as our main
         firewall and wireless gateway as well as a local file server.</para>
       </listitem>
 
       <listitem>
-        <para>The DomU (Dom name <emphasis role="bold">lists</emphasis>, DNS
-        name lists.shorewall.net) is used as a public Web/FTP/Mail/DNS
-        server.</para>
+        <para>The DomU (Domain name <emphasis role="bold">lists</emphasis>,
+        DNS name <emphasis role="bold">lists.shorewall.net</emphasis>) is used
+        as a public Web/FTP/Mail/DNS server.</para>
       </listitem>
     </orderedlist>
 
@@ -162,7 +159,7 @@
       configuration like this one for your first Shorewall installation. You
       are very likely to frustrate both yourself and the Shorewall support
       team. Rather I suggest that you start with something simple like a
-      <ulink url="standalone.htm">standalone installation</ulink> in a domU;
+      <ulink url="standalone.htm">standalone installation</ulink> in a DomU;
       once you are comfortable with that then you will be ready to try
       something more substantial.</para>
 
@@ -176,8 +173,8 @@
     <section id="Domains">
       <title>Domain Configuration</title>
 
-      <para>Below are the relevant configuration files for the three domains.
-      I use partitions on my hard drives for DomU storage devices.</para>
+      <para>Below are the relevant configuration files for the two domains. I
+      use a partition on my hard drives for the DomU storage device.</para>
 
       <para>There is not much documentation about how to configure Xen for
       routed operation. I've tried to mark the relevant parts with <emphasis
@@ -190,17 +187,23 @@
         <blockquote>
           <programlisting>title XEN
     root (hd0,1)
-    kernel /boot/xen.gz dom0_mem=458752 sched=bvt
+    kernel /boot/xen.gz Dom0_mem=458752 sched=bvt
     module /boot/vmlinuz-xen root=/dev/hda2 vga=0x31a selinux=0    resume=/dev/hda1  splash=silent showopts 
     module /boot/initrd-xen</programlisting>
         </blockquote>
 
-        <para><filename>/etc/modprobe.conf.local</filename><blockquote>
+        <para><filename>/etc/modprobe.conf.local</filename> (This may need to
+        go in <filename>/etc/modprobe.conf</filename> or
+        <filename>/etc/modprobe.d/options</filename> on your system)</para>
+
+        <para><blockquote>
             <programlisting><emphasis role="bold">options netloop nloopbacks=0</emphasis> #Stop netloop from creating 8 useless vifs</programlisting>
           </blockquote></para>
 
-        <para><filename>/etc/xen/auto/02-lists</filename> — configuration file
-        for the lists domain.</para>
+        <para><filename>/etc/xen/auto/01-lists</filename> — configuration file
+        for the lists domain. Placed in <filename
+        class="directory">/etc/xen/auto/</filename> so it is started
+        automatically by Xen's <emphasis>xendomains</emphasis> service.</para>
 
         <blockquote>
           <programlisting>#  -*- mode: python; -*-
@@ -228,7 +231,7 @@ vif      = [ 'mac=aa:cc:00:00:00:01, <emphasis role="bold">ip=206.124.146.177, v
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
           <para>Note that the vifname is set to 'eth3' for the virtual
-          interface to this domU. This will cause the dom0 interface to the
+          interface to this DomU. This will cause the Dom0 interface to the
           server to have a fixed name (<filename
           class="devicefile">eth3</filename>) which makes it a lot easier to
           deal with in Shorewall and elsewhere.</para>
@@ -242,6 +245,12 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 206.124.146.177  scope link  src 206.124.146.176
 gateway:~ #</programlisting>
           </blockquote>
+
+          <para>Note that the source for the route is 206.124.146.176. That is
+          the primary IP address of Dom0's <filename
+          class="devicefile">eth0</filename>. Xen configures <filename
+          class="devicefile">eth3</filename> to have that same IP address.
+          </para>
         </blockquote>
 
         <para>Excerpt from
@@ -281,11 +290,11 @@ gateway:~ #</programlisting>
 
       <caution>
         <para>Under some circumstances, UDP and/or TCP communication from a
-        domU won't work for no obvious reason. That happened with the
+        DomU won't work for no obvious reason. That happened with the
         <emphasis role="bold">lists</emphasis> domain in my setup. Looking at
-        the IP traffic with <command>tcpdump -nvvi eth1</command> in dom0
+        the IP traffic with <command>tcpdump -nvvi eth1</command> in Dom0
         showed that UDP packets from the <emphasis
-        role="bold">lists</emphasis> domU had incorrect checksums. That
+        role="bold">lists</emphasis> DomU had incorrect checksums. That
         problem was corrected by arranging for the following command to be
         executed in the <emphasis role="bold">lists</emphasis> domain when its
         <filename class="devicefile">eth0</filename> device was brought
@@ -293,9 +302,9 @@ gateway:~ #</programlisting>
 
         <para><command>ethtool -K eth0 tx off</command></para>
 
-        <para>Under SuSE 10.1, I placed the following in
-        <filename>/etc/sysconfig/network/if-up.d/resettx</filename> (that file
-        is executable):</para>
+        <para>Under <trademark>SuSE</trademark> 10.1, I placed the following
+        in <filename>/etc/sysconfig/network/if-up.d/resettx</filename> (that
+        file is executable):</para>
 
         <programlisting>#!/bin/sh
 
@@ -337,7 +346,7 @@ fi</programlisting>
       wirelessly, the IP address is assigned by OpenVPN.</para>
 
       <para>The Shorewall configuration files are shown below. All routing and
-      secondary IP addresses are handled in the SUSE network
+      secondary IP addresses are handled in the SuSE network
       configuration.</para>
 
       <blockquote>
@@ -768,8 +777,10 @@ $EXT_IF         30      6*full/10       6*full/10       3
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
       </blockquote>
 
-      <para>The tap0 device used by the bridged OpenVPN server is created and
-      bridged to eth1 using a SuSE-specific SysV init script:</para>
+      <para>The <filename class="devicefile">tap0</filename> device used by
+      the bridged OpenVPN server is created and bridged to <filename
+      class="devicefile">eth1</filename> using a SuSE-specific SysV init
+      script:</para>
 
       <blockquote>
         <programlisting>#!/bin/sh

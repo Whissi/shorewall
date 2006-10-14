@@ -109,21 +109,23 @@
     systems (including Dom0).</para>
 
     <caution>
-      <para>I find Xen Domain 0 to be an arcane environment in which to try to
-      use Netfilter (and hence Shorewall). As the number of interfaces and
-      bridges increase, complexity increases geometrically. I recommend
-      following this guide only if you really need to place a public server in
-      your local network. Otherwise, the <ulink url="XenMyWay.html">way that I
-      use Xen</ulink> is much more straight-forward.</para>
+      <para>I find a bridged Xen Domain 0 to be an arcane environment in which
+      to try to use Netfilter (and hence Shorewall). As the number of
+      interfaces and bridges increase, complexity increases geometrically. I
+      recommend following this guide only if you really need to place a public
+      server in your local network. Otherwise, <ulink
+      url="XenMyWay.html">running Shorewall in a DomU</ulink> is much more
+      straight-forward as is <ulink url="XenMyWay-Routed.html">running
+      Shorewall in a routed Dom0</ulink>.</para>
     </caution>
 
     <warning>
       <para>I know of no case where a user has successfully used NAT
       (including Masquerade) in a bridged Xen Dom0. So if you want to create a
       masquerading firewall/gateway using Xen, you need to do so in a DomU
-      (see <ulink url="XenMyWay.html">how I do it</ulink>) or you must
-      configure Xen to use routing and NAT rather than the default
-      bridging.</para>
+      (see <ulink url="XenMyWay.html">how I did it</ulink>) or you must
+      configure <ulink url="XenMyWay-Routed.html">Xen to use routing</ulink>
+      or NAT rather than the default bridging.</para>
     </warning>
 
     <para>Here is an example. In this example, we will assume that the system

@@ -321,14 +321,6 @@ addrule2() # $1 = chain name, remainder of arguments specify the rule
 }
 
 #
-# Query NetFilter about the existence of a filter chain
-#
-chain_exists() # $1 = chain name
-{
-    qt $IPTABLES -L $1 -n
-}
-
-#
 # Create a mangle chain
 #
 # Create a variable exists_mangle_${1} and set its value to Yes to indicate that
@@ -642,7 +634,7 @@ find_broadcasts() {
 }
 
 #
-# Find interfaces with BROADCAST=detect -- Only returns information if we are compiling a script
+# Find interfaces with BROADCAST=detect
 #
 find_bcastdetect_interfaces() {
     for interface in $ALL_INTERFACES; do
@@ -1569,8 +1561,6 @@ __EOF__
 # Add a NAT rule - Helper function for the rules file processor
 #
 # The caller has established the following variables:
-#    COMMAND        = The current command
-#                     the motions.
 #    cli	    = Source IP, interface or MAC Specification
 #    serv	    = Destination IP Specification
 #    servport	    = Port the server is listening on
@@ -1758,7 +1748,6 @@ __EOF__
 # Add one Filter Rule
 #
 # The caller has established the following variables:
-#	 COMMAND	= current command.
 #	 client		= SOURCE IP or MAC
 #	 server		= DESTINATION IP or interface
 #	 protocol	= Protocol

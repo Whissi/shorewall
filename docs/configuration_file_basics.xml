@@ -231,6 +231,85 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     </example>
   </section>
 
+  <section id="COMMENT">
+    <title>Attach Comment to Netfilter Rules</title>
+
+    <para>Beginning with Shorewall version 3.3.3, if you kernel and iptables
+    contain comment match support (see the output of <command>shorewall show
+    capabilities</command>), then you can attach comments to Netfilter rules.
+    This feature is available in the following files:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><filename>/etc/shorewall/masq</filename></para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/etc/shorewall/nat</filename></para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/etc/shorewall/rules</filename></para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/etc/shorewall/tcrules</filename></para>
+      </listitem>
+
+      <listitem>
+        <para>Action definition files
+        (<filename>/etc/shorewall/action.*</filename>)</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>To attach a comment to one or more rules, insert a record above the
+    rules that begins with the word COMMENT (must be in all caps). The
+    remainder of the line is treated as a comment -- that comment will appear
+    delimited by "/* ... */" in the output of the <command>shorewall[-lite]
+    show</command> and <command>shorewall[-lite] dump</command> commands. The
+    comment will be attached to each generated rule until another COMMENT line
+    appears. To stop attaching comments to rules, simply insert a line that
+    contains the single word COMMENT.</para>
+
+    <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
+
+    <programlisting>COMMENT Stop NETBIOS noise
+
+REJECT          loc                             net                     tcp     137,445
+REJECT          loc                             net                     udp     137:139
+
+COMMENT Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
+
+DROP            loc:!192.168.0.0/22             net
+
+COMMENT</programlisting>
+
+    <para>Here's the corresponding output from
+    <filename>/sbin/shorewall-lite</filename>:</para>
+
+    <programlisting>gateway:~ # <command>shorewall-lite show loc2net</command>
+Shorewall Lite 3.3.3 Chains loc2net at gateway - Mon Oct 16 15:04:52 PDT 2006
+
+Counters reset Mon Oct 16 14:52:17 PDT 2006
+
+Chain loc2net (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 LOG        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
+    0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25
+    0     0 LOG        udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:1025:1031 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
+    0     0 reject     udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:1025:1031
+    0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           multiport dports 137,445 <emphasis
+        role="bold">/* Stop NETBIOS noise */</emphasis>
+    0     0 reject     udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:137:139 <emphasis
+        role="bold">/* Stop NETBIOS noise */</emphasis>
+    0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0           <emphasis
+        role="bold">/* Stop my idiotic work laptop from sending to the net with an HP source/dest IP address */</emphasis>
+    5   316 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+gateway:~ #
+
+</programlisting>
+  </section>
+
   <section id="Continuation">
     <title>Line Continuation</title>
 

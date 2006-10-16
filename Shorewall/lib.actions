@@ -761,7 +761,7 @@ process_action3() {
 		;;
 	    COMMENT)
 		if [ -n "$COMMENTS" ]; then
-		    comment=($xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
+		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
 		    save_command COMMENT=\"$comment\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"

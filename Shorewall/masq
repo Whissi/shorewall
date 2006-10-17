@@ -54,15 +54,17 @@
 #		     delimited by "/* ... */" in the output of "shorewall show
 #		     nat"
 #
-#	SUBNET -- Subnet that you wish to masquerade. You can specify this as
-#		  a subnet or as an interface. If you give the name of an
-#		  interface, the interface must be up before you start the
-#		  firewall (Shorewall will use your main routing table to
-#		  determine the appropriate subnet(s) to masquerade).
+#	SOURCE (formerly called SUBNET)
 #
-#		  In order to exclude a subset of the specified SUBNET, you
+#		  Set of hosts that you wish to masquerade. You can specify this
+#		  as an address (net or host) or as an interface. If you give
+#		  the name of an interface, the interface must be up before you
+#		  start the firewall (Shorewall will use your main routing table
+#		  to determine the appropriate addresses to masquerade).
+#
+#		  In order to exclude a addrress of the specified SOURCE, you
 #		  may append "!" and a comma-separated list of IP addresses
-#		  and/or subnets that you wish to exclude.
+#		  (host or net) that you wish to exclude.
 #
 #		  Example: eth1!192.168.1.4,192.168.32.0/27
 #
@@ -239,5 +241,5 @@
 # For additional information, see http://shorewall.net/Documentation.htm#Masq
 #
 ###############################################################################
-#INTERFACE		SUBNET		ADDRESS		PROTO	PORT(S)	IPSEC
+#INTERFACE		SOURCE		ADDRESS		PROTO	PORT(S)	IPSEC
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

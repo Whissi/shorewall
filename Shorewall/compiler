@@ -4077,9 +4077,24 @@ activate_rules()
 	run_iptables -A $2 -j ${1}_dyn
     }
     #
-    # Add a set of exclusions to a chain
+    # Add a set of exclusions at the end of a nat chain
     #
-    add_exclusions_to_chain() # $1 = chain name, $2 - $n = exclusions
+    add_nat_exclusions() # $1 = chain name $2 - $n = exclusions
+    {
+	local c=$1 num=0
+
+	shift
+
+	for host in $*; do
+	    interface=${host%%:*}
+	    networks=${host#*:}
+	    num=$(($num + 1))
+	    run_iptables -t nat -I $c $num -i $interface -s $networks -j RETURN
+	done
+    #
+    # Insert a set of exclusions at the front of a chain
+    #
+    insert_exclusions() # $1 = chain name, $2 - $n = exclusions
     {
 	local c=$1 num=0
 
@@ -4197,13 +4212,7 @@ activate_rules()
 	    frwd_chain=${zone}_frwd
 	    chain=$(dnat_chain $zone)
 	    if havenatchain $chain; then
-		local num=0
-		for host in $exclusions; do
-		    interface=${host%%:*}
-		    networks=${host#*:}
-		    num=$(($num + 1))
-		    run_iptables -t nat -I $chain $num -i $interface -s $networks -j RETURN
-		done
+		add_nat_exclusions $chain $exclusions
 	    fi
 	fi
 
@@ -4300,20 +4309,20 @@ activate_rules()
 		    all2$zone1)
 		        if eval test -z \"\$${chain}_exclusions\"; then
 			    eval ${chain}_exclusions=Yes
-			    add_exclusions_to_chain $chain $exclusions1
+			    insert_exclusions $chain $exclusions1
 			fi
 			;;
 		    *2all)
 			chain1=${chain}_${zone1}_exclusions
 			if ! havechain $chain1; then
 			    createchain $chain1 no
-			    add_exclusions_to_chain $chain1 $exclusions1
+			    insert_exclusions $chain1 $exclusions1
 			    run_iptables -A $chain1 -j $chain
 			    chain=$chain1
 			fi
 			;;
 		    *)
-			add_exclusions_to_chain $chain $exclusions1
+			insert_exclusions $chain $exclusions1
 			;;
 		esac    
 	    fi    

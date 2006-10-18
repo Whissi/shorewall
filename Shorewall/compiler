@@ -4113,8 +4113,8 @@ activate_rules()
 
 	    if [ -n "$exclusions" ]; then
 		local num=1
-		in_chain=${zone}_in
-		out_chain=${zone}_out
+		in_chain=${zone}_input
+		out_chain=${zone}_output
 		createchain $in_chain No
 		createchain $out_chain No
 
@@ -4176,7 +4176,6 @@ activate_rules()
 	fi
 
 	need_broadcast=
-
 	
 	if [ -n "$complex" ]; then
 	    frwd_chain=${zone}_frwd
@@ -4198,8 +4197,8 @@ activate_rules()
 
 	    if [ -n "$chain1" ]; then
 		if [ -n "$exclusions" ]; then
-		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j ${zone}_out
-		    run_iptables -A ${zone}_out -j $chain1
+		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j ${zone}_output
+		    run_iptables -A ${zone}_output -j $chain1
 		else
 		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
 		fi
@@ -4211,8 +4210,8 @@ activate_rules()
 
 	    if [ -n "$chain2" ]; then
 		if [ -n "$exclusions" ]; then
-		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j ${zone}_in
-		    run_iptables -A ${zone}_in -j $chain2
+		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j ${zone}_input
+		    run_iptables -A ${zone}_input -j $chain2
 		else		
 		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 		fi

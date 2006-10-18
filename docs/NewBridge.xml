@@ -5,7 +5,8 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Shorewall and Bridged Firewalls</title>
+    <title>Shorewall and Bridged Firewalls without using physdev match
+    support</title>
 
     <authorgroup>
       <author>
@@ -39,10 +40,14 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 3.3.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    3.3.3 then please see the documentation for that
     release.</emphasis></para>
+
+    <para><emphasis role="bold">This configuration is not as secure as the one
+    described in <ulink url="bridge.html">another article</ulink> but it has
+    the advantage that it works with all kernel versions.</emphasis></para>
   </caution>
 
   <section>
@@ -85,18 +90,6 @@
   <section>
     <title>Requirements</title>
 
-    <warning>
-      <para><emphasis role="bold">SUPPORT FOR BRIDGING AS DESCRIBED IN THIS
-      ARTICLE MIGHT BE DISCONTINUED IN THE FUTURE.</emphasis> The underlying
-      Netfilter features that Shorewall Bridge/Firewall support relies on are
-      being removed and it is not certain whether Shorewall will be able to
-      continue to support bridge/firewalls in the way described here.</para>
-
-      <para>In <ulink url="NewBridge.html">another article</ulink>, I describe
-      how to configure a bridge/firewall which will work with future kernel
-      versions.</para>
-    </warning>
-
     <para>Note that if you need a bridge but do not need to restrict the
     traffic through the bridge then any version of Shorewall will work. See
     the <ulink url="SimpleBridge.html">Simple Bridge documentation</ulink> for
@@ -113,22 +106,6 @@
       <listitem>
         <para>Your kernel must contain bridge/netfilter integration
         (CONFIG_BRIDGE_NETFILTER=y).</para>
-      </listitem>
-
-      <listitem>
-        <para>Your kernel must contain Netfilter physdev match support
-        (CONFIG_IP_NF_MATCH_PHYSDEV=m or CONFIG_IP_NF_MATCH_PHYSDEV=y).
-        Physdev match is standard in the 2.6 kernel series but must be patched
-        into the 2.4 kernels (see <ulink
-        url="http://bridge.sf.net">http://bridge.sf.net</ulink>). Bering and
-        Bering uCLibc users must find and install ipt_physdev.o for their
-        distribution and add <quote>ipt_physdev</quote> to
-        /etc/modules.</para>
-      </listitem>
-
-      <listitem>
-        <para>Your iptables must contain physdev match support. iptables 1.2.9
-        and later contain this support.</para>
       </listitem>
 
       <listitem>
@@ -231,8 +208,7 @@ iface br0 inet static
     bridge/firewall to be managed remotely. The bridge must also have an IP
     address for REJECT rules and policies to work correctly — otherwise REJECT
     behaves the same as DROP. It is also a requirement for bridges to have an
-    IP address if they are part of a <link
-    linkend="bridge-router">bridge/router</link>.</para>
+    IP address if they are part of a bridge/router.</para>
 
     <important>
       <para>Get your bridge configuration working first, including bridge
@@ -512,20 +488,24 @@ rc-update add bridge boot
   <section>
     <title>Configuring Shorewall</title>
 
-    <para>Bridging in Shorewall is enabled using the BRIDGING option in
-    <filename>/etc/shorewall/shorewall.conf</filename>:</para>
+    <para>To use this form of bridge support, you must turn off the BRIDGING
+    option in <filename>/etc/shorewall/shorewall.conf</filename>:</para>
 
-    <programlisting>BRIDGING=Yes</programlisting>
+    <programlisting>BRIDGING=No</programlisting>
 
-    <para>In the scenario pictured above, there would probably be two zones
-    defined -- one for the internet and one for the local LAN so in
+    <para>In the scenario pictured above (where the hosts 192.168.1.10 and
+    192.168.1.11 are on the 'net' side of the bridge), there would probably be
+    two zones defined -- one for the internet and one for the local LAN so in
     <filename>/etc/shorewall/zones</filename>:</para>
 
     <programlisting>#ZONE   TYPE            OPTIONS
 fw      firewall
 net     ipv4
-loc     ipv4
+loc:net ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+
+    <para>Note that the loc zone is defined to be a sub-zone of the net
+    zone.</para>
 
     <para>A conventional two-zone policy file is appropriate here —
     <filename>/etc/shorewall/policy</filename>:</para>
@@ -541,17 +521,16 @@ all         all         REJECT        info
     <filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
--       br0             192.168.1.255
+net      br0             192.168.1.255
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-    <para>The zones are defined using the
+    <para>The loc zone is defined using the
     <filename>/etc/shorewall/hosts</filename> file. Assuming that the router
     is connected to <filename class="devicefile">eth0</filename> and the
     switch to <filename class="devicefile">eth1</filename>:</para>
 
     <programlisting>#ZONE           HOST(S)                         OPTIONS
-net             br0:eth0
-loc             br0:eth1
+loc             br0:192.168.1.0/24!192.168.1.10/31,192.168.1.254
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
 
     <para>When Shorewall is stopped, you want to allow only local traffic
@@ -567,66 +546,10 @@ br0             192.168.1.0/24  routeback
     firewall rules.</para>
   </section>
 
-  <section id="bridge-router">
-    <title>Combination Router/Bridge</title>
-
-    <para>A system running Shorewall doesn't have to be exclusively a bridge
-    or a router -- it can act as both. Here's an example:<graphic
-    fileref="images/bridge2.png" /></para>
-
-    <para>This is basically the same setup as shown in the <ulink
-    url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> with the
-    exception that the DMZ is bridged rather than using Proxy ARP. Changes in
-    the configuration shown in the Setup Guide are as follows:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>The <filename>/etc/shorewall/proxyarp</filename> file is empty
-        in this configuration.</para>
-      </listitem>
-
-      <listitem>
-        <para>The <filename>/etc/shorewall/interfaces</filename> file is as
-        follows:<programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
--        br0            detect        routefilter
-loc      eth1           detect</programlisting></para>
-      </listitem>
-
-      <listitem>
-        <para>The <filename>/etc/shorewall/hosts</filename> file would
-        have:</para>
-
-        <programlisting>#ZONE    HOSTS                        OPTIONS
-net      br0:eth0
-dmz      br0:eth2</programlisting>
-      </listitem>
-
-      <listitem>
-        <para>The DMZ systems need a route to the 192.168.201.0/24 network via
-        192.0.2.176 to enable them to communicate with the local
-        network.</para>
-      </listitem>
-    </orderedlist>
-  </section>
-
   <section>
     <title>Limitations</title>
 
     <para>Bridging doesn't work with some wireless cards — see <ulink
     url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
-  </section>
-
-  <section>
-    <title>Other Links</title>
-
-    <itemizedlist>
-      <listitem>
-        <para><ulink
-        url="http://wiki.buenosaireslibre.org/HowTos_2fBridgedFirewall">Here
-        is an article in Spanish </ulink>detailing bridging a public and local
-        network using Shorewall. This is another router/bridge
-        configuration.</para>
-      </listitem>
-    </itemizedlist>
   </section>
 </article>

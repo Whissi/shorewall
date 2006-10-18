@@ -4077,6 +4077,22 @@ activate_rules()
 	run_iptables -A $2 -j ${1}_dyn
     }
     #
+    # Add a set of exclusions to a chain
+    #
+    add_exclusions_to_chain() # $1 = chain name, $2 - $n = exclusions
+    {
+	local c=$1 num=0
+
+	shift
+
+	for host1 in $*; do
+	    interface1=${host1%%:*}
+	    networks1=${host1#*:}
+	    num=$(($num + 1))
+	    run_iptables -I $c $num -o $interface1 -d $networks1 -j RETURN
+	done
+    }
+    #
     # Add jumps to early SNAT chains
     #
     for interface in $ALL_INTERFACES; do
@@ -4279,6 +4295,29 @@ activate_rules()
 		num_ifaces=0
 	    fi
 
+	    if [ -n "$exclusions1" ]; then
+		case $chain in
+		    all2$zone1)
+		        if eval test -z \"\$${chain}_exclusions\"; then
+			    eval ${chain}_exclusions=Yes
+			    add_exclusions_to_chain $chain $exclusions1
+			fi
+			;;
+		    *2all)
+			chain1=${chain}_${zone1}_exclusions
+			if ! havechain $chain1; then
+			    createchain $chain1 no
+			    add_exclusions_to_chain $chain1 $exclusions1
+			    run_iptables -A $chain1 -j $chain
+			    chain=$chain1
+			fi
+			;;
+		    *)
+			add_exclusions_to_chain $chain $exclusions1
+			;;
+		esac    
+	    fi    
+
 	    if [ -n "$complex" ]; then
 		for host1 in $dest_hosts; do
 		    interface1=${host1%%:*}
@@ -4308,16 +4347,6 @@ activate_rules()
 		    done
 		done
 	    fi
-
-	    if [ -n "$exclusions1" ]; then
-		local num=0
-		for host1 in $exclusions1; do
-		    interface1=${host1%%:*}
-		    networks1=${host1#*:}
-		    num=$(($num + 1))
-		    run_iptables -I $chain $num -o $interface1 -d $networks1 -j RETURN
-		done
-	    fi    
 	done
     done
 

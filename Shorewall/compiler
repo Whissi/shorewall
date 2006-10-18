@@ -4091,6 +4091,7 @@ activate_rules()
 	    num=$(($num + 1))
 	    run_iptables -t nat -I $c $num -i $interface -s $networks -j RETURN
 	done
+    }
     #
     # Insert a set of exclusions at the front of a chain
     #
@@ -4313,7 +4314,7 @@ activate_rules()
 			fi
 			;;
 		    *2all)
-			chain1=${chain}_${zone1}_exclusions
+			chain1=${chain}_${zone1}_ex
 			if ! havechain $chain1; then
 			    createchain $chain1 no
 			    insert_exclusions $chain1 $exclusions1

@@ -127,6 +127,21 @@ Other changes in 3.3.3
 6)  The SUBNET column in /etc/shorewall/masq has been renamed SOURCE to
     more accurately describe the contents of the column.
 
+7)  Previously, it was not possible to use exclusion in
+    /etc/shorewall/hosts. Beginning with this release, you may now use
+    exclusion lists in entries in this file. Exclusion lists are
+    discussed at:
+
+       http://www.shorewall.net/configuration_file_basics.htm#Exclusion.
+
+    Example:
+
+	loc	eth0:192.168.1.0/24!192.168.1.4,192.168.1.16/28
+
+    In that example, the 'loc' zone is defined to be the subnet
+    192.168.1.0/24 interfacing via eth0 *except* for host 192.168.1.4
+    and hosts in the sub-network 192.168.1.16/28.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

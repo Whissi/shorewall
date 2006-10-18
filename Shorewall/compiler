@@ -4109,6 +4109,29 @@ activate_rules()
 	    frwd_chain=${zone}_frwd
 	    createchain $frwd_chain No
 
+	    eval exclusions=\"\$${zone}_exclusions\"
+
+	    if [ -n "$exclusions" ]; then
+		local num=1
+		in_chain=${zone}_in
+		out_chain=${zone}_out
+		createchain $in_chain No
+		createchain $out_chain No
+
+		if [ "$(rules_chain $zone $zone)" = ACCEPT ]; then
+		    createchain ${zone}2${zone} yes
+		    run_iptables -A ${zone}2${zone} -j ACCEPT
+		fi
+
+		for host in $exclusions; do
+		    interface=${host%%:*}
+		    address=${host#*:}
+		    run_iptables -A $frwd_chain -i $interface -s $address -j RETURN
+		    run_iptables -A $in_chain   -i $interface -s $address -j RETURN
+		    run_iptables -A $out_chain  -i $interface -s $address -j RETURN
+		done
+	    fi
+
 	    if [ -n "$POLICY_MATCH" ]; then
 		#
 		# Because policy match only matches an 'in' or an 'out' policy (but not both), we have to place the
@@ -4143,8 +4166,7 @@ activate_rules()
 
 	eval complex=\$${zone}_is_complex
 	eval type=\$${zone}_type
-
-	[ -n "$complex" ] && frwd_chain=${zone}_frwd
+	eval exclusions=\"\$${zone}_exclusions\"
 
 	echo $zone $type $source_hosts >> $STATEDIR/zones
 
@@ -4155,18 +4177,46 @@ activate_rules()
 
 	need_broadcast=
 
+	
+	if [ -n "$complex" ]; then
+	    frwd_chain=${zone}_frwd
+	    chain=$(dnat_chain $zone)
+	    if havenatchain $chain; then
+		local num=0
+		for host in $exclusions; do
+		    interface=${host%%:*}
+		    networks=${host#*:}
+		    num=$(($num + 1))
+		    run_iptables -t nat -I $chain $num -i $interface -s $networks -j RETURN
+		done
+	    fi
+	fi
+
 	for host in $source_hosts; do
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
-	    [ -n "$chain1" ] && run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
-
+	    if [ -n "$chain1" ]; then
+		if [ -n "$exclusions" ]; then
+		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j ${zone}_out
+		    run_iptables -A ${zone}_out -j $chain1
+		else
+		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
+		fi
+	    fi
 	    #
 	    # Add jumps from the builtin chain for DNAT rules
 	    #
 	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks) $(match_ipsec_in $zone $host)
 
-	    [ -n "$chain2" ] && run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
+	    if [ -n "$chain2" ]; then
+		if [ -n "$exclusions" ]; then
+		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j ${zone}_in
+		    run_iptables -A ${zone}_in -j $chain2
+		else		
+		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
+		fi
+	    fi
 
 	    if [ -n "$complex" ] && ! is_ipsec_host $zone $host ; then
                 run_iptables2 -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
@@ -4197,6 +4247,7 @@ activate_rules()
 	    [ "$policy" = NONE ] && continue
 
 	    eval dest_hosts=\$${zone1}_hosts
+	    eval exclusions1=\"\$${zone1}_exclusions\"
 
 	    chain="$(rules_chain $zone $zone1)"
 
@@ -4221,7 +4272,7 @@ activate_rules()
 		# If we don't need to route back and if we have only one interface or one port to
 		# the zone then assume that hosts in the zone can communicate directly.
 		#
-		if [ $num_ifaces -lt 2 -a -z "$routeback" ] ; then
+		if [ $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
 		    continue
 		fi
 	    else
@@ -4258,6 +4309,16 @@ activate_rules()
 		    done
 		done
 	    fi
+
+	    if [ -n "$exclusions1" ]; then
+		local num=0
+		for host1 in $exclusions1; do
+		    interface1=${host1%%:*}
+		    networks1=${host1#*:}
+		    num=$(($num + 1))
+		    run_iptables -I $chain $num -o $interface1 -d $networks1 -j RETURN
+		done
+	    fi    
 	done
     done
 
@@ -4779,7 +4840,7 @@ run_iptables()
         \$IPTABLES \$@
     fi
     
-    if [ $? -ne 0 ]; then
+    if [ \$? -ne 0 ]; then
         error_message "ERROR: Command \"\$IPTABLES \$@\" Failed"
 	stop_firewall
         exit 2

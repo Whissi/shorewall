@@ -4265,7 +4265,69 @@ activate_rules()
 	    done
 	fi
 
+	dest_zones=
+	temp_zones=
+	last_chain=
+
 	for zone1 in $ZONES; do
+
+	    eval policy=\$${zone}2${zone1}_policy
+
+	    [ "$policy" = NONE ] && continue
+
+	    eval dest_hosts=\$${zone1}_hosts
+	    eval exclusions1=\"\$${zone1}_exclusions\"
+
+	    chain="$(rules_chain $zone $zone1)"
+
+	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
+
+	    if [ $zone = $zone1 ]; then
+		#
+		# Try not to generate superfluous intra-zone rules
+		#
+		eval routeback=\"\$${zone}_routeback\"
+		eval interfaces=\"\$${zone}_interfaces\"
+		eval ports="\$${zone}_ports"
+
+		num_ifaces=$(list_count1 $interfaces)
+		#
+		# If the zone has a single interface then what matters is how many ports it has
+		#
+		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
+		#
+		# If we don't need to route back and if we have only one interface or one port to
+		# the zone then assume that hosts in the zone can communicate directly.
+		#
+		if [ $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
+		    continue
+		fi
+	    fi
+
+	    case $chain in
+		*2all)
+		    if [ -n "$last_chain" ]; then
+			if [ "$chain" != "$last_chain" ]; then
+			    last_chain=$chain
+			    dest_zones="$dest_zones $temp_zones"
+			    temp_zones=$zone1
+			else
+			    temp_zones="$temp_zones $zone1"
+			fi
+		    else
+			last_chain=$chain
+			temp_zones=$zone1
+		    fi
+		    ;;
+		*)
+		    dest_zones="$dest_zones $temp_zones $zone1"
+		    temp_zones=
+		    last_chain=
+		    ;;
+	    esac
+	done
+
+	for zone1 in $dest_zones; do
 
 	    eval policy=\$${zone}2${zone1}_policy
 
@@ -4363,6 +4425,21 @@ activate_rules()
 		done
 	    fi
 	done
+
+	if [ -n "$last_chain" ]; then
+	    if [ -n "$complex" ]; then
+		run_iptables -A $frwd_chain -j $last_chain
+	    else
+		for host in $source_hosts; do
+		    interface=${host%%:*}
+		    networks=${host#*:}
+		    
+		    chain=$(forward_chain $interface)
+		        
+		    run_iptables -A $chain $(match_source_hosts $networks) -j $last_chain
+		done
+	    fi
+	fi
     done
 
     for interface in $ALL_INTERFACES ; do

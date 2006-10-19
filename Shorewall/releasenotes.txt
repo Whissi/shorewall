@@ -142,6 +142,38 @@ Other changes in 3.3.3
     192.168.1.0/24 interfacing via eth0 *except* for host 192.168.1.4
     and hosts in the sub-network 192.168.1.16/28.
 
+8)  In prior Shorewall versions, multiple jumps to a '2all' chain could
+    be generated in succession.
+
+    Example from an earlier shorewall version:
+
+    gateway:~ # shorewall show eth2_fwd
+    Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
+
+    Counters reset Thu Oct 19 08:34:47 PDT 2006
+
+    Chain eth2_fwd (1 references)
+     pkts bytes target     prot opt in     out     source            destination
+        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+        0     0 wifi2all   all  --  *      eth0    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+    gateway:~ # 
+
+    This redundancy has been eliminated:
+
+    gateway:~ # shorewall show eth2_fwd
+    Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
+
+    Counters reset Thu Oct 19 09:15:19 PDT 2006
+
+    Chain eth2_fwd (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+        0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    gateway:~ #
+ 
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

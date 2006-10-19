@@ -4298,13 +4298,18 @@ activate_rules()
 			fi
 			;;
 		    *2all)
-			chain1=${chain}_${zone1}_ex
-			if ! havechain $chain1; then
+			eval chain1=\$${chain}_${zone1}_ex
+
+			if [ -z "$chain1" ]; then
+			    chain1=excl_${EXCLUSION_SEQ}
+			    EXCLUSION_SEQ=$(( $EXCLUSION_SEQ + 1 ))
+			    eval ${chain}_${zone}_ex=$chain1
 			    createchain $chain1 no
 			    insert_exclusions filter $chain1 $exclusions1
 			    run_iptables -A $chain1 -j $chain
-			    chain=$chain1
 			fi
+
+			chain=$chain1
 			;;
 		    *)
 			insert_exclusions filter $chain $exclusions1

@@ -4264,7 +4264,11 @@ activate_rules()
 		run_iptables -A OUTPUT -o $interface -d 224.0.0.0/4     -j $chain1
 	    done
 	fi
-
+	#
+	# The following code attempts to eliminate redundant sequences of jumps to 
+	# all2all or <source zone>2all. It does so by combining all trailing 
+	# jumps to the same policy-only chain.
+	#
 	dest_zones=
 	temp_zones=
 	last_chain=
@@ -4274,9 +4278,6 @@ activate_rules()
 	    eval policy=\$${zone}2${zone1}_policy
 
 	    [ "$policy" = NONE ] && continue
-
-	    eval dest_hosts=\$${zone1}_hosts
-	    eval exclusions1=\"\$${zone1}_exclusions\"
 
 	    chain="$(rules_chain $zone $zone1)"
 
@@ -4306,27 +4307,54 @@ activate_rules()
 
 	    case $chain in
 		*2all)
+		    #
+		    # Rules chain is a Policy-only chain that could be used more than once (all2all or ${zone}2all
+		    #
 		    if [ -n "$last_chain" ]; then
+			#
+			# And the last rules chain was a policy-only chain
+			#
 			if [ "$chain" != "$last_chain" ]; then
+			    #
+			    # But it was a different one -- back to square 1
+			    #
 			    last_chain=$chain
 			    dest_zones="$dest_zones $temp_zones"
 			    temp_zones=$zone1
 			else
+			    #
+			    # Same chain -- add this dest zone to the running list of
+			    #               zones using the same rules chain
+			    #
 			    temp_zones="$temp_zones $zone1"
 			fi
+		    elif [ $policy = ACCEPT ]; then
+			#
+			# We don't wild-card ACCEPT policies -- could open up security holes through interfaces
+			# that aren't described in /etc/shorewall/interfaces
+			#
+			dest_zones="$dest_zones $zone1"
 		    else
+			#
+			# First in a potential run of rules using this chain
+			#
 			last_chain=$chain
 			temp_zones=$zone1
 		    fi
 		    ;;
 		*)
+		    #
+		    # Not a policy chain -- add accumulated sequence of dest zones to those needing processing
+		    #
 		    dest_zones="$dest_zones $temp_zones $zone1"
 		    temp_zones=
 		    last_chain=
 		    ;;
 	    esac
 	done
-
+	#
+	# $dest_zones is now the (possibly condensed) list of destination zones that we need to handle from this source zone
+	#
 	for zone1 in $dest_zones; do
 
 	    eval policy=\$${zone}2${zone1}_policy
@@ -4368,17 +4396,32 @@ activate_rules()
 	    fi
 
 	    if [ -n "$exclusions1" ]; then
+		#
+		# We handle exlusions in the dest zone by inserting RETURN rules at the front of
+		# each rules chain where the zone is the destination
+		#
 		case $chain in
 		    all2$zone1)
+			#
+			# We only want to add the exclusions once
+			#
 		        if eval test -z \"\$${chain}_exclusions\"; then
 			    eval ${chain}_exclusions=Yes
 			    insert_exclusions filter $chain $exclusions1
 			fi
 			;;
 		    *2all)
+			#
+			# A policy-only chain -- we create one exclusion chain for this
+			#                        dest zone/chain combination, and re-use
+			#                        it if the occasion presents itself
+			#
 			eval chain1=\$${chain}_${zone1}_ex
 
 			if [ -z "$chain1" ]; then
+			    #
+			    # Must create the chain
+			    #
 			    chain1=excl_${EXCLUSION_SEQ}
 			    EXCLUSION_SEQ=$(( $EXCLUSION_SEQ + 1 ))
 			    eval ${chain}_${zone}_ex=$chain1
@@ -4386,7 +4429,9 @@ activate_rules()
 			    add_exclusions filter $chain1 $exclusions1
 			    run_iptables -A $chain1 -j $chain
 			fi
-
+			#
+			# We must jump to the exclusion chain rather than to the policy chain
+			#
 			chain=$chain1
 			;;
 		    *)
@@ -4425,7 +4470,9 @@ activate_rules()
 		done
 	    fi
 	done
-
+	#
+	# Now add (an) unconditional jump(s) to the last unique policy-only chain determined above, if any
+	#
 	if [ -n "$last_chain" ]; then
 	    if [ -n "$complex" ]; then
 		run_iptables -A $frwd_chain -j $last_chain

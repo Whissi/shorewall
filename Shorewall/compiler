@@ -4308,7 +4308,7 @@ activate_rules()
 	    case $chain in
 		*2all)
 		    #
-		    # Rules chain is a Policy-only chain that could be used more than once (all2all or ${zone}2all
+		    # Rules chain is a policy-only chain that could be used more than once (all2all or ${zone}2all
 		    #
 		    if [ -n "$last_chain" ]; then
 			#
@@ -4344,7 +4344,7 @@ activate_rules()
 		    ;;
 		*)
 		    #
-		    # Not a policy chain -- add accumulated sequence of dest zones to those needing processing
+		    # Not a policy-only chain -- add accumulated sequence of dest zones to those needing processing
 		    #
 		    dest_zones="$dest_zones $temp_zones $zone1"
 		    temp_zones=

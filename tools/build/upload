@@ -4,6 +4,11 @@ rpm=
 literpm=
 
 case $1 in
+    3.*[13569].*)
+	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	rpm=shorewall-${1}-1.noarch.rpm
+	literpm=shorewall-lite-${1}-1.noarch.rpm
+	;;
     *.*[13569].*)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm

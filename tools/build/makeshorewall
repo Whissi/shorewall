@@ -570,7 +570,9 @@ if [ -n "$OLDVERSION" ]; then
     progress_message "Creating patch-$VERSION ..."
 
     diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
-    diff -Naur shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
+    if [ -n "$HASLITE" ]; then
+	diff -Naur shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
+    fi
 fi
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

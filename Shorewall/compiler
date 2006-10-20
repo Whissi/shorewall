@@ -4387,13 +4387,6 @@ activate_rules()
 		# If the zone has a single interface then what matters is how many ports it has
 		#
 		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
-		#
-		# If we don't need to route back and if we have only one interface or one port to
-		# the zone then assume that hosts in the zone can communicate directly.
-		#
-		if [ $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
-		    continue
-		fi
 	    else
 		routeback=
 		num_ifaces=0

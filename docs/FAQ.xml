@@ -1035,6 +1035,12 @@ DROP      net       fw      udp      10619</programlisting>
             level and this packet is being logged under that policy. If you
             intend to ACCEPT this traffic then you need a <ulink
             url="Documentation.htm#Rules">rule</ulink> to that effect.</para>
+
+            <para>Beginning with Shorewall 3.3.3, packets logged out of these
+            chains may have a source and/or destination that is not in any
+            defined zone (see the output of <command>shorewall[-lite] show
+            zones</command>). Remember that zone membership involves both a
+            firewall interface and an ip address.</para>
           </listitem>
         </varlistentry>
 
@@ -1119,18 +1125,22 @@ DROP      net       fw      udp      10619</programlisting>
 
           <listitem>
             <para>The packet has a source IP address that isn't in any of your
-            defined zones (<quote>shorewall[-lite] show zones</quote> and look
-            at the printed zone definitions) or the chain is FORWARD and the
-            destination IP isn't in any of your defined zones. If the chain is
-            FORWARD and the IN and OUT interfaces are the same, then you
-            probably need the <emphasis role="bold">routeback</emphasis>
-            option on that interface in <filename> <ulink
+            defined zones (<quote><command>shorewall[-lite] show
+            zones</command></quote> and look at the printed zone definitions)
+            or the chain is FORWARD and the destination IP isn't in any of
+            your defined zones. If the chain is FORWARD and the IN and OUT
+            interfaces are the same, then you probably need the <emphasis
+            role="bold">routeback</emphasis> option on that interface in
+            <filename> <ulink
             url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>
             </filename> or you need the <emphasis
             role="bold">routeback</emphasis> option in the relevant entry in
             <filename> <ulink
-            url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink>
-            </filename>.</para>
+            url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink>.</filename></para>
+
+            <para>In Shorewall 3.3.3 and later versions, such packets may also
+            be logged out of a &lt;zone&gt;2all chain or the all2all chain.
+            </para>
           </listitem>
         </varlistentry>
 
@@ -1139,8 +1149,11 @@ DROP      net       fw      udp      10619</programlisting>
 
           <listitem>
             <para>The packet has a destination IP address that isn't in any of
-            your defined zones("shorewall show zones" and look at the printed
-            zone definitions).</para>
+            your defined zones(<command>shorewall[-lite] show zones</command>
+            and look at the printed zone definitions).</para>
+
+            <para>In Shorewall 3.3.3 and later versions, such packets may also
+            be logged out of the fw2all chain or the all2all chain.</para>
           </listitem>
         </varlistentry>
 

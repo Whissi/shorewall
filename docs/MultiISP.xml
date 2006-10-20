@@ -653,7 +653,8 @@ eth1             eth2              130.252.99.27</programlisting>
         <para>Entries in <filename>/etc/shorewall/masq</filename> have no
         effect on which ISP a particular connection will be sent through. That
         is rather the purpose of entries in
-        <filename>/etc/shorewall/tcrules</filename>.</para>
+        <filename>/etc/shorewall/tcrules</filename> or
+        <filename>/etc/shorewall/route_rules</filename>.</para>
       </warning>
 
       <para>Now suppose that you want to route all outgoing SMTP traffic from
@@ -666,6 +667,32 @@ eth1             eth2              130.252.99.27</programlisting>
       <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
+    </section>
+
+    <section>
+      <title>Applications running on the Firewall</title>
+
+      <para>Experience has shown that in some cases, problems occur with
+      applications running on the firewall itself. When this happens, it is
+      suggested that you have the application use specific local IP addresses
+      rather than 0.</para>
+
+      <para>Examples:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Squid: In <filename>squid.conf</filename>, set <emphasis
+          role="bold">tcp_outgoing_address</emphasis> to the IP address of the
+          interface that you want Squid to use.</para>
+        </listitem>
+
+        <listitem>
+          <para>In OpenVPN, set <emphasis role="bold">local
+          </emphasis>(<emphasis role="bold">--local</emphasis> on the command
+          line) to the IP address that you want the server to receive
+          connections on.</para>
+        </listitem>
+      </itemizedlist>
     </section>
 
     <section>

@@ -116,16 +116,24 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
     while read z type hosts; do
 	if [ "$z" = "$zone" ]; then
-	    for h in $hostlist; do
-		list_search $h $hosts
-		if [ "$?" -gt 0 ]; then
-		    newhostlist="$newhostlist $h"
-		else
-		    error_message "$h already in zone $zone"
-		fi
-	    done
+	    case "$hosts" in
+		*exclude*)
+		    rm -f ${VARDIR}/zones_$$
+		    startup_error "Modifying a zone that has an exclude list is not supported"
+		    ;;
+		*)
+		    for h in $hostlist; do
+			list_search $h $hosts
+			if [ "$?" -gt 0 ]; then
+			    newhostlist="$newhostlist $h"
+			else
+			    error_message "$h already in zone $zone"
+			fi
+		    done
 
-	    [ -z "$hosts" ] && hosts=$newhostlist || hosts="$hosts $newhostlist"
+		    [ -z "$hosts" ] && hosts=$newhostlist || hosts="$hosts $newhostlist"
+		    ;;
+	    esac
 	fi
 
 	eval ${z}_hosts=\"$hosts\"

@@ -69,13 +69,14 @@ configuration files and with the help of the iptables utility,
 Shorewall configures Netfilter to match your requirements. Shorewall
 can be used on a dedicated firewall system, a multi-function
 gateway/router/server or on a standalone GNU/Linux system. Shorewall
-does not use Netfilter's ipchains compatibility mode and can thus
+does not use Netfilter's ipchains compatibility mode; as a consequence,
+Shorewall can
 take advantage of Netfilter's connection state tracking
-capabilities.<br>
+capabilities to create a stateful firewall.<br>
 <br>
 Shorewall is <u>not</u> a daemon. Once Shorewall
-has configured Netfilter, it's job is complete. After that, there is
-no Shorewall code running although the <a
+has configured Netfilter, it's job is complete and there is
+no Shorewall code left running in the system. The <a
  href="starting_and_stopping_shorewall.htm">/sbin/shorewall
 program can be used at any time to monitor the Netfilter firewall</a>.</p>
 <p style="margin-left: 0.42in;">Shorewall is not the easiest to use of

@@ -4200,7 +4200,11 @@ activate_rules()
 	eval type=\$${zone}_type
 	eval exclusions=\"\$${zone}_exclusions\"
 
-	echo $zone $type $source_hosts >> $STATEDIR/zones
+	if [ -n "$exclusions" ]; then
+	    echo "$zone $type $source_hosts exclude $exclusions" >> $STATEDIR/zones
+	else
+	    echo "$zone $type $source_hosts" >> $STATEDIR/zones
+	fi
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
 	    echo "$FW $zone $chain1" >> $STATEDIR/chains

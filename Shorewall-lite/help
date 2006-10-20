@@ -205,7 +205,7 @@ save)
 	;;
 
 show)
-	echo "show: show [ <chain> [ <chain> ...] |actions|capabilities|classifiers|config|connections|log|macros|mangle|nat|tc|zones]
+	echo "show: show [ <chain> [ <chain> ...] |actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones]
 
     shorewall-lite [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
@@ -230,6 +230,10 @@ show)
     shorewall-lite show - [ -f ] capabilities - displays your kernel/iptables capabilities.  When \"-f\" is
     specified, then the output is suitable for use as /etc/shorewall/capabilities on your administrative
     system.
+
+    shorewall-lite show ip - produces output equivalent to 'ip addr ls'
+
+    shorewall-lite show routing - produces a report about routing rules and tables.
 
     shorewall-lite show config - displays the default CONFIG_PATH and LITEDIR for your distribution
 

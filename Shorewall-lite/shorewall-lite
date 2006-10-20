@@ -671,6 +671,25 @@ restart_command() {
 }
 
 #
+# Show routing configuration
+#
+show_routing() {
+    if [ -n "$(ip rule ls)" ]; then
+	heading "Routing Rules"
+	ip rule ls
+	ip rule ls | while read rule; do
+	    echo ${rule##* }
+	done | sort -u | while read table; do
+	    heading "Table $table:"
+	    ip route ls table $table
+	done
+    else
+	heading "Routing Table"
+	ip route ls
+    fi
+}
+
+#
 # Show Command Executor
 #
 show_command() {
@@ -798,6 +817,18 @@ show_command() {
 	    echo "Default CONFIG_PATH is $CONFIG_PATH"
 	    echo "LITEDIR is $LITEDIR"
 	    ;;
+	ip)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version IP at $HOSTNAME - $(date)"
+	    echo
+	    ip addr ls
+	    ;;
+	routing)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version Routing at $HOSTNAME - $(date)"
+	    echo
+	    show_routing
+	    ;;
 	*)
 	    echo "Shorewall Lite $version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
 	    echo
@@ -892,19 +923,7 @@ dump_command() {
 	done
     done
 
-    if [ -n "$(ip rule ls)" ]; then
-	heading "Routing Rules"
-	ip rule ls
-	ip rule ls | while read rule; do
-	    echo ${rule##* }
-	done | sort -u | while read table; do
-	    heading "Table $table:"
-	    ip route ls table $table
-	done
-    else
-	heading "Routing Table"
-	ip route ls
-    fi
+    show_routing
 
     heading "ARP"
     arp -na
@@ -1030,7 +1049,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [ -f ] [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|log|mangle|nat|tc|zones]"
+    echo "   show [ -x ] [ -m ] [ -f ] [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|ip|log|mangle|nat|routing|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"

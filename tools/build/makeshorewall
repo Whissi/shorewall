@@ -305,6 +305,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	else
 	    do_or_die "cp $SHOREWALLDIR/functions $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	fi
+	do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     fi
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"

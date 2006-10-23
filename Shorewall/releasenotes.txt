@@ -343,7 +343,7 @@ New Features:
         0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
     gateway:~ # 
 
-    This redundancy has been eliminated:
+    This redundancy may be eliminated by setting COMBINE_JUMPS=Yes in shorewall.conf.
 
     gateway:~ # shorewall-lite show eth2_fwd
     Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
@@ -356,3 +356,6 @@ New Features:
         0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
     gateway:~ #
  
+    Note that with COMBINE_JUMPS=Yes, traffic destined for an
+    interface/Address that falls outside of all defined zones may now
+    be logged out of a '2all' chain rather than out of the FORWARD chain.

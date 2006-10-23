@@ -4190,7 +4190,9 @@ activate_rules()
 	    fi
 	fi
     done
-
+    #
+    # Main source zone rule-activation loop
+    #
     for zone in $ZONES; do
 	eval source_hosts=\$${zone}_hosts
 
@@ -4221,7 +4223,9 @@ activate_rules()
 		insert_exclusions nat $chain $exclusions
 	    fi
 	fi
-
+	#
+	# Take care of PREROUTING, INPUT and OUTPUT jumps
+	#
 	for host in $source_hosts; do
 	    interface=${host%%:*}
 	    networks=${host#*:}
@@ -4270,120 +4274,132 @@ activate_rules()
 	    done
 	fi
 	#
-	# The following code attempts to eliminate redundant sequences of jumps to 
-	# all2all or <source zone>2all. It does so by combining all trailing 
-	# jumps to the same policy-only chain.
+	#                           F O R W A R D I N G
 	#
-	dest_zones=
 	temp_zones=
 	last_chain=
 
-	for zone1 in $ZONES; do
+	if [ -n "$COMBINE_JUMPS" ]; then
 
-	    eval policy=\$${zone}2${zone1}_policy
+	    dest_zones=
+	    #
+	    # The following loop attempts to eliminate redundant sequences of jumps to 
+	    # all2all or <source zone>2all. It does so by combining all trailing 
+	    # jumps to the same policy-only chain.
+	    #
+	    for zone1 in $ZONES; do
 
-	    [ "$policy" = NONE ] && continue
-
-	    chain="$(rules_chain $zone $zone1)"
-
-	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
-
-	    if [ $zone = $zone1 ]; then
-		#
-		# Try not to generate superfluous intra-zone rules
-		#
-		eval routeback=\"\$${zone}_routeback\"
-		eval interfaces=\"\$${zone}_interfaces\"
-		eval ports="\$${zone}_ports"
-
-		num_ifaces=$(list_count1 $interfaces)
-		#
-		# If the zone has a single interface then what matters is how many ports it has
-		#
-		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
-		#
-		# If we don't need to route back and if we have only one interface or one port to
-		# the zone then assume that hosts in the zone can communicate directly.
-		#
-		if [ $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
-		    continue
-		fi
-	    fi
-
-	    case $chain in
-		*2all)
+		eval policy=\$${zone}2${zone1}_policy
+		
+		[ "$policy" = NONE ] && continue
+		
+		chain="$(rules_chain $zone $zone1)"
+		
+		[ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
+		
+		if [ $zone = $zone1 ]; then
 		    #
-		    # Rules chain is a policy-only chain that could be used more than once (all2all or ${zone}2all
+		    # Try not to generate superfluous intra-zone rules
 		    #
-		    if [ -n "$last_chain" ]; then
-			#
-			# And the last rules chain was a policy-only chain
-			#
-			if [ "$chain" != "$last_chain" ]; then
+		    eval routeback=\"\$${zone}_routeback\"
+		    eval interfaces=\"\$${zone}_interfaces\"
+		    eval ports="\$${zone}_ports"
+		    
+		    num_ifaces=$(list_count1 $interfaces)
+		    #
+		    # If the zone has a single interface then what matters is how many ports it has
+		    #
+		    [ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
+		    #
+		    # If we don't need to route back and if we have only one interface or one port to
+		    # the zone then assume that hosts in the zone can communicate directly.
+		    #
+		    if [  $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
+			continue
+		    fi 
+		fi 
+
+		case $chain in
+		    *2all)
+		        #
+		        # Rules chain is a policy-only chain that could be used more than once (all2all or ${zone}2all
+		        #
+			if [ -n "$last_chain" ]; then
 			    #
-			    # But it was a different one -- back to square 1
+			    # And the last rules chain was a policy-only chain
 			    #
-			    last_chain=$chain
-			    dest_zones="$dest_zones $temp_zones"
-			    temp_zones=$zone1
+			    if [ "$chain" != "$last_chain" ]; then
+			        #
+			        # But it was a different one -- back to square 1
+			        #
+				last_chain=$chain
+				dest_zones="$dest_zones $temp_zones"
+				temp_zones=$zone1
+			    else
+			        #
+			        # Same chain -- add this dest zone to the running list of
+			        #               zones using the same rules chain
+			        #
+			        temp_zones="$temp_zones $zone1"
+			    fi
+		        elif [ $policy = ACCEPT ]; then
+			    #
+			    # We don't wild-card ACCEPT policies -- could open up security holes through interfaces
+			    # that aren't described in /etc/shorewall/interfaces
+			    #
+			    dest_zones="$dest_zones $zone1"
 			else
 			    #
-			    # Same chain -- add this dest zone to the running list of
-			    #               zones using the same rules chain
-			    #
-			    temp_zones="$temp_zones $zone1"
+			    # First in a potential run of rules using this chain
+		            #
+			    last_chain=$chain
+			    temp_zones=$zone1
 			fi
-		    elif [ $policy = ACCEPT ]; then
-			#
-			# We don't wild-card ACCEPT policies -- could open up security holes through interfaces
-			# that aren't described in /etc/shorewall/interfaces
-			#
-			dest_zones="$dest_zones $zone1"
-		    else
-			#
-			# First in a potential run of rules using this chain
-			#
-			last_chain=$chain
-			temp_zones=$zone1
-		    fi
-		    ;;
-		*)
-		    #
-		    # Not a policy-only chain -- add accumulated sequence of dest zones to those needing processing
-		    #
-		    dest_zones="$dest_zones $temp_zones $zone1"
-		    temp_zones=
-		    last_chain=
-		    ;;
-	    esac
-	done
-
+			;;
+		    *)
+		        #
+		        # Not a policy-only chain -- add accumulated sequence of dest zones to those needing processing
+		        #
+			dest_zones="$dest_zones $temp_zones $zone1"
+			temp_zones=
+			last_chain=
+			;;
+		esac
+	    done
+	else
+	    dest_zones=$ZONES
+	fi
 	#
-	# $dest_zones is now the (possibly condensed) list of destination zones that we need to handle from this source zone
+	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
+	# $dest_zones is the list of destination zones that we need to handle from this source zone
 	#
 	for zone1 in $dest_zones; do
 
 	    eval policy=\$${zone}2${zone1}_policy
+		
+	    [ "$policy" = NONE ] && continue
+
 	    eval dest_hosts=\$${zone1}_hosts
 	    eval exclusions1=\"\$${zone1}_exclusions\"
 
 	    chain="$(rules_chain $zone $zone1)"
 
+	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
+	    
 	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> $STATEDIR/chains
 
 	    if [ $zone = $zone1 ]; then
-		#
-		# Try not to generate superfluous intra-zone rules
-		#
 		eval routeback=\"\$${zone}_routeback\"
 		eval interfaces=\"\$${zone}_interfaces\"
 		eval ports="\$${zone}_ports"
 
 		num_ifaces=$(list_count1 $interfaces)
-		#
-		# If the zone has a single interface then what matters is how many ports it has
-		#
+		
 		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
+
+		if [  $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
+		    continue
+		fi 
 	    else
 		routeback=
 		num_ifaces=0
@@ -4465,6 +4481,9 @@ activate_rules()
 	    fi
 	done
 	#
+	#                                      E N D   F O R W A R D I N G
+	#
+	#
 	# Now add (an) unconditional jump(s) to the last unique policy-only chain determined above, if any
 	#
 	if [ -n "$last_chain" ]; then
@@ -4482,13 +4501,17 @@ activate_rules()
 	    fi
 	fi
     done
-
+    #
+    # Now add the jumps to the interface (first) chains from FORWARD, INPUT and POSTROUTING
+    #
     for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
 	addnatjump POSTROUTING $(masq_chain $interface) -o $interface
     done
-
+    #
+    # Handle fw->fw
+    #
     chain=${FW}2${FW}
 
     if havechain $chain; then
@@ -4501,7 +4524,9 @@ activate_rules()
 	#
 	run_iptables -D OUTPUT -o lo -j ACCEPT
     fi
-
+    #
+    # Add policy enforcement to the builtin filter chains to catch underfined hosts
+    #
     complete_standard_chain INPUT all $FW
     complete_standard_chain OUTPUT $FW all
     complete_standard_chain FORWARD all all

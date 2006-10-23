@@ -4048,7 +4048,7 @@ activate_rules()
     }
 
     #
-    # Jump to a RULES chain from one of the builtin nat chains. These jumps are
+    # Jump to a RULES chain from one of the builtin nat chains. These jumps
     # are inserted before jumps to one-to-one NAT chains.
     #
     addrulejump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
@@ -4081,7 +4081,7 @@ activate_rules()
     #
     insert_exclusions() # $1 = table $2 = chain name, $3 - $n = exclusions
     {
-	local t=$1 c=$2 num=0
+	local t=$1 c=$2 num=0 host1 interface1 networks1
 
 	shift 2
 
@@ -4097,17 +4097,18 @@ activate_rules()
     #
     add_exclusions() # $1 = table $2 = chain name, $3 - $n = exclusions
     {
-	local t=$1 c=$2
+	local t=$1 c=$2 host1 interface1 networks1
 
 	shift 2
 
 	for host1 in $*; do
 	    interface1=${host1%%:*}
 	    networks1=${host1#*:}
-	    num=$(($num + 1))
 	    run_iptables -t $t -A $c -o $interface1 -d $networks1 -j RETURN
 	done
     }
+    #
+    #                E x e c u t i o n   S t a r t s   H e r e
     #
     # Add jumps to early SNAT chains
     #
@@ -4356,21 +4357,17 @@ activate_rules()
 		    ;;
 	    esac
 	done
+
 	#
 	# $dest_zones is now the (possibly condensed) list of destination zones that we need to handle from this source zone
 	#
 	for zone1 in $dest_zones; do
 
 	    eval policy=\$${zone}2${zone1}_policy
-
-	    [ "$policy" = NONE ] && continue
-
 	    eval dest_hosts=\$${zone1}_hosts
 	    eval exclusions1=\"\$${zone1}_exclusions\"
 
 	    chain="$(rules_chain $zone $zone1)"
-
-	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
 
 	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> $STATEDIR/chains
 

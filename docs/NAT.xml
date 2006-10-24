@@ -117,6 +117,17 @@
       feature requires kernel 2.4.19 or later and iptables 1.2.6a or later and
       you must have enabled CONFIG_IP_NF_NAT_LOCAL in your kernel.</para>
     </note>
+
+    <para>Entries in <filename>/etc/shorewall/nat</filename> only arrange for
+    address translation; they do not allow traffic to pass through the
+    firewall in violation of your policies. In the above example, suppose that
+    you wish to run a web server on 10.1.1.2 (a.k.a. 130.252.100.18). You
+    would need the following entry in
+    <filename>/etc/shorewall/rules</filename>:</para>
+
+    <programlisting>#ACTION     SOURCE     DEST            PROTO       DEST        SOURCE         ORIG
+#                                                  PORT(S)     PORT(S)        DEST
+ACCEPT      net        loc:10.1.1.2    tcp         80          -              130.252.100.18</programlisting>
   </section>
 
   <section>

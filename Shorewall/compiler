@@ -3629,7 +3629,7 @@ __EOF__
 		    do_iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
             fi
 	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
-	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A $(out_chain $interface)   -p udp --dport 67:68 -j ACCEPT
 	done
     fi
     #
@@ -3948,7 +3948,7 @@ __EOF__
 
 	    run_iptables -A $(input_chain $interface)   -j $chain
 	    run_iptables -A $(forward_chain $interface) -j $(dynamic_fwd $interface)
-	    run_iptables -A OUTPUT -o $interface        -j $(dynamic_out $interface)
+	    run_iptables -A $(out_chain $interface)     -j $(dynamic_out $interface)
 	done
     fi
     #
@@ -4232,10 +4232,10 @@ activate_rules()
 
 	    if [ -n "$chain1" ]; then
 		if [ -n "$exclusions" ]; then
-		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j ${zone}_output
+		    run_iptables2 -A $(out_chain $interface) $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j ${zone}_output
 		    run_iptables -A ${zone}_output -j $chain1
 		else
-		    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
+		    run_iptables2 -A $(out_chain $interface) $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
 		fi
 	    fi
 	    #
@@ -4269,8 +4269,8 @@ activate_rules()
 
 	if [ -n "$chain1" ]; then
 	    for interface in $need_broadcast ; do
-		run_iptables -A OUTPUT -o $interface -d 255.255.255.255 -j $chain1
-		run_iptables -A OUTPUT -o $interface -d 224.0.0.0/4     -j $chain1
+		run_iptables -A $(out_chain $interface) -d 255.255.255.255 -j $chain1
+		run_iptables -A $(out_chain $interface) -d 224.0.0.0/4     -j $chain1
 	    done
 	fi
 	#
@@ -4507,6 +4507,7 @@ activate_rules()
     for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
+	run_iptables -A OUTPUT  -o $interface -j $(out_chain $interface)
 	addnatjump POSTROUTING $(masq_chain $interface) -o $interface
     done
     #
@@ -5386,6 +5387,8 @@ __EOF__
 	    createchain $chain no
 	    run_iptables -A $chain $state -j dynamic
 	done
+
+	createchain $(out_chain $interface) no
     done
 
     if strip_file_and_lib_load proxyarp proxyarp; then

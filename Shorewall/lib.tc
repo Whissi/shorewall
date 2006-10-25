@@ -44,22 +44,23 @@ setup_traffic_shaping()
 	local rateunit rate
 	rate=$1
 	rateunit=$( echo $rate | sed -e 's/[0-9]*//')
-	rate=$( echo $rate | sed -e 's/[a-z]*//g')
+	rate=$( echo $rate | sed -e 's/[a-zA-Z]*//g')
 
 	case $rateunit in
-	    kbit)
+	    kbit|Kbit)
 		rate=$rate
 		;;
-	    mbit)
+	    mbit|Mbit)
 		rate=$(expr $rate \* 1024)
 		;;
-	    mbps)
+	    mbps|Mbps)
 		rate=$(expr $rate \* 8192)
 		;;
-	    kbps)
+	    kbps|Kbps)
 		rate=$(expr $rate \* 8)
 		;;
 	    *)
+                [ -n "$rateunit" ] && fatal_error "Invalid Rate ($1)"
 		rate=$(expr $rate / 128)
 		;;
 	esac
@@ -134,6 +135,8 @@ setup_traffic_shaping()
 		    ;;
 	    esac
 	    list_search $device $devices && fatal_error "Interface $device is defined more than once in tcdevices"
+	    inband=$(rate_to_kbit $inband)
+	    outband=$(rate_to_kbit $outband)
 	    tc_all_devices="$tc_all_devices $device"
 	done < $TMP_DIR/tcdevices
     }

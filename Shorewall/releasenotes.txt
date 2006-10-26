@@ -134,6 +134,14 @@ Other Changes in 3.3.4.
 
     gateway:~
 
+    If you really want a rule that duplicates the policy, follow the
+    action with "!":
+
+	#ACTION		SOURCE		DEST	PROTO	DEST
+	#						PORT(S)
+	...
+	ACCEPT!		all		all	icmp	8
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

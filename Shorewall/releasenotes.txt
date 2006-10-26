@@ -45,6 +45,95 @@ Other Changes in 3.3.4.
 2)  Beginning with this release, Shorewall and Shorewall Lite will
     share common change logs and release notes.
 
+3)  A change introduced in 3.3.3 has been modified as described here.
+
+    In Shorewall versions prior to 3.3.2, multiple jumps to a '2all'
+    chain could be generated in succession.
+
+    Example from an earlier shorewall version:
+
+    gateway:~ # shorewall-lite show eth2_fwd
+    Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
+
+    Counters reset Thu Oct 19 08:34:47 PDT 2006
+
+    Chain eth2_fwd (1 references)
+     pkts bytes target     prot opt in     out     source            destination
+        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+        0     0 wifi2all   all  --  *      eth0    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+    gateway:~ # 
+
+    This redundancy may be eliminated by setting OPTIMIZE=1 in shorewall.conf.
+
+    gateway:~ # shorewall-lite show eth2_fwd
+    Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
+
+    Counters reset Thu Oct 19 09:15:19 PDT 2006
+
+    Chain eth2_fwd (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+        0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    gateway:~ #
+ 
+    Note that with OPTIMIZE=1, traffic destined for an
+    interface/Address that falls outside of all defined zones may now
+    be logged out of a '2all' chain rather than out of the FORWARD
+    chain.
+
+    The OPTIMIZE setting also controls the suppression of redundant
+    wildcard rules (those specifying "all" in the SOURCE or DEST
+    column). A wildcard rule is considered to be redundant when it
+    has the same ACTION and Log Level as the applicable policy.
+
+    Example:
+
+	/etc/shorewall/policy
+
+	#SOURCE		DEST		POLICY		LEVEL
+	loc		net		ACCEPT
+
+        /etc/shorewall/rules
+
+	#ACTION		SOURCE		DEST	PROTO	DEST
+	#						PORT(S)
+	...
+	ACCEPT		all		all	icmp	8
+
+    OPTIMIZE=0
+
+    gateway:~ # shorewall show loc2net
+    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:55:03 PDT 2006
+
+    Counters reset Thu Oct 26 07:54:58 PDT 2006
+
+    Chain loc2net (1 references)
+     pkts bytes target     prot opt in     out     source               destination         
+      ...
+        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
+        0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           icmp type 8 
+        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+    gateway:~
+
+    OPTIMIZE=1
+    
+    gateway:~ # shorewall show loc2net
+    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
+
+    Counters reset Thu Oct 26 07:56:38 PDT 2006
+
+    Chain loc2net (1 references)
+     pkts bytes target     prot opt in     out     source               destination         
+      ...
+        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
+        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+    gateway:~
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default
@@ -323,40 +412,3 @@ New Features:
     In that example, the 'loc' zone is defined to be the subnet
     192.168.1.0/24 interfacing via eth0 *except* for host 192.168.1.4
     and hosts in the sub-network 192.168.1.16/28.
-
-11) In prior Shorewall versions, multiple jumps to a '2all' chain could
-    be generated in succession.
-
-    Example from an earlier shorewall version:
-
-    gateway:~ # shorewall-lite show eth2_fwd
-    Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
-
-    Counters reset Thu Oct 19 08:34:47 PDT 2006
-
-    Chain eth2_fwd (1 references)
-     pkts bytes target     prot opt in     out     source            destination
-        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
-        0     0 wifi2all   all  --  *      eth0    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-        0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-        0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-        0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-    gateway:~ # 
-
-    This redundancy may be eliminated by setting OPTIMIZE=1 in shorewall.conf.
-
-    gateway:~ # shorewall-lite show eth2_fwd
-    Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
-
-    Counters reset Thu Oct 19 09:15:19 PDT 2006
-
-    Chain eth2_fwd (1 references)
-     pkts bytes target     prot opt in     out     source               destination
-        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
-        0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    gateway:~ #
- 
-    Note that with OPTIMIZE=1, traffic destined for an
-    interface/Address that falls outside of all defined zones may now
-    be logged out of a '2all' chain rather than out of the FORWARD
-    chain.

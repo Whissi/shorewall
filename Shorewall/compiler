@@ -2647,7 +2647,17 @@ process_rules()
 		ydestzone=${yservers%%:*}
 		if [ "${ysourcezone}" != "${ydestzone}" -o "$2" = Yes ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
-		    if [ "$ypolicy" != NONE ] ; then
+		    if [ "$ypolicy" != NONE ]; then
+			if [ $OPTIMIZE -gt 0 ]; then
+			    eval yloglevel=\$${ysourcezone}2${ydestzone}_loglevel
+			    if [ -n "$yloglevel" ]; then
+				if [ x$ypolicy:$yloglevel = x$xtarget ]; then
+				    continue
+				fi
+			    elif [ x$ypolicy = x$xtarget ]; then
+				continue
+			    fi
+			fi
 			if [ "$1" = Yes ]; then
 			    process_macro $xtarget "$xparam" $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
 			else
@@ -3530,7 +3540,6 @@ __EOF__
     for address in $broadcasts ; do
 	[ -n "$SMURF_LOG_LEVEL" ] && log_rule $SMURF_LOG_LEVEL smurfs DROP -s $address
 	run_iptables -A smurfs $(source_ip_range $address) -j DROP
-	run_iptables -A reject -s $address -j DROP
     done
     #
     # Reject Rules -- Don't respond to broadcasts with an ICMP
@@ -4366,6 +4375,13 @@ activate_rules()
 			;;
 		esac
 	    done
+	    #
+	    # If there is no reduction in the number of rules then don't bother with the optimization
+	    #
+	    if [ -n "$last_chain" -a $(list_count1 $temp_zones) -eq 1 ]; then
+		dest_zones="$dest_zones $temp_zones"
+		last_chain=
+	    fi
 	else
 	    dest_zones=$ZONES
 	fi

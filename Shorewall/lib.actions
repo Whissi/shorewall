@@ -26,22 +26,6 @@
 #
 
 #
-# Function to create/find appropriate action chain -- callable in user scripts
-# that want to invoke an action.
-#
-get_actionchain() # $1 = Action from a rule, including log level and tag if any
-{
-    if list_search ${1%%:*} $ACTIONS; then
-	if ! list_search $1 $USEDACTIONS; then
-	    createactionchain $1
-	    USEDACTIONS="$USEDACTIONS $1"
-	fi
-
-	echo $(find_logactionchain $1)
-    fi
-}
-
-#
 # Add one Filter Rule from an action -- Helper function for the action file processor
 #
 # The caller has established the following variables:

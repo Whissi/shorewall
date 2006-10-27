@@ -1129,6 +1129,39 @@ make_verbose() {
 }
 
 #
+# Executor for drop,reject,... commands
+#
+block() # $1 = command, $2 = Finished, $3 = Original Command $4 - $n addresses
+{
+    local chain=$1 finished=$2
+
+    shift 3
+
+    while [ $# -gt 0 ]; do
+	case $1 in
+	    *-*)
+		qt $IPTABLES -D dynamic -m iprange --src-range $1 -j reject
+		qt $IPTABLES -D dynamic -m iprange --src-range  $1 -j DROP
+		qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logreject
+		qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logdrop
+		$IPTABLES -A dynamic -m iprange --src-range $1 -j $chain || break 1
+		;;
+	    *)
+		qt $IPTABLES -D dynamic -s $1 -j reject
+		qt $IPTABLES -D dynamic -s $1 -j DROP
+		qt $IPTABLES -D dynamic -s $1 -j logreject
+		qt $IPTABLES -D dynamic -s $1 -j logdrop
+		$IPTABLES -A dynamic -s $1 -j $chain || break 1
+		;;
+	esac
+
+	echo "$1 $finished"
+	shift
+    done
+}
+    
+
+#
 # Execution begins here
 #
 debugging=
@@ -1477,18 +1510,10 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    mutex_on
-	    while [ $# -gt 1 ]; do
-		shift
-		qt $IPTABLES -D dynamic -s $1 -j reject
-		qt $IPTABLES -D dynamic -s $1 -j DROP
-		qt $IPTABLES -D dynamic -s $1 -j logreject
-		qt $IPTABLES -D dynamic -s $1 -j logdrop
-		$IPTABLES -A dynamic -s $1 -j DROP || break 1
-		echo "$1 Dropped"
-	    done
+	    block DROP Dropped $*
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
+	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2
 	fi
 	;;
@@ -1497,18 +1522,10 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    mutex_on
-	    while [ $# -gt 1 ]; do
-		shift
-		qt $IPTABLES -D dynamic -s $1 -j reject
-		qt $IPTABLES -D dynamic -s $1 -j DROP
-		qt $IPTABLES -D dynamic -s $1 -j logreject
-		qt $IPTABLES -D dynamic -s $1 -j logdrop
-		$IPTABLES -A dynamic -s $1 -j logdrop || break 1
-		echo "$1 Dropped"
-	    done
+	    block logdrop Dropped $*
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
+	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2
 	fi
 	;;
@@ -1517,18 +1534,10 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    mutex_on
-	    while [ $# -gt 1 ]; do
-		shift
-		qt $IPTABLES -D dynamic -s $1 -j reject
-		qt $IPTABLES -D dynamic -s $1 -j DROP
-		qt $IPTABLES -D dynamic -s $1 -j logreject
-		qt $IPTABLES -D dynamic -s $1 -j logdrop
-		$IPTABLES -A dynamic -s $1 -j $COMMAND || break 1
-		echo "$1 Rejected"
-	    done
+	    block $COMMAND Rejected $*
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
+	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2
 	fi
 	;;
@@ -1539,19 +1548,34 @@ case "$COMMAND" in
 	    mutex_on
 	    while [ $# -gt 1 ]; do
 		shift
-		if qt $IPTABLES -D dynamic -s $1 -j reject    ||\
-		   qt $IPTABLES -D dynamic -s $1 -j DROP      ||\
-		   qt $IPTABLES -D dynamic -s $1 -j logdrop   ||\
-		   qt $IPTABLES -D dynamic -s $1 -j logreject
-		then
-		    echo "$1 Allowed"
-		else
-		    echo "$1 Not Dropped or Rejected"
-		fi
+		case $1 in
+		    *-*)
+			if  qt $IPTABLES -D dynamic -m iprange --src-range $1 -j reject    ||\
+			    qt $IPTABLES -D dynamic -m iprange --src-range $1 -j DROP      ||\
+			    qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logdrop   ||\
+			    qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logreject
+			then
+			    echo "$1 Allowed"
+			else
+			    echo "$1 Not Dropped or Rejected"
+			fi
+			;;
+		    *)
+			if  qt $IPTABLES -D dynamic -s $1 -j reject    ||\
+			    qt $IPTABLES -D dynamic -s $1 -j DROP      ||\
+			    qt $IPTABLES -D dynamic -s $1 -j logdrop   ||\
+			    qt $IPTABLES -D dynamic -s $1 -j logreject
+			then
+			    echo "$1 Allowed"
+			else
+			    echo "$1 Not Dropped or Rejected"
+			fi
+			;;
+		esac
 	    done
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
+	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2
 	fi
 	;;

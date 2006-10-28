@@ -355,6 +355,19 @@ Rsync/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&
   </section>
 
   <section>
+    <title>Siproxd</title>
+
+    <caution>
+      <para>This assumes siproxd is running <emphasis role="bold">on the
+      firewall and is using the default ports</emphasis>.</para>
+    </caution>
+
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT            net           fw           udp        5060
+ACCEPT     <emphasis>       net           fw           udp        7070:7089</emphasis><emphasis></emphasis></programlisting>
+  </section>
+
+  <section>
     <title>SSH/SFTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)

@@ -114,6 +114,7 @@
 #
 #          shorewall compile [ -e ] [ <directory> ] <filename>
 #                                                  Compile a firewall program file.
+
 #
 # Set the configuration variables from shorewall.conf
 #
@@ -1025,24 +1026,18 @@ CONFDIR=/etc/shorewall
 export PRODUCT="Shorewall"
 
 FIREWALL=$SHAREDIR/firewall
-FUNCTIONS=$SHAREDIR/lib.base
-FUNCTIONS1=$SHAREDIR/lib.commands
+LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
 HELP=$SHAREDIR/help
 
-if [ -f $FUNCTIONS ]; then
-    . $FUNCTIONS
-else
-    echo "$FUNCTIONS does not exist!" >&2
-    exit 2
-fi
-
-if [ -f $FUNCTIONS1 ]; then
-    . $FUNCTIONS1
-else
-    echo "$FUNCTIONS1 does not exist!" >&2
-    exit 2
-fi
+for library in $LIBRARIES; do
+    if [ -f $library ]; then
+	. $library
+    else
+	echo "$library does not exist!" >&2
+	exit 2
+    fi
+done
 
 ensure_config_path
 

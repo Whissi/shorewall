@@ -77,6 +77,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall-lite/configpath
 %attr(0777,root,root) /usr/share/shorewall-lite/functions
 %attr(0444,root,root) /usr/share/shorewall-lite/lib.base
+%attr(0444,root,root) /usr/share/shorewall-lite/lib.cli
 %attr(0444,root,root) /usr/share/shorewall-lite/modules
 %attr(0544,root,root) /usr/share/shorewall-lite/shorecap
 %attr(0544,root,root) /usr/share/shorewall-lite/help

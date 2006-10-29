@@ -150,6 +150,21 @@ Other Changes in 3.3.4.
     command-processing code that is common to both /sbin/shorewall and
     /sbin/shorewall-lite.
 
+6)  Previously, Shorewall has not attempted to undo the changes it has
+    made to the firewall's routing as a result of entries in
+    /etc/shorewall/providers and /etc/shorewall/routes. Beginning with
+    this release, Shorewall will attempt to undo these changes.
+
+    If you use entries in /etc/shorewall/providers, you must exercise
+    care when installing this version of Shorewall in order to 
+    ensure that the firewall's routing be restored correctly.
+
+    When Shorewall starts or is restarted, it will capture the contents
+    of /etc/shorewall/rt_tables and will restore that database when
+    Shorewall is stopped or restarted. Similarly, the default route
+    will be captured the first time that you [re]start Shorewall using
+    this version.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

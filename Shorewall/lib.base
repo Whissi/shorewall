@@ -1281,3 +1281,45 @@ get_device_mtu() # $1 = device
 	echo 1500
     fi
 }
+
+#
+# Undo changes to routing
+#
+undo_routing() {
+    #
+    # Restore rt_tables database
+    #
+    if [ -f ${VARDIR}/rt_tables ]; then
+	cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
+	rm -f ${VARDIR}/rt_tables
+    fi
+    #
+    # Restore the default route
+    #
+    if [ -f ${VARDIR}/default_route ]; then
+	local default_route="$(sed 's/\n/ /' ${VARDIR}/default_route)"
+
+	case "$default_route" in
+	    default*default)
+		default_route="${default_route%% default*}"
+		;;
+	esac
+	
+	qt ip route replace $default_route
+
+	progress_message "Default Route ($default_route) restored"
+
+	rm -f ${VARDIR}/default_route
+    fi
+    #
+    # Restore the rest of the routing table
+    #
+    if [ -f ${VARDIR}/undo_routing; then
+	. undo_routing
+	progress_message "Shorewall-generated routing tables and routing rules removed"
+	rm -f ${VARDIR}/undo_routing
+    fi
+}
+	
+
+	

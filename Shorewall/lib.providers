@@ -123,6 +123,8 @@ __EOF__
 	
 	save_command "qt ip route flush table $number"
 
+	echo "qt ip route flush table $number" >> ${VARDIR}/undo_routing
+
 	if [ "x${duplicate:=-}" != x- ]; then
 	    if [ "x${copy:=-}" != "x-" ]; then
 		if [ "x${copy}" = xnone ]; then
@@ -174,6 +176,7 @@ __EOF__
 
 	    save_command "qt ip rule del fwmark $mark"
 	    save_command "run_ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
+	    echo "qt ip rule del fwmark $mark" >> ${VARDIR}/undo_routing
 	fi
 
 	loose=
@@ -297,10 +300,13 @@ __EOF__
 
 	save_command "qt ip rule del $source $dest $priority"
 	save_command "run_ip rule add $source $dest $priority table $provider"
+	echo "qt ip rule del $source $dest $priority" >> ${VARDIR}/undo_routing
 
 	progress_message "Routing rule \"$rule\" $DONE"
     }
-
+    #
+    #  E x e c u t i o n    B e g i n s    H e r e
+    #
     local_number=255
     main_number=254
     default_number=253
@@ -311,6 +317,15 @@ __EOF__
     save_command
     save_command "if [ -z \"\$NOROUTES\" ]; then"
     INDENT="$INDENT    "
+    indent >&3 << __EOF__
+#
+# Undo any changes made the last time that we [re]started
+#
+undo_routing
+echo "cp /etc/iproute2/rt_tables \${VARDIR}/"
+ip route ls | grep -E '^\s*(default |nexthop )' > ${VARDIR}default_route
+> \${VARDIR}/undo_routing
+__EOF__
     save_progress_message "Adding Providers..."
     save_command "DEFAULT_ROUTE="
 

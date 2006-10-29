@@ -303,6 +303,8 @@ stop_firewall() {
 
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
+    undo_routing
+
     process_criticalhosts
 
     if [ -n "$CRITICALHOSTS" ]; then

@@ -293,7 +293,7 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall-lite/c
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+	install_file $f ${PREFIX}/usr/share/shorewall-lite/$f 0644
 	echo "Library ${f#*.} file installed as ${PREFIX}/usr/share/shorewall-lite/$f"
     fi
 done

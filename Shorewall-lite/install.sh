@@ -289,12 +289,14 @@ install_file configpath ${PREFIX}/usr/share/shorewall-lite/configpath 0644
 echo "Default config path file installed as ${PREFIX}/usr/share/shorewall-lite/configpath"
 
 #
-# Install the functions file
+# Install the libraries
 #
-
-install_file lib.base ${PREFIX}/usr/share/shorewall-lite/lib.base 0444
-
-echo "Common functions installed as ${PREFIX}/usr/share/shorewall-lite/lib.base"
+for f in lib.* ; do
+    if [ -f $f ]; then
+	install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+	echo "Library ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+    fi
+done
 
 ln -sf lib.base ${PREFIX}/usr/share/shorewall-lite/functions
 

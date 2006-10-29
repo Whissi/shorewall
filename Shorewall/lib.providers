@@ -30,7 +30,7 @@
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum rulebase echobin=$(mywhich echo) balance save_indent="$INDENT" mask= first=Yes save_indent1=
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum rulebase balance save_indent="$INDENT" mask= first=Yes save_indent1=
 
     copy_table() {
 	    indent >&3 << __EOF__
@@ -350,6 +350,7 @@ __EOF__
         for table in $PROVIDERS; do
 	    eval number=\$${table}_number
 	    indent >&3 << __EOF__
+echobin=\$(mywhich echo) 
 \${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
 __EOF__
 	done

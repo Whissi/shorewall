@@ -1314,8 +1314,8 @@ undo_routing() {
     #
     # Restore the rest of the routing table
     #
-    if [ -f ${VARDIR}/undo_routing; then
-	. undo_routing
+    if [ -f ${VARDIR}/undo_routing ]; then
+	. ${VARDIR}/undo_routing
 	progress_message "Shorewall-generated routing tables and routing rules removed"
 	rm -f ${VARDIR}/undo_routing
     fi

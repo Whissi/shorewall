@@ -647,7 +647,7 @@ done
 for f in lib.* ; do
     if [ -f $f ]; then
 	install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-	echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+	echo "Library ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
     fi
 done
 #

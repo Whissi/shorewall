@@ -1,4 +1,4 @@
-Shorewall 3.3.4
+Shorewall 3.3.5
 	  	 
  Note to users upgrading from Shorewall 3.0 or 3.3	 
   	 
@@ -31,145 +31,15 @@ Shorewall 3.3.4
     Please see the "Migration Considerations" below for additional upgrade 	 
     information. 	 
   	 
-Problems Corrected in 3.3.4
+Problems Corrected in 3.3.5
+
+1)  Previously, if the last 'balance' provider was removed from
+    /etc/shorewall/providers then "shorewall restart" would not restore
+    the default route that was in place prior to "shorewall start".
+
+Other Changes in 3.3.5.
 
 None.
-
-Other Changes in 3.3.4.
-
-1)  New "shorewall[-lite] show ip" and "shorewall[-lite] show routing"
-    commands have been added. The first produces the same output as "ip
-    addr ls". The second produces a report about your routing rules and
-    tables.
-
-2)  Beginning with this release, Shorewall and Shorewall Lite will
-    share common change logs and release notes.
-
-3)  A change introduced in 3.3.3 has been modified as described here.
-
-    In Shorewall versions prior to 3.3.2, multiple jumps to a '2all'
-    chain could be generated in succession.
-
-    Example from an earlier shorewall version:
-
-    gateway:~ # shorewall-lite show eth2_fwd
-    Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
-
-    Counters reset Thu Oct 19 08:34:47 PDT 2006
-
-    Chain eth2_fwd (1 references)
-     pkts bytes target     prot opt in     out     source            destination
-        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
-        0     0 wifi2all   all  --  *      eth0    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-        0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-        0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-        0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-    gateway:~ # 
-
-    This redundancy may be eliminated by setting OPTIMIZE=1 in shorewall.conf.
-
-    gateway:~ # shorewall-lite show eth2_fwd
-    Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
-
-    Counters reset Thu Oct 19 09:15:19 PDT 2006
-
-    Chain eth2_fwd (1 references)
-     pkts bytes target     prot opt in     out     source               destination
-        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
-        0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    gateway:~ #
- 
-    Note that with OPTIMIZE=1, traffic destined for an
-    interface/Address that falls outside of all defined zones may now
-    be logged out of a '2all' chain rather than out of the FORWARD
-    chain.
-
-    The OPTIMIZE setting also controls the suppression of redundant
-    wildcard rules (those specifying "all" in the SOURCE or DEST
-    column). A wildcard rule is considered to be redundant when it
-    has the same ACTION and Log Level as the applicable policy.
-
-    Example:
-
-	/etc/shorewall/policy
-
-	#SOURCE		DEST		POLICY		LEVEL
-	loc		net		ACCEPT
-
-        /etc/shorewall/rules
-
-	#ACTION		SOURCE		DEST	PROTO	DEST
-	#						PORT(S)
-	...
-	ACCEPT		all		all	icmp	8
-
-    OPTIMIZE=0
-
-    gateway:~ # shorewall show loc2net
-    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:55:03 PDT 2006
-
-    Counters reset Thu Oct 26 07:54:58 PDT 2006
-
-    Chain loc2net (1 references)
-     pkts bytes target     prot opt in     out     source               destination         
-      ...
-        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
-        0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           icmp type 8 
-        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
-
-    gateway:~
-
-    OPTIMIZE=1
-    
-    gateway:~ # shorewall show loc2net
-    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
-
-    Counters reset Thu Oct 26 07:56:38 PDT 2006
-
-    Chain loc2net (1 references)
-     pkts bytes target     prot opt in     out     source               destination         
-      ...
-        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
-        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
-
-    gateway:~
-
-    If you really want a rule that duplicates the policy, follow the
-    action with "!":
-
-	#ACTION		SOURCE		DEST	PROTO	DEST
-	#						PORT(S)
-	...
-	ACCEPT!		all		all	icmp	8
-
-4)  IP Address ranges are now allowed in the drop, reject, allow and
-    logdrop shorewall[-lite] commands.
-
-5)  The lib.cli library has been added. It is distributed with
-    both Shorewall and Shorewall Lite and contains the
-    command-processing code that is common to both /sbin/shorewall and
-    /sbin/shorewall-lite.
-
-6)  Previously, Shorewall has not attempted to undo the changes it has
-    made to the firewall's routing as a result of entries in
-    /etc/shorewall/providers and /etc/shorewall/routes. Beginning with
-    this release, Shorewall will attempt to undo these changes.
-
-    When Shorewall starts or is restarted and there are entries in
-    /etc/shorewall/providers, Shorewall will capture the contents
-    of /etc/shorewall/rt_tables and will restore that database when
-    Shorewall is stopped or restarted. Similarly, the default route
-    will be captured the first time that you [re]start Shorewall using
-    this version and will be restored under the following conditions:
-
-    a) shorewall stop
-    b) shorewall clear
-    c) shorewall restart or restore and there are no entries in
-       /etc/shorewall/providers.
-
-    Once the default route has been restored, Shorewall will delete
-    the saved copy so that it will once again be captured at the next
-    shorewall start or shorewall restore.
 
 Migration Considerations:
 
@@ -449,3 +319,136 @@ New Features:
     In that example, the 'loc' zone is defined to be the subnet
     192.168.1.0/24 interfacing via eth0 *except* for host 192.168.1.4
     and hosts in the sub-network 192.168.1.16/28.
+
+11) New "shorewall[-lite] show ip" and "shorewall[-lite] show routing"
+    commands have been added. The first produces the same output as "ip
+    addr ls". The second produces a report about your routing rules and
+    tables.
+
+12) Beginning with this release, Shorewall and Shorewall Lite will
+    share common change logs and release notes.
+
+13) In Shorewall versions prior to 3.3.2, multiple jumps to a '2all'
+    chain could be generated in succession.
+
+    Example from an earlier shorewall version:
+
+    gateway:~ # shorewall-lite show eth2_fwd
+    Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
+
+    Counters reset Thu Oct 19 08:34:47 PDT 2006
+
+    Chain eth2_fwd (1 references)
+     pkts bytes target     prot opt in     out     source            destination
+        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+        0     0 wifi2all   all  --  *      eth0    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+        0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
+    gateway:~ # 
+
+    This redundancy may be eliminated by setting OPTIMIZE=1 in shorewall.conf.
+
+    gateway:~ # shorewall-lite show eth2_fwd
+    Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
+
+    Counters reset Thu Oct 19 09:15:19 PDT 2006
+
+    Chain eth2_fwd (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+        0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+        0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    gateway:~ #
+ 
+    Note that with OPTIMIZE=1, traffic destined for an
+    interface/Address that falls outside of all defined zones may now
+    be logged out of a '2all' chain rather than out of the FORWARD
+    chain.
+
+    The OPTIMIZE setting also controls the suppression of redundant
+    wildcard rules (those specifying "all" in the SOURCE or DEST
+    column). A wildcard rule is considered to be redundant when it
+    has the same ACTION and Log Level as the applicable policy.
+
+    Example:
+
+	/etc/shorewall/policy
+
+	#SOURCE		DEST		POLICY		LEVEL
+	loc		net		ACCEPT
+
+        /etc/shorewall/rules
+
+	#ACTION		SOURCE		DEST	PROTO	DEST
+	#						PORT(S)
+	...
+	ACCEPT		all		all	icmp	8
+
+    OPTIMIZE=0
+
+    gateway:~ # shorewall show loc2net
+    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:55:03 PDT 2006
+
+    Counters reset Thu Oct 26 07:54:58 PDT 2006
+
+    Chain loc2net (1 references)
+     pkts bytes target     prot opt in     out     source               destination         
+      ...
+        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
+        0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           icmp type 8 
+        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+    gateway:~
+
+    OPTIMIZE=1
+    
+    gateway:~ # shorewall show loc2net
+    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
+
+    Counters reset Thu Oct 26 07:56:38 PDT 2006
+
+    Chain loc2net (1 references)
+     pkts bytes target     prot opt in     out     source               destination         
+      ...
+        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
+        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+    gateway:~
+
+    If you really want a rule that duplicates the policy, follow the
+    action with "!":
+
+	#ACTION		SOURCE		DEST	PROTO	DEST
+	#						PORT(S)
+	...
+	ACCEPT!		all		all	icmp	8
+
+14) IP Address ranges are now allowed in the drop, reject, allow and
+    logdrop shorewall[-lite] commands.
+
+15) The lib.cli library has been added. It is distributed with
+    both Shorewall and Shorewall Lite and contains the
+    command-processing code that is common to both /sbin/shorewall and
+    /sbin/shorewall-lite.
+
+16) Previously, Shorewall has not attempted to undo the changes it has
+    made to the firewall's routing as a result of entries in
+    /etc/shorewall/providers and /etc/shorewall/routes. Beginning with
+    this release, Shorewall will attempt to undo these changes.
+
+    When Shorewall starts or is restarted and there are entries in
+    /etc/shorewall/providers, Shorewall will capture the contents
+    of /etc/shorewall/rt_tables and will restore that database when
+    Shorewall is stopped or restarted. Similarly, the default route
+    will be captured the first time that you [re]start Shorewall using
+    this version and will be restored under the following conditions:
+
+    a) shorewall stop
+    b) shorewall clear
+    c) shorewall restart or restore and there are no entries in
+       /etc/shorewall/providers.
+
+    Once the default route has been restored, Shorewall will delete
+    the saved copy so that it will once again be captured at the next
+    shorewall start or shorewall restore.
+

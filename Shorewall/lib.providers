@@ -355,6 +355,8 @@ __EOF__
 	    save_command "    error_message \"WARNING: No Default route added (all 'balance' providers are down)\""
 	    save_command "fi"
 	    save_command
+	else
+	    save_command restore_default_route
 	fi
 
 	cat >&3 << __EOF__

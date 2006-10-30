@@ -1287,42 +1287,58 @@ get_device_mtu() # $1 = device
 #
 undo_routing() {
     
-    if [ -n "$RESTORE_ROUTING" ]; then
-        #
-        # Restore rt_tables database
-        #
-	if [ -f ${VARDIR}/rt_tables ]; then
-	    cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
-	    rm -f ${VARDIR}/rt_tables
-	fi
-        #
-        # Restore the default route
-        #
-	if [ -f ${VARDIR}/default_route ]; then
-	    local default_route="$(sed 's/\n/ /' ${VARDIR}/default_route)"
-	    
-	    case "$default_route" in
-		default*default)
-		    default_route="${default_route%% default*}"
+    #
+    # Restore rt_tables database
+    #
+    if [ -f ${VARDIR}/rt_tables ]; then
+	cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
+	rm -f ${VARDIR}/rt_tables
+    fi
+    #
+    # Restore the rest of the routing table
+    #
+    if [ -f ${VARDIR}/undo_routing ]; then
+	. ${VARDIR}/undo_routing
+	progress_message "Shorewall-generated routing tables and routing rules removed"
+	rm -f ${VARDIR}/undo_routing
+    fi
+
+}
+
+restore_default_route() {
+    
+    if [ -f ${VARDIR}/default_route ]; then
+	local default_route= route
+
+	while read route ; do
+	    case $route in
+		default*)
+		    if [ -n "$default_route" ]; then
+			case "$default_route" in
+			    metric)
+		                #
+		                # Don't restore a route with a metric -- we only replace the one with metric == 0
+		                #
+				qt ip route delete default metric 0 && \
+				    progress_message "Default Route with metric 0 deleted"
+				;;
+			    *)
+				qt ip route replace $default_route && \
+				    progress_message "Default Route (${default_route# }) restored"
+				;;
+			esac
+			
+			break
+		    fi
+		    
+		    default_route="$default_route $route"
+		    ;;
+		*)
+		    default_route="$default_route $route"
 		    ;;
 	    esac
+	done < ${VARDIR}/default_route
 	    
-	    qt ip route replace $default_route
-	    
-	    progress_message "Default Route ($default_route) restored"
-	    
-	    rm -f ${VARDIR}/default_route
-	fi
-        #
-        # Restore the rest of the routing table
-        #
-	if [ -f ${VARDIR}/undo_routing ]; then
-	    . ${VARDIR}/undo_routing
-	    progress_message "Shorewall-generated routing tables and routing rules removed"
-	    rm -f ${VARDIR}/undo_routing
-	fi
+	rm -f ${VARDIR}/default_route
     fi
 }
-	
-
-	

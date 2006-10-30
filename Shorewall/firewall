@@ -304,6 +304,7 @@ stop_firewall() {
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
     undo_routing
+    restore_default_route
 
     process_criticalhosts
 

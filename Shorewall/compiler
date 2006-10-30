@@ -4724,6 +4724,8 @@ __EOF__
 
     save_command "undo_routing"
 
+    save_command "restore_default_route"
+
     process_criticalhosts
 
     if [ -n "$CRITICALHOSTS" ]; then
@@ -5135,7 +5137,6 @@ __EOF__
     LOGLIMIT="$LOGLIMIT"
     LOGTAGONLY="$LOGTAGONLY"
     LOGRULENUMBERS="$LOGRULENUMBERS"
-    RESTORE_ROUTING="$RESTORE_ROUTING"
 __EOF__
 
     if [ -n "$LOGFORMAT" ]; then
@@ -5426,6 +5427,9 @@ __EOF__
     if strip_file_and_lib_load providers providers; then
 	setup_providers $(find_file providers)
 	[ -n "$ROUTEMARK_INTERFACES" ] && setup_routes
+    else
+	save_command undo_routing
+	save_command restore_default_route
     fi
 
     if strip_file_and_lib_load nat nat; then

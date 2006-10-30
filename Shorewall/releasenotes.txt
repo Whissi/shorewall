@@ -153,23 +153,23 @@ Other Changes in 3.3.4.
 6)  Previously, Shorewall has not attempted to undo the changes it has
     made to the firewall's routing as a result of entries in
     /etc/shorewall/providers and /etc/shorewall/routes. Beginning with
-    this release, Shorewall will attempt to undo these changes if
-    RESTORE_ROUTING=Yes in /etc/shorewall/shorewall.conf.
+    this release, Shorewall will attempt to undo these changes.
 
-    If you use entries in /etc/shorewall, you must exercise
-    care when first setting this option in order to 
-    ensure that the firewall's routing be restored correctly.
+    When Shorewall starts or is restarted and there are entries in
+    /etc/shorewall/providers, Shorewall will capture the contents
+    of /etc/shorewall/rt_tables and will restore that database when
+    Shorewall is stopped or restarted. Similarly, the default route
+    will be captured the first time that you [re]start Shorewall using
+    this version and will be restored under the following conditions:
 
-    When Shorewall starts or is restarted with RESTORE_ROUTING=Yes,
-    it will capture the contents of /etc/shorewall/rt_tables and will
-    restore that database when Shorewall is stopped or
-    restarted. Similarly, the default route will be captured the first
-    time that you [re]start Shorewall using this version.
+    a) shorewall stop
+    b) shorewall clear
+    c) shorewall restart or restore and there are no entries in
+       /etc/shorewall/providers.
 
-    Beware that setting RESTORE_ROUTING=Yes may result in lost
-    connections after a start, stop, restart, restore or clear command
-    because the route being used by some existing connections may be
-    deleted.
+    Once the default route has been restored, Shorewall will delete
+    the saved copy so that it will once again be captured at the next
+    shorewall start or shorewall restore.
 
 Migration Considerations:
 

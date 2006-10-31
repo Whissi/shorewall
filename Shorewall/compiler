@@ -783,40 +783,44 @@ setup_ecn() # $1 = file name
 
     strip_file ecn $1
 
-    progress_message2 "$DOING $1..."
+    if [ -s ${TMP_DIR}/ecn ]; then
+	save_progress_message "Setting up ECN..."
 
-    while read interface host; do
-	expandv interface host
-	list_search  $interface $ALL_INTERFACES || \
-	    fatal_error "Unknown interface $interface"
-	list_search $interface $interfaces || \
-	    interfaces="$interfaces $interface"
-	[ "x$host" = "x-" ] && host=
-	for h in $(separate_list ${host:-0.0.0.0/0}); do
-	    hosts="$hosts $interface:$h"
-	done
-    done < $TMP_DIR/ecn
+	progress_message2 "$DOING $1..."
 
-    if [ -n "$interfaces" ]; then
-	progress_message "$DOING ECN control on${interfaces}..."
+	while read interface host; do
+	    expandv interface host
+	    list_search  $interface $ALL_INTERFACES || \
+		fatal_error "Unknown interface $interface"
+	    list_search $interface $interfaces || \
+		interfaces="$interfaces $interface"
+	    [ "x$host" = "x-" ] && host=
+	    for h in $(separate_list ${host:-0.0.0.0/0}); do
+		hosts="$hosts $interface:$h"
+	    done
+	done < $TMP_DIR/ecn
 
-	for interface in $interfaces; do
-	    chain=$(ecn_chain $interface)
-	    if havemanglechain $chain; then
-		flushmangle $chain
-	    else
-		createmanglechain $chain
-		run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
-		run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
-	    fi
-	done
-
-	for host in $hosts; do
-	    interface=${host%:*}
-	    h=${host#*:}
-	    run_iptables -t mangle -A $(ecn_chain $interface) -p tcp $(dest_ip_range $h) -j ECN --ecn-tcp-remove
-	    progress_message_and_save "   ECN Disabled to $h through $interface"
-	done
+	if [ -n "$interfaces" ]; then
+	    progress_message "$DOING ECN control on${interfaces}..."
+	    
+	    for interface in $interfaces; do
+		chain=$(ecn_chain $interface)
+		    if havemanglechain $chain; then
+			flushmangle $chain
+		    else
+			createmanglechain $chain
+			run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
+			run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
+		    fi
+	    done
+	    
+	    for host in $hosts; do
+		interface=${host%:*}
+		h=${host#*:}
+		run_iptables -t mangle -A $(ecn_chain $interface) -p tcp $(dest_ip_range $h) -j ECN --ecn-tcp-remove
+		    progress_message_and_save "   ECN Disabled to $h through $interface"
+	    done
+	fi
     fi
 }
 
@@ -872,6 +876,8 @@ setup_tc1() {
     # Process the TC Rules File
     #
     if strip_file_and_lib_load tcrules tcrules; then
+	save_progress_message "Setting up TC Rules..."
+
 	while read mark sources dests proto ports sports user testval length tos; do
 	    expandv mark sources dests proto ports sports user testval length tos
 	    if [ "x$mark" = xCOMMENT ]; then
@@ -1062,7 +1068,6 @@ compile_refresh_firewall()
     ecn=$(find_file ecn)
 
     if [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ]; then
-	save_progress_message "Refreshing ECN"
 	setup_ecn $ecn
     fi
     #
@@ -3118,6 +3123,8 @@ process_tos() # $1 = name of tos file
 
     if [ -s $TMP_DIR/tos ] ; then
 	
+	save_progress_message "Setting up TOS..."
+
 	progress_message2 "$DOING $1..."
 
 	createmanglechain $chain
@@ -5449,8 +5456,6 @@ __EOF__
 
     setup_syn_flood_chains
 
-    save_progress_message "Setting up IPSEC management..."
-
     setup_ipsec
 
     maclist_hosts=$(find_hosts_by_option maclist)
@@ -5502,18 +5507,11 @@ __EOF__
 
     if [ -n "$MANGLE_ENABLED" ]; then
 	tos=$(find_file tos)
-	if [ -f $tos ]; then
-	    save_progress_message "Setting up TOS..."
-	    process_tos $tos
-	fi
+	[ -f $tos ] && process_tos $tos
 
 	ecn=$(find_file ecn)
-	if [ -f $ecn ]; then
-	    save_progress_message "Setting up ECN..."
-	    setup_ecn $ecn
-	fi
+	[ -f $ecn ] && setup_ecn $ecn
 
-	save_progress_message "Setting up TC Rules..."
 	setup_tc
     fi
 

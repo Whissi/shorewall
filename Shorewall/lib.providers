@@ -325,14 +325,20 @@ __EOF__
     INDENT="$INDENT    "
     indent >&3 << __EOF__
 #
-# Undo any changes made the last time that we [re]started
+# Undo any changes made since the last time that we [re]started -- this will not restore the default route
 #
 undo_routing
 #
-# Save current routing state so that it can be restored later
+# Save current routing table database so that it can be restored later
 #
 cp /etc/iproute2/rt_tables \${VARDIR}/
+#
+# Capture the default route(s) if we don't have it (them) already.
+#
 [ -f \${VARDIR}/default_route ] || ip route ls | grep -E '^\s*(default |nexthop )' > \${VARDIR}/default_route
+#
+# Initialize the file that holds 'undo' commands
+#
 > \${VARDIR}/undo_routing
 __EOF__
     save_progress_message "Adding Providers..."
@@ -353,9 +359,13 @@ __EOF__
 	    save_command "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\""
 	    save_command "else"
 	    save_command "    error_message \"WARNING: No Default route added (all 'balance' providers are down)\""
+	    save_command "    restore_default_route"
 	    save_command "fi"
 	    save_command
 	else
+	    save_command "#"
+	    save_command "# We don't have any 'balance' providers so we retore any default route that we've saved"
+	    save_command "#"
 	    save_command restore_default_route
 	fi
 

@@ -1352,3 +1352,21 @@ restore_default_route() {
 	rm -f ${VARDIR}/default_route
     fi
 }
+
+#
+# Determine how to do "echo -e"
+
+find_echo() {
+    local result
+
+    result=$(echo "a\tb")
+    [ ${#result} -eq 3 ] && echo echo
+
+    result=$(echo -e "a\tb")
+    [ ${#result} -eq 3 ] && echo "echo -e"
+
+    result=$(which echo)
+    [ -n "$result" ] && echo "$result -e"
+
+    echo echo 
+}

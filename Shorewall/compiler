@@ -1537,7 +1537,7 @@ __EOF__
 	    Limit)
 		set -- $(separate_list $xtag)
 
-		[ $# -eq 3 ] || fatal_error "Rule must include <set name>,<max connections>,<interval> as the log tag"
+		[ $# -eq 3 ] || fatal_error "Limit rules must include <set name>,<max connections>,<interval> as the log tag"
 
 		run_iptables -A $xchain -m recent --name $1 --set
 
@@ -3219,7 +3219,7 @@ default_policy() # $1 = client $2 = server
 	    # The policy chain is the canonical chain; add policy rule to it
 	    # The syn flood jump has already been added if required.
 	    #
-	    policy_rules $chain $policy $loglevel $default
+	    policy_rules $chain $policy "${loglevel:--}" $default
 	else
 	    #
 	    # The policy chain is different from the canonical chain -- approach
@@ -3233,7 +3233,7 @@ default_policy() # $1 = client $2 = server
 		    # in this chain.
 		    #
 		    report_syn_flood_protection
-		    policy_rules $chain $policy $loglevel $default
+		    policy_rules $chain $policy "${loglevel:--}" $default
 		else
 		    #
 		    # No problem with double-counting so just jump to the
@@ -3249,7 +3249,7 @@ default_policy() # $1 = client $2 = server
 		#
 		[ -n "$synparams" ] && \
 		    report_syn_flood_protection
-		policy_rules $chain $policy $loglevel $default
+		policy_rules $chain $policy "${loglevel:--}" $default
 		;;
 	    *)
 		#
@@ -3301,7 +3301,7 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 	eval default=\$${policychain}_default
 	eval
 
-	policy_rules $1 $policy $loglevel $default
+	policy_rules $1 $policy "${loglevel:--}" $default
     else
 	policy_rules $1 DROP info $DROP_DEFAULT
     fi
@@ -4021,7 +4021,7 @@ apply_policy_rules() {
 		case $chain in
 		    all2*|*2all)
 			run_user_exit $chain
-			policy_rules $chain $policy $loglevel $default
+			policy_rules $chain $policy "${loglevel:--}" $default
 			;;
 		esac
 	    fi

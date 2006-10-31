@@ -382,12 +382,13 @@ ${INDENT}cat > /etc/iproute2/rt_tables <<EOF
 # local
 #
 EOF
+
+echocommand=\$(find_echo)
 __EOF__
         for table in $PROVIDERS; do
 	    eval number=\$${table}_number
 	    indent >&3 << __EOF__
-echobin=\$(mywhich echo)
-\${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
+\$echocommand "$number\t$table" >>  /etc/iproute2/rt_tables
 __EOF__
 	done
 

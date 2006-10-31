@@ -5540,7 +5540,10 @@ __EOF__
 
     append_file start
 
-    [ -n "$DELAYBLACKLISTLOAD" ] && refresh_blacklist
+    if [ -n "$DELAYBLACKLISTLOAD" ]; then
+	refresh_blacklist
+	save_command
+    fi
 
     createchain shorewall no
 

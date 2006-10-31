@@ -526,7 +526,7 @@ setup_nat() {
 
 	while read external interface internal allints localnat; do
 	    expandv external interface internal allints localnat
-	    
+
 	    if [ "x$external" = xCOMMENT ]; then
 		if [ -n "$COMMENTS" ]; then
 		    comment=$(echo $interface $internal $allints $localnat)
@@ -539,10 +539,10 @@ setup_nat() {
 	    fi
 	    progress_message_and_save "   Host $internal NAT $external on $interface"
 	done < $TMP_DIR/nat
-	
+
 	[ -n "$COMMENTS" ] && save_command COMMENT=
     fi
-    
+
 }
 
 #

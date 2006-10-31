@@ -773,7 +773,7 @@ process_action3() {
 	if [ -n "$is_macro" ]; then
 
 	    xtarget1=$(map_old_action $xtarget1)
-	    
+
 	    case $xtarget1 in
 		*/*)
 		    param=${xtarget1#*/}
@@ -784,15 +784,15 @@ process_action3() {
 	    progress_message "..Expanding Macro $(find_file macro.$xtarget1)..."
 	    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 		expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
-		
+
 		mtarget=$(merge_levels $xaction2 $mtarget)
-		
+
 		case $mtarget in
 		    PARAM|PARAM:*)
 			[ -n "$param" ] && mtarget=$(substitute_action $param $mtarget) || fatal_error "PARAM requires that a parameter be supplied in macro invocation"
 			;;
 		esac
-		
+
 		if [ -n "$mclients" ]; then
 		    case $mclients in
 			-|SOURCE)
@@ -808,7 +808,7 @@ process_action3() {
 		else
 		    mclients=${xclients}
 		fi
-		
+
 		if [ -n "$mservers" ]; then
 		    case $mservers in
 			-|DEST)
@@ -824,13 +824,13 @@ process_action3() {
 		else
 		    mservers=${xserverss}
 		fi
-		
+
 		[ -n "$xprotocol" ]  && [ "x${xprotocol}" != x- ]  && mprotocol=$xprotocol
 		[ -n "$xports" ]     && [ "x${xports}" != x- ]     && mports=$xports
 		[ -n "$xcports" ]    && [ "x${xcports}" != x- ]    && mcports=$xcports
 		[ -n "$xratelimit" ] && [ "x${xratelimit}" != x- ] && mratelimit=$xratelimit
 		[ -n "$xuserspec" ]  && [ "x${xuserspec}" != x- ]  && muserspec=$xuserspec
-		
+
 		rule="$mtarget ${mclients:=-} ${mservers:=-} ${mprotocol:=-} ${mports:=-} ${mcports:=-} ${mratelimit:-} ${muserspec:=-}"
 		process_action $xchain $xaction1 $mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec
 	    done < $TMP_DIR/macro.$xtarget1
@@ -840,7 +840,7 @@ process_action3() {
 	    process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
 	fi
     done < $TMP_DIR/$f
-    
+
     [ -n "$COMMENTS" ] && save_command COMMENT=
-    
+
 }

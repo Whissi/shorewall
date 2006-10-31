@@ -26,7 +26,7 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-# This library is loaded by /usr/share/shorewall/compiler when TC_ENABLED=Internal 
+# This library is loaded by /usr/share/shorewall/compiler when TC_ENABLED=Internal
 # and the tcdevices and/or the tcclasses file is non-empty. It is also loaded under
 # the same circumstances by the compiled firewall script when processing the
 # 'refresh' command.
@@ -179,7 +179,7 @@ setup_traffic_shaping()
 
 	dev=$(chain_base $device)
 
-	save_command "if qt ip link ls dev $device; then"
+	save_command "if interface_is_usable $device; then"
 	indent="$INDENT"
 	INDENT="$INDENT    "
 	save_command ${dev}_exists=Yes
@@ -202,7 +202,7 @@ setup_traffic_shaping()
 	INDENT="$indent"
 	save_command else
 	INDENT="$INDENT    "
-	save_command error_message "\"WARNING: Device $device not found -- traffic-shaping configuration skipped\""
+	save_command error_message "\"WARNING: Device $device not up and configured -- traffic-shaping configuration skipped\""
 	save_command "${dev}_exists="
 	INDENT="$indent"
 	save_command "fi"
@@ -282,6 +282,12 @@ setup_traffic_shaping()
 	return 0
     }
 
+    finish_device() {
+	INDENT="$indent"
+	save_command fi
+	save_command
+    }
+
     validate_tcdevices_file
     validate_tcclasses_file
 
@@ -309,12 +315,9 @@ setup_traffic_shaping()
 	    dev=$(chain_base $device)
 
 	    if [ "$device" != "$last_device" ]; then
-		if [ -n "$last_device" ]; then
-		    INDENT="$indent"
-		    save_command fi
-		    save_command
-		fi
-		    
+
+		[ -n "$last_device" ] && finish_device
+
 		save_command "if [ -n \"\$${dev}_exists\" ] ; then"
 		indent="$INDENT"
 		INDENT="$INDENT    "
@@ -326,10 +329,6 @@ setup_traffic_shaping()
 	    add_tc_class && progress_message "   TC Class $tcdev defined."
 	done < $TMP_DIR/tcclasses
 
-	if [ -n "$last_device" ]; then
-	    INDENT="$indent"
-	    save_command fi
-	    save_command
-	fi	    
+	[ -n "$last_device" ] && finish_device
     fi
 }

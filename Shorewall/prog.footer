@@ -14,7 +14,7 @@ initialize
 # Start trace if first arg is "debug" or "trace"
 #
 if [ $# -gt 1 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
-    set -x	
+    set -x
     shift
 fi
 
@@ -95,7 +95,7 @@ case "$COMMAND" in
 	    status=0
 	    progress_message3 "$PRODUCT Counters Reset"
 	fi
-	;;	
+	;;
     restart)
 	if shorewall_is_started; then
 	    progress_message3 "Restarting $PRODUCT...."
@@ -108,7 +108,7 @@ case "$COMMAND" in
 	status=$?
 	if [ -n "$SUBSYSLOCK" ]; then
  	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-        fi	
+        fi
 	progress_message3 "done."
 	;;
     refresh)
@@ -127,7 +127,7 @@ case "$COMMAND" in
 	status=$?
 	if [ -n "$SUBSYSLOCK" ]; then
  	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-        fi	
+        fi
 	;;
     clear)
 	progress_message3 "Clearing $PRODUCT...."

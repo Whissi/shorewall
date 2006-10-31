@@ -42,7 +42,7 @@ setup_mac_lists() # $1 = Phase Number
     local ipsec
     local policy=
 
-    create_mac_chain()			
+    create_mac_chain()
     {
 	case $MACLIST_TABLE in
 	    filter)
@@ -100,7 +100,7 @@ setup_mac_lists() # $1 = Phase Number
 		if [ $MACLIST_TABLE = mangle ] && interface_has_option $interface dhcp; then
 		    run_iptables -t mangle -A $chain -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN
 		fi
-		
+
 		if [ -n "$MACLIST_TTL" ]; then
 		    chain1=$(macrecent_target $interface)
 		    create_mac_chain $chain1
@@ -117,7 +117,7 @@ setup_mac_lists() # $1 = Phase Number
 	    expandv disposition interface mac addresses
 
 	    level=
-	    
+
 	    case $disposition in
 		ACCEPT:*)
 		    level=${disposition#*:}
@@ -165,11 +165,11 @@ setup_mac_lists() # $1 = Phase Number
 	    fi
 
 	    [ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
-		
+
 		if ! have_mac_chain $chain ; then
 		    fatal_error "No hosts on $interface have the maclist option specified"
 		fi
-		
+
 		if [ x${mac:=-} = x- ]; then
 		    if [ -z "$addresses" ]; then
 			fatal_error "You must specify a MAC address or an IP address"
@@ -196,7 +196,7 @@ setup_mac_lists() # $1 = Phase Number
         # Generate jumps from the input and forward chains
         #
         [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
-    
+
         for hosts in $maclist_hosts; do
 	    ipsec=${hosts%^*}
 	    hosts=${hosts#*^}
@@ -223,11 +223,11 @@ setup_mac_lists() # $1 = Phase Number
 	for interface in $maclist_interfaces; do
 
 	    [ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
-		
+
 		if [ -n "$MACLIST_LOG_LEVEL" -o $MACLIST_DISPOSITION != ACCEPT ]; then
 		    indent >&3 << __EOF__
 
-if interface_is_up $interface && [ "\$(find_first_interface_address_if_any $interface)" != 0.0.0.0 ]; then
+if interface_is_usable $interface; then
     ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
         address=\${address%/*}
         if [ -n "\$broadcast" ]; then
@@ -247,11 +247,11 @@ __EOF__
 		CHAIN=$chain
 
 		append_file maclog
-		
+
 		if [ -n "$MACLIST_LOG_LEVEL" ]; then
 		    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
 		fi
-		
+
 		if [ $MACLIST_DISPOSITION != ACCEPT ]; then
 		    run_iptables -A $chain -t $MACLIST_TABLE -j $MACLIST_TARGET
 		fi

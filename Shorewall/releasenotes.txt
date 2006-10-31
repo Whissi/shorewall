@@ -1,36 +1,36 @@
 Shorewall 3.3.5
-	  	 
- Note to users upgrading from Shorewall 3.0 or 3.3	 
-  	 
-    Most problems associated with upgrades come from two causes: 	 
-	  	 
-    - The user didn't read and follow the migration considerations in these 	 
-      release notes. 	 
-	  	 
-    - The user mis-handled the /etc/shorewall/shorewall.conf file during 	 
-      upgrade. Shorewall is designed to allow the default behavior of 	 
-      the product to evolve over time. To make this possible, the design 	 
-      assumes that you will not replace your current shorewall.conf file 	 
-      during upgrades. If you feel absolutely compelled to have the latest 	 
-      comments and options in your shorewall.conf then you must proceed 	 
-      carefully. 	 
-	  	 
-    While you are at it, if you have a file named /etc/shorewall/rfc1918 then 	 
-    please check that file. If it has addresses listed that are NOT in one of 	 
-    these three ranges, then please rename the file to 	 
-    /etc/shorewall/rfc1918.old. 	 
-  	 
-         10.0.0.0 - 10.255.255.255 	 
-         172.16.0.0 - 172.31.255.255 	 
-         192.168.0.0 - 192.168.255.255 	 
-  	 
-    If you have a file named /etc/shorewall/modules, please remove 	 
-    it. The default modules file is now located in /usr/share/shorewall/ 	 
-    (see the "Migration Considerations" below). 	 
-  	 
-    Please see the "Migration Considerations" below for additional upgrade 	 
-    information. 	 
-  	 
+
+ Note to users upgrading from Shorewall 3.0 or 3.3
+
+    Most problems associated with upgrades come from two causes:
+
+    - The user didn't read and follow the migration considerations in these
+      release notes.
+
+    - The user mis-handled the /etc/shorewall/shorewall.conf file during
+      upgrade. Shorewall is designed to allow the default behavior of
+      the product to evolve over time. To make this possible, the design
+      assumes that you will not replace your current shorewall.conf file
+      during upgrades. If you feel absolutely compelled to have the latest
+      comments and options in your shorewall.conf then you must proceed
+      carefully.
+
+    While you are at it, if you have a file named /etc/shorewall/rfc1918 then
+    please check that file. If it has addresses listed that are NOT in one of
+    these three ranges, then please rename the file to
+    /etc/shorewall/rfc1918.old.
+
+         10.0.0.0 - 10.255.255.255
+         172.16.0.0 - 172.31.255.255
+         192.168.0.0 - 192.168.255.255
+
+    If you have a file named /etc/shorewall/modules, please remove
+    it. The default modules file is now located in /usr/share/shorewall/
+    (see the "Migration Considerations" below).
+
+    Please see the "Migration Considerations" below for additional upgrade
+    information.
+
 Problems Corrected in 3.3.5
 
 1)  Previously, if the last 'balance' provider was removed from
@@ -98,7 +98,7 @@ New Features:
     - lib.accounting. Must be available if you include entries in
       /etc/shorewall/accounting.
 
-    - lib.actions. Must be available if you do not specify 
+    - lib.actions. Must be available if you do not specify
       USE_ACTIONS=No in /etc/shorewall/shorewall.conf.
 
     - lib.dynamiczones. Must be available if you specify
@@ -179,7 +179,7 @@ New Features:
 
        The value assigned to these may be:
 
-       	a) The name of an action. 
+       	a) The name of an action.
 	b) The name of a macro
 	c) 'None' or 'none'
 
@@ -203,12 +203,12 @@ New Features:
        In /etc/shorewall/policy, when the POLICY is DROP, REJECT,
        ACCEPT or QUEUE then the policy may be followed by ":" and one
        of the following:
-			
+
 	a) The word "None" or "none". This causes any default
 	   action defined in /etc/shorewall/shorewall.conf
 	   to be omitted for this policy.
 	b) The name of an action (requires that USE_ACTIONS=Yes
-	   in shorewall.conf). That action will be invoked 
+	   in shorewall.conf). That action will be invoked
 	   before the policy is enforced.
 	c) The name of a macro. The rules in that macro will
 	   be applied before the policy is enforced. This
@@ -248,8 +248,8 @@ New Features:
     than 5 but it may be greater than 5). For example, setting
     LOGFORMAT="FW:%s:%s:" will allow zone names of up to 8 characters.
 
-6)  Netfilter provides support for attaching comments to Netfilter 
-    rules. Comments can be up to 255 bytes in length and are 
+6)  Netfilter provides support for attaching comments to Netfilter
+    rules. Comments can be up to 255 bytes in length and are
     visible using the "shorewall show <chain>", "shorewall show nat",
     "shorewall show mangle" and "shorewall dump" commands. Comments are
     delimited by '/* ... */" in the output.
@@ -280,12 +280,12 @@ New Features:
     Example from my rules file:
 
 	    #SOURCE      SOURCE     DEST       PROTO DEST PORT(S)
-	    
+
 	    COMMENT Stop Microsoft Noise
 
 	    REJECT       loc        net        tcp   137,445
 	    REJECT       loc        net        udp   137:139
-	    
+
 	    COMMENT  # Stop comment from being attached to rules below
 
     The output of "shorewall show loc2net" includes (folded):
@@ -348,7 +348,7 @@ New Features:
         0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
         0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
         0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0           policy match dir out pol none
-    gateway:~ # 
+    gateway:~ #
 
     This redundancy may be eliminated by setting OPTIMIZE=1 in shorewall.conf.
 
@@ -362,7 +362,7 @@ New Features:
         0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
         0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
     gateway:~ #
- 
+
     Note that with OPTIMIZE=1, traffic destined for an
     interface/Address that falls outside of all defined zones may now
     be logged out of a '2all' chain rather than out of the FORWARD
@@ -395,26 +395,26 @@ New Features:
     Counters reset Thu Oct 26 07:54:58 PDT 2006
 
     Chain loc2net (1 references)
-     pkts bytes target     prot opt in     out     source               destination         
+     pkts bytes target     prot opt in     out     source               destination
       ...
-        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
-        0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           icmp type 8 
-        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0
+        0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           icmp type 8
+        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
 
     gateway:~
 
     OPTIMIZE=1
-    
+
     gateway:~ # shorewall show loc2net
     Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
 
     Counters reset Thu Oct 26 07:56:38 PDT 2006
 
     Chain loc2net (1 references)
-     pkts bytes target     prot opt in     out     source               destination         
+     pkts bytes target     prot opt in     out     source               destination
       ...
-        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0 
-        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+        0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0
+        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
 
     gateway:~
 

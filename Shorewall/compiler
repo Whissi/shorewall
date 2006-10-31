@@ -39,7 +39,7 @@
 # Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message
-{   
+{
     echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     [ -n "$OUTPUT" ] && rm -f $OUTPUT
@@ -49,10 +49,10 @@ fatal_error() # $* = Error Message
 
 #
 # We include this for compatibility with the 'firewall' script. It distinguishes between
-# Fatal Errors (stop or restore required) and Startup Errors (errors detected before the firewall 
+# Fatal Errors (stop or restore required) and Startup Errors (errors detected before the firewall
 # state has been changed. This allows us to use common parsing routines in both programs.
 #
-startup_error() 
+startup_error()
 {
     echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
@@ -508,7 +508,7 @@ validate_policy()
 	esac
 
 	default=
-	
+
 	case $policy in
 	    *:None|*:none)
 		default=none
@@ -546,7 +546,7 @@ validate_policy()
 	    NONE)
 		[ "$client" = "$FW" -o "$server" = "$FW" ] && \
 		    fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
-		
+
 		[ -n "$clientwild" -o -n "$serverwild" ] && \
 		    fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 		;;
@@ -569,7 +569,7 @@ validate_policy()
 	[ "x$synparams"  = "x-" ] && synparams=
 
 	policy=${policy%:*}
-	
+
 	[ $policy = NONE ] || ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
 
 	eval ${chain}_is_policy=Yes
@@ -802,7 +802,7 @@ setup_ecn() # $1 = file name
 
 	if [ -n "$interfaces" ]; then
 	    progress_message "$DOING ECN control on${interfaces}..."
-	    
+
 	    for interface in $interfaces; do
 		chain=$(ecn_chain $interface)
 		    if havemanglechain $chain; then
@@ -813,7 +813,7 @@ setup_ecn() # $1 = file name
 			run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
 		    fi
 	    done
-	    
+
 	    for host in $hosts; do
 		interface=${host%:*}
 		h=${host#*:}
@@ -897,7 +897,7 @@ setup_tc1() {
     # Just in case the file ended with a comment
     #
     [ -n "$COMMENTS" ] && save_command COMMENT=
-   
+
     #
     # Link to the TC mangle chains from the main chains
     #
@@ -1371,7 +1371,7 @@ substitute_action() # $1 = parameter, $2 = action
 #                                   it handles builtin actions.
 #
 process_actions3()
-{    
+{
     for xaction in $USEDACTIONS; do
 	#
 	# Find the chain associated with this action:level:tag
@@ -1538,7 +1538,7 @@ __EOF__
 		set -- $(separate_list $xtag)
 
 		[ $# -eq 3 ] || fatal_error "Rule must include <set name>,<max connections>,<interval> as the log tag"
-		
+
 		run_iptables -A $xchain -m recent --name $1 --set
 
 		if [ -n "$xlevel" ]; then
@@ -1796,12 +1796,12 @@ add_a_rule() {
     {
 	fatal_error "Unknown interface $1 in rule: \"$rule\""
     }
-    
+
     rule_interface_verify()
     {
 	verify_interface $1 || interface_error $1
     }
-    
+
     handle_exclusion()
     {
 	build_exclusion_chain chain filter "$excludesource" "$excludedest"
@@ -1826,7 +1826,7 @@ add_a_rule() {
 
     do_ipp2p() {
 	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
-	
+
 	dports="-m ipp2p --${port:-ipp2p}"
 
 	case $proto in
@@ -1879,7 +1879,7 @@ add_a_rule() {
 
     dest_interface=
     serv=
-    
+
     case "$server" in
 	-)
 	    ;;
@@ -1907,7 +1907,7 @@ add_a_rule() {
     servport=$serverport
     multiport=
     user="$userandgroup"
-    
+
     # Restore $chain to the canonical chain.
 
     chain=$logchain
@@ -1958,7 +1958,7 @@ add_a_rule() {
 	    ;;
 	REDIRECT)
 	    [ -n "$excludedest" ] && fatal_error "Invalid DEST for this ACTION; rule \"$rule\""
-	    
+
 	    [ -n "$serv" ] && \
 		fatal_error "REDIRECT rules cannot  specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
@@ -1966,7 +1966,7 @@ add_a_rule() {
 	    ;;
 	DNAT|SAME)
 	    [ -n "$excludedest" ] && fatal_error "Invalid DEST for this ACTION; rule \"$rule\""
-	    
+
 	    [ -n "$serv" ] || \
 		fatal_error "$logtarget rules require a server address; rule: \"$rule\""
 	    natrule=Yes
@@ -1986,7 +1986,7 @@ add_a_rule() {
 	    state=
 	    ;;
     esac
-    
+
     if [ -n "${serv}${servport}" ]; then
 
         # A specific server or server port given
@@ -1997,11 +1997,11 @@ add_a_rule() {
 	elif [ -n "$servport" -a "$servport" != "$port" ]; then
 	    fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
 	fi
-	
+
 	if [ -n "${excludesource}${excludedest}" ]; then
 	    handle_exclusion
 	fi
-	
+
 	if [ -z "$dnat_only" ]; then
 	    if [ -n "$serv" ]; then
 		for serv1 in $(separate_list $serv); do
@@ -2019,7 +2019,7 @@ __EOF__
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
 					    $user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
 				    fi
-				    
+
 				    run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
 					$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
 				done
@@ -2029,12 +2029,12 @@ __EOF__
 				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 				    $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 			    fi
-			    
+
 			    if [ -n "$nonat" ]; then
 				addnatrule $(dnat_chain $source) $proto $multiport \
 				    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $user -j RETURN
 			    fi
-			    
+
 			    if [ "$logtarget" != NONAT ]; then
 				run_iptables2 -A $chain $state $proto $multiport $cli $sports \
 				    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
@@ -2047,11 +2047,11 @@ __EOF__
 		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 			$state $(fix_bang $proto $sports $multiport $cli $dports)
 		fi
-		
+
 		[ -n "$nonat" ] && \
 		    addnatrule $(dnat_chain $source) $proto $multiport \
 		    $cli $sports $dports $ratelimit $user -j RETURN
-		    
+
 		    [ "$logtarget" != NONAT ] && \
 			run_iptables2 -A $chain $state $proto $multiport $cli $sports \
 			$dports $ratelimit $user -j $target
@@ -2071,13 +2071,13 @@ __EOF__
 		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 			$state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
 		fi
-		
+
 		if [ "$logtarget" != LOG ]; then
 		    if [ -n "$nonat" ]; then
 			addnatrule $(dnat_chain $source) $proto $multiport \
 			    $cli $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j RETURN
 		    fi
-		    
+
 		    if [ "$logtarget" != NONAT ]; then
 			run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
 			    $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j $target
@@ -2089,13 +2089,13 @@ __EOF__
 		log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 		    $state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 	    fi
-	    
+
 	    if [ "$logtarget" != LOG ]; then
 		if [ -n "$nonat" ]; then
 		    addnatrule $(dnat_chain $source) $proto $multiport \
 			$cli $sports $dports $ratelimit $user -j RETURN
 		fi
-		
+
 		if [ "$logtarget" != NONAT ]; then
 		    run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
 			$sports $dports $ratelimit $user -j $target
@@ -2923,13 +2923,13 @@ process_default_macro() # $1 = macro name
 
 	add_a_rule
 	progress_message "Rule \"$target $protocol $port $cport $ratelimit $userspec\" $DONE"
-	
+
     done < $TMP_DIR/macro.$macro
 
     progress_message "..End Macro"
 
 }
-    
+
 #
 # Process a record from the tos file
 #
@@ -3118,11 +3118,11 @@ process_tos() # $1 = name of tos file
 	chain=fortos
 	stdchain=FORWARD
     fi
-    
+
     strip_file tos $1
 
     if [ -s $TMP_DIR/tos ] ; then
-	
+
 	save_progress_message "Setting up TOS..."
 
 	progress_message2 "$DOING $1..."
@@ -3496,7 +3496,7 @@ refresh_blacklist() {
 	expandv networks protocol ports
 	process_blacklist_rec
     done < $TMP_DIR/blacklist
-    
+
     INDENT="$indent"
     save_command "fi"
 }
@@ -4234,7 +4234,7 @@ activate_rules()
 	fi
 
 	need_broadcast=
-	
+
 	if [ -n "$complex" ]; then
 	    frwd_chain=${zone}_frwd
 	    chain=$(dnat_chain $zone)
@@ -4266,7 +4266,7 @@ activate_rules()
 		if [ -n "$exclusions" ]; then
 		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j ${zone}_input
 		    run_iptables -A ${zone}_input -j $chain2
-		else		
+		else
 		    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 		fi
 	    fi
@@ -4302,20 +4302,20 @@ activate_rules()
 
 	    dest_zones=
 	    #
-	    # The following loop attempts to eliminate redundant sequences of jumps to 
-	    # all2all or <source zone>2all. It does so by combining all trailing 
+	    # The following loop attempts to eliminate redundant sequences of jumps to
+	    # all2all or <source zone>2all. It does so by combining all trailing
 	    # jumps to the same policy-only chain.
 	    #
 	    for zone1 in $ZONES; do
 
 		eval policy=\$${zone}2${zone1}_policy
-		
+
 		[ "$policy" = NONE ] && continue
-		
+
 		chain="$(rules_chain $zone $zone1)"
-		
+
 		[ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
-		
+
 		if [ $zone = $zone1 ]; then
 		    #
 		    # Try not to generate superfluous intra-zone rules
@@ -4323,7 +4323,7 @@ activate_rules()
 		    eval routeback=\"\$${zone}_routeback\"
 		    eval interfaces=\"\$${zone}_interfaces\"
 		    eval ports="\$${zone}_ports"
-		    
+
 		    num_ifaces=$(list_count1 $interfaces)
 		    #
 		    # If the zone has a single interface then what matters is how many ports it has
@@ -4335,8 +4335,8 @@ activate_rules()
 		    #
 		    if [  $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
 			continue
-		    fi 
-		fi 
+		    fi
+		fi
 
 		case $chain in
 		    *2all)
@@ -4402,7 +4402,7 @@ activate_rules()
 	for zone1 in $dest_zones; do
 
 	    eval policy=\$${zone}2${zone1}_policy
-		
+
 	    [ "$policy" = NONE ] && continue
 
 	    eval dest_hosts=\$${zone1}_hosts
@@ -4411,7 +4411,7 @@ activate_rules()
 	    chain="$(rules_chain $zone $zone1)"
 
 	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
-	    
+
 	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> $STATEDIR/chains
 
 	    if [ $zone = $zone1 ]; then
@@ -4420,12 +4420,12 @@ activate_rules()
 		eval ports="\$${zone}_ports"
 
 		num_ifaces=$(list_count1 $interfaces)
-		
+
 		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
 
 		if [  $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
 		    continue
-		fi 
+		fi
 	    else
 		routeback=
 		num_ifaces=0
@@ -4473,8 +4473,8 @@ activate_rules()
 		    *)
 			insert_exclusions filter $chain $exclusions1
 			;;
-		esac    
-	    fi    
+		esac
+	    fi
 
 	    if [ -n "$complex" ]; then
 		for host1 in $dest_hosts; do
@@ -4519,9 +4519,9 @@ activate_rules()
 		for host in $source_hosts; do
 		    interface=${host%%:*}
 		    networks=${host#*:}
-		    
+
 		    chain=$(forward_chain $interface)
-		        
+
 		    run_iptables -A $chain $(match_source_hosts $networks) -j $last_chain
 		done
 	    fi
@@ -4880,7 +4880,7 @@ conditionally_add_option() { # $1 = option name
 [ -n "\${$1:=$value}" ]
 __EOF__
     fi
-}	
+}
 
 conditionally_add_option1() { # $1 = option name
     local value
@@ -4892,7 +4892,7 @@ conditionally_add_option1() { # $1 = option name
 $1="$value"
 __EOF__
     fi
-}	
+}
 
 #
 # Compile a Firewall Script
@@ -5054,7 +5054,7 @@ run_iptables()
     else
         \$IPTABLES \$@
     fi
-    
+
     if [ \$? -ne 0 ]; then
         error_message "ERROR: Command \"\$IPTABLES \$@\" Failed"
 	stop_firewall
@@ -5377,7 +5377,7 @@ __EOF__
     done
 
     strip_file_and_lib_load accounting accounting && setup_accounting $(find_file accounting)
-    
+
     createchain reject	no
     createchain dynamic no
     createchain logdrop no
@@ -5431,8 +5431,9 @@ __EOF__
     #
     if strip_file_and_lib_load providers providers; then
 	setup_providers $(find_file providers)
-	[ -n "$ROUTEMARK_INTERFACES" ] && setup_routes
+	[ -n "$ROUTEMARK_INTERFACES" ] && setup_route_marking
     else
+	save_command
 	save_command undo_routing
 	save_command restore_default_route
     fi
@@ -5624,10 +5625,10 @@ __EOF__
 	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE; do
 		conditionally_add_option $option
 	    done
-	    
+
 	    conditionally_add_option1 TC_ENABLED
 
-	    exec 3>&-	    
+	    exec 3>&-
 	fi
 
 	progress_message3 "Shorewall configuration compiled to $(resolve_file $outfile)"

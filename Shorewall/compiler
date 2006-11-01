@@ -4997,6 +4997,14 @@ VARDIR=/var/lib/shorewall-lite
 __EOF__
 
 	cat ${SHAREDIR}/lib.base >&3
+
+	cat >&3 << __EOF__
+
+################################################################################
+#                        End of ${SHAREDIR}/lib.base
+################################################################################
+
+__EOF__
     else
 	cat >&3 << __EOF__
 SHAREDIR=/usr/share/shorewall
@@ -5008,7 +5016,6 @@ __EOF__
     fi
 
     cat >&3 << __EOF__
-
 #
 # Set policy of chain \$1 to \$2
 #

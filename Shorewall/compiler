@@ -4909,7 +4909,11 @@ __EOF__
 #
 mycat() 
 {
-    awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
+    if [ -n "$(mywhich awk)" ]; then
+	awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
+    else
+	cat $*
+    fi
 }
 
 #

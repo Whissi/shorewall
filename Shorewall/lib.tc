@@ -291,6 +291,17 @@ setup_traffic_shaping()
     validate_tcdevices_file
     validate_tcclasses_file
 
+    cat >&3 << __EOF__
+
+#
+# Set up Traffic Shaping
+#
+setup_traffic_shaping()
+{
+__EOF__
+    
+    INDENT="    "
+
     if [ -s $TMP_DIR/tcdevices ]; then
 	save_progress_message "Setting up Traffic Control..."
 	progress_message2 "$DOING $devfile..."
@@ -330,5 +341,11 @@ setup_traffic_shaping()
 	done < $TMP_DIR/tcclasses
 
 	[ -n "$last_device" ] && finish_device
+
     fi
+    
+    INDENT=
+
+    save_command "}"
+    save_command
 }

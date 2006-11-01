@@ -937,8 +937,11 @@ setup_tc1() {
         save_progress_message "Setting up Traffic Control..."
 	append_file $TC_SCRIPT
     elif [ "$TC_ENABLED" = Internal ]; then
-	strip_file_and_lib_load tcdevices tc
-	strip_file_and_lib_load tcclasses tc && setup_traffic_shaping
+	if [ -n "$LIB_tc_LOADED" ]; then
+	    save_command
+	    save_command setup_traffic_shaping
+	    save_command
+	fi
     fi
 }
 
@@ -1047,8 +1050,10 @@ __EOF__
     if [ -n "$TC_SCRIPT" ]; then
 	save_progress_message "Refreshing Traffic Shaping"
 	run_user_exit $TC_SCRIPT
-    elif [ "$TC_ENABLED" = Internal ]; then
-	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
+    elif [ "$TC_ENABLED" = Internal -a -n "$LIB_tc_LOADED" ]; then
+	save_command
+	save_command setup_traffic_shaping
+	save_command
     fi
 }
 
@@ -1089,6 +1094,7 @@ compile_refresh_firewall()
     INDENT=""
 
     save_command "}"
+    save_command
 
 }
 
@@ -4540,7 +4546,7 @@ activate_rules()
 	fi
     done
     #
-    # Now add the jumps to the interface (first) chains from FORWARD, INPUT and POSTROUTING
+    # Now add the jumps to the interface chains from FORWARD, INPUT, OUTPUT and POSTROUTING
     #
     for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
@@ -5227,6 +5233,16 @@ __EOF__
     [ -d \${VARDIR} ] || mkdir -p \${VARDIR}
 
 }
+__EOF__
+
+    if [ "$TC_ENABLED" = Internal ]; then
+	strip_file_and_lib_load tcdevices tc
+	strip_file_and_lib_load tcclasses tc
+
+	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
+    fi
+    
+    cat >&3 << __EOF__
 
 #
 # Start/Restart/Reload the firewall

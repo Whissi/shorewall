@@ -4905,14 +4905,11 @@ __EOF__
 }
 
 #
-# Hack to fix up generated object
+# Post-process generated script
 #
-prepare_source() 
+mycat() 
 {
-    awk \
-	'BEGIN      {blnk=0;}; \
-        /^\s*$/     {blnk=1; next; }; \
-                    { if (blnk == 1 ) print ""; blnk=0; print; }' -
+    awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
 }
 
 #
@@ -5635,7 +5632,7 @@ __EOF__
 	progress_message3 "Shorewall configuration verified"
     else
 	INDENT=
-	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) | prepare_source > $outfile
+	mycat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
 	if [ -n "$EXPORT" ]; then
 	    exec 3>${outfile}.conf

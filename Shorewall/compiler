@@ -875,23 +875,11 @@ setup_tc1() {
     #
     # Process the TC Rules File
     #
-    if strip_file_and_lib_load tcrules tcrules; then
+    if [ -n "$LIB_tcrules_LOADED" ]; then
 	save_progress_message "Setting up TC Rules..."
+	save_command setup_tc_rules
+	save_command
 
-	while read mark sources dests proto ports sports user testval length tos; do
-	    expandv mark sources dests proto ports sports user testval length tos
-	    if [ "x$mark" = xCOMMENT ]; then
-		if [ -n "$COMMENTS" ]; then
-		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
-		    save_command COMMENT=\"$comment\"
-		else
-		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
-		fi
-	    else
-		rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
-		process_tc_rule
-	    fi
-	done < $TMP_DIR/tcrules
     fi
     #
     # Just in case the file ended with a comment
@@ -1023,20 +1011,8 @@ __EOF__
     if [ -s $TMP_DIR/tcrules ]; then
 	save_progress_message "Refreshing Traffic Control Rules..."
 
-	while read mark sources dests proto ports sports user testval; do
-	    if [ "x$mark" = xCOMMENT ]; then
-		if [ -n "$COMMENTS" ]; then
-		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
-		    save_command COMMENT=\"$comment\"
-		else
-		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
-		fi
-	    else
-		expandv mark sources dests proto ports sports user testval tos
-		rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
-		process_tc_rule
-	    fi
-	done < $TMP_DIR/tcrules
+	save_command setup_tc_rules
+	save_command
     fi
     #
     # Just in case the file ended with a comment
@@ -5235,32 +5211,7 @@ __EOF__
 }
 __EOF__
 
-    if [ "$TC_ENABLED" = Internal ]; then
-	strip_file_and_lib_load tcdevices tc
-	strip_file_and_lib_load tcclasses tc
-
-	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
-    fi
-    
-    cat >&3 << __EOF__
-
-#
-# Start/Restart/Reload the firewall
-#
-define_firewall() {
-    local restore_file=\$1
-__EOF__
-
-    INDENT="    "
-
-    cat >&3 << __EOF__
-
-    load_kernel_modules
-
-__EOF__
-
     progress_message2 "Initializing..."
-    save_progress_message "Initializing..."
 
     report_capabilities
 
@@ -5311,6 +5262,53 @@ __EOF__
 
     determine_interfaces
     determine_hosts
+
+    if strip_file_and_lib_load tcrules tcrules; then
+	process_tc_rules
+    fi
+
+    if [ "$TC_ENABLED" = Internal ]; then
+	strip_file_and_lib_load tcdevices tc
+	strip_file_and_lib_load tcclasses tc
+
+	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
+    fi
+    
+    cat >&3 << __EOF__
+
+#
+# Start/Restart/Reload the firewall
+#
+define_firewall() {
+    local restore_file=\$1
+__EOF__
+
+    INDENT="    "
+
+    cat >&3 << __EOF__
+
+    load_kernel_modules
+
+__EOF__
+
+    save_progress_message "Initializing..."
+
+    for interface in $ALL_INTERFACES; do
+	if interface_has_option $interface norfc1918; then
+	    indent >&3 << __EOF__
+addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)
+if [ -n "\$addr" ]; then
+    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
+    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
+        if in_network \$addr \$network; then
+            startup_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
+        fi
+    done
+fi
+
+__EOF__
+	fi
+    done
 
     append_file init
 

@@ -405,3 +405,38 @@ process_tc_rule()
     progress_message "   TC Rule \"$rule\" $DONE"
     save_progress_message_short "   TC Rule \\\"$rule\\\" Added"
 }
+
+#
+# Process the tcrules file
+#
+process_tc_rules()
+{
+    cat >&3 << __EOF__
+
+#
+# Create Marking Rules from the tcrules file
+#
+setup_tc_rules()
+{
+__EOF__
+    INDENT="    "
+    
+    while read mark sources dests proto ports sports user testval length tos; do
+	expandv mark sources dests proto ports sports user testval length tos
+	if [ "x$mark" = xCOMMENT ]; then
+	    if [ -n "$COMMENTS" ]; then
+		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)
+		    save_command COMMENT=\"$comment\"
+	    else
+		error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
+	    fi
+	else
+	    rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
+	    process_tc_rule
+	fi
+    done < $TMP_DIR/tcrules
+
+    INDENT=""
+    save_command "}"
+    save_command
+}

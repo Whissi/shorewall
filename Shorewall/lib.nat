@@ -450,7 +450,11 @@ __EOF__
         #
         # Just in case the file ended with a comment
         #
-	[ -n "$COMMENTS" ] && save_command COMMENT=
+	if [ -n "$COMMENTS" ]; then
+	    save_command
+	    save_command COMMENT=
+	    save_command
+	fi
     fi
 }
 
@@ -540,7 +544,11 @@ setup_nat() {
 	    progress_message_and_save "   Host $internal NAT $external on $interface"
 	done < $TMP_DIR/nat
 
-	[ -n "$COMMENTS" ] && save_command COMMENT=
+	if [ -n "$COMMENTS" ]; then
+	    save_command
+	    save_command COMMENT=
+	    save_command
+	fi
     fi
 
 }

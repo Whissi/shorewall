@@ -383,7 +383,7 @@ ${INDENT}cat > /etc/iproute2/rt_tables <<EOF
 #
 EOF
 
-echocommand=\$(find_echo)
+${INDENT}echocommand=\$(find_echo)
 __EOF__
         for table in $PROVIDERS; do
 	    eval number=\$${table}_number
@@ -411,6 +411,7 @@ __EOF__
 	fi
     fi
 
+    save_command
     save_command "run_ip route flush cache"
     INDENT="$save_indent"
     save_command "fi"

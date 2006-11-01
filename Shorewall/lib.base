@@ -1355,18 +1355,20 @@ restore_default_route() {
 
 #
 # Determine how to do "echo -e"
+#
 
 find_echo() {
     local result
 
     result=$(echo "a\tb")
-    [ ${#result} -eq 3 ] && echo echo
+    [ ${#result} -eq 3 ] && { echo echo; return; }
 
     result=$(echo -e "a\tb")
-    [ ${#result} -eq 3 ] && echo "echo -e"
+    [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
 
     result=$(which echo)
-    [ -n "$result" ] && echo "$result -e"
+    [ -n "$result" ] && { echo "$result -e"; return; }
 
     echo echo 
 }
+        

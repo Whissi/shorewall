@@ -896,8 +896,11 @@ setup_tc1() {
     #
     # Just in case the file ended with a comment
     #
-    [ -n "$COMMENTS" ] && save_command COMMENT=
-
+    if [ -n "$COMMENTS" ]; then
+	save_command
+	save_command COMMENT=
+	save_command
+    fi
     #
     # Link to the TC mangle chains from the main chains
     #
@@ -1005,7 +1008,7 @@ refresh_tc() {
     #
     indent >&3 << __EOF__
 
-$IPTABLES -t mangle -L -n | grep '^Chain excl_' | while read junk chain rest; do
+\$IPTABLES -t mangle -L -n | grep '^Chain excl_' | while read junk chain rest; do
     run_iptables -t mangle -F \$chain
     run_iptables -t mangle -X \$chain
 done
@@ -1035,7 +1038,11 @@ __EOF__
     #
     # Just in case the file ended with a comment
     #
-    [ -n "$COMMENTS" ] && save_command COMMENT=
+    if [ -n "$COMMENTS" ]; then
+	save_command
+	save_command COMMENT=
+	save_command
+    fi
 
     if [ -n "$TC_SCRIPT" ]; then
 	save_progress_message "Refreshing Traffic Shaping"
@@ -2834,8 +2841,11 @@ process_rules()
     #
     # Just in case the file ended with a comment
     #
-    [ -n "$COMMENTS" ] && save_command COMMENT=
-
+    if [ -n "$COMMENTS" ]; then
+	save_command
+	save_command COMMENT=
+    fi
+    
     case $SECTION in
 	ESTABLISHED)
 	    finish_section ESTABLISHED,RELATED
@@ -4895,6 +4905,17 @@ __EOF__
 }
 
 #
+# Hack to fix up generated object
+#
+prepare_source() 
+{
+    awk \
+	'BEGIN      {blnk=0;}; \
+        /^\s*$/     {blnk=1; next; }; \
+                    { if (blnk == 1 ) print ""; blnk=0; print; }' -
+}
+
+#
 # Compile a Firewall Script
 #
 compile_firewall() # $1 = File Name
@@ -5181,6 +5202,7 @@ __EOF__
 
     STOPPING=
     COMMENT=
+
     #
     # The library requires that ${VARDIR} exist
     #
@@ -5613,7 +5635,7 @@ __EOF__
 	progress_message3 "Shorewall configuration verified"
     else
 	INDENT=
-	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
+	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) | prepare_source > $outfile
 	chmod 700 $outfile
 	if [ -n "$EXPORT" ]; then
 	    exec 3>${outfile}.conf

@@ -967,12 +967,12 @@ delete_tc()
     indent >&3 << __EOF__
 ip link list | while read inx interface details; do
     case \$inx in
-       [0-9]*)
-           qt tc qdisc del dev \${interface%:} root
-           qt tc qdisc del dev \${interface%:} ingress
-           ;;
-       *)
-           ;;
+        [0-9]*)
+            qt tc qdisc del dev \${interface%:} root
+            qt tc qdisc del dev \${interface%:} ingress
+            ;;
+        *)
+            ;;
     esac
 done
 __EOF__
@@ -4907,12 +4907,20 @@ __EOF__
 }
 
 #
-# Post-process generated script
+# Post-process generated script to:
+#
+#       - Suppress redundant blank lines
+#       - Replace leading spaces with tabs
 #
 mycat() 
 {
-    if [ -n "$(mywhich awk)" ]; then
-	awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
+    local awk=$(mywhich awk)
+
+    if [ -n "$awk" ]; then
+	$awk 'BEGIN   {blnk=0;}; \
+              /^\s*$/ {blnk=1; next; }; \
+                      { while (/^\t*        /) sub(/        /, "\t"   ); }; \
+                      { if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
     else
 	cat $*
     fi

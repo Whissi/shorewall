@@ -1691,7 +1691,9 @@ __EOF__
 
 	    if [ $addr = detect ]; then
 		ensurenatchain $(dnat_chain $source)
-
+		#
+		# The 'for loops' begun below are completed in add_a_rule() whose declaration follows
+	        #
 		indent >&3 << __EOF__
 
 for adr in \$addr; do

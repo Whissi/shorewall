@@ -3421,6 +3421,27 @@ process_blacklist_rec() {
     done
 }
 
+process_blacklist()
+{
+    cat >&3 << __EOF__
+#
+# Load the blacklist
+#
+load_blacklist() 
+{
+__EOF__
+    INDENT="    "
+
+    while read networks protocol ports; do
+	expandv networks protocol ports
+	process_blacklist_rec
+    done < $TMP_DIR/blacklist
+
+    INDENT=
+    save_command "}"
+    save_command
+}
+
 #
 # Setup the Black List
 #
@@ -3430,10 +3451,8 @@ setup_blacklist() {
     local disposition=$BLACKLIST_DISPOSITION
     local ipsec policy
 
-    if [ -n "$hosts" -a -f $f ]; then
+    if [ -n "$hosts" -a -s ${TMP_DIR}/blacklist ]; then
 	progress_message2 "$DOING Blacklisting..."
-
-	strip_file blacklist $f
 
 	createchain blacklst no
 
@@ -3457,11 +3476,8 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	if [ -z "$DELAYBLACKLISTLOAD" ]; then
-	    while read networks protocol ports; do
-		expandv networks protocol ports
-		process_blacklist_rec
-	    done < $TMP_DIR/blacklist
+	if [ -z "$DELAYBLACKLISTLOAD" -a -s ${TMP_DIR}/blacklist ]; then
+	    save_command load_blacklist
 	fi
     fi
 }
@@ -3486,35 +3502,13 @@ refresh_blacklist() {
 
     run_iptables -F blacklst
 
-    while read networks protocol ports; do
-	expandv networks protocol ports
-	process_blacklist_rec
-    done < $TMP_DIR/blacklist
+    save_command load_blacklist
 
     INDENT="$indent"
     save_command "fi"
 }
 
-#
-# Verify the Black List
-#
-validate_blacklist() {
-    local f=$(find_file blacklist)
-    local disposition=$BLACKLIST_DISPOSITION
 
-    progress_message2 "Checking Black List..."
-
-    strip_file blacklist $f
-
-    [ "$disposition" = REJECT ] && disposition=reject
-
-    while read networks protocol ports; do
-	expandv networks protocol ports
-	process_blacklist_rec
-    done < $TMP_DIR/blacklist
-}
-
-#
 # Construct zone-independent rules
 #
 add_common_rules() {
@@ -5264,6 +5258,7 @@ __EOF__
     determine_hosts
 
     if strip_file_and_lib_load tcrules tcrules; then
+	progress_message2 "Compiling $(find_file tcrules)..."
 	process_tc_rules
     fi
 
@@ -5272,6 +5267,11 @@ __EOF__
 	strip_file_and_lib_load tcclasses tc
 
 	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
+    fi
+
+    if [ -n "$(find_hosts_by_option blacklist)" ]; then
+	strip_file blacklist
+	process_blacklist
     fi
     
     cat >&3 << __EOF__
@@ -5595,7 +5595,7 @@ __EOF__
 
     append_file start
 
-    if [ -n "$DELAYBLACKLISTLOAD" ]; then
+    if [ -n "$DELAYBLACKLISTLOAD" -a -s ${TMP_DIR}/blacklist ]; then
 	refresh_blacklist
 	save_command
     fi

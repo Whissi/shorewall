@@ -3423,6 +3423,10 @@ process_blacklist_rec() {
 
 process_blacklist()
 {
+    local disposition=$BLACKLIST_DISPOSITION
+
+    [ "$disposition" = REJECT ] && disposition=reject
+
     cat >&3 << __EOF__
 #
 # Load the blacklist
@@ -3447,8 +3451,6 @@ __EOF__
 #
 setup_blacklist() {
     local hosts="$(find_hosts_by_option blacklist)"
-    local f=$(find_file blacklist)
-    local disposition=$BLACKLIST_DISPOSITION
     local ipsec policy
 
     if [ -n "$hosts" -a -s ${TMP_DIR}/blacklist ]; then
@@ -3473,8 +3475,6 @@ setup_blacklist() {
 
 	    progress_message_and_save "   Blacklisting enabled on ${interface}${network}"
 	done
-
-	[ "$disposition" = REJECT ] && disposition=reject
 
 	if [ -z "$DELAYBLACKLISTLOAD" -a -s ${TMP_DIR}/blacklist ]; then
 	    save_command load_blacklist

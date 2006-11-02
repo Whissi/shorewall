@@ -1051,7 +1051,7 @@ compile_refresh_firewall()
     #
     # Blacklist
     #
-    refresh_blacklist
+    refresh_blacklist Yes
 
     ecn=$(find_file ecn)
 
@@ -3485,13 +3485,11 @@ setup_blacklist() {
 #
 # Refresh the Black List
 #
-refresh_blacklist() {
+refresh_blacklist() # $1 = Yes means flush the blacklist
+{
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
     local indent="$INDENT"
-
-    progress_message2 "$DOING Black List..."
-    save_progress_message "Loading Black List..."
 
     strip_file blacklist $f
 
@@ -3500,7 +3498,12 @@ refresh_blacklist() {
     save_command "if chain_exists blacklst; then"
     INDENT="$INDENT    "
 
-    run_iptables -F blacklst
+    if [ "$1" = Yes ]; then
+	save_command progress_message2 \"Refreshing Black List...\"
+	run_iptables -F blacklst
+    else
+	save_command progress_message2 \"Loading Black List...\"
+    fi
 
     save_command load_blacklist
 
@@ -5596,7 +5599,7 @@ __EOF__
     append_file start
 
     if [ -n "$DELAYBLACKLISTLOAD" -a -s ${TMP_DIR}/blacklist ]; then
-	refresh_blacklist
+	refresh_blacklist No
 	save_command
     fi
 

@@ -4913,6 +4913,8 @@ compile_firewall() # $1 = File Name
 	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
     }
 
+    progress_message2 "Initializing..."
+
     #
     # So that mktempdir doesn't have to jump through hoops when there isn't a working 'mktemp',
     # we create the compiler's temporary directory in TMP_DIR
@@ -5126,7 +5128,7 @@ __EOF__
 
     local version=\$(cat \${SHAREDIR}/version)
 
-    if [ \${SHOREWALL_LIBVERSION:-0} -lt 30200 ]; then
+    if [ \${SHOREWALL_LIBVERSION:-0} -lt 30203 ]; then
 	fatal_error "This script requires Shorewall version 3.3.3 or later; current version is \$version"
     fi
     #
@@ -5192,8 +5194,6 @@ __EOF__
 
 }
 __EOF__
-
-    progress_message2 "Initializing..."
 
     report_capabilities
 
@@ -5272,13 +5272,9 @@ __EOF__
 
     INDENT="    "
 
-    cat >&3 << __EOF__
-
-    load_kernel_modules
-
-__EOF__
-
     save_progress_message "Initializing..."
+
+    save_command load_kernel_modules
 
     for interface in $ALL_INTERFACES; do
 	if interface_has_option $interface norfc1918; then

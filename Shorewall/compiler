@@ -1041,6 +1041,7 @@ compile_refresh_firewall()
     local INDENT=""
     local DOING="Compiling Refresh of"
     local DONE="Compiled"
+    local indent
 
     save_command "refresh_firewall()"
     save_command "{"
@@ -1050,8 +1051,18 @@ compile_refresh_firewall()
 
     #
     # Blacklist
-    #
-    refresh_blacklist Yes
+    #    
+    save_command "if chain_exists blacklst; then"
+    indent="$INDENT"
+    INDENT="$INDENT    "
+    
+    save_command progress_message2 \"Refreshing Black List...\"
+    run_iptables -F blacklst
+
+    save_command load_blacklist
+    
+    INDENT="$indent"
+    save_command "fi"
 
     ecn=$(find_file ecn)
 
@@ -2857,12 +2868,13 @@ process_default_macro() # $1 = macro name
     local logtag=
     local excludesource=
     local target client server protocol port cport ratelimit userspec rule
+    local f=$(find_file macro.${macro})
 
     havechain $macro && fatal_error "Illegal duplicate default macro name: $macro"
 
     createchain $macro no
-    strip_file macro.$macro
-    progress_message "..Expanding Default Macro $(find_file macro.${macro}) into chain $macro..."
+    strip_file macro.$macro $f
+    progress_message "..Expanding Default Macro $f into chain $macro..."
 
     while read target client server protocol port cport ratelimit userspec; do
 	expandv target client server protocol port cport ratelimit userspec
@@ -2878,13 +2890,13 @@ process_default_macro() # $1 = macro name
 	    ACCEPT|DROP|REJECT)
 		;;
 	    *)
-		if list_search $target $ACTIONS; then
-		    if ! list_search $target $USEDACTIONS; then
+		if ! list_search $target $USEDACTIONS; then
+		    if list_search $target $ACTIONS; then
 			createactionchain $target
 			USEDACTIONS="$USEDACTIONS $target"
+		    else
+			fatal_error "Invalid target ($target) in default macro $macro"
 		    fi
-		else
-		    fatal_error "Invalid target ($target) in default macro $macro"
 		fi
 		;;
 	esac
@@ -3424,8 +3436,12 @@ process_blacklist_rec() {
 process_blacklist()
 {
     local disposition=$BLACKLIST_DISPOSITION
+    local f=$(find_file blacklist)
 
     [ "$disposition" = REJECT ] && disposition=reject
+
+    strip_file blacklist $f
+    progress_message2 "Compiling $f..."
 
     cat >&3 << __EOF__
 #
@@ -3481,36 +3497,6 @@ setup_blacklist() {
 	fi
     fi
 }
-
-#
-# Refresh the Black List
-#
-refresh_blacklist() # $1 = Yes means flush the blacklist
-{
-    local f=$(find_file blacklist)
-    local disposition=$BLACKLIST_DISPOSITION
-    local indent="$INDENT"
-
-    strip_file blacklist $f
-
-    [ "$disposition" = REJECT ] && disposition=reject
-
-    save_command "if chain_exists blacklst; then"
-    INDENT="$INDENT    "
-
-    if [ "$1" = Yes ]; then
-	save_command progress_message2 \"Refreshing Black List...\"
-	run_iptables -F blacklst
-    else
-	save_command progress_message2 \"Loading Black List...\"
-    fi
-
-    save_command load_blacklist
-
-    INDENT="$indent"
-    save_command "fi"
-}
-
 
 # Construct zone-independent rules
 #
@@ -4424,7 +4410,7 @@ activate_rules()
 
 	    if [ -n "$exclusions1" ]; then
 		#
-		# We handle exlusions in the dest zone by inserting RETURN rules at the front of
+		# We handle exclusions in the dest zone by inserting RETURN rules at the front of
 		# each rules chain where the zone is the destination
 		#
 		case $chain in
@@ -4500,7 +4486,6 @@ activate_rules()
 	#
 	#                                      E N D   F O R W A R D I N G
 	#
-	#
 	# Now add (an) unconditional jump(s) to the last unique policy-only chain determined above, if any
 	#
 	if [ -n "$last_chain" ]; then
@@ -4564,7 +4549,7 @@ activate_rules()
 	for table in mangle nat filter; do
 	    case $table in
 		mangle)
-		    chains="PREROUTING INPUT FORWARD POSTROUTING"
+		    [ -n "$MANGLE_FORWARD" ] && chains="PREROUTING INPUT FORWARD POSTROUTING" || chains="PREROUTING INPUT"
 		    ;;
 		nat)
 		    chains="PREROUTING POSTROUTING OUTPUT"
@@ -5273,7 +5258,6 @@ __EOF__
     fi
 
     if [ -n "$(find_hosts_by_option blacklist)" ]; then
-	strip_file blacklist
 	process_blacklist
     fi
     
@@ -5599,7 +5583,9 @@ __EOF__
     append_file start
 
     if [ -n "$DELAYBLACKLISTLOAD" -a -s ${TMP_DIR}/blacklist ]; then
-	refresh_blacklist No
+	save_command
+	save_command progress_message2 \"Loading Black List...\"
+	save_command load_blacklist
 	save_command
     fi
 

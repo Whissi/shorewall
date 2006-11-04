@@ -4881,10 +4881,7 @@ mycat()
     local awk=$(mywhich awk)
 
     if [ -n "$awk" ]; then
-	$awk 'BEGIN   {blnk=0;}; \
-              /^\s*$/ {blnk=1; next; }; \
-                      { while (/^\t*        /) sub(/        /, "\t"   ); }; \
-                      { if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
+	$awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { while (/^\t*        /) sub(/        /, "\t"   ); if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
     else
 	cat $*
     fi

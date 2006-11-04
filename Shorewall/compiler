@@ -4878,10 +4878,8 @@ __EOF__
 #
 mycat() 
 {
-    local awk=$(mywhich awk)
-
-    if [ -n "$awk" ]; then
-	$awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { while (/^\t*        /) sub(/        /, "\t"   ); if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
+    if [ -n "$HAVEAWK" ]; then
+	awk 'BEGIN {blnk=0;}; /^\s*$/ {blnk=1; next; }; { while (/^\t*        /) sub(/        /, "\t"   ); if (blnk == 1 ) { print ""; blnk=0; }; print; }' $*
     else
 	cat $*
     fi
@@ -5167,13 +5165,13 @@ __EOF__
 	cat >&3 << __EOF__
     IPTABLES="$IPTABLES"
 
-    [ -e "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"
+    [ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"
 __EOF__
    else
 	cat >&3 << __EOF__
     [ -z "\$IPTABLES" ] && IPTABLES=\$(mywhich iptables 2> /dev/null)
 
-    [ -n "\$IPTABLES" -a -e "\$IPTABLES" ] || startup_error "Can't find iptables executable"
+    [ -n "\$IPTABLES" -a -x "\$IPTABLES" ] || startup_error "Can't find iptables executable"
 __EOF__
     fi
 

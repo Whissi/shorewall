@@ -1,2549 +1,2549 @@
-###############################################################################
-# This documentation provides a quick reference to the configuration
-# files. The documentation at
-# http://www.shorewall.net/Documentation_Index.html should be
-# considered to be the primary documentation.
-###############################################################################
-# /etc/shorewall/accounting
-#
-#	Accounting rules exist simply to count packets and bytes in categories
-#	that you define in this file. You may display these rules and their
-#	packet and byte counters using the "shorewall show accounting" command.
-#
-#	Please see http://shorewall.net/Accounting.html for examples and
-#	additional information about how to use this file.
-#
-#
-# Columns are:
-#
-#	ACTION	      - What to do when a match is found.
-#
-#				COUNT	- Simply count the match and continue
-#					  with the next rule
-#				DONE	- Count the match and don't attempt
-#					  to match any other accounting rules
-#					  in the chain specified in the CHAIN
-#					  column.
-#				<chain>[:COUNT]
-#					- Where <chain> is the name of
-#					  a chain. Shorewall will create
-#					  the chain automatically if it
-#					  doesn't already exist. Causes
-#					  a jump to that chain. If :COUNT
-#					  is including, a counting rule
-#					  matching this record will be
-#					  added to <chain>
-#
-#	CHAIN	      - The name of a chain. If specified as "-" the
-#			'accounting' chain is assumed. This is the chain
-#			where the accounting rule is added. The chain will
-#			be created if it doesn't already exist.
-#
-#	SOURCE	      - Packet Source
-#
-#			The name of an interface, an address (host or net) or
-#			an interface name followed by ":"
-#			and a host or net address.
-#
-#	DESTINATION   - Packet Destination
-#
-#			Format the same as the SOURCE column.
-#
-#	PROTOCOL	A protocol name (from /etc/protocols), a protocol
-#			number, "ipp2p", "ipp2p:udp" or "ipp2p:all"
-#
-#	DEST PORT(S)	Destination Port number. If the PROTOCOL is "ipp2p"
-#			then this column must contain an ipp2p option
-#			("iptables -m ipp2p --help") without the leading
-#			"--". If no option is given in this column, "ipp2p"
-#			is assumed.
-#
-#			Service name from /etc/services or port number. May
-#			only be specified if the protocol is TCP or UDP (6
-#			or 17).
-#
-#			You may place a comma-separated list of port numbers in
-#			this column if your kernel and iptables include
-#			multiport match support.
-#
-#	SOURCE PORT(S)	Source Port number
-#
-#			Service name from /etc/services or port number. May
-#			only be specified if the protocol is TCP or UDP (6
-#			or 17).
-#
-#			You may place a comma-separated list of port numbers in
-#			this column if your kernel and iptables include
-#			multiport match support.
-#
-#	USER/GROUP	This column may only be non-empty if the CHAIN is
-#			OUTPUT.
-#
-#			The column may contain:
-#
-#	[!][<user name or number>][:<group name or number>][+<program name>]
-#
-#			When this column is non-empty, the rule applies only
-#			if the program generating the output is running under
-#			the effective <user> and/or <group> specified (or is
-#			NOT running under that id if "!" is given).
-#
-#			Examples:
-#
-#				joe	#program must be run by joe
-#				:kids	#program must be run by a member of
-#					#the 'kids' group
-#				!:kids	#program must not be run by a member
-#					#of the 'kids' group
-#				+upnpd	#program named upnpd (This feature was
-#					#removed from Netfilter in kernel
-#					#version 2.6.14).
-#
-#	In all of the above columns except ACTION and CHAIN, the values "-",
-#	"any" and "all" may be used as wildcards. Omitted trailing columns are
-#	also treated as wildcards.
-#
-# Please see http://shorewall.net/Accounting.html for examples and
-# additional information about how to use this file.
-#
-###############################################################################
-# /etc/shorewall/blacklist
-#
-#	This file contains a list of IP addresses, MAC addresses and/or
-#	subnetworks.
-#
-# Columns are:
-#
-#	ADDRESS/SUBNET	- Host address, subnetwork, MAC address, IP address
-#			  range (if your kernel and iptables contain iprange
-#			  match support) or ipset name prefaced by "+" (if
-#			  your kernel supports ipset match).
-#
-#			  MAC addresses must be prefixed with "~" and use "-"
-#			  as a separator.
-#
-#			  Example: ~00-A0-C9-15-39-78
-#
-#			  A dash ("-") in this column means that any source
-#			  address will match. This is useful if you want to
-#			  blacklist a particular application.
-#
-#	PROTOCOL	- Optional. If specified, must be a protocol number
-#			  or a protocol name from /etc/protocols.
-#
-#	PORTS		- Optional. May only be specified if the protocol
-#			  is TCP (6) or UDP (17). A comma-separated list
-#			  of destination port numbers or service names from
-#			  /etc/services.
-#
-#	When a packet arrives on an interface that has the 'blacklist' option
-#	specified in /etc/shorewall/interfaces, its source IP address is
-#	checked against this file and disposed of according to the
-#	BLACKLIST_DISPOSITION and BLACKLIST_LOGLEVEL variables in
-#	/etc/shorewall/shorewall.conf
-#
-#	If PROTOCOL or PROTOCOL and PORTS are supplied, only packets matching
-#	the protocol (and one of the ports if PORTS supplied) are blocked.
-#
-#	Example:
-#
-#	To block DNS queries from address 192.0.2.126:
-#
-#	ADDRESS/SUBNET		PROTOCOL	PORT
-#	192.0.2.126		udp		53
-#
-#	Example:
-#
-#	To block DNS queries from addresses in the ipset 'dnsblack':
-#
-#	ADDRESS/SUBNET		PROTOCOL	PORT
-#	+dnsblack		udp		53
-#
-# Please see http://shorewall.net/blacklisting_support.htm for additional
-# information.
-#
-###############################################################################
-# /etc/shorewall/ecn
-#
-#	Use this file to list the destinations for which you want to
-#	disable ECN.
-#
-#	This feature requires kernel 2.4.20 or later. If you run 2.4.20,
-#	you also need the patch found at http://www.shorewall.net/ecn/patch.
-#	That patch is included in kernels 2.4.21 and later.
-#
-#	INTERFACE	- Interface through which host(s) communicate with
-#			  the firewall
-#	HOST(S)		- (Optional) Comma-separated list of IP/subnet
-#			  If left empty or supplied as "-",
-#			  0.0.0.0/0 is assumed. If your kernel and iptables
-#			  include iprange match support then IP address ranges
-#			  are also permitted.
-#
-# For additional information, see http://shorewall.net/Documentation.htm#ECN
-#
-###############################################################################
-# /etc/shorewall/hosts
-#
-#	THE ONLY TIME YOU NEED THIS FILE IS WHERE YOU HAVE MORE THAN
-#	ONE ZONE CONNECTED THROUGH A SINGLE INTERFACE.
-#
-#	IF YOU DON'T HAVE THAT SITUATION THEN DON'T TOUCH THIS FILE.
-#------------------------------------------------------------------------------
-#	IF YOU HAVE AN ENTRY FOR A ZONE AND INTERFACE IN
-#	/etc/shorewall/interfaces THEN DO NOT ADD ANY ENTRIES FOR THAT
-#	ZONE AND INTERFACE IN THIS FILE.
-#------------------------------------------------------------------------------
-#	This file is used to define zones in terms of subnets and/or
-#	individual IP addresses. Most simple setups don't need to
-#	(should not) place anything in this file.
-#
-#	The order of entries in this file is not significant in
-#	determining zone composition. Rather, the order that the zones
-#	are defined in /etc/shorewall/zones determines the order in
-#	which the records in this file are interpreted.
-#
-#	ZONE	- The name of a zone defined in /etc/shorewall/zones. You may
-#		  not list the firewall zone in this column.
-#
-#	HOST(S)	- The name of an interface  defined in the
-#		  /etc/shorewall/interfaces file followed by a colon (":") and
-#		  a comma-separated list whose elements are either:
-#
-#			a) The IP address of a host
-#			b) A subnetwork in the form
-#			   <subnet-address>/<mask width>
-#			c) An IP address range of the form <low address>-<high
-#			   address>. Your kernel and iptables must have iprange
-#			   match support.
-#			d) A physical port name; only allowed when the
-#			   interface names a bridge created by the
-#			   brctl addbr command. This port must not
-#			   be defined in /etc/shorewall/interfaces and may
-#			   optionally followed by a colon (":") and a
-#			   host or network IP or a range.
-#			   See http://www.shorewall.net/bridge.html
-#			   for details. Specifying a physical port
-#			   name requires that you have BRIDGING=Yes in
-#			   /etc/shorewall/shorewall.conf.
-#			e) The name of an ipset (preceded by "+").
-#
-#		  Examples:
-#
-#			eth1:192.168.1.3
-#			eth2:192.168.2.0/24
-#			eth3:192.168.2.0/24,192.168.3.1
-#			br0:eth4
-#			br0:eth0:192.168.1.16/28
-#			eth4:192.168.1.44-192.168.1.49
-#			eth2:+Admin
-#
-#	OPTIONS - A comma-separated list of options. Currently-defined
-#		  options are:
-#
-#			maclist	     - Connection requests from these hosts
-#				       are compared against the contents of
-#				       /etc/shorewall/maclist. If this option
-#				       is specified, the interface must be
-#				       an ethernet NIC and must be up before
-#				       Shorewall is started.
-#
-#			routeback    - Shorewall should set up the
-#				       infrastructure to pass packets
-#				       from this/these address(es) back
-#				       to themselves. This is necessary if
-#				       hosts in this group use the services
-#				       of a transparent proxy that is
-#				       a member of the group or if DNAT is used
-#				       to send requests originating from this
-#				       group to a server in the group.
-#
-#			norfc1918    - This option only makes sense for ports
-#				       on a bridge.
-#
-#				       The port should not accept
-#				       any packets whose source is in one
-#				       of the ranges reserved by RFC 1918
-#				       (i.e., private or "non-routable"
-#				       addresses. If packet mangling or
-#				       connection-tracking match is enabled in
-#				       your kernel, packets whose destination
-#				       addresses are reserved by RFC 1918 are
-#				       also rejected.
-#
-#			blacklist    - This option only makes sense for ports
-#				       on a bridge.
-#
-#				       Check packets arriving on this port
-#				       against the /etc/shorewall/blacklist
-#				       file.
-#
-#			tcpflags     - Packets arriving from these hosts are
-#				       checked for certain illegal combinations
-#				       of TCP flags. Packets found to have
-#				       such a combination of flags are handled
-#				       according to the setting of
-#				       TCP_FLAGS_DISPOSITION after having been
-#				       logged according to the setting of
-#				       TCP_FLAGS_LOG_LEVEL.
-#
-#			nosmurfs     - This option only makes sense for ports
-#				       on a bridge.
-#
-#				       Filter packets for smurfs
-#				       (packets with a broadcast
-#				       address as the source).
-#
-#				       Smurfs will be optionally logged based
-#				       on the setting of SMURF_LOG_LEVEL in
-#				       shorewall.conf. After logging, the
-#				       packets are dropped.
-#
-#			ipsec	     - The zone is accessed via a
-#				       kernel 2.6 ipsec SA. Note that if the
-#				       zone named in the ZONE column is
-#				       specified as an IPSEC zone in the
-#				       /etc/shorewall/zones file then you
-#				       do NOT need to specify the 'ipsec'
-#				       option here.
-#
-# For additional information, see http://shorewall.net/Documentation.htm#Hosts
-#
-###############################################################################
-# /etc/shorewall/interfaces
-#
-#	You must add an entry in this file for each network interface on your
-#	firewall system.
-#
-# Columns are:
-#
-#	ZONE		Zone for this interface. Must match the name of a
-#			zone defined in /etc/shorewall/zones. You may not
-#			list the firewall zone in this column.
-#
-#			If the interface serves multiple zones that will be
-#			defined in the /etc/shorewall/hosts file, you should
-#			place "-" in this column.
-#
-#			If there are multiple interfaces to the same zone,
-#			you must list them in separate entries:
-#
-#			Example:
-#
-#				loc	eth1	-
-#				loc	eth2	-
-#
-#	INTERFACE	Name of interface. Each interface may be listed only
-#			once in this file. You may NOT specify the name of
-#			an alias (e.g., eth0:0) here; see
-#			http://www.shorewall.net/FAQ.htm#faq18
-#
-#			You may specify wildcards here. For example, if you
-#			want to make an entry that applies to all PPP
-#			interfaces, use 'ppp+'.
-#
-#			There is no need to define the loopback	interface (lo)
-#			in this file.
-#
-#	BROADCAST	The broadcast address for the subnetwork to which the
-#			interface belongs. For P-T-P interfaces, this
-#			column is left blank.If the interface has multiple
-#			addresses on multiple subnets then list the broadcast
-#			addresses as a comma-separated list.
-#
-#			If you use the special value "detect", Shorewall
-#			will detect the broadcast address(es) for you. If you
-#			select this option, the interface must be up before
-#			the firewall is started.
-#
-#			If you don't want to give a value for this column but
-#			you want to enter a value in the OPTIONS column, enter
-#			"-" in this column.
-#
-#	OPTIONS		A comma-separated list of options including the
-#			following:
-#
-#			dhcp	     - Specify this option when any of
-#				       the following are true:
-#				       1. the interface gets its IP address
-#					  via DHCP
-#				       2. the interface is used by
-#					  a DHCP server running on the firewall
-#				       3. you have a static IP but are on a LAN
-#					  segment with lots of Laptop DHCP
-#					  clients.
-#				       4. the interface is a bridge with
-#					  a DHCP server on one port and DHCP
-#					  clients on another port.
-#
-#			norfc1918    - This interface should not receive
-#				       any packets whose source is in one
-#				       of the ranges reserved by RFC 1918
-#				       (i.e., private or "non-routable"
-#				       addresses). If packet mangling or
-#				       connection-tracking match is enabled in
-#				       your kernel, packets whose destination
-#				       addresses are reserved by RFC 1918 are
-#				       also rejected.
-#
-#			routefilter  - turn on kernel route filtering for this
-#				       interface (anti-spoofing measure). This
-#				       option can also be enabled globally in
-#				       the /etc/shorewall/shorewall.conf file.
-#
-#			logmartians  - turn on kernel martian logging (logging
-#				       of packets with impossible source
-#				       addresses. It is suggested that if you
-#				       set routefilter on an interface that
-#				       you also set logmartians. This option
-#				       may also be enabled globally in the
-#				       /etc/shorewall/shorewall.conf file.
-#
-#			blacklist    - Check packets arriving on this interface
-#				       against the /etc/shorewall/blacklist
-#				       file.
-#
-#			maclist	     - Connection requests from this interface
-#				       are compared against the contents of
-#				       /etc/shorewall/maclist. If this option
-#				       is specified, the interface must be
-#				       an ethernet NIC and must be up before
-#				       Shorewall is started.
-#
-#			tcpflags     - Packets arriving on this interface are
-#				       checked for certain illegal combinations
-#				       of TCP flags. Packets found to have
-#				       such a combination of flags are handled
-#				       according to the setting of
-#				       TCP_FLAGS_DISPOSITION after having been
-#				       logged according to the setting of
-#				       TCP_FLAGS_LOG_LEVEL.
-#
-#			proxyarp     -
-#				Sets
-#				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.
-#				Do NOT use this option if you are
-#				employing Proxy ARP through entries in
-#				/etc/shorewall/proxyarp. This option is
-#				intended soley for use with Proxy ARP
-#				sub-networking as described at:
-#				http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet
-#
-#			routeback    - If specified, indicates that Shorewall
-#				       should include rules that allow
-#				       filtering traffic arriving on this
-#				       interface back out that same interface.
-#
-#			arp_filter   - If specified, this interface will only
-#				       respond to ARP who-has requests for IP
-#				       addresses configured on the interface.
-#				       If not specified, the interface can
-#				       respond to ARP who-has requests for
-#				       IP addresses on any of the firewall's
-#				       interface. The interface must be up
-#				       when Shorewall is started.
-#
-#			arp_ignore[=<number>]
-#				     - If specified, this interface will
-#				       respond to arp requests based on the
-#				       value of <number>.
-#
-#				       1 - reply only if the target IP address
-#				       is local address configured on the
-#				       incoming interface
-#
-#				       2 - reply only if the target IP address
-#				       is local address configured on the
-#				       incoming interface and both with the
-#				       sender's IP address are part from same
-#				       subnet on this interface
-#
-#				       3 - do not reply for local addresses
-#				       configured with scope host, only
-#				       resolutions for global and link
-#				       addresses are replied
-#
-#				       4-7 - reserved
-#
-#				       8 - do not reply for all local
-#				       addresses
-#
-#				       If no <number> is given then the value
-#				       1 is assumed
-#
-#				       WARNING -- DO NOT SPECIFY arp_ignore
-#				       FOR ANY INTERFACE INVOLVED IN PROXY ARP.
-#
-#			nosmurfs     - Filter packets for smurfs
-#				       (packets with a broadcast
-#				       address as the source).
-#
-#				       Smurfs will be optionally logged based
-#				       on the setting of SMURF_LOG_LEVEL in
-#				       shorewall.conf. After logging, the
-#				       packets are dropped.
-#
-#			detectnets   - Automatically taylors the zone named
-#				       in the ZONE column to include only those
-#				       hosts routed through the interface.
-#
-#			sourceroute  - If this option is not specified for an
-#				       interface, then source-routed packets
-#				       will not be accepted from that
-#				       interface (sets /proc/sys/net/ipv4/
-#				       conf/<interface>/
-#				       accept_source_route to 1).
-#				       Only set this option if you know what
-#				       you are you doing. This might represent
-#				       a security risk and is not usually
-#				       needed.
-#
-#			upnp	     - Incoming requests from this interface
-#				       may be remapped via UPNP (upnpd).
-#
-#			WARNING: DO NOT SET THE detectnets OPTION ON YOUR
-#				 INTERNET INTERFACE.
-#
-#			The order in which you list the options is not
-#			significant but the list should have no embedded white
-#			space.
-#
-#	Example 1:	Suppose you have eth0 connected to a DSL modem and
-#			eth1 connected to your local network and that your
-#			local subnet is 192.168.1.0/24. The interface gets
-#			it's IP address via DHCP from subnet
-#			206.191.149.192/27. You have a DMZ with subnet
-#			192.168.2.0/24 using eth2.
-#
-#			Your entries for this setup would look like:
-#
-#			net	eth0	206.191.149.223	dhcp
-#			local	eth1	192.168.1.255
-#			dmz	eth2	192.168.2.255
-#
-#	Example 2:	The same configuration without specifying broadcast
-#			addresses is:
-#
-#			net	eth0	detect		dhcp
-#			loc	eth1	detect
-#			dmz	eth2	detect
-#
-#	Example 3:	You have a simple dial-in system with no ethernet
-#			connections.
-#
-#			net	ppp0	-
-#
-# For additional information, see
-# http://shorewall.net/Documentation.htm#Interfaces
-#
-###############################################################################
-# /etc/shorewall/maclist
-#
-#	This file is used to define the MAC addresses and optionally their
-#	associated IP addresses to be allowed to use the specified interface.
-#	The feature is enabled by using the maclist option in the interfaces
-#	or hosts configuration file.
-#
-# Columns are:
-#
-#	DISPOSITION	ACCEPT or DROP (if MACLIST_TABLE=filter, then REJECT
-#			is also allowed)
-#
-#	INTERFACE	Network interface to a host. If the interface
-#			names a bridge, it may be optionally followed by
-#			a colon (":") and a physical port name (e.g.,
-#			br0:eth4).
-#
-#	MAC		MAC address of the host -- you do not need to use
-#			the Shorewall format for MAC addresses here. If IP
-#			ADDRESSES is supplied then MAC can be supplied as
-#			a dash ("-")
-#
-#	IP ADDRESSES	Optional -- if specified, both the MAC and IP address
-#			must match. This column can contain a comma-separated
-#			list of host and/or subnet addresses. If your kernel
-#			and iptables have iprange match support then IP
-#			address ranges are also allowed.
-#
-# For additional information, see http://shorewall.net/MAC_Validation.html
-#
-###############################################################################
-# /etc/shorewall/masq
-#
-#	Use this file to define dynamic NAT (Masquerading) and to define
-#	Source NAT (SNAT).
-#
-#	WARNING: The entries in this file are order-sensitive. The first
-#	entry that matches a particular connection will be the one that
-#	is used.
-#
-#	WARNING: If you have more than one ISP, adding entries to this
-#	file will *not* force connections to go out through a particular
-#	ISP. You must use PREROUTING entries in /etc/shorewall/tcrules
-#	to do that.
-#
-# Columns are:
-#
-#	INTERFACE -- Outgoing interface. This is usually your internet
-#		     interface. If ADD_SNAT_ALIASES=Yes in
-#		     /etc/shorewall/shorewall.conf, you may add ":" and
-#		     a digit to indicate that you want the alias added with
-#		     that name (e.g., eth0:0). This will allow the alias to
-#		     be displayed with ifconfig. THAT IS THE ONLY USE FOR
-#		     THE ALIAS NAME AND IT MAY NOT APPEAR IN ANY OTHER
-#		     PLACE IN YOUR SHOREWALL CONFIGURATION.
-#
-#		     This may be qualified by adding the character
-#		     ":" followed by a destination host or subnet.
-#
-#		     If you wish to inhibit the action of ADD_SNAT_ALIASES
-#		     for this entry then include the ":" but omit the digit:
-#
-#				eth0:
-#				eth2::192.0.2.32/27
-#
-#		     Normally Masq/SNAT rules are evaluated after those for
-#		     one-to-one NAT (/etc/shorewall/nat file). If you want
-#		     the rule to be applied before one-to-one NAT rules,
-#		     prefix the interface name with "+":
-#
-#			+eth0
-#			+eth0:192.0.2.32/27
-#			+eth0:2
-#
-#		     This feature should only be required if you need to
-#		     insert rules in this file that preempt entries in
-#		     /etc/shorewall/nat.
-#
-#		     If you place COMMENT in this column, then the rest of the
-#		     line will be attached as a comment to the Netfilter rule(s)
-#		     generated by the following entry. The comment will appear
-#		     delimited by "/* ... */" in the output of "shorewall show
-#		     nat"
-#
-#	SOURCE (formerly called SUBNET)
-#
-#		  Set of hosts that you wish to masquerade. You can specify this
-#		  as an address (net or host) or as an interface. If you give
-#		  the name of an interface, the interface must be up before you
-#		  start the firewall (Shorewall will use your main routing table
-#		  to determine the appropriate addresses to masquerade).
-#
-#		  In order to exclude a addrress of the specified SOURCE, you
-#		  may append "!" and a comma-separated list of IP addresses
-#		  (host or net) that you wish to exclude.
-#
-#		  Example: eth1!192.168.1.4,192.168.32.0/27
-#
-#		  In that example traffic from eth1 would be masqueraded unless
-#		  it came from 192.168.1.4 or 196.168.32.0/27
-#
-#	ADDRESS -- (Optional).	If you specify an address here, SNAT will be
-#				used and this will be the source address. If
-#				ADD_SNAT_ALIASES is set to Yes or yes in
-#				/etc/shorewall/shorewall.conf then Shorewall
-#				will automatically add this address to the
-#				INTERFACE named in the first column.
-#
-#				You may also specify a range of up to 256
-#				IP addresses if you want the SNAT address to
-#				be assigned from that range in a round-robin
-#				range by connection. The range is specified by
-#				<first ip in range>-<last ip in range>.
-#
-#				Example: 206.124.146.177-206.124.146.180
-#
-#				You may also use the special value "detect"
-#				which causes Shorewall to determine the
-#				IP addresses configured on the interface named
-#				in the INTERFACES column and substitute them
-#				in this column.
-#
-#				Finally, you may also specify a comma-separated
-#				list of ranges and/or addresses in this column.
-#
-#				This column may not contain DNS Names.
-#
-#				Normally, Netfilter will attempt to retain
-#				the source port number. You may cause
-#				netfilter to remap the source port by following
-#				an address or range (if any) by ":" and
-#				a port range with the format <low port>-
-#				<high port>. If this is done, you must
-#				specify "tcp" or "udp" in the PROTO column.
-#
-#				Examples:
-#
-#					192.0.2.4:5000-6000
-#					:4000-5000
-#
-#				You can invoke the SAME target using the
-#				following in this column:
-#
-#			SAME:[nodst:]<address-range>[,<address-range>...]
-#
-#				The <address-ranges> may be single addresses
-#				or "detect" as described above.
-#
-#				SAME works like SNAT with the exception that
-#				the same local IP address is assigned to each
-#				connection from a local address to a given
-#				remote address.
-#
-#				If the 'nodst:' option is included, then the
-#				same source address is used for a given
-#				internal system regardless of which remote
-#				system is involved.
-#
-#				If you want to leave this column empty
-#				but you need to specify the next column then
-#				place a hyphen ("-") here.
-#
-#	PROTO -- (Optional)	If you wish to restrict this entry to a
-#				particular protocol then enter the protocol
-#				name (from /etc/protocols) or number here.
-#
-#	PORT(S) -- (Optional)	If the PROTO column specifies TCP (protocol 6)
-#				or UDP (protocol 17) then you may list one
-#				or more port numbers (or names from
-#				/etc/services) separated by commas or you
-#				may list a single port range
-#				(<low port>:<high port>).
-#
-#				Where a comma-separated list is given, your
-#				kernel and iptables must have multiport match
-#				support and a maximum of 15 ports may be
-#				listed.
-#
-#	IPSEC -- (Optional)	If you specify a value other than "-" in this
-#				column, you must be running kernel 2.6 and
-#				your kernel and iptables must include policy
-#				match support.
-#
-#				Comma-separated list of options from the
-#				following. Only packets that will be encrypted
-#				via an SA that matches these options will have
-#				their source address changed.
-#
-#					Yes or yes -- must be the only option
-#					listed and matches all outbound
-#					traffic that will be encrypted.
-#
-#					reqid=<number> where <number> is
-#					specified using setkey(8) using the
-#					'unique:<number> option for the SPD
-#					level.
-#
-#					spi=<number> where <number> is the
-#					SPI of the SA.
-#
-#					proto=ah|esp|ipcomp
-#
-#					mode=transport|tunnel
-#
-#					tunnel-src=<address>[/<mask>] (only
-#					available with mode=tunnel)
-#
-#					tunnel-dst=<address>[/<mask>] (only
-#					available with mode=tunnel)
-#
-#					strict	Means that packets must match
-#						all rules.
-#
-#					next	Separates rules; can only be
-#						used with strict..
-#
-#	Example 1:
-#
-#		  You have a simple masquerading setup where eth0 connects to
-#		  a DSL or cable modem and eth1 connects to your local network
-#		  with subnet 192.168.0.0/24.
-#
-#		  Your entry in the file can be either:
-#
-#			eth0	eth1
-#
-#		  or
-#
-#			eth0	192.168.0.0/24
-#
-#	Example 2:
-#
-#		  You add a router to your local network to connect subnet
-#		  192.168.1.0/24 which you also want to masquerade. You then
-#		  add a second entry for eth0 to this file:
-#
-#			eth0	192.168.1.0/24
-#
-#	Example 3:
-#
-#		  You have an IPSEC tunnel through ipsec0 and you want to
-#		  masquerade packets coming from 192.168.1.0/24 but only if
-#		  these packets are destined for hosts in 10.1.1.0/24:
-#
-#			ipsec0:10.1.1.0/24	196.168.1.0/24
-#
-#	Example 4:
-#
-#		  You want all outgoing traffic from 192.168.1.0/24 through
-#		  eth0 to use source address 206.124.146.176 which is NOT the
-#		  primary address of eth0. You want 206.124.146.176 added to
-#		  be added to eth0 with name eth0:0.
-#
-#			eth0:0	192.168.1.0/24	206.124.146.176
-#
-#	Example 5:
-#
-#		 You want all outgoing SMTP traffic entering the firewall
-#		 on eth1 to be sent from eth0 with source IP address
-#		 206.124.146.177. You want all other outgoing traffic
-#		 from eth1 to be sent from eth0 with source IP address
-#		 206.124.146.176.
-#
-#			eth0	eth1	206.124.146.177	tcp	smtp
-#			eth0	eth1	206.124.146.176
-#
-#		THE ORDER OF THE ABOVE TWO RULES IS SIGNIFICANT!!!!!
-#
-# For additional information, see http://shorewall.net/Documentation.htm#Masq
-#
-###############################################################################
-# /etc/shorewall/nat
-#
-#	This file is used to define one-to-one Network Address Translation
-#	(NAT).
-#
-# WARNING: If all you want to do is simple port forwarding, do NOT use this
-#	   file. See http://www.shorewall.net/FAQ.htm#faq1. Also, in most
-#	   cases, Proxy ARP is a better solution that one-to-one NAT.
-#
-# Columns are:
-#
-#	EXTERNAL	External IP Address - this should NOT be the primary
-#			IP address of the interface named in the next
-#			column and must not be a DNS Name.
-#
-#                       If you put COMMENT in this column, the rest of the
-#			line will be attached as a comment to the Netfilter
-#			rule(s) generated by the following entries in the
-#			file. The comment will appear delimited by "/* ... */"
-#			in the output of "shorewall show nat"
-#
-#			To stop the comment from being attached to further
-#			rules, simply include COMMENT on a line by itself.
-#
-#	INTERFACE	Interface that has the EXTERNAL address.
-#			If ADD_IP_ALIASES=Yes in shorewall.conf, Shorewall
-#			will automatically add the EXTERNAL address to this
-#			interface. Also if ADD_IP_ALIASES=Yes, you may
-#			follow the interface name with ":" and a digit to
-#			indicate that you want Shorewall to add the alias
-#			with this name (e.g., "eth0:0"). That allows you to
-#			see the alias with ifconfig. THAT IS THE ONLY THING
-#			THAT THIS NAME IS GOOD FOR -- YOU CANNOT USE IT
-#			ANYWHERE ELSE IN YOUR SHORWALL CONFIGURATION.
-#
-#			If you want to override ADD_IP_ALIASES=Yes for a
-#			particular entry, follow the interface name with
-#			":" and no digit (e.g., "eth0:").
-#	INTERNAL	Internal Address (must not be a DNS Name).
-#
-#	ALL INTERFACES	If Yes or yes, NAT will be effective from all hosts.
-#			If No or no (or left empty) then NAT will be effective
-#			only through the interface named in the INTERFACE
-#			column
-#
-#	LOCAL		If Yes or yes, NAT will be effective from the firewall
-#			system
-#
-# For additional information, see http://shorewall.net/NAT.htm
-#
-###############################################################################
-# /etc/shorewall/netmap
-#
-#	This file is used to map addresses in one network to corresponding
-#	addresses in a second network.
-#
-#	WARNING: To use this file, your kernel and iptables must have
-#		 NETMAP support included.
-#
-# Columns are:
-#
-#	TYPE		Must be DNAT or SNAT.
-#
-#			If DNAT, traffic entering INTERFACE and addressed to
-#			NET1 has it's destination address rewritten to the
-#			corresponding address in NET2.
-#
-#			If SNAT, traffic leaving INTERFACE with a source
-#			address in NET1 has it's source address rewritten to
-#			the corresponding address in NET2.
-#
-#	NET1		Network in CIDR format (e.g., 192.168.1.0/24)
-#
-#	INTERFACE	The name of a network interface. The interface must
-#			be defined in /etc/shorewall/interfaces.
-#
-#	NET2		Network in CIDR format
-#
-# See http://shorewall.net/netmap.html for an example and usage
-# information.
-#
-###############################################################################
-# /etc/shorewall/policy
-#
-#		     THE ORDER OF ENTRIES IN THIS FILE IS IMPORTANT
-#
-#	This file determines what to do with a new connection request if we
-#	don't get a match from the /etc/shorewall/rules file . For each
-#	source/destination pair, the file is processed in order until a
-#	match is found ("all" will match any client or server).
-#
-#	                INTRA-ZONE POLICIES ARE PRE-DEFINED
-#
-#	For $FW and for all of the zoned defined in /etc/shorewall/zones,
-#	the POLICY for connections from the zone to itself is ACCEPT (with no
-#	logging or TCP connection rate limiting but may be overridden by an
-#	entry in this file. The overriding entry must be explicit (cannot use
-#	"all" in the SOURCE or DEST).
-#
-#       Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall.conf, then
-#       the implicit policy to/from any sub-zone is CONTINUE. These implicit
-#       CONTINUE policies may also be overridden by an explicit entry in this
-#       file.
-#
-# Columns are:
-#
-#	SOURCE		Source zone. Must be the name of a zone defined
-#			in /etc/shorewall/zones, $FW or "all".
-#
-#	DEST		Destination zone. Must be the name of a zone defined
-#			in /etc/shorewall/zones, $FW or "all"
-#
-#	POLICY		Policy if no match from the rules file is found. Must
-#			be "ACCEPT", "DROP", "REJECT", "CONTINUE" or "NONE".
-#
-#			ACCEPT		- Accept the connection
-#			DROP		- Ignore the connection request
-#			REJECT		- For TCP, send RST. For all other,
-#					  send "port unreachable" ICMP.
-#			QUEUE		- Send the request to a user-space
-#					  application using the QUEUE target.
-#			CONTINUE	- Pass the connection request past
-#					  any other rules that it might also
-#					  match (where the source or
-#					  destination zone in those rules is
-#					  a superset of the SOURCE or DEST
-#					  in this policy).
-#			NONE		- Assume that there will never be any
-#					  packets from this SOURCE
-#					  to this DEST. Shorewall will not set
-#					  up any infrastructure to handle such
-#					  packets and you may not have any
-#					  rules with this SOURCE and DEST in
-#					  the /etc/shorewall/rules file. If
-#					  such a packet _is_ received, the
-#					  result is undefined. NONE may not be
-#					  used if the SOURCE or DEST columns
-#					  contain the firewall zone ($FW) or
-#					  "all".
-#
-#			If the policy is DROP or REJECT then the policy should
-#			be followed by ":" and one of the following:
-#
-#			a) The word "None" or "none". This causes any default
-#			   action defined in /etc/shorewall/shorewall.conf to
-#			   be omitted for this policy.
-#			b) The name of an action (requires that USE_ACTIONS=Yes
-#			   in shorewall.conf). That action will be invoked
-#			   before the policy is enforced.
-#			c) The name of a macro. The rules in that macro will
-#			   be applied before the policy is enforced. This
-#			   does not require USE_ACTIONS=Yes.
-#
-#	LOG LEVEL	If supplied, each connection handled under the default
-#			POLICY is logged at that level. If not supplied, no
-#			log message is generated. See syslog.conf(5) for a
-#			description of log levels.
-#
-#			Beginning with Shorewall version 1.3.12, you may
-#			also specify ULOG (must be in upper case). This will
-#			log to the ULOG target and sent to a separate log
-#			through use of ulogd
-#			(http://www.gnumonks.org/projects/ulogd).
-#
-#			If you don't want to log but need to specify the
-#			following column, place "-" here.
-#
-#	LIMIT:BURST	If passed, specifies the maximum TCP connection rate
-#			and the size of an acceptable burst. If not specified,
-#			TCP connections are not limited.
-#
-#	Example:
-#
-#	a) All connections from the local network to the internet are allowed
-#	b) All connections from the internet are ignored but logged at syslog
-#	   level KERNEL.INFO.
-#	d) All other connection requests are rejected and logged at level
-#	   KERNEL.INFO.
-#
-#	#SOURCE		DEST		POLICY		LOG
-#	#						LEVEL
-#	loc		net		ACCEPT
-#	net		all		DROP		info
-#	#
-#	# THE FOLLOWING POLICY MUST BE LAST
-#	#
-#	all		all		REJECT		info
-#
-# See http://shorewall.net/Documentation.htm#Policy for additional information.
-#
-###############################################################################
-# /etc/shorewall/providers
-#
-#	This file is used to define additional routing tables. You will
-#	want to define an additional table if:
-#
-#	- You have connections to more than one ISP or multiple connections
-#	  to the same ISP
-#
-#	- You run Squid as a transparent proxy on a host other than the
-#	  firewall.
-#
-#	To omit a column, enter "-".
-#
-# Columns are:
-#
-#	NAME		The provider name.  Must be a valid shell variable name.
-#			The names 'local', 'main', 'default' and 'unspec' are
-#			reserved and may not be used as provider names.
-#
-#	NUMBER		The provider number -- a number between 1 and 15
-#
-#	MARK		A FWMARK value used in your /etc/shorewall/tcrules
-#			file to direct packets to this provider.
-#
-#			If HIGH_ROUTE_MARKS=Yes in shorewall.conf, then the
-#			value must be a multiple of 256 between 256 and 65280
-#			or their hexadecimal equivalents (0x0100 and 0xff00
-#			with the low-order byte of the value being zero).
-#			Otherwise, the value must be between 1 and 255.
-#
-#	DUPLICATE	The name of an existing table to duplicate. May be
-#			'main' or the name of a previous provider.
-#
-#	INTERFACE	The name of the network interface to the provider.
-#			Must be listed in /etc/shorewall/interfaces.
-#
-#	GATEWAY		The IP address of the provider's gateway router.
-#
-#			You can enter "detect" here and Shorewall will
-#			attempt to detect the gateway automatically.
-#
-#			[ EXPERIMENTAL ] For PPP devices, you may omit this
-#			column.
-#
-#	OPTIONS		A comma-separated list selected from the following:
-#
-#		track	If specified, inbound connections on this interface
-#			are to be tracked so that responses may be routed back
-#			out this same interface.
-#
-#			You want to specify 'track' if internet hosts will be
-#			connecting to local servers through this provider.
-#
-#		balance The providers that have 'balance' specified will
-#			get outbound traffic load-balanced among them. By
-#			default, all interfaces with 'balance' specified
-#			will have the same weight (1). You can change the
-#			weight of an interface by specifiying balance=<weight>
-#			where <weight> is the weight of the route out of
-#			this interface.
-#
-#		loose	Shorewall normally adds a routing rule for each
-#			IP address on an interface which forces traffic
-#			whose source is that IP address to be sent using
-#			the routing table for that interface. Setting
-#			'loose' prevents creation of such rules on this
-#			interface.
-#
-#		optional
-#			If the interface named in the INTERFACE column is not
-#			up and configured with an IPv4 address then ignore
-#			this provider.
-#
-#	COPY		A comma-separated lists of other interfaces on your
-#			firewall. Only makes sense when DUPLICATE is 'main'.
-#			Only copy routes through INTERFACE and through
-#			interfaces listed here. If you only wish to copy
-#			routes through INTERFACE, enter 'none' here.
-#
-# Example:  You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
-#	    interface is eth2
-#
-#	#NAME	NUMBER	MARK DUPLICATE	INTERFACE GATEWAY	OPTIONS
-#	Squid	1	1    -		eth2	  192.168.2.99	-
-#
-# Example:
-#
-#      eth0 connects to ISP 1. The IP address of eth0 is 206.124.146.176 and
-#      the ISP's gateway router has IP address 206.124.146.254.
-#
-#      eth1 connects to ISP 2. The IP address of eth1 is 130.252.99.27 and the
-#      ISP's gateway router has IP address 130.252.99.254.
-#
-#      eth2 connects to a local network.
-#
-#      #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY	     OPTIONS	        COPY
-#      ISP1  1	    1	 main	   eth0	     206.124.146.254 track,balance      eth2
-#      ISP2  2	    2	 main	   eth1	     130.252.99.254  track,balance      eth2
-#
-# See http://www.shorewall.net/MultiISP.html for additional
-# information.
-#
-###############################################################################
-# /etc/shorewall/proxyarp
-#
-#	This file is used to define Proxy ARP.
-#
-# Columns are:
-#
-#	ADDRESS		IP Address
-#
-#	INTERFACE	Local interface where system is connected.
-#
-#	EXTERNAL	External Interface to be used to access this system
-#
-#	HAVEROUTE	If there is already a route from the firewall to
-#			the host whose address is given, enter "Yes" or "yes"
-#			in this column. Otherwise, entry "no", "No" or leave
-#			the column empty and Shorewall will add the route for
-#			you. If Shorewall adds the route,the route will be
-#			persistent if the PERSISTENT column contains Yes;
-#			otherwise, "shorewall stop" or "shorewall clear" will
-#			delete the route.
-#
-#	PERSISTENT	If HAVEROUTE is No or "no", then the value of this
-#			column determines if the route added by Shorewall
-#			persists after a "shorewall stop" or a "shorewall
-#			clear". If this column contains "Yes" or "yes" then
-#			the route persists; If the column is empty or contains
-#			"No"or "no" then the route is deleted at "shorewall
-#			stop" or "shorewall clear".
-#
-#			Example: Host with IP 155.186.235.6 is connected to
-#			interface eth1 and we want hosts attached via eth0
-#			to be able to access it using that address.
-#
-#			#ADDRESS	INTERFACE	EXTERNAL
-#			155.186.235.6	eth1		eth0
-#
-# See http://shorewall.net/ProxyARP.htm for additional information.
-#
-###############################################################################
-# /etc/shorewall/rfc1918
-#
-#	Lists the subnetworks that are blocked by the 'norfc1918' interface
-#	option.
-#
-#	The default list includes those IP addresses listed in RFC 1918.
-#
-#	DO NOT MODIFY THIS FILE. IF YOU NEED TO MAKE CHANGES, COPY THE FILE
-#	TO /etc/shorewall AND MODIFY THE COPY.
-#
-# Columns are:
-#
-#	SUBNETS		A comma-separated list of subnet addresses
-#			(host addresses also allowed as are IP
-#			address ranges provided that your kernel and iptables
-#			have iprange match support).
-#	TARGET		Where to send packets to/from this subnet
-#			RETURN	- let the packet be processed normally
-#			DROP	- silently drop the packet
-#			logdrop - log then drop
-#
-#	By default, the RETURN target causes 'norfc1918' processing to cease
-#	for a packet if the packet's source IP address matches the rule. Thus,
-#	if you have:
-#
-#		SUBNETS			TARGET
-#		192.168.1.0/24		RETURN
-#
-#	then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even though
-#	you also have:
-#
-#		SUBNETS			TARGET
-#		10.0.0.0/8		logdrop
-#
-#	Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic
-#	to be logged and dropped since while the packet's source matches the
-#	RETURN rule, the packet's destination matches the 'logdrop' rule.
-###############################################################################
-# /etc/shorewall/route_rules
-#
-#	Entries in this file cause traffic to be routed to one of the
-#	providers listed in /etc/shorewall/providers.
-#
-#	Columns are:
-#
-#		SOURCE(optional)
-#				An ip address (network or host) that
-#				matches the source IP address in a packet.
-#				May also be specified as an interface
-#				name optionally followed by ":" and an
-#				address. If the device 'lo' is specified,
-#				the packet must originate from the firewall
-#				itself.
-#
-#		DEST(optional)  An ip address (network or host) that
-#				matches the destination IP address in a packet.
-#
-#				If you choose to omit either SOURCE or DEST,
-#				place "-" in that column. Note that you
-#				may not omit both SOURCE and DEST.
-#
-#		PROVIDER        The provider to route the traffic through.
-#				May be expressed either as the provider name
-#				or the provider number. May also be 'main'
-#				or 254 for the main routing table. This can
-#				be used in combination with VPN tunnels, see
-#				example 2 below.
-#
-#		PRIORITY
-#				The rule's priority which determines the order
-#				in which the rules are processed.
-#
-#				1000-1999   Before Shorewall-generated
-#					    'MARK' rules
-#
-#				11000- 11999 After 'MARK' rules but before
-#					    Shorewall-generated rules for
-#					    ISP interfaces.
-#
-#				26000-26999 After ISP interface rules but
-#					    before 'default' rule.
-#
-#				Rules with equal priority are applied in
-#				the order in which they appear in the file.
-#
-# Example 1: You want all traffic coming in on eth1 to be routed to the ISP1
-#          provider:
-#
-#	#SOURCE			DEST		PROVIDER	PRIORITY
-#	eth1	    		-		ISP1		1000
-#
-# Example 2: You use OpenVPN (routed setup /tunX) in combination with multiple
-#            providers. In this case you have to set up a rule to ensure that
-#            the OpenVPN traffic is routed back through the tunX interface(s)
-#            rather than through any of the providers. 10.8.0.0/24 is the
-#            subnet choosen in your OpenVPN configuration (server 10.8.0.0
-#            255.255.255.0)
-#
-#	#SOURCE			DEST		PROVIDER	PRIORITY
-#	-	    		10.8.0.0/24	main		1000
-#
-# For additional information, see
-# http://www.shorewall.net/MultiISP.html
-#
-###############################################################################
-# /etc/shorewall/routestopped
-#
-#	This file is used to define the hosts that are accessible when the
-#	firewall is stopped or when it is in the process of being
-#	[re]started.
-#
-# Columns are:
-#
-#	INTERFACE	- Interface through which host(s) communicate with
-#			  the firewall
-#	HOST(S)		- (Optional) Comma-separated list of IP/subnet
-#			  addresses. If your kernel and iptables include
-#			  iprange match support, IP address ranges are also
-#			  allowed.
-#
-#			  If left empty or supplied as "-",
-#			  0.0.0.0/0 is assumed.
-#	OPTIONS		- (Optional) A comma-separated list of
-#			  options. The currently-supported options are:
-#
-#			  routeback - Set up a rule to ACCEPT traffic from
-#			  these hosts back to themselves.
-#
-#			  source - Allow traffic from these hosts to ANY
-#			  destination. Without this option or the 'dest'
-#			  option, only traffic from this host to other
-#			  listed hosts (and the firewall) is allowed. If
-#			  'source' is specified then 'routeback' is redundant.
-#
-#			  dest - Allow traffic to these hosts from ANY
-#			  source. Without this option or the 'source'
-#			  option, only traffic from this host to other
-#			  listed hosts (and the firewall) is allowed. If
-#			  'dest' is specified then 'routeback' is redundant.
-#
-#			  critical - Allow traffic between the firewall and
-#			  these hosts throughout '[re]start', 'stop' and
-#			  'clear'. Specifying 'critical' on one or more
-#			  entries will cause your firewall to be "totally
-#			  open" for a brief window during each of those
-#			  operations.
-#
-#		NOTE:   The 'source' and 'dest' options work best when used
-#			in conjunction with ADMINISABSENTMINDED=Yes in
-#			/etc/shorewall/shorewall.conf.
-#
-# Example:
-#
-#	INTERFACE	HOST(S)			OPTIONS
-#	eth2		192.168.1.0/24
-#	eth0		192.0.2.44
-#	br0		-			routeback
-#	eth3		-			source
-#
-# See http://shorewall.net/Documentation.htm#Routestopped and
-# http://shorewall.net/starting_and_stopping_shorewall.htm for additional
-# information.
-#
-###############################################################################
-# /etc/shorewall/rules
-#
-#	Rules in this file govern connection establishment. Requests and
-#	responses are automatically allowed using connection tracking. For any
-#	particular (source,dest) pair of zones, the rules are evaluated in the
-#	order in which they appear in this file and the first match is the one
-#	that determines the disposition of the request.
-#
-#	In most places where an IP address or subnet is allowed, you
-#	can preceed the address/subnet with "!" (e.g., !192.168.1.0/24) to
-#	indicate that the rule matches all addresses except the address/subnet
-#	given. Notice that no white space is permitted between "!" and the
-#	address/subnet.
-#------------------------------------------------------------------------------
-# WARNING: If you masquerade or use SNAT from a local system to the internet,
-#	   you cannot use an ACCEPT rule to allow traffic from the internet to
-#	   that system. You *must* use a DNAT rule instead.
-#------------------------------------------------------------------------------
-#
-# The rules file is divided into sections. Each section is introduced by
-# a "Section Header" which is a line beginning with SECTION followed by the
-# section name.
-#
-# Sections are as follows and must appear in the order listed:
-#
-#	ESTABLISHED		Packets in the ESTABLISHED state are processed
-#				by rules in this section.
-#
-#				The only ACTIONs allowed in this section are
-#				ACCEPT, DROP, REJECT, LOG and QUEUE
-#
-#				There is an implicit ACCEPT rule inserted
-#				at the end of this section.
-#
-#	RELATED			Packets in the RELATED state are processed by
-#				rules in this section.
-#
-#				The only ACTIONs allowed in this section are
-#				ACCEPT, DROP, REJECT, LOG and QUEUE
-#
-#				There is an implicit ACCEPT rule inserted
-#				at the end of this section.
-#
-#	NEW			Packets in the NEW and INVALID states are
-#				processed by rules in this section.
-#
-# Note: If you are not familiar with Netfilter to the point where you are
-#	comfortable with the differences between the various connection
-#	tracking states, then I suggest that you omit the ESTABLISHED and
-#	RELATED sections and place all of your rules in the NEW section
-#	(That's after the line that reads SECTION NEW').
-#
-# WARNING: If you specify FASTACCEPT=Yes in shorewall.conf then the
-#	   ESTABLISHED and RELATED sections must be empty.
-#
-# You may omit any section that you don't need. If no Section Headers appear
-# in the file then all rules are assumed to be in the NEW section.
-#
-# Columns are:
-#
-#	ACTION		ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
-#			LOG, QUEUE, COMMENT, a <macro>,  or an <action>.
-#
-#				ACCEPT	 -- allow the connection request
-#				ACCEPT+	 -- like ACCEPT but also excludes the
-#					    connection from any subsequent
-#					    DNAT[-] or REDIRECT[-] rules
-#				NONAT	 -- Excludes the connection from any
-#					    subsequent DNAT[-] or REDIRECT[-]
-#					    rules but doesn't generate a rule
-#					    to accept the traffic.
-#				DROP	 -- ignore the request
-#				REJECT	 -- disallow the request and return an
-#					    icmp-unreachable or an RST packet.
-#				DNAT	 -- Forward the request to another
-#					    system (and optionally another
-#					    port).
-#				DNAT-	 -- Advanced users only.
-#					    Like DNAT but only generates the
-#					    DNAT iptables rule and not
-#					    the companion ACCEPT rule.
-#				SAME	 -- Similar to DNAT except that the
-#					    port may not be remapped and when
-#					    multiple server addresses are
-#					    listed, all requests from a given
-#					    remote system go to the same
-#					    server.
-#				SAME-	 -- Advanced users only.
-#					    Like SAME but only generates the
-#					    NAT iptables rule and not
-#					    the companion ACCEPT rule.
-#				REDIRECT -- Redirect the request to a local
-#					    port on the firewall.
-#				REDIRECT-
-#					 -- Advanced users only.
-#					    Like REDIRET but only generates the
-#					    REDIRECT iptables rule and not
-#					    the companion ACCEPT rule.
-#
-#				CONTINUE -- (For experts only). Do not process
-#					    any of the following rules for this
-#					    (source zone,destination zone). If
-#					    The source and/or destination IP
-#					    address falls into a zone defined
-#					    later in /etc/shorewall/zones, this
-#					    connection request will be passed
-#					    to the rules defined for that
-#					    (those) zone(s).
-#				LOG	 -- Simply log the packet and continue.
-#				QUEUE	 -- Queue the packet to a user-space
-#					    application such as ftwall
-#					    (http://p2pwall.sf.net).
-#                               COMMENT  -- the rest of the line will be attached
-#					    as a comment to the Netfilter rule(s)
-#					    generated by the following entres.
-#					    The comment will appear delimited by
-#					    "/* ... */" in the output of
-#					    "shorewall show <chain>". To stop
-#					    the comment from being attached to
-#					    further rules, simply include
-#					    COMMENT on a line by itself.
-#				<action> -- The name of an action defined in
-#					    /etc/shorewall/actions or in
-#					    /usr/share/shorewall/actions.std.
-#				<macro>	 -- The name of a macro defined in a
-#					    file named macro.<macro-name>. If
-#					    the macro accepts an action
-#					    parameter (Look at the macro
-#					    source to see if it has PARAM in
-#					    the TARGET column) then the macro
-#					    name is followed by "/" and the
-#					    action (ACCEPT, DROP, REJECT, ...)
-#					    to be substituted for the
-#					    parameter. Example: FTP/ACCEPT.
-#
-#			The ACTION may optionally be followed
-#			by ":" and a syslog log level (e.g, REJECT:info or
-#			DNAT:debug). This causes the packet to be
-#			logged at the specified level.
-#
-#			If the ACTION names an action defined in
-#			/etc/shorewall/actions or in
-#			/usr/share/shorewall/actions.std then:
-#
-#			- If the log level is followed by "!' then all rules
-#			  in the action are logged at the log level.
-#
-#			- If the log level is not followed by "!" then only
-#			  those rules in the action that do not specify
-#			  logging are logged at the specified level.
-#
-#			- The special log level 'none!' suppresses logging
-#			  by the action.
-#
-#			You may also specify ULOG (must be in upper case) as a
-#			log level.This will log to the ULOG target for routing
-#			to a separate log through use of ulogd
-#			(http://www.gnumonks.org/projects/ulogd).
-#
-#			Actions specifying logging may be followed by a
-#			log tag (a string of alphanumeric characters)
-#			are appended to the string generated by the
-#			LOGPREFIX (in /etc/shorewall/shorewall.conf).
-#
-#			Example: ACCEPT:info:ftp would include 'ftp '
-#			at the end of the log prefix generated by the
-#			LOGPREFIX setting.
-#
-#	SOURCE		Source hosts to which the rule applies. May be a zone
-#			defined in /etc/shorewall/zones, $FW to indicate the
-#			firewall itself, "all", "all+", "all-", "all+-" or
-#			"none".
-#
-#			When "none" is used either in the SOURCE or DEST
-#			column, the rule is ignored.
-#
-#			"all" means "All Zones", including the firewall itself.
-#			"all-" means "All Zones, except the firewall itself".
-#			When "all[-]" is used either in the SOURCE or DEST column
-#			intra-zone traffic is not affected. When "all+[-]" is
-#			"used, intra-zone traffic is affected.
-#
-#			Except when "all[+][-]" is specified, clients may be
-#			further restricted to a list of subnets and/or hosts by
-#			appending ":" and a comma-separated list of subnets
-#			and/or hosts. Hosts may be specified by IP or MAC
-#			address; mac addresses must begin with "~" and must use
-#			"-" as a separator.
-#
-#			Hosts may be specified as an IP address range using the
-#			syntax <low address>-<high address>. This requires that
-#			your kernel and iptables contain iprange match support.
-#			If you kernel and iptables have ipset match support
-#			then you may give the name of an ipset prefaced by "+".
-#			The ipset name may be optionally followed by a number
-#			from 1 to 6 enclosed in square brackets ([]) to
-#			indicate the number of levels of source bindings to be
-#			matched.
-#
-#			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
-#
-#			net:155.186.235.0/24	Subnet 155.186.235.0/24 on the
-#						Internet
-#
-#			loc:192.168.1.1,192.168.1.2
-#						Hosts 192.168.1.1 and
-#						192.168.1.2 in the local zone.
-#			loc:~00-A0-C9-15-39-78	Host in the local zone with
-#						MAC address 00:A0:C9:15:39:78.
-#
-#			net:192.0.2.11-192.0.2.17
-#						Hosts 192.0.2.11-192.0.2.17 in
-#						the net zone.
-#
-#			Alternatively, clients may be specified by interface
-#			by appending ":" to the zone name followed by the
-#			interface name. For example, loc:eth1 specifies a
-#			client that communicates with the firewall system
-#			through eth1. This may be optionally followed by
-#			another colon (":") and an IP/MAC/subnet address
-#			as described above (e.g., loc:eth1:192.168.1.5).
-#
-#	DEST		Location of Server. May be a zone defined in
-#			/etc/shorewall/zones, $FW to indicate the firewall
-#			itself, "all". "all+" or "none".
-#
-#			When "none" is used either in the SOURCE or DEST
-#			column, the rule is ignored.
-#
-#			When "all" is used either in the SOURCE or DEST column
-#			intra-zone traffic is not affected. When "all+" is
-#			used, intra-zone traffic is affected.
-#
-#			Except when "all[+]" is specified, the server may be
-#			further restricted to a particular subnet, host or
-#			interface by appending ":" and the subnet, host or
-#			interface. See above.
-#
-#				Restrictions:
-#
-#				1. MAC addresses are not allowed.
-#				2. In DNAT rules, only IP addresses are
-#				   allowed; no FQDNs or subnet addresses
-#				   are permitted.
-#				3. You may not specify both an interface and
-#				   an address.
-#
-#			Like in the SOURCE column, you may specify a range of
-#			up to 256 IP addresses using the syntax
-#			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
-#			the connections will be assigned to addresses in the
-#			range in a round-robin fashion.
-#
-#			If you kernel and iptables have ipset match support
-#			then you may give the name of an ipset prefaced by "+".
-#			The ipset name may be optionally followed by a number
-#			from 1 to 6 enclosed in square brackets ([]) to
-#			indicate the number of levels of destination bindings
-#			to be matched. Only one of the SOURCE and DEST columns
-#			may specify an ipset name.
-#
-#			The port that the server is listening on may be
-#			included and separated from the server's IP address by
-#			":". If omitted, the firewall will not modifiy the
-#			destination port. A destination port may only be
-#			included if the ACTION is DNAT or REDIRECT.
-#
-#			Example: loc:192.168.1.3:3128 specifies a local
-#			server at IP address 192.168.1.3 and listening on port
-#			3128. The port number MUST be specified as an integer
-#			and not as a name from /etc/services.
-#
-#			if the ACTION is REDIRECT, this column needs only to
-#			contain the port number on the firewall that the
-#			request should be redirected to.
-#
-#	PROTO		Protocol - Must be "tcp", "tcp:syn", "udp", "icmp",
-#			"ipp2p", "ipp2p:udp", "ipp2p:all" a number, or "all".
-#                       "ipp2p*" requires ipp2p match support in your kernel
-#                       and iptables.
-#
-#			"tcp:syn" implies "tcp" plus the SYN flag must be
-#			set and the RST,ACK and FIN flags must be reset.
-#
-#	DEST PORT(S)	Destination Ports. A comma-separated list of Port
-#			names (from /etc/services), port numbers or port
-#			ranges; if the protocol is "icmp", this column is
-#			interpreted as the destination icmp-type(s).
-#
-#			If the protocol is ipp2p, this column is interpreted
-#			as an ipp2p option without the leading "--" (example
-#			"bit" for bit-torrent). If no port is given, "ipp2p" is
-#			assumed.
-#
-#			A port range is expressed as <low port>:<high port>.
-#
-#			This column is ignored if PROTOCOL = all but must be
-#			entered if any of the following ields are supplied.
-#			In that case, it is suggested that this field contain
-#			 "-"
-#
-#			If your kernel contains multi-port match support, then
-#			only a single Netfilter rule will be generated if in
-#			this list and the CLIENT PORT(S) list below:
-#			1. There are 15 or less ports listed.
-#			2. No port ranges are included.
-#			Otherwise, a separate rule will be generated for each
-#			port.
-#
-#	SOURCE PORT(S)	(Optional) Port(s) used by the client. If omitted,
-#			any source port is acceptable. Specified as a comma-
-#			separated list of port names, port numbers or port
-#			ranges.
-#
-#			If you don't want to restrict client ports but need to
-#			specify an ORIGINAL DEST in the next column, then
-#			place "-" in this column.
-#
-#			If your kernel contains multi-port match support, then
-#			only a single Netfilter rule will be generated if in
-#			this list and the DEST PORT(S) list above:
-#			1. There are 15 or less ports listed.
-#			2. No port ranges are included.
-#			Otherwise, a separate rule will be generated for each
-#			port.
-#
-#	ORIGINAL DEST	(0ptional) -- If ACTION is DNAT[-] or REDIRECT[-]
-#			then if included and different from the IP
-#			address given in the SERVER column, this is an address
-#			on some interface on the firewall and connections to
-#			that address will be forwarded to the IP and port
-#			specified in the DEST column.
-#
-#			A comma-separated list of addresses may also be used.
-#			This is usually most useful with the REDIRECT target
-#			where you want to redirect traffic destined for
-#			particular set of hosts.
-#
-#			Finally, if the list of addresses begins with "!" then
-#			the rule will be followed only if the original
-#			destination address in the connection request does not
-#			match any of the addresses listed.
-#
-#			For other actions, this column may be included and may
-#			contain one or more addresses (host or network)
-#			separated by commas. Address ranges are not allowed.
-#			When this column is supplied, rules are generated
-#			that require that the original destination address
-#			matches one of the listed addresses. This feature is
-#			most useful when you want to generate a filter rule
-#			that corresponds to a DNAT- or REDIRECT- rule. In this
-#			usage, the list of addresses should not begin with "!".
-#
-#			See http://shorewall.net/PortKnocking.html for an
-#			example of using an entry in this column with a
-#			user-defined action rule.
-#
-#	RATE LIMIT	You may rate-limit the rule by placing a value in
-#			this colume:
-#
-#				<rate>/<interval>[:<burst>]
-#
-#			where <rate> is the number of connections per
-#			<interval> ("sec" or "min") and <burst> is the
-#			largest burst permitted. If no <burst> is given,
-#			a value of 5 is assumed. There may be no
-#			no whitespace embedded in the specification.
-#
-#				Example: 10/sec:20
-#
-#	USER/GROUP	This column may only be non-empty if the SOURCE is
-#			the firewall itself.
-#
-#			The column may contain:
-#
-#	[!][<user name or number>][:<group name or number>][+<program name>]
-#
-#			When this column is non-empty, the rule applies only
-#			if the program generating the output is running under
-#			the effective <user> and/or <group> specified (or is
-#			NOT running under that id if "!" is given).
-#
-#			Examples:
-#
-#				joe	#program must be run by joe
-#				:kids	#program must be run by a member of
-#					#the 'kids' group
-#				!:kids	#program must not be run by a member
-#					#of the 'kids' group
-#				+upnpd	#program named upnpd (This feature was
-#					#removed from Netfilter in kernel
-#					#version 2.6.14).
-#
-#	Example: Accept SMTP requests from the DMZ to the internet
-#
-#	#ACTION SOURCE	DEST PROTO	DEST	SOURCE	ORIGINAL
-#	#				PORT	PORT(S) DEST
-#	ACCEPT	dmz	net	  tcp	smtp
-#
-#	Example: Forward all ssh and http connection requests from the
-#		 internet to local system 192.168.1.3
-#
-#	#ACTION SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
-#	#					PORT	PORT(S) DEST
-#	DNAT	net	loc:192.168.1.3 tcp	ssh,http
-#
-#	Example: Forward all http connection requests from the internet
-#		 to local system 192.168.1.3 with a limit of 3 per second and
-#		 a maximum burst of 10
-#
-#	#ACTION SOURCE DEST	       PROTO  DEST  SOURCE  ORIGINAL RATE
-#	#				      PORT  PORT(S) DEST     LIMIT
-#	DNAT	net    loc:192.168.1.3 tcp    http  -	    -	     3/sec:10
-#
-#	Example: Redirect all locally-originating www connection requests to
-#		 port 3128 on the firewall (Squid running on the firewall
-#		 system) except when the destination address is 192.168.2.2
-#
-#	#ACTION	 SOURCE	DEST	  PROTO	DEST	SOURCE	ORIGINAL
-#	#				PORT	PORT(S) DEST
-#	REDIRECT loc	3128	  tcp	www	 -	!192.168.2.2
-#
-#	Example: All http requests from the internet to address
-#		 130.252.100.69 are to be forwarded to 192.168.1.3
-#
-#	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
-#	#					PORT	PORT(S) DEST
-#	DNAT	  net	loc:192.168.1.3 tcp	80	-	130.252.100.69
-#
-#	Example: You want to accept SSH connections to your firewall only
-#		 from internet IP addresses 130.252.100.69 and 130.252.100.70
-#
-#	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
-#	#					PORT	PORT(S) DEST
-#	ACCEPT	 net:130.252.100.69,130.252.100.70 $FW \
-#					tcp	22
-#
-# See http://www.shorewall.net/Documentation.htm#Rules for additional
-# information.
-#
-###############################################################################
-# Based on tc4shorewall version 0.5 by Arne Bernin
-#
-# /etc/shorewall/tcclasses
-#
-#	Define the classes used for traffic shaping in this file.
-#
-#	A note on the rate/bandwidth definitions used in this file:
-#
-#		- don't use a space between the integer value and
-#		  the unit: 30kbit is valid while 30 kbit is NOT.
-#
-#		- you can use one of the following units:
-#
-#			kbps		Kilobytes per second
-#			mbps		Megabytes per second
-#			kbit		Kilobits per second
-#			mbit		Megabits per second
-#			bps or a
-#			bare number	Bytes per second
-#
-#		- if you want the values to be calculated for you depending
-#		on the output bandwidth setting defined for an interface
-#		in tcdevices, you can use expressions like the following:
-#
-#			full/3		causes the bandwidth to be calculated
-#					as 3 of the the full outgoing
-#					speed that is defined.
-#
-#			full*9/10	will set this bandwidth to 9/10 of
-#					the full bandwidth
-#
-#		DO NOT add a unit to the rate if it is calculated !
-#
-# Columns are:
-#
-#	INTERFACE	Name of interface. Each interface may be listed only
-#			once in this file. You may NOT specify the name of
-#			an alias (e.g., eth0:0) here; see
-#			http://www.shorewall.net/FAQ.htm#faq18
-#
-#			You may NOT specify wildcards here,  e.g. if you
-#			have multiple ppp interfaces, you need to put
-#			them all in here!
-#
-#			Please note that you can only use interface names
-#			in here that have a bandwidth defined in the tcdevices
-#			file
-#
-#	MARK		The mark value which is an integer in the range 1-255.
-#			You define this marks in the tcrules file, marking
-#			the traffic you want to fit in the classes defined
-#			in here.
-#
-#			You can use the same marks for different interfaces.
-#
-#	RATE		The minimum bandwidth this class should get,
-#			when the traffic load rises.
-#
-#	CEIL		The maximum bandwidth this class is allowed to use
-#			when the link is idle. Useful if you have traffic
-#			which can get full speed when more needed services
-#			(e.g. ssh) are not used.
-#
-#			You can use the value "full" in here for setting
-#			the maximum bandwidth to the defined output bandwidth
-#			of that interface
-#
-#	PRIORITY	The priority in which classes will be serviced by
-#			the packet shaping scheduler and also the priority
-#			in which bandwidth in excess of the rate will be
-#			given to each class.
-#
-#			Higher priority classes will experience less delay
-#			since they are serviced first.  Priority values
-#			are serviced in ascending order (e.g. 0 is higher
-#			priority than 1).
-#
-#			Classes may be set to the same priority, in which
-#			case they will be serviced as equals.
-#
-#	OPTIONS		A comma-separated list of options including the
-#			following:
-#
-#			default		- this is the default class for that
-#					interface where all traffic should go,
-#					that is not classified otherwise.
-#
-#					NOTE: defining default for exactly one
-#					class per interface is mandatory!
-#
-#			tos=0x<value>[/0x<mask>]  (mask defaults to 0xff)
-#					- this lets you define a classifier
-#					for the given <value>/<mask>
-#					combination of the IP packet's
-#					TOS/Precedence/DiffSrv octet (aka the
-#					TOS byte).  Please note, classifiers
-#					override all mark settings, so if you
-#					define a classifer for a class, all
-#					traffic having that mark will go in it
-#					regardless of any mark set on the
-#					packet by a firewall/mangle filter.
-#
-#					NOTE: multiple tos= statements may be
-#					applied per class and per interface,
-#					but a given value/mask pair is valid
-#					for only ONE class per interface.
-#
-#			tos-<tosname>	- aliases for the following TOS octet
-#					value and mask encodings.  TOS
-#					encodings of the "TOS byte" have been
-#					deprecated in favor of diffserve
-#					classes, but programs like ssh,
-#					rlogin, and ftp still use them.
-#
-#   					tos-minimize-delay 	 0x10/0x10
-#                               	tos-maximize-throughput	 0x08/0x08
-#                               	tos-maximize-reliability 0x04/0x04
-#                               	tos-minimize-cost	 0x02/0x02
-#                               	tos-normal-service	 0x00/0x1e
-#
-#					NOTE: each of this options is only
-#					valid for ONE class per interface.
-#
-#			tcp-ack		- if defined causes an tc filter to
-#					be created that puts all tcp ack
-#					packets on that interface that have
-#					an size of <=64 Bytes to go in this
-#					class. This is useful for speeding up
-#					downloads. Please note that the size
-#					of the ack packets is limited to 64
-#					bytes as some applications (p2p for
-#					example) use to make every packet an
-#					ack packet which would cause them
-#					all into here. We want only packets
-#					WITHOUT payload to match, so the size
-#					limit.
-#
-#					NOTE: This option is only valid for
-#					ONE class per interface.
-#
-#
-#
-#	Example 1:	Suppose you are using PPP over Ethernet (DSL)
-#			and ppp0 is the interface for this. You have 4 classes
-#			here, the first you can use for voice	over IP
-#			traffic, the second interactive traffic (e.g.
-#			ssh/telnet but not scp), the third will be for all
-#			unclassified traffic, and the forth is for low
-#			priority traffic (e.g. peer-to-peer).
-#
-#			The voice traffic in the first class will be
-#			guaranteed a minimum of 100kbps and always be
-#			serviced first (because of the low priority number,
-#			giving less delay) and will be granted excess
-#			bandwidth (up to 180kbps, the class ceiling) first,
-#			before any other traffic.  A single VOIP stream,
-#			depending upon codecs, after encapsulation, can take
-#			up to 80kbps on a PPOE/DSL link, so we pad a little
-#			bit just in case.  (TOS byte values 0xb8 and 0x68
-#			are DiffServ classes EF and AFF3-1 respectively and
-#			are often used by VOIP devices).
-#
-#			Interactive traffic (tos-minimum-delay)	and
-#			TCP acks (and ICMP echo traffic if you use the example
-#			in tcrules) and any packet with a mark of 2 will be
-#			guaranteed 1/4 of the link bandwidth, and may extend
-#			up to full speed of the link.
-#
-#			Unclassified traffic and packets marked as 3 will be
-#			guaranteed 1/4th of the link bandwidth, and may extend
-#			to the full speed of the link.
-#
-#			Packets marked with 4 will be treated as low priority
-#			packets.  (The tcrules example marks p2p traffic as
-#			such.)  If the link is congested, they're only
-#			guaranteed 1/8th of the speed, and even if the link is
-#			empty, can only expand to 80% of link bandwidth just
-#			as a precaution in case there are upstream queues we
-#			didn't account for. This is the last class to get
-#			additional bandwidth and the last to get serviced by
-#			the scheduler because of the low priority.
-#
-#		ppp0  1  100kbit  180kbit   1  tos=0x68/0xfc,tos=0xb8/0xfc
-#		ppp0  2  full/4   full	    2  tcp-ack,tos-minimize-delay
-#		ppp0  3	 full/4   full	    3  default
-#		ppp0  4	 full/8   full*8/10 4
-#
-# See http://shorewall.net/traffic_shaping.htm for additional information.
-# 
-###############################################################################
-# Based on tc4shorewall version 0.5 by Arne Bernin
-#
-# /etc/shorewall/tcdevices
-#
-#	Entries in this file define the bandwidth for interfaces
-#	on which you want traffic shaping to be enabled.
-#
-#	If you do not plan to use traffic shaping for a device,
-#	don't put it in here as it limits the troughput of that
-#	device to the limits you set here.
-#
-# Columns are:
-#
-#
-#	INTERFACE	Name of interface. Each interface may be listed only
-#			once in this file. You may NOT specify the name of
-#			an alias (e.g., eth0:0) here; see
-#			http://www.shorewall.net/FAQ.htm#faq18
-#
-#			You man NOT specify wildcards here,  e.g. if you
-#			have multiple ppp interfaces, you need to put
-#			them all in here!
-#
-#			If the device doesn't exist, a warning message will
-#			be issued during "shorewall [re]start" and "shorewall
-#			refresh" and traffic shaping configuration will be
-#			skipped for that device.
-#
-#	IN-BANDWIDTH	The incoming Bandwidth of that interface. Please
-#			note that you are not able to do traffic shaping
-#			on incoming traffic, as the traffic is already
-#			received before you could do so. But this allows
-#			you to define the maximum traffic allowed for
-#			this interface in total, if the rate is exceeded,
-#			the packets are dropped.
-#			You want this mainly if you have a DSL or Cable
-#			connection to avoid queuing at your providers side.
-#
-#			If you don't want any traffic to be dropped set this
-#			to a value faster than your interface.
-#
-#			Use kbit or kbps(for Kilobytes per second) for
-#			speed, and make sure there is NO space between the
-#			number and the unit.
-#
-#	OUT-BANDWIDTH	The outgoing Bandwidth of that interface.
-#			This is the maximum speed you connection can handle.
-#			It is also the speed you can refer as "full" if
-#			you define the tc classes.
-#			Outgoing traffic above this rate will be dropped.
-#
-#			Use kbit or kbps(for Kilobytes per second) for
-#			speed, and make sure there is NO space between the
-#			number and the unit.
-#
-#	Example 1:	Suppose you are using PPP over Ethernet (DSL)
-#			and ppp0 is the interface for this. The
-#			device has an outgoing bandwidth of 500kbit and an
-#			incoming bandwidth of 6000kbit
-#			ppp0	6000kbit	500kbit
-#
-# See http://shorewall.net/traffic_shaping.htm for additional information.
-# 
-###############################################################################
-# /etc/shorewall/tcrules
-#
-#	Entries in this file cause packets to be marked as a means of
-#	classifying them for traffic control or policy routing.
-#
-#			       I M P O R T A N T ! ! ! !
-#
-#		Unlike rules in the /etc/shorewall/rules file, evaluation
-#		of rules in this file will continue after a match. So the
-#		final mark for each packet will be the one assigned by the
-#		LAST tcrule that matches.
-#
-#		If you use multiple internet providers with the 'track' option,
-#		in /etc/shorewall/providers be sure to read the restrictions at
-#		http://shorewall.net/MultiISP.html.
-#
-# Columns are:
-#
-#
-#	MARK/		a) A mark value which is an integer in the range 1-255.
-#	CLASSIFY
-#			   Normally will set the mark value. If preceded by
-#			   a vertical bar ("|"), the mark value will be
-#			   logically ORed with the current mark value to
-#			   produce a new mark value. If preceded by an
-#			   ampersand ("&"), will be logically ANDed with the
-#			   current mark value to produce a new mark value.
-#
-#			   Both "|" and "&" require Extended MARK Target
-#			   support in your kernel and iptables; neither may
-#			   be used with connection marks (see below).
-#
-#			   If HIGH_ROUTE_MARKS=Yes in shorewall.conf then
-#			   you may also specify a value in the range 0x0100-
-#			   0xFF00 with the low-order byte being zero. Such
-#			   values may only be used in the PREROUTING chain
-#			   (value followed by :F or you have set
-#			   MARK_IN_FORWARD_CHAIN=Yes in shorewall conf and have
-#			   not followed the value with :P) or the OUTPUT chain
-#			   (SOURCE is $FW).
-#
-#			   May optionally be followed by ":P" or ":F"
-#			   where ":P" indicates that marking should occur in
-#			   the PREROUTING chain and ":F" indicates that marking
-#			   should occur in the FORWARD chain. If neither
-#			   ":P" nor ":F" follow the mark value then the chain
-#			   is determined by the setting of
-#			   MARK_IN_FORWARD_CHAIN in
-#			   /etc/shorewall/shorewall.conf.
-#
-#			   If your kernel and iptables include CONNMARK support
-#			   then you can also mark the connection rather than
-#			   the packet.
-#
-#			   The mark value may be optionally followed by "/"
-#			   and a mask value (used to determine those bits of
-#			   the connection mark to actually be set). The
-#			   mark and optional mask are then followed by one of:
-#
-#				C - Mark the connection in the chain determined
-#				    by the setting of MARK_IN_FORWARD_CHAIN
-#
-#				CF: Mark the connection in the FORWARD chain
-#
-#				CP: Mark the connection in the PREROUTING
-#				    chain.
-#
-#			b) A classification (classid) of the form
-#                          <major>:<minor> where <major> and <minor> are
-#                          integers. Corresponds to the 'class' specification
-#                          in these traffic shaping modules:
-#
-#				- atm
-#				- cbq
-#				- dsmark
-#				- pfifo_fast
-#				- htb
-#				- prio
-#
-#			   Classification occurs in the POSTROUTING chain except
-#			   when the SOURCE is $FW[:<address>] in which case
-#			   marking occurs in the OUTPUT chain.
-#
-#			c) RESTORE[/mask] -- restore the packet's mark from the
-#			   connection's mark using the supplied mask if any.
-#			   Your kernel and iptables must include CONNMARK
-#			   support.
-#
-#			   As in a) above, may be followed by ":P" or ":F
-#
-#			c) SAVE[/mask] -- save the packet's mark to the
-#			   connection's mark using the supplied mask if any.
-#			   Your kernel and iptables must include CONNMARK
-#			   support.
-#
-#			   As in a) above, may be followed by ":P" or ":F
-#
-#			d) CONTINUE -- don't process any more marking rules in
-#			   the table.
-#
-#			   As in a) above, may be followed by ":P" or ":F".
-#
-#                       e) COMMENT -- the rest of the line will be attached as
-#			   a comment to the Netfilter rule(s) generated by the
-#			   following entries. The comment will appear delimited
-#			   by "/* ... */" in the output of "shorewall show
-#			   mangle"
-#
-#			  To stop the comment from being attached to further
-#			  rules, simply include COMMENT on a line by itself.
-#
-#	SOURCE		Source of the packet. A comma-separated list of
-#			interface names, IP addresses, MAC addresses and/or
-#			subnets for packets being routed through a common path.
-#			List elements may also consist of an interface name
-#			followed by ":" and an address
-#			(e.g., eth1:192.168.1.0/24). For example, all packets
-#			for connections masqueraded to eth0 from other
-#			interfaces can be matched in a single rule with
-#			several alternative SOURCE criteria. However, a
-#			connection whose packets gets to eth0 in a
-#			different way, e.g., direct from the firewall itself,
-#			needs a different rule.
-#
-#			Accordingly, use $FW in its own separate rule for
-#			packets originating on the firewall. In such a rule,
-#			the MARK column may NOT specify either ":P" or ":F"
-#			because marking for firewall-originated packets
-#			always occurs in the OUTPUT chain.
-#
-#			MAC addresses must be prefixed with "~" and use
-#			"-" as a separator.
-#
-#			Example: ~00-A0-C9-15-39-78
-#
-#	DEST		Destination of the packet. Comma separated list of
-#			IP addresses and/or subnets. If your kernel and
-#			iptables include iprange match support, IP address
-#			ranges are also allowed. List elements may also
-#			consist of an interface name followed by ":" and an
-#			address (e.g., eth1:192.168.1.0/24).
-#			If the MARK column specificies a classification of
-#			the form <major>:<minor> then this column may also
-#			contain an interface name.
-#
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
-#                       "ipp2p:udp", "ipp2p:all" a number, or "all".
-#                       "ipp2p" requires ipp2p match support in your kernel
-#                       and iptables.
-#
-#	PORT(S)		Destination Ports. A comma-separated list of Port
-#			names (from /etc/services), port numbers or port
-#			ranges; if the protocol is "icmp", this column is
-#			interpreted as the destination icmp-type(s).
-#
-#			If the protocol is ipp2p, this column is interpreted
-#			as an ipp2p option without the leading "--" (example
-#			"bit" for bit-torrent). If no PORT is given, "ipp2p" is
-#			assumed.
-#
-#			This column is ignored if PROTOCOL = all but must be
-#			entered if any of the following field is supplied.
-#			In that case, it is suggested that this field contain
-#			 "-"
-#
-#	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
-#			any source port is acceptable. Specified as a comma-
-#			separated list of port names, port numbers or port
-#			ranges.
-#
-#	USER		This column may only be non-empty if the SOURCE is
-#			the firewall itself.
-#
-#			When this column is non-empty, the rule applies only
-#			if the program generating the output is running under
-#			the effective user and/or group.
-#
-#			It may contain :
-#
-#	[<user name or number>]:[<group name or number>][+<program name>]
-#
-#			The colon is optionnal when specifying only a user
-#			or a program name.
-#			Examples : john: , john , :users , john:users ,
-#				   +mozilla-bin (Support for program names
-#				   was removed from Netfilter in Kernel
-#				   version 2.6.14).
-#
-#	TEST		Defines a test on the existing packet or connection
-#			mark. The rule will match only if the test returns
-#			true. Tests have the format [!]<value>[/<mask>][:C]
-#
-#			Where:
-#
-#				!	Inverts the test (not equal)
-#				<value> Value of the packet or connection mark.
-#				<mask>	A mask to be applied to the mark before
-#					testing
-#				:C	Designates a connection mark. If
-#					omitted, the packet mark's value is
-#					tested.
-#
-#			If you don't want to define a test but need to specify
-#			anything in the following columns, place a "-" in this
-#			field.
-#
-#	LENGTH		(Optional) Packet Length. This field, if present
-#			allow you to match the length of a packet against
-#			a specific value or range of values. You must have
-#			iptables length support for this to work.
-#			A range is specified in the form <min>:<max>
-#			where either <min> or <max> (but not both) may be
-#			omitted. If <min> is omitted, then 0 is assumed; if
-#			<max> is omitted, than any packet that is <min> or
-#			longer will match.
-#
-#                       Examples: 1024, 64:1500, :100 (packet of length
-#                                                      100 bytes or less)
-#
-#			If you don't want to define a test but need to specify
-#			anything in the following columns, place a "-" in this
-#			field.
-#
-#	TOS		Type of service. Either a standard name, or a numeric
-#			value to match.
-#
-#				Minimize-Delay (16)
-#				Maximize-Throughput (8)
-#				Maximize-Reliability (4)
-#				Minimize-Cost (2)
-#				Normal-Service (0)
-#
-# Example 1:
-#
-#	Mark all ICMP echo traffic with packet mark 1.
-#	Mark all peer to peer traffic with packet mark 4.
-#
-#	This is a little more complex than otherwise expected.  Since
-#	the ipp2p module is unable to determine all packets in a
-#	connection are P2P packets, we mark the entire connection as
-#	P2P if any of the packets are determined to match.
-#
-#	We assume packet/connection mark 0 to means unclassified.
-#
-#	1	 0.0.0.0/0 0.0.0.0/0	icmp	echo-request
-#	1	 0.0.0.0/0 0.0.0.0/0	icmp	echo-reply
-#
-#	RESTORE	 0.0.0.0/0 0.0.0.0/0	all	-	-	-	0
-#	CONTINUE 0.0.0.0/0 0.0.0.0/0	all	-	-	-	!0
-#	4	 0.0.0.0/0 0.0.0.0/0	ipp2p:all
-#	SAVE	 0.0.0.0/0 0.0.0.0/0	all	-	-	-	!0
-#
-#	"If a packet hasn't been classifed (packet mark is 0), copy
-#	 the connection mark to the packet mark.  If the packet mark
-#	 is set, we're done.  If the packet is P2P, set the packet
-#	 mark to 4.  If the packet mark has been set, save it to the
-#	 connection mark."
-#
-# See http://shorewall.net/traffic_shaping.htm for additional information.
-# For usage in selecting among multiple ISPs, see
-# http://shorewall.net/MultiISP.html
-#
-###############################################################################
-#  /etc/shorewall/tos
-#
-#	This file defines rules for setting Type Of Service (TOS)
-#
-# Columns are:
-#
-#	SOURCE		Name of a zone declared in /etc/shorewall/zones, "all"
-#			or $FW.
-#
-#			If not "all" or $FW, may optionally be followed by
-#			":" and an IP address, a MAC address, a subnet
-#			specification or the name of an interface.
-#
-#			Example: loc:192.168.2.3
-#
-#			MAC addresses must be prefixed with "~" and use
-#			"-" as a separator.
-#
-#			Example: ~00-A0-C9-15-39-78
-#
-#	DEST		Name of a zone declared in /etc/shorewall/zones, "all"
-#			or $FW.
-#
-#			If not "all" or $FW, may optionally be followed by
-#			":" and an IP address or a subnet specification
-#
-#			Example: loc:192.168.2.3
-#
-#	PROTOCOL	Protocol.
-#
-#	SOURCE PORTS	Source port or port range. If all ports, use "-".
-#
-#	DEST PORTS	Destination port or port range. If all ports, use "-"
-#
-#	TOS		Type of service. Must be one of the following:
-#
-#				Minimize-Delay (16)
-#				Maximize-Throughput (8)
-#				Maximize-Reliability (4)
-#				Minimize-Cost (2)
-#				Normal-Service (0)
-#
-# See http://shorewall.net/Documentation.htm#TOS for additional
-# information.
-#
-###############################################################################
-# /etc/shorewall/tunnels
-#
-#	This file defines IPSEC, GRE, IPIP and OPENVPN tunnels.
-#
-#	IPIP, GRE and OPENVPN tunnels must be configured on the
-#	firewall/gateway itself. IPSEC endpoints may be defined
-#	on the firewall/gateway or on an internal system.
-#
-#	The columns are:
-#
-#	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat",
-#			"ipip", "gre", "6to4", "pptpclient", "pptpserver",
-#			"openvpn", "openvpnclient", "openvpnserver" or
-#			"generic"
-#
-#			If the type is "ipsec" or "ipsecnat", it may be
-#			followed by ":noah" to indicate that the Authentication
-#			Header protocol (51) is not used by the tunnel.
-#
-#			If type is "openvpn", "openvpnclient" or
-#			"openvpnserver" it may optionally be followed by ":"
-#			and "tcp" or "udp" to specify the protocol to be
-#			used. If not specified, "udp" is assumed.
-#
-#			If type is "openvpn", "openvpnclient" or
-#			"openvpnserver" it may optionally be followed
-#			by ":" and the port number used by the tunnel. if no
-#			":" and port number are included, then the default port
-#			of 1194 will be used. . Where both the protocol and port
-#			are specified, the protocol must be given first (e.g.,
-#			openvpn:tcp:4444).
-#
-#			If type is "generic", it must be followed by ":" and
-#			a protocol name (from /etc/protocols) or a protocol
-#			number. If the protocol is "tcp" or "udp" (6 or 17),
-#			then it may optionally be followed by ":" and a
-#			port number.
-#
-#	ZONE	    --	The zone of the physical interface through which
-#			tunnel traffic passes. This is normally your internet
-#			zone.
-#
-#	GATEWAY	    --	The IP address of the remote tunnel gateway. If the
-#			remote gateway has no fixed address (Road Warrior)
-#			then specify the gateway as 0.0.0.0/0. May be
-#			specified as a network address and if your kernel and
-#			iptables include iprange match support then IP address
-#			ranges are also allowed.
-#
-#	GATEWAY
-#	ZONES --	Optional. If the gateway system specified in the third
-#			column is a standalone host then this column should
-#			contain a comma-separated list of the names of the
-#			zones that the host might be in. This column only
-#			applies to IPSEC tunnels where it enables ISAKMP
-#			traffic to flow through the tunnel to the remote
-#			gateway.
-#
-#		Example 1:
-#
-#			IPSec tunnel. The remote gateway is 4.33.99.124 and
-#			the remote subnet is 192.168.9.0/24. The tunnel does
-#			not use the AH protocol
-#
-#			ipsec:noah	net	4.33.99.124
-#
-#		Example 2:
-#
-#			Road Warrior (LapTop that may connect from anywhere)
-#			where the "gw" zone is used to represent the remote
-#			LapTop.
-#
-#			ipsec	net	0.0.0.0/0	gw
-#
-#		Example 3:
-#
-#			Host 4.33.99.124 is a standalone system connected
-#			via an ipsec tunnel to the firewall system. The host
-#			is in zone gw.
-#
-#			ipsec	net	4.33.99.124	gw
-#
-#		Example 4:
-#
-#			Road Warriors that may belong to zones vpn1, vpn2 or
-#			vpn3. The FreeS/Wan _updown script will add the
-#			host to the appropriate zone using the "shorewall add"
-#			command on connect and will remove the host from the
-#			zone at disconnect time.
-#
-#			ipsec	net	0.0.0.0/0	vpn1,vpn2,vpn3
-#
-#		Example 5:
-#
-#			You run the Linux PPTP client on your firewall and
-#			connect to server 192.0.2.221.
-#
-#			pptpclient	net	192.0.2.221
-#
-#		Example 6:
-#
-#			You run a PPTP server on your firewall.
-#
-#			pptpserver	net
-#
-#		Example 7:
-#
-#			OPENVPN tunnel. The remote gateway is 4.33.99.124 and
-#			openvpn uses port 7777.
-#
-#			openvpn:7777	net	4.33.99.124
-#
-#		Example 8:
-#
-#			You have a tunnel that is not one of the supported
-#			types. Your tunnel uses UDP port 4444. The other end
-#			of the tunnel is 4.3.99.124.
-#
-#			generic:udp:4444	net	4.3.99.124
-#
-# See http://shorewall.net/Documentation.htm#Tunnels for additional
-# information.
-#
-###############################################################################
-# /etc/shorewall/zones
-#
-#	This file declares your network zones. You specify the hosts in
-#	each zone through entries in /etc/shorewall/interfaces or
-#	/etc/shorewall/hosts.
-#
-#	WARNING: The format of this file changed in Shorewall 3.0.0. You can
-#		 continue to use your old records provided that you set
-#		 IPSECFILE=ipsec in /etc/shorewall/shorewall.conf. This will
-#		 signal Shorewall that the IPSEC-related zone options are
-#		 still specified in /etc/shorewall/ipsec rather than in this
-#		 file.
-#
-#		 To use records in the format described below, you must have
-#		 IPSECFILE=zones specified in /etc/shorewall/shorewall.conf
-#		 AND YOU MUST NOT SET THE 'FW' VARIABLE IN THAT FILE!!!!!
-#
-# Columns are:
-#
-#	ZONE	Short name of the zone. The names "all" and "none" are reserved
-#		and may not be used as zone names. The maximum length of a
-#		zone name is determined by the setting of the LOGFORMAT option
-#		in shorewall.conf. With the default LOGFORMAT, zone names can
-#		be at most 5 characters long.
-#
-#		Where a zone is nested in one or more other zones,
-#		you may follow the (sub)zone name by ":" and a
-#		comma-separated list of the parent zones. The parent
-#		zones must have been defined in earlier records in this
-#		file.
-#
-#		Example:
-#
-#			#ZONE     TYPE     OPTIONS
-#			a	  ipv4
-#			b	  ipv4
-#			c:a,b     ipv4
-#
-#		Currently, Shorewall uses this information to reorder the
-#		zone list so that parent zones appear after their subzones in
-#		the list. The IMPLICIT_CONTINUE option in shorewall.conf can
-#		also create implicit CONTINUE policies to/from the subzone.
-#
-#		In the future, Shorewall may make additional use
-#		of nesting information.
-#
-#	TYPE	ipv4 -	This is the standard Shorewall zone type and is the
-#			default if you leave this column empty or if you enter
-#			"-" in the column. Communication with some zone hosts
-#			may be encrypted. Encrypted hosts are designated using
-#			the 'ipsec'option in /etc/shorewall/hosts.
-#		ipsec -	Communication with all zone hosts is encrypted
-#			Your kernel and iptables must include policy
-#			match support.
-#		firewall
-#		      - Designates the firewall itself. You must have
-#			exactly one 'firewall' zone. No options are
-#			permitted with a 'firewall' zone. The name that you
-#			enter in the ZONE column will be stored in the shell
-#			variable $FW which you may use in other configuration
-#			files to designate the firewall zone.
-#
-#	OPTIONS,	A comma-separated list of options as follows:
-#	IN OPTIONS,
-#	OUT OPTIONS	reqid=<number> where <number> is specified
-#			using setkey(8) using the 'unique:<number>
-#			option for the SPD level.
-#
-#			spi=<number> where <number> is the SPI of
-#			the SA used to encrypt/decrypt packets.
-#
-#			proto=ah|esp|ipcomp
-#
-#			mss=<number> (sets the MSS field in TCP packets)
-#
-#			mode=transport|tunnel
-#
-#			tunnel-src=<address>[/<mask>] (only
-#			available with mode=tunnel)
-#
-#			tunnel-dst=<address>[/<mask>] (only
-#			available with mode=tunnel)
-#
-#			strict	Means that packets must match all rules.
-#
-#			next	Separates rules; can only be used with
-#				strict
-#
-#		Example:
-#			mode=transport,reqid=44
-#
-#	The options in the OPTIONS column are applied to both incoming
-#	and outgoing traffic. The IN OPTIONS are applied to incoming
-#	traffic (in addition to OPTIONS) and the OUT OPTIONS are
-#	applied to outgoing traffic.
-#
-#	If you wish to leave a column empty but need to make an entry
-#	in a following column, use "-".
-#------------------------------------------------------------------------------
-# Example zones:
-#
-#	You have a three interface firewall with internet, local and DMZ
-#	interfaces.
-#
-#	#ZONE	TYPE		OPTIONS		IN			OUT
-#	#					OPTIONS			OPTIONS
-#	fw	firewall
-#	net	ipv4
-#	loc	ipv4
-#	dmz	ipv4
-#
-# For more information, see http://www.shorewall.net/Documentation.htm#Zones
-#
-###############################################################################
+################################################################################
+ This documentation provides a quick reference to the configuration
+ files. The documentation at
+ http://www.shorewall.net/Documentation_Index.html should be
+ considered to be the primary documentation.
+################################################################################
+ /etc/shorewall/accounting
+
+	Accounting rules exist simply to count packets and bytes in categories
+	that you define in this file. You may display these rules and their
+	packet and byte counters using the "shorewall show accounting" command.
+
+	Please see http://shorewall.net/Accounting.html for examples and
+	additional information about how to use this file.
+
+
+ Columns are:
+
+	ACTION	      - What to do when a match is found.
+
+				COUNT	- Simply count the match and continue
+					  with the next rule
+				DONE	- Count the match and don't attempt
+					  to match any other accounting rules
+					  in the chain specified in the CHAIN
+					  column.
+				<chain>[:COUNT]
+					- Where <chain> is the name of
+					  a chain. Shorewall will create
+					  the chain automatically if it
+					  doesn't already exist. Causes
+					  a jump to that chain. If :COUNT
+					  is including, a counting rule
+					  matching this record will be
+					  added to <chain>
+
+	CHAIN	      - The name of a chain. If specified as "-" the
+			'accounting' chain is assumed. This is the chain
+			where the accounting rule is added. The chain will
+			be created if it doesn't already exist.
+
+	SOURCE	      - Packet Source
+
+			The name of an interface, an address (host or net) or
+			an interface name followed by ":"
+			and a host or net address.
+
+	DESTINATION   - Packet Destination
+
+			Format the same as the SOURCE column.
+
+	PROTOCOL	A protocol name (from /etc/protocols), a protocol
+			number, "ipp2p", "ipp2p:udp" or "ipp2p:all"
+
+	DEST PORT(S)	Destination Port number. If the PROTOCOL is "ipp2p"
+			then this column must contain an ipp2p option
+			("iptables -m ipp2p --help") without the leading
+			"--". If no option is given in this column, "ipp2p"
+			is assumed.
+
+			Service name from /etc/services or port number. May
+			only be specified if the protocol is TCP or UDP (6
+			or 17).
+
+			You may place a comma-separated list of port numbers in
+			this column if your kernel and iptables include
+			multiport match support.
+
+	SOURCE PORT(S)	Source Port number
+
+			Service name from /etc/services or port number. May
+			only be specified if the protocol is TCP or UDP (6
+			or 17).
+
+			You may place a comma-separated list of port numbers in
+			this column if your kernel and iptables include
+			multiport match support.
+
+	USER/GROUP	This column may only be non-empty if the CHAIN is
+			OUTPUT.
+
+			The column may contain:
+
+	[!][<user name or number>][:<group name or number>][+<program name>]
+
+			When this column is non-empty, the rule applies only
+			if the program generating the output is running under
+			the effective <user> and/or <group> specified (or is
+			NOT running under that id if "!" is given).
+
+			Examples:
+
+				joe	#program must be run by joe
+				:kids	#program must be run by a member of
+					#the 'kids' group
+				!:kids	#program must not be run by a member
+					#of the 'kids' group
+				+upnpd	#program named upnpd (This feature was
+					#removed from Netfilter in kernel
+					#version 2.6.14).
+
+	In all of the above columns except ACTION and CHAIN, the values "-",
+	"any" and "all" may be used as wildcards. Omitted trailing columns are
+	also treated as wildcards.
+
+ Please see http://shorewall.net/Accounting.html for examples and
+ additional information about how to use this file.
+
+################################################################################
+ /etc/shorewall/blacklist
+
+	This file contains a list of IP addresses, MAC addresses and/or
+	subnetworks.
+
+ Columns are:
+
+	ADDRESS/SUBNET	- Host address, subnetwork, MAC address, IP address
+			  range (if your kernel and iptables contain iprange
+			  match support) or ipset name prefaced by "+" (if
+			  your kernel supports ipset match).
+
+			  MAC addresses must be prefixed with "~" and use "-"
+			  as a separator.
+
+			  Example: ~00-A0-C9-15-39-78
+
+			  A dash ("-") in this column means that any source
+			  address will match. This is useful if you want to
+			  blacklist a particular application.
+
+	PROTOCOL	- Optional. If specified, must be a protocol number
+			  or a protocol name from /etc/protocols.
+
+	PORTS		- Optional. May only be specified if the protocol
+			  is TCP (6) or UDP (17). A comma-separated list
+			  of destination port numbers or service names from
+			  /etc/services.
+
+	When a packet arrives on an interface that has the 'blacklist' option
+	specified in /etc/shorewall/interfaces, its source IP address is
+	checked against this file and disposed of according to the
+	BLACKLIST_DISPOSITION and BLACKLIST_LOGLEVEL variables in
+	/etc/shorewall/shorewall.conf
+
+	If PROTOCOL or PROTOCOL and PORTS are supplied, only packets matching
+	the protocol (and one of the ports if PORTS supplied) are blocked.
+
+	Example:
+
+	To block DNS queries from address 192.0.2.126:
+
+	ADDRESS/SUBNET		PROTOCOL	PORT
+	192.0.2.126		udp		53
+
+	Example:
+
+	To block DNS queries from addresses in the ipset 'dnsblack':
+
+	ADDRESS/SUBNET		PROTOCOL	PORT
+	+dnsblack		udp		53
+
+ Please see http://shorewall.net/blacklisting_support.htm for additional
+ information.
+
+################################################################################
+ /etc/shorewall/ecn
+
+	Use this file to list the destinations for which you want to
+	disable ECN.
+
+	This feature requires kernel 2.4.20 or later. If you run 2.4.20,
+	you also need the patch found at http://www.shorewall.net/ecn/patch.
+	That patch is included in kernels 2.4.21 and later.
+
+	INTERFACE	- Interface through which host(s) communicate with
+			  the firewall
+	HOST(S)		- (Optional) Comma-separated list of IP/subnet
+			  If left empty or supplied as "-",
+			  0.0.0.0/0 is assumed. If your kernel and iptables
+			  include iprange match support then IP address ranges
+			  are also permitted.
+
+ For additional information, see http://shorewall.net/Documentation.htm#ECN
+
+################################################################################
+ /etc/shorewall/hosts
+
+	THE ONLY TIME YOU NEED THIS FILE IS WHERE YOU HAVE MORE THAN
+	ONE ZONE CONNECTED THROUGH A SINGLE INTERFACE.
+
+	IF YOU DON'T HAVE THAT SITUATION THEN DON'T TOUCH THIS FILE.
+------------------------------------------------------------------------------
+	IF YOU HAVE AN ENTRY FOR A ZONE AND INTERFACE IN
+	/etc/shorewall/interfaces THEN DO NOT ADD ANY ENTRIES FOR THAT
+	ZONE AND INTERFACE IN THIS FILE.
+------------------------------------------------------------------------------
+	This file is used to define zones in terms of subnets and/or
+	individual IP addresses. Most simple setups don't need to
+	(should not) place anything in this file.
+
+	The order of entries in this file is not significant in
+	determining zone composition. Rather, the order that the zones
+	are defined in /etc/shorewall/zones determines the order in
+	which the records in this file are interpreted.
+
+	ZONE	- The name of a zone defined in /etc/shorewall/zones. You may
+		  not list the firewall zone in this column.
+
+	HOST(S)	- The name of an interface  defined in the
+		  /etc/shorewall/interfaces file followed by a colon (":") and
+		  a comma-separated list whose elements are either:
+
+			a) The IP address of a host
+			b) A subnetwork in the form
+			   <subnet-address>/<mask width>
+			c) An IP address range of the form <low address>-<high
+			   address>. Your kernel and iptables must have iprange
+			   match support.
+			d) A physical port name; only allowed when the
+			   interface names a bridge created by the
+			   brctl addbr command. This port must not
+			   be defined in /etc/shorewall/interfaces and may
+			   optionally followed by a colon (":") and a
+			   host or network IP or a range.
+			   See http://www.shorewall.net/bridge.html
+			   for details. Specifying a physical port
+			   name requires that you have BRIDGING=Yes in
+			   /etc/shorewall/shorewall.conf.
+			e) The name of an ipset (preceded by "+").
+
+		  Examples:
+
+			eth1:192.168.1.3
+			eth2:192.168.2.0/24
+			eth3:192.168.2.0/24,192.168.3.1
+			br0:eth4
+			br0:eth0:192.168.1.16/28
+			eth4:192.168.1.44-192.168.1.49
+			eth2:+Admin
+
+	OPTIONS - A comma-separated list of options. Currently-defined
+		  options are:
+
+			maclist	     - Connection requests from these hosts
+				       are compared against the contents of
+				       /etc/shorewall/maclist. If this option
+				       is specified, the interface must be
+				       an ethernet NIC and must be up before
+				       Shorewall is started.
+
+			routeback    - Shorewall should set up the
+				       infrastructure to pass packets
+				       from this/these address(es) back
+				       to themselves. This is necessary if
+				       hosts in this group use the services
+				       of a transparent proxy that is
+				       a member of the group or if DNAT is used
+				       to send requests originating from this
+				       group to a server in the group.
+
+			norfc1918    - This option only makes sense for ports
+				       on a bridge.
+
+				       The port should not accept
+				       any packets whose source is in one
+				       of the ranges reserved by RFC 1918
+				       (i.e., private or "non-routable"
+				       addresses. If packet mangling or
+				       connection-tracking match is enabled in
+				       your kernel, packets whose destination
+				       addresses are reserved by RFC 1918 are
+				       also rejected.
+
+			blacklist    - This option only makes sense for ports
+				       on a bridge.
+
+				       Check packets arriving on this port
+				       against the /etc/shorewall/blacklist
+				       file.
+
+			tcpflags     - Packets arriving from these hosts are
+				       checked for certain illegal combinations
+				       of TCP flags. Packets found to have
+				       such a combination of flags are handled
+				       according to the setting of
+				       TCP_FLAGS_DISPOSITION after having been
+				       logged according to the setting of
+				       TCP_FLAGS_LOG_LEVEL.
+
+			nosmurfs     - This option only makes sense for ports
+				       on a bridge.
+
+				       Filter packets for smurfs
+				       (packets with a broadcast
+				       address as the source).
+
+				       Smurfs will be optionally logged based
+				       on the setting of SMURF_LOG_LEVEL in
+				       shorewall.conf. After logging, the
+				       packets are dropped.
+
+			ipsec	     - The zone is accessed via a
+				       kernel 2.6 ipsec SA. Note that if the
+				       zone named in the ZONE column is
+				       specified as an IPSEC zone in the
+				       /etc/shorewall/zones file then you
+				       do NOT need to specify the 'ipsec'
+				       option here.
+
+ For additional information, see http://shorewall.net/Documentation.htm#Hosts
+
+################################################################################
+ /etc/shorewall/interfaces
+
+	You must add an entry in this file for each network interface on your
+	firewall system.
+
+ Columns are:
+
+	ZONE		Zone for this interface. Must match the name of a
+			zone defined in /etc/shorewall/zones. You may not
+			list the firewall zone in this column.
+
+			If the interface serves multiple zones that will be
+			defined in the /etc/shorewall/hosts file, you should
+			place "-" in this column.
+
+			If there are multiple interfaces to the same zone,
+			you must list them in separate entries:
+
+			Example:
+
+				loc	eth1	-
+				loc	eth2	-
+
+	INTERFACE	Name of interface. Each interface may be listed only
+			once in this file. You may NOT specify the name of
+			an alias (e.g., eth0:0) here; see
+			http://www.shorewall.net/FAQ.htm#faq18
+
+			You may specify wildcards here. For example, if you
+			want to make an entry that applies to all PPP
+			interfaces, use 'ppp+'.
+
+			There is no need to define the loopback	interface (lo)
+			in this file.
+
+	BROADCAST	The broadcast address for the subnetwork to which the
+			interface belongs. For P-T-P interfaces, this
+			column is left blank.If the interface has multiple
+			addresses on multiple subnets then list the broadcast
+			addresses as a comma-separated list.
+
+			If you use the special value "detect", Shorewall
+			will detect the broadcast address(es) for you. If you
+			select this option, the interface must be up before
+			the firewall is started.
+
+			If you don't want to give a value for this column but
+			you want to enter a value in the OPTIONS column, enter
+			"-" in this column.
+
+	OPTIONS		A comma-separated list of options including the
+			following:
+
+			dhcp	     - Specify this option when any of
+				       the following are true:
+				       1. the interface gets its IP address
+					  via DHCP
+				       2. the interface is used by
+					  a DHCP server running on the firewall
+				       3. you have a static IP but are on a LAN
+					  segment with lots of Laptop DHCP
+					  clients.
+				       4. the interface is a bridge with
+					  a DHCP server on one port and DHCP
+					  clients on another port.
+
+			norfc1918    - This interface should not receive
+				       any packets whose source is in one
+				       of the ranges reserved by RFC 1918
+				       (i.e., private or "non-routable"
+				       addresses). If packet mangling or
+				       connection-tracking match is enabled in
+				       your kernel, packets whose destination
+				       addresses are reserved by RFC 1918 are
+				       also rejected.
+
+			routefilter  - turn on kernel route filtering for this
+				       interface (anti-spoofing measure). This
+				       option can also be enabled globally in
+				       the /etc/shorewall/shorewall.conf file.
+
+			logmartians  - turn on kernel martian logging (logging
+				       of packets with impossible source
+				       addresses. It is suggested that if you
+				       set routefilter on an interface that
+				       you also set logmartians. This option
+				       may also be enabled globally in the
+				       /etc/shorewall/shorewall.conf file.
+
+			blacklist    - Check packets arriving on this interface
+				       against the /etc/shorewall/blacklist
+				       file.
+
+			maclist	     - Connection requests from this interface
+				       are compared against the contents of
+				       /etc/shorewall/maclist. If this option
+				       is specified, the interface must be
+				       an ethernet NIC and must be up before
+				       Shorewall is started.
+
+			tcpflags     - Packets arriving on this interface are
+				       checked for certain illegal combinations
+				       of TCP flags. Packets found to have
+				       such a combination of flags are handled
+				       according to the setting of
+				       TCP_FLAGS_DISPOSITION after having been
+				       logged according to the setting of
+				       TCP_FLAGS_LOG_LEVEL.
+
+			proxyarp     -
+				Sets
+				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.
+				Do NOT use this option if you are
+				employing Proxy ARP through entries in
+				/etc/shorewall/proxyarp. This option is
+				intended soley for use with Proxy ARP
+				sub-networking as described at:
+				http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet
+
+			routeback    - If specified, indicates that Shorewall
+				       should include rules that allow
+				       filtering traffic arriving on this
+				       interface back out that same interface.
+
+			arp_filter   - If specified, this interface will only
+				       respond to ARP who-has requests for IP
+				       addresses configured on the interface.
+				       If not specified, the interface can
+				       respond to ARP who-has requests for
+				       IP addresses on any of the firewall's
+				       interface. The interface must be up
+				       when Shorewall is started.
+
+			arp_ignore[=<number>]
+				     - If specified, this interface will
+				       respond to arp requests based on the
+				       value of <number>.
+
+				       1 - reply only if the target IP address
+				       is local address configured on the
+				       incoming interface
+
+				       2 - reply only if the target IP address
+				       is local address configured on the
+				       incoming interface and both with the
+				       sender's IP address are part from same
+				       subnet on this interface
+
+				       3 - do not reply for local addresses
+				       configured with scope host, only
+				       resolutions for global and link
+				       addresses are replied
+
+				       4-7 - reserved
+
+				       8 - do not reply for all local
+				       addresses
+
+				       If no <number> is given then the value
+				       1 is assumed
+
+				       WARNING -- DO NOT SPECIFY arp_ignore
+				       FOR ANY INTERFACE INVOLVED IN PROXY ARP.
+
+			nosmurfs     - Filter packets for smurfs
+				       (packets with a broadcast
+				       address as the source).
+
+				       Smurfs will be optionally logged based
+				       on the setting of SMURF_LOG_LEVEL in
+				       shorewall.conf. After logging, the
+				       packets are dropped.
+
+			detectnets   - Automatically taylors the zone named
+				       in the ZONE column to include only those
+				       hosts routed through the interface.
+
+			sourceroute  - If this option is not specified for an
+				       interface, then source-routed packets
+				       will not be accepted from that
+				       interface (sets /proc/sys/net/ipv4/
+				       conf/<interface>/
+				       accept_source_route to 1).
+				       Only set this option if you know what
+				       you are you doing. This might represent
+				       a security risk and is not usually
+				       needed.
+
+			upnp	     - Incoming requests from this interface
+				       may be remapped via UPNP (upnpd).
+
+			WARNING: DO NOT SET THE detectnets OPTION ON YOUR
+				 INTERNET INTERFACE.
+
+			The order in which you list the options is not
+			significant but the list should have no embedded white
+			space.
+
+	Example 1:	Suppose you have eth0 connected to a DSL modem and
+			eth1 connected to your local network and that your
+			local subnet is 192.168.1.0/24. The interface gets
+			it's IP address via DHCP from subnet
+			206.191.149.192/27. You have a DMZ with subnet
+			192.168.2.0/24 using eth2.
+
+			Your entries for this setup would look like:
+
+			net	eth0	206.191.149.223	dhcp
+			local	eth1	192.168.1.255
+			dmz	eth2	192.168.2.255
+
+	Example 2:	The same configuration without specifying broadcast
+			addresses is:
+
+			net	eth0	detect		dhcp
+			loc	eth1	detect
+			dmz	eth2	detect
+
+	Example 3:	You have a simple dial-in system with no ethernet
+			connections.
+
+			net	ppp0	-
+
+ For additional information, see
+ http://shorewall.net/Documentation.htm#Interfaces
+
+################################################################################
+ /etc/shorewall/maclist
+
+	This file is used to define the MAC addresses and optionally their
+	associated IP addresses to be allowed to use the specified interface.
+	The feature is enabled by using the maclist option in the interfaces
+	or hosts configuration file.
+
+ Columns are:
+
+	DISPOSITION	ACCEPT or DROP (if MACLIST_TABLE=filter, then REJECT
+			is also allowed)
+
+	INTERFACE	Network interface to a host. If the interface
+			names a bridge, it may be optionally followed by
+			a colon (":") and a physical port name (e.g.,
+			br0:eth4).
+
+	MAC		MAC address of the host -- you do not need to use
+			the Shorewall format for MAC addresses here. If IP
+			ADDRESSES is supplied then MAC can be supplied as
+			a dash ("-")
+
+	IP ADDRESSES	Optional -- if specified, both the MAC and IP address
+			must match. This column can contain a comma-separated
+			list of host and/or subnet addresses. If your kernel
+			and iptables have iprange match support then IP
+			address ranges are also allowed.
+
+ For additional information, see http://shorewall.net/MAC_Validation.html
+
+################################################################################
+ /etc/shorewall/masq
+
+	Use this file to define dynamic NAT (Masquerading) and to define
+	Source NAT (SNAT).
+
+	WARNING: The entries in this file are order-sensitive. The first
+	entry that matches a particular connection will be the one that
+	is used.
+
+	WARNING: If you have more than one ISP, adding entries to this
+	file will *not* force connections to go out through a particular
+	ISP. You must use PREROUTING entries in /etc/shorewall/tcrules
+	to do that.
+
+ Columns are:
+
+	INTERFACE -- Outgoing interface. This is usually your internet
+		     interface. If ADD_SNAT_ALIASES=Yes in
+		     /etc/shorewall/shorewall.conf, you may add ":" and
+		     a digit to indicate that you want the alias added with
+		     that name (e.g., eth0:0). This will allow the alias to
+		     be displayed with ifconfig. THAT IS THE ONLY USE FOR
+		     THE ALIAS NAME AND IT MAY NOT APPEAR IN ANY OTHER
+		     PLACE IN YOUR SHOREWALL CONFIGURATION.
+
+		     This may be qualified by adding the character
+		     ":" followed by a destination host or subnet.
+
+		     If you wish to inhibit the action of ADD_SNAT_ALIASES
+		     for this entry then include the ":" but omit the digit:
+
+				eth0:
+				eth2::192.0.2.32/27
+
+		     Normally Masq/SNAT rules are evaluated after those for
+		     one-to-one NAT (/etc/shorewall/nat file). If you want
+		     the rule to be applied before one-to-one NAT rules,
+		     prefix the interface name with "+":
+
+			+eth0
+			+eth0:192.0.2.32/27
+			+eth0:2
+
+		     This feature should only be required if you need to
+		     insert rules in this file that preempt entries in
+		     /etc/shorewall/nat.
+
+		     If you place COMMENT in this column, then the rest of the
+		     line will be attached as a comment to the Netfilter rule(s)
+		     generated by the following entry. The comment will appear
+		     delimited by "/* ... */" in the output of "shorewall show
+		     nat"
+
+	SOURCE (formerly called SUBNET)
+
+		  Set of hosts that you wish to masquerade. You can specify this
+		  as an address (net or host) or as an interface. If you give
+		  the name of an interface, the interface must be up before you
+		  start the firewall (Shorewall will use your main routing table
+		  to determine the appropriate addresses to masquerade).
+
+		  In order to exclude a addrress of the specified SOURCE, you
+		  may append "!" and a comma-separated list of IP addresses
+		  (host or net) that you wish to exclude.
+
+		  Example: eth1!192.168.1.4,192.168.32.0/27
+
+		  In that example traffic from eth1 would be masqueraded unless
+		  it came from 192.168.1.4 or 196.168.32.0/27
+
+	ADDRESS -- (Optional).	If you specify an address here, SNAT will be
+				used and this will be the source address. If
+				ADD_SNAT_ALIASES is set to Yes or yes in
+				/etc/shorewall/shorewall.conf then Shorewall
+				will automatically add this address to the
+				INTERFACE named in the first column.
+
+				You may also specify a range of up to 256
+				IP addresses if you want the SNAT address to
+				be assigned from that range in a round-robin
+				range by connection. The range is specified by
+				<first ip in range>-<last ip in range>.
+
+				Example: 206.124.146.177-206.124.146.180
+
+				You may also use the special value "detect"
+				which causes Shorewall to determine the
+				IP addresses configured on the interface named
+				in the INTERFACES column and substitute them
+				in this column.
+
+				Finally, you may also specify a comma-separated
+				list of ranges and/or addresses in this column.
+
+				This column may not contain DNS Names.
+
+				Normally, Netfilter will attempt to retain
+				the source port number. You may cause
+				netfilter to remap the source port by following
+				an address or range (if any) by ":" and
+				a port range with the format <low port>-
+				<high port>. If this is done, you must
+				specify "tcp" or "udp" in the PROTO column.
+
+				Examples:
+
+					192.0.2.4:5000-6000
+					:4000-5000
+
+				You can invoke the SAME target using the
+				following in this column:
+
+			SAME:[nodst:]<address-range>[,<address-range>...]
+
+				The <address-ranges> may be single addresses
+				or "detect" as described above.
+
+				SAME works like SNAT with the exception that
+				the same local IP address is assigned to each
+				connection from a local address to a given
+				remote address.
+
+				If the 'nodst:' option is included, then the
+				same source address is used for a given
+				internal system regardless of which remote
+				system is involved.
+
+				If you want to leave this column empty
+				but you need to specify the next column then
+				place a hyphen ("-") here.
+
+	PROTO -- (Optional)	If you wish to restrict this entry to a
+				particular protocol then enter the protocol
+				name (from /etc/protocols) or number here.
+
+	PORT(S) -- (Optional)	If the PROTO column specifies TCP (protocol 6)
+				or UDP (protocol 17) then you may list one
+				or more port numbers (or names from
+				/etc/services) separated by commas or you
+				may list a single port range
+				(<low port>:<high port>).
+
+				Where a comma-separated list is given, your
+				kernel and iptables must have multiport match
+				support and a maximum of 15 ports may be
+				listed.
+
+	IPSEC -- (Optional)	If you specify a value other than "-" in this
+				column, you must be running kernel 2.6 and
+				your kernel and iptables must include policy
+				match support.
+
+				Comma-separated list of options from the
+				following. Only packets that will be encrypted
+				via an SA that matches these options will have
+				their source address changed.
+
+					Yes or yes -- must be the only option
+					listed and matches all outbound
+					traffic that will be encrypted.
+
+					reqid=<number> where <number> is
+					specified using setkey(8) using the
+					'unique:<number> option for the SPD
+					level.
+
+					spi=<number> where <number> is the
+					SPI of the SA.
+
+					proto=ah|esp|ipcomp
+
+					mode=transport|tunnel
+
+					tunnel-src=<address>[/<mask>] (only
+					available with mode=tunnel)
+
+					tunnel-dst=<address>[/<mask>] (only
+					available with mode=tunnel)
+
+					strict	Means that packets must match
+						all rules.
+
+					next	Separates rules; can only be
+						used with strict..
+
+	Example 1:
+
+		  You have a simple masquerading setup where eth0 connects to
+		  a DSL or cable modem and eth1 connects to your local network
+		  with subnet 192.168.0.0/24.
+
+		  Your entry in the file can be either:
+
+			eth0	eth1
+
+		  or
+
+			eth0	192.168.0.0/24
+
+	Example 2:
+
+		  You add a router to your local network to connect subnet
+		  192.168.1.0/24 which you also want to masquerade. You then
+		  add a second entry for eth0 to this file:
+
+			eth0	192.168.1.0/24
+
+	Example 3:
+
+		  You have an IPSEC tunnel through ipsec0 and you want to
+		  masquerade packets coming from 192.168.1.0/24 but only if
+		  these packets are destined for hosts in 10.1.1.0/24:
+
+			ipsec0:10.1.1.0/24	196.168.1.0/24
+
+	Example 4:
+
+		  You want all outgoing traffic from 192.168.1.0/24 through
+		  eth0 to use source address 206.124.146.176 which is NOT the
+		  primary address of eth0. You want 206.124.146.176 added to
+		  be added to eth0 with name eth0:0.
+
+			eth0:0	192.168.1.0/24	206.124.146.176
+
+	Example 5:
+
+		 You want all outgoing SMTP traffic entering the firewall
+		 on eth1 to be sent from eth0 with source IP address
+		 206.124.146.177. You want all other outgoing traffic
+		 from eth1 to be sent from eth0 with source IP address
+		 206.124.146.176.
+
+			eth0	eth1	206.124.146.177	tcp	smtp
+			eth0	eth1	206.124.146.176
+
+		THE ORDER OF THE ABOVE TWO RULES IS SIGNIFICANT!!!!!
+
+ For additional information, see http://shorewall.net/Documentation.htm#Masq
+
+################################################################################
+ /etc/shorewall/nat
+
+	This file is used to define one-to-one Network Address Translation
+	(NAT).
+
+ WARNING: If all you want to do is simple port forwarding, do NOT use this
+	   file. See http://www.shorewall.net/FAQ.htm#faq1. Also, in most
+	   cases, Proxy ARP is a better solution that one-to-one NAT.
+
+ Columns are:
+
+	EXTERNAL	External IP Address - this should NOT be the primary
+			IP address of the interface named in the next
+			column and must not be a DNS Name.
+
+                       If you put COMMENT in this column, the rest of the
+			line will be attached as a comment to the Netfilter
+			rule(s) generated by the following entries in the
+			file. The comment will appear delimited by "/* ... */"
+			in the output of "shorewall show nat"
+
+			To stop the comment from being attached to further
+			rules, simply include COMMENT on a line by itself.
+
+	INTERFACE	Interface that has the EXTERNAL address.
+			If ADD_IP_ALIASES=Yes in shorewall.conf, Shorewall
+			will automatically add the EXTERNAL address to this
+			interface. Also if ADD_IP_ALIASES=Yes, you may
+			follow the interface name with ":" and a digit to
+			indicate that you want Shorewall to add the alias
+			with this name (e.g., "eth0:0"). That allows you to
+			see the alias with ifconfig. THAT IS THE ONLY THING
+			THAT THIS NAME IS GOOD FOR -- YOU CANNOT USE IT
+			ANYWHERE ELSE IN YOUR SHORWALL CONFIGURATION.
+
+			If you want to override ADD_IP_ALIASES=Yes for a
+			particular entry, follow the interface name with
+			":" and no digit (e.g., "eth0:").
+	INTERNAL	Internal Address (must not be a DNS Name).
+
+	ALL INTERFACES	If Yes or yes, NAT will be effective from all hosts.
+			If No or no (or left empty) then NAT will be effective
+			only through the interface named in the INTERFACE
+			column
+
+	LOCAL		If Yes or yes, NAT will be effective from the firewall
+			system
+
+ For additional information, see http://shorewall.net/NAT.htm
+
+################################################################################
+ /etc/shorewall/netmap
+
+	This file is used to map addresses in one network to corresponding
+	addresses in a second network.
+
+	WARNING: To use this file, your kernel and iptables must have
+		 NETMAP support included.
+
+ Columns are:
+
+	TYPE		Must be DNAT or SNAT.
+
+			If DNAT, traffic entering INTERFACE and addressed to
+			NET1 has it's destination address rewritten to the
+			corresponding address in NET2.
+
+			If SNAT, traffic leaving INTERFACE with a source
+			address in NET1 has it's source address rewritten to
+			the corresponding address in NET2.
+
+	NET1		Network in CIDR format (e.g., 192.168.1.0/24)
+
+	INTERFACE	The name of a network interface. The interface must
+			be defined in /etc/shorewall/interfaces.
+
+	NET2		Network in CIDR format
+
+ See http://shorewall.net/netmap.html for an example and usage
+ information.
+
+################################################################################
+ /etc/shorewall/policy
+
+		     THE ORDER OF ENTRIES IN THIS FILE IS IMPORTANT
+
+	This file determines what to do with a new connection request if we
+	don't get a match from the /etc/shorewall/rules file . For each
+	source/destination pair, the file is processed in order until a
+	match is found ("all" will match any client or server).
+
+	                INTRA-ZONE POLICIES ARE PRE-DEFINED
+
+	For $FW and for all of the zoned defined in /etc/shorewall/zones,
+	the POLICY for connections from the zone to itself is ACCEPT (with no
+	logging or TCP connection rate limiting but may be overridden by an
+	entry in this file. The overriding entry must be explicit (cannot use
+	"all" in the SOURCE or DEST).
+
+       Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall.conf, then
+       the implicit policy to/from any sub-zone is CONTINUE. These implicit
+       CONTINUE policies may also be overridden by an explicit entry in this
+       file.
+
+ Columns are:
+
+	SOURCE		Source zone. Must be the name of a zone defined
+			in /etc/shorewall/zones, $FW or "all".
+
+	DEST		Destination zone. Must be the name of a zone defined
+			in /etc/shorewall/zones, $FW or "all"
+
+	POLICY		Policy if no match from the rules file is found. Must
+			be "ACCEPT", "DROP", "REJECT", "CONTINUE" or "NONE".
+
+			ACCEPT		- Accept the connection
+			DROP		- Ignore the connection request
+			REJECT		- For TCP, send RST. For all other,
+					  send "port unreachable" ICMP.
+			QUEUE		- Send the request to a user-space
+					  application using the QUEUE target.
+			CONTINUE	- Pass the connection request past
+					  any other rules that it might also
+					  match (where the source or
+					  destination zone in those rules is
+					  a superset of the SOURCE or DEST
+					  in this policy).
+			NONE		- Assume that there will never be any
+					  packets from this SOURCE
+					  to this DEST. Shorewall will not set
+					  up any infrastructure to handle such
+					  packets and you may not have any
+					  rules with this SOURCE and DEST in
+					  the /etc/shorewall/rules file. If
+					  such a packet _is_ received, the
+					  result is undefined. NONE may not be
+					  used if the SOURCE or DEST columns
+					  contain the firewall zone ($FW) or
+					  "all".
+
+			If the policy is DROP or REJECT then the policy should
+			be followed by ":" and one of the following:
+
+			a) The word "None" or "none". This causes any default
+			   action defined in /etc/shorewall/shorewall.conf to
+			   be omitted for this policy.
+			b) The name of an action (requires that USE_ACTIONS=Yes
+			   in shorewall.conf). That action will be invoked
+			   before the policy is enforced.
+			c) The name of a macro. The rules in that macro will
+			   be applied before the policy is enforced. This
+			   does not require USE_ACTIONS=Yes.
+
+	LOG LEVEL	If supplied, each connection handled under the default
+			POLICY is logged at that level. If not supplied, no
+			log message is generated. See syslog.conf(5) for a
+			description of log levels.
+
+			Beginning with Shorewall version 1.3.12, you may
+			also specify ULOG (must be in upper case). This will
+			log to the ULOG target and sent to a separate log
+			through use of ulogd
+			(http://www.gnumonks.org/projects/ulogd).
+
+			If you don't want to log but need to specify the
+			following column, place "-" here.
+
+	LIMIT:BURST	If passed, specifies the maximum TCP connection rate
+			and the size of an acceptable burst. If not specified,
+			TCP connections are not limited.
+
+	Example:
+
+	a) All connections from the local network to the internet are allowed
+	b) All connections from the internet are ignored but logged at syslog
+	   level KERNEL.INFO.
+	d) All other connection requests are rejected and logged at level
+	   KERNEL.INFO.
+
+	#SOURCE		DEST		POLICY		LOG
+	#						LEVEL
+	loc		net		ACCEPT
+	net		all		DROP		info
+	#
+	# THE FOLLOWING POLICY MUST BE LAST
+	#
+	all		all		REJECT		info
+
+ See http://shorewall.net/Documentation.htm#Policy for additional information.
+
+################################################################################
+ /etc/shorewall/providers
+
+	This file is used to define additional routing tables. You will
+	want to define an additional table if:
+
+	- You have connections to more than one ISP or multiple connections
+	  to the same ISP
+
+	- You run Squid as a transparent proxy on a host other than the
+	  firewall.
+
+	To omit a column, enter "-".
+
+ Columns are:
+
+	NAME		The provider name.  Must be a valid shell variable name.
+			The names 'local', 'main', 'default' and 'unspec' are
+			reserved and may not be used as provider names.
+
+	NUMBER		The provider number -- a number between 1 and 15
+
+	MARK		A FWMARK value used in your /etc/shorewall/tcrules
+			file to direct packets to this provider.
+
+			If HIGH_ROUTE_MARKS=Yes in shorewall.conf, then the
+			value must be a multiple of 256 between 256 and 65280
+			or their hexadecimal equivalents (0x0100 and 0xff00
+			with the low-order byte of the value being zero).
+			Otherwise, the value must be between 1 and 255.
+
+	DUPLICATE	The name of an existing table to duplicate. May be
+			'main' or the name of a previous provider.
+
+	INTERFACE	The name of the network interface to the provider.
+			Must be listed in /etc/shorewall/interfaces.
+
+	GATEWAY		The IP address of the provider's gateway router.
+
+			You can enter "detect" here and Shorewall will
+			attempt to detect the gateway automatically.
+
+			[ EXPERIMENTAL ] For PPP devices, you may omit this
+			column.
+
+	OPTIONS		A comma-separated list selected from the following:
+
+		track	If specified, inbound connections on this interface
+			are to be tracked so that responses may be routed back
+			out this same interface.
+
+			You want to specify 'track' if internet hosts will be
+			connecting to local servers through this provider.
+
+		balance The providers that have 'balance' specified will
+			get outbound traffic load-balanced among them. By
+			default, all interfaces with 'balance' specified
+			will have the same weight (1). You can change the
+			weight of an interface by specifiying balance=<weight>
+			where <weight> is the weight of the route out of
+			this interface.
+
+		loose	Shorewall normally adds a routing rule for each
+			IP address on an interface which forces traffic
+			whose source is that IP address to be sent using
+			the routing table for that interface. Setting
+			'loose' prevents creation of such rules on this
+			interface.
+
+		optional
+			If the interface named in the INTERFACE column is not
+			up and configured with an IPv4 address then ignore
+			this provider.
+
+	COPY		A comma-separated lists of other interfaces on your
+			firewall. Only makes sense when DUPLICATE is 'main'.
+			Only copy routes through INTERFACE and through
+			interfaces listed here. If you only wish to copy
+			routes through INTERFACE, enter 'none' here.
+
+ Example:  You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
+	    interface is eth2
+
+	#NAME	NUMBER	MARK DUPLICATE	INTERFACE GATEWAY	OPTIONS
+	Squid	1	1    -		eth2	  192.168.2.99	-
+
+ Example:
+
+      eth0 connects to ISP 1. The IP address of eth0 is 206.124.146.176 and
+      the ISP's gateway router has IP address 206.124.146.254.
+
+      eth1 connects to ISP 2. The IP address of eth1 is 130.252.99.27 and the
+      ISP's gateway router has IP address 130.252.99.254.
+
+      eth2 connects to a local network.
+
+      #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY	     OPTIONS	        COPY
+      ISP1  1	    1	 main	   eth0	     206.124.146.254 track,balance      eth2
+      ISP2  2	    2	 main	   eth1	     130.252.99.254  track,balance      eth2
+
+ See http://www.shorewall.net/MultiISP.html for additional
+ information.
+
+################################################################################
+ /etc/shorewall/proxyarp
+
+	This file is used to define Proxy ARP.
+
+ Columns are:
+
+	ADDRESS		IP Address
+
+	INTERFACE	Local interface where system is connected.
+
+	EXTERNAL	External Interface to be used to access this system
+
+	HAVEROUTE	If there is already a route from the firewall to
+			the host whose address is given, enter "Yes" or "yes"
+			in this column. Otherwise, entry "no", "No" or leave
+			the column empty and Shorewall will add the route for
+			you. If Shorewall adds the route,the route will be
+			persistent if the PERSISTENT column contains Yes;
+			otherwise, "shorewall stop" or "shorewall clear" will
+			delete the route.
+
+	PERSISTENT	If HAVEROUTE is No or "no", then the value of this
+			column determines if the route added by Shorewall
+			persists after a "shorewall stop" or a "shorewall
+			clear". If this column contains "Yes" or "yes" then
+			the route persists; If the column is empty or contains
+			"No"or "no" then the route is deleted at "shorewall
+			stop" or "shorewall clear".
+
+			Example: Host with IP 155.186.235.6 is connected to
+			interface eth1 and we want hosts attached via eth0
+			to be able to access it using that address.
+
+			#ADDRESS	INTERFACE	EXTERNAL
+			155.186.235.6	eth1		eth0
+
+ See http://shorewall.net/ProxyARP.htm for additional information.
+
+################################################################################
+ /etc/shorewall/rfc1918
+
+	Lists the subnetworks that are blocked by the 'norfc1918' interface
+	option.
+
+	The default list includes those IP addresses listed in RFC 1918.
+
+	DO NOT MODIFY THIS FILE. IF YOU NEED TO MAKE CHANGES, COPY THE FILE
+	TO /etc/shorewall AND MODIFY THE COPY.
+
+ Columns are:
+
+	SUBNETS		A comma-separated list of subnet addresses
+			(host addresses also allowed as are IP
+			address ranges provided that your kernel and iptables
+			have iprange match support).
+	TARGET		Where to send packets to/from this subnet
+			RETURN	- let the packet be processed normally
+			DROP	- silently drop the packet
+			logdrop - log then drop
+
+	By default, the RETURN target causes 'norfc1918' processing to cease
+	for a packet if the packet's source IP address matches the rule. Thus,
+	if you have:
+
+		SUBNETS			TARGET
+		192.168.1.0/24		RETURN
+
+	then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even though
+	you also have:
+
+		SUBNETS			TARGET
+		10.0.0.0/8		logdrop
+
+	Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic
+	to be logged and dropped since while the packet's source matches the
+	RETURN rule, the packet's destination matches the 'logdrop' rule.
+################################################################################
+ /etc/shorewall/route_rules
+
+	Entries in this file cause traffic to be routed to one of the
+	providers listed in /etc/shorewall/providers.
+
+	Columns are:
+
+		SOURCE(optional)
+				An ip address (network or host) that
+				matches the source IP address in a packet.
+				May also be specified as an interface
+				name optionally followed by ":" and an
+				address. If the device 'lo' is specified,
+				the packet must originate from the firewall
+				itself.
+
+		DEST(optional)  An ip address (network or host) that
+				matches the destination IP address in a packet.
+
+				If you choose to omit either SOURCE or DEST,
+				place "-" in that column. Note that you
+				may not omit both SOURCE and DEST.
+
+		PROVIDER        The provider to route the traffic through.
+				May be expressed either as the provider name
+				or the provider number. May also be 'main'
+				or 254 for the main routing table. This can
+				be used in combination with VPN tunnels, see
+				example 2 below.
+
+		PRIORITY
+				The rule's priority which determines the order
+				in which the rules are processed.
+
+				1000-1999   Before Shorewall-generated
+					    'MARK' rules
+
+				11000- 11999 After 'MARK' rules but before
+					    Shorewall-generated rules for
+					    ISP interfaces.
+
+				26000-26999 After ISP interface rules but
+					    before 'default' rule.
+
+				Rules with equal priority are applied in
+				the order in which they appear in the file.
+
+ Example 1: You want all traffic coming in on eth1 to be routed to the ISP1
+          provider:
+
+	#SOURCE			DEST		PROVIDER	PRIORITY
+	eth1	    		-		ISP1		1000
+
+ Example 2: You use OpenVPN (routed setup /tunX) in combination with multiple
+            providers. In this case you have to set up a rule to ensure that
+            the OpenVPN traffic is routed back through the tunX interface(s)
+            rather than through any of the providers. 10.8.0.0/24 is the
+            subnet choosen in your OpenVPN configuration (server 10.8.0.0
+            255.255.255.0)
+
+	#SOURCE			DEST		PROVIDER	PRIORITY
+	-	    		10.8.0.0/24	main		1000
+
+ For additional information, see
+ http://www.shorewall.net/MultiISP.html
+
+################################################################################
+ /etc/shorewall/routestopped
+
+	This file is used to define the hosts that are accessible when the
+	firewall is stopped or when it is in the process of being
+	[re]started.
+
+ Columns are:
+
+	INTERFACE	- Interface through which host(s) communicate with
+			  the firewall
+	HOST(S)		- (Optional) Comma-separated list of IP/subnet
+			  addresses. If your kernel and iptables include
+			  iprange match support, IP address ranges are also
+			  allowed.
+
+			  If left empty or supplied as "-",
+			  0.0.0.0/0 is assumed.
+	OPTIONS		- (Optional) A comma-separated list of
+			  options. The currently-supported options are:
+
+			  routeback - Set up a rule to ACCEPT traffic from
+			  these hosts back to themselves.
+
+			  source - Allow traffic from these hosts to ANY
+			  destination. Without this option or the 'dest'
+			  option, only traffic from this host to other
+			  listed hosts (and the firewall) is allowed. If
+			  'source' is specified then 'routeback' is redundant.
+
+			  dest - Allow traffic to these hosts from ANY
+			  source. Without this option or the 'source'
+			  option, only traffic from this host to other
+			  listed hosts (and the firewall) is allowed. If
+			  'dest' is specified then 'routeback' is redundant.
+
+			  critical - Allow traffic between the firewall and
+			  these hosts throughout '[re]start', 'stop' and
+			  'clear'. Specifying 'critical' on one or more
+			  entries will cause your firewall to be "totally
+			  open" for a brief window during each of those
+			  operations.
+
+		NOTE:   The 'source' and 'dest' options work best when used
+			in conjunction with ADMINISABSENTMINDED=Yes in
+			/etc/shorewall/shorewall.conf.
+
+ Example:
+
+	INTERFACE	HOST(S)			OPTIONS
+	eth2		192.168.1.0/24
+	eth0		192.0.2.44
+	br0		-			routeback
+	eth3		-			source
+
+ See http://shorewall.net/Documentation.htm#Routestopped and
+ http://shorewall.net/starting_and_stopping_shorewall.htm for additional
+ information.
+
+################################################################################
+ /etc/shorewall/rules
+
+	Rules in this file govern connection establishment. Requests and
+	responses are automatically allowed using connection tracking. For any
+	particular (source,dest) pair of zones, the rules are evaluated in the
+	order in which they appear in this file and the first match is the one
+	that determines the disposition of the request.
+
+	In most places where an IP address or subnet is allowed, you
+	can preceed the address/subnet with "!" (e.g., !192.168.1.0/24) to
+	indicate that the rule matches all addresses except the address/subnet
+	given. Notice that no white space is permitted between "!" and the
+	address/subnet.
+------------------------------------------------------------------------------
+ WARNING: If you masquerade or use SNAT from a local system to the internet,
+	   you cannot use an ACCEPT rule to allow traffic from the internet to
+	   that system. You *must* use a DNAT rule instead.
+------------------------------------------------------------------------------
+
+ The rules file is divided into sections. Each section is introduced by
+ a "Section Header" which is a line beginning with SECTION followed by the
+ section name.
+
+ Sections are as follows and must appear in the order listed:
+
+	ESTABLISHED		Packets in the ESTABLISHED state are processed
+				by rules in this section.
+
+				The only ACTIONs allowed in this section are
+				ACCEPT, DROP, REJECT, LOG and QUEUE
+
+				There is an implicit ACCEPT rule inserted
+				at the end of this section.
+
+	RELATED			Packets in the RELATED state are processed by
+				rules in this section.
+
+				The only ACTIONs allowed in this section are
+				ACCEPT, DROP, REJECT, LOG and QUEUE
+
+				There is an implicit ACCEPT rule inserted
+				at the end of this section.
+
+	NEW			Packets in the NEW and INVALID states are
+				processed by rules in this section.
+
+ Note: If you are not familiar with Netfilter to the point where you are
+	comfortable with the differences between the various connection
+	tracking states, then I suggest that you omit the ESTABLISHED and
+	RELATED sections and place all of your rules in the NEW section
+	(That's after the line that reads SECTION NEW').
+
+ WARNING: If you specify FASTACCEPT=Yes in shorewall.conf then the
+	   ESTABLISHED and RELATED sections must be empty.
+
+ You may omit any section that you don't need. If no Section Headers appear
+ in the file then all rules are assumed to be in the NEW section.
+
+ Columns are:
+
+	ACTION		ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
+			LOG, QUEUE, COMMENT, a <macro>,  or an <action>.
+
+				ACCEPT	 -- allow the connection request
+				ACCEPT+	 -- like ACCEPT but also excludes the
+					    connection from any subsequent
+					    DNAT[-] or REDIRECT[-] rules
+				NONAT	 -- Excludes the connection from any
+					    subsequent DNAT[-] or REDIRECT[-]
+					    rules but doesn't generate a rule
+					    to accept the traffic.
+				DROP	 -- ignore the request
+				REJECT	 -- disallow the request and return an
+					    icmp-unreachable or an RST packet.
+				DNAT	 -- Forward the request to another
+					    system (and optionally another
+					    port).
+				DNAT-	 -- Advanced users only.
+					    Like DNAT but only generates the
+					    DNAT iptables rule and not
+					    the companion ACCEPT rule.
+				SAME	 -- Similar to DNAT except that the
+					    port may not be remapped and when
+					    multiple server addresses are
+					    listed, all requests from a given
+					    remote system go to the same
+					    server.
+				SAME-	 -- Advanced users only.
+					    Like SAME but only generates the
+					    NAT iptables rule and not
+					    the companion ACCEPT rule.
+				REDIRECT -- Redirect the request to a local
+					    port on the firewall.
+				REDIRECT-
+					 -- Advanced users only.
+					    Like REDIRET but only generates the
+					    REDIRECT iptables rule and not
+					    the companion ACCEPT rule.
+
+				CONTINUE -- (For experts only). Do not process
+					    any of the following rules for this
+					    (source zone,destination zone). If
+					    The source and/or destination IP
+					    address falls into a zone defined
+					    later in /etc/shorewall/zones, this
+					    connection request will be passed
+					    to the rules defined for that
+					    (those) zone(s).
+				LOG	 -- Simply log the packet and continue.
+				QUEUE	 -- Queue the packet to a user-space
+					    application such as ftwall
+					    (http://p2pwall.sf.net).
+                               COMMENT  -- the rest of the line will be attached
+					    as a comment to the Netfilter rule(s)
+					    generated by the following entres.
+					    The comment will appear delimited by
+					    "/* ... */" in the output of
+					    "shorewall show <chain>". To stop
+					    the comment from being attached to
+					    further rules, simply include
+					    COMMENT on a line by itself.
+				<action> -- The name of an action defined in
+					    /etc/shorewall/actions or in
+					    /usr/share/shorewall/actions.std.
+				<macro>	 -- The name of a macro defined in a
+					    file named macro.<macro-name>. If
+					    the macro accepts an action
+					    parameter (Look at the macro
+					    source to see if it has PARAM in
+					    the TARGET column) then the macro
+					    name is followed by "/" and the
+					    action (ACCEPT, DROP, REJECT, ...)
+					    to be substituted for the
+					    parameter. Example: FTP/ACCEPT.
+
+			The ACTION may optionally be followed
+			by ":" and a syslog log level (e.g, REJECT:info or
+			DNAT:debug). This causes the packet to be
+			logged at the specified level.
+
+			If the ACTION names an action defined in
+			/etc/shorewall/actions or in
+			/usr/share/shorewall/actions.std then:
+
+			- If the log level is followed by "!' then all rules
+			  in the action are logged at the log level.
+
+			- If the log level is not followed by "!" then only
+			  those rules in the action that do not specify
+			  logging are logged at the specified level.
+
+			- The special log level 'none!' suppresses logging
+			  by the action.
+
+			You may also specify ULOG (must be in upper case) as a
+			log level.This will log to the ULOG target for routing
+			to a separate log through use of ulogd
+			(http://www.gnumonks.org/projects/ulogd).
+
+			Actions specifying logging may be followed by a
+			log tag (a string of alphanumeric characters)
+			are appended to the string generated by the
+			LOGPREFIX (in /etc/shorewall/shorewall.conf).
+
+			Example: ACCEPT:info:ftp would include 'ftp '
+			at the end of the log prefix generated by the
+			LOGPREFIX setting.
+
+	SOURCE		Source hosts to which the rule applies. May be a zone
+			defined in /etc/shorewall/zones, $FW to indicate the
+			firewall itself, "all", "all+", "all-", "all+-" or
+			"none".
+
+			When "none" is used either in the SOURCE or DEST
+			column, the rule is ignored.
+
+			"all" means "All Zones", including the firewall itself.
+			"all-" means "All Zones, except the firewall itself".
+			When "all[-]" is used either in the SOURCE or DEST column
+			intra-zone traffic is not affected. When "all+[-]" is
+			"used, intra-zone traffic is affected.
+
+			Except when "all[+][-]" is specified, clients may be
+			further restricted to a list of subnets and/or hosts by
+			appending ":" and a comma-separated list of subnets
+			and/or hosts. Hosts may be specified by IP or MAC
+			address; mac addresses must begin with "~" and must use
+			"-" as a separator.
+
+			Hosts may be specified as an IP address range using the
+			syntax <low address>-<high address>. This requires that
+			your kernel and iptables contain iprange match support.
+			If you kernel and iptables have ipset match support
+			then you may give the name of an ipset prefaced by "+".
+			The ipset name may be optionally followed by a number
+			from 1 to 6 enclosed in square brackets ([]) to
+			indicate the number of levels of source bindings to be
+			matched.
+
+			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
+
+			net:155.186.235.0/24	Subnet 155.186.235.0/24 on the
+						Internet
+
+			loc:192.168.1.1,192.168.1.2
+						Hosts 192.168.1.1 and
+						192.168.1.2 in the local zone.
+			loc:~00-A0-C9-15-39-78	Host in the local zone with
+						MAC address 00:A0:C9:15:39:78.
+
+			net:192.0.2.11-192.0.2.17
+						Hosts 192.0.2.11-192.0.2.17 in
+						the net zone.
+
+			Alternatively, clients may be specified by interface
+			by appending ":" to the zone name followed by the
+			interface name. For example, loc:eth1 specifies a
+			client that communicates with the firewall system
+			through eth1. This may be optionally followed by
+			another colon (":") and an IP/MAC/subnet address
+			as described above (e.g., loc:eth1:192.168.1.5).
+
+	DEST		Location of Server. May be a zone defined in
+			/etc/shorewall/zones, $FW to indicate the firewall
+			itself, "all". "all+" or "none".
+
+			When "none" is used either in the SOURCE or DEST
+			column, the rule is ignored.
+
+			When "all" is used either in the SOURCE or DEST column
+			intra-zone traffic is not affected. When "all+" is
+			used, intra-zone traffic is affected.
+
+			Except when "all[+]" is specified, the server may be
+			further restricted to a particular subnet, host or
+			interface by appending ":" and the subnet, host or
+			interface. See above.
+
+				Restrictions:
+
+				1. MAC addresses are not allowed.
+				2. In DNAT rules, only IP addresses are
+				   allowed; no FQDNs or subnet addresses
+				   are permitted.
+				3. You may not specify both an interface and
+				   an address.
+
+			Like in the SOURCE column, you may specify a range of
+			up to 256 IP addresses using the syntax
+			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
+			the connections will be assigned to addresses in the
+			range in a round-robin fashion.
+
+			If you kernel and iptables have ipset match support
+			then you may give the name of an ipset prefaced by "+".
+			The ipset name may be optionally followed by a number
+			from 1 to 6 enclosed in square brackets ([]) to
+			indicate the number of levels of destination bindings
+			to be matched. Only one of the SOURCE and DEST columns
+			may specify an ipset name.
+
+			The port that the server is listening on may be
+			included and separated from the server's IP address by
+			":". If omitted, the firewall will not modifiy the
+			destination port. A destination port may only be
+			included if the ACTION is DNAT or REDIRECT.
+
+			Example: loc:192.168.1.3:3128 specifies a local
+			server at IP address 192.168.1.3 and listening on port
+			3128. The port number MUST be specified as an integer
+			and not as a name from /etc/services.
+
+			if the ACTION is REDIRECT, this column needs only to
+			contain the port number on the firewall that the
+			request should be redirected to.
+
+	PROTO		Protocol - Must be "tcp", "tcp:syn", "udp", "icmp",
+			"ipp2p", "ipp2p:udp", "ipp2p:all" a number, or "all".
+                       "ipp2p*" requires ipp2p match support in your kernel
+                       and iptables.
+
+			"tcp:syn" implies "tcp" plus the SYN flag must be
+			set and the RST,ACK and FIN flags must be reset.
+
+	DEST PORT(S)	Destination Ports. A comma-separated list of Port
+			names (from /etc/services), port numbers or port
+			ranges; if the protocol is "icmp", this column is
+			interpreted as the destination icmp-type(s).
+
+			If the protocol is ipp2p, this column is interpreted
+			as an ipp2p option without the leading "--" (example
+			"bit" for bit-torrent). If no port is given, "ipp2p" is
+			assumed.
+
+			A port range is expressed as <low port>:<high port>.
+
+			This column is ignored if PROTOCOL = all but must be
+			entered if any of the following ields are supplied.
+			In that case, it is suggested that this field contain
+			 "-"
+
+			If your kernel contains multi-port match support, then
+			only a single Netfilter rule will be generated if in
+			this list and the CLIENT PORT(S) list below:
+			1. There are 15 or less ports listed.
+			2. No port ranges are included.
+			Otherwise, a separate rule will be generated for each
+			port.
+
+	SOURCE PORT(S)	(Optional) Port(s) used by the client. If omitted,
+			any source port is acceptable. Specified as a comma-
+			separated list of port names, port numbers or port
+			ranges.
+
+			If you don't want to restrict client ports but need to
+			specify an ORIGINAL DEST in the next column, then
+			place "-" in this column.
+
+			If your kernel contains multi-port match support, then
+			only a single Netfilter rule will be generated if in
+			this list and the DEST PORT(S) list above:
+			1. There are 15 or less ports listed.
+			2. No port ranges are included.
+			Otherwise, a separate rule will be generated for each
+			port.
+
+	ORIGINAL DEST	(0ptional) -- If ACTION is DNAT[-] or REDIRECT[-]
+			then if included and different from the IP
+			address given in the SERVER column, this is an address
+			on some interface on the firewall and connections to
+			that address will be forwarded to the IP and port
+			specified in the DEST column.
+
+			A comma-separated list of addresses may also be used.
+			This is usually most useful with the REDIRECT target
+			where you want to redirect traffic destined for
+			particular set of hosts.
+
+			Finally, if the list of addresses begins with "!" then
+			the rule will be followed only if the original
+			destination address in the connection request does not
+			match any of the addresses listed.
+
+			For other actions, this column may be included and may
+			contain one or more addresses (host or network)
+			separated by commas. Address ranges are not allowed.
+			When this column is supplied, rules are generated
+			that require that the original destination address
+			matches one of the listed addresses. This feature is
+			most useful when you want to generate a filter rule
+			that corresponds to a DNAT- or REDIRECT- rule. In this
+			usage, the list of addresses should not begin with "!".
+
+			See http://shorewall.net/PortKnocking.html for an
+			example of using an entry in this column with a
+			user-defined action rule.
+
+	RATE LIMIT	You may rate-limit the rule by placing a value in
+			this colume:
+
+				<rate>/<interval>[:<burst>]
+
+			where <rate> is the number of connections per
+			<interval> ("sec" or "min") and <burst> is the
+			largest burst permitted. If no <burst> is given,
+			a value of 5 is assumed. There may be no
+			no whitespace embedded in the specification.
+
+				Example: 10/sec:20
+
+	USER/GROUP	This column may only be non-empty if the SOURCE is
+			the firewall itself.
+
+			The column may contain:
+
+	[!][<user name or number>][:<group name or number>][+<program name>]
+
+			When this column is non-empty, the rule applies only
+			if the program generating the output is running under
+			the effective <user> and/or <group> specified (or is
+			NOT running under that id if "!" is given).
+
+			Examples:
+
+				joe	#program must be run by joe
+				:kids	#program must be run by a member of
+					#the 'kids' group
+				!:kids	#program must not be run by a member
+					#of the 'kids' group
+				+upnpd	#program named upnpd (This feature was
+					#removed from Netfilter in kernel
+					#version 2.6.14).
+
+	Example: Accept SMTP requests from the DMZ to the internet
+
+	#ACTION SOURCE	DEST PROTO	DEST	SOURCE	ORIGINAL
+	#				PORT	PORT(S) DEST
+	ACCEPT	dmz	net	  tcp	smtp
+
+	Example: Forward all ssh and http connection requests from the
+		 internet to local system 192.168.1.3
+
+	#ACTION SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
+	#					PORT	PORT(S) DEST
+	DNAT	net	loc:192.168.1.3 tcp	ssh,http
+
+	Example: Forward all http connection requests from the internet
+		 to local system 192.168.1.3 with a limit of 3 per second and
+		 a maximum burst of 10
+
+	#ACTION SOURCE DEST	       PROTO  DEST  SOURCE  ORIGINAL RATE
+	#				      PORT  PORT(S) DEST     LIMIT
+	DNAT	net    loc:192.168.1.3 tcp    http  -	    -	     3/sec:10
+
+	Example: Redirect all locally-originating www connection requests to
+		 port 3128 on the firewall (Squid running on the firewall
+		 system) except when the destination address is 192.168.2.2
+
+	#ACTION	 SOURCE	DEST	  PROTO	DEST	SOURCE	ORIGINAL
+	#				PORT	PORT(S) DEST
+	REDIRECT loc	3128	  tcp	www	 -	!192.168.2.2
+
+	Example: All http requests from the internet to address
+		 130.252.100.69 are to be forwarded to 192.168.1.3
+
+	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
+	#					PORT	PORT(S) DEST
+	DNAT	  net	loc:192.168.1.3 tcp	80	-	130.252.100.69
+
+	Example: You want to accept SSH connections to your firewall only
+		 from internet IP addresses 130.252.100.69 and 130.252.100.70
+
+	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
+	#					PORT	PORT(S) DEST
+	ACCEPT	 net:130.252.100.69,130.252.100.70 $FW \
+					tcp	22
+
+ See http://www.shorewall.net/Documentation.htm#Rules for additional
+ information.
+
+################################################################################
+ Based on tc4shorewall version 0.5 by Arne Bernin
+
+ /etc/shorewall/tcclasses
+
+	Define the classes used for traffic shaping in this file.
+
+	A note on the rate/bandwidth definitions used in this file:
+
+		- don't use a space between the integer value and
+		  the unit: 30kbit is valid while 30 kbit is NOT.
+
+		- you can use one of the following units:
+
+			kbps		Kilobytes per second
+			mbps		Megabytes per second
+			kbit		Kilobits per second
+			mbit		Megabits per second
+			bps or a
+			bare number	Bytes per second
+
+		- if you want the values to be calculated for you depending
+		on the output bandwidth setting defined for an interface
+		in tcdevices, you can use expressions like the following:
+
+			full/3		causes the bandwidth to be calculated
+					as 3 of the the full outgoing
+					speed that is defined.
+
+			full*9/10	will set this bandwidth to 9/10 of
+					the full bandwidth
+
+		DO NOT add a unit to the rate if it is calculated !
+
+ Columns are:
+
+	INTERFACE	Name of interface. Each interface may be listed only
+			once in this file. You may NOT specify the name of
+			an alias (e.g., eth0:0) here; see
+			http://www.shorewall.net/FAQ.htm#faq18
+
+			You may NOT specify wildcards here,  e.g. if you
+			have multiple ppp interfaces, you need to put
+			them all in here!
+
+			Please note that you can only use interface names
+			in here that have a bandwidth defined in the tcdevices
+			file
+
+	MARK		The mark value which is an integer in the range 1-255.
+			You define this marks in the tcrules file, marking
+			the traffic you want to fit in the classes defined
+			in here.
+
+			You can use the same marks for different interfaces.
+
+	RATE		The minimum bandwidth this class should get,
+			when the traffic load rises.
+
+	CEIL		The maximum bandwidth this class is allowed to use
+			when the link is idle. Useful if you have traffic
+			which can get full speed when more needed services
+			(e.g. ssh) are not used.
+
+			You can use the value "full" in here for setting
+			the maximum bandwidth to the defined output bandwidth
+			of that interface
+
+	PRIORITY	The priority in which classes will be serviced by
+			the packet shaping scheduler and also the priority
+			in which bandwidth in excess of the rate will be
+			given to each class.
+
+			Higher priority classes will experience less delay
+			since they are serviced first.  Priority values
+			are serviced in ascending order (e.g. 0 is higher
+			priority than 1).
+
+			Classes may be set to the same priority, in which
+			case they will be serviced as equals.
+
+	OPTIONS		A comma-separated list of options including the
+			following:
+
+			default		- this is the default class for that
+					interface where all traffic should go,
+					that is not classified otherwise.
+
+					NOTE: defining default for exactly one
+					class per interface is mandatory!
+
+			tos=0x<value>[/0x<mask>]  (mask defaults to 0xff)
+					- this lets you define a classifier
+					for the given <value>/<mask>
+					combination of the IP packet's
+					TOS/Precedence/DiffSrv octet (aka the
+					TOS byte).  Please note, classifiers
+					override all mark settings, so if you
+					define a classifer for a class, all
+					traffic having that mark will go in it
+					regardless of any mark set on the
+					packet by a firewall/mangle filter.
+
+					NOTE: multiple tos= statements may be
+					applied per class and per interface,
+					but a given value/mask pair is valid
+					for only ONE class per interface.
+
+			tos-<tosname>	- aliases for the following TOS octet
+					value and mask encodings.  TOS
+					encodings of the "TOS byte" have been
+					deprecated in favor of diffserve
+					classes, but programs like ssh,
+					rlogin, and ftp still use them.
+
+   					tos-minimize-delay 	 0x10/0x10
+                               	tos-maximize-throughput	 0x08/0x08
+                               	tos-maximize-reliability 0x04/0x04
+                               	tos-minimize-cost	 0x02/0x02
+                               	tos-normal-service	 0x00/0x1e
+
+					NOTE: each of this options is only
+					valid for ONE class per interface.
+
+			tcp-ack		- if defined causes an tc filter to
+					be created that puts all tcp ack
+					packets on that interface that have
+					an size of <=64 Bytes to go in this
+					class. This is useful for speeding up
+					downloads. Please note that the size
+					of the ack packets is limited to 64
+					bytes as some applications (p2p for
+					example) use to make every packet an
+					ack packet which would cause them
+					all into here. We want only packets
+					WITHOUT payload to match, so the size
+					limit.
+
+					NOTE: This option is only valid for
+					ONE class per interface.
+
+
+
+	Example 1:	Suppose you are using PPP over Ethernet (DSL)
+			and ppp0 is the interface for this. You have 4 classes
+			here, the first you can use for voice	over IP
+			traffic, the second interactive traffic (e.g.
+			ssh/telnet but not scp), the third will be for all
+			unclassified traffic, and the forth is for low
+			priority traffic (e.g. peer-to-peer).
+
+			The voice traffic in the first class will be
+			guaranteed a minimum of 100kbps and always be
+			serviced first (because of the low priority number,
+			giving less delay) and will be granted excess
+			bandwidth (up to 180kbps, the class ceiling) first,
+			before any other traffic.  A single VOIP stream,
+			depending upon codecs, after encapsulation, can take
+			up to 80kbps on a PPOE/DSL link, so we pad a little
+			bit just in case.  (TOS byte values 0xb8 and 0x68
+			are DiffServ classes EF and AFF3-1 respectively and
+			are often used by VOIP devices).
+
+			Interactive traffic (tos-minimum-delay)	and
+			TCP acks (and ICMP echo traffic if you use the example
+			in tcrules) and any packet with a mark of 2 will be
+			guaranteed 1/4 of the link bandwidth, and may extend
+			up to full speed of the link.
+
+			Unclassified traffic and packets marked as 3 will be
+			guaranteed 1/4th of the link bandwidth, and may extend
+			to the full speed of the link.
+
+			Packets marked with 4 will be treated as low priority
+			packets.  (The tcrules example marks p2p traffic as
+			such.)  If the link is congested, they're only
+			guaranteed 1/8th of the speed, and even if the link is
+			empty, can only expand to 80% of link bandwidth just
+			as a precaution in case there are upstream queues we
+			didn't account for. This is the last class to get
+			additional bandwidth and the last to get serviced by
+			the scheduler because of the low priority.
+
+		ppp0  1  100kbit  180kbit   1  tos=0x68/0xfc,tos=0xb8/0xfc
+		ppp0  2  full/4   full	    2  tcp-ack,tos-minimize-delay
+		ppp0  3	 full/4   full	    3  default
+		ppp0  4	 full/8   full*8/10 4
+
+ See http://shorewall.net/traffic_shaping.htm for additional information.
+ 
+################################################################################
+ Based on tc4shorewall version 0.5 by Arne Bernin
+
+ /etc/shorewall/tcdevices
+
+	Entries in this file define the bandwidth for interfaces
+	on which you want traffic shaping to be enabled.
+
+	If you do not plan to use traffic shaping for a device,
+	don't put it in here as it limits the troughput of that
+	device to the limits you set here.
+
+ Columns are:
+
+
+	INTERFACE	Name of interface. Each interface may be listed only
+			once in this file. You may NOT specify the name of
+			an alias (e.g., eth0:0) here; see
+			http://www.shorewall.net/FAQ.htm#faq18
+
+			You man NOT specify wildcards here,  e.g. if you
+			have multiple ppp interfaces, you need to put
+			them all in here!
+
+			If the device doesn't exist, a warning message will
+			be issued during "shorewall [re]start" and "shorewall
+			refresh" and traffic shaping configuration will be
+			skipped for that device.
+
+	IN-BANDWIDTH	The incoming Bandwidth of that interface. Please
+			note that you are not able to do traffic shaping
+			on incoming traffic, as the traffic is already
+			received before you could do so. But this allows
+			you to define the maximum traffic allowed for
+			this interface in total, if the rate is exceeded,
+			the packets are dropped.
+			You want this mainly if you have a DSL or Cable
+			connection to avoid queuing at your providers side.
+
+			If you don't want any traffic to be dropped set this
+			to a value faster than your interface.
+
+			Use kbit or kbps(for Kilobytes per second) for
+			speed, and make sure there is NO space between the
+			number and the unit.
+
+	OUT-BANDWIDTH	The outgoing Bandwidth of that interface.
+			This is the maximum speed you connection can handle.
+			It is also the speed you can refer as "full" if
+			you define the tc classes.
+			Outgoing traffic above this rate will be dropped.
+
+			Use kbit or kbps(for Kilobytes per second) for
+			speed, and make sure there is NO space between the
+			number and the unit.
+
+	Example 1:	Suppose you are using PPP over Ethernet (DSL)
+			and ppp0 is the interface for this. The
+			device has an outgoing bandwidth of 500kbit and an
+			incoming bandwidth of 6000kbit
+			ppp0	6000kbit	500kbit
+
+ See http://shorewall.net/traffic_shaping.htm for additional information.
+ 
+################################################################################
+ /etc/shorewall/tcrules
+
+	Entries in this file cause packets to be marked as a means of
+	classifying them for traffic control or policy routing.
+
+			       I M P O R T A N T ! ! ! !
+
+		Unlike rules in the /etc/shorewall/rules file, evaluation
+		of rules in this file will continue after a match. So the
+		final mark for each packet will be the one assigned by the
+		LAST tcrule that matches.
+
+		If you use multiple internet providers with the 'track' option,
+		in /etc/shorewall/providers be sure to read the restrictions at
+		http://shorewall.net/MultiISP.html.
+
+ Columns are:
+
+
+	MARK/		a) A mark value which is an integer in the range 1-255.
+	CLASSIFY
+			   Normally will set the mark value. If preceded by
+			   a vertical bar ("|"), the mark value will be
+			   logically ORed with the current mark value to
+			   produce a new mark value. If preceded by an
+			   ampersand ("&"), will be logically ANDed with the
+			   current mark value to produce a new mark value.
+
+			   Both "|" and "&" require Extended MARK Target
+			   support in your kernel and iptables; neither may
+			   be used with connection marks (see below).
+
+			   If HIGH_ROUTE_MARKS=Yes in shorewall.conf then
+			   you may also specify a value in the range 0x0100-
+			   0xFF00 with the low-order byte being zero. Such
+			   values may only be used in the PREROUTING chain
+			   (value followed by :F or you have set
+			   MARK_IN_FORWARD_CHAIN=Yes in shorewall conf and have
+			   not followed the value with :P) or the OUTPUT chain
+			   (SOURCE is $FW).
+
+			   May optionally be followed by ":P" or ":F"
+			   where ":P" indicates that marking should occur in
+			   the PREROUTING chain and ":F" indicates that marking
+			   should occur in the FORWARD chain. If neither
+			   ":P" nor ":F" follow the mark value then the chain
+			   is determined by the setting of
+			   MARK_IN_FORWARD_CHAIN in
+			   /etc/shorewall/shorewall.conf.
+
+			   If your kernel and iptables include CONNMARK support
+			   then you can also mark the connection rather than
+			   the packet.
+
+			   The mark value may be optionally followed by "/"
+			   and a mask value (used to determine those bits of
+			   the connection mark to actually be set). The
+			   mark and optional mask are then followed by one of:
+
+				C - Mark the connection in the chain determined
+				    by the setting of MARK_IN_FORWARD_CHAIN
+
+				CF: Mark the connection in the FORWARD chain
+
+				CP: Mark the connection in the PREROUTING
+				    chain.
+
+			b) A classification (classid) of the form
+                          <major>:<minor> where <major> and <minor> are
+                          integers. Corresponds to the 'class' specification
+                          in these traffic shaping modules:
+
+				- atm
+				- cbq
+				- dsmark
+				- pfifo_fast
+				- htb
+				- prio
+
+			   Classification occurs in the POSTROUTING chain except
+			   when the SOURCE is $FW[:<address>] in which case
+			   marking occurs in the OUTPUT chain.
+
+			c) RESTORE[/mask] -- restore the packet's mark from the
+			   connection's mark using the supplied mask if any.
+			   Your kernel and iptables must include CONNMARK
+			   support.
+
+			   As in a) above, may be followed by ":P" or ":F
+
+			c) SAVE[/mask] -- save the packet's mark to the
+			   connection's mark using the supplied mask if any.
+			   Your kernel and iptables must include CONNMARK
+			   support.
+
+			   As in a) above, may be followed by ":P" or ":F
+
+			d) CONTINUE -- don't process any more marking rules in
+			   the table.
+
+			   As in a) above, may be followed by ":P" or ":F".
+
+                       e) COMMENT -- the rest of the line will be attached as
+			   a comment to the Netfilter rule(s) generated by the
+			   following entries. The comment will appear delimited
+			   by "/* ... */" in the output of "shorewall show
+			   mangle"
+
+			  To stop the comment from being attached to further
+			  rules, simply include COMMENT on a line by itself.
+
+	SOURCE		Source of the packet. A comma-separated list of
+			interface names, IP addresses, MAC addresses and/or
+			subnets for packets being routed through a common path.
+			List elements may also consist of an interface name
+			followed by ":" and an address
+			(e.g., eth1:192.168.1.0/24). For example, all packets
+			for connections masqueraded to eth0 from other
+			interfaces can be matched in a single rule with
+			several alternative SOURCE criteria. However, a
+			connection whose packets gets to eth0 in a
+			different way, e.g., direct from the firewall itself,
+			needs a different rule.
+
+			Accordingly, use $FW in its own separate rule for
+			packets originating on the firewall. In such a rule,
+			the MARK column may NOT specify either ":P" or ":F"
+			because marking for firewall-originated packets
+			always occurs in the OUTPUT chain.
+
+			MAC addresses must be prefixed with "~" and use
+			"-" as a separator.
+
+			Example: ~00-A0-C9-15-39-78
+
+	DEST		Destination of the packet. Comma separated list of
+			IP addresses and/or subnets. If your kernel and
+			iptables include iprange match support, IP address
+			ranges are also allowed. List elements may also
+			consist of an interface name followed by ":" and an
+			address (e.g., eth1:192.168.1.0/24).
+			If the MARK column specificies a classification of
+			the form <major>:<minor> then this column may also
+			contain an interface name.
+
+	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
+                       "ipp2p:udp", "ipp2p:all" a number, or "all".
+                       "ipp2p" requires ipp2p match support in your kernel
+                       and iptables.
+
+	PORT(S)		Destination Ports. A comma-separated list of Port
+			names (from /etc/services), port numbers or port
+			ranges; if the protocol is "icmp", this column is
+			interpreted as the destination icmp-type(s).
+
+			If the protocol is ipp2p, this column is interpreted
+			as an ipp2p option without the leading "--" (example
+			"bit" for bit-torrent). If no PORT is given, "ipp2p" is
+			assumed.
+
+			This column is ignored if PROTOCOL = all but must be
+			entered if any of the following field is supplied.
+			In that case, it is suggested that this field contain
+			 "-"
+
+	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
+			any source port is acceptable. Specified as a comma-
+			separated list of port names, port numbers or port
+			ranges.
+
+	USER		This column may only be non-empty if the SOURCE is
+			the firewall itself.
+
+			When this column is non-empty, the rule applies only
+			if the program generating the output is running under
+			the effective user and/or group.
+
+			It may contain :
+
+	[<user name or number>]:[<group name or number>][+<program name>]
+
+			The colon is optionnal when specifying only a user
+			or a program name.
+			Examples : john: , john , :users , john:users ,
+				   +mozilla-bin (Support for program names
+				   was removed from Netfilter in Kernel
+				   version 2.6.14).
+
+	TEST		Defines a test on the existing packet or connection
+			mark. The rule will match only if the test returns
+			true. Tests have the format [!]<value>[/<mask>][:C]
+
+			Where:
+
+				!	Inverts the test (not equal)
+				<value> Value of the packet or connection mark.
+				<mask>	A mask to be applied to the mark before
+					testing
+				:C	Designates a connection mark. If
+					omitted, the packet mark's value is
+					tested.
+
+			If you don't want to define a test but need to specify
+			anything in the following columns, place a "-" in this
+			field.
+
+	LENGTH		(Optional) Packet Length. This field, if present
+			allow you to match the length of a packet against
+			a specific value or range of values. You must have
+			iptables length support for this to work.
+			A range is specified in the form <min>:<max>
+			where either <min> or <max> (but not both) may be
+			omitted. If <min> is omitted, then 0 is assumed; if
+			<max> is omitted, than any packet that is <min> or
+			longer will match.
+
+                       Examples: 1024, 64:1500, :100 (packet of length
+                                                      100 bytes or less)
+
+			If you don't want to define a test but need to specify
+			anything in the following columns, place a "-" in this
+			field.
+
+	TOS		Type of service. Either a standard name, or a numeric
+			value to match.
+
+				Minimize-Delay (16)
+				Maximize-Throughput (8)
+				Maximize-Reliability (4)
+				Minimize-Cost (2)
+				Normal-Service (0)
+
+ Example 1:
+
+	Mark all ICMP echo traffic with packet mark 1.
+	Mark all peer to peer traffic with packet mark 4.
+
+	This is a little more complex than otherwise expected.  Since
+	the ipp2p module is unable to determine all packets in a
+	connection are P2P packets, we mark the entire connection as
+	P2P if any of the packets are determined to match.
+
+	We assume packet/connection mark 0 to means unclassified.
+
+	1	 0.0.0.0/0 0.0.0.0/0	icmp	echo-request
+	1	 0.0.0.0/0 0.0.0.0/0	icmp	echo-reply
+
+	RESTORE	 0.0.0.0/0 0.0.0.0/0	all	-	-	-	0
+	CONTINUE 0.0.0.0/0 0.0.0.0/0	all	-	-	-	!0
+	4	 0.0.0.0/0 0.0.0.0/0	ipp2p:all
+	SAVE	 0.0.0.0/0 0.0.0.0/0	all	-	-	-	!0
+
+	"If a packet hasn't been classifed (packet mark is 0), copy
+	 the connection mark to the packet mark.  If the packet mark
+	 is set, we're done.  If the packet is P2P, set the packet
+	 mark to 4.  If the packet mark has been set, save it to the
+	 connection mark."
+
+ See http://shorewall.net/traffic_shaping.htm for additional information.
+ For usage in selecting among multiple ISPs, see
+ http://shorewall.net/MultiISP.html
+
+################################################################################
+  /etc/shorewall/tos
+
+	This file defines rules for setting Type Of Service (TOS)
+
+ Columns are:
+
+	SOURCE		Name of a zone declared in /etc/shorewall/zones, "all"
+			or $FW.
+
+			If not "all" or $FW, may optionally be followed by
+			":" and an IP address, a MAC address, a subnet
+			specification or the name of an interface.
+
+			Example: loc:192.168.2.3
+
+			MAC addresses must be prefixed with "~" and use
+			"-" as a separator.
+
+			Example: ~00-A0-C9-15-39-78
+
+	DEST		Name of a zone declared in /etc/shorewall/zones, "all"
+			or $FW.
+
+			If not "all" or $FW, may optionally be followed by
+			":" and an IP address or a subnet specification
+
+			Example: loc:192.168.2.3
+
+	PROTOCOL	Protocol.
+
+	SOURCE PORTS	Source port or port range. If all ports, use "-".
+
+	DEST PORTS	Destination port or port range. If all ports, use "-"
+
+	TOS		Type of service. Must be one of the following:
+
+				Minimize-Delay (16)
+				Maximize-Throughput (8)
+				Maximize-Reliability (4)
+				Minimize-Cost (2)
+				Normal-Service (0)
+
+ See http://shorewall.net/Documentation.htm#TOS for additional
+ information.
+
+################################################################################
+ /etc/shorewall/tunnels
+
+	This file defines IPSEC, GRE, IPIP and OPENVPN tunnels.
+
+	IPIP, GRE and OPENVPN tunnels must be configured on the
+	firewall/gateway itself. IPSEC endpoints may be defined
+	on the firewall/gateway or on an internal system.
+
+	The columns are:
+
+	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat",
+			"ipip", "gre", "6to4", "pptpclient", "pptpserver",
+			"openvpn", "openvpnclient", "openvpnserver" or
+			"generic"
+
+			If the type is "ipsec" or "ipsecnat", it may be
+			followed by ":noah" to indicate that the Authentication
+			Header protocol (51) is not used by the tunnel.
+
+			If type is "openvpn", "openvpnclient" or
+			"openvpnserver" it may optionally be followed by ":"
+			and "tcp" or "udp" to specify the protocol to be
+			used. If not specified, "udp" is assumed.
+
+			If type is "openvpn", "openvpnclient" or
+			"openvpnserver" it may optionally be followed
+			by ":" and the port number used by the tunnel. if no
+			":" and port number are included, then the default port
+			of 1194 will be used. . Where both the protocol and port
+			are specified, the protocol must be given first (e.g.,
+			openvpn:tcp:4444).
+
+			If type is "generic", it must be followed by ":" and
+			a protocol name (from /etc/protocols) or a protocol
+			number. If the protocol is "tcp" or "udp" (6 or 17),
+			then it may optionally be followed by ":" and a
+			port number.
+
+	ZONE	    --	The zone of the physical interface through which
+			tunnel traffic passes. This is normally your internet
+			zone.
+
+	GATEWAY	    --	The IP address of the remote tunnel gateway. If the
+			remote gateway has no fixed address (Road Warrior)
+			then specify the gateway as 0.0.0.0/0. May be
+			specified as a network address and if your kernel and
+			iptables include iprange match support then IP address
+			ranges are also allowed.
+
+	GATEWAY
+	ZONES --	Optional. If the gateway system specified in the third
+			column is a standalone host then this column should
+			contain a comma-separated list of the names of the
+			zones that the host might be in. This column only
+			applies to IPSEC tunnels where it enables ISAKMP
+			traffic to flow through the tunnel to the remote
+			gateway.
+
+		Example 1:
+
+			IPSec tunnel. The remote gateway is 4.33.99.124 and
+			the remote subnet is 192.168.9.0/24. The tunnel does
+			not use the AH protocol
+
+			ipsec:noah	net	4.33.99.124
+
+		Example 2:
+
+			Road Warrior (LapTop that may connect from anywhere)
+			where the "gw" zone is used to represent the remote
+			LapTop.
+
+			ipsec	net	0.0.0.0/0	gw
+
+		Example 3:
+
+			Host 4.33.99.124 is a standalone system connected
+			via an ipsec tunnel to the firewall system. The host
+			is in zone gw.
+
+			ipsec	net	4.33.99.124	gw
+
+		Example 4:
+
+			Road Warriors that may belong to zones vpn1, vpn2 or
+			vpn3. The FreeS/Wan _updown script will add the
+			host to the appropriate zone using the "shorewall add"
+			command on connect and will remove the host from the
+			zone at disconnect time.
+
+			ipsec	net	0.0.0.0/0	vpn1,vpn2,vpn3
+
+		Example 5:
+
+			You run the Linux PPTP client on your firewall and
+			connect to server 192.0.2.221.
+
+			pptpclient	net	192.0.2.221
+
+		Example 6:
+
+			You run a PPTP server on your firewall.
+
+			pptpserver	net
+
+		Example 7:
+
+			OPENVPN tunnel. The remote gateway is 4.33.99.124 and
+			openvpn uses port 7777.
+
+			openvpn:7777	net	4.33.99.124
+
+		Example 8:
+
+			You have a tunnel that is not one of the supported
+			types. Your tunnel uses UDP port 4444. The other end
+			of the tunnel is 4.3.99.124.
+
+			generic:udp:4444	net	4.3.99.124
+
+ See http://shorewall.net/Documentation.htm#Tunnels for additional
+ information.
+
+################################################################################
+ /etc/shorewall/zones
+
+	This file declares your network zones. You specify the hosts in
+	each zone through entries in /etc/shorewall/interfaces or
+	/etc/shorewall/hosts.
+
+	WARNING: The format of this file changed in Shorewall 3.0.0. You can
+		 continue to use your old records provided that you set
+		 IPSECFILE=ipsec in /etc/shorewall/shorewall.conf. This will
+		 signal Shorewall that the IPSEC-related zone options are
+		 still specified in /etc/shorewall/ipsec rather than in this
+		 file.
+
+		 To use records in the format described below, you must have
+		 IPSECFILE=zones specified in /etc/shorewall/shorewall.conf
+		 AND YOU MUST NOT SET THE 'FW' VARIABLE IN THAT FILE!!!!!
+
+ Columns are:
+
+	ZONE	Short name of the zone. The names "all" and "none" are reserved
+		and may not be used as zone names. The maximum length of a
+		zone name is determined by the setting of the LOGFORMAT option
+		in shorewall.conf. With the default LOGFORMAT, zone names can
+		be at most 5 characters long.
+
+		Where a zone is nested in one or more other zones,
+		you may follow the (sub)zone name by ":" and a
+		comma-separated list of the parent zones. The parent
+		zones must have been defined in earlier records in this
+		file.
+
+		Example:
+
+			#ZONE     TYPE     OPTIONS
+			a	  ipv4
+			b	  ipv4
+			c:a,b     ipv4
+
+		Currently, Shorewall uses this information to reorder the
+		zone list so that parent zones appear after their subzones in
+		the list. The IMPLICIT_CONTINUE option in shorewall.conf can
+		also create implicit CONTINUE policies to/from the subzone.
+
+		In the future, Shorewall may make additional use
+		of nesting information.
+
+	TYPE	ipv4 -	This is the standard Shorewall zone type and is the
+			default if you leave this column empty or if you enter
+			"-" in the column. Communication with some zone hosts
+			may be encrypted. Encrypted hosts are designated using
+			the 'ipsec'option in /etc/shorewall/hosts.
+		ipsec -	Communication with all zone hosts is encrypted
+			Your kernel and iptables must include policy
+			match support.
+		firewall
+		      - Designates the firewall itself. You must have
+			exactly one 'firewall' zone. No options are
+			permitted with a 'firewall' zone. The name that you
+			enter in the ZONE column will be stored in the shell
+			variable $FW which you may use in other configuration
+			files to designate the firewall zone.
+
+	OPTIONS,	A comma-separated list of options as follows:
+	IN OPTIONS,
+	OUT OPTIONS	reqid=<number> where <number> is specified
+			using setkey(8) using the 'unique:<number>
+			option for the SPD level.
+
+			spi=<number> where <number> is the SPI of
+			the SA used to encrypt/decrypt packets.
+
+			proto=ah|esp|ipcomp
+
+			mss=<number> (sets the MSS field in TCP packets)
+
+			mode=transport|tunnel
+
+			tunnel-src=<address>[/<mask>] (only
+			available with mode=tunnel)
+
+			tunnel-dst=<address>[/<mask>] (only
+			available with mode=tunnel)
+
+			strict	Means that packets must match all rules.
+
+			next	Separates rules; can only be used with
+				strict
+
+		Example:
+			mode=transport,reqid=44
+
+	The options in the OPTIONS column are applied to both incoming
+	and outgoing traffic. The IN OPTIONS are applied to incoming
+	traffic (in addition to OPTIONS) and the OUT OPTIONS are
+	applied to outgoing traffic.
+
+	If you wish to leave a column empty but need to make an entry
+	in a following column, use "-".
+------------------------------------------------------------------------------
+ Example zones:
+
+	You have a three interface firewall with internet, local and DMZ
+	interfaces.
+
+	#ZONE	TYPE		OPTIONS		IN			OUT
+	#					OPTIONS			OPTIONS
+	fw	firewall
+	net	ipv4
+	loc	ipv4
+	dmz	ipv4
+
+ For more information, see http://www.shorewall.net/Documentation.htm#Zones
+
+################################################################################

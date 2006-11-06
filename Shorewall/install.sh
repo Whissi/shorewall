@@ -261,7 +261,7 @@ chmod 755 ${PREFIX}/etc/shorewall
 chmod 755 ${PREFIX}/usr/share/shorewall
 chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
 
-run_install $OWNERSHIP -m 0644 Documentation.txt ${PREFIX}/etc/shorewall/Documentation.txt
+run_install $OWNERSHIP -m 0644 Documentation ${PREFIX}/etc/shorewall/Documentation
 #
 # Install the config file
 #

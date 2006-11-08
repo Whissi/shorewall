@@ -8,8 +8,6 @@ usage() {
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
-initialize
-
 #
 # Start trace if first arg is "debug" or "trace"
 #
@@ -17,6 +15,8 @@ if [ $# -gt 1 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
     set -x
     shift
 fi
+
+initialize
 
 finished=0
 

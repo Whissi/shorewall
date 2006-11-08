@@ -554,6 +554,10 @@ chain_base() #$1 = interface
 
     while true; do
 	case $c in
+	    @*)
+               c=at_${c#@}
+	       ;;
+                
 	    *.*)
 		c="${c%.*}_${c##*.}"
 		;;
@@ -1187,7 +1191,7 @@ disable_ipv6() {
 #
 # Add a logging rule.
 #
-log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
+do_log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
 {
     local level=$1
     local chain=$2
@@ -1227,14 +1231,12 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 	error_message "WARNING: Log Prefix shortened to \"$prefix\""
     fi
 
-    [ "$PROGRAM" = compiler ] && prefix="\"$prefix\""
-
     case $level in
 	ULOG)
-	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
 	    ;;
     esac
 
@@ -1243,7 +1245,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     fi
 }
 
-log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+do_log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
 {
     local level=$1
     local chain=$2
@@ -1251,7 +1253,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
     shift 3
 
-    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
+    do_log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
 }
 
 delete_tc1()

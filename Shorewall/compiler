@@ -3537,6 +3537,9 @@ setup_blacklist() {
 add_common_rules() {
     local savelogparms="$LOGPARMS"
     local broadcasts="$(find_broadcasts) 255.255.255.255 224.0.0.0/4"
+    local policy
+
+    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
     #
     # Populate the smurf chain
     #
@@ -3632,7 +3635,6 @@ __EOF__
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -3745,7 +3747,6 @@ __EOF__
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
@@ -3754,7 +3755,7 @@ __EOF__
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
-		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface $(match_source_hosts $networks) -j man1918
+		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface $(match_source_hosts $networks) $policy -j man1918
 	done
     fi
 

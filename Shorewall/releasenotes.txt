@@ -58,6 +58,16 @@ Other Changes in 3.3.5.
     single file /etc/shorewall/Documentation. The documentation is in
     alphabetical order by file name.
 
+3)  The "shorewall [re]load" command now supports a "-c" option.
+
+    Example:
+
+	shorewall reload -c gateway
+
+    When -c is given, Shorewall will capture the capabilities of the
+    remote system to a file named "capabilities" in the export
+    directory before compiling the configuration.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

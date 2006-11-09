@@ -732,7 +732,7 @@ safe_commands() {
 #
 reload_command() # $* = original arguments less the command.
 {
-    local verbose=$(make_verbose) file= finished=0 saveit= result directory system
+    local verbose=$(make_verbose) file= finished=0 saveit= result directory system getcaps=
 
     [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
 
@@ -751,6 +751,10 @@ reload_command() # $* = original arguments less the command.
 			s*)
 			    saveit=Yes
 			    option=${option#s}
+			    ;;
+			c*)
+			    getcaps=Yes
+			    option=${option#c}
 			    ;;
 			*)
 			    usage 1
@@ -781,8 +785,16 @@ reload_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
+    if [ -n "$getcaps" ]; then
+	progress_message "Getting Capabilities on system $system..."
+	if ! ssh root@${system} "/sbin/shorewall-lite show -f capabilities > ${LITEDIR}/capabilities" || \
+	   ! scp root@$system:${LITEDIR}/capabilities $directory; then
+	    echo "   ERROR: Capturing capabilities on system $system failed" >&2 && exit 2
+	fi
+    fi
+
     if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
-	echo "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
+	progress_message "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
 	scp $directory/firewall $directory/firewall.conf root@${system}:${LITEDIR}
     then
 	echo "Copy complete"
@@ -887,13 +899,13 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   load [ -s ] [ <directory> ] <system>"
+    echo "   load [ -s ] [ -c ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
-    echo "   reload [ -s ] [ <directory> ] <system>"
+    echo "   reload [ -s ] [ -c ] [ <directory> ] <system>"
     echo "   reset"
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"

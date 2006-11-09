@@ -224,7 +224,7 @@ iprange)
 	;;
 
 load)
-	echo "load: load [ -s ] [ <directory> ] <system>
+	echo "load: load [ -s ] [ -c ] [ <directory> ] <system>
     If <directory> is omitted, then the current working directory is assumed.
 
     Requires that Shorewall Lite be installed on the named <system>.
@@ -236,7 +236,10 @@ load)
     successfully, Shorewall Lite on <system> is started via ssh.
 
     If the -s option is given and Shorewall Lite starts successfully then
-    ssh is used to execute 'shorewall-lite save' on <system>"
+    ssh is used to execute 'shorewall-lite save' on <system>
+
+    If the -c option is given, Shorewall will capture the remote system's
+    capabilities to <directory>/capabilities before compiling"
 	;;
 
 logdrop)
@@ -286,7 +289,7 @@ reset)
 	;;
 
 reload)
-	echo "reload: reload [ <directory> ] <system>
+	echo "reload: reload [ -s ] [ -c ] [ <directory> ] <system>
     If <directory> is omitted, then the current working directory is assumed.
 
     Requires that Shorewall Lite be installed on the named <system>.
@@ -298,7 +301,10 @@ reload)
     successfully, Shorewall Lite on <system> is restarted via ssh.
 
     If the -s option is given and Shorewall Lite restarts successfully then
-    ssh is used to execute 'shorewall-lite save' on <system>"
+    ssh is used to execute 'shorewall-lite save' on <system>
+
+    If the -c option is given, Shorewall will capture the remote system's
+    capabilities to <directory>/capabilities before compiling"
 	;;
 
 restart)

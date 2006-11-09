@@ -734,7 +734,7 @@ reload_command() # $* = original arguments less the command.
 {
     local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps=
 
-    [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
+    [ -n "$LITEDIR" ] || fatal_error "ERROR: LITEDIR not defined in ${SHAREDIR}/configpath"
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -783,13 +783,17 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    capabilities=$(find_file capabilities)
+    if [ -z "$getcaps" ]; then
+	SHOREWALL_DIR=$directory
+	capabilities=$(find_file capabilities)
+	[ -f $capabilities ] || getcaps=Yes
+    fi
 
-    if [ -n "$getcaps" -o ! -f $capabilities ]; then
+    if [ -n "$getcaps" ]; then
 	progress_message "Getting Capabilities on system $system..."
 	if ! ssh root@${system} "/sbin/shorewall-lite show -f capabilities > ${LITEDIR}/capabilities" || \
 	   ! scp root@$system:${LITEDIR}/capabilities $directory; then
-	    echo "   ERROR: Capturing capabilities on system $system failed" >&2 && exit 2
+	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
 
@@ -835,7 +839,7 @@ export_command() # $* = original arguments less the command.
 			    option=
 			    ;;
 			*)
-			    usage 1
+			    fatal_error "Unrecognized option \"$option\""
 			    ;;
 		    esac
 		done
@@ -857,7 +861,7 @@ export_command() # $* = original arguments less the command.
 	    target=$2
 	    ;;
 	*)
-	    usage 1
+	    fatal_error "ERROR: Invalid command syntax (\"shorewall help export\" for help)"
 	    ;;
     esac
 
@@ -961,8 +965,6 @@ while [ $finished -eq 0 ]; do
 	    ;;
 	-*)
 	    option=${option#-}
-
-	    [ -z "$option" ] && usage 1
 
 	    while [ -n "$option" ]; do
 		case $option in

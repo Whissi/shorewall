@@ -763,9 +763,9 @@ $EXT_IF         1300kbit        384kbit
 </programlisting>
 
         <para><filename>/etc/shorewall/tcclasses</filename><programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
-$EXT_IF         10      full            full            1               tcp-ack,tos-minimize-delay
-$EXT_IF         20      9*full/10       9*full/10       2               default
-$EXT_IF         30      6*full/10       6*full/10       3
+$EXT_IF         10      5*full/10       full            1               tcp-ack,tos-minimize-delay
+$EXT_IF         20      3*full/10       9*full/10       2               default
+$EXT_IF         30      2*full/10       6*full/10       3
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
 
         <para><filename>/etc/shorewall/tcrules</filename><programlisting>#MARK   SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST

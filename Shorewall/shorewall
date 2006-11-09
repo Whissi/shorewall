@@ -732,7 +732,7 @@ safe_commands() {
 #
 reload_command() # $* = original arguments less the command.
 {
-    local verbose=$(make_verbose) file= finished=0 saveit= result directory system getcaps=
+    local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps=
 
     [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
 
@@ -783,15 +783,17 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    file=$(resolve_file $directory/firewall)
+    capabilities=$(find_file capabilities)
 
-    if [ -n "$getcaps" ]; then
+    if [ -n "$getcaps" -o ! -f $capabilities ]; then
 	progress_message "Getting Capabilities on system $system..."
 	if ! ssh root@${system} "/sbin/shorewall-lite show -f capabilities > ${LITEDIR}/capabilities" || \
 	   ! scp root@$system:${LITEDIR}/capabilities $directory; then
 	    echo "   ERROR: Capturing capabilities on system $system failed" >&2 && exit 2
 	fi
     fi
+
+    file=$(resolve_file $directory/firewall)
 
     if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
 	progress_message "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \

@@ -81,7 +81,6 @@ progress_message3() # $* = Message
 split() {
     local ifs=$IFS
     IFS=:
-    set -- $1
     echo $*
     IFS=$ifs
 }
@@ -767,7 +766,7 @@ find_first_interface_address_if_any() # $1 = interface
 #
 interface_is_usable() # $1 = interface
 {
-    interface_is_up $1 && [ "\$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]
+    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]
 }
 
 #
@@ -831,7 +830,7 @@ ensure_config_path() {
 }
 
 #
-# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in ${CONFDIR}
+# Find a File -- For relative file name, look in ${SHOREWALL_DIR} then each ${CONFIG_PATH} then ${CONFDIR}
 #
 find_file()
 {
@@ -845,17 +844,12 @@ find_file()
 	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
 		echo $SHOREWALL_DIR/$1
 	    else
-		saveifs=$IFS
-		IFS=:
-		for directory in $CONFIG_PATH; do
+		for directory in $(split $CONFIG_PATH); do
 		    if [ -f $directory/$1 ]; then
 			echo $directory/$1
-			IFS=$saveifs
 			return
 		    fi
 		done
-
-		IFS=$saveifs
 
 		echo ${CONFDIR}/$1
 	    fi
@@ -1324,7 +1318,6 @@ undo_routing() {
 }
 
 restore_default_route() {
-
     if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
 	local default_route= route
 

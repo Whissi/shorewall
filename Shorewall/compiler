@@ -1841,7 +1841,6 @@ add_a_rule() {
 	if [ -n "$natrule" ]; then
 	    lib_load nat "$logtarget Rules"
 	    add_nat_rule
-	    [ $policy = ACCEPT ] && return
 	elif [ -n "$servport" -a "$servport" != "$port" ]; then
 	    fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
 	fi
@@ -2528,7 +2527,7 @@ process_rules()
 
     do_it() # $1 = "Yes" if the target is a macro.
     {
-	expandv xprotocol xports xcports xaddress xratelimit xuserspec intrazone=
+	expandv xprotocol xports xcports xaddress xratelimit xuserspec
 
 	if [ -z "$SECTIONS" ]; then
 	    finish_section ESTABLISHED,RELATED

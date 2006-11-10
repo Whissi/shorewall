@@ -193,8 +193,11 @@ setup_traffic_shaping()
 	save_command "${dev}_mtu=\$(get_device_mtu $device)"
 	run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$${dev}_mtu"
 
-	run_tc qdisc add dev $device handle ffff: ingress
-	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	if [ ${inband} -gt 0 ]; then
+	    run_tc qdisc add dev $device handle ffff: ingress
+	    run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	fi
+
 	eval ${dev}_devnum=$devnum
 	devnum=$(($devnum + 1))
 

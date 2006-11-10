@@ -2527,6 +2527,8 @@ process_rules()
 
     do_it() # $1 = "Yes" if the target is a macro.
     {
+	local intrazone=
+
 	expandv xprotocol xports xcports xaddress xratelimit xuserspec
 
 	if [ -z "$SECTIONS" ]; then

@@ -56,11 +56,8 @@
   </important>
 
   <warning>
-    <para>Said another way, reading just Shorewall documentation is probably
-    not going to give you enough background to use this material. Shorewall
-    may make iptables easy but the Shorewall team simply can't be expected to
-    spoon-feed Linux traffic control to you (please remember that the user's
-    manual for a tractor doesn't teach you to grow corn either).</para>
+    <para>Said another way, reading just Shorewall documentation is not going
+    to give you enough background to use this material.</para>
 
     <para>At a minimum, you will need to refer to at least the following
     additional information:</para>
@@ -273,6 +270,40 @@
   <section>
     <title>Using builtin traffic shaping/control</title>
 
+    <para>Shorewall's builtin traffic shaping feature provides a thin layer on
+    top of the ingress qdesc, HTB and SFQ. That translation layer allows you
+    to:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Define HTB classes using Shorewall-style column-oriented
+        configuration files.</para>
+      </listitem>
+
+      <listitem>
+        <para>Integrate the reloading of your traffic shaping configuration
+        with the reloading of your packet-filtering and marking
+        configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para>Assign traffic to HTB classes by TOS value.</para>
+      </listitem>
+
+      <listitem>
+        <para>Assign outgoing TCP ACK packets to an HTB class.</para>
+      </listitem>
+
+      <listitem>
+        <para>Assign traffic to HTB classes based on packet mark value.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Those few features are really all that builtin traffic
+    shaping/control provides; consequently, you need to understand HTB and
+    Linux traffic shaping as well as Netfilter packet marking in order to use
+    the facility. Again, please see the links at top of this article.</para>
+
     <para>For defining bandwidths (for either devices or classes) please use
     kbit or kbps(for Kilobytes per second) and make sure there is <emphasis
     role="bold">NO</emphasis> space between the number and the unit (it is
@@ -383,7 +414,10 @@ ppp0           6000kbit         500kbit</programlisting>
           <para>RATE - The minimum bandwidth this class should get, when the
           traffic load rises. Please note that first the classes which equal
           or a lesser priority value are served even if there are others that
-          have a guaranteed bandwith but a lower priority.</para>
+          have a guaranteed bandwith but a lower priority. <emphasis
+          role="bold">If the sum of the RATEs for all classes assigned to an
+          INTERFACE exceed that interfaces's OUT-BANDWIDTH, then the
+          OUT-BANDWIDTH limit will not be honored.</emphasis></para>
         </listitem>
 
         <listitem>

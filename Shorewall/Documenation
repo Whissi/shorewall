@@ -1810,7 +1810,9 @@ Invariant Sections, with no Front-Cover, and with no Back-Cover Texts.
 			You can use the same marks for different interfaces.
 
 	RATE		The minimum bandwidth this class should get,
-			when the traffic load rises.
+			when the traffic load rises. If the sum of the rates
+			in this column exceed the INTERFACE's OUT-BANDWIDTH,
+			then the OUT-BANDWIDTH limit may not be honored.
 
 	CEIL		The maximum bandwidth this class is allowed to use
 			when the link is idle. Useful if you have traffic
@@ -1819,7 +1821,7 @@ Invariant Sections, with no Front-Cover, and with no Back-Cover Texts.
 
 			You can use the value "full" in here for setting
 			the maximum bandwidth to the defined output bandwidth
-			of that interface
+			of that interface.
 
 	PRIORITY	The priority in which classes will be serviced by
 			the packet shaping scheduler and also the priority
@@ -1869,10 +1871,10 @@ Invariant Sections, with no Front-Cover, and with no Back-Cover Texts.
 					rlogin, and ftp still use them.
 
    					tos-minimize-delay 	 0x10/0x10
-                               	tos-maximize-throughput	 0x08/0x08
-                               	tos-maximize-reliability 0x04/0x04
-                               	tos-minimize-cost	 0x02/0x02
-                               	tos-normal-service	 0x00/0x1e
+                               		tos-maximize-throughput	 0x08/0x08
+                               		tos-maximize-reliability 0x04/0x04
+                               		tos-minimize-cost	 0x02/0x02
+                               		tos-normal-service	 0x00/0x1e
 
 					NOTE: each of this options is only
 					valid for ONE class per interface.

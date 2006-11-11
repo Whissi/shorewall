@@ -929,7 +929,7 @@ gateway:~ #</programlisting>
         Lite)</term>
 
         <listitem>
-          <para><command>load [ -s ] [ &lt;directory&gt; ]
+          <para><command>load [ -s ] [ -c ] [ &lt;directory&gt; ]
           &lt;system&gt;</command></para>
 
           <para>If &lt;directory&gt; is omitted, the current working directory
@@ -988,6 +988,12 @@ gateway:~ #</programlisting>
             <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
             save'</command></member>
           </simplelist>
+
+          <para>The -c option was added in Shorewall 3.2.6. It causes the
+          capabilities of the remote system to be collected and stored in a
+          <filename>capabilities</filename> file in the specified (or
+          defaulted) &lt;directory&gt; before the configuration is
+          compiled.</para>
         </listitem>
       </varlistentry>
 

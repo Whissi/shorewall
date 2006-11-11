@@ -338,7 +338,7 @@
         follows:</para>
 
         <blockquote>
-          <programlisting>ignorefiles =  firewall firewall.* Makefile* trace* trace.* *~
+          <programlisting>ignorefiles =  firewall% firewall Makefile% trace% %~
 all: firewall
 firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
         @shorewall reload -c -s gateway</programlisting>

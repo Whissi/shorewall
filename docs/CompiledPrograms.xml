@@ -217,7 +217,8 @@
       </listitem>
 
       <listitem>
-        <para>On each firewall system, you run:</para>
+        <para>If you are running Shorewall 3.2.5 or earlier, then on each
+        firewall system, you run:</para>
 
         <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
@@ -274,19 +275,45 @@
           </listitem>
 
           <listitem>
-            <programlisting><command>cd &lt;export directory&gt;</command>
+            <para>If you are running Shorewall 3.2.5 or earlier then:</para>
+
+            <blockquote>
+              <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall load firewall</command></programlisting>
 
-            <para>The <ulink
-            url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
-            command compiles a firewall script from the configuration files in
-            the current working directory (using <command>shorewall compile
-            -e</command>), copies that file to the remote system via scp and
-            starts Shorewall Lite on the remote system via ssh.</para>
+              <para>The <ulink
+              url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+              command compiles a firewall script from the configuration files
+              in the current working directory (using <command>shorewall
+              compile -e</command>), copies that file to the remote system via
+              scp and starts Shorewall Lite on the remote system via
+              ssh.</para>
 
-            <para>Example (firewall's DNS name is 'gateway'):</para>
+              <para>Example (firewall's DNS name is 'gateway'):</para>
 
-            <para><command>/sbin/shorewall load gateway</command></para>
+              <para><command>/sbin/shorewall load gateway</command></para>
+            </blockquote>
+
+            <para>If you are running Shorewall 3.2.6 or later then:</para>
+
+            <blockquote>
+              <programlisting><command>cd &lt;export directory&gt;</command>
+<command>/sbin/shorewall load -c firewall</command></programlisting>
+
+              <para>The <ulink
+              url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+              command compiles a firewall script from the configuration files
+              in the current working directory (using <command>shorewall
+              compile -e</command>), copies that file to the remote system via
+              scp and starts Shorewall Lite on the remote system via ssh. The
+              -c option causes the capabilities of the remote system to be
+              generated and copied to a file named capabilities in the export
+              directory. See <link linkend="Shorecap">below</link>.</para>
+
+              <para>Example (firewall's DNS name is 'gateway'):</para>
+
+              <para><command>/sbin/shorewall load -c gateway</command></para>
+            </blockquote>
           </listitem>
         </orderedlist>
       </listitem>
@@ -303,7 +330,22 @@
         command compiles a firewall script from the configuration files in the
         current working directory (using <command>shorewall compile
         -e</command>), copies that file to the remote system via scp and
-        restarts Shorewall Lite on the remote system via ssh.</para>
+        restarts Shorewall Lite on the remote system via ssh. #Note: In
+        Shorewall 3.2.6 and later, the <emphasis role="bold">reload</emphasis>
+        command also supports the '-c' option.</para>
+
+        <para>I personally place a Makefile in each export directory as
+        follows:</para>
+
+        <blockquote>
+          <programlisting>ignorefiles =  firewall* Makefile* trace*
+all: firewall
+firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
+        @shorewall reload -c -s gateway</programlisting>
+        </blockquote>
+
+        <para>That way, after I've change the configuration, I can simply type
+        <command>make</command>.</para>
       </listitem>
     </orderedlist>
 
@@ -498,7 +540,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="Shorecap">
     <title>The /etc/shorewall/capabilities file and the shorecap
     program</title>
 

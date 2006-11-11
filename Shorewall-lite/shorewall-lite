@@ -193,7 +193,7 @@ start_command() {
 
     if shorewall_is_started; then
 	error_message "Shorewall is already running"
-	exit 1
+	exit 0
     fi
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do

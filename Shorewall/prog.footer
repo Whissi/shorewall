@@ -67,7 +67,7 @@ case "$COMMAND" in
     start)
 	if shorewall_is_started; then
 	    error_message "$PRODUCT is already Running"
-	    status=1
+	    status=0
 	else
 	    progress_message3 "Starting $PRODUCT...."
 	    define_firewall

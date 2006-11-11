@@ -6,7 +6,7 @@
 #
 #     (c) 2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
 #
-#       Shorewall documentation is available at http://shorewall.sourceforge.net
+#       Shorewall documentation is available at http://www.shorewall.net
 #
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of Version 2 of the GNU General Public License

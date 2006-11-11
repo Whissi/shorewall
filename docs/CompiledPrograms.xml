@@ -338,7 +338,7 @@
         follows:</para>
 
         <blockquote>
-          <programlisting>ignorefiles =  firewall% firewall Makefile% trace% %~
+          <programlisting>ignorefiles =  firewall% Makefile% trace% %~
 all: firewall
 firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
         @shorewall reload -c -s gateway</programlisting>
@@ -348,8 +348,8 @@ firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
         type <command>make</command>.</para>
 
         <note>
-          <para>I omit trace* and trace.* because I often trace compiler
-          execution in while I'm debugging new versions of Shorewall.</para>
+          <para>I omit trace% because I often trace compiler execution in
+          while I'm debugging new versions of Shorewall.</para>
         </note>
       </listitem>
     </orderedlist>

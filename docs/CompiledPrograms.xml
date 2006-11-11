@@ -346,6 +346,11 @@ firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
 
         <para>That way, after I've changed the configuration, I can simply
         type <command>make</command>.</para>
+
+        <note>
+          <para>I omit trace* and trace.* because I often trace compiler
+          execution in while I'm debugging new versions of Shorewall.</para>
+        </note>
       </listitem>
     </orderedlist>
 
@@ -457,7 +462,8 @@ firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
         </listitem>
 
         <listitem>
-          <para>On the firewall system:</para>
+          <para>If you are running Shorewall 3.2.5 or earlier, then on the
+          firewall system:</para>
 
           <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
@@ -494,15 +500,31 @@ firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
           class="directory">/etc/shorewall</filename>.</para>
 
           <para>After having made the above changes to the firewall's export
-          directory, execute the following commands:</para>
+          directory, execute the following commands.</para>
 
-          <programlisting><command>cd &lt;export directory&gt;</command>
+          <para>For Shorewall version 3.2.5 and earlier:</para>
+
+          <blockquote>
+            <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall load &lt;firewall system&gt;</command>
 </programlisting>
 
-          <para>Example (firewall's DNS name is 'gateway'):</para>
+            <para>Example (firewall's DNS name is 'gateway'):</para>
 
-          <para><command>/sbin/shorewall load gateway</command></para>
+            <para><command>/sbin/shorewall load gateway</command></para>
+          </blockquote>
+
+          <para>For Shorewall versions 3.2.6 and later:</para>
+
+          <blockquote>
+            <programlisting><command>cd &lt;export directory&gt;</command>
+<command>/sbin/shorewall load -c &lt;firewall system&gt;</command>
+</programlisting>
+
+            <para>Example (firewall's DNS name is 'gateway'):</para>
+
+            <para><command>/sbin/shorewall load -c gateway</command></para>
+          </blockquote>
 
           <para>The <ulink
           url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
@@ -535,6 +557,9 @@ firewall: $(filter-out $(ignorefiles) , $(wildcard *) )
 
           <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
+
+          <para>Or, if you are running Shorewall 3.2.6 or later, simply use
+          the -c </para>
         </listitem>
       </orderedlist>
     </section>

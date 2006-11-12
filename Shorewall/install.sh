@@ -624,9 +624,9 @@ if [ ! -f ${PREFIX}/etc/shorewall/actions ]; then
 fi
 
 #
-# Install the  Makefile
+# Install the  Makefiles
 #
-run_install $OWNERSHIP -m 0644 Makefile ${PREFIX}/usr/share/shorewall/configfiles/Makefile
+run_install $OWNERSHIP -m 0644 Makefile-lite ${PREFIX}/usr/share/shorewall/configfiles/Makefile
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
 echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
 

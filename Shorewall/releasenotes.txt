@@ -79,6 +79,21 @@ Other Changes in 3.3.5.
     /etc/shorewall/tcdevices then no ingress qdisc will be created for
     the device.
 
+5)  The Makefile installed in /usr/share/shorewall/configfiles/ is now
+    the same one mentioned at
+    http://www.shorewall.net/CompiledPrograms.html.
+
+    Once the file is copied into an export directory, you modify the
+    setting of the HOST variable to match the name of the remote
+    firewall.
+
+    The default target is the "firewall" script so "make" compiles the
+    firewall script if any of the configuration files have
+    changed. "make install" builds "firewall" if necessary then
+    installs it on the remote firewall. "make capabilities" will
+    generate the "capabilities" file if that file doesn't exist. "make
+    save" will save the running configuration on the remote firewall.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

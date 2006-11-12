@@ -187,15 +187,7 @@ DEBIAN=
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-if [ -n "$PREFIX" ]; then
-	if [ `id -u` != 0 ] ; then
-	    echo "Not setting file owner/group permissions, not running as root."
-	    OWNERSHIP=""
-	fi
-
-	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
-	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
-elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
+if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
@@ -204,6 +196,16 @@ elif [ -f /etc/arch-release ] ; then
       DEST="/etc/rc.d"
       INIT="shorewall"
       ARCHLINUX=yes
+fi
+
+if [ -n "$PREFIX" ]; then
+	if [ `id -u` != 0 ] ; then
+	    echo "Not setting file owner/group permissions, not running as root."
+	    OWNERSHIP=""
+	fi
+
+	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
+	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
 fi
 
 #

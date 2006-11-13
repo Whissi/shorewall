@@ -195,10 +195,9 @@ setup_mac_lists() # $1 = Phase Number
         #
         # Generate jumps from the input and forward chains
         #
-        [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
-
         for hosts in $maclist_hosts; do
 	    ipsec=${hosts%^*}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    hosts=${hosts#*^}
 	    interface=${hosts%%:*}
 	    hosts=${hosts#*:}

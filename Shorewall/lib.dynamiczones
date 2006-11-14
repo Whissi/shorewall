@@ -50,6 +50,8 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 	fi
     }
 
+    DOING=Processing
+    DONE=Processed
     #
     # Load $zones
     #
@@ -229,6 +231,8 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     local dhcp_interfaces blacklist_interfaces maclist_interfaces tcpflags_interfaces
     local rulenum source_chain dest_hosts iface hosts hostlist=
 
+    DOING=Processing
+    DONE=Processed
     #
     # Load $zones
     #

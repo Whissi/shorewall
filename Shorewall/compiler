@@ -1198,6 +1198,16 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
 createactionchain() # $1 = Action, including log level and tag if any
 {
+    create_simple_chain() 
+    {
+	CHAIN=$1
+	LEVEL=
+	TAG=
+	createchain $CHAIN no
+	
+	process_action_file $CHAIN
+    }
+
     case $1 in
 	*::*)
 	    fatal_error "Invalid ACTION $1"
@@ -1208,15 +1218,15 @@ createactionchain() # $1 = Action, including log level and tag if any
 	    ;;
 	*:*)
 	    set -- $(split $1)
-	    createlogactionchain $1 $2
+
+	    if [ "x$2" = xnone ]; then
+		create_simple_chain $1
+	    else
+		createlogactionchain $1 $2
+	    fi
 	    ;;
 	*)
-	    CHAIN=$1
-	    LEVEL=
-	    TAG=
-	    createchain $CHAIN no
-
-	    process_action_file $CHAIN
+	    create_simple_chain $1
 	    ;;
     esac
 }
@@ -1229,13 +1239,21 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 {
     local fullaction=$1 action=${1%%:*} level= chains=
 
+    find_simpleaction() {
+	havechain $action ||  fatal_error "Fatal error in find_logactionchain"
+	echo $action
+    }
+
     case $fullaction in
 	*:*)
 	    level=${fullaction#*:}
+	    if [ "x$level" = xnone ]; then
+		find_simpleaction
+		return
+	    fi
 	    ;;
 	*)
-	    havechain $action ||  fatal_error "Fatal error in find_logactionchain"
-	    echo $action
+	    find_simpleaction
 	    return
 	    ;;
     esac

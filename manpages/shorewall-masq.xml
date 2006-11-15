@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-masq</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>masq</refname>
+
+    <refpurpose>Shorewall Masquerade/SNAT definition file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/masq</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>Use this file to define dynamic NAT (Masquerading) and to define
+    Source NAT (SNAT).</para>
+
+    <warning>
+      <para>The entries in this file are order-sensitive. The first entry that
+      matches a particular connection will be the one that is used.</para>
+    </warning>
+
+    <warning>
+      <para>If you have more than one ISP, adding entries to this file will
+      *not* force connections to go out through a particular ISP. You must use
+      PREROUTING entries in /etc/shorewall-tcrules(5) to do that.</para>
+    </warning>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACE</emphasis></term>
+
+        <listitem>
+          <para>Outgoing interface. This is usually your internet interface.
+          If ADD_SNAT_ALIASES=Yes in shorewall.conf(5), you may add ":" and a
+          digit to indicate that you want the alias added with that name
+          (e.g., eth0:0). This will allow the alias to be displayed with
+          ifconfig. <emphasis role="bold">That is the only use for the alias
+          name; it may not appear in any other place in your Shorewall
+          configuratio</emphasis>n.</para>
+
+          <para>The interface may be qualified by adding the character ":"
+          followed by a destination host or subnet to indicate that you only
+          want to change the source IP address for packets being sent to that
+          particular destination.</para>
+
+          <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
+          entry then include the ":" but omit the digit:</para>
+
+          <programlisting>        eth0:
+        eth2::192.0.2.32/27</programlisting>
+
+          <para>Normally Masq/SNAT rules are evaluated after those for
+          one-to-one NAT (defined in shorewall-nat(5)). If you want the rule
+          to be applied before one-to-one NAT rules, prefix the interface name
+          with "+":</para>
+
+          <programlisting>        +eth0
+        +eth0:192.0.2.32/27
+        +eth0:2</programlisting>
+
+          <para>This feature should only be required if you need to insert
+          rules in this file that preempt entries in shorewall/nat(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> (Formerly called
+        SUBNET)</term>
+
+        <listitem>
+          <para>Set of hosts that you wish to masquerade. You can specify this
+          as an address (net or host) or as an interface. If you give the name
+          of an interface, the interface must be up before you start the
+          firewall (Shorewall will use your main routing table to determine
+          the appropriate addresses to masquerade).</para>
+
+          <para>In order to exclude a addrress of the specified SOURCE, you
+          may append "!" and a comma-separated list of IP addresses (host or
+          net) that you wish to exclude.</para>
+
+          <para>Example: eth1!192.168.1.4,192.168.32.0/27</para>
+
+          <para>In that example traffic from eth1 would be masqueraded unless
+          it came from 192.168.1.4 or 196.168.32.0/27</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">ADDRESS</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>If you specify an address here, SNAT will be used and this
+          will be the source address. If ADD_SNAT_ALIASES is set to Yes or yes
+          in shorewall.conf(5) then Shorewall will automatically add this
+          address to the INTERFACE named in the first column. </para>
+
+          <para>You may also specify a range of up to 256 IP addresses if you
+          want the SNAT address to be assigned from that range in a
+          round-robin range by connection. The range is specified by
+          <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.</para>
+
+          <para>Example: 206.124.146.177-206.124.146.180</para>
+
+          <para>You may also use the special value "detect" which causes
+          Shorewall to determine the IP addresses configured on the interface
+          named in the INTERFACES column and substitute them in this
+          column.</para>
+
+          <para>Finally, you may also specify a comma-separated list of ranges
+          and/or addresses in this column.</para>
+
+          <para>This column may not contain DNS Names.</para>
+
+          <para>Normally, Netfilter will attempt to retain the source port
+          number. You may cause netfilter to remap the source port by
+          following an address or range (if any) by ":" and a port range with
+          the format
+          <emphasis>lowport</emphasis>-<emphasis>highport</emphasis>. If this
+          is done, you must specify "tcp" or "udp" in the PROTO column.</para>
+
+          <para>Examples:</para>
+
+          <programlisting>        192.0.2.4:5000-6000
+        :4000-5000</programlisting>
+
+          <para>You can invoke the SAME target using the following in this
+          column:</para>
+
+          <para>SAME:[nodst:]<emphasis>address-range</emphasis>[,<emphasis>address-range</emphasis>...]</para>
+
+          <para>The <emphasis>address-range</emphasis>s may be single
+          addresses or "detect" as described above.</para>
+
+          <para>SAME works like SNAT with the exception that the same local IP
+          address is assigned to each connection from a local address to a
+          given remote address.</para>
+
+          <para>If the 'nodst:' option is included, then the same source
+          address is used for a given internal system regardless of which
+          remote system is involved.</para>
+
+          <para>If you want to leave this column empty but you need to specify
+          the next column then place a hyphen ("-") here.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>If you wish to restrict this entry to a particular protocol
+          then enter the protocol name (from protocols(5)) or number
+          here.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PORT(S)</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>If the PROTO column specifies TCP (protocol 6) or UDP
+          (protocol 17) then you may list one or more port numbers (or names
+          from services(5)) separated by commas or you may list a single port
+          range
+          (<emphasis>lowport</emphasis>:<emphasis>highport</emphasis>).</para>
+
+          <para>Where a comma-separated list is given, your kernel and
+          iptables must have multiport match support and a maximum of 15 ports
+          may be listed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">IPSEC</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>If you specify a value other than "-" in this column, you must
+          be running kernel 2.6 and your kernel and iptables must include
+          policy match support.</para>
+
+          <para>Comma-separated list of options from the following. Only
+          packets that will be encrypted via an SA that matches these options
+          will have their source address changed.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold">reqid=</emphasis><emphasis>number</emphasis></term>
+
+              <listitem>
+                <para>where <emphasis>number</emphasis> is specified using
+                setkey(8) using the 'unique:<emphasis>number</emphasis> option
+                for the SPD level.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">spi=</emphasis>&lt;number&gt;</term>
+
+              <listitem>
+                <para>where <emphasis>number</emphasis> is the SPI of the SA
+                used to encrypt/decrypt packets.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proto=</emphasis><emphasis
+              role="bold">ah</emphasis>|<emphasis
+              role="bold">esp</emphasis>|<emphasis
+              role="bold">ipcomp</emphasis></term>
+
+              <listitem>
+                <para>IPSEC Encapsulation Protocol</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">mss=</emphasis><emphasis>number</emphasis></term>
+
+              <listitem>
+                <para>sets the MSS field in TCP packets</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">mode=</emphasis><emphasis
+              role="bold">transport</emphasis>|<emphasis
+              role="bold">tunnel</emphasis></term>
+
+              <listitem>
+                <para>IPSEC mode</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tunnel-src=</emphasis><emphasis>address</emphasis>[/<emphasis>mask</emphasis>]</term>
+
+              <listitem>
+                <para>only available with mode=tunnel</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tunnel-dst=</emphasis><emphasis>address</emphasis>[/<emphasis>mask</emphasis>]</term>
+
+              <listitem>
+                <para>only available with mode=tunnel</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">strict</emphasis></term>
+
+              <listitem>
+                <para>Means that packets must match all rules.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">next</emphasis></term>
+
+              <listitem>
+                <para>Separates rules; can only be used with strict</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example 1:</term>
+
+        <listitem>
+          <para>You have a simple masquerading setup where eth0 connects to a
+          DSL or cable modem and eth1 connects to your local network with
+          subnet 192.168.0.0/24. </para>
+
+          <para>Your entry in the file can be either:</para>
+
+          <programlisting>        #INTERFACE   SOURCE
+        eth0         eth1</programlisting>
+
+          <para>or </para>
+
+          <programlisting>        #INTERFACE   SOURCE
+        eth0    192.168.0.0/24</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 2:</term>
+
+        <listitem>
+          <para>You add a router to your local network to connect subnet
+          192.168.1.0/24 which you also want to masquerade. You then add a
+          second entry for eth0 to this file:</para>
+
+          <programlisting>        #INTERFACE   SOURCE
+        eth0         192.168.1.0/24</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 3:</term>
+
+        <listitem>
+          <para>You have an IPSEC tunnel through ipsec0 and you want to
+          masquerade packets coming from 192.168.1.0/24 but only if these
+          packets are destined for hosts in 10.1.1.0/24:</para>
+
+          <programlisting>        #INTERFACE              SOURCE
+        ipsec0:10.1.1.0/24      196.168.1.0/24</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 4:</term>
+
+        <listitem>
+          <para>You want all outgoing traffic from 192.168.1.0/24 through eth0
+          to use source address 206.124.146.176 which is NOT the primary
+          address of eth0. You want 206.124.146.176 added to be added to eth0
+          with name eth0:0.</para>
+
+          <programlisting>        #INTERFACE              SOURCE          ADDRESS
+        eth0:0                  192.168.1.0/24  206.124.146.176</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 5:</term>
+
+        <listitem>
+          <para>You want all outgoing SMTP traffic entering the firewall on
+          eth1 to be sent from eth0 with source IP address 206.124.146.177.
+          You want all other outgoing traffic from eth1 to be sent from eth0
+          with source IP address 206.124.146.176.</para>
+
+          <programlisting>        #INTERFACE   SOURCE  ADDRESS         PROTO   PORT(S)
+        eth0         eth1    206.124.146.177 tcp     smtp
+        eth0         eth1    206.124.146.176</programlisting>
+
+          <warning>
+            <para>The order of the above two rules is significant!</para>
+          </warning>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/masq</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_routes(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

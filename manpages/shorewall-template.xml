@@ -1,209 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall:zones</refentrytitle>
+    <refentrytitle>shorewall-</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
 
   <refnamediv>
-    <refname>zones</refname>
+    <refname>file</refname>
 
-    <refpurpose>Shorewall zone declaration file</refpurpose>
+    <refpurpose>Shorewall file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/zones</command>
+      <command>/etc/shorewall/</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>The /etc/shorewall/zones file declares your network zones. You
-    specify the hosts in each zone through entries in
-    <filename>/etc/shorewall/interfaces</filename> or
-    <filename>/etc/shorewall/hosts</filename>.</para>
-
-    <warning>
-      <para>The format of this file changed in Shorewall 3.0.0. You can
-      continue to use your old records provided that you set IPSECFILE=ipsec
-      in /etc/shorewall/shorewall.conf. This will signal Shorewall that the
-      IPSEC-related zone options are still specified in /etc/shorewall/ipsec
-      rather than in this file.</para>
-
-      <para>To use records in the format described below, you must have
-      IPSECFILE=zones specified in
-      <filename>/etc/shorewall/shorewall.conf</filename> AND YOU MUST NOT SET
-      THE 'FW' VARIABLE IN THAT FILE.</para>
-    </warning>
-
     <para>The columns in the file are as follows.</para>
 
     <variablelist>
       <varlistentry>
-        <term>ZONE</term>
+        <term>COLUMN 1</term>
 
         <listitem>
-          <para>Short name of the zone. The names "all" and "none" are
-          reserved and may not be used as zone names. The maximum length of a
-          zone name is determined by the setting of the LOGFORMAT option in
-          shorewall.conf. With the default LOGFORMAT, zone names can be at
-          most 5 characters long.</para>
-
-          <para>Where a zone is nested in one or more other zones, you may
-          follow the (sub)zone name by ":" and a comma-separated list of the
-          parent zones. The parent zones must have been defined in earlier
-          records in this file.</para>
-
-          <para>Example:</para>
-
-          <programlisting>#ZONE     TYPE     OPTIONS
-a         ipv4
-b         ipv4
-c:a,b     ipv4</programlisting>
-
-          <para>Currently, Shorewall uses this information to reorder the zone
-          list so that parent zones appear after their subzones in the list.
-          The IMPLICIT_CONTINUE option in shorewall.conf can also create
-          implicit CONTINUE policies to/from the subzone.</para>
-
-          <para>In the future, Shorewall may make additional use of nesting
-          information.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>TYPE</term>
-
-        <listitem>
-          <variablelist>
-            <varlistentry>
-              <term>ipv4</term>
-
-              <listitem>
-                <para>This is the standard Shorewall zone type and is the
-                default if you leave this column empty or if you enter "-" in
-                the column. Communication with some zone hosts may be
-                encrypted. Encrypted hosts are designated using the
-                'ipsec'option in /etc/shorewall/hosts.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>ipsec</term>
-
-              <listitem>
-                <para>Communication with all zone hosts is encrypted. Your
-                kernel and iptables must include polic match support.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>fw</term>
-
-              <listitem>
-                <para>Designates the firewall itself. You must have exactly
-                one 'firewall' zone. No options ar permitted with a 'firewall'
-                zone. The name that you enter in the ZONE column will be
-                stored in the shell variable $FW which you may use in other
-                configuration files to designate the firewall zone.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>OPTIONS, IN OPTIONS and OUT OPTIONS</term>
-
-        <listitem>
-          <para>A comma-separated list of options.</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>reqid=&lt;number&gt;</term>
-
-              <listitem>
-                <para>where &lt;number&gt; is specified using setkey(8) using
-                the 'unique:&lt;number&gt; option for the SPD level.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>spi=&lt;number&gt;</term>
-
-              <listitem>
-                <para>where &lt;number&gt; is the SPI of the SA used to
-                encrypt/decrypt packets.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>proto=ah|esp|ipcomp</term>
-
-              <listitem>
-                <para>IPSEC Encapsulation Protocol</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>mss=&lt;number&gt;</term>
-
-              <listitem>
-                <para>sets the MSS field in TCP packets</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>mode=transport|tunnel</term>
-
-              <listitem>
-                <para>IPSEC mode</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>tunnel-src=&lt;address&gt;[/&lt;mask&gt;]</term>
-
-              <listitem>
-                <para>only available with mode=tunnel</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>tunnel-dst=&lt;address&gt;[/&lt;mask&gt;]</term>
-
-              <listitem>
-                <para>only available with mode=tunnel</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>strict</term>
-
-              <listitem>
-                <para>Means that packets must match all rules.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>next</term>
-
-              <listitem>
-                <para>Separates rules; can only be used with strict</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-
-          <para>The options in the OPTIONS column are applied to both incoming
-          and outgoing traffic. The IN OPTIONS are applied to incoming traffic
-          (in addition to OPTIONS) and the OUT OPTIONS are applied to outgoing
-          traffic.</para>
-
-          <para>If you wish to leave a column empty but need to make an entry
-          in a following column, use "-".</para>
+          <para></para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -212,7 +37,7 @@ c:a,b     ipv4</programlisting>
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/zones</para>
+    <para>/etc/shorewall/</para>
   </refsect1>
 
   <refsect1>
@@ -224,8 +49,8 @@ c:a,b     ipv4</programlisting>
     shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
     shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
     shorewall-route_routes(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall.tcdevices(5),
-    shorewall.tcrules(5), shorewall.tos(5), shorewall.tunnels(5),
-    shorewall.zones(5)</para>
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

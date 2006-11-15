@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-interfaces</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>interfaces</refname>
+
+    <refpurpose>Shorewall interfaces file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/interfaces</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>The interfaces file serves to define the firewall's network
+    interfaces to Shorewall.</para>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">ZONE</emphasis></term>
+
+        <listitem>
+          <para>Zone for this interface. Must match the name of a zone defined
+          in /etc/shorewall/zones. You may not list the firewall zone in this
+          column.</para>
+
+          <para>If the interface serves multiple zones that will be defined in
+          the /etc/shorewall/hosts file, you should place "-" in this
+          column.</para>
+
+          <para>If there are multiple interfaces to the same zone, you must
+          list them in separate entries.</para>
+
+          <para>Example:</para>
+
+          <blockquote>
+            <programlisting>#ZONE   INTERFACE       BROADCAST
+loc     eth1            -
+loc     eth2            -</programlisting>
+          </blockquote>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACE</emphasis></term>
+
+        <listitem>
+          <para>Name of interface. Each interface may be listed only once in
+          this file. You may NOT specify the name of an alias (e.g., eth0:0)
+          here; see http://www.shorewall.net/FAQ.htm#faq18</para>
+
+          <para>You may specify wildcards here. For example, if you want to
+          make an entry that applies to all PPP interfaces, use 'ppp+'.</para>
+
+          <para>There is no need to define the loopback interface (lo) in this
+          file.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">BROADCAST</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>The broadcast address for the subnetwork to which the
+          interface belongs. For P-T-P interfaces, this column is left
+          blank.If the interface has multiple addresses on multiple subnets
+          then list the broadcast addresses as a comma-separated list.</para>
+
+          <para>If you use the special value "detect", Shorewall will detect
+          the broadcast address(es) for you. If you select this option, the
+          interface must be up before the firewall is started.</para>
+
+          <para>If you don't want to give a value for this column but you want
+          to enter a value in the OPTIONS column, enter "-" in this
+          column.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OPTIONS</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>A comma-separated list of options from the following list. The
+          order in which you list the options is not significant but the list
+          should have no embedded white space.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">dhcp</emphasis></term>
+
+              <listitem>
+                <para>Specify this option when any of the following are
+                true:</para>
+
+                <orderedlist spacing="compact">
+                  <listitem>
+                    <para>the interface gets its IP address via DHCP</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface is used by a DHCP server running on
+                    the firewall</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>you have a static IP but are on a LAN segment with
+                    lots of DHCP clients.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface is a bridge with a DHCP server on one
+                    port and DHCP clients on another port.</para>
+                  </listitem>
+                </orderedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">norfc1918</emphasis></term>
+
+              <listitem>
+                <para>This interface should not receive any packets whose
+                source is in one of the ranges reserved by RFC 1918 (i.e.,
+                private or "non-routable" addresses). If packet mangling or
+                connection-tracking match is enabled in your kernel, packets
+                whose destination addresses are reserved by RFC 1918 are also
+                rejected.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">routefilter</emphasis></term>
+
+              <listitem>
+                <para>Turn on kernel route filtering for this interface
+                (anti-spoofing measure). This option can also be enabled
+                globally in the shorewall.conf(5) file.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">logmartians</emphasis></term>
+
+              <listitem>
+                <para>Turn on kernel martian logging (logging of packets with
+                impossible source addresses. It is suggested that if you set
+                <emphasis role="bold">routefilter</emphasis> on an interface
+                that you also set <emphasis
+                role="bold">logmartians</emphasis>. This option may also be
+                enabled globally in the shorewall.conf(5) file.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">blacklist</emphasis></term>
+
+              <listitem>
+                <para>Check packets arriving on this interface against the
+                shorewall-blacklist(5) file.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">maclist</emphasis></term>
+
+              <listitem>
+                <para>Connection requests from this interface are compared
+                against the contents of shorewall-maclist(5). If this option
+                is specified, the interface must be an ethernet NIC and must
+                be up before Shorewall is started.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">tcpflags</emphasis></term>
+
+              <listitem>
+                <para>Packets arriving on this interface are checked for
+                certain illegal combinations of TCP flags. Packets found to
+                have such a combination of flags are handled according to the
+                setting of TCP_FLAGS_DISPOSITION after having been logged
+                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proxyarp</emphasis></term>
+
+              <listitem>
+                <para>Sets
+                /proc/sys/net/ipv4/conf/&lt;interface&gt;/proxy_arp. Do NOT
+                use this option if you are employing Proxy ARP through entries
+                in shorewall-proxyarp(5). This option is intended soley for
+                use with Proxy ARP sub-networking as described at:
+                http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">routeback</emphasis></term>
+
+              <listitem>
+                <para>If specified, indicates that Shorewall should include
+                rules that allow filtering traffic arriving on this interface
+                back out that same interface.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">arp_filter</emphasis></term>
+
+              <listitem>
+                <para>If specified, this interface will only respond to ARP
+                who-has requests for IP addresses configured on the interface.
+                If not specified, the interface can respond to ARP who-has
+                requests for IP addresses on any of the firewall's interface.
+                The interface must be up when Shorewall is started.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">arp_ignore</emphasis>[=&lt;number&gt;]</term>
+
+              <listitem>
+                <para>If specified, this interface will respond to arp
+                requests based on the value of &lt;number&gt; (defaults to
+                1).</para>
+
+                <para>1 - reply only if the target IP address is local address
+                configured on the incoming interface</para>
+
+                <para>2 - reply only if the target IP address is local address
+                configured on the incoming interface and both with the
+                sender's IP address are part from same subnet on this
+                interface</para>
+
+                <para>3 - do not reply for local addresses configured with
+                scope host, only resolutions for global and link </para>
+
+                <para>4-7 - reserved</para>
+
+                <para>8 - do not reply for all local addresses</para>
+
+                <warning>
+                  <para>Do not specify <emphasis
+                  role="bold">arp_ignore</emphasis> for any interface involved
+                  in Proxy ARP.</para>
+                </warning>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">nosmurfs</emphasis></term>
+
+              <listitem>
+                <para>Filter packets for smurfs (packets with a broadcast
+                address as the source).</para>
+
+                <para>Smurfs will be optionally logged based on the setting of
+                SMURF_LOG_LEVEL in shorewall.conf(5). After logging, the
+                packets are dropped.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">detectnets</emphasis></term>
+
+              <listitem>
+                <para>Automatically taylors the zone named in the ZONE column
+                to include only those hosts routed through the
+                interface.</para>
+
+                <warning>
+                  <para>Do not set the <emphasis
+                  role="bold">detectnets</emphasis> option on your internet
+                  interface.</para>
+                </warning>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">sourceroute</emphasis></term>
+
+              <listitem>
+                <para>If this option is not specified for an interface, then
+                source-routed packets will not be accepted from that interface
+                (sets
+                /proc/sys/net/ipv4/conf/&lt;interface&gt;/accept_source_route
+                to 1). Only set this option if you know what you are you
+                doing. This might represent a security risk and is not usually
+                needed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">upnp</emphasis></term>
+
+              <listitem>
+                <para>Incoming requests from this interface may be remapped
+                via UPNP (upnpd).</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Example</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example 1:</term>
+
+        <listitem>
+          <para> Suppose you have eth0 connected to a DSL modem and eth1
+          connected to your local network and that your local subnet is
+          192.168.1.0/24. The interface gets it's IP address via DHCP from
+          subnet 206.191.149.192/27. You have a DMZ with subnet 192.168.2.0/24
+          using eth2.</para>
+
+          <para>Your entries for this setup would look like:</para>
+
+          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
+net     eth0      206.191.149.223  dhcp
+loc     eth1      192.168.1.255
+dmz     eth2      192.168.2.255</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 2:</term>
+
+        <listitem>
+          <para>The same configuration without specifying broadcast addresses
+          is:</para>
+
+          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
+net     eth0      detect           dhcp
+loc     eth1      detect
+dmz     eth2      detect</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 3:</term>
+
+        <listitem>
+          <para>You have a simple dial-in system with no ethernet
+          connections.</para>
+
+          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
+net     ppp0      -</programlisting>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/interfaces</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-ipsec(5),
+    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_routes(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

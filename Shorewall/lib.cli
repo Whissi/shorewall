@@ -265,7 +265,7 @@ save_config() {
 	    echo "   ERROR: $RESTOREPATH exists and is not a saved $PRODUCT configuration"
 	else
 	    case $RESTOREFILE in
-		save)
+		.*|capabilities|chains|default_route|firewall|firewall.conf|nat|proxyarp|restarted|rt_tables|save|state|undo_routing|zones)
 		    echo "   ERROR: Reserved file name: $RESTOREFILE"
 		    ;;
 		*)

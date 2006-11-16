@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-tcdevices</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>tcdevices</refname>
+
+    <refpurpose>Shorewall Traffic Shaping Devices file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/tcdevices</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>Entries in this file define the bandwidth for interfaces on which
+    you want traffic shaping to be enabled.</para>
+
+    <para> If you do not plan to use traffic shaping for a device, don't put
+    it in here as it limits the troughput of that device to the limits you set
+    here.</para>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACES</emphasis></term>
+
+        <listitem>
+          <para>Name of interface. Each interface may be listed only once in
+          this file. You may NOT specify the name of an alias (e.g., eth0:0)
+          here; see http://www.shorewall.net/FAQ.htm#faq18</para>
+
+          <para>You man NOT specify wildcards here, e.g. if you have multiple
+          ppp interfaces, you need to put them all in here!</para>
+
+          <para>If the device doesn't exist, a warning message will be issued
+          during "shorewall [re]start" and "shorewall refresh" and traffic
+          shaping configuration will be skipped for that device.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">IN-BANDWIDTH</emphasis></term>
+
+        <listitem>
+          <para>The incoming Bandwidth of that interface. Please note that you
+          are not able to do traffic shaping on incoming traffic, as the
+          traffic is already received before you could do so. But this allows
+          you to define the maximum traffic allowed for this interface in
+          total, if the rate is exceeded, the packets are dropped. You want
+          this mainly if you have a DSL or Cable connection to avoid queuing
+          at your providers side.</para>
+
+          <para>If you don't want any traffic to be dropped, set this to a
+          value to zero in which case Shorewall will not create an ingress
+          qdisc.</para>
+
+          <para>Use kbit or kbps(for Kilobytes per second) for speed, and make
+          sure there is NO space between the number and the unit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OUT-BANDWIDTH</emphasis></term>
+
+        <listitem>
+          <para>The outgoing Bandwidth of that interface. This is the maximum
+          speed you connection can handle. It is also the speed you can refer
+          as "full" if you define the tc classes. Outgoing traffic above this
+          rate will be dropped.</para>
+
+          <para> Use kbit or kbps(for Kilobytes per second) for speed, and
+          make sure there is NO space between the number and the unit.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example 1:</term>
+
+        <listitem>
+          <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
+          interface for this. The device has an outgoing bandwidth of 500kbit
+          and an incoming bandwidth of 6000kbit</para>
+
+          <programlisting>        #INTERFACE   IN-BANDWIDTH    OUT-BANDWIDTH
+        ppp0         6000kbit        500kbit
+</programlisting>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/tcdevices</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

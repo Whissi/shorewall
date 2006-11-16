@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-maclist</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>maclist</refname>
+
+    <refpurpose>Shorewall MAC Verification file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/maclist</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file is used to define the MAC addresses and optionally their
+    associated IP addresses to be allowed to use the specified interface. The
+    feature is enabled by using the <emphasis role="bold">maclist</emphasis>
+    option in the shorewall-interfaces(5) or shorewall-hosts(5) configuration
+    file.</para>
+
+    <para> The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">DISPOSITION</emphasis></term>
+
+        <listitem>
+          <para><emphasis role="bold">ACCEPT</emphasis> or <emphasis
+          role="bold">DROP</emphasis> (if MACLIST_TABLE=filter in
+          shorewall.conf(5), then REJECT is also allowed)</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACE</emphasis></term>
+
+        <listitem>
+          <para>Network interface to a host. If the interface names a bridge,
+          it may be optionally followed by a colon (":") and a physical port
+          name (e.g., br0:eth4).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MAC</emphasis></term>
+
+        <listitem>
+          <para>MAC address of the host -- you do not need to use the
+          Shorewall format for MAC addresses here. If <emphasis role="bold">IP
+          ADDRESSESES</emphasis> is supplied then <emphasis
+          role="bold">MAC</emphasis> can be supplied as a dash (<emphasis
+          role="bold">-</emphasis>)</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">IP ADDRESSES</emphasis> (Optional)</term>
+
+        <listitem>
+          <para>If specified, both the MAC and IP address must match. This
+          column can contain a comma-separated list of host and/or subnet
+          addresses. If your kernel and iptables have iprange match support
+          then IP address ranges are also allowed.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/maclist</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-masq(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_routes(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall</refentrytitle>
+
+    <manvolnum>8</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>shorewall</refname>
+
+    <refpurpose>Administration tool for Shoreline Firewall
+    (Shorewall)</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg rep="norepeat">-options</arg>
+
+      <command>add</command>
+
+      <arg choice="plain" rep="repeat">interface[:host-list]</arg>
+
+      <arg choice="plain">zone</arg>
+
+      <sbr />
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>allow</command>
+
+      <arg choice="plain">address</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>check</command>
+
+      <arg><option>-e</option></arg>
+
+      <arg>directory</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>clear</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>compile</command>
+
+      <arg><option>-e</option></arg>
+
+      <arg>directory</arg>
+
+      <arg choice="plain">pathname</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg rep="norepeat">-options</arg>
+
+      <command>delete</command>
+
+      <arg choice="plain" rep="repeat">interface[:host-list]</arg>
+
+      <arg choice="plain">zone</arg>
+
+      <sbr />
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>drop</command>
+
+      <arg choice="plain">address</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>dump</command>
+
+      <arg><option>-x</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>export</command>
+
+      <arg choice="opt">directory1</arg>
+
+      <arg choice="plain">[user@]system:[directory2]</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>forget</command>
+
+      <arg>filename</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>help</command>
+
+      <group>
+        <arg choice="plain">command</arg>
+      </group>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>hits</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>ipcalc</command>
+
+      <group>
+        <arg choice="plain">address mask</arg>
+
+        <arg choice="plain">address/vlsm</arg>
+      </group>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>iprange</command>
+
+      <arg choice="plain">address1-address2</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>load</command>
+
+      <arg><option>-s</option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg>directory</arg>
+
+      <arg choice="plain">system</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>logdrop</command>
+
+      <arg choice="plain">address</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>logwatch</command>
+
+      <arg><option>-m</option></arg>
+
+      <arg>refresh-interval</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>logreject</command>
+
+      <arg choice="plain">address</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>refresh</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>reject</command>
+
+      <arg choice="plain">address</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>reload</command>
+
+      <arg><option>-s</option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg>directory</arg>
+
+      <arg choice="plain">system</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>restart</command>
+
+      <arg>directory</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>save-restart</command>
+
+      <arg choice="opt">filename</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>save-start</command>
+
+      <arg choice="opt">filename</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>save</command>
+
+      <arg choice="opt">filename</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>show</command>
+
+      <arg><option>-x</option></arg>
+
+      <arg rep="repeat">chain</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>show</command>
+
+      <arg><option>-f</option></arg>
+
+      <command>capabilities</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>show</command>
+
+      <group choice="req">
+        <option>actions|classifiers|connectionsconfig|macros|zones</option>
+      </group>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>show</command>
+
+      <arg><option>-x</option></arg>
+
+      <group choice="req">
+        <option>nat|tos|mangle|nat</option>
+      </group>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>show</command>
+
+      <arg><option>-m</option></arg>
+
+      <command>log</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>start</command>
+
+      <arg><option>-f</option></arg>
+
+      <arg>directory</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>stop</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>status</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>try</command>
+
+      <arg choice="plain">directory</arg>
+
+      <arg>timeout</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>version</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>The shorewall utility is used to control the Shoreline Firewall
+    (Shorewall).</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Options</title>
+
+    <para>The <emphasis>options</emphasis> control the amount of output that
+    the command produces. They consist of a sequence of the letters <emphasis
+    role="bold">v</emphasis> and <emphasis role="bold">q</emphasis>. If the
+    options are omitted, the amount of output is determined by the setting of
+    the VERBOSITY parameter in shorewall.conf(5). Each <emphasis
+    role="bold">v</emphasis> adds one to the effective verbosity and each
+    <emphasis role="bold">q</emphasis> subtracts one from the effective
+    VERBOSITY.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Commands</title>
+
+    <para>The available commands are listed below. The available
+    <emphasis>command-options</emphasis> and
+    <emphasis>command-arguments</emphasis> are listed with each
+    command.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">add</emphasis>
+        <emphasis>interface</emphasis>[:<emphasis>host-list</emphasis>] ...
+        <emphasis>zone</emphasis></term>
+
+        <listitem>
+          <para>Adds a list of hosts or subnets to a dynamic zone usually used
+          with VPN's.</para>
+
+          <para>A <emphasis>host-list</emphasis> is the name of an interface
+          followed by a comma-separated list whose elements are:</para>
+
+          <programlisting>        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (:) and a host or network address</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">allow</emphasis>
+        <emphasis>address</emphasis> ...</term>
+
+        <listitem>
+          <para>Re-enables receipt of packets from hosts previously
+          blacklisted by a <emphasis role="bold">drop</emphasis>, <emphasis
+          role="bold">logdrop</emphasis>, <emphasis
+          role="bold">reject</emphasis>, or <emphasis
+          role="bold">logreject</emphasis> command.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">check</emphasis> [ <emphasis
+        role="bold">-e</emphasis> ] [ <emphasis>directory</emphasis> ]</term>
+
+        <listitem>
+          <para>Compiles the configuraton in the specified
+          <emphasis>directory</emphasis> and discards the compiled output
+          script. If no <emphasis>directory</emphasis> is given, then
+          /etc/shorewall is assumed.</para>
+
+          <para>The <emphasis role="bold">-e</emphasis> option causes the
+          compiler to look for a file named capabilities. This file is
+          produced using the command <emphasis role="bold">shorewall-lite show
+          -f capabilities &gt; capabities</emphasis> on a system with
+          Shorewall Lite installed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>clear</term>
+
+        <listitem>
+          <para>Clear will remove all rules and chains installed by Shorewall.
+          The firewall is then wide open and unprotected. Existing connections
+          are untouched. Clear is often used to see if the firewall is causing
+          connection problems.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">compile</emphasis> [ -e ] [ directory ]
+        filename</term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

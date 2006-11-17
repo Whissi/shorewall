@@ -188,6 +188,8 @@
       <arg>directory</arg>
 
       <arg choice="plain">system</arg>
+
+      <arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -333,9 +335,8 @@
 
       <command>show</command>
 
-      <group choice="req">
-        <option>actions|classifiers|connectionsconfig|macros|zones</option>
-      </group>
+      <arg
+      choice="req"><option>actions|classifiers|connections|config|macros|zones</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -347,9 +348,17 @@
 
       <arg><option>-x</option></arg>
 
-      <group choice="req">
-        <option>nat|tos|mangle|nat</option>
-      </group>
+      <arg choice="req"><option>mangle|nat</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-options</arg>
+
+      <command>show</command>
+
+      <arg choice="plain"><option>tc</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -522,6 +531,15 @@
         <listitem>
           <para>The delete command reverses the effect of an earlier <emphasis
           role="bold">add</emphasis> command.</para>
+
+          <para>The <emphasis>interface</emphasis> argument names an interface
+          defined in the shorewall-interfaces(5) file. A
+          <emphasis>host-list</emphasis> is comma-separated list whose
+          elements are:</para>
+
+          <programlisting>        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (:) and a host or network address</programlisting>
         </listitem>
       </varlistentry>
 
@@ -554,7 +572,7 @@
 
         <listitem>
           <para>If <emphasis>directory1</emphasis> is omitted, the current
-          working directory is assumed. </para>
+          working directory is assumed.</para>
 
           <para>Allows a non-root user to compile a shorewall script and stage
           it on a system (provided that the user has access to the system via
@@ -856,6 +874,24 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">classifiers</emphasis></term>
+
+              <listitem>
+                <para>Displays information about the packet classifiers
+                defined on the system as a result of traffic shaping
+                configuration.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">config</emphasis></term>
+
+              <listitem>
+                <para>Dispays distribution-specific defaults.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">connections</emphasis></term>
 
               <listitem>
@@ -863,7 +899,118 @@
                 the firewall.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">macros</emphasis></term>
+
+              <listitem>
+                <para>Displays information about each macro defined on the
+                firewall system.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">mangle</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter mangle table using the command
+                <emphasis role="bold">iptables -t mangle -L -n -v</emphasis>.
+                The <emphasis role="bold">-x</emphasis> option is passed
+                directly through to iptables.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">nat</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter nat table using the command
+                <emphasis role="bold">iptables -t nat -L -n -v</emphasis>. The
+                <emphasis role="bold">-x</emphasis> option is passed directly
+                through to iptables.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">tc</emphasis></term>
+
+              <listitem>
+                <para>Displays information about queuing disciplines, classes
+                and filters.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">zones</emphasis></term>
+
+              <listitem>
+                <para>Displays the current composition of the Shorewall zones
+                on the system.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">start</emphasis></term>
+
+        <listitem>
+          <para>Start shorewall. Existing connections through shorewall
+          managed interfaces are untouched. New connections will be allowed
+          only if they are allowed by the firewall rules or policies. If a
+          <emphasis>directory</emphasis> is included in the command, Shorewall
+          will look in that <emphasis>directory</emphasis> first for
+          configuration files.If <emphasis role="bold">-f</emphasis> is
+          specified, the saved configuration specified by the RESTOREFILE
+          option in shorewall.conf(5) will be restored if that saved
+          configuration exists and has been modified more recently than the
+          files in /etc/shorewall.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">stop</emphasis></term>
+
+        <listitem>
+          <para>Stops the firewall. All existing connections, except those
+          listed in shorewall-routestopped(5) or permitted by the
+          ADMINISABSENTMINDED option in shorewall.conf(5), are taken down. The
+          only new traffic permitted through the firewall is from systems
+          listed in shorewall-routestopped(5) or by
+          ADMINISABSENTMINDED.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">status</emphasis></term>
+
+        <listitem>
+          <para>Produces a short report about the state of the
+          Shorewall-configured firewall.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">try</emphasis> (Deprecated)</term>
+
+        <listitem>
+          <para>Restart shorewall using the specified configuration. If an
+          error occurs during the restart, then another <emphasis
+          role="bold">shorewall restart</emphasis> is performed using the
+          default configuration. If a timeout is specified then the restart is
+          always performed after the timeout occurs and uses the default
+          configuration. When restarting using the default configuration, if
+          the default restore script (as specified by the RESTOREFILE setting
+          in shorewall.conf(5) exists. then that script is used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">version</emphasis></term>
+
+        <listitem>
+          <para>Displays Shorewall.s version.</para>
         </listitem>
       </varlistentry>
     </variablelist>

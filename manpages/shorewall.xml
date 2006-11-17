@@ -851,14 +851,25 @@
               <term>[ <emphasis>chain</emphasis> ] ...</term>
 
               <listitem>
-                <para>Using the <emphasis role="bold">iptables -L</emphasis>
-                <emphasis>chain</emphasis> <emphasis role="bold">-n
-                -v</emphasis> command, the rules in each
-                <emphasis>chain</emphasis> are displayed. If no
+                <para>The rules in each <emphasis>chain</emphasis> are
+                displayed ssing the <emphasis role="bold">iptables
+                -L</emphasis> <emphasis>chain</emphasis> <emphasis
+                role="bold">-n -v</emphasis> command. If no
                 <emphasis>chain</emphasis> is given, all of the chains in the
                 filter table are displayed. The <emphasis
                 role="bold">-x</emphasis> option is passed directly through to
-                iptables.</para>
+                iptables and causes actual packet and byte counts to be
+                displayed. Without this option, those counts are
+                abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">actions</emphasis></term>
+
+              <listitem>
+                <para>Produces a report about the available actions (built-in,
+                standard and user-defined).</para>
               </listitem>
             </varlistentry>
 
@@ -914,9 +925,11 @@
 
               <listitem>
                 <para>Displays the Netfilter mangle table using the command
-                <emphasis role="bold">iptables -t mangle -L -n -v</emphasis>.
-                The <emphasis role="bold">-x</emphasis> option is passed
-                directly through to iptables.</para>
+                <emphasis role="bold">iptables -t mangle -L -n
+                -v</emphasis>.The <emphasis role="bold">-x</emphasis> option
+                is passed directly through to iptables and causes actual
+                packet and byte counts to be displayed. Without this option,
+                those counts are abbreviated.</para>
               </listitem>
             </varlistentry>
 
@@ -925,9 +938,11 @@
 
               <listitem>
                 <para>Displays the Netfilter nat table using the command
-                <emphasis role="bold">iptables -t nat -L -n -v</emphasis>. The
+                <emphasis role="bold">iptables -t nat -L -n -v</emphasis>.The
                 <emphasis role="bold">-x</emphasis> option is passed directly
-                through to iptables.</para>
+                through to iptables and causes actual packet and byte counts
+                to be displayed. Without this option, those counts are
+                abbreviated.</para>
               </listitem>
             </varlistentry>
 

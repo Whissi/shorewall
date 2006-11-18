@@ -5232,16 +5232,19 @@ __EOF__
 	setcontinue OUTPUT
     fi
 
-    f=$(find_file ipsets)
+    indent >&3 << __EOF__
 
-    if [ -f $f ]; then
-	progress_message2 "Processing $f ..."
-	save_progress_message "Restoring IPSETS..."
-	save_command "ipset -U :all: :all:"
-	save_command "ipset -F"
-	save_command "ipset -X"
-	save_command "ipset -R < $f"
-    fi
+f=\$(find_file ipsets)
+
+if [ -f \$f ]; then
+    progress_message2 "Restoring IPSETS..."
+    ipset -U :all: :all:
+    ipset -F
+    ipset -X
+    ipset -R < \$f
+fi
+
+__EOF__
 
     append_file continue
 

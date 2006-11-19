@@ -682,16 +682,18 @@ fi
 
 rm -f *.gz
 
-for f in manpages/*.5; do
+cd manpages
+
+for f in *.5; do
     gzip $f
-    run_install -D $f.gz ${PREFIX}/usr/share/man/man5/${f#manpage/}.gz
-    echo "Man page $f.gz installed to /usr/share/man/man5/${f#manpage/}.gz"
+    run_install -D $f.gz ${PREFIX}/usr/share/man/man5/${f.gz
+    echo "Man page $f.gz installed to /usr/share/man/man5/${f}.gz"
 done
 
-for f in manpages/*.8; do
+for f in *.8; do
     gzip $f
-    run_install -D ${f}.gz ${PREFIX}/usr/share/man/man8/${f#manpage/}.gz
-    echo "Man page $f.gz installed to /usr/share/man/man8/${f#manpage/}.gz"
+    run_install -D ${f}.gz ${PREFIX}/usr/share/man/man8/${f}.gz
+    echo "Man page $f.gz installed to /usr/share/man/man8/${f}.gz"
 done
 
 echo "Man Pages Installed"

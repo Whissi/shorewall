@@ -86,6 +86,7 @@ SAMPLESTAG=
 HASLITE=
 SIGN=
 MANPAGETAG=
+LITEMANPAGETAG=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -239,6 +240,7 @@ case $VERSION in
 	SAMPLESTAG="trunk/Samples"
 	HASLITE=Yes
 	MANPAGETAG=trunk/manpages
+	LITEMANPAGETAG=trunk/manpages-lite
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -341,6 +343,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	done
 	rm *.xml
 	cd $DIR
+
+	cd $SHOREWALLLITEDIR
+	mkdir manpages
+	cp -f $SHOREWALLDIR/manpages/*.[58] manpages
+	cd manpages
+	for f in *.xml; do
+	    if [ $f != shorewall-template.xml ]; then
+		progress_message "Generating Man Page from $f..."
+		docbook-to-man $f
+	    fi
+	done
+	rm *.xml
+	cd $DIR 
     fi	
 
     do_or_die "rm -rf $SHOREWALLDIR/debian"

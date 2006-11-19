@@ -82,6 +82,32 @@ fi
 %attr(0544,root,root) /usr/share/shorewall-lite/shorecap
 %attr(0544,root,root) /usr/share/shorewall-lite/help
 
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-accounting.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-actions.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-blacklist.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall.conf.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-hosts.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-interfaces.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-masq.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-nat.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-netmap.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-params.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-policy.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-providers.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-proxyarp.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-route_rules.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-routestopped.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-rules.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-tcclasses.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-tcdevices.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-tcrules.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-tos.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-tunnels.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-zones.5.gz
+
+%attr(0x444,root,root) %{_mandir}/man8/shorewall-lite.8.gz
+
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog

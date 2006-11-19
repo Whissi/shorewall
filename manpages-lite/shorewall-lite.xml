@@ -156,8 +156,6 @@
       <arg>-options</arg>
 
       <command>restart</command>
-
-      <arg>directory</arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -257,8 +255,6 @@
       <command>start</command>
 
       <arg><option>-f</option></arg>
-
-      <arg>directory</arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -289,8 +285,8 @@
   <refsect1>
     <title>Description</title>
 
-    <para>The shorewall utility is used to control the Shoreline Firewall
-    (Shorewall).</para>
+    <para>The shorewall-lite utility is used to control the Shoreline Firewall
+    (Shorewall) Lite.</para>
   </refsect1>
 
   <refsect1>
@@ -346,10 +342,10 @@
         <term><emphasis role="bold">clear</emphasis></term>
 
         <listitem>
-          <para>Clear will remove all rules and chains installed by Shorewall.
-          The firewall is then wide open and unprotected. Existing connections
-          are untouched. Clear is often used to see if the firewall is causing
-          connection problems.</para>
+          <para>Clear will remove all rules and chains installed by Shorewall
+          Lite. The firewall is then wide open and unprotected. Existing
+          connections are untouched. Clear is often used to see if the
+          firewall is causing connection problems.</para>
         </listitem>
       </varlistentry>
 
@@ -390,8 +386,8 @@
           <para>The <emphasis role="bold">-x</emphasis> option causes actual
           packet and byte counts to be displayed. Without that option, these
           counts are abbreviated. The <emphasis role="bold">-m</emphasis>
-          option causes any MAC addresses included in Shorewall log messages
-          to be displayed.</para>
+          option causes any MAC addresses included in Shorewall Lite log
+          messages to be displayed.</para>
         </listitem>
       </varlistentry>
 
@@ -399,10 +395,10 @@
         <term><emphasis role="bold">forget</emphasis></term>
 
         <listitem>
-          <para>Deletes /var/lib/shorewall/<emphasis>filenam</emphasis>e and
-          /var/lib/shorewall/save. If no <emphasis>filename</emphasis> is
-          given then the file specified by RESTOREFILE in shorewall.conf(5) is
-          assumed.</para>
+          <para>Deletes /var/lib/shorewall-lite/<emphasis>filenam</emphasis>e
+          and /var/lib/shorewall-lite/save. If no
+          <emphasis>filename</emphasis> is given then the file specified by
+          RESTOREFILE in shorewall.conf(5) is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -420,8 +416,8 @@
         <term><emphasis role="bold">hits</emphasis></term>
 
         <listitem>
-          <para>Generates several reports from Shorewall log messages in the
-          current log file.</para>
+          <para>Generates several reports from Shorewall Lite log messages in
+          the current log file.</para>
         </listitem>
       </varlistentry>
 
@@ -459,9 +455,9 @@
         <listitem>
           <para>Monitors the log file specified by theLOGFILE option in
           shorewall.conf(5) and produces an audible alarm when new Shorewall
-          messages are logged. The <emphasis role="bold">-m</emphasis> option
-          causes the MAC address of each packet source to be displayed if that
-          information is available.</para>
+          Lite messages are logged. The <emphasis role="bold">-m</emphasis>
+          option causes the MAC address of each packet source to be displayed
+          if that information is available.</para>
         </listitem>
       </varlistentry>
 
@@ -489,10 +485,7 @@
         <listitem>
           <para>Restart is similar to <emphasis role="bold">shorewall-lite
           stop</emphasis> followed by <emphasis role="bold">shorewall-lite
-          start</emphasis>. Existing connections are maintained. If a
-          <emphasis>directory</emphasis> is included in the command, Shorewall
-          will look in that <emphasis>directory</emphasis> first for
-          configuration files.</para>
+          start</emphasis>. Existing connections are maintained. I.</para>
         </listitem>
       </varlistentry>
 
@@ -500,12 +493,12 @@
         <term><emphasis role="bold">restore</emphasis></term>
 
         <listitem>
-          <para>Restore Shorewall to a state saved using the <emphasis
+          <para>Restore Shorewall Lite to a state saved using the <emphasis
           role="bold">shorewall-lite save</emphasis> command. Existing
           connections are maintained. The <emphasis>filename</emphasis> names
           a restore file in /var/lib/shorewall-lite created using <emphasis
           role="bold">shorewall-lite save</emphasis>; if no
-          <emphasis>filename</emphasis> is given then Shorewall will be
+          <emphasis>filename</emphasis> is given then Shorewall Lite will be
           restored from the file specified by the RESTOREFILE option in
           shorewall.conf(5).</para>
         </listitem>
@@ -646,8 +639,8 @@
               <term><emphasis role="bold">zones</emphasis></term>
 
               <listitem>
-                <para>Displays the current composition of the Shorewall zones
-                on the system.</para>
+                <para>Displays the current composition of the Shorewall Lite
+                zones on the system.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -658,16 +651,14 @@
         <term><emphasis role="bold">start</emphasis></term>
 
         <listitem>
-          <para>Start shorewall. Existing connections through shorewall
-          managed interfaces are untouched. New connections will be allowed
-          only if they are allowed by the firewall rules or policies. If a
-          <emphasis>directory</emphasis> is included in the command, Shorewall
-          will look in that <emphasis>directory</emphasis> first for
-          configuration files.If <emphasis role="bold">-f</emphasis> is
-          specified, the saved configuration specified by the RESTOREFILE
-          option in shorewall.conf(5) will be restored if that saved
-          configuration exists and has been modified more recently than the
-          files in /etc/shorewall.</para>
+          <para>Start shorewall Lite. Existing connections through
+          shorewall-lite managed interfaces are untouched. New connections
+          will be allowed only if they are allowed by the firewall rules or
+          policies. If <emphasis role="bold">-f</emphasis> is specified, the
+          saved configuration specified by the RESTOREFILE option in
+          shorewall.conf(5) will be restored if that saved configuration
+          exists and has been modified more recently than the files in
+          /etc/shorewall.</para>
         </listitem>
       </varlistentry>
 

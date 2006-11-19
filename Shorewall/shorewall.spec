@@ -232,6 +232,7 @@ fi
 %attr(0x444,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
 %attr(0x444,root,root) %{_mandir}/man5/shorewall-masq.5.gz
 %attr(0x444,root,root) %{_mandir}/man5/shorewall-nat.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall-netmap.5.gz
 %attr(0x444,root,root) %{_mandir}/man5/shorewall-params.5.gz
 %attr(0x444,root,root) %{_mandir}/man5/shorewall-policy.5.gz
 %attr(0x444,root,root) %{_mandir}/man5/shorewall-providers.5.gz

@@ -333,8 +333,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	progress_message "Exporting $MANPAGETAG from SVN..."
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$MANPAGETAG manpages >> $LOGFILE 2>&1"
 	cd manpages
-	for file in *.xml; do
-	    docbook-to-man $file
+	for f in *.xml; do
+	    if [ $f != shorewall-templage.xml ]; then
+		progress_message "Generating Man Page from $f..."
+		docbook-to-man $f
+	    fi
 	done
 	rm *.xml
 	cd $DIR
@@ -593,4 +596,3 @@ if [ -n "$OLDVERSION" ]; then
 fi
 
 progress_message "Shorewall $VERSION Build complete - $(date)"
-

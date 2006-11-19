@@ -334,7 +334,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$MANPAGETAG manpages >> $LOGFILE 2>&1"
 	cd manpages
 	for file in *.xml; do
-	    docbook2man $file
+	    docbook-to-man $file
 	done
 	rm *.xml
 	cd $DIR

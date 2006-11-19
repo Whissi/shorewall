@@ -683,13 +683,13 @@ fi
 rm -f *.gz
 
 for f in manpages/*.5; do
-    gzip manpages/$f
-    install_file -D manpages/${f}.gz ${PREFIX}/usr/share/man/man5/${f}.gz
+    gzip $f
+    install_file -D $f.gz ${PREFIX}/usr/share/man/man5/${f}.gz
 done
 
 for f in manpages/*.8; do
-    gzip manpages/$f
-    install_file -D manpages/${f}.gz ${PREFIX}/usr/share/man/man8/${f}.gz
+    gzip $f
+    install_file -D ${f}.gz ${PREFIX}/usr/share/man/man8/${f}.gz
 done
 
 echo "Man Pages Installed"

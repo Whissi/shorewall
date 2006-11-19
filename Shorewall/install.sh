@@ -684,12 +684,12 @@ rm -f *.gz
 
 for f in manpages/*.5; do
     gzip $f
-    install_file -D $f.gz ${PREFIX}/usr/share/man/man5/${f}.gz
+    run_install -D $f.gz ${PREFIX}/usr/share/man/man5/${f}.gz
 done
 
 for f in manpages/*.8; do
     gzip $f
-    install_file -D ${f}.gz ${PREFIX}/usr/share/man/man8/${f}.gz
+    run_install -D ${f}.gz ${PREFIX}/usr/share/man/man8/${f}.gz
 done
 
 echo "Man Pages Installed"

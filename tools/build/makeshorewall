@@ -334,7 +334,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$MANPAGETAG manpages >> $LOGFILE 2>&1"
 	cd manpages
 	for f in *.xml; do
-	    if [ $f != shorewall-templage.xml ]; then
+	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
 		docbook-to-man $f
 	    fi

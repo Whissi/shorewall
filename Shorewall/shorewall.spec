@@ -251,6 +251,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Sat Nov 18 2006 Tom Eastep tom@shorewall.net
+- Add Man Pages.
 * Sun Oct 29 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.3.4-1
 * Mon Oct 16 2006 Tom Eastep tom@shorewall.net

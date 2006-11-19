@@ -85,6 +85,7 @@ BUILDHTML=
 SAMPLESTAG=
 HASLITE=
 SIGN=
+MANPAGEDBRANCH=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -237,6 +238,7 @@ case $VERSION in
 	XMLPROJ="docs-3.3"
 	SAMPLESTAG="trunk/Samples"
 	HASLITE=Yes
+	MANPAGEBRANCH=trunk/manpages
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -325,6 +327,17 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
 	cd $DIR
     fi
+
+    if [ -n "$MANPAGETAG" ]; then
+	cd $SHOREWALLDIR
+	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+	cd manpages
+	for file in *.xml; do
+	    docbook2xml $file
+	done
+	rm *.xml
+	cd $DIR
+    fi	
 
     do_or_die "rm -rf $SHOREWALLDIR/debian"
 

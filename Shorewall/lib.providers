@@ -138,6 +138,8 @@ __EOF__
 	    else
 		copy_table
 	    fi
+	elif [ "x${copy:=-}" != x- ]; then
+	    fatal_error "A non-empty COPY column requires that a routing table be specified in the DUPLICATE column" 
 	fi
 
 	if [ "x$gateway" = xdetect ] ; then

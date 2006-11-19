@@ -677,6 +677,24 @@ if [ -z "$PREFIX" ]; then
 fi
 
 #
+# Install the Man Pages
+#
+
+rm -f *.gz
+
+for file in *.5; do
+    gzip $f
+    install_file -D ${f}.gz ${PREFIX}/usr/share/man/man5/${f}.gz
+fi
+
+for file in *.8; do
+    gzip $f
+    install_file -D ${f}.gz ${PREFIX}/usr/share/man/man8/${f}.gz
+fi
+
+echo "Man Pages Installed"
+
+#
 # Install the firewall script
 #
 install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0555

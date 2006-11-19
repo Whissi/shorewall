@@ -223,6 +223,31 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcdevices
 %attr(0644,root,root) /usr/share/shorewall/configfiles/Makefile
 
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_accounting.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_actions.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_blacklist.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall.conf.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_hosts.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_interfaces.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_maclist.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_masq.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_nat.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_params.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_policy.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_providers.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_proxyarp.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_route_rules.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_routestopped.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_rules.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_tcclasses.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_tcdevices.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_tcrules.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_tos.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_tunnels.5.gz
+%attr(0x444,root,root) %{_mandir}/man5/shorewall_zones.5.gz
+
+%attr(0x444,root,root) %{_mandir}/man8/shorewall.8.gz
+
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog

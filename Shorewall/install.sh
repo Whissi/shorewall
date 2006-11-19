@@ -696,6 +696,8 @@ for f in *.8; do
     echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
 done
 
+cd ..
+
 echo "Man Pages Installed"
 
 #

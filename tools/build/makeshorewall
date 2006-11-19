@@ -350,7 +350,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	cd $SHOREWALLLITEDIR
 	progress_message "Exporting $LITEMANPAGETAG from SVN..."
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
-	cp -f $SHOREWALLDIR/manpages/*.[58] manpages
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then

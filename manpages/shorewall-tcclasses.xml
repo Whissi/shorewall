@@ -128,9 +128,9 @@
         <term><emphasis role="bold">MARK</emphasis></term>
 
         <listitem>
-          <para>The mark value which is an integer in the range 1-255. You
-          define this marks in the tcrules file, marking the traffic you want
-          to fit in the classes defined in here.</para>
+          <para>The mark value which is an integer in the range 1-255. You set
+          mark values in the tcrules file, marking the traffic you want to fit
+          in the classes defined in here.</para>
 
           <para>You can use the same marks for different interfaces.</para>
         </listitem>
@@ -141,7 +141,7 @@
 
         <listitem>
           <para>The minimum bandwidth this class should get, when the traffic
-          load rises. If the sum of the rates in this column exceed the
+          load rises. If the sum of the rates in this column exceeds the
           INTERFACE's OUT-BANDWIDTH, then the OUT-BANDWIDTH limit may not be
           honored.</para>
         </listitem>
@@ -209,7 +209,7 @@
                 <para>This lets you define a classifier for the given
                 <emphasis>value</emphasis>/<emphasis>mask</emphasis>
                 combination of the IP packet's TOS/Precedence/DiffSrv octet
-                (aka the TOS byte). Please note note classifiers override all
+                (aka the TOS byte). Please note that classifiers override all
                 mark settings, so if you define a classifer for a class, all
                 traffic having that mark will go in it regardless of any mark
                 set on the packet by a firewall/mangle filter.</para>
@@ -233,7 +233,7 @@
         <emphasis role="bold">tos-normal-service</emphasis>       0x00/0x1e</programlisting>
 
                 <note>
-                  <para> Each of this options is only valid for ONE class per
+                  <para>Each of these options is only valid for ONE class per
                   interface.</para>
                 </note>
               </listitem>
@@ -243,14 +243,12 @@
               <term><emphasis role="bold">tcp-ack</emphasis></term>
 
               <listitem>
-                <para>If defined causes an tc filter to be created that puts
-                all tcp ack packets on that interface that have an size of
+                <para>If defined, causes a tc filter to be created that puts
+                all tcp ack packets on that interface that have a size of
                 &lt;=64 Bytes to go in this class. This is useful for speeding
                 up downloads. Please note that the size of the ack packets is
-                limited to 64 bytes as some applications (p2p for example) use
-                to make every packet an ack packet which would cause them all
-                into here. We want only packets WITHOUT payload to match, so
-                the size limit.</para>
+                limited to 64 bytes because we want only packets WITHOUT
+                payload to match.</para>
 
                 <note>
                   <para>This option is only valid for ONE class per

@@ -31,6 +31,538 @@
   </refsect1>
 
   <refsect1>
+    <title>OPTIONS</title>
+
+    <para>The following options may be set in shorewall.conf.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">ADMINISABSENTMINDED=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>The value of this variable affects Shorewall's stopped state.
+          When ADMINISABSENTMINDES=No, only traffic to/from those addresses
+          listed in shorewall-routestopped(5) is accepted when Shorewall is
+          stopped. When ADMINISABSENTMINDED=Yes, in addition to traffic
+          to/from addresses in shorewall-routestopped(5), connections that
+          were active when Shorewall stopped continue to work and all new
+          connections from the firewall system itself are allowed. If this
+          variable is not set or is given the empty value then
+          ADMINISABSENTMINDED=No is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">BRIDGING=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>When set to Yes or yes, enables Shorewall Bridging
+          support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CLEAR_TC=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>If this option is set to “No” then Shorewall won't clear the
+          current traffic control rules during [re]start. This setting is
+          intended for use by people that prefer to configure traffic shaping
+          when the network interfaces come up rather than when the firewall is
+          started. If that is what you want to do, set TC_ENABLED=Yes and
+          CLEAR_TC=No and do not supply an /etc/shorewall/tcstart file. That
+          way, your traffic shaping rules can still use the “fwmark”
+          classifier based on packet marking defined in shorewall-tcrules(5).
+          If not specified, CLEAR_TC=Yes is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">CONFIG_PATH=</emphasis><emphasis>directory</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>directory</emphasis>]...</term>
+
+        <listitem>
+          <para>Specifies where configuration files other than shorewall.conf
+          may be found. CONFIG_PATH is specifies as a list of directory names
+          separated by colons (":"). When looking for a configuration file
+          other than shorewall.conf:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>If the command is "try" or if "-c &lt;configuration
+              directory&gt;" was specified in the command then the directory
+              given in the command is searched first.</para>
+            </listitem>
+
+            <listitem>
+              <para>Next, each directory in the CONFIG_PATH setting is
+              searched in sequence.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>If CONFIG_PATH is not given or if it is set to the empty value
+          then the contents of /usr/share/shorewall/configpath are used. As
+          released from shorewall.net, that file sets the CONFIG_PATH to
+          /etc/shorewall:/usr/share/shorewall but your particular distribution
+          may set it differently. See the output of shorewall show config for
+          the default on your system.</para>
+
+          <para>Note that the setting in /usr/share/shorewall/configpath is
+          always used to locate shorewall.conf.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DYNAMIC_ZONES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>When set to Yes or yes, enables dynamic zones.
+          DYNAMIC_ZONES=Yes is not allowed in configurations that will run
+          under Shorewall Lite.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">FASTACCEPT=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Normally, Shorewall accepting ESTABLISHED/RELATED packets
+          until these packets reach the chain in which the original connection
+          was accepted. So for packets going from the 'loc' zone to the 'net'
+          zone, ESTABLISHED/RELATED packets are ACCEPTED in the 'loc2net'
+          chain.</para>
+
+          <para>If you set FASTACCEPT=Yes, then ESTABLISHED/RELEATED packets
+          are accepted early in the INPUT, FORWARD and OUTPUT chains. If you
+          set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
+          or RELATED sections of shorewall-rules(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">HIGH_ROUTE_MARKS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Prior to version 3.2.0, it was not possible to use connection
+          marking in /etc/shorewall/tcrules if you have a multi-ISP
+          configuration that uses the track option.</para>
+
+          <para>Beginning with release 3.2.0, you may now set
+          HIGH_ROUTE_MARKS=Yes in to effectively divide the packet mark and
+          connection mark into two 8-byte mark fields.</para>
+
+          <para>When you do this:</para>
+
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>The MARK field in the providers file must have a value
+              that is less than 65536 and that is a multiple of 256 (using hex
+              representation, the values are 0x0100-0xFF00 with the low-order
+              8 bits being zero).</para>
+            </listitem>
+
+            <listitem>
+              <para>You may only set those mark values in the PREROUTING
+              chain.</para>
+            </listitem>
+
+            <listitem>
+              <para>Marks used for traffic shaping must still be in the range
+              of 1-255 and may still not be set in the PREROUTING
+              chain.</para>
+            </listitem>
+
+            <listitem>
+              <para>When you SAVE or RESTORE in tcrules, only the TC mark
+              value is saved or restored. Shorewall handles saving and
+              restoring the routing (provider) marks.</para>
+            </listitem>
+          </orderedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">IMPLICIT_CONTINUE=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>When this option is set to "Yes", it causes subzones to be
+          treated differently with respect to policies.</para>
+
+          <para>Subzones are defined by following their name with ":" and a
+          list of parent zones (in /etc/shorewall/zones). Normally, you want
+          to have a set of special rules for the subzone and if a connection
+          doesn't match any of those subzone-specific rules then you want the
+          parent zone rules and policies to be applied. With
+          IMPLICIT_CONTINUE=Yes, that happens automatically.</para>
+
+          <para>If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set,
+          then subzones are not subject to this special treatment. With
+          IMPLICIT_CONTINUE=Yes, an implicit CONTINUE policy may be overridden
+          by including an explicit policy (one that does not specify "all" in
+          either the SOURCE or the DEST columns).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">IPTABLES=</emphasis><emphasis>pathname</emphasis></term>
+
+        <listitem>
+          <para>This parameter names the iptables executable to be used by
+          Shorewall. If not specified or if specified as a null value, then
+          the iptables executable located using the PATH option is used.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">LOGALLNEW=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>When set to a log level, this option causes Shorewall to
+          generate a logging rule as the first rule in each builtin
+          chain.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>The table name is used as the chain name in the log
+              prefix.</para>
+            </listitem>
+
+            <listitem>
+              <para>The chain name is used as the target in the log
+              prefix.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Example: Using the default LOGFORMAT, the log prefix for
+          logging from the nat table's PREROUTING chain is:</para>
+
+          <programlisting>    Shorewall:nat:PREROUTING
+</programlisting>
+
+          <important>
+            <para>There is no rate limiting on these logging rules so use
+            LOGALLNEW at your own risk; it may cause high CPU and disk
+            utilization and you may not be able to control your firewall after
+            you enable this option.</para>
+          </important>
+
+          <caution>
+            <para>Do not use this option if the resulting log messages will be
+            sent to another system.</para>
+          </caution>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">LOGFORMAT="</emphasis><emphasis>formatstring</emphasis><emphasis
+        role="bold">"</emphasis></term>
+
+        <listitem>
+          <para>The value of this variable generate the --log-prefix setting
+          for Shorewall logging rules. It contains a “printf” formatting
+          template which accepts three arguments (the chain name, logging rule
+          number (optional) and the disposition). To use LOGFORMAT with
+          fireparse, set it as:</para>
+
+          <programlisting>    LOGFORMAT="fp=%s:%d a=%s "</programlisting>
+
+          <para>If the LOGFORMAT value contains the substring “%d” then the
+          logging rule number is calculated and formatted in that position; if
+          that substring is not included then the rule number is not included.
+          If not supplied or supplied as empty (LOGFORMAT="") then
+          “Shorewall:%s:%s:” is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MACLIST_DISPOSITION=</emphasis>{<emphasis
+        role="bold">ACCEPT</emphasis>|<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>}</term>
+
+        <listitem>
+          <para>Determines the disposition of connections requests that fail
+          MAC Verification and must have the value ACCEPT (accept the
+          connection request anyway), REJECT (reject the connection request)
+          or DROP (ignore the connection request). If not set or if set to the
+          empty value (e.g., MACLIST_DISPOSITION="") then
+          MACLIST_DISPOSITION=REJECT is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MACLIST_TABLE=</emphasis>{<emphasis
+        role="bold">mangle</emphasis>|<emphasis
+        role="bold">filter</emphasis>}</term>
+
+        <listitem>
+          <para>Normally, MAC verification occurs in the filter table (INPUT
+          and FORWARD) chains. When forwarding a packet from an interface with
+          MAC verification to a bridge interface, that doesn't work.</para>
+
+          <para>This problem can be worked around by setting
+          MACLIST_TABLE=mangle which will cause Mac verification to occur out
+          of the PREROUTING chain. Because REJECT isn't available in that
+          environment, you may not specify MACLIST_DISPOSITION=REJECT with
+          MACLIST_TABLE=mangle.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">MACLIST_TTL=</emphasis><emphasis>number</emphasis></term>
+
+        <listitem>
+          <para>The performance of configurations with a large numbers of
+          entries in /etc/shorewall/maclist can be improved by setting the
+          MACLIST_TTL variable in shorewall.conf(5).</para>
+
+          <para>If your iptables and kernel support the "Recent Match" (see
+          the output of "shorewall check" near the top), you can cache the
+          results of a 'maclist' file lookup and thus reduce the overhead
+          associated with MAC Verification.</para>
+
+          <para>When a new connection arrives from a 'maclist' interface, the
+          packet passes through then list of entries for that interface in
+          shorewall-maclist(5). If there is a match then the source IP address
+          is added to the 'Recent' set for that interface. Subsequent
+          connection attempts from that IP address occurring within
+          $MACLIST_TTL seconds will be accepted without having to scan all of
+          the entries. After $MACLIST_TTL from the first accepted connection
+          request from an IP address, the next connection request from that IP
+          address will be checked against the entire list.</para>
+
+          <para>If MACLIST_TTL is not specified or is specified as empty (e.g,
+          MACLIST_TTL="" or is specified as zero then 'maclist' lookups will
+          not be cached).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">MARK_IN_FORWARD_CHAIN=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>If your kernel has a FORWARD chain in the mangle table, you
+          may set MARK_IN_FORWARD_CHAIN=Yes to cause the marking specified in
+          the tcrules file to occur in that chain rather than in the
+          PREROUTING chain. This permits you to mark inbound traffic based on
+          its destination address when SNAT or Masquerading are in use. To
+          determine if your kernel has a FORWARD chain in the mangle table,
+          use the <emphasis role="bold">/sbin/shorewall show mangle</emphasis>
+          command; if a FORWARD chain is displayed then your kernel will
+          support this option. If this option is not specified or if it is
+          given the empty value (e.g., MARK_IN_FORWARD_CHAIN="") then
+          MARK_IN_FORWARD_CHAIN=No is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>MODULE_SUFFIX="<emphasis role="bold">suffix</emphasis>
+        ...<emphasis role="bold">"</emphasis></term>
+
+        <listitem>
+          <para>The value of this option determines the possible file
+          extensions of kernel modules. The default value is "o gz ko
+          o.gz".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PKTTYPE=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Normally Shorewall attempts to use the iptables packet type
+          match extension to determine broadcast and multicast packets.</para>
+
+          <orderedlist>
+            <listitem>
+              <para>This can cause a message to appear during shorewall start
+              (modprobe: cant locate module ipt_pkttype).</para>
+            </listitem>
+
+            <listitem>
+              <para>Some users have found problems with the packet match
+              extension with the result that their firewall log is flooded
+              with messages relating to broadcast packets.</para>
+            </listitem>
+          </orderedlist>
+
+          <para>If you are experiencing either of these problems, setting
+          PKTTYPE=No will prevent Shorewall from trying to use the packet type
+          match extension and to use IP address matching to determine which
+          packets are broadcasts or multicasts.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">RESTOREFILE=</emphasis><emphasis>filename</emphasis></term>
+
+        <listitem>
+          <para>Specifies the simple name of a file in /var/lib/shorewall to
+          be used as the default restore script in the <emphasis
+          role="bold">shorewall save</emphasis>, <emphasis
+          role="bold">shorewall restore</emphasis>, <emphasis
+          role="bold">shorewall forget </emphasis>and <emphasis
+          role="bold">shorewall -f start</emphasis> commands.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">RFC1918_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>This parameter determines the level at which packets logged
+          under the <emphasis role="bold">norfc1918</emphasis> mechanism are
+          logged. The value must be a valid syslog level and if no level is
+          given, then info is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">RFC1918_STRICT=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Traditionally, the RETURN target in the 'rfc1918' file has
+          caused norfc1918 processing to cease for a packet if the packet's
+          source IP address matches the rule. Thus, if you have this entry in
+          /etc/shorewall/rfc1918:</para>
+
+          <programlisting>    #SUBNETS                 TARGET
+    192.168.1.0/24           RETURN</programlisting>
+
+          <para>then traffic from 192.168.1.4 to 10.0.3.9 will be accepted
+          even though you also have:</para>
+
+          <programlisting>    #SUBNETS                 TARGET
+    10.0.0.0/8               logdrop</programlisting>
+
+          <para>Setting RFC1918_STRICT=Yes in shorewall.conf will cause such
+          traffic to be logged and dropped since while the packet's source
+          matches the RETURN rule, the packet's destination matches the
+          'logdrop' rule.</para>
+
+          <para>If not specified or specified as empty (e.g.,
+          RFC1918_STRICT="") then RFC1918_STRICT=No is assumed.</para>
+
+          <warning>
+            <para>RFC1918_STRICT=Yes requires that your kernel and iptables
+            support 'Connection Tracking' match.</para>
+          </warning>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">SHOREWALL_SHELL=</emphasis><emphasis>pathname</emphasis></term>
+
+        <listitem>
+          <para>This option is used to specify the shell program to be used to
+          run the Shorewall compiler and to interpret the compiled script. If
+          not specified or specified as a null value, /bin/sh is assumed.
+          Using a light-weight shell such as ash or dash can significantly
+          improve performance.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">SMURF_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Specifies the logging level for smurf packets (see the
+          nosmurfs option in /etc/shorewall/interfaces). If set to the empty
+          value ( SMURF_LOG_LEVEL="" ) then smurfs are not logged.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">STARTUP_ENABLED=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Determines if Shorewall is allowed to start. As released from
+          shorewall.net, this option is set to No. When set to Yes or yes,
+          Shorewall may be started. Used as a guard against Shorewall being
+          accidentally started before it has been configured.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">TCP_FLAGS_DISPOSITION=</emphasis>{<emphasis
+        role="bold">ACCEPT</emphasis>|<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>}</term>
+
+        <listitem>
+          <para>Determines the disposition of TCP packets that fail the checks
+          enabled by the <emphasis role="bold">tcpflags</emphasis> interface
+          option (see shorewall-interfaces(5)) and must have a value of ACCEPT
+          (accept the packet), REJECT (send an RST response) or DROP (ignore
+          the packet). If not set or if set to the empty value (e.g.,
+          TCP_FLAGS_DISPOSITION="") then TCP_FLAGS_DISPOSITION=DROP is
+          assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">TCP_FLAGS_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Determines the syslog level for logging packets that fail the
+          checks enabled by the tcpflags interface option. The value must be a
+          valid syslogd log level. If you don't want to log these packets, set
+          to the empty value (e.g., TCP_FLAGS_LOG_LEVEL="").</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">VERBOSITY=</emphasis><emphasis>number</emphasis></term>
+
+        <listitem>
+          <para> Shorewall has traditionally been very noisy (produced lots of
+          output). You may set the default level of verbosity using the
+          VERBOSITY OPTION.</para>
+
+          <para>Values are:</para>
+
+          <simplelist>
+            <member>0 — Silent. You may make it more verbose using the -v
+            option</member>
+
+            <member>1 — Major progress messages displayed</member>
+
+            <member>2 — All progress messages displayed (old default
+            behavior)</member>
+          </simplelist>
+
+          <para>If not specified, then 2 is assumed.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
     <title>FILES</title>
 
     <para>/etc/shorewall/shorewall.conf</para>

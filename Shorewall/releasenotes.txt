@@ -1,6 +1,6 @@
-Shorewall 3.3.5
+Shorewall 3.3.6
 
- Note to users upgrading from Shorewall 3.0 or 3.3
+ Note to users upgrading from Shorewall 3.0 or 3.2
 
     Most problems associated with upgrades come from two causes:
 
@@ -33,95 +33,11 @@ Shorewall 3.3.5
 
 Problems Corrected in 3.3.5
 
-1)  Previously, if the last 'balance' provider was removed from
-    /etc/shorewall/providers then "shorewall restart" would not restore
-    the default route that was in place prior to "shorewall start".
+None.
 
-2)  Previously, restoration of routing was ignoring the "-n"
-    option. Now such restoration only occurs if "-n" was not specified.
+Other Changes in 3.3.6
 
-3)  Previously, a startup error resulted when white space was included
-    in LOGFORMAT.
-
-4)  Previously, the "shorewall[-lite] start" command would return a
-    non-zero exit status if Shorewall [Lite] was already started. It
-    now returns an indication of success.
-
-Other Changes in 3.3.5.
-
-1)  Shorewall no longer includes policy matches in its generated
-    ruleset when no IPSEC zones or IPSEC networks are defined (IPSEC
-    networks are defined using the 'ipsec' option in
-    /etc/shorewall/hosts).
-
-2)  From the beginning, the Shorewall configuration files in
-    /etc/shorewall/ have contained documentary comments. While these
-    comments are useful, they present an upgrade problem. Beginning
-    with this release, these comments are removed from the
-    configuration files themselves and are gathered together in a
-    single file /etc/shorewall/Documentation. The documentation is in
-    alphabetical order by file name.
-
-3)  The "shorewall [re]load" command now supports a "-c" option.
-
-    Example:
-
-	shorewall reload -c gateway
-
-    When -c is given, Shorewall will capture the capabilities of the
-    remote system to a file named "capabilities" in the export
-    directory before compiling the configuration.
-
-    If the file "capabilities" does not currently exist in the 
-    export directory then "-c" is automatically assumed.
-
-4)  If 0 (zero) is specified for the IN-BANDWIDTH in
-    /etc/shorewall/tcdevices then no ingress qdisc will be created for
-    the device.
-
-5)  The Makefile installed in /usr/share/shorewall/configfiles/ is now
-    the same one mentioned at
-    http://www.shorewall.net/CompiledPrograms.html.
-
-    Once the file is copied into an export directory, you modify the
-    setting of the HOST variable to match the name of the remote
-    firewall.
-
-    The default target is the "firewall" script so "make" compiles the
-    firewall script if any of the configuration files have
-    changed. "make install" builds "firewall" if necessary then
-    installs it on the remote firewall. "make capabilities" will
-    generate the "capabilities" file if that file doesn't exist. "make
-    save" will save the running configuration on the remote firewall.
-
-6)  Shorewall and Shorewall Lite now include the following manpages. 
-
-	      shorewall-accounting(5)
-	      shorewall-actions(5)
-	      shorewall-blacklist(5)
-	      shorewall.conf(5)
-	      shorewall-hosts(5)
-	      shorewall-interfaces(5)
-	      shorewall-lite(8)
-	      shorewall-maclist(5)
-	      shorewall-masq(5)
-	      shorewall-nat(5)
-	      shorewall-netmap(5)
-	      shorewall-params(5)
-	      shorewall-policy(5)
-	      shorewall-providers(5)
-	      shorewall-proxyarp(5)
-	      shorewall-route_rules(5)
-	      shorewall-routestopped(5)
-	      shorewall-rules(5)
-	      shorewall-tcclasses(5)
-	      shorewall-tcdevices(5)
-	      shorewall-tcrules(5)
-	      shorewall-template(5)
-	      shorewall-tos(5)
-	      shorewall-tunnels(5)
-	      shorewall(8)
-	      shorewall-zones(5)
+None.
 
 Migration Considerations:
 
@@ -535,3 +451,76 @@ New Features:
     the saved copy so that it will once again be captured at the next
     shorewall start or shorewall restore.
 
+17) Shorewall no longer includes policy matches in its generated
+    ruleset when no IPSEC zones or IPSEC networks are defined (IPSEC
+    networks are defined using the 'ipsec' option in
+    /etc/shorewall/hosts).
+
+18) From the beginning, the Shorewall configuration files in
+    /etc/shorewall/ have contained documentary comments. While these
+    comments are useful, they present an upgrade problem. Beginning
+    with this release, these comments are removed from the
+    configuration files themselves and are gathered together in a
+    single file /etc/shorewall/Documentation. The documentation is in
+    alphabetical order by file name.
+
+19) The "shorewall [re]load" command now supports a "-c" option.
+
+    Example:
+
+	shorewall reload -c gateway
+
+    When -c is given, Shorewall will capture the capabilities of the
+    remote system to a file named "capabilities" in the export
+    directory before compiling the configuration.
+
+    If the file "capabilities" does not currently exist in the 
+    export directory then "-c" is automatically assumed.
+
+20) If 0 (zero) is specified for the IN-BANDWIDTH in
+    /etc/shorewall/tcdevices then no ingress qdisc will be created for
+    the device.
+
+21) The Makefile installed in /usr/share/shorewall/configfiles/ is now
+    the same one mentioned at
+    http://www.shorewall.net/CompiledPrograms.html.
+
+    Once the file is copied into an export directory, you modify the
+    setting of the HOST variable to match the name of the remote
+    firewall.
+
+    The default target is the "firewall" script so "make" compiles the
+    firewall script if any of the configuration files have
+    changed. "make install" builds "firewall" if necessary then
+    installs it on the remote firewall. "make capabilities" will
+    generate the "capabilities" file if that file doesn't exist. "make
+    save" will save the running configuration on the remote firewall.
+
+22) Shorewall and Shorewall Lite now include the following manpages. 
+
+	      shorewall-accounting(5)
+	      shorewall-actions(5)
+	      shorewall-blacklist(5)
+	      shorewall.conf(5)
+	      shorewall-hosts(5)
+	      shorewall-interfaces(5)
+	      shorewall-lite(8)
+	      shorewall-maclist(5)
+	      shorewall-masq(5)
+	      shorewall-nat(5)
+	      shorewall-netmap(5)
+	      shorewall-params(5)
+	      shorewall-policy(5)
+	      shorewall-providers(5)
+	      shorewall-proxyarp(5)
+	      shorewall-route_rules(5)
+	      shorewall-routestopped(5)
+	      shorewall-rules(5)
+	      shorewall-tcclasses(5)
+	      shorewall-tcdevices(5)
+	      shorewall-tcrules(5)
+	      shorewall-template(5)
+	      shorewall-tos(5)
+	      shorewall-tunnels(5)
+	      shorewall(8)
+	      shorewall-zones(5)

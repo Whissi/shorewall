@@ -101,12 +101,67 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">BLACKLIST_DISPOSITION=</emphasis>{<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>}</term>
+
+        <listitem>
+          <para>This parameter determines the disposition of packets from
+          blacklisted hosts. It may have the value DROP if the packets are to
+          be dropped or REJECT if the packets are to be replied with an ICMP
+          port unreachable reply or a TCP RST (tcp only). If you do not assign
+          a value or if you assign an empty value then DROP is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">BLACKLIST_LOGLEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+
+        <listitem>
+          <para>This parameter determines if packets from blacklisted hosts
+          are logged and it determines the syslog level that they are to be
+          logged at. Its value is a syslog level (Example:
+          BLACKLIST_LOGLEVEL=debug). If you do not assign a value or if you
+          assign an empty value then packets from blacklisted hosts are not
+          logged.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">BRIDGING=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
           <para>When set to Yes or yes, enables Shorewall Bridging
           support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CLAMPMSS={</emphasis><emphasis
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|<emphasis>value</emphasis>}</term>
+
+        <listitem>
+          <para>This parameter enables the TCP Clamp MSS to PMTU feature of
+          Netfilter and is usually required when your internet connection is
+          through PPPoE or PPTP. If set to <emphasis
+          role="bold">Yes</emphasis> or <emphasis role="bold">yes</emphasis>,
+          the feature is enabled. If left blank or set to <emphasis
+          role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
+          the feature is not enabled.</para>
+
+          <note>
+            <para>This option requires CONFIG_IP_NF_TARGET_TCPMSS in your
+            kernel. </para>
+          </note>
+
+          <para> You may also set CLAMPMSS to a numeric
+          <emphasis>value</emphasis> (e.g., CLAMPMSS=1400). This will set the
+          MSS field in TCP SYN packets going through the firewall to the
+          <emphasis>value</emphasis> that you specify.</para>
         </listitem>
       </varlistentry>
 
@@ -160,6 +215,23 @@
 
           <para>Note that the setting in /usr/share/shorewall/configpath is
           always used to locate shorewall.conf.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DELAYBLACKLISTLOAD=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Users with a large static black list (shorewall-blacklist(5))
+          may want to set the DELAYBLACKLISTLOAD option to Yes. When
+          DELAYBLACKLISTLOAD=Yes, Shorewall will enable new connections before
+          loading the blacklist rules. While this may allow connections from
+          blacklisted hosts to slip by during construction of the blacklist,
+          it can substantially reduce the time that all new connections are
+          disabled during <emphasis role="bold">shorewall</emphasis>
+          [<emphasis role="bold">re</emphasis>]<emphasis
+          role="bold">start</emphasis>.</para>
         </listitem>
       </varlistentry>
 
@@ -703,6 +775,20 @@
             <para>RFC1918_STRICT=Yes requires that your kernel and iptables
             support 'Connection Tracking' match.</para>
           </warning>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">ROUTE_FILTER=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>If this parameter is given the value <emphasis
+          role="bold">Yes</emphasis> or <emphasis role="bold">yes</emphasis>
+          then route filtering (anti-spoofing) is enabled on all network
+          interfaces which are brought up while Shorewall is in the started
+          state. The default value is <emphasis
+          role="bold">no</emphasis>.</para>
         </listitem>
       </varlistentry>
 

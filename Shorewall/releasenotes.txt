@@ -37,7 +37,8 @@ None.
 
 Other Changes in 3.3.6
 
-None.
+1)  Now that the manpages are in place, /etc/shorewall/Documentation
+    has been removed.
 
 Migration Considerations:
 
@@ -96,6 +97,14 @@ New Features:
     - lib.actions. Must be available if you do not specify
       USE_ACTIONS=No in /etc/shorewall/shorewall.conf.
 
+    - lib.base. The base Shorewall library required by all programs. 
+
+    - lib.cli. Library containing the code common to /sbin/shorewall,
+      /sbin/shorewall-lite, and /usr/share/shorewall/firewall.
+
+    - lib.config. Library containing the code that is common to
+      /usr/share/shorewall/compiler and /usr/share/shorewall/firewall. 
+
     - lib.dynamiczones. Must be available if you specify
       DYNAMIC_ZONES=Yes in shorewall.conf.
 
@@ -126,8 +135,6 @@ New Features:
     footprint by:
 
     - Omitting the macro files.
-    - Only including the 'modules' file appropriate for the kernel in
-      use.
     - Omitting all unused extension scripts.
     - Stripping the comments (except for copyright) from the various
       files.
@@ -237,7 +244,7 @@ New Features:
     messages which must be 29 bytes or less in length. With the
     standard Shorewall LOGFORMAT, that leaves 11 characters for the
     chain name; given that many chain names are of the form
-    <zone1>2<zone2>, that gives a maximum zone name length of 11.
+    <zone1>2<zone2>, that gives a maximum zone name length of 5.
 
     Beginning with this release, the maximum length of a zone name is
     dependent on the LOGFORMAT (the maximum length may never be less
@@ -425,12 +432,7 @@ New Features:
 14) IP Address ranges are now allowed in the drop, reject, allow and
     logdrop shorewall[-lite] commands.
 
-15) The lib.cli library has been added. It is distributed with
-    both Shorewall and Shorewall Lite and contains the
-    command-processing code that is common to both /sbin/shorewall and
-    /sbin/shorewall-lite.
-
-16) Previously, Shorewall has not attempted to undo the changes it has
+15) Previously, Shorewall has not attempted to undo the changes it has
     made to the firewall's routing as a result of entries in
     /etc/shorewall/providers and /etc/shorewall/routes. Beginning with
     this release, Shorewall will attempt to undo these changes.
@@ -451,37 +453,12 @@ New Features:
     the saved copy so that it will once again be captured at the next
     shorewall start or shorewall restore.
 
-17) Shorewall no longer includes policy matches in its generated
+16) Shorewall no longer includes policy matches in its generated
     ruleset when no IPSEC zones or IPSEC networks are defined (IPSEC
     networks are defined using the 'ipsec' option in
     /etc/shorewall/hosts).
 
-18) From the beginning, the Shorewall configuration files in
-    /etc/shorewall/ have contained documentary comments. While these
-    comments are useful, they present an upgrade problem. Beginning
-    with this release, these comments are removed from the
-    configuration files themselves and are gathered together in a
-    single file /etc/shorewall/Documentation. The documentation is in
-    alphabetical order by file name.
-
-19) The "shorewall [re]load" command now supports a "-c" option.
-
-    Example:
-
-	shorewall reload -c gateway
-
-    When -c is given, Shorewall will capture the capabilities of the
-    remote system to a file named "capabilities" in the export
-    directory before compiling the configuration.
-
-    If the file "capabilities" does not currently exist in the 
-    export directory then "-c" is automatically assumed.
-
-20) If 0 (zero) is specified for the IN-BANDWIDTH in
-    /etc/shorewall/tcdevices then no ingress qdisc will be created for
-    the device.
-
-21) The Makefile installed in /usr/share/shorewall/configfiles/ is now
+17) The Makefile installed in /usr/share/shorewall/configfiles/ is now
     the same one mentioned at
     http://www.shorewall.net/CompiledPrograms.html.
 
@@ -496,7 +473,7 @@ New Features:
     generate the "capabilities" file if that file doesn't exist. "make
     save" will save the running configuration on the remote firewall.
 
-22) Shorewall and Shorewall Lite now include the following manpages. 
+18) Shorewall and Shorewall Lite now include the following manpages. 
 
 	      shorewall-accounting(5)
 	      shorewall-actions(5)
@@ -524,3 +501,11 @@ New Features:
 	      shorewall-tunnels(5)
 	      shorewall(8)
 	      shorewall-zones(5)
+
+19) From the beginning, the Shorewall configuration files in
+    /etc/shorewall/ have contained documentary comments. While these
+    comments are useful, they present an upgrade problem. Beginning
+    with this release, these comments are removed from the
+    configuration files themselves and are replaced by the manpages
+    described in the preceding release note entry.
+

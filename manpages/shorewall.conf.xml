@@ -37,8 +37,91 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">ADD_IP_ALIASES=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis
+        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">none</emphasis>}</term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">none</emphasis>}</term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">none</emphasis>}</term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">none</emphasis>}</term>
+
+        <listitem>
+          <para>In earlier Shorewall versions, a "default action" for DROP and
+          REJECT policies was specified in the file
+          /usr/share/shorewall/actions.std.</para>
+
+          <para>To allow for default rules to be applied when USE_ACTIONS=No,
+          the DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT and QUEUE_DEFAULT
+          options have been added.</para>
+
+          <para>DROP_DEFAULT describes the rules to be applied before a
+          connection request is dropped by a DROP policy; REJECT_DEFAULT
+          describes the rules to be applied if a connection request is
+          rejected by a REJECT policy. The other two are similar for ACCEPT
+          and QUEUE policies.</para>
+
+          <para>The value applied to these may be:</para>
+
+          <simplelist>
+            <member>a) The name of an action.</member>
+
+            <member>b) The name of a macro</member>
+
+            <member>c) <emphasis role="bold">None</emphasis> or <emphasis
+            role="bold">none</emphasis></member>
+          </simplelist>
+
+          <para>The default values are:</para>
+
+          <simplelist>
+            <member>DROP_DEFAULT="Drop"</member>
+
+            <member>REJECT_DEFAULT="Reject"</member>
+
+            <member>ACCEPT_DEFAULT="none"</member>
+
+            <member>QUEUE_DEFAULT="none"</member>
+          </simplelist>
+
+          <para>If USE_ACTIONS=Yes, then these values refer to action.Drop and
+          action.Reject respectively. If USE_ACTIONS=No, then these values
+          refer to macro.Drop and macro.Reject.</para>
+
+          <para>If you set the value of either option to "None" then no
+          default action will be used and the default action or macro must be
+          specified in shorewall-policy(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">ADD_IP_ALIASES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
@@ -54,7 +137,7 @@
           (ADD_IP_ALIASES="") then ADD_IP_ALIASES=Yes is assumed.</para>
 
           <warning>
-            <para> Addresses added by ADD_IP_ALIASES=Yes are deleted and
+            <para>Addresses added by ADD_IP_ALIASES=Yes are deleted and
             re-added during shorewall restart. As a consequence, connections
             using those addresses may be severed.</para>
           </warning>
@@ -62,8 +145,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ADD_SNAT_ALIASES=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">ADD_SNAT_ALIASES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
@@ -84,8 +167,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ADMINISABSENTMINDED=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">ADMINISABSENTMINDED=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>The value of this variable affects Shorewall's stopped state.
@@ -102,9 +185,9 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">BLACKLIST_DISPOSITION=</emphasis>{<emphasis
+        role="bold">BLACKLIST_DISPOSITION=</emphasis>[<emphasis
         role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>}</term>
+        role="bold">REJECT</emphasis>]</term>
 
         <listitem>
           <para>This parameter determines the disposition of packets from
@@ -140,9 +223,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CLAMPMSS={</emphasis><emphasis
+        <term><emphasis role="bold">CLAMPMSS=[</emphasis><emphasis
         role="bold">Yes</emphasis>|<emphasis
-        role="bold">No</emphasis>|<emphasis>value</emphasis>}</term>
+        role="bold">No</emphasis>|<emphasis>value</emphasis>]</term>
 
         <listitem>
           <para>This parameter enables the TCP Clamp MSS to PMTU feature of
@@ -155,10 +238,10 @@
 
           <note>
             <para>This option requires CONFIG_IP_NF_TARGET_TCPMSS in your
-            kernel. </para>
+            kernel.</para>
           </note>
 
-          <para> You may also set CLAMPMSS to a numeric
+          <para>You may also set CLAMPMSS to a numeric
           <emphasis>value</emphasis> (e.g., CLAMPMSS=1400). This will set the
           MSS field in TCP SYN packets going through the firewall to the
           <emphasis>value</emphasis> that you specify.</para>
@@ -166,8 +249,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CLEAR_TC=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">CLEAR_TC=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>If this option is set to “No” then Shorewall won't clear the
@@ -236,8 +319,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DETECT_DNAT_ADDRS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">DETECT_DNAT_ADDRS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>If set to “Yes” or “yes”, Shorewall will detect the first IP
@@ -345,10 +428,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">IP_FORWARDING=</emphasis>{<emphasis
+        <term><emphasis role="bold">IP_FORWARDING=</emphasis>[<emphasis
         role="bold">On</emphasis>|<emphasis
         role="bold">Off</emphasis>|<emphasis
-        role="bold">Keep</emphasis>}</term>
+        role="bold">Keep</emphasis>]</term>
 
         <listitem>
           <para>This parameter determines whether Shorewall enables or
@@ -391,14 +474,24 @@
       </varlistentry>
 
       <varlistentry>
+        <term>IPSECFILE={zones|ipsec}</term>
+
+        <listitem>
+          <para>This should be set to <emphasis role="bold">zones</emphasis>
+          for all new Shorewall installations. IPSECFILE=ipsec is only used
+          for compatibility with pre-Shorewall-3.0 configurations.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">IPTABLES=</emphasis><emphasis>pathname</emphasis></term>
 
         <listitem>
           <para>This parameter names the iptables executable to be used by
           Shorewall. If not specified or if specified as a null value, then
-          the iptables executable located using the PATH option is used.
-          </para>
+          the iptables executable located using the PATH option is
+          used.</para>
         </listitem>
       </varlistentry>
 
@@ -535,10 +628,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">MACLIST_DISPOSITION=</emphasis>{<emphasis
+        <term><emphasis role="bold">MACLIST_DISPOSITION=</emphasis>[<emphasis
         role="bold">ACCEPT</emphasis>|<emphasis
         role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>}</term>
+        role="bold">REJECT</emphasis>]</term>
 
         <listitem>
           <para>Determines the disposition of connections requests that fail
@@ -611,9 +704,23 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">MAPOLDACTIONS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Previously, Shorewall included a large number of standard
+          actions (AllowPing, AllowFTP, ...). These have been replaced with
+          parameterized macros. For compatibility, Shorewall can map the old
+          names into invocations of the new macros if you set
+          MAPOLDACTIONS=Yes. If this option is not set or is set to the empty
+          value (MAPOLDACTIONS="") then MAPOLDACTIONS=Yes is assumed</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
-        role="bold">MARK_IN_FORWARD_CHAIN=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        role="bold">MARK_IN_FORWARD_CHAIN=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>If your kernel has a FORWARD chain in the mangle table, you
@@ -659,14 +766,45 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">NAT_BEFORE_RULES=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">NAT_BEFORE_RULES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>If set to “No” or “no”, port forwarding rules can override the
           contents of the /etc/shorewall/nat file. If set to “Yes” or “yes”,
           port forwarding rules cannot override one-to-one NAT. If not set or
           set to an empty value, “Yes” is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OPTIMIZE=</emphasis>[<emphasis
+        role="bold">0</emphasis>|<emphasis role="bold">1</emphasis>]</term>
+
+        <listitem>
+          <para>Traditionally, Shorewall has created rules for the complete
+          matrix of Networks defined by the zones, interfaces and hosts files.
+          Any traffic that didn't correspond to an element of that matrix was
+          rejected in one of the built-in changes. When the matrix is sparse,
+          this results in lots of largely useless rules.</para>
+
+          <para>These extra rules can be eliminated by setting
+          OPTIMIZE=1.</para>
+
+          <para>The OPTIMIZE setting also controls the suppression of
+          redundant wildcard rules (those specifying "all" in the SOURCE or
+          DEST column). A wildcard rule is considered to be redundant when it
+          has the same ACTION and Log Level as the applicable policy.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PATH=<emphasis role="bold">pathname</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>pathname</emphasis>]...</term>
+
+        <listitem>
+          <para>Determines the order in which Shorewall searches directories
+          for executable files.</para>
         </listitem>
       </varlistentry>
 
@@ -745,8 +883,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">RFC1918_STRICT=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">RFC1918_STRICT=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>Traditionally, the RETURN target in the 'rfc1918' file has
@@ -779,8 +917,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ROUTE_FILTER=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">ROUTE_FILTER=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>If this parameter is given the value <emphasis
@@ -789,6 +927,19 @@
           interfaces which are brought up while Shorewall is in the started
           state. The default value is <emphasis
           role="bold">no</emphasis>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SAVE_IPSETS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>If SAVE_IPSETS=Yes, then the current contents of your ipsets
+          will be saved by the <emphasis role="bold">shorewall save</emphasis>
+          command. Regardless of the setting of SAVE_IPSETS, if saved ipset
+          contents are available then they will be restored by <emphasis
+          role="bold">shorewall restore</emphasis>.</para>
         </listitem>
       </varlistentry>
 
@@ -843,11 +994,49 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|<emphasis
+        role="bold">Internal</emphasis>]</term>
+
+        <listitem>
+          <para>If you say <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis> here, Shorewall will use a script that
+          you supply to configure traffic shaping. The script must be named
+          'tcstart' and must be placed in a directory on your
+          CONFIG_PATH.</para>
+
+          <para>If you say <emphasis role="bold">No</emphasis> or <emphasis
+          role="bold">no</emphasis> then traffic shaping is not
+          enabled.</para>
+
+          <para>If you set TC_ENABLED=Internal or internal or leave the option
+          empty then Shorewall will use its builtin traffic shaper
+          (tc4shorewall written by Arne Bernin.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">TC_EXPERT=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Normally, Shorewall tries to protect users from themselves by
+          preventing PREROUTING and OUTPUT tcrules from being applied to
+          packets that have been marked by the 'track' option in
+          /etc/shorewall/providers.</para>
+
+          <para>If you know what you are doing, you can set TC_EXPERT=Yes and
+          Shorewall will not include these cautionary checks.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
-        role="bold">TCP_FLAGS_DISPOSITION=</emphasis>{<emphasis
+        role="bold">TCP_FLAGS_DISPOSITION=</emphasis>[<emphasis
         role="bold">ACCEPT</emphasis>|<emphasis
         role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>}</term>
+        role="bold">REJECT</emphasis>]</term>
 
         <listitem>
           <para>Determines the disposition of TCP packets that fail the checks
@@ -873,11 +1062,23 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">USE_ACTIONS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>While Shorewall Actions can be very useful, they also require
+          a sizable amount of code to implement. By setting USE_ACTIONS=No,
+          embedded Shorewall installations can omit the large library
+          /usr/share/shorewall/lib.actions.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">VERBOSITY=</emphasis><emphasis>number</emphasis></term>
 
         <listitem>
-          <para> Shorewall has traditionally been very noisy (produced lots of
+          <para>Shorewall has traditionally been very noisy (produced lots of
           output). You may set the default level of verbosity using the
           VERBOSITY OPTION.</para>
 

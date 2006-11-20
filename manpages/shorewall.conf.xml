@@ -37,6 +37,53 @@
 
     <variablelist>
       <varlistentry>
+        <term><emphasis role="bold">ADD_IP_ALIASES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>This parameter determines whether Shorewall automatically adds
+          the external address(es) in shorewall.nat(5). If the variable is set
+          to <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis> then Shorewall automatically adds these
+          aliases. If it is set to <emphasis role="bold">No</emphasis> or
+          <emphasis role="bold">no</emphasis>, you must add these aliases
+          yourself using your distribution's network configuration
+          tools.</para>
+
+          <para>If this variable is not set or is given an empty value
+          (ADD_IP_ALIASES="") then ADD_IP_ALIASES=Yes is assumed.</para>
+
+          <warning>
+            <para> Addresses added by ADD_IP_ALIASES=Yes are deleted and
+            re-added during shorewall restart. As a consequence, connections
+            using those addresses may be severed.</para>
+          </warning>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">ADD_SNAT_ALIASES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>This parameter determines whether Shorewall automatically adds
+          the SNAT ADDRESS in /etc/shorewall/masq. If the variable is set to
+          “Yes” or “yes” then Shorewall automatically adds these addresses. If
+          it is set to “No” or “no”, you must add these addresses yourself
+          using your distribution's network configuration tools.</para>
+
+          <para>If this variable is not set or is given an empty value
+          (ADD_SNAT_ALIASES="") then ADD_SNAT_ALIASES=No is assumed.</para>
+
+          <warning>
+            <para>Addresses added by ADD_SNAT_ALIASES=Yes are deleted and
+            re-added during shorewall restart. As a consequence, connections
+            using those addresses may be severed.</para>
+          </warning>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">ADMINISABSENTMINDED=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
@@ -113,6 +160,20 @@
 
           <para>Note that the setting in /usr/share/shorewall/configpath is
           always used to locate shorewall.conf.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DETECT_DNAT_ADDRS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>If set to “Yes” or “yes”, Shorewall will detect the first IP
+          address of the interface to the source zone and will include this
+          address in DNAT rules as the original destination IP address. If set
+          to “No” or “no”, Shorewall will not detect this address and any
+          destination IP address will match the DNAT rule. If not specified or
+          empty, “DETECT_DNAT_ADDRS=Yes” is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -212,6 +273,52 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">IP_FORWARDING=</emphasis>{<emphasis
+        role="bold">On</emphasis>|<emphasis
+        role="bold">Off</emphasis>|<emphasis
+        role="bold">Keep</emphasis>}</term>
+
+        <listitem>
+          <para>This parameter determines whether Shorewall enables or
+          disables IPV4 Packet Forwarding (/proc/sys/net/ipv4/ip_forward).
+          Possible values are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">On</emphasis> or <emphasis
+              role="bold">on</emphasis></term>
+
+              <listitem>
+                <para>packet forwarding will be enabled.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">Off</emphasis> or <emphasis
+              role="bold">off</emphasis></term>
+
+              <listitem>
+                <para>packet forwarding will be disabled.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">Keep</emphasis> or <emphasis
+              role="bold">keep</emphasis></term>
+
+              <listitem>
+                <para>Shorewall will neither enable nor disable packet
+                forwarding.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>If this variable is not set or is given an empty value
+          (IP_FORWARD="") then IP_FORWARD=On is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">IPTABLES=</emphasis><emphasis>pathname</emphasis></term>
 
@@ -220,6 +327,21 @@
           Shorewall. If not specified or if specified as a null value, then
           the iptables executable located using the PATH option is used.
           </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">LOG_MARTIANS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>If set to Yes or yes, sets
+          /proc/sys/net/ipv4/conf/all/log_martians and
+          /proc/sys/net/ipv4/conf/default/log_martians to 1. Default is which
+          sets both of the above to zero. If you do not enable martian logging
+          for all interfaces, you may still enable it for individual
+          interfaces using the logmartians interface option in
+          shorewall-interfaces(5).</para>
         </listitem>
       </varlistentry>
 
@@ -244,11 +366,11 @@
             </listitem>
           </itemizedlist>
 
-          <para>Example: Using the default LOGFORMAT, the log prefix for
+          <para>For example, using the default LOGFORMAT, the log prefix for
           logging from the nat table's PREROUTING chain is:</para>
 
           <programlisting>    Shorewall:nat:PREROUTING
-</programlisting>
+ </programlisting>
 
           <important>
             <para>There is no rate limiting on these logging rules so use
@@ -261,6 +383,21 @@
             <para>Do not use this option if the resulting log messages will be
             sent to another system.</para>
           </caution>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">LOGFILE=</emphasis><emphasis>pathname</emphasis></term>
+
+        <listitem>
+          <para>This parameter tells the /sbin/shorewall program where to look
+          for Shorewall messages when processing the <emphasis
+          role="bold">dump</emphasis>, <emphasis
+          role="bold">logwatch</emphasis>, <emphasis role="bold">show
+          log</emphasis>, and <emphasis role="bold">hits</emphasis> commands.
+          If not assigned or if assigned an empty value, /var/log/messages is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -287,6 +424,45 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">LOGBURST=</emphasis><emphasis>burst</emphasis></term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">LOGRATE=</emphasis><emphasis>rate</emphasis><emphasis
+        role="bold">/</emphasis>{<emphasis
+        role="bold">minute</emphasis>|<emphasis
+        role="bold">second</emphasis>}</term>
+
+        <listitem>
+          <para>These parameters set the match rate and initial burst size for
+          logged packets. Please see the iptables man page for a description
+          of the behavior of these parameters (the iptables option --limit is
+          set by LOGRATE and --limit-burst is set by LOGBURST). If both
+          parameters are set empty, no rate-limiting will occur.</para>
+
+          <para>Example:</para>
+
+          <programlisting>    LOGRATE=10/minute
+    LOGBURST=5</programlisting>
+
+          <para>For each logging rule, the first time the rule is reached, the
+          packet will be logged; in fact, since the burst is 5, the first five
+          packets will be logged. After this, it will be 6 seconds (1 minute
+          divided by the rate of 10) before a message will be logged from the
+          rule, regardless of how many packets reach it. Also, every 6 seconds
+          which passes without matching a packet, one of the bursts will be
+          regained; if no packets hit the rule for 30 seconds, the burst will
+          be fully recharged; back where we started.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MACLIST_DISPOSITION=</emphasis>{<emphasis
         role="bold">ACCEPT</emphasis>|<emphasis
         role="bold">DROP</emphasis>|<emphasis
@@ -299,6 +475,18 @@
           or DROP (ignore the connection request). If not set or if set to the
           empty value (e.g., MACLIST_DISPOSITION="") then
           MACLIST_DISPOSITION=REJECT is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">MACLIST_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+
+        <listitem>
+          <para>Determines the syslog level for logging connection requests
+          that fail MAC Verification. The value must be a valid syslogd log
+          level. If you don't want to log these connection requests, set to
+          the empty value (e.g., MACLIST_LOG_LEVEL="").</para>
         </listitem>
       </varlistentry>
 
@@ -371,13 +559,42 @@
       </varlistentry>
 
       <varlistentry>
-        <term>MODULE_SUFFIX="<emphasis role="bold">suffix</emphasis>
+        <term><emphasis
+        role="bold">MODULE_SUFFIX=</emphasis>"<emphasis>suffix</emphasis>
         ...<emphasis role="bold">"</emphasis></term>
 
         <listitem>
           <para>The value of this option determines the possible file
           extensions of kernel modules. The default value is "o gz ko
           o.gz".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">MODULESDIR=</emphasis><emphasis>pathname</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>pathname</emphasis>]...</term>
+
+        <listitem>
+          <para>This parameter specifies the directory/directories where your
+          kernel netfilter modules may be found. If you leave the variable
+          empty, Shorewall will supply the value "/lib/modules/`uname
+          -r`/kernel/net/ipv4/netfilter" in versions of Shorewall prior to
+          3.2.4 and "/lib/modules/`uname
+          -r`/kernel/net/ipv4/netfilter:/lib/modules/`uname
+          -r`/kernel/net/ipv4/netfilter" in later versions.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">NAT_BEFORE_RULES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>If set to “No” or “no”, port forwarding rules can override the
+          contents of the /etc/shorewall/nat file. If set to “Yes” or “yes”,
+          port forwarding rules cannot override one-to-one NAT. If not set or
+          set to an empty value, “Yes” is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -420,6 +637,26 @@
           role="bold">shorewall restore</emphasis>, <emphasis
           role="bold">shorewall forget </emphasis>and <emphasis
           role="bold">shorewall -f start</emphasis> commands.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">RETAIN_ALIASES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>During <emphasis role="bold">shorewall star</emphasis>t, IP
+          addresses to be added as a consequence of ADD_IP_ALIASES=Yes and
+          ADD_SNAT_ALIASES=Yes are quietly deleted when shorewall-nat(5) and
+          shorewall-masq(5) are processed then are re-added later. This is
+          done to help ensure that the addresses can be added with the
+          specified labels but can have the undesirable side effect of causing
+          routes to be quietly deleted. When RETAIN_ALIASES is set to Yes,
+          existing addresses will not be deleted. Regardless of the setting of
+          RETAIN_ALIASES, addresses added during <emphasis
+          role="bold">shorewall start</emphasis> are still deleted at a
+          subsequent <emphasis role="bold">shorewall stop</emphasis> or
+          <emphasis role="bold">shorewall restart</emphasis>.</para>
         </listitem>
       </varlistentry>
 
@@ -502,6 +739,20 @@
           shorewall.net, this option is set to No. When set to Yes or yes,
           Shorewall may be started. Used as a guard against Shorewall being
           accidentally started before it has been configured.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">SUBSYSLOCK=</emphasis><emphasis>pathname</emphasis></term>
+
+        <listitem>
+          <para>This parameter should be set to the name of a file that the
+          firewall should create if it starts successfully and remove when it
+          stops. Creating and removing this file allows Shorewall to work with
+          your distribution's initscripts. For RedHat, this should be set to
+          /var/lock/subsys/shorewall. For Debian, the value is
+          /var/state/shorewall and in LEAF it is /var/run/shorwall.</para>
         </listitem>
       </varlistentry>
 

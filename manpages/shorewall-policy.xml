@@ -36,7 +36,7 @@
     <important>
       <para>Intra-zone policies are pre-defined</para>
 
-      <para>For $FW and for all of the zoned defined in /etc/shorewall/zones,
+      <para>For $FW and for all of the zones defined in /etc/shorewall/zones,
       the POLICY for connections from the zone to itself is ACCEPT (with no
       logging or TCP connection rate limiting but may be overridden by an
       entry in this file. The overriding entry must be explicit (cannot use
@@ -121,9 +121,10 @@
                 SOURCE to this DEST. Shorewall will not create any
                 infrastructure to handle such packets and you may not have any
                 rules with this SOURCE and DEST in the /etc/shorewall/rules
-                file such a packet _is_ received, the result is undefined.
-                NONE may not be used if the SOURCE or DEST columns contain the
-                firewall zone ($FW) or "all".</para>
+                file. If such a packet <emphasis role="bold">is</emphasis>
+                received, the result is undefined. NONE may not be used if the
+                SOURCE or DEST columns contain the firewall zone ($FW) or
+                "all".</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -163,11 +164,11 @@
           levels.</para>
 
           <para>You may also specify ULOG (must be in upper case). This will
-          log to the ULOG target and sent to a separate log through use of
-          ulogd (http://www.gnumonks.org/projects/ulogd).</para>
+          log to the ULOG target and will send to a separate log through use
+          of ulogd (http://www.gnumonks.org/projects/ulogd).</para>
 
           <para>If you don't want to log but need to specify the following
-          column, place "-" here. </para>
+          column, place "-" here.</para>
         </listitem>
       </varlistentry>
 
@@ -177,7 +178,7 @@
         <listitem>
           <para>If passed, specifies the maximum TCP connection rate and the
           size of an acceptable burst. If not specified, TCP connections are
-          not limited. </para>
+          not limited.</para>
         </listitem>
       </varlistentry>
     </variablelist>

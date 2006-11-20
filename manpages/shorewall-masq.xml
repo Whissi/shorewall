@@ -86,9 +86,9 @@
           firewall (Shorewall will use your main routing table to determine
           the appropriate addresses to masquerade).</para>
 
-          <para>In order to exclude a addrress of the specified SOURCE, you
-          may append "!" and a comma-separated list of IP addresses (host or
-          net) that you wish to exclude.</para>
+          <para>In order to exclude a address of the specified SOURCE, you may
+          append "!" and a comma-separated list of IP addresses (host or net)
+          that you wish to exclude.</para>
 
           <para>Example: eth1!192.168.1.4,192.168.32.0/27</para>
 
@@ -104,7 +104,7 @@
           <para>If you specify an address here, SNAT will be used and this
           will be the source address. If ADD_SNAT_ALIASES is set to Yes or yes
           in shorewall.conf(5) then Shorewall will automatically add this
-          address to the INTERFACE named in the first column. </para>
+          address to the INTERFACE named in the first column.</para>
 
           <para>You may also specify a range of up to 256 IP addresses if you
           want the SNAT address to be assigned from that range in a
@@ -294,14 +294,14 @@
         <listitem>
           <para>You have a simple masquerading setup where eth0 connects to a
           DSL or cable modem and eth1 connects to your local network with
-          subnet 192.168.0.0/24. </para>
+          subnet 192.168.0.0/24.</para>
 
           <para>Your entry in the file can be either:</para>
 
           <programlisting>        #INTERFACE   SOURCE
         eth0         eth1</programlisting>
 
-          <para>or </para>
+          <para>or</para>
 
           <programlisting>        #INTERFACE   SOURCE
         eth0    192.168.0.0/24</programlisting>
@@ -340,8 +340,8 @@
         <listitem>
           <para>You want all outgoing traffic from 192.168.1.0/24 through eth0
           to use source address 206.124.146.176 which is NOT the primary
-          address of eth0. You want 206.124.146.176 added to be added to eth0
-          with name eth0:0.</para>
+          address of eth0. You want 206.124.146.176 to be added to eth0 with
+          name eth0:0.</para>
 
           <programlisting>        #INTERFACE              SOURCE          ADDRESS
         eth0:0                  192.168.1.0/24  206.124.146.176</programlisting>

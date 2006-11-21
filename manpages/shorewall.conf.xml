@@ -302,9 +302,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis
-        role="bold">CONFIG_PATH=</emphasis><emphasis>directory</emphasis>[<emphasis
-        role="bold">:</emphasis><emphasis>directory</emphasis>]...</term>
+        <term>CONFIG_PATH=[<emphasis>directory</emphasis>[:<emphasis>directory</emphasis>]...]</term>
 
         <listitem>
           <para>Specifies where configuration files other than shorewall.conf
@@ -359,12 +357,14 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>If set to “Yes” or “yes”, Shorewall will detect the first IP
+          <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis>, Shorewall will detect the first IP
           address of the interface to the source zone and will include this
           address in DNAT rules as the original destination IP address. If set
-          to “No” or “no”, Shorewall will not detect this address and any
-          destination IP address will match the DNAT rule. If not specified or
-          empty, “DETECT_DNAT_ADDRS=Yes” is assumed.</para>
+          to <emphasis role="bold">No</emphasis> or <emphasis
+          role="bold">no</emphasis>, Shorewall will not detect this address
+          and any destination IP address will match the DNAT rule. If not
+          specified or empty, “DETECT_DNAT_ADDRS=Yes” is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -373,9 +373,10 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>When set to Yes or yes, enables dynamic zones.
-          DYNAMIC_ZONES=Yes is not allowed in configurations that will run
-          under Shorewall Lite.</para>
+          <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis>, enables dynamic zones. DYNAMIC_ZONES=Yes
+          is not allowed in configurations that will run under Shorewall
+          Lite.</para>
         </listitem>
       </varlistentry>
 
@@ -523,7 +524,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">IPTABLES=</emphasis><emphasis>pathname</emphasis></term>
+        role="bold">IPTABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
           <para>This parameter names the iptables executable to be used by
@@ -534,23 +535,25 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">LOG_MARTIANS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">LOG_MARTIANS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>If set to Yes or yes, sets
+          <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis>, sets
           /proc/sys/net/ipv4/conf/all/log_martians and
-          /proc/sys/net/ipv4/conf/default/log_martians to 1. Default is which
-          sets both of the above to zero. If you do not enable martian logging
-          for all interfaces, you may still enable it for individual
-          interfaces using the logmartians interface option in
+          /proc/sys/net/ipv4/conf/default/log_martians to 1. Default is
+          <emphasis role="bold">No</emphasis> which sets both of the above to
+          zero. If you do not enable martian logging for all interfaces, you
+          may still enable it for individual interfaces using the <emphasis
+          role="bold">logmartians</emphasis> interface option in
           shorewall-interfaces(5).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis
-        role="bold">LOGALLNEW=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">LOGALLNEW=</emphasis>[<emphasis>log-level</emphasis>]</term>
 
         <listitem>
           <para>When set to a log level, this option causes Shorewall to
@@ -591,7 +594,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">LOGFILE=</emphasis><emphasis>pathname</emphasis></term>
+        role="bold">LOGFILE=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
           <para>This parameter tells the /sbin/shorewall program where to look
@@ -605,9 +608,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis
-        role="bold">LOGFORMAT="</emphasis><emphasis>formatstring</emphasis><emphasis
-        role="bold">"</emphasis></term>
+        <term><emphasis role="bold">LOGFORMAT=</emphasis>[<emphasis
+        role="bold">"</emphasis><emphasis>formattemplate</emphasis><emphasis
+        role="bold">"</emphasis>]</term>
 
         <listitem>
           <para>The value of this variable generate the --log-prefix setting
@@ -628,7 +631,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">LOGBURST=</emphasis><emphasis>burst</emphasis></term>
+        role="bold">LOGBURST=</emphasis>[<emphasis>burst</emphasis>]</term>
 
         <listitem>
           <para></para>
@@ -637,10 +640,9 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">LOGRATE=</emphasis><emphasis>rate</emphasis><emphasis
-        role="bold">/</emphasis>{<emphasis
+        role="bold">LOGRATE=</emphasis>[<emphasis>rate</emphasis>/{<emphasis
         role="bold">minute</emphasis>|<emphasis
-        role="bold">second</emphasis>}</term>
+        role="bold">second</emphasis>}]</term>
 
         <listitem>
           <para>These parameters set the match rate and initial burst size for
@@ -694,9 +696,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">MACLIST_TABLE=</emphasis>{<emphasis
-        role="bold">mangle</emphasis>|<emphasis
-        role="bold">filter</emphasis>}</term>
+        <term><emphasis role="bold">MACLIST_TABLE=</emphasis>[<emphasis
+        role="bold">filter</emphasis>|<emphasis
+        role="bold">mangle</emphasis>]</term>
 
         <listitem>
           <para>Normally, MAC verification occurs in the filter table (INPUT
@@ -713,7 +715,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">MACLIST_TTL=</emphasis><emphasis>number</emphasis></term>
+        role="bold">MACLIST_TTL=[</emphasis><emphasis>number</emphasis>]</term>
 
         <listitem>
           <para>The performance of configurations with a large numbers of
@@ -776,9 +778,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis
-        role="bold">MODULE_SUFFIX=</emphasis>"<emphasis>suffix</emphasis>
-        ...<emphasis role="bold">"</emphasis></term>
+        <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
+        role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
+        role="bold">"</emphasis>]</term>
 
         <listitem>
           <para>The value of this option determines the possible file
@@ -812,26 +814,14 @@
           that programs will wait for exclusive access to the Shorewall lock
           file. After the number of seconds corresponding to the value of this
           variable, programs will assume that the last program to hold the
-          lock died without releasing the lock. </para>
+          lock died without releasing the lock.</para>
 
           <para>If not set or set to the empty value, a value of 60 (60
           seconds) is assumed.</para>
 
           <para>An appropriate value for this parameter would be twice the
           length of time that it takes your firewall system to process a
-          "shorewall restart" command. </para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">NAT_BEFORE_RULES=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
-
-        <listitem>
-          <para>If set to “No” or “no”, port forwarding rules can override the
-          contents of the /etc/shorewall/nat file. If set to “Yes” or “yes”,
-          port forwarding rules cannot override one-to-one NAT. If not set or
-          set to an empty value, “Yes” is assumed.</para>
+          <emphasis role="bold">shorewall restart</emphasis> command.</para>
         </listitem>
       </varlistentry>
 
@@ -991,7 +981,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">SAVE_IPSETS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
           <para>If SAVE_IPSETS=Yes, then the current contents of your ipsets
@@ -1004,7 +994,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">SHOREWALL_SHELL=</emphasis><emphasis>pathname</emphasis></term>
+        role="bold">SHOREWALL_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
           <para>This option is used to specify the shell program to be used to
@@ -1017,7 +1007,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">SMURF_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">SMURF_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
 
         <listitem>
           <para>Specifies the logging level for smurf packets (see the
@@ -1032,7 +1022,9 @@
 
         <listitem>
           <para>Determines if Shorewall is allowed to start. As released from
-          shorewall.net, this option is set to No. When set to Yes or yes,
+          shorewall.net, this option is set to <emphasis
+          role="bold">No</emphasis>. When set to <emphasis
+          role="bold">Yes</emphasis> or <emphasis role="bold">yes</emphasis>,
           Shorewall may be started. Used as a guard against Shorewall being
           accidentally started before it has been configured.</para>
         </listitem>
@@ -1040,7 +1032,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">SUBSYSLOCK=</emphasis><emphasis>pathname</emphasis></term>
+        role="bold">SUBSYSLOCK=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
           <para>This parameter should be set to the name of a file that the
@@ -1083,7 +1075,7 @@
           <para>Normally, Shorewall tries to protect users from themselves by
           preventing PREROUTING and OUTPUT tcrules from being applied to
           packets that have been marked by the 'track' option in
-          /etc/shorewall/providers.</para>
+          shorewall-providers(5).</para>
 
           <para>If you know what you are doing, you can set TC_EXPERT=Yes and
           Shorewall will not include these cautionary checks.</para>
@@ -1134,7 +1126,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">VERBOSITY=</emphasis><emphasis>number</emphasis></term>
+        role="bold">VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
 
         <listitem>
           <para>Shorewall has traditionally been very noisy (produced lots of

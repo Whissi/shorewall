@@ -375,7 +375,7 @@ usage() # $1 = exit status
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   forget [ <file name> ]"
-    echo "   help [ <command > | host | address ]"
+    echo "   help"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
@@ -881,8 +881,7 @@ case "$COMMAND" in
 	;;
     help)
 	shift
-	[ $# -ne 1 ] && usage 1
-	help $@
+	usage
 	;;
     *)
 	usage 1

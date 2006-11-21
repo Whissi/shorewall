@@ -313,13 +313,6 @@ install_file shorecap ${PREFIX}/usr/share/shorewall-lite/shorecap 0555
 echo
 echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall-lite/shorecap"
 
-
-# Install the Help file
-#
-install_file help ${PREFIX}/usr/share/shorewall-lite/help 0544
-
-echo "Help command executor installed in ${PREFIX}/usr/share/shorewall-lite/help"
-
 #
 # Install the Modules file
 #

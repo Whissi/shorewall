@@ -861,7 +861,7 @@ export_command() # $* = original arguments less the command.
 	    target=$2
 	    ;;
 	*)
-	    fatal_error "ERROR: Invalid command syntax (\"shorewall help export\" for help)"
+	    fatal_error "ERROR: Invalid command syntax (\"man shorewall\" for help)"
 	    ;;
     esac
 
@@ -900,7 +900,7 @@ usage() # $1 = exit status
     echo "   dump [ -x ]"
     echo "   export [ <directory1> ] [<user>@]<system>:[<directory2>]"
     echo "   forget [ <file name> ]"
-    echo "   help [ <command > | host | address ]"
+    echo "   help"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
@@ -916,7 +916,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones]"
+    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -1456,8 +1456,7 @@ case "$COMMAND" in
 	;;
     help)
 	shift
-	[ $# -ne 1 ] && usage 1
-	help $@
+	usage
 	;;
     safe-restart|safe-start)
 	shift

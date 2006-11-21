@@ -70,10 +70,6 @@
       <arg>-options</arg>
 
       <command>help</command>
-
-      <group>
-        <arg choice="plain">command</arg>
-      </group>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -186,6 +182,9 @@
       <command>show</command>
 
       <arg><option>-x</option></arg>
+
+      <arg><option>-t</option>
+      {<option>filter</option>|<option>mangle</option>|<option>nat</option>}</arg>
 
       <arg rep="repeat">chain</arg>
     </cmdsynopsis>
@@ -406,9 +405,7 @@
         <term><emphasis role="bold">help</emphasis></term>
 
         <listitem>
-          <para>Displays information about a particular
-          <emphasis>command</emphasis>. If no <emphasis>command</emphasis> is
-          given, a syntax summary is displayed.</para>
+          <para>Displays a syntax summary.</para>
         </listitem>
       </varlistentry>
 
@@ -541,6 +538,11 @@
                 iptables and causes actual packet and byte counts to be
                 displayed. Without this option, those counts are
                 abbreviated.</para>
+
+                <para>The <emphasis role="bold">-t</emphasis> option
+                designates the Netfilter table to be displayed. Without that
+                option, the <emphasis role="bold">filter</emphasis> table is
+                assumed.</para>
               </listitem>
             </varlistentry>
 

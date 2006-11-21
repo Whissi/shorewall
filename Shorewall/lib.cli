@@ -355,7 +355,7 @@ show_routing() {
 # Show Command Executor
 #
 show_command() {
-    local finished=0
+    local finished=0 local table=filter
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -384,6 +384,21 @@ show_command() {
 			f*)
 			    FILEMODE=Yes
 			    option=${option#f}
+			    ;;
+			t)
+			    [ $# -eq 1 ] && usage 1
+
+			    case $2 in
+				mangle|nat|filter)
+				    table=$2
+				    ;;
+				*)
+				    fatal_error "Invalid table name ($s)"
+				    ;;
+			    esac
+			    
+			    option=
+			    shift
 			    ;;
 			*)
 			    usage 1
@@ -528,10 +543,10 @@ show_command() {
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    $IPTABLES -L $chain $IPT_OPTIONS
+		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
 		done
 	    else
-		$IPTABLES -L $IPT_OPTIONS
+		$IPTABLES -t $table -L $IPT_OPTIONS
 	    fi
 	    ;;
     esac
@@ -713,15 +728,6 @@ restore_command() {
 	[ -n "$nolock" ] || mutex_off
 	exit 2
     fi
-}
-
-#
-# Help information
-#
-help()
-{
-    [ -x $HELP ] && { export version; exec $HELP $*; }
-    echo "Help subsystem is not installed at $HELP"
 }
 
 #

@@ -295,12 +295,6 @@ install_file compiler ${PREFIX}/usr/share/shorewall/compiler 0555
 echo
 echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler"
 
-# Install the Help file
-#
-install_file help ${PREFIX}/usr/share/shorewall/help 0555
-
-echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
-
 #
 # Install the policy file
 #

@@ -68,7 +68,6 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall
 %attr(0755,root,root) %dir /usr/share/shorewall/configfiles
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0644,root,root) %config(noreplace) /etc/shorewall/Documentation
 %attr(0644,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy

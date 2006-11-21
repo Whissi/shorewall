@@ -187,9 +187,12 @@
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
           the SNAT ADDRESS in /etc/shorewall/masq. If the variable is set to
-          “Yes” or “yes” then Shorewall automatically adds these addresses. If
-          it is set to “No” or “no”, you must add these addresses yourself
-          using your distribution's network configuration tools.</para>
+          <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis> then Shorewall automatically adds these
+          addresses. If it is set to <emphasis role="bold">No</emphasis> or
+          <emphasis role="bold">no</emphasis>, you must add these addresses
+          yourself using your distribution's network configuration
+          tools.</para>
 
           <para>If this variable is not set or is given an empty value
           (ADD_SNAT_ALIASES="") then ADD_SNAT_ALIASES=No is assumed.</para>
@@ -253,7 +256,8 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>When set to Yes or yes, enables Shorewall Bridging
+          <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis>, enables Shorewall Bridging
           support.</para>
         </listitem>
       </varlistentry>
@@ -289,15 +293,16 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>If this option is set to “No” then Shorewall won't clear the
-          current traffic control rules during [re]start. This setting is
-          intended for use by people that prefer to configure traffic shaping
-          when the network interfaces come up rather than when the firewall is
-          started. If that is what you want to do, set TC_ENABLED=Yes and
-          CLEAR_TC=No and do not supply an /etc/shorewall/tcstart file. That
-          way, your traffic shaping rules can still use the “fwmark”
-          classifier based on packet marking defined in shorewall-tcrules(5).
-          If not specified, CLEAR_TC=Yes is assumed.</para>
+          <para>If this option is set to <emphasis role="bold">No</emphasis>
+          then Shorewall won't clear the current traffic control rules during
+          [re]start. This setting is intended for use by people that prefer to
+          configure traffic shaping when the network interfaces come up rather
+          than when the firewall is started. If that is what you want to do,
+          set TC_ENABLED=Yes and CLEAR_TC=No and do not supply an
+          /etc/shorewall/tcstart file. That way, your traffic shaping rules
+          can still use the “fwmark” classifier based on packet marking
+          defined in shorewall-tcrules(5). If not specified, CLEAR_TC=Yes is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -341,13 +346,14 @@
 
         <listitem>
           <para>Users with a large static black list (shorewall-blacklist(5))
-          may want to set the DELAYBLACKLISTLOAD option to Yes. When
-          DELAYBLACKLISTLOAD=Yes, Shorewall will enable new connections before
-          loading the blacklist rules. While this may allow connections from
-          blacklisted hosts to slip by during construction of the blacklist,
-          it can substantially reduce the time that all new connections are
-          disabled during <emphasis role="bold">shorewall</emphasis>
-          [<emphasis role="bold">re</emphasis>]<emphasis
+          may want to set the DELAYBLACKLISTLOAD option to <emphasis
+          role="bold">Yes</emphasis>. When DELAYBLACKLISTLOAD=Yes, Shorewall
+          will enable new connections before loading the blacklist rules.
+          While this may allow connections from blacklisted hosts to slip by
+          during construction of the blacklist, it can substantially reduce
+          the time that all new connections are disabled during <emphasis
+          role="bold">shorewall</emphasis> [<emphasis
+          role="bold">re</emphasis>]<emphasis
           role="bold">start</emphasis>.</para>
         </listitem>
       </varlistentry>
@@ -446,8 +452,9 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>When this option is set to "Yes", it causes subzones to be
-          treated differently with respect to policies.</para>
+          <para>When this option is set to <emphasis
+          role="bold">Yes</emphasis>, it causes subzones to be treated
+          differently with respect to policies.</para>
 
           <para>Subzones are defined by following their name with ":" and a
           list of parent zones (in /etc/shorewall/zones). Normally, you want

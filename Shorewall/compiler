@@ -839,13 +839,13 @@ setup_ecn() # $1 = file name
 
 	    for interface in $interfaces; do
 		chain=$(ecn_chain $interface)
-		    if havemanglechain $chain; then
-			flushmangle $chain
-		    else
-			createmanglechain $chain
-			run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
-			run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
-		    fi
+		if havemanglechain $chain; then
+		    flushmangle $chain
+		else
+		    createmanglechain $chain
+		    run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
+		    run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
+		fi
 	    done
 
 	    for host in $hosts; do

@@ -226,6 +226,7 @@ fi
 %attr(0444,root,root) %{_mandir}/man5/shorewall-actions.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-blacklist.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall.conf.5.gz
+%attr(0444,root,root) %{_mandir}/man5/shorewall-ecn.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-hosts.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-interfaces.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-maclist.5.gz

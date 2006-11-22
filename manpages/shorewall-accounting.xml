@@ -30,7 +30,10 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">ACTION</emphasis></term>
+        <term><emphasis role="bold">ACTION</emphasis> — {<emphasis
+        role="bold">COUNT</emphasis>|<emphasis
+        role="bold">DONE</emphasis>|<emphasis>chain</emphasis>[:<emphasis
+        role="bold">COUNT</emphasis>]}</term>
 
         <listitem>
           <para>What to do when a matching packet is found.</para>
@@ -56,8 +59,9 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis>chain</emphasis>:<emphasis
-              role="bold">COUNT</emphasis></term>
+              <term><emphasis>chain</emphasis>[<emphasis
+              role="bold">:</emphasis><emphasis
+              role="bold">COUNT</emphasis>]</term>
 
               <listitem>
                 <para>Where <emphasis>chain</emphasis> is the name of a chain.
@@ -73,19 +77,27 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CHAIN</emphasis></term>
+        <term><emphasis role="bold">CHAIN</emphasis> — {<emphasis
+        role="bold">-</emphasis>|<emphasis>chain</emphasis>}</term>
 
         <listitem>
-          <para>The name of a chain. If specified as <emphasis
-          role="bold">-</emphasis> the <emphasis
+          <para>The name of a <emphasis>chain</emphasis>. If specified as
+          <emphasis role="bold">-</emphasis> the <emphasis
           role="bold">accounting</emphasis> chain is assumed. This is the
-          chain where the accounting rule is added. The chain will be created
-          if it doesn't already exist.</para>
+          chain where the accounting rule is added. The
+          <emphasis>chain</emphasis> will be created if it doesn't already
+          exist.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis></term>
+        <term><emphasis role="bold">SOURCE</emphasis> — {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis
+        role="bold">$FW</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
 
         <listitem>
           <para>Packet Source.</para>
@@ -96,7 +108,11 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DESTINATION</emphasis></term>
+        <term><emphasis role="bold">DESTINATION</emphasis> — {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
 
         <listitem>
           <para>Packet Destination.</para>
@@ -107,38 +123,53 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTOCOL</emphasis></term>
+        <term><emphasis role="bold">PROTOCOL</emphasis> — {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis
+        role="bold">ipp2p</emphasis>[<emphasis
+        role="bold">:</emphasis>{<emphasis
+        role="bold">udp</emphasis>|<emphasis
+        role="bold">all</emphasis>}]}</term>
 
         <listitem>
-          <para>A protocol name (from protocols(5)), a protocol number,
-          <emphasis role="bold">ipp2p</emphasis>, <emphasis
+          <para>A <emphasis>protocol-name</emphasis> (from protocols(5)), a
+          <emphasis>protocol-number</emphasis>, <emphasis
+          role="bold">ipp2p</emphasis>, <emphasis
           role="bold">ipp2p:udp</emphasis> or <emphasis
           role="bold">ipp2p:all</emphasis></para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S)</emphasis></term>
+        <term><emphasis role="bold">DEST PORT(S)</emphasis> — Value:
+        {<emphasis role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>ipp2p-option</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
         <listitem>
           <para>Destination Port number. If the PROTOCOL is <emphasis
-          role="bold">ipp2p</emphasis> then this column must contain an ipp2p
-          option ("iptables -m ipp2p --help") without the leading "--". If no
-          option is given in this column, "ipp2p" is assumed.</para>
+          role="bold">ipp2p</emphasis> then this column must contain an
+          <emphasis>ipp2p-option</emphasis> ("iptables -m ipp2p --help")
+          without the leading "--". If no option is given in this column,
+          "ipp2p" is assumed.</para>
 
           <para>Service name from services(5) or <emphasis>port
           number</emphasis>. May only be specified if the protocol is
           <emphasis role="bold">tcp</emphasis> or <emphasis
           role="bold">udp</emphasis> (6 or 17).</para>
 
-          <para>You may place a comma-separated list of port numbers in this
-          column if your kernel and iptables include multiport match
+          <para>You may place a comma-separated list of port names or numbers
+          in this column if your kernel and iptables include multiport match
           support.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis></term>
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> — {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
         <listitem>
           <para>Source Port Service name from services(5) or <emphasis>port
@@ -152,17 +183,15 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis></term>
+        <term><emphasis role="bold">USER/GROUP</emphasis> — [<emphasis
+        role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
+        role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
 
         <listitem>
           <para>This column may only be non-empty if the <emphasis
-          role="bold">SOURCE</emphasis> is the firewall itself.</para>
-
-          <para>The column may contain:</para>
-
-          <para>[!][<emphasis>user name or number</emphasis>][:<emphasis>group
-          name or number</emphasis>][+<emphasis>program
-          name</emphasis>]</para>
+          role="bold">SOURCE</emphasis> is the firewall itself (<emphasis
+          role="bold">$FW</emphasis>).</para>
 
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective

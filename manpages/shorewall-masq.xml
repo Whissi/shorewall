@@ -39,21 +39,27 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">INTERFACE</emphasis></term>
+        <term><emphasis role="bold">INTERFACE</emphasis> — [<emphasis
+        role="bold">+</emphasis>]<emphasis>interface</emphasis>[<emphasis
+        role="bold">:</emphasis>[<emphasis>digit</emphasis>]][<emphasis
+        role="bold">:</emphasis>[<emphasis>address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address</emphasis>]...]</term>
 
         <listitem>
-          <para>Outgoing interface. This is usually your internet interface.
-          If ADD_SNAT_ALIASES=Yes in shorewall.conf(5), you may add ":" and a
-          digit to indicate that you want the alias added with that name
-          (e.g., eth0:0). This will allow the alias to be displayed with
-          ifconfig. <emphasis role="bold">That is the only use for the alias
-          name; it may not appear in any other place in your Shorewall
+          <para>Outgoing <emphasis>interface</emphasis>. This is usually your
+          internet interface. If ADD_SNAT_ALIASES=Yes in shorewall.conf(5),
+          you may add ":" and a <emphasis>digit</emphasis> to indicate that
+          you want the alias added with that name (e.g., eth0:0). This will
+          allow the alias to be displayed with ifconfig. <emphasis
+          role="bold">That is the only use for the alias name; it may not
+          appear in any other place in your Shorewall
           configuratio</emphasis>n.</para>
 
           <para>The interface may be qualified by adding the character ":"
-          followed by a destination host or subnet to indicate that you only
-          want to change the source IP address for packets being sent to that
-          particular destination.</para>
+          followed by a comma-separated list of destination host or subnet
+          addresses to indicate that you only want to change the source IP
+          address for packets being sent to those particular
+          destinations.</para>
 
           <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
           entry then include the ":" but omit the digit:</para>
@@ -76,15 +82,20 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis> (Formerly called
-        SUBNET)</term>
+        <term><emphasis role="bold">SOURCE</emphasis> (Formerly called SUBNET)
+        —
+        {<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address</emphasis>]}[<emphasis
+        role="bold">!</emphasis><emphasis>exclude-address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>exclude-address</emphasis>]...]</term>
 
         <listitem>
           <para>Set of hosts that you wish to masquerade. You can specify this
-          as an address (net or host) or as an interface. If you give the name
-          of an interface, the interface must be up before you start the
-          firewall (Shorewall will use your main routing table to determine
-          the appropriate addresses to masquerade).</para>
+          as an <emphasis>address</emphasis> (net or host) or as an
+          <emphasis>interface</emphasis>. If you give the name of an
+          interface, the interface must be up before you start the firewall
+          (Shorewall will use your main routing table to determine the
+          appropriate addresses to masquerade).</para>
 
           <para>In order to exclude a address of the specified SOURCE, you may
           append "!" and a comma-separated list of IP addresses (host or net)
@@ -98,7 +109,12 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ADDRESS</emphasis> (Optional)</term>
+        <term><emphasis role="bold">ADDRESS</emphasis> (Optional) — [<emphasis
+        role="bold">-</emphasis>|[<emphasis
+        role="bold">SAME:</emphasis>[<emphasis
+        role="bold">nodst:</emphasis>]][<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
+        role="bold">-</emphasis><emphasis>highport</emphasis>]|<emphasis
+        role="bold">detect</emphasis>]</term>
 
         <listitem>
           <para>If you specify an address here, SNAT will be used and this
@@ -157,7 +173,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTO</emphasis> (Optional)</term>
+        <term><emphasis role="bold">PROTO</emphasis> (Optional) — {<emphasis
+        role="bold">-</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>}</term>
 
         <listitem>
           <para>If you wish to restrict this entry to a particular protocol
@@ -167,7 +184,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORT(S)</emphasis> (Optional)</term>
+        <term><emphasis role="bold">PORT(S)</emphasis> (Optional) —
+        [<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...]</term>
 
         <listitem>
           <para>If the PROTO column specifies TCP (protocol 6) or UDP
@@ -183,7 +201,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">IPSEC</emphasis> (Optional)</term>
+        <term><emphasis role="bold">IPSEC</emphasis> (Optional) —
+        [<emphasis>option</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
 
         <listitem>
           <para>If you specify a value other than "-" in this column, you must

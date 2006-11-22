@@ -52,7 +52,9 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis></term>
+        <term><emphasis role="bold">SOURCE</emphasis> —
+        <emphasis>zone</emphasis>|<emphasis
+        role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
 
         <listitem>
           <para>Source zone. Must be the name of a zone defined in
@@ -61,7 +63,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST</emphasis></term>
+        <term><emphasis role="bold">DEST</emphasis> —
+        <emphasis>zone</emphasis>|<emphasis
+        role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
 
         <listitem>
           <para>Destination zone. Must be the name of a zone defined in
@@ -70,7 +74,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">POLICY</emphasis></term>
+        <term><emphasis role="bold">POLICY</emphasis> — {<emphasis
+        role="bold">ACCEPT</emphasis>|<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|<emphasis
+        role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">NONE</emphasis>}[<emphasis
+        role="bold">:</emphasis>{<emphasis>default-action-or-macro</emphasis>|<emphasis
+        role="bold">None</emphasis>}]</term>
 
         <listitem>
           <para>Policy if no match from the rules file is found. Must be
@@ -155,7 +166,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">LOG LEVEL</emphasis> (Optional)</term>
+        <term><emphasis role="bold">LOG LEVEL</emphasis> (Optional) —
+        [<emphasis>log-level</emphasis>|<emphasis
+        role="bold">ULOG</emphasis>]</term>
 
         <listitem>
           <para>If supplied, each connection handled under the default POLICY
@@ -173,11 +186,15 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">BURST:LIMIT</emphasis></term>
+        <term><emphasis role="bold">BURST:LIMIT</emphasis> —
+        <emphasis>rate</emphasis><emphasis role="bold">/</emphasis>{<emphasis
+        role="bold">second</emphasis>|<emphasis
+        role="bold">minute</emphasis>}:<emphasis>burst</emphasis></term>
 
         <listitem>
-          <para>If passed, specifies the maximum TCP connection rate and the
-          size of an acceptable burst. If not specified, TCP connections are
+          <para>If passed, specifies the maximum TCP connection
+          <emphasis>rate</emphasis> and the size of an acceptable
+          <emphasis>burst</emphasis>. If not specified, TCP connections are
           not limited.</para>
         </listitem>
       </varlistentry>

@@ -27,10 +27,14 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis></term>
+        <term><emphasis role="bold">SOURCE</emphasis> -
+        {<emphasis>zone</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis
+        role="bold">all</emphasis>|<emphasis
+        role="bold">$FW</emphasis>}</term>
 
         <listitem>
-          <para>Name of a zone declared in shorewall.zones(5), <emphasis
+          <para>Name of a zone declared in shorewall-zones(5), <emphasis
           role="bold">all</emphasis> or <emphasis
           role="bold">$FW</emphasis>.</para>
 
@@ -49,23 +53,25 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST</emphasis></term>
+        <term><emphasis role="bold">DEST</emphasis> -
+        {<emphasis>zone</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis
+        role="bold">all</emphasis>}</term>
 
         <listitem>
-          <para>Name of a zone declared in shorewall.zones(5), <emphasis
-          role="bold">all</emphasis> or <emphasis
-          role="bold">$FW</emphasis>.</para>
+          <para>Name of a zone declared in shorewall-zones(5) or <emphasis
+          role="bold">all</emphasis>.</para>
 
-          <para>If not <emphasis role="bold">all</emphasis> or <emphasis
-          role="bold">$FW</emphasis>, may optionally be followed by ":" and an
-          IP address or a subnet specification</para>
+          <para>If not <emphasis role="bold">all</emphasis>, may optionally be
+          followed by ":" and an IP address or a subnet specification</para>
 
           <para>Example: loc:192.168.2.3</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTOCOL</emphasis></term>
+        <term><emphasis role="bold">PROTOCOL</emphasis> —
+        <emphasis>proto-name-or-number</emphasis></term>
 
         <listitem>
           <para>Protocol name or number.</para>
@@ -73,7 +79,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORTS</emphasis></term>
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> —
+        {-|<emphasis>port</emphasis>|<emphasis>lowport</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>highport</emphasis>}</term>
 
         <listitem>
           <para>Source port or port range. If all ports, use "-".</para>
@@ -81,7 +89,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORTS</emphasis></term>
+        <term><emphasis role="bold">DEST PORT(S)</emphasis> —
+        {-|<emphasis>port</emphasis>|<emphasis>lowport</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>highport</emphasis>}</term>
 
         <listitem>
           <para>Destination port or port range. If all ports, use "-"</para>
@@ -89,7 +99,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">TOS</emphasis></term>
+        <term><emphasis role="bold">TOS</emphasis> —
+        <emphasis>tos</emphasis></term>
 
         <listitem>
           <para>Must be one of the following;</para>

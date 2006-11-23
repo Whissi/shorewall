@@ -109,7 +109,27 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">ACTION</emphasis></term>
+        <term><emphasis role="bold">ACTION</emphasis> — {<emphasis
+        role="bold">ACCEPT</emphasis>[<emphasis
+        role="bold">+</emphasis>]|<emphasis
+        role="bold">NONAT</emphasis>|<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|<emphasis
+        role="bold">DNAT</emphasis>[<emphasis
+        role="bold">-</emphasis>]|<emphasis
+        role="bold">SAME</emphasis>[<emphasis
+        role="bold">-</emphasis>]|<emphasis
+        role="bold">REDIRECT</emphasis>[<emphasis
+        role="bold">-</emphasis>]|<emphasis
+        role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">LOG</emphasis>|<emphasis
+        role="bold">QUEUE</emphasis>|<emphasis
+        role="bold">COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
+        role="bold">/</emphasis><emphasis>target</emphasis>}<emphasis
+        role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
+        role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
+        role="bold">!</emphasis></emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>tag</emphasis>]]</term>
 
         <listitem>
           <para>Must be one of the following.</para>
@@ -291,7 +311,8 @@
                 macro accepts an action parameter (Look at the macro source to
                 see if it has PARAM in the TARGET column) then the
                 <emphasis>macro</emphasis> name is followed by "/" and the
-                action (<emphasis role="bold">ACCEPT</emphasis>, <emphasis
+                <emphasis>target</emphasis> (<emphasis
+                role="bold">ACCEPT</emphasis>, <emphasis
                 role="bold">DROP</emphasis>, <emphasis
                 role="bold">REJECT</emphasis>, ...) to be substituted for the
                 parameter.</para>
@@ -343,7 +364,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis></term>
+        <term><emphasis role="bold">SOURCE</emphasis> —
+        {<emphasis>zone</emphasis>|<emphasis
+        role="bold">all</emphasis>[<emphasis
+        role="bold">+</emphasis>][<emphasis
+        role="bold">-</emphasis>]}<emphasis
+        role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
+        role="bold">:</emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...|<emphasis
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
 
         <listitem>
           <para>Source hosts to which the rule applies. May be a zone defined
@@ -440,7 +468,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST</emphasis></term>
+        <term><emphasis role="bold">DEST</emphasis> —
+        {<emphasis>zone</emphasis>|<emphasis
+        role="bold">all</emphasis>[<emphasis
+        role="bold">+</emphasis>][<emphasis
+        role="bold">-</emphasis>]}<emphasis
+        role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
+        role="bold">:</emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...|<emphasis
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}}</term>
 
         <listitem>
           <para>Location of Server. May be a zone defined in
@@ -520,17 +555,17 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTO</emphasis> (Optional)</term>
+        <term><emphasis role="bold">PROTO</emphasis> (Optional) — {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">tcp:syn</emphasis>|<emphasis
+        role="bold">ipp2p</emphasis>|<emphasis
+        role="bold">ipp2p:udp</emphasis>|<emphasis
+        role="bold">ipp2p:all</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis
+        role="bold">all}</emphasis></term>
 
         <listitem>
-          <para>Protocol - Must be <emphasis role="bold">tcp</emphasis>,
-          <emphasis role="bold">tcp:syn</emphasis>, <emphasis
-          role="bold">udp</emphasis>, <emphasis role="bold">icmp</emphasis>,
-          <emphasis role="bold">ipp2p</emphasis>,<emphasis role="bold">
-          ipp2p:udp</emphasis>, <emphasis role="bold">ipp2p:all</emphasis> a
-          <emphasis>number</emphasis>, or <emphasis
-          role="bold">all</emphasis>. <emphasis role="bold">ipp2p</emphasis>*
-          requires ipp2p match support in your kernel and iptables. <emphasis
+          <para>Protocol - <emphasis role="bold">ipp2p</emphasis>* requires
+          ipp2p match support in your kernel and iptables. <emphasis
           role="bold">tcp:syn</emphasis> implies <emphasis
           role="bold">tcp</emphasis> plus the SYN flag must be set and the
           RST,ACK and FIN flags must be reset.</para>
@@ -538,7 +573,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) </emphasis>(Optional)</term>
+        <term><emphasis role="bold">DEST PORT(S) </emphasis>(Optional) —
+        {<emphasis
+        role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...}</term>
 
         <listitem>
           <para>Destination Ports. A comma-separated list of Port names (from
@@ -576,8 +614,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis>
-        (Optional)</term>
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (Optional) —
+        {<emphasis
+        role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...}</term>
 
         <listitem>
           <para>Port(s) used by the client. If omitted, any source port is
@@ -610,7 +650,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (Optional)</term>
+        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (Optional) —
+        [<emphasis
+        role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...]</term>
 
         <listitem>
           <para>If ACTION is <emphasis role="bold">DNAT</emphasis>[<emphasis
@@ -647,36 +689,37 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">RATE LIMIT</emphasis> (Optional)</term>
+        <term><emphasis role="bold">RATE LIMIT</emphasis> (Optional) —
+        [<emphasis role="bold">-</emphasis>|<emphasis>rate</emphasis><emphasis
+        role="bold">/</emphasis>{<emphasis
+        role="bold">sec</emphasis>|<emphasis
+        role="bold">min</emphasis>}[:<emphasis>burst</emphasis>] </term>
 
         <listitem>
           <para>You may rate-limit the rule by placing a value in this
           column:</para>
 
-          <para><emphasis>rate</emphasis>/<emphasis>interval</emphasis>[:<emphasis>burst</emphasis>]
-          where <emphasis>rate</emphasis> is the number of connections per
-          <emphasis>interval</emphasis> (<emphasis role="bold">sec</emphasis>
-          or <emphasis role="bold">min</emphasis>) and
-          <emphasis>burst</emphasis> is the largest burst permitted. If no
-          <emphasis>burst</emphasis> is given, a value of 5 is assumed. There
-          may be no no whitespace embedded in the specification.</para>
+          <para><emphasis>rate</emphasis> is the number of connections per
+          interval (<emphasis role="bold">sec</emphasis> or <emphasis
+          role="bold">min</emphasis>) and <emphasis>burst</emphasis> is the
+          largest burst permitted. If no <emphasis>burst</emphasis> is given,
+          a value of 5 is assumed. There may be no no whitespace embedded in
+          the specification.</para>
 
           <para>Example: 10/sec:20</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis> (Optional)</term>
+        <term><emphasis role="bold">USER/GROUP</emphasis> (Optional) —
+        [<emphasis
+        role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
+        role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
 
         <listitem>
           <para>This column may only be non-empty if the SOURCE is the
           firewall itself.</para>
-
-          <para>The column may contain:</para>
-
-          <para>[!][<emphasis>user name or number</emphasis>][:<emphasis>group
-          name or number</emphasis>][+<emphasis>program
-          name</emphasis>]</para>
 
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective
@@ -838,8 +881,7 @@
     <title>See ALSO</title>
 
     <para><ulink
-    url="http://shorewall.net/Documentation.htm#Rules">http://shorewall.net/Documentation.htm#Rules</ulink>
-    </para>
+    url="http://shorewall.net/Documentation.htm#Rules">http://shorewall.net/Documentation.htm#Rules</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),

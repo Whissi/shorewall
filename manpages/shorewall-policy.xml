@@ -110,6 +110,29 @@
               <listitem>
                 <para>For TCP, send RST. For all other, send an "unreachable"
                 ICMP.</para>
+
+                <para>If the policy is DROP or REJECT then the policy may be
+                followed by ":" and one of the following:</para>
+
+                <orderedlist numeration="loweralpha">
+                  <listitem>
+                    <para>The word "None" or "none". This causes any default
+                    action defined in /etc/shorewall/shorewall.conf to be
+                    omitted for this policy.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The name of an action (requires that USE_ACTIONS=Yes
+                    in shorewall.conf). That action will be invoked before the
+                    policy is enforced.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The name of a macro. The rules in that macro will be
+                    applied before the policy is enforced. This does not
+                    require USE_ACTIONS=Yes.</para>
+                  </listitem>
+                </orderedlist>
               </listitem>
             </varlistentry>
 
@@ -139,29 +162,6 @@
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <para>If the policy is DROP or REJECT then the policy may be
-          followed by ":" and one of the following:</para>
-
-          <orderedlist numeration="loweralpha">
-            <listitem>
-              <para>The word "None" or "none". This causes any default action
-              defined in /etc/shorewall/shorewall.conf to be omitted for this
-              policy.</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of an action (requires that USE_ACTIONS=Yes in
-              shorewall.conf). That action will be invoked before the policy
-              is enforced.</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of a macro. The rules in that macro will be
-              applied before the policy is enforced. This does not require
-              USE_ACTIONS=Yes.</para>
-            </listitem>
-          </orderedlist>
         </listitem>
       </varlistentry>
 

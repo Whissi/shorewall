@@ -32,12 +32,14 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">INTERFACES</emphasis></term>
+        <term><emphasis role="bold">INTERFACE</emphasis> —
+        <emphasis>interface</emphasis></term>
 
         <listitem>
-          <para>Name of interface. Each interface may be listed only once in
-          this file. You may NOT specify the name of an alias (e.g., eth0:0)
-          here; see http://www.shorewall.net/FAQ.htm#faq18</para>
+          <para>Name of <emphasis>interface</emphasis>. Each interface may be
+          listed only once in this file. You may NOT specify the name of an
+          alias (e.g., eth0:0) here; see <ulink
+          url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
 
           <para>You may NOT specify wildcards here, e.g. if you have multiple
           ppp interfaces, you need to put them all in here!</para>
@@ -49,37 +51,41 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">IN-BANDWIDTH</emphasis></term>
+        <term><emphasis role="bold">IN-BANDWIDTH</emphasis> —
+        <emphasis>bandwidth</emphasis></term>
 
         <listitem>
-          <para>The incoming Bandwidth of that interface. Please note that you
-          are not able to do traffic shaping on incoming traffic, as the
-          traffic is already received before you could do so. But this allows
-          you to define the maximum traffic allowed for this interface in
-          total, if the rate is exceeded, the packets are dropped. You want
-          this mainly if you have a DSL or Cable connection to avoid queuing
-          at your providers side.</para>
+          <para>The incoming <emphasis>bandwidth</emphasis> of that interface.
+          Please note that you are not able to do traffic shaping on incoming
+          traffic, as the traffic is already received before you could do so.
+          But this allows you to define the maximum traffic allowed for this
+          interface in total, if the rate is exceeded, the packets are
+          dropped. You want this mainly if you have a DSL or Cable connection
+          to avoid queuing at your providers side.</para>
 
           <para>If you don't want any traffic to be dropped, set this to a
           value to zero in which case Shorewall will not create an ingress
           qdisc.</para>
 
-          <para>Use kbit or kbps(for Kilobytes per second) for speed, and make
-          sure there is NO space between the number and the unit.</para>
+          <para>Use <emphasis role="bold">kbit</emphasis> or <emphasis
+          role="bold">kbps</emphasis>(for Kilobytes per second) for speed, and
+          make sure there is NO space between the number and the unit.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OUT-BANDWIDTH</emphasis></term>
+        <term><emphasis role="bold">OUT-BANDWIDTH</emphasis> —
+        <emphasis>bandwidth</emphasis></term>
 
         <listitem>
-          <para>The outgoing Bandwidth of that interface. This is the maximum
-          speed your connection can handle. It is also the speed you can refer
-          as "full" if you define the tc classes. Outgoing traffic above this
-          rate will be dropped.</para>
+          <para>The outgoing <emphasis>bandwidth</emphasis> of that interface.
+          This is the maximum speed your connection can handle. It is also the
+          speed you can refer as "full" if you define the tc classes. Outgoing
+          traffic above this rate will be dropped.</para>
 
-          <para>Use kbit or kbps(for Kilobytes per second) for speed, and make
-          sure there is NO space between the number and the unit.</para>
+          <para>Use <emphasis role="bold">kbit</emphasis> or <emphasis
+          role="bold">kbps</emphasis>(for Kilobytes per second) for speed, and
+          make sure there is NO space between the number and the unit.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -98,8 +104,7 @@
           and an incoming bandwidth of 6000kbit</para>
 
           <programlisting>        #INTERFACE   IN-BANDWIDTH    OUT-BANDWIDTH
-        ppp0         6000kbit        500kbit
-</programlisting>
+        ppp0         6000kbit        500kbit</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -25,20 +25,25 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">TYPE</emphasis></term>
+        <term><emphasis role="bold">TYPE</emphasis> — {{<emphasis
+        role="bold">ipsec</emphasis>|<emphasis
+        role="bold">ipsecnat</emphasis>}[<emphasis
+        role="bold">:noah</emphasis>]|<emphasis
+        role="bold">ipip</emphasis>|<emphasis
+        role="bold">gre</emphasis>|<emphasis
+        role="bold">pptpclient</emphasis>|<emphasis
+        role="bold">pptpserver</emphasis>|{<emphasis
+        role="bold">openvpn</emphasis>|<emphasis
+        role="bold">openvpnclient</emphasis>|<emphasis
+        role="bold">openvpnserver</emphasis>}[:{<emphasis
+        role="bold">tcp</emphasis>|<emphasis
+        role="bold">udp</emphasis>}]<emphasis
+        role="bold">[</emphasis>:<emphasis>port</emphasis>]|<emphasis
+        role="bold">generic</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>protocol</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>port</emphasis>]}</term>
 
         <listitem>
-          <para>Must be <emphasis role="bold">ipsec</emphasis>, <emphasis
-          role="bold">ipsecnat</emphasis>, <emphasis
-          role="bold">ipip</emphasis>, <emphasis role="bold">gre</emphasis>,
-          <emphasis role="bold">6to4</emphasis>, <emphasis
-          role="bold">pptpclient</emphasis>, <emphasis
-          role="bold">pptpserver</emphasis>, <emphasis
-          role="bold">openvpn</emphasis>, <emphasis
-          role="bold">openvpnclient</emphasis>, <emphasis
-          role="bold">openvpnserver</emphasis> or <emphasis
-          role="bold">generic</emphasis></para>
-
           <para>If the type is <emphasis role="bold">ipsec</emphasis> or
           <emphasis role="bold">ipsecnat</emphasis>, it may be followed by
           <emphasis role="bold">:noah</emphasis> to indicate that the
@@ -71,16 +76,19 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ZONE</emphasis></term>
+        <term><emphasis role="bold">ZONE</emphasis> -
+        <emphasis>zone</emphasis></term>
 
         <listitem>
-          <para>The zone of the physical interface through which tunnel
-          traffic passes. This is normally your internet zone.</para>
+          <para>The <emphasis>zone</emphasis> of the physical interface
+          through which tunnel traffic passes. This is normally your internet
+          zone.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">GATEWAY</emphasis></term>
+        <term><emphasis role="bold">GATEWAY</emphasis> —
+        <emphasis>address-or-range</emphasis></term>
 
         <listitem>
           <para>The IP address of the remote tunnel gateway. If the remote
@@ -92,7 +100,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">GATEWAY ZONES</emphasis> (Optional)</term>
+        <term><emphasis role="bold">GATEWAY ZONES</emphasis> (Optional) —
+        [<emphasis>zone</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>zone</emphasis>]...]</term>
 
         <listitem>
           <para>If the gateway system specified in the third column is a

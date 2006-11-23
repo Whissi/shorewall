@@ -21,7 +21,8 @@
   <refsect1>
     <title>Description</title>
 
-    <para>A note on the rate/bandwidth definitions used in this file:</para>
+    <para>A note on the <emphasis>rate</emphasis>/bandwidth definitions used
+    in this file:</para>
 
     <itemizedlist>
       <listitem>
@@ -109,12 +110,14 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">INTERFACE</emphasis></term>
+        <term><emphasis role="bold">INTERFACE</emphasis> —
+        <emphasis>interface</emphasis></term>
 
         <listitem>
-          <para>Name of interface. Each interface may be listed only once in
-          this file. You may NOT specify the name of an alias (e.g., eth0:0)
-          here; see http://www.shorewall.net/FAQ.htm#faq18</para>
+          <para>Name of <emphasis>interface</emphasis>. Each interface may be
+          listed only once in this file. You may NOT specify the name of an
+          alias (e.g., eth0:0) here; see
+          http://www.shorewall.net/FAQ.htm#faq18</para>
 
           <para>You may NOT specify wildcards here, e.g. if you have multiple
           ppp interfaces, you need to put them all in here!</para>
@@ -125,19 +128,21 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">MARK</emphasis></term>
+        <term><emphasis role="bold">MARK</emphasis> —
+        <emphasis>value</emphasis></term>
 
         <listitem>
-          <para>The mark value which is an integer in the range 1-255. You set
-          mark values in the tcrules file, marking the traffic you want to fit
-          in the classes defined in here.</para>
+          <para>The mark <emphasis>value</emphasis> which is an integer in the
+          range 1-255. You set mark values in the tcrules file, marking the
+          traffic you want to fit in the classes defined in here.</para>
 
           <para>You can use the same marks for different interfaces.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">RATE</emphasis></term>
+        <term><emphasis role="bold">RATE</emphasis> —
+        <emphasis>rate</emphasis></term>
 
         <listitem>
           <para>The minimum bandwidth this class should get, when the traffic
@@ -148,25 +153,29 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CEIL</emphasis></term>
+        <term><emphasis role="bold">CEIL</emphasis> —
+        <emphasis>rate</emphasis></term>
 
         <listitem>
           <para>The maximum bandwidth this class is allowed to use when the
           link is idle. Useful if you have traffic which can get full speed
           when more needed services (e.g. ssh) are not used.</para>
 
-          <para>You can use the value "full" in here for setting the maximum
-          bandwidth to the defined output bandwidth of that interface.</para>
+          <para>You can use the value <emphasis role="bold">full</emphasis> in
+          here for setting the maximum bandwidth to the defined output
+          bandwidth of that interface.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PRIORITY</emphasis></term>
+        <term><emphasis role="bold">PRIORITY</emphasis> —
+        <emphasis>priority</emphasis></term>
 
         <listitem>
-          <para>The priority in which classes will be serviced by the packet
-          shaping scheduler and also the priority in which bandwidth in excess
-          of the rate will be given to each class.</para>
+          <para>The <emphasis>priority</emphasis> in which classes will be
+          serviced by the packet shaping scheduler and also the priority in
+          which bandwidth in excess of the rate will be given to each
+          class.</para>
 
           <para>Higher priority classes will experience less delay since they
           are serviced first. Priority values are serviced in ascending order
@@ -178,7 +187,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OPTIONS</emphasis></term>
+        <term><emphasis role="bold">OPTIONS</emphasis> (Optional) —
+        [<emphasis>option</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
 
         <listitem>
           <para>A comma-separated list of options including the

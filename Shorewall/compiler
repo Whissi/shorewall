@@ -5134,10 +5134,10 @@ __EOF__
 
     save_progress_message "Initializing..."
 
-    if [ -n "$EXPORT" -a -n "$SHOREWALL_DIR" ]; then
-	f=$SHOREWALL_DIR/modules
+    if [ -n "$EXPORT" ]; then
+	f=$(find_file modules)
 
-	if [ -f $f ]; then
+	if [ "$f" != ${SHAREDIR}/modules -a -f $f ]; then
 	    save_command 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir'
 	    save_command "cat > \${VARDIR}/.modules $LEFTSHIFT EOF"
 	    grep loadmodule $f | sed 's/^\s*//' >&3

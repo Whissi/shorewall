@@ -5134,7 +5134,21 @@ __EOF__
 
     save_progress_message "Initializing..."
 
-    save_command load_kernel_modules
+    if [ -n "$EXPORT" -a -n "$SHOREWALL_DIR" ]; then
+	f=$SHOREWALL_DIR/modules
+
+	if [ -f $f ]; then
+	    save_command 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir'
+	    save_command "cat > \${VARDIR}/.modules $LEFTSHIFT EOF"
+	    grep loadmodule $f | sed 's/^\s*//' >&3
+	    save_command_unindented EOF
+	    save_command "reload_kernel_modules < \${VARDIR}/.modules"
+	else
+	    save_command load_kernel_modules
+	fi
+    else
+	save_command load_kernel_modules
+    fi
 
     for interface in $ALL_INTERFACES; do
 	if interface_has_option $interface norfc1918; then

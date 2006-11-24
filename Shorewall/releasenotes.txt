@@ -43,6 +43,13 @@ Other Changes in 3.3.6
     Command-specific help has also been removed since it duplicates
     information in the man pages.
 
+2)  Prior to this release, on firewall systems with Shorewall Lite
+    installed, the local modules file is used to load kernel
+    modules. Beginning with this release, if there is a 'modules' file
+    in the CONFIG_PATH when the firewall script is compiled, then that
+    file will be copied into the compiled script and used on the
+    firewall system.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

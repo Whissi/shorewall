@@ -86,6 +86,7 @@ fi
 %attr(0444,root,root) %{_mandir}/man5/shorewall-blacklist.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall.conf.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-ecn.5.gz
+%attr(0444,root,root) %{_mandir}/man5/shorewall-exclusion.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-hosts.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-interfaces.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
@@ -111,6 +112,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Sat Nov 25 2006 Tom Eastep tom@shorewall.net
+- Added shorewall-exclusion(5)
 * Sun Nov 19 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.3.5-1
 * Sun Oct 29 2006 Tom Eastep tom@shorewall.net

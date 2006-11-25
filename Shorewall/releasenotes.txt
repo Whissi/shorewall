@@ -33,7 +33,11 @@ Shorewall 3.3.6
 
 Problems Corrected in 3.3.6
 
-None.
+1)  Handling of saved ipsets in /etc/shorewall/ipsets is broken when
+    used on a system running Shorewall Lite. If there is a file named
+    'ipsets' on the CONFIG_PATH when the firewall script is compiled,
+    then the compiled script attempts to restore the ipsets from that
+    file (which may not exist on the firewall system). 
 
 Other Changes in 3.3.6
 
@@ -44,11 +48,11 @@ Other Changes in 3.3.6
     information in the man pages.
 
 2)  Prior to this release, on firewall systems with Shorewall Lite
-    installed, the local modules file is used to load kernel
-    modules. Beginning with this release, if there is a 'modules' file
-    in the CONFIG_PATH when the firewall script is compiled, then that
-    file will be copied into the compiled script and used on the
-    firewall system.
+    installed, the local modules file is used to determine which kernel
+    modules to load. Beginning with this release, if there is a
+    'modules' file in the CONFIG_PATH when the firewall script is
+    compiled, then that file will be copied into the compiled script
+    and used on the firewall system.
 
 Migration Considerations:
 

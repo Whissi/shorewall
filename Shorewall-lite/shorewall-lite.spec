@@ -114,6 +114,7 @@ fi
 %changelog
 * Sat Nov 25 2006 Tom Eastep tom@shorewall.net
 - Added shorewall-exclusion(5)
+- Updated to 3.3.6-1
 * Sun Nov 19 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.3.5-1
 * Sun Oct 29 2006 Tom Eastep tom@shorewall.net

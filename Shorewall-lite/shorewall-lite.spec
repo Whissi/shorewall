@@ -1,5 +1,5 @@
 %define name shorewall-lite
-%define version 3.3.5
+%define version 3.3.6
 %define release 1
 %define prefix /usr
 

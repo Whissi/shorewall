@@ -375,7 +375,7 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:</emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
           <para>Source hosts to which the rule applies. May be a zone defined
@@ -415,6 +415,10 @@
           may be optionally followed by a number from 1 to 6 enclosed in
           square brackets ([]) to indicate the number of levels of source
           bindings to be matched.</para>
+
+          <para>You may exclude certain hosts from the set already defined
+          through use of an <emphasis>exclusion</emphasis> (see
+          shorewall-exclusion(5)).</para>
 
           <para>Examples:</para>
 
@@ -460,6 +464,15 @@
                 <para>Hosts 192.0.2.11-192.0.2.17 in the net zone.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>net:155.186.235.0/24!155.186.235.16/28</term>
+
+              <listitem>
+                <para>Subnet 155.186.235.0/24 on the Internet except for
+                155.186.235.16/28</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
           <blockquote>
@@ -481,7 +494,7 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:</emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}}</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
           <para>Location of Server. May be a zone defined in
@@ -504,6 +517,10 @@
           role="bold">+</emphasis>] is specified, the server may be further
           restricted to a particular subnet, host or interface by appending
           ":" and the subnet, host or interface. See above.</para>
+
+          <para>You may exclude certain hosts from the set already defined
+          through use of an <emphasis>exclusion</emphasis> (see
+          shorewall-exclusion(5)).</para>
 
           <para>Restrictions:</para>
 
@@ -703,7 +720,7 @@
         [<emphasis role="bold">-</emphasis>|<emphasis>rate</emphasis><emphasis
         role="bold">/</emphasis>{<emphasis
         role="bold">sec</emphasis>|<emphasis
-        role="bold">min</emphasis>}[:<emphasis>burst</emphasis>] </term>
+        role="bold">min</emphasis>}[:<emphasis>burst</emphasis>]</term>
 
         <listitem>
           <para>You may rate-limit the rule by placing a value in this

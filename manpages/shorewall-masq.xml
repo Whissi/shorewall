@@ -43,7 +43,7 @@
         role="bold">+</emphasis>]<emphasis>interface</emphasis>[<emphasis
         role="bold">:</emphasis>[<emphasis>digit</emphasis>]][<emphasis
         role="bold">:</emphasis>[<emphasis>address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address</emphasis>]...]</term>
+        role="bold">,</emphasis><emphasis>address</emphasis>]...][<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
           <para>Outgoing <emphasis>interface</emphasis>. This is usually your
@@ -58,8 +58,8 @@
           <para>The interface may be qualified by adding the character ":"
           followed by a comma-separated list of destination host or subnet
           addresses to indicate that you only want to change the source IP
-          address for packets being sent to those particular
-          destinations.</para>
+          address for packets being sent to those particular destinations.
+          Exclusion is allowed (see shorewall-exclusion(5)).</para>
 
           <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
           entry then include the ":" but omit the digit:</para>
@@ -85,9 +85,7 @@
         <term><emphasis role="bold">SOURCE</emphasis> (Formerly called SUBNET)
         —
         {<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address</emphasis>]}[<emphasis
-        role="bold">!</emphasis><emphasis>exclude-address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>exclude-address</emphasis>]...]</term>
+        role="bold">,</emphasis><emphasis>address</emphasis>]}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
           <para>Set of hosts that you wish to masquerade. You can specify this
@@ -98,8 +96,9 @@
           appropriate addresses to masquerade).</para>
 
           <para>In order to exclude a address of the specified SOURCE, you may
-          append "!" and a comma-separated list of IP addresses (host or net)
-          that you wish to exclude.</para>
+          append an <emphasis>exclusion</emphasis> ("!" and a comma-separated
+          list of IP addresses (host or net) that you wish to exclude (see
+          shorewall-exclusion(5))).</para>
 
           <para>Example: eth1!192.168.1.4,192.168.32.0/27</para>
 
@@ -402,12 +401,13 @@
     url="http://www.shorewall.net/Documentation.htm#Masq">http://www.shorewall.net/Documentation.htm#Masq</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_routes(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-exclusion(5), shorewall-hosts(5),
+    shorewall-interfaces(5), shorewall-ipsec(5), shorewall-maclist(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_routes(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

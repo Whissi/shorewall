@@ -94,9 +94,7 @@
         <term><emphasis role="bold">SOURCE</emphasis> — {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
-        role="bold">all</emphasis>|<emphasis
-        role="bold">$FW</emphasis>[<emphasis
-        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
+        role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
         role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
 
         <listitem>
@@ -152,7 +150,7 @@
           role="bold">ipp2p</emphasis> then this column must contain an
           <emphasis>ipp2p-option</emphasis> ("iptables -m ipp2p --help")
           without the leading "--". If no option is given in this column,
-          "ipp2p" is assumed.</para>
+          <emphasis role="bold">ipp2p</emphasis> is assumed.</para>
 
           <para>Service name from services(5) or <emphasis>port
           number</emphasis>. May only be specified if the protocol is
@@ -190,8 +188,8 @@
 
         <listitem>
           <para>This column may only be non-empty if the <emphasis
-          role="bold">SOURCE</emphasis> is the firewall itself (<emphasis
-          role="bold">$FW</emphasis>).</para>
+          role="bold">CHAIN</emphasis> is <emphasis
+          role="bold">OUTPUT</emphasis>.</para>
 
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective

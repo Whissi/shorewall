@@ -277,6 +277,43 @@ gateway:~ #</programlisting>
 (vif-script     vif-route)</emphasis>
 </programlisting>
           </blockquote></para>
+
+        <note>
+          <para>I have been asked a couple of times "How would I add another
+          domU to the DMZ?" Here is a sample config file to add a second domU
+          named "server", boot device <filename>/dev/hdb1</filename> and IP
+          address 206.124.146.179:</para>
+
+          <programlisting>#  -*- mode: python; -*-
+
+# configuration name:
+name     = "server"
+
+# usable ram:
+memory   = 512
+
+# kernel and initrd:
+kernel   = "/xen2/vmlinuz-xen"
+ramdisk  = "/xen2/initrd-xen"
+
+# boot device:
+root     = "/dev/hdb1"
+
+# boot to run level:
+extra    = "3"
+
+# network interface:
+vif      = [ 'mac=aa:cc:00:00:00:02, <emphasis role="bold">ip=206.124.146.179, vifname=eth4</emphasis>' ]
+
+# storage devices:
+disk     = [ 'phy:hdb1,hdb1,w' ]</programlisting>
+
+          <para>Note that this domU has its own vif named <filename
+          class="devicefile">eth4</filename>.</para>
+
+          <para>The Shorewall configuration would need to be adjusted
+          accordingly.</para>
+        </note>
       </blockquote>
 
       <para>With both Xen domains up and running, the system looks as shown in

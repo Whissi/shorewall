@@ -1815,6 +1815,9 @@ add_a_rule() {
     case "$logtarget" in
 	ACCEPT|DROP|REJECT|CONTINUE)
 	    if [ "$SECTION" != DONE ]; then
+		#
+		# This function is called from process_default_macro() after rules are DONE
+		#
 		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" ] ; then
 		    error_message "WARNING -- Rule \"$rule\" is a POLICY"
 		    error_message "	   -- and should be moved to the policy file"

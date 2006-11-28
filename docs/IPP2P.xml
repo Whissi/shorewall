@@ -178,15 +178,18 @@ tcp      6 269712 ESTABLISHED src=192.168.3.8 dst=206.124.146.177 sport=50584 dp
             does) by specifying a <firstterm>classid</firstterm> of the form
             &lt;number&gt;:&lt;number&gt; in the MARK column. That is the
             preferred method. A classid is specified when a traffic shaping
-            class is defined. tc4shorewall assigns a classid of 1:&lt;100 +
-            mark value&gt;. They may also be classified using an
-            <firstterm>fwmark classifier</firstterm> which causes the traffic
-            shaping code to classify the traffic based in the packet mark
-            value. That is done by the traffic shaping solution using the
-            <command>tc filter add</command> command. The built-in
-            tc4shorewall shaper uses this command so if you are using the
-            built-in traffic shaping solution, you may use either
-            method.</para>
+            class is defined. tc4shorewall assigns a classid of &lt;device
+            number&gt;:1&lt;mark value&gt;. The first device in
+            <filename>/etc/shorewall/tcdevices</filename> is device number 1,
+            the second is device number 2, and so on. For the first device,
+            mark value 1 is classid 1:11, mark value 22 is classid 1:122,
+            etc.. They may also be classified using an <firstterm>fwmark
+            classifier</firstterm> which causes the traffic shaping code to
+            classify the traffic based in the packet mark value. That is done
+            by the traffic shaping solution using the <command>tc filter
+            add</command> command. The built-in tc4shorewall shaper uses this
+            command so if you are using the built-in traffic shaping solution,
+            you may use either method.</para>
           </footnote>.</para>
       </listitem>
 

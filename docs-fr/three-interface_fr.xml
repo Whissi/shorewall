@@ -236,8 +236,8 @@
     faire qu'avec quelques-uns d'entre eux comme décrit dans ce guide.</para>
 
     <warning>
-      <para><emphasis role="bold">Note aux utilisateurs de
-      Debian</emphasis></para>
+      <para><emphasis role="bold">Note aux utilisateurs de Debian et de
+      Ubuntu</emphasis></para>
 
       <para>Si vous vous servez du .deb pour installer, vous vous rendrez
       compte que votre répertoire <filename
@@ -347,7 +347,22 @@ dmz     ipv4</programlisting>
     url="shorewall_extension_scripts.htm">action commune</ulink> définie pour
     cette politique dans <filename>/etc/shorewall/actions</filename> ou dans
     <filename>/usr/share/shorewall/actions.std</filename> cette action commune
-    sera exécutée avant que la politique ne soit appliquée.</para>
+    sera exécutée avant que la politique ne soit appliquée. Le but de l'action
+    commune est double:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Elle ignore (DROP) ou rejete (REJECT) silencieusement le traffic
+        courant qui n'est pas dangeureux qui sans cela encombrerait votre
+        fichier journal - les messages de broadcast, par exemple.</para>
+      </listitem>
+
+      <listitem>
+        <para>Elle garantit que le traffic nécessaire à un fonctionnement
+        normal est autorisé à traverser le firewall &mdash; ICMP
+        <emphasis>fragmentation-needed</emphasis> par exemple</para>
+      </listitem>
+    </itemizedlist>
 
     <para>Le fichier /etc/shorewall/policy inclus dans l'archive d'exemple
     (three-interface) contient les politiques suivantes:</para>

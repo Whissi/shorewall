@@ -254,12 +254,18 @@ setup_traffic_shaping()
 	run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
 
 	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
+
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
-	    run_iptables -t mangle -A tcpost $(match_dest_dev $device) -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid
+	    if known_interface $device; then
+		run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid
+	    else
+		run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
+	    fi
 	else
 	    run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
 	fi
+
 	#options
 	list_search "tcp-ack" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
  	list_search "tos-minimize-delay" $options       && options="$options tos=0x10/0x10"

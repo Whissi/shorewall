@@ -54,6 +54,11 @@ Other Changes in 3.3.6
     compiled, then that file will be copied into the compiled script
     and used on the firewall system.
 
+3)  Shorewall now uses tc fwmark filters to classify packets for
+    traffic shaping when the DEVICE isn't an interface described in
+    /etc/shorewall/interfaces. This is in preparation for the upcoming
+    change to the way that --physdev-out works in iptables/Netfilter.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

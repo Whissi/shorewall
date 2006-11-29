@@ -1305,42 +1305,7 @@ case "$COMMAND" in
 	fi
 	;;
     allow)
-	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
-	    mutex_on
-	    while [ $# -gt 1 ]; do
-		shift
-		case $1 in
-		    *-*)
-			if  qt $IPTABLES -D dynamic -m iprange --src-range $1 -j reject    ||\
-			    qt $IPTABLES -D dynamic -m iprange --src-range $1 -j DROP      ||\
-			    qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logdrop   ||\
-			    qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logreject
-			then
-			    echo "$1 Allowed"
-			else
-			    echo "$1 Not Dropped or Rejected"
-			fi
-			;;
-		    *)
-			if  qt $IPTABLES -D dynamic -s $1 -j reject    ||\
-			    qt $IPTABLES -D dynamic -s $1 -j DROP      ||\
-			    qt $IPTABLES -D dynamic -s $1 -j logdrop   ||\
-			    qt $IPTABLES -D dynamic -s $1 -j logreject
-			then
-			    echo "$1 Allowed"
-			else
-			    echo "$1 Not Dropped or Rejected"
-			fi
-			;;
-		esac
-	    done
-	    mutex_off
-	else
-	    error_message "ERROR: Shorewall is not started"
-	    exit 2
-	fi
+	allow_command $@
 	;;
     save)
 	[ -n "$debugging" ] && set -x

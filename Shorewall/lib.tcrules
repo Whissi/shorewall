@@ -45,7 +45,7 @@
 #
 process_tc_rule()
 {
-    local did_connmark=
+    local did_connmark= multiport=
 
     chain=$MARKING_CHAIN  target="MARK --set-mark" marktest=
 
@@ -185,8 +185,6 @@ process_tc_rule()
 	    r="${r}-m tos --tos ${tos} "
 	fi
 
-	multiport=
-
 	case $proto in
 	    ipp2p|IPP2P|ipp2p:*|IPP2P:*)
 		do_ipp2p
@@ -199,7 +197,7 @@ process_tc_rule()
 		[ "x$proto" = "x-"  ] && proto=all
 		[ "x$proto" = "x"   ] && proto=all
 		[ "$proto"  = "all" ] || r="${r}-p $proto "
-		[ "x$port"  = "x-"  ] || r="${r}--dport $port "
+		[ "x$port"  = "x-"  ] || r="${r}$multiport $port "
 		;;
 	esac
 
@@ -391,16 +389,35 @@ process_tc_rule()
 	    dests=${dests%!*}
 	    ;;
     esac
-
-    for source in $(separate_list $sources); do
-	for dest in $(separate_list $dests); do
-	    for port in $(separate_list ${ports:=-}); do
+    #
+    # This isn't as fancy as the code in the rules file processor. It only uses multiport match
+    # if the extended variety is available and then only on the destination port(s). 
+    #
+    if [ -n "$XMULTIPORT" ]; then
+	#
+	# Extended Multiport match can handle port ranges 
+	#
+	multiport="-m multiport --dports"
+	for source in $(separate_list $sources); do
+	    for dest in $(separate_list $dests); do
+		port=${ports:=-}
 		for sport in $(separate_list ${sports:=-}); do
 		    add_a_tc_rule
 		done
 	    done
 	done
-    done
+    else
+	multiport=--dport
+	for source in $(separate_list $sources); do
+	    for dest in $(separate_list $dests); do
+		for port in $(separate_list ${ports:=-}); do
+		    for sport in $(separate_list ${sports:=-}); do
+			add_a_tc_rule
+		    done
+		done
+	    done
+	done
+    fi
 
     progress_message "   TC Rule \"$rule\" $DONE"
     save_progress_message_short "   TC Rule \\\"$rule\\\" Added"

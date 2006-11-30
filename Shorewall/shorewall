@@ -1209,7 +1209,8 @@ case "$COMMAND" in
 	    fi
 	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
 	    $0 $VERBOSE $NOROUTES start
-	elif [ $# -eq 3 ]; the	    sleep $3
+	elif [ $# -eq 3 ]; then
+	    sleep $3
 	    $0 $VERBOSE $NOROUTES restart
 	fi
 	;;

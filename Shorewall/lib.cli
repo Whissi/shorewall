@@ -267,10 +267,12 @@ save_config() {
 	    echo "   ERROR: $RESTOREPATH exists and is not a saved $PRODUCT configuration"
 	else
 	    case $RESTOREFILE in
-		.*|capabilities|chains|default_route|firewall|firewall.conf|nat|proxyarp|restarted|rt_tables|save|state|undo_routing|zones)
+		capabilities|chains|default_route|firewall|firewall.conf|nat|proxyarp|restarted|rt_tables|save|state|undo_routing|zones)
 		    echo "   ERROR: Reserved file name: $RESTOREFILE"
 		    ;;
 		*)
+		    validate_restorefile RESTOREFILE
+
 		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
 			echo "   Dynamic Rules Saved"
 			if [ -f ${VARDIR}/.restore ]; then

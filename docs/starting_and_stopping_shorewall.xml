@@ -1359,6 +1359,29 @@ gateway:~ #</programlisting>
           <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
           exists. then that script is used.</para>
+
+          <para>The <command>try</command> command is deprecated. A better
+          approach to testing new configurations is:</para>
+
+          <blockquote>
+            <para><command>shorewall save</command></para>
+
+            <para><command>shorewall restart
+            &lt;configuration-directory&gt;</command> [ <command>&amp;&amp;
+            sleep &lt;timeout&gt; &amp;&amp; shorewall restore</command>
+            ]</para>
+
+            <para><emphasis>fix problems</emphasis></para>
+
+            <para><command>shorewall restart
+            &lt;configuration-directory&gt;</command> [ <command>&amp;&amp;
+            sleep &lt;timeout&gt; &amp;&amp; shorewall restore</command>
+            ]</para>
+
+            <para><emphasis>fix problems</emphasis></para>
+
+            <para>…</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 

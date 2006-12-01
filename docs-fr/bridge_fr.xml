@@ -119,6 +119,20 @@
   <section>
     <title>Pré-requis système</title>
 
+    <warning>
+      <para><emphasis role="bold">LE SUPPORT POUR LES PONTS TEL QU'IL EST
+      DECRIT DANS CET ARTICLE RISQUE D'ETRE ABANDONNE.</emphasis> Les
+      fonctions sous-jacentes de netfilter sur lesquelles le pont filtrant de
+      Shorewall reposent sont en train d'être abandonnées et il n'est pas
+      certain que Shorewall puisse continuer à supporter les ponts filtrants
+      tels qu'ils sont décrits ici.</para>
+
+      <para>Dans <ulink url="NewBridge.html">un autre article (en
+      aglais)</ulink>, je décris comment configurer avec Shorewall un
+      pont-routeur qui fonctionnera avec les versions futures du
+      kernel.</para>
+    </warning>
+
     <para>N'importe quelle version de Shorewall fera l'affaire si vous avez
     besoin d'un pont mais que vous n'avez pas besoin de restreindre le trafic
     à travers ce pont. Pour plus de détails, reportez vous à la <ulink
@@ -130,6 +144,11 @@
       <listitem>
         <para>Votre noyau doit être compilé avec le support pour les ponts
         (CONFIG_BRIDGE=m ou CONFIG_BRIDGE=y).</para>
+      </listitem>
+
+      <listitem>
+        <para>Votre noyau doit comprendre l'intégration bridge/netfilter
+        (CONFIG_BRIDGE_NETFILTER=y).</para>
       </listitem>
 
       <listitem>
@@ -200,6 +219,16 @@
         <command>dhcrelay</command> sure le Pont/Firewal.</para>
       </listitem>
     </itemizedlist>
+
+    <warning>
+      <para>L'insertion d'un pont filtrant entre un routeur et un ensemble
+      d'hôtes locaux ne fonctionne que si ces machines locales forment un
+      réseau IP unique. Dans le schéma ci-dessus, tous les hôtes dans la zone
+      loc sont dans le réseau 192.168.1.0/24. Si le routeur doit router entre
+      plusieurs réseaux locaux par la même interface physique (plusieurs
+      réseaux IP partagent le même réseau local), l'insertion d'un pont
+      filtrant entre le routeur et le réseau local ne fonctionnera pas.</para>
+    </warning>
 
     <para>Voici d'autres possibilités -- Il pourrait y avoir un hub ou un
     switch entre le routeur et le Pont/Firewall, et il pourrait y avoir
@@ -276,8 +305,9 @@ BOOTPROTO=dhcp
 ONBOOT=yes</programlisting>
     </blockquote>
 
-    <para>Aussi bien sur les systèmes SUSE que sur les systèmes Mandriva, il
-    faudra un script séparé pour configurer le pont.</para>
+    <para>Aussi bien sur les systèmes <trademark>SUSE</trademark> que sur les
+    systèmes Mandriva, il faudra un script séparé pour configurer le
+    pont.</para>
 
     <para>Voilà les scripts dont je me sers sur un système
     <trademark>SUSE</trademark> 9.1.</para>

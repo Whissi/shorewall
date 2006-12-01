@@ -91,7 +91,7 @@
 
   <note>
     <para>Les RPM Shorewall sont signés. Pour éviter d'avoir des
-    avertissements tels que le suivant<programlisting>warning: shorewall-3.0.1-1.noarch.rpm: V3 DSA signature: NOKEY, key ID 6c562ac4</programlisting></para>
+    avertissements tels que le suivant<programlisting>warning: shorewall-3.2.1-1.noarch.rpm: V3 DSA signature: NOKEY, key ID 6c562ac4</programlisting></para>
 
     <para>téléchargez la <ulink
     url="https://lists.shorewall.net/shorewall.gpg.key">clé GPG
@@ -144,10 +144,19 @@
         </caution>
 
         <note>
-          <para>Certains utilisateurs SUSE ont rencontré un problème dans
-          lequel le rpm signale un conflit avec un noyau de version &lt;= 2.2
-          alors qu'un noyau 2.4 est installé. Si ceci se produit, utilisez
-          simplement l'option rpm --nodeps.</para>
+          <para>Some <trademark>SUSE</trademark> users have encountered a
+          problem whereby rpm reports a conflict with kernel &lt;= 2.2 even
+          though a 2.4 kernel is installed. If this happens, simply use the
+          --nodeps option to rpm.</para>
+
+          <programlisting><filename><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></filename></programlisting>
+        </note>
+
+        <note>
+          <para>Certains utilisateurs <trademark>SUSE</trademark> ont
+          rencontré un problème dans lequel le rpm signale un conflit avec un
+          noyau de version &lt;= 2.2 alors qu'un noyau 2.4 est installé. Si
+          ceci se produit, utilisez simplement l'option rpm --nodeps.</para>
 
           <programlisting><filename><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></filename></programlisting>
         </note>
@@ -158,7 +167,7 @@
           un échec de l'installation de Shorewall avec le diagnostic
           suivant:</para>
 
-          <programlisting>error: failed dependencies:iproute is needed by shorewall-2.2.x-1</programlisting>
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-3.2.x-1</programlisting>
 
           <para>Ce problème ne devrait pas survenir si vous utilisez le bon
           paquetage RPM (voir 1., ci-dessus), mais il peut être contourné en
@@ -186,9 +195,7 @@
       </listitem>
 
       <listitem>
-        <para>Activez le démarrage de shorewall en supprimant le fichier
-        <filename>/etc/shorewall/startup_disabled</filename> (Si vous utilisez
-        Shorewall 2.1.3 ou une de ses versions ultérieures, éditez le fichier
+        <para>Activez le démarrage de shorewall en éditant le fichier
         /<filename>etc/shorewall/shorewall.conf</filename> et mettez
         STARTUP_ENABLED à Yes).</para>
       </listitem>
@@ -215,7 +222,7 @@
       <listitem>
         <para>Allez dans le répertoire shorewall (la version est codée dans le
         nom de répertoire comme par exemple dans
-        <quote>shorewall-3.0.0</quote>).</para>
+        <quote>shorewall-3.2.1</quote>).</para>
       </listitem>
 
       <listitem>
@@ -286,9 +293,18 @@
     <para><command>apt-get install shorewall</command></para>
 
     <para>Pour être certain d'installer la dernière version de Shorewall, vous
-    devriez modifier votre fichier <filename>/etc/apt/preferences</filename>
-    comme décrit <ulink
-    url="http://sourceforge.net/mailarchive/message.php?msg_id=13995291">ici</ulink>.</para>
+    devriez modifier votre fichier
+    <filename>/etc/apt/preferences</filename></para>
+
+    <para><programlisting>Package: shorewall
+Pin: release o=Debian,a=testing
+Pin-Priority: 700
+
+Package: shorewall-doc
+Pin: release o=Debian,a=testing
+Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Puis
+    exécutez</emphasis></emphasis><programlisting># apt-get update
+# apt-get install shorewall</programlisting></para>
 
     <para><emphasis role="bold">Lorsque vous avez fini de configurer
     Shorewall, vous pouvez activer son lancement au démarrage du système en
@@ -377,12 +393,12 @@
         </note>
 
         <note>
-          <para>A partir de Shorewall 1.4.0, Shorewall dépend du paquetage
-          iproute. Malheureusement, certaines distributions nomment ce
-          paquetage iproute2 ce qui provoquera un échec de la mise à jour avec
-          le diagnostic suivant:</para>
+          <para>Shorewall dépend du paquetage iproute. Malheureusement,
+          certaines distributions nomment ce paquetage iproute2 ce qui
+          provoquera un échec de la mise à jour avec le diagnostic
+          suivant:</para>
 
-          <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.0-1</programlisting>
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-3.2.1-1</programlisting>
 
           <para>Ceci peut être contourné en utilisant l'option --nodeps de
           rpm.</para>
@@ -422,7 +438,7 @@
 
       <listitem>
         <para>Allez dans le répertoire Shorewall (la version est codée dans le
-        nom du répertoire comme dans <quote>shorewall-3.0.1</quote>).</para>
+        nom du répertoire comme dans <quote>shorewall-3.2.1-1</quote>).</para>
       </listitem>
 
       <listitem>
@@ -599,7 +615,7 @@ tar -xzvf /mnt/package2.lrp
 
     <para>Pour des informations concernant d'autres outils de mise à jour
     LEAF/Bering, consultez <ulink
-    url="http://cvs.sourceforge.net/viewcvs.py/*checkout*/leaf/devel/alexrh/lck/README.html">cet
+    url="http://leaf.cvs.sourceforge.net/*checkout*/leaf/devel/alexrh/lck/README.html">cet
     article de Alex Rhomberg</ulink>.</para>
   </section>
 

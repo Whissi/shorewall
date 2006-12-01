@@ -66,6 +66,10 @@ Other Changes in 3.3.6
     Shorewall will use that support for the destination port when
     generating rules from entries in the /etc/shorewall/tcrules file.
 
+5)  The 'try' command has been removed. See the Migration
+    Considerations for information about how to accomplish the same
+    thing as 'try' in a better way.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default
@@ -105,6 +109,18 @@ Migration Considerations:
     /etc/shorewall/actions, remove the entry. Also remove the files
     /etc/shorewall/action.Limit and/or /etc/shorewall/Limit if you have
     them.
+
+3)  The 'shorewall try' command has been eliminated. The syntax of
+    'try' was:
+
+	  shorewall try <config-dir> [ <timeout> ]
+
+    A better way to accomplish the same thing is:
+
+	  shorewall save #Do this only once before you start testing
+
+	  shorewall restart <config-dir> [ && sleep <timeout> && \
+	  shorewall restore ]
 
 New Features:
 

@@ -864,7 +864,7 @@ export_command() # $* = original arguments less the command.
 	*:*)
 	    ;;
 	*)
-	    fatal_error "Target must be of the form [user@]<system>:[<directory>]"
+	    target=$target:
 	    ;;
     esac
 
@@ -893,7 +893,7 @@ usage() # $1 = exit status
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
-    echo "   export [ <directory1> ] [<user>@]<system>:[<directory2>]"
+    echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
     echo "   hits"

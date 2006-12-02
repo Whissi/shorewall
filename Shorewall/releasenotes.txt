@@ -33,11 +33,11 @@ Shorewall 3.3.6
 
 Problems Corrected in 3.3.6
 
-1)  Handling of saved ipsets in /etc/shorewall/ipsets is broken when
-    used on a system running Shorewall Lite. If there is a file named
-    'ipsets' on the CONFIG_PATH when the firewall script is compiled,
-    then the compiled script attempts to restore the ipsets from that
-    file (which may not exist on the firewall system).
+1)  Handling of saved ipsets in /etc/shorewall/ipsets was broken when
+    used on a system running Shorewall Lite. If there was a file named
+    'ipsets' on the CONFIG_PATH when the firewall script was compiled,
+    then the compiled script attempted to restore the ipsets from that
+    file (which may not have existed on the firewall system).
 
 2)  Previously, "shorewall safe-[re]start" was badly broken. This
     breakage had been corrected. 
@@ -54,8 +54,9 @@ Other Changes in 3.3.6
     installed, the local modules file is used to determine which kernel
     modules to load. Beginning with this release, if there is a
     'modules' file in the CONFIG_PATH when the firewall script is
-    compiled, then that file will be copied into the compiled script
-    and used on the firewall system.
+    compiled (other than /usr/share/shorewall/modules), then that file
+    will be copied into the compiled script and used on the firewall
+    system.
 
 3)  Shorewall now uses tc fwmark filters to classify packets for
     traffic shaping when the DEVICE isn't an interface described in
@@ -70,6 +71,29 @@ Other Changes in 3.3.6
     Considerations for information about how to accomplish the same
     thing as 'try' in a better way.
 
+6)  The syntax of the 'export' command has been made slightly
+    friendlier.
+
+    The old syntax:
+
+	export <directory1> [user@]system:[<directory2>]
+
+    It is now:
+
+        export <directory1> [user@]system[:<directory2>]
+
+    In other words, if you don't need to specify <directory2>, you may
+    omit the colon (":") following the system name.
+    
+    The old syntax is still accepted -- that is, you can still 
+    type:
+
+        export firewall2:
+
+    which is equivalent to
+
+        export firewall2
+	
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default
@@ -117,13 +141,20 @@ Migration Considerations:
 
     A better way to accomplish the same thing is:
 
-	  shorewall save #Do this only once before you start testing
+      shorewall save #Do this only once before you start testing
 
-	  shorewall restart <config-dir> [ && sleep <timeout> && \
-	  shorewall restore ]
+      shorewall restart <config-dir> [ && sleep <timeout> && shorewall restore ]
+	  
+      --- fix problems ---
+      
+      shorewall restart <config-dir> [ && sleep <timeout> && shorewall restore ]
+	  
+      --- fix problems ---
 
-	  shorewall save #Do this only once after you have installed 
-			 #the new configuration
+      ...
+
+      shorewall save #Do this only once after you have installed 
+		     #the new configuration
 
 New Features:
 

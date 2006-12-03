@@ -76,9 +76,23 @@ Other Changes in 3.3.6
     configuration once in the event of a failure. Previously, if there
     was a current 'safe' command in effect, then that configuration
     would be restored on a failure and then the last-running
-    configuration would be restored. 
+    configuration would be restored.
 
-6)  The syntax of the 'export' command has been made slightly
+6)  The 'try' command has been reimplemented with new semantics. 
+
+    If Shorewall is started then the firewall state is saved to a
+    temporary saved configuration (/var/lib/shorewall/.try). Next, if
+    Shorewall is currently started then a restart command is issued;
+    otherwise, a start command is performed. if an error occurs during
+    the  compliation phase  of  the  restart or start, the command
+    terminates without changing the Shorewall state. If an error occurs
+    during the restart phase, then a 'shorewall restore' is performed
+    using the saved configuration. If an error occurs during the start
+    phase, then Shorewall is  cleared. If the start/restart succeeds
+    and a timeout is specified then a 'clear' or 'restore' is performed
+    after timeout seconds. 
+
+7)  The syntax of the 'export' command has been made slightly
     friendlier.
 
     The old syntax:

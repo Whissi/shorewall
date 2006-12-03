@@ -1342,7 +1342,7 @@ gateway:~ #</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term>try (Deprecated - Not supported by Shorewall Lite)</term>
+        <term>try (Not supported by Shorewall Lite)</term>
 
         <listitem>
           <para><command>shorewall try &lt;configuration-directory&gt; [
@@ -1360,8 +1360,9 @@ gateway:~ #</programlisting>
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
           exists. then that script is used.</para>
 
-          <para>The <command>try</command> command is deprecated. A better
-          approach to testing new configurations is:</para>
+          <para>The <command>try</command> command is deprecated in Shorewall
+          3.0 and 3.2. A better approach to testing new configurations
+          is:</para>
 
           <blockquote>
             <para><command>shorewall save</command></para>
@@ -1381,6 +1382,29 @@ gateway:~ #</programlisting>
             <para><emphasis>fix problems</emphasis></para>
 
             <para>…</para>
+          </blockquote>
+
+          <para>Beginning with Shorewall version 3.3.6, the
+          <command>try</command> command has new and improved semantics as
+          follows:</para>
+
+          <blockquote>
+            <para>If Shorewall is started then the firewall state is saved to
+            a temporary saved configuration
+            (<filename>/var/lib/shorewall/.try</filename>). Next, if Shorewall
+            is currently started then a <command>restart</command> command is
+            issued; otherwise, a <command>start</command> command is
+            performed. if an error occurs during the compliation phase of the
+            <command>restart</command> or <command>start</command>, the
+            command terminates without changing the Shorewall state. If an
+            error occurs during the <command>restart</command> phase, then a
+            shorewall restore is performed using the saved configuration. If
+            an error occurs during the <command>start</command> phase, then
+            Shorewall is cleared. If the start/restart succeeds and a
+            &lt;<emphasis>timeout</emphasis>&gt; is specified then a
+            <command>clear</command> or <command>restore</command> is
+            performed after &lt;<emphasis>timeout</emphasis>&gt;
+            seconds.</para>
           </blockquote>
         </listitem>
       </varlistentry>

@@ -64,6 +64,13 @@
 #          shorewall show capabilities             Display iptables/kernel capabilities
 #	   shorewall version			   Display the installed version id
 #	   shorewall check [ -e ] [ <directory> ]  Dry-run compilation.
+#	   shorewall try <directory> [ <timeout> ] Try a new configuration and if
+#						   it doesn't work, revert to the
+#						   standard one. If a timeout is supplied
+#						   the command reverts back to the
+#						   standard configuration after that many
+#						   seconds have elapsed after successfully
+#						   starting the new configuration.
 #	   shorewall logwatch [ refresh-interval ] Monitor the local log for Shorewall
 #						   messages.
 #	   shorewall drop <address> ...		   Temporarily drop all packets from the
@@ -97,11 +104,11 @@
 #                                                  Displays the decimal equivalent of an IP
 #                                                  address and vice versa.
 #
-#          shorewall safe-start                    Starts the firewall and promtp for a c
+#          shorewall safe-start [ <directory> ]    Starts the firewall and promtp for a c
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall safe-restart                  Restarts the firewall and prompt for a
+#          shorewall safe-restart [ <directory> ]  Restarts the firewall and prompt for a
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
@@ -649,7 +656,27 @@ safe_commands() {
 	esac
     done
 
-    [ $# -eq 0 ] || usage 2
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
 
     if [ -z "$STARTUP_ENABLED" ]; then
 	error_message "ERROR: Startup is disabled"
@@ -668,7 +695,7 @@ safe_commands() {
 	# the command is safe-start but the firewall is already running
 	error_message "Shorewall is already started"
 	mutex_off
-	exit 1
+	exit 0
     fi
 
     if [ "$COMMAND" = "safe-start" -o -z "$running" ]; then
@@ -687,39 +714,163 @@ safe_commands() {
 	exit $status
     fi
 
-    RESTOREFILE=.safe
-    RESTOREPATH=${VARDIR}/.safe
-
-    save_config
-
     case $command in
 	start)
+	    export RESTOREFILE=NONE
 	    progress_message3 "Starting..."
 	    ;;
 	restart)
+	    export RESTOREFILE=.safe
+	    RESTOREPATH=${VARDIR}/.safe
+	    save_config
 	    progress_message3 "Restarting..."
 	    ;;
     esac
 
-    ${VARDIR}/.$command $command
+    if ${VARDIR}/.$command $command; then
 
-    echo -n "Do you want to accept the new firewall configuration? [y/n] "
+	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 
-    if read_yesno_with_timeout; then
-	echo "New configuration has been accepted"
-    else
-	if [ "$command" = "restart" ]; then
-	    ${VARDIR}/.safe restore
+	if read_yesno_with_timeout; then
+	    echo "New configuration has been accepted"
 	else
-	    ${VARDIR}/.$command clear
+	    if [ "$command" = "restart" ]; then
+		${VARDIR}/.safe restore
+	    else
+		${VARDIR}/.$command clear
+	    fi
+	    
+	    mutex_off
+	    echo "New configuration has been rejected and the old one restored"
+	    exit 2
 	fi
 
-	mutex_off
-	echo "New configuration has been rejected and the old one restored"
-	exit 2
     fi
 
     mutex_off
+}
+
+#
+# 'try' Command Executor
+#
+try_command() {
+    local finished=0 timeout=
+
+    handle_directory() {
+	[ -n "$SHOREWALL_DIR" ] && usage 2
+
+	if [ ! -d $1 ]; then
+	    if [ -e $1 ]; then
+		echo "$1 is not a directory" >&2 && exit 2
+	    else
+		echo "Directory $1 does not exist" >&2 && exit 2
+	    fi
+	fi
+	
+	SHOREWALL_DIR=$1
+	export SHOREWALL_DIR
+    }
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    usage 1
+	    ;;
+	1)
+	    handle_directory $1
+	    ;;
+	2)
+	    handle_directory $1
+	    timeout=$2
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    if [ -z "$STARTUP_ENABLED" ]; then
+	error_message "ERROR: Startup is disabled"
+	exit 2
+    fi
+
+    mutex_on
+
+    if shorewall_is_started; then
+	running=Yes
+    else
+	running=
+    fi
+
+    if [ -z "$running" ]; then
+	# shorewall is not started yet
+	command="start"
+    else
+	# the firewall is already running
+	command="restart"
+    fi
+
+    progress_message3 "Compiling..."
+
+    if ! $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging nolock compile ${VARDIR}/.$command; then
+	status=$?
+	mutex_off
+	exit $status
+    fi
+
+    case $command in
+	start)
+	    export RESTOREFILE=NONE
+	    progress_message3 "Starting..."
+	    ;;
+	restart)
+	    export RESTOREFILE=.try
+	    RESTOREPATH=${VARDIR}/.try
+	    save_config
+	    progress_message3 "Restarting..."
+	    ;;
+    esac
+
+    if ${VARDIR}/.$command $command && [ -n "$timeout" ]; then
+	sleep $timeout
+	    
+	if [ "$command" = "restart" ]; then
+	    ${VARDIR}/.try restore
+	else
+	    ${VARDIR}/.$command clear
+	fi	    
+    fi
+
+    mutex_off
+
+    return 0
 }
 
 #
@@ -915,9 +1066,10 @@ usage() # $1 = exit status
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
+    echo "   try <directory> [ <timeout> ]"
     echo "   version"
-    echo "   safe-start"
-    echo "   safe-restart"
+    echo "   safe-start [ <directory> ]"
+    echo "   safe-restart [ <directory> ]"
     echo
     exit $1
 }
@@ -1191,6 +1343,10 @@ case "$COMMAND" in
     version)
 	echo $version
 	;;
+    try)
+	shift
+	try_command $@
+	;;
     logwatch)
 	logwatch_command $@
 	;;
@@ -1249,6 +1405,7 @@ case "$COMMAND" in
 	esac
 
 	RESTOREPATH=${VARDIR}/$RESTOREFILE
+	mutex_off
 
 	[ "$nolock" ] || mutex_on
 

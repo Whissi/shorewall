@@ -4483,36 +4483,45 @@ stop_firewall() {
 	*)
 	    set +x
 
-	    RESTOREPATH=\${VARDIR}/\$RESTOREFILE
+            if [ "\$RESTOREFILE" = NONE ]; then
+                COMMAND=clear
+                clear_firewall
+                echo "\$PRODUCT Cleared"
 
-	    if [ -x \$RESTOREPATH ]; then
+	        kill \$\$
+	        exit 2
+            else
+	        RESTOREPATH=\${VARDIR}/\$RESTOREFILE
 
-		if [ -x \${RESTOREPATH}-ipsets ]; then
-		    progress_message2 Restoring Ipsets...
-		    #
-		    # We must purge iptables to be sure that there are no
-		    # references to ipsets
-		    #
-		    for table in mangle nat filter; do
-			\$IPTABLES -t \$table -F
-			\$IPTABLES -t \$table -X
-		    done
+	        if [ -x \$RESTOREPATH ]; then
 
-		    \${RESTOREPATH}-ipsets
-		fi
+		    if [ -x \${RESTOREPATH}-ipsets ]; then
+		        progress_message2 Restoring Ipsets...
+		        #
+		        # We must purge iptables to be sure that there are no
+		        # references to ipsets
+		        #
+		        for table in mangle nat filter; do
+			    \$IPTABLES -t \$table -F
+			    \$IPTABLES -t \$table -X
+		        done
 
-		echo Restoring \${PRODUCT:=Shorewall}...
+		        \${RESTOREPATH}-ipsets
+		    fi
 
-		if \$RESTOREPATH restore; then
-		    echo "\$PRODUCT restored from \$RESTOREPATH"
-		    set_state "Started"
-		else
-		    set_state "Unknown"
-		fi
+		    echo Restoring \${PRODUCT:=Shorewall}...
 
-		kill \$\$
-		exit 2
-	    fi
+		    if \$RESTOREPATH restore; then
+		        echo "\$PRODUCT restored from \$RESTOREPATH"
+		        set_state "Started"
+		    else
+		        set_state "Unknown"
+		    fi
+
+	            kill \$\$
+	            exit 2
+	        fi
+            fi
 	    ;;
     esac
 
@@ -4889,7 +4898,7 @@ __EOF__
 
     set_state "Cleared"
 
-    logger "Shorewall Cleared"
+    logger "\$PRODUCT Cleared"
 }
 
 #

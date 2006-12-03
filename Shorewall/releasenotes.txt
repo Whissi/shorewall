@@ -67,9 +67,16 @@ Other Changes in 3.3.6
     Shorewall will use that support for the destination port when
     generating rules from entries in the /etc/shorewall/tcrules file.
 
-5)  The 'try' command has been removed. See the Migration
-    Considerations for information about how to accomplish the same
-    thing as 'try' in a better way.
+5)  The 'safe-start' and 'safe-restart' command have been
+    improved. Both now accept an optional directory name; if supplied,
+    Shorewall will look first in that directory for configuration
+    files.
+
+    The commands have also been enhanced to only restore the
+    configuration once in the event of a failure. Previously, if there
+    was a current 'safe' command in effect, then that configuration
+    would be restored on a failure and then the last-running
+    configuration would be restored. 
 
 6)  The syntax of the 'export' command has been made slightly
     friendlier.

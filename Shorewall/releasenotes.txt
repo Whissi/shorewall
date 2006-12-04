@@ -114,6 +114,19 @@ Other Changes in 3.3.6
     which is equivalent to
 
         export firewall2
+
+8)  Shorewall commands may be speeded up slightly by using a
+    'capabilities' file. The 'capabilities' file was originally
+    designed for use with Shorewall Lite and records the
+    iptables/Netfilter features available on the target system.
+
+    To generate a capabilities file, execute the following command as
+    root:
+
+      shorewall show -f capabilities > /etc/shorewall/capabilities
+
+    When you install a new kernel and/or iptables, be sure to generate
+    a new file.
 	
 Migration Considerations:
 

@@ -61,6 +61,10 @@ DIR=$PWD
 # location and options for GnuPG
 #
 GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
+#
+# SVN Repository
+#
+SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -298,11 +302,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     rm -rf $SHOREWALLDIR
     rm -rf $SHOREWALLLITEDIR
 
-    do_or_die "svn export --non-interactive --force https://shorewall.svn.sourceforge.net/svnroot/shorewall/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+    do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
  
     if [ -n "$HASLITE" ]; then
 	progress_message "Exporting $LITESVNBRANCH from SVN..."
-	do_or_die "svn export --non-interactive --force https://shorewall.svn.sourceforge.net/svnroot/shorewall/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	if [ -f $SHOREWALLDIR/lib.base ]; then
 	    do_or_die "cp $SHOREWALLDIR/lib.base $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
@@ -326,14 +330,14 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
-	do_or_die "svn export --non-interactive --force https://shorewall.svn.sourceforge.net/svnroot/shorewall/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
 	cd $DIR
     fi
 
     if [ -n "$MANPAGETAG" ]; then
 	cd $SHOREWALLDIR
 	progress_message "Exporting $MANPAGETAG from SVN..."
-	do_or_die "svn export --non-interactive --force https://shorewall.svn.sourceforge.net/svnroot/shorewall/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
@@ -349,7 +353,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	cd $SHOREWALLLITEDIR
 	progress_message "Exporting $LITEMANPAGETAG from SVN..."
-	do_or_die "svn export --non-interactive --force https://shorewall.svn.sourceforge.net/svnroot/shorewall/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
@@ -414,7 +418,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "svn export --non-interactive --force https://shorewall.svn.sourceforge.net/svnroot/shorewall/$DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die "svn export --non-interactive --force ${SVN}/$DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd

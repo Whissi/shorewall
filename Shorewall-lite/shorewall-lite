@@ -92,7 +92,11 @@ get_config() {
 
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
-    if [ ! -f $LOGFILE ]; then
+    if ( ps ax 2> /dev/null | qt grep 'syslogd.*-C' ) ; then
+	LOGREAD="logread"
+    elif [ -f $LOGFILE ]; then
+	LOGREAD="cat $LOGFILE"
+    else
 	echo "LOGFILE ($LOGFILE) does not exist!" >&2
 	exit 2
     fi
@@ -100,7 +104,7 @@ get_config() {
     # See if we have a real version of "tail" -- use separate redirection so
     # that ash (aka /bin/sh on LRP) doesn't crap
     #
-    if ( tail -n5 $LOGFILE > /dev/null 2> /dev/null ) ; then
+    if ( tail -n5 /dev/null > /dev/null 2> /dev/null ) ; then
 	realtail="Yes"
     else
 	realtail=""

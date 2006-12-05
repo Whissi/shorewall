@@ -1648,8 +1648,8 @@ iptables: Invalid argument
       "shorewall start" fails with the message "ipt_policy: matchsize 116 !=
       308". What's wrong?</title>
 
-      <para>Answer: Your iptables is incompatible with your kernel.
-      Either</para>
+      <para><emphasis role="bold">Answer:</emphasis> Your iptables is
+      incompatible with your kernel. Either</para>
 
       <itemizedlist>
         <listitem>
@@ -1663,6 +1663,16 @@ iptables: Invalid argument
           <filename>/lib/iptables/libipt_policy.so</filename>.</para>
         </listitem>
       </itemizedlist>
+    </section>
+
+    <section id="faq62">
+      <title>(FAQ 62) I have unexplained 30-second pauses during "shorewall
+      [re]start". What causes that?</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> This usually happens when
+      the firewall uses LDAP Authentication. The solution is to list your LDAP
+      server(s) as <emphasis role="bold">critical</emphasis> in <ulink
+      url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>.</para>
     </section>
   </section>
 

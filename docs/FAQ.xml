@@ -56,7 +56,7 @@
 
     <section id="faq37">
       <title>(FAQ 37) I just installed Shorewall on Debian and the
-      /etc/shorewall directory is empty!!!</title>
+      /etc/shorewall directory is almost empty!!!</title>
 
       <para><emphasis role="bold">Answer</emphasis>:</para>
 
@@ -71,19 +71,13 @@
       </important>
 
       <para>If you install using the .deb, you will find that your <filename
-      class="directory">/etc/shorewall</filename> directory is empty. This is
-      intentional. The released configuration file skeletons may be found on
-      your system in the directory <filename
+      class="directory">/etc/shorewall</filename> directory is almost empty.
+      This is intentional. The released configuration file skeletons may be
+      found on your system in the directory <filename
       class="directory">/usr/share/doc/shorewall/default-config</filename>.
       Simply copy the files you need from that directory to <filename
       class="directory">/etc/shorewall</filename> and modify the
       copies.</para>
-
-      <para>Note that you must copy <filename
-      class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-      and <filename>/usr/share/doc/shorewall/default-config/modules</filename>
-      to <filename class="directory">/etc/shorewall</filename> even if you do
-      not modify those files.</para>
     </section>
 
     <section id="faq44">
@@ -134,6 +128,13 @@ DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
       <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
 #                                                                            PORT    DEST.
 DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -       &lt;<emphasis>external IP</emphasis>&gt;</programlisting>
+
+      <para>If you want to forward requests from a particular internet address
+      ( <emphasis>&lt;address&gt;</emphasis> ):</para>
+
+      <programlisting>#ACTION SOURCE        DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
+#                                                                                   PORT    DEST.
+DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -</programlisting>
 
       <para>Finally, if you need to forward a range of ports, in the DEST PORT
       column specify the range as
@@ -358,7 +359,7 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
     </section>
 
     <section id="faq48">
-      <title>(FAQ 48) How do I Set up Transparent Proxy with
+      <title>(FAQ 48) How do I Set up Transparent HTTP Proxy with
       Shorewall?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: See <ulink
@@ -433,7 +434,9 @@ DNAT       loc          loc:192.168.1.5    tcp      www         -         130.15
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address then include this in
-          <filename>/etc/shorewall/params</filename>:</para>
+          <filename>/etc/shorewall/params</filename> (or your
+          <filename>&lt;export directory&gt;/init</filename> file if you are
+          using Shorewall Lite on the firewall system):</para>
 
           <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>        </programlisting>
 
@@ -444,8 +447,8 @@ DNAT       loc          loc:192.168.1.5    tcp      www         -         130.15
 DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0_IP</programlisting>
 
           <para>Using this technique, you will want to configure your
-          DHCP/PPPoE client to automatically restart Shorewall each time that
-          you get a new IP address.</para>
+          DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
+          time that you get a new IP address.</para>
         </listitem>
       </itemizedlist>
 
@@ -478,8 +481,8 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
         addresses and can be accessed externally and internally using the same
         address.</para>
 
-        <para>If you don't like those solutions and prefer to stupidly route
-        all Z-&gt;Z traffic through your firewall then:</para>
+        <para>If you don't like those solutions and prefer, incredibly, to
+        route all Z-&gt;Z traffic through your firewall then:</para>
 
         <orderedlist>
           <listitem>
@@ -495,7 +498,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
         <example>
           <title>Example:</title>
 
-          <literallayout>Zone: dmz Interface: eth2 Subnet: 192.168.2.0/24 Address: 192.168.2.254</literallayout>
+          <literallayout>Zone: dmz, Interface: eth2, Subnet: 192.168.2.0/24, Address: 192.168.2.254</literallayout>
 
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
@@ -510,7 +513,7 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
           <programlisting>#INTERFACE    SUBNETS     ADDRESS
 eth2          eth2        192.168.2.254</programlisting>
 
-          <para>Like the idiotic hack in FAQ 2 above, this will make all
+          <para>Like the silly hack in FAQ 2 above, this will make all
           dmz-&gt;dmz traffic appear to originate on the firewall.</para>
         </example>
       </section>
@@ -545,7 +548,9 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
-        <para>In <filename>/etc/shorewall/params</filename>:</para>
+        <para>In <filename>/etc/shorewall/params (or in your
+        <filename>&lt;export directory&gt;/init</filename> file if you are
+        using Shorewall Lite on the firewall system)</filename>:</para>
 
         <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
 
@@ -762,7 +767,8 @@ to debug/develop the newnat interface.</programlisting></para>
         <listitem>
           <para>The DNS settings on the local systems are wrong or the user is
           running a DNS server on the firewall and hasn't enabled UDP and TCP
-          port 53 from the firewall to the internet.</para>
+          port 53 from the local net to the firewall or from the firewall to
+          the internet.</para>
         </listitem>
 
         <listitem>
@@ -862,9 +868,34 @@ LOGBURST=""</programlisting>
           <ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink>
         </literallayout>
 
-        <para>I personally use Logwatch. It emails me a report each day from
-        my various systems with each report summarizing the logged activity on
-        the corresponding system.</para>
+        <para>I personally use <ulink
+        url="http://www.logwatch.org">Logwatch</ulink>. It emails me a report
+        each day from my various systems with each report summarizing the
+        logged activity on the corresponding system. I use the brief report
+        format; here's a sample:</para>
+
+        <blockquote>
+          <programlisting> --------------------- iptables firewall Begin ------------------------ 
+
+ Dropped 111 packets on interface eth0
+   From 58.20.162.142 - 5 packets to tcp(1080) 
+   From 62.163.19.50 - 1 packet to udp(6348) 
+   From 66.111.45.60 - 9 packets to tcp(192) 
+   From 69.31.82.50 - 18 packets to tcp(3128) 
+   From 72.232.183.102 - 2 packets to tcp(3128) 
+   From 82.96.96.3 - 6 packets to tcp(808,1080,1978,7600,65506) 
+   From 128.48.51.209 - 5 packets to tcp(143) 
+   From 164.77.223.150 - 12 packets to tcp(873) 
+   From 165.233.109.23 - 8 packets to tcp(22) 
+   From 202.99.172.175 - 4 packets to udp(2,4081) 
+   From 206.59.41.101 - 2 packets to tcp(5900) 
+   From 217.91.30.224 - 24 packets to tcp(873) 
+   From 218.87.47.114 - 6 packets to tcp(3128) 
+   From 220.110.219.234 - 4 packets to tcp(22) 
+   From 220.133.116.173 - 5 packets to tcp(3128) 
+ 
+ ---------------------- iptables firewall End -------------------------</programlisting>
+        </blockquote>
       </section>
 
       <section id="faq6b">
@@ -1136,9 +1167,10 @@ DROP      net       fw      udp      10619</programlisting>
             <filename> <ulink
             url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink>.</filename></para>
 
-            <para>In Shorewall 3.3.3 and later versions, such packets may also
-            be logged out of a &lt;zone&gt;2all chain or the all2all
-            chain.</para>
+            <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
+            <ulink url="Documentation.htm#Conf">shorewall.conf</ulink>, such
+            packets may also be logged out of a &lt;zone&gt;2all chain or the
+            all2all chain.</para>
           </listitem>
         </varlistentry>
 
@@ -1150,8 +1182,10 @@ DROP      net       fw      udp      10619</programlisting>
             your defined zones(<command>shorewall[-lite] show zones</command>
             and look at the printed zone definitions).</para>
 
-            <para>In Shorewall 3.3.3 and later versions, such packets may also
-            be logged out of the fw2all chain or the all2all chain.</para>
+            <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
+            <ulink url="Documentation.htm#Conf">shorewall.conf</ulink>, such
+            packets may also be logged out of the fw2all chain or the all2all
+            chain.</para>
           </listitem>
         </varlistentry>
 
@@ -1357,8 +1391,8 @@ modprobe: Can't locate module iptable_raw</programlisting>
       different ISPs. How do I set this up in Shorewall?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: See <ulink
-      url="MultiISP.html">this article on Shorewall and
-      Routing</ulink>.</para>
+      url="MultiISP.html">this article on Shorewall and Multiple
+      ISPs</ulink>.</para>
     </section>
 
     <section id="faq49">
@@ -1428,10 +1462,6 @@ Perhaps iptables or your kernel needs to be upgraded.</programlisting>
 chkconfig --delete ipchains
 rmmod ipchains</command></programlisting>
 
-      <para>Also, be sure to check the <ulink url="errata.htm">errata</ulink>
-      for problems concerning the version of iptables (v1.2.3) shipped with
-      RH7.2.</para>
-
       <section id="faq8a">
         <title>(FAQ 8a) When I try to start Shorewall on RedHat I get a
         message referring me to FAQ #8</title>
@@ -1497,13 +1527,13 @@ Creating input Chains...
     </section>
 
     <section id="faq34">
-      <title>(FAQ 34) How can I speed up start (restart)?</title>
+      <title>(FAQ 34) How can I speed up Shorewall start (restart)?</title>
 
       <para><emphasis role="bold">Answer</emphasis>:Using a light-weight shell
-      such as <command>ash</command> can dramatically decrease the time
-      required to <emphasis role="bold">start</emphasis> or <emphasis
-      role="bold">restart</emphasis> Shorewall. See the SHOREWALL_SHELL
-      variable in <filename> <ulink
+      such as <command>ash</command> or <command>dash</command> can
+      dramatically decrease the time required to <emphasis
+      role="bold">start</emphasis> or <emphasis role="bold">restart</emphasis>
+      Shorewall. See the SHOREWALL_SHELL variable in <filename> <ulink
       url="Documentation.htm#Conf">shorewall.conf</ulink> </filename>.</para>
 
       <para>Use a fast terminal emulator -- in particular the KDE konsole
@@ -1637,8 +1667,7 @@ iptables: Invalid argument
       Netfilter modules loaded. How do I avoid that?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Copy
-      <filename>/usr/share/shorewall/modules</filename> (or
-      <filename>/usr/share/shorewall/xmodules</filename> if appropriate) to
+      <filename>/usr/share/shorewall[-lite]/modules</filename> to
       <filename>/etc/shorewall/modules </filename>and modify the copy to
       include only the modules that you need.</para>
     </section>
@@ -2047,7 +2076,7 @@ eth0               eth1                        # eth1 = interface to local netwo
 
               <entry align="center">Shorewall Lite 3.2.2</entry>
 
-              <entry align="center">Shorewall Lite 3.2.3</entry>
+              <entry align="center">Shorewall Lite 3.2.3 and later</entry>
             </row>
           </thead>
 
@@ -2089,7 +2118,8 @@ eth0               eth1                        # eth1 = interface to local netwo
             </row>
 
             <row>
-              <entry><emphasis role="bold">Shorewall 3.2.3</emphasis></entry>
+              <entry><emphasis role="bold">Shorewall 3.2.3 and
+              later</emphasis></entry>
 
               <entry align="center">P1</entry>
 
@@ -2241,12 +2271,12 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       parsing the payload of individual packets doesn't always work because
       the application-level data stream can be split across packets in
       arbitrary ways. This is one of the weaknesses of the 'string match'
-      Netfilter extension available in Patch-O-Matic-ng. The only sure way to
-      filter on packet content is to proxy the connections in question -- in
-      the case of HTTP, this means running something like <ulink
-      url="Shorewall_Squid_Usage.html">Squid</ulink>. Proxying allows the
-      proxy process to assemble complete application-level messages which can
-      then be accurately parsed and decisions can be made based on the
+      Netfilter extension available in later Linux kernel releases. The only
+      sure way to filter on packet content is to proxy the connections in
+      question -- in the case of HTTP, this means running something like
+      <ulink url="Shorewall_Squid_Usage.html">Squid</ulink>. Proxying allows
+      the proxy process to assemble complete application-level messages which
+      can then be accurately parsed and decisions can be made based on the
       result.</para>
     </section>
 
@@ -2296,7 +2326,7 @@ gateway:~#</programlisting>
 $FW                loc                     ACCEPT
 loc                $FW                     ACCEPT           </programlisting>
 
-      <para>You can also delete any ACCEPT rules from $FW-&gt;loc and
+      <para>You should also delete any ACCEPT rules from $FW-&gt;loc and
       loc-&gt;$FW since those rules are redundant with the above
       policies.</para>
     </section>

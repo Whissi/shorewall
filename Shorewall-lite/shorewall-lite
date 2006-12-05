@@ -92,7 +92,7 @@ get_config() {
 
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
-    if ( ps ax 2> /dev/null | qt grep 'syslogd.*-C' ) ; then
+    if ( ps ax 2> /dev/null | grep -v grep |  qt grep 'syslogd.*-C' ) ; then
 	LOGREAD="logread"
     elif [ -f $LOGFILE ]; then
 	LOGREAD="cat $LOGFILE"

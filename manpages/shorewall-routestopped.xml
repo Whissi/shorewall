@@ -30,7 +30,7 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis>INTERFACE</emphasis> —
+        <term><emphasis role="bold">INTERFACE</emphasis> —
         <emphasis>interface</emphasis></term>
 
         <listitem>
@@ -40,8 +40,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">HOST(S)</emphasis> (Optional) — {<emphasis
-        role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...}</term>
+        <term><emphasis role="bold">HOST(S)</emphasis> (Optional) — [<emphasis
+        role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...]</term>
 
         <listitem>
           <para>Comma-separated list of IP/subnet addresses. If your kernel
@@ -107,20 +107,35 @@
                 throughout '[re]start', 'stop' and 'clear'. Specifying
                 <emphasis role="bold">critical</emphasis> on one or more
                 entries will cause your firewall to be "totally open" for a
-                brief window during each of those operations.</para>
+                brief window during each of those operations. Examples of
+                where you might want to use this are:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>'Ping' nodes with heartbeat.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>LDAP server(s) if you use LDAP Authentication</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>NFS Server if you have an NFS-mounted root
+                    filesystem.</para>
+                  </listitem>
+                </itemizedlist>
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <note>
-            <para>The <emphasis role="bold">source</emphasis> and <emphasis
-            role="bold">dest</emphasis> options work best when used in
-            conjunction with ADMINISABSENTMINDED=Yes in
-            shorewall.conf(5).</para>
-          </note>
         </listitem>
       </varlistentry>
     </variablelist>
+
+    <note>
+      <para>The <emphasis role="bold">source</emphasis> and <emphasis
+      role="bold">dest</emphasis> options work best when used in conjunction
+      with ADMINISABSENTMINDED=Yes in shorewall.conf(5).</para>
+    </note>
   </refsect1>
 
   <refsect1>

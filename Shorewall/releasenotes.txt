@@ -128,6 +128,11 @@ Other Changes in 3.3.6
     When you install a new kernel and/or iptables, be sure to generate
     a new file.
 	
+9)  When syslogd is run with the -C option (which in some
+    implementations causes syslogd to log to an in-memory circular
+    buffer), /sbin/shorewall will now use the 'logread' command to read
+    the log from that buffer. This is for combatibility with OpenWRT.
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

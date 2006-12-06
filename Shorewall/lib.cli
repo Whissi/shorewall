@@ -121,6 +121,26 @@ timed_read ()
 }
 
 #
+# Determine if 'syslog -C' is running
+#
+syslog_circular_buffer() {
+    local pid tty flags cputime path args arg
+
+    ps ax 2> /dev/null | while read pid tty flags cputime path args; do
+	case $path in
+	    syslogd|*/syslogd)
+		for arg in $args; do
+		    if [ x$arg = x-C ]; then
+			echo Yes
+			return
+		    fi
+		done
+		;;
+	esac
+    done
+}
+
+#
 # Display the last $1 packets logged
 #
 packet_log() # $1 = number of messages

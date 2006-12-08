@@ -45,20 +45,18 @@
 #
 process_tc_rule()
 {
-    local did_connmark= multiport=
+    local did_connmark= multiport= classid=
 
     chain=$MARKING_CHAIN  target="MARK --set-mark" marktest=
 
-    verify_designator() {
-	[ "$chain" = tcout ] && \
-	    fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+    handle_designator() {
 	chain=$1
 	mark="${mark%:*}"
     }
 
     do_ipp2p()
     {
-	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. TC Rule: \"$rule\""
 	[ "x$port" = "x-" ] && port="ipp2p"
 
 	case $proto in
@@ -66,7 +64,7 @@ process_tc_rule()
 		proto=${proto#*:}
 		;;
 	    *)
-		proto=all
+		proto=tcp
 		;;
 	esac
 
@@ -154,7 +152,6 @@ process_tc_rule()
 	    esac
 	fi
 
-
 	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
 
 	if [ "x$dest" != "x-"  ]; then
@@ -220,36 +217,68 @@ process_tc_rule()
     case $sources in
 	$FW|$FW:*)
 	    chain=tcout
+
+	    if [ "x$mark" != "x${mark%:*}" ]; then
+		case "${mark#*:}" in
+		    t|T)
+			handle_designator tcpost
+			;;
+		    ct|CT)
+			handle_designator tcpost
+			do_connmark
+			;;
+		    c|C)
+			mark=${mark%:*}
+			do_connmark
+			;;
+		    p|P|cp|CP|f|F|cf|CF)
+			fatal_error "Invalid chain designator for source \$FW; rule \"$rule\""
+			;;
+		    *)
+			chain=tcpost
+			target="CLASSIFY --set-class"
+			classid=Yes
+			;;
+		esac
+	    fi
+	    ;;
+	*)
+	    if [ "x$mark" != "x${mark%:*}" ]; then
+		case "${mark#*:}" in
+		    p|P)
+			handle_designator tcpre
+			;;
+		    cp|CP)
+			handle_designator tcpre
+			do_connmark
+			;;
+		    f|F)
+			handle_designator tcfor
+			;;
+		    cf|CF)
+			handle_designator tcfor
+			do_connmark
+			;;
+		    t|T)
+			handle_designator tcpost
+			;;
+		    ct|CT)
+			handle_designator tcpost
+			do_connmark
+			;;
+		    c|C)
+			mark=${mark%:*}
+			do_connmark
+			;;
+		    *)
+			chain=tcpost
+			classid=Yes
+			target="CLASSIFY --set-class"
+			;;
+		esac
+	    fi
 	    ;;
     esac
-
-    if [ "$mark" != "${mark%:*}" ]; then
-	case "${mark#*:}" in
-	    p|P)
-		verify_designator tcpre
-		;;
-	    cp|CP)
-		verify_designator tcpre
-		do_connmark
-		;;
-	    f|F)
-		verify_designator tcfor
-		;;
-	    cf|CF)
-		verify_designator tcfor
-		do_connmark
-		;;
-	    c|C)
-		mark=${mark%:*}
-		do_connmark
-		;;
-	    *)
-		chain=tcpost
-		target="CLASSIFY --set-class"
-		;;
-	esac
-
-    fi
 
     mask=0xffff
 
@@ -282,7 +311,7 @@ process_tc_rule()
 	    mark=
 	    ;;
 	\|*)
-	    [ $chain = tcpost ] && fatal_error "Invalid class ID: $mark"
+	    [ -n "$classid" ] && fatal_error "Invalid class ID: $mark"
 	    [ -n "$did_connmark" ] && fatal_error "Logical OR not valid with :C[FP]"
 	    target="MARK --or-mark"
 	    mark=${mark#|}
@@ -292,7 +321,7 @@ process_tc_rule()
 	    fi
 	    ;;
 	\&*)
-	    [ $chain = tcpost ] && fatal_error "Invalid class ID: $mark"
+	    [ -n "$classid" ] && fatal_error "Invalid class ID: $mark"
 	    [ -n "$did_connmark" ] && fatal_error "Logical AND not valid with :C[FP]"
 	    target="MARK --and-mark"
 	    mark=${mark#&}
@@ -302,7 +331,7 @@ process_tc_rule()
 	    fi
 	    ;;
 	*)
-	    if [ "$chain" != tcpost ]; then
+	    if [ -z "$classid" ]; then
 		validate_mark $mark
 		if [ $((${mark%/*})) -gt 255 ]; then
 		    case $chain in

@@ -49,10 +49,11 @@
         role="bold">COMMENT</emphasis>}[<emphasis
         role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
         role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
-        role="bold">CF</emphasis>|<emphasis role="bold">CP</emphasis>}]</term>
+        role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
+        role="bold">CP</emphasis>|<emphasis role="bold">CT</emphasis>}]</term>
 
         <listitem>
-          <orderedlist numeration="loweralpha">
+          <orderedlist numeration="arabic">
             <listitem>
               <para>A mark <emphasis>value</emphasis> which is an integer in
               the range 1-255.</para>
@@ -90,8 +91,10 @@
 
               <itemizedlist>
                 <listitem>
-                  <para>If the SOURCE is $FW, then the rule is inserted into
-                  the OUTPUT chain.</para>
+                  <para>If the SOURCE is <emphasis
+                  role="bold">$FW</emphasis>[<emphasis
+                  role="bold">:</emphasis><emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...],
+                  then the rule is inserted into the OUTPUT chain.</para>
                 </listitem>
 
                 <listitem>
@@ -180,7 +183,7 @@
               supplied mask if any. Your kernel and iptables must include
               CONNMARK support.</para>
 
-              <para>As in a) above, may be followed by <emphasis
+              <para>As in 1) above, may be followed by <emphasis
               role="bold">:P</emphasis> or <emphasis
               role="bold">:F</emphasis></para>
             </listitem>
@@ -192,7 +195,7 @@
               mask if any. Your kernel and iptables must include CONNMARK
               support.</para>
 
-              <para>As in a) above, may be followed by <emphasis
+              <para>As in 1) above, may be followed by <emphasis
               role="bold">:P</emphasis> or <emphasis
               role="bold">:F</emphasis></para>
             </listitem>
@@ -201,7 +204,7 @@
               <para><emphasis role="bold">CONTINUE</emphasis> Don't process
               any more marking rules in the table.</para>
 
-              <para>As in a) above, may be followed by <emphasis
+              <para>As in 1) above, may be followed by <emphasis
               role="bold">:P</emphasis> or <emphasis
               role="bold">:F</emphasis></para>
             </listitem>

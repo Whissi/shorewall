@@ -548,6 +548,13 @@ openvpnserver:udp       net     0.0.0.0/0                 #Routed server for Roa
 openvpnserver:udp       wifi    192.168.3.0/24            #Home wireless network server
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
+        <para><filename>/etc/shorewall/blacklist</filename>:</para>
+
+        <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
+-                       udp             1024:1033,1434
+-                       tcp             57,1433,1434,2401,2745,3127,3306,3410,4899,5554,6101,8081,9898
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+
         <para><filename>/etc/shorewall/actions</filename>:</para>
 
         <programlisting>#ACTION

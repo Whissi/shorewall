@@ -468,7 +468,6 @@ __EOF__
     INDENT="    "
     
     while read mark sources dests proto ports sports user testval length tos; do
-	expandv mark sources dests proto ports sports user testval length tos
 	if [ "x$mark" = xCOMMENT ]; then
 	    if [ -n "$COMMENTS" ]; then
 		    comment=$(echo $sources $dests $proto $ports $sports $user $testval $length $tos)

@@ -432,7 +432,6 @@ __EOF__
 	save_progress_message "Setting up Masquerading/SNAT..."
 
 	while read fullinterface networks addresses proto ports ipsec; do
-	    expandv fullinterface networks addresses proto ports ipsec
 	    if [ -n "$NAT_ENABLED" ]; then
 		if [ "x$fullinterface" = xCOMMENT ]; then
 		    if [ -n "$COMMENTS" ]; then
@@ -530,7 +529,6 @@ setup_nat() {
 	save_progress_message "Setting up one-to-one NAT..."
 
 	while read external interface internal allints localnat; do
-	    expandv external interface internal allints localnat
 
 	    if [ "x$external" = xCOMMENT ]; then
 		if [ -n "$COMMENTS" ]; then
@@ -560,7 +558,6 @@ setup_nat() {
 setup_netmap() {
 
     while read type net1 interface net2 ; do
-	expandv type net1 interface net2
 
 	list_search $interface $ALL_INTERFACES || \
 	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""

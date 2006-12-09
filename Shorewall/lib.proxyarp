@@ -101,7 +101,6 @@ __EOF__
     save_progress_message "Setting up Proxy ARP..."
 
     while read address interface external haveroute persistent; do
-	expandv address interface external haveroute persistent
 	list_search $interface $setlist   || setlist="$setlist $interface"
 	list_search $external  $resetlist || list_search $external $setlist || resetlist="$resetlist $external"
 	setup_one_proxy_arp

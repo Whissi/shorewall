@@ -226,7 +226,6 @@ setup_tunnels() # $1 = name of tunnels file
     strip_file tunnels $1
 
     while read kind z gateway z1; do
-	expandv kind z gateway z1
 	tunnel="$(echo $kind $z $gateway $z1)"
 	if validate_zone $z; then
 	    inchain=${z}2${FW}

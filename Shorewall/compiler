@@ -479,11 +479,7 @@ validate_policy()
 	fi
     done
 
-    strip_file policy
-
     while read client server policy loglevel synparams; do
-	expandv client server policy loglevel synparams
-
 	clientwild=
 	serverwild=
 
@@ -815,15 +811,12 @@ setup_ecn() # $1 = file name
     local hosts=
     local h
 
-    strip_file ecn $1
-
     if [ -s ${TMP_DIR}/ecn ]; then
 	save_progress_message "Setting up ECN..."
 
 	progress_message2 "$DOING $1..."
 
 	while read interface host; do
-	    expandv interface host
 	    list_search  $interface $ALL_INTERFACES || \
 		fatal_error "Unknown interface $interface"
 	    list_search $interface $interfaces || \
@@ -909,7 +902,7 @@ setup_tc1() {
     #
     # Process the TC Rules File
     #
-    if [ -n "$LIB_tcrules_LOADED" ]; then
+    if [ -s $TMP_DIR/tcrules ]; then
 	save_progress_message "Setting up TC Rules..."
 	save_command setup_tc_rules
 	save_command
@@ -2084,11 +2077,9 @@ process_rule() # $1 = target
     else
 	loglevel="${target#*:}"
 	target="${target%%:*}"
-	expandv loglevel
 	if [ "$loglevel" != "${loglevel%:*}" ]; then
 	    logtag="${loglevel#*:}"
 	    loglevel="${loglevel%:*}"
-	    expandv logtag
 	fi
 
 	case $loglevel in
@@ -2430,8 +2421,6 @@ process_macro() # $1 = target
     progress_message "..Expanding Macro $(find_file macro.${itarget%%:*})..."
 
     while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-	expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
-
 	mtarget=$(merge_levels $itarget $mtarget)
 
 	case $mtarget in
@@ -2550,8 +2539,6 @@ process_rules()
     {
 	local intrazone=
 
-	expandv xprotocol xports xcports xaddress xratelimit xuserspec
-
 	if [ -z "$SECTIONS" ]; then
 	    finish_section ESTABLISHED,RELATED
 	    SECTIONS="ESTABLISHED RELATED NEW"
@@ -2612,8 +2599,6 @@ process_rules()
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	expandv xtarget xclients xservers
-
 	if [ "x$xclients" = xnone -o "x$servers" = xnone ]; then
 	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
 	    progress_message "   Rule \"$rule\" ignored."
@@ -2745,7 +2730,6 @@ process_default_macro() # $1 = macro name
     progress_message "..Expanding Default Macro $f into chain $macro..."
 
     while read target client server protocol port cport ratelimit userspec; do
-	expandv target client server protocol port cport ratelimit userspec
 	rule="$target ${client:--} ${server:--} ${protocol:--} ${port:--} ${cport:--} ${ratelimit:--} ${userspec:--}"
 
 	case $target in
@@ -2993,8 +2977,6 @@ process_tos() # $1 = name of tos file
 	stdchain=FORWARD
     fi
 
-    strip_file tos $1
-
     if [ -s $TMP_DIR/tos ] ; then
 
 	save_progress_message "Setting up TOS..."
@@ -3005,7 +2987,6 @@ process_tos() # $1 = name of tos file
 	createmanglechain outtos
 
 	while read src dst protocol sport dport tos; do
-	    expandv src dst protocol sport dport tos
 	    rule="$(echo $src $dst $protocol $sport $dport $tos)"
 	    process_tos_rule
 	done < $TMP_DIR/tos
@@ -3308,7 +3289,6 @@ process_blacklist()
 
     [ "$disposition" = REJECT ] && disposition=reject
 
-    strip_file blacklist $f
     progress_message2 "Compiling $f..."
 
     cat >&3 << __EOF__
@@ -3321,7 +3301,6 @@ __EOF__
     INDENT="    "
 
     while read networks protocol ports; do
-	expandv networks protocol ports
 	process_blacklist_rec
     done < $TMP_DIR/blacklist
 
@@ -3505,8 +3484,6 @@ __EOF__
 	progress_message2 "Enabling RFC1918 Filtering"
 
 	save_progress_message "Setting up RFC1918 Filtering..."
-
-	strip_file rfc1918
 
 	createchain norfc1918 no
 
@@ -5117,15 +5094,12 @@ __EOF__
     determine_interfaces
     determine_hosts
 
-    if strip_file_and_lib_load tcrules tcrules; then
+    if [ -s $TMP_DIR/tcrules ]; then
 	progress_message2 "Compiling $(find_file tcrules)..."
 	process_tc_rules
     fi
 
     if [ "$TC_ENABLED" = Internal ]; then
-	strip_file_and_lib_load tcdevices tc
-	strip_file_and_lib_load tcclasses tc
-
 	[ -n "$LIB_tc_LOADED" ] && setup_traffic_shaping
     fi
 
@@ -5180,9 +5154,6 @@ __EOF__
     done
 
     append_file init
-
-    strip_file rules
-    strip_file maclist
 
     TERMINATOR=fatal_error
 
@@ -5278,8 +5249,6 @@ __EOF__
 
     progress_message2 "$DOING $f ..."
 
-    strip_file routestopped $f
-
     process_routestopped -A
 
     if [ -n "$DISABLE_IPV6" ]; then
@@ -5302,7 +5271,7 @@ __EOF__
 	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
     done
 
-    strip_file_and_lib_load accounting accounting && setup_accounting $(find_file accounting)
+    [ -n "$LIB_accounting_LOADED" ] && setup_accounting $(find_file accounting)
 
     createchain reject	no
     createchain dynamic no
@@ -5345,7 +5314,7 @@ __EOF__
 	createchain $(out_chain $interface) no
     done
 
-    if strip_file_and_lib_load proxyarp proxyarp; then
+    if [ -s $TMP_DIR/proxyarp ]; then
 	progress_message2 "$DOING Proxy ARP"
 	setup_proxy_arp
     else
@@ -5355,7 +5324,7 @@ __EOF__
     #
     # [re]-Establish routing
     #
-    if strip_file_and_lib_load providers providers; then
+    if [ -s $TMP_DIR/providers ]; then
 	setup_providers $(find_file providers)
 	[ -n "$ROUTEMARK_INTERFACES" ] && setup_route_marking
     else
@@ -5364,14 +5333,15 @@ __EOF__
 	save_command restore_default_route
     fi
 
-    if strip_file_and_lib_load nat nat; then
+	
+    if [ -s $TMP_DIR/nat ]; then
 	progress_message2 "$DOING NAT..."
 	setup_nat
     else
 	> $STATEDIR/nat
     fi
 
-    if strip_file_and_lib_load netmap nat; then
+    if [ -s $TMP_DIR/netmap ]; then
 	progress_message2 "$DOING NETMAP..."
 	setup_netmap
     fi
@@ -5396,7 +5366,7 @@ __EOF__
     save_progress_message "Setting up Rules..."
     process_rules
 
-    if strip_file_and_lib_load tunnels tunnels; then
+    if [ -s $TMP_DIR/tunnels ]; then
 	tunnels=$(find_file tunnels)
 	progress_message2 "$DOING $tunnels..."
 	save_progress_message "Setting up Tunnels..."
@@ -5428,7 +5398,7 @@ __EOF__
 
     progress_message2 "$DOING $(find_file policy)...";   apply_policy_rules
 
-    if strip_file_and_lib_load masq nat; then
+    if [ -s $TMP_DIR/nat ]; then
 	setup_masq $(find_file masq)
     fi
 

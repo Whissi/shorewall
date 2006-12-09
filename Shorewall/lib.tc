@@ -76,7 +76,6 @@ setup_traffic_shaping()
     get_outband_for_dev() {
 	local device inband outband
 	while read device inband outband; do
-	    expandv device inband outband
 	    tcdev="$device $inband $outband"
 	    if [ "$1" = "$device" ] ; then
 		echo $outband
@@ -107,7 +106,6 @@ setup_traffic_shaping()
 	searchdev=$1
 
 	while read device mark rate ceil prio options; do
-	    expandv device mark rate ceil prio options
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 	    tcdev="$device $mark $rate $ceil $prio $options"
 	    if [ "$searchdev" = "$device" ] ; then
@@ -126,7 +124,6 @@ setup_traffic_shaping()
 	progress_message2 "Validating $devfile..."
 	local device local device inband outband
 	while read device inband outband; do
-	    expandv device inband outband
 	    tcdev="$device $inband $outband"
 	    check_defmark_for_dev $device || fatal_error "Option default is not defined for any class in tcclasses for interface $device"
 	    case $interface in
@@ -146,7 +143,6 @@ setup_traffic_shaping()
 	local classlist device mark rate ceil prio bandw wrongopt allopts opt
 	allopts=""
 	while read device mark rate ceil prio options; do
-	    expandv device mark rate ceil prio options
 	    tcdev="$device $mark $rate $ceil $prio $options"
 	    ratew=$(get_outband_for_dev $device)
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
@@ -314,7 +310,6 @@ __EOF__
 	progress_message2 "$DOING $devfile..."
 
 	while read device inband outband; do
-	    expandv device inband outband
 	    tcdev="$device $inband $outband"
 	    add_root_tc && progress_message "   TC Device $tcdev defined."
 	done < $TMP_DIR/tcdevices
@@ -326,7 +321,6 @@ __EOF__
 	last_device=
 
 	while read device mark rate ceil prio options; do
-	    expandv device mark rate ceil prio options
 	    tcdev="$device $mark $rate $ceil $prio $options"
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 

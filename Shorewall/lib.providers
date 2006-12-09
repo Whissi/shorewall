@@ -347,7 +347,6 @@ __EOF__
     save_command "DEFAULT_ROUTE="
 
     while read table number mark duplicate interface gateway options copy; do
-	expandv table number mark duplicate interface gateway options copy
 	provider="$table $number $mark $duplicate $interface $gateway $options $copy"
 	add_a_provider
 	PROVIDERS="$PROVIDERS $table"
@@ -405,7 +404,6 @@ __EOF__
 		save_command
 
 		while read source dest provider priority; do
-		    expandv source dest provider priority
 		    rule="$source $dest $priority $provider"
 		    add_an_rtrule
 		done < $TMP_DIR/route_rules

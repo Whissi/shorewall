@@ -329,11 +329,9 @@ process_action() # $1 = chain    (Chain to add the rules to)
     else
 	loglevel="${target#*:}"
 	target="${target%%:*}"
-	expandv loglevel
 	if [ "$loglevel" != "${loglevel%:*}" ]; then
 	    logtag="${loglevel#*:}"
 	    loglevel="${loglevel%:*}"
-	    expandv logtag
 	fi
 
 	case $loglevel in
@@ -588,7 +586,6 @@ process_actions1() {
 		    progress_message2 "   Pre-processing $fn..."
 		    strip_file $f $fn
 		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-			expandv xtarget
 			temp="${xtarget%%:*}"
 			case "$temp" in
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
@@ -630,7 +627,6 @@ process_actions1() {
 					    progress_message "   ..Expanding Macro $fn..."
 
 					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-						expandv mtarget
 						temp="${mtarget%%:*}"
 						case "$temp" in
 						    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|PARAM)
@@ -726,7 +722,6 @@ process_action3() {
     progress_message2 "$DOING $(find_file $f) for Chain $xchain..."
 
     while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
-	expandv xtarget
 	#
 	# Generate the target:level:tag to pass to process_action()
 	#
@@ -768,8 +763,6 @@ process_action3() {
 		;;
 	esac
 
-	expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
-
 	if [ -n "$is_macro" ]; then
 
 	    xtarget1=$(map_old_action $xtarget1)
@@ -783,7 +776,6 @@ process_action3() {
 
 	    progress_message "..Expanding Macro $(find_file macro.$xtarget1)..."
 	    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-		expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
 
 		mtarget=$(merge_levels $xaction2 $mtarget)
 

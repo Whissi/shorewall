@@ -242,7 +242,6 @@ setup_accounting() # $1 = Name of accounting file
     strip_file accounting $1
 
     while read action chain source dest proto port sport user ; do
-	expandv action chain source dest proto port sport user
 	process_accounting_rule
     done < $TMP_DIR/accounting
 

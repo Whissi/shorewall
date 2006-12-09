@@ -239,8 +239,6 @@ setup_accounting() # $1 = Name of accounting file
 
     save_progress_message "Setting up Accounting..."
 
-    strip_file accounting $1
-
     while read action chain source dest proto port sport user ; do
 	process_accounting_rule
     done < $TMP_DIR/accounting

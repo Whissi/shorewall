@@ -557,10 +557,6 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 process_actions1() {
 
-    strip_file actions
-
-    strip_file actions.std ${SHAREDIR}/actions.std
-
     for inputfile in actions.std actions; do
 	while read xaction rest; do
 	    [ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"

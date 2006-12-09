@@ -393,21 +393,15 @@ __EOF__
 __EOF__
 	done
 
-	f=$(find_file route_rules)
+	if [ -s $TMP_DIR/route_rules ]; then
+	    progress_message2 "$DOING $(find_file route_rules)..."
 
-	if [ -f $f ]; then
-	    strip_file route_rules $f
+	    save_command
 
-	    if [ -s $TMP_DIR/route_rules ]; then
-		progress_message2 "$DOING $f..."
-
-		save_command
-
-		while read source dest provider priority; do
-		    rule="$source $dest $priority $provider"
-		    add_an_rtrule
-		done < $TMP_DIR/route_rules
-	    fi
+	    while read source dest provider priority; do
+		rule="$source $dest $priority $provider"
+		add_an_rtrule
+	    done < $TMP_DIR/route_rules
 	fi
     fi
 

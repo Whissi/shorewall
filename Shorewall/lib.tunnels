@@ -223,8 +223,6 @@ setup_tunnels() # $1 = name of tunnels file
 	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
     }
 
-    strip_file tunnels $1
-
     while read kind z gateway z1; do
 	tunnel="$(echo $kind $z $gateway $z1)"
 	if validate_zone $z; then

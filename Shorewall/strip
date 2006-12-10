@@ -21,9 +21,16 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+###############################################################################
+# Filter that expands variables
 #
-# Perform variable substitution on the passed argument and echo the result
-#
+expand_line() {
+    local line
+
+    while read line; do
+	echo $(expand $line)
+    done
+}
 
 #
 # Read a file and handle "INCLUDE" directives
@@ -42,7 +49,7 @@ read_file() # $1 = file name, $2 = nest count
 		    echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
 		fi
 	    else
-		eval echo \"$first $rest\"
+		eval "$first $rest"
 	    fi
 	done < $1
     else
@@ -92,7 +99,7 @@ if [ ! -f $TMP_DIR/$1 ]; then
     [ $# = 1 ] && fname=$(find_file $1) || fname=$2
 
     if [ -f $fname ]; then
-	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
+	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' | expand_line > $TMP_DIR/$1
     else
 	> $TMP_DIR/$1
     fi

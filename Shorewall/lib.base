@@ -832,6 +832,10 @@ ensure_config_path() {
 	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
 	. $F
     fi
+
+    if [ -n "$SHOREWALL_DIR" ]; then
+	[ "${CONFIG_PATH%%:*}" = "$SHOREWALL_DIR" ] || CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
+    fi
 }
 
 #

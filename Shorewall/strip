@@ -1,7 +1,6 @@
 #! /bin/sh
 #
 # Script for use from Perl to strip config files and perform shell variable
-# substitution.
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -25,10 +24,6 @@
 #
 # Perform variable substitution on the passed argument and echo the result
 #
-expand() # $@ = contents of variable which may be the name of another variable
-{
-    eval echo \"$@\"
-}
 
 #
 # Read a file and handle "INCLUDE" directives
@@ -47,7 +42,7 @@ read_file() # $1 = file name, $2 = nest count
 		    echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
 		fi
 	    else
-		echo "$(expand $first $rest)"
+		eval echo \"$first $rest\"
 	    fi
 	done < $1
     else
@@ -77,18 +72,14 @@ find_file()
 	    echo $1
 	    ;;
 	*)
-	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
-		echo $SHOREWALL_DIR/$1
-	    else
-		for directory in $(split $CONFIG_PATH); do
-		    if [ -f $directory/$1 ]; then
-			echo $directory/$1
-			return
-		    fi
-		done
-
-		echo ${CONFDIR}/$1
-	    fi
+	    for directory in $(split $CONFIG_PATH); do
+		if [ -f $directory/$1 ]; then
+		    echo $directory/$1
+		    return
+		fi
+	    done
+	    
+	    echo ${CONFDIR}/$1
 	    ;;
     esac
 }

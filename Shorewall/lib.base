@@ -835,7 +835,7 @@ ensure_config_path() {
 }
 
 #
-# Find a File -- For relative file name, look in ${SHOREWALL_DIR} then each ${CONFIG_PATH} then ${CONFDIR}
+# Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
 #
 find_file()
 {
@@ -846,18 +846,14 @@ find_file()
 	    echo $1
 	    ;;
 	*)
-	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
-		echo $SHOREWALL_DIR/$1
-	    else
-		for directory in $(split $CONFIG_PATH); do
-		    if [ -f $directory/$1 ]; then
-			echo $directory/$1
-			return
-		    fi
-		done
+	    for directory in $(split $CONFIG_PATH); do
+		if [ -f $directory/$1 ]; then
+		    echo $directory/$1
+		    return
+		fi
+	    done
 
-		echo ${CONFDIR}/$1
-	    fi
+	    echo ${CONFDIR}/$1
 	    ;;
     esac
 }

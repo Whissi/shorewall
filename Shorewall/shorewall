@@ -124,7 +124,6 @@ get_config() {
 	#
 	# This block is avoided for compile for export and when the user isn't root
 	#
-	[ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:CONFIG_PATH
 	export CONFIG_PATH
 
 	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
@@ -294,7 +293,8 @@ start_command() {
 		fi
 	    fi
 
-	    CONFIG_PATH=$1:$CONFIG_PATH
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
 	    ;;
 	*)
 	    usage 1
@@ -397,7 +397,8 @@ compile_command() {
 		fi
 	    fi
 
-	    CONFIG_PATH=$1:$CONFIG_PATH
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
 	    file=$2
 	    ;;
 	*)
@@ -461,7 +462,8 @@ check_command() {
 		fi
 	    fi
 
-	    CONFIG_PATH=$1:$CONFIG_PATH
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
 	    ;;
 	*)
 	    usage 1
@@ -524,7 +526,8 @@ restart_command() {
 		fi
 	    fi
 
-	    CONFIG_PATH=$1:$CONFIG_PATH
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
 	    ;;
 	*)
 	    usage 1
@@ -671,7 +674,8 @@ safe_commands() {
 		fi
 	    fi
 
-	    CONFIG_PATH=$1:$CONFIG_PATH
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
 	    ;;
 	*)
 	    usage 1
@@ -767,7 +771,8 @@ try_command() {
 	    fi
 	fi
 	
-	CONFIG_PATH=$1:$CONFIG_PATH
+	SHOREWALL_DIR=$1
+	export SHOREWALL_DIR
     }
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
@@ -929,7 +934,7 @@ reload_command() # $* = original arguments less the command.
     esac
 
     if [ -z "$getcaps" ]; then
-	CONFIG_PATH=$directory:$CONFIG_PATH
+	SHOREWALL_DIR=$directory
 	capabilities=$(find_file capabilities)
 	[ -f $capabilities ] || getcaps=Yes
     fi
@@ -1173,12 +1178,11 @@ while [ $finished -eq 0 ]; do
     esac
 done
 
-
-
 if [ $# -eq 0 ]; then
     usage 1
 fi
 
+[ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 

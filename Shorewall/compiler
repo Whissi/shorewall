@@ -4460,6 +4460,18 @@ stop_firewall() {
 	*)
 	    set +x
 
+            case \$COMMAND in
+	        start)
+	            logger "Shorewall start failed"
+	            ;;
+	        restart)
+	            logger "Shorewall restart failed"
+	            ;;
+	        restore)
+	            logger "Shorewall restore failed"
+	            ;;
+            esac
+            
             if [ "\$RESTOREFILE" = NONE ]; then
                 COMMAND=clear
                 clear_firewall

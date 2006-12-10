@@ -869,8 +869,16 @@ resolve_file() # $1 = file name
 	/*)
 	    echo $1
 	    ;;
+	.)
+	    echo $pwd
+	    ;;
 	./*)
 	    echo ${pwd}${1#.}
+	    ;;
+	..)
+	    cd ..
+	    echo $PWD
+	    cd $pwd
 	    ;;
 	../*)
 	    cd ..

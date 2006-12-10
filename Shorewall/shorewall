@@ -293,7 +293,7 @@ start_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$1
+	    SHOREWALL_DIR=$(resolve_file $1)
 	    export SHOREWALL_DIR
 	    ;;
 	*)
@@ -397,7 +397,7 @@ compile_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$1
+	    SHOREWALL_DIR=$(resolve_file $1)
 	    export SHOREWALL_DIR
 	    file=$2
 	    ;;
@@ -462,7 +462,7 @@ check_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$1
+	    SHOREWALL_DIR=$(resolve_file $1)
 	    export SHOREWALL_DIR
 	    ;;
 	*)
@@ -526,7 +526,7 @@ restart_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$1
+	    SHOREWALL_DIR=$(resolve_file $1)
 	    export SHOREWALL_DIR
 	    ;;
 	*)
@@ -674,7 +674,7 @@ safe_commands() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$1
+	    SHOREWALL_DIR=$(resolve_file $1)
 	    export SHOREWALL_DIR
 	    ;;
 	*)
@@ -771,7 +771,7 @@ try_command() {
 	    fi
 	fi
 	
-	SHOREWALL_DIR=$1
+	SHOREWALL_DIR=$(resolve_file $1)
 	export SHOREWALL_DIR
     }
 
@@ -934,7 +934,7 @@ reload_command() # $* = original arguments less the command.
     esac
 
     if [ -z "$getcaps" ]; then
-	SHOREWALL_DIR=$directory
+	SHOREWALL_DIR=$(resolve_file $directory)
 	capabilities=$(find_file capabilities)
 	[ -f $capabilities ] || getcaps=Yes
     fi
@@ -1129,7 +1129,7 @@ while [ $finished -eq 0 ]; do
 			    fi
 			fi
 
-			SHOREWALL_DIR=$2
+			SHOREWALL_DIR=$(resolve_file $2)
 			option=
 			shift
 			;;

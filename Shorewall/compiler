@@ -138,7 +138,7 @@ run_iptables() {
 	#
 	# Purge the temporary files that we use to prevent duplicate '-m' specifications
 	#
-	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$PHYSDEV_MATCH" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
     fi
 
@@ -153,7 +153,7 @@ run_iptables2() {
 	#
 	# Purge the temporary files that we use to prevent duplicate '-m' specifications
 	#
-	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$PHYSDEV_MATCH" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
     fi
 
@@ -168,7 +168,7 @@ qt_iptables() {
 	#
 	# Purge the temporary files that we use to prevent duplicate '-m' specifications
 	#
-	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$PHYSDEV_MATCH" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
     fi
 
@@ -3883,7 +3883,7 @@ activate_rules()
 	if havenatchain $destchain ; then
 	    run_iptables2 -t nat -A $sourcechain $@ -j $destchain
 	elif [ -z "$KLUDGEFREE" ]; then
-	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && -rm -f $TMP_DIR/physdev
+	    [ -n "$PHYSDEV_MATCH" -a -f $TMP_DIR/physdev ] && -rm -f $TMP_DIR/physdev
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 	fi
     }
@@ -3903,7 +3903,7 @@ activate_rules()
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
 	elif [ -z "$KLUDGEFREE" ]; then
-	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && rm -f $TMP_DIR/physdev
+	    [ -n "$PHYSDEV_MATCH" -a -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	fi

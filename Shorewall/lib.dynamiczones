@@ -42,7 +42,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
     do_iptables() # $@ = command
     {
-	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$PHYSDEV_MATCH" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	if ! $IPTABLES $@ ; then

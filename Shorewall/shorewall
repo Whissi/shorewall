@@ -120,7 +120,7 @@
 #
 get_config() {
 
-    if [ -z "$EXPORT" -a "$(whoami)" = root ]; then
+    if [ -z "$EXPORT" -a "$(id -u)" = 0 ]; then
 	#
 	# This block is avoided for compile for export and when the user isn't root
 	#
@@ -882,7 +882,7 @@ try_command() {
 #
 reload_command() # $* = original arguments less the command.
 {
-    local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps=
+    local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps= root=root
 
     [ -n "$LITEDIR" ] || fatal_error "ERROR: LITEDIR not defined in ${SHAREDIR}/configpath"
 
@@ -905,6 +905,12 @@ reload_command() # $* = original arguments less the command.
 			c*)
 			    getcaps=Yes
 			    option=${option#c}
+			    ;;
+			r)
+			    [ $# -gt 1 ] || fatal_error "Missing Root User name"
+			    root=$2
+			    option=
+			    shift
 			    ;;
 			*)
 			    usage 1
@@ -941,8 +947,8 @@ reload_command() # $* = original arguments less the command.
 
     if [ -n "$getcaps" ]; then
 	progress_message "Getting Capabilities on system $system..."
-	if ! ssh root@${system} "/sbin/shorewall-lite show -f capabilities > ${LITEDIR}/capabilities" || \
-	   ! scp root@$system:${LITEDIR}/capabilities $directory; then
+	if ! ssh ${root}@${system} "/sbin/shorewall-lite show -f capabilities > ${LITEDIR}/capabilities" || \
+	   ! scp ${root}@$system:${LITEDIR}/capabilities $directory; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -951,19 +957,19 @@ reload_command() # $* = original arguments less the command.
 
     if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
 	progress_message "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
-	scp $directory/firewall $directory/firewall.conf root@${system}:${LITEDIR}
+	scp $directory/firewall $directory/firewall.conf ${root}@${system}:${LITEDIR}
     then
 	echo "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    ssh root@${system} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    ssh ${root}@${system} "/sbin/shorewall-lite $debugging $verbose restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    ssh root@${system} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    ssh ${root}@${system} "/sbin/shorewall-lite $debugging $verbose restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    ssh root@${system} "/sbin/shorewall-lite $debugging $verbose save" && \
+	    ssh ${root}@${system} "/sbin/shorewall-lite $debugging $verbose save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
@@ -1055,13 +1061,13 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   load [ -s ] [ -c ] [ <directory> ] <system>"
+    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
-    echo "   reload [ -s ] [ -c ] [ <directory> ] <system>"
+    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   reset"
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"

@@ -765,7 +765,14 @@ restore_command() {
 	fi
 
 	progress_message3 "Restoring Shorewall..."
-	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
+
+	if $SHOREWALL_SHELL $RESTOREPATH restore; then
+	    progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
+	    logger "$PRODUCT restored"
+	else
+	    logger "ERROR:$PRODUCT restore failed" 
+	fi
+
 	[ -n "$nolock" ] || mutex_off
     else
 	echo "File ${VARDIR}/$RESTOREFILE: file not found"

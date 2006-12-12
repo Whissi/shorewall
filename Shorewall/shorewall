@@ -233,11 +233,11 @@ start_command() {
 	    ${VARDIR}/.start $debugging start
 	    rc=$?
 	else
+	    logger -p kern.err "ERROR:Shorewall start failed"
 	    rc=$?
 	fi
 
 	[ -n "$nolock" ] || mutex_off
-	[ $rc -ne 0 ] && logger "ERROR: Shorewall start failed"
 	exit $rc
     }
 
@@ -332,7 +332,6 @@ start_command() {
 		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > ${VARDIR}/restarted
 		progress_message3 Shorewall restored from $RESTOREPATH
-		logger "Shorewall restored"
 	    else
 		do_it
 	    fi
@@ -551,11 +550,11 @@ restart_command() {
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
 	rc=$?
     else
+	logger -p kern.err "ERROR:Shorewall restart failed"
 	rc=$?
     fi
 
     [ -n "$nolock" ] || mutex_off
-    [ $rc -ne 0 ] && logger "ERROR: Shorewall restart failed"
     return $rc
 }
 

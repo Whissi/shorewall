@@ -188,11 +188,11 @@ start_command() {
 	    rc=$?
 	else
 	    error_message "${LITEDIR}/firewall is missing or is not executable"
+	    logger -p kern.err "ERROR:Shorewall Lite start failed"
 	    rc=2
 	fi
 
 	[ -n "$nolock" ] || mutex_off
-	[ $rc -eq 0 ] || logger "ERROR:Shorewall Lite start failed"
 	exit $rc
     }
 
@@ -363,11 +363,11 @@ restart_command() {
 	rc=$?
     else
 	error_message "${LITEDIR}/firewall is missing or is not executable"
+	logger -p kern.err "ERROR:Shorewall Lite restart failed"
 	rc=2
     fi
 
     [ -n "$nolock" ] || mutex_off
-    [ $rc -eq 0 ] || logger "ERROR:Shorewall Lite restart failed"
     return $rc
 }
 

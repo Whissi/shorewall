@@ -766,12 +766,7 @@ restore_command() {
 
 	progress_message3 "Restoring Shorewall..."
 
-	if $SHOREWALL_SHELL $RESTOREPATH restore; then
-	    progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
-	    logger "$PRODUCT restored"
-	else
-	    logger "ERROR:$PRODUCT restore failed" 
-	fi
+	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
 
 	[ -n "$nolock" ] || mutex_off
     else

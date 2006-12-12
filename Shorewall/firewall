@@ -81,7 +81,7 @@ startup_error() # $* = Error Message
 #
 report () { # $* = message
     progress_message3 "$@"
-    logger "$@"
+    logger -p kern.info "$@"
 }
 
 #
@@ -391,7 +391,7 @@ stop_firewall() {
 
     set_state "Stopped"
 
-    logger "Shorewall Stopped"
+    logger -p kern.info "Shorewall Stopped"
 
     rm -rf $TMP_DIR
 
@@ -434,7 +434,7 @@ clear_firewall() {
 
     set_state "Cleared"
 
-    logger "Shorewall Cleared"
+    logger -p kern.info "Shorewall Cleared"
 }
 
 #

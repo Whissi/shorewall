@@ -4462,13 +4462,13 @@ stop_firewall() {
 
             case \$COMMAND in
 	        start)
-	            logger "Shorewall start failed"
+	            logger -p kern.err "ERROR:\$PRODUCT start failed"
 	            ;;
 	        restart)
-	            logger "Shorewall restart failed"
+	            logger -p kern.err "ERROR:\$PRODUCT restart failed"
 	            ;;
 	        restore)
-	            logger "Shorewall restore failed"
+	            logger -p kern.err "ERROR:\$PRODUCT restore failed"
 	            ;;
             esac
             
@@ -4691,7 +4691,7 @@ __EOF__
 
     set_state "Stopped"
 
-    logger "Shorewall Stopped"
+    logger -p kern.info "\$PRODUCT Stopped"
 
     case \$COMMAND in
     stop|clear)
@@ -4887,7 +4887,7 @@ __EOF__
 
     set_state "Cleared"
 
-    logger "\$PRODUCT Cleared"
+    logger -p kern.info "\$PRODUCT Cleared"
 }
 
 #
@@ -4908,13 +4908,13 @@ startup_error() # \$* = Error Message
     echo "   ERROR: \$@" >&2
     case \$COMMAND in
         start)
-	    logger "Shorewall start failed"
+	    logger -p kern.err "ERROR:\$PRODUCT start failed"
 	    ;;
 	restart)
-	    logger "Shorewall restart failed"
+	    logger -p kern.err "ERROR:\$PRODUCT restart failed"
 	    ;;
 	restore)
-	    logger "Shorewall restore failed"
+	    logger -p kern.err "ERROR:\$PRODUCT restore failed"
 	    ;;
     esac
             
@@ -5480,13 +5480,13 @@ __EOF__
 
     case \$COMMAND in
 	start)
-	    logger "Shorewall started"
+	    logger -p kern.info "\$PRODUCT started"
 	    ;;
 	restart)
-	    logger "Shorewall restarted"
+	    logger -p kern.info "\$PRODUCT restarted"
 	    ;;
 	restore)
-	    logger "Shorewall restored"
+	    logger -p kern.info "\$PRODUCT restored"
 	    ;;
     esac
 

@@ -613,7 +613,7 @@ if [ -n "$OLDVERSION" ]; then
 
     diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
     if [ -n "$HASLITE" ]; then
-	diff -Naur shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
+	diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
     fi
 fi
 

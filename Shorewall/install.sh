@@ -678,13 +678,13 @@ cd manpages
 
 for f in *.5; do
     gzip $f
-    run_install -D $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
+    run_install -D  -m 0444 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
     echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
 done
 
 for f in *.8; do
     gzip $f
-    run_install -D $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
+    run_install -D  -m 0444 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
     echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
 done
 

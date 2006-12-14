@@ -101,7 +101,7 @@ progress_message_and_save()
 indent() {
     if [ -n "$INDENT" ]; then
 	if [ -n "$HAVEAWK" ]; then
-	    eval awk \''BEGIN { indent=1; }; /^[[:space:]]*$/ { print ""; indent=1; next; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
+	    eval awk \''BEGIN { indent=1; }; /^\s*$/ { print ""; indent=1; next; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
 	else
 	    eval sed \'s\/^/"$INDENT"\/\' $1
 	fi
@@ -3467,7 +3467,7 @@ __EOF__
 
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
-		is_bridge=$( brctl show $interface 2> /dev/null | grep ^$interface[[:space:]] )
+		is_bridge=$( brctl show 2> /dev/null | grep "^$interface[[:space:]]" )
 		[ -n "$is_bridge" ] && \
 		    do_iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
             fi

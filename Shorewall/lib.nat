@@ -35,6 +35,8 @@ setup_masq()
 
     do_ipsec_options() {
 	local options="$(separate_list $ipsec)" option
+	[ -n "$ORIGINAL_POLICY_MATCH" ] || \
+	    fatal_error "IPSEC options requires policy match support in your kernel and iptables"
 	policy="-m policy --pol ipsec --dir out"
 
 	for option in $options; do
@@ -66,12 +68,12 @@ setup_masq()
 
 	case $ipsec in
 	    Yes|yes)
-		[ -n "$POLICY_MATCH" ] || \
+		[ -n "$ORIGINAL_POLICY_MATCH" ] || \
 		    fatal_error "IPSEC=Yes requires policy match support in your kernel and iptables"
 		policy="-m policy --pol ipsec --dir out"
 		;;
 	    No|no)
-		[ -n "$POLICY_MATCH" ] || \
+		[ -n "$ORIGINAL_POLICY_MATCH" ] || \
 		    fatal_error "IPSEC=No requires policy match support in your kernel and iptables"
 		policy="-m policy --pol none --dir out"
 		;;

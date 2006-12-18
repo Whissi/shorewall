@@ -113,6 +113,14 @@ ACCEPT   -              -               tcp     135,139,445
   </section>
 
   <section>
+    <title>Enabling the Use of Actions</title>
+
+    <para>In Shorewall version 3.4 and later, to make use of any of the three
+    types of actions you must set the USE_ACTIONS option to Yes in
+    <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+  </section>
+
+  <section id="Default">
     <title>Default Actions (Formerly Common Actions)</title>
 
     <para>Shorewall allows the association of a <firstterm>default
@@ -140,17 +148,37 @@ ACCEPT   -              -               tcp     135,139,445
       </listitem>
     </orderedlist>
 
-    <para>Shorewall provides default actions for the REJECT and DROP policies.
-    The default action for REJECT is named <firstterm>Reject</firstterm> and
-    the default action for DROP is named <firstterm>Drop</firstterm>. These
-    associations are made through two entries in
-    /usr/share/shorewall/actions.std:</para>
+    <para>If you are running Shorewall 3.2 or earlier, then:</para>
 
-    <programlisting>Drop:DROP       #Default Action for DROP policy
+    <blockquote>
+      <para>Shorewall provides default actions for the REJECT and DROP
+      policies. The default action for REJECT is named
+      <firstterm>Reject</firstterm> and the default action for DROP is named
+      <firstterm>Drop</firstterm>. These associations are made through two
+      entries in /usr/share/shorewall/actions.std:</para>
+
+      <programlisting>Drop:DROP       #Default Action for DROP policy
 Reject:REJECT   #Default Action for REJECT policy</programlisting>
 
-    <para>These may be overridden by entries in your /etc/shorewall/actions
-    file.</para>
+      <para>These may be overridden by entries in your /etc/shorewall/actions
+      file.</para>
+    </blockquote>
+
+    <para>If you are running Shorewall 3.4 or later, then:</para>
+
+    <blockquote>
+      <para>Shorewall supports default actions for the ACCEPT, REJECT, DROP
+      and QUEUE policies. These default actions are specified in the
+      /etc/shorewall/shorewall.conf file using the ACCEPT_DEFAULT,
+      REJECT_DEFAULT, DROP_DEFAULT and QUEUE_DEFAULT options respectively.
+      Policies whose default is set to a value of "none" have no default
+      action.</para>
+
+      <para>In addition, the default specified in
+      /etc/shorewall/shorewall.conf may be overridden by specifying a
+      different default in the POLICY column of <ulink
+      url="Documentation.htm#Policy">/etc/shorewall/policy</ulink>.</para>
+    </blockquote>
 
     <warning>
       <para>Entries in the DROP and REJECT default actions <emphasis

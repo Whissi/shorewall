@@ -245,6 +245,29 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
     from actions cannot themselves invoke other actions.</para>
   </section>
 
+  <section id="Default">
+    <title>Default Macros</title>
+
+    <para>Beginning with Shorewall release 3.4, Shorewall supports
+    <firstterm>default macros</firstterm>; default macros perform the same
+    function as <ulink url="???">default actions</ulink>. The DEFAULT_ACCEPT,
+    DEFAULT_REJECT, DEFAULT_DROP and DEFAULT_QUEUE options in
+    <filename>/etc/shorewall/shorewall.conf</filename> may specify the name of
+    a macro. In that case, the rules in the macro will be traversed before the
+    associated policy is applied.</para>
+
+    <para>The value of the DEFAULT_... settings is interpreted as follows. If
+    USE_ACTIONS=Yes in shorewall.conf, then the value is treated like the name
+    of an action -- if that action is not found, then the value is treated
+    like the name of a macro. If USE_ACTIONS=No, then the value is treated
+    like the name of a macro. The special value "none" is always interpreted
+    as "no default rules should be applied".</para>
+
+    <para>Shorewall versions 3.4 and later include standard 'Reject' and
+    'Drop' macros that are equivalent to the 'Reject' and 'Drop'
+    actions.</para>
+  </section>
+
   <section>
     <title>Defining your own Macros</title>
 

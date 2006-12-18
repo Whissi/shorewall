@@ -1,145 +1,20 @@
-Shorewall 3.3.6
+Shorewall 3.4.0 Beta 1
 
- Note to users upgrading from Shorewall 3.0 or 3.2
+Release Highlights
 
-    Most problems associated with upgrades come from two causes:
+1)  Shorewall can now be taylored to reduce its footprint on embedded
+    systems. As part of this change, actions are now completely optional.
 
-    - The user didn't read and follow the migration considerations in these
-      release notes.
+2)  Exclusion is now possible in /etc/shorewall/hosts. This is required
+    for bridge/firewalls under kernel 2.6.20 and later.
 
-    - The user mis-handled the /etc/shorewall/shorewall.conf file during
-      upgrade. Shorewall is designed to allow the default behavior of
-      the product to evolve over time. To make this possible, the design
-      assumes that you will not replace your current shorewall.conf file
-      during upgrades. If you feel absolutely compelled to have the latest
-      comments and options in your shorewall.conf then you must proceed
-      carefully.
-
-    While you are at it, if you have a file named /etc/shorewall/rfc1918 then
-    please check that file. If it has addresses listed that are NOT in one of
-    these three ranges, then please rename the file to
-    /etc/shorewall/rfc1918.old.
-
-         10.0.0.0 - 10.255.255.255
-         172.16.0.0 - 172.31.255.255
-         192.168.0.0 - 192.168.255.255
-
-    If you have a file named /etc/shorewall/modules, please remove
-    it. The default modules file is now located in /usr/share/shorewall/
-    (see the "Migration Considerations" below).
-
-    Please see the "Migration Considerations" below for additional upgrade
-    information.
-
-Problems Corrected in 3.3.6
-
-1)  Handling of saved ipsets in /etc/shorewall/ipsets was broken when
-    used on a system running Shorewall Lite. If there was a file named
-    'ipsets' on the CONFIG_PATH when the firewall script was compiled,
-    then the compiled script attempted to restore the ipsets from that
-    file (which may not have existed on the firewall system).
-
-2)  Previously, "shorewall safe-[re]start" was badly broken. This
-    breakage had been corrected. 
-
-Other Changes in 3.3.6
-
-1)  Now that the manpages are in place, /etc/shorewall/Documentation
-    has been removed.
-
-    Command-specific help has also been removed since it duplicates
-    information in the man pages.
-
-2)  Prior to this release, on firewall systems with Shorewall Lite
-    installed, the local modules file is used to determine which kernel
-    modules to load. Beginning with this release, if there is a
-    'modules' file in the CONFIG_PATH when the firewall script is
-    compiled (other than /usr/share/shorewall/modules), then that file
-    will be copied into the compiled script and used on the firewall
-    system.
-
-3)  Shorewall now uses tc fwmark filters to classify packets for
-    traffic shaping when the DEVICE isn't an interface described in
-    /etc/shorewall/interfaces. This is in preparation for the upcoming
-    change to the way that --physdev-out works in iptables/Netfilter;
-    that change is now scheduled for kernel 2.6.20.
-
-4)  If your kernel and iptables have extended multiport support, then
-    Shorewall will use that support for the destination port when
-    generating rules from entries in the /etc/shorewall/tcrules file.
-
-5)  The 'safe-start' and 'safe-restart' command have been
-    improved. Both now accept an optional directory name; if supplied,
-    Shorewall will look first in that directory for configuration
-    files.
-
-    The commands have also been enhanced to only restore the
-    configuration once in the event of a failure. Previously, if there
-    was a current 'save' command in effect, then that configuration
-    would be restored on a failure and then the last-running
-    configuration would be restored.
-
-6)  The 'try' command has been reimplemented with new semantics. 
-
-    If Shorewall is started then the firewall state is saved to a
-    temporary saved configuration (/var/lib/shorewall/.try). Next, if
-    Shorewall is currently started then a restart command is issued;
-    otherwise, a start command is performed. if an error occurs during
-    the  compliation phase  of  the  restart or start, the command
-    terminates without changing the Shorewall state. If an error occurs
-    during the restart phase, then a 'shorewall restore' is performed
-    using the saved configuration. If an error occurs during the start
-    phase, then Shorewall is  cleared. If the start/restart succeeds
-    and a timeout is specified then a 'clear' or 'restore' is performed
-    after timeout seconds. 
-
-7)  The syntax of the 'export' command has been made slightly
-    friendlier.
-
-    The old syntax:
-
-	export <directory1> [user@]system:[<directory2>]
-
-    It is now:
-
-        export <directory1> [user@]system[:<directory2>]
-
-    In other words, if you don't need to specify <directory2>, you may
-    omit the colon (":") following the system name.
-    
-    The old syntax is still accepted -- that is, you can still 
-    type:
-
-        export firewall2:
-
-    which is equivalent to
-
-        export firewall2
-
-8)  Shorewall commands may be speeded up slightly by using a
-    'capabilities' file. The 'capabilities' file was originally
-    designed for use with Shorewall Lite and records the
-    iptables/Netfilter features available on the target system.
-
-    To generate a capabilities file, execute the following command as
-    root:
-
-      shorewall show -f capabilities > /etc/shorewall/capabilities
-
-    When you install a new kernel and/or iptables, be sure to generate
-    a new file.
-	
-9)  When syslogd is run with the -C option (which in some
-    implementations causes syslogd to log to an in-memory circular
-    buffer), /sbin/shorewall will now use the 'logread' command to read
-    the log from that buffer. This is for combatibility with OpenWRT.
-
-10) There is now a ":T" qualifier in /etc/shorewall/tcrules which
-    causes the resulting rule to be inserted into the POSTROUTING
-    chain.
-
-11) Failures of the start, restart and restore commands are now logged
-    using 'logger'.
+3)  Shorewall and Shorewall Lite now include man pages. There is a 
+    man page for shorewall(8), one for shorewall-lite(8) and one for
+    each configuration file. As part of this change, all documentation
+    has been removed from Shorewall configuration files. This should
+    make it easier from users to upgrade from one release to the next
+    since the configuration files will only change when column is added
+    or renamed.
 
 Migration Considerations:
 
@@ -181,38 +56,16 @@ Migration Considerations:
     /etc/shorewall/action.Limit and/or /etc/shorewall/Limit if you have
     them.
 
-3)  The 'shorewall try' command has been eliminated. The syntax of
-    'try' was:
+New Features in Shorewall 3.4:
 
-	  shorewall try <config-dir> [ <timeout> ]
-
-    A better way to accomplish the same thing is:
-
-      shorewall save #Do this only once before you start testing
-
-      shorewall restart <config-dir> [ && sleep <timeout> && shorewall restore ]
-	  
-      --- fix problems ---
-      
-      shorewall restart <config-dir> [ && sleep <timeout> && shorewall restore ]
-	  
-      --- fix problems ---
-
-      ...
-
-      shorewall save #Do this only once after you have installed 
-		     #the new configuration
-
-New Features:
-
-1)  In order to accomodate small embedded applications, Shorewall 3.3
+1)  In order to accomodate small embedded applications, Shorewall 3.4
     is now modularized. In addition to the base files, there are
     loadable "libraries" that may be included or omitted from an
     embedded system as required.
 
     Loadable Shorewall libraries reside in /usr/share/shorewall/ and
     have names that begin with "lib.". The following libraries are
-    included in Shorewall 3.3:
+    included in Shorewall 3.4:
 
     - lib.accounting. Must be available if you include entries in
       /etc/shorewall/accounting.
@@ -626,10 +479,98 @@ New Features:
 	      shorewall(8)
 	      shorewall-zones(5)
 
+    Now that the manpages are in place, command-specific help has been
+    removed since it duplicates information in the man pages.
+
 19) From the beginning, the Shorewall configuration files in
     /etc/shorewall/ have contained documentary comments. While these
     comments are useful, they present an upgrade problem. Beginning
     with this release, these comments are removed from the
     configuration files themselves and are replaced by the manpages
     described in the preceding release note entry.
+
+20) Shorewall now uses tc fwmark filters to classify packets for
+    traffic shaping when the DEVICE isn't an interface described in
+    /etc/shorewall/interfaces. This is in preparation for the upcoming
+    change to the way that --physdev-out works in iptables/Netfilter;
+    that change is now scheduled for kernel 2.6.20.
+
+21) If your kernel and iptables have extended multiport support, then
+    Shorewall will use that support for the destination port when
+    generating rules from entries in the /etc/shorewall/tcrules file.
+
+22) The 'safe-start' and 'safe-restart' command have been
+    improved. Both now accept an optional directory name; if supplied,
+    Shorewall will look first in that directory for configuration
+    files.
+
+    The commands have also been enhanced to only restore the
+    configuration once in the event of a failure. Previously, if there
+    was a current 'save' command in effect, then that configuration
+    would be restored on a failure and then the last-running
+    configuration would be restored.
+
+23) The 'try' command has been reimplemented with new semantics. 
+
+    If Shorewall is started then the firewall state is saved to a
+    temporary saved configuration (/var/lib/shorewall/.try). Next, if
+    Shorewall is currently started then a restart command is issued;
+    otherwise, a start command is performed. if an error occurs during
+    the  compliation phase  of  the  restart or start, the command
+    terminates without changing the Shorewall state. If an error occurs
+    during the restart phase, then a 'shorewall restore' is performed
+    using the saved configuration. If an error occurs during the start
+    phase, then Shorewall is  cleared. If the start/restart succeeds
+    and a timeout is specified then a 'clear' or 'restore' is performed
+    after timeout seconds. 
+
+24) The syntax of the 'export' command has been made slightly
+    friendlier.
+
+    The old syntax:
+
+	export <directory1> [user@]system:[<directory2>]
+
+    It is now:
+
+        export <directory1> [user@]system[:<directory2>]
+
+    In other words, if you don't need to specify <directory2>, you may
+    omit the colon (":") following the system name.
+    
+    The old syntax is still accepted -- that is, you can still 
+    type:
+
+        export firewall2:
+
+    which is equivalent to
+
+        export firewall2
+
+25) Shorewall commands may be speeded up slightly by using a
+    'capabilities' file. The 'capabilities' file was originally
+    designed for use with Shorewall Lite and records the
+    iptables/Netfilter features available on the target system.
+
+    To generate a capabilities file, execute the following command as
+    root:
+
+      shorewall show -f capabilities > /etc/shorewall/capabilities
+
+    When you install a new kernel and/or iptables, be sure to generate
+    a new capabilities file.
+	
+26) When syslogd is run with the -C option (which in some
+    implementations causes syslogd to log to an in-memory circular
+    buffer), /sbin/shorewall will now use the 'logread' command to read
+    the log from that buffer. This is for combatibility with OpenWRT.
+
+27) There is now a ":T" qualifier in /etc/shorewall/tcrules which
+    causes the resulting rule to be inserted into the POSTROUTING
+    chain.
+
+Problems Corrected in 3.4.0 Beta 1.
+
+1)  It is now possible to place entries in the IPSEC column of 
+    /etc/shorewall/masq without having specified ipsec zones or hosts.
 

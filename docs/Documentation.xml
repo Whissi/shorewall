@@ -1183,6 +1183,117 @@ loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
     that you want a message sent to your system log each time that the policy
     is applied.</para>
 
+    <para>Shorewall supports the association of a set of rules with individual
+    policies. Packets that are having the policy applied are first passed
+    through the associated rules. These rules are specified in the form of a
+    <ulink url="Actions.html#Default"><firstterm>default
+    action</firstterm></ulink> or <ulink
+    url="Macros.html#Default"><firstterm>default
+    macro</firstterm></ulink>.</para>
+
+    <para>Prior to Shorewall 3.3, default actions were specified in
+    <filename>/usr/share/shorewall/actions.std</filename> or in
+    <filename>/etc/shorewall/actions</filename>.</para>
+
+    <para>This approach has two drawbacks:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>All DROP policies must use the same default action and all
+        REJECT policies must use the same default action.</para>
+      </listitem>
+
+      <listitem>
+        <para>Now that Shorewall supports modularized action processing (see
+        the <link linkend="Conf">USE_ACTIONS option</link> below), we need a
+        way to define default rules for a policy that does not involve
+        actions.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>The solution is two-fold:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Four new options have been added to the
+        <filename>/etc/shorewall/shorewall.conf</filename> file that allow
+        specifying the default action for DROP, REJECT, ACCEPT and QUEUE. The
+        options are DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT and
+        QUEUE_DEFAULT.</para>
+
+        <para>DROP_DEFAULT describes the rules to be applied before a
+        connection request is dropped by a DROP policy; REJECT_DEFAULT
+        describes the rules to be applied if a connection request is rejected
+        by a REJECT policy. The other two are similar for ACCEPT and QUEUE
+        policies.</para>
+
+        <para>The value assigned to these may be:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>The name of an action.</para>
+          </listitem>
+
+          <listitem>
+            <para>The name of a macro.</para>
+          </listitem>
+
+          <listitem>
+            <para>'None' or 'none'</para>
+          </listitem>
+        </orderedlist>
+
+        <para>The default values are:</para>
+
+        <simplelist>
+          <member>DROP_DEFAULT="Drop"</member>
+
+          <member>REJECT_DEFAULT="Reject"</member>
+
+          <member>ACCEPT_DEFAULT=none</member>
+
+          <member>QUEUE_DEFAULT=none</member>
+        </simplelist>
+
+        <para>If USE_ACTIONS=Yes, then these values refer to action.Drop and
+        action.Reject respectively. If USE_ACTIONS=No, then these values refer
+        to macro.Drop and macro.Reject.</para>
+
+        <para>If you set the value of either option to "None" then no default
+        action will be used and the default action or macro (if any) must be
+        specified in /etc/shorewall/policy.</para>
+      </listitem>
+
+      <listitem>
+        <para>The POLICY column in /etc/shorewall/policy has been
+        extended.</para>
+
+        <para>In <filename>/etc/shorewall/policy</filename>, when the POLICY
+        is DROP, REJECT, ACCEPT or QUEUE then the policy may be followed by
+        ":" and one of the following:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>The word "None" or "none". This causes any default action
+            defined in /etc/shorewall/shorewall.conf to be omitted for this
+            policy.</para>
+          </listitem>
+
+          <listitem>
+            <para>The name of an action (requires that USE_ACTIONS=Yes in
+            shorewall.conf). That action will be invoked before the policy is
+            enforced.</para>
+          </listitem>
+
+          <listitem>
+            <para>The name of a macro. The rules in that macro will be applied
+            before the policy is enforced. This does not require
+            USE_ACTIONS=Yes.</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+    </itemizedlist>
+
     <para>Entries in /etc/shorewall/policy have four columns as
     follows:</para>
 
@@ -1215,7 +1326,14 @@ loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
 
         <listitem>
           <para>The default policy for connection requests from the SOURCE
-          zone to the DESTINATION zone.</para>
+          zone to the DESTINATION zone. Beginning with Shorewall version 3.4,
+          the policy may be optionally followed by a colon (":") and the
+          <ulink url="Actions.html#Default">default action</ulink> or <ulink
+          url="Macros.html#Default">default macro</ulink> to be used before
+          the policy is applied. Default actions or macros specified here
+          override any such default specified using the
+          <emphasis>policy</emphasis>_DEFAULT options in <link
+          linkend="Conf">/etc/shorewall/shorewall.conf</link>.</para>
         </listitem>
       </varlistentry>
 
@@ -2753,6 +2871,149 @@ eth0                  eth1            206.124.146.176</programlisting>
     <para>This file is used to set the following firewall parameters:</para>
 
     <variablelist>
+      <varlistentry>
+        <term>ACCEPT_DEFAULT, DROP_DEFAULT, QUEUE_DEFAULT and REJECT_DEFAULT
+        (Added in version 3.4.0)</term>
+
+        <listitem>
+          <para>These options specify the <ulink
+          url="Actions.html#Default">default action</ulink> or <ulink
+          url="Macros.html#Default">default macro</ulink> for ACCEPT, DROP,
+          QUEUE and REJECT policies respectively. If not specified, the
+          following defaults are used:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>ACCEPT_DEFAULT=none</para>
+            </listitem>
+
+            <listitem>
+              <para>DROP_DEFAULT=Drop</para>
+            </listitem>
+
+            <listitem>
+              <para>QUEUE_DEFAULT=none</para>
+            </listitem>
+
+            <listitem>
+              <para>REJECT_DEFAULT=Reject</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>The special value "none" is used to indicate that no default
+          action/default should be used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>USE_ACTIONS (Added in version 3.4.0)</term>
+
+        <listitem>
+          <para>If set to 'Yes' (the default) then user-defined and standard
+          actions may be used. If set to 'No', only built-in actions may be
+          used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>OPTIMIZE (Added in version 3.4.0)</term>
+
+        <listitem>
+          <para>In Shorewall versions prior to 3.3.2, multiple jumps to a
+          '2all' chain could be generated in succession.</para>
+
+          <para>Example from an earlier shorewall version:</para>
+
+          <programlisting>gateway:~ # shorewall-lite show eth2_fwd
+Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
+
+Counters reset Thu Oct 19 08:34:47 PDT 2006
+
+Chain eth2_fwd (1 references)
+ pkts bytes target     prot opt in     out     source            destination
+    0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+    0     0 wifi2all   all  --  *      eth0    0.0.0.0/0            0.0.0.0/0
+    0     0 wifi2all   all  --  *      br0     0.0.0.0/0            0.0.0.0/0
+    0     0 wifi2all   all  --  *      eth3    0.0.0.0/0            0.0.0.0/0
+    0     0 wifi2all   all  --  *      tun+    0.0.0.0/0            0.0.0.0/0
+gateway:~ #</programlisting>
+
+          <para>This redundancy may be eliminated by setting OPTIMIZE=1 in
+          shorewall.conf.</para>
+
+          <programlisting>gateway:~ # shorewall-lite show eth2_fwd
+Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
+
+Counters reset Thu Oct 19 09:15:19 PDT 2006
+
+Chain eth2_fwd (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID,NEW
+    0     0 wifi2all   all  --  *      *       0.0.0.0/0            0.0.0.0/0
+gateway:~ #</programlisting>
+
+          <para>Note that with OPTIMIZE=1, traffic destined for an
+          interface/Address that falls outside of all defined zones may now be
+          logged out of a '2all' chain rather than out of the FORWARD
+          chain.</para>
+
+          <para>The OPTIMIZE setting also controls the suppression of
+          redundant wildcard rules (those specifying "all" in the SOURCE or
+          DEST column). A wildcard rule is considered to be redundant when it
+          has the same ACTION and Log Level as the applicable policy.</para>
+
+          <para>Example:</para>
+
+          <para><filename>/etc/shorewall/policy</filename><programlisting>#SOURCE         DEST            POLICY          LEVEL
+loc             net             ACCEPT
+</programlisting></para>
+
+          <para><filename>/etc/shorewall/rules</filename><programlisting>#ACTION         SOURCE          DEST    PROTO   DEST
+#                                               PORT(S)
+...
+ACCEPT          all             all     icmp    8</programlisting></para>
+
+          <para>With OPTIMIZE=0</para>
+
+          <programlisting>gateway:~ # shorewall show loc2net
+Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:55:03 PDT 2006
+
+Counters reset Thu Oct 26 07:54:58 PDT 2006
+
+Chain loc2net (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    ...
+    0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0
+    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           icmp type 8
+    0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+gateway:~</programlisting>
+
+          <para>With OPTIMIZE=1</para>
+
+          <programlisting>gateway:~ # shorewall show loc2net
+Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
+
+Counters reset Thu Oct 26 07:56:38 PDT 2006
+
+Chain loc2net (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+  ...
+    0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0
+    0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+gateway:~</programlisting>
+
+          <para>If you really want a rule that duplicates the policy, follow
+          the action with "!":</para>
+
+          <programlisting>#ACTION         SOURCE          DEST    PROTO   DEST
+#                                               PORT(S)
+  ...
+ACCEPT!         all             all     icmp    8</programlisting>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term>VERBOSITY (Added in version 3.2.0)</term>
 

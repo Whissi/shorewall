@@ -171,6 +171,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Submission
 %attr(0644,root,root) /usr/share/shorewall/macro.SVN
 %attr(0644,root,root) /usr/share/shorewall/macro.Syslog
+%attr(0644,root,root) /usr/share/shorewall/macro.TFTP
 %attr(0644,root,root) /usr/share/shorewall/macro.Telnet
 %attr(0644,root,root) /usr/share/shorewall/macro.Telnets
 %attr(0644,root,root) /usr/share/shorewall/macro.Time

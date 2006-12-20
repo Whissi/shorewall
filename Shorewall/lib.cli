@@ -150,16 +150,9 @@ packet_log() # $1 = number of messages
     [ -n "$realtail" ] && options="-n$1"
 
     if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
-	$LOGREAD | grep 'IN=.* OUT=' | \
-	    sed s/" kernel:"// | \
-	    sed s/" $host $LOGFORMAT"/" "/ | \
-	    tail $options
+	$LOGREAD | grep 'IN=.* OUT=' | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/ | tail $options
     else
-	$LOGREAD | grep 'IN=.* OUT=' | \
-	    sed s/" kernel:"// | \
-	    sed s/" $host $LOGFORMAT"/" "/ | \
-	    sed 's/MAC=.* SRC=/SRC=/' | \
-	    tail $options
+	$LOGREAD | grep 'IN=.* OUT=' | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/ | tail $options
     fi
 }
 

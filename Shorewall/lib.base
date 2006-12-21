@@ -529,7 +529,7 @@ ip_network() {
 ip_broadcast() {
     local x=$(( 32 - ${1#*/} ))
 
-    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
+    [ $x -eq 32 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
 }
 
 #

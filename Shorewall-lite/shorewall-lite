@@ -756,7 +756,7 @@ case "$COMMAND" in
 	fi
 
 	valid_address $address || fatal_error "Invalid IP address: $address"
-	if [ -z "$vlsm" ] && exit 2
+	[ -z "$vlsm" ] && exit 2
 	[ "x$address" = "x$vlsm" ] && usage 2
 	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
 

@@ -1468,6 +1468,7 @@ case "$COMMAND" in
 	    usage 1
 	fi
 
+	valid_address $address || fatal_error "Invalid IP address: $address"
 	[ -z "$vlsm" ] && exit 2
 	[ "x$address" = "x$vlsm" ] && usage 2
 	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
@@ -1484,6 +1485,10 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	case $2 in
 	    *.*.*.*-*.*.*.*)
+		for address in ${2%-*} ${2#*-}; do
+		    valid_address $address || fatal_error "Invalid IP address: $address"
+		done
+
 		ip_range $2
 		;;
 	    *)
@@ -1495,6 +1500,7 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	case $2 in
 	    *.*.*.*)
+		valid_address $2 || fatal_error "Invalid IP address: $2"
 		echo "   $(decodeaddr $2)"
 		;;
 	    *)
@@ -1504,7 +1510,7 @@ case "$COMMAND" in
 	;;
     restore)
 	shift
-r	estore_command $@
+	restore_command $@
         ;;
     call)
 	[ -n "$debugging" ] && set -x

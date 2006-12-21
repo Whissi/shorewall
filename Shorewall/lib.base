@@ -361,6 +361,32 @@ lib_avail() # $1 = Name of the Library
 LEFTSHIFT='<<'
 
 #
+# Validate an IP address
+#
+valid_address() {
+    local x y
+    local ifs=$IFS
+
+    IFS=.
+
+    for x in $1; do
+	case $x in
+	    [0-9]|[0-9][0-9]|[1-2][0-9][0-9])
+		[ $x -lt 256 ] || { IFS=$ifs; return 2; }
+                ;;
+	    *)
+	        IFS=$ifs
+		return 2
+		;;
+	esac
+    done
+    
+    IFS=$ifs
+
+    return 0
+}
+
+#
 # Convert an IP address in dot quad format to an integer
 #
 decodeaddr() {

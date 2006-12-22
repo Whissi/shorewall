@@ -144,6 +144,8 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.ICQ
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAP
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAPS
+%attr(0644,root,root) /usr/share/shorewall/macro.IPP
+%attr(0644,root,root) /usr/share/shorewall/macro.Jetdirect
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAP
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAPS
 %attr(0644,root,root) /usr/share/shorewall/macro.MySQL
@@ -156,6 +158,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.POP3
 %attr(0644,root,root) /usr/share/shorewall/macro.POP3S
 %attr(0644,root,root) /usr/share/shorewall/macro.PostgreSQL
+%attr(0644,root,root) /usr/share/shorewall/macro.Printer
 %attr(0644,root,root) /usr/share/shorewall/macro.RDP
 %attr(0644,root,root) /usr/share/shorewall/macro.Rdate
 %attr(0644,root,root) /usr/share/shorewall/macro.Reject

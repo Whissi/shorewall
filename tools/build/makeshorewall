@@ -60,11 +60,15 @@ DIR=$PWD
 #
 # location and options for GnuPG
 #
-GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
+GPG="/usr/bin/gpg -ab --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
 #
 # SVN Repository
 #
 SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
+#
+# Program that generates man pages from Docbook XML
+#
+DOCBOOK2MAN=docbook2x-man
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -342,7 +346,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		docbook-to-man $f
+		$DOCBOOK2MAN $f
 	    fi
 	done
 	rm *.xml
@@ -358,7 +362,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		docbook-to-man $f
+		$DOCBOOK2MAN $f
 	    fi
 	done
 	rm *.xml

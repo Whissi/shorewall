@@ -260,7 +260,7 @@ DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP addr
             blocking SYN,ACK responses. This technique allows your ISP to
             detect when you are running a server (in violation of your service
             agreement) and to stop connections to that server from being
-            established. </para>
+            established.</para>
           </listitem>
         </itemizedlist>
       </section>
@@ -1012,6 +1012,18 @@ DROP      net       fw      udp      10619</programlisting>
         /etc/sysconfig/syslog to suppress info (log level 6) messages on the
         console.</para>
       </tip>
+
+      <section id="faq16a">
+        <title>(FAQ 16a) Why can't I see any Shorewall messages in
+        /var/log/messages?</title>
+
+        <para><emphasis role="bold">Answer:</emphasis> The actual log file
+        name will likely not be well standardized, but anytime you see no
+        logging, it's time to look outside the Shorewall configuration for the
+        cause. As an example, recent <trademark>SuSE</trademark> releases use
+        syslog-ng by default and write Shorewall messages to
+        <filename>/var/log/firewall</filename>.</para>
+      </section>
     </section>
 
     <section id="faq17">

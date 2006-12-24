@@ -404,13 +404,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	progress_message "Building $RPMNAME..."
 
 	test -n "$SIGN" && SIGN="--sign"
-	do_or_die "rpmbuild -tb $SIGN $TARBALL >> $LOGFILE 2>&1"
+	rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
+	do_or_die "cp shorewall-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+	do_or_die "cp $SHOREWALLDIR/shorewall.spec $RPMDIR/SPECS/"
+	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall.spec >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
 
 	if [ -n "$HASLITE" ]; then
 	    progress_message "Building $LITERPMNAME..."
 
-	    do_or_die "rpmbuild -tb $SIGN $LITETARBALL >> $LOGFILE 2>&1"
+	    rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
+	    do_or_die "cp shorewall-lite-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+	    do_or_die "cp $SHOREWALLLITEDIR/shorewall-lite.spec $RPMDIR/SPECS/"
+	    do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec >> $LOGFILE 2>&1"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
 	fi
     fi

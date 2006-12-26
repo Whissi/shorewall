@@ -214,10 +214,6 @@ cd "$(dirname $0)"
 echo "Installing Shorewall Version $VERSION"
 
 #
-# First do Backups
-#
-
-#
 # Check for /etc/shorewall
 #
 if [ -d ${PREFIX}/etc/shorewall ]; then

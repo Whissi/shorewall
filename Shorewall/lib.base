@@ -1231,13 +1231,15 @@ do_log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispos
     local disposition=$4
     local rulenum=
     local limit=
-    local tag=${6:+$6 }
-    local command=${7:--A}
+    local tag=
+    local command=
     local prefix
     local base=$(chain_base $displayChain)
     local pf
 
     limit="${5:-$LOGLIMIT}" # Do this here rather than in the declaration above to appease /bin/ash.
+    tag=${6:+$6 }
+    command=${7:--A}
 
     shift 7
 

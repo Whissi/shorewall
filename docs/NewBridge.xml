@@ -504,8 +504,8 @@ net     ipv4
 loc:net ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
-    <para>Note that the loc zone is defined to be a sub-zone of the net
-    zone.</para>
+    <para>Note that the <emphasis role="bold">loc</emphasis> zone is defined
+    to be a sub-zone of the <emphasis role="bold">net</emphasis> zone.</para>
 
     <para>A conventional two-zone policy file is appropriate here —
     <filename>/etc/shorewall/policy</filename>:</para>
@@ -524,7 +524,7 @@ all         all         REJECT        info
 net      br0             192.168.1.255
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-    <para>The loc zone is defined using the
+    <para>The <emphasis role="bold">loc</emphasis> zone is defined using the
     <filename>/etc/shorewall/hosts</filename> file. Assuming that the router
     is connected to <filename class="devicefile">eth0</filename> and the
     switch to <filename class="devicefile">eth1</filename>:</para>
@@ -532,6 +532,13 @@ net      br0             192.168.1.255
     <programlisting>#ZONE           HOST(S)                         OPTIONS
 loc             br0:192.168.1.0/24!192.168.1.10/31,192.168.1.254
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+
+    <note>
+      <para>192.168.1.10/31 consists of the two local systems outside the
+      firewall; namely, 192.168.1.10 and 192.168.1.11. Those systems must be
+      excluded from the <emphasis role="bold">loc</emphasis> zone as must the
+      router (192.168.1.254).</para>
+    </note>
 
     <para>When Shorewall is stopped, you want to allow only local traffic
     through the bridge —

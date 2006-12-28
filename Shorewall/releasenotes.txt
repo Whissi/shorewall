@@ -1,12 +1,17 @@
-Shorewall 3.4.0 Beta 1
+Shorewall 3.4.0 Beta 2
 
 Release Highlights
 
-1)  Shorewall can now be taylored to reduce its footprint on embedded
-    systems. As part of this change, actions are now completely optional.
+1)  Shorewall can now be tailored to reduce its footprint on embedded
+    systems. As part of this change, actions are now completely
+    optional.
+
+    See http://www.shorewall.net/Modularization.html for details.
 
 2)  Exclusion is now possible in /etc/shorewall/hosts. This is required
     for bridge/firewalls under kernel 2.6.20 and later.
+
+    See http://www.shorewall.net/NewBridge.html.
 
 3)  Shorewall and Shorewall Lite now include man pages. There is a 
     man page for shorewall(8), one for shorewall-lite(8) and one for
@@ -15,6 +20,13 @@ Release Highlights
     make it easier from users to upgrade from one release to the next
     since the configuration files will only change when column is added
     or renamed.
+
+    See http://www.shorewall.net/Documentation_Index.html#Manpages.
+
+4)  Shorewall now remembers the changes that it has made to routing as
+    a result of entries in /etc/shorewall/providers and
+    /etc/shorewall/route_rules and reverses those changes when
+    appropriate.
 
 Migration Considerations:
 

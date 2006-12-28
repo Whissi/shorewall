@@ -60,7 +60,7 @@ Migration Considerations:
 
     If you have not overridden the defaults using entries in
     /etc/shorewall/actions then you need make no changes to migrate to
-    Shorewall version 3.3. Otherwise, please see item 3) in the New
+    Shorewall version 3.4. Otherwise, please see item 3) in the New
     Features below.
 
 2)  The 'Limit' action is now a builtin. If you have 'Limit' listed in
@@ -140,7 +140,7 @@ New Features in Shorewall 3.4:
 
     See the next item for more information.
 
-3)  Prior to Shorewall 3.3, default actions were specified in
+3)  Prior to Shorewall 3.4, default actions were specified in
     /usr/share/shorewall/actions.std or in /etc/shorewall/actions.
 
     This approach has two drawbacks:
@@ -244,7 +244,7 @@ New Features in Shorewall 3.4:
     "shorewall show mangle" and "shorewall dump" commands. Comments are
     delimited by '/* ... */" in the output.
 
-    Beginning with Shorewall 3.3.3, you may place COMMENT lines in the
+    Beginning with Shorewall 3.4, you may place COMMENT lines in the
     /etc/shorewall/rules, /etc/shorewall/tcrules, /etc/shorewall/nat
     and /etc/shorewall/masq files and in action files. The remainder of
     the line is treated as a comment and it will be attached as a
@@ -321,13 +321,13 @@ New Features in Shorewall 3.4:
 12) Beginning with this release, Shorewall and Shorewall Lite will
     share common change logs and release notes.
 
-13) In Shorewall versions prior to 3.3.2, multiple jumps to a '2all'
+13) In Shorewall versions prior to 3.4, multiple jumps to a '2all'
     chain could be generated in succession.
 
     Example from an earlier shorewall version:
 
     gateway:~ # shorewall-lite show eth2_fwd
-    Shorewall Lite 3.3.2 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
+    Shorewall Lite 3.4.0-Beta1 Chains eth2_fwd at gateway - Thu Oct 19 08:54:37 PDT 2006
 
     Counters reset Thu Oct 19 08:34:47 PDT 2006
 
@@ -343,7 +343,7 @@ New Features in Shorewall 3.4:
     This redundancy may be eliminated by setting OPTIMIZE=1 in shorewall.conf.
 
     gateway:~ # shorewall-lite show eth2_fwd
-    Shorewall Lite 3.3.3 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
+    Shorewall Lite 3.4.0-Beta1 Chains eth2_fwd at gateway - Thu Oct 19 09:15:24 PDT 2006
 
     Counters reset Thu Oct 19 09:15:19 PDT 2006
 
@@ -380,7 +380,7 @@ New Features in Shorewall 3.4:
     OPTIMIZE=0
 
     gateway:~ # shorewall show loc2net
-    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:55:03 PDT 2006
+    Shorewall Lite 3.4.0-Beta1 Chains loc2net at gateway - Thu Oct 26 07:55:03 PDT 2006
 
     Counters reset Thu Oct 26 07:54:58 PDT 2006
 
@@ -396,7 +396,7 @@ New Features in Shorewall 3.4:
     OPTIMIZE=1
 
     gateway:~ # shorewall show loc2net
-    Shorewall Lite 3.3.3 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
+    Shorewall Lite 3.4.0-Beta1 Chains loc2net at gateway - Thu Oct 26 07:57:12 PDT 2006
 
     Counters reset Thu Oct 26 07:56:38 PDT 2006
 

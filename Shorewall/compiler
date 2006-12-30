@@ -3300,9 +3300,14 @@ load_blacklist()
 __EOF__
     INDENT="    "
 
-    while read networks protocol ports; do
-	process_blacklist_rec
-    done < $TMP_DIR/blacklist
+    if [ -s $TMP_DIR/blacklist ]; then
+
+	while read networks protocol ports; do
+	    process_blacklist_rec
+	done < $TMP_DIR/blacklist
+    else
+	save_command true
+    fi
 
     INDENT=
     save_command "}"

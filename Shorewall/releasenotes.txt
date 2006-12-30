@@ -28,6 +28,13 @@ Release Highlights
     /etc/shorewall/route_rules and reverses those changes when
     appropriate.
 
+Problems Corrected in 3.4.0 Beta 2
+
+1)  If 'blacklist' was specified on an interface and the
+    /etc/shorewall/blacklist was empty, then the generated firewall
+    script contained a syntax error (the function load_blacklist() was
+    empty).
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

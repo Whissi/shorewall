@@ -1096,7 +1096,7 @@ compile_refresh_firewall()
     save_command progress_message2 \"Refreshing Black List...\"
     run_iptables -F blacklst
 
-    save_command load_blacklist
+    [ -s ${TMP_DIR}/blacklist ] && save_command load_blacklist
     
     INDENT="$indent"
     save_command "fi"
@@ -3297,31 +3297,29 @@ process_blacklist()
     local disposition=$BLACKLIST_DISPOSITION
     local f=$(find_file blacklist)
 
-    [ "$disposition" = REJECT ] && disposition=reject
+    if [ -s $TMP_DIR/blacklist ]; then
 
-    progress_message2 "Compiling $f..."
+	[ "$disposition" = REJECT ] && disposition=reject
 
-    cat >&3 << __EOF__
+	progress_message2 "Compiling $f..."
+
+	cat >&3 << __EOF__
 #
 # Load the blacklist
 #
 load_blacklist() 
 {
 __EOF__
-    INDENT="    "
-
-    if [ -s $TMP_DIR/blacklist ]; then
-
+	INDENT="    "
+	
 	while read networks protocol ports; do
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
-    else
-	save_command true
-    fi
 
-    INDENT=
-    save_command "}"
-    save_command
+	INDENT=
+	save_command "}"
+	save_command
+    fi
 }
 
 #

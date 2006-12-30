@@ -117,10 +117,20 @@ append_file() # $1 = File Name
 {
     local user_exit=$(find_file $1)
 
-    if [ -f $user_exit ]; then
-	save_progress_message "Processing $user_exit ..."
-	indent $user_exit >&3
-    fi
+    case $user_exit in
+	$SHAREDIR/*)
+	    #
+	    # Don't copy files from /usr/share/shorewall into the compiled script
+	    #
+	    ;;
+	*)
+	    if [ -f $user_exit ]; then
+		save_progress_message "Processing $user_exit ..."
+		indent $user_exit >&3
+		save_command
+	    fi
+	    ;;
+    esac
 }
 
 #

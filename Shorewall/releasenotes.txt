@@ -35,6 +35,11 @@ Problems Corrected in 3.4.0 Beta 2
     script contained a syntax error (the function load_blacklist() was
     empty).
 
+2)  If the file /etc/shorewall/init did not exist, then the compiler
+    would incorrectly copy /usr/share/shorewall/init into the
+    compiled script. /usr/share/shorewall/init is a symbolic link
+    to the Shorewall init script (usually /etc/init.d/shorewall).
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

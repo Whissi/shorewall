@@ -80,6 +80,32 @@ Migration Considerations:
     /etc/shorewall/action.Limit and/or /etc/shorewall/Limit if you have
     them.
 
+3)  This issue only applies if you have entries in
+    /etc/shorewall/providers.
+
+    Previously, Shorewall has not attempted to undo the changes it has
+    made to the firewall's routing as a result of entries in
+    /etc/shorewall/providers and /etc/shorewall/routes. Beginning with
+    this release, Shorewall will attempt to undo these changes.
+
+    See item 15 under new features below for additional information.
+
+    This change can present a migration issue in that the 
+    initial routing configuration when this version of Shorewall is
+    installed has probably been changed by Shorewall already. Hence,
+    When Shorewall restores the original configuration, it will be
+    installing a configuration that the previously-installed version
+    has already modified.
+
+    The steps to correcting this after you have installed this version
+    of Shorewall are as follows:
+
+    a) "shorewall[-lite] stop"
+    b) Be sure that the files /var/lib/shorewall[-lite]/default_route
+       and /var/lib/shorewall[-lite]/undo_routing do not exist. If they
+       do exist, remove them.
+    b) Either restart networking or reboot.
+
 New Features in Shorewall 3.4:
 
 1)  In order to accomodate small embedded applications, Shorewall 3.4
@@ -469,8 +495,8 @@ New Features in Shorewall 3.4:
     firewall script if any of the configuration files have
     changed. "make install" builds "firewall" if necessary then
     installs it on the remote firewall. "make capabilities" will
-    generate the "capabilities" file if that file doesn't exist. "make
-    save" will save the running configuration on the remote firewall.
+    generate the "capabilities" file. "make save" will save the running
+    configuration on the remote firewall.
 
 18) Shorewall and Shorewall Lite now include the following manpages. 
 

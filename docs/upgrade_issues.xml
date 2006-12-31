@@ -68,6 +68,206 @@
   </section>
 
   <section>
+    <title>Versions &gt;= 3.4.0-Beta1</title>
+
+    <para></para>
+
+    <orderedlist>
+      <listitem>
+        <para>Shorewall supports the notion of "default actions". A default
+        action defines a set of rules that are applied before a policy is
+        enforced. Default actions accomplish two goals:</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>Relieve log congestion. Default actions typically include
+            rules to silently drop or reject traffic that would otherwise be
+            logged when the policy is enforced.</para>
+          </listitem>
+
+          <listitem>
+            <para>Insure correct operation. Default actions can also avoid
+            common pitfalls like dropping connection requests on TCP port 113.
+            If these connections are dropped (rather than rejected) then you
+            may encounter problems connecting to internet services that
+            utilize the AUTH protocol of client authentication.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>In prior Shorewall versions, default actions (action.Drop and
+        action.Reject) were defined for DROP and REJECT policies in
+        <filename>/usr/share/shorewall/actions.std</filename>. These could be
+        overridden in <filename>/etc/shorewall/actions</filename>.</para>
+
+        <para>This approach has two drawbacks:</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>All DROP policies must use the same default action and all
+            REJECT policies must use the same default action.</para>
+          </listitem>
+
+          <listitem>
+            <para>Now that we have <ulink
+            url="Modularization.html">modularized action processing</ulink>,
+            we need a way to define default rules for a policy that does not
+            involve actions.</para>
+          </listitem>
+        </orderedlist>
+
+        <para> If you have not overridden the defaults using entries in
+        <filename>/etc/shorewall/actions</filename> then you need make no
+        changes to migrate to Shorewall version 3.4. If you have overridden
+        either of these entries, then please read on.</para>
+
+        <para>The change in version 3.4 is two-fold:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Four new options have been added to the
+            <filename>/etc/shorewall/shorewall.conf</filename> file that allow
+            specifying the default action for DROP, REJECT, ACCEPT and
+            QUEUE.</para>
+
+            <para>The options are DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT
+            and QUEUE_DEFAULT.</para>
+
+            <para>DROP_DEFAULT describes the rules to be applied before a
+            connection request is dropped by a DROP policy; REJECT_DEFAULT
+            describes the rules to be applied if a connection request is
+            rejected by a REJECT policy. The other two are similar for ACCEPT
+            and QUEUE policies. The value assigned to these may be:</para>
+
+            <orderedlist numeration="loweralpha">
+              <listitem>
+                <para>The name of an action.</para>
+              </listitem>
+
+              <listitem>
+                <para>The name of a macro.</para>
+              </listitem>
+
+              <listitem>
+                <para>'None' or 'none'</para>
+              </listitem>
+            </orderedlist>
+
+            <para>The default values are:</para>
+
+            <simplelist>
+              <member>DROP_DEFAULT="Drop"</member>
+
+              <member>REJECT_DEFAULT="Reject"</member>
+
+              <member>ACCEPT_DEFAULT=none</member>
+
+              <member>QUEUE_DEFAULT=none</member>
+            </simplelist>
+
+            <para>If USE_ACTIONS=Yes, then these values refer to action.Drop
+            and action.Reject respectively. If USE_ACTIONS=No, then these
+            values refer to macro.Drop and macro.Reject.</para>
+
+            <para> If you set the value of either option to "None" then no
+            default action will be used and the default action or macro (if
+            any) must be specified in
+            <filename>/etc/shorewall/policy</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para>The POLICY column in /etc/shorewall/policy has been
+            extended.</para>
+
+            <para>In <filename>/etc/shorewall/policy</filename>, when the
+            POLICY is DROP, REJECT, ACCEPT or QUEUE then the policy may be
+            followed by ":" and one of the following:</para>
+
+            <orderedlist numeration="loweralpha">
+              <listitem>
+                <para>The word "None" or "none". This causes any default
+                action defined in
+                <filename>/etc/shorewall/shorewall.conf</filename> to be
+                omitted for this policy.</para>
+              </listitem>
+
+              <listitem>
+                <para>The name of an action (requires that USE_ACTIONS=Yes in
+                <filename>shorewall.conf</filename>). That action will be
+                invoked before the policy is enforced.</para>
+              </listitem>
+
+              <listitem>
+                <para>The name of a macro. The rules in that macro will be
+                applied before the policy is enforced. This does not require
+                USE_ACTIONS=Yes.</para>
+              </listitem>
+            </orderedlist>
+          </listitem>
+        </itemizedlist>
+
+        <para>Example:</para>
+
+        <programlisting>#SOURCE         DEST            POLICY          LOG
+#                                               LEVEL
+loc             net             ACCEPT
+net             all             DROP:MyDrop     info
+#
+# THE FOLLOWING POLICY MUST BE LAST
+#
+all             all             REJECT:MyReject info</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>The 'Limit' action is now a builtin. If you have 'Limit' listed
+        in <filename>/etc/shorewall/actions</filename>, remove the entry. Also
+        remove the files <filename>/etc/shorewall/action.Limit</filename>
+        and/or <filename>/etc/shorewall/Limit</filename> if you have
+        them.</para>
+      </listitem>
+
+      <listitem>
+        <para>This issue only applies if you have entries in
+        <filename>/etc/shorewall/providers</filename>.</para>
+
+        <para>Previously, Shorewall has not attempted to undo the changes it
+        has made to the firewall's routing as a result of entries in
+        <filename>/etc/shorewall/providers</filename> and
+        <filename>/etc/shorewall/routes</filename>. Beginning with this
+        release, Shorewall will attempt to undo these changes. This change can
+        present a migration issue in that the initial routing configuration
+        when this version of Shorewall is installed has probably been changed
+        by Shorewall already. Hence, when Shorewall restores the original
+        configuration, it will be installing a configuration that the
+        previously-installed version has already modified.</para>
+
+        <para>The steps to correcting this after you have installed version
+        3.4 or later of Shorewall are as follows:</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para><command>shorewall[-lite] stop</command></para>
+          </listitem>
+
+          <listitem>
+            <para>Remove the files
+            <filename>/var/lib/shorewall[-lite]/default_route</filename> and
+            <filename>/var/lib/shorewall[-lite]/undo_routing</filename> if
+            they exist.</para>
+          </listitem>
+
+          <listitem>
+            <para>Either restart networking or reboot.</para>
+          </listitem>
+
+          <listitem>
+            <para><command>shorewall[-lite] start</command></para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
     <title>Version &gt;= 3.2.0</title>
 
     <orderedlist>

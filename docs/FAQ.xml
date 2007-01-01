@@ -1023,12 +1023,24 @@ DROP      net       fw      udp      10619</programlisting>
         <title>(FAQ 16a) Why can't I see any Shorewall messages in
         /var/log/messages?</title>
 
-        <para><emphasis role="bold">Answer:</emphasis> The actual log file
-        name will likely not be well standardized, but anytime you see no
-        logging, it's time to look outside the Shorewall configuration for the
-        cause. As an example, recent <trademark>SuSE</trademark> releases use
-        syslog-ng by default and write Shorewall messages to
+        <para><emphasis role="bold">Answer:</emphasis> First of all, it is
+        important to understand that Shorewall itself does not control where
+        Netfilter log messages are written. The LOGFILE setting in
+        <filename>shorewall.conf</filename> simply tells the
+        <filename>/sbin/shorewall[-lite]</filename> program where to look for
+        the log. Also, it is important to understand that a log severity of
+        "debug" will generally be written to fewer log files than a log
+        severity of "info".</para>
+
+        <para>The actual log file where Netfilter messages are written is not
+        standardized; but anytime you see no logging, it's time to look
+        outside the Shorewall configuration for the cause. As an example,
+        recent <trademark>SuSE</trademark> releases use syslog-ng by default
+        and write Shorewall messages to
         <filename>/var/log/firewall</filename>.</para>
+
+        <para>Please see the <ulink url="shorewall_logging.html">Shorewall
+        logging documentation</ulink> for further information.</para>
       </section>
     </section>
 

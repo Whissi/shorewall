@@ -619,6 +619,15 @@ New Features in Shorewall 3.4:
     causes the resulting rule to be inserted into the POSTROUTING
     chain.
 
+28) The program /usr/share/shorewall/wait4ifup can be used to wait for
+    a network device (such as a ppp device) to reach the UP state. 
+    
+	/usr/share/shorewall/wait4ifup <interface> [ <seconds> ]
+
+    The program will wait for up to <seconds> seconds for the 
+    named <interface> to reach the UP state. if <seconds> is not given,
+    60 seconds is assumed.
+
 Problems Corrected in 3.4.0 Beta 1.
 
 1)  It is now possible to place entries in the IPSEC column of 

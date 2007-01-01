@@ -1,0 +1,28 @@
+#!/bin/sh
+
+#
+# Determine if Interface is up
+#
+interface_is_up() {
+    [ -n "$(ip link ls dev $1 | grep -e '[<,]UP[,>]')" ]
+}
+
+case $# in
+    1)
+	timeout=60
+	;;
+    2)
+	timeout=$2
+	;;
+    *)
+	echo "usage: $(basename $0) <interface> [ <timeout> ]"
+	exit 2
+	;;
+esac
+
+while [ $timeout -gt 0 ] && ! interface_is_up $1; do
+    sleep 1
+    timeout=$(( $timeout - 1 ))
+done
+
+    

@@ -292,6 +292,15 @@ echo
 echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler"
 
 #
+# Install wait4ifup
+#
+
+install_file wait4ifup ${PREFIX}/usr/share/shorewall/wait4ifup 0555
+
+echo
+echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall/wait4ifup"
+
+#
 # Install the policy file
 #
 run_install $OWNERSHIP -m 0644 policy ${PREFIX}/usr/share/shorewall/configfiles/policy

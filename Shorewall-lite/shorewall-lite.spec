@@ -80,6 +80,7 @@ fi
 %attr(0444,root,root) /usr/share/shorewall-lite/lib.cli
 %attr(0444,root,root) /usr/share/shorewall-lite/modules
 %attr(0544,root,root) /usr/share/shorewall-lite/shorecap
+%attr(0555,root,root) /usr/share/shorewall-lite/wait4ifup
 
 %attr(0444,root,root) %{_mandir}/man5/shorewall-accounting.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-actions.5.gz

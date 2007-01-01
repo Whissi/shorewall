@@ -190,6 +190,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/prog.header
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
+%attr(0555,root,root) /usr/share/shorewall/wait4ifup
 
 %attr(0644,root,root) /usr/share/shorewall/configfiles/shorewall.conf
 %attr(0644,root,root) /usr/share/shorewall/configfiles/zones

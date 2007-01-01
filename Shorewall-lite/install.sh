@@ -312,6 +312,15 @@ echo
 echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall-lite/shorecap"
 
 #
+# Install wait4ifup
+#
+
+install_file wait4ifup ${PREFIX}/usr/share/shorewall-lite/wait4ifup 0555
+
+echo
+echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall-lite/wait4ifup"
+
+#
 # Install the Modules file
 #
 run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/modules

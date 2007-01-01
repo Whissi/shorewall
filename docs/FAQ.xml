@@ -1344,22 +1344,28 @@ DROP      net       fw      udp      10619</programlisting>
       <programlisting>Nov 25 18:58:52 linux kernel:
       Shorewall:net2all:DROP:IN=eth1 OUT=
       MAC=00:60:1d:f0:a6:f9:00:60:1d:f6:35:50:08:00 SRC=206.124.146.179
-      DST=192.0.2.3 LEN=56 TOS=0x00 PREC=0x00 TTL=110 ID=18558 PROTO=ICMP
-      TYPE=3 CODE=3 [SRC=192.0.2.3 DST=172.16.1.10 LEN=128 TOS=0x00 PREC=0x00
+      DST=192.0.2.3 LEN=56 TOS=0x00 PREC=0x00 TTL=110 ID=18558 <emphasis
+          role="bold">PROTO=ICMP</emphasis>
+      <emphasis role="bold">TYPE=3 CODE=3</emphasis> [SRC=192.0.2.3 DST=172.16.1.10 LEN=128 TOS=0x00 PREC=0x00
       TTL=47 ID=0 DF PROTO=UDP SPT=53 DPT=2857 LEN=108 ]</programlisting>
 
       <para>192.0.2.3 is external on my firewall... 172.16.0.0/24 is my
       internal LAN</para>
 
-      <para><emphasis role="bold">Answer:</emphasis> While most people
-      associate the Internet Control Message Protocol (ICMP) with
-      <quote>ping</quote>, ICMP is a key piece of IP. ICMP is used to report
-      problems back to the sender of a packet; this is what is happening here.
-      Unfortunately, where NAT is involved (including SNAT, DNAT and
-      Masquerade), there are a lot of broken implementations. That is what you
-      are seeing with these messages. When Netfilter displays these messages,
-      the part before the "[" describes the ICMP packet and the part between
-      the "[" and "]" describes the packet for which the ICMP is a
+      <para><emphasis role="bold">Answer:</emphasis> First of all, please note
+      that the above is a very specific type of log message dealing with ICMP
+      port unreachable packets. Do not read this answer and assume that all
+      Shorewall log messages have something to do with ICMP (hint -- see <link
+      linkend="faq17">FAQ 17</link>).</para>
+
+      <para>While most people associate the Internet Control Message Protocol
+      (ICMP) with <quote>ping</quote>, ICMP is a key piece of IP. ICMP is used
+      to report problems back to the sender of a packet; this is what is
+      happening here. Unfortunately, where NAT is involved (including SNAT,
+      DNAT and Masquerade), there are a lot of broken implementations. That is
+      what you are seeing with these messages. When Netfilter displays these
+      messages, the part before the "[" describes the ICMP packet and the part
+      between the "[" and "]" describes the packet for which the ICMP is a
       response.</para>
 
       <para>Here is my interpretation of what is happening -- to confirm this

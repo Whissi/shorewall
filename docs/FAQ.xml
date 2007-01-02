@@ -1032,15 +1032,18 @@ DROP      net       fw      udp      10619</programlisting>
         Netfilter log messages are written. The LOGFILE setting in
         <filename>shorewall.conf</filename> simply tells the
         <filename>/sbin/shorewall[-lite]</filename> program where to look for
-        the log. Also, it is important to understand that a log severity of
-        "debug" will generally be written to fewer log files than a log
-        severity of "info".</para>
+        the log. Also, it is important to understand that a log level of
+        "debug" will generally cause Netfilter messages be written to fewer
+        files in <filename class="directory">/var/log</filename> than a log
+        severity of "info". The log level does not control the number of log
+        messages or the content of the messages.</para>
 
         <para>The actual log file where Netfilter messages are written is not
-        standardized; but anytime you see no logging, it's time to look
-        outside the Shorewall configuration for the cause. As an example,
-        recent <trademark>SuSE</trademark> releases use syslog-ng by default
-        and write Shorewall messages to
+        standardized and will vary by distribution and distribusion version.
+        But anytime you see no logging, it's time to look outside the
+        Shorewall configuration for the cause. As an example, recent
+        <trademark>SuSE</trademark> releases use syslog-ng by default and
+        write Shorewall messages to
         <filename>/var/log/firewall</filename>.</para>
 
         <para>Please see the <ulink url="shorewall_logging.html">Shorewall
@@ -1358,9 +1361,9 @@ DROP      net       fw      udp      10619</programlisting>
 
       <para><emphasis role="bold">Answer:</emphasis> First of all, please note
       that the above is a very specific type of log message dealing with ICMP
-      port unreachable packets. Do not read this answer and assume that all
-      Shorewall log messages have something to do with ICMP (hint -- see <link
-      linkend="faq17">FAQ 17</link>).</para>
+      port unreachable packets (PROTO=ICMP TYPE=3 CODE=3). Do not read this
+      answer and assume that all Shorewall log messages have something to do
+      with ICMP (hint -- see <link linkend="faq17">FAQ 17</link>).</para>
 
       <para>While most people associate the Internet Control Message Protocol
       (ICMP) with <quote>ping</quote>, ICMP is a key piece of IP. ICMP is used

@@ -70,7 +70,7 @@ fi
 %files
 %defattr(0644,root,root,0755)
 %attr(0755,root,root) %dir /etc/shorewall-lite
-%attr(0644,root,root) %config(noreplace) /etc/shorewall-lite/shorewall.conf
+%attr(0644,root,root) %config(noreplace) /etc/shorewall-lite/shorewall-lite.conf
 %attr(0644,root,root) /etc/shorewall-lite/Makefile
 %attr(0544,root,root) /etc/init.d/shorewall-lite
 %attr(0755,root,root) %dir /usr/share/shorewall-lite

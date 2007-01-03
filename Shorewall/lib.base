@@ -613,25 +613,6 @@ chain_exists() # $1 = chain name
 }
 
 #
-# Loosly Match the name of an interface
-#
-
-if_match() # $1 = Name in interfaces file - may end in "+"
-           # $2 = Full interface name - may also end in "+"
-{
-    local pattern=${1%+}
-
-    case $1 in
-	*+)
-	    test  "x$(echo $2 | truncate ${#pattern} )" = "x${pattern}"
-	    ;;
-	*)
-	    test "x$1" = "x$2"
-	    ;;
-    esac
-}
-
-#
 # Find the value 'dev' in the passed arguments then echo the next value
 #
 

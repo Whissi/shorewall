@@ -107,14 +107,14 @@
     <para>Shorewall is written entirely in Bourne Shell. While this allows
     Shorewall to run on a wide range of distributions (included embedded
     ones), the shell programming environment is not ideal for writing the
-    compiler portion of Shorewall. As a consequency, the code must repeatedly
+    compiler portion of Shorewall. As a consequence, the code must repeatedly
     perform sequential searches of lists. If a list has <emphasis
-    role="bold">N</emphasis> elements (<emphasis role="bold">N</emphasis> &gt;
-    1) and a sequential search is made for each of those elements, then the
-    number of comparisons is 1 + 2 + 3 + .... + <emphasis
-    role="bold">N</emphasis> = <emphasis role="bold">N</emphasis> * (<emphasis
-    role="bold">N</emphasis> - 1 ). So again, we see order <emphasis
-    role="bold">N</emphasis><superscript>2</superscript> scaling.</para>
+    role="bold">N</emphasis> elements and a sequential search is made for each
+    of those elements, then the number of comparisons is 1 + 2 + 3 + .... +
+    <emphasis role="bold">N</emphasis> = <emphasis role="bold">N</emphasis> *
+    (<emphasis role="bold">N</emphasis> + 1 ) / 2. So again, we see order
+    <emphasis role="bold">N</emphasis><superscript>2</superscript>
+    scaling.</para>
   </section>
 
   <section>
@@ -145,11 +145,11 @@
     linearly with the number of rules whereas it scales geometrically with the
     number of zones.</para>
 
-    <para>Another tip worth noting has to do with the use of shell variables.
-    </para>
+    <para>Another tip worth noting has to do with the use of shell
+    variables.</para>
 
     <para>Suppose that the following appears in
-    <filename>/etc/shorewall/params</filename>: </para>
+    <filename>/etc/shorewall/params</filename>:</para>
 
     <programlisting>HOSTS=&lt;ip1&gt;,&lt;ip2&gt;,&lt;ip3&gt;,...&lt;ipN&gt;</programlisting>
 

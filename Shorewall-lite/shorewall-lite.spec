@@ -1,6 +1,6 @@
 %define name shorewall-lite
 %define version 3.4.0
-%define release 0Beta1
+%define release 0Beta2
 %define prefix /usr
 
 Summary: Shoreline Firewall Lite is an iptables-based firewall for Linux systems.
@@ -41,25 +41,30 @@ export GROUP=`id -n -g` ;\
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%pre
+
+if [ $1 -eq 2 -a -f /etc/shorewall-lite/shorewall.conf ]; then
+    mv -f /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall-lite.conf
+fi
+
 %post
 
 if [ $1 -eq 1 ]; then
-	if [ -x /sbin/insserv ]; then
-		/sbin/insserv /etc/rc.d/shorewall-lite
-	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --add shorewall-lite;
-	fi
+    if [ -x /sbin/insserv ]; then
+	/sbin/insserv /etc/rc.d/shorewall-lite
+    elif [ -x /sbin/chkconfig ]; then
+	/sbin/chkconfig --add shorewall-lite;
+    fi
 fi
 
 %preun
 
-if [ $1 = 0 ]; then
-	if [ -x /sbin/insserv ]; then
-		/sbin/insserv -r /etc/init.d/shorewall-lite
-	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --del shorewall-lite
-	fi
-
+if [ $1 -eq 0 ]; then
+    if [ -x /sbin/insserv ]; then
+	/sbin/insserv -r /etc/init.d/shorewall-lite
+    elif [ -x /sbin/chkconfig ]; then
+	/sbin/chkconfig --del shorewall-lite
+    fi
 fi
 
 %files
@@ -89,6 +94,9 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Wed Jan 03 2007 Tom Eastep tom@shorewall.net
+- Updated to 3.4.0-0Beta2
+- Handle rename of shorewall.conf
 * Thu Dec 14 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.4.0-0Beta1
 * Sat Nov 25 2006 Tom Eastep tom@shorewall.net

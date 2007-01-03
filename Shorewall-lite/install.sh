@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=3.4.0-Beta1
+VERSION=3.4.0-Beta2
 
 usage() # $1 = exit status
 {
@@ -227,6 +227,8 @@ if [ -z "$PREFIX" -a -d /etc/shorewall-lite ]; then
 	backup_directory /usr/share/shorewall-lite
 	backup_directory /var/lib/shorewall-lite
     fi
+    [ -f /etc/shorewall-lite/shorewall.conf ] && \
+	mv -f /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall-lite.conf
 else
     first_install="Yes"
     rm -rf ${PREFIX}/etc/shorewall-lite
@@ -267,9 +269,9 @@ chmod 755 ${PREFIX}/usr/share/shorewall-lite
 #
 # Install the config file
 #
-if [ ! -f ${PREFIX}/etc/shorewall-lite/shorewall.conf ]; then
-   run_install $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall-lite/shorewall.conf
-   echo "Config file installed as ${PREFIX}/etc/shorewall-lite/shorewall.conf"
+if [ ! -f ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf ]; then
+   run_install $OWNERSHIP -m 0744 shorewall-lite.conf ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf
+   echo "Config file installed as ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf"
 fi
 
 if [ -n "$ARCHLINUX" ] ; then

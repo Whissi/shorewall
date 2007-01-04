@@ -43,8 +43,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 
-if [ $1 -eq 2 -a -f /etc/shorewall-lite/shorewall.conf ]; then
-    mv -f /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall-lite.conf
+if [ -f /etc/shorewall-lite/shorewall.conf ]; then
+    cp -fa /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall.conf.rpmsave
 fi
 
 %post
@@ -55,6 +55,9 @@ if [ $1 -eq 1 ]; then
     elif [ -x /sbin/chkconfig ]; then
 	/sbin/chkconfig --add shorewall-lite;
     fi
+elif [ -f /etc/shorewall-lite/shorewall.conf.rpmsave ]; then
+    mv -f /etc/shorewall-lite/shorewall-lite.conf /etc/shorewall-lite/shorewall-lite.conf.rpmnew
+    mv -f /etc/shorewall-lite/shorewall.conf.rpmsave /etc/shorewall/shorewall-lite.conf
 fi
 
 %preun

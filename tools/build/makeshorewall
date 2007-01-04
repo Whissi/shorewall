@@ -43,7 +43,7 @@
 #
 # XSL Stylesheet to use for XML->HTML conversion
 #
-STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl
+STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
 #
 # Directory where the build log will be placed. The log has the name
 # shorewall_build_<version>.log
@@ -60,7 +60,7 @@ DIR=$PWD
 #
 # location and options for GnuPG
 #
-GPG="/usr/bin/gpg -ab --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
+GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
 #
 # SVN Repository
 #
@@ -68,7 +68,7 @@ SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
 #
 # Program that generates man pages from Docbook XML
 #
-DOCBOOK2MAN=docbook2x-man
+DOCBOOK2MAN="docbook-to-man -C /usr/share/docbook2X/xslt/catalog.xml --utf8trans-map /usr/share/docbook2X/charmaps/roff.charmap"
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################

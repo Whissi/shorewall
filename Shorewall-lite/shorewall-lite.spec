@@ -58,6 +58,7 @@ if [ $1 -eq 1 ]; then
 elif [ -f /etc/shorewall-lite/shorewall.conf.rpmsave ]; then
     mv -f /etc/shorewall-lite/shorewall-lite.conf /etc/shorewall-lite/shorewall-lite.conf.rpmnew
     mv -f /etc/shorewall-lite/shorewall.conf.rpmsave /etc/shorewall-lite/shorewall-lite.conf
+    echo "/etc/shorewall-lite/shorewall.conf retained as /etc/shorewall-lite/shorewall-lite.conf"
     echo "/etc/shorewall-lite/shorewall-lite.conf installed as /etc/shorewall-lite/shorewall-lite.conf.rpmnew"
 fi
 

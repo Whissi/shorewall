@@ -61,8 +61,29 @@
       <itemizedlist>
         <listitem>
           <para>In all cases, Squid should be configured to run as a
-	  transparent proxy as described at <ulink
+          transparent proxy as described at <ulink
           url="http://www.tldp.org/HOWTO/TransparentProxy.html">http://www.tldp.org/HOWTO/TransparentProxy.html</ulink>.</para>
+
+          <para>The essence of this article is that you need the following in
+          your squid.conf:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>httpd_accel_host virtual</para>
+            </listitem>
+
+            <listitem>
+              <para>httpd_accel_port 80</para>
+            </listitem>
+
+            <listitem>
+              <para>httpd_accel_with_proxy on</para>
+            </listitem>
+
+            <listitem>
+              <para>httpd_accel_uses_host_header on</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
 
         <listitem>

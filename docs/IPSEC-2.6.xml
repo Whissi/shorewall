@@ -294,13 +294,15 @@
     the following</para>
 
     <blockquote>
-      <para><filename>/etc/shorewall/tunnels</filename> — System A:</para>
+      <para><filename><filename>/etc/shorewall/tunnels</filename></filename> —
+      System A:</para>
 
       <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
 ipsec         net         134.28.54.2
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/tunnels</filename> — System B:</para>
+      <para><filename><filename>/etc/shorewall/tunnels</filename></filename> —
+      System B:</para>
 
       <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
 ipsec         net         206.162.148.9
@@ -320,8 +322,8 @@ ipsec         net         206.162.148.9
     zone called <quote>vpn</quote> to represent the remote subnet.</para>
 
     <blockquote>
-      <para><filename>/etc/shorewall/zones</filename> — Systems A and
-      B:</para>
+      <para><filename><filename>/etc/shorewall/zones</filename></filename> —
+      Systems A and B:</para>
 
       <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
@@ -340,13 +342,13 @@ net            ipv4
     from the HOSTS column.</para>
 
     <blockquote>
-      <para>/etc/shorewall/hosts — System A</para>
+      <para><filename>/etc/shorewall/hosts</filename> — System A</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
 vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ipsec</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-      <para>/etc/shorewall/hosts — System B</para>
+      <para><filename>/etc/shorewall/hosts</filename> — System B</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
 vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis>
@@ -494,7 +496,7 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
       called <quote>vpn</quote> to represent the remote host.</para>
 
       <blockquote>
-        <para>/etc/shorewall/zones — System A</para>
+        <para><filename>/etc/shorewall/zones</filename> — System A</para>
 
         <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
@@ -524,7 +526,7 @@ ipsec         net         0.0.0.0/0           vpn
       file:</para>
 
       <blockquote>
-        <para>/etc/shorewall/hosts — System A:</para>
+        <para><filename>/etc/shorewall/hosts</filename> — System A:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
 vpn               eth0:0.0.0.0/0
@@ -537,7 +539,7 @@ vpn               eth0:0.0.0.0/0
       <para>On the laptop:</para>
 
       <blockquote>
-        <para>/etc/shorewall/zones - System B:</para>
+        <para><filename>/etc/shorewall/zones</filename> - System B:</para>
 
         <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
@@ -546,13 +548,13 @@ net            ipv4
 loc            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-        <para>/etc/shorewall/tunnels - System B:</para>
+        <para><filename>/etc/shorewall/tunnels</filename> - System B:</para>
 
         <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
 ipsec         net         206.162.148.9       vpn
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-        <para>/etc/shorewall/hosts - System B:</para>
+        <para><filename>/etc/shorewall/hosts</filename> - System B:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
 vpn               eth0:0.0.0.0/0
@@ -562,7 +564,7 @@ vpn               eth0:0.0.0.0/0
       <para>On system A, here are the IPSEC files:</para>
 
       <blockquote>
-        <para>/etc/racoon/racoon.conf - System A:</para>
+        <para><filename>/etc/racoon/racoon.conf</filename> - System A:</para>
 
         <programlisting>path certificate "/etc/certs" ;
  
@@ -599,7 +601,7 @@ sainfo <emphasis role="bold">anonymous</emphasis>
         compression_algorithm deflate ;
 }</programlisting>
 
-        <para>/etc/racoon/setkey.conf - System A:</para>
+        <para><filename>/etc/racoon/setkey.conf</filename> - System A:</para>
 
         <programlisting>flush;
 spdflush;</programlisting>
@@ -725,7 +727,7 @@ spdadd 192.168.20.10/32 192.168.20.40/32 any -P out ipsec esp/transport/192.168.
 spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.40-192.168.20.10/require;
 </programlisting>
 
-      <para>/etc/racoon/psk.txt:</para>
+      <para><filename>/etc/racoon/psk.txt</filename>:</para>
 
       <programlisting>192.168.20.20             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.20&gt;
 192.168.20.30             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.30&gt;
@@ -744,20 +746,20 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
 net     eth0            detect          routefilter,dhcp,tcpflags
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para>/etc/shorewall/tunnels:</para>
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <programlisting>#TYPE          ZONE             GATEWAY         GATEWAY
 #                                               ZONE
 ipsec:noah     net              192.168.20.0/24 loc</programlisting>
 
-      <para>/etc/shorewall/zones:</para>
+      <para><filename>/etc/shorewall/zones</filename>:</para>
 
       <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
 loc            ipsec            mode=transport
 net            ipv4</programlisting>
 
-      <para><filename>/etc/shorewall/hosts</filename>:</para>
+      <para><filename><filename>/etc/shorewall/hosts</filename></filename>:</para>
 
       <programlisting>#ZONE           HOST(S)                         OPTIONS
 loc             eth0:192.168.20.0/24  

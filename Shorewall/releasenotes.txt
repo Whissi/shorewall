@@ -1,4 +1,4 @@
-Shorewall 3.4.0 Beta 2
+Shorewall 3.4.0 Beta 3
 
 Release Highlights
 
@@ -28,25 +28,10 @@ Release Highlights
     /etc/shorewall/route_rules and reverses those changes when
     appropriate.
 
-Problems Corrected in 3.4.0 Beta 2
+Problems Corrected in 3.4.0 Beta 3
 
-1)  If 'blacklist' was specified on an interface and the
-    /etc/shorewall/blacklist file was empty, then the generated
-    firewall script contained a syntax error (the function
-    load_blacklist() was empty).
-
-2)  If the file /etc/shorewall/init did not exist, then the compiler
-    would incorrectly copy /usr/share/shorewall/init into the
-    compiled script. /usr/share/shorewall/init is a symbolic link
-    to the Shorewall init script (usually /etc/init.d/shorewall).
-
-3)  To allow Shorewall and Shorewall Lite to coexist on a single
-    system, the Shorewall section 5 manpages are no longer included in
-    Shorewall Lite. In addition, the Shorewall Lite manpage for
-    "shorewall.conf" has been renamed "shorewall-lite.conf". This
-    has resulted in a similar change to the actual file --
-    /etc/shorewall-lite/shorewall.conf has been renamed
-    /etc/shorewall-lite/shorewall-lite.conf.
+1)  Shorewall now supports VLAN interfaces with names of the form
+    vlan@ethX.
 
 Migration Considerations:
 
@@ -650,3 +635,23 @@ Problems Corrected in 3.4.0 Beta 1.
 
 2)  The /etc/shorewall/masq file is no longer ignored when the
     /etc/shorewall/nat file is empty.
+
+Problems Corrected in 3.4.0 Beta 2
+
+1)  If 'blacklist' was specified on an interface and the
+    /etc/shorewall/blacklist file was empty, then the generated
+    firewall script contained a syntax error (the function
+    load_blacklist() was empty).
+
+2)  If the file /etc/shorewall/init did not exist, then the compiler
+    would incorrectly copy /usr/share/shorewall/init into the
+    compiled script. /usr/share/shorewall/init is a symbolic link
+    to the Shorewall init script (usually /etc/init.d/shorewall).
+
+3)  To allow Shorewall and Shorewall Lite to coexist on a single
+    system, the Shorewall section 5 manpages are no longer included in
+    Shorewall Lite. In addition, the Shorewall Lite manpage for
+    "shorewall.conf" has been renamed "shorewall-lite.conf". This
+    has resulted in a similar change to the actual file --
+    /etc/shorewall-lite/shorewall.conf has been renamed
+    /etc/shorewall-lite/shorewall-lite.conf.

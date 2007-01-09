@@ -596,6 +596,9 @@ chain_base() #$1 = interface
 	    *%*)
 		c="${c%\%*}_${c##*%}"
 		;;
+	    *@*)
+		c="${c%@*}_${c##*@}"
+		;;
 	    *)
 		echo ${c:=common}
 		return

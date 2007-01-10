@@ -74,6 +74,13 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     to another system, the packet's mark value is no longer available.
     Connection mark values, on the other hand, persist for the life of the
     connection.</para>
+
+    <important>
+      <para>Other parts of the system such as <ulink
+      url="traffic_shaping.htm">Traffic Shaping</ulink> and <ulink
+      url="MultiISP.html">Policy Routing</ulink> cannot use connection marks —
+      they can only use packet marks.</para>
+    </important>
   </section>
 
   <section>
@@ -123,7 +130,9 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
         <para>POSTROUTING program — Entries with a class-id in the MARK column
         (and that don't specify $FW in the SOURCE column) are part of the
         POSTROUTING program. These rules are executed for each packet leaving
-        the firewall.</para>
+        the firewall. Entries specifying the ":T" suffix in the MARK column
+        are also part of the POSTROUTING program (Shorewall version 3.4.0 and
+        later). </para>
       </listitem>
 
       <listitem>

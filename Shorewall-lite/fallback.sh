@@ -5,7 +5,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2006 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2006,2007 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://shorewall.net
 #

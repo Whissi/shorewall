@@ -82,7 +82,10 @@
     <itemizedlist>
       <listitem>
         <para>Shorewall generates rules for zones in the order that the zone
-        declarations appear in /etc/shorewall/zones.</para>
+        declarations appear in /etc/shorewall/zones unless you modify the
+        processing order using the explicit
+        <emphasis>child-zone</emphasis>:<emphasis>parent-zone</emphasis>
+        syntax, in which case the child zone rules are generated first.</para>
       </listitem>
 
       <listitem>
@@ -196,11 +199,12 @@
         <para><filename>/etc/shorewall/zones</filename></para>
 
         <programlisting>#ZONE       TYPE      OPTIONS
-loc1        ipv4
-loc         ipv4</programlisting>
+loc         ipv4
+loc1:loc    ipv4</programlisting>
 
         <note>
-          <para>the sub-zone (loc1) is defined first!</para>
+          <para>the Parent zone (loc) is defined first then the sub-zone
+          (loc1) is defined using the special syntax shown.</para>
         </note>
 
         <para><filename>/etc/shorewall/interfaces</filename></para>

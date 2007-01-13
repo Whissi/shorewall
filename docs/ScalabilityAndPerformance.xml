@@ -190,5 +190,11 @@ ACCEPT  $HOSTS </programlisting>
     replaced with <emphasis role="bold">M</emphasis> AcceptHosts rules, the
     total number of rules will be <emphasis role="bold">N</emphasis> +
     <emphasis role="bold">M</emphasis>.</para>
+
+    <para>Example (Accept net-&gt;fw SSH from $HOSTS):</para>
+
+    <programlisting>#ACTION          SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/
+#                                                        PORT    PORT(S)         DEST            LIMIT           GROUP
+AcceptHosts      net             $FW             tcp     22             </programlisting>
   </section>
 </article>

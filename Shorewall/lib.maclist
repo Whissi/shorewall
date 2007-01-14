@@ -165,31 +165,31 @@ setup_mac_lists() # $1 = Phase Number
 
 	    [ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
-		if ! have_mac_chain $chain ; then
-		    fatal_error "No hosts on $interface have the maclist option specified"
-		fi
+	    if ! have_mac_chain $chain ; then
+		fatal_error "No hosts on $interface have the maclist option specified"
+	    fi
 
-		if [ x${mac:=-} = x- ]; then
-		    if [ -z "$addresses" ]; then
-			fatal_error "You must specify a MAC address or an IP address"
-		    else
-			macpart=
-		    fi
-		else
-		    macpart=$(mac_match $mac)
-		fi
-
+	    if [ x${mac:=-} = x- ]; then
 		if [ -z "$addresses" ]; then
-		    [ -n "$level" ] && \
-			log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
-			run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
+		    fatal_error "You must specify a MAC address or an IP address"
 		else
-		    for address in $(separate_list $addresses) ; do
-			[ -n "$level" ] && \
-			    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart -s $address $physdev_part
-			    run_iptables2 -A $chain -t $MACLIST_TABLE $macpart -s $address $physdev_part -j $target
-		    done
+		    macpart=
 		fi
+	    else
+		macpart=$(mac_match $mac)
+	    fi
+	    
+	    if [ -z "$addresses" ]; then
+		[ -n "$level" ] && \
+		    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
+		    run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
+	    else
+		for address in $(separate_list $addresses) ; do
+		    [ -n "$level" ] && \
+			log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart -s $address $physdev_part
+			run_iptables2 -A $chain -t $MACLIST_TABLE $macpart -s $address $physdev_part -j $target
+		done
+	    fi
 	done < $TMP_DIR/maclist
         #
         # Generate jumps from the input and forward chains

@@ -201,6 +201,10 @@ process_tc_rule()
 	[ "x$sport" = "x-"  ] || r="${r}--sport $sport "
 
 	if [ -n "${excludesources}${excludedests}" ]; then
+
+	    [ $target = RETURN ] && \
+		fatal_error "Exclusion is currently not supported with CONTINUE"
+
 	    build_exclusion_chain chain1 mangle "$excludesources" "$excludedests"
 
 	    run_iptables2 -t mangle -A $chain $r -j $chain1

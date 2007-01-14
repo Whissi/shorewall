@@ -129,27 +129,27 @@ setup_mac_lists() # $1 = Phase Number
 		REJECT:*)
 		    [ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
 		    target=reject
-		disposition=REJECT
-		;;
-	    REJECT)
-		[ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
-		target=reject
-		;;
-	    DROP:*)
-		level=${disposition#*:}
-		disposition=DROP
-		target=DROP
-		;;
-	    DROP)
-		target=DROP
-		;;
-	    *)
-		addresses="$mac"
-		mac="$interface"
-		interface="$disposition"
-		disposition=ACCEPT
-		target=RETURN
-		;;
+		    disposition=REJECT
+		    ;;
+		REJECT)
+		    [ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
+		    target=reject
+		    ;;
+		DROP:*)
+		    level=${disposition#*:}
+		    disposition=DROP
+		    target=DROP
+		    ;;
+		DROP)
+		    target=DROP
+		    ;;
+		*)
+		    addresses="$mac"
+		    mac="$interface"
+		    interface="$disposition"
+		    disposition=ACCEPT
+		    target=RETURN
+		    ;;
 	    esac
 
 	    physdev_part=

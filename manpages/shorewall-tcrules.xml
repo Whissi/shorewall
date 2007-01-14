@@ -25,9 +25,11 @@
     classifying them for traffic control or policy routing.</para>
 
     <important>
-      <para>Unlike rules in the shorewall-rules(5) file, evaluation of rules
-      in this file will continue after a match. So the final mark for each
-      packet will be the one assigned by the LAST tcrule that matches.</para>
+      <para>Unlike rules in the <ulink
+      url="shorewall-rules.html">shorewall-rules</ulink>(5) file, evaluation
+      of rules in this file will continue after a match. So the final mark for
+      each packet will be the one assigned by the LAST tcrule that
+      matches.</para>
 
       <para>If you use multiple internet providers with the 'track' option, in
       /etc/shorewall/providers be sure to read the restrictions at
@@ -99,7 +101,8 @@
 
                 <listitem>
                   <para>Otherwise, the chain is determined by the setting of
-                  MARK_IN_FORWARD_CHAIN in shorewall.conf(5).</para>
+                  MARK_IN_FORWARD_CHAIN in <ulink
+                  url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
                 </listitem>
               </itemizedlist>
 
@@ -168,12 +171,15 @@
 
               <para>When using Shorewall's built-in traffic tool, the
               <emphasis>major</emphasis> class is the device number (the first
-              device in shorewall-tcdevices(5) is major class 1, the second
-              device is major class 2, and so on) and the
-              <emphasis>minor</emphasis> class is the class's MARK value in
-              shorewall-tcclasses(5) preceded by the number 1 (MARK 1
-              corresponds to minor class 11, MARK 5 corresponds to minor class
-              15, MARK 22 corresponds to minor class 122, etc.).</para>
+              device in <ulink
+              url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5) is
+              major class 1, the second device is major class 2, and so on)
+              and the <emphasis>minor</emphasis> class is the class's MARK
+              value in <ulink
+              url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5)
+              preceded by the number 1 (MARK 1 corresponds to minor class 11,
+              MARK 5 corresponds to minor class 15, MARK 22 corresponds to
+              minor class 122, etc.).</para>
             </listitem>
 
             <listitem>
@@ -254,8 +260,8 @@
           <para>Example: ~00-A0-C9-15-39-78</para>
 
           <para>You may exclude certain hosts from the set already defined
-          through use of an <emphasis>exclusion</emphasis> (see
-          shorewall-exclusion(5)).</para>
+          through use of an <emphasis>exclusion</emphasis> (see <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -275,8 +281,8 @@
           this column may also contain an interface name.</para>
 
           <para>You may exclude certain hosts from the set already defined
-          through use of an <emphasis>exclusion</emphasis> (see
-          shorewall-exclusion(5)).</para>
+          through use of an <emphasis>exclusion</emphasis> (see <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 

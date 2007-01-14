@@ -151,7 +151,8 @@
 
           <para>If you set the value of either option to "None" then no
           default action will be used and the default action or macro must be
-          specified in shorewall-policy(5).</para>
+          specified in <ulink
+          url="shorewall-policy.html">shorewall-policy</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -161,8 +162,9 @@
 
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
-          the external address(es) in shorewall.nat(5). If the variable is set
-          to <emphasis role="bold">Yes</emphasis> or <emphasis
+          the external address(es) in <ulink
+          url="shorewall-nat.html">shorewall-nat</ulink>(5). If the variable
+          is set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis> then Shorewall automatically adds these
           aliases. If it is set to <emphasis role="bold">No</emphasis> or
           <emphasis role="bold">no</emphasis>, you must add these aliases
@@ -186,8 +188,9 @@
 
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
-          the SNAT ADDRESS in /etc/shorewall/masq. If the variable is set to
-          <emphasis role="bold">Yes</emphasis> or <emphasis
+          the SNAT ADDRESS in <ulink
+          url="shorewall-masq.html">shorewall-masq</ulink>(5). If the variable
+          is set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis> then Shorewall automatically adds these
           addresses. If it is set to <emphasis role="bold">No</emphasis> or
           <emphasis role="bold">no</emphasis>, you must add these addresses
@@ -212,12 +215,14 @@
         <listitem>
           <para>The value of this variable affects Shorewall's stopped state.
           When ADMINISABSENTMINDES=No, only traffic to/from those addresses
-          listed in shorewall-routestopped(5) is accepted when Shorewall is
-          stopped. When ADMINISABSENTMINDED=Yes, in addition to traffic
-          to/from addresses in shorewall-routestopped(5), connections that
-          were active when Shorewall stopped continue to work and all new
-          connections from the firewall system itself are allowed. If this
-          variable is not set or is given the empty value then
+          listed in <ulink
+          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
+          is accepted when Shorewall is stopped. When ADMINISABSENTMINDED=Yes,
+          in addition to traffic to/from addresses in <ulink
+          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5),
+          connections that were active when Shorewall stopped continue to work
+          and all new connections from the firewall system itself are allowed.
+          If this variable is not set or is given the empty value then
           ADMINISABSENTMINDED=No is assumed.</para>
         </listitem>
       </varlistentry>
@@ -301,8 +306,9 @@
           set TC_ENABLED=Yes and CLEAR_TC=No and do not supply an
           /etc/shorewall/tcstart file. That way, your traffic shaping rules
           can still use the “fwmark” classifier based on packet marking
-          defined in shorewall-tcrules(5). If not specified, CLEAR_TC=Yes is
-          assumed.</para>
+          defined in <ulink
+          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5). If not
+          specified, CLEAR_TC=Yes is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -345,8 +351,9 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>Users with a large static black list (shorewall-blacklist(5))
-          may want to set the DELAYBLACKLISTLOAD option to <emphasis
+          <para>Users with a large static black list (<ulink
+          url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)) may
+          want to set the DELAYBLACKLISTLOAD option to <emphasis
           role="bold">Yes</emphasis>. When DELAYBLACKLISTLOAD=Yes, Shorewall
           will enable new connections before loading the blacklist rules.
           While this may allow connections from blacklisted hosts to slip by
@@ -400,7 +407,8 @@
           <para>If you set FASTACCEPT=Yes, then ESTABLISHED/RELEATED packets
           are accepted early in the INPUT, FORWARD and OUTPUT chains. If you
           set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
-          or RELATED sections of shorewall-rules(5).</para>
+          or RELATED sections of <ulink
+          url="shorewall-rules.html">shorewall-rules</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -410,8 +418,9 @@
 
         <listitem>
           <para>Prior to version 3.2.0, it was not possible to use connection
-          marking in /etc/shorewall/tcrules if you have a multi-ISP
-          configuration that uses the track option.</para>
+          marking in <ulink
+          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) if you
+          have a multi-ISP configuration that uses the track option.</para>
 
           <para>Beginning with release 3.2.0, you may now set
           HIGH_ROUTE_MARKS=Yes in to effectively divide the packet mark and
@@ -457,10 +466,11 @@
           differently with respect to policies.</para>
 
           <para>Subzones are defined by following their name with ":" and a
-          list of parent zones (in /etc/shorewall/zones). Normally, you want
-          to have a set of special rules for the subzone and if a connection
-          doesn't match any of those subzone-specific rules then you want the
-          parent zone rules and policies to be applied. With
+          list of parent zones (in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5)). Normally,
+          you want to have a set of special rules for the subzone and if a
+          connection doesn't match any of those subzone-specific rules then
+          you want the parent zone rules and policies to be applied. With
           IMPLICIT_CONTINUE=Yes, that happens automatically.</para>
 
           <para>If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set,
@@ -553,8 +563,8 @@
           <emphasis role="bold">No</emphasis> which sets both of the above to
           zero. If you do not enable martian logging for all interfaces, you
           may still enable it for individual interfaces using the <emphasis
-          role="bold">logmartians</emphasis> interface option in
-          shorewall-interfaces(5).</para>
+          role="bold">logmartians</emphasis> interface option in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -726,8 +736,10 @@
 
         <listitem>
           <para>The performance of configurations with a large numbers of
-          entries in /etc/shorewall/maclist can be improved by setting the
-          MACLIST_TTL variable in shorewall.conf(5).</para>
+          entries in <ulink
+          url="shorewall-maclist.html">shorewall-maclist</ulink>(5) can be
+          improved by setting the MACLIST_TTL variable in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
           <para>If your iptables and kernel support the "Recent Match" (see
           the output of "shorewall check" near the top), you can cache the
@@ -736,13 +748,14 @@
 
           <para>When a new connection arrives from a 'maclist' interface, the
           packet passes through then list of entries for that interface in
-          shorewall-maclist(5). If there is a match then the source IP address
-          is added to the 'Recent' set for that interface. Subsequent
-          connection attempts from that IP address occurring within
-          $MACLIST_TTL seconds will be accepted without having to scan all of
-          the entries. After $MACLIST_TTL from the first accepted connection
-          request from an IP address, the next connection request from that IP
-          address will be checked against the entire list.</para>
+          <ulink url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
+          there is a match then the source IP address is added to the 'Recent'
+          set for that interface. Subsequent connection attempts from that IP
+          address occurring within $MACLIST_TTL seconds will be accepted
+          without having to scan all of the entries. After $MACLIST_TTL from
+          the first accepted connection request from an IP address, the next
+          connection request from that IP address will be checked against the
+          entire list.</para>
 
           <para>If MACLIST_TTL is not specified or is specified as empty (e.g,
           MACLIST_TTL="" or is specified as zero then 'maclist' lookups will
@@ -913,16 +926,18 @@
         <listitem>
           <para>During <emphasis role="bold">shorewall star</emphasis>t, IP
           addresses to be added as a consequence of ADD_IP_ALIASES=Yes and
-          ADD_SNAT_ALIASES=Yes are quietly deleted when shorewall-nat(5) and
-          shorewall-masq(5) are processed then are re-added later. This is
-          done to help ensure that the addresses can be added with the
-          specified labels but can have the undesirable side effect of causing
-          routes to be quietly deleted. When RETAIN_ALIASES is set to Yes,
-          existing addresses will not be deleted. Regardless of the setting of
-          RETAIN_ALIASES, addresses added during <emphasis
-          role="bold">shorewall start</emphasis> are still deleted at a
-          subsequent <emphasis role="bold">shorewall stop</emphasis> or
-          <emphasis role="bold">shorewall restart</emphasis>.</para>
+          ADD_SNAT_ALIASES=Yes are quietly deleted when <ulink
+          url="shorewall-nat.html">shorewall-nat</ulink>(5) and <ulink
+          url="shorewall-masq.html">shorewall-masq</ulink>(5) are processed
+          then are re-added later. This is done to help ensure that the
+          addresses can be added with the specified labels but can have the
+          undesirable side effect of causing routes to be quietly deleted.
+          When RETAIN_ALIASES is set to Yes, existing addresses will not be
+          deleted. Regardless of the setting of RETAIN_ALIASES, addresses
+          added during <emphasis role="bold">shorewall start</emphasis> are
+          still deleted at a subsequent <emphasis role="bold">shorewall
+          stop</emphasis> or <emphasis role="bold">shorewall
+          restart</emphasis>.</para>
         </listitem>
       </varlistentry>
 
@@ -1018,8 +1033,10 @@
 
         <listitem>
           <para>Specifies the logging level for smurf packets (see the
-          nosmurfs option in /etc/shorewall/interfaces). If set to the empty
-          value ( SMURF_LOG_LEVEL="" ) then smurfs are not logged.</para>
+          nosmurfs option in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)). If
+          set to the empty value ( SMURF_LOG_LEVEL="" ) then smurfs are not
+          logged.</para>
         </listitem>
       </varlistentry>
 
@@ -1081,8 +1098,8 @@
         <listitem>
           <para>Normally, Shorewall tries to protect users from themselves by
           preventing PREROUTING and OUTPUT tcrules from being applied to
-          packets that have been marked by the 'track' option in
-          shorewall-providers(5).</para>
+          packets that have been marked by the 'track' option in <ulink
+          url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
 
           <para>If you know what you are doing, you can set TC_EXPERT=Yes and
           Shorewall will not include these cautionary checks.</para>
@@ -1099,11 +1116,12 @@
         <listitem>
           <para>Determines the disposition of TCP packets that fail the checks
           enabled by the <emphasis role="bold">tcpflags</emphasis> interface
-          option (see shorewall-interfaces(5)) and must have a value of ACCEPT
-          (accept the packet), REJECT (send an RST response) or DROP (ignore
-          the packet). If not set or if set to the empty value (e.g.,
-          TCP_FLAGS_DISPOSITION="") then TCP_FLAGS_DISPOSITION=DROP is
-          assumed.</para>
+          option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
+          must have a value of ACCEPT (accept the packet), REJECT (send an RST
+          response) or DROP (ignore the packet). If not set or if set to the
+          empty value (e.g., TCP_FLAGS_DISPOSITION="") then
+          TCP_FLAGS_DISPOSITION=DROP is assumed.</para>
         </listitem>
       </varlistentry>
 

@@ -298,9 +298,10 @@
     the command produces. They consist of a sequence of the letters <emphasis
     role="bold">v</emphasis> and <emphasis role="bold">q</emphasis>. If the
     options are omitted, the amount of output is determined by the setting of
-    the VERBOSITY parameter in shorewall.conf(5). Each <emphasis
-    role="bold">v</emphasis> adds one to the effective verbosity and each
-    <emphasis role="bold">q</emphasis> subtracts one from the effective
+    the VERBOSITY parameter in <ulink
+    url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5). Each
+    <emphasis role="bold">v</emphasis> adds one to the effective verbosity and
+    each <emphasis role="bold">q</emphasis> subtracts one from the effective
     VERBOSITY.</para>
   </refsect1>
 
@@ -318,8 +319,9 @@
           with VPN's.</para>
 
           <para>The <emphasis>interface</emphasis> argument names an interface
-          defined in the shorewall-interfaces(5) file. A
-          <emphasis>host-list</emphasis> is comma-separated list whose
+          defined in the <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          file. A <emphasis>host-list</emphasis> is comma-separated list whose
           elements are:</para>
 
           <programlisting>        A host or network address
@@ -359,8 +361,9 @@
           role="bold">add</emphasis> command.</para>
 
           <para>The <emphasis>interface</emphasis> argument names an interface
-          defined in the shorewall-interfaces(5) file. A
-          <emphasis>host-list</emphasis> is comma-separated list whose
+          defined in the <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          file. A <emphasis>host-list</emphasis> is comma-separated list whose
           elements are:</para>
 
           <programlisting>        A host or network address
@@ -400,7 +403,9 @@
           <para>Deletes /var/lib/shorewall-lite/<emphasis>filenam</emphasis>e
           and /var/lib/shorewall-lite/save. If no
           <emphasis>filename</emphasis> is given then the file specified by
-          RESTOREFILE in shorewall.conf(5) is assumed.</para>
+          RESTOREFILE in <ulink
+          url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5) is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -453,11 +458,12 @@
         <term><emphasis role="bold">logwatch</emphasis></term>
 
         <listitem>
-          <para>Monitors the log file specified by theLOGFILE option in
-          shorewall.conf(5) and produces an audible alarm when new Shorewall
-          Lite messages are logged. The <emphasis role="bold">-m</emphasis>
-          option causes the MAC address of each packet source to be displayed
-          if that information is available.</para>
+          <para>Monitors the log file specified by theLOGFILE option in <ulink
+          url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5) and
+          produces an audible alarm when new Shorewall Lite messages are
+          logged. The <emphasis role="bold">-m</emphasis> option causes the
+          MAC address of each packet source to be displayed if that
+          information is available.</para>
         </listitem>
       </varlistentry>
 
@@ -499,8 +505,8 @@
           a restore file in /var/lib/shorewall-lite created using <emphasis
           role="bold">shorewall-lite save</emphasis>; if no
           <emphasis>filename</emphasis> is given then Shorewall Lite will be
-          restored from the file specified by the RESTOREFILE option in
-          shorewall.conf(5).</para>
+          restored from the file specified by the RESTOREFILE option in <ulink
+          url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -514,8 +520,8 @@
           <emphasis role="bold">shorewall-lite restore</emphasis> and
           <emphasis role="bold">shorewall-lite -f start</emphasis> commands.
           If <emphasis>filename</emphasis> is not given then the state is
-          saved in the file specified by the RESTOREFILE option in
-          shorewall.conf(5).</para>
+          saved in the file specified by the RESTOREFILE option in <ulink
+          url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -660,10 +666,10 @@
           shorewall-lite managed interfaces are untouched. New connections
           will be allowed only if they are allowed by the firewall rules or
           policies. If <emphasis role="bold">-f</emphasis> is specified, the
-          saved configuration specified by the RESTOREFILE option in
-          shorewall.conf(5) will be restored if that saved configuration
-          exists and has been modified more recently than the files in
-          /etc/shorewall.</para>
+          saved configuration specified by the RESTOREFILE option in <ulink
+          url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5) will
+          be restored if that saved configuration exists and has been modified
+          more recently than the files in /etc/shorewall.</para>
         </listitem>
       </varlistentry>
 
@@ -672,11 +678,13 @@
 
         <listitem>
           <para>Stops the firewall. All existing connections, except those
-          listed in shorewall-routestopped(5) or permitted by the
-          ADMINISABSENTMINDED option in shorewall.conf(5), are taken down. The
-          only new traffic permitted through the firewall is from systems
-          listed in shorewall-routestopped(5) or by
-          ADMINISABSENTMINDED.</para>
+          listed in <ulink
+          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
+          or permitted by the ADMINISABSENTMINDED option in shorewall.conf(5),
+          are taken down. The only new traffic permitted through the firewall
+          is from systems listed in <ulink
+          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
+          or by ADMINISABSENTMINDED.</para>
         </listitem>
       </varlistentry>
 

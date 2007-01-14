@@ -26,9 +26,9 @@
     place anything in this file.</para>
 
     <para>The order of entries in this file is not significant in determining
-    zone composition. Rather, the order that the zones are defined in
-    shorewall-zones(5) determines the order in which the records in this file
-    are interpreted.</para>
+    zone composition. Rather, the order that the zones are defined in <ulink
+    url="shorewall-zones.html">shorewall-zones</ulink>(5) determines the order
+    in which the records in this file are interpreted.</para>
 
     <warning>
       <para>The only time that you need this file is when you have more than
@@ -36,9 +36,10 @@
     </warning>
 
     <warning>
-      <para>If you have an entry for a zone and interface in
-      shorewall-interfaces(5) then do not include any entries in this file for
-      that same (zone, interface) pair.</para>
+      <para>If you have an entry for a zone and interface in <ulink
+      url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5) then do
+      not include any entries in this file for that same (zone, interface)
+      pair.</para>
     </warning>
 
     <para>The columns in the file are as follows.</para>
@@ -49,7 +50,8 @@
         <emphasis>zone-name</emphasis></term>
 
         <listitem>
-          <para>The name of a zone defined in shorewall-zones(5). You may not
+          <para>The name of a zone defined in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5). You may not
           list the firewall zone in this column.</para>
         </listitem>
       </varlistentry>
@@ -61,9 +63,10 @@
         role="bold">+</emphasis><emphasis>ipset</emphasis>}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
-          <para>The name of an interface defined in the
-          shorewall-interfaces(5) file followed by a colon (":") and a
-          comma-separated list whose elements are either:</para>
+          <para>The name of an interface defined in the <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5) file
+          followed by a colon (":") and a comma-separated list whose elements
+          are either:</para>
 
           <orderedlist numeration="loweralpha">
             <listitem>
@@ -84,12 +87,14 @@
               <para>A physical <emphasis>bridge-port</emphasis> name; only
               allowed when the interface names a bridge created by the
               <command>brctl(8) addbr</command> command. This port must not be
-              defined in shorewall-interfaces(5) and may be optionally
-              followed by a colon (":") and a host or network IP or a range.
-              See <ulink
+              defined in <ulink
+              url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+              and may be optionally followed by a colon (":") and a host or
+              network IP or a range. See <ulink
               url="http://www.shorewall.net/bridge.html">http://www.shorewall.net/bridge.html</ulink>
               for details. Specifying a physical port name requires that you
-              have BRIDGING=Yes in shorewall.conf(5).</para>
+              have BRIDGING=Yes in <ulink
+              url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
             </listitem>
 
             <listitem>
@@ -99,7 +104,8 @@
 
           <blockquote>
             <para>You may also exclude certain hosts through use of an
-            <emphasis>exclusion</emphasis> (see shorewall-exclusion(5).</para>
+            <emphasis>exclusion</emphasis> (see <ulink
+            url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
           </blockquote>
         </listitem>
       </varlistentry>
@@ -119,9 +125,11 @@
 
               <listitem>
                 <para>Connection requests from these hosts are compared
-                against the contents of shorewall-maclist(5). If this option
-                is specified, the interface must be an ethernet NIC or
-                equivalent and must be up before Shorewall is started.</para>
+                against the contents of <ulink
+                url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
+                this option is specified, the interface must be an ethernet
+                NIC or equivalent and must be up before Shorewall is
+                started.</para>
               </listitem>
             </varlistentry>
 
@@ -145,8 +153,9 @@
                 <para>This option only makes sense for ports on a
                 bridge.</para>
 
-                <para>Check packets arriving on this port against the
-                shorewall-blacklist(5) file.</para>
+                <para>Check packets arriving on this port against the <ulink
+                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
+                file.</para>
               </listitem>
             </varlistentry>
 
@@ -173,8 +182,9 @@
                 address as the source).</para>
 
                 <para>Smurfs will be optionally logged based on the setting of
-                SMURF_LOG_LEVEL in shorewall.conf(5). After logging, the
-                packets are dropped.</para>
+                SMURF_LOG_LEVEL in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5). After
+                logging, the packets are dropped.</para>
               </listitem>
             </varlistentry>
 
@@ -184,8 +194,10 @@
               <listitem>
                 <para>The zone is accessed via a kernel 2.6 ipsec SA. Note
                 that if the zone named in the ZONE column is specified as an
-                IPSEC zone in the shorewall-zones(5) file then you do NOT need
-                to specify the 'ipsec' option here.</para>
+                IPSEC zone in the <ulink
+                url="shorewall-zones.html">shorewall-zones</ulink>(5) file
+                then you do NOT need to specify the 'ipsec' option
+                here.</para>
               </listitem>
             </varlistentry>
           </variablelist>

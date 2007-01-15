@@ -93,22 +93,22 @@ setup_mac_lists() # $1 = Phase Number
     if [ $1 -eq 1 ]; then
 	for interface in $maclist_interfaces; do
 	    chain=$(mac_chain $interface)
-		create_mac_chain $chain
-	        #
-	        # If we're using the mangle table and the interface is DHCP-enabled then we need to accept DHCP broadcasts from 0.0.0.0
-	        #
-		if [ $MACLIST_TABLE = mangle ] && interface_has_option $interface dhcp; then
-		    run_iptables -t mangle -A $chain -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN
-		fi
+	    create_mac_chain $chain
+	    #
+	    # If we're using the mangle table and the interface is DHCP-enabled then we need to accept DHCP broadcasts from 0.0.0.0
+	    #
+	    if [ $MACLIST_TABLE = mangle ] && interface_has_option $interface dhcp; then
+		run_iptables -t mangle -A $chain -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN
+	    fi
 
-		if [ -n "$MACLIST_TTL" ]; then
-		    chain1=$(macrecent_target $interface)
-		    create_mac_chain $chain1
-		    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
-		    run_iptables -A $chain  -t $MACLIST_TABLE                                                         -j $chain1
-		    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --update                        --name $chain -j RETURN
-		    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --set                           --name $chain
-		fi
+	    if [ -n "$MACLIST_TTL" ]; then
+		chain1=$(macrecent_target $interface)
+		create_mac_chain $chain1
+		run_iptables -A $chain  -t $MACLIST_TABLE -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
+		run_iptables -A $chain  -t $MACLIST_TABLE                                                         -j $chain1
+		run_iptables -A $chain  -t $MACLIST_TABLE -m recent --update                        --name $chain -j RETURN
+		run_iptables -A $chain  -t $MACLIST_TABLE -m recent --set                           --name $chain
+	    fi
 	done
         #
         # Process the maclist file producing the verification rules

@@ -461,13 +461,13 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
           <link linkend="CONTINUE">CONTINUE policy</link> described
           below.</para>
 
-          <para>Beginning With Shorewall 3.0, you can adjust the order in
+          <para>Beginning with Shorewall 3.0, you can adjust the order in
           which Shorewall generates its rules by using special syntax in the
           ZONE column of <filename>/etc/shorewall/zones</filename>. Where a
           zone is nested in one or more other zones, you may follow the
           (sub)zone name by ":" and a comma-separated list of the parent
-          zones. The parent zones must have been defined in earlier records in
-          this file.</para>
+          zones. The parent zones must have been declared in earlier records
+          in this file.</para>
 
           <para>Example:<blockquote>
               <programlisting>#ZONE                TYPE           OPTIONS
@@ -475,6 +475,11 @@ parnt1               ipv4
 parnt2               ipv4
 child:parnt1,parnt2  ipv4</programlisting>
             </blockquote></para>
+
+          <para>Even though zones <emphasis>parnt1</emphasis> and
+          <emphasis>parnt2</emphasis> are declared before zone
+          <emphasis>child</emphasis>, Shorewall will generate the rules for
+          <emphasis>child</emphasis> before either of the parent zones.</para>
         </listitem>
       </varlistentry>
 

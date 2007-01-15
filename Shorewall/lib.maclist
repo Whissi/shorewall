@@ -144,11 +144,21 @@ setup_mac_lists() # $1 = Phase Number
 		    target=DROP
 		    ;;
 		*)
-		    addresses="$mac"
-		    mac="$interface"
-		    interface="$disposition"
-		    disposition=ACCEPT
-		    target=RETURN
+		    case "$interface" in
+			*:*:*|~*-*-*)
+			    #
+			    # Pre-3.2 record format
+			    #
+			    addresses="$mac"
+			    mac="$interface"
+			    interface="$disposition"
+			    disposition=ACCEPT
+			    target=RETURN
+			    ;;
+			*)
+			    fatal_error "Invalid DISPOSITION ($disposition) in rule \"$disposition $interface $mac $addresses\""
+			    ;;
+		    esac
 		    ;;
 	    esac
 

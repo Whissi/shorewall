@@ -36,6 +36,24 @@ Problems Corrected in 3.4.0 Beta 3
 2)  Previously, "ipp2p:udp" was incorrectly rejected in the PROTO
     column of an action definition.
 
+3)  Previously, if an invalid DISPOSITION was specified in a record in
+    /etc/shorewall/maclist, then a confusing error message would
+    result.
+
+    Example:
+
+    /etc/shorewall/mac:
+
+	ALOW:info	eth0	02:0C:03:04:05:06
+
+    Error message:
+
+	ERROR: No hosts on ALOW:info have the maclist option specified
+
+    The new error message is:
+
+        ERROR: Invalid DISPOSITION (ALOW:info) in rule "ALOW:info eth0 02:0C:03:04:05:06"
+
 Migration Considerations:
 
 1)  Shorewall supports the notion of "default actions". A default

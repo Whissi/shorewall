@@ -444,6 +444,37 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
           <quote>all</quote> may not be used as a zone name nor may the zone
           name assigned to the firewall itself via the FW variable in <xref
           linkend="Conf" />.</para>
+
+          <para id="Nested">The <filename>/etc/shorewall/interfaces</filename>
+          and <filename>/etc/shorewall/hosts</filename> file allow you to
+          define nested or overlapping zones. Such overlapping/nested zones
+          are allowed and Shorewall normally processes zones in the order that
+          they appear in the <filename>/etc/shorewall/zones</filename> file.
+          So if you have nested zones, you want the sub-zone to appear before
+          the super-zone and in the case of overlapping zones, the rules that
+          will apply to hosts that belong to both zones is determined by which
+          zone appears first in
+          <filename>/etc/shorewall/zones</filename>.</para>
+
+          <para>Hosts that belong to more than one zone may be managed by the
+          rules of all of those zones. This is done through use of the special
+          <link linkend="CONTINUE">CONTINUE policy</link> described
+          below.</para>
+
+          <para>Beginning With Shorewall 3.0, you can adjust the order in
+          which Shorewall generates its rules by using special syntax in the
+          ZONE column of <filename>/etc/shorewall/zones</filename>. Where a
+          zone is nested in one or more other zones, you may follow the
+          (sub)zone name by ":" and a comma-separated list of the parent
+          zones. The parent zones must have been defined in earlier records in
+          this file.</para>
+
+          <para>Example:<blockquote>
+              <programlisting>#ZONE                TYPE           OPTIONS
+parnt1               ipv4
+parnt2               ipv4
+child:parnt1,parnt2  ipv4</programlisting>
+            </blockquote></para>
         </listitem>
       </varlistentry>
 
@@ -1081,24 +1112,6 @@ net      eth0         detect       dhcp,norfc1918
       <programlisting>#ZONE       HOST(S)               OPTIONS
 loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
     </example>
-
-    <section id="Nested">
-      <title>Nested and Overlapping Zones</title>
-
-      <para>The <filename>/etc/shorewall/interfaces</filename> and
-      <filename>/etc/shorewall/hosts</filename> file allow you to define
-      nested or overlapping zones. Such overlapping/nested zones are allowed
-      and Shorewall processes zones in the order that they appear in the
-      <filename>/etc/shorewall/zones</filename> file. So if you have nested
-      zones, you want the sub-zone to appear before the super-zone and in the
-      case of overlapping zones, the rules that will apply to hosts that
-      belong to both zones is determined by which zone appears first in
-      <filename>/etc/shorewall/zones</filename>.</para>
-
-      <para>Hosts that belong to more than one zone may be managed by the
-      rules of all of those zones. This is done through use of the special
-      <link linkend="CONTINUE">CONTINUE policy</link> described below.</para>
-    </section>
   </section>
 
   <section id="Policy" xreflabel="/etc/shorewall/policy">

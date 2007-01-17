@@ -91,6 +91,13 @@
         <command>shorewall restart</command>). Ideally, restarting the packet
         filter should have no effect on routing.</para>
       </listitem>
+
+      <listitem>
+        <para>Prior to Shorewall 3.4.0, the routes and route rules added by
+        this support were not completely removed during <command>shorewall
+        stop</command>, <command>shorewall clear</command> or
+        <command>shorewall restart</command>.</para>
+      </listitem>
     </itemizedlist>
 
     <section>
@@ -142,7 +149,7 @@
 
       <para>Shorewall will set up the routing and will update the
       <filename>/etc/iproute2/rt_tables</filename> to include the table names
-      and number of the tables that it adds.</para>
+      and numbers of the tables that it adds.</para>
 
       <caution>
         <para>This feature uses <ulink url="traffic_shaping.htm">packet
@@ -488,15 +495,17 @@
       particular provider then you <emphasis>must </emphasis>mark that traffic
       with the provider's MARK value in
       <filename>/etc/shorewall/tcrules</filename> and you must do that marking
-      in the PREROUTING chain.</para>
+      in the PREROUTING chain; or, you must provide the appropriate rules in
+      <filename>/etc/shorewall/route_rules</filename>.</para>
 
       <warning id="Undo">
-        <para>Entries in <filename>/etc/shorewall/providers</filename>
-        permanently alter your firewall/gateway's routing; that is, the effect
-        of these changes is not reversed by <command>shorewall stop</command>
-        or <command>shorewall clear</command>. To restore routing to its
-        original state, you may have to restart your network. This can usually
-        be done by <command>/etc/init.d/network restart</command> or
+        <para>If you are running a Shorewall version prior to 3.4.0, entries
+        in <filename>/etc/shorewall/providers</filename> permanently alter
+        your firewall/gateway's routing; that is, the effect of these changes
+        is not reversed by <command>shorewall stop</command> or
+        <command>shorewall clear</command>. To restore routing to its original
+        state, you may have to restart your network. This can usually be done
+        by <command>/etc/init.d/network restart</command> or
         <command>/etc/init.d/networking restart</command>. Check your
         distribution's networking documentation.</para>
 

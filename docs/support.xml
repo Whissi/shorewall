@@ -122,9 +122,23 @@
         <para>If your problem is that an <emphasis
         role="bold">error</emphasis> occurs when you try to
         <quote><command>shorewall start</command></quote> or if Shorewall is
-        otherwise failing to start properly, then please:</para>
+        otherwise failing to start properly, then please do the
+        following.</para>
 
         <blockquote>
+          <para>If your VERBOSITY setting in shorewall.conf is less than 2,
+          then try running with a higher verbosity level by using the "-vv"
+          option:</para>
+
+          <blockquote>
+            <programlisting><command>shorewall -vv [re]start</command></programlisting>
+          </blockquote>
+
+          <para>That will give you additional progress messages that may make
+          it clear which entry in which file is generating the error.</para>
+
+          <para>If that didn't solve your problem, then please</para>
+
           <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
 
           <para>Forward the <filename>/tmp/trace</filename> file as an

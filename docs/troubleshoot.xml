@@ -36,8 +36,19 @@
     <title><quote>shorewall start</quote> and <quote>shorewall restart</quote>
     Errors</title>
 
-    <para>If you receive an error message when starting or restarting the
-    firewall and you can't determine the cause, then do the following:</para>
+    <para>You receive an error message when starting or restarting the
+    firewall and you can't determine the cause. First, if your VERBOSITY
+    setting in shorewall.conf is less than 2, then try running with a higher
+    verbosity level by using the "-v" option:</para>
+
+    <blockquote>
+      <programlisting><command>shorewall -vv [re]start</command></programlisting>
+    </blockquote>
+
+    <para>That will give you additional progress messages that may make it
+    clear which entry in which file is generating the error.</para>
+
+    <para>If that didn't help, then do the following:</para>
 
     <itemizedlist>
       <listitem>

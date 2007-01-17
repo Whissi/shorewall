@@ -30,6 +30,8 @@
 
       <year>2006</year>
 
+      <year>2007</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -44,6 +46,16 @@
     </legalnotice>
 
     <revhistory>
+      <revision>
+        <revnumber>1.5</revnumber>
+
+        <date>2007-01-17</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Updated zones files to 3.x format</revremark>
+      </revision>
+
       <revision>
         <revnumber>1.4</revnumber>
 
@@ -512,12 +524,13 @@ pptpserver      net              0.0.0.0/0</programlisting>
 
         <para><filename>/etc/shorewall/zones</filename>:</para>
 
-        <programlisting>#ZONE           DISPLAY          COMMENTS
-net             Internet         The Internet
-loc             Local            Local Network
-vpn1            Remote1          Remote Network 1
-vpn2            Remote2          Remote Network 2
-vpn3            Remote3          Remote Network 3</programlisting>
+        <programlisting>#ZONE           TYPE
+fw              firewall
+net             ipv4
+loc             ipv4
+vpn1            ipv4
+vpn2            ipv4
+vpn3            ipv4</programlisting>
 
         <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
@@ -636,8 +649,8 @@ loadmodule ip_nat_proto_gre</programlisting>
 
     <para><filename>/etc/shorewall/zones</filename>:</para>
 
-    <programlisting>#ZONE          DISPLAY          COMMENTS
-cpq            Compaq           Compaq Intranet</programlisting>
+    <programlisting>#ZONE          TYPE
+cpq            ipv4</programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
@@ -847,8 +860,8 @@ restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
       <listitem>
         <para>Add this entry to /etc/shorewall/zones:</para>
 
-        <programlisting>#ZONE          DISPLAY          COMMENTS
-modem          Modem            ADSL Modem</programlisting>
+        <programlisting>#ZONE          TYPE
+modem          ipv4</programlisting>
 
         <para>That entry defines a new zone called <quote>modem</quote> which
         will contain only your ADSL modem.</para>

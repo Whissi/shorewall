@@ -52,7 +52,14 @@ Problems Corrected in 3.4.0 Beta 3
 
     The new error message is:
 
-        ERROR: Invalid DISPOSITION (ALOW:info) in rule "ALOW:info eth0 02:0C:03:04:05:06"
+        ERROR: Invalid DISPOSITION (ALOW:info) in rule "ALOW:info eth0
+        02:0C:03:04:05:06"
+
+Other Changes in 3.4.0 Beta 3
+
+1)  Previously, 'ipsecnat' tunnels allowed AH traffic by default
+    (unless 'isecnat:noah' was given). Given that AH is incompatible
+    with nat-traversal, 'ipsecnat' now implies 'ipsecnat:noah'.
 
 Migration Considerations:
 
@@ -125,6 +132,11 @@ Migration Considerations:
     The /etc/shorewall-lite/shorewall.conf file has been renamed
     /etc/shorewall-lite/shorewall-lite.conf. When you upgrade,
     your shorewall.conf file will be renamed shorewall-lite.conf.
+
+5)  Previously, 'ipsecnat' tunnels allowed AH traffic by default
+    (unless 'isecnat:noah' was given). Given that AH is incompatible
+    with nat-traversal, 'ipsecnat' now implies 'ipsecnat:noah' and the
+    latter is now redundant.
 
 New Features in Shorewall 3.4:
 

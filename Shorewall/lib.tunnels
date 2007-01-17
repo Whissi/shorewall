@@ -49,6 +49,8 @@ setup_tunnels() # $1 = name of tunnels file
 
 	[ $kind = IPSEC ] && kind=ipsec
 
+	[ $kind = ipsec ] || noah=noah
+
 	options="-m state --state NEW -j ACCEPT"
 	addrule2 $inchain	  -p 50	 $source -j ACCEPT
 	addrule2 $outchain	  -p 50	 $dest   -j ACCEPT

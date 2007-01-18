@@ -21,18 +21,12 @@
   <refsect1>
     <title>Description</title>
 
-    <para>Rules in this file govern connection establishment. By default,
+    <para>Entries in this file govern connection establishment. By default,
     subsequent requests and responses are automatically allowed using
     connection tracking. For any particular (source,dest) pair of zones, the
     rules are evaluated in the order in which they appear in this file and the
     first terminating match is the one that determines the disposition of the
     request. All rules are terminating except LOG and QUEUE rules.</para>
-
-    <para>In most places where an IP address or subnet is allowed, you can
-    preceed the address/subnet with "!" (e.g., !192.168.1.0/24) to indicate
-    that the rule matches all addresses except the address/subnet given.
-    Notice that no white space is permitted between "!" and the
-    address/subnet.</para>
 
     <warning>
       <para>If you masquerade or use SNAT from a local system to the internet,
@@ -347,7 +341,7 @@
             rewritten.</para>
 
             <para>If the <emphasis role="bold">ACTION</emphasis> names an
-            <emphasis>action</emphasis> defined in <ulink
+            <emphasis>action</emphasis> declared in <ulink
             url="shorewall-actions.html">shorewall-actions</ulink>(5) or in
             /usr/share/shorewall/actions.std then:</para>
 
@@ -397,7 +391,7 @@
         role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
 
         <listitem>
-          <para>Source hosts to which the rule applies. May be a zone defined
+          <para>Source hosts to which the rule applies. May be a zone declared
           in /etc/shorewall/zones, <emphasis role="bold">$FW</emphasis> to
           indicate the firewall itself, <emphasis role="bold">all</emphasis>,
           <emphasis role="bold">all+</emphasis>, <emphasis
@@ -526,7 +520,7 @@
         role="bold">+</emphasis><emphasis>ipset</emphasis>}]</term>
 
         <listitem>
-          <para>Location of Server. May be a zone defined in <ulink
+          <para>Location of Server. May be a zone declared in <ulink
           url="shorewall-zones.html">shorewall-zones</ulink>(5), $<emphasis
           role="bold">FW</emphasis> to indicate the firewall itself, <emphasis
           role="bold">all</emphasis>. <emphasis role="bold">all+</emphasis> or

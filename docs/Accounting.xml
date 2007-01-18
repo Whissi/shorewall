@@ -45,7 +45,7 @@
   /etc/shorewall/accounting. By default, the accounting rules are placed in a
   chain called <quote>accounting</quote> and can thus be displayed using
   <quote>shorewall[-lite] show accounting</quote>. All traffic passing into,
-  out of or through the firewall traverses the accounting chain including
+  out of, or through the firewall traverses the accounting chain including
   traffic that will later be rejected by interface options such as
   <quote>tcpflags</quote> and <quote>maclist</quote>. If your kernel doesn't
   support the connection tracking match extension (Kernel 2.4.21) then some
@@ -78,7 +78,7 @@
           Chain names must start with a letter, must be composed of letters
           and digits, and may contain underscores (<quote>_</quote>) and
           periods (<quote>.</quote>). Beginning with Shorewall version 1.4.8,
-          chain names man also contain embedded dashes (<quote>-</quote>) and
+          chain names may also contain embedded dashes (<quote>-</quote>) and
           are not required to start with a letter.</para>
         </listitem>
       </itemizedlist>
@@ -92,7 +92,7 @@
 
     <listitem>
       <para><emphasis role="bold">SOURCE</emphasis> - Packet Source. The name
-      of an interface, an address (host or net) or an interface name followed
+      of an interface, an address (host or net), or an interface name followed
       by <quote>:</quote> and a host or net address.</para>
     </listitem>
 
@@ -164,8 +164,8 @@
   outbound ones.</para>
 
   <para>Accounting rules are not stateful -- each rule only handles traffic in
-  one direction. For example, if eth0 is your internet interface and you have
-  a web server in your DMZ connected to eth1 then to count HTTP traffic in
+  one direction. For example, if eth0 is your internet interface, and you have
+  a web server in your DMZ connected to eth1, then to count HTTP traffic in
   both directions requires two rules:</para>
 
   <programlisting>        #ACTION CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE

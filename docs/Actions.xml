@@ -47,7 +47,7 @@
     series of one or more iptables rules. The symbolic name may appear in the
     ACTION column of an <filename><ulink
     url="Documentation.htm#Rules">/etc/shorewall/rules</ulink></filename> file
-    entry in which case, the traffic matching that rules file entry will be
+    entry, in which case the traffic matching that rules file entry will be
     passed to the series of iptables rules named by the action.</para>
 
     <para>Actions can be thought of as templates. When an action is invoked in
@@ -290,7 +290,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
 
       <listitem>
         <para>PROTO - Protocol - Must be <quote>tcp</quote>,
-        <quote>udp</quote>, <quote>icmp</quote>, a number, or
+        <quote>udp</quote>, <quote>icmp</quote>, a protocol number, or
         <quote>all</quote>.</para>
       </listitem>
 
@@ -303,7 +303,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
         <para>A port range is expressed as &lt;<emphasis>low
         port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
 
-        <para>This column is ignored if PROTOCOL = all but must be entered if
+        <para>This column is ignored if PROTO = "all", but must be entered if
         any of the following fields are supplied. In that case, it is
         suggested that this field contain <quote>-</quote>.</para>
 
@@ -331,7 +331,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
         names, port numbers or port ranges.</para>
 
         <para>If you don't want to restrict client ports but need to specify
-        an ADDRESS in the next column, then place "-" in this column.</para>
+        any of the following fields, then place "-" in this column.</para>
 
         <para>If your kernel contains multi-port match support, then only a
         single Netfilter rule will be generated if in this list and in the
@@ -403,7 +403,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
       </listitem>
     </itemizedlist>
 
-    <para>Omitted column entries should be entered using a dash ("-:).</para>
+    <para>Omitted column entries should be entered using a dash ("-").</para>
 
     <para>Example:</para>
 
@@ -422,7 +422,7 @@ LogAndAccept loc         $FW         tcp      22</programlisting>
   <section>
     <title>Actions and Logging</title>
 
-    <para>Specifying a log level in a rule that specifies a user- or
+    <para>Specifying a log level in a rule that specifies a user-defined or
     Shorewall-defined action will cause each rule in the action to be logged
     with the specified level (and tag).</para>
 
@@ -457,7 +457,7 @@ bar:info</programlisting>
       </listitem>
 
       <listitem>
-        <para>If you follow the log level with "!" then logging will be at
+        <para>If you follow the log level with "!" then logging will be set at
         that level for all rules recursively invoked by the action.</para>
 
         <para>Example:</para>

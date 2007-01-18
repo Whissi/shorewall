@@ -52,7 +52,7 @@
     <firstterm>routers</firstterm>. In the context of the Open System
     Interconnect (OSI) reference model, a router operates at layer 3,
     Shorewall may also be deployed on a GNU Linux System that acts as a
-    <firstterm>bridge</firstterm>. Bridges are layer-2 devices in the OSI
+    <firstterm>bridge</firstterm>. Bridges are layer 2 devices in the OSI
     model (think of a bridge as an ethernet switch).</para>
 
     <para>Some differences between routers and bridges are:</para>
@@ -60,7 +60,7 @@
     <orderedlist>
       <listitem>
         <para>Routers determine packet destination based on the destination IP
-        address while bridges route traffic based on the destination MAC
+        address, while bridges route traffic based on the destination MAC
         address in the ethernet frame.</para>
       </listitem>
 
@@ -143,8 +143,8 @@
 
     <para>The following diagram shows a typical application of a
     bridge/firewall. There is already an existing router in place whose
-    internal interface supports a network and you want to insert a firewall
-    between the router and the systems in the local network. In the example
+    internal interface supports a network, and you want to insert a firewall
+    between the router, and the systems in the local network. In the example
     shown, the network uses RFC 1918 addresses but that is not a requirement;
     the bridge would work exactly the same if public IP addresses were used
     (remember that the bridge doesn't deal with IP addresses).</para>
@@ -158,7 +158,7 @@
       <listitem>
         <para>The Shorewall system (the Bridge/Firewall) has only a single IP
         address even though it has two ethernet interfaces! The IP address is
-        configured on the bridge itself rather than on either of the network
+        configured on the bridge itself, rather than on either of the network
         cards.</para>
       </listitem>
 
@@ -207,7 +207,7 @@
     url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
 
     <para>Unfortunately, many Linux distributions don't have good bridge
-    configuration tools and the network configuration GUIs don't detect the
+    configuration tools, and the network configuration GUIs don't detect the
     presence of bridge devices. Here is an excerpt from a Debian
     <filename>/etc/network/interfaces</filename> file for a two-port bridge
     with a static IP address:</para>
@@ -356,8 +356,8 @@ exit 0</programlisting></para>
 
     <para>Axel Westerhold has contributed this example of configuring a bridge
     with a static IP address on a Fedora System (Core 1 and Core 2 Test 1).
-    Note that these files also configure the bridge itself so there is no need
-    for a separate bridge config script.</para>
+    Note that these files also configure the bridge itself, so there is no
+    need for a separate bridge config script.</para>
 
     <blockquote>
       <para><filename>/etc/sysconfig/network-scripts/ifcfg-br0:</filename></para>
@@ -536,7 +536,7 @@ net         all         DROP          info
 all         all         REJECT        info
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
-    <para>Only the bridge device itself is configured with an IP address so
+    <para>Only the bridge device itself is configured with an IP address, so
     only that device is defined to Shorewall in
     <filename>/etc/shorewall/interfaces</filename>:</para>
 
@@ -571,8 +571,8 @@ br0             192.168.1.0/24  routeback
     <title>Combination Router/Bridge</title>
 
     <para>A system running Shorewall doesn't have to be exclusively a bridge
-    or a router -- it can act as both. Here's an example:<graphic
-    fileref="images/bridge2.png" /></para>
+    or a router -- it can act as both, which is also know as a brouter. Here's
+    an example:<graphic fileref="images/bridge2.png" /></para>
 
     <para>This is basically the same setup as shown in the <ulink
     url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> with the

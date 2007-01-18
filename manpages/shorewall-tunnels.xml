@@ -53,23 +53,25 @@
         <listitem>
           <para>Types are as follows:</para>
 
-          <programlisting>        <emphasis role="bold">ipsec</emphasis>            - IPv4 IPSEC
-        <emphasis role="bold">ipsecnat</emphasis>         - IPv4 IPSEC with NAT-Traversal (UDP port 4500 encapsulation)
-        <emphasis role="bold">ipip</emphasis>             - IPv4 encapsulated in IPv4 (Protocol 4)
-        <emphasis role="bold">gre</emphasis>              - Generalized Routing Encapsulation (Protocol 47)
-        <emphasis role="bold">pptpclient</emphasis>       - PPTP Client runs on the firewall
-        <emphasis role="bold">pptpserver</emphasis>       - PPTP Server runs on the firewall
-        <emphasis role="bold">openvpn</emphasis>          - OpenVPN in point-to-point mode
-        <emphasis role="bold">openvpnclient</emphasis>    - OpenVPN client runs on the firewall
-        <emphasis role="bold">openvpnserver</emphasis>    - OpenVPN server runs on the firewall
-        <emphasis role="bold">generic</emphasis>          - Other tunnel type</programlisting>
+          <programlisting>        <emphasis role="bold">ipsec</emphasis>         - IPv4 IPSEC
+        <emphasis role="bold">ipsecnat</emphasis>      - IPv4 IPSEC with NAT Traversal (UDP port 4500 encapsulation)
+        <emphasis role="bold">ipip</emphasis>          - IPv4 encapsulated in IPv4 (Protocol 4)
+        <emphasis role="bold">gre</emphasis>           - Generalized Routing Encapsulation (Protocol 47)
+        <emphasis role="bold">pptpclient</emphasis>    - PPTP Client runs on the firewall
+        <emphasis role="bold">pptpserver</emphasis>    - PPTP Server runs on the firewall
+        <emphasis role="bold">openvpn</emphasis>       - OpenVPN in point-to-point mode
+        <emphasis role="bold">openvpnclient</emphasis> - OpenVPN client runs on the firewall
+        <emphasis role="bold">openvpnserver</emphasis> - OpenVPN server runs on the firewall
+        <emphasis role="bold">generic</emphasis>       - Other tunnel type</programlisting>
 
           <para>If the type is <emphasis role="bold">ipsec</emphasis>, it may
           be followed by <emphasis role="bold">:noah</emphasis> to indicate
-          that the Authentication Header protocol (51) is not used by the
-          tunnel. Given that nat-traversal only support ESP (protocol 50),
-          <emphasis role="bold">ipsecnat</emphasis> tunnels don't need a
-          <emphasis role="bold">noah</emphasis> option.</para>
+          that the Authentication Headers protocol (51) is not used by the
+          tunnel. NAT traversal is only supported with ESP (protocol 50) so
+          <emphasis role="bold">ipsecnat</emphasis> tunnels don't require a
+          <emphasis role="bold">noah</emphasis> option (<emphasis
+          role="bold">ipsecnat:noah</emphasis> may be specified but is
+          redundant).</para>
 
           <para>If type is <emphasis role="bold">openvpn</emphasis>, <emphasis
           role="bold">openvpnclient</emphasis> or <emphasis

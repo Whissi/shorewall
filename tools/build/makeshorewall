@@ -504,15 +504,27 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	    VPN.htm
 	    whitelisting_under_shorewall.htm"
 
+	NOTOC="
+            Documentation_Index.xml
+            ECN.xml
+            fallback.xml
+            GettingStarted.xml
+            IPP2P.xml
+            ping.xml
+            ProxyARP.xml
+            shorewall_features.xml
+            shorewall_prerequisites.xml
+            SimpleBridge.xml"
+
 	for file in shorewall-docs-xml-$VERSION/*.xml; do
 	    a=$(basename $file)
 	    b=${a%.*}
 	    list_search $b.htm $HTMFILES && b=$b.htm || b=$b.html
 	    f="shorewall-docs-html-$VERSION/$b"
-
+	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''" || GENTOC=
 	    report "Converting $DIR/$file from XML to HTML ($DIR/$f) ..."
 
-	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $file
+	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC -param toc.section.depth 3 $STYLESHEET $file
 	done
 
 	progress_message "Copying images to $DIR/$HTMLDIR/images ..."

@@ -590,6 +590,23 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
   </section>
 
   <section>
+    <title>Blacklisting</title>
+
+    <section id="faq63">
+      <title>(FAQ 63) I just blacklisted IP address 206.124.146.176 and I can
+      still ping it. What did I do wrong?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: Nothing.</para>
+
+      <para>Blacklisting an IP address blocks incoming traffic from that IP
+      address. And if you set BLACKLISTNEWONLY=Yes in shorewall.conf, then
+      only new connections <emphasis role="bold">from</emphasis> that address
+      are disallowed; traffic from that address that is part of an established
+      connection (such as ping replies) is allowed.</para>
+    </section>
+  </section>
+
+  <section>
     <title>Netmeeting/MSN</title>
 
     <section id="faq3">

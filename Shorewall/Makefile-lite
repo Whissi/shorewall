@@ -42,6 +42,10 @@ HOST = gateway
 #
 LITEDIR = /var/lib/shorewall-lite
 #
+# Set this if the remote system has a non-standard modules directory
+#
+MODULESDIR=
+#
 # Default target is the firewall script
 #
 ################################################################################
@@ -52,7 +56,7 @@ all: firewall
 # Only generate the capabilities file if it doesn't already exist
 #
 capabilities: 
-	ssh root@$(HOST) "/sbin/shorewall-lite show -f capabilities > $(LITEDIR)/capabilities"
+	ssh root@$(HOST) "MODULESDIR=$(MODULESDIR) /usr/share/shorewall-lite/shorecap > $(LITEDIR)/capabilities"
 	scp root@$(HOST):$(LITEDIR)/capabilities .
 #
 # Compile the firewall script. Using the 'wildcard' function causes "*" to be expanded so that

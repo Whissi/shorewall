@@ -382,6 +382,10 @@ HOST = gateway
 #
 LITEDIR = /var/lib/shorewall-lite
 #
+# Set this if the remote system has a non-standard modules directory
+#
+MODULESDIR=
+#
 # Default target is the firewall script
 #
 ################################################################################
@@ -392,7 +396,7 @@ all: firewall
 # Only generate the capabilities file if it doesn't already exist
 #
 capabilities: 
-        ssh root@$(HOST) "/sbin/shorewall-lite show -f capabilities &gt; $(LITEDIR)/capabilities"
+        ssh root@$(HOST) "MODULESDIR=$(MODULESDIR) /usr/share/shorewall-lite/shorecap &gt; $(LITEDIR)/capabilities"
         scp root@$(HOST):$(LITEDIR)/capabilities .
 #
 # Compile the firewall script. Using the 'wildcard' function causes "*" to be expanded so that
@@ -644,7 +648,7 @@ clean:
           changes and you need to create a new capabilities file, do the
           following:</para>
 
-          <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
+          <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
 
           <para>Or, if you are running Shorewall 3.2.6 or later, simply use
@@ -721,6 +725,10 @@ MANGLE_FORWARD                  # Mangle table has FORWARD chain</programlisting
         <para><command>shorewall-lite show -f capabilities &gt;
         capabilities</command></para>
       </blockquote></para>
+
+    <para>Note that unlike the shorecap program, the <command>show
+    capabilities</command> command shows the kernel's current capabilities; it
+    does not attempt to load additional kernel modules.</para>
   </section>
 
   <section>

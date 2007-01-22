@@ -941,6 +941,11 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
+    if [ -f $directory/shorewall.conf ]; then
+	litedir=$(grep '^\s*LITEDIR=' $directory/shorewall.conf | tail -n 1)
+	[ -n "$litedir" ] && LITEDIR=${litedir#*=}
+    fi
+
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
 	capabilities=$(find_file capabilities)
@@ -948,8 +953,15 @@ reload_command() # $* = original arguments less the command.
     fi
 
     if [ -n "$getcaps" ]; then
+	if [ -f $directory/shorewall.conf ]; then
+	    MODULESDIR=$(grep '^\s*MODULESDIR=' $directory/shorewall.conf | tail -n 1)
+	    MODULESDIR=${MODULESDIR#*=}
+	    IPTABLES=$(grep '^\s*IPTABLES=' $directory/shorewall.conf | tail -n 1)
+	    IPTABLES=${IPTABLES#*=}
+	fi
+
 	progress_message "Getting Capabilities on system $system..."
-	if ! ssh ${root}@${system} "/sbin/shorewall-lite show -f capabilities > ${LITEDIR}/capabilities" || \
+	if ! ssh ${root}@${system} "MODULESDIR=$MODULESDIR IPTABLES=$IPTABLES /usr/share/shorewall-lite/shorecap > ${LITEDIR}/capabilities" || \
 	   ! scp ${root}@$system:${LITEDIR}/capabilities $directory; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi

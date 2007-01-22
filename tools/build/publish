@@ -93,9 +93,7 @@ while [ $# -gt 0 ]; do
 		f="$WEBSITE/$b"
 	    fi
 
-	    GENTOC=
-
-	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''"
+	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''" || GENTOC=
 
 	    echo "Converting $1 from XML to HTML ($b) ..."
 

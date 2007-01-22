@@ -3208,11 +3208,7 @@ rules_chain() # $1 = source zone, $2 = destination zone
 #   $dport       = destination port selector
 #
 add_blacklist_rule() {
-    if [ -n "$BLACKLIST_LOGLEVEL" ]; then
-	log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  $(fix_bang $source $proto $dport)
-    fi
-
-    run_iptables2 -A blacklst $source $proto $dport -j $disposition
+    run_iptables2 -A blacklst $source $proto $dport -j $target
 }
 
 #
@@ -3299,10 +3295,13 @@ process_blacklist()
 {
     local disposition=$BLACKLIST_DISPOSITION
     local f=$(find_file blacklist)
+    local target
 
     if [ -s $TMP_DIR/blacklist ]; then
 
 	[ "$disposition" = REJECT ] && disposition=reject
+
+	[ -n "$BLACKLIST_LOGLEVEL" ] && target=blacklog || target=$disposition
 
 	progress_message2 "Compiling $f..."
 
@@ -3314,7 +3313,7 @@ load_blacklist()
 {
 __EOF__
 	INDENT="    "
-	
+
 	while read networks protocol ports; do
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
@@ -3336,6 +3335,17 @@ setup_blacklist() {
 	progress_message2 "$DOING Blacklisting..."
 
 	createchain blacklst no
+
+	if [ -n "$BLACKLIST_LOGLEVEL" ]; then
+	    createchain blacklog no
+	    log_rule_limit $BLACKLIST_LOGLEVEL blacklog blacklst $BLACKLIST_DISPOSITION "$LOGLIMIT" "" -A
+	    
+	    if [ $BLACKLIST_DISPOSITION = REJECT ]; then
+		run_iptables -A blacklog -j reject
+	    else
+		run_iptables -A blacklog -j $BLACKLIST_DISPOSITION
+	    fi
+	fi
 
 	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 

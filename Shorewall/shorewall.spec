@@ -237,11 +237,13 @@ fi
 %attr(0444,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-masq.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-nat.5.gz
+%attr(0444,root,root) %{_mandir}/man5/shorewall-nesting.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-netmap.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-params.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-policy.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-providers.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-proxyarp.5.gz
+%attr(0444,root,root) %{_mandir}/man5/shorewall-rfc1918.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-route_rules.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-routestopped.5.gz
 %attr(0444,root,root) %{_mandir}/man5/shorewall-rules.5.gz

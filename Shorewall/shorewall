@@ -941,10 +941,9 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    if [ -f $directory/shorewall.conf ]; then
-	litedir=$(grep '^\s*LITEDIR=' $directory/shorewall.conf | tail -n 1)
-	[ -n "$litedir" ] && LITEDIR=${litedir#*=}
-    fi
+    litedir=$(ssh ${root}@${system} /sbin/shorewall-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+
+    [ -n "$litedir" ] && LITEDIR=$litedir
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)

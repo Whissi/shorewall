@@ -30,10 +30,6 @@ Release Highlights
 
 Problems Corrected in 3.4.0 RC 1
 
-None.
-
-Other Changes in 3.4.0 RC 1
-
 1)  While most distributions store the Shorewall Lite compiled program
     in /var/lib/shorewall/, Shorewall includes features that allow that
     location to be changed on a per-distribution basis. The default for
@@ -51,12 +47,13 @@ Other Changes in 3.4.0 RC 1
     from the firewall system so it is possible for that command to
     upload the compiled script to the wrong directory.
 
-    To work around this problem, a LITEDIR option has been added to
-    shorewall.conf. By setting that variable appropriately in each
-    export directory, you can cause the "shorewall [re]load" command to
-    upload the script to the correct directory on each firewall system.
-    Note that the LITEDIR setting is commented out in shorewall.conf so
-    you must uncomment it if you wish to assign it a value.
+    To work around this problem, Shorewall now determines the LITEDIR
+    setting on the firewall system and uses that setting for uploading
+    the compiled script.
+
+Other Changes in 3.4.0 RC 1
+
+None.
 
 Migration Considerations:
 

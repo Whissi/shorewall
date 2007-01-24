@@ -553,6 +553,26 @@
       </varlistentry>
 
       <varlistentry>
+        <term>LITEDIR=<replaceable>pathname</replaceable></term>
+
+        <listitem>
+          <para>There is lack of agreement about where exactly in the file
+          hierarchy the firewall script in Shorewall Lite systems should be
+          stored. To allow everyone's opinion to prevail (and to prevent the
+          Shorewall author from going crazy), the LITEDIR option allows
+          distributions to decide where the file will be stored on Shorewall
+          Lite systems under the distribution.</para>
+
+          <para>If you have a Shorewall Lite system that uses a directory
+          other than /var/lib/shorewall-lite then in that system's export
+          directory, you will want to uncomment and set LITEDIR appropriately
+          for that distribution. You can determine the appropriate setting by
+          using the <emphasis role="bold">shorewall show config</emphasis>
+          command on the Shorewall Lite system.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">LOG_MARTIANS=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 

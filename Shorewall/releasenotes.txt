@@ -1,4 +1,4 @@
-Shorewall 3.4.0 Beta 3
+Shorewall 3.4.0 RC1
 
 Release Highlights
 
@@ -28,41 +28,35 @@ Release Highlights
     /etc/shorewall/route_rules and reverses those changes when
     appropriate.
 
-Problems Corrected in 3.4.0 Beta 3
+Problems Corrected in 3.4.0 RC 1
 
-1)  Shorewall now supports VLAN interfaces with names of the form
-    vlan@ethX.
+None.
 
-2)  Previously, "ipp2p:udp" was incorrectly rejected in the PROTO
-    column of an action definition.
+Other Changes in 3.4.0 RC 1
 
-3)  Previously, if an invalid DISPOSITION was specified in a record in
-    /etc/shorewall/maclist, then a confusing error message would
-    result.
+1)  While most distributions store the Shorewall Lite compiled program
+    in /var/lib/shorewall/, Shorewall includes features that allow that
+    location to be changed on a per-distribution basis. The default for
+    a particular distribution may be determined by the command
+    "shorewall[-lite] show config".
 
-    Example:
+        teastep@lists:~/shorewall/trunk$ shorewall show config
+	Default CONFIG_PATH is /etc/shorewall:/usr/share/shorewall
+	LITEDIR is /var/lib/shorewall-lite
+	teastep@lists:~/shorewall/trunk$
 
-    /etc/shorewall/mac:
+    The LITEDIR setting is the location where the compiled script
+    should be placed. Unfortunately, the "shorewall [re]load" command
+    uses the setting on the administrative system rather than the one
+    from the firewall system so it is possible for that command to
+    upload the compiled script to the wrong directory.
 
-	ALOW:info	eth0	02:0C:03:04:05:06
-
-    Error message:
-
-	ERROR: No hosts on ALOW:info have the maclist option specified
-
-    The new error message is:
-
-        ERROR: Invalid DISPOSITION (ALOW:info) in rule "ALOW:info eth0
-        02:0C:03:04:05:06"
-
-Other Changes in 3.4.0 Beta 3
-
-1)  Previously, 'ipsecnat' tunnels allowed AH traffic by default
-    (unless 'isecnat:noah' was given). Given that AH is incompatible
-    with nat-traversal, 'ipsecnat' now implies 'ipsecnat:noah'.
-
-2)  Shorewall now generates half as many rules as previously in the
-    'blacklst' chain when BLACKLIST_LOGLEVEL is specified.
+    To work around this problem, a LITEDIR option has been added to
+    shorewall.conf. By setting that variable appropriately in each
+    export directory, you can cause the "shorewall [re]load" command to
+    upload the script to the correct directory on each firewall system.
+    Note that the LITEDIR setting is commented out in shorewall.conf so
+    you must uncomment it if you wish to assign it a value.
 
 Migration Considerations:
 
@@ -667,6 +661,12 @@ New Features in Shorewall 3.4:
     The exit status is zero if <interface> comes up within <seconds>
     seconds and non-zero otherwise.
 
+29) Previously, 'ipsecnat' tunnels allowed AH traffic by default
+    (unless 'isecnat:noah' was given). Given that AH is incompatible
+    with nat-traversal, 'ipsecnat' now implies 'ipsecnat:noah'.
+
+30) Shorewall now generates half as many rules as previously in the
+    'blacklst' chain when BLACKLIST_LOGLEVEL is specified.
 
 Problems Corrected in 3.4.0 Beta 1.
 
@@ -695,3 +695,32 @@ Problems Corrected in 3.4.0 Beta 2
     has resulted in a similar change to the actual file --
     /etc/shorewall-lite/shorewall.conf has been renamed
     /etc/shorewall-lite/shorewall-lite.conf.
+
+Problems Corrected in 3.4.0 Beta 3
+
+1)  Shorewall now supports VLAN interfaces with names of the form
+    vlan@ethX.
+
+2)  Previously, "ipp2p:udp" was incorrectly rejected in the PROTO
+    column of an action definition.
+
+3)  Previously, if an invalid DISPOSITION was specified in a record in
+    /etc/shorewall/maclist, then a confusing error message would
+    result.
+
+    Example:
+
+    /etc/shorewall/mac:
+
+	ALOW:info	eth0	02:0C:03:04:05:06
+
+    Error message:
+
+	ERROR: No hosts on ALOW:info have the maclist option specified
+
+    The new error message is:
+
+        ERROR: Invalid DISPOSITION (ALOW:info) in rule "ALOW:info eth0
+        02:0C:03:04:05:06"
+
+

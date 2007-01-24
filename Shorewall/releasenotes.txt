@@ -57,6 +57,12 @@ None.
 
 Migration Considerations:
 
+If you are migrating from a Shorewall version earlier than 3.2.0 then
+please see the 3.2.8 release notes for additional migration
+information.
+
+http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
+
 1)  Shorewall supports the notion of "default actions". A default
     action defines a set of rules that are applied before a policy is
     enforced. Default actions accomplish two goals:
@@ -150,10 +156,13 @@ New Features in Shorewall 3.4:
       USE_ACTIONS=No in /etc/shorewall/shorewall.conf.
 
     - lib.base. The base Shorewall library required by all programs,
-      including compiled firewall scripts. 
+      including compiled firewall scripts. This library is also
+      released as part of Shorewall Lite and is installed in
+      /usr/share/shorewall-lite/.
 
     - lib.cli. Library containing the code common to /sbin/shorewall,
-      /sbin/shorewall-lite.
+      /sbin/shorewall-lite. This library is also released as part of
+      Shorewall Lite and is installed in /usr/share/shorewall-lite/.
 
     - lib.config. Library containing the code that is common to
       /usr/share/shorewall/compiler and /usr/share/shorewall/firewall. 
@@ -189,6 +198,9 @@ New Features in Shorewall 3.4:
 
     - Omitting the macro files.
     - Omitting all unused extension scripts.
+
+    See http://www.shorewall.net/Modularization.html for additional
+    details.
 
 2)  As hinted in the previous bullet, there is a new USE_ACTIONS option
     in /etc/shorewall/shorewall.conf. Shorewall actions can be very
@@ -302,7 +314,7 @@ New Features in Shorewall 3.4:
     than 5 but it may be greater than 5). For example, setting
     LOGFORMAT="FW:%s:%s:" will allow zone names of up to 8 characters.
 
-6)  Netfilter provides support for attachmend of comments to Netfilter
+6)  Netfilter provides support for attachment of comments to Netfilter
     rules. Comments can be up to 255 bytes in length and are visible
     using the "shorewall show <chain>", "shorewall show nat",
     "shorewall show mangle" and "shorewall dump" commands. Comments are
@@ -539,11 +551,13 @@ New Features in Shorewall 3.4:
 	      shorewall-maclist(5)
 	      shorewall-masq(5)
 	      shorewall-nat(5)
+	      shorewall-nesting(5)
 	      shorewall-netmap(5)
 	      shorewall-params(5)
 	      shorewall-policy(5)
 	      shorewall-providers(5)
 	      shorewall-proxyarp(5)
+	      shorewall-rfc1918(5)
 	      shorewall-route_rules(5)
 	      shorewall-routestopped(5)
 	      shorewall-rules(5)

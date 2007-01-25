@@ -267,6 +267,7 @@ load_kernel_modules()
 	MODULES=$(lsmod | cut -d ' ' -f1)
 	progress_message "Loading Modules..."
 	. $modules
+	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 	echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir
 	cp -f $modules ${VARDIR}/.modules
     else

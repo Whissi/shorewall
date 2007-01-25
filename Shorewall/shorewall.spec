@@ -163,6 +163,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Rdate
 %attr(0644,root,root) /usr/share/shorewall/macro.Reject
 %attr(0644,root,root) /usr/share/shorewall/macro.Rsync
+%attr(0644,root,root) /usr/share/shorewall/macro.SixXS
 %attr(0644,root,root) /usr/share/shorewall/macro.SMB
 %attr(0644,root,root) /usr/share/shorewall/macro.SMBBI
 %attr(0644,root,root) /usr/share/shorewall/macro.SMBswat

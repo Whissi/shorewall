@@ -353,6 +353,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    fi
 	done
 	rm *.xml
+	perl -p -i'' -e 's/ \[.*?html\]//g' *.5 *.8
 	cd $DIR
 
 	cd $SHOREWALLLITEDIR
@@ -367,6 +368,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    fi
 	done
 	rm *.xml
+	perl -p -i'' -e 's/ \[.*?html\]//g' *.5 *.8
 	cd $DIR 
     fi	
 

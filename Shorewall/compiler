@@ -660,14 +660,14 @@ setup_forwarding() {
     progress_message2 "Compiling IP Forwarding..."
 
     case "$IP_FORWARDING" in
-    [Oo][Nn])
-	save_progress_message "IP Forwarding Enabled"
-	save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
-	;;
-    [Oo][Ff][Ff])
-	save_progress_message "IP Forwarding Disabled!"
-	save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
-	;;
+	On|on)
+	    save_progress_message "IP Forwarding Enabled"
+	    save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
+	    ;;
+	Off|off)
+	    save_progress_message "IP Forwarding Disabled!"
+	    save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
+	    ;;
     esac
 }
 
@@ -4701,14 +4701,14 @@ __EOF__
     save_command
 
     case "$IP_FORWARDING" in
-    [Oo][Nn])
-	save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
-	save_command "progress_message2 IP Forwarding Enabled"
-	;;
-    [Oo][Ff][Ff])
-	save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
-	save_command "progress_message2 IP Forwarding Disabled!"
-	;;
+	On|on|ON)
+	    save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
+	    save_command "progress_message2 IP Forwarding Enabled"
+	    ;;
+	Off|off|OFF)
+	    save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
+	    save_command "progress_message2 IP Forwarding Disabled!"
+	    ;;
     esac
 
     append_file stopped

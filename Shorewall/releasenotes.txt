@@ -43,13 +43,13 @@ Problems Corrected in 3.4.0 RC 1
 
     The LITEDIR setting is the location where the compiled script
     should be placed. Unfortunately, the "shorewall [re]load" command
-    uses the setting on the administrative system rather than the one
-    from the firewall system so it is possible for that command to
-    upload the compiled script to the wrong directory.
+    prefiously used the setting on the administrative system rather
+    than the one from the firewall system so it was possible for that
+    command to upload the compiled script to the wrong directory.
 
     To work around this problem, Shorewall now determines the LITEDIR
     setting on the firewall system and uses that setting for uploading
-    the compiled script.
+    the compiled script and its companion .conf file.
 
 2)  Previously, IP ranges and ipset names were handled incorrectly in
     the last column of the maclist file with the result that run-time

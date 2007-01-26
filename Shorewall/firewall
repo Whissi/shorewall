@@ -378,14 +378,14 @@ stop_firewall() {
     done
 
     case "$IP_FORWARDING" in
-    [Oo][Nn])
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	progress_message2 "IP Forwarding Enabled"
-	;;
-    [Oo][Ff][Ff])
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	progress_message2 "IP Forwarding Disabled!"
-	;;
+	On|on|ON)
+	    echo 1 > /proc/sys/net/ipv4/ip_forward
+	    progress_message2 "IP Forwarding Enabled"
+	    ;;
+	Off|off|OFF)
+	    echo 0 > /proc/sys/net/ipv4/ip_forward
+	    progress_message2 "IP Forwarding Disabled!"
+	    ;;
     esac
 
     run_user_exit stopped

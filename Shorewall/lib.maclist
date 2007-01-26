@@ -192,12 +192,12 @@ setup_mac_lists() # $1 = Phase Number
 	    if [ -z "$addresses" ]; then
 		[ -n "$level" ] && \
 		    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
-		    run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
+		run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
 	    else
 		for address in $(separate_list $addresses) ; do
 		    [ -n "$level" ] && \
-			log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart -s $address $physdev_part
-			run_iptables2 -A $chain -t $MACLIST_TABLE $macpart -s $address $physdev_part -j $target
+			log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $(match_source_hosts $address) $physdev_part
+		    run_iptables2 -A $chain -t $MACLIST_TABLE $macpart $(match_source_hosts $address) $physdev_part -j $target
 		done
 	    fi
 	done < $TMP_DIR/maclist

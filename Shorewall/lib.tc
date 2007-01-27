@@ -38,7 +38,7 @@
 setup_traffic_shaping()
 {
     local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1 last_device=
-    r2q=10 indent=
+    r2q=10 indent= prefix=1
 
     rate_to_kbit() {
 	local rateunit rate
@@ -184,7 +184,7 @@ setup_traffic_shaping()
 
 	defmark=$(get_defmark_for_dev $device)
 
-	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
+	run_tc qdisc add dev $device root handle $devnum: htb default ${prefix}${defmark}
 
 	save_command "${dev}_mtu=\$(get_device_mtu $device)"
 	run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$${dev}_mtu"
@@ -240,7 +240,7 @@ setup_traffic_shaping()
 	#
 	mark=$(($mark))
 
-	classid=$devnum:1$mark
+	classid=$devnum:${prefix}${mark}
 
 	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
 
@@ -249,7 +249,7 @@ setup_traffic_shaping()
 	save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum"
 	run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
 
-	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
+	run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10
 	#
 	# add filters
 	#
@@ -306,6 +306,8 @@ __EOF__
     INDENT="    "
 
     if [ -s $TMP_DIR/tcdevices ]; then
+	[ $(list_count1 $all_tc_devices) -gt 10 ] && prefix=10
+ 
 	save_progress_message "Setting up Traffic Control..."
 	progress_message2 "$DOING $devfile..."
 

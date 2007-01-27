@@ -122,7 +122,7 @@
         role="bold">LOG</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>|<emphasis
         role="bold">COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>target</emphasis>}<emphasis
+        role="bold">/</emphasis><emphasis>target</emphasis>]}<emphasis
         role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
         role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
         role="bold">!</emphasis></emphasis>][<emphasis
@@ -261,7 +261,9 @@
                 <ulink url="shorewall-zones.html">shorewall-zones</ulink>(5)
                 or in a parent zone of the source or destination zones, then
                 this connection request will be passed to the rules defined
-                for that (those) zone(s).</para>
+                for that (those) zone(s). See <ulink
+                url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for
+                additional information.</para>
               </listitem>
             </varlistentry>
 
@@ -366,8 +368,8 @@
 
             <para>You may also specify <emphasis role="bold">ULOG</emphasis>
             (must be in upper case) as a log level.This will log to the ULOG
-            target for routing to a separate log through use of ulogd
-            (http://www.gnumonks.org/projects/ulogd).</para>
+            target for routing to a separate log through use of ulogd (<ulink
+            url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
 
             <para>Actions specifying logging may be followed by a log tag (a
             string of alphanumeric characters) which is appended to the string
@@ -676,7 +678,7 @@
           numbers or port ranges.</para>
 
           <warning>
-            <para>Unless you really understand TCP/IP, you should leave this
+            <para>Unless you really understand IP, you should leave this
             column empty or place a dash (<emphasis role="bold">-</emphasis>)
             in the column. Most people who try to use this column get it
             wrong.</para>
@@ -738,12 +740,14 @@
           <para>It is also possible to specify a set of addresses then exclude
           part of those addresses. For example, <emphasis
           role="bold">192.168.1.0/24!192.168.1.16/28</emphasis> specifies the
-          addresses 192.168.1.0-182.168.1.15 and
-          192.168.1.32-192.168.1.255.</para>
+          addresses 192.168.1.0-182.168.1.15 and 192.168.1.32-192.168.1.255.
+          See <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
 
-          <para>See http://shorewall.net/PortKnocking.html for an example of
-          using an entry in this column with a user-defined action
-          rule.</para>
+          <para>See <ulink
+          url="../PortKnocking.html">http://shorewall.net/PortKnocking.html</ulink>
+          for an example of using an entry in this column with a user-defined
+          action rule.</para>
         </listitem>
       </varlistentry>
 

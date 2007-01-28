@@ -130,7 +130,7 @@
 
           <para>You may also specify a range of up to 256 IP addresses if you
           want the SNAT address to be assigned from that range in a
-          round-robin range by connection. The range is specified by
+          round-robin fashion by connection. The range is specified by
           <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.</para>
 
           <para>Example: 206.124.146.177-206.124.146.180</para>
@@ -157,21 +157,16 @@
           <programlisting>        192.0.2.4:5000-6000
         :4000-5000</programlisting>
 
-          <para>You can invoke the SAME target using the following in this
-          column:</para>
-
-          <para>SAME:[nodst:]<emphasis>address-range</emphasis>[,<emphasis>address-range</emphasis>...]</para>
-
-          <para>The <emphasis>address-range</emphasis>s may be single
-          addresses or "detect" as described above.</para>
+          <para>You can invoke the SAME target rather than the SNAT target by
+          prefixing the column contents with <option>SAME:</option>.</para>
 
           <para>SAME works like SNAT with the exception that the same local IP
           address is assigned to each connection from a local address to a
           given remote address.</para>
 
-          <para>If the 'nodst:' option is included, then the same source
-          address is used for a given internal system regardless of which
-          remote system is involved.</para>
+          <para>If the <option>nodst:</option> option is included, then the
+          same source address is used for a given internal system regardless
+          of which remote system is involved.</para>
 
           <para>If you want to leave this column empty but you need to specify
           the next column then place a hyphen ("-") here.</para>

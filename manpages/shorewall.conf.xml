@@ -25,9 +25,7 @@
 
     <para>The file consists of Shell comments (lines beginning with '#'),
     blank lines and assignment statements
-    (<emphasis>variable</emphasis>=<emphasis>value</emphasis>). Each
-    variable's setting is preceded by comments that describe the variable and
-    it's effect.</para>
+    (<emphasis>variable</emphasis>=<emphasis>value</emphasis>).</para>
   </refsect1>
 
   <refsect1>
@@ -65,9 +63,10 @@
     messages to syslogd, Shorewall will direct netfilter to log the messages
     via the ULOG target which will send them to a process called 'ulogd'.
     ulogd is available with most Linux distributions (although it probably
-    isn't installed by default). Ulogd is also available from
-    http://www.gnumonks.org/projects/ulogd and can be configured to log all
-    Shorewall message to their own log file</para>
+    isn't installed by default). Ulogd is also available from <ulink
+    url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>
+    and can be configured to log all Shorewall message to their own log
+    file</para>
 
     <para>The following options may be set in shorewall.conf.</para>
 
@@ -215,7 +214,7 @@
 
         <listitem>
           <para>The value of this variable affects Shorewall's stopped state.
-          When ADMINISABSENTMINDES=No, only traffic to/from those addresses
+          When ADMINISABSENTMINDED=No, only traffic to/from those addresses
           listed in <ulink
           url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
           is accepted when Shorewall is stopped. When ADMINISABSENTMINDED=Yes,
@@ -471,8 +470,9 @@
           url="shorewall-zones.html">shorewall-zones</ulink>(5)). Normally,
           you want to have a set of special rules for the subzone and if a
           connection doesn't match any of those subzone-specific rules then
-          you want the parent zone rules and policies to be applied. With
-          IMPLICIT_CONTINUE=Yes, that happens automatically.</para>
+          you want the parent zone rules and policies to be applied; see
+          <ulink url="shorewall-nesting.html">shorewall-nesting</ulink>(5).
+          With IMPLICIT_CONTINUE=Yes, that happens automatically.</para>
 
           <para>If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set,
           then subzones are not subject to this special treatment. With
@@ -549,26 +549,6 @@
           Shorewall. If not specified or if specified as a null value, then
           the iptables executable located using the PATH option is
           used.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>LITEDIR=<replaceable>pathname</replaceable></term>
-
-        <listitem>
-          <para>There is lack of agreement about where exactly in the file
-          hierarchy the firewall script in Shorewall Lite systems should be
-          stored. To allow everyone's opinion to prevail (and to prevent the
-          Shorewall author from going crazy), the LITEDIR option allows
-          distributions to decide where the file will be stored on Shorewall
-          Lite systems under the distribution.</para>
-
-          <para>If you have a Shorewall Lite system that uses a directory
-          other than /var/lib/shorewall-lite then in that system's export
-          directory, you will want to uncomment and set LITEDIR appropriately
-          for that distribution. You can determine the appropriate setting by
-          using the <emphasis role="bold">shorewall show config</emphasis>
-          command on the Shorewall Lite system.</para>
         </listitem>
       </varlistentry>
 
@@ -684,10 +664,10 @@
 
         <listitem>
           <para>These parameters set the match rate and initial burst size for
-          logged packets. Please see the iptables man page for a description
-          of the behavior of these parameters (the iptables option --limit is
-          set by LOGRATE and --limit-burst is set by LOGBURST). If both
-          parameters are set empty, no rate-limiting will occur.</para>
+          logged packets. Please see iptables(8) for a description of the
+          behavior of these parameters (the iptables option --limit is set by
+          LOGRATE and --limit-burst is set by LOGBURST). If both parameters
+          are set empty, no rate-limiting will occur.</para>
 
           <para>Example:</para>
 
@@ -808,13 +788,13 @@
           may set MARK_IN_FORWARD_CHAIN=Yes to cause the marking specified in
           the tcrules file to occur in that chain rather than in the
           PREROUTING chain. This permits you to mark inbound traffic based on
-          its destination address when SNAT or Masquerading are in use. To
-          determine if your kernel has a FORWARD chain in the mangle table,
-          use the <emphasis role="bold">/sbin/shorewall show mangle</emphasis>
-          command; if a FORWARD chain is displayed then your kernel will
-          support this option. If this option is not specified or if it is
-          given the empty value (e.g., MARK_IN_FORWARD_CHAIN="") then
-          MARK_IN_FORWARD_CHAIN=No is assumed.</para>
+          its destination address when DNAT is in use. To determine if your
+          kernel has a FORWARD chain in the mangle table, use the <emphasis
+          role="bold">/sbin/shorewall show mangle</emphasis> command; if a
+          FORWARD chain is displayed then your kernel will support this
+          option. If this option is not specified or if it is given the empty
+          value (e.g., MARK_IN_FORWARD_CHAIN="") then MARK_IN_FORWARD_CHAIN=No
+          is assumed.</para>
         </listitem>
       </varlistentry>
 

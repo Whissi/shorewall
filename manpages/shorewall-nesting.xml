@@ -24,7 +24,7 @@
 
     <para>In <ulink url="shorewall-zones.html">shorewall-zones</ulink>(5), a
     zone may be declared to be a sub-zone of one or more other zones using the
-    above syntax. </para>
+    above syntax.</para>
 
     <para>Where zones are nested, the CONTINUE policy in <ulink
     url="shorewall-policy.html">shorewall-policy</ulink>(5) allows hosts that
@@ -67,7 +67,9 @@
     requests should first be processed under rules where the source zone is
     sam and if there is no match then the connection request should be treated
     under rules where the source zone is net. It is important that this policy
-    be listed BEFORE the next policy (net to all).</para>
+    be listed BEFORE the next policy (net to all). You can have this policy
+    generated for you automatically by using the IMPLICIT_CONTINUE option in
+    <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
     <para>Partial <filename>/etc/shorewall/rules</filename>:</para>
 

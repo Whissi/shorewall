@@ -22,7 +22,8 @@
     <title>Description</title>
 
     <para>This file defines the high-level policy for connections between
-    zones defined in /etc/shorewall/zones.</para>
+    zones defined in <ulink
+    url="shorewall-zones.html">shorewall-zones</ulink>(5).</para>
 
     <important>
       <para>The order of entries in this file is important</para>
@@ -57,8 +58,9 @@
         role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
 
         <listitem>
-          <para>Source zone. Must be the name of a zone defined in
-          /etc/shorewall/zones, $FW or "all".</para>
+          <para>Source zone. Must be the name of a zone defined in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW or
+          "all".</para>
         </listitem>
       </varlistentry>
 
@@ -68,8 +70,9 @@
         role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
 
         <listitem>
-          <para>Destination zone. Must be the name of a zone defined in
-          /etc/shorewall/zones, $FW or "all"</para>
+          <para>Destination zone. Must be the name of a zone defined in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW or
+          "all"</para>
         </listitem>
       </varlistentry>
 
@@ -79,13 +82,44 @@
         role="bold">DROP</emphasis>|<emphasis
         role="bold">REJECT</emphasis>|<emphasis
         role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">QUEUE</emphasis>|<emphasis
         role="bold">NONE</emphasis>}[<emphasis
         role="bold">:</emphasis>{<emphasis>default-action-or-macro</emphasis>|<emphasis
         role="bold">None</emphasis>}]</term>
 
         <listitem>
-          <para>Policy if no match from the rules file is found. Must be
-          "ACCEPT", "DROP", "REJECT", "CONTINUE" or "NONE".</para>
+          <para>Policy if no match from the rules file is found.</para>
+
+          <para>If the policy is other than CONTINUE or NONE then the policy
+          may be followed by ":" and one of the following:</para>
+
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>The word "None" or "none". This causes any default action
+              defined in <ulink
+              url="shorewall.conf.html">shorewall.conf</ulink>(5) to be
+              omitted for this policy.</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of an action (requires that USE_ACTIONS=Yes in
+              <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5)).
+              That action will be invoked before the policy is
+              enforced.</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of a macro. The rules in that macro will be
+              applied before the policy is enforced. This does not require
+              USE_ACTIONS=Yes.</para>
+            </listitem>
+          </orderedlist>
+
+          <blockquote>
+            <programlisting></programlisting>
+
+            <para>Possible policies are:</para>
+          </blockquote>
 
           <variablelist>
             <varlistentry>
@@ -110,29 +144,15 @@
               <listitem>
                 <para>For TCP, send RST. For all other, send an "unreachable"
                 ICMP.</para>
+              </listitem>
+            </varlistentry>
 
-                <para>If the policy is DROP or REJECT then the policy may be
-                followed by ":" and one of the following:</para>
+            <varlistentry>
+              <term>QUEUE</term>
 
-                <orderedlist numeration="loweralpha">
-                  <listitem>
-                    <para>The word "None" or "none". This causes any default
-                    action defined in /etc/shorewall/shorewall.conf to be
-                    omitted for this policy.</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>The name of an action (requires that USE_ACTIONS=Yes
-                    in shorewall.conf). That action will be invoked before the
-                    policy is enforced.</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>The name of a macro. The rules in that macro will be
-                    applied before the policy is enforced. This does not
-                    require USE_ACTIONS=Yes.</para>
-                  </listitem>
-                </orderedlist>
+              <listitem>
+                <para>Queue the request for a user-space application such as
+                Snort-inline.</para>
               </listitem>
             </varlistentry>
 
@@ -180,7 +200,8 @@
 
           <para>You may also specify ULOG (must be in upper case). This will
           log to the ULOG target and will send to a separate log through use
-          of ulogd (http://www.gnumonks.org/projects/ulogd).</para>
+          of ulogd (<ulink
+          url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
 
           <para>If you don't want to log but need to specify the following
           column, place "-" here.</para>
@@ -223,14 +244,14 @@
       </listitem>
     </orderedlist>
 
-    <programlisting>#SOURCE         DEST            POLICY          LOG           BURST:LIMIT
-#                                               LEVEL
-loc             net             ACCEPT
-net             all             DROP            info
-#
-# THE FOLLOWING POLICY MUST BE LAST
-#
-all             all             REJECT          info</programlisting>
+    <programlisting>        #SOURCE         DEST            POLICY          LOG           BURST:LIMIT
+        #                                               LEVEL
+        loc             net             ACCEPT
+        net             all             DROP            info
+        #
+        # THE FOLLOWING POLICY MUST BE LAST
+        #
+        all             all             REJECT          info</programlisting>
   </refsect1>
 
   <refsect1>

@@ -59,12 +59,14 @@ loc     eth2            -</programlisting>
 
         <listitem>
           <para>Name of interface. Each interface may be listed only once in
-          this file. You may NOT specify the name of an alias (e.g., eth0:0)
-          here; see <ulink
+          this file. You may NOT specify the name of a "virtual" interface
+          (e.g., eth0:0) here; see <ulink
           url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
 
-          <para>You may specify wildcards here. For example, if you want to
-          make an entry that applies to all PPP interfaces, use 'ppp+'.</para>
+          <para>You may use wildcards here by specifying a prefix followed by
+          the plus sign ("+"). For example, if you want to make an entry that
+          applies to all PPP interfaces, use 'ppp+'; that would match ppp1,
+          ppp2, …</para>
 
           <para>There is no need to define the loopback interface (lo) in this
           file.</para>
@@ -230,7 +232,10 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>If specified, indicates that Shorewall should include
                 rules that allow filtering traffic arriving on this interface
-                back out that same interface.</para>
+                back out that same interface. This option is also required
+                when you have used a wildcard in the INTERFACE column if you
+                want to allow traffic between the interfaces that match the
+                wildcard.</para>
               </listitem>
             </varlistentry>
 

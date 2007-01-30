@@ -96,20 +96,28 @@ progress_message_and_save()
 }
 
 #
-# If a filename is passed, then echo the contents of that file indented by $INDENT and perform INCLUDE processing.
-# If no filename is passed, then echo the contents of STDIN intended by $INDENT but do not perform INCLUDE processing.
+# Echo the contents of the passed file indented by $INDENT
 #
 indent() {
     if [ -n "$INDENT" ]; then
-	if [ $# -ge 1 ]; then
-	    read_file $1 0 | eval sed \'s\/^/"$INDENT"\/\' -
+	if [ -n "$HAVEAWK" ]; then
+	    eval awk \''BEGIN { indent=1; }; /^\s*$/ { print ""; indent=1; next; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
 	else
-	    eval sed \'s\/^/"$INDENT"\/\'
+	    eval sed \'s\/^/"$INDENT"\/\' $1
 	fi
-    elif [ $# -ge 1 ]; then
-	read_file $1 0
     else
-	cat
+	cat $1
+    fi
+}
+
+#
+# Echo the contents of the passed file indented by $INDENT and perform INCLUDE processing.
+#
+indent1() {
+    if [ -n "$INDENT" ]; then
+	read_file $1 0 | eval sed \'s\/^/"$INDENT"\/\' -
+    else
+	read_file $1 0
     fi
 }
 
@@ -129,7 +137,7 @@ append_file() # $1 = File Name
 	*)
 	    if [ -f $user_exit ]; then
 		save_progress_message "Processing $user_exit ..."
-		indent $user_exit >&3
+		indent1 $user_exit >&3
 		save_command
 	    fi
 	    ;;

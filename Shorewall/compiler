@@ -96,14 +96,15 @@ progress_message_and_save()
 }
 
 #
-# Echo the contents of the passed file indented by $INDENT
+# If a filename is passed, then echo the contents of that file indented by $INDENT and perform INCLUDE processing.
+# If no filename is passed, then echo the contents of STDIN intended by $INDENT but do not perform INCLUDE processing.
 #
 indent() {
     if [ -n "$INDENT" ]; then
 	if [ $# -ge 1 ]; then
 	    read_file $1 0 | eval sed \'s\/^/"$INDENT"\/\' -
 	else
-	    eval sed \'s\/^/"$INDENT"\/\' $1
+	    eval sed \'s\/^/"$INDENT"\/\'
 	fi
     elif [ $# -ge 1 ]; then
 	read_file $1 0

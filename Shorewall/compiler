@@ -107,9 +107,24 @@ indent() {
 }
 
 #
-# Echo the contents of the passed file indented by $INDENT and perform INCLUDE processing.
+# Echo the contents of the passed file indented by $INDENT while handling line continuation
 #
 indent1() {
+    if [ -n "$INDENT" ]; then
+	if [ -n "$HAVEAWK" ]; then
+	    eval awk \''BEGIN { indent=1; }; /^[[:space:]]*$/ { print ""; indent=1; next; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
+	else
+	    eval sed \'s\/^/"$INDENT"\/\' $1
+	fi
+    else
+	cat $1
+    fi
+}
+
+#
+# Echo the contents of the passed file indented by $INDENT and perform INCLUDE processing.
+#
+indent2() {
     if [ -n "$INDENT" ]; then
 	read_file $1 0 | eval sed \'s\/^/"$INDENT"\/\'
     else
@@ -138,6 +153,20 @@ append_file() # $1 = File Name
 	    fi
 	    ;;
     esac
+}
+
+#
+# Append a file to the compiler's output with indentation and INCLUDE expansion.
+#
+append_file1() # $1 = File Name
+{
+    local user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	save_progress_message "Processing $user_exit ..."
+	indent2 $user_exit >&3
+	save_command
+    fi
 }
 
 #
@@ -5086,7 +5115,7 @@ __EOF__
 __EOF__
     fi
 
-    append_file params
+    append_file1 params
 
     cat >&3 << __EOF__
 

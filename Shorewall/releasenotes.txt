@@ -73,8 +73,13 @@ Problems Corrected in 3.4.0 RC1
     This problem has been corrected in RC1.
 
 4)  Previously, if "INCLUDE <filename>" appeared in
-    /etc/shorewall/params or in an extension script then run-time
-    errors occurred.
+    /etc/shorewall/params then run-time errors occurred.
+
+    As part of the fix for this problem, the mechanism by which
+    /etc/shorewall/params is copied into the compiler output was
+    changed. As a result, extra white space is removed from the text
+    during the copy operation so code in /etc/shorewall/params should
+    not depend on precise white-space, even in quoted strings.
 
 Other Changes in 3.4.0 RC 1
 

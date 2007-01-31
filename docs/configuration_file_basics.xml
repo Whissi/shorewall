@@ -709,6 +709,15 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
         <para>The names of any functions or variables declared should begin
         with an upper case letter.</para>
       </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall version 3.2.9, the
+        <filename>/etc/shorewall/params</filename> file is pre-processed in
+        such a way that extra white-space is compressed from the file as it is
+        being copied into the generated compiler output. So the code in
+        /etc/shorewall/params should not depend on precise white-space,
+        including whitespace within quoted strings.</para>
+      </listitem>
     </orderedlist>
 
     <para>One possible use of this feature is to compensate for recent Linux

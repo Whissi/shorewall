@@ -1,0 +1,749 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall и подключение к Internet по нескольким каналам </title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2005</year>
+
+      <year>2006</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <copyright>
+      <year>2007</year>
+
+      <holder>Russian Translation: Grigory Mokhin</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Этот документ разрешается копировать, распространять и/или изменять при выполнении условий лицензии GNU Free Documentation License версии
+1.2 или более поздней, опубликованной Free Software Foundation; без неизменяемых разделов, без текста на верхней обложке, без текста на нижней обложке. Копия лицензии приведена по ссылке
+<quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <warning>
+    <para>Вы должны <emphasis role="bold"> установить современный дистрибутив, который обновляется поставщиком</emphasis>, прежде чем пытаться настроить работу в этом режиме. Старые дистрибутивы не удовлетворяют минимальным требованиям, и вам потребуется перекомпилировать iptables, ядро и прочее программное обеспечение в системе.
+Если вы проигнорируете этот совет, <emphasis role="bold">то
+<emphasis role="bold">не </emphasis> рассчитывайте, что кто-либо сможет вам помочь.
+</emphasis>.</para>
+  </warning>
+
+  <warning>
+    <para>Чтение только документации Shorewall не будет достаточным для понимания раскрываемых здесь тем. Shorewall упрощает работу с iptables, но разработчики Shorewall не имеют достаточных ресурсов, чтобы учить вас основам управляемой маршрутизации в Linux (равно как и пособие по вождению комбайна не учит правильно выращивать пшеницу).
+Скорее всего вам потребуется обратиться к следующим дополнительным источникам:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>LARTC HOWTO: <ulink
+        url="http://www.lartc.org">http://www.lartc.org</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>Вывод команды <command>man ip</command></para>
+      </listitem>
+
+      <listitem>
+        <para>Вывод команд <command>ip route help</command> и <command>ip rule
+        help</command></para>
+      </listitem>
+    </itemizedlist>
+  </warning>
+
+  <section>
+    <title>Поддержка нескольких соединений с Internet </title>
+
+    <para>Начиная с версии 2.3.2 в Shorewall реализована ограниченная поддержка нескольких соединений с Internet.
+Ниже описаны существующие ограничения:
+</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Используется статическая конфигурация маршрутов. Поэтому не предусмотрены меры по защите от сбоя какого-либо из каналов связи с провайдером.
+</para>
+      </listitem>
+
+      <listitem>
+        <para>Изменения маршрутизации и очистка кэша маршрутов осуществляются при запуске
+<emphasis role="bold">и при перезапуске Shorewall </emphasis> (если не указана опция "-n" для
+        <command>shorewall restart</command>). Вообще говоря, в идеальном случае перезапуск пакетного фильтра никак не должен влиять на маршрутизацию.
+</para>
+      </listitem>
+
+      <listitem>
+        <para>В версиях Shorewall ниже 3.4.0 маршруты и правила маршрутизации, добавляемые при запуске, не удалялись полностью в ходе выполнения команд
+<command>shorewall
+        stop</command>, <command>shorewall clear</command>               или <command>shorewall restart</command>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <section>
+      <title>Обзор </title>
+
+      <para>Предположим, что система, в которой работает файрвол, подключена к двум провайдерам по двум интерфейсам ethernet, как показано на рисунке.
+</para>
+
+      <graphic align="center" fileref="images/TwoISPs.png" valign="middle" />
+
+      <itemizedlist>
+        <listitem>
+          <para>eth0 подключен к ISP1. IP-адрес eth0 - это
+          206.124.146.176, и шлюз провайдера имеет IP-адрес
+          206.124.146.254.</para>
+        </listitem>
+
+        <listitem>
+          <para>eth1 подключен к ISP2. IP-адрес eth1 - это
+          130.252.99.27, и шлюз провайдера имеет IP-адрес
+          130.252.99.254.</para>
+        </listitem>
+
+        <listitem>
+          <para>eth2 подключен к локальной сети. У него может быть любой IP-адрес.
+</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Все эти <firstterm>провайдеры </firstterm> должны быть перечислены в файле <filename>/etc/shorewall/providers</filename>.</para>
+
+      <para>В записях в файле <filename>/etc/shorewall/providers</filename> можно указать, что для исходящих соединений должно быть включено распределение нагрузки по двум каналам связи с провайдерами.
+В записях в файле <filename>/etc/shorewall/tcrules</filename> можно указать, что некоторые исходящие соединения должны использовать определённый канал провайдера.
+      Правила в файле <filename>/etc/shorewall/tcrules</filename> необязательны для того, чтобы настройка
+<filename>/etc/shorewall/providers</filename> работала, но необходимо указать уникальное значение MARK для каждого из провайдеров, чтобы Shorewall настроил правила маркировки.
+</para>
+
+      <para>Если задать опцию <emphasis role="bold">track</emphasis> в файле
+<filename>/etc/shorewall/providers</filename>, то соединения из
+Internet будут автоматически маршрутизироваться обратно через правильный интерфейс на соответствующий шлюз провайдера.
+Это будет работать как в том случае, когда соединение обрабатывается самим файрволом, так и для соединений, маршрутизируемых или пробрасываемых к системам позади файрвола.
+</para>
+
+      <para>Shorewall настраивает маршрутизацию и обновляет файл
+<filename>/etc/iproute2/rt_tables</filename> , включая в него имена таблиц и их номера.
+</para>
+
+      <caution>
+        <para>При этом используются функции <ulink url="traffic_shaping.htm">маркировки пакетов
+</ulink> для управления маршрутизацией. Как следствие этого возникают ограничения на записи в файле
+<filename>/etc/shorewall/tcrules</filename>:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Маркировка пакетов для целей управления трафиком не может осуществляться в цепочке PREROUTING для соединений с участием провайдеров, для которых задана опция 'track' (см. далее).</para>
+          </listitem>
+
+          <listitem>
+            <para>Нельзя использовать опции SAVE или RESTORE. </para>
+          </listitem>
+
+          <listitem>
+            <para>Нельзя использовать маркировку соединений. </para>
+          </listitem>
+        </itemizedlist>
+      </caution>
+
+      <para>Файл <filename>/etc/shorewall/providers</filename> может также использоваться в других сценариях маршрутизации.
+В <ulink
+      url="Shorewall_Squid_Usage.html">документации по работе с Squid </ulink> приведены примеры.
+</para>
+    </section>
+
+    <section>
+      <title>Файл /etc/shorewall/providers </title>
+
+      <para>Далее описаны поля этого файла. Как и везде в файлах конфигурации Shorewall, укажите в поле для столбца "-", если не требуется задавать никакое значение.
+</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>NAME</term>
+
+          <listitem>
+            <para>Имя провайдера. Должно начинаться с буквы и состоять из букв и цифр.
+Имя провайдера становится именем сгенерированной таблицы маршрутизации для этого провайдера.
+</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>NUMBER</term>
+
+          <listitem>
+            <para>Число от 1 до 252. Оно будет номером таблицы маршрутизации для сгенерированной таблицы для этого провайдера.
+</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>MARK</term>
+
+          <listitem>
+            <para>Метка, применяемая в файле /etc/shorewall/tcrules для направления пакетов через этого провайдера.
+Shorewall также помечает этой меткой соединения, которые входят через этого провайдера, и восстанавливает метку пакета в цепочке PREROUTING.
+            Метка должна быть целым числом от 1 до 255.</para>
+
+            <para>Начиная с Shorewall версии 3.2.0 Beta 6, можно задать опцию HIGH_ROUTE_MARKS=Yes в файле
+<filename>/etc/shorewall/shorewall.conf</filename>. Это позволяет решить следующие задачи:
+</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Использовать метки пакетов для управления трафиком, при условии что эти метки присваиваются в цепочке FORWARD. </para>
+              </listitem>
+
+              <listitem>
+                <para>Использовать значения меток &gt; 255 для меток провайдера.
+Эти метки должны быть кратными 256 в диапазоне 256-65280 (в 16-ричном представлении 0x100 - 0xFF00, с нулевыми младшими 8 битами).
+</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>DUPLICATE</term>
+
+          <listitem>
+            <para>Имя или номер таблицы маршрутизации, которая будет продублирована.
+Можно указать 'main' или имя или номер ранее объявленного провайдера.
+Для большинства приложений здесь достаточно будет указать 'main'.
+</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>INTERFACE</term>
+
+          <listitem>
+            <para>Имя интерфейса канала связи с провайдером. </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>GATEWAY</term>
+
+          <listitem>
+            <para>IP-адрес шлюза провайдера. </para>
+
+            <para>Здесь можно указать <emphasis role="bold">detect</emphasis> для автоматического определения IP-адреса шлюза.
+</para>
+
+            <para><emphasis role="bold">Совет: </emphasis> <emphasis
+            role="bold">"detect"</emphasis> следует указывать в том случае, если интерфейс из поля INTERFACE настраивается динамически по DHCP. </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>OPTIONS</term>
+
+          <listitem>
+            <para>Список параметров через запятую, описанных ниже: </para>
+
+            <variablelist>
+              <varlistentry>
+                <term>track</term>
+
+                <listitem>
+                  <para>Если эта опция включена, то будут отслеживаться соединения, ВХОДЯЩИЕ через этот интерфейс, чтобы ответы могли маршрутизироваться обратно через этот же интерфейс.
+</para>
+
+                  <para>Укажите 'track', если через этого провайдера к локальным серверам будут обращаться хосты из Internet.
+Вместе с 'track' всегда следует указывать опцию 'balance'. </para>
+
+                  <para>Для работы с этой функцией ядро и
+                  iptables должны поддерживать цель CONNMARK и сравнение connmark.
+                  Расширение цели ROUTE не требуется. </para>
+
+                  <warning>
+                    <para>В iptables 1.3.1 есть ошибка в реализации CONNMARK и iptables-save/iptables-restore. Поэтому при настройке нескольких провайдеров команда
+<command>shorewall
+                    restore</command> может быть не выполнена. Если это имеет место, примените исправление iptables, доступное по адресу <ulink
+                    url="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</ulink>.</para>
+                  </warning>
+
+                  <important>
+                    <para>Если используется файл
+<filename>/etc/shorewall/providers</filename> для настройки нескольких соединений с Internet, укажите опцию 'track', даже если в ней нет необходимости. Она помогает поддерживать длительные соединения, в которых могут быть долгие периоды отсутствия трафика.
+</para>
+                  </important>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>balance</term>
+
+                <listitem>
+                  <para>Опция 'balance' позволяет распределять нагрузку исходящих потоков между несколькими провайдерами.
+Распределение нагрузки не будет идеальным, поскольку оно осуществляется посредством маршрутов, а маршруты кэшируются.
+При этом маршрут к хостам, к которым часто обращаются пользователи, будет проходить всегда через одного и того же провайдера.
+</para>
+
+                  <para>По умолчанию всем провайдерам присваивается одинаковый вес (1).
+Вес конкретного провайдера можно изменить опцией
+<emphasis>balance</emphasis> с "=" и весом
+                  (например, balance=2). Веса отражают относительную пропускную способность каналов связи с провайдером. Они должны быть небольшими числами, потому что ядро создает дополнительные маршруты для каждого приращения веса.
+</para>
+
+                  <important>
+                    <para>Если используется файл
+                    <filename>/etc/shorewall/providers</filename> для настройки нескольких соединений с Internet, укажите опцию 'balance', даже если в ней нет необходимости. С помощью записей в файле
+<filename>/etc/shorewall/tcrules</filename>
+можно принудительно направить трафик через конкретного провайдера. <note>
+                        <para>Если вы проигнорируете этот совет, то прочитайте <ulink url="FAQ.htm#faq57">FAQ 57</ulink> и
+                        <ulink url="FAQ.htm#faq58">FAQ 58</ulink>.</para>
+                      </note></para>
+                  </important>
+
+                  <important>
+                    <para>Если указана опция 'balance', но весь трафик по-прежнему идёт через одного провайдера, то причина этого может состоять в том, что ядро не собрано с опцией
+                    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n. У некоторых пользователей пересборка ядра с этой опцией помогла устранить неполадку.
+</para>
+
+                    <para>Эта неполадка присутствует в ядре SuSE 10.0, и согласно
+<ulink
+                    url="https://bugzilla.novell.com/show_bug.cgi?id=190908">
+                    в этом случае может возникать критическая ошибка ядра.</ulink>
+                    В SUSE 10.1 и SLES 10 опция
+                    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n включена по умолчанию. Источник неполадки описан здесь:
+<ulink
+                    url="http://news.gmane.org/find-root.php?message_id=%3c00da01c5b35a%24b12b9860%241b00a8c0%40cruncher%3e">несовместимость между исправлениями от LARTC и опцией
+                    CONFIG_IP_ROUTE_MULTIPATH_CACHED.</ulink></para>
+                  </important>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>loose</term>
+
+                <listitem>
+                  <para>Не включать правила маршрутизации, которые принудительно направляют через данный интерфейс трафик, исходный IP-адрес которого совпадает с адресом интерфейса канала с провайдером.
+Эта опция полезна для определения провайдеров, которые должны использоваться только при наличии соответствующей метки пакета.
+</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>optional (начиная с Shorewall 3.2.2)</term>
+
+                <listitem>
+                  <para>Shorewall определит, работает ли этот интерфейс и настроен ли его IP-адрес.
+Если он не настроен, то будет показано предупреждение, а сам провайдер не будет включен.
+</para>
+
+                  <note>
+                    <para>Параметр 'optional' предназначен для определения состояния интерфейсов, которые могли бы вызвать сбой команды <command>shorewall start</command>               или <command>shorewall restart</command> - однако даже если интерфейс находится в состоянии, в котором Shorewall может [пере]запуститься без ошибок, это не означает, что трафик может с гарантией проходить через этот интерфейс.
+</para>
+                  </note>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+
+            <para>Для тех, кто окончательно запутался в том, что такое <emphasis
+            role="bold"> track</emphasis> и <emphasis
+            role="bold">balance</emphasis>:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para><emphasis role="bold">track</emphasis> управляет входящими соединениями.
+</para>
+              </listitem>
+
+              <listitem>
+                <para><emphasis role="bold">balance</emphasis> управляет исходящими соединениями.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>COPY</term>
+
+          <listitem>
+            <para>Если в поле DUPLICATE указана существующая таблица,
+            то Shorewall копирует все маршруты, проходящие через интерфейс, указанный в столбце INTERFACE, а также через интерфейс, указанный в этом поле. В этом поле следует указать все интерфейсы в системе файрвола, исключая интерфейсы Internet, указанные в поле INTERFACE этого файла.
+</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Какие функции выполняет запись в файле providers </title>
+
+      <para>Добавление записи в файле providers приводит к созданию альтернативной таблицы маршрутизации.
+Помимо этого: </para>
+
+      <orderedlist>
+        <listitem>
+          <para>Если не указана опция <emphasis role="bold">loose</emphasis> , то создается правило ip для каждого IP-адреса из поля INTERFACE, которое обеспечивает маршрутизацию трафика с этого адреса через соответствующую таблицу маршрутизации.
+</para>
+        </listitem>
+
+        <listitem>
+          <para>Если указана опция <emphasis role="bold">track</emphasis>, то соединения, для которых хотя бы один пакет прошел на интерфейс, указанный в поле INTERFACE, получат метку соединения, заданную в  поле MARK. В цепочке PREROUTING метка пакетов, имеющих метку соединения, будет задана равной метке соединения, и такие помеченные пакеты не будут подчиняться правилам для цепочки PREROUTING, заданным в файле <filename>/etc/shorewall/tcrules</filename>. Это обеспечивает маршрутизацию через правильный интерфейс для входящих соединений.
+</para>
+        </listitem>
+
+        <listitem>
+          <para>Если указана опция <emphasis role="bold">balance</emphasis>, то
+          Shorewall заменит маршрут по умолчанию с весом 100 в таблице маршрутизации
+          'main' маршрутом с распределением нагрузки между шлюзами, для которых опция
+<emphasis role="bold">balance</emphasis> включена.
+Поэтому, если вы настраиваете маршруты по умолчанию, то укажите их вес меньше, чем 100, иначе маршрут, добавленный Shorewall, не будет иметь силы.
+</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Больше <emphasis role="bold">ничего </emphasis> эти записи не делают.
+По-прежнему работает основной принцип, упомянутый в документации <ulink
+      url="Shorewall_and_Routing.html">по маршрутизации Shorewall
+</ulink>:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Маршрутизация отвечает за то, куда направляются пакеты. </para>
+        </listitem>
+
+        <listitem>
+          <para>После того, как маршрут пакета определён, файрвол (Shorewall) определяет, разрешить ли отправку пакета по его маршруту.
+</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Итак, если вы хотите направить трафик через определённого провайдера, то
+<emphasis>необходимо </emphasis>пометить этот трафик значением MARK провайдера в файле
+<filename>/etc/shorewall/tcrules</filename> и пометить пакет в цепочке PREROUTING; другим способом будет указание соответствующих правил в файле
+<filename>/etc/shorewall/route_rules</filename>.</para>
+
+      <warning id="Undo">
+        <para>В Shorewall версий ниже 3.4.0 записи из файла
+<filename>/etc/shorewall/providers</filename> необратимо изменяют маршрутизацию системы, то есть эти изменения не отменяются при вызове команды
+<command>shorewall stop</command>               или <command>shorewall clear</command>. Для того чтобы восстановить исходные маршруты, может потребоваться перезапустить сеть.
+Обычно это делается командой
+<command>/etc/init.d/network restart</command>               или <command>/etc/init.d/networking restart</command>. Обратитесь к документации по сети вашего дистрибутива.
+</para>
+
+        <para>Дополнительные замечания: </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Влияние изменений, вносимых Shorewall в таблицу маршрутизации, можно уменьшить, указав параметр
+<emphasis>metric</emphasis> для каждого настраиваемого маршрута по умолчанию.
+Shorewall создаст маршрут по умолчанию с распределением нагрузки (если опция
+<emphasis role="bold">balance</emphasis> включена для какого-либо из провайдеров), который не будет включать метрику и тем самым не будет заменять никакой существующий маршрут, для которого метрика отлична от нуля.
+</para>
+          </listitem>
+
+          <listitem>
+            <para>Опция <command>-n</command> команд <command>shorewall
+            restart</command> и <command>shorewall restore</command> позволяет предотвратить изменение маршрутизации.
+</para>
+          </listitem>
+
+          <listitem>
+            <para>Файл <filename>/etc/shorewall/stopped</filename> можно также использовать для восстановления маршрутизации при остановке Shorewall. Когда система работает в обычной конфигурации маршрутизации (одна таблица), то ее содержимое можно сохранить следующим образом:
+</para>
+
+            <programlisting>ip route ls &gt; routes</programlisting>
+
+            <para>Ниже приведен пример файла <filename>routes</filename> для моей системы:
+</para>
+
+            <programlisting>192.168.1.1 dev eth3  scope link
+206.124.146.177 dev eth1  scope link
+192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1
+192.168.2.0/24 via 192.168.2.2 dev tun0
+192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.254
+206.124.146.0/24 dev eth3  proto kernel  scope link  src 206.124.146.176
+169.254.0.0/16 dev eth0  scope link
+127.0.0.0/8 dev lo  scope link
+default via 206.124.146.254 dev eth3</programlisting>
+
+            <para>Отредактируйте этот файл следующим образом: </para>
+
+            <programlisting><command>ip route flush table main
+ip route add</command> 192.168.1.1 dev eth3  scope link
+<command>ip route add </command>206.124.146.177 dev eth1  scope link
+<command>ip route add </command>192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1
+<command>ip route add </command>192.168.2.0/24 via 192.168.2.2 dev tun0
+<command>ip route add </command>192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.254
+<command>ip route add </command>206.124.146.0/24 dev eth3  proto kernel  scope link  src 206.124.146.176
+<command>ip route add </command>169.254.0.0/16 dev eth0  scope link
+<command>ip route add </command>127.0.0.0/8 dev lo  scope link
+<command>ip route add </command>default via 206.124.146.254 dev eth3
+<command>ip route flush cache</command></programlisting>
+
+            <para>Сохраните этот файл как
+<filename>/etc/shorewall/stopped</filename>.</para>
+
+            <para>В этот файл можно также добавить следующее:
+</para>
+
+            <programlisting><command>ip rule ls</command> | while read priority rule; do
+    case ${priority%:} in
+        0|3276[67])
+            ;;
+        *)
+            ip rule del $rule
+            ;;
+    esac
+done</programlisting>
+
+            <para>Этот код удаляет все правила маршрутов, за исключением маршрута по умолчанию.
+</para>
+          </listitem>
+        </itemizedlist>
+      </warning>
+    </section>
+
+    <section>
+      <title>Какие функции НЕ выполняет запись в файле providers</title>
+
+      <para>Shorewall - это инструмент для настройки Netfilter, а не процесс, который непрерывно работает в  системе, поэтому записи в файле providers
+<emphasis role="bold">не обеспечивают автоматического переключения в случае сбоя одного из каналов связи с Internet </emphasis>.</para>
+    </section>
+
+    <section>
+      <title>Пример</title>
+
+      <para>Конфигурация схемы сети, показанной на рисунке в начале этого документа, описывается в файле
+<filename>/etc/shorewall/providers</filename> следующим образом.
+</para>
+
+      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
+ISP1    1       1       main            eth0            206.124.146.254 track,balance    eth2
+ISP2    2       2       main            eth1            130.252.99.254  track,balance    eth2</programlisting>
+
+      <para>Прочие файлы конфигурации будут иметь следующий вид: </para>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+net      eth0         detect          … 
+net      eth1         detect          …</programlisting>
+
+      <para><filename>/etc/shorewall/policy</filename>:</para>
+
+      <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
+net        net            DROP</programlisting>
+
+      <para>Независимо от того, есть ли маскируемые хосты, или нет, <emphasis
+      role="bold">ДОБАВЬТЕ ДВЕ ЗАПИСИ В ФАЙЛ
+<filename>/etc/shorewall/masq</filename></emphasis>:</para>
+
+      <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             130.252.99.27     206.124.146.176
+eth1             206.124.146.176   130.252.99.27</programlisting>
+
+      <para>Эти записи обеспечивают отправку пакетов, созданных в системе файрвола, с правильным исходным IP-адресом, соответствующим интерфейсу, через который они направляются.
+</para>
+
+      <note>
+        <para>Если какой-либо из интерфейсов имеет динамический IP-адрес, то указанные правила можно создать  с помощью переменных оболочки.
+Например, если
+<filename class="devicefile">eth0</filename> имеет динамический IP-адрес:
+</para>
+
+        <para><filename>/etc/shorewall/params</filename>:</para>
+
+        <programlisting>ETH0_IP=$(получить-адрес-интерфейса eth0)</programlisting>
+
+        <para>/etc/shorewall/masq:</para>
+
+        <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             130.252.99.27     $ETH0_IP
+eth1             $ETH0_IP          130.252.99.27</programlisting>
+      </note>
+
+      <para>Если есть маскируемые хосты, настройте в файле
+<filename>/etc/shorewall/masq</filename> маскарадинг для обоих провайдеров. Например, если маскируются хосты, подключенные через
+<filename
+      class="devicefile">eth2</filename> то: </para>
+
+      <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             eth2              206.124.146.176
+eth1             eth2              130.252.99.27</programlisting>
+
+      <warning>
+        <para>Записи в файле <filename>/etc/shorewall/masq</filename> никак не влияют на то, через какого провайдера пройдёт конкретное соединение.
+Для этого служат записи в файле
+<filename>/etc/shorewall/tcrules</filename>               или <filename>/etc/shorewall/route_rules</filename>.</para>
+      </warning>
+
+      <para>Предположим, что требуется направить весь исходящий трафик SMTP из локальной сети через провайдера 2. В файле
+<ulink
+      url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink> укажите следующее (и в версии Shorewall ниже 3.0.0 также задайте
+      TC_ENABLED=Yes в файле <ulink
+      url="???">/etc/shorewall/shorewall.conf</ulink>).</para>
+
+      <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                               PORT(S)
+2:P             &lt;локальная сеть&gt; 0.0.0.0/0       tcp     25</programlisting>
+    </section>
+
+    <section>
+      <title>Приложения, работающие в системе файрвола </title>
+
+      <para>Опыт показал, что иногда возникают неполадки с приложениями, работающими в системе файрвола.
+Если это имеет место, то свяжите приложение с определенным локальным IP-адресом вместо 0.
+</para>
+
+      <para>Примеры:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Squid: В файле <filename>squid.conf</filename> задайте <emphasis
+          role="bold">tcp_outgoing_address</emphasis> равным IP-адресу интерфейса, на котором будет работать Squid. </para>
+        </listitem>
+
+        <listitem>
+          <para>Для OpenVPN задайте опцию <emphasis role="bold">local
+          </emphasis>(<emphasis role="bold">--local</emphasis> в командной строке с IP-адресом, на котором должен принимать соединения сервер.
+</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/route_rules</title>
+
+      <para>Файл <filename>/etc/shorewall/route_rules</filename> добавлен в
+Shorewall в версии 3.2.0. Файл <filename>route_rules</filename> позволяет направлять определенный трафик через конкретного провайдера, как и записи из файла
+<filename>tcrules</filename> . Разница между этими двумя файлами состоит в том что записи в
+<filename>route_rules</filename> никак не связаны с Netfilter.</para>
+
+      <warning>
+        <para>Записи в файле <filename>/etc/shorewall/route_rules</filename>
+        необратимо изменяют маршрутизацию системы, то есть эти изменения не отменяются при вызове команды <command>shorewall stop</command>
+              или <command>shorewall clear</command>. Для того чтобы восстановить исходные маршруты, может потребоваться перезапустить сеть. Обычно это делает команда <command>/etc/init.d/network restart</command>               или <command>/etc/init.d/networking restart</command>. Обратитесь к документации по сети вашего дистрибутива.</para>
+
+        <para>Также обратите внимание на <link linkend="Undo">предупреждение в разделе
+<emphasis>Какие функции выполняет запись в файле providers</emphasis></link>.</para>
+      </warning>
+
+      <section>
+        <title>Правила маршрутизации </title>
+
+        <para>Правила маршрутизации управляются ядром Linux. Их можно просмотреть командой
+<command>ip rule ls</command> . При маршрутизации пакета правила обрабатываются поочередно, пока не будет найден маршрут пакета.
+</para>
+
+        <programlisting>gateway:~ # <command>ip rule ls</command>
+0:      from all lookup local                &lt;=== Локальные IP-адреса (система файрвола)
+10001:  from all fwmark 0x1 lookup Blarg     &lt;=== Это и следующее правило генерируются
+10002:  from all fwmark 0x2 lookup Comcast        записями 'MARK' из /etc/shorewall/providers.
+20000:  from 206.124.146.176 lookup Blarg    &lt;=== Это и следующее правило не генерируются, если
+20256:  from 24.12.22.33 lookup Comcast         указана опция 'loose'; они основаны на выводе 'ip addr ls'
+32766:  from all lookup main                 &lt;=== Это таблица маршрутизации, показанная в выводе 'iproute -n'
+32767:  from all lookup default              &lt;=== Эта таблица обычно пуста
+</programlisting>
+
+        <para>В этом примере есть два провайдера, Blarg и Comcast, с метками MARK 1 и 2 соответственно. </para>
+      </section>
+
+      <section>
+        <title>Файл route_rules </title>
+
+        <para>Далее описаны столбцы файла: </para>
+
+        <variablelist>
+          <varlistentry>
+            <term>SOURCE (Необязательный)</term>
+
+            <listitem>
+              <para>IP-адрес (сеть или хост), с которыми совпадает исходный IP-адрес пакета.
+Может указываться как имя интерфейса, за которым следует необязательная часть из ":" и адреса. Если указано устройство 'lo', то пакет должен исходит из системы файрвола.
+</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>DEST (Необязательный)</term>
+
+            <listitem>
+              <para>IP-адрес (сеть или хост), с которыми совпадает целевой IP-адрес пакета.</para>
+
+              <para>Если опущен SOURCE или DEST, то в укажите в одном из этих полей "-".
+Необходимо задать хотя бы одно из полей SOURCE или
+              DEST.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PROVIDER</term>
+
+            <listitem>
+              <para>Провайдер, через которого должен проходить трафик. Может быть задан как имя провайдера или его номер.
+</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PRIORITY</term>
+
+            <listitem>
+              <para>Приоритет правила, определяющий порядок обработки правил.
+</para>
+
+              <para>1000-1999: перед правилами Shorewall, генерируемыми на основе меток 'MARK' </para>
+
+              <para>11000- 11999: после правил 'MARK', но перед правилами
+              Shorewall, генерируемыми для интерфейсов провайдеров. </para>
+
+              <para>26000-26999: после интерфейсов провайдеров, но перед правилом 'default'.
+</para>
+
+              <para>Правила с одинаковым приоритетом обрабатываются в том порядке, как они указаны в файле.
+</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Пример 1: направить весь трафик, приходящий на eth1, через Comcast.</para>
+
+        <programlisting>#SOURCE            DEST      PROVIDER        PRIORITY
+eth1               -         Comcast         1000</programlisting>
+
+        <para>С этим правилом вывод <command>ip rule ls</command>
+будет следующим. </para>
+
+        <para><programlisting>gateway:~ # <command>ip rule ls</command>
+0:      from all lookup local
+1000:   from all iif eth1 lookup Comcast
+10001:  from all fwmark 0x1 lookup Blarg
+10002:  from all fwmark 0x2 lookup Comcast
+20000:  from 206.124.146.176 lookup Blarg
+20256:  from 24.12.22.33 lookup Comcast
+32766:  from all lookup main
+32767:  from all lookup default
+gateway:~ #</programlisting>Обратите внимание, что приоритет 1000 приводит к тому, что проверка на
+<filename class="devicefile">eth1</filename> осуществляется перед проверкой fwmark. </para>
+
+        <para>Пример 2: используется OpenVPN (маршрутизируемая конфигурация /tunX) в сочетании с несколькими провайдерами.
+В этом случае необходимо настроить правило, согласно которому трафик OpenVPN будет направляться обратно через интерфейс tunX, а не через какого-либо из провайдеров.
+10.8.0.0/24 - это подсеть, выбранная для OpenVPN (сервер 10.8.0.0
+        255.255.255.0).</para>
+
+        <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
+-                       10.8.0.0/24     main            1000</programlisting>
+      </section>
+    </section>
+  </section>
+</article>

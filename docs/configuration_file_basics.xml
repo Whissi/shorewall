@@ -713,52 +713,24 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       </listitem>
 
       <listitem>
-        <para>Beginning with Shorewall version 3.2.9, the
+        <para>In Shorewall 3.2, the <filename>/etc/shorewall/params</filename>
+        file is processed by the compiler at compile-time and by the compiled
+        script at run-time. Beginning with Shorewall version 3.2.9, the
         <filename>/etc/shorewall/params</filename> file is pre-processed in
         such a way that extra white-space is compressed from the file as it is
         being copied into the generated compiler output. So the code in
         /etc/shorewall/params should not depend on precise white-space,
         including whitespace within quoted strings.</para>
       </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall 3.4.0 RC2,
+        <filename>/etc/shorewall/params</filename> is no longer processed by
+        the compiled script. If you need to set shell variables for use by
+        your run-time extension script, then set those variables in your
+        <filename>/etc/shorewall/init</filename> file.</para>
+      </listitem>
     </orderedlist>
-
-    <para>One possible use of this feature is to compensate for recent Linux
-    behavior in which the identity of network interfaces varies from boot to
-    boot (what is <filename class="devicefile">eth0</filename> after one boot
-    may be <filename class="devicefile">eth1</filename> after the next).
-    <trademark>SUSE</trademark> users, for example, can take the following
-    approach:</para>
-
-    <programlisting>wookie:~ # lspci
-0000:00:00.0 Host bridge: VIA Technologies, Inc. VT82C598 [Apollo MVP3] (rev 04)
-0000:00:01.0 PCI bridge: VIA Technologies, Inc. VT82C598/694x [Apollo MVP3/Pro133x AGP]
-0000:00:03.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 01)
-0000:00:04.0 Ethernet controller: Lite-On Communications Inc LNE100TX (rev 20)
-0000:00:05.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 41)
-0000:00:14.0 ISA bridge: VIA Technologies, Inc. VT82C586/A/B PCI-to-ISA [Apollo VP] (rev 45)
-0000:00:14.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
-0000:00:14.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 02)
-0000:00:14.3 Bridge: VIA Technologies, Inc. VT82C586B ACPI (rev 10)
-0000:01:00.0 VGA compatible controller: ATI Technologies Inc 3D Rage LT Pro AGP-133 (rev dc)
-wookie:~ #</programlisting>
-
-    <para>If the firewall's external interface is the DECchip controller at
-    0000:00:05.0 and the internal interface is the Ethernet Pro 100 at
-    0000:00:03.0, then the following entries in
-    <filename>/etc/shorewall/params</filename> will set EXT_IF and INT_IF to
-    the names of these two controllers respectively:</para>
-
-    <programlisting>EXT_IF=$(getcfg-interface bus-pci-0000:00:05.0)
-INT_IF=$(getcfg-interface bus-pci-0000:00:03.0)</programlisting>
-
-    <caution>
-      <para>The <command>shorewall save</command> and <command>shorewall
-      restore</command> commands should be used carefully if you use the above
-      workaround for unstable interface names. In particular, you should set
-      OPTIONS="" in <filename>/etc/default/shorewall</filename> or
-      <filename>/etc/sysconfig/shorewall</filename> so that the "-f" option
-      will not be specified on startup at boot time.</para>
-    </caution>
   </section>
 
   <section id="MAC">

@@ -34,28 +34,22 @@ None.
 
 Other Changes in 3.4.0 RC 1
 
-1)  A new 'compile' extension script has been added. This script is
-    invoked in the compiler to set shell variables needed at compile
-    time. The script can use 'ssh' to obtain information from a remote
-    firewall system. 
+1)  In spite of my claim that I would not introduce any changes other
+    than bug fixes in a release candidate, I'm going to do so anyway.
 
-    One common thing that such a script might want to do is to obtain
-    the IP address of an interface on a remote firewall for later use
-    in Shorewall configuration files. This can be done using the
-    following trick:
+    Beginning with Shorewall 3.4.0, Shorewall will only process
+    /etc/shorewall/params during the compile phase. Any shell variables
+    needed at run-time must be set in /etc/shorewall/init.
 
-	 ADDR=$(ssh root@<firewall> "shorewall-lite call
-	 get_first_interface_address <interface>")
+    In a Shorewall/Shorewall Lite environment, his allows
+    /etc/shorewall/params to be written to run exclusively
+    on the administrative system while /etc/shorewall/init runs
+    exclusively on the firewall system.
 
-    where:
-
-	 <firewall> is the name of the remote firewall system; and
-	 <interface> is the name of an interface on that system.
-
-    The shorewall-lite "call" command allows you to interactively call
-    any function in /usr/share/shorewall-lite/lib.base and
-    /usr/share/shorewall-lite/lib.config.
-
+    So shell variables required at compile time may be set in
+    /etc/shorewall/params and those required at run-time may be set in
+    /etc/shorewall/init.
+ 
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then
@@ -64,7 +58,20 @@ information.
 
 http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
 
-1)  Shorewall supports the notion of "default actions". A default
+1)  Beginning with Shorewall 3.4.0, Shorewall will only process
+    /etc/shorewall/params during the compile phase. Any shell variables
+    needed at run-time must be set in /etc/shorewall/init.
+
+    In a Shorewall/Shorewall Lite environment, his allows
+    /etc/shorewall/params to be written to run exclusively
+    on the administrative system while /etc/shorewall/init runs
+    exclusively on the firewall system.
+
+    So shell variables required at compile time may be set in
+    /etc/shorewall/params and those required at run-time may be set in
+    /etc/shorewall/init.
+ 
+2)  Shorewall supports the notion of "default actions". A default
     action defines a set of rules that are applied before a policy is
     enforced. Default actions accomplish two goals:
 
@@ -97,12 +104,12 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
     Shorewall version 3.4. Otherwise, please see item 3) in the New
     Features below.
 
-2)  The 'Limit' action is now a builtin. If you have 'Limit' listed in
+3)  The 'Limit' action is now a builtin. If you have 'Limit' listed in
     /etc/shorewall/actions, remove the entry. Also remove the files
     /etc/shorewall/action.Limit and/or /etc/shorewall/Limit if you have
     them.
 
-3)  This issue only applies if you have entries in
+4)  This issue only applies if you have entries in
     /etc/shorewall/providers.
 
     Previously, Shorewall has not attempted to undo the changes it has
@@ -128,13 +135,13 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
        do exist, remove them.
     b) Either restart networking or reboot.
 
-4)  This issue only applies if you run Shorewall Lite. 
+5)  This issue only applies if you run Shorewall Lite. 
 
     The /etc/shorewall-lite/shorewall.conf file has been renamed
     /etc/shorewall-lite/shorewall-lite.conf. When you upgrade,
     your shorewall.conf file will be renamed shorewall-lite.conf.
 
-5)  Previously, 'ipsecnat' tunnels allowed AH traffic by default
+6)  Previously, 'ipsecnat' tunnels allowed AH traffic by default
     (unless 'isecnat:noah' was given). Given that AH is incompatible
     with nat-traversal, 'ipsecnat' now implies 'ipsecnat:noah' and the
     latter is now redundant.

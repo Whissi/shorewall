@@ -99,6 +99,22 @@
               <para>Bottom line: You probably want to use only constant values
               for variables set in
               <filename>/etc/shorewall/params</filename>.</para>
+
+              <para>To work around this, Shorewall 3.2.9 (Shorewall 3.4.0 RC2)
+              and later support a <firstterm>compile</firstterm> extension
+              script. This script is invoked during compiler initialization to
+              set shell variables needed at compile time. If you need the IP
+              address of eth0 on the firewall system, you can use this trick
+              in <filename>/etc/shorewall/compile</filename>:</para>
+
+              <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
+
+              <para>The <command>shorewall-lite call</command> command allows
+              you to interactively call any function in
+              <filename>/etc/shorewall/functions</filename>
+              (<filename>/etc/shorewall/lib.bas</filename>e and
+              <filename>/etc/shorewall/lib.conf</filename> on Shorewall 3.4
+              and later).</para>
             </listitem>
           </itemizedlist>
         </listitem>

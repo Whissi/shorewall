@@ -41,7 +41,7 @@ Other Changes in 3.4.0 RC 1
     /etc/shorewall/params during the compile phase. Any shell variables
     needed at run-time must be set in /etc/shorewall/init.
 
-    In a Shorewall/Shorewall Lite environment, his allows
+    In a Shorewall/Shorewall Lite environment, this allows
     /etc/shorewall/params to be written to run exclusively
     on the administrative system while /etc/shorewall/init runs
     exclusively on the firewall system.
@@ -49,6 +49,9 @@ Other Changes in 3.4.0 RC 1
     So shell variables required at compile time may be set in
     /etc/shorewall/params and those required at run-time may be set in
     /etc/shorewall/init.
+
+    As part of this change, extra white space is no longer removed from
+    /etc/shorewall/params as it was in RC1.
  
 Migration Considerations:
 
@@ -62,7 +65,7 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
     /etc/shorewall/params during the compile phase. Any shell variables
     needed at run-time must be set in /etc/shorewall/init.
 
-    In a Shorewall/Shorewall Lite environment, his allows
+    In a Shorewall/Shorewall Lite environment, this allows
     /etc/shorewall/params to be written to run exclusively
     on the administrative system while /etc/shorewall/init runs
     exclusively on the firewall system.
@@ -70,6 +73,9 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
     So shell variables required at compile time may be set in
     /etc/shorewall/params and those required at run-time may be set in
     /etc/shorewall/init.
+
+    As part of this change, the 'compile' extension script introduced
+    in Shorewall 3.2.9 has been removed.
  
 2)  Shorewall supports the notion of "default actions". A default
     action defines a set of rules that are applied before a policy is

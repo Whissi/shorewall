@@ -1142,12 +1142,14 @@ compile_refresh_firewall()
 #
 process_action_file() # $1 = File Name
 {
-    local user_exit=$(find_file $1)
+    if ! list_search $1 $BUILTIN_ACTIONS; then
+	local user_exit=$(find_file $1)
 
-    if [ -f $user_exit ]; then
-	progress_message "Processing $user_exit ..."
-
-	. $user_exit
+	if [ -f $user_exit ]; then
+	    progress_message "Processing $user_exit ..."
+	    
+	    . $user_exit
+	fi
     fi
 }
 
@@ -1362,7 +1364,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 define_builtin_actions() {
     ACTIONS="dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP Limit"
-
+    BUILTIN_ACTIONS="$ACTIONS"
     USEDACTIONS=
 }
 

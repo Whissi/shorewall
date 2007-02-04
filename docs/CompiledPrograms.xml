@@ -115,7 +115,7 @@
 
               <para>The <command>shorewall-lite call</command> command allows
               you to to call interactively any Shorewall function that you can
-              call in an extension script. </para>
+              call in an extension script.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -212,6 +212,21 @@
         network. You need not configure Shorewall there and you may totally
         disable startup of Shorewall in your init scripts. For ease of
         reference, we call this system the 'administrative system'.</para>
+
+        <caution>
+          <para>If you want to be able to allow non-root users to manage
+          remote filewall systems, then the file
+          <filename>/etc/shorewall/shorewall.conf</filename> must be readable
+          by all users on the administrative system. Not all packages secure
+          the file that way and you may have to change the file permissions
+          yourself. /sbin/shorewall uses the SHOREWALL_SHELL setting from
+          <filename>/etc/shorewall/shorewall.conf</filename> to determine the
+          shell to use when compiling programs and it uses the VERBOSITY
+          setting for determining how much output the compiler generates. All
+          other settings are taken from the <filename>shorewall.conf
+          </filename>file in the remote systems <firstterm>export
+          directory</firstterm> (see below).</para>
+        </caution>
       </listitem>
 
       <listitem>

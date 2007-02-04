@@ -72,9 +72,9 @@
             </listitem>
 
             <listitem>
-              <para>The <filename>/etc/shorewall/params</filename> extension
-              script is executed at compile time as well as at run
-              time.</para>
+              <para>With Shorewall 3.2.0 through 3.2.8, the
+              <filename>/etc/shorewall/params</filename> extension script is
+              executed at compile time as well as at run time.</para>
 
               <para>Running the script at compile time allows variable
               expansion (expanding $variable to it's defined value) of
@@ -99,22 +99,23 @@
               <para>Bottom line: You probably want to use only constant values
               for variables set in
               <filename>/etc/shorewall/params</filename>.</para>
+            </listitem>
 
-              <para>To work around this, Shorewall 3.2.9 (Shorewall 3.4.0 RC2)
-              and later support a <firstterm>compile</firstterm> extension
-              script. This script is invoked during compiler initialization to
-              set shell variables needed at compile time. If you need the IP
-              address of eth0 on the firewall system, you can use this trick
-              in <filename>/etc/shorewall/compile</filename>:</para>
+            <listitem>
+              <para>Beginning with Shorewall 3.2.9 (and 3.4.0 RC2),
+              <filename>/etc/shorewall/params</filename> is only processed at
+              compile time. For run-time setting of shell variables, use
+              <filename>/etc/shorewall/init</filename>.</para>
+
+              <para>If <filename>/etc/shorewall/params</filename> needs to set
+              shell variables based on the configuration of the firewall
+              system, you can use this trick:</para>
 
               <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
 
               <para>The <command>shorewall-lite call</command> command allows
-              you to interactively call any function in
-              <filename>/etc/shorewall/functions</filename>
-              (<filename>/etc/shorewall/lib.bas</filename>e and
-              <filename>/etc/shorewall/lib.conf</filename> on Shorewall 3.4
-              and later).</para>
+              you to to call interactively any Shorewall function that you can
+              call in an extension script. </para>
             </listitem>
           </itemizedlist>
         </listitem>

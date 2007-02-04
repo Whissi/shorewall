@@ -46,7 +46,7 @@
   </caution>
 
   <section>
-    <title>Squid as a Transparent Proxy</title>
+    <title>Squid as a Transparent (Interception) Proxy</title>
 
     <important>
       <para>This section gives instructions for transparent proxying of HTTP.
@@ -62,7 +62,23 @@
         <listitem>
           <para>In all cases, Squid should be configured to run as a
           transparent proxy as described at <ulink
-          url="http://www.tldp.org/HOWTO/TransparentProxy.html">http://www.tldp.org/HOWTO/TransparentProxy.html</ulink>.</para>
+          url="http://wiki.squid-cache.org/SquidFaq/InterceptionProxy">http://wiki.squid-cache.org/SquidFaq/InterceptionProxy</ulink>.</para>
+
+          <para>The bottom line of that article is that if you are running
+          <emphasis role="bold">Squid 2.6 or later</emphasis>, then you simply
+          need to add the word <firstterm>transparent</firstterm> to your
+          http_port specification:</para>
+
+          <programlisting>http_port 3128 transparent</programlisting>
+
+          <para>In <emphasis role="bold">earlier Squid versions</emphasis>,
+          you need to set several options:</para>
+
+          <programlisting>http_port 3128
+httpd_accel_host virtual
+httpd_accel_port 80
+httpd_accel_with_proxy  on
+httpd_accel_uses_host_header on</programlisting>
         </listitem>
 
         <listitem>

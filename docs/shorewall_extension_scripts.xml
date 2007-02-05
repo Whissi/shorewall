@@ -245,18 +245,17 @@
     </listitem>
 
     <listitem>
-      <para><emphasis role="bold">Shorewall version 3.2.0 and later
-      only.</emphasis> When compiling your firewall configuration, Shorewall
-      copies most extension scripts directly into the "compiled" program where
-      they are executed in-line during processing of the start, restart and
-      restore commands. When copying a script, Shorewall indents the script to
-      match the surrounding code; if you have 'awk' installed on the system
-      where the configuration is being compiled, Shorewall can correctly
-      handle line continuation in your script ("\" as the last character on a
-      line). If you do not have awk, you may not use line continuation in your
-      scripts. Also beware that quoted strings continued from one line to
-      another will have extra whitespace inserted as a result of
-      indentation.</para>
+      <para><emphasis role="bold">Shorewall version 3.2.* only.</emphasis>
+      When compiling your firewall configuration, Shorewall copies most
+      extension scripts directly into the "compiled" program where they are
+      executed in-line during processing of the start, restart and restore
+      commands. When copying a script, Shorewall indents the script to match
+      the surrounding code; if you have 'awk' installed on the system where
+      the configuration is being compiled, Shorewall can correctly handle line
+      continuation in your script ("\" as the last character on a line). If
+      you do not have awk, you may not use line continuation in your scripts.
+      Also beware that quoted strings continued from one line to another will
+      have extra whitespace inserted as a result of indentation.</para>
 
       <note>
         <para>The <filename>/etc/shorewall/params</filename> script is
@@ -280,41 +279,60 @@
         processed by the compiler rather than copied into the compiled
         script.</para>
       </note>
+
+      <note>
+        <para>Beginning in Shorewall version 3.4.9, a
+        <firstterm>compile</firstterm> extension script is supported. This
+        script is sourced during compiler initialization in the same way as
+        <filename>/etc/shorewall/params</filename>. This script is useful if
+        you are running Shorewall Lite on remote firewall systems and wish to
+        set variables only on the administrative system during
+        compilation.</para>
+      </note>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">Shorewall version 3.4.0 RC2 and
+      later.</emphasis> When compiling your firewall configuration, Shorewall
+      copies most extension scripts directly into the "compiled" program where
+      they are executed in-line during processing of the start, restart and
+      restore commands. When copying a script, Shorewall indents the script to
+      match the surrounding code; if you have 'awk' installed on the system
+      where the configuration is being compiled, Shorewall can correctly
+      handle line continuation in your script ("\" as the last character on a
+      line). If you do not have awk, you may not use line continuation in your
+      scripts. Also beware that quoted strings continued from one line to
+      another will have extra whitespace inserted as a result of
+      indentation.</para>
+
+      <note>
+        <para>The <filename>/etc/shorewall/params</filename> script is
+        processed only during compilation. So shell variables set in that file
+        may be used in Shorewall configuration files only. Any variables that
+        your extension scripts require at run-time should be set in
+        <filename>/etc/shorewall/init</filename>.Note that if you assign
+        dynamic values to variables, there is no guarantee that the value
+        calculated at compile time will be the same as what is calculated at
+        run time. This is particularly true if you use the <command>shorewall
+        compile</command> command to compile a program then run that program
+        at a later time or if you use Shorewall Lite.</para>
+      </note>
+
+      <note>
+        <para>Extension scripts associated with a particular chain or action
+        are not copied into the compiled script; they are rather processed
+        directly by the compiler using the Bourne shell "." command. For
+        example, if A is an action then if <filename
+        class="directory">/etc/shorewall/A</filename> exists then it will be
+        processed by the compiler rather than copied into the compiled
+        script.</para>
+      </note>
+
+      <note>
+        <para>The <firstterm>compile</firstterm> extension script is still
+        supported but its use is deprecated since it performs the same
+        function as <filename>/etc/shorewall/params</filename>.</para>
+      </note>
     </listitem>
   </itemizedlist>
-
-  <para>You can also define a <emphasis>default action</emphasis> to be
-  performed immediately before a policy of ACCEPT, DROP or REJECT is applied.
-  Separate <ulink url="Actions.html">actions</ulink> can be assigned to each
-  policy type so for example you can have a different default action for DROP
-  and REJECT policies. The most common usage of default actions is to silently
-  drop traffic that you don't wish to have logged by the policy.</para>
-
-  <para>As released, Shorewall defines a number of actions which are cataloged
-  in the <filename>/usr/share/shorewall/actions.std</filename> file. That file
-  is processed before /etc/shorewall/actions. Among the entries in
-  <filename>/usr/share/shorewall/actions.std</filename> are:</para>
-
-  <programlisting>Drop:DROP
-Reject:REJECT</programlisting>
-
-  <para>So the action named <quote>Drop</quote> is performed immediately
-  before DROP policies are applied and the action called <quote>Reject</quote>
-  is performed before REJECT policies are applied. These actions are defined
-  in the files <filename>/usr/share/shorewall/action.Drop</filename> and
-  <filename>/usr/share/shorewall/action.Reject</filename> respectively.</para>
-
-  <para>You can override these defaults with entries in your
-  /etc/shorewall/actions file. For example, if that file were to contain
-  <quote>MyDrop:DROP</quote> then the default action for DROP policies would
-  become <quote>MyDrop</quote>.</para>
-
-  <para>One final note. The chain created to perform an action has the same
-  name as the action. You can use an extension script by that name to add
-  rules to the action's chain in the same way as you can any other chain. So
-  if you create the new action <quote>Dagger</quote> and define it in
-  <filename>/etc/shorewall/action.Dagger</filename>, you can also have an
-  extension script named <filename>/etc/shorewall/Dagger</filename> that can
-  add rules to the <quote>Dagger</quote> chain that can't be created using
-  <filename>/etc/shorewall/action.Dagger</filename>.</para>
 </article>

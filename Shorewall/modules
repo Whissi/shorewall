@@ -3,7 +3,7 @@
 #
 # /usr/share/shorewall/modules
 #
-#	This file loads the modules needed by the firewall.
+#	This file loads the modules that may be needed by the firewall.
 #
 #	THE ORDER OF THE COMMANDS BELOW IS IMPORTANT!!!!!! You MUST load in
 #	dependency order. i.e., if M2 depends on M1 then you must load M1
@@ -46,13 +46,22 @@ loadmodule xt_tcpmss
 #
 # Helpers
 #
+loadmodule ip_conntrack_amanda
 loadmodule ip_conntrack_ftp
-loadmodule ip_conntrack_tftp
+loadmodule ip_conntrack_h323
 loadmodule ip_conntrack_irc
-loadmodule iptable_nat
+loadmodule ip_conntrack_netbios_ns
+loadmodule ip_conntrack_pptp
+loadmodule ip_conntrack_sip
+loadmodule ip_conntrack_tftp
+loadmodule ip_nat_amanda
 loadmodule ip_nat_ftp
-loadmodule ip_nat_tftp
+loadmodule ip_nat_h323
 loadmodule ip_nat_irc
+loadmodule ip_nat_pptp
+loadmodule ip_nat_sip
+loadmodule ip_nat_snmp_basic
+loadmodule ip_nat_tftp
 loadmodule ip_set
 loadmodule ip_set_iphash
 loadmodule ip_set_ipmap

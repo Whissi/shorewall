@@ -1,0 +1,41 @@
+#/bin/sh
+
+rpm=
+literpm=
+
+DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging//shorewall-$1"
+
+case $1 in
+    3.*[13569].*)
+	rpm=shorewall-${1}-1.noarch.rpm
+	literpm=shorewall-lite-${1}-1.noarch.rpm
+	;;
+    *.*[13569].*)
+	rpm=shorewall-${1}-1.noarch.rpm
+	;;
+    *Beta*|*RC*)
+	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
+	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
+	;;
+    3.[2468].*)
+	rpm=shorewall-${1}-1.noarch.rpm
+	literpm=shorewall-lite-${1}-1.noarch.rpm
+	;;
+    *)
+	rpm=shorewall-${1}-1.noarch.rpm
+	;;
+esac
+
+[ $# -eq 1 ] || { echo "Usage: $(basename $0) <version>"; exit 2; }
+
+[ -d errata ] || mkdir errata
+
+echo "There are no known problems in Shorewall version $1" > known_problems.txt
+
+if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
+    cat shorewall-${1}/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
+else
+    cat shorewall-${1}/releasenotes.txt > releasenotes.txt
+fi
+
+scp -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $DEST

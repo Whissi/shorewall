@@ -39,9 +39,10 @@ Other Changes in 3.4.0 RC 1
 1)  In spite of my claim that I would not introduce any changes other
     than bug fixes in a release candidate, I'm going to do so anyway.
 
-    Beginning with Shorewall 3.4.0, Shorewall will only process
+    Beginning with Shorewall 3.4.0 RC2, Shorewall will only process
     /etc/shorewall/params during the compile phase. Any shell variables
-    needed at run-time must be set in /etc/shorewall/init.
+    needed at run-time by your extension scripts must be set in
+    /etc/shorewall/init.
 
     In a Shorewall/Shorewall Lite environment, this allows
     /etc/shorewall/params to be written to run exclusively
@@ -146,10 +147,29 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
     /etc/shorewall-lite/shorewall-lite.conf. When you upgrade,
     your shorewall.conf file will be renamed shorewall-lite.conf.
 
-6)  Previously, 'ipsecnat' tunnels allowed AH traffic by default
-    (unless 'isecnat:noah' was given). Given that AH is incompatible
-    with nat-traversal, 'ipsecnat' now implies 'ipsecnat:noah' and the
-    latter is now redundant.
+6)  This issue only applies if you set shell variables in
+    /etc/shorewall/params.
+
+    Beginning with Shorewall 3.4.0, Shorewall will only process
+    /etc/shorewall/params during the compile phase. Any shell variables
+    needed at run-time by your extension scripts must be set in
+    /etc/shorewall/init.
+
+    In a Shorewall/Shorewall Lite environment, this allows
+    /etc/shorewall/params to be written to run exclusively
+    on the administrative system while /etc/shorewall/init runs
+    exclusively on the firewall system.
+
+    So shell variables required at compile time may be set in
+    /etc/shorewall/params and those required at run-time may be set in
+    /etc/shorewall/init.
+
+    As part of this change, extra white space is no longer removed from
+    /etc/shorewall/params as it was in RC1.
+
+    The /etc/shorewall/compile extension script introduced in Shorewall
+    3.2.9 will continue to be supported but its use is deprecated since
+    it now performs the same function as /etc/shorewall/params.
 
 New Features in Shorewall 3.4:
 

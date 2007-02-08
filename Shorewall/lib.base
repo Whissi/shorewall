@@ -910,6 +910,21 @@ resolve_file() # $1 = file name
 }
 
 #
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $@ = contents of variable which may be the name of another variable
+{
+    eval echo \"$@\"
+}
+
+#
+# Function for including one file into another
+#
+INCLUDE() {
+    . $(find_file $(expand $@))
+}
+
+#
 # Set the Shorewall state
 #
 set_state () # $1 = state

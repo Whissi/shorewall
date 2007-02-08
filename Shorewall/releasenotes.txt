@@ -34,28 +34,14 @@ Problems Corrected in 3.4.0 RC2
     automatically loaded by Shorewall. They have now been added to the
     /usr/share/shorewall[-lite]/modules files.
 
+2)  If "INCLUDE <filename>" appeared in /etc/shorewall/params then
+    run-time errors occurred. This has been corrected. Note that if you
+    use INCLUDE in your params file in an export directory then the
+    included file must also be available on the firewall system in
+    /etc/shorewall-lite/. 
+
 Other Changes in 3.4.0 RC 1
 
-1)  In spite of my claim that I would not introduce any changes other
-    than bug fixes in a release candidate, I'm going to do so anyway.
-
-    Beginning with Shorewall 3.4.0 RC2, Shorewall will only process
-    /etc/shorewall/params during the compile phase. Any shell variables
-    needed at run-time by your extension scripts must be set in
-    /etc/shorewall/init.
-
-    In a Shorewall/Shorewall Lite environment, this allows
-    /etc/shorewall/params to be written to run exclusively
-    on the administrative system while /etc/shorewall/init runs
-    exclusively on the firewall system.
-
-    So shell variables required at compile time may be set in
-    /etc/shorewall/params and those required at run-time may be set in
-    /etc/shorewall/init.
-
-    As part of this change, extra white space is no longer removed from
-    /etc/shorewall/params as it was in RC1.
- 
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then

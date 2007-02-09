@@ -5092,7 +5092,7 @@ __EOF__
 __EOF__
     fi
 
-    append_file params
+    [ -n "$EXPORTPARAMS" -o -z "$EXPORT" ] && append_file params
 
     cat >&3 << __EOF__
 

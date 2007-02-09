@@ -34,13 +34,24 @@ Problems Corrected in 3.4.0 RC2
     automatically loaded by Shorewall. They have now been added to the
     /usr/share/shorewall[-lite]/modules files.
 
-2)  If "INCLUDE <filename>" appeared in /etc/shorewall/params then
-    run-time errors occurred. This has been corrected. Note that if you
-    use INCLUDE in your params file in an export directory then the
-    included file must also be available on the firewall system in
-    /etc/shorewall-lite/. 
+2)  It is very difficult to code a 'params' file that assigns other
+    than constant values such that it works correctly with Shorewall
+    Lite. To work around this problem, a new EXPORTPARAMS option
+    has been added to shorewall.conf. When EXPORTPARAMS=No, the
+    'params' file is no longer copied to the compiler output when the
+    '-e' flag is present.
 
-Other Changes in 3.4.0 RC 1
+    With EXPORTPARAMS=No, uf you need to set environmental variables on
+    the firewall system for use by your extension scripts, then do so
+    in the init extension script.
+
+    The default is EXPORTPARAMS=Yes to retain the current behavior.
+
+    This fix is brought forward from Shorewall version 3.2.9.
+ 
+Other Changes in 3.4.0 RC 2
+
+None.
 
 Migration Considerations:
 
@@ -132,30 +143,6 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
     The /etc/shorewall-lite/shorewall.conf file has been renamed
     /etc/shorewall-lite/shorewall-lite.conf. When you upgrade,
     your shorewall.conf file will be renamed shorewall-lite.conf.
-
-6)  This issue only applies if you set shell variables in
-    /etc/shorewall/params.
-
-    Beginning with Shorewall 3.4.0, Shorewall will only process
-    /etc/shorewall/params during the compile phase. Any shell variables
-    needed at run-time by your extension scripts must be set in
-    /etc/shorewall/init.
-
-    In a Shorewall/Shorewall Lite environment, this allows
-    /etc/shorewall/params to be written to run exclusively
-    on the administrative system while /etc/shorewall/init runs
-    exclusively on the firewall system.
-
-    So shell variables required at compile time may be set in
-    /etc/shorewall/params and those required at run-time may be set in
-    /etc/shorewall/init.
-
-    As part of this change, extra white space is no longer removed from
-    /etc/shorewall/params as it was in RC1.
-
-    The /etc/shorewall/compile extension script introduced in Shorewall
-    3.2.9 will continue to be supported but its use is deprecated since
-    it now performs the same function as /etc/shorewall/params.
 
 New Features in Shorewall 3.4:
 

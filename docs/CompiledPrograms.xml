@@ -73,8 +73,8 @@
 
             <listitem>
               <para>With Shorewall 3.2.0 through 3.2.8, the
-              <filename>/etc/shorewall/params</filename> extension script is
-              executed at compile time as well as at run time.</para>
+              <filename>params</filename> extension script is executed at
+              compile time as well as at run time.</para>
 
               <para>Running the script at compile time allows variable
               expansion (expanding $variable to it's defined value) of
@@ -92,9 +92,9 @@
               <para>in <filename>/etc/shorewall/params</filename> then all
               occurrences of $EXT_IP in Shorewall configuration files will be
               replaced with eth0's IP address when the program is being
-              compiled. On the other hand, if you use $EXT_IP in your
-              /etc/shorewall/start script, the value will be the IP address of
-              eth0 when the program is run.</para>
+              compiled. On the other hand, if you use $EXT_IP in your start
+              script, the value will be the IP address of eth0 when the
+              program is run.</para>
 
               <para>Bottom line: You probably want to use only constant values
               for variables set in
@@ -102,14 +102,16 @@
             </listitem>
 
             <listitem>
-              <para>Beginning with Shorewall 3.4.0 RC2,
-              <filename>/etc/shorewall/params</filename> is only processed at
-              compile time. For run-time setting of shell variables, use
-              <filename>/etc/shorewall/init</filename>.</para>
+              <para>Beginning with Shorewall 3.2.9 and 3.4.0 RC2, the
+              <filename>params</filename> file is only processed at compile
+              time if you set EXPORTPARAMS=No in
+              <filename>shorewall.conf</filename>. For run-time setting of
+              shell variables, use the <filename>init</filename> extension
+              script.</para>
 
-              <para>If <filename>/etc/shorewall/params</filename> needs to set
-              shell variables based on the configuration of the firewall
-              system, you can use this trick:</para>
+              <para>If the <filename>params</filename> file needs to set shell
+              variables based on the configuration of the firewall system, you
+              can use this trick:</para>
 
               <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
 
@@ -624,6 +626,61 @@ clean:
           using the export directory will not include any files from <filename
           class="directory">/etc/shorewall</filename>.</para>
 
+          <para>If you set variables in the params file, there are a couple of
+          issues:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>With Shorewall 3.2.0 through 3.2.8, the
+              <filename>params</filename> extension script is executed at
+              compile time as well as at run time.</para>
+
+              <para>Running the script at compile time allows variable
+              expansion (expanding $variable to it's defined value) of
+              variables used in Shorewall configuration files to occur at
+              compile time. Running it at run-time allows your extension
+              scripts to use the variables that it creates. BUT -- for any
+              given variable, the value at compile time may be different from
+              the value at run-time unless you only assign constant
+              values.</para>
+
+              <para>For example, if you have:</para>
+
+              <programlisting>EXT_IP=$(find_first_interface_address eth0)</programlisting>
+
+              <para>in <filename>/etc/shorewall/params</filename> then all
+              occurrences of $EXT_IP in Shorewall configuration files will be
+              replaced with eth0's IP address when the program is being
+              compiled. On the other hand, if you use $EXT_IP in your start
+              script, the value will be the IP address of eth0 when the
+              program is run.</para>
+
+              <para>Bottom line: You probably want to use only constant values
+              for variables set in <filename>/etc/shorewall/params</filename>
+              or upgrade to Shorewall 3.2.9 or later (3.4.0 RC2 or
+              later).</para>
+            </listitem>
+
+            <listitem>
+              <para>Beginning with Shorewall 3.2.9 and 3.4.0 RC2, the
+              <filename>params</filename> file is only processed at compile
+              time if you set EXPORTPARAMS=No in
+              <filename>shorewall.conf</filename>. For run-time setting of
+              shell variables, use the <filename>init</filename> extension
+              script.</para>
+
+              <para>If the <filename>params</filename> file needs to set shell
+              variables based on the configuration of the firewall system, you
+              can use this trick:</para>
+
+              <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
+
+              <para>The <command>shorewall-lite call</command> command allows
+              you to to call interactively any Shorewall function that you can
+              call in an extension script.</para>
+            </listitem>
+          </itemizedlist>
+
           <para>After having made the above changes to the firewall's export
           directory, execute the following commands.</para>
 
@@ -728,7 +785,7 @@ MANGLE_FORWARD                  # Mangle table has FORWARD chain</programlisting
     </blockquote>
 
     <para>As you can see, the file contains a simple list of shell variable
-    assignments -- the variables correspond to the capabilities listed by the
+    assignments — the variables correspond to the capabilities listed by the
     <command>shorewall show capabilities</command> command and they appear in
     the same order as the output of that command.</para>
 

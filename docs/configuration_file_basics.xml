@@ -713,29 +713,21 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       </listitem>
 
       <listitem>
-        <para>In Shorewall 3.2, the <filename>/etc/shorewall/params</filename>
-        file is processed by the compiler at compile-time and by the compiled
-        script at run-time. Beginning with Shorewall version 3.2.9, the
-        <filename>/etc/shorewall/params</filename> file is pre-processed in
-        such a way that extra white-space is compressed from the file as it is
-        being copied into the generated compiler output. So the code in
-        /etc/shorewall/params should not depend on precise white-space,
-        including whitespace within quoted strings.</para>
+        <para>The <filename>/etc/shorewall/params</filename> file is processed
+        by the compiler at compile-time and by the compiled script at
+        run-time. Beginning with Shorewall 3.2.9 and 3.4.0 RC2, if the "-e"
+        flag is given to the compiler and you have set EXPORTPARAMS=No in
+        <filename>shorewall.conf</filename>, then the
+        <filename><filename>params</filename></filename> file is only
+        processed by the compiler; it is not run by the compiled
+        script.</para>
       </listitem>
 
       <listitem>
-        <para>Beginning with Shorewall 3.4.0 RC2,
-        <filename>/etc/shorewall/params</filename> is no longer copied into
-        the compiled script (and extra white-space is no longer compresed from
-        the file). If you need to set shell variables for use by your run-time
-        <ulink url="shorewall_extension_scripts.htm">extension
-        scripts</ulink>, then set those variables in your
-        <filename>/etc/shorewall/init</filename> file.</para>
-
-        <para>If you are using Shorewall Lite and if
-        <filename>/etc/shorewall/params</filename> needs to set shell
-        variables based on the configuration of the firewall system, you can
-        use this trick:</para>
+        <para>If you are using Shorewall Lite and if the
+        <filename>params</filename> script needs to set shell variables based
+        on the configuration of the firewall system, you can use this
+        trick:</para>
 
         <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
 

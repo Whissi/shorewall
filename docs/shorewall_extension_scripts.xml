@@ -245,17 +245,18 @@
     </listitem>
 
     <listitem>
-      <para><emphasis role="bold">Shorewall version 3.2.* only.</emphasis>
-      When compiling your firewall configuration, Shorewall copies most
-      extension scripts directly into the "compiled" program where they are
-      executed in-line during processing of the start, restart and restore
-      commands. When copying a script, Shorewall indents the script to match
-      the surrounding code; if you have 'awk' installed on the system where
-      the configuration is being compiled, Shorewall can correctly handle line
-      continuation in your script ("\" as the last character on a line). If
-      you do not have awk, you may not use line continuation in your scripts.
-      Also beware that quoted strings continued from one line to another will
-      have extra whitespace inserted as a result of indentation.</para>
+      <para><emphasis role="bold">Shorewall version 3.2.0 - 3.2.8
+      only.</emphasis> When compiling your firewall configuration, Shorewall
+      copies most extension scripts directly into the "compiled" program where
+      they are executed in-line during processing of the start, restart and
+      restore commands. When copying a script, Shorewall indents the script to
+      match the surrounding code; if you have 'awk' installed on the system
+      where the configuration is being compiled, Shorewall can correctly
+      handle line continuation in your script ("\" as the last character on a
+      line). If you do not have awk, you may not use line continuation in your
+      scripts. Also beware that quoted strings continued from one line to
+      another will have extra whitespace inserted as a result of
+      indentation.</para>
 
       <note>
         <para>The <filename>/etc/shorewall/params</filename> script is
@@ -279,20 +280,10 @@
         processed by the compiler rather than copied into the compiled
         script.</para>
       </note>
-
-      <note>
-        <para>Beginning in Shorewall version 3.4.9, a
-        <firstterm>compile</firstterm> extension script is supported. This
-        script is sourced during compiler initialization in the same way as
-        <filename>/etc/shorewall/params</filename>. This script is useful if
-        you are running Shorewall Lite on remote firewall systems and wish to
-        set variables only on the administrative system during
-        compilation.</para>
-      </note>
     </listitem>
 
     <listitem>
-      <para><emphasis role="bold">Shorewall version 3.4.0 RC2 and
+      <para><emphasis role="bold">Shorewall version 3.2.9 (3.4.0 RC2) and
       later.</emphasis> When compiling your firewall configuration, Shorewall
       copies most extension scripts directly into the "compiled" program where
       they are executed in-line during processing of the start, restart and
@@ -307,15 +298,25 @@
 
       <note>
         <para>The <filename>/etc/shorewall/params</filename> script is
-        processed only during compilation. So shell variables set in that file
-        may be used in Shorewall configuration files only. Any variables that
-        your extension scripts require at run-time should be set in
-        <filename>/etc/shorewall/init</filename>.Note that if you assign
-        dynamic values to variables, there is no guarantee that the value
-        calculated at compile time will be the same as what is calculated at
-        run time. This is particularly true if you use the <command>shorewall
-        compile</command> command to compile a program then run that program
-        at a later time or if you use Shorewall Lite.</para>
+        processed only during compilation if the "-e" compiler flag is given
+        and EXPORTPARAMS=No in <filename>shorewall.conf</filename>. So shell
+        variables set in that file may be used in Shorewall configuration
+        files only. Any variables that your extension scripts require at
+        run-time on the firewall system should be set in the
+        <filename>init</filename> extension script.</para>
+
+        <para>When the "-e" flag is not given or when EXPORTPARAMS=Yes (the
+        default), the <filename>/etc/shorewall/params</filename> script is
+        processed during compilation <emphasis role="bold">and</emphasis>
+        copied into the compiled script as described above. So shell variables
+        set during compilation may be used in Shorewall configuration files
+        while those set at run-time are available to your other extension
+        scripts.Note that if you assign dynamic values to variables, there is
+        no guarantee that the value calculated at compile time will be the
+        same as what is calculated at run time. This is particularly true if
+        you use the <command>shorewall compile</command> command to compile a
+        program then run that program at a later time or if you use Shorewall
+        Lite.</para>
       </note>
 
       <note>
@@ -326,12 +327,6 @@
         class="directory">/etc/shorewall/A</filename> exists then it will be
         processed by the compiler rather than copied into the compiled
         script.</para>
-      </note>
-
-      <note>
-        <para>The <firstterm>compile</firstterm> extension script is still
-        supported but its use is deprecated since it performs the same
-        function as <filename>/etc/shorewall/params</filename>.</para>
       </note>
     </listitem>
   </itemizedlist>

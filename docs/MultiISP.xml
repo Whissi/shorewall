@@ -715,12 +715,13 @@ eth1             eth2              130.252.99.27</programlisting>
       independent of Netfilter.</para>
 
       <warning>
-        <para>Entries in <filename>/etc/shorewall/route_rules</filename>
-        permanently alter your firewall/gateway's routing; that is, the effect
-        of these changes is not reversed by <command>shorewall stop</command>
-        or <command>shorewall clear</command>. To restore routing to its
-        original state, you may have to restart your network. This can usually
-        be done by <command>/etc/init.d/network restart</command> or
+        <para>Prior to Shorewall version 3.4.0, entries in
+        <filename>/etc/shorewall/route_rules</filename> permanently alter your
+        firewall/gateway's routing; that is, the effect of these changes is
+        not reversed by <command>shorewall stop</command> or
+        <command>shorewall clear</command>. To restore routing to its original
+        state, you may have to restart your network. This can usually be done
+        by <command>/etc/init.d/network restart</command> or
         <command>/etc/init.d/networking restart</command>. Check your
         distribution's networking documentation.</para>
 

@@ -3143,6 +3143,26 @@ eth0                  eth1            206.124.146.176</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>EXPORTPARAMS (Added in versions 3.2.9 and 3.4.0 RC2)</term>
+
+        <listitem>
+          <para>It is quite difficult to code a 'params' file that assigns
+          other than constant values such that it works correctly with
+          Shorewall Lite. The EXPORTPARAMS option works around this problem.
+          When EXPORTPARAMS=No, the 'params' file is not copied to the
+          compiler output.</para>
+
+          <para>With EXPORTPARAMS=No, if you need to set environmental
+          variables on the firewall system for use by your extension scripts,
+          then do so in the init extension script.</para>
+
+          <para>The default is EXPORTPARAMS=Yes which causes the 'params' file
+          to be copied to the compiler output and to be executed at
+          run-time.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>FASTACCEPT</term>
 
         <listitem>

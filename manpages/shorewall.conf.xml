@@ -394,6 +394,25 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">EXPORTPARAMS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>It is quite difficult to code a 'params' file that assigns
+          other than constant values such that it works correctly with
+          Shorewall Lite. The EXPORTPARAMS option works around this problem.
+          When EXPORTPARAMS=No, the 'params' file is not copied to the
+          compiler output when the '-e' compiler flag is present.</para>
+
+          <para>With EXPORTPARAMS=No, if you need to set environmental
+          variables on the firewall system for use by your extension scripts,
+          then do so in the init extension script.</para>
+
+          <para>The default is EXPORTPARAMS=Yes</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">FASTACCEPT=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 

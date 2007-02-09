@@ -298,25 +298,24 @@
 
       <note>
         <para>The <filename>/etc/shorewall/params</filename> script is
-        processed only during compilation if the "-e" compiler flag is given
-        and EXPORTPARAMS=No in <filename>shorewall.conf</filename>. So shell
-        variables set in that file may be used in Shorewall configuration
-        files only. Any variables that your extension scripts require at
-        run-time on the firewall system should be set in the
-        <filename>init</filename> extension script.</para>
+        processed only during compilation if EXPORTPARAMS=No in
+        <filename>shorewall.conf</filename>. So shell variables set in that
+        file may be used in Shorewall configuration files only. Any variables
+        that your extension scripts require at run-time on the firewall system
+        should be set in the <filename>init</filename> extension
+        script.</para>
 
-        <para>When the "-e" flag is not given or when EXPORTPARAMS=Yes (the
-        default), the <filename>/etc/shorewall/params</filename> script is
-        processed during compilation <emphasis role="bold">and</emphasis>
-        copied into the compiled script as described above. So shell variables
-        set during compilation may be used in Shorewall configuration files
-        while those set at run-time are available to your other extension
-        scripts.Note that if you assign dynamic values to variables, there is
-        no guarantee that the value calculated at compile time will be the
-        same as what is calculated at run time. This is particularly true if
-        you use the <command>shorewall compile</command> command to compile a
-        program then run that program at a later time or if you use Shorewall
-        Lite.</para>
+        <para>When EXPORTPARAMS=Yes (the default), the
+        <filename>/etc/shorewall/params</filename> script is processed during
+        compilation <emphasis role="bold">and</emphasis> copied into the
+        compiled script as described above. So shell variables set during
+        compilation may be used in Shorewall configuration files while those
+        set at run-time are available to your other extension scripts.Note
+        that if you assign dynamic values to variables, there is no guarantee
+        that the value calculated at compile time will be the same as what is
+        calculated at run time. This is particularly true if you use the
+        <command>shorewall compile</command> command to compile a program then
+        run that program at a later time or if you use Shorewall Lite.</para>
       </note>
 
       <note>

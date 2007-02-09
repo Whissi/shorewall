@@ -346,17 +346,31 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
   <section id="INCLUDE">
     <title>INCLUDE Directive</title>
 
-    <para>Any configuration file may contain INCLUDE directives (INCLUDE is
-    not supported in <ulink url="shorewall_extension_scripts.htm">extension
-    scripts</ulink>). An INCLUDE directive consists of the word INCLUDE
-    followed by a path name and causes the contents of the named file to be
-    logically included into the file containing the INCLUDE. Relative path
-    names given in an INCLUDE directive are assumed to reside in
-    /etc/shorewall or in an alternate configuration directory if one has been
-    specified for the command.</para>
+    <para>Any configuration file may contain INCLUDE directives. An INCLUDE
+    directive consists of the word INCLUDE followed by a path name and causes
+    the contents of the named file to be logically included into the file
+    containing the INCLUDE. Relative path names given in an INCLUDE directive
+    are assumed to reside in /etc/shorewall or in an alternate configuration
+    directory if one has been specified for the command.</para>
 
     <para>INCLUDE's may be nested to a level of 3 -- further nested INCLUDE
     directives are ignored with a warning message.</para>
+
+    <caution>
+      <para>If you are using <ulink
+      url="CompiledPrograms.html%23Lite">Shorewall Lite</ulink> and are
+      running a version of Shorewall earlier than 3.2.9, it is not advisable
+      to use INCLUDE in the <filename>params</filename> file in an export
+      directory. If you do that, you must ensure that the included file is
+      also present on the firewall system's <filename
+      class="directory">/etc/shorewall-lite/</filename> directory.</para>
+
+      <para>Beginning with Shorewall version 3.2.9 (3.4.0 RC2), you can set
+      EXPORTPARAMS=No in <filename>shorewall.conf</filename>. That prevents
+      the <filename>params</filename> file from being copied into the compiled
+      script. With EXPORTPARAMS=No, it is perfectly okay to use INCLUDE in the
+      <filename>params</filename> file.</para>
+    </caution>
 
     <example>
       <title>Use of INCLUDE</title>
@@ -724,7 +738,8 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       </listitem>
 
       <listitem>
-        <para>If you are using Shorewall Lite and if the
+        <para>If you are using <ulink
+        url="CompiledPrograms.html%23Lite">Shorewall Lite</ulink> and if the
         <filename>params</filename> script needs to set shell variables based
         on the configuration of the firewall system, you can use this
         trick:</para>

@@ -238,7 +238,9 @@ find_interface_addresses $interface | while read address; do
     qt ip rule del from \$address
 done
 __EOF__
+	    [ -n "$balance" ] && error_message "WARNING: 'balance' and 'loose' should not be specified together - Provider \"$provider\""
 	fi
+     
 
     indent >&3 << __EOF__
 

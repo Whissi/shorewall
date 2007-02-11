@@ -597,6 +597,59 @@ done</programlisting>
       of failure of one of your Internet connections</emphasis>.</para>
     </section>
 
+    <section id="Martians">
+      <title>Martians</title>
+
+      <para>One problem that often arises with Multi-ISP configuration is
+      'Martians'. If your internet interfaces are configured with the
+      <emphasis role="bold">routefilter</emphasis> option in
+      <filename>/etc/shorewall/interfaces</filename> (remember that if you set
+      that option, you should also select <emphasis
+      role="bold">logmartians</emphasis>), then things may not work correctly
+      and you will see messages like this:</para>
+
+      <programlisting>Feb  9 17:23:45 gw.ilinx kernel: martian source 206.124.146.176 from 64.86.88.116, on dev eth1 
+Feb  9 17:23:45 gw.ilinx kernel: ll header: 00:a0:24:2a:1f:72:00:13:5f:07:97:05:08:00</programlisting>
+
+      <para>The above message is somewhat awkwardly phrased. The source IP in
+      this incoming packet was 64.86.88.116 and the destination IP address is
+      206.124.146.176. Another gotcha is that the incoming packet has already
+      had the destination IP address changed for DNAT or because the original
+      outgoing connection was altered by an entry in
+      <filename>/etc/shorewall/masq</filename> (SNAT or Masquerade). So the
+      destination IP address (206.124.146.176) may not have been the
+      destination IP address in the packet as it was initially
+      received.</para>
+
+      <para>There a couple of common causes for these problems:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>You have connected both of your external interfaces to the
+          same hub/switch. Connecting multiple firewall interfaces to a common
+          hub or switch is always a bad idea that will result in
+          hard-to-diagnose problems.</para>
+        </listitem>
+
+        <listitem>
+          <para>You are specifying both the <emphasis
+          role="bold">loose</emphasis> and <emphasis
+          role="bold">balance</emphasis> options on your provider(s). This
+          causes individual connections to ping-pong back and forth between
+          the interfaces which is guaranteed to cause problems.</para>
+        </listitem>
+
+        <listitem>
+          <para>You are redirecting traffic from the local system out of one
+          interface or the other using packet marking in your
+          <filename>/etc/shorewall/tcrules</filename> file. A better approach
+          is to configure the application to use the appropriate local IP
+          address (the IP address of the interface that you want the
+          application to use). See <link linkend="Local">below</link>.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+
     <section>
       <title>Example</title>
 
@@ -621,17 +674,19 @@ net      eth1         detect          …</programlisting>
       <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
 net        net            DROP</programlisting>
 
-      <para>Regardless of whether you have masqueraded hosts or not, <emphasis
-      role="bold">YOU MUST ADD THESE TWO ENTRIES TO
-      <filename>/etc/shorewall/masq</filename></emphasis>:</para>
+      <para>Regardless of whether you have masqueraded hosts or not, the
+      following entries are required in
+      <filename>/etc/shorewall/masq</filename> if you plan to redirect
+      connections from the firewall using entries in
+      <filename>/etc/shorewall/tcrules</filename>.</para>
 
       <programlisting>#INTERFACE       SUBNET            ADDRESS
 eth0             130.252.99.27     206.124.146.176
 eth1             206.124.146.176   130.252.99.27</programlisting>
 
-      <para>Those entries ensure that traffic originating on the firewall
-      always has the source IP address corresponding to the interface that it
-      is routed out of.</para>
+      <para>Those entries ensure that traffic originating on the firewall and
+      redirected via packet marks always has the source IP address
+      corresponding to the interface that it is routed out of.</para>
 
       <note>
         <para>If you have a Dynamic IP address on either of the interfaces,
@@ -679,13 +734,16 @@ eth1             eth2              130.252.99.27</programlisting>
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
     </section>
 
-    <section>
+    <section id="Local">
       <title>Applications running on the Firewall</title>
 
       <para>Experience has shown that in some cases, problems occur with
-      applications running on the firewall itself. When this happens, it is
-      suggested that you have the application use specific local IP addresses
-      rather than 0.</para>
+      applications running on the firewall itself. This is especially true
+      when you have specified <emphasis role="bold">routefilter</emphasis> on
+      your external interfaces in /etc/shorewall/interfaces (see <link
+      linkend="Martians">above</link>). When this happens, it is suggested
+      that you have the application use specific local IP addresses rather
+      than 0.</para>
 
       <para>Examples:</para>
 

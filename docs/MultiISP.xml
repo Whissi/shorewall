@@ -654,7 +654,7 @@ Feb  9 17:23:45 gw.ilinx kernel: ll header: 00:a0:24:2a:1f:72:00:13:5f:07:97:05:
       If you do this, you may wish to add rules to log and drop packets from
       the Internet that have source addresses in your local networks. For
       example, if the local LAN in the above diagram is 192.168.1.0/24, then
-      you would add this rule: </para>
+      you would add this rule:</para>
 
       <programlisting>#ACTION          SOURCE                     DEST
 DROP:info        net:192.168.1.0/24         all</programlisting>
@@ -691,7 +691,8 @@ net        net            DROP</programlisting>
       following entries are required in
       <filename>/etc/shorewall/masq</filename> if you plan to redirect
       connections from the firewall using entries in
-      <filename>/etc/shorewall/tcrules</filename>.</para>
+      <filename>/etc/shorewall/tcrules</filename> or if you specify <emphasis
+      role="bold">balance</emphasis> on your providers.</para>
 
       <programlisting>#INTERFACE       SUBNET            ADDRESS
 eth0             130.252.99.27     206.124.146.176

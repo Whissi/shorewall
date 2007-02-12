@@ -303,14 +303,11 @@ SNAT  192.168.1.0/24 vpn              10.10.10.0/24        #RULE 2B</programlist
   <section>
     <title>Can't I do this with one router? Why do I need two?</title>
 
-    <para>The single router would have to be able to route to two different
-    192.168.1.0/24 networks. In Netfilter parlance, that would mean that the
-    destination IP address would have to be rewritten after the packet had
-    been routed; Netfilter doesn't have that capability.</para>
-
-    <para>Note that if you do it with two routers, then adding a third is
-    easy. There's no reason why you can't have yet another network that is
-    192.168.1.0/24 on the inside, but you can allocated it 10.10.12.0/24 for
-    everybody else.</para>
+    <para>I wrote this article before Shorewall included <ulink
+    url="MultiISP.html">multiple provider support</ulink>. You should be able
+    to accomplish the same thing with just one router through careful use of
+    /etc/shorewall/netmap and <ulink url="MultiISP.html">multiple
+    providers</ulink>. If you try it and get it working, please contribute an
+    update to this article.</para>
   </section>
 </article>

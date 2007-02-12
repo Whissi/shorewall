@@ -648,6 +648,19 @@ Feb  9 17:23:45 gw.ilinx kernel: ll header: 00:a0:24:2a:1f:72:00:13:5f:07:97:05:
           application to use). See <link linkend="Local">below</link>.</para>
         </listitem>
       </orderedlist>
+
+      <para>If all else fails, remove the <emphasis
+      role="bold">routefilter</emphasis> option from your external interfaces.
+      If you do this, you may wish to add rules to log and drop packets from
+      the Internet that have source addresses in your local networks. For
+      example, if the local LAN in the above diagram is 192.168.1.0/24, then
+      you would add this rule: </para>
+
+      <programlisting>#ACTION          SOURCE                     DEST
+DROP:info        net:192.168.1.0/24         all</programlisting>
+
+      <para>Be sure the above rule is added before any other rules with
+      <emphasis>net</emphasis> in the SOURCE column.</para>
     </section>
 
     <section>

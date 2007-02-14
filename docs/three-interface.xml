@@ -382,6 +382,31 @@ $FW        net         ACCEPT</programlisting>
     external interface will be <filename
     class="devicefile">ippp0</filename>.</para>
 
+    <tip>
+      <para>Be sure you know which interface is your external interface. Many
+      hours have been spent floundering by users who have configured the wrong
+      interface. If you are unsure, then as root type "ip route ls" at the
+      command line. The device listed in the last (default) route should be
+      your external interface.</para>
+
+      <para>Example:</para>
+
+      <programlisting>root@lists:~# ip route ls
+192.168.1.1 dev eth0  scope link 
+192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1 
+192.168.3.0/24 dev br0  proto kernel  scope link  src 192.168.3.254 
+10.13.10.0/24 dev tun1  scope link 
+192.168.2.0/24 via 192.168.2.2 dev tun0 
+192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.254 
+206.124.146.0/24 dev eth0  proto kernel  scope link  src 206.124.146.176 
+10.10.10.0/24 dev tun1  scope link 
+default via 206.124.146.254 dev <emphasis role="bold">eth0</emphasis> 
+root@lists:~# </programlisting>
+
+      <para>In that example, <filename class="devicefile">eth0</filename> is
+      the external interface.</para>
+    </tip>
+
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>I<emphasis role="bold">f your external interface is <filename
@@ -428,31 +453,6 @@ $FW        net         ACCEPT</programlisting>
     <filename>/etc/shorewall/interfaces</filename> file accordingly. While you
     are there, you may wish to review the list of options that are specified
     for the interfaces. Some hints:</para>
-
-    <tip>
-      <para>Be sure you know which interface is your external interface. Many
-      hours have been spent floundering by users who have configured the wrong
-      interface. If you are unsure, then as root type "ip route ls" at the
-      command line. The device listed in the last (default) route should be
-      your external interface.</para>
-
-      <para>Example:</para>
-
-      <programlisting>root@lists:~# ip route ls
-192.168.1.1 dev eth0  scope link 
-192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1 
-192.168.3.0/24 dev br0  proto kernel  scope link  src 192.168.3.254 
-10.13.10.0/24 dev tun1  scope link 
-192.168.2.0/24 via 192.168.2.2 dev tun0 
-192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.254 
-206.124.146.0/24 dev eth0  proto kernel  scope link  src 206.124.146.176 
-10.10.10.0/24 dev tun1  scope link 
-default via 206.124.146.254 dev <emphasis role="bold">eth0</emphasis> 
-root@lists:~# </programlisting>
-
-      <para>In that example, <filename class="devicefile">eth0</filename> is
-      the external interface.</para>
-    </tip>
 
     <tip>
       <para>If your external interface is <filename

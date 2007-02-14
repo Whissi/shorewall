@@ -43,25 +43,12 @@ None.
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then
-please see the 3.2.8 release notes for additional migration
+please see the 3.2.9 release notes for additional migration
 information.
 
-http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
+http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.9/releasenotes.txt
 
-1)  Beginning with Shorewall 3.4.0, Shorewall will only process
-    /etc/shorewall/params during the compile phase. Any shell variables
-    needed at run-time must be set in /etc/shorewall/init.
-
-    In a Shorewall/Shorewall Lite environment, this allows
-    /etc/shorewall/params to be written to run exclusively
-    on the administrative system while /etc/shorewall/init runs
-    exclusively on the firewall system.
-
-    So shell variables required at compile time may be set in
-    /etc/shorewall/params and those required at run-time may be set in
-    /etc/shorewall/init.
-
-2)  Shorewall supports the notion of "default actions". A default
+1)  Shorewall supports the notion of "default actions". A default
     action defines a set of rules that are applied before a policy is
     enforced. Default actions accomplish two goals:
 
@@ -94,12 +81,12 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
     Shorewall version 3.4. Otherwise, please see item 3) in the New
     Features below.
 
-3)  The 'Limit' action is now a builtin. If you have 'Limit' listed in
+2)  The 'Limit' action is now a builtin. If you have 'Limit' listed in
     /etc/shorewall/actions, remove the entry. Also remove the files
     /etc/shorewall/action.Limit and/or /etc/shorewall/Limit if you have
     them.
 
-4)  This issue only applies if you have entries in
+3)  This issue only applies if you have entries in
     /etc/shorewall/providers.
 
     Previously, Shorewall has not attempted to undo the changes it has
@@ -125,7 +112,7 @@ http://www.shorewall.net/pub/shorewall/3.2/shorewall-3.2.8/releasenotes.txt
        do exist, remove them.
     b) Either restart networking or reboot.
 
-5)  This issue only applies if you run Shorewall Lite. 
+4)  This issue only applies if you run Shorewall Lite. 
 
     The /etc/shorewall-lite/shorewall.conf file has been renamed
     /etc/shorewall-lite/shorewall-lite.conf. When you upgrade,
@@ -672,136 +659,21 @@ New Features in Shorewall 3.4:
 30) Shorewall now generates half as many rules as previously in the
     'blacklst' chain when BLACKLIST_LOGLEVEL is specified.
 
-Problems Corrected in 3.4.0 Beta 1.
+31) Beginning with Shorewall 3.4.0, if EXPORTPARAMS=No in
+    shorewall.conf then Shorewall will not process
+    /etc/shorewall/params when the compiled script is run. With
+    EXPORTPARAMS=No, any shell variables needed at run-time must be set
+    in /etc/shorewall/init.
 
-1)  It is now possible to place entries in the IPSEC column of 
-    /etc/shorewall/masq without having specified ipsec zones or hosts.
+    In a Shorewall/Shorewall Lite environment, this allows
+    /etc/shorewall/params to be written to run exclusively
+    on the administrative system while /etc/shorewall/init runs
+    exclusively on the firewall system.
 
-2)  The /etc/shorewall/masq file is no longer ignored when the
-    /etc/shorewall/nat file is empty.
+    So shell variables required at compile time may be set in
+    /etc/shorewall/params and those required at run-time may be set in
+    /etc/shorewall/init.
 
-Problems Corrected in 3.4.0 Beta 2
-
-1)  If 'blacklist' was specified on an interface and the
-    /etc/shorewall/blacklist file was empty, then the generated
-    firewall script contained a syntax error (the function
-    load_blacklist() was empty).
-
-2)  If the file /etc/shorewall/init did not exist, then the compiler
-    would incorrectly copy /usr/share/shorewall/init into the
-    compiled script. /usr/share/shorewall/init is a symbolic link
-    to the Shorewall init script (usually /etc/init.d/shorewall).
-
-3)  To allow Shorewall and Shorewall Lite to coexist on a single
-    system, the Shorewall section 5 manpages are no longer included in
-    Shorewall Lite. In addition, the Shorewall Lite manpage for
-    "shorewall.conf" has been renamed "shorewall-lite.conf". This
-    has resulted in a similar change to the actual file --
-    /etc/shorewall-lite/shorewall.conf has been renamed
-    /etc/shorewall-lite/shorewall-lite.conf.
-
-Problems Corrected in 3.4.0 Beta 3
-
-1)  Shorewall now supports VLAN interfaces with names of the form
-    vlan@ethX.
-
-2)  Previously, "ipp2p:udp" was incorrectly rejected in the PROTO
-    column of an action definition.
-
-3)  Previously, if an invalid DISPOSITION was specified in a record in
-    /etc/shorewall/maclist, then a confusing error message would
-    result.
-
-    Example:
-
-    /etc/shorewall/mac:
-
-	ALOW:info	eth0	02:0C:03:04:05:06
-
-    Error message:
-
-	ERROR: No hosts on ALOW:info have the maclist option specified
-
-    The new error message is:
-
-        ERROR: Invalid DISPOSITION (ALOW:info) in rule "ALOW:info eth0
-        02:0C:03:04:05:06"
-
-Problems Corrected in 3.4.0 RC1
-
-1)  While most distributions store the Shorewall Lite compiled program
-    in /var/lib/shorewall/, Shorewall includes features that allow that
-    location to be changed on a per-distribution basis. The default for
-    a particular distribution may be determined by the command
-    "shorewall[-lite] show config".
-
-        teastep@lists:~/shorewall/trunk$ shorewall show config
-	Default CONFIG_PATH is /etc/shorewall:/usr/share/shorewall
-	LITEDIR is /var/lib/shorewall-lite
-	teastep@lists:~/shorewall/trunk$
-
-    The LITEDIR setting is the location where the compiled script
-    should be placed. Unfortunately, the "shorewall [re]load" command
-    previously used the setting on the administrative system rather
-    than the one from the firewall system so it was possible for that
-    command to upload the compiled script to the wrong directory.
-
-    To work around this problem, Shorewall now determines the LITEDIR
-    setting on the firewall system and uses that setting for uploading
-    the compiled script and its companion .conf file.
-
-2)  Previously, IP ranges and ipset names were handled incorrectly in
-    the last column of the maclist file with the result that run-time
-    errors occured.
-
-3)  The Beta3 manpages are sprinked with .html filenames enclosed in
-    square brackets.
-
-    Example:
-
-	...set MARK_IN_FORWARD_CHAIN=Yes in shorewall.conf
-	[shorewall.conf.html](5) and have...
- 
-    These were generated by <ulink> elements in the XML source which
-    were added to provide inter-document links in the HTML rendition of
-    the manpages. <ulink>s were previously ignored by the XML->man
-    conversion tool; unfortunately, the latest release of the tool
-    no longer ignores these elements but rather produces the ugly
-    result shown above.
-
-    This problem has been corrected in RC1.
-
-4)  Previously, if "INCLUDE <filename>" appeared in
-    /etc/shorewall/params then run-time errors occurred.
-
-    As part of the fix for this problem, the mechanism by which
-    /etc/shorewall/params is copied into the compiler output was
-    changed. As a result, extra white space is removed from the text
-    during the copy operation so code in /etc/shorewall/params should
-    not depend on precise white-space, even in quoted strings.
-
-Other Changes in 3.4.0 RC 1
-
-1)  A macro that handles SixXS has been contributed by Christian
-    Roessner.
-
-Problems Corrected in 3.4.0 
-
-1)  The new SIP and H323 Netfilter helper modules were not being
-    automatically loaded by Shorewall. They have now been added to the
-    /usr/share/shorewall[-lite]/modules files.
-
-2)  It is quite difficult to code a 'params' file that assigns other
-    than constant values such that it works correctly with Shorewall
-    Lite. To work around this problem, a new EXPORTPARAMS option
-    has been added to shorewall.conf. When EXPORTPARAMS=No, the
-    'params' file is no longer copied to the compiler output.
-
-    With EXPORTPARAMS=No, if you need to set environmental variables on
-    the firewall system for use by your extension scripts, then do so
-    in the init extension script.
-
-    The default is EXPORTPARAMS=Yes to retain the current behavior.
-
-    This fix is brought forward from Shorewall version 3.2.9.
- 
+    Note: EXPORTPARAMS was actually introduced in Shorewall version
+    3.2.9. It is described here for the benefit of those who did not
+    install that version.

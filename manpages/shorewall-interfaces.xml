@@ -166,11 +166,27 @@ loc     eth2            -</programlisting>
 
               <listitem>
                 <para>Turn on kernel martian logging (logging of packets with
-                impossible source addresses. It is suggested that if you set
-                <emphasis role="bold">routefilter</emphasis> on an interface
-                that you also set <emphasis
-                role="bold">logmartians</emphasis>. This option may also be
-                enabled globally in the <ulink
+                impossible source addresses. It is strongly suggested that if
+                you set <emphasis role="bold">routefilter</emphasis> on an
+                interface that you also set <emphasis
+                role="bold">logmartians</emphasis>. Even if you do not specify
+                the <option>routefilter</option> option, it is a good idea to
+                specify <option>logmartians</option> because your distribution
+                may be enabling route filtering without you knowing it.</para>
+
+                <para>To find out if route filtering is set on a given
+                <replaceable>interface</replaceable>, check the contents of
+                <filename>/proc/sys/net/ipv4/conf/<replaceable>interface</replaceable>/rp_filter</filename>
+                — a non-zero value indicates that route filtering is
+                enabled.</para>
+
+                <para>Example:</para>
+
+                <programlisting>        teastep@lists:~$ <command>cat /proc/sys/net/ipv4/conf/eth0/rp_filter </command>
+        1
+        teastep@lists:~$ </programlisting>
+
+                <para>This option may also be enabled globally in the <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5)
                 file.</para>
               </listitem>

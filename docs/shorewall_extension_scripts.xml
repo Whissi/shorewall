@@ -302,8 +302,12 @@
         <filename>shorewall.conf</filename>. So shell variables set in that
         file may be used in Shorewall configuration files only. Any variables
         that your extension scripts require at run-time on the firewall system
-        should be set in the <filename>init</filename> extension
-        script.</para>
+        should be set in the <filename>init</filename> extension script (if
+        you need variable values in the <filename>stop</filename> or
+        <filename>stopped</filename> scripts, you will need to set their value
+        in <filename>stop</filename> since <filename>init</filename> is not
+        invoked when processing the <command>stop</command> and
+        <command>clear</command> commands).</para>
 
         <para>When EXPORTPARAMS=Yes (the default), the
         <filename>/etc/shorewall/params</filename> script is processed during

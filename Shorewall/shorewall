@@ -233,8 +233,8 @@ start_command() {
 	    ${VARDIR}/.start $debugging start
 	    rc=$?
 	else
-	    logger -p kern.err "ERROR:Shorewall start failed"
 	    rc=$?
+	    logger -p kern.err "ERROR:Shorewall start failed"
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -617,7 +617,11 @@ refresh_command() {
 	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
     fi
 
+    rc=$?
+
     [ -n "$nolock" ] || mutex_off
+
+    return $rc
 }
 
 #

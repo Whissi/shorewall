@@ -550,8 +550,8 @@ restart_command() {
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
 	rc=$?
     else
-	logger -p kern.err "ERROR:Shorewall restart failed"
 	rc=$?
+	logger -p kern.err "ERROR:Shorewall restart failed"
     fi
 
     [ -n "$nolock" ] || mutex_off

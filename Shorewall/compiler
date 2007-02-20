@@ -5358,10 +5358,14 @@ if [ -f \${VARDIR}/save ]; then
             DROP|reject|logdrop|logreject)
                 case \$rest in
                     \$rangematch*)
-                        run_iptables -A dynamic -m iprange --src-range \${rest#source IP range}
+                        run_iptables -A dynamic -m iprange --src-range \${rest#source IP range} -j \$target
                         ;;
                     *)
-                        run_iptables -A dynamic -s \$address -j \$target
+                        if [ -z "\$rest" ]; then
+                            run_iptables -A dynamic -s \$address -j \$target
+                        else
+                            error_message "WARNING: Unable to restore dynamic rule \"\$target \$ignore1 \$ignore2 \$address \$ignore3 \$rest\""
+                        fi
                         ;;
                 esac
                 ;;

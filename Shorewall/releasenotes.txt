@@ -32,6 +32,11 @@ Problems Corrected in 3.4.0 Final
 
 1)  The route_rules file was being ignored. This has been corrected.
 
+2)  If an IP range was specified in a 'drop' or 'reject' (including the
+    logging forms) and a 'shorewall save' was performed, then the next
+    time that Shorewall was restarted, new connections from outside the
+    firewall were totally blocked.
+
 Other Changes in 3.4.0 Final
 
 1)  A warning is now issued when 'loose' and 'balance' are specified together

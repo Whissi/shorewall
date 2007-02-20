@@ -5352,10 +5352,18 @@ __EOF__
 
 if [ -f \${VARDIR}/save ]; then
     progress_message2 "Setting up dynamic rules..."
-    while read target ignore1 ignore2 address rest; do
+    rangematch='source IP range'
+    while read target ignore1 ignore2 address ignore3 rest; do
         case \$target in
             DROP|reject|logdrop|logreject)
-                run_iptables -A dynamic -s \$address -j \$target
+                case \$rest in
+                    \$rangematch*)
+                        run_iptables -A dynamic -m iprange --src-range \${rest#source IP range}
+                        ;;
+                    *)
+                        run_iptables -A dynamic -s \$address -j \$target
+                        ;;
+                esac
                 ;;
         esac
     done < \${VARDIR}/save

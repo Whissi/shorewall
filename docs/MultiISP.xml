@@ -256,6 +256,11 @@
 
           <listitem>
             <para>The name of the interface to the provider.</para>
+
+            <caution>
+              <para>The Shorewall implementation of Multi-ISP support assumes
+              that each provider has it's own interface.</para>
+            </caution>
           </listitem>
         </varlistentry>
 
@@ -344,7 +349,7 @@
                     have multiple internet connections, we recommend that you
                     specify 'balance' even if you don't need it. You can still
                     use entries in <filename>/etc/shorewall/tcrules</filename>
-                    to force traffic to one provider or another.<note>
+                    to force all traffic to one provider or another.<note>
                         <para>If you don't heed this advice then be prepared
                         to read <ulink url="FAQ.htm#faq57">FAQ 57</ulink> and
                         <ulink url="FAQ.htm#faq58">FAQ 58</ulink>.</para>

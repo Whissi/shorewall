@@ -658,6 +658,13 @@ dump_command() {
 	brctl show
     fi
 
+    if qt mywhich setkey; then
+	heading "PFKEY SPD"
+	setkey -DP
+	heading "PFKEY SAD"
+	setkey -D | grep -Ev '^[[:space:]](A:|E:)'  # Don't divulge the keys 
+    fi
+
     heading "/proc"
     show_proc /proc/version
     show_proc /proc/sys/net/ipv4/ip_forward

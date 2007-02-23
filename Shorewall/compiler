@@ -485,19 +485,21 @@ validate_policy()
 	if [ -n "$IMPLICIT_CONTINUE" ]; then
 	    eval parents=\$${zone}_parents
 	    if [ -n "$parents" ]; then
-		for zone1 in $ZONES $FW; do
-		    chain=${zone}2${zone1}
-		    eval ${chain}_is_policy=Yes
-		    eval ${chain}_is_optional=Yes
-		    eval ${chain}_policy=CONTINUE
-		    eval ${chain}_policychain=$chain
-		    ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
-		    chain=${zone1}2${zone}
-		    eval ${chain}_is_policy=Yes
-		    eval ${chain}_is_optional=Yes
-		    eval ${chain}_policy=CONTINUE
-		    eval ${chain}_policychain=$chain
-		    ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+		for zone1 in $ZONES $FW; do 
+		    if $zone != $zone1; then
+			chain=${zone}2${zone1}
+			eval ${chain}_is_policy=Yes
+			eval ${chain}_is_optional=Yes
+			eval ${chain}_policy=CONTINUE
+			eval ${chain}_policychain=$chain
+			ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+			chain=${zone1}2${zone}
+			eval ${chain}_is_policy=Yes
+			eval ${chain}_is_optional=Yes
+			eval ${chain}_policy=CONTINUE
+			eval ${chain}_policychain=$chain
+			ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+		    fi
 		done
 	    fi
 	fi

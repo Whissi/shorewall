@@ -40,6 +40,12 @@ Problems Corrected in 3.4.0 Final
 3)  If a 'start' or restart' command failed during the compile phase, 
     /sbin/shorewall erroneously returned an exit status of 0.
 
+4)  If IMPLICIT_CONTINUE=Yes was in effect, then sub-zones received the
+    implicit CONTINUE policy for their intra-zone traffic (rather than
+    the implicit ACCEPT policy for such traffic). This could cause
+    intra-zone traffic to be rejected by rules for one of the
+    parent zones.
+
 Other Changes in 3.4.0 Final
 
 1)  A warning is now issued when 'loose' and 'balance' are specified together
@@ -48,7 +54,9 @@ Other Changes in 3.4.0 Final
 
 2)  If the 'setkey' program is installed, then the IPSEC SPD and SAD
     are displayed in the output of "shorewall[-lite] dump. All key
-    information (E: and A: lines) is suppressed in the command output.
+    information (E: and A: lines) is suppressed in the command output
+    so that the output of "dump" cannot be used to breach IPSEC
+    security.
 
 Migration Considerations:
 

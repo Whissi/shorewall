@@ -521,7 +521,7 @@
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:{</emphasis><emphasis>interface</emphasis>|<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}]</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}][<option>:</option><replaceable>port</replaceable>]</term>
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
@@ -579,11 +579,12 @@
           role="bold">DEST</emphasis> columns may specify an ipset
           name.</para>
 
-          <para>The port that the server is listening on may be included and
-          separated from the server's IP address by ":". If omitted, the
-          firewall will not modifiy the destination port. A destination port
-          may only be included if the <emphasis role="bold">ACTION</emphasis>
-          is <emphasis role="bold">DNAT</emphasis> or <emphasis
+          <para>The <replaceable>port</replaceable> that the server is
+          listening on may be included and separated from the server's IP
+          address by ":". If omitted, the firewall will not modifiy the
+          destination port. A destination port may only be included if the
+          <emphasis role="bold">ACTION</emphasis> is <emphasis
+          role="bold">DNAT</emphasis> or <emphasis
           role="bold">REDIRECT</emphasis>. Example:</para>
 
           <variablelist>
@@ -604,7 +605,8 @@
             role="bold">REDIRECT</emphasis> or <emphasis
             role="bold">REDIRECT-</emphasis>, this column needs only to
             contain the port number on the firewall that the request should be
-            redirected to.</para>
+            redirected to. That is equivalent to specifying
+            <option>$FW</option>::<replaceable>port</replaceable>.</para>
           </blockquote>
         </listitem>
       </varlistentry>

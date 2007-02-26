@@ -2526,7 +2526,7 @@ process_macro() # $1 = target
 #
 process_rules()
 {
-    local comment=
+    local comment= optimize
     #
     # Process a rule where the source or destination is "all"
     #
@@ -2541,7 +2541,7 @@ process_rules()
 		if [ "${ysourcezone}" != "${ydestzone}" -o "$2" = Yes ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ]; then
-			if [ $OPTIMIZE -gt 0 ]; then
+			if [ $optimize -gt 0 ]; then
 			    eval yloglevel=\$${ysourcezone}2${ydestzone}_loglevel
 			    if [ -n "$yloglevel" ]; then
 				if [ x$ypolicy:$yloglevel = x$xtarget ]; then
@@ -2633,8 +2633,14 @@ process_rules()
 	    continue
 	fi
 
+	optimize=$OPTIMIZE;
+
 	case "${xtarget%%:*}" in
-	    ACCEPT|ACCEPT+|ACCEPT!|NONAT|DROP|DROP!|REJECT|REJECT!|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
+	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
+		do_it No
+		;;
+	    ACCEPT!|DROP!REJECT!|QUEUE!|CONTINUE!)
+		optimize=0
 		do_it No
 		;;
 	    COMMENT)

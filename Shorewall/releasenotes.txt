@@ -1,4 +1,4 @@
-Shorewall 3.4.0 RC3
+Shorewall 3.4.0
 
 Release Highlights
 
@@ -28,35 +28,11 @@ Release Highlights
     /etc/shorewall/route_rules and reverses those changes when
     appropriate.
 
-Problems Corrected in 3.4.0 RC3
+Problems Corrected in 3.4.0 Final.
 
-1)  The route_rules file was being ignored. This has been corrected.
-
-2)  If an IP range was specified in a 'drop' or 'reject' command
-    (including the logging forms) and a 'shorewall save' was performed,
-    then the next time that Shorewall was restarted, new connections
-    from outside the firewall were totally blocked.
-
-3)  If a 'start' or restart' command failed during the compile phase, 
-    /sbin/shorewall erroneously returned an exit status of 0.
-
-4)  If IMPLICIT_CONTINUE=Yes was in effect, then sub-zones received the
-    implicit CONTINUE policy for their intra-zone traffic (rather than
-    the implicit ACCEPT policy for such traffic). This could cause
-    intra-zone traffic to be rejected by rules for one of the
-    parent zones.
-
-Other Changes in 3.4.0 RC3
-
-1)  A warning is now issued when 'loose' and 'balance' are specified together
-    for a provider. This combination of options can lead to packets being
-    dropped as 'martians'.
-
-2)  If the 'setkey' program is installed, then the IPSEC SPD and SAD
-    are displayed in the output of "shorewall[-lite] dump. All key
-    information (E: and A: lines) is suppressed in the command output
-    so that the output of "dump" cannot be used to breach IPSEC
-    security.
+1)  In the rules file, following the action with "!" is supposed to
+    exempt the rule from being suppressed by OPTIMIZE=Yes. That feature
+    was not working.
 
 Migration Considerations:
 

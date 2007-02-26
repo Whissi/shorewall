@@ -110,19 +110,19 @@
       <varlistentry>
         <term><emphasis role="bold">ACTION</emphasis> — {<emphasis
         role="bold">ACCEPT</emphasis>[<emphasis
-        role="bold">+</emphasis>]|<emphasis
+        role="bold"><option>+</option>|<option>!</option></emphasis>]|<emphasis
         role="bold">NONAT</emphasis>|<emphasis
-        role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>|<emphasis
+        role="bold">DROP[<option>!</option>]</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>[<option>!</option>]|<emphasis
         role="bold">DNAT</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
         role="bold">SAME</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
         role="bold">REDIRECT</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
         role="bold">LOG</emphasis>|<emphasis
-        role="bold">QUEUE</emphasis>|<emphasis
+        role="bold">QUEUE</emphasis>[<option>!</option>]|<emphasis
         role="bold">COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
         role="bold">/</emphasis><emphasis>target</emphasis>]}<emphasis
         role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
@@ -157,6 +157,16 @@
             </varlistentry>
 
             <varlistentry>
+              <term>ACCEPT!</term>
+
+              <listitem>
+                <para>like ACCEPT but exempts the rule from being suppressed
+                by OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">NONAT</emphasis></term>
 
               <listitem>
@@ -176,11 +186,31 @@
             </varlistentry>
 
             <varlistentry>
+              <term>DROP-</term>
+
+              <listitem>
+                <para>like DROP but exempts the rule from being suppressed by
+                OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">REJECT</emphasis></term>
 
               <listitem>
                 <para>disallow the request and return an icmp-unreachable or
                 an RST packet.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>REJECT!</term>
+
+              <listitem>
+                <para>like REJECT but exempts the rule from being suppressed
+                by OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -270,6 +300,26 @@
             </varlistentry>
 
             <varlistentry>
+              <term>CONTINUE!</term>
+
+              <listitem>
+                <para>like CONTINUE but exempts the rule from being suppressed
+                by OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>A-</term>
+
+              <listitem>
+                <para>like ACCEPT but exempts the rule from being suppressed
+                by OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">LOG</emphasis></term>
 
               <listitem>
@@ -285,6 +335,16 @@
                 <para>Queue the packet to a user-space application such as
                 ftwall (http://p2pwall.sf.net). The application may reinsert
                 the packet for further processing.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>QUEUE!</term>
+
+              <listitem>
+                <para>like QUEUE but exempts the rule from being suppressed by
+                OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 

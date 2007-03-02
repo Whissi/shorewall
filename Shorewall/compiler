@@ -2069,6 +2069,27 @@ process_ratelimit() {
 }
 
 #
+# Combine a source/dest from the macro body with one from the macro invocation
+#
+merge_macro_source_dest() # $1 = source/dest from macro body, $2 = source/dest from invocation
+{
+    case $2 in
+	-)
+	    echo ${1}
+	    ;;
+	*.*.*|+*|~*|!~*)
+	    #
+	    # Value in the invocation is an address -- put it behind the value from the macro
+	    #
+	    echo ${1}:${2}
+	    ;;
+	*)
+	    echo ${2}:${1}
+	    ;;
+    esac
+}
+
+#
 # Process a record from the rules file
 #
 process_rule() # $1 = target

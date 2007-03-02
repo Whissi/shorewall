@@ -540,8 +540,6 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #      c) A dependency graph is created. For each <action>, the variable 'requiredby_<action>' lists the
 #         action[:level[:tag]] of each action invoked by <action>.
 #      d) All actions are listed in the global variable ACTIONS.
-#      e) Common actions are recorded (in variables of the name <policy>_common) and are added to the global
-#         USEDACTIONS
 #
 # As the rules file is scanned, each action[:level[:tag]] is merged onto the USEDACTIONS list. When an <action>
 # is merged onto this list, its action chain is created. Where logging is specified, a chain with the name

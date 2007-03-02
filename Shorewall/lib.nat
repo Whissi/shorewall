@@ -506,7 +506,7 @@ setup_nat() {
 	    addnatrule nat_out -s $internal $policyout -j SNAT --to-source $external
 	else
 	    addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
-		addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
+	    addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
 	fi
 
 	[ -n "$localnat" ] && \

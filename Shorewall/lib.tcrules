@@ -74,7 +74,7 @@ process_tc_rule()
     verify_small_mark()
     {
 	verify_mark $1
-	[ $(($1)) -lt 256 ] || fatal_error "Mark Value ($1) too larg, rule \"$rule\""
+	[ $(($1)) -lt 256 ] || fatal_error "Mark Value ($1) too large, rule \"$rule\""
     }
 
     do_connmark()

@@ -39,6 +39,9 @@ Problems Corrected in 3.4.0 Final.
 
 	   merge_macro_source_dest: command not found
 
+3)  An obscure bug in rule activation having to do with the new
+    exclusion feature in /etc/shorewall/hosts has been corrected.
+
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then
@@ -673,7 +676,12 @@ New Features in Shorewall 3.4:
     /etc/shorewall/params and those required at run-time may be set in
     /etc/shorewall/init.
 
-    Note: EXPORTPARAMS was actually introduced in Shorewall version
+    Note 1: If you need shell variables values in your
+    /etc/shorewall/stop or /etc/shorewall/stopped script, then you need
+    to set their values in /etc/shorewall/stop. /etc/shorewall/init is
+    not invoked during processing of the 'stop' and 'clear' commands.
+
+    Note 2: EXPORTPARAMS was actually introduced in Shorewall version
     3.2.9. It is described here for the benefit of those who did not
     install that version.
 

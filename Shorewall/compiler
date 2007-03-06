@@ -4350,7 +4350,7 @@ activate_rules()
 			    #
 			    chain1=excl_${EXCLUSION_SEQ}
 			    EXCLUSION_SEQ=$(( $EXCLUSION_SEQ + 1 ))
-			    eval ${chain}_${zone}_ex=$chain1
+			    eval ${chain}_${zone1}_ex=$chain1
 			    createchain $chain1 no
 			    add_exclusions filter $chain1 $exclusions1
 			    run_iptables -A $chain1 -j $chain

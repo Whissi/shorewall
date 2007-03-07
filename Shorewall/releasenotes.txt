@@ -42,6 +42,13 @@ Problems Corrected in 3.4.0 Final.
 3)  An obscure bug in rule activation having to do with the new
     exclusion feature in /etc/shorewall/hosts has been corrected.
 
+4) The "shorewall-[lite] [re]start and stop" commands reset the
+   proxy_arp flag on all interfaces on the system making it impossible
+   to control proxy arp manually with Shorewall installed. With this
+   change, shorewall will only clear proxy arp if there were entries in
+   /etc/shorewall/proxyarp the last time that Shorewall was
+   [re]started.
+
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then

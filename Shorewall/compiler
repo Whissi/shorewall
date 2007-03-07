@@ -787,18 +787,18 @@ setup_syn_flood_chains()
 #
 delete_proxy_arp() {
     indent >&3 << __EOF__
-if [ -f \${VARDIR}/proxyarp ]; then
+if [ -s \${VARDIR}/proxyarp ]; then
     while read address interface external haveroute; do
         qt arp -i \$external -d \$address pub
         [ -z "\$haveroute" -a -z "\$NOROUTE" ] && qt ip route del \$address dev \$interface
     done < \${VARDIR}/proxyarp
 
-    rm -f \${VARDIR}/proxyarp
+    for f in /proc/sys/net/ipv4/conf/*; do
+        [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+    done
 fi
 
-for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
-done
+rm -f \${VARDIR}/proxyarp
 
 __EOF__
 

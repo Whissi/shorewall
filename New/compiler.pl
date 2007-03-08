@@ -1084,8 +1084,8 @@ sub merge_levels ($$) {
 
     my $target   = $subparts[0];
 
-    push @subparts, '' while @subparts < 3;   #Avoid undefined value
-s
+    push @subparts, '' while @subparts < 3;   #Avoid undefined values
+
     my $level = $supparts[1];
 
     if ( @supparts == 3 ) {

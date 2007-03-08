@@ -1,7 +1,6 @@
 #! /usr/bin/perl -w
 
 use strict;
-use Net::IPv4Addr qw( :all );
 #
 # IPSEC Option types
 #
@@ -150,7 +149,10 @@ my %interface_options;
 my %interface_zone;
 
 my @policy_chains;
-my %chain_table = ( raw = {} , mangle = {}, net = {}, filter = {} );
+my %chain_table = ( raw    => {} , 
+		    mangle => {},
+		    net    => {},
+		    filter => {} );
 
 my $nat_table    = $chain_table{nat};
 my $mangle_table = $chain_table{mangle};

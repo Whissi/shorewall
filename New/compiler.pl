@@ -151,7 +151,7 @@ my %interface_zone;
 my @policy_chains;
 my %chain_table = ( raw    => {} , 
 		    mangle => {},
-		    net    => {},
+		    nat    => {},
 		    filter => {} );
 
 my $nat_table    = $chain_table{nat};

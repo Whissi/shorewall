@@ -1714,10 +1714,11 @@ sub do_proto( $$$ )
 sub mac_match( $ ) {
     my $mac = $_[0];
 
-    $mac =~ s/^~//;
+    $mac =~ s/^(!?)~//;
+    $mac =~ s/^!// if my $invert = $1 ? '! ' : ''; 
     $mac =~ s/-/:/g;
 
-    "--match mac --mac-source $mac ";
+    "--match mac --mac-source ${invert}$mac ";
 }
 
 #
@@ -1827,14 +1828,10 @@ sub iprange_match() {
 sub match_source_net( $ ) {
     my $net = $_[0];
     
-    if ( $net =~ /.*\..*\..*\..*-.*\..*\..*\..*/ ) {
-	my $match = ' ';
-	if ( $net =~ /^!/ ) {
-	    $net =~ s/!//;
-	    $match .= '!';
-	}
-    
-	$match . iprange_match . "--src-range $net ";
+    if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
+	$net =~ s/!// if my $invert = $1 ? '! ' : '';
+
+	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
 	( $net = $2 ) =~ s/-/:/g;
 	"-m mac --mac-source $1 $net "
@@ -1852,14 +1849,10 @@ sub match_source_net( $ ) {
 sub match_dest_net( $ ) {
     my $net = $_[0];
     
-    if ( $net =~ /-/ ) {
-	my $match = ' ';
-	if ( $net =~ /^!/ ) {
-	     $net =~ s/!//;
-	     $match .= '! ';
-	}
+    if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
+	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 
-	$match . iprange_match . "--dest-range $net ";
+	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-d ! $net ";
@@ -2979,7 +2972,7 @@ sub complete_standard_chain ( $$$ ) {
     policy_rules $stdchainref , $policy , $loglevel, $default;
 }
 
-my %cts = ( t => { chain  => 'tcpost',
+my %tcs = ( t => { chain  => 'tcpost',
 		   connmark => 0,
 		   fw       => 1
 		   } ,
@@ -3064,7 +3057,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
     my $chain  = $env{MARKING_CHAIN};
     my $target = 'MARK --set-mark';
-    my $ctsref;
+    my $tcsref;
     my $connmark = 0;
     my $classid  = 0;
 
@@ -3078,16 +3071,16 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     }
 
     if ( $designator ) {
-	$ctsref = $cts{$designator};
+	$tcsref = $tcs{$designator};
 	
-	if ( $ctsref ) {
+	if ( $tcsref ) {
 	    if ( $chain eq 'tcout' ) {
-		fatal_error "Invalid chain designator for source $firewall_zone; rule \"$line\"" unless $ctsref->{fw};
+		fatal_error "Invalid chain designator for source $firewall_zone; rule \"$line\"" unless $tcsref->{fw};
 	    }
 
-	    $chain    = $ctsref->{chain}  if $ctsref->{chain};
-	    $target   = $ctsref->{target} if $ctsref->{target};
-	    $mark     = "$mark/0xFF"      if $connmark = $ctsref->{connmark};
+	    $chain    = $tcsref->{chain}  if $tcsref->{chain};
+	    $target   = $tcsref->{target} if $tcsref->{target};
+	    $mark     = "$mark/0xFF"      if $connmark = $tcsref->{connmark};
 	    
 	} else {
 	    fatal_error "Invalid MARK ($original_mark) in rule \"$line\"" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
@@ -5250,7 +5243,7 @@ do_initialize;
 #
 # Process the zones file.
 #
-progress_message2 "Determining Zones...";              determine_zones;
+progress_message2 "Determining Zones...";                    determine_zones;
 #
 # Process the interfaces file.
 #

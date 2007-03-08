@@ -364,7 +364,7 @@ sub parse_zone_option_list($)
 		$e   = $1;
 	    }
 	    
-	    $fmt = $validoptions{"$e"};
+	    $fmt = $validoptions{$e};
 
 	    fatal_error "Invalid Option ($e)" unless $fmt;
 	    
@@ -422,8 +422,8 @@ sub determine_zones()
 
 	    for my $p ( @parents ) {
 		fatal_error "Invalid Parent List ($2)" unless $p;
-		fatal_error "Unknown parent zone ($p)" unless $zones{"$p"};
-		fatal_error 'Subzones of firewall zone not allowed' if $zones{"$p"} eq 'firewall';
+		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
+		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p} eq 'firewall';
 	    }
 	}
 
@@ -433,19 +433,19 @@ sub determine_zones()
 	$zone_parents{$zone}    = \@parents;
 	$zone_exclusions{$zone} = [];
 	
-	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{"$zone"};
+	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
 
 	$type = "ipv4" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $zones{"$zone"} = 'ipv4';
+	    $zones{$zone} = 'ipv4';
 	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $zones{"$zone"} = 'ipsec4';
+	    $zones{$zone} = 'ipsec4';
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined: $zone" if $firewall_zone;
 	    $firewall_zone = $zone;
-	    $zones{"$zone"} = "firewall";
+	    $zones{$zone} = "firewall";
 	} elsif ( $type eq '-' ) {
 	    $type = 'ipv4';
 	} else {
@@ -476,11 +476,11 @@ sub determine_zones()
 	$pushed = 0;
       ZONE:
 	for my $zone ( @z ) {
-	    unless ( $ordered{"$zone"} ) {
-		for my $parent ( @{$zone_parents{"$zone"}} ) {
-		    next ZONE unless $ordered{"$parent"};
+	    unless ( $ordered{$zone} ) {
+		for my $parent ( @{$zone_parents{$zone}} ) {
+		    next ZONE unless $ordered{$parent};
 		}
-		$ordered{"$zone"} = 1;
+		$ordered{$zone} = 1;
 		push @zones, $zone;
 		$pushed = 1; 
 	    }
@@ -502,9 +502,9 @@ sub add_group_to_zone($$$$$)
     my $interfaceref;
     my $arrayref;
     my $zonetype = $zones{$zone};
-    my $ifacezone = $interface_zone{"$interface"};
+    my $ifacezone = $interface_zone{$interface};
 
-    $zone_interfaces{"$zone"}{"$interface"} = 1;
+    $zone_interfaces{$zone}{$interface} = 1;
 
     my @newnetworks;
     my @exclusions;
@@ -532,9 +532,9 @@ sub add_group_to_zone($$$$$)
 
     $zone_options{$zone}{in_out}{routeback} = 1 if $options->{routeback};
 
-    $typeref      = ( $zone_hosts{"$zone"}          || ( $zone_hosts{"$zone"} = {} ) );
-    $interfaceref = ( $typeref->{"$type"}           || ( $interfaceref = $typeref->{$type} = {} ) );
-    $arrayref     = ( $interfaceref->{"$interface"} || ( $interfaceref->{"$interface"} = [] ) );
+    $typeref      = ( $zone_hosts{$zone}          || ( $zone_hosts{$zone} = {} ) );
+    $interfaceref = ( $typeref->{$type}           || ( $interfaceref = $typeref->{$type} = {} ) );
+    $arrayref     = ( $interfaceref->{$interface} || ( $interfaceref->{$interface} = [] ) );
 
     $zone_options{$zone}{complex} = 1 if @$arrayref || ( @newnetworks > 1 );
 
@@ -593,7 +593,7 @@ sub validate_interfaces_file()
 	if ( $zone eq '-' ) {
 	    $zone = '';
 	} else {
-	    my $type = $zones{"$zone"};
+	    my $type = $zones{$zone};
 
 	    fatal_error "Unknown zone ($zone)" unless $type;
 	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $type eq 'firewall';
@@ -602,16 +602,16 @@ sub validate_interfaces_file()
 	$networks = '' if $networks eq '-';
 	$options  = '' if $networks eq '-';
 
-	fatal_error "Duplicate Interface ($interface)" if $interfaces{"$interface"};
+	fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
 
 	fatal_error "Invalid Interface Name: $interface" if $interface =~ /:|^\+$/;
 
-	( $interfaces{"$interface"} = $interface ) =~ s/\+$// ;
+	( $interfaces{$interface} = $interface ) =~ s/\+$// ;
 
 	if ( $networks && $networks ne '-' )
 	{
 	    my @broadcast = split ',', $networks; 
-	    $interface_broadcast{"$interface"} = \@broadcast;
+	    $interface_broadcast{$interface} = \@broadcast;
 	}
 
 	if ( $options )
@@ -622,7 +622,7 @@ sub validate_interfaces_file()
 	    {
 		next if $option eq '-';
 
-		if ( $validoptions{"$option"} ) {
+		if ( $validoptions{$option} ) {
 		    $options{$option} = 1;
 		} elsif ( $option =~ /^arp_filter=([1-3,8])$/ ) {
 		    $options{arp_filter} = $1;
@@ -633,14 +633,14 @@ sub validate_interfaces_file()
 
 	    $zone_options{$zone}{in_out}{routeback} = 1 if $options{routeback};
 
-	    $interface_options{"$interface"} = \%options;
+	    $interface_options{$interface} = \%options;
 	}
 
 	push @interfaces, $interface;
 
-	add_group_to_zone( $zone, $zones{"$zone"}, $interface, \@allipv4, {} ) if $zone;
+	add_group_to_zone( $zone, $zones{$zone}, $interface, \@allipv4, {} ) if $zone;
 	
-    	$interface_zone{"$interface"} = $zone; #Must follow the call to add_group_to_zone()
+    	$interface_zone{$interface} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$line\" Validated";
 
@@ -658,9 +658,9 @@ sub dump_interface_info()
 
     for my $interface ( @interfaces ) {
 	print "Interface: $interface\n";
-	my $root = $interfaces{"$interface"};
+	my $root = $interfaces{$interface};
 	print "   Root = $root\n";
-	my $bcastref = $interface_broadcast{"$interface"};
+	my $bcastref = $interface_broadcast{$interface};
 	if ( $bcastref ) {
 	    my $spaces = '';
 	    print '   Broadcast: ';
@@ -670,7 +670,7 @@ sub dump_interface_info()
 	    }
 	}
 
-	my $options = $interface_options{"$interface"};
+	my $options = $interface_options{$interface};
 
 	if ( $options ) {
 	    print '     Options: ';
@@ -682,7 +682,7 @@ sub dump_interface_info()
 	    }
 	}
 
-	my $zone = $interface_zone{"$interface"};
+	my $zone = $interface_zone{$interface};
 	print "        zone: $zone\n" if $zone;
     }
 
@@ -698,7 +698,7 @@ sub known_interface($)
 {
     my $interface = $_[0];
 
-    return 1 if exists $interfaces{"$interface"};
+    return 1 if exists $interfaces{$interface};
 
     for my $i ( @interfaces ) {
 	my $val = $interfaces{$i};
@@ -708,7 +708,7 @@ sub known_interface($)
 	    #
 	    # Cache this result for future reference
 	    #
-	    $interfaces{"$interface"} = undef;
+	    $interfaces{$interface} = undef;
 	    return 1;
 	}
     }
@@ -742,7 +742,7 @@ sub validate_hosts_file()
 
 	fatal_error "Invalid hosts file entry: $line" if $extra;
 
-	my $type = $zones{"$zone"};
+	my $type = $zones{$zone};
 
 	fatal_error "Unknown ZONE ($zone)" unless $type;
 	fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type eq 'firewall';
@@ -753,7 +753,7 @@ sub validate_hosts_file()
 	    $interface = $1;
 	    $hosts = $2;
 	    $zone_options{$zone}{complex} = 1 if $hosts =~ /^\+/;
-	    fatal_error "Unknown interface ($interface)" unless $interfaces{"$interface"};
+	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface};
 	} else {
 	    fatal_error "Invalid HOSTS(S) column contents: $hosts";
 	}
@@ -769,8 +769,8 @@ sub validate_hosts_file()
 		if ( $option eq 'ipsec' ) {
 		    $type = 'ipsec';
 		    $zone_options{$zone}{complex} = 1;
-		} elsif ( $validoptions{"$option"}) {
-		    $options{"$option"} = 1;
+		} elsif ( $validoptions{$option}) {
+		    $options{$option} = 1;
 		} else {
 		    fatal_error "Invalid option ($option)";
 		}
@@ -798,14 +798,14 @@ sub dump_zone_info()
 
     for my $zone ( @zones )
     {
-	my $typeref   = $zone_hosts{"$zone"};
-	my $type      = $zones{"$zone"};
-	my $optionref = $zone_options{"$zone"};
+	my $typeref   = $zone_hosts{$zone};
+	my $type      = $zones{$zone};
+	my $optionref = $zone_options{$zone};
 	my $groupref;    
 
 	print "Zone: $zone\n";
 	
-	my $zonetype = $zones{"$zone"};
+	my $zonetype = $zones{$zone};
 
 	print "   Type: $zonetype\n";
 	print "   Parents:\n";
@@ -835,12 +835,12 @@ sub dump_zone_info()
 	if ( $typeref ) {
 	    print "   Host Groups:\n";
 	    for my $type ( sort keys %$typeref ) {
-		my $interfaceref = $typeref->{"$type"};
+		my $interfaceref = $typeref->{$type};
 		
 		print "      Type: $type\n";
 	
 		for my $interface ( sort keys %$interfaceref ) {
-		    my $arrayref = $interfaceref->{"$interface"};
+		    my $arrayref = $interfaceref->{$interface};
 		    
 		    print "         Interface: $interface\n";
 		    
@@ -890,19 +890,19 @@ sub zone_report()
 {
     for my $zone ( @zones )
     {
-	my $hostref   = $zone_hosts{"$zone"};
-	my $type      = $zones{"$zone"};
-	my $optionref = $zone_options{"$zone"};
+	my $hostref   = $zone_hosts{$zone};
+	my $type      = $zones{$zone};
+	my $optionref = $zone_options{$zone};
 	my $groupref;    
 
 	progress_message "   $zone ($type)";
 
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
-		my $interfaceref = $hostref->{"$type"};
+		my $interfaceref = $hostref->{$type};
 		
 		for my $interface ( sort keys %$interfaceref ) {
-		    my $arrayref = $interfaceref->{"$interface"};
+		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
 			my $hosts     = $groupref->{hosts};
 			if ( $hosts ) {
@@ -932,7 +932,7 @@ sub new_chain($$)
     $ch{log} = 1 if $env{LOGRULENUMBERS};
     $ch{rules} = \@rules;
     $ch{table} = $table;
-    $chain_table{$table}{"$chain"} = \%ch;
+    $chain_table{$table}{$chain} = \%ch;
     \%ch;
 }
 
@@ -1040,7 +1040,7 @@ sub dump_chain_table()
 	print "Table: $table\n";
 
 	for my $chain ( sort keys %{$chain_table{$table}} ) {
-	    my $chainref = $chain_table{$table}{"$chain"};
+	    my $chainref = $chain_table{$table}{$chain};
 	    print "   Chain $chain:\n";
 	    
 	    if ( $chainref->{is_policy} ) {
@@ -1272,7 +1272,7 @@ sub new_policy_chain($$$)
     $chainref->{is_optional} = $optional;
     $chainref->{policychain} = $chainref;
     
-    $chain_table{filter}{"$chain"} = $chainref;
+    $chain_table{filter}{$chain} = $chainref;
 }
 
 #
@@ -1387,11 +1387,11 @@ sub validate_policy()
 	
 	my $clientwild = ( "\L$client" eq 'all' );
 
-	fatal_error "Undefined zone $client" unless $clientwild || $zones{"$client"};
+	fatal_error "Undefined zone $client" unless $clientwild || $zones{$client};
 
 	my $serverwild = ( "\L$server" eq 'all' );
 
-	fatal_error "Undefined zone $server" unless $serverwild || $zones{"$server"};
+	fatal_error "Undefined zone $server" unless $serverwild || $zones{$server};
 
 	( $policy , my $default ) = split /:/, $policy;
 
@@ -1412,7 +1412,7 @@ sub validate_policy()
 	    $default = $default_actions{$policy} || '';
 	}
 
-	fatal_error "Invalid policy $policy" unless exists $validpolicies{"$policy"};
+	fatal_error "Invalid policy $policy" unless exists $validpolicies{$policy};
 
 	if ( $policy eq 'NONE' ) {
 	    fatal_error "$client, $server, $policy, $loglevel, $synparams: NONE policy not allowed to/from firewall zone"
@@ -1424,8 +1424,8 @@ sub validate_policy()
 	my $chain = "${client}2${server}";
 	my $chainref;
 
-	if ( defined $chain_table{filter}{"$chain"} ) {
-	    $chainref = $chain_table{filter}{"$chain"};
+	if ( defined $chain_table{filter}{$chain} ) {
+	    $chainref = $chain_table{filter}{$chain};
 	    
 	    if ( $chainref->{is_policy} ) {
 		if ( $chainref->{is_optional} ) {
@@ -2243,7 +2243,7 @@ sub do_ipsec_options($)
             $e   = $1;
         }
 
-	$fmt = $validoptions{"$e"};
+	$fmt = $validoptions{$e};
 
 	fatal_error "Invalid Option ($e)" unless $fmt;
 
@@ -2329,7 +2329,7 @@ sub setup_one_masq($$$$$$)
     #
     ( my $interface = $fullinterface ) =~ s/:.*//;
 
-    fatal_error "Unknown interface $interface, rule \"$line\"" unless $interfaces{"$interface"};
+    fatal_error "Unknown interface $interface, rule \"$line\"" unless $interfaces{$interface};
 
     #
     # If there is no source or destination then allow all addresses
@@ -2539,7 +2539,7 @@ sub find_interfaces_by_option( $ ) {
     my @ints = ();
 
     for my $interface ( @interfaces ) {
-	my $optionsref = $interface_options{"$interface"};
+	my $optionsref = $interface_options{$interface};
 	if ( $optionsref && $optionsref->{$option} ) {
 	    push @ints , $interface;
 	}
@@ -2571,7 +2571,7 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	my $optionsref = $interface_options{"$interface"};
+	my $optionsref = $interface_options{$interface};
 	if ( $optionsref && $optionsref->{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIPv4 ];
 	}
@@ -2781,7 +2781,7 @@ sub add_common_rules() {
 		add_rule get_chainref( 'filter' , $chain), '-p udp --dport 67:68 -j ACCEPT';
 	    }
 
-	    add_rule get_chainref( 'filter', forward_chain $interface) , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interface_options{"$interface"}{routeback};
+	    add_rule get_chainref( 'filter', forward_chain $interface) , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interface_options{$interface}{routeback};
 	}
     }
 
@@ -3532,8 +3532,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	$dest = ALLIPv4;
     }
 
-    fatal_error "Unknown source zone ($sourcezone) in rule \"$line\"" unless $zones{"$sourcezone"}; 
-    fatal_error "Unknown destination zone ($destzone) in rule \"$line\"" unless $zones{"$destzone"};
+    fatal_error "Unknown source zone ($sourcezone) in rule \"$line\"" unless $zones{$sourcezone}; 
+    fatal_error "Unknown destination zone ($destzone) in rule \"$line\"" unless $zones{$destzone};
     #
     # Take care of chain
     #
@@ -3767,8 +3767,8 @@ sub process_rules() {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
 	} elsif ( $target eq 'SECTION' ) {
-	    fatal_error "Invalid SECTION $source" unless defined $sections{"$source"};
-	    fatal_error "Duplicate or out of order SECTION $source" if $sections{"$source"};
+	    fatal_error "Invalid SECTION $source" unless defined $sections{$source};
+	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
 	    fatal_error "Invalid Section $source $dest" if $dest;
 	    $sectioned = 1;
 	    $sections{$source} = 1;

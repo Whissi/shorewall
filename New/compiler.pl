@@ -350,35 +350,37 @@ sub parse_zone_option_list($)
     my $options = '';
     my $fmt;
 
-    for my $e ( split ',' , $list ) {
-        my $val    = undef;
-	my $invert = '';
+    if ( $list ne '-' ) {
+	for my $e ( split ',' , $list ) {
+	    my $val    = undef;
+	    my $invert = '';
 
-        if ( $e =~ /([\w-]+)!=(.+)/ ) {
-            $val    = $2;
-            $e      = $1;
-	    $invert = '! ';
-        } elsif ( $e =~ /([\w-]+)=(.+)/ ) {
-            $val = $2;
-            $e   = $1;
-        }
+	    if ( $e =~ /([\w-]+)!=(.+)/ ) {
+		$val    = $2;
+		$e      = $1;
+		$invert = '! ';
+	    } elsif ( $e =~ /([\w-]+)=(.+)/ ) {
+		$val = $2;
+		$e   = $1;
+	    }
+	    
+	    $fmt = $validoptions{"$e"};
 
-	$fmt = $validoptions{"$e"};
-
-	fatal_error "Invalid Option ($e)" unless $fmt;
-
-	if ( $fmt eq NOTHING ) {
-	    fatal_error "Option $e does not take a value" if defined $val;
-	} else {
-	    fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
-	}
-
-	if ( $key{$e} ) {
-	    $h{$e} = $val;
-	} else {
-	    $options .= $invert;
-	    $options .= "--$e ";
-	    $options .= "$val "if defined $val;
+	    fatal_error "Invalid Option ($e)" unless $fmt;
+	    
+	    if ( $fmt eq NOTHING ) {
+		fatal_error "Option $e does not take a value: Zone \"$line\"" if defined $val;
+	    } else {
+		fatal_error "Invalid value ($val) for option \"$e\" in Zone \"$line\"" unless $val =~ /^($fmt)$/;
+	    }
+	    
+	    if ( $key{$e} ) {
+		$h{$e} = $val;
+	    } else {
+		$options .= $invert;
+		$options .= "--$e ";
+		$options .= "$val "if defined $val;
+	    }
 	}
     }
 
@@ -425,7 +427,8 @@ sub determine_zones()
 	    }
 	}
 
-	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ and length $zone <= $env{MAXZONENAMELENGTH};
+	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $env{MAXZONENAMELENGTH};
+	fatal_error "Invalid zone name: $zone" if $zone =~ /^all2|2all$/;
 	
 	$zone_parents{$zone}    = \@parents;
 	$zone_exclusions{$zone} = [];
@@ -443,6 +446,8 @@ sub determine_zones()
 	    fatal_error "Only one firewall zone may be defined: $zone" if $firewall_zone;
 	    $firewall_zone = $zone;
 	    $zones{"$zone"} = "firewall";
+	} elsif ( $type eq '-' ) {
+	    $type = 'ipv4';
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -454,7 +459,9 @@ sub determine_zones()
 	$zone_hash{out}      = parse_zone_option_list( $out_options || '');
 	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
 
-	$zone_options{"$zone"} = \%zone_hash;
+	$zone_options{$zone} = \%zone_hash;
+
+	$zone_interfaces{$zone} = {};
 
 	push @z, $zone;
     }
@@ -4671,7 +4678,7 @@ sub activate_rules() {
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
-	while ( my ( $grouptype, $typeref ) = each %$source_hosts_ref ) {
+	 for my $typeref ( values %$source_hosts_ref ) {
 	    while ( my ( $interface, $arrayref ) = each %$typeref ) {
 		for my $hostref ( @$arrayref ) {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
@@ -4715,22 +4722,24 @@ sub activate_rules() {
 	if ( $config{OPTIMIZE} > 0 ) {
 	    my @temp_zones;
 
+	  ZONE1:
 	    for my $zone1 ( grep $zones{$_} ne 'firewall' , @zones )  {
 		my $policy = ( get_chainref 'filter' , "${zone}2${zone1}" )->{policy};
+		
 		next if $policy  eq 'NONE';
 		
 		my $chain = rules_chain $zone, $zone1;
+		
 		next unless $chain;
 
-		if ( $zone eq $zone1 ) {
-		    my $routeback  = $zone_options{$zone}{routeback};
-		    my @a = keys %{ $zone_interfaces{$zone} || {} };
-		    my $interfaces = @a ;
-		    
-		    next if $interfaces < 2 && ! ( $routeback || @$exclusions );
+		if ( $zone eq $zone1 )
+		{
+		    #
+		    # One thing that the Llamma doesn't tell you is that evaluating a hash in a numeric context produces a warning.
+		    #
+		    no warnings;
+		    next if (  %{ $zone_interfaces{$zone}} < 2 ) && ! ( $zone_options{$zone}{routeback} || @$exclusions );
 		}
-
-		$chain = rules_chain $zone, $zone1;
 		
 		if ( $chain =~ /2all$/ ) {
 		    if ( $chain ne $last_chain ) {
@@ -4763,6 +4772,7 @@ sub activate_rules() {
 	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
 	# $dest_zones is the list of destination zones that we need to handle from this source zone
 	#
+      ZONE1:
 	for my $zone1 ( @dest_zones ) {
 	    my $policy = ( get_chainref 'filter' , "${zone}2${zone1}" )->{policy};
 	    next if $policy  eq 'NONE';
@@ -4774,10 +4784,11 @@ sub activate_rules() {
 	    my $num_ifaces = 0;
 	    
 	    if ( $zone eq $zone1 ) {
-		$routeback  = $zone_options{$zone}{routeback};
-		my @a = keys %{$zone_interfaces{$zone}};
-		$num_ifaces = @a;
-		next if $num_ifaces < 2 && ! ( $routeback || @$exclusions );
+		#
+		# One thing that the Llamma doesn't tell you is that evaluating a hash in a numeric context produces a warning.
+		#
+		no warnings;
+		next ZONE1 if ( $num_ifaces = %{$zone_interfaces{$zone}} ) < 2 && ! ( $zone_options{$zone}{routeback} || @$exclusions );
 	    }
 
 	    my $chainref    = get_chainref 'filter', $chain;
@@ -4810,7 +4821,7 @@ sub activate_rules() {
 	    }
 	    
 	    if ( $complex ) {
-		while (  my ( $grouptype, $typeref ) = each %$dest_hosts_ref ) {
+		for my $typeref ( values %$dest_hosts_ref ) {
 		    while ( my ( $interface , $arrayref ) = each %$typeref ) {
 			for my $hostref ( @$arrayref ) {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
@@ -4823,13 +4834,13 @@ sub activate_rules() {
 		    }
 		}
 	    } else {
-		while ( my ( $grouptype, $typeref ) =  each %$source_hosts_ref ) {
+		for my $typeref ( values %$source_hosts_ref ) {
 		    while ( my ( $interface , $arrayref ) = each %$typeref ) {
 			my $chain3ref = get_chainref 'filter' , forward_chain $interface;
 			for my $hostref ( @$arrayref ) {
 			    for my $net ( @{$hostref->{hosts}} ) {
 				my $source_match = match_source_net $net;
-				while ( my ( $group1type , $type1ref ) = each %$dest_hosts_ref ) {
+				for my $type1ref ( values %$dest_hosts_ref ) {
 				    while ( my ( $interface1, $array1ref ) = each %$type1ref ) {
 					for my $host1ref ( @$array1ref ) {
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref; 
@@ -4855,7 +4866,7 @@ sub activate_rules() {
 		if ( $complex ) {
 		    add_rule $frwd_ref , "-j $last_chain";
 		} else {
-		    while ( my ( $grouptype , $typeref ) = each %$source_hosts_ref ) {
+		    for my $typeref ( values %$source_hosts_ref ) {
 			while ( my ( $interface , $arrayref ) = each %$typeref ) {
 			    my $chain2ref = get_chainref 'filter' , forward_chain $interface;
 			    for my $hostref ( @$arrayref ) {

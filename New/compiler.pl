@@ -150,7 +150,11 @@ my %interface_options;
 my %interface_zone;
 
 my @policy_chains;
-my %chain_table;
+my %chain_table = ( raw = {} , mangle = {}, net = {}, filter = {} );
+
+my $nat_table    = $chain_table{nat};
+my $mangle_table = $chain_table{mangle};
+my $filter_table = $chain_table{filter};
 
 my $comment = '';
 
@@ -950,11 +954,6 @@ sub ensure_chain($$)
     new_chain $table, $chain;
 }
 
-sub get_chainref( $$ ) 
-{
-    $chain_table{$_[0]}{$_[1]};
-}
-
 sub finish_chain_section( $$ );
 
 #
@@ -964,7 +963,7 @@ sub ensure_filter_chain( $$ )
 {
     my ($chain, $populate) = @_;
 
-    my $chainref = $chain_table{filter}{$chain};
+    my $chainref = $filter_table->{$chain};
 
     unless ( $chainref ) {
 	$chainref    = new_chain 'filter' , $chain;
@@ -1272,7 +1271,7 @@ sub new_policy_chain($$$)
     $chainref->{is_optional} = $optional;
     $chainref->{policychain} = $chainref;
     
-    $chain_table{filter}{$chain} = $chainref;
+    $filter_table->{$chain} = $chainref;
 }
 
 #
@@ -1282,7 +1281,7 @@ sub set_policy_chain($$$)
 {
     my ($chain1, $chainref, $policy) = @_;
 
-    my $chainref1 = $chain_table{filter}{$chain1};
+    my $chainref1 = $filter_table->{$chain1};
     $chainref1 = new_chain 'filter', $chain1 unless $chainref1;
     unless ( $chainref1->{policychain} ) {
 	$chainref1->{policychain} = $chainref;
@@ -1424,8 +1423,8 @@ sub validate_policy()
 	my $chain = "${client}2${server}";
 	my $chainref;
 
-	if ( defined $chain_table{filter}{$chain} ) {
-	    $chainref = $chain_table{filter}{$chain};
+	if ( defined $filter_table->{$chain} ) {
+	    $chainref = $filter_table->{$chain};
 	    
 	    if ( $chainref->{is_policy} ) {
 		if ( $chainref->{is_optional} ) {
@@ -2631,7 +2630,7 @@ sub setup_rfc1918_filteration( $ ) {
 	my $ipsec     = $hostref->[1];
 	my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in "  : '';
 	for my $chain ( @{first_chains $interface}) {
-	    add_rule get_chainref( 'filter', $chain ) , '-m state --state NEW ' . match_source_net( $hostref->[2]) . "${policy}-j norfc1918";
+	    add_rule $filter_table->{$chain} , '-m state --state NEW ' . match_source_net( $hostref->[2]) . "${policy}-j norfc1918";
 	}
     }
 }
@@ -2698,7 +2697,7 @@ sub setup_blacklist() {
 	my $source    = match_source_net $network;
    
 	for my $chain ( @{first_chains $interface}) {
-	    add_rule get_chainref( 'filter', $chain ) , "${source}${state}${policy}-j blacklst";
+	    add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
 	}
 
 	progress_message "   Blacklisting enabled on ${interface}:${network}";
@@ -2756,7 +2755,7 @@ sub add_common_rules() {
 	    my $ipsec  = $hostref->[1];
 	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    for $chain ( @{first_chains $interface}) {
-		add_rule get_chainref( 'filter', $chain ) , '-m state --state NEW,INVALID ' . match_source_net( $hostref->[2]) . "${policy}-j smurfs";
+		add_rule $filter_table->{$chain} , '-m state --state NEW,INVALID ' . match_source_net( $hostref->[2]) . "${policy}-j smurfs";
 	    }
 	}
     }
@@ -2778,10 +2777,10 @@ sub add_common_rules() {
 
 	for $interface ( @$list ) {
 	    for $chain ( @{first_chains $interface}) {
-		add_rule get_chainref( 'filter' , $chain), '-p udp --dport 67:68 -j ACCEPT';
+		add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
 	    }
 
-	    add_rule get_chainref( 'filter', forward_chain $interface) , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interface_options{$interface}{routeback};
+	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interface_options{$interface}{routeback};
 	}
     }
 
@@ -2835,7 +2834,7 @@ sub add_common_rules() {
 	    my $ipsec  = $hostref->[1];
 	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    for $chain ( @{first_chains $interface}) {
-		add_rule get_chainref( 'filter', $chain ) , '-p tcp ' . match_source_net( $hostref->[2]) . "${policy}-j tcpflags";
+		add_rule $filter_table->{$chain} , '-p tcp ' . match_source_net( $hostref->[2]) . "${policy}-j tcpflags";
 	    }
 	}
     }
@@ -2849,9 +2848,9 @@ sub add_common_rules() {
 	
 	(new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1; 
 	    
-	add_rule get_chainref('filter' , input_chain $interface ),  "-j $chain";
-	add_rule get_chainref('filter' , forward_chain $interface), '-j ' . dynamic_fwd $interface;
-	add_rule get_chainref('filter' , output_chain $interface),  '-j ' . dynamic_out $interface;
+	add_rule $filter_table->{input_chain $interface},  "-j $chain";
+	add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
+	add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
     }	
 
     $list = find_interfaces_by_option 'upnp';
@@ -2862,7 +2861,7 @@ sub add_common_rules() {
 	(new_chain 'nat', 'UPnP')->{referenced} = 1;
 
 	for $interface ( @$list ) {
-	    add_rule get_chainref( 'nat', 'PREROUTING') , "-i $interface -j UPnP";
+	    add_rule $nat_table->{PREROUTING} , "-i $interface -j UPnP";
 	}
     }
 
@@ -2945,7 +2944,7 @@ sub apply_policy_rules() {
 
     for my $zone ( @zones ) {
 	for my $zone1 ( @zones ) {
-	    my $chainref = get_chainref 'filter' , "${zone}2${zone1}";
+	    my $chainref = $filter_table->{"${zone}2${zone1}"};
 	    default_policy $chainref, $zone, $zone1 if $chainref->{referenced};
 	}
     }
@@ -2963,7 +2962,7 @@ sub apply_policy_rules() {
 sub complete_standard_chain ( $$$ ) {
     my ( $stdchainref, $zone, $zone2 ) = @_;
 
-    my $ruleschainref = get_chainref 'filter' , "${zone}2${zone2}";
+    my $ruleschainref = $filter_table->{"${zone}2${zone2}"};
     my ( $policy, $loglevel, $default ) = ( 'DROP', 'info', $config{DROP_DEFAULT} );
     my $policychainref;
 
@@ -3256,7 +3255,7 @@ sub setup_mac_lists( $ ) {
 
 		fatal_error "No hosts on $interface have the maclist option specified: \"$line\"" unless $maclist_interfaces{$interface};
 
-		my $chainref = get_chainref $table, ( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface );
+		my $chainref = $chain_table{$table}{( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface )};
 
 		$mac       = '' unless $mac && ( $mac ne '-' );
 		$addresses = '' unless $addresses && ( $addresses ne '-' );
@@ -3294,10 +3293,10 @@ sub setup_mac_lists( $ ) {
 	    my $target = mac_chain $interface;
 	    if ( $table eq 'filter' ) {
 		for my $chain ( @{first_chains $interface}) {
-		    add_rule get_chainref( 'filter', $chain ) , "${source}-m state --statue NEW ${policy}-j $target";
+		    add_rule $filter_table->{$chain} , "${source}-m state --statue NEW ${policy}-j $target";
 		}
 	    } else {
-		add_rule get_chainref( 'mangle', 'PREROUTING' ), "-i $interface ${source}-m state --state NEW ${policy}-j $target";
+		add_rule $mangle_table->{PREROUTING}, "-i $interface ${source}-m state --state NEW ${policy}-j $target";
 	    }
 	}
     } else {
@@ -3306,7 +3305,7 @@ sub setup_mac_lists( $ ) {
 	my $disposition = $config{MACLIST_DISPOSITION};
 
 	for my $interface ( @maclist_interfaces ) {
-	    my $chainref = get_chainref $table, ( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface );
+	    my $chainref = $chain_table{$table}{( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = mac_chain $interface;
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '';
 	    add_rule $chainref, "-j $target";
@@ -3710,7 +3709,7 @@ sub process_rule ( $$$$$$$$$ ) {
 		    for my $zone1 ( @zones ) {
 			if ( $includedstfw || ( $zones{$zone1} ne 'firewall' ) ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
-				my $policychainref = $chain_table{filter}{"${zone}2${zone1}"}{policychain};
+				my $policychainref = $filter_table->{"${zone}2${zone1}"}{policychain};
 				fatal_error "No policy from zone $zone to zone $zone1" unless $policychainref;
 				if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 				    if ( $optimize > 0 ) {
@@ -4515,43 +4514,53 @@ sub setup_accounting() {
 	
     close ACC;
 
-    if ( get_chainref 'filter', 'accounting' ) {
+    if ( $filter_table->{accounting} ) {
 	for my $chain qw/INPUT FORWARD OUTPUT/ {
-	    insert_rule get_chainref( 'filter', $chain ), 1, '-j accounting';
+	    insert_rule $filter_table->{$chain}, 1, '-j accounting';
 	}
     }
 }
 
+#
+# Helper functions for generate_matrix()
+#-----------------------------------------
+#
+# If the destination chain exists, then at the end of the source chain add a jump to the destination.
+#
 sub addnatjump( $$$ ) {
     my ( $source , $dest, $predicates ) = @_;
 
-    my $sourceref = get_chainref 'nat', $source;
-    my $destref   = get_chainref 'nat', $dest;
+    my $destref   = $nat_table->{$dest} || {};
 
-    if ( $destref && $destref->{referenced} ) {
-	add_rule $sourceref , $predicates . "-j $dest";
+    if ( $destref->{referenced} ) {
+	add_rule $nat_table->{$source} , $predicates . "-j $dest";
     } else {
 	$iprangematch = $ipsetmatch = 0;
     }
 }
 
+#
+# If the destination chain exists, then at the position in the source chain given by $$countref, add a jump to the destination.
+#
 sub insertnatjump( $$$$ ) {
     my ( $source, $dest, $countref, $predicates ) = @_;
 
-    my $sourceref = get_chainref 'nat', $source;
-    my $destref   = get_chainref 'nat', $dest;
+    my $destref   = $nat_table->{$dest} || {};
 
-    if ( $destref && $destref->{referenced} ) {
-	insert_rule $sourceref , ($$countref)++, $predicates . "-j $dest";
+    if ( $destref->{referenced} ) {
+	insert_rule $nat_table->{$source} , ($$countref)++, $predicates . "-j $dest";
     } else {
 	$iprangematch = $ipsetmatch = 0;
     }
 }
 
-sub rules_chain( $$ ) {
+#
+# Return the target for rules from the $zone to $zone1.
+#
+sub rules_target( $$ ) {
     my ( $zone, $zone1 ) = @_;
     my $chain = "${zone}2${zone1}";
-    my $chainref = get_chainref 'filter', $chain;
+    my $chainref = $filter_table->{$chain};
 
     return $chain   if $chainref && $chainref->{referenced};
     return 'ACCEPT' if $zone eq $zone1;
@@ -4565,6 +4574,9 @@ sub rules_chain( $$ ) {
     '';
 }
 
+#
+# Add a jump to the passed chain ($chainref) to the dynamic zone chain for the passed zone.
+#
 sub create_zone_dyn_chain( $$ ) {
     my ( $zone , $chainref ) = @_;
     my $name = "${zone}_dyn";
@@ -4572,6 +4584,9 @@ sub create_zone_dyn_chain( $$ ) {
     add_rule $chainref, "-j $name";
 }
 
+#
+# Insert the passed exclusions at the front of the passed chain.
+#
 sub insert_exclusions( $$ ) {
     my ( $chainref, $exclusionsref ) = @_;
 
@@ -4583,6 +4598,9 @@ sub insert_exclusions( $$ ) {
     }
 }
 
+#
+# Add the passed exclusions at the end of the passed chain.
+#
 sub add_exclusions ( $$ ) {
     my ( $chainref, $exclusionsref ) = @_;
 
@@ -4591,8 +4609,17 @@ sub add_exclusions ( $$ ) {
 	add_rule $chainref , "-i $interface " . match_source_net( $host ) . '-j RETURN';
     }
 }    
-    
-sub activate_rules() {
+
+#
+# To quote an old comment, generate_matrix makes a sows ear out of a silk purse.
+#
+# The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
+#-----------------------------------------------------------
+# The goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
+#
+# The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of rules.
+# 
+sub generate_matrix() {
     my $prerouting_rule  = 1;
     my $postrouting_rule = 1;
     my $exclusion_seq    = 1;
@@ -4626,7 +4653,7 @@ sub activate_rules() {
 	    my $in_ref  = new_standard_chain "${zone}_input";
 	    my $out_ref = new_standard_chain "${zone}_output";
 	    
-	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_chain $zone, $zone eq 'ACCEPT';
+	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target $zone, $zone eq 'ACCEPT';
 
 	    for my $host ( @$exclusions ) {
 		my ( $interface, $net ) = split /:/, $host;
@@ -4655,12 +4682,12 @@ sub activate_rules() {
 	}
     }
     #
-    # Main source zone rule-activation loop
+    # Main source-zone matrix-generation loop
     #
     for my $zone ( grep ( $zones{$_} ne 'firewall'  ,  @zones ) ) {
 	my $source_hosts_ref = $zone_hosts{$zone};
-	my $chain1         = rules_chain $firewall_zone , $zone;
-	my $chain2         = rules_chain $zone, $firewall_zone;
+	my $chain1         = rules_target $firewall_zone , $zone;
+	my $chain2         = rules_target $zone, $firewall_zone;
 	my $complex        = $zone_options{$zone}{complex} || 0; 
 	my $type           = $zones{$zone};
 	my $exclusions     = $zone_exclusions{$zone};
@@ -4669,7 +4696,7 @@ sub activate_rules() {
 	my $chain          = 0;
 
 	if ( $complex ) {
-	    $frwd_ref = get_chainref 'filter' , "${zone}_frwd";
+	    $frwd_ref = $filter_table->{"${zone}_frwd"};
 	    my $dnat_ref = ensure_chain 'nat' , dnat_chain( $zone );
 	    if ( @$exclusions ) {
 		insert_exclusions $dnat_ref, $exclusions if $dnat_ref->{referenced};
@@ -4678,7 +4705,7 @@ sub activate_rules() {
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
-	 for my $typeref ( values %$source_hosts_ref ) {
+	for my $typeref ( values %$source_hosts_ref ) {
 	    while ( my ( $interface, $arrayref ) = each %$typeref ) {
 		for my $hostref ( @$arrayref ) {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
@@ -4689,10 +4716,10 @@ sub activate_rules() {
 
 			if ( $chain1 ) {
 			    if ( @$exclusions ) {
-				add_rule get_chainref( 'filter' , output_chain $interface ) , $dest . $ipsec_out_match . "-j ${zone}_output";
-				add_rule get_chainref( 'filter' , "${zone}_output" ) , "-j $chain1";
+				add_rule $filter_table->{output_chain $interface} , $dest . $ipsec_out_match . "-j ${zone}_output";
+				add_rule $filter_table->{"${zone}_output"} , "-j $chain1";
 			    } else {
-				add_rule get_chainref( 'filter' , output_chain $interface ) , $dest . $ipsec_out_match . "-j $chain1";
+				add_rule $filter_table->{output_chain $interface} , $dest . $ipsec_out_match . "-j $chain1";
 			    }
 			}
 			
@@ -4700,14 +4727,14 @@ sub activate_rules() {
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {
-				add_rule get_chainref( 'filter' , input_chain $interface ), $source . $ipsec_in_match . "-j ${zone}_input";
-				add_rule get_chainref( 'filter' , "${zone}_input") , "-j $chain2";
+				add_rule $filter_table->{input_chain $interface}, $source . $ipsec_in_match . "-j ${zone}_input";
+				add_rule $filter_table->{"${zone}_input"} , "-j $chain2";
 			    } else {
-				add_rule get_chainref( 'filter' , input_chain $interface ), $source . $ipsec_in_match . "-j $chain2";
+				add_rule $filter_table->{input_chain $interface}, $source . $ipsec_in_match . "-j $chain2";
 			    }
 			}
 
-			add_rule get_chainref( 'filter' , forward_chain $interface ) , $source . $ipsec_in_match . "-j $frwd_ref->{name}"
+			add_rule $filter_table->{forward_chain $interface} , $source . $ipsec_in_match . "-j $frwd_ref->{name}"
 			    if $complex && $hostref->{ipsec} ne 'ipsec';
 		    }
 		}
@@ -4724,18 +4751,17 @@ sub activate_rules() {
 
 	  ZONE1:
 	    for my $zone1 ( grep $zones{$_} ne 'firewall' , @zones )  {
-		my $policy = ( get_chainref 'filter' , "${zone}2${zone1}" )->{policy};
+		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
 		
 		next if $policy  eq 'NONE';
 		
-		my $chain = rules_chain $zone, $zone1;
+		my $chain = rules_target $zone, $zone1;
 		
 		next unless $chain;
 
-		if ( $zone eq $zone1 )
-		{
+		if ( $zone eq $zone1 ) {
 		    #
-		    # One thing that the Llamma doesn't tell you is that evaluating a hash in a numeric context produces a warning.
+		    # One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		    #
 		    no warnings;
 		    next if (  %{ $zone_interfaces{$zone}} < 2 ) && ! ( $zone_options{$zone}{routeback} || @$exclusions );
@@ -4770,28 +4796,29 @@ sub activate_rules() {
 	# Here it is -- THE BIG UGLY!!!!!!!!!!!!
 	#
 	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
-	# $dest_zones is the list of destination zones that we need to handle from this source zone
+	# @dest_zones is the list of destination zones that we need to handle from this source zone
 	#
       ZONE1:
 	for my $zone1 ( @dest_zones ) {
-	    my $policy = ( get_chainref 'filter' , "${zone}2${zone1}" )->{policy};
+	    my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
+
 	    next if $policy  eq 'NONE';
 
-	    my $chain = rules_chain $zone, $zone1;
+	    my $chain = rules_target $zone, $zone1;
+
 	    next unless $chain;
 	    
-	    my $routeback  = 0;
 	    my $num_ifaces = 0;
 	    
 	    if ( $zone eq $zone1 ) {
 		#
-		# One thing that the Llamma doesn't tell you is that evaluating a hash in a numeric context produces a warning.
+		# One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		#
 		no warnings;
 		next ZONE1 if ( $num_ifaces = %{$zone_interfaces{$zone}} ) < 2 && ! ( $zone_options{$zone}{routeback} || @$exclusions );
 	    }
 
-	    my $chainref    = get_chainref 'filter', $chain;
+	    my $chainref    = $filter_table->{$chain};
 	    my $exclusions1 = $zone_exclusions{$zone1};
 	    
 	    my $dest_hosts_ref = $zone_hosts{$zone1};
@@ -4836,7 +4863,7 @@ sub activate_rules() {
 	    } else {
 		for my $typeref ( values %$source_hosts_ref ) {
 		    while ( my ( $interface , $arrayref ) = each %$typeref ) {
-			my $chain3ref = get_chainref 'filter' , forward_chain $interface;
+			my $chain3ref = $filter_table->{forward_chain $interface};
 			for my $hostref ( @$arrayref ) {
 			    for my $net ( @{$hostref->{hosts}} ) {
 				my $source_match = match_source_net $net;
@@ -4845,7 +4872,7 @@ sub activate_rules() {
 					for my $host1ref ( @$array1ref ) {
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref; 
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
-						if ( $interface ne $interface1 || $net ne $net1 || $host1ref->{options}{routeback} ) {
+						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
 						    add_rule $chain3ref, "-o $interface1 " . $source_match . match_dest_net($net1) . $ipsec_out_match . "-j $chain";
 						}
 					    }
@@ -4868,7 +4895,7 @@ sub activate_rules() {
 		} else {
 		    for my $typeref ( values %$source_hosts_ref ) {
 			while ( my ( $interface , $arrayref ) = each %$typeref ) {
-			    my $chain2ref = get_chainref 'filter' , forward_chain $interface;
+			    my $chain2ref = $filter_table->{forward_chain $interface};
 			    for my $hostref ( @$arrayref ) {
 				for my $net ( @{$hostref->{hosts}} ) {
 				    add_rule $chain2ref, match_source_net($net) .  "-j $last_chain";
@@ -4884,20 +4911,20 @@ sub activate_rules() {
     # Now add the jumps to the interface chains from FORWARD, INPUT, OUTPUT and POSTROUTING
     #
     for my $interface ( @interfaces ) {
-	add_rule get_chainref( 'filter' , 'FORWARD' ) , "-i $interface -j " . forward_chain $interface;
-	add_rule get_chainref( 'filter' , 'INPUT' )   , "-i $interface -j " . input_chain $interface;
-	add_rule get_chainref( 'filter' , 'OUTPUT' )  , "-o $interface -j " . output_chain $interface;
+	add_rule $filter_table->{FORWARD} , "-i $interface -j " . forward_chain $interface;
+	add_rule $filter_table->{INPUT}   , "-i $interface -j " . input_chain $interface;
+	add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface;
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , "-o $interface ";
     }
 
-    my $chainref = get_chainref 'filter' , "${firewall_zone}2${firewall_zone}";
+    my $chainref = $filter_table->{"${firewall_zone}2${firewall_zone}"};
 
-    add_rule get_chainref( 'filter' , 'OUTPUT' ) , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
-    add_rule get_chainref( 'filter' , 'INPUT'  ) , '-i lo -j ACCEPT';
+    add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
+    add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
 
-    complete_standard_chain get_chainref( 'filter' , 'INPUT' )   , 'all' , $firewall_zone;
-    complete_standard_chain get_chainref( 'filter' , 'OUTPUT' )  , $firewall_zone , 'all';
-    complete_standard_chain get_chainref( 'filter' , 'FORWARD' ) , 'all' , 'all';
+    complete_standard_chain $filter_table->{INPUT}   , 'all' , $firewall_zone;
+    complete_standard_chain $filter_table->{OUTPUT}  , $firewall_zone , 'all';
+    complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all';
 
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
@@ -4908,7 +4935,7 @@ sub activate_rules() {
 	    for my $chain ( @{$builtins{$table}} ) {
 		log_rule_limit 
 		    $config{LOGALLNEW} , 
-		    get_chainref( $table, $chain ) ,
+		    $chain_table{$table}{$chain} ,
 		    $table ,
 		    $chain ,
 		    '' ,
@@ -5293,7 +5320,7 @@ progress_message2 "Setting UP Accounting...";                setup_accounting;
 #
 # Do the BIG UGLY...
 #
-progress_message2 "Generating Rule Matrix...";               activate_rules;                        dump_chain_table if $ENV{DEBUG};
+progress_message2 "Generating Rule Matrix...";               generate_matrix;                       dump_chain_table if $ENV{DEBUG};
 #
 # Create the script.
 #

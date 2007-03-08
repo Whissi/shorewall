@@ -135,6 +135,7 @@ my $line; # Current config file line
 
 my @zones;
 my %zones;
+my %zone_children;
 my %zone_parents;
 my %zone_hosts;
 my %zone_options;
@@ -398,11 +399,12 @@ sub parse_zone_option_list($)
 #
 # Parse the zones file. Generates the following information:
 #
-#     zones        => <zone type>
-#     zone_parents => <List of parent zones>
-#     zone_options => in_out => mss   => <mss value>
-#                            => ipsec => "ipsec selection string"
-#                            => routeback => 1
+#     zones         => <zone type>
+#     zone_children => <Ref to Empty List>
+#     zone_parents  => <List of parent zones>
+#     zone_options  => in_out => mss   => <mss value>
+#                             => ipsec => "ipsec selection string"
+#                             => routeback => 1
 #                     in     ...
 #                     out    ...
 #     
@@ -430,6 +432,7 @@ sub determine_zones()
 		fatal_error "Invalid Parent List ($2)" unless $p;
 		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
 		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p} eq 'firewall';
+		push @{$zone_children{$p}}, $zone;
 	    }
 	}
 
@@ -468,6 +471,7 @@ sub determine_zones()
 	$zone_options{$zone} = \%zone_hash;
 
 	$zone_interfaces{$zone} = {};
+	$zone_children{$zone}   = [];
 
 	push @z, $zone;
     }
@@ -483,8 +487,8 @@ sub determine_zones()
       ZONE:
 	for my $zone ( @z ) {
 	    unless ( $ordered{$zone} ) {
-		for my $parent ( @{$zone_parents{$zone}} ) {
-		    next ZONE unless $ordered{$parent};
+		for my $child ( @{$zone_children{$zone}} ) {
+		    next ZONE unless $ordered{$child};
 		}
 		$ordered{$zone} = 1;
 		push @zones, $zone;

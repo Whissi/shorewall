@@ -4593,7 +4593,7 @@ sub activate_rules() {
     my %policy_exclusions;
 
     for my $interface ( @interfaces ) {
-	addnatjump 'PREROUTING' , snat_chain( $interface ), "-i $interface ";
+	addnatjump 'POSTROUTING' , snat_chain( $interface ), "-o $interface ";
     }
 
     if ( $config{DYNAMIC_ZONES} ) {

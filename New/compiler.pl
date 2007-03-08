@@ -1082,20 +1082,21 @@ sub merge_levels ($$) {
 
     my $subparts = @subparts;
 
-    push @subparts, '' while @subparts < 3;             #Avoid undefined values
+    my $target   = $subparts[0];
 
-    if ( @supparts == 3 ) {
-	my $level = $supparts[1];
-	return "$subparts[0]:none!:$supparts[2]"        if $level eq 'none!';
-	return "$subparts[0]:$supparts[1]:$supparts[2]" if $level =~ /!$/;
-	return $subordinate                             if $subparts >= 2;
-	return "$subparts[0]:$supparts[1]";
+    push @subparts, '' while @subparts < 3;   #Avoid undefined values
+    my $level = $supparts[1];
+
+    if ( $subparts == 3 ) {
+	return "$target:none!:$supparts[2]"   if $level eq 'none!';
+	return "$target:$level:$supparts[2]"  if $level =~ /!$/;
+	return $subordinate                   if $subparts >= 2;
+	return "$target:$level";
     } 
 
-    if ( @subparts == 2 ) {
-	my $level = $supparts[1];
-	return "$subparts[0]:none!"                     if $level eq 'none!';
-	return "$subparts[0]:$supparts[1]"              if ($level =~ /!$/) || ($subparts < 2);
+    if ( $subparts == 2 ) {
+	return "$target:none!"                if $level eq 'none!';
+	return "$target:$level"               if ($level =~ /!$/) || ($subparts < 2);
     }
 
     $subordinate;

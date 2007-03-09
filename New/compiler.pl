@@ -60,6 +60,7 @@ my %config = ( STARTUP_ENABLED => undef,
 	       #
 	       # Firewall Options
 	       #
+	       BRIDGING => undef,
 	       IP_FORWARDING => undef,
 	       ADD_IP_ALIASES => undef,
 	       ADD_SNAT_ALIASES => undef,
@@ -133,13 +134,81 @@ my %capabilities =
 
 my $line; # Current config file line
 
-my @zones;
+#
+# Zone Table. 
+#
+#     @zones contains the ordered list of zones with sub-zones appearing before their parents.
+#
+#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4';
+#                        options =>    { complex => 0|1
+#                                        in_out  => < policy match string >
+#                                        in      => < policy match string >
+#                                        out     => < policy match string > 
+#                                      }
+#                        parents =>    [ <parents> ]     Parents, Children and interfaces are listed by name
+#                        children =>   [ <children> ]
+#                        interfaces => [ <interfaces> ]
+#                        hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
+#                                                                  options => { <option1> => <value1>
+#                                                                               ...
+#                                                                             }
+#                                                                  hosts   => [ <net1> , <net2> , ... ]
+#                                                                }
+#                                                <interface2> => ...
+#                                              }
+#                                            ]
+#                       }
+#             <zone2> => ...
+#           }
+#
+#     $firewall_zone names the firewall zone.
+#
+my @zones; 
 my %zones;
 my $firewall_zone;
 
+#
+#     Interface Table.
+#
+#     @interfaces lists the interface names in the order that they appear in the interfaces file.
+#
+#     %interfaces { <interface1> => { root        => <name without trailing '+'>
+#                                     broadcast   => [ <bcast1>, ... ]
+#                                     options     => { <option1> = <val1> ,
+#                                                      ...
+#                                                    }
+#                                     zone        => <zone name>
+#                 }
+#
 my @interfaces;
 my %interfaces;
 
+#
+# Chain Table
+#
+#    @policy_chains is a list of references to policy chains in the filter table
+#
+#    %chain_table { <table> => { <chain1>  => { name         => <chain name>
+#                                               is_policy    => 0|1
+#                                               is_optionsl  => 0|1
+#                                               referenced   => 0|1      
+#                                               policy       => <policy>
+#                                               loglevel     => <level>
+#                                               synparams    => <burst/limit>
+#                                               default      => <default action>
+#                                               policy_chain => <ref to policy chain -- self-reference if this is a policy chain>
+#                                               rules        => [ <rule1>
+#                                                                 <rule2>
+#                                                                 ...
+#                                                               ]
+#
+#       'is_optional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
+#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are optional.
+#
+#       Only 'referenced' chains get written to the iptables-restore output.
+#
+#       'loglevel', 'synparams' and 'default' only apply to policy chains. 
+#
 my @policy_chains;
 my %chain_table = ( raw    => {} , 
 		    mangle => {},
@@ -149,42 +218,62 @@ my %chain_table = ( raw    => {} ,
 my $nat_table    = $chain_table{nat};
 my $mangle_table = $chain_table{mangle};
 my $filter_table = $chain_table{filter};
-
+#
+# Contents of last COMMENT line.
+#
 my $comment = '';
-
+#
+# Current Indentation 
+# 
 my %indent;
-
+#
+# Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
+#
 my $exclseq = 0;
-
+#
+# These are used to avoid duplicate '-m iprange' and '-m ipset' specifications in the same rule.
+#
 my $iprangematch = 0;
 my $ipsetmatch   = 0;
-
+#
+# Current rules file section.
+#
 my $section  = 'ESTABLISHED';
-
+#
+# These get set to 1 as sections are encountered.
+#
 my %sections = ( ESTABLISHED => 0,
 		 RELATED     => 0,
 		 NEW         => 0
 		 );
-
+#
+# Set to one if we find a SECTION
+#
 my $sectioned = 0;
-
+#
+# Some IPv4 useful stuff
+#
 my @allipv4 = ( '0.0.0.0/0' );
 
 use constant { ALLIPv4 => '0.0.0.0/0' };
 
 my @rfc1918_networks = ( "10.0.0.0/24", "172.16.0.0/12", "192.168.0.0/16" );
-
-use constant { STANDARD => 1,
-	       NATRULE  => 2,
-	       BUILTIN  => 4,
-	       NONAT    => 8,
-	       NATONLY  => 16,
-	       REDIRECT => 32,
-	       ACTION   => 64,
-	       MACRO    => 128,
-	       LOGRULE  => 256,
+#
+#  Target Table. Each entry maps a target to a set of flags defined as follows.
+#
+use constant { STANDARD => 1,              #defined by Netfilter
+	       NATRULE  => 2,              #Involved NAT
+	       BUILTIN  => 4,              #A built-in action
+	       NONAT    => 8,              #'NONAT' or 'ACCEPT+'
+	       NATONLY  => 16,             #'DNAT-' or 'REDIRECT-'
+	       REDIRECT => 32,             #'REDIRECT'
+	       ACTION   => 64,             #An action
+	       MACRO    => 128,            #A Macro
+	       LOGRULE  => 256,            #'LOG'
 	   };
-
+#
+#   As new targets (Actions and Macros) are discovered, they are added to the table
+#
 my %targets = ('ACCEPT'       => STANDARD,
 	       'ACCEPT+'      => STANDARD  + NONAT,
 	       'ACCEPT!'      => STANDARD,
@@ -212,15 +301,31 @@ my %targets = ('ACCEPT'       => STANDARD,
 	       'forwardUPnP'  => BUILTIN  + ACTION,
 	       'Limit'        => BUILTIN  + ACTION,
 	       );
-
+#
+#  Action Table
+#
+#     %actions{ <action1> =>  { requires => { <requisite1> = 1,
+#                                             <requisite2> = 1,
+#                                             ...
+#                                           } ,
+#                               actchain => <action chain number> # Used for generating unique chain names for each <level>:<tag> pair.
+#
 my %actions;
-
+#
+#  Used Actions. Each action that is actually used has an entry with value 1.
+#
 my %usedactions;
-
+#
+# Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
+#
 my %logactionchains;
-
+#
+# Maps each used macro to it's 'macro. ...' file.
+#
 my %macros;
-
+#
+# Default actions for each policy.
+#
 my %default_actions = ( DROP     => 'none' ,
 			REJECT   => 'none' ,
 			ACCEPT   => 'none' ,
@@ -663,7 +768,7 @@ sub dump_interface_info()
 	    }
 	}
 
-	my $zone = $interfaces{$interface}{zone};
+	my $zone = $interfaceref->{zone};
 	print "        zone: $zone\n" if $zone;
     }
 
@@ -811,9 +916,7 @@ sub dump_zone_info()
 	
 	if ( $typeref ) {
 	    print "   Host Groups:\n";
-	    for my $type ( sort keys %$typeref ) {
-		my $interfaceref = $typeref->{$type};
-		
+	    while ( my ( $type, $interfaceref ) =  ( each %$typeref ) ) {
 		print "      Type: $type\n";
 	
 		for my $interface ( sort keys %$interfaceref ) {

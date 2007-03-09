@@ -1224,7 +1224,7 @@ sub new_action( $ ) {
 
     my %h;
 
-    $h{actchain}   = 0;
+    $h{actchain}   = '';
     $h{requires} = {};
     $actions{$action} = \%h;
 }
@@ -1265,16 +1265,14 @@ sub createlogactionchain( $$ ) {
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 	
     while ( $chain_table{'%' . $chain . $actionref->{actchain}} ) {
-	$chain = substr $chain, 0, 27 if ++($actionref->{actchain}) == 10 and length $chain == 28;
+	$chain = substr $chain, 0, 27 if $actionref->{actchain} == 10 and length $chain == 28;
     }
 
     $actionref = new_action $action unless $actionref;
 
-    $actionref->{actchain}++;
-
     $level = 'none' unless $level;
 
-    $logactionchains{"$action:$level"} = new_chain 'filter', '%' . $chain . $actionref->{actchain};
+    $logactionchains{"$action:$level"} = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
 
     #
     # Fixme -- action file
@@ -3527,8 +3525,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my $rule = '';
+    my $actionchainref;
 
-    $proto     = '' unless defined $proto;
     $ports     = '' unless defined $ports;
     $sports    = '' unless defined $sports;
     $origdest  = '' unless defined $origdest;
@@ -3565,7 +3563,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     # Mark target as used
     #
     if ( $actiontype & ACTION ) {
-	unless ( $usedactions{target} ) {
+	unless ( $usedactions{$target} ) {
 	    $usedactions{$target} = 1;
 	    createactionchain $target;
 	}
@@ -3711,6 +3709,12 @@ sub process_rule1 ( $$$$$$$$$ ) {
     # Add filter table rule, unless this is a NATONLY rule type
     #
     unless ( $actiontype & NATONLY ) {
+
+	if ( $actiontype & ACTION ) {
+	    $action = (find_logactionchain $target)->{name};
+	    $loglevel = '';
+	}
+
 	finish_rule
 	    ensure_chain ('filter', $chain ) ,
 	    $rule ,
@@ -4148,7 +4152,7 @@ sub allowinUPnP ( $$$ ) {
 sub Limit( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    my @tag = split $tag;
+    my @tag = split /,/, $tag;
 
     fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
 

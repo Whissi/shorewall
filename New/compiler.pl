@@ -388,16 +388,7 @@ sub parse_zone_option_list($)
 }
 
 #
-# Parse the zones file. Generates the Zone Table
-#
-#     zones         => <zone type>
-#     zone_children => <Ref to Empty List>
-#     zone_parents  => <List of parent zones>
-#     zone_options  => in_out => mss   => <mss value>
-#                             => ipsec => "ipsec selection string"
-#                             => routeback => 1
-#                     in     ...
-#                     out    ...
+# Parse the zones file.
 #     
 sub determine_zones()
 {
@@ -460,8 +451,7 @@ sub determine_zones()
 	$zone_hash{out}      = parse_zone_option_list( $out_options || '');
 	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
 
-	$zoneref->{options} = \%zone_hash;
-
+	$zoneref->{options}    = \%zone_hash;
 	$zoneref->{interfaces} = {};
 	$zoneref->{children}   = [];
 	$zoneref->{hosts}      = {};
@@ -491,13 +481,6 @@ sub determine_zones()
     }
 }
 
-#
-# Add an entry to the zone_hosts hash.
-#
-#   %zone_hosts -> zone => (ipsec|ipv4) => <interface> => <Array> => options => <option1> => value1
-#                                                                               <option2> => value2
-#                                                                 => hosts   =  <network>
-#
 sub add_group_to_zone($$$$$)
 {
     my ($zone, $type, $interface, $networks, $options) = @_;
@@ -553,15 +536,7 @@ sub add_group_to_zone($$$$$)
 }
 
 #
-# Parse the interfaces file. Generates the following information
-#
-# @interfaces          => File-ordered list of interfaces from interfaces file.
-# %interfaces          => Interface name without trailing '+'; this hash is extended as names are found to match wildcards.
-# %interface_broadcast => List of broadcast addresses (or detect).
-# %interface_options   => Option1 => Value1
-#                      => Option2 => Value2
-#                         ...
-# %interface_zone      => Zone associated with interface, if any.
+# Parse the interfaces file.
 #	 
 sub validate_interfaces_file()
 {
@@ -723,7 +698,7 @@ sub known_interface($)
 }
 
 #
-# Validates the hosts file. Generates entries in %zone{..}{hosts} as described above.
+# Validates the hosts file. Generates entries in %zone{..}{hosts} 
 #
 sub validate_hosts_file()
 {
@@ -808,11 +783,9 @@ sub dump_zone_info()
 	my $zoneref   = $zones{$zone};
 	my $typeref   = $zoneref->{hosts};
 	my $optionref = $zoneref->{options};
-	my $groupref;    
+	my $zonetype = $zoneref->{type};
 
 	print "Zone: $zone\n";
-	
-	my $zonetype = $zoneref->{type};
 
 	print "   Type: $zonetype\n";
 	print "   Parents:\n";
@@ -901,7 +874,6 @@ sub zone_report()
 	my $hostref   = $zoneref->{hosts};
 	my $type      = $zoneref->{type};
 	my $optionref = $zoneref->{options};
-	my $groupref;    
 
 	progress_message "   $zone ($type)";
 

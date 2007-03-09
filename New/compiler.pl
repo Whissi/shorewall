@@ -783,7 +783,7 @@ sub dump_zone_info()
 	my $zoneref   = $zones{$zone};
 	my $typeref   = $zoneref->{hosts};
 	my $optionref = $zoneref->{options};
-	my $zonetype = $zoneref->{type};
+	my $zonetype  = $zoneref->{type};
 
 	print "Zone: $zone\n";
 
@@ -804,10 +804,7 @@ sub dump_zone_info()
 		    print "      Complex: $optionref->{$opttype}\n";
 		} else {
 		    print "      $opttype:\n";
-		    for my $option ( keys %{$optionref->{$opttype}}) {
-			my $val = $optionref->{$opttype}{$option};
-			print "         $option=$val\n";
-		    }
+		    while ( my ( $option, $val ) = each %{$optionref->{$opttype}} ) { print "         $option=$val\n"; }
 		}
 	    }
 	}

@@ -1087,17 +1087,18 @@ sub merge_levels ($$) {
     push @subparts, '' while @subparts < 3;   #Avoid undefined values
 
     my $level = $supparts[1];
+    my $tag   = $supparts[2];
 
     if ( @supparts == 3 ) {
-	return "$target:none!:$supparts[2]"   if $level eq 'none!';
-	return "$target:$level:$supparts[2]"  if $level =~ /!$/;
-	return $subordinate                   if $subparts >= 2;
+	return "$target:none!:$tag"   if $level eq 'none!';
+	return "$target:$level:$tag"  if $level =~ /!$/;
+	return $subordinate           if $subparts >= 2;
 	return "$target:$level";
     } 
 
     if ( @supparts == 2 ) {
-	return "$target:none!"                if $level eq 'none!';
-	return "$target:$level"               if ($level =~ /!$/) || ($subparts < 2);
+	return "$target:none!"        if $level eq 'none!';
+	return "$target:$level"       if ($level =~ /!$/) || ($subparts < 2);
     }
 
     $subordinate;
@@ -5237,6 +5238,88 @@ sub do_initialize() {
     initialize_chain_table;
 }
 
+sub compile_firewall() {
+    #
+    # Process the zones file.
+    #
+    progress_message2 "Determining Zones...";                    determine_zones;
+    #
+    # Process the interfaces file.
+    #
+    progress_message2 "Validating interfaces file...";           validate_interfaces_file;             dump_interface_info if $ENV{DEBUG};
+    #
+    # Process the hosts file.
+    #
+    progress_message2 "Validating hosts file...";                validate_hosts_file;
+
+    if ( $ENV{DEBUG} ) {
+	dump_zone_info;
+    } else {
+	progress_message "Determining Hosts in Zones...";        zone_report;
+    }
+    #
+    # Do action pre-processing.
+    #
+    progress_message2 "Preprocessing Action Files...";           process_actions1;
+    #
+    # Process the Policy File.
+    #
+    progress_message2 "Validating Policy file...";               validate_policy;
+    #
+    # Do all of the zone-independent stuff
+    #
+    progress_message2 "Setting up Common Rules...";              add_common_rules;
+    #
+    # Setup Masquerading/SNAT
+    #
+    progress_message2 "Compiling Masq file...";                  setup_masq;
+    #
+    # MACLIST Filtration
+    #
+    progress_message2 "Setting up MAC Filtration -- Phase 1..."; setup_mac_lists 1;
+    #
+    # Process the rules file.
+    #
+    progress_message2 "Compiling Rules...";                      process_rules;
+    #
+    # Add Tunnel rules.
+    #
+    progress_message2 "Adding Tunnels...";                       setup_tunnels;
+    #
+    # Post-rules action processing.
+    #
+    process_actions2;
+    process_actions3;
+    #
+    # MACLIST Filtration again
+    #
+    progress_message2 "Setting up MAC Filtration -- Phase 2..."; setup_mac_lists 2;
+    #
+    # Apply Policies
+    #
+    progress_message 'Applying Policies...';                     apply_policy_rules;                    dump_action_table if $ENV{DEBUG};
+    #
+    # Setup Nat
+    #
+    progress_message2 "Compiling one-to-one NAT...";             setup_nat;
+    #
+    # TCRules
+    #
+    progress_message2 "Processing TC Rules...";                  process_tcrules;
+    #
+    # Accounting.
+    #
+    progress_message2 "Setting UP Accounting...";                setup_accounting;
+    #
+    # Do the BIG UGLY...
+    #
+    progress_message2 "Generating Rule Matrix...";               generate_matrix;                       dump_chain_table if $ENV{DEBUG};
+    #
+    # Create the script.
+    #
+    progress_message2 "Creating iptables-restore file...";       create_iptables_restore_file;
+}
+
 #
 #                                               E x e c u t i o n   S t a r t s   H e r e
 #
@@ -5246,83 +5329,5 @@ $ENV{VERBOSE} = 2 if $ENV{DEBUG};
 # Get shorewall.conf and capabilities.
 #
 do_initialize;
-#
-# Process the zones file.
-#
-progress_message2 "Determining Zones...";                    determine_zones;
-#
-# Process the interfaces file.
-#
-progress_message2 "Validating interfaces file...";           validate_interfaces_file;             dump_interface_info if $ENV{DEBUG};
-#
-#
-# Process the hosts file.
-#
-progress_message2 "Validating hosts file...";                validate_hosts_file;
 
-if ( $ENV{DEBUG} ) {
-    dump_zone_info;
-} else {
-    progress_message "Determining Hosts in Zones...";        zone_report;
-}
-#
-# Do action pre-processing.
-#
-progress_message2 "Preprocessing Action Files...";           process_actions1;
-#
-# Process the Policy File.
-#
-progress_message2 "Validating Policy file...";               validate_policy;
-#
-# Do all of the zone-independent stuff
-#
-progress_message2 "Setting up Common Rules...";              add_common_rules;
-#
-# Setup Masquerading/SNAT
-#
-progress_message2 "Compiling Masq file...";                  setup_masq;
-#
-# MACLIST Filtration
-#
-progress_message2 "Setting up MAC Filtration -- Phase 1..."; setup_mac_lists 1;
-#
-# Process the rules file.
-#
-progress_message2 "Compiling Rules...";                      process_rules;
-#
-# Add Tunnel rules.
-#
-progress_message2 "Adding Tunnels...";                       setup_tunnels;
-#
-# Post-rules action processing.
-#
-process_actions2;
-process_actions3;
-#
-# MACLIST Filtration again
-#
-progress_message2 "Setting up MAC Filtration -- Phase 2..."; setup_mac_lists 2;
-#
-# Apply Policies
-#
-progress_message 'Applying Policies...';                     apply_policy_rules;                    dump_action_table if $ENV{DEBUG};
-#
-# Setup Nat
-#
-progress_message2 "Compiling one-to-one NAT...";             setup_nat;
-#
-# TCRules
-#
-progress_message2 "Processing TC Rules...";                  process_tcrules;
-#
-# Accounting.
-#
-progress_message2 "Setting UP Accounting...";                setup_accounting;
-#
-# Do the BIG UGLY...
-#
-progress_message2 "Generating Rule Matrix...";               generate_matrix;                       dump_chain_table if $ENV{DEBUG};
-#
-# Create the script.
-#
-progress_message2 "Creating iptables-restore file...";       create_iptables_restore_file;
+compile_firewall;

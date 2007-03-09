@@ -135,19 +135,10 @@ my $line; # Current config file line
 
 my @zones;
 my %zones;
-my %zone_children;
-my %zone_parents;
-my %zone_hosts;
-my %zone_options;
-my %zone_interfaces;
-my %zone_exclusions;
 my $firewall_zone;
 
 my @interfaces;
 my %interfaces;
-my %interface_broadcast;
-my %interface_options;
-my %interface_zone;
 
 my @policy_chains;
 my %chain_table = ( raw    => {} , 
@@ -194,33 +185,33 @@ use constant { STANDARD => 1,
 	       LOGRULE  => 256,
 	   };
 
-my %all_actions = ('ACCEPT'       => STANDARD,
-		   'ACCEPT+'      => STANDARD  + NONAT,
-		   'ACCEPT!'      => STANDARD,
-		   'NONAT'        => STANDARD  + NONAT,
-		   'DROP'         => STANDARD,
-		   'DROP!'        => STANDARD,
-		   'REJECT'       => STANDARD,
-		   'REJECT!'      => STANDARD,
-		   'DNAT'         => NATRULE,
-		   'DNAT-'        => NATRULE  + NATONLY,
-		   'REDIRECT'     => NATRULE  + REDIRECT,
-		   'REDIRECT-'    => NATRULE  + REDIRECT + NATONLY,
-		   'LOG'          => STANDARD + LOGRULE,
-		   'CONTINUE'     => STANDARD,
-		   'QUEUE'        => STANDARD,
-		   'SAME'         => NATRULE,
-		   'SAME-'        => NATRULE  + NATONLY,
-		   'dropBcast'    => BUILTIN  + ACTION,
-		   'allowBcast'   => BUILTIN  + ACTION,
-		   'dropNotSyn'   => BUILTIN  + ACTION,
-		   'rejNotSyn'    => BUILTIN  + ACTION,
-		   'dropInvalid'  => BUILTIN  + ACTION,
-		   'allowInvalid' => BUILTIN  + ACTION,
-		   'allowinUPnP'  => BUILTIN  + ACTION,
-		   'forwardUPnP'  => BUILTIN  + ACTION,
-		   'Limit'        => BUILTIN  + ACTION,
-		   );
+my %targets = ('ACCEPT'       => STANDARD,
+	       'ACCEPT+'      => STANDARD  + NONAT,
+	       'ACCEPT!'      => STANDARD,
+	       'NONAT'        => STANDARD  + NONAT,
+	       'DROP'         => STANDARD,
+	       'DROP!'        => STANDARD,
+	       'REJECT'       => STANDARD,
+	       'REJECT!'      => STANDARD,
+	       'DNAT'         => NATRULE,
+	       'DNAT-'        => NATRULE  + NATONLY,
+	       'REDIRECT'     => NATRULE  + REDIRECT,
+	       'REDIRECT-'    => NATRULE  + REDIRECT + NATONLY,
+	       'LOG'          => STANDARD + LOGRULE,
+	       'CONTINUE'     => STANDARD,
+	       'QUEUE'        => STANDARD,
+	       'SAME'         => NATRULE,
+	       'SAME-'        => NATRULE  + NATONLY,
+	       'dropBcast'    => BUILTIN  + ACTION,
+	       'allowBcast'   => BUILTIN  + ACTION,
+	       'dropNotSyn'   => BUILTIN  + ACTION,
+	       'rejNotSyn'    => BUILTIN  + ACTION,
+	       'dropInvalid'  => BUILTIN  + ACTION,
+	       'allowInvalid' => BUILTIN  + ACTION,
+	       'allowinUPnP'  => BUILTIN  + ACTION,
+	       'forwardUPnP'  => BUILTIN  + ACTION,
+	       'Limit'        => BUILTIN  + ACTION,
+	       );
 
 my %actions;
 
@@ -397,7 +388,7 @@ sub parse_zone_option_list($)
 }
 
 #
-# Parse the zones file. Generates the following information:
+# Parse the zones file. Generates the Zone Table
 #
 #     zones         => <zone type>
 #     zone_children => <Ref to Empty List>
@@ -423,6 +414,8 @@ sub determine_zones()
 	my ($zone, $type, $options, $in_options, $out_options, $extra) = split /\s+/, $line;
 
 	fatal_error("Invalid zone file entry: $line") if $extra;
+	
+	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
 
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;
@@ -431,32 +424,31 @@ sub determine_zones()
 	    for my $p ( @parents ) {
 		fatal_error "Invalid Parent List ($2)" unless $p;
 		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
-		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p} eq 'firewall';
-		push @{$zone_children{$p}}, $zone;
+		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} eq 'firewall';
+		push @{$zones{$p}{children}}, $zone;
 	    }
 	}
 
 	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $env{MAXZONENAMELENGTH};
 	fatal_error "Invalid zone name: $zone" if $zone =~ /^all2|2all$/;
-	
-	$zone_parents{$zone}    = \@parents;
-	$zone_exclusions{$zone} = [];
-	
-	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
+
+	my $zoneref = $zones{$zone} = {};
+	$zoneref->{parents}    = \@parents;
+	$zoneref->{exclusions} = [];
 
 	$type = "ipv4" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $zones{$zone} = 'ipv4';
+	    $zoneref->{type} = 'ipv4';
 	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $zones{$zone} = 'ipsec4';
+	    $zoneref->{type} = 'ipsec4';
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined: $zone" if $firewall_zone;
 	    $firewall_zone = $zone;
-	    $zones{$zone} = "firewall";
+	    $zoneref->{type} = "firewall";
 	} elsif ( $type eq '-' ) {
-	    $type = 'ipv4';
+	    $type = $zoneref->{type} = 'ipv4';
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -468,10 +460,11 @@ sub determine_zones()
 	$zone_hash{out}      = parse_zone_option_list( $out_options || '');
 	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
 
-	$zone_options{$zone} = \%zone_hash;
+	$zoneref->{options} = \%zone_hash;
 
-	$zone_interfaces{$zone} = {};
-	$zone_children{$zone}   = [];
+	$zoneref->{interfaces} = {};
+	$zoneref->{children}   = [];
+	$zoneref->{hosts}      = {};
 
 	push @z, $zone;
     }
@@ -487,7 +480,7 @@ sub determine_zones()
       ZONE:
 	for my $zone ( @z ) {
 	    unless ( $ordered{$zone} ) {
-		for my $child ( @{$zone_children{$zone}} ) {
+		for my $child ( @{$zones{$zone}{children}} ) {
 		    next ZONE unless $ordered{$child};
 		}
 		$ordered{$zone} = 1;
@@ -511,10 +504,11 @@ sub add_group_to_zone($$$$$)
     my $typeref;
     my $interfaceref;
     my $arrayref;
-    my $zonetype = $zones{$zone};
-    my $ifacezone = $interface_zone{$interface};
+    my $zoneref  = $zones{$zone};
+    my $zonetype = $zoneref->{type};
+    my $ifacezone = $interfaces{$interface}{zone};
 
-    $zone_interfaces{$zone}{$interface} = 1;
+    $zoneref->{interfaces}{$interface} = 1;
 
     my @newnetworks;
     my @exclusions;
@@ -540,13 +534,13 @@ sub add_group_to_zone($$$$$)
 	push @$new, $switched ? "$interface:$host" : $host;
     }
 
-    $zone_options{$zone}{in_out}{routeback} = 1 if $options->{routeback};
+    $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback};
 
-    $typeref      = ( $zone_hosts{$zone}          || ( $zone_hosts{$zone} = {} ) );
+    $typeref      = ( $zoneref->{hosts}           || ( $zoneref->{hosts} = {} ) );
     $interfaceref = ( $typeref->{$type}           || ( $interfaceref = $typeref->{$type} = {} ) );
     $arrayref     = ( $interfaceref->{$interface} || ( $interfaceref->{$interface} = [] ) );
 
-    $zone_options{$zone}{complex} = 1 if @$arrayref || ( @newnetworks > 1 );
+    $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 );
 
     my %h;
 
@@ -554,7 +548,7 @@ sub add_group_to_zone($$$$$)
     $h{hosts}   = \@newnetworks;
     $h{ipsec}   = $type eq 'ipsec' ? 'ipsec' : 'none';
 
-    push @{$zone_exclusions{$zone}}, @exclusions;
+    push @{$zoneref->{exclusions}}, @exclusions;
     push @{$arrayref}, \%h;
 }
 
@@ -597,16 +591,17 @@ sub validate_interfaces_file()
 	$line =~ s/\s+/ /g;
 
 	my ($zone, $interface, $networks, $options, $extra) = split /\s+/, $line;
+	my $zoneref;
 
 	fatal_error "Invalid interfaces entry: $line" if $extra;
 
 	if ( $zone eq '-' ) {
 	    $zone = '';
 	} else {
-	    my $type = $zones{$zone};
+	    $zoneref = $zones{$zone};
 
-	    fatal_error "Unknown zone ($zone)" unless $type;
-	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $type eq 'firewall';
+	    fatal_error "Unknown zone ($zone)" unless $zoneref;
+	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} eq 'firewall';
 	}
 
 	$networks = '' if $networks eq '-';
@@ -616,12 +611,12 @@ sub validate_interfaces_file()
 
 	fatal_error "Invalid Interface Name: $interface" if $interface =~ /:|^\+$/;
 
-	( $interfaces{$interface} = $interface ) =~ s/\+$// ;
+	( $interfaces{$interface}{root} = $interface ) =~ s/\+$// ;
 
 	if ( $networks && $networks ne '-' )
 	{
 	    my @broadcast = split ',', $networks; 
-	    $interface_broadcast{$interface} = \@broadcast;
+	    $interfaces{$interface}{broadcast} = \@broadcast;
 	}
 
 	if ( $options )
@@ -641,16 +636,16 @@ sub validate_interfaces_file()
 		}
 	    }
 
-	    $zone_options{$zone}{in_out}{routeback} = 1 if $options{routeback};
+	    $zoneref->{options}{in_out}{routeback} = 1 if $options{routeback};
 
-	    $interface_options{$interface} = \%options;
+	    $interfaces{$interface}{options} = \%options;
 	}
 
 	push @interfaces, $interface;
 
-	add_group_to_zone( $zone, $zones{$zone}, $interface, \@allipv4, {} ) if $zone;
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@allipv4, {} ) if $zone;
 	
-    	$interface_zone{$interface} = $zone; #Must follow the call to add_group_to_zone()
+    	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$line\" Validated";
 
@@ -667,10 +662,11 @@ sub dump_interface_info()
     print "\n";
 
     for my $interface ( @interfaces ) {
+	my $interfaceref = $interfaces{$interface};
 	print "Interface: $interface\n";
-	my $root = $interfaces{$interface};
+	my $root = $interfaceref->{root};
 	print "   Root = $root\n";
-	my $bcastref = $interface_broadcast{$interface};
+	my $bcastref = $interfaceref->{broadcast};
 	if ( $bcastref ) {
 	    my $spaces = '';
 	    print '   Broadcast: ';
@@ -680,7 +676,7 @@ sub dump_interface_info()
 	    }
 	}
 
-	my $options = $interface_options{$interface};
+	my $options = $interfaceref->{options};
 
 	if ( $options ) {
 	    print '     Options: ';
@@ -692,7 +688,7 @@ sub dump_interface_info()
 	    }
 	}
 
-	my $zone = $interface_zone{$interface};
+	my $zone = $interfaces{$interface}{zone};
 	print "        zone: $zone\n" if $zone;
     }
 
@@ -711,7 +707,7 @@ sub known_interface($)
     return 1 if exists $interfaces{$interface};
 
     for my $i ( @interfaces ) {
-	my $val = $interfaces{$i};
+	my $val = $interfaces{$i}{root};
 	next if $val eq $i;
 	my $len = length $val;
 	if ( substr( $interface, 0, $len ) eq $val ) {
@@ -727,7 +723,7 @@ sub known_interface($)
 }
 
 #
-# Validates the hosts file. Generates entries in %zone_hosts as described above.
+# Validates the hosts file. Generates entries in %zone{..}{hosts} as described above.
 #
 sub validate_hosts_file()
 {
@@ -752,7 +748,8 @@ sub validate_hosts_file()
 
 	fatal_error "Invalid hosts file entry: $line" if $extra;
 
-	my $type = $zones{$zone};
+	my $zoneref = $zones{$zone};
+	my $type    = $zoneref->{type};
 
 	fatal_error "Unknown ZONE ($zone)" unless $type;
 	fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type eq 'firewall';
@@ -762,8 +759,8 @@ sub validate_hosts_file()
 	if ( $hosts =~ /^([\w.@%-]+):(.*)$/ ) {
 	    $interface = $1;
 	    $hosts = $2;
-	    $zone_options{$zone}{complex} = 1 if $hosts =~ /^\+/;
-	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface};
+	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
 	} else {
 	    fatal_error "Invalid HOSTS(S) column contents: $hosts";
 	}
@@ -778,7 +775,7 @@ sub validate_hosts_file()
 	    {
 		if ( $option eq 'ipsec' ) {
 		    $type = 'ipsec';
-		    $zone_options{$zone}{complex} = 1;
+		    $zoneref->{options}{complex} = 1;
 		} elsif ( $validoptions{$option}) {
 		    $options{$option} = 1;
 		} else {
@@ -808,19 +805,19 @@ sub dump_zone_info()
 
     for my $zone ( @zones )
     {
-	my $typeref   = $zone_hosts{$zone};
-	my $type      = $zones{$zone};
-	my $optionref = $zone_options{$zone};
+	my $zoneref   = $zones{$zone};
+	my $typeref   = $zoneref->{hosts};
+	my $optionref = $zoneref->{options};
 	my $groupref;    
 
 	print "Zone: $zone\n";
 	
-	my $zonetype = $zones{$zone};
+	my $zonetype = $zoneref->{type};
 
 	print "   Type: $zonetype\n";
 	print "   Parents:\n";
 
-	my $parentsref = $zone_parents{$zone};
+	my $parentsref = $zoneref->{parents};
 
 	for my $parent ( @$parentsref ) {
 	    print "      $parent\n";
@@ -900,13 +897,16 @@ sub zone_report()
 {
     for my $zone ( @zones )
     {
-	my $hostref   = $zone_hosts{$zone};
-	my $type      = $zones{$zone};
-	my $optionref = $zone_options{$zone};
+	my $zoneref   = $zones{$zone};
+	my $hostref   = $zoneref->{hosts};
+	my $type      = $zoneref->{type};
+	my $optionref = $zoneref->{options};
 	my $groupref;    
 
 	progress_message "   $zone ($type)";
 
+	my $printed = 0;
+	
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
 		my $interfaceref = $hostref->{$type};
@@ -918,14 +918,15 @@ sub zone_report()
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
 			    progress_message "      $interface:$grouplist";
+			    $printed = 1;
 			}
 		    }
 
 		}
 	    }
-	} else {
-	    print STDERR "      *** $zone is an EMPTY ZONE ***\n" if $type ne 'firewall';
 	}
+    
+	print STDERR "      *** $zone is an EMPTY ZONE ***\n" unless $printed || $type eq 'firewall';
     }
 }
 
@@ -1119,7 +1120,7 @@ sub split_action ( $ ) {
 #
 sub isolate_action( $ ) {
     my ( $action , $undef ) = split '/', $_[0];
-    $all_actions{$action} || '';
+    $targets{$action} || '';
 }
 
 # This function substitutes the second argument for the first part of the first argument up to the first colon (":")
@@ -1279,8 +1280,6 @@ sub new_policy_chain($$$)
     $chainref->{policy}      = $policy;
     $chainref->{is_optional} = $optional;
     $chainref->{policychain} = $chainref;
-    
-    $filter_table->{$chain} = $chainref;
 }
 
 #
@@ -1310,7 +1309,7 @@ sub print_policy($$$$)
 
 #
 # Try to find a macro file -- RETURNS false if the file doesn't exist or MACRO if it does.
-# If the file exists, the macro is entered into the 'all_actions' table and the fully-qualified
+# If the file exists, the macro is entered into the 'targets' table and the fully-qualified
 # name of the file is stored in the 'macro' table.
 #
 sub find_macro( $ )
@@ -1320,7 +1319,7 @@ sub find_macro( $ )
 
     if ( -f $macrofile ) {
 	$macros{$macro} = $macrofile;
-	$all_actions{$macro} = MACRO;
+	$targets{$macro} = MACRO;
     }
 }    
 
@@ -1350,7 +1349,7 @@ sub validate_policy()
     for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT/ {
 	my $action = $config{$option};
 	next if $action eq 'none';
-	my $actiontype = $all_actions{$action};
+	my $actiontype = $targets{$action};
   
 	if ( defined $actiontype ) {
 	    fatal_error "Invalid setting ($action) for $option" unless $actiontype & ACTION;
@@ -1369,7 +1368,7 @@ sub validate_policy()
     for $zone ( @zones ) {
 	push @policy_chains, ( new_policy_chain "${zone}2${zone}", 'ACCEPT', OPTIONAL );
 
-	if ( $config{IMPLICIT_CONTINUE} && ( @{$zone_parents{$zone}} ) ) {
+	if ( $config{IMPLICIT_CONTINUE} && ( @{$zones{$zone}{parents}} ) ) {
 	    for my $zone1 ( @zones ) {
 		next if $zone eq $zone1;
 		push @policy_chains, ( new_policy_chain "${zone}2${zone1}", 'CONTINUE', OPTIONAL );
@@ -1406,7 +1405,7 @@ sub validate_policy()
 	if ( "\L$policy" eq 'none' ) {
 	    $default = 'none';
 	} elsif ( $default ) {
-	    my $defaulttype = $all_actions{$default};
+	    my $defaulttype = $targets{$default};
 	    
 	    if ( $defaulttype & ACTION ) {
 		unless ( $usedactions{$default} ) {
@@ -1424,7 +1423,7 @@ sub validate_policy()
 
 	if ( $policy eq 'NONE' ) {
 	    fatal_error "$client, $server, $policy, $loglevel, $synparams: NONE policy not allowed to/from firewall zone"
-		if ( $zones{$client} eq 'firewall' ) || ( $zones{$server} eq 'firewall' );
+		if ( $zones{$client}{type} eq 'firewall' ) || ( $zones{$server}{type} eq 'firewall' );
 	    fatal_error "$client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
 	}
@@ -1891,9 +1890,10 @@ sub match_orig_dest ( $ ) {
 sub match_ipsec_in( $$ ) {
     my ( $zone , $hostref ) = @_;
     my $match = '-m policy --dir in --pol ';
-    my $optionsref = $zone_options{$zone};
+    my $zoneref    = $zones{$zone};
+    my $optionsref = $zoneref->{options};
 
-    if ( $zones{$zone} eq 'ipsec4' ) {
+    if ( $zoneref->{type} eq 'ipsec4' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) { 
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
@@ -1908,9 +1908,10 @@ sub match_ipsec_in( $$ ) {
 sub match_ipsec_out( $$ ) {
     my ( $zone , $hostref ) = @_;
     my $match = '-m policy --dir out --pol ';
-    my $optionsref = $zone_options{$zone};
+    my $zoneref    = $zones{$zone};
+    my $optionsref = $zoneref->{options};
 
-    if ( $zones{$zone} eq 'ipsec4' ) {
+    if ( $zoneref->{type} eq 'ipsec4' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) { 
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
@@ -2330,7 +2331,7 @@ sub setup_one_masq($$$$$$)
     #
     ( my $interface = $fullinterface ) =~ s/:.*//;
 
-    fatal_error "Unknown interface $interface, rule \"$line\"" unless $interfaces{$interface};
+    fatal_error "Unknown interface $interface, rule \"$line\"" unless $interfaces{$interface}{root};
 
     #
     # If there is no source or destination then allow all addresses
@@ -2540,7 +2541,7 @@ sub find_interfaces_by_option( $ ) {
     my @ints = ();
 
     for my $interface ( @interfaces ) {
-	my $optionsref = $interface_options{$interface};
+	my $optionsref = $interfaces{$interface}{options};
 	if ( $optionsref && $optionsref->{$option} ) {
 	    push @ints , $interface;
 	}
@@ -2557,8 +2558,8 @@ sub find_hosts_by_option( $ ) {
     my $option = $_[0];
     my @hosts;
 
-    for my $zone ( keys %zone_hosts ) {
-	while ( my ($type, $interfaceref) = each %{$zone_hosts{$zone}} ) {
+    for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
+	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {
 		    if ( $host->{$option} ) {
@@ -2572,7 +2573,7 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	my $optionsref = $interface_options{$interface};
+	my $optionsref = $interfaces{$interface}{options};
 	if ( $optionsref && $optionsref->{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIPv4 ];
 	}
@@ -2782,7 +2783,7 @@ sub add_common_rules() {
 		add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
 	    }
 
-	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interface_options{$interface}{routeback};
+	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interfaces{$interface}{options}{routeback};
 	}
     }
 
@@ -3216,7 +3217,7 @@ sub setup_mac_lists( $ ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 	    
 	    add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
-		if ( $table eq 'mangle' ) && $interface_options{$interface}{dhcp};
+		if ( $table eq 'mangle' ) && $interfaces{$interface}{options}{dhcp};
 	    
 	    if ( $config{MACLIST_TTL} ) {
 		my $chain1ref = new_chain $table, macrecent_target $interface;
@@ -3391,7 +3392,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	}
 
 	my $action     = isolate_action $mtarget;
-	my $actiontype = $all_actions{$action};
+	my $actiontype = $targets{$action};
 
 	if ( $actiontype & ACTION ) {
 	    unless ( $usedactions{$action} ) {
@@ -3465,7 +3466,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    my $actiontype = $all_actions{$action} || find_macro isolate_action $action;
+    my $actiontype = $targets{$action} || find_macro isolate_action $action;
 
     fatal_error "Unknown action ($action) in rule \"$line\"" unless $actiontype;
 
@@ -3601,7 +3602,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	# And generate the nat table rule(s)
 	#
 	finish_rule
-	    ensure_chain ('nat' , $zones{$sourcezone} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ) ,
+	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ) ,
 	    $rule ,
 	    $source ,
 	    $origdest ,
@@ -3624,7 +3625,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
  
 	finish_rule
-	    ensure_chain ('nat' , $zones{$sourcezone} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
 	    $rule ,
 	    $source ,
 	    $dest ,
@@ -3706,10 +3707,10 @@ sub process_rule ( $$$$$$$$$ ) {
 
     if ( $source eq 'all' ) {
 	for my $zone ( @zones ) {
-	    if ( $includesrcfw || ( $zones{$zone} ne 'firewall' ) ) {
+	    if ( $includesrcfw || ( $zones{$zone}{type} ne 'firewall' ) ) {
 		if ( $dest eq 'all' ) {
 		    for my $zone1 ( @zones ) {
-			if ( $includedstfw || ( $zones{$zone1} ne 'firewall' ) ) {
+			if ( $includedstfw || ( $zones{$zone1}{type} ne 'firewall' ) ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
 				my $policychainref = $filter_table->{"${zone}2${zone1}"}{policychain};
 				fatal_error "No policy from zone $zone to zone $zone1" unless $policychainref;
@@ -3735,7 +3736,7 @@ sub process_rule ( $$$$$$$$$ ) {
     } elsif ( $dest eq 'all' ) {
 	for my $zone1 ( @zones ) {
 	    my $zone = ( split /:/, $source )[0];
-	    if ( ( $includedstfw || ( $zones{$zone1} ne 'firewall') ) &&( ( $zone ne $zone1 ) || $intrazone) ) {
+	    if ( ( $includedstfw || ( $zones{$zone1}{type} ne 'firewall') ) &&( ( $zone ne $zone1 ) || $intrazone) ) {
 		process_rule1 $target, $source, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 	    }
 	}
@@ -3826,7 +3827,7 @@ sub setup_one_ipsec {
     }
 
     for my $zone ( split /,/, $gatewayzones ) {
-	fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone} eq 'ipv4';
+	fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
 	$inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
 	$outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
 	
@@ -3939,7 +3940,7 @@ sub setup_one_generic {
 sub setup_one_tunnel($$$$) {
     my ( $kind , $zone, $gateway, $gatewayzones ) = @_;
     
-    fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone} eq 'ipv4';
+    fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
 
     my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
     my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
@@ -4250,7 +4251,7 @@ sub process_action3( $$$$$ ) {
 #    
 sub process_actions1() {
 
-    for my $act ( grep $all_actions{$_} & ACTION , keys %all_actions ) {
+    for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
 	new_action $act;
     }
 
@@ -4269,12 +4270,12 @@ sub process_actions1() {
 
 	    next unless $action;
 
-	    if ( $all_actions{$action} ) {
-		next if $all_actions{$action} & ACTION;
+	    if ( $targets{$action} ) {
+		next if $targets{$action} & ACTION;
 		fatal_error "Invalid Action Name: $action";
 	    }
 
-	    $all_actions{$action} = ACTION;
+	    $targets{$action} = ACTION;
 
 	    fatal_error "Invalid Action Name: $action" unless "\L$action" =~ /^[a-z]\w*$/;
 
@@ -4303,7 +4304,7 @@ sub process_actions1() {
 		
 		$level = 'none' unless $level;
 
-		my $targettype = $all_actions{$target};
+		my $targettype = $targets{$target};
 
 		if ( defined $targettype ) {
 		    next if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
@@ -4333,7 +4334,7 @@ sub process_actions1() {
 
 			    $mtarget =~ s/:.*$//;
 
-			    $targettype = $all_actions{$mtarget};
+			    $targettype = $targets{$mtarget};
 
 			    $targettype = 0 unless defined $targettype;
 
@@ -4397,7 +4398,7 @@ sub process_actions3 () {
 	$level = '' unless defined $level;
 	$tag   = '' unless defined $tag;
 	
-	if ( $all_actions{$action} & BUILTIN ) {
+	if ( $targets{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;
 	    $builtinops{$action}->($chainref, $level, $tag);
 	} else {
@@ -4646,9 +4647,10 @@ sub generate_matrix() {
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , "-o $interface ";
     }
 
-    for my $zone ( grep $zone_options{$_}{complex} , @zones ) {
-	my $frwd_ref = new_standard_chain "${zone}_frwd";
-	my $exclusions = $zone_exclusions{$zone};
+    for my $zone ( grep $zones{$_}{options}{complex} , @zones ) {
+	my $frwd_ref   = new_standard_chain "${zone}_frwd";
+	my $zoneref    = $zones{$zone};
+	my $exclusions = $zoneref->{exclusions};
 
 	if ( @$exclusions ) {
 	    my $num = 1;
@@ -4665,8 +4667,8 @@ sub generate_matrix() {
 	    }
 	    
 	    if ( $capabilities{POLICY_MATCH} ) {
-		my $type       = $zones{$zone};
-		my $source_ref = $zone_hosts{ipsec} || [];
+		my $type       = $zoneref->{type};
+		my $source_ref = $zoneref->{hosts}{ipsec} || [];
 
 		create_zone_dyn_chain $zone, $frwd_ref && $config{DYNAMIC_ZONES} && (@$source_ref || $type ne 'ipsec4' );
 		
@@ -4686,16 +4688,17 @@ sub generate_matrix() {
     #
     # Main source-zone matrix-generation loop
     #
-    for my $zone ( grep ( $zones{$_} ne 'firewall'  ,  @zones ) ) {
-	my $source_hosts_ref = $zone_hosts{$zone};
-	my $chain1         = rules_target $firewall_zone , $zone;
-	my $chain2         = rules_target $zone, $firewall_zone;
-	my $complex        = $zone_options{$zone}{complex} || 0; 
-	my $type           = $zones{$zone};
-	my $exclusions     = $zone_exclusions{$zone};
-	my $need_broadcast = {}; ### Fixme ###
-	my $frwd_ref       = 0; 
-	my $chain          = 0;
+    for my $zone ( grep ( $zones{$_}{type} ne 'firewall'  ,  @zones ) ) {
+	my $zoneref          = $zones{$zone};
+	my $source_hosts_ref = $zoneref->{hosts};
+	my $chain1           = rules_target $firewall_zone , $zone;
+	my $chain2           = rules_target $zone, $firewall_zone;
+	my $complex          = $zoneref->{options}{complex} || 0; 
+	my $type             = $zoneref->{type};
+	my $exclusions       = $zoneref->{exclusions};
+	my $need_broadcast   = {}; ### Fixme ###
+	my $frwd_ref         = 0; 
+	my $chain            = 0;
 
 	if ( $complex ) {
 	    $frwd_ref = $filter_table->{"${zone}_frwd"};
@@ -4752,7 +4755,8 @@ sub generate_matrix() {
 	    my @temp_zones;
 
 	  ZONE1:
-	    for my $zone1 ( grep $zones{$_} ne 'firewall' , @zones )  {
+	    for my $zone1 ( grep $zones{$_}{type} ne 'firewall' , @zones )  {
+		my $zone1ref = $zones{$zone1};
 		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
 		
 		next if $policy  eq 'NONE';
@@ -4766,7 +4770,7 @@ sub generate_matrix() {
 		    # One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		    #
 		    no warnings;
-		    next if (  %{ $zone_interfaces{$zone}} < 2 ) && ! ( $zone_options{$zone}{routeback} || @$exclusions );
+		    next if (  %{ $zoneref->{interfaces}} < 2 ) && ! ( $zoneref->{options}{routeback} || @$exclusions );
 		}
 		
 		if ( $chain =~ /2all$/ ) {
@@ -4792,7 +4796,7 @@ sub generate_matrix() {
 		$last_chain = '';
 	    }
 	} else {
-	    @dest_zones =  grep $zones{$_} ne 'firewall' , @zones ;
+	    @dest_zones =  grep $zones{$_}{type} ne 'firewall' , @zones ;
 	}
 	#
 	# Here it is -- THE BIG UGLY!!!!!!!!!!!!
@@ -4802,7 +4806,8 @@ sub generate_matrix() {
 	#
       ZONE1:
 	for my $zone1 ( @dest_zones ) {
-	    my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
+	    my $zone1ref = $zones{$zone1};
+	    my $policy   = $filter_table->{"${zone}2${zone1}"}->{policy};
 
 	    next if $policy  eq 'NONE';
 
@@ -4817,13 +4822,13 @@ sub generate_matrix() {
 		# One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		#
 		no warnings;
-		next ZONE1 if ( $num_ifaces = %{$zone_interfaces{$zone}} ) < 2 && ! ( $zone_options{$zone}{routeback} || @$exclusions );
+		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{routeback} || @$exclusions );
 	    }
 
 	    my $chainref    = $filter_table->{$chain};
-	    my $exclusions1 = $zone_exclusions{$zone1};
+	    my $exclusions1 = $zone1ref->{exclusions};
 	    
-	    my $dest_hosts_ref = $zone_hosts{$zone1};
+	    my $dest_hosts_ref = $zone1ref->{hosts};
 	    
 	    if ( @$exclusions1 ) {
 		if ( $chain eq "all2$zone1" ) {

@@ -2044,7 +2044,7 @@ sub log_rule( $$$$ ) {
 #
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
 # 
-sub finish_rule( $$$$$$$$$ )
+sub expand_rule( $$$$$$$$$ )
 {
     my ($chainref , $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
@@ -2449,7 +2449,7 @@ sub setup_one_masq($$$$$$)
     #
     # And Generate the Rule(s)
     #
-    finish_rule ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface), $rule, $networks, $destnets, '', $target, '', '' , '';
+    expand_rule ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface), $rule, $networks, $destnets, '', $target, '', '' , '';
 
     progress_message "   Masq record \"$line\" compiled";
 
@@ -2742,7 +2742,7 @@ sub setup_blacklist() {
 	
 	fatal_error "Invalid blacklist entry: \"$line\"" if $extra;
 
-	finish_rule 
+	expand_rule 
 	    ensure_filter_chain( 'blacklst' , 0 ) ,
 	    do_proto( $protocol , $ports, '' ) ,
 	    $networks ,
@@ -3212,7 +3212,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 		if $cmd and $chain eq 'tcpre' and $cmd <= 0xFF and $config{HIGH_ROUTE_MARKS};
 	}
 
-    finish_rule 
+    expand_rule 
 	ensure_chain( 'mangle' , $chain ) ,
 	do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) ,
 	$source ,
@@ -3536,7 +3536,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    my $actiontype = $targets{$action} || find_macro isolate_action $action;
+    my $actiontype = $targets{$action} || find_macro( isolate_action $action );
 
     fatal_error "Unknown action ($action) in rule \"$line\"" unless $actiontype;
 
@@ -3671,7 +3671,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	finish_rule
+	expand_rule
 	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ) ,
 	    $rule ,
 	    $source ,
@@ -3694,7 +3694,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	#
 	fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
  
-	finish_rule
+	expand_rule
 	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
 	    $rule ,
 	    $source ,
@@ -3715,7 +3715,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $loglevel = '';
 	}
 
-	finish_rule
+	expand_rule
 	    ensure_chain ('filter', $chain ) ,
 	    $rule ,
 	    $source ,
@@ -4178,7 +4178,7 @@ sub process_action( $$$$$$$$$$ ) {
 
     my ( $action , $level ) = split_action $target;
 
-    finish_rule ( $chainref ,
+    expand_rule ( $chainref ,
 		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user , 
 		  $source ,
 		  $dest ,
@@ -4551,7 +4551,7 @@ sub process_accounting_rule( $$$$$$$$ ) {
 	}
     }
 
-    finish_rule
+    expand_rule
 	$chainref ,
 	$rule ,
 	$source ,
@@ -4563,7 +4563,7 @@ sub process_accounting_rule( $$$$$$$$ ) {
 	'' ;
 
     if ( $rule2 ) {
-	finish_rule 
+	expand_rule 
 	    $jumpchainref ,
 	    $rule ,
 	    $source ,

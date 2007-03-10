@@ -3435,6 +3435,12 @@ sub finish_section ( $ ) {
 
 sub process_rule1 ( $$$$$$$$$ );
 
+sub expand_shell_variables( $ ) {
+    my $line = $_[0];
+    $line = $1 . $ENV{$2} . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*\b)(.*)$/;
+    $line;
+}
+    
 #
 # Expand a macro rule from the rules file
 #
@@ -3451,7 +3457,8 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	next if $line =~ /^\s*$/;
 	$line =~ s/\s+/ /g;
 	$line =~ s/#.*$//;
-	
+	$line = expand_shell_variables $line unless $macrofile =~ /^($env{SHAREDIR})/;
+		
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split /\s+/, $line;
 	
 	$mtarget = merge_levels $target, $mtarget;
@@ -4188,7 +4195,7 @@ sub process_action( $$$$$$$$$$ ) {
 		  $action ,
 		  '' );
 }
-    
+
 #
 # Generate chain for non-builtin action invocation
 #	
@@ -4207,7 +4214,8 @@ sub process_action3( $$$$$ ) {
 	next if $line =~ /^\s*#/;
 	next if $line =~ /^\s*$/;
 	$line =~ s/\s+/ /g;
-	$line =~ s/#.*$//;
+	$line =~ s/#.*$//;	
+	$line = expand_shell_variables $line unless $actionfile =~ /^($env{SHAREDIR})/;
 		
 	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user , $extra ) = split /\s+/, $line;
 
@@ -4246,7 +4254,8 @@ sub process_action3( $$$$$ ) {
 		next if $line =~ /^\s*$/;
 		$line =~ s/\s+/ /g;
 		$line =~ s/#.*$//;
-			    
+		$line = expand_shell_variables $line unless $actionfile =~ /^($env{SHAREDIR})/;
+
 		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split /\s+/, $line;
 		
 		if ( $mtarget =~ /^PARAM:?/ ) {

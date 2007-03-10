@@ -5362,7 +5362,7 @@ sub compile_firewall( $ ) {
     #
     # Setup Masquerading/SNAT
     #
-    progress_message2 "$doing Masq file...";                  setup_masq;
+    progress_message2 "$doing Masq file...";                     setup_masq;
     #
     # MACLIST Filtration
     #
@@ -5370,7 +5370,7 @@ sub compile_firewall( $ ) {
     #
     # Process the rules file.
     #
-    progress_message2 "$doing Rules...";                      process_rules;
+    progress_message2 "$doing Rules...";                         process_rules;
     #
     # Add Tunnel rules.
     #
@@ -5387,11 +5387,11 @@ sub compile_firewall( $ ) {
     #
     # Apply Policies
     #
-    progress_message 'Applying Policies...';                     apply_policy_rules;                    dump_action_table if $ENV{DEBUG};
+    progress_message2 'Applying Policies...';                    apply_policy_rules;                    dump_action_table if $ENV{DEBUG};
     #
     # Setup Nat
     #
-    progress_message2 "$doing one-to-one NAT...";             setup_nat;
+    progress_message2 "$doing one-to-one NAT...";                setup_nat;
     #
     # TCRules
     #
@@ -5408,7 +5408,7 @@ sub compile_firewall( $ ) {
     # Create the script.
     #
     unless ( $command eq 'check' ) {
-	progress_message2 "Creating iptables-restore file...";   create_iptables_restore_file;
+	progress_message2 "Creating iptables-restore input...";  create_iptables_restore_file;
     }
 }
 

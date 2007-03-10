@@ -62,15 +62,11 @@ startup_error()
 }
 
 #
+# Debug the compiler if first arg is "debug"
 #
-# E X E C U T I O N    B E G I N S   H E R E
-#
-#
-# Start trace if first arg is "debug"
-#
-debug=
+debug="-w"
 
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { debug="-d"; shift ; }
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { debug="-dw"; shift ; }
 
 SHAREDIR=/usr/share/shorewall
 VARDIR=/var/lib/shorewall

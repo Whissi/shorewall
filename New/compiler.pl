@@ -133,6 +133,8 @@ my %capabilities =
 	       ADDRTYPE => undef,
 	       );
 
+my ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
+
 my $line; # Current config file line
 
 #
@@ -2442,7 +2444,7 @@ sub setup_one_masq($$$$$$)
     #
     expand_rule ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface), $rule, $networks, $destnets, '', $target, '', '' , '';
 
-    progress_message "   Masq record \"$line\" compiled";
+    progress_message "   Masq record \"$line\" $done";
 
 }
 
@@ -2551,7 +2553,7 @@ sub do_one_nat( $$$$$ )
     #
     # Fixme -- add_ip_aliases
     #
-    progress_message "   NAT entry \"$line\" compiled";
+    progress_message "   NAT entry \"$line\" $done";
 }
 
 #
@@ -2861,7 +2863,7 @@ sub add_common_rules() {
     if ( @$list ) {
 	my $disposition;
 
-	progress_message2 '   Compiling TCP Flags checking...';
+	progress_message2 '   $doing TCP Flags checking...';
 	
 	$chainref = new_standard_chain 'tcpflags';
 
@@ -2920,7 +2922,7 @@ sub add_common_rules() {
     $list = find_interfaces_by_option 'upnp';
 
     if ( @$list ) {
-	progress_message2 '   Compiling UPnP';
+	progress_message2 '   $doing UPnP';
 
 	(new_chain 'nat', 'UPnP')->{referenced} = 1;
 
@@ -3214,7 +3216,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	'' ,
 	'';
     
-    progress_message "   TC Rule \"$line\" compiled";
+    progress_message "   TC Rule \"$line\" $done";
     
 }
 	
@@ -3271,7 +3273,7 @@ sub setup_mac_lists( $ ) {
 
     my @maclist_interfaces = ( sort keys %maclist_interfaces );
     
-    progress_message "   Compiling MAC Verification for @maclist_interfaces -- Phase $phase...";
+    progress_message "   $doing MAC Verification for @maclist_interfaces -- Phase $phase...";
 
     if ( $phase == 1 ) {
 	for my $interface ( @maclist_interfaces ) {
@@ -3339,7 +3341,7 @@ sub setup_mac_lists( $ ) {
 		    add_rule $chainref , "$mac-j $targetref->{target}";
 		}
 
-		progress_message "      Maclist entry \"$line\" compiled";
+		progress_message "      Maclist entry \"$line\" $done";
 	    }
 	}
 
@@ -3512,7 +3514,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	
 	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $rate, $user;
 
-	progress_message "   Rule \"$line\" Compiled";    }
+	progress_message "   Rule \"$line\" $done";    }
 
     close M;
 
@@ -3738,6 +3740,7 @@ sub process_rule ( $$$$$$$$$ ) {
     my $includesrcfw = 1;
     my $includedstfw = 1;
     my $optimize = $config{OPTIMIZE};
+    my $thisline = $line;
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
@@ -3821,7 +3824,7 @@ sub process_rule ( $$$$$$$$$ ) {
 	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
     }
 
-    progress_message "   Rule \"$line\" Compiled";
+    progress_message "   Rule \"$thisline\" $done";
 }
 
 #
@@ -4048,7 +4051,7 @@ sub setup_one_tunnel($$$$) {
 
     $tunnelref->{function}->( $inchainref, $outchainref, @{$tunnelref->{params}} );
 
-    progress_message "   Tunnel \"$line\" Compiled";
+    progress_message "   Tunnel \"$line\" $done";
 }
 
 sub setup_tunnels() {
@@ -5321,7 +5324,11 @@ sub do_initialize() {
     initialize_chain_table;
 }
 
-sub compile_firewall() {
+sub compile_firewall( $ ) {
+    
+    my $objectfile = $_[0];
+
+    ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
     #
     # Process the zones file.
     #
@@ -5355,7 +5362,7 @@ sub compile_firewall() {
     #
     # Setup Masquerading/SNAT
     #
-    progress_message2 "Compiling Masq file...";                  setup_masq;
+    progress_message2 "$doing Masq file...";                  setup_masq;
     #
     # MACLIST Filtration
     #
@@ -5363,7 +5370,7 @@ sub compile_firewall() {
     #
     # Process the rules file.
     #
-    progress_message2 "Compiling Rules...";                      process_rules;
+    progress_message2 "$doing Rules...";                      process_rules;
     #
     # Add Tunnel rules.
     #
@@ -5384,7 +5391,7 @@ sub compile_firewall() {
     #
     # Setup Nat
     #
-    progress_message2 "Compiling one-to-one NAT...";             setup_nat;
+    progress_message2 "$doing one-to-one NAT...";             setup_nat;
     #
     # TCRules
     #
@@ -5400,7 +5407,9 @@ sub compile_firewall() {
     #
     # Create the script.
     #
-    progress_message2 "Creating iptables-restore file...";       create_iptables_restore_file;
+    unless ( $command eq 'check' ) {
+	progress_message2 "Creating iptables-restore file...";   create_iptables_restore_file;
+    }
 }
 
 #
@@ -5413,4 +5422,4 @@ $ENV{VERBOSE} = 2 if $ENV{DEBUG};
 #
 do_initialize;
 
-compile_firewall;
+compile_firewall $ARGV[0];

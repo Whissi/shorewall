@@ -3433,27 +3433,22 @@ sub finish_section ( $ ) {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$ );
-
 #
-# Macros and actions can have shell variables embedded. This function expands them.
+# Macro and action files can have shell variables embedded. This function expands them from %ENV.
 #
 sub expand_shell_variables( $ ) {
-    my $line = $_[0];
-
-    while ( $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/ ) {
-	warning_message "Shell variable \$$2 not found" unless $ENV{$2};
-	$line = $1 . $ENV{$2} . $3 ;
-    }
-
-    $line;
+    my $line = $_[0]; $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/; $line;
 }
     
+sub process_rule1 ( $$$$$$$$$ );
+
 #
 # Expand a macro rule from the rules file
 #
 sub process_macro ( $$$$$$$$$$$ ) {
     my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user) = @_;
+
+    my $standard = ( $macrofile =~ /^($env{SHAREDIR})/ );
 
     progress_message "..Expanding Macro $macrofile...";
 
@@ -3465,7 +3460,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	next if $line =~ /^\s*$/;
 	$line =~ s/\s+/ /g;
 	$line =~ s/#.*$//;
-	$line = expand_shell_variables $line unless $macrofile =~ /^($env{SHAREDIR})/;
+	$line = expand_shell_variables $line unless $standard;
 		
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split /\s+/, $line;
 	
@@ -4210,6 +4205,7 @@ sub process_action( $$$$$$$$$$ ) {
 sub process_action3( $$$$$ ) {
     my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
     my $actionfile = find_file "action.$action";
+    my $standard = ( $actionfile =~ /^($env{SHAREDIR})/ );
 
     fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
 
@@ -4223,7 +4219,7 @@ sub process_action3( $$$$$ ) {
 	next if $line =~ /^\s*$/;
 	$line =~ s/\s+/ /g;
 	$line =~ s/#.*$//;	
-	$line = expand_shell_variables $line unless $actionfile =~ /^($env{SHAREDIR})/;
+	$line = expand_shell_variables $line unless $standard;
 		
 	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user , $extra ) = split /\s+/, $line;
 
@@ -4257,12 +4253,14 @@ sub process_action3( $$$$$ ) {
 
 	    open M, $fn or fatal_error "Can't open $fn: $!";
 	    
+	    my $standard = ( $fn =~ /^($env{SHAREDIR})/ );
+	    
 	    while ( $line = <M> ) {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
 		$line =~ s/\s+/ /g;
 		$line =~ s/#.*$//;
-		$line = expand_shell_variables $line unless $actionfile =~ /^($env{SHAREDIR})/;
+		$line = expand_shell_variables $line unless $standard;
 
 		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split /\s+/, $line;
 		

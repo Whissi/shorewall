@@ -68,13 +68,9 @@ startup_error()
 #
 # Start trace if first arg is "debug"
 #
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+debug=
 
-NOLOCK=
-
-[ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
-
-trap "exit 2" 1 2 3 4 5 6 9
+[ $# -gt 1 ] && [ "$1" = "-D8" ] && { debug="-d" ; shift ; }
 
 SHAREDIR=/usr/share/shorewall
 VARDIR=/var/lib/shorewall
@@ -102,24 +98,13 @@ case "$COMMAND" in
     check)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	exec perl /usr/share/shorewall/compiler.perl $1
+	exec perl $debug /usr/share/shorewall/compiler.pl $1
 	;;
-
     compile)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	exec perl /usr/share/shorewall/compiler.perl $1
+	exec perl $debug /usr/share/shorewall/compiler.pl $1
 	;;
-    call)
-	#
-	# Undocumented way to call functions in ${SHAREDIR}/compiler directly
-	#
-	shift
-	do_initialize
-	EMPTY=
-	$@
-	;;
-
     *)
 	usage
 	;;

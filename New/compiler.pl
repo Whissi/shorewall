@@ -3435,9 +3435,17 @@ sub finish_section ( $ ) {
 
 sub process_rule1 ( $$$$$$$$$ );
 
+#
+# Macros and actions can have shell variables embedded. This function expands them.
+#
 sub expand_shell_variables( $ ) {
     my $line = $_[0];
-    $line = $1 . $ENV{$2} . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*\b)(.*)$/;
+
+    while ( $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/ ) {
+	fatal_error "Shell variable \$$2 not found" unless $ENV{$2};
+	$line = $1 . $ENV{$2} . $3 ;
+    }
+
     $line;
 }
     

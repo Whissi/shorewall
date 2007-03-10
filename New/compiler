@@ -1,0 +1,127 @@
+#!/bin/sh
+#
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall Compiler - V3.4
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#
+#	If an error occurs while starting or restarting the firewall, the
+#	firewall is automatically stopped.
+#
+#	Commands are:
+#
+#          compile check                        Verify the configuration files.
+#	   compile compile <path name>          Compile into <path name>
+#
+#	Environmental Variables:
+#
+#	    EXPORT=Yes                          -e option specified to /sbin/shorewall
+#	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
+#	    VERBOSE                             Standard Shorewall verbosity control.
+
+#
+# Fatal error -- stops the compiler after issuing the error message
+#
+fatal_error() # $* = Error Message
+{
+    echo "   ERROR: $@" >&2
+    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    [ -n "$OUTPUT" ] && rm -f $OUTPUT
+    kill $$
+    exit 2
+}
+
+#
+# We include this for compatibility with the 'firewall' script. That script distinguishes between
+# Fatal Errors (stop or restore required) and Startup Errors (errors detected before the firewall
+# state has been changed. This allows us to use common parsing routines in both programs.
+#
+startup_error()
+{
+    echo "   ERROR: $@" >&2
+    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    [ -n "$OUTPUT" ] && rm -f $OUTPUT
+    kill $$
+    exit 2
+}
+
+#
+#
+# E X E C U T I O N    B E G I N S   H E R E
+#
+#
+# Start trace if first arg is "debug"
+#
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+
+NOLOCK=
+
+[ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
+
+trap "exit 2" 1 2 3 4 5 6 9
+
+SHAREDIR=/usr/share/shorewall
+VARDIR=/var/lib/shorewall
+[ -z "$EXPORT" ] && CONFDIR=/etc/shorewall || CONFDIR=${SHAREDIR}/configfiles
+
+[ -n "${VERBOSE:=2}" ]
+
+for library in lib.base lib.config; do
+    FUNCTIONS=${SHAREDIR}/${library}
+
+    if [ -f $FUNCTIONS ]; then
+	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
+	. $FUNCTIONS
+    else
+	fatal_error "Installation Error: $FUNCTIONS does not exist!"
+    fi
+done
+
+PROGRAM=compiler
+
+COMMAND="$1"
+
+case "$COMMAND" in
+
+    check)
+	[ $# -ne 1 ] && usage
+	do_initialize
+	exec perl /usr/share/shorewall/compiler.perl $1
+	;;
+
+    compile)
+	[ $# -ne 2 ] && usage
+	do_initialize
+	exec perl /usr/share/shorewall/compiler.perl $1
+	;;
+    call)
+	#
+	# Undocumented way to call functions in ${SHAREDIR}/compiler directly
+	#
+	shift
+	do_initialize
+	EMPTY=
+	$@
+	;;
+
+    *)
+	usage
+	;;
+
+esac

@@ -48,6 +48,7 @@ my %config = ( STARTUP_ENABLED => undef,
 	       SUBSYSLOCK => undef,
 	       MODULESDIR => undef,
 	       #CONFIG_PATH is inherited
+	       CONFIG_PATH => undef,
 	       RESTOREFILE => undef,
 	       IPSECFILE => undef,
 	       #
@@ -331,15 +332,6 @@ my %default_actions = ( DROP     => 'none' ,
 			ACCEPT   => 'none' ,
 			QUEUE    => 'none' );
 
-sub ensure_config_path() {
-    $config{CONFIG_PATH}  = $env{CONFDIR} . $env{SHAREDIR} unless $config{CONFIG_PATH};
-
-    if ( $ENV{SHOREWALL_DIR} ) {
-	( my ( $firstdir ) = $config{CONFIG_PATH} ) =~ s/:.*//; 
-	$config{CONFIG_PATH} = "$ENV{SHOREWALL_DIR}:" . $config{CONFIG_PATH} if $ENV{SHOREWALL_DIR} ne $firstdir;
-    }
-}
- 	
 #
 # Search the CONFIG_PATH for the passed file
 #
@@ -353,7 +345,7 @@ sub find_file($)
 
     my $directory;
 
-    for $directory ( split ':', $config{CONFIG_PATH} ) {
+    for $directory ( split ':', $ENV{CONFIG_PATH} ) {
 	my $file = "$directory/$filename";
 	return $file if -f $file;
     }
@@ -1188,11 +1180,10 @@ sub split_action ( $ ) {
 }
 
 #
-# Get Action Type
+# Get Macro Name
 #
 sub isolate_action( $ ) {
-    my ( $action , $undef ) = split '/', $_[0];
-    $targets{$action} || '';
+    ( split '/' , $_[0] )[0];
 }
 
 # This function substitutes the second argument for the first part of the first argument up to the first colon (":")
@@ -4227,7 +4218,7 @@ sub process_action3( $$$$$ ) {
 
 	my ( $action2 , $level2 ) = split_action $target2;
 
-	my $action2type = isolate_action $action2;
+	my $action2type = $targets{isolate_action $action2};
 
 	unless ( $action2type == STANDARD ) {
 	    if ( $target eq 'COMMENT' ) {
@@ -5076,8 +5067,6 @@ sub create_iptables_restore_file() {
 # Read the shorewall.conf file and establish global hashes %config and %env.
 #
 sub do_initialize() {
-    ensure_config_path;
-
     my $file = find_file 'shorewall.conf';
 
     if ( -f $file ) {
@@ -5109,8 +5098,6 @@ sub do_initialize() {
     } else {
 	fatal_error "$file does not exist!";
     }
-
-    ensure_config_path;
 
     $file = find_file 'capabilities';
 

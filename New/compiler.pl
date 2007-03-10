@@ -3442,7 +3442,7 @@ sub expand_shell_variables( $ ) {
     my $line = $_[0];
 
     while ( $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/ ) {
-	fatal_error "Shell variable \$$2 not found" unless $ENV{$2};
+	warning_message "Shell variable \$$2 not found" unless $ENV{$2};
 	$line = $1 . $ENV{$2} . $3 ;
     }
 

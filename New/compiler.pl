@@ -148,6 +148,9 @@ my $line; # Current config file line
 
 my $object; # Object file Handle Reference
 
+my $tempfile; # Temporary object file name
+
+
 #
 # Zone Table. 
 #
@@ -380,6 +383,8 @@ sub warning_message
 sub fatal_error
 {
     print STDERR "   ERROR: @_\n";
+    close $object, if $object;
+    system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
     exit 2;
 }
 
@@ -5425,7 +5430,6 @@ sub do_initialize() {
 sub compile_firewall( $ ) {
     
     my $objectfile = $_[0];
-    my $tempfile;
     my ( $dir, $file );
 
     ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;

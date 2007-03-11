@@ -4627,12 +4627,12 @@ __EOF__
 	    [ -z "\${haveroute}\${NOROUTES}" ] && qt ip route del \$address dev \$interface
 	done < \${VARDIR}/proxyarp
 
-	rm -f \${VARDIR}/proxyarp
+        for f in /proc/sys/net/ipv4/conf/*; do
+            [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+        done
     fi
 
-    for f in /proc/sys/net/ipv4/conf/*; do
-	    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
-    done
+    rm -f \${VARDIR}/proxyarp
 
 __EOF__
     [ -n "$CLEAR_TC" ] && save_command "delete_tc1"

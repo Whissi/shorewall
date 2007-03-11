@@ -1,4 +1,4 @@
-Shorewall 3.4.0
+Shorewall 3.4.1
 
 Release Highlights
 
@@ -28,24 +28,14 @@ Release Highlights
     /etc/shorewall/route_rules and reverses those changes when
     appropriate.
 
-Problems Corrected in 3.4.0 Final.
+Problems Corrected in 3.4.1
 
-1)  In the rules file, following the action with "!" is supposed to
-    exempt the rule from being suppressed by OPTIMIZE=1. That feature
-    was not working.
-
-2)  If both a macro body and a macro invocation contained an entry in the
-    SOURCE or DEST column, then compilation failed with the error:
-
-	   merge_macro_source_dest: command not found
-
-3)  An obscure bug in rule activation having to do with the new
-    exclusion feature in /etc/shorewall/hosts has been corrected.
-
-4) The "shorewall-[lite] [re]start and stop" commands reset the
+1) The "shorewall-[lite] [re]start and stop" commands reset the
    proxy_arp flag on all interfaces on the system making it impossible
-   to control proxy arp manually with Shorewall installed. With this
-   change, shorewall will only clear proxy arp if there were entries in
+   to control proxy arp manually with Shorewall installed. There was a
+   partial fix included in 3.4.0; unfortunately, it did not correct the
+   problem completely. Shorewall 3.4.1 includes the rest of the change 
+   necessarey to only clear proxy arp if there were entries in
    /etc/shorewall/proxyarp the last time that Shorewall was
    [re]started.
 

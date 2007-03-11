@@ -5691,13 +5691,13 @@ case "$COMMAND" in
     check)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	[ -n "$EXPERIMENTAL" ] && exec perl $debug $(find_file compiler.pl) || exec compile_firewall
+	[ -n "$EXPERIMENTAL" ] && exec perl $debug $(find_file compiler.pl) || compile_firewall
 	;;
 
     compile)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	[ -n "$EXPERIMENTAL" ] && exec perl $debug $(find_file compiler.pl) $2 || exec compile_firewall $2
+	[ -n "$EXPERIMENTAL" ] && exec perl $debug $(find_file compiler.pl) $2 || compile_firewall $2
 	;;
 
     call)

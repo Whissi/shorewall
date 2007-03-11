@@ -99,7 +99,7 @@ case "$COMMAND" in
     compile)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	exec perl $debug /usr/share/shorewall/compiler.pl $1
+	exec perl $debug /usr/share/shorewall/compiler.pl $(resolve_file $2)
 	;;
     *)
 	usage

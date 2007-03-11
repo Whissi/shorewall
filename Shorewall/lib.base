@@ -963,6 +963,7 @@ determine_capabilities() {
     XMARK=
     MANGLE_FORWARD=
     COMMENTS=
+    ADDRTYPE=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -1029,6 +1030,7 @@ determine_capabilities() {
     fi
 
     qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+    qt $IPTABLES -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
 
     qt $IPTABLES -F fooX1234
     qt $IPTABLES -X fooX1234
@@ -1072,6 +1074,7 @@ report_capabilities() {
 	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
 	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
 	report_capability "Comments" $COMMENTS
+	report_capability "Address Type Match" $ADDRTYPE
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1113,6 +1116,7 @@ report_capabilities1() {
     report_capability1 XMARK
     report_capability1 MANGLE_FORWARD
     report_capability1 COMMENTS
+    report_capability1 ADDRTYPE
 }
 
 #

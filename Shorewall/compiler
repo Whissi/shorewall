@@ -5655,7 +5655,9 @@ usage() {
 #
 # Start trace if first arg is "debug"
 #
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+debug='-w'
+
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; debug='-wd' ; shift ; }
 
 NOLOCK=
 
@@ -5689,13 +5691,13 @@ case "$COMMAND" in
     check)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	compile_firewall
+	[ -n "$EXPERIMENTAL" ] && exec perl $debug $(find_file compiler.pl) || exec compile_firewall
 	;;
 
     compile)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	compile_firewall $2
+	[ -n "$EXPERIMENTAL" ] && exec perl $debug $(find_file compiler.pl) $2 || exec compile_firewall $2
 	;;
 
     call)

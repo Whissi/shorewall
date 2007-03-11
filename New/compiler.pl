@@ -142,8 +142,6 @@ my $line; # Current config file line
 
 my $object; # Object file Handle Reference
 
-my $indent = '';
-
 #
 # Zone Table. 
 #
@@ -235,7 +233,7 @@ my $comment = '';
 #
 # Current Indentation 
 # 
-my %indent;
+my $indent;
 #
 # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
 #
@@ -457,7 +455,10 @@ sub save_progress_message_short( $ ) {
     emit "progress_message $_[0]";
 }
 
-sub indent( $ ) {
+#
+# Functions for copying files into the object
+#
+sub copy( $ ) {
     my $file = $_[0];
     
     open IF , $file or fatal_error "Unable to open $file: $!";
@@ -470,7 +471,7 @@ sub indent( $ ) {
     close IF;
 }
 
-sub indent1( $ ) {
+sub copy1( $ ) {
     my $file = $_[0];
     
     open IF , $file or fatal_error "Unable to open $file: $!";
@@ -498,7 +499,7 @@ sub append_file( $ ) {
     unless ( $user_exit =~ /$env{SHAREDIR}/ ) {
 	if ( -f $user_exit ) {
 	    save_progress_message "Processing $user_exit ...";
-	    indent1 $user_exit;
+	    copy1 $user_exit;
 	}
     }   
 }
@@ -5409,9 +5410,6 @@ sub do_initialize() {
     initialize_chain_table;
 }
 
-sub compile_stop_firewall() {
-}
-
 sub compile_firewall( $ ) {
     
     my $objectfile = $_[0];
@@ -5444,8 +5442,9 @@ sub compile_firewall( $ ) {
 	    emit 'SHAREDIR=/usr/share/shorewall-lite';
 	    emit 'CONFDIR=/etc/shorewall-lite';
 	    emit 'VARDIR=/var/lib/shorewall-lite';
+	    emit 'PRODUCT="Shorewall Lite"';
 
-	    indent "$env{SHAREDIR}/lib.base";
+	    copy "$env{SHAREDIR}/lib.base";
 	    
 	    emit '################################################################################';
 	    emit '# End of /usr/share/shorewall/lib.base';
@@ -5453,14 +5452,36 @@ sub compile_firewall( $ ) {
 	} else {
 	    emit 'SHAREDIR=/usr/share/shorewall';
 	    emit 'CONFDIR=/etc/shorewall';
-	    emit "VARDIR=/var/lib/shorewall\n";
+	    emit 'VARDIR=/var/lib/shorewall\n';
+	    emit 'PRODUCT=\'Shorewall\'';
 	    emit '. /usr/share/shoreall-lite/lib.base';
 	}
+
+	emit '';
+
+	for my $exit qw/init initdone start started stop stopped/ {
+	    emit "run_${exit}_exit() {";
+	    $indent = '    ';
+	    append_file $exit;
+	    $indent = '';
+	    emit "}\n";
+	}
+
+	emit 'initialize()';
+	emit '{';
+
+	$indent = '    ';
+
+	while ( my ( $option, $value ) = ( each %config ) ) {
+	    emit "${option}=${value}";
+	}
+
+	emit '}';
+	
+	$indent = '';
+	
+	copy "$env{SHAREDIR}/prog.functions";
     }
-    #
-    # Compile the program to stop the firewall
-    #
-    compile_stop_firewall;
 
     #
     # Process the zones file.

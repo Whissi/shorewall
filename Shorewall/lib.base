@@ -1290,7 +1290,7 @@ do_log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispos
     fi
 
     if [ ${#prefix} -gt 29 ]; then
-	prefix="$(echo $prefix | truncate 29)"
+	prefix=`echo "$prefix" | truncate 29`
 	error_message "WARNING: Log Prefix shortened to \"$prefix\""
     fi
 

@@ -5190,10 +5190,10 @@ sub create_iptables_restore_file() {
 	}
 
 	emit 'COMMIT';
-	emit '__EOF__';
     }
 
-    emit '}';
+    emit '__EOF__';
+    emit "}\n";
 }
        
 #
@@ -5458,6 +5458,8 @@ sub setup_forwarding() {
 	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
 	emit 'progress_message2 IP Forwarding Disabled!';
     }
+
+    emit '';
 }
 
 sub generate_object () {
@@ -5562,7 +5564,10 @@ sub generate_object () {
     emit "}\n";
 	
     copy find_file 'prog.functions';
-    progress_message2 "Creating iptables-restore input...";  create_iptables_restore_file;
+    
+    progress_message2 "Creating iptables-restore input...";
+
+    create_iptables_restore_file;
 
     emit '#';
     emit '# Start/Restart/Reload the firewall';
@@ -5610,7 +5615,7 @@ sub generate_object () {
         emit "            startup_error \"The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"";
         emit '        fi';
 	emit '    done';
-	emit 'fi';
+	emit "fi\n";
     }
 
     emit "run_init_exit\n";
@@ -5624,17 +5629,13 @@ sub generate_object () {
 
     emit "f=\$(find_file ipsets)\n";
 
-    emit 'if [ -f $f ]; then';
-    emit '    progress_message2 "Restoring IPSETS...';
-    emit '    ipset -U :all: :all:';
-    emit '    ipset -F';
-    emit '    ipset -X';
-    emit '    ipset -R < $f';
-    emit "fi\n";
-
     emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     setup_forwarding;
+
+    emit "restore_iptables\n";
+
+    emit "restore_dynamic_rules\n";
     
     $indent = '';
 

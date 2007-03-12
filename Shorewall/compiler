@@ -998,12 +998,6 @@ setup_tc() {
 #
 delete_tc()
 {
-    clear_one_tc() {
-	save_command "tc qdisc del dev $1 root 2> /dev/null"
-	save_command "tc qdisc del dev $1 ingress 2> /dev/null"
-
-    }
-
     save_progress_message "Clearing Traffic Control/QOS"
 
     append_file tcclear

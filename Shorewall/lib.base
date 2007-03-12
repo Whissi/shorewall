@@ -339,6 +339,11 @@ lib_load() # $1 = Name of the Library, $2 = Error Message heading if the library
     eval loaded=\$LIB_${1}_LOADED
 
     if [ -z "$loaded" ]; then
+	if [ -n "$EXPERIMENTAL" ]; then
+	    eval LIB_${1}_LOADED=Yes
+	    return
+	fi
+
 	if [ -f $lib ]; then
 	    progress_message "Loading library $lib..."
 	    . $lib
@@ -1226,6 +1231,16 @@ disable_ipv6() {
 	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
 	fi
     fi
+}
+
+# Function to truncate a string -- It uses 'cut -b -<n>'
+# rather than ${v:first:last} because light-weight shells like ash and
+# dash do not support that form of expansion.
+#
+
+truncate() # $1 = length
+{
+    cut -b -${1}
 }
 
 #

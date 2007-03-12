@@ -1922,19 +1922,27 @@ sub mac_match( $ ) {
 }
 
 #
+# Convert mark value to decimal number
+#
+sub mark_value ( $ ) {
+    my $mark = $_[0];
+    $mark =~ /^0x/ ? hex $mark : $mark =~ /^0/ ? oct $mark : $mark;
+}
+
+#
 # Mark validatation functions
 #
 sub verify_mark( $ ) {
     my $mark  = $_[0];
-    my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFF : 0xFFFF;
+    my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFFFF : 0xFF;
 
     fatal_error "Invalid Mark or Mask value: $mark" 
-	unless "\L$mark" =~ /$(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ and $mark <= $limit;
+	unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ && mark_value( $mark ) <= $limit;
 }
 
 sub verify_small_mark( $ ) {
     verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if $mark > 0xFF;
+    fatal_error "Mark value ($mark) too large" if mark_value( $mark ) > 0xFF;
 }
 
 sub validate_mark( $ ) {
@@ -3333,7 +3341,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    validate_mark $mark;
 
 	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes' 
-		if $cmd and $chain eq 'tcpre' and $cmd <= 0xFF and $config{HIGH_ROUTE_MARKS};
+		if $cmd || $chain eq 'tcpre' || mark_value( $cmd ) <= 0xFF || $config{HIGH_ROUTE_MARKS};
 	}
 
     expand_rule 
@@ -5485,6 +5493,8 @@ my %builtinproviders = ( 'local' => LOCAL_NUMBER ,
 
 my %providers;
 my @providers;
+my %routemarked_interfaces;
+my $routemarked_interfaces = 0;
 
 sub copy_table( $$ ) {
     my ( $duplicate, $number ) = @_;
@@ -5554,11 +5564,9 @@ sub add_a_provider( $$$$$$$$ ) {
 
     fatal_error "Duplicate provider ( $table )" if $providers{$table} || $builtinproviders{$table};
 
-    for my $num ( values %providers, values %builtinproviders ) {
+    for my $num ( ( map $providers{@_}{number} ,  keys %providers  ) , values %builtinproviders ) {
 	fatal_error "Duplicate provider number ( $number )" if $num == $number;
     }
-
-    $providers{$table} = $number;
 
     emit "#\n# Add Provider $table ($number)\n#";
 
@@ -5570,8 +5578,8 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "qt ip route flush table $number";
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
     
-    $duplicate |= '-';
-    $copy      |= '-';
+    $duplicate = '-' unless $duplicate;
+    $copy      = '-' unless $copy;
 
     if ( $duplicate ne '-' ) {
 	if ( $copy ne '-' ) {
@@ -5590,7 +5598,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
     }
 
-    $gateway |= '';
+    $gateway = '-' unless $gateway;
 
     if ( $gateway eq 'detect' ) {
 	emit "gateway=\$(detect_gateway $interface)\n";
@@ -5609,8 +5617,89 @@ sub add_a_provider( $$$$$$$$ ) {
 	emit "run_ip route add default dev $interface table $number";
     }
 
+    $mark = '-' unless $mark;
+
+    my $val = 0;
+
+    if ( $mark ne '-' ) {
+
+	$val = mark_value $mark;
+
+	verify_mark $mark;
+
+	if ( $val < 256) {
+	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
+	} else {
+	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
+	}
+
+	for my $num ( map $providers{@_}{mark} ,  keys %providers  ) {
+	    fatal_error "Duplicate mark value ( $mark )" if $num == $val;
+	}
+
+
+	emit "qt ip rule del fwmark $mark";
+	emit "run_ip rule add fwmark $mark pref \$((10000 + $mark)) table $number";
+	emit "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing";
+    }
+
+    $providers{$table}         = {};
+    $providers{$table}{number} = $number;
+    $providers{$table}{mark}   = $val;
+
+    my ( $loose, $optional ) = (0,0);
+
+    unless ( $options eq '-' ) {
+	for my $option ( split /,/, $options ) {
+	    if ( $option eq 'track' ) {
+		fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface};
+		fatal_error "The 'track' option requires a numeric value in the MARK column - Provider \"$line\"" if $mark eq '-';
+		$routemarked_interfaces{$interface} = $mark;
+		$routemarked_interfaces++;
+	    } elsif ( $option =~ /^balance=(\d+)/ ) {
+		balance_default_route $1 , $gateway, $interface;
+	    } elsif ( $option eq 'balance' ) {
+		balance_default_route 1 , $gateway, $interface;
+	    } elsif ( $option eq 'loose' ) {
+		$loose = 1;
+	    } elsif ( $option eq 'optional' ) {
+		$optional = 1;
+	    } else {
+		fatal_error "Invalid option ($option) in provider \"$line\"";
+	    }
+	}
+    }
+
+    if ( $loose ) {
+	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
+	
+	emit "\nrulenum=0\n";
+
+	emit "find_interface_addresses $interface | while read address; do";
+	emit '    qt ip rule del from $address';
+	emit "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number";
+	emit "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing";
+	emit '    rulenum=$(($rulenum + 1))';
+	emit 'done';
+    } else {	    
+	emit "\nfind_interface_addresses $interface | while read address; do";
+	emit '    qt ip rule del from $address';
+	emit 'done';
+    }
+
+    emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
+
     pop_indent;
-    emit "fi\n";
+    emit 'else';
+
+    if ( $optional ) {
+	emit "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"";
+	emit "    ${iface}_up=";
+    } else {
+	emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
+    }
+
+    emit "fi\n";	
 }
 
 sub setup_providers() {
@@ -5644,6 +5733,8 @@ sub setup_providers() {
 	fatal_error "Invalid providers entry: $line" if $extra;
 
 	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
+
+	push @providers, $table;
 
 	$providers++;
 
@@ -5681,9 +5772,14 @@ sub setup_providers() {
 	emit '';
 	
 	for my $table ( @providers ) {
-	    emit "\$echocommand \"$providers{$table}\t$table\" >>  /etc/iproute2/rt_tables";
+	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	}
+
+	emit '';
     }
+}
+
+sub setup_route_marking() {
 }
 
 sub generate_object () {
@@ -5847,14 +5943,18 @@ sub generate_object () {
     emit '';
     emit "delete_proxyarp\n";
     emit "delete_tc1\n"   if $config{CLEAR_TC};
-    emit "undo_routing\n";
-    emit "restore_default_route\n";
 
     emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     setup_forwarding;
 
-    setup_providers;
+    if ( -s "$ENV{TMP_DIR}/providers" ) {
+	setup_providers;
+	setup_route_marking if $routemarked_interfaces;
+    } else {
+	emit "\nundo_routing";
+	emit 'restore_default_route';
+    }
 
     emit "restore_iptables\n";
 
@@ -5988,7 +6088,9 @@ sub compile_firewall( $ ) {
     #
     # Create the script.
     #
-    unless ( $command eq 'check' ) {
+    if ( $command eq 'check' ) {
+	setup_providers if -s "$ENV{TMP_DIR}/providers";
+    } else {
 	eval {
 	    ( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
 	};

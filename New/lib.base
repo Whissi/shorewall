@@ -1311,13 +1311,7 @@ do_log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates
 
 delete_tc1()
 {
-    clear_one_tc() {
-        tc qdisc del dev $1 root 2> /dev/null
-        tc qdisc del dev $1 ingress 2> /dev/null
-
-    }
-
-    run_user_exit tcclear
+    run_tcclear_exit;
 
     run_ip link list | \
     while read inx interface details; do

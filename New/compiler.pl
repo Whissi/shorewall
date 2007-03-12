@@ -462,14 +462,26 @@ sub default_yes_no ( $$ ) {
 }
 
 #
+# Push/Pop Indent
+#
+sub push_indent() {
+    $indent = "$indent    ";
+}
+
+sub pop_indent() {
+    $indent = substr( $indent , 0 , ( length $indent ) - 4 );
+}
+
+#
 # Write the argument to the object file with the current indentation.
 #
 sub emit ( $ ) {
-    my $line = $_[0];
-
-    $line =~ s/^/$indent/ if $indent && $line;
-
-    print $object "$line\n";
+    if ( $object ) {
+	my $line = $_[0];
+	$line =~ s/^/$indent/gm if $indent && $line;
+	1 while $line =~ s/^        /\t/m;
+	print $object "$line\n";
+    }
 }
 
 #
@@ -477,20 +489,18 @@ sub emit ( $ ) {
 #
 
 sub emit_unindented( $ ) {
-    print $object "$_[0]\n";
+    print $object "$_[0]\n" if $object;
 }
 
 #
 # Write a progress_message2 command to the output file.
 #
 sub save_progress_message( $ ) {
-    print $object "\n";
-    emit "progress_message2 $_[0]";
-    print $object "\n";
+    emit "\nprogress_message2 $_[0]\n" if $object;
 }
 
 sub save_progress_message_short( $ ) {
-    emit "progress_message $_[0]";
+    emit "progress_message $_[0]" if $object;
 }
 
 #
@@ -763,8 +773,7 @@ sub add_group_to_zone($$$$$)
 #	 
 sub validate_interfaces_file()
 {
-    my %validoptions = (
-			arp_filter => 1,
+    my %validoptions = (arp_filter => 1,
 			arp_ignore => 1,
 			blacklist => 1,
 			detectnets => 1,
@@ -780,7 +789,7 @@ sub validate_interfaces_file()
 			tcpflags => 1,
 			upnp => 1,
 			);
-    
+
     open INTERFACES, "$ENV{TMP_DIR}/interfaces" or fatal_error "Unable to open stripped interfaces file: $!";
 
     while ( $line = <INTERFACES> ) {
@@ -1162,10 +1171,8 @@ sub ensure_filter_chain( $$ )
 
     my $chainref = $filter_table->{$chain};
 
-    unless ( $chainref ) {
-	$chainref    = new_chain 'filter' , $chain;
-    }
-    
+    $chainref = new_chain 'filter' , $chain unless $chainref;
+
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
 	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
@@ -5462,6 +5469,223 @@ sub setup_forwarding() {
     emit '';
 }
 
+use constant { LOCAL_NUMBER   => 255,
+	       MAIN_NUMBER    => 254,
+	       DEFAULT_NUMBER => 253,
+	       UNSPEC_NUMBER  => 0
+	       };
+
+my $balance             = 0;
+my $first_default_route = 1;
+
+my %builtinproviders = ( 'local' => LOCAL_NUMBER ,
+			 main    => MAIN_NUMBER ,
+			 default => DEFAULT_NUMBER ,
+			 unspec  => UNSPEC_NUMBER );
+
+my %providers;
+my @providers;
+
+sub copy_table( $$ ) {
+    my ( $duplicate, $number ) = @_;
+
+    emit "ip route show table $duplicate | while read net route; do";
+    emit '    case $net in';
+    emit '        default|nexthop)';
+    emit '            ;;';
+    emit '        *)';
+    emit "            run_ip route add table $number \$net \$route";
+    emit '            ;;';
+    emit '    esac';
+    emit "done\n";
+}
+
+sub copy_and_edit_table( $$$ ) {
+    my ( $duplicate, $number, $copy ) = @_;
+
+    emit "ip route show table $duplicate | while read net route; do";
+    emit '    case $net in';
+    emit '        default|nexthop)';
+    emit '            ;;';
+    emit '        *)';
+    emit "            run_ip route add table $number \$net \$route";
+    emit '            case \$(find_device \$route) in';
+    emit "            `echo $copy\) | sed 's/ /|/g'`";
+    emit "                run_ip route add table $number \$net \$route";
+    emit '                ;;';
+    emit '            esac';
+    emit '            ;;';
+    emit '    esac';
+    emit "done\n";
+}
+
+sub balance_default_route( $$$ ) {
+    my ( $weight, $gateway, $interface ) = @_;
+
+    $balance = 1;
+
+    emit '';
+    
+    if ( $first_default_route ) {
+	if ( $gateway ) {
+	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight\"";
+	} else {
+	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight\"";
+	}
+
+	$first_default_route = 0;
+    } else {
+	if ( $gateway ) {
+	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight\"";
+	} else {
+	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight\"";
+	}
+    }
+}
+
+#
+# Builtin routing tables
+#
+sub add_a_provider( $$$$$$$$ ) {
+
+    my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
+
+    fatal_error 'Providers require mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
+
+    fatal_error "Duplicate provider ( $table )" if $providers{$table} || $builtinproviders{$table};
+
+    for my $num ( values %providers, values %builtinproviders ) {
+	fatal_error "Duplicate provider number ( $number )" if $num == $number;
+    }
+
+    $providers{$table} = $number;
+
+    emit "#\n# Add Provider $table ($number)\n#";
+
+    emit "if interface_is_usable $interface; then";
+    push_indent;
+    my $iface = chain_base $interface;
+
+    emit "${iface}_up=Yes";
+    emit "qt ip route flush table $number";
+    emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
+    
+    $duplicate |= '-';
+    $copy      |= '-';
+
+    if ( $duplicate ne '-' ) {
+	if ( $copy ne '-' ) {
+	    if ( $copy eq 'none' ) {
+		$copy = $interface;
+	    } else {
+		my @c = ( split /,/, $copy );
+		$copy = "$copy @c";
+	    }
+
+	    copy_and_edit_table( $duplicate, $copy, $number );
+	} else {
+	    copy_table ( $duplicate, $number );
+	}
+    } else {
+	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
+    }
+
+    $gateway |= '';
+
+    if ( $gateway eq 'detect' ) {
+	emit "gateway=\$(detect_gateway $interface)\n";
+
+	emit 'if [ -n "$gateway" ]; then';
+	emit "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number";
+	emit "    run_ip route add default via \$gateway dev $interface table $number";
+	emit 'else';
+	emit "    fatal_error \"Unable to detect the gateway through interface $interface\"";
+	emit "fi\n";
+    } elsif ( $gateway && $gateway ne '-' ) {
+	emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
+	emit "run_ip route add default via $gateway dev $interface table $number";
+    } else {
+	$gateway = '';
+	emit "run_ip route add default dev $interface table $number";
+    }
+
+    pop_indent;
+    emit "fi\n";
+}
+
+sub setup_providers() {
+    my $fn = find_file 'providers';
+
+    my $providers = 0;
+
+    progress_message2 "$doing $fn ...";
+
+    emit "#\n# Undo any changes made since the last time that we [re]started -- this will not restore the default route\n#";
+    emit 'undo_routing';
+    emit "#\n# Save current routing table database so that it can be restored later\n#";
+    emit 'cp /etc/iproute2/rt_tables ${VARDIR}/';
+    emit "#\n# Capture the default route(s) if we don't have it (them) already.\n#";
+    emit '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route';
+    emit "#\n# Initialize the file that holds 'undo' commands\n#";
+    emit '> ${VARDIR}/undo_routing';
+    
+    save_progress_message 'Adding Providers...';
+    
+    emit 'DEFAULT_ROUTE=';
+
+    open PV, "$ENV{TMP_DIR}/providers" or fatal_error "Unable to open stripped providers file: $!";
+
+    while ( $line = <PV> ) {
+	chomp $line;
+	$line =~ s/\s+/ /g;
+	
+	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy, $extra ) = split /\s+/, $line;
+
+	fatal_error "Invalid providers entry: $line" if $extra;
+
+	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
+
+	$providers++;
+
+	progress_message "Provider \"$line\" $done";
+
+    }
+
+    close PV;
+
+    if ( $providers ) {
+	if ( $balance ) {
+	    emit 'if [ -n "$DEFAULT_ROUTE" ]; then';
+	    emit '    run_ip route replace default scope global $DEFAULT_ROUTE';
+	    emit "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"";
+	    emit 'else';
+	    emit '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"';
+	    emit '    restore_default_route';
+	    emit 'fi';
+	    emit '';
+	} else {
+	    emit "#\n# We don't have any 'balance' providers so we restore any default route that we've saved\n#";
+	    emit 'restore_default_route';
+	}
+
+	emit 'cat > /etc/iproute2/rt_tables <<EOF';
+	emit_unindented "#\n# reserved values\n#";
+	emit_unindented "255\tlocal";
+	emit_unindented "254\tmain";
+	emit_unindented "253\tdefault";
+	emit_unindented "0\tunspec";
+	emit_unindented "#\n# local\n#";
+	emit_unindented "EOF\n";
+
+	emit 'echocommand=$(find_echo)';
+	emit '';
+	
+	for my $table ( @providers ) {
+	    emit "\$echocommand \"$providers{$table}\t$table\" >>  /etc/iproute2/rt_tables";
+	}
+    }
+}
+
 sub generate_object () {
     copy find_file 'prog.header';
 
@@ -5490,7 +5714,7 @@ sub generate_object () {
 
     emit '';
 
-    for my $exit qw/init start started stop stopped/ {
+    for my $exit qw/init start tcclear started stop stopped/ {
 	emit "run_${exit}_exit() {";
 	$indent = '    ';
 	append_file $exit;
@@ -5526,12 +5750,12 @@ sub generate_object () {
 	
     for my $option ( @propagateconfig ) {
 	my $value = $config{$option} || '';
-	emit "${option}=\"${value}\"";
+	emit "$option=\"$value\"";
     }
 
     for my $option ( @propagateenv ) {
 	my $value = $env{$option} || '';
-	emit "${option}=\"${value}\"";
+	emit "$option=\"$value\"";
     }
 
     emit '[ -n "${COMMAND:=restart}" ]';
@@ -5619,19 +5843,18 @@ sub generate_object () {
     }
 
     emit "run_init_exit\n";
+    emit 'qt $IPTABLES -L shorewall -n && qt $IPTABLES -F shorewall && qt $IPTABLES -X shorewall';
+    emit '';
     emit "delete_proxyarp\n";
-    emit '[ -n "$CLEAR_TC" ] && delete_tc1';
-    emit '';
-    emit '[ -n "$DISABLE_IPV6" ] && disable_ipv6';
-    emit '';
+    emit "delete_tc1\n"   if $config{CLEAR_TC};
     emit "undo_routing\n";
     emit "restore_default_route\n";
-
-    emit "f=\$(find_file ipsets)\n";
 
     emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     setup_forwarding;
+
+    setup_providers;
 
     emit "restore_iptables\n";
 

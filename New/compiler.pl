@@ -5569,8 +5569,7 @@ sub add_a_provider( $$$$$$$$ ) {
     fatal_error "Duplicate provider ( $table )" if $providers{$table};
 
     for my $provider ( keys %providers  ) {
-	my $num = $providers{$provider}{number};
-	fatal_error "Duplicate provider number ( $number )" if $num == $number;
+	fatal_error "Duplicate provider number ( $number )" if $providers{$provider}{number} == $number;
     }
 
     emit "#\n# Add Provider $table ($number)\n#";
@@ -5645,7 +5644,8 @@ sub add_a_provider( $$$$$$$$ ) {
 
 
 	emit "qt ip rule del fwmark $mark";
-	emit "run_ip rule add fwmark $mark pref \$((10000 + $mark)) table $number";
+	my $pref = 10000 + $val;
+	emit "run_ip rule add fwmark $mark pref $pref table $number";
 	emit "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing";
     }
 
@@ -5830,8 +5830,6 @@ sub setup_providers() {
 	for my $table ( @providers ) {
 	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	}
-
-	emit '';
 
 	if ( -s "$ENV{TMP_DIR}/route_rules" ) {
 	    my $fn = find_file 'route_rules';

@@ -2922,6 +2922,18 @@ sub setup_blacklist() {
     }
 }
 
+sub setup_forwarding() {
+    if ( "\L$config{IP_FORWARDING}" eq 'on' ) {
+	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
+	emit 'progress_message2 IP Forwarding Enabled';
+    } elsif ( "\L$config{IP_FORWARDING}" eq 'off' ) {
+	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
+	emit 'progress_message2 IP Forwarding Disabled!';
+    }
+
+    emit '';
+}
+
 sub add_common_rules() {
     my $interface;
     my $chainref;
@@ -3084,6 +3096,8 @@ sub add_common_rules() {
     }
 
     setup_syn_flood_chains;
+
+    setup_forwarding;
 }
 
 #
@@ -4031,156 +4045,158 @@ sub process_rules() {
 #
 # Here starts the tunnel stuff -- we really should get rid of this crap...
 #
-sub setup_one_ipsec {
-    my ($inchainref, $outchainref, $kind, $source, $dest, $gatewayzones) = @_;
+sub setup_tunnels() {
 
-    ( $kind, my $qualifier ) = split /:/, $kind;
+    sub setup_one_ipsec {
+	my ($inchainref, $outchainref, $kind, $source, $dest, $gatewayzones) = @_;
 
-    fatal_error "Invalid IPSEC modifier ($qualifier) in tunnel \"$line\"" if $qualifier && ( $qualifier ne 'noah' );
+	( $kind, my $qualifier ) = split /:/, $kind;
 
-    my $noah = $qualifier || ($kind ne 'ipsec' );
-
-    my $options = '-m $state --state NEW -j ACCEPT';
-
-    add_rule $inchainref,  "-p 50 $source -j ACCEPT"; 
-    add_rule $outchainref, "-p 50 $dest   -j ACCEPT"; 
-
-    unless ( $noah ) {
-	add_rule $inchainref,  "-p 51 $source -j ACCEPT"; 
-	add_rule $outchainref, "-p 51 $dest   -j ACCEPT"; 
-    }
-
-    add_rule $outchainref,  "-p udp $dest --dport 500 $options";
-
-    if ( $kind eq 'ipsec' ) {
-	add_rule $inchainref, "-p udp $source --dport $options";
-    } else {
-	add_rule $inchainref, "-p udp $source -m multiport --dports 500,4500 $options";
-    }
-
-    for my $zone ( split /,/, $gatewayzones ) {
-	fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
-	$inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
-	$outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+	fatal_error "Invalid IPSEC modifier ($qualifier) in tunnel \"$line\"" if $qualifier && ( $qualifier ne 'noah' );
 	
-	unless ( $capabilities{POLICY_MATCH} ) {
-	    add_rule $inchainref,  "-p 50 $source -j ACCEPT";
-	    add_rule $outchainref, "-p 50 $dest -j ACCEPT";
+	my $noah = $qualifier || ($kind ne 'ipsec' );
+
+	my $options = '-m $state --state NEW -j ACCEPT';
+	
+	add_rule $inchainref,  "-p 50 $source -j ACCEPT"; 
+	add_rule $outchainref, "-p 50 $dest   -j ACCEPT"; 
+	
+	unless ( $noah ) {
+	    add_rule $inchainref,  "-p 51 $source -j ACCEPT"; 
+	    add_rule $outchainref, "-p 51 $dest   -j ACCEPT"; 
+	}
+	
+	add_rule $outchainref,  "-p udp $dest --dport 500 $options";
+	
+	if ( $kind eq 'ipsec' ) {
+	    add_rule $inchainref, "-p udp $source --dport $options";
+	} else {
+	    add_rule $inchainref, "-p udp $source -m multiport --dports 500,4500 $options";
+	}
+	
+	for my $zone ( split /,/, $gatewayzones ) {
+	    fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+	    $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
+	    $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
 	    
-	    unless ( $noah ) {
-		add_rule $inchainref,  "-p 51 $source -j ACCEPT";
-		add_rule $outchainref, "-p 51 $dest -j ACCEPT";
+	    unless ( $capabilities{POLICY_MATCH} ) {
+		add_rule $inchainref,  "-p 50 $source -j ACCEPT";
+		add_rule $outchainref, "-p 50 $dest -j ACCEPT";
+		
+		unless ( $noah ) {
+		    add_rule $inchainref,  "-p 51 $source -j ACCEPT";
+		    add_rule $outchainref, "-p 51 $dest -j ACCEPT";
+		}
+	    }
+	    
+	    if ( $kind eq 'ipsec' ) {
+		add_rule $inchainref,  "-p udp $source --dport 500 $options";
+		add_rule $outchainref, "-p udp $dest --dport 500 $options";
+	    } else {
+		add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
+		add_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
 	    }
 	}
-
-	if ( $kind eq 'ipsec' ) {
-	    add_rule $inchainref,  "-p udp $source --dport 500 $options";
-	    add_rule $outchainref, "-p udp $dest --dport 500 $options";
-	} else {
-	    add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
-	    add_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
-	}
     }
-}
-
-sub setup_one_other {
-    my ($inchainref, $outchainref, $kind, $source, $dest , $protocol) = @_;
-
-    add_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
-    add_rule $outchainref , "-p $protocol $dest -j ACCEPT";
-}
-
-sub setup_pptp_client {
-    my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
-
-    add_rule $outchainref,  "-p 47 $dest -j ACCEPT";
-    add_rule $inchainref,   "-p 47 $source -j ACCEPT";
-    add_rule $outchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
-}
-
-sub setup_pptp_server {
-    my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
-
-    add_rule $inchainref,  "-p 47 $dest -j ACCEPT";
-    add_rule $outchainref, "-p 47 $source -j ACCEPT";
-    add_rule $inchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
-}
-
-sub setup_one_openvpn {
-    my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
-
-    my $protocol = 'udp';
-    my $port     = 1194;
-
-    ( $kind, my ( $proto, $p ) ) = split /:/, $kind;
-
-    $port     = $p     if $p;
-    $protocol = $proto if $proto;
-
-    add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
-    add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
-}
-
-sub setup_one_openvpn_client {
-    my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
-
-    my $protocol = 'udp';
-    my $port     = 1194;
-
-    ( $kind, my ( $proto, $p ) ) = split /:/, $kind;
-
-    $port     = $p     if $p;
-    $protocol = $proto if $proto;
-
-    add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
-    add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
-}
-
-sub setup_one_openvpn_server {
-    my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
-
-    my $protocol = 'udp';
-    my $port     = 1194;
-
-    ( $kind, my ( $proto, $p ) ) = split /:/, $kind;
-
-    $port     = $p     if $p;
-    $protocol = $proto if $proto;
-
-    add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
-    add_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
-}
-
-sub setup_one_generic {
-    my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
-
-    my $protocol = 'udp';
-    my $port     = '--dport 5000';
-
-    if ( $kind =~ /.*:.*:.*/ ) {
-	( $kind, $protocol, $port) = split /:/, $kind;
-	$port = "--dport $port";
-    } else {
-	$port = '';
-	( $kind, $protocol ) = split /:/ , $kind if $kind =~ /.*:.*/;
-    }
-
-    add_rule $inchainref,  "-p $protocol $source $port -j ACCEPT";
-    add_rule $outchainref, "-p $protocol $dest $port -j ACCEPT";
-}
-
-sub setup_one_tunnel($$$$) {
-    my ( $kind , $zone, $gateway, $gatewayzones ) = @_;
     
-    fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+    sub setup_one_other {
+	my ($inchainref, $outchainref, $kind, $source, $dest , $protocol) = @_;
+	
+	add_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
+	add_rule $outchainref , "-p $protocol $dest -j ACCEPT";
+    }
+    
+    sub setup_pptp_client {
+	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
+	
+	add_rule $outchainref,  "-p 47 $dest -j ACCEPT";
+	add_rule $inchainref,   "-p 47 $source -j ACCEPT";
+	add_rule $outchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	}
+    
+    sub setup_pptp_server {
+	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
+	
+	add_rule $inchainref,  "-p 47 $dest -j ACCEPT";
+	add_rule $outchainref, "-p 47 $source -j ACCEPT";
+	add_rule $inchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	}
+    
+    sub setup_one_openvpn {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = 1194;
+	
+	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	
+	$port     = $p     if $p;
+	$protocol = $proto if $proto;
+	
+	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+    }
 
-    my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
-    my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+    sub setup_one_openvpn_client {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = 1194;
+	
+	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	
+	$port     = $p     if $p;
+	$protocol = $proto if $proto;
+	
+	add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+    }
 
-    my $source = match_source_net $gateway;
-    my $dest   = match_dest_net   $gateway;
-  
-    my %tunneltypes = ( 'ipsec'         => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
+    sub setup_one_openvpn_server {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = 1194;
+	
+	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	
+	$port     = $p     if $p;
+	$protocol = $proto if $proto;
+
+	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
+    }
+
+    sub setup_one_generic {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = '--dport 5000';
+	
+	if ( $kind =~ /.*:.*:.*/ ) {
+	    ( $kind, $protocol, $port) = split /:/, $kind;
+	    $port = "--dport $port";
+	} else {
+	    $port = '';
+	    ( $kind, $protocol ) = split /:/ , $kind if $kind =~ /.*:.*/;
+	}
+	
+	add_rule $inchainref,  "-p $protocol $source $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest $port -j ACCEPT";
+    }
+    
+    sub setup_one_tunnel($$$$) {
+	my ( $kind , $zone, $gateway, $gatewayzones ) = @_;
+	
+	fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+	
+	my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
+	my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+	
+	my $source = match_source_net $gateway;
+	my $dest   = match_dest_net   $gateway;
+	
+	my %tunneltypes = ( 'ipsec'         => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
 			'ipsecnat'      => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
 			'ipip'          => { function => \&setup_one_other,          params   => [ $source, $dest , 4 ] } ,
 			'gre'           => { function => \&setup_one_other,          params   => [ $source, $dest , 47 ] } ,
@@ -4193,21 +4209,21 @@ sub setup_one_tunnel($$$$) {
 			'generic'       => { function => \&setup_one_generic ,       params   => [ $kind, $source, $dest ] } ,
 			);
 
-    $kind = "\L$kind";
+	$kind = "\L$kind";
 
-    (my $type) = split /:/, $kind;
-
-    my $tunnelref = $tunneltypes{ $type };
-
-    fatal_error "Tunnels of type $type are not supported: Tunnel \"$line\"" unless $tunnelref;
-
-    $tunnelref->{function}->( $inchainref, $outchainref, @{$tunnelref->{params}} );
-
-    progress_message "   Tunnel \"$line\" $done";
-}
-
-sub setup_tunnels() {
-
+	(my $type) = split /:/, $kind;
+	
+	my $tunnelref = $tunneltypes{ $type };
+	
+	fatal_error "Tunnels of type $type are not supported: Tunnel \"$line\"" unless $tunnelref;
+	
+	$tunnelref->{function}->( $inchainref, $outchainref, @{$tunnelref->{params}} );
+	
+	progress_message "   Tunnel \"$line\" $done";
+    }
+    #
+    # Setup_Tunnels() Starts Here
+    #
     open TUNNELS, "$ENV{TMP_DIR}/tunnels" or fatal_error "Unable to open stripped tunnels file: $!";
 
     while ( $line = <TUNNELS> ) {
@@ -4236,119 +4252,28 @@ sub setup_tunnels() {
 }    
 
 #
-# The following small functions generate rules for the builtin actions of the same name
-#
-sub dropBcast( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    if ( $level ) {
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
-    }
-
-    add_rule $chainref, '-m pkttype --pkt-type broadcast -j DROP';
-    add_rule $chainref, '-m pkttype --pkt-type multicast -j DROP';
-}
-
-sub allowBcast( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    if ( $level ) {
-	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
-	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
-    }
-
-    add_rule $chainref, '-m pkttype --pkt-type broadcast -j ACCEPT';
-    add_rule $chainref, '-m pkttype --pkt-type multicast -j ACCEPT';
-}
-
-sub dropNotSyn ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
-    add_rule $chainref , '-p tcp ! --syn -j DROP';
-}
-
-sub rejNotSyn ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
-    add_rule $chainref , '-p tcp ! --syn -j REJECT';
-}
-
-sub dropInvalid ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level;    
-    add_rule $chainref , '-m state --state INVALID -j REJECT';
-}
-
-sub allowInvalid ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level;    
-    add_rule $chainref , '-m state --state INVALID -j ACCEPT';
-}
-
-sub forwardUPnP ( $$$ ) {
-}
-
-sub allowinUPnP ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    if ( $level ) {
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
-    }
-
-    add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
-    add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
-}
-
-sub Limit( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    my @tag = split /,/, $tag;
-
-    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
-
-    add_rule $chainref, '-m recent --name $tag[0] --set';
-    
-    if ( $level ) {
-	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
-	add_rule $xchainref, '-j DROP';
-	add_rule $chainref,  "-m recent --name $tag[0] --update --seconds $tag[2] --hitcount $(( $tag[1] + 1 )) -j $chainref->{name}%";
-    } else {
-	add_rule $chainref, "-m recent --update --name $tag[0] --seconds $tag[2] --hitcount $(( $tag[1] + 1 )) -j DROP";
-    }
-
-    add_rule $chainref, '-j ACCEPT';
-}
-
-#
-# This function is called to process each rule generated from an action file.
-#
-sub process_action( $$$$$$$$$$ ) {
-    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
-
-    my ( $action , $level ) = split_action $target;
-
-    expand_rule ( $chainref ,
-		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user , 
-		  $source ,
-		  $dest ,
-		  '', #Original Dest
-		  '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action),
-		  $level ,
-		  $action ,
-		  '' );
-}
-
-#
 # Generate chain for non-builtin action invocation
 #	
 sub process_action3( $$$$$ ) {
+    #
+    # This function is called to process each rule generated from an action file.
+    #
+    sub process_action( $$$$$$$$$$ ) {
+	my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
+	
+	my ( $action , $level ) = split_action $target;
+	
+	expand_rule ( $chainref ,
+		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user , 
+		      $source ,
+		      $dest ,
+		      '', #Original Dest
+		      '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action),
+		      $level ,
+		      $action ,
+		      '' );
+    }
+
     my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^($env{SHAREDIR})/ );
@@ -4617,6 +4542,97 @@ sub process_actions2 () {
 }
 		
 sub process_actions3 () {
+    #
+    # The following small functions generate rules for the builtin actions of the same name
+    #
+    sub dropBcast( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	if ( $level ) {
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
+	}
+	
+	add_rule $chainref, '-m pkttype --pkt-type broadcast -j DROP';
+	add_rule $chainref, '-m pkttype --pkt-type multicast -j DROP';
+    }
+    
+    sub allowBcast( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	if ( $level ) {
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
+	}
+	
+	add_rule $chainref, '-m pkttype --pkt-type broadcast -j ACCEPT';
+	add_rule $chainref, '-m pkttype --pkt-type multicast -j ACCEPT';
+    }
+    
+    sub dropNotSyn ( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
+	add_rule $chainref , '-p tcp ! --syn -j DROP';
+    }
+    
+    sub rejNotSyn ( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+
+	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
+	add_rule $chainref , '-p tcp ! --syn -j REJECT';
+    }
+    
+    sub dropInvalid ( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level;    
+	add_rule $chainref , '-m state --state INVALID -j REJECT';
+    }
+
+    sub allowInvalid ( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level;    
+	add_rule $chainref , '-m state --state INVALID -j ACCEPT';
+    }
+    
+    sub forwardUPnP ( $$$ ) {
+    }
+
+    sub allowinUPnP ( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	if ( $level ) {
+	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
+	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
+	}
+	
+	add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
+	add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
+    }
+    
+    sub Limit( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+	
+	my @tag = split /,/, $tag;
+	
+	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
+	
+	add_rule $chainref, '-m recent --name $tag[0] --set';
+	
+	if ( $level ) {
+	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
+	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
+	    add_rule $xchainref, '-j DROP';
+	    add_rule $chainref,  "-m recent --name $tag[0] --update --seconds $tag[2] --hitcount $(( $tag[1] + 1 )) -j $chainref->{name}%";
+	} else {
+	    add_rule $chainref, "-m recent --update --name $tag[0] --seconds $tag[2] --hitcount $(( $tag[1] + 1 )) -j DROP";
+	}
+	
+	add_rule $chainref, '-j ACCEPT';
+    }
+
     my %builtinops = ( 'dropBcast'    => \&dropBcast,
 		       'allowBcast'   => \&allowBcast,
 		       'dropNotSyn'   => \&dropNotSyn,
@@ -4670,20 +4686,20 @@ sub dump_action_table() {
 #
 # Accounting
 #
-sub accounting_error() {
-    warning_message "Invalid Accounting rule \"$line\"";
-}
-
 my $jumpchainref;
-
-sub jump_to_chain( $ ) {
-    my $jumpchain = $_[0];
-    $jumpchainref = ensure_chain( 'filter', $jumpchain );
-    "-j $jumpchain";
-}
 
 sub process_accounting_rule( $$$$$$$$ ) {
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = @_;
+
+    sub accounting_error() {
+	warning_message "Invalid Accounting rule \"$line\"";
+    }
+
+    sub jump_to_chain( $ ) {
+	my $jumpchain = $_[0];
+	$jumpchainref = ensure_chain( 'filter', $jumpchain );
+	"-j $jumpchain";
+    }
 
     $chain = 'accounting' unless $chain and $chain ne '-';
     
@@ -4761,105 +4777,106 @@ sub setup_accounting() {
     }
 }
 
-#
-# Helper functions for generate_matrix()
-#-----------------------------------------
-#
-# If the destination chain exists, then at the end of the source chain add a jump to the destination.
-#
-sub addnatjump( $$$ ) {
-    my ( $source , $dest, $predicates ) = @_;
-
-    my $destref   = $nat_table->{$dest} || {};
-
-    if ( $destref->{referenced} ) {
-	add_rule $nat_table->{$source} , $predicates . "-j $dest";
-    } else {
-	$iprangematch = $ipsetmatch = 0;
-    }
-}
-
-#
-# If the destination chain exists, then at the position in the source chain given by $$countref, add a jump to the destination.
-#
-sub insertnatjump( $$$$ ) {
-    my ( $source, $dest, $countref, $predicates ) = @_;
-
-    my $destref   = $nat_table->{$dest} || {};
-
-    if ( $destref->{referenced} ) {
-	insert_rule $nat_table->{$source} , ($$countref)++, $predicates . "-j $dest";
-    } else {
-	$iprangematch = $ipsetmatch = 0;
-    }
-}
-
-#
-# Return the target for rules from the $zone to $zone1.
-#
-sub rules_target( $$ ) {
-    my ( $zone, $zone1 ) = @_;
-    my $chain = "${zone}2${zone1}";
-    my $chainref = $filter_table->{$chain};
-
-    return $chain   if $chainref && $chainref->{referenced};
-    return 'ACCEPT' if $zone eq $zone1;
-    
-    if ( $chainref->{policy} ne 'CONTINUE' ) {
-	my $policyref = $chainref->{policychain};
-	return $policyref->{name} if $policyref;
-	fatal_error "No policy defined for zone $zone to zone $zone1";
-    }
-
-    '';
-}
-
-#
-# Add a jump to the passed chain ($chainref) to the dynamic zone chain for the passed zone.
-#
-sub create_zone_dyn_chain( $$ ) {
-    my ( $zone , $chainref ) = @_;
-    my $name = "${zone}_dyn";
-    new_standard_chain $name;
-    add_rule $chainref, "-j $name";
-}
-
-#
-# Insert the passed exclusions at the front of the passed chain.
-#
-sub insert_exclusions( $$ ) {
-    my ( $chainref, $exclusionsref ) = @_;
-
-    my $num = 1;
-
-    for my $host ( @{$exclusionsref} ) {
-	my ( $interface, $net ) = split /:/, $host;
-	insert_rule $chainref , $num++, "-i $interface " . match_source_net( $host ) . '-j RETURN';
-    }
-}
-
-#
-# Add the passed exclusions at the end of the passed chain.
-#
-sub add_exclusions ( $$ ) {
-    my ( $chainref, $exclusionsref ) = @_;
-
-    for my $host ( @{$exclusionsref} ) {
-	my ( $interface, $net ) = split /:/, $host;
-	add_rule $chainref , "-i $interface " . match_source_net( $host ) . '-j RETURN';
-    }
-}    
 
 #
 # To quote an old comment, generate_matrix makes a sows ear out of a silk purse.
 #
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
-#-----------------------------------------------------------
-# The goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
+# A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
 #
 # The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of rules.
 # 
 sub generate_matrix() {
+    #
+    # Helper functions for generate_matrix()
+    #-----------------------------------------
+    #
+    # If the destination chain exists, then at the end of the source chain add a jump to the destination.
+    #
+    sub addnatjump( $$$ ) {
+        my ( $source , $dest, $predicates ) = @_;
+
+	my $destref   = $nat_table->{$dest} || {};
+
+	if ( $destref->{referenced} ) {
+	    add_rule $nat_table->{$source} , $predicates . "-j $dest";
+	} else {
+	    $iprangematch = $ipsetmatch = 0;
+	}
+    }
+    #
+    # If the destination chain exists, then at the position in the source chain given by $$countref, add a jump to the destination.
+    #
+    sub insertnatjump( $$$$ ) {
+	my ( $source, $dest, $countref, $predicates ) = @_;
+	
+	my $destref   = $nat_table->{$dest} || {};
+	
+	if ( $destref->{referenced} ) {
+	    insert_rule $nat_table->{$source} , ($$countref)++, $predicates . "-j $dest";
+	} else {
+	    $iprangematch = $ipsetmatch = 0;
+	}
+    }
+
+    #
+    # Return the target for rules from the $zone to $zone1.
+    #
+    sub rules_target( $$ ) {
+	my ( $zone, $zone1 ) = @_;
+	my $chain = "${zone}2${zone1}";
+	my $chainref = $filter_table->{$chain};
+	
+	return $chain   if $chainref && $chainref->{referenced};
+	return 'ACCEPT' if $zone eq $zone1;
+    
+	if ( $chainref->{policy} ne 'CONTINUE' ) {
+	    my $policyref = $chainref->{policychain};
+	    return $policyref->{name} if $policyref;
+	    fatal_error "No policy defined for zone $zone to zone $zone1";
+	}
+	
+	'';
+    }
+
+    #
+    # Add a jump to the passed chain ($chainref) to the dynamic zone chain for the passed zone.
+    #
+    sub create_zone_dyn_chain( $$ ) {
+	my ( $zone , $chainref ) = @_;
+	my $name = "${zone}_dyn";
+	new_standard_chain $name;
+	add_rule $chainref, "-j $name";
+    }
+
+    #
+    # Insert the passed exclusions at the front of the passed chain.
+    #
+    sub insert_exclusions( $$ ) {
+	my ( $chainref, $exclusionsref ) = @_;
+	
+	my $num = 1;
+	
+	for my $host ( @{$exclusionsref} ) {
+	    my ( $interface, $net ) = split /:/, $host;
+	    insert_rule $chainref , $num++, "-i $interface " . match_source_net( $host ) . '-j RETURN';
+	}
+    }
+
+    #
+    # Add the passed exclusions at the end of the passed chain.
+    #
+    sub add_exclusions ( $$ ) {
+	my ( $chainref, $exclusionsref ) = @_;
+	
+	for my $host ( @{$exclusionsref} ) {
+	    my ( $interface, $net ) = split /:/, $host;
+	    add_rule $chainref , "-i $interface " . match_source_net( $host ) . '-j RETURN';
+	}
+    }    
+    #
+    # Generate_Matrix() Starts Here
+    #
     my $prerouting_rule  = 1;
     my $postrouting_rule = 1;
     my $exclusion_seq    = 1;
@@ -5478,18 +5495,6 @@ sub do_initialize() {
     initialize_chain_table;
 }
 
-sub setup_forwarding() {
-    if ( "\L$config{IP_FORWARDING}" eq 'on' ) {
-	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Enabled';
-    } elsif ( "\L$config{IP_FORWARDING}" eq 'off' ) {
-	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Disabled!';
-    }
-
-    emit '';
-}
-
 use constant { LOCAL_NUMBER   => 255,
 	       MAIN_NUMBER    => 254,
 	       DEFAULT_NUMBER => 253,
@@ -5509,270 +5514,269 @@ my @providers;
 my %routemarked_interfaces;
 my $routemarked_interfaces = 0;
 
-sub copy_table( $$ ) {
-    my ( $duplicate, $number ) = @_;
-
-    emit "ip route show table $duplicate | while read net route; do";
-    emit '    case $net in';
-    emit '        default|nexthop)';
-    emit '            ;;';
-    emit '        *)';
-    emit "            run_ip route add table $number \$net \$route";
-    emit '            ;;';
-    emit '    esac';
-    emit "done\n";
-}
-
-sub copy_and_edit_table( $$$ ) {
-    my ( $duplicate, $number, $copy ) = @_;
-
-    my $match = $copy;
-
-    $match =~ s/ /\|/g;
-
-    emit "ip route show table $duplicate | while read net route; do";
-    emit '    case $net in';
-    emit '        default|nexthop)';
-    emit '            ;;';
-    emit '        *)';
-    emit "            run_ip route add table $number \$net \$route";
-    emit '            case $(find_device $route) in';
-    emit "                $match)";
-    emit "                    run_ip route add table $number \$net \$route";
-    emit '                    ;;';
-    emit '            esac';
-    emit '            ;;';
-    emit '    esac';
-    emit "done\n";
-}
-
-sub balance_default_route( $$$ ) {
-    my ( $weight, $gateway, $interface ) = @_;
-
-    $balance = 1;
-
-    emit '';
-    
-    if ( $first_default_route ) {
-	if ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight\"";
-	} else {
-	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight\"";
-	}
-
-	$first_default_route = 0;
-    } else {
-	if ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight\"";
-	} else {
-	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight\"";
-	}
-    }
-}
-
-#
-# Builtin routing tables
-#
-sub add_a_provider( $$$$$$$$ ) {
-
-    my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
-
-    fatal_error 'Providers require mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
-
-    fatal_error "Duplicate provider ( $table )" if $providers{$table};
-
-    for my $provider ( keys %providers  ) {
-	fatal_error "Duplicate provider number ( $number )" if $providers{$provider}{number} == $number;
-    }
-
-    emit "#\n# Add Provider $table ($number)\n#";
-
-    emit "if interface_is_usable $interface; then";
-    push_indent;
-    my $iface = chain_base $interface;
-
-    emit "${iface}_up=Yes";
-    emit "qt ip route flush table $number";
-    emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
-    
-    $duplicate = '-' unless $duplicate;
-    $copy      = '-' unless $copy;
-
-    if ( $duplicate ne '-' ) {
-	if ( $copy ne '-' ) {
-	    if ( $copy eq 'none' ) {
-		$copy = $interface;
-	    } else {
-		my @c = ( split /,/, $copy );
-		$copy = "@c";
-	    }
-
-	    copy_and_edit_table( $duplicate, $number ,$copy );
-	} else {
-	    copy_table ( $duplicate, $number );
-	}
-    } else {
-	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
-    }
-
-    $gateway = '-' unless $gateway;
-
-    if ( $gateway eq 'detect' ) {
-	emit "gateway=\$(detect_gateway $interface)\n";
-
-	emit 'if [ -n "$gateway" ]; then';
-	emit "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number";
-	emit "    run_ip route add default via \$gateway dev $interface table $number";
-	emit 'else';
-	emit "    fatal_error \"Unable to detect the gateway through interface $interface\"";
-	emit "fi\n";
-    } elsif ( $gateway && $gateway ne '-' ) {
-	emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
-	emit "run_ip route add default via $gateway dev $interface table $number";
-    } else {
-	$gateway = '';
-	emit "run_ip route add default dev $interface table $number";
-    }
-
-    $mark = '-' unless $mark;
-
-    my $val = 0;
-
-    if ( $mark ne '-' ) {
-
-	$val = numeric_value $mark;
-
-	verify_mark $mark;
-
-	if ( $val < 256) {
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
-	} else {
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
-	}
-
-	for my $provider ( keys %providers  ) {
-	    my $num = $providers{$provider}{mark};
-	    fatal_error "Duplicate mark value ( $mark )" if $num == $val;
-	}
-
-
-	emit "qt ip rule del fwmark $mark";
-	my $pref = 10000 + $val;
-	emit "run_ip rule add fwmark $mark pref $pref table $number";
-	emit "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing";
-    }
-
-    $providers{$table}         = {};
-    $providers{$table}{number} = $number;
-    $providers{$table}{mark}   = $val;
-
-    my ( $loose, $optional ) = (0,0);
-
-    unless ( $options eq '-' ) {
-	for my $option ( split /,/, $options ) {
-	    if ( $option eq 'track' ) {
-		fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface};
-		fatal_error "The 'track' option requires a numeric value in the MARK column - Provider \"$line\"" if $mark eq '-';
-		$routemarked_interfaces{$interface} = $mark;
-		$routemarked_interfaces++;
-	    } elsif ( $option =~ /^balance=(\d+)/ ) {
-		balance_default_route $1 , $gateway, $interface;
-	    } elsif ( $option eq 'balance' ) {
-		balance_default_route 1 , $gateway, $interface;
-	    } elsif ( $option eq 'loose' ) {
-		$loose = 1;
-	    } elsif ( $option eq 'optional' ) {
-		$optional = 1;
-	    } else {
-		fatal_error "Invalid option ($option) in provider \"$line\"";
-	    }
-	}
-    }
-
-    if ( $loose ) {
-	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
-	
-	emit "\nrulenum=0\n";
-
-	emit "find_interface_addresses $interface | while read address; do";
-	emit '    qt ip rule del from $address';
-	emit "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number";
-	emit "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing";
-	emit '    rulenum=$(($rulenum + 1))';
-	emit 'done';
-    } else {	    
-	emit "\nfind_interface_addresses $interface | while read address; do";
-	emit '    qt ip rule del from $address';
-	emit 'done';
-    }
-
-    emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
-
-    pop_indent;
-    emit 'else';
-
-    if ( $optional ) {
-	emit "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"";
-	emit "    ${iface}_up=";
-    } else {
-	emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
-    }
-
-    emit "fi\n";	
-}
-
-sub add_an_rtrule( $$$$ ) {
-    my ( $source, $dest, $provider, $priority ) = @_;
-
-    unless ( $providers{$provider} ) {	
-	my $found = 0;
-
-	if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
-	    my $provider_number = numeric_value $provider;
-
-	    for my $provider ( keys %providers ) {
-		if ( $providers{$provider}{number} == $provider_number ) {
-		    $found = 1;
-		    last;
-		}
-	    }
-	}
-
-	fatal_error "Unknown provider $provider in route rule \"$line\"" unless $found;
-    }
-
-    $source = '-' unless $source;
-    $dest   = '-' unless $dest;
-
-    fatal_error "You must specify either the source or destination in an rt rule: \"$line\"" if $source eq '-' && $dest eq '-';
-
-    $dest = $dest eq '-' ? '' : "to $dest";
-
-    if ( $source eq '-' ) {
-	$source = '';
-    } elsif ( $source =~ /:/ ) { 
-	( my $interface, $source ) = split /:/, $source;
-	$source = "iif $interface from $source";
-    } elsif ( $source =~ /\..*\..*/ ) {
-	$source = "from $source";
-    } else {
-	$source = "iif $source";
-    }
-		
-    fatal_error "Invalid priority ($priority) in rule \"$line\"" unless $priority && $priority =~ /^\d{1,5}$/;
-
-    $priority = "priority $priority";
-	
-    emit "qt ip rule del $source $dest $priority";
-    emit "run_ip rule add $source $dest $priority table $provider";
-    emit "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing";
-    progress_message "   Routing rule \"$line\" $done"
-}
-
 sub setup_providers() {
     my $fn = find_file 'providers';
     my $providers = 0;
 
+    sub copy_table( $$ ) {
+	my ( $duplicate, $number ) = @_;
+
+	emit "ip route show table $duplicate | while read net route; do";
+	emit '    case $net in';
+	emit '        default|nexthop)';
+	emit '            ;;';
+	emit '        *)';
+	emit "            run_ip route add table $number \$net \$route";
+	emit '            ;;';
+	emit '    esac';
+	emit "done\n";
+    }
+
+    sub copy_and_edit_table( $$$ ) {
+	my ( $duplicate, $number, $copy ) = @_;
+	
+	my $match = $copy;
+	
+	$match =~ s/ /\|/g;
+	
+	emit "ip route show table $duplicate | while read net route; do";
+	emit '    case $net in';
+	emit '        default|nexthop)';
+	emit '            ;;';
+	emit '        *)';
+	emit "            run_ip route add table $number \$net \$route";
+	emit '            case $(find_device $route) in';
+	emit "                $match)";
+	emit "                    run_ip route add table $number \$net \$route";
+	emit '                    ;;';
+	emit '            esac';
+	emit '            ;;';
+	emit '    esac';
+	emit "done\n";
+    }
+
+    sub balance_default_route( $$$ ) {
+	my ( $weight, $gateway, $interface ) = @_;
+	
+	$balance = 1;
+	
+	emit '';
+    
+	if ( $first_default_route ) {
+	    if ( $gateway ) {
+		emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight\"";
+	    } else {
+		emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight\"";
+	    }
+	    
+	    $first_default_route = 0;
+	} else {
+	    if ( $gateway ) {
+		emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight\"";
+	    } else {
+		emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight\"";
+	    }
+	}
+    }
+    
+    sub add_a_provider( $$$$$$$$ ) {
+
+	my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
+	
+	fatal_error 'Providers require mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
+	
+	fatal_error "Duplicate provider ( $table )" if $providers{$table};
+	
+	for my $provider ( keys %providers  ) {
+	    fatal_error "Duplicate provider number ( $number )" if $providers{$provider}{number} == $number;
+	}
+
+	emit "#\n# Add Provider $table ($number)\n#";
+
+	emit "if interface_is_usable $interface; then";
+	push_indent;
+	my $iface = chain_base $interface;
+
+	emit "${iface}_up=Yes";
+	emit "qt ip route flush table $number";
+	emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
+    
+	$duplicate = '-' unless $duplicate;
+	$copy      = '-' unless $copy;
+
+	if ( $duplicate ne '-' ) {
+	    if ( $copy ne '-' ) {
+		if ( $copy eq 'none' ) {
+		    $copy = $interface;
+		} else {
+		    my @c = ( split /,/, $copy );
+		    $copy = "@c";
+		}
+		
+		copy_and_edit_table( $duplicate, $number ,$copy );
+	    } else {
+		copy_table ( $duplicate, $number );
+	    }
+	} else {
+	    fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
+	}
+
+	$gateway = '-' unless $gateway;
+
+	if ( $gateway eq 'detect' ) {
+	    emit "gateway=\$(detect_gateway $interface)\n";
+	    
+	    emit 'if [ -n "$gateway" ]; then';
+	    emit "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number";
+	    emit "    run_ip route add default via \$gateway dev $interface table $number";
+	    emit 'else';
+	    emit "    fatal_error \"Unable to detect the gateway through interface $interface\"";
+	    emit "fi\n";
+	} elsif ( $gateway && $gateway ne '-' ) {
+	    emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
+	    emit "run_ip route add default via $gateway dev $interface table $number";
+	} else {
+	    $gateway = '';
+	    emit "run_ip route add default dev $interface table $number";
+	}
+	
+	$mark = '-' unless $mark;
+
+	my $val = 0;
+
+	if ( $mark ne '-' ) {
+
+	    $val = numeric_value $mark;
+	    
+	    verify_mark $mark;
+	    
+	    if ( $val < 256) {
+		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
+	    } else {
+		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
+	    }
+	    
+	    for my $provider ( keys %providers  ) {
+		my $num = $providers{$provider}{mark};
+		fatal_error "Duplicate mark value ( $mark )" if $num == $val;
+	    }
+
+
+	    emit "qt ip rule del fwmark $mark";
+	    my $pref = 10000 + $val;
+	    emit "run_ip rule add fwmark $mark pref $pref table $number";
+	    emit "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing";
+	}
+
+	$providers{$table}         = {};
+	$providers{$table}{number} = $number;
+	$providers{$table}{mark}   = $val;
+
+	my ( $loose, $optional ) = (0,0);
+
+	unless ( $options eq '-' ) {
+	    for my $option ( split /,/, $options ) {
+		if ( $option eq 'track' ) {
+		    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface};
+		    fatal_error "The 'track' option requires a numeric value in the MARK column - Provider \"$line\"" if $mark eq '-';
+		    $routemarked_interfaces{$interface} = $mark;
+		    $routemarked_interfaces++;
+		} elsif ( $option =~ /^balance=(\d+)/ ) {
+		    balance_default_route $1 , $gateway, $interface;
+		} elsif ( $option eq 'balance' ) {
+		    balance_default_route 1 , $gateway, $interface;
+		} elsif ( $option eq 'loose' ) {
+		    $loose = 1;
+		} elsif ( $option eq 'optional' ) {
+		    $optional = 1;
+		} else {
+		    fatal_error "Invalid option ($option) in provider \"$line\"";
+		}
+	    }
+	}
+	
+	if ( $loose ) {
+	    my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
+	    
+	    emit "\nrulenum=0\n";
+	    
+	    emit "find_interface_addresses $interface | while read address; do";
+	    emit '    qt ip rule del from $address';
+	    emit "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number";
+	    emit "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing";
+	    emit '    rulenum=$(($rulenum + 1))';
+	    emit 'done';
+	} else {	    
+	    emit "\nfind_interface_addresses $interface | while read address; do";
+	    emit '    qt ip rule del from $address';
+	    emit 'done';
+	}
+	
+	emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
+
+	pop_indent;
+	emit 'else';
+	
+	if ( $optional ) {
+	    emit "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"";
+	    emit "    ${iface}_up=";
+	} else {
+	    emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
+	}
+	
+	emit "fi\n";	
+    }
+
+    sub add_an_rtrule( $$$$ ) {
+	my ( $source, $dest, $provider, $priority ) = @_;
+	
+	unless ( $providers{$provider} ) {	
+	    my $found = 0;
+	    
+	    if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
+		my $provider_number = numeric_value $provider;
+		
+		for my $provider ( keys %providers ) {
+		    if ( $providers{$provider}{number} == $provider_number ) {
+			$found = 1;
+			last;
+		    }
+		}
+	    }
+	    
+	    fatal_error "Unknown provider $provider in route rule \"$line\"" unless $found;
+	}
+	
+	$source = '-' unless $source;
+	$dest   = '-' unless $dest;
+
+	fatal_error "You must specify either the source or destination in an rt rule: \"$line\"" if $source eq '-' && $dest eq '-';
+	
+	$dest = $dest eq '-' ? '' : "to $dest";
+	
+	if ( $source eq '-' ) {
+	    $source = '';
+	} elsif ( $source =~ /:/ ) { 
+	    ( my $interface, $source ) = split /:/, $source;
+	    $source = "iif $interface from $source";
+	} elsif ( $source =~ /\..*\..*/ ) {
+	    $source = "from $source";
+	} else {
+	    $source = "iif $source";
+	}
+	
+	fatal_error "Invalid priority ($priority) in rule \"$line\"" unless $priority && $priority =~ /^\d{1,5}$/;
+	
+	$priority = "priority $priority";
+	
+	emit "qt ip rule del $source $dest $priority";
+	emit "run_ip rule add $source $dest $priority table $provider";
+	emit "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing";
+	progress_message "   Routing rule \"$line\" $done";
+    }
+    #
+    #   Setup_Providers() Starts Here....
+    # 
     progress_message2 "$doing $fn ...";
 
     emit "\nif [ -z \"\$NOROUTES\" ]; then";
@@ -5874,6 +5878,9 @@ sub setup_providers() {
 
 }
 
+#
+# Set up marking for 'tracked' interfaces. Unline in Shorewall 3.x, we add these rules inconditionally, even if the associated interface isn't up.
+#
 sub setup_route_marking() {
     my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFFFF' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
@@ -6058,34 +6065,35 @@ sub generate_script_2 () {
 
     emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
-    setup_forwarding;
-
-    if ( -s "$ENV{TMP_DIR}/providers" ) {
-	setup_providers;
-	setup_route_marking if $routemarked_interfaces;
-    } else {
-	emit "\nundo_routing";
-	emit 'restore_default_route';
-    }
-
-    setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
-    
-    $indent = '';
-
-    emit "}\n";;
-
 }
 
-sub report_capability( $ ) {
-    my $cap = $_[0];
-    print "   $capdesc{$cap}: ";
-    print $capabilities{$cap} ? "Available\n" : "Not Available\n";
+sub generate_script_3() {
+    pop_indent;
+
+    emit "}\n";
+    
+    progress_message2 "Creating iptables-restore input...";
+    create_netfilter_load;	
+    emit "#\n# Start/Restart the Firewall\n#";
+    emit 'define_firewall() {';
+    emit '   setup_routing_and_traffic_shaping;';
+    emit '   setup_netfilter';
+    emit '   [ $COMMAND = restore ] || restore_dynamic_rules';
+    emit "}\n";
+    
+    copy find_file 'prog.footer';	
 }
 
 sub compile_firewall( $ ) {
     
     my $objectfile = $_[0];
     my ( $dir, $file );
+
+    sub report_capability( $ ) {
+	my $cap = $_[0];
+	print "   $capdesc{$cap}: ";
+	print $capabilities{$cap} ? "Available\n" : "Not Available\n";
+    }
 
     ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
 
@@ -6120,59 +6128,95 @@ sub compile_firewall( $ ) {
 	}
     }
 
-    fatal_error "Shorewall $ENV{VERSION} requires Conntrack Match Support" unless $capabilities{CONNTRACK_MATCH};
-    fatal_error "Shorewall $ENV{VERSION} requires Extended Multi-port Match Support" unless $capabilities{XMULTIPORT};
-    fatal_error "Shorewall $ENV{VERSION} requires Address Type Match Support" unless $capabilities{ADDRTYPE};
-    fatal_error 'BRIDGING=Yes requires Physdev Match support in your Kernel and iptables' if $config{BRIDGING} && ! $capabilities{PHYSDEV_MATCH};
-    fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables' if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};
-    fatal_error 'RFC1918_STRICT=Yes requires Connection Tracking match' if $config{RFC1918_STRICT} && ! $capabilities{CONNTRACK_MATCH};
+    fatal_error "Shorewall $ENV{VERSION} requires Conntrack Match Support" 
+	unless $capabilities{CONNTRACK_MATCH};
+    fatal_error "Shorewall $ENV{VERSION} requires Extended Multi-port Match Support"
+	unless $capabilities{XMULTIPORT};
+    fatal_error "Shorewall $ENV{VERSION} requires Address Type Match Support"
+	unless $capabilities{ADDRTYPE};
+    fatal_error 'BRIDGING=Yes requires Physdev Match support in your Kernel and iptables'
+	if $config{BRIDGING} && ! $capabilities{PHYSDEV_MATCH};
+    fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables'
+	if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};
+    fatal_error 'RFC1918_STRICT=Yes requires Connection Tracking match'
+	if $config{RFC1918_STRICT} && ! $capabilities{CONNTRACK_MATCH};
 
     #
     # Process the zones file.
     #
-    progress_message2 "Determining Zones...";                    determine_zones;
+    progress_message2 "Determining Zones...";                    
+    determine_zones;
     #
     # Process the interfaces file.
     #
-    progress_message2 "Validating interfaces file...";           validate_interfaces_file;             dump_interface_info if $ENV{DEBUG};
+    progress_message2 "Validating interfaces file...";           
+    validate_interfaces_file;             
+    dump_interface_info                if $ENV{DEBUG};
     #
     # Process the hosts file.
     #
-    progress_message2 "Validating hosts file...";                validate_hosts_file;
+    progress_message2 "Validating hosts file...";                
+    validate_hosts_file;
 
     if ( $ENV{DEBUG} ) {
 	dump_zone_info;
     } elsif ( $ENV{VERBOSE} > 1 ) {
-	progress_message "Determining Hosts in Zones...";        zone_report;
+	progress_message "Determining Hosts in Zones...";        
+	zone_report;
     }
     #
     # Do action pre-processing.
     #
-    progress_message2 "Preprocessing Action Files...";           process_actions1;
+    progress_message2 "Preprocessing Action Files...";           
+    process_actions1;
     #
     # Process the Policy File.
     #
-    progress_message2 "Validating Policy file...";               validate_policy;
+    progress_message2 "Validating Policy file...";               
+    validate_policy;
+    #
+    # Start Second Part of script
+    #
+    generate_script_2;
     #
     # Do all of the zone-independent stuff
     #
-    progress_message2 "Setting up Common Rules...";              add_common_rules;
+    progress_message2 "Setting up Common Rules...";              
+    add_common_rules;
+    #
+    # [Re-]establish Routing
+    # 
+    if ( -s "$ENV{TMP_DIR}/providers" ) {
+	setup_providers;
+	setup_route_marking if $routemarked_interfaces;
+    } else {
+	emit "\nundo_routing";
+	emit 'restore_default_route';
+    }
+    #
+    # Traffic Shaping
+    #
+    setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
     #
     # Setup Masquerading/SNAT
     #
-    progress_message2 "$doing Masq file...";                     setup_masq;
+    progress_message2 "$doing Masq file...";                     
+    setup_masq;
     #
     # MACLIST Filtration
     #
-    progress_message2 "Setting up MAC Filtration -- Phase 1..."; setup_mac_lists 1;
+    progress_message2 "Setting up MAC Filtration -- Phase 1..."; 
+    setup_mac_lists 1;
     #
     # Process the rules file.
     #
-    progress_message2 "$doing Rules...";                         process_rules;
+    progress_message2 "$doing Rules...";                         
+    process_rules;
     #
     # Add Tunnel rules.
     #
-    progress_message2 "Adding Tunnels...";                       setup_tunnels;
+    progress_message2 "Adding Tunnels...";                       
+    setup_tunnels;
     #
     # Post-rules action processing.
     #
@@ -6181,49 +6225,40 @@ sub compile_firewall( $ ) {
     #
     # MACLIST Filtration again
     #
-    progress_message2 "Setting up MAC Filtration -- Phase 2..."; setup_mac_lists 2;
+    progress_message2 "Setting up MAC Filtration -- Phase 2..."; 
+    setup_mac_lists 2;
     #
     # Apply Policies
     #
-    progress_message2 'Applying Policies...';                    apply_policy_rules;                    dump_action_table if $ENV{DEBUG};
+    progress_message2 'Applying Policies...';                    
+    apply_policy_rules;                    
+    dump_action_table         if $ENV{DEBUG};
     #
     # Setup Nat
     #
-    progress_message2 "$doing one-to-one NAT...";                setup_nat;
+    progress_message2 "$doing one-to-one NAT...";                
+    setup_nat;
     #
     # TCRules
     #
-    progress_message2 "Processing TC Rules...";                  process_tcrules;
+    progress_message2 "Processing TC Rules...";                  
+    process_tcrules;
     #
     # Accounting.
     #
-    progress_message2 "Setting UP Accounting...";                setup_accounting;
+    progress_message2 "Setting UP Accounting...";                
+    setup_accounting;
     #
     # Do the BIG UGLY...
     #
-    if ( $command eq 'check' ) {
-	if ( -s "$ENV{TMP_DIR}/providers" ) {
-	    progress_message2 'Checking Routing...';
-	    setup_providers;
-	    setup_route_marking if $routemarked_interfaces;
-	}
-    } else {
-	progress_message2 "Generating Rule Matrix...";               generate_matrix;                       dump_chain_table if $ENV{DEBUG};
+    unless ( $command eq 'check' ) {
 	#
 	# Finish the script.
 	#
-	progress_message2 "Compiling Routing and Traffic Shaping";
-	generate_script_2;
-	progress_message2 "Creating iptables-restore input...";
-	create_netfilter_load;	
-	emit "#\n# Start/Restart the Firewall\n#";
-	emit 'define_firewall() {';
-	emit '   setup_routing_and_traffic_shaping;';
-	emit '   setup_netfilter';
-	emit '   [ $COMMAND = restore ] || restore_dynamic_rules';
-	emit "}\n";
-	
-	copy find_file 'prog.footer';	
+	progress_message2 'Generating Rule Matrix...';           
+	generate_matrix;                       
+	dump_chain_table               if $ENV{DEBUG};
+	generate_script_3;
 	$file = "$dir/$file";
 	rename $tempfile, $file;
 	chmod 0700, $file;
@@ -6231,7 +6266,7 @@ sub compile_firewall( $ ) {
 }
 
 #
-#                                               E x e c u t i o n   S t a r t s   H e r e
+#                        E x e c u t i o n   S t a r t s   H e r e
 #
 
 $ENV{VERBOSE} = 2 if $ENV{DEBUG};

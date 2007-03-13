@@ -173,9 +173,10 @@ my %capdesc = ( NAT_ENABLED     => 'NAT',
 
 my ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
-my $line = '';     # Current config file line
-my $object = 0;    # Object file Handle Reference
-my $tempfile = ''; # Temporary object file name
+my $line = '';          # Current config file line
+my $object = 0;         # Object file Handle Reference
+my $lastlineblank = 0;  # Avoid extra blank lines in the output
+my $tempfile = '';      # Temporary object file name
 
 
 #
@@ -473,14 +474,23 @@ sub pop_indent() {
 }
 
 #
-# Write the argument to the object file with the current indentation.
+# Write the argument to the object file (if any) with the current indentation.
+# 
+# Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit ( $ ) {
     if ( $object ) {
 	my $line = $_[0];
-	$line =~ s/^/$indent/gm if $indent && $line;
-	1 while $line =~ s/^        /\t/m;
-	print $object "$line\n";
+
+	unless ( $line =~ /^\s+$/ ) {
+	    $line =~ s/^/$indent/gm if $indent && $line;
+	    1 while $line =~ s/^        /\t/m;
+	    print $object "$line\n";
+	    $lastlineblank = 0;
+	} else {
+	    print $object '' unless $lastlineblank;
+	    $lastlineblank = 1;
+	}
     }
 }
 
@@ -5862,10 +5872,9 @@ sub setup_providers() {
 }
 
 sub setup_route_marking() {
-    my $mask    = $config{HIGH_ROUTE_MARKS} ? 0xFF : 0xFF;
+    my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFFFF' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
     my $preroutrulenum = 1;
-    
     
     insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     insert_rule $mangle_table->{OUTPUT} , 1, " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
@@ -5873,11 +5882,14 @@ sub setup_route_marking() {
     my $chainref = new_chain 'mangle', 'routemark';
 
     while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
-	insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+	insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-i $interface -m mark --mark 0/$mask -j routemark";
 	add_rule $chainref, " -i $interface -j MARK $mark_op $mark";
     }
 
     add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
+}
+
+sub setup_traffic_shaping() {
 }
 
 sub generate_object () {
@@ -5983,10 +5995,6 @@ sub generate_object () {
 	
     copy find_file 'prog.functions';
     
-    progress_message2 "Creating iptables-restore input...";
-
-    create_iptables_restore_file;
-
     emit '#';
     emit '# Start/Restart/Reload the firewall';
     emit '#';
@@ -6057,11 +6065,17 @@ sub generate_object () {
     emit "restore_iptables\n";
 
     emit "restore_dynamic_rules\n";
+
+    setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
     
     $indent = '';
 
-    emit '}';
+    emit "}\n";;
 	
+    progress_message2 "Creating iptables-restore input...";
+
+    create_iptables_restore_file;
+
     copy find_file 'prog.footer';	
 }
 

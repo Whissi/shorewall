@@ -424,19 +424,22 @@ sub progress_message {
     }
 }
 
+sub timestamp() {
+    my ($sec, $min, $hr) = ( localtime ) [0,1,2];
+    printf '%02d:%02d:%02d ', $hr, $min, $sec;
+}
+
 sub progress_message2 {
     if ( $ENV{VERBOSE} > 0 ) {
-	my $ts = '';
-	$ts = ( localtime ) . ' ' if $ENV{TIMESTAMP};
-	print "${ts}@_\n";
+	timestamp if $ENV{TIMESTAMP};
+	print "@_\n";
     }
 }
 
 sub progress_message3 {
     if ( $ENV{VERBOSE} >= 0 ) {
-	my $ts = '';
-	$ts = ( localtime ) . ' ' if $ENV{TIMESTAMP};
-	print "${ts}@_\n";
+	timestamp if $ENV{TIMESTAMP};
+	print "@_\n";
     }
 }
 
@@ -5188,8 +5191,8 @@ sub generate_matrix() {
     }
 }
 
-sub create_iptables_restore_file() {
-    emit 'restore_iptables()';
+sub create_netfilter_load() {
+    emit 'setup_netfilter()';
     emit '{';
     emit '    iptables-restore << __EOF__';
 
@@ -5763,7 +5766,7 @@ sub add_an_rtrule( $$$$ ) {
     emit "qt ip rule del $source $dest $priority";
     emit "run_ip rule add $source $dest $priority table $provider";
     emit "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing";
-    progress_message "Routing rule \"$line\" $done"
+    progress_message "   Routing rule \"$line\" $done"
 }
 
 sub setup_providers() {
@@ -5804,7 +5807,7 @@ sub setup_providers() {
 
 	$providers++;
 
-	progress_message "Provider \"$line\" $done";
+	progress_message "   Provider \"$line\" $done";
 
     }
 
@@ -5892,7 +5895,7 @@ sub setup_route_marking() {
 sub setup_traffic_shaping() {
 }
 
-sub generate_object () {
+sub generate_script_1 {
     copy find_file 'prog.header';
 
     my $date = localtime;
@@ -5904,9 +5907,9 @@ sub generate_object () {
 	emit 'CONFDIR=/etc/shorewall-lite';
 	emit 'VARDIR=/var/lib/shorewall-lite';
 	emit 'PRODUCT="Shorewall Lite"';
-
+	
 	copy "$env{SHAREDIR}/lib.base";
-	    
+	
 	emit '################################################################################';
 	emit '# End of /usr/share/shorewall/lib.base';
 	emit '################################################################################';
@@ -5917,9 +5920,9 @@ sub generate_object () {
 	emit 'PRODUCT=\'Shorewall\'';
 	emit '. /usr/share/shoreall-lite/lib.base';
     }
-
+	
     emit '';
-
+    
     for my $exit qw/init start tcclear started stop stopped/ {
 	emit "run_${exit}_exit() {";
 	$indent = '    ';
@@ -5927,12 +5930,12 @@ sub generate_object () {
 	$indent = '';
 	emit "}\n";
     }
-
+    
     emit 'initialize()';
     emit '{';
 
-    $indent = '    ';
-
+    push_indent;
+    
     if ( $ENV{EXPORT} ) {
 	emit '#';
 	emit '# These variables are required by the library functions called in this script';
@@ -5958,12 +5961,12 @@ sub generate_object () {
 	my $value = $config{$option} || '';
 	emit "$option=\"$value\"";
     }
-
+    
     for my $option ( @propagateenv ) {
 	my $value = $env{$option} || '';
 	emit "$option=\"$value\"";
     }
-
+	
     emit '[ -n "${COMMAND:=restart}" ]';
     emit '[ -n "${VERBOSE:=0}" ]';
     emit '[ -n "${RESTOREFILE:=$RESTOREFILE}" ]';
@@ -5971,7 +5974,7 @@ sub generate_object () {
     emit "VERSION=\"$ENV{VERSION}\"";
     emit "PATH=\"$config{PATH}\"";
     emit 'TERMINATOR=fatal_error';
-
+    
     if ( $config{IPTABLES} ) {
 	emit "IPTABLES=\"$config{IPTABLES}\"\n";
 	emit "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\"";
@@ -5989,16 +5992,19 @@ sub generate_object () {
     emit '#';
     emit '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}';
     
-    $indent = '';
+    pop_indent;
     
     emit "}\n";
-	
+    
     copy find_file 'prog.functions';
     
+}
+
+sub generate_script_2 () {
     emit '#';
-    emit '# Start/Restart/Reload the firewall';
+    emit '# Setup Routing and Traffic Shaping';
     emit '#';
-    emit 'define_firewall() {';
+    emit 'setup_routing_and_traffic_shaping() {';
     
     $indent = '    ';
     
@@ -6062,21 +6068,12 @@ sub generate_object () {
 	emit 'restore_default_route';
     }
 
-    emit "restore_iptables\n";
-
-    emit "restore_dynamic_rules\n";
-
     setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
     
     $indent = '';
 
     emit "}\n";;
-	
-    progress_message2 "Creating iptables-restore input...";
 
-    create_iptables_restore_file;
-
-    copy find_file 'prog.footer';	
 }
 
 sub report_capability( $ ) {
@@ -6105,6 +6102,14 @@ sub compile_firewall( $ ) {
 	};
 
 	fatal_error "$@" if $@;
+    
+	eval {
+	    ( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
+	};
+
+	fatal_error "$@" if $@;
+
+	generate_script_1;
     }
 
     if ( $ENV{VERBOSE} > 1 ) {
@@ -6196,21 +6201,29 @@ sub compile_firewall( $ ) {
     #
     # Do the BIG UGLY...
     #
-    progress_message2 "Generating Rule Matrix...";               generate_matrix;                       dump_chain_table if $ENV{DEBUG};
-    #
-    # Create the script.
-    #
     if ( $command eq 'check' ) {
-	setup_providers if -s "$ENV{TMP_DIR}/providers";
+	if ( -s "$ENV{TMP_DIR}/providers" ) {
+	    progress_message2 'Checking Routing...';
+	    setup_providers;
+	    setup_route_marking if $routemarked_interfaces;
+	}
     } else {
-	eval {
-	    ( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
-	};
-
-	fatal_error "$@" if $@;
-
-	generate_object;
-
+	progress_message2 "Generating Rule Matrix...";               generate_matrix;                       dump_chain_table if $ENV{DEBUG};
+	#
+	# Finish the script.
+	#
+	progress_message2 "Compiling Routing and Traffic Shaping";
+	generate_script_2;
+	progress_message2 "Creating iptables-restore input...";
+	create_netfilter_load;	
+	emit "#\n# Start/Restart the Firewall\n#";
+	emit 'define_firewall() {';
+	emit '   setup_routing_and_traffic_shaping;';
+	emit '   setup_netfilter';
+	emit '   [ $COMMAND = restore ] || restore_dynamic_rules';
+	emit "}\n";
+	
+	copy find_file 'prog.footer';	
 	$file = "$dir/$file";
 	rename $tempfile, $file;
 	chmod 0700, $file;

@@ -1922,9 +1922,9 @@ sub mac_match( $ ) {
 }
 
 #
-# Convert mark value to decimal number
+# Convert value to decimal number
 #
-sub mark_value ( $ ) {
+sub numeric_value ( $ ) {
     my $mark = $_[0];
     $mark =~ /^0x/ ? hex $mark : $mark =~ /^0/ ? oct $mark : $mark;
 }
@@ -1937,12 +1937,12 @@ sub verify_mark( $ ) {
     my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFFFF : 0xFF;
 
     fatal_error "Invalid Mark or Mask value: $mark" 
-	unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ && mark_value( $mark ) <= $limit;
+	unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ && numeric_value( $mark ) <= $limit;
 }
 
 sub verify_small_mark( $ ) {
     verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if mark_value( $mark ) > 0xFF;
+    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > 0xFF;
 }
 
 sub validate_mark( $ ) {
@@ -3341,7 +3341,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    validate_mark $mark;
 
 	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes' 
-		if $cmd || $chain eq 'tcpre' || mark_value( $cmd ) <= 0xFF || $config{HIGH_ROUTE_MARKS};
+		if $cmd || $chain eq 'tcpre' || numeric_value( $cmd ) <= 0xFF || $config{HIGH_ROUTE_MARKS};
 	}
 
     expand_rule 
@@ -5486,12 +5486,12 @@ use constant { LOCAL_NUMBER   => 255,
 my $balance             = 0;
 my $first_default_route = 1;
 
-my %builtinproviders = ( 'local' => LOCAL_NUMBER ,
-			 main    => MAIN_NUMBER ,
-			 default => DEFAULT_NUMBER ,
-			 unspec  => UNSPEC_NUMBER );
 
-my %providers;
+my %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
+		   main    => { number => MAIN_NUMBER    , mark => 0 } ,
+		   default => { number => DEFAULT_NUMBER , mark => 0 } ,
+		   unspec  => { number => UNSPEC_NUMBER  , mark => 0 } );
+
 my @providers;
 my %routemarked_interfaces;
 my $routemarked_interfaces = 0;
@@ -5513,16 +5513,20 @@ sub copy_table( $$ ) {
 sub copy_and_edit_table( $$$ ) {
     my ( $duplicate, $number, $copy ) = @_;
 
+    my $match = $copy;
+
+    $match =~ s/ /\|/g;
+
     emit "ip route show table $duplicate | while read net route; do";
     emit '    case $net in';
     emit '        default|nexthop)';
     emit '            ;;';
     emit '        *)';
     emit "            run_ip route add table $number \$net \$route";
-    emit '            case \$(find_device \$route) in';
-    emit "            `echo $copy\) | sed 's/ /|/g'`";
-    emit "                run_ip route add table $number \$net \$route";
-    emit '                ;;';
+    emit '            case $(find_device $route) in';
+    emit "                $match)";
+    emit "                    run_ip route add table $number \$net \$route";
+    emit '                    ;;';
     emit '            esac';
     emit '            ;;';
     emit '    esac';
@@ -5562,9 +5566,10 @@ sub add_a_provider( $$$$$$$$ ) {
 
     fatal_error 'Providers require mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
 
-    fatal_error "Duplicate provider ( $table )" if $providers{$table} || $builtinproviders{$table};
+    fatal_error "Duplicate provider ( $table )" if $providers{$table};
 
-    for my $num ( ( map $providers{@_}{number} ,  keys %providers  ) , values %builtinproviders ) {
+    for my $provider ( keys %providers  ) {
+	my $num = $providers{$provider}{number};
 	fatal_error "Duplicate provider number ( $number )" if $num == $number;
     }
 
@@ -5587,10 +5592,10 @@ sub add_a_provider( $$$$$$$$ ) {
 		$copy = $interface;
 	    } else {
 		my @c = ( split /,/, $copy );
-		$copy = "$copy @c";
+		$copy = "@c";
 	    }
 
-	    copy_and_edit_table( $duplicate, $copy, $number );
+	    copy_and_edit_table( $duplicate, $number ,$copy );
 	} else {
 	    copy_table ( $duplicate, $number );
 	}
@@ -5623,7 +5628,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $mark ne '-' ) {
 
-	$val = mark_value $mark;
+	$val = numeric_value $mark;
 
 	verify_mark $mark;
 
@@ -5633,7 +5638,8 @@ sub add_a_provider( $$$$$$$$ ) {
 	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
 	}
 
-	for my $num ( map $providers{@_}{mark} ,  keys %providers  ) {
+	for my $provider ( keys %providers  ) {
+	    my $num = $providers{$provider}{mark};
 	    fatal_error "Duplicate mark value ( $mark )" if $num == $val;
 	}
 
@@ -5702,12 +5708,62 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "fi\n";	
 }
 
+sub add_an_rtrule( $$$$ ) {
+    my ( $source, $dest, $provider, $priority ) = @_;
+
+    unless ( $providers{$provider} ) {	
+	my $found = 0;
+
+	if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
+	    my $provider_number = numeric_value $provider;
+
+	    for my $provider ( keys %providers ) {
+		if ( $providers{$provider}{number} == $provider_number ) {
+		    $found = 1;
+		    last;
+		}
+	    }
+	}
+
+	fatal_error "Unknown provider $provider in route rule \"$line\"" unless $found;
+    }
+
+    $source = '-' unless $source;
+    $dest   = '-' unless $dest;
+
+    fatal_error "You must specify either the source or destination in an rt rule: \"$line\"" if $source eq '-' && $dest eq '-';
+
+    $dest = $dest eq '-' ? '' : "to $dest";
+
+    if ( $source eq '-' ) {
+	$source = '';
+    } elsif ( $source =~ /:/ ) { 
+	( my $interface, $source ) = split /:/, $source;
+	$source = "iif $interface from $source";
+    } elsif ( $source =~ /\..*\..*/ ) {
+	$source = "from $source";
+    } else {
+	$source = "iif $source";
+    }
+		
+    fatal_error "Invalid priority ($priority) in rule \"$line\"" unless $priority && $priority =~ /^\d{1,5}$/;
+
+    $priority = "priority $priority";
+	
+    emit "qt ip rule del $source $dest $priority";
+    emit "run_ip rule add $source $dest $priority table $provider";
+    emit "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing";
+    progress_message "Routing rule \"$line\" $done"
+}
+
 sub setup_providers() {
     my $fn = find_file 'providers';
-
     my $providers = 0;
 
     progress_message2 "$doing $fn ...";
+
+    emit "\nif [ -z \"\$NOROUTES\" ]; then";
+    push_indent;
 
     emit "#\n# Undo any changes made since the last time that we [re]started -- this will not restore the default route\n#";
     emit 'undo_routing';
@@ -5776,10 +5832,54 @@ sub setup_providers() {
 	}
 
 	emit '';
+
+	if ( -s "$ENV{TMP_DIR}/route_rules" ) {
+	    my $fn = find_file 'route_rules';
+	    progress_message2 "$doing $fn...";
+
+	    emit '';
+
+	    open RR, "$ENV{TMP_DIR}/route_rules" or fatal_error "Unable to open stripped route rules file: $!";
+
+	    while ( $line = <RR> ) {
+		chomp $line;
+		$line =~ s/\s+/ /g;
+		
+		my ( $source, $dest, $provider, $priority, $extra ) = split /\s+/, $line;
+
+		fatal_error "Invalid providers entry: $line" if $extra;
+		
+		add_an_rtrule( $source, $dest, $provider , $priority );
+	    }
+
+	    close RR;
+	}
     }
+
+    emit '';
+    emit 'run_ip route flush cache';
+    pop_indent;
+    emit "fi\n"
+
 }
 
 sub setup_route_marking() {
+    my $mask    = $config{HIGH_ROUTE_MARKS} ? 0xFF : 0xFF;
+    my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
+    my $preroutrulenum = 1;
+    
+    
+    insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    insert_rule $mangle_table->{OUTPUT} , 1, " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    
+    my $chainref = new_chain 'mangle', 'routemark';
+
+    while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
+	insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+	add_rule $chainref, " -i $interface -j MARK $mark_op $mark";
+    }
+
+    add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
 }
 
 sub generate_object () {

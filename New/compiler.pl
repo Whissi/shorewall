@@ -1717,7 +1717,7 @@ sub add_common_rules() {
     if ( @$list ) {
 	my $disposition;
 
-	progress_message2 '   $doing TCP Flags checking...';
+	progress_message2 "   $doing TCP Flags checking...";
 	
 	$chainref = new_standard_chain 'tcpflags';
 
@@ -1762,7 +1762,7 @@ sub add_common_rules() {
     if ( $config{DYNAMIC_ZONES} ) {
 	for $interface ( @interfaces) {
 	    for $chain ( @{dynamic_chains $interface} ) {
-		new_standard_chain '$chain';
+		new_standard_chain $chain;
 	    }
 	}
 	

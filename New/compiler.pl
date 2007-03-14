@@ -9,6 +9,7 @@ use Shorewall::Config;
 use Shorewall::Chains;
 use Shorewall::Zones;
 use Shorewall::Interfaces;
+use Shorewall::Hosts;
 
 #
 # IPSEC Option types
@@ -4624,6 +4625,7 @@ sub compile_firewall( $ ) {
 	generate_matrix;                       
 	dump_chain_table               if $ENV{DEBUG};
 	generate_script_3;
+	
 	$file = "$dir/$file";
 	rename $tempfile, $file;
 	chmod 0700, $file;

@@ -15,11 +15,19 @@ our @EXPORT = qw( add_rule
 		  dynamic_fwd
 		  dynamic_in
 		  dynamic_out
-		  cynamic_chains
+		  dynamic_chains
 		  dnat_chain
 		  snat_chain
 		  ecn_chain
 		  first_chains
+		  new_chain
+		  ensure_chain
+		  ensure_filter_chain
+		  new_standard_chain
+		  new_builtin_chain
+		  initialize_chain_table
+		  dump_chain_table
+		  finish_section
 		  
 		  @policy_chains 
 		  %chain_table 
@@ -222,6 +230,193 @@ sub first_chains( $ ) #$1 = interface
     my $c = chain_base $_[0];
 
     [ $c . '_fwd', $c . '_in' ];
+}
+
+#
+# Create a new chain and return a reference to it.
+#
+sub new_chain($$)
+{
+    my ($table, $chain) = @_;
+    my %ch;
+    my @rules;
+    
+    $ch{name} = $chain;
+    $ch{log} = 1 if $env{LOGRULENUMBERS};
+    $ch{rules} = \@rules;
+    $ch{table} = $table;
+    $chain_table{$table}{$chain} = \%ch;
+    \%ch;
+}
+
+#
+# Create a chain if it doesn't exist already
+#
+sub ensure_chain($$)
+{
+    my ($table, $chain) = @_;
+
+    my $ref =  $chain_table{$table}{$chain};
+    
+    return $ref if $ref;
+
+    new_chain $table, $chain;
+}
+
+sub finish_chain_section( $$ );
+
+#
+# Create a filter chain if necessary. Optionally populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
+#
+sub ensure_filter_chain( $$ )
+{
+    my ($chain, $populate) = @_;
+
+    my $chainref = $filter_table->{$chain};
+
+    $chainref = new_chain 'filter' , $chain unless $chainref;
+
+    if ( $populate and ! $chainref->{referenced} ) {
+	if ( $section eq 'NEW' or $section eq 'DONE' ) {
+	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
+	} elsif ( $section eq 'ESTABLISHED' ) {
+	    finish_chain_section $chainref , 'ESTABLISHED';
+	}
+    }
+
+    $chainref->{referenced} = 1;
+	    
+    $chainref;
+}
+
+#
+# Add a builtin chain
+#
+sub new_builtin_chain($$$)
+{
+    my $chainref = new_chain $_[0],$_[1];
+    $chainref->{referenced} = 1;
+    $chainref->{policy}     = $_[2];
+    $chainref->{builtin}    = 1;
+}
+
+sub new_standard_chain($) {
+    my $chainref = new_chain 'filter' ,$_[0];
+    $chainref->{referenced} = 1;
+    $chainref;
+}    
+
+#
+# Add all builtin chains to the chain table
+#
+#
+sub initialize_chain_table()
+{
+    for my $chain qw/OUTPUT PREROUTING/ {
+	new_builtin_chain 'raw', $chain, 'ACCEPT';
+    }
+
+    for my $chain qw/INPUT OUTPUT FORWARD/ {
+	new_builtin_chain 'filter', $chain, 'DROP';
+    }
+
+    for my $chain qw/PREROUTING POSTROUTING OUTPUT/ {
+	new_builtin_chain 'nat', $chain, 'ACCEPT';
+    }
+
+    for my $chain qw/PREROUTING INPUT FORWARD OUTPUT POSTROUTING/ {
+	new_builtin_chain 'mangle', $chain, 'ACCEPT';
+    }
+	
+    if ( $capabilities{MANGLE_FORWARD} ) {
+	for my $chain qw/ FORWARD POSTROUTING / {
+	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
+	}
+    }
+}
+
+#
+# Dump the contents of the Chain Table
+#
+sub dump_chain_table()
+{
+    print "\n";
+
+    for my $table qw/filter nat mangle/ {
+	print "Table: $table\n";
+
+	for my $chain ( sort keys %{$chain_table{$table}} ) {
+	    my $chainref = $chain_table{$table}{$chain};
+	    print "   Chain $chain:\n";
+	    
+	    if ( $chainref->{is_policy} ) {
+		print "      This is a policy chain\n";
+		my $val = $chainref->{is_optional} ? 'Yes' : 'No';
+		print "         Optional:  $val\n";
+		print "         Log Level: $chainref->{loglevel}\n" if $chainref->{loglevel};
+		print "         Syn Parms: $chainref->{synparams}\n" if $chainref->{synparams};
+		print "         Default:   $chainref->{default}\n" if $chainref->{default};
+	    }
+		
+	    print "      Policy chain: $chainref->{policychain}{name}\n" if $chainref->{policychain} ;
+	    print "      Policy: $chainref->{policy}\n"                  if $chainref->{policy};
+	    print "      Referenced\n" if $chainref->{referenced};
+
+	    if ( @{$chainref->{rules}} ) {
+		print "      Rules:\n";
+		for my $rule (  @{$chainref->{rules}} ) {
+		    print "         $rule\n";
+		}
+	    }   
+	}
+    }
+}
+
+#
+# Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain 
+#
+sub finish_chain_section ($$) {
+    my ($chainref, $state ) = @_;
+    my $chain = $chainref->{name};
+
+    add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
+    
+    if ($sections{RELATED} ) {
+	if ( $chainref->{is_policy} ) {
+	    if ( $chainref->{synparams} ) {
+		my $synchainref = ensure_chain 'filter', "\@$chain";
+		if ( $section eq 'DONE' ) {
+		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE)$/ ) {
+			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
+		    } 
+		} else {
+		    add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
+		}
+	    }
+	} else {
+	    my $policychainref = $chainref->{policychain};
+	    if ( $policychainref->{synparams} ) {
+		my $synchainref = ensure_chain 'filter', "\@$policychainref->{name}";
+		add_rule $synchainref, "-p tcp --syn -j $synchainref->{name}";
+	    }
+	}
+    }
+}		    
+
+#
+# Do section-end processing
+# 
+sub finish_section ( $ ) {
+    my $sections = $_[0];
+
+    for my $zone ( @zones ) {
+	for my $zone1 ( @zones ) {
+	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
+	    if ( $chainref->{referenced} ) {
+		finish_chain_section $chainref, $sections;
+	    }
+	}
+    }
 }
 
 1;

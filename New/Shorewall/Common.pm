@@ -1,9 +1,11 @@
 package Shorewall::Common;
 require Exporter;
+use File::Temp qw/ tempfile tempdir /;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(warning_message 
 		 fatal_error
+		 create_temp_object
 		 emit 
 		 emit_unindented
 		 save_progress_message
@@ -15,9 +17,9 @@ our @EXPORT = qw(warning_message
 		 pop_indent
 		 copy
 		 copy1
-		 append_file
 
-		 $line $object $lastlineblank);
+		 $line
+		 $lastlineblank);
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -43,6 +45,18 @@ sub fatal_error
     close $object, if $object;
     system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
     die;
+}
+
+sub create_temp_object() {
+    my $tempfile;
+
+    eval {
+	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
+    };
+
+    fatal_error "$@" if $@;
+
+    return $tempfile;
 }
 
 #
@@ -127,49 +141,42 @@ sub save_progress_message_short( $ ) {
 # Functions for copying files into the object
 #
 sub copy( $ ) {
-    my $file = $_[0];
+    if ( $object ) {
+	my $file = $_[0];
     
-    open IF , $file or fatal_error "Unable to open $file: $!";
+	open IF , $file or fatal_error "Unable to open $file: $!";
 	    
-    while ( my $line = <IF> ) {
-	$line =~ s/^/$indent/ if $indent;
-	print $object $line;
+	while ( my $line = <IF> ) {
+	    $line =~ s/^/$indent/ if $indent;
+	    print $object $line;
+	}
+	
+	close IF;
     }
-
-    close IF;
 }
 
 sub copy1( $ ) {
-    my $file = $_[0];
+    if ( $object ) {
+	my $file = $_[0];
     
-    open IF , $file or fatal_error "Unable to open $file: $!";
+	open IF , $file or fatal_error "Unable to open $file: $!";
 	    
-    my $do_indent = 1;
+	my $do_indent = 1;
 
-    while ( my $line = <IF> ) {
-	if ( $line =~ /^\s+$/ ) {
-	    print $object "\n";
-	    $do_indent = 1;
-	    next;
+	while ( my $line = <IF> ) {
+	    if ( $line =~ /^\s+$/ ) {
+		print $object "\n";
+		$do_indent = 1;
+		next;
+	    }
+	    
+	    $line =~ s/^/$indent/ if $indent && $do_indent;
+	    print $object $line;
+	    $do_indent = ! ( $line =~ /\\$/ );
 	}
-
-	$line =~ s/^/$indent/ if $indent && $do_indent;
-	print $object $line;
-	$do_indent = ! ( $line =~ /\\$/ );
+	
+	close IF;
     }
-
-    close IF;
-}
-
-sub append_file( $ ) {
-    my $user_exit = find_file $_[0];
-
-    unless ( $user_exit =~ /$env{SHAREDIR}/ ) {
-	if ( -f $user_exit ) {
-	    save_progress_message "Processing $user_exit ...";
-	    copy1 $user_exit;
-	}
-    }   
 }
 
 1;

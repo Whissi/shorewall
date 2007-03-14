@@ -5,14 +5,14 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file do_initialize report_capabilities propagateconfig %config %env %capabilities );
+our @EXPORT = qw(find_file do_initialize report_capabilities propagateconfig append_file %config %env %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
 #
 # From shorewall.conf file
 #
-my %config =     
+our %config =     
               ( STARTUP_ENABLED => undef,
 		VERBOSITY => undef,
 		#
@@ -102,7 +102,7 @@ my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
 # Misc Globals
 #
-my %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
+our %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
 	       CONFDIR =>  '/etc/shorewall',
 	       LOGPARMS => '',
 	       VERSION =>  '3.9.0',
@@ -111,7 +111,7 @@ my %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
 #
 # From parsing the capabilities file
 #
-my %capabilities = 
+our %capabilities = 
              ( NAT_ENABLED => undef,
 	       MANGLE_ENABLED => undef,
 	       MULTIPORT => undef,
@@ -491,4 +491,15 @@ sub propagateconfig() {
     }
 }
 
-1;
+sub append_file( $ ) {
+    my $user_exit = find_file $_[0];
+
+    unless ( $user_exit =~ /$env{SHAREDIR}/ ) {
+	if ( -f $user_exit ) {
+	    save_progress_message "Processing $user_exit ...";
+	    copy1 $user_exit;
+	}
+    }   
+}
+
+;

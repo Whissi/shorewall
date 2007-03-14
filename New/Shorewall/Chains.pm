@@ -416,7 +416,7 @@ sub finish_section ( $ ) {
 
     for my $zone ( @zones ) {
 	for my $zone1 ( @zones ) {
-	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
+	    my $chainref = $chain_table{'filter'}{"$zone}2${zone1}"};
 	    if ( $chainref->{referenced} ) {
 		finish_chain_section $chainref, $sections;
 	    }

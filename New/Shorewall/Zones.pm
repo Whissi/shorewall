@@ -4,9 +4,32 @@ use Shorewall::Common;
 use Shorewall::Config;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( determine_zones add_group_to_zone dump_zone_info zone_report @zones %zones $firewall_zone );
+our @EXPORT = qw( NOTHING
+		  NUMERIC
+		  NETWORK
+		  IPSECPROTO
+		  IPSECMODE
+	     
+		  determine_zones
+		  add_group_to_zone
+		  dump_zone_info
+		  zone_report
+
+		  @zones 
+		  %zones
+		  $firewall_zone );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
+
+#
+# IPSEC Option types
+#
+use constant { NOTHING    => 'NOTHING',
+	       NUMERIC    => '0x[\da-fA-F]+|\d+',
+	       NETWORK    => '\d+.\d+.\d+.\d+(\/\d+)?',
+	       IPSECPROTO => 'ah|esp|ipcomp',
+	       IPSECMODE  => 'tunnel|transport'
+	       };
 
 #
 # Zone Table. 

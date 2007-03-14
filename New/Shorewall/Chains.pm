@@ -33,7 +33,8 @@ our @EXPORT = qw( add_rule
 		  %chain_table 
 		  $nat_table 
 		  $mangle_table 
-		  $filter_table );
+		  $filter_table
+		  $section );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -63,15 +64,19 @@ our @VERSION = 1.00;
 #
 #       'loglevel', 'synparams' and 'default' only apply to policy chains. 
 #
-my @policy_chains;
-my %chain_table = ( raw    => {} , 
-		    mangle => {},
-		    nat    => {},
-		    filter => {} );
+our @policy_chains;
+our %chain_table = ( raw    => {} , 
+		     mangle => {},
+		     nat    => {},
+		     filter => {} );
 
-my $nat_table    = $chain_table{nat};
-my $mangle_table = $chain_table{mangle};
-my $filter_table = $chain_table{filter};
+our $nat_table    = $chain_table{nat};
+our $mangle_table = $chain_table{mangle};
+our $filter_table = $chain_table{filter};
+#
+# Current rules file section.
+#
+our $section  = 'ESTABLISHED';
 
 #
 # Add a rule to a chain. Arguments are:

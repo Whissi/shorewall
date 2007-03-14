@@ -2,6 +2,7 @@ package Shorewall::Interfaces;
 require Exporter;
 use Shorewall::Common;
 use Shorewall::Config;
+use Shorewall::Zones;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_interfaces_file dump_interface_info known_interface @interfaces %interfaces );
@@ -21,8 +22,8 @@ our @VERSION = 1.00;
 #                                     zone        => <zone name>
 #                 }
 #
-my @interfaces;
-my %interfaces;
+our @interfaces;
+our %interfaces;
 
 #
 # Parse the interfaces file.

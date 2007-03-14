@@ -18,12 +18,11 @@ our @EXPORT = qw(warning_message
 		 copy
 		 copy1
 
-		 $line
-		 $lastlineblank);
+		 $line);
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
-my $line = '';          # Current config file line
+our $line = '';          # Current config file line
 my $object = 0;         # Object file Handle Reference
 my $lastlineblank = 0;  # Avoid extra blank lines in the output
 my $indent        = '';

@@ -38,10 +38,6 @@ my $exclseq = 0;
 my $iprangematch = 0;
 my $ipsetmatch   = 0;
 #
-# Current rules file section.
-#
-my $section  = 'ESTABLISHED';
-#
 # These get set to 1 as sections are encountered.
 #
 my %sections = ( ESTABLISHED => 0,
@@ -4277,15 +4273,14 @@ sub setup_providers() {
 sub setup_route_marking() {
     my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFFFF' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
-    my $preroutrulenum = 1;
     
-    insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
-    insert_rule $mangle_table->{OUTPUT} , 1, " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    add_rule $mangle_table->{OUTPUT} , " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     
     my $chainref = new_chain 'mangle', 'routemark';
 
     while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
-	insert_rule $mangle_table->{PREROUTING} , $preroutrulenum++ , "-i $interface -m mark --mark 0/$mask -j routemark";
+	add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
 	add_rule $chainref, " -i $interface -j MARK $mark_op $mark";
     }
 

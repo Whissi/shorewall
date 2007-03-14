@@ -37,9 +37,9 @@ our @VERSION = 1.00;
 #
 #     $firewall_zone names the firewall zone.
 #
-my @zones; 
-my %zones;
-my $firewall_zone;
+our @zones; 
+our %zones;
+our $firewall_zone;
 
 #
 # Parse the passed option list and return a reference to a hash as follows:

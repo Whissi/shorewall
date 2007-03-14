@@ -169,8 +169,6 @@ my %capdesc = ( NAT_ENABLED     => 'NAT',
 		COMMENTS        => 'Comments',
 		ADDRTYPE        => 'Address Type Match',
 		);
-
-
 #
 # Search the CONFIG_PATH for the passed file
 #
@@ -191,6 +189,7 @@ sub find_file($)
 
     "$env{CONFDIR}/$filename";
 }
+
 sub default ( $$ ) {
     my ( $var, $val ) = @_;
 

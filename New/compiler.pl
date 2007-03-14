@@ -1802,7 +1802,7 @@ sub policy_rules( $$$$ ) {
 
     fatal_error "Null target in policy_rules()" unless $target;
 
-    add_rule $chainref , ( '-j ' . ( $target eq 'REJECT' ? 'reject' : $target ) );
+    add_rule $chainref , ( '-j ' . ( $target eq 'REJECT' ? 'reject' : $target ) ) unless $target eq 'CONTINUE';
 }
 
 sub report_syn_flood_protection() {

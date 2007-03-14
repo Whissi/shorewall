@@ -486,7 +486,7 @@ validate_policy()
 	    eval parents=\$${zone}_parents
 	    if [ -n "$parents" ]; then
 		for zone1 in $ZONES $FW; do 
-		    if $zone != $zone1; then
+		    if [ $zone != $zone1 ]; then
 			chain=${zone}2${zone1}
 			eval ${chain}_is_policy=Yes
 			eval ${chain}_is_optional=Yes
@@ -3066,6 +3066,8 @@ policy_rules() # $1 = chain to add rules to
 	case $target in
 	    REJECT)
 		run_iptables -A $1 -j reject
+		;;
+	    CONTINUE)
 		;;
 	    *)
 		run_iptables -A $1 -j $target

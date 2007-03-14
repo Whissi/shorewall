@@ -30,14 +30,38 @@ Release Highlights
 
 Problems Corrected in 3.4.1
 
-1) The "shorewall-[lite] [re]start and stop" commands reset the
-   proxy_arp flag on all interfaces on the system making it impossible
-   to control proxy arp manually with Shorewall installed. There was a
-   partial fix included in 3.4.0; unfortunately, it did not correct the
-   problem completely. Shorewall 3.4.1 includes the rest of the change 
-   necessarey to only clear proxy arp if there were entries in
-   /etc/shorewall/proxyarp the last time that Shorewall was
-   [re]started.
+1)  The "shorewall-[lite] [re]start and stop" commands reset the
+    proxy_arp flag on all interfaces on the system making it impossible
+    to control proxy arp manually with Shorewall installed. There was a
+     partial fix included in 3.4.0; unfortunately, it did not correct the
+    problem completely. Shorewall 3.4.1 includes the rest of the change 
+    necessarey to only clear proxy arp if there were entries in
+    /etc/shorewall/proxyarp the last time that Shorewall was
+    [re]started.
+
+2)  If the log-prefix in a log message exceeded 29 characters, 
+    'shorewall restart' fails with 'truncate: command not found' and a
+    possible segmentation fault in iptables.
+
+3)  Log messages specifying a log tag had two spaces appended to the
+    log prefix. This could cause mysterious "log-prefix truncated"
+    messages. 
+
+4)  When nested zones were defined in the /etc/shorewall/zones file,
+    shell error messages ( usually '<zone>: not found' ) during
+    compilation resulted.
+
+5)  Use of CONTINUE policies lead to startup errors with a message
+    such as the following:
+
+       Applying Policies...
+       iptables v1.3.7: Couldn't load target
+       `CONTINUE':/usr/local/lib/iptables/libipt_CONTINUE.so: cannot open
+       shared object file: No such file or directory
+
+       Try `iptables -h' or 'iptables --help' for more information.
+       
+          ERROR: Command "/sbin/iptables -A net2c148 -j CONTINUE" Failed 
 
 Migration Considerations:
 

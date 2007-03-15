@@ -8,7 +8,7 @@ use Shorewall::Interfaces;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_hosts_file );
+our @EXPORT = qw( validate_hosts_file find_hosts_by_option );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -85,3 +85,36 @@ sub validate_hosts_file()
 
     close HOSTS;
 }
+#
+# Returns a reference to a array of host entries. Each entry is a 
+# reference to an array containing ( interface , group type {ipsec|none} , network ); 
+#
+sub find_hosts_by_option( $ ) {
+    my $option = $_[0];
+    my @hosts;
+
+    for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
+	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
+	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
+		for my $host ( @{$arrayref} ) {
+		    if ( $host->{$option} ) {
+			for my $net ( @{$host->{hosts}} ) {
+			    push @hosts, [ $interface, $type eq 'ipsec4' ? 'ipsec' : 'none' , $net ];
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    for my $interface ( @interfaces ) {
+	my $optionsref = $interfaces{$interface}{options};
+	if ( $optionsref && $optionsref->{$option} ) {
+	    push @hosts, [ $interface, 'none', ALLIPv4 ];
+	}
+    }
+
+    \@hosts;
+}
+
+1;

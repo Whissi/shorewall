@@ -1,8 +1,6 @@
 #! /usr/bin/perl -w
 
 use strict;
-use File::Basename;
-use File::Temp qw/ tempfile tempdir /;
 use lib "$ENV{HOME}/shorewall/trunk/New";
 use Shorewall::Common;
 use Shorewall::Config;
@@ -12,8 +10,6 @@ use Shorewall::Interfaces;
 use Shorewall::Hosts;
 
 my ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
-
-my $tempfile = '';      # Temporary object file name
 
 #
 # Set to one if we find a SECTION
@@ -803,55 +799,6 @@ sub add_rule_pair( $$$$ ) {
 
     log_rule $level, $chainref, $target,  , $predicate,  if $level;
     add_rule $chainref , "${predicate}-j $target";
-}
-
-#
-# Returns reference to array of interfaces with the passed option
-#
-sub find_interfaces_by_option( $ ) {
-    my $option = $_[0];
-    my @ints = ();
-
-    for my $interface ( @interfaces ) {
-	my $optionsref = $interfaces{$interface}{options};
-	if ( $optionsref && $optionsref->{$option} ) {
-	    push @ints , $interface;
-	}
-    }
-
-    \@ints;
-}
-
-#
-# Returns a reference to a array of host entries. Each entry is a 
-# reference to an array containing ( interface , group type {ipsec|none} , network ); 
-#
-sub find_hosts_by_option( $ ) {
-    my $option = $_[0];
-    my @hosts;
-
-    for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
-	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
-	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
-		for my $host ( @{$arrayref} ) {
-		    if ( $host->{$option} ) {
-			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $type eq 'ipsec4' ? 'ipsec' : 'none' , $net ];
-			}
-		    }
-		}
-	    }
-	}
-    }
-
-    for my $interface ( @interfaces ) {
-	my $optionsref = $interfaces{$interface}{options};
-	if ( $optionsref && $optionsref->{$option} ) {
-	    push @hosts, [ $interface, 'none', ALLIPv4 ];
-	}
-    }
-
-    \@hosts;
 }
 
 sub setup_rfc1918_filteration( $ ) {

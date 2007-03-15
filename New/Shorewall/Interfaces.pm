@@ -7,7 +7,13 @@ use Shorewall::Zones;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( add_group_to_zone validate_interfaces_file dump_interface_info known_interface @interfaces  );
+our @EXPORT = qw( add_group_to_zone 
+		  validate_interfaces_file
+		  dump_interface_info 
+		  known_interface 
+		  find_interfaces_by_option
+
+		  @interfaces  );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -240,6 +246,23 @@ sub known_interface($)
     }
 
     0;
+}
+
+#
+# Returns reference to array of interfaces with the passed option
+#
+sub find_interfaces_by_option( $ ) {
+    my $option = $_[0];
+    my @ints = ();
+
+    for my $interface ( @interfaces ) {
+	my $optionsref = $interfaces{$interface}{options};
+	if ( $optionsref && $optionsref->{$option} ) {
+	    push @ints , $interface;
+	}
+    }
+
+    \@ints;
 }
 
 1;

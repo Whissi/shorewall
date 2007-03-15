@@ -1,3 +1,26 @@
+#
+# Shorewall 3.9 -- /usr/share/shorewall/Shorewall/Nat.pm
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 2007 - Tom Eastep (teastep@shorewall.net)
+#
+#       Complete documentation is available at http://shorewall.net
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of Version 2 of the GNU General Public License
+#       as published by the Free Software Foundation.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#
+#
 package Shorewall::Nat;
 require Exporter;
 use Shorewall::Common;

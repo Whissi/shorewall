@@ -151,7 +151,9 @@ stop_firewall() {
     undo_routing
 
     restore_default_route
-
+    #
+    # Fixme -- CRITICALHOSTS handling broken
+    #
     if [ -n "$CRITICALHOSTS" ]; then
 	if [ -z "$ADMINISABSENTMINDED" ]; then
 
@@ -162,7 +164,7 @@ stop_firewall() {
 	    setpolicy FORWARD DROP
 
 	    deleteallchains
-
+		
 	    for host in $CRITICALHOSTS; do
 		interface=${host%:*}
 		networks=${host#*:}

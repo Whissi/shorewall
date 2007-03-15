@@ -5,6 +5,8 @@ use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Interfaces;
 
+use strict;
+
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_hosts_file );
 our @EXPORT_OK = ();

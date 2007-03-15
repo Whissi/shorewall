@@ -4,8 +4,10 @@ use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
 
+use strict;
+
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_interfaces_file dump_interface_info known_interface @interfaces %interfaces );
+our @EXPORT = qw( add_group_to_zone validate_interfaces_file dump_interface_info known_interface @interfaces  );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -24,6 +26,60 @@ our @VERSION = 1.00;
 #
 our @interfaces;
 our %interfaces;
+
+sub add_group_to_zone($$$$$)
+{
+    my ($zone, $type, $interface, $networks, $options) = @_;
+    my $typeref;
+    my $interfaceref;
+    my $arrayref;
+    my $zoneref  = $zones{$zone};
+    my $zonetype = $zoneref->{type};
+    my $ifacezone = $interfaces{$interface}{zone};
+
+    $zoneref->{interfaces}{$interface} = 1;
+
+    my @newnetworks;
+    my @exclusions;
+    my $new = \@newnetworks;
+    my $switched = 0;
+
+    $ifacezone = '' unless defined $ifacezone;
+
+    for my $host ( @$networks ) {
+	if ( $host =~ /^!.*/ ) {
+	    fatal_error "Invalid host group: @$networks" if $switched;
+	    $switched = 1;
+	    $new = \@exclusions;
+	}
+
+	unless ( $switched ) {
+	    if ( $type eq $zonetype ) {
+		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $ifacezone eq $zone;
+		$ifacezone = $zone if $host eq ALLIPv4;
+	    }
+	}
+	    
+	push @$new, $switched ? "$interface:$host" : $host;
+    }
+
+    $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback};
+
+    $typeref      = ( $zoneref->{hosts}           || ( $zoneref->{hosts} = {} ) );
+    $interfaceref = ( $typeref->{$type}           || ( $interfaceref = $typeref->{$type} = {} ) );
+    $arrayref     = ( $interfaceref->{$interface} || ( $interfaceref->{$interface} = [] ) );
+
+    $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 );
+
+    my %h;
+
+    $h{options} = $options;
+    $h{hosts}   = \@newnetworks;
+    $h{ipsec}   = $type eq 'ipsec' ? 'ipsec' : 'none';
+
+    push @{$zoneref->{exclusions}}, @exclusions;
+    push @{$arrayref}, \%h;
+}
 
 #
 # Parse the interfaces file.

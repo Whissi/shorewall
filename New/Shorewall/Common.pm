@@ -1,11 +1,17 @@
 package Shorewall::Common;
 require Exporter;
+use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 
+use strict;
+
 our @ISA = qw(Exporter);
-our @EXPORT = qw(warning_message 
+our @EXPORT = qw(ALLIPv4
+
+		 warning_message 
 		 fatal_error
 		 create_temp_object
+		 finalize_object
 		 emit 
 		 emit_unindented
 		 save_progress_message
@@ -17,15 +23,28 @@ our @EXPORT = qw(warning_message
 		 pop_indent
 		 copy
 		 copy1
-
+		 
+		 @allipv4
+		 @rfc1918_networks
 		 $line);
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
+#
+# Some IPv4 useful stuff
+#
+our @allipv4 = ( '0.0.0.0/0' );
+
+use constant { ALLIPv4 => '0.0.0.0/0' };
+
+our @rfc1918_networks = ( "10.0.0.0/24", "172.16.0.0/12", "192.168.0.0/16" );
+
 our $line = '';          # Current config file line
-my $object = 0;         # Object file Handle Reference
-my $lastlineblank = 0;  # Avoid extra blank lines in the output
+my $object = 0;          # Object file Handle Reference
+my $lastlineblank = 0;   # Avoid extra blank lines in the output
 my $indent        = '';
+my ( $dir, $file );      # Object's Directory and File
+my $tempfile;            # Temporary File Name
 
 #
 # Issue a Warning Message
@@ -46,16 +65,29 @@ sub fatal_error
     die;
 }
 
-sub create_temp_object() {
-    my $tempfile;
+sub create_temp_object( $ ) {
+    my $objectfile = $_[0];
+    my $suffix;
 
     eval {
+	( $file, $dir, $suffix ) = fileparse( $objectfile );
+	fatal_error "Directory $dir does not exist" unless -d $dir;
+	fatal_error "$dir is a Symbolic Link" if -l $dir;
+	fatal_error "$objectfile is a Directory" if -d $objectfile;
+	fatal_error "$dir is a Symbolic Link" if -l $objectfile;
+	fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
     fatal_error "$@" if $@;
 
-    return $tempfile;
+    $file = "$dir/$file.$suffix";
+
+}
+
+sub finalize_object() {
+    rename $tempfile, $file;
+    chmod 0700, $file;
 }
 
 #

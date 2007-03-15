@@ -1,0 +1,224 @@
+package Shorewall::Tunnels;
+require Exporter;
+use Shorewall::Common;
+use Shorewall::Config;
+use Shorewall::Zones;
+use Shorewall::Chains;
+
+use strict;
+
+our @ISA = qw(Exporter);
+our @EXPORT = qw( setup_tunnels );
+our @EXPORT_OK = ( );
+our @VERSION = 1.00;
+
+#
+# Here starts the tunnel stuff -- we really should get rid of this crap...
+#
+sub setup_tunnels() {
+
+    sub setup_one_ipsec {
+	my ($inchainref, $outchainref, $kind, $source, $dest, $gatewayzones) = @_;
+
+	( $kind, my $qualifier ) = split /:/, $kind;
+
+	fatal_error "Invalid IPSEC modifier ($qualifier) in tunnel \"$line\"" if $qualifier && ( $qualifier ne 'noah' );
+	
+	my $noah = $qualifier || ($kind ne 'ipsec' );
+
+	my $options = '-m $state --state NEW -j ACCEPT';
+	
+	add_rule $inchainref,  "-p 50 $source -j ACCEPT"; 
+	add_rule $outchainref, "-p 50 $dest   -j ACCEPT"; 
+	
+	unless ( $noah ) {
+	    add_rule $inchainref,  "-p 51 $source -j ACCEPT"; 
+	    add_rule $outchainref, "-p 51 $dest   -j ACCEPT"; 
+	}
+	
+	add_rule $outchainref,  "-p udp $dest --dport 500 $options";
+	
+	if ( $kind eq 'ipsec' ) {
+	    add_rule $inchainref, "-p udp $source --dport $options";
+	} else {
+	    add_rule $inchainref, "-p udp $source -m multiport --dports 500,4500 $options";
+	}
+	
+	for my $zone ( split /,/, $gatewayzones ) {
+	    fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+	    $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
+	    $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+	    
+	    unless ( $capabilities{POLICY_MATCH} ) {
+		add_rule $inchainref,  "-p 50 $source -j ACCEPT";
+		add_rule $outchainref, "-p 50 $dest -j ACCEPT";
+		
+		unless ( $noah ) {
+		    add_rule $inchainref,  "-p 51 $source -j ACCEPT";
+		    add_rule $outchainref, "-p 51 $dest -j ACCEPT";
+		}
+	    }
+	    
+	    if ( $kind eq 'ipsec' ) {
+		add_rule $inchainref,  "-p udp $source --dport 500 $options";
+		add_rule $outchainref, "-p udp $dest --dport 500 $options";
+	    } else {
+		add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
+		add_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
+	    }
+	}
+    }
+    
+    sub setup_one_other {
+	my ($inchainref, $outchainref, $kind, $source, $dest , $protocol) = @_;
+	
+	add_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
+	add_rule $outchainref , "-p $protocol $dest -j ACCEPT";
+    }
+    
+    sub setup_pptp_client {
+	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
+	
+	add_rule $outchainref,  "-p 47 $dest -j ACCEPT";
+	add_rule $inchainref,   "-p 47 $source -j ACCEPT";
+	add_rule $outchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	}
+    
+    sub setup_pptp_server {
+	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
+	
+	add_rule $inchainref,  "-p 47 $dest -j ACCEPT";
+	add_rule $outchainref, "-p 47 $source -j ACCEPT";
+	add_rule $inchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	}
+    
+    sub setup_one_openvpn {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = 1194;
+	
+	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	
+	$port     = $p     if $p;
+	$protocol = $proto if $proto;
+	
+	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+    }
+
+    sub setup_one_openvpn_client {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = 1194;
+	
+	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	
+	$port     = $p     if $p;
+	$protocol = $proto if $proto;
+	
+	add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+    }
+
+    sub setup_one_openvpn_server {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = 1194;
+	
+	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	
+	$port     = $p     if $p;
+	$protocol = $proto if $proto;
+
+	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
+    }
+
+    sub setup_one_generic {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+	
+	my $protocol = 'udp';
+	my $port     = '--dport 5000';
+	
+	if ( $kind =~ /.*:.*:.*/ ) {
+	    ( $kind, $protocol, $port) = split /:/, $kind;
+	    $port = "--dport $port";
+	} else {
+	    $port = '';
+	    ( $kind, $protocol ) = split /:/ , $kind if $kind =~ /.*:.*/;
+	}
+	
+	add_rule $inchainref,  "-p $protocol $source $port -j ACCEPT";
+	add_rule $outchainref, "-p $protocol $dest $port -j ACCEPT";
+    }
+    
+    sub setup_one_tunnel($$$$) {
+	my ( $kind , $zone, $gateway, $gatewayzones ) = @_;
+	
+	fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+	
+	my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
+	my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+	
+	my $source = match_source_net $gateway;
+	my $dest   = match_dest_net   $gateway;
+	
+	my %tunneltypes = ( 'ipsec'         => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
+			'ipsecnat'      => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
+			'ipip'          => { function => \&setup_one_other,          params   => [ $source, $dest , 4 ] } ,
+			'gre'           => { function => \&setup_one_other,          params   => [ $source, $dest , 47 ] } ,
+			'6to4'          => { function => \&setup_one_other,          params   => [ $source, $dest , 41 ] } ,
+			'pptpclient'    => { function => \&setup_pptp_client,        params   => [ $kind, $source, $dest ] } ,
+			'pptpserver'    => { function => \&setup_pptp_server,        params   => [ $kind, $source, $dest ] } ,
+			'openvpn'       => { function => \&setup_one_openvpn,        params   => [ $kind, $source, $dest ] } ,
+			'openvpnclient' => { function => \&setup_one_openvpn_client, params   => [ $kind, $source, $dest ] } ,
+			'openvpnserver' => { function => \&setup_one_openvpn_server, params   => [ $kind, $source, $dest ] } ,
+			'generic'       => { function => \&setup_one_generic ,       params   => [ $kind, $source, $dest ] } ,
+			);
+
+	$kind = "\L$kind";
+
+	(my $type) = split /:/, $kind;
+	
+	my $tunnelref = $tunneltypes{ $type };
+	
+	fatal_error "Tunnels of type $type are not supported: Tunnel \"$line\"" unless $tunnelref;
+	
+	$tunnelref->{function}->( $inchainref, $outchainref, @{$tunnelref->{params}} );
+	
+	progress_message "   Tunnel \"$line\" $done";
+    }
+    #
+    # Setup_Tunnels() Starts Here
+    #
+    open TUNNELS, "$ENV{TMP_DIR}/tunnels" or fatal_error "Unable to open stripped tunnels file: $!";
+
+    while ( $line = <TUNNELS> ) {
+
+	chomp $line;
+	$line =~ s/\s+/ /g;
+
+	my ( $kind, $zone, $gateway, $gatewayzones, $extra ) = split /\s+/, $line;
+
+	if ( $kind eq 'COMMENT' ) {
+	    if ( $capabilities{COMMENTS} ) {
+		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+		$comment =~ s/\s*$//;
+	    } else {
+		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+	    }
+	} else {
+	    fatal_error "Invalid Tunnels file entry: \"$line\"" if $extra;
+	    setup_one_tunnel $kind, $zone, $gateway, $gatewayzones;
+	}
+    }
+	
+    close TUNNELS;
+
+    $comment = '';
+}    
+
+1;

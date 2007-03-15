@@ -8,7 +8,7 @@ use Shorewall::Chains;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( process_tcrules );
+our @EXPORT = qw( process_tcrules setup_traffic_shaping );
 our @EXPORT_OK = qw( process_tc_rule );
 our @VERSION = 1.00;
 
@@ -220,6 +220,10 @@ sub process_tcrules() {
     close TC;
 
     $comment = '';
+}
+
+sub setup_traffic_shaping() {
+    1;
 }
 
 1;

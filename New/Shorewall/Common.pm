@@ -26,7 +26,11 @@ our @EXPORT = qw(ALLIPv4
 		 
 		 @allipv4
 		 @rfc1918_networks
-		 $line);
+		 $line
+		 $command
+		 $doing
+		 $done
+		 );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -40,6 +44,9 @@ use constant { ALLIPv4 => '0.0.0.0/0' };
 our @rfc1918_networks = ( "10.0.0.0/24", "172.16.0.0/12", "192.168.0.0/16" );
 
 our $line = '';          # Current config file line
+
+our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
+
 my $object = 0;          # Object file Handle Reference
 my $lastlineblank = 0;   # Avoid extra blank lines in the output
 my $indent        = '';

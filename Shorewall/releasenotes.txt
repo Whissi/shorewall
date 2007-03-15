@@ -47,7 +47,8 @@ Problems Corrected in 3.4.1
     log prefix. This could cause mysterious "log-prefix truncated"
     messages. 
 
-4)  When nested zones were defined in the /etc/shorewall/zones file,
+4)  When nested zones were defined in the /etc/shorewall/zones file and
+    IMPLICIT_CONTINUE=Yes was given in /etc/shorewall/shorewall.conf,
     shell error messages ( usually '<zone>: not found' ) during
     compilation resulted.
 
@@ -64,6 +65,22 @@ Problems Corrected in 3.4.1
           ERROR: Command "/sbin/iptables -A net2c148 -j CONTINUE"
           Failed
 
+6)  If there were hosts defined as 'critical' in
+    /etc/shorewall/routestopped then problems occured in two cases:
+
+    i) On a Shorewall Lite system when 'shorewall stop' or 'shorewall
+    clear' was issued.
+
+    ii) On Shorewall or Shorewall lite system when 'start' or 'restart'
+    failed during execution of the compiled script and there was no saved
+    configuration ('shorewall[-lite] save' has not been issued).
+
+    The symptoms were that the following shell messages were issued and
+    the 'critical' hosts were not enabled:
+
+      /var/lib/shorewall/.start: line nnn: source_ip_range: command not found
+      /var/lib/shorewall/.start: line nnm: dest_ip_range: command not found
+    
 Other changes in 3.4.1
 
 1)  Several changes are included which allow testing of experimental

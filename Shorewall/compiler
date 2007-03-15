@@ -4653,12 +4653,16 @@ __EOF__
 
     deleteallchains
 
-    for host in $CRITICALHOSTS; do
-	interface=\${host%:*}
-	networks=\${host#*:}
-	\$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
-	\$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
-    done
+__EOF__
+
+	    for host in $CRITICALHOSTS; do
+		interface=${host%:*}
+		networks=${host#*:}
+		do_iptables -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+		do_iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+	    done
+    
+	    cat >&3 << __EOF__
 
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
@@ -4676,12 +4680,15 @@ __EOF__
 
     deleteallchains
 
-    for host in $CRITICALHOSTS; do
-	interface=\${host%:*}
-	networks=\${host#*:}
-	\$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
-	\$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
-    done
+__EOF__
+	    for host in $CRITICALHOSTS; do
+		interface=${host%:*}
+		networks=${host#*:}
+		do_iptables -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	        do_iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+	    done
+
+	    cat >&3 << __EOF__
 
     setpolicy INPUT DROP
 

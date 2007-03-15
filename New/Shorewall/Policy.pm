@@ -311,11 +311,7 @@ sub complete_standard_chain ( $$$ ) {
 
     $policychainref = $ruleschainref->{policychain} if $ruleschainref;
 
-    if ( $policychainref ) {
-	$policy    = $policychainref->{policy};
-	$loglevel  = $policychainref->{loglevel};
-	$default   = $policychainref->{default};
-    }
+    ( $policy, $loglevel, $default ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
 
     policy_rules $stdchainref , $policy , $loglevel, $default;
 }

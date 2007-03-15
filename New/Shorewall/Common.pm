@@ -14,6 +14,7 @@ our @EXPORT = qw(ALLIPv4
 		 finalize_object
 		 emit 
 		 emit_unindented
+		 emit_as_is
 		 save_progress_message
 		 save_progress_message_short
 		 progress_message
@@ -88,12 +89,13 @@ sub create_temp_object( $ ) {
 
     fatal_error "$@" if $@;
 
-    $file = "$dir/$file.$suffix";
+    $file = "$file.$suffix" if $suffix;
+    $file = $dir . $file;
 
 }
 
 sub finalize_object() {
-    rename $tempfile, $file;
+    rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
     chmod 0700, $file;
 }
 
@@ -124,6 +126,10 @@ sub emit ( $ ) {
 
 sub emit_unindented( $ ) {
     print $object "$_[0]\n" if $object;
+}
+
+sub emit_as_is( $ ) {
+    print $object "$_[0]" if $object;
 }
 
 #

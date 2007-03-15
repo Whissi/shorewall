@@ -601,7 +601,7 @@ sub generate_script_2 () {
 
 	    open MF, $mf or fatal_error "Unable to open $mf: $!";
 
-	    while ( $line = <MF> ) { emit_unindented $line if $line =~ /^\s*loadmodule\b/; }
+	    while ( $line = <MF> ) { emit_as_is $line if $line =~ /^\s*loadmodule\b/; }
 
 	    close MF;
 

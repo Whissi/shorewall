@@ -5,7 +5,7 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file do_initialize report_capabilities propagateconfig append_file %config %env %capabilities );
+our @EXPORT = qw(find_file get_configuration report_capabilities propagateconfig append_file %config %env %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -229,7 +229,7 @@ sub report_capabilities() {
 #
 # Read the shorewall.conf file and establish global hashes %config and %env.
 #
-sub do_initialize() {
+sub get_configuration() {
     my $file = find_file 'shorewall.conf';
 
     if ( -f $file ) {

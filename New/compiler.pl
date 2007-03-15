@@ -1659,6 +1659,8 @@ $ENV{VERBOSE} = 2 if $ENV{DEBUG};
 #
 # Get shorewall.conf and capabilities.
 #
-do_initialize;
-
+get_configuration;
+#
+# Compile/Check the configuration.
+#
 compile_firewall $ARGV[0];

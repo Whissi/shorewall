@@ -36,7 +36,7 @@ use Shorewall::Policy;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( add_common_rules setup_mac_lists process_rules generate_matrix );
+our @EXPORT = qw( add_common_rules setup_mac_lists process_criticalhosts process_routestopped process_rules generate_matrix );
 our @EXPORT_OK = qw( process_rule process_rule1 );
 our @VERSION = 1.00;
 
@@ -202,6 +202,154 @@ sub setup_blacklist() {
 	}
 
 	progress_message "   Blacklisting enabled on ${interface}:${network}";
+    }
+}
+
+sub process_criticalhosts() {
+
+    my $fn = find_file 'routestopped';
+    my  @critical;
+
+    @critical = ();
+
+    open RS, "$ENV{TMP_DIR}/routestopped" or fatal_error "Unable to open stripped routestopped file: $!";
+
+    while ( $line = <RS> ) {
+
+	my $routeback = 0;
+	    
+	chomp $line;
+	$line =~ s/\s+/ /g;
+
+	
+	my ($interface, $hosts, $options, $extra) = split /\s+/, $line;
+	
+	fatal_error "Invalid routestopped file entry: \"$line\"" if $extra;
+
+	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
+
+	my @hosts;
+
+	for my $host ( split /,/, $hosts ) {
+	    push @hosts, "$interface:$hosts";
+	}
+
+	$options = '-' unless $options;
+
+	unless ( $options eq '-' ) {
+	    for my $option (split /,/, $options ) {
+		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' ) {
+		    if ( $option eq 'critical' ) {
+			push @critical, @hosts; 
+		    } else {
+			warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"";
+		    }
+		}
+	    }
+	}
+    }
+
+    close RS;
+
+    \@critical;
+}
+
+sub process_routestopped() {
+
+    my $fn = find_file 'routestopped';
+    my ( @allhosts, %source, %dest );
+
+    @critical = ();
+
+    progress_message2 "$doing $fn...";
+
+    open RS, "$ENV{TMP_DIR}/routestopped" or fatal_error "Unable to open stripped routestopped file: $!";
+
+    while ( $line = <RS> ) {
+
+	my $routeback = 0;
+	    
+	chomp $line;
+	$line =~ s/\s+/ /g;
+
+	
+	my ($interface, $hosts, $options, $extra) = split /\s+/, $line;
+	
+	fatal_error "Invalid routestopped file entry: \"$line\"" if $extra;
+
+	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
+
+	my @hosts;
+
+	for my $host ( split /,/, $hosts ) {
+	    push @hosts, "$interface:$hosts";
+	}
+
+	$options = '-' unless $options;
+
+	unless ( $options eq '-' ) {
+	    for my $option (split /,/, $options ) {
+		if ( $option eq 'routeback' ) {
+		    if ( $routeback ) {
+			warning_message "Duplicate 'routeback' option ignored in routestopped entry \"$line\"";
+		    } else {
+			$routeback = 1;
+			
+			for my $host ( split /,/, $hosts ) {
+			    my $source = match_source_net $host;
+			    my $dest   = match_dest_net   $host;
+
+			    emit "run_iptables -A FORWARD -i $interface -o $interface $source $dest -j ACCEPT";
+			}
+		    }
+		} elsif ( $option eq 'source' ) {
+		    for my $host ( split /,/, $hosts ) {
+			$source{"$interface:$host"} = 1;
+		    }
+		} elsif ( $option eq 'dest' ) {
+		    for my $host ( split /,/, $hosts ) {
+			$dest{"$interface:$host"} = 1;
+		    }		    
+		} else {
+		    warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"" $option eq 'critical';
+		}
+	    }
+	}
+
+	push @allhosts, @hosts;
+    }
+
+    close RS;
+
+    for my $host ( @allhosts ) {
+	my ( $interface, $h ) = split /,/, $host;
+	my $source  = match_source_net $h;
+	my $dest    = match_dest_net $h;
+	
+	emit "\$IPTABLES INPUT -i $interface $source ACCEPT";
+	emit "\$IPTABLES OUTPUT -o $interface $dest ACCEPT"    if $config{ADMINISABSENTMINDED};
+	
+	my $matched = 0;
+
+	if ( $source{$host} ) {
+	    emit "\$IPTABLES FORWARD -i $interface $source ACCEPT";
+	    $matched = 1;
+	}
+
+	if ( $dest{$host} ) {
+	    emit "\$IPTABLES FORWARD -o $interface $dest ACCEPT";
+	    $matched = 1;
+	}
+	    
+	unless ( $matched ) {
+	    for my $host1 ( @allhosts ) {
+		unless ( $host eq $host1 ) {
+		    my ( $interface1, $h1 ) = split /,/, $host1;
+		    my $dest1 = match_dest_net $h1;
+		    emit "\$IPTABLES -A FORWARD -i $interface -o $interface1 $source $dest1 -j ACCEPT";
+		}
+	    }
+	}
     }
 }
 

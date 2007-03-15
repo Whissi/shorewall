@@ -150,12 +150,183 @@ sub generate_script_1 {
     pop_indent;
     
     emit "}\n";
+
+        
+}
+
+sub compile_stop_firewall() {
+
+    emit "#\n# Stop/restore the firewall after an error or because of a 'stop' or 'clear' command\n#";
+    emit "stop_firewall() {\n";
+
+    emit << "EOF";
+#
+# Stop/restore the firewall after an error or because of a "stop" or "clear" command
+#
+stop_firewall() {
+
+    deletechain() {
+	qt \$IPTABLES -L \$1 -n && qt \$IPTABLES -F \$1 && qt \$IPTABLES -X \$1
+    }
+
+    deleteallchains() {
+	\$IPTABLES -F
+	\$IPTABLES -X
+    }
+
+    setcontinue() {
+	\$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+    }
+
+    delete_nat() {
+	\$IPTABLES -t nat -F
+	\$IPTABLES -t nat -X
+
+	if [ -f \${VARDIR}/nat ]; then
+	    while read external interface; do
+		del_ip_addr \$external \$interface
+	    done < \${VARDIR}/nat
+
+	    rm -f \${VARDIR}/nat
+	fi
+    }
+
+    case \$COMMAND in
+	stop|clear)
+	    ;;
+	*)
+	    set +x
+
+            case \$COMMAND in
+	        start)
+	            logger -p kern.err "ERROR:\$PRODUCT start failed"
+	            ;;
+	        restart)
+	            logger -p kern.err "ERROR:\$PRODUCT restart failed"
+	            ;;
+	        restore)
+	            logger -p kern.err "ERROR:\$PRODUCT restore failed"
+	            ;;
+            esac
+            
+            if [ "\$RESTOREFILE" = NONE ]; then
+                COMMAND=clear
+                clear_firewall
+                echo "\$PRODUCT Cleared"
+
+	        kill \$\$
+	        exit 2
+            else
+	        RESTOREPATH=\${VARDIR}/\$RESTOREFILE
+
+	        if [ -x \$RESTOREPATH ]; then
+
+		    if [ -x \${RESTOREPATH}-ipsets ]; then
+		        progress_message2 Restoring Ipsets...
+		        #
+		        # We must purge iptables to be sure that there are no
+		        # references to ipsets
+		        #
+		        for table in mangle nat filter; do
+			    \$IPTABLES -t \$table -F
+			    \$IPTABLES -t \$table -X
+		        done
+
+		        \${RESTOREPATH}-ipsets
+		    fi
+
+		    echo Restoring \${PRODUCT:=Shorewall}...
+
+		    if \$RESTOREPATH restore; then
+		        echo "\$PRODUCT restored from \$RESTOREPATH"
+		        set_state "Started"
+		    else
+		        set_state "Unknown"
+		    fi
+
+	            kill \$\$
+	            exit 2
+	        fi
+            fi
+	    ;;
+    esac
+
+    set_state "Stopping"
+
+    STOPPING="Yes"
+
+    TERMINATOR=
+
+    deletechain shorewall
+
+    determine_capabilities
+
+    run_stop_exit;
+    if [ -n "\$MANGLE_ENABLED" ]; then
+	run_iptables -t mangle -F
+	run_iptables -t mangle -X
+	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	    qt \$IPTABLES -t mangle -P \$chain ACCEPT
+	done
+    fi
+
+    if [ -n "\$RAW_TABLE" ]; then
+	run_iptables -t raw -F
+	run_iptables -t raw -X
+	for chain in PREROUTING OUTPUT; do
+	    qt \$IPTABLES -t raw -P \$chain ACCEPT
+	done
+    fi
+
+    if [ -n "\$NAT_ENABLED" ]; then
+	delete_nat
+	for chain in PREROUTING POSTROUTING OUTPUT; do
+	    qt \$IPTABLES -t nat -P \$chain ACCEPT
+	done
+    fi
+
+    if [ -f \${VARDIR}/proxyarp ]; then
+	while read address interface external haveroute; do
+	    qt arp -i \$external -d \$address pub
+	    [ -z "\${haveroute}\${NOROUTES}" ] && qt ip route del \$address dev \$interface
+	done < \${VARDIR}/proxyarp
+
+        for f in /proc/sys/net/ipv4/conf/*; do
+            [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+        done
+    fi
+
+    rm -f \${VARDIR}/proxyarp
+EOF
+
+    emit 'delete_tc1' if $config{CLEAR_TC};
+    emit 'undo_routing';
+    emit 'restore_default_route';
     
-    copy find_file 'prog.functions';
-    
+    my @criticalhosts = process_criticalhosts;
+
+    if ( @criticalhosts ) {
+	if ( $config{ADMINISABSENTMINDED} ) {
+	    emit 'for chain in INPUT OUTPUT; do';
+	    emit '    setpolicy \$chain ACCEPT';
+	    emit "done\n";
+
+	    emit "setpolicy FORWARD DROP\n";
+	    
+	    emit "deleteallchains\n";
+
+	    for my $hosts ( @criticalhosts ) {
+                my ( $interface, $host ) = ( split /,/, $hosts );
+                
+
+		
+
 }
 
 sub generate_script_2 () {
+
+    copy find_file 'prog.functions';
+
     emit '#';
     emit '# Setup Routing and Traffic Shaping';
     emit '#';

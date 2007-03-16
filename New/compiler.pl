@@ -359,7 +359,6 @@ stop_firewall() {
 	setcontinue \$chain
     done
 ";
-
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
 	emit "
@@ -498,6 +497,8 @@ sub generate_script_2 () {
     emit "delete_tc1\n"   if $config{CLEAR_TC};
 
     emit "disable_ipv6\n" if $config{DISABLE_IPV6};
+
+    setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
 
 }
 

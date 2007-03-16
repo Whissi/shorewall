@@ -37,7 +37,7 @@ use Shorewall::Proc;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( add_common_rules setup_mac_lists process_criticalhosts process_routestopped process_rules generate_matrix );
+our @EXPORT = qw( add_common_rules setup_mac_lists process_criticalhosts process_routestopped process_rules generate_matrix setup_mss );
 our @EXPORT_OK = qw( process_rule process_rule1 );
 our @VERSION = 1.00;
 
@@ -1504,6 +1504,13 @@ sub generate_matrix() {
 	    }
 	}
     }
+}
+
+sub setup_mss( $ ) {
+    my $clampmss = $_[0];
+    my $option = "\Lclampmss" eq 'yes' ? '--clamp-mss-to-pmtu' : '--set-mss $clampmss';
+
+    add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option";
 }
 
 1;

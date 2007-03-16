@@ -58,6 +58,7 @@ use Shorewall::Actions;
 use Shorewall::Accounting;
 use Shorewall::Rules;
 use Shorewall::Proc;
+use Shorewall::Proxyarp;
 
 sub generate_script_1 {
     copy find_file 'prog.header';
@@ -598,6 +599,10 @@ sub compile_firewall( $ ) {
     setup_martian_logging;
     setup_source_routing;
     setup_forwarding;
+    #
+    # Proxy Arp
+    #
+    setup_proxy_arp;
     #
     # [Re-]establish Routing
     # 

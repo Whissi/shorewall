@@ -329,8 +329,8 @@ stop_firewall() {
 	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
-    done";
-	    emit '';
+    done
+";
 	} else {
 	    emit "
     for chain in INPUT OUTPUT; do
@@ -339,9 +339,8 @@ stop_firewall() {
 
     setpolicy FORWARD DROP
 
-    deleteallchains";
-
-	    emit '';
+    deleteallchains
+";
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /,/, $hosts );
@@ -357,9 +356,9 @@ stop_firewall() {
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done";
+    done
+";
 
-	    emit '';
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
 	emit "
@@ -380,9 +379,8 @@ stop_firewall() {
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done";
-
-	emit '';
+    done
+";
     }
 
     push_indent;

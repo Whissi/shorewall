@@ -154,55 +154,75 @@ sub setup_syn_flood_chains() {
 
 sub setup_blacklist() {
 
-    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-
-    progress_message2 "   Setting up Blacklist...";
-
-    open BL, "$ENV{TMP_DIR}/blacklist" or fatal_error "Unable to open stripped blacklist file: $!";
-
-    progress_message( "      Processing " . find_file 'blacklist' . '...' );
-
-    while ( $line = <BL> ) {
-
-	chomp $line;
-	$line =~ s/\s+/ /g;
-	
-	my ( $networks, $protocol, $ports , $extra ) = split /\s+/, $line;
-	
-	fatal_error "Invalid blacklist entry: \"$line\"" if $extra;
-
-	expand_rule 
-	    ensure_filter_chain( 'blacklst' , 0 ) ,
-	    do_proto( $protocol , $ports, '' ) ,
-	    $networks ,
-	    '' ,
-	    '' ,
-	    '-j ' . ($disposition eq 'REJECT' ? 'reject' : $disposition),
-	    $level ,
-	    $disposition ,
-	    '';
-	
-	progress_message "         \"$line\" added to blacklist";
-    }
-
-    close BL;
-
     my $hosts = find_hosts_by_option 'blacklist';
 
-    my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
-    
-    for my $hostref ( @$hosts ) {
-	my $interface = $hostref->[0];
-	my $ipsec     = $hostref->[1];
-	my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	my $network   = $hostref->[2];
-	my $source    = match_source_net $network;
-   
-	for my $chain ( @{first_chains $interface}) {
-	    add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
+    if ( @$hosts ) {
+
+	my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+
+	progress_message2 "   Setting up Blacklist...";
+
+	new_standard_chain 'blacklst';
+
+	my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
+
+	if ( $level ) {
+	    my $chainref = new_standard_chain 'blacklog';
+	
+	    log_rule_limit( $level , $chainref , 'blacklst' , $disposition , "$env{LOGLIMIT}" , '', 'add',	'' );
+	
+	    add_rule $chainref, "-j $target" ;
+
+	    $target = 'blacklog';
 	}
 
-	progress_message "   Blacklisting enabled on ${interface}:${network}";
+	if ( -s "$ENV{TMP_DIR}/blacklist" ) {
+
+	    open BL, "$ENV{TMP_DIR}/blacklist" or fatal_error "Unable to open stripped blacklist file: $!";
+
+	    progress_message( "      Processing " . find_file 'blacklist' . '...' );
+
+	    while ( $line = <BL> ) {
+	    
+		chomp $line;
+		$line =~ s/\s+/ /g;
+	    
+		my ( $networks, $protocol, $ports , $extra ) = split /\s+/, $line;
+	
+		fatal_error "Invalid blacklist entry: \"$line\"" if $extra;
+
+		expand_rule 
+		    ensure_filter_chain( 'blacklst' , 0 ) ,
+		    do_proto( $protocol , $ports, '' ) ,
+		    $networks ,
+		    '' ,
+		    '' ,
+		    "-j $target" ,
+		    '' ,
+		    $disposition ,
+		    '';
+	
+		progress_message "         \"$line\" added to blacklist";
+	    }
+	}
+
+	close BL;
+
+	my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
+    
+	for my $hostref ( @$hosts ) {
+	    my $interface = $hostref->[0];
+	    my $ipsec     = $hostref->[1];
+	    my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $network   = $hostref->[2];
+	    my $source    = match_source_net $network;
+	    
+	    for my $chain ( @{first_chains $interface}) {
+		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
+	    }
+
+	    progress_message "   Blacklisting enabled on ${interface}:${network}";
+	}
     }
 }
 
@@ -363,10 +383,15 @@ sub add_common_rules() {
 
     my $rejectref = new_standard_chain 'reject';
 
+    $level = $env{BLACKLIST_LOG_LEVEL} || 'info';
+
+    add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
+    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'REJECT' , $level ;
+
     new_standard_chain 'dynamic';
 
-    my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID' : '';
-
+    my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
+    
     for $interface ( @interfaces ) {
 	for $chain ( input_chain $interface , forward_chain $interface ) {
 	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
@@ -374,11 +399,6 @@ sub add_common_rules() {
 
 	new_standard_chain output_chain( $interface );
     }
-
-    $level = $env{BLACKLIST_LOG_LEVEL} || 'info';
-
-    add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
-    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'REJECT' , $level ;
 
     setup_blacklist;
 

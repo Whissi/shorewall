@@ -54,7 +54,8 @@ sub setup_arp_filtering() {
     emit "for f in /proc/sys/net/ipv4/conf/*; do
     [ -f \$f/arp_filter ] && echo 0 > \$f/arp_filter
     [ -f \$f/arp_ignore ] && echo 0 > \$f/arp_ignore
-done";
+done
+";
 
     emit '';
 
@@ -71,7 +72,8 @@ if [ -f $file ]; then
     echo 1 > $file
 else
     error_message \"WARNING: Cannot set ARP filtering on $interface\"
-fi";
+fi
+";
 	}
 
 	for my $interface ( @$interfaces1 ) {
@@ -84,7 +86,8 @@ fi";
     echo $value > $file
 else
     error_message \"WARNING: Cannot set ARP filtering on $interface\"
-fi";
+fi
+";
 	}
     }
 }
@@ -104,10 +107,9 @@ sub setup_route_filtering() {
 
 	emit "for f in /proc/sys/net/ipv4/conf/*; do
     [ -f \$f/log_martians ] && echo 0 > \$f/rp_filter
-done";
+done
+";
 
-	emit '';
-	
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
 
@@ -115,7 +117,8 @@ done";
     echo 1 > $file
 else
     error_message \"WARNING: Cannot set route filtering on $interface\"
-fi";
+fi
+";
 	}
 	
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
@@ -144,10 +147,9 @@ sub setup_martian_logging() {
 
 	emit "for f in /proc/sys/net/ipv4/conf/*; do
     [ -f \$f/log_martians ] && echo 0 > \$f/log_martians
-done";
+done
+";
 
-	emit '';
-	
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
 
@@ -155,7 +157,8 @@ done";
     echo 1 > $file
 else
     error_message \"WARNING: Cannot set Martian logging on $interface\"
-fi";
+fi
+";
 	}
 	
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
@@ -177,9 +180,8 @@ sub setup_source_routing() {
 
     emit "for f in /proc/sys/net/ipv4/conf/*; do
     [ -f \$f/accept_source_route ] && echo 0 > \$f/accept_source_route
-done";
-
-    emit '';
+done
+";
 
     my $interfaces = find_interfaces_by_option 'sourceroute';
 
@@ -195,7 +197,8 @@ done";
     echo 1 > $file
 else
     error_message \"WARNING: Cannot set Accept Source Routing on $interface\"
-fi";
+fi
+";
 	}
     }
 }

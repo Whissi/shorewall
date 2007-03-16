@@ -131,13 +131,14 @@ sub emit ( $ ) {
     if ( $object ) {
 	my $line = $_[0];
 
-	unless ( $line =~ /^\s+$/ ) {
-	    $line =~ s/^/$indent/gm if $indent && $line;
+	unless ( $line =~ /^\s*$/ ) {
+	    $line =~ s/^\n// if $lastlineblank;
+	    $line =~ s/^/$indent/gm if $indent;
 	    1 while $line =~ s/^        /\t/m;
 	    print $object "$line\n";
-	    $lastlineblank = 0;
+	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	} else {
-	    print $object '' unless $lastlineblank;
+	    print $object "\n" unless $lastlineblank;
 	    $lastlineblank = 1;
 	}
     }

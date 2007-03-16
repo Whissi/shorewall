@@ -32,6 +32,7 @@ use Shorewall::Hosts;
 use Shorewall::Actions;
 use Shorewall::Macros;
 use Shorewall::Policy;
+use Shorewall::Proc;
 
 use strict;
 
@@ -351,18 +352,6 @@ sub process_routestopped() {
     }
 }
 
-sub setup_forwarding() {
-    if ( "\L$config{IP_FORWARDING}" eq 'on' ) {
-	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Enabled';
-    } elsif ( "\L$config{IP_FORWARDING}" eq 'off' ) {
-	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Disabled!';
-    }
-
-    emit '';
-}
-
 sub add_common_rules() {
     my $interface;
     my $chainref;
@@ -526,7 +515,6 @@ sub add_common_rules() {
 
     setup_syn_flood_chains;
 
-    setup_forwarding;
 }
 
 my %maclist_targets = ( ACCEPT => { target => 'RETURN' , mangle => 1 } ,

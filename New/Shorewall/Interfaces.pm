@@ -35,6 +35,7 @@ our @EXPORT = qw( add_group_to_zone
 		  dump_interface_info 
 		  known_interface 
 		  find_interfaces_by_option
+		  get_interface_option
 
 		  @interfaces  );
 our @EXPORT_OK = ();
@@ -286,6 +287,15 @@ sub find_interfaces_by_option( $ ) {
     }
 
     \@ints;
+}
+
+#
+# Return the value of an option for an interface
+#
+sub get_interface_option( $$ ) {
+    my ( $interface, $option ) = @_;
+
+    $interfaces{$interface}{options}{$option};
 }
 
 1;

@@ -57,6 +57,7 @@ use Shorewall::Macros;
 use Shorewall::Actions;
 use Shorewall::Accounting;
 use Shorewall::Rules;
+use Shorewall::Proc;
 
 sub generate_script_1 {
     copy find_file 'prog.header';
@@ -150,12 +151,15 @@ sub generate_script_1 {
     pop_indent;
     
     emit "}\n";
-
         
 }
 
 sub compile_stop_firewall() {
-
+#
+# Emacs doesn't handle 'here documents' in Perl Mode nearly as well as it does in Shell mode
+# (it basically doesn't understand it at all and gets lost). So we use the following rather
+# unfortunate style in place of 'here docs'.
+#
     emit "
 #
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
@@ -296,23 +300,21 @@ stop_firewall() {
 
     rm -f \${VARDIR}/proxyarp\n";
 
-    push_indent;
-
-    emit 'delete_tc1' if $config{CLEAR_TC};
-    emit 'undo_routing';
-    emit 'restore_default_route';
+    emit '    delete_tc1' if $config{CLEAR_TC};
+    emit '    undo_routing';
+    emit '    restore_default_route';
     
     my $criticalhosts = process_criticalhosts;
 
     if ( @$criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
-	    emit 'for chain in INPUT OUTPUT; do';
-	    emit '    setpolicy \$chain ACCEPT';
-	    emit "done\n";
+	    emit '    for chain in INPUT OUTPUT; do';
+	    emit '        setpolicy \$chain ACCEPT';
+	    emit "    done\n";
 
-	    emit "setpolicy FORWARD DROP\n";
+	    emit "    setpolicy FORWARD DROP\n";
 	    
-	    emit 'deleteallchains';
+	    emit '    deleteallchains';
 	    emit '';
 
 	    for my $hosts ( @$criticalhosts ) {
@@ -320,18 +322,16 @@ stop_firewall() {
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emit "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
-		emit "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
+		emit "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
+		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
 	    
-	    pop_indent;
 	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
     done";
 	    emit '';
 	} else {
-	    pop_indent;
 	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain ACCEPT
@@ -348,8 +348,8 @@ stop_firewall() {
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emit "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
-		emit "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
+		emit "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
+		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
 
 	    emit "
@@ -362,7 +362,6 @@ stop_firewall() {
 	    emit '';
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
-	pop_indent;
 	emit "
     for chain in INPUT OUTPUT FORWARD; do
 	setpolicy \$chain DROP
@@ -370,7 +369,6 @@ stop_firewall() {
 
     deleteallchains";
     } else {
-	pop_indent;
 	emit "
     for chain in INPUT FORWARD; do
 	setpolicy \$chain DROP
@@ -438,6 +436,7 @@ stop_firewall() {
 	;;
     esac
 }\n";
+
 }
 
 sub generate_script_2 () {
@@ -593,6 +592,14 @@ sub compile_firewall( $ ) {
     #
     progress_message2 "Setting up Common Rules...";              
     add_common_rules;
+    #
+    # /proc stuff
+    #
+    setup_arp_filtering;
+    setup_route_filtering;
+    setup_martian_logging;
+    setup_source_routing;
+    setup_forwarding;
     #
     # [Re-]establish Routing
     # 

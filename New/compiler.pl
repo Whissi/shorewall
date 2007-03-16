@@ -82,7 +82,7 @@ sub generate_script_1 {
 	emit 'CONFDIR=/etc/shorewall';
 	emit 'VARDIR=/var/lib/shorewall\n';
 	emit 'PRODUCT=\'Shorewall\'';
-	emit '. /usr/share/shoreall-lite/lib.base';
+	emit '. /usr/share/shoreall/lib.base';
     }
 	
     emit '';
@@ -158,7 +158,7 @@ sub compile_stop_firewall() {
 #
 # Emacs doesn't handle 'here documents' in Perl Mode nearly as well as it does in Shell mode
 # (it basically doesn't understand it at all and gets lost). So we use the following rather
-# unfortunate style in place of 'here docs'.
+# awkward style in place of 'here docs'.
 #
     emit "
 #

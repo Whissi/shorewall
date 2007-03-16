@@ -259,8 +259,6 @@ sub process_routestopped() {
     my $fn = find_file 'routestopped';
     my ( @allhosts, %source, %dest );
 
-    @critical = ();
-
     progress_message2 "$doing $fn...";
 
     open RS, "$ENV{TMP_DIR}/routestopped" or fatal_error "Unable to open stripped routestopped file: $!";
@@ -311,7 +309,7 @@ sub process_routestopped() {
 			$dest{"$interface:$host"} = 1;
 		    }		    
 		} else {
-		    warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"" $option eq 'critical';
+		    warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"" unless $option eq 'critical';
 		}
 	    }
 	}
@@ -322,7 +320,7 @@ sub process_routestopped() {
     close RS;
 
     for my $host ( @allhosts ) {
-	my ( $interface, $h ) = split /,/, $host;
+	my ( $interface, $h ) = split /:/, $host;
 	my $source  = match_source_net $h;
 	my $dest    = match_dest_net $h;
 	
@@ -344,7 +342,7 @@ sub process_routestopped() {
 	unless ( $matched ) {
 	    for my $host1 ( @allhosts ) {
 		unless ( $host eq $host1 ) {
-		    my ( $interface1, $h1 ) = split /,/, $host1;
+		    my ( $interface1, $h1 ) = split /:/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    emit "\$IPTABLES -A FORWARD -i $interface -o $interface1 $source $dest1 -j ACCEPT";
 		}

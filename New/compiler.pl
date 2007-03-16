@@ -156,12 +156,9 @@ sub generate_script_1 {
 
 sub compile_stop_firewall() {
 
-    emit "#\n# Stop/restore the firewall after an error or because of a 'stop' or 'clear' command\n#";
-    emit "stop_firewall() {\n";
-
-    emit << "EOF";
+    emit "
 #
-# Stop/restore the firewall after an error or because of a "stop" or "clear" command
+# Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
 stop_firewall() {
 
@@ -199,20 +196,20 @@ stop_firewall() {
 
             case \$COMMAND in
 	        start)
-	            logger -p kern.err "ERROR:\$PRODUCT start failed"
+	            logger -p kern.err \"ERROR:\$PRODUCT start failed\"
 	            ;;
 	        restart)
-	            logger -p kern.err "ERROR:\$PRODUCT restart failed"
+	            logger -p kern.err \"ERROR:\$PRODUCT restart failed\"
 	            ;;
 	        restore)
-	            logger -p kern.err "ERROR:\$PRODUCT restore failed"
+	            logger -p kern.err \"ERROR:\$PRODUCT restore failed\"
 	            ;;
             esac
             
-            if [ "\$RESTOREFILE" = NONE ]; then
+            if [ \"\$RESTOREFILE\" = NONE ]; then
                 COMMAND=clear
                 clear_firewall
-                echo "\$PRODUCT Cleared"
+                echo \"\$PRODUCT Cleared\"
 
 	        kill \$\$
 	        exit 2
@@ -238,10 +235,10 @@ stop_firewall() {
 		    echo Restoring \${PRODUCT:=Shorewall}...
 
 		    if \$RESTOREPATH restore; then
-		        echo "\$PRODUCT restored from \$RESTOREPATH"
-		        set_state "Started"
+		        echo \"\$PRODUCT restored from \$RESTOREPATH\"
+		        set_state \"Started\"
 		    else
-		        set_state "Unknown"
+		        set_state \"Unknown\"
 		    fi
 
 	            kill \$\$
@@ -251,9 +248,9 @@ stop_firewall() {
 	    ;;
     esac
 
-    set_state "Stopping"
+    set_state \"Stopping\"
 
-    STOPPING="Yes"
+    STOPPING=\"Yes\"
 
     TERMINATOR=
 
@@ -262,7 +259,8 @@ stop_firewall() {
     determine_capabilities
 
     run_stop_exit;
-    if [ -n "\$MANGLE_ENABLED" ]; then
+
+    if [ -n \"\$MANGLE_ENABLED\" ]; then
 	run_iptables -t mangle -F
 	run_iptables -t mangle -X
 	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
@@ -270,7 +268,7 @@ stop_firewall() {
 	done
     fi
 
-    if [ -n "\$RAW_TABLE" ]; then
+    if [ -n \"\$RAW_TABLE\" ]; then
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do
@@ -278,7 +276,7 @@ stop_firewall() {
 	done
     fi
 
-    if [ -n "\$NAT_ENABLED" ]; then
+    if [ -n \"\$NAT_ENABLED\" ]; then
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
 	    qt \$IPTABLES -t nat -P \$chain ACCEPT
@@ -288,7 +286,7 @@ stop_firewall() {
     if [ -f \${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i \$external -d \$address pub
-	    [ -z "\${haveroute}\${NOROUTES}" ] && qt ip route del \$address dev \$interface
+	    [ -z \"\${haveroute}\${NOROUTES}\" ] && qt ip route del \$address dev \$interface
 	done < \${VARDIR}/proxyarp
 
         for f in /proc/sys/net/ipv4/conf/*; do
@@ -296,16 +294,17 @@ stop_firewall() {
         done
     fi
 
-    rm -f \${VARDIR}/proxyarp
-EOF
+    rm -f \${VARDIR}/proxyarp\n";
+
+    push_indent;
 
     emit 'delete_tc1' if $config{CLEAR_TC};
     emit 'undo_routing';
     emit 'restore_default_route';
     
-    my @criticalhosts = process_criticalhosts;
+    my $criticalhosts = process_criticalhosts;
 
-    if ( @criticalhosts ) {
+    if ( $criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
 	    emit 'for chain in INPUT OUTPUT; do';
 	    emit '    setpolicy \$chain ACCEPT';
@@ -315,12 +314,131 @@ EOF
 	    
 	    emit "deleteallchains\n";
 
-	    for my $hosts ( @criticalhosts ) {
+	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /,/, $hosts );
-                
+                my $source = match_source_net $host;
+		my $dest   = match_dest_net $host;
 
-		
+		emit "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
+		emit "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
+	    }
+	    
+	    pop_indent;
+	    emit "
+    for chain in INPUT OUTPUT; do
+	setpolicy \$chain DROP
+    done
 
+";
+	} else {
+	    pop_indent;
+	    emit "
+    for chain in INPUT OUTPUT; do
+	setpolicy \$chain ACCEPT
+    done
+
+    setpolicy FORWARD DROP
+
+    deleteallchains
+
+";
+
+	    for my $hosts ( @$criticalhosts ) {
+                my ( $interface, $host ) = ( split /,/, $hosts );
+                my $source = match_source_net $host;
+		my $dest   = match_dest_net $host;
+
+		emit "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
+		emit "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
+	    }
+
+	    emit "
+    setpolicy INPUT DROP
+
+    for chain in INPUT FORWARD; do
+	setcontinue \$chain
+    done
+
+";
+	}
+    } elsif ( ! $config{ADMINISABSENTMINDED} ) {
+	pop_indent;
+	emit "
+    for chain in INPUT OUTPUT FORWARD; do
+	setpolicy \$chain DROP
+    done
+
+    deleteallchains
+";
+    } else {
+	pop_indent;
+	emit "
+    for chain in INPUT FORWARD; do
+	setpolicy \$chain DROP
+    done
+
+    setpolicy OUTPUT ACCEPT
+
+    deleteallchains
+
+    for chain in INPUT FORWARD; do
+	setcontinue \$chain
+    done
+
+";
+    }
+
+    push_indent;
+
+    process_routestopped;
+
+    emit '$IPTABLES -A INPUT  -i lo -j ACCEPT';
+    emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT';
+    emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
+
+    my $interfaces = find_interfaces_by_option 'dhcp';
+
+    for my $interface ( @$interfaces ) {
+	emit "\$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT";
+	emit "\$IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	#
+	# This might be a bridge
+	#
+	emit "\$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT";
+    }
+
+    emit '';
+
+    if ( $config{IP_FORWARDING} =~ /on/i ) {
+	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
+	emit 'progress_message2 IP Forwarding Enabled';
+    } elsif ( $config{IP_FORWARDING} =~ /off/i ) {
+	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
+	emit 'progress_message2 IP Forwarding Disabled!';
+    }
+    
+    append_file 'stopped';
+
+    pop_indent;
+
+    emit "
+    set_state \"Stopped\"
+
+    logger -p kern.info \"\$PRODUCT Stopped\"
+
+    case \$COMMAND in
+    stop|clear)
+	;;
+    *)
+	#
+	# The firewall is being stopped when we were trying to do something
+	# else. Remove the lock file and Kill the shell in case we're in a
+	# subshell
+	#
+	kill \$\$
+	;;
+    esac
+}";
 }
 
 sub generate_script_2 () {
@@ -463,6 +581,10 @@ sub compile_firewall( $ ) {
     #
     progress_message2 "Validating Policy file...";               
     validate_policy;
+    #
+    # Compile the 'stop_firewall()' function
+    #
+    compile_stop_firewall;
     #
     # Start Second Part of script
     #

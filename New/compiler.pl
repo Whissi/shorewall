@@ -304,7 +304,7 @@ stop_firewall() {
     
     my $criticalhosts = process_criticalhosts;
 
-    if ( $criticalhosts ) {
+    if ( @$criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
 	    emit 'for chain in INPUT OUTPUT; do';
 	    emit '    setpolicy \$chain ACCEPT';
@@ -312,7 +312,8 @@ stop_firewall() {
 
 	    emit "setpolicy FORWARD DROP\n";
 	    
-	    emit "deleteallchains\n";
+	    emit 'deleteallchains';
+	    emit '';
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /,/, $hosts );
@@ -327,9 +328,8 @@ stop_firewall() {
 	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
-    done
-
-";
+    done";
+	    emit '';
 	} else {
 	    pop_indent;
 	    emit "
@@ -339,9 +339,9 @@ stop_firewall() {
 
     setpolicy FORWARD DROP
 
-    deleteallchains
+    deleteallchains";
 
-";
+	    emit '';
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /,/, $hosts );
@@ -357,9 +357,9 @@ stop_firewall() {
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done
+    done";
 
-";
+	    emit '';
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
 	pop_indent;
@@ -368,8 +368,7 @@ stop_firewall() {
 	setpolicy \$chain DROP
     done
 
-    deleteallchains
-";
+    deleteallchains";
     } else {
 	pop_indent;
 	emit "
@@ -383,9 +382,9 @@ stop_firewall() {
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done
+    done";
 
-";
+	emit '';
     }
 
     push_indent;
@@ -438,7 +437,7 @@ stop_firewall() {
 	kill \$\$
 	;;
     esac
-}";
+}\n";
 }
 
 sub generate_script_2 () {

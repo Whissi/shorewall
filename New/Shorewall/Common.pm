@@ -25,6 +25,7 @@ package Shorewall::Common;
 require Exporter;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
+use Cwd 'abs_path';
 
 use strict;
 
@@ -47,6 +48,8 @@ our @EXPORT = qw(ALLIPv4
 		 pop_indent
 		 copy
 		 copy1
+		 create_temp_aux_config
+		 finalize_aux_config
 		 
 		 @allipv4
 		 @rfc1918_networks
@@ -102,6 +105,7 @@ sub create_temp_object( $ ) {
 
     eval {
 	( $file, $dir, $suffix ) = fileparse( $objectfile );
+	$dir = abs_path $dir;
 	fatal_error "Directory $dir does not exist" unless -d $dir;
 	fatal_error "$dir is a Symbolic Link" if -l $dir;
 	fatal_error "$objectfile is a Directory" if -d $objectfile;
@@ -110,7 +114,7 @@ sub create_temp_object( $ ) {
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
-    fatal_error "$@" if $@;
+    die if $@;
 
     $file = "$file.$suffix" if $suffix;
     $file = $dir . $file;
@@ -118,6 +122,8 @@ sub create_temp_object( $ ) {
 }
 
 sub finalize_object() {
+    close $object;
+    $object = 0;
     rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
     chmod 0700, $file;
 }
@@ -245,6 +251,23 @@ sub copy1( $ ) {
 	
 	close IF;
     }
+}
+
+sub create_temp_aux_config() {
+    eval {
+	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
+    };
+
+    die if $@;
+
+}
+
+sub finalize_aux_config() {
+    close $object;
+    $object = 0;
+    rename $tempfile, "$file.conf" or fatal_error "Cannot Rename $tempfile to $file.conf: $!";
+
+    progress_message3 "Shorewall configuration compiled to $file";
 }
 
 1;

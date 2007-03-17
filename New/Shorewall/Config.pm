@@ -28,7 +28,7 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file get_configuration report_capabilities propagateconfig append_file %config %env %capabilities );
+our @EXPORT = qw(find_file get_configuration report_capabilities propagateconfig append_file generate_aux_config %config %env %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -525,4 +525,39 @@ sub append_file( $ ) {
     }   
 }
 
-;
+sub generate_aux_config() {
+    sub conditionally_add_option( $ ) {
+	my $option = $_[0];
+
+	my $value = $config{$option};
+
+	emit "[ -n \"\${$option:=$value}\" ]" if $value;
+    }
+
+    sub conditionally_add_option1( $ ) {
+	my $option = $_[0];
+
+	my $value = $config{$option};
+
+	emit "$option=\"$value\"" if $value;
+    }
+
+    create_temp_aux_config;
+
+    my $date = localtime;
+
+    emit "#
+# Shorewall auxiliary configuration file created by Shorewall version $ENV{VERSION} - $date
+#";
+    
+    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
+	conditionally_add_option $option;
+    }
+
+    conditionally_add_option1 'TC_ENABLED';
+
+    finalize_aux_config;
+
+}
+
+1;

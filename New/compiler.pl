@@ -710,6 +710,7 @@ sub compile_firewall( $ ) {
 	dump_chain_table               if $ENV{DEBUG};
 	generate_script_3;
 	finalize_object;
+	generate_aux_config;
     }
 }
 

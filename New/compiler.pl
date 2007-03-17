@@ -503,17 +503,53 @@ sub generate_script_2 () {
 }
 
 sub generate_script_3() {
-    pop_indent;
 
-    emit "}\n";
+    emit 'cat > ${VARDIR}/proxyarp << __EOF__';
+  
+    for $line ( @proxyarp ) {
+	emit_unindented $line;
+    }
+
+    emit_unindented '__EOF__';
+
+    emit_as_is "
+    if [ \$COMMAND = restore ]; then
+	iptables-restore < \$restore_file
+    fi\n";
+
+    emit 'date > ${VARDIR}/restarted';
     
+    append_file 'start';
+
+    emit 'set_state "Started"';
+
+    emit '
+    cp -f $(my_pathname) ${VARDIR}/.restore
+
+    case \$COMMAND in
+	start)
+	    logger -p kern.info "$PRODUCT started"
+	    ;;
+	restart)
+	    logger -p kern.info "$PRODUCT restarted"
+	    ;;
+	restore)
+	    logger -p kern.info "$PRODUCT restored"
+	    ;;
+    esac
+
+}
+';
+
     progress_message2 "Creating iptables-restore input...";
     create_netfilter_load;	
     emit "#\n# Start/Restart the Firewall\n#";
     emit 'define_firewall() {';
     emit '   setup_routing_and_traffic_shaping;';
     emit '   setup_netfilter';
-    emit '   [ $COMMAND = restore ] || restore_dynamic_rules';
+    emit '   restore_dynamic_rules';
+    emit '   run_iptables -N shorewall';
+    emit '   run_started_exit';
     emit "}\n";
     
     copy find_file 'prog.footer';	
@@ -669,7 +705,9 @@ sub compile_firewall( $ ) {
     progress_message2 "Setting UP Accounting...";                
     setup_accounting;
 
-    unless ( $command eq 'check' ) {
+    if ( $command eq 'check' ) {
+	progress_message3 "Shorewall configuration verified";
+    } else {
 	#
 	# Finish the script.
 	#

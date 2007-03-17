@@ -512,19 +512,25 @@ sub generate_script_3() {
 
     emit_unindented '__EOF__';
 
-    emit_as_is "
-    if [ \$COMMAND = restore ]; then
-	iptables-restore < \$restore_file
-    fi\n";
+    pop_indent;
 
-    emit 'date > ${VARDIR}/restarted';
-    
-    append_file 'start';
+    emit "}/n";
 
-    emit 'set_state "Started"';
+    progress_message2 "Creating iptables-restore input...";
+    create_netfilter_load;
 
-    emit '
-    cp -f $(my_pathname) ${VARDIR}/.restore
+    emit "#\n# Start/Restart the Firewall\n#";
+    emit 'define_firewall() {';
+    emit '   setup_routing_and_traffic_shaping;';
+    emit '   setup_netfilter';
+    emit '   restore_dynamic_rules';
+    emit '   date > ${VARDIR}/restarted';
+    emit '   run_start_exit';
+    emit '   run_iptables -N shorewall';
+    emit '   set_state "Started"';
+    emit '   run_started_exit';
+    emit '';
+    emit '   cp -f $(my_pathname) ${VARDIR}/.restore
 
     case \$COMMAND in
 	start)
@@ -536,20 +542,8 @@ sub generate_script_3() {
 	restore)
 	    logger -p kern.info "$PRODUCT restored"
 	    ;;
-    esac
+    esac';
 
-}
-';
-
-    progress_message2 "Creating iptables-restore input...";
-    create_netfilter_load;	
-    emit "#\n# Start/Restart the Firewall\n#";
-    emit 'define_firewall() {';
-    emit '   setup_routing_and_traffic_shaping;';
-    emit '   setup_netfilter';
-    emit '   restore_dynamic_rules';
-    emit '   run_iptables -N shorewall';
-    emit '   run_started_exit';
     emit "}\n";
     
     copy find_file 'prog.footer';	

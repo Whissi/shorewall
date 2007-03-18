@@ -45,6 +45,7 @@ our @EXPORT = qw( STANDARD
 		  PREROUTE_RESTRICT
 		  POSTROUTE_RESTRICT
 		  
+		  add_command
 		  add_rule
 		  insert_rule
 		  chain_base
@@ -980,8 +981,8 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
 
 	if ( $restriction == POSTROUTE_RESTRICT ) {
-	    add_command( $chainref , ('    ' x $detectcount) . "sources=\$(get_routed_networks $iiface)" );
-	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$sourcess" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"") );
+	    add_command( $chainref , ('    ' x $detectcount) . "sources=\$(get_routed_networks $iiface);" );
+	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$sourcess" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"";) );
 	    add_command( $chainref , ('    ' x $detectcount) . 'for source in $sources; do' );
 	    $rule .= '-s $source';
 	    $detectcount++;
@@ -1014,8 +1015,8 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
 
 	if ( $restriction == PREROUTE_RESTRICT ) {
-	    add_command( $chainref , ('    ' x $detectcount) . "dests=\$(find_interface_addresses $diface)" );
-	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"") );
+	    add_command( $chainref , ('    ' x $detectcount) . "dests=\$(find_interface_addresses $diface);" );
+	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\";") );
 
 	    add_command( $chainref , ('    ' x $detectcount) . 'for dest in $dests; do' );
 	    $rule .= '-d $dest';
@@ -1030,7 +1031,7 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $detectcount ) {
 	my $newchainref = new_anon_chain( $chainref );
 
-	add_command $chainref, ('    ' x $detectcount) . qq(emit "-A $chain $rule -j $newchainref->{name}");
+	add_command $chainref, ('    ' x $detectcount) . qq(emit "-A $chain $rule -j $newchainref->{name}";);
 
 	while ( $detectcount-- ) { 
 	    add_command( $chainref, ('    ' x $detectcount) . 'done' ); 
@@ -1243,7 +1244,8 @@ sub create_netfilter_load() {
 	for my $chainref ( @chains ) {
 	    my $name = $chainref->{name};
 	    for my $rule ( @{$chainref->{rules}} ) {
-		emit "-A $name $rule";
+		$rule = "-A $name $rule" unless substr( $rule, 0, 1) eq '~';
+		emit_unindented $rule;
 	    }
 	}
 

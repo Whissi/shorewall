@@ -154,6 +154,7 @@ sub setup_one_masq($$$$$$)
 
     fatal_error "Unknown interface $interface, rule \"$line\"" unless $interfaces{$interface}{root};
 
+    my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
     #
     # If there is no source or destination then allow all addresses
     #
@@ -165,6 +166,7 @@ sub setup_one_masq($$$$$$)
     #
     $rule .= do_proto $proto, $ports, '';
 	
+    my $detectaddress = 0;
     #
     # Parse the ADDRESSES column
     #
@@ -175,12 +177,20 @@ sub setup_one_masq($$$$$$)
 	    for my $addr ( split /,/, $addresses ) {
 		$target .= "--to $addr ";
 	    }
-	} elsif (  $addresses =~ /^SAME:nodst:/ ) {
+	} elsif ( $addresses =~ /^SAME:nodst:/ ) {
 	    $target = '-j SAME ';
 	    $addresses =~ s/.*://;
 	    for my $addr ( split /,/, $addresses ) {
 		$target .= "--to $addr ";
 	    }
+	} elsif ( $addresses eq 'detect' ) {
+	    $target = '-j SNAT $addrlist';
+	    add_command( $chainref , "addresses=\$(find_interface_addresses $interface); \\" );
+	    add_command( $chainref , qq([ -z "\$addresses" ] && fatal_error "Unable to determine the IP address(es) of $interface"; \\) );
+	    add_command( $chainref , 'addrlist=; \\' );
+	    add_command( $chainref , 'for address in $addresses; do \\' );
+	    add_command( $chainref , '    addrlist="$addrlist --to-source $address \\";' );
+	    add_command( $chainref , 'done' );
 	} else {
 	    my $addrlist = '';
 	    for my $addr ( split /,/, $addresses ) {
@@ -195,12 +205,12 @@ sub setup_one_masq($$$$$$)
 
 	    $target .= $addrlist;
 	}
-    }  
+    }
 
     #
     # And Generate the Rule(s)
     #
-    expand_rule ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface), POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
+    expand_rule $chainref , POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
 
     progress_message "   Masq record \"$line\" $done";
 

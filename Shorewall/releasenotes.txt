@@ -33,6 +33,10 @@ Problems corrected in Shorewall 3.4.2
 1)  The /usr/share/shorewall[-lite]/modules file has been updated for
     kernel 2.6.20.
 
+2)  The /proc/net/ip_conntrack pseudo-file has been inexplicably
+    renamed /proc/net/nf_conntrack in kernel 2.6.20. The lib.cli
+    library has been updated to look for both files.
+
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then

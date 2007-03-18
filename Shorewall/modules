@@ -22,6 +22,8 @@ loadmodule ip_tables
 loadmodule iptable_filter
 loadmodule iptable_mangle
 loadmodule ip_conntrack
+loadmodule nf_conntrack
+loadmodule nf_conntrack_ipv4
 loadmodule iptable_nat
 loadmodule xt_state
 loadmodule xt_tcpudp
@@ -33,12 +35,14 @@ loadmodule xt_connmark
 loadmodule xt_CONNMARK
 loadmodule xt_conntrack
 loadmodule xt_dccp
+loadmodule xt_hashlimit
 loadmodule xt_helper
 loadmodule xt_length
 loadmodule xt_limit
 loadmodule xt_mac
 loadmodule xt_mark
 loadmodule xt_MARK
+loadmodule xt_NFLOG
 loadmodule xt_NFQUEUE
 loadmodule xt_physdev
 loadmodule xt_pkttype
@@ -67,6 +71,29 @@ loadmodule ip_set_iphash
 loadmodule ip_set_ipmap
 loadmodule ip_set_macipmap
 loadmodule ip_set_portmap
+#
+# 2.6.20+ helpers
+#
+loadmodule nf_conntrack_ftp
+loadmodule nf_conntrack_h323
+loadmodule nf_conntrack_irc
+loadmodule nf_conntrack_netbios_ns
+loadmodule nf_conntrack_netlink
+loadmodule nf_conntrack_pptp
+loadmodule nf_conntrack_proto_gre
+loadmodule nf_conntrack_proto_sctp
+loadmodule nf_conntrack_sip
+loadmodule nf_conntrack_tftp
+loadmodule nf_nat_amanda
+loadmodule nf_nat_ftp
+loadmodule nf_nat_h323
+loadmodule nf_nat_irc
+loadmodule nf_nat
+loadmodule nf_nat_pptp
+loadmodule nf_nat_proto_gre
+loadmodule nf_nat_sip
+loadmodule nf_nat_snmp_basic
+loadmodule nf_nat_tftp
 #
 # Traffic Shaping
 #

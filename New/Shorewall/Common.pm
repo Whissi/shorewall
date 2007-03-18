@@ -117,6 +117,7 @@ sub create_temp_object( $ ) {
     die if $@;
 
     $file = "$file.$suffix" if $suffix;
+    $dir .= '/' unless substr( $dir, -1, 1 ) eq '/';
     $file = $dir . $file;
 
 }

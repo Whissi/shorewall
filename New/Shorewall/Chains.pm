@@ -222,24 +222,9 @@ my $iprangematch = 0;
 #
 my $slowstart = 0;
 #
-# Add a rule to a chain. Arguments are:
+# Sequence for naming temporary chains
 #
-#    Chain reference , Rule
-#
-sub add_rule($$)
-{
-    my ($chainref, $rule) = @_;
-    
-    $rule .= " -m comment --comment \"$comment\"" if $comment;
-
-    push @{$chainref->{rules}}, $rule;
-
-    $chainref->{referenced} = 1;
-
-    $iprangematch = 0;
-    $ipsetmatch   = 0;
-}
-
+my $chainseq;
 #
 # Add a run-time command to a chain. Arguments are:
 #
@@ -256,6 +241,24 @@ sub add_command($$)
     $chainref->{referenced} = 1;
 
     $slowstart = 1;
+}
+#
+# Add a rule to a chain. Arguments are:
+#
+#    Chain reference , Rule
+#
+sub add_rule($$)
+{
+    my ($chainref, $rule) = @_;
+    
+    $rule .= " -m comment --comment \"$comment\"" if $comment;
+
+    push @{$chainref->{rules}}, $rule;
+
+    $chainref->{referenced} = 1;
+
+    $iprangematch = 0;
+    $ipsetmatch   = 0;
 }
 
 #
@@ -415,6 +418,16 @@ sub new_chain($$)
     \%ch;
 }
 
+#
+# Create an anonymous chain
+#
+sub new_anon_chain( $ ) {
+    my $chainref = $_[0];
+    my $seq      = $chainseq++;
+    new_chain( $chainref->{table}, 'chain' . "$seq" );
+}
+
+#
 #
 # Create a chain if it doesn't exist already
 #
@@ -936,9 +949,9 @@ sub log_rule( $$$$ ) {
 # 
 sub expand_rule( $$$$$$$$$$ )
 {
-    my ($chainref , $restrictions, $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
+    my ($chainref , $restriction, $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
-
+    my $chain = $chainref->{name};
     #
     # Isolate Source Interface, if any
     #
@@ -957,11 +970,22 @@ sub expand_rule( $$$$$$$$$$ )
 	$source = '';
     }
     #
+    # Count of the number of parameters to the current rule that are to be detected at run-time
+    #
+    my $detectcount = 0;
+    #
     # Verify Inteface, if any
     #
     if ( $iiface ) {
 	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
-	$rule .= "-i $iiface ";
+	if ( $restriction == POSTROUTE_RESTRICT ) {
+	    add_command( $chainref , ('   ' x $detectcount) . "sources=\$(get_routed_networks $iiface)" );
+	    add_command( $chainref , ('   ' x $detectcount) . 'for source in $sources; do' );
+	    $rule .= '-s $source';
+	    $detectcount++;
+	} else {
+	    $rule .= "-i $iiface ";
+	}
     }
 
     #
@@ -986,7 +1010,29 @@ sub expand_rule( $$$$$$$$$$ )
     #
     if ( $diface ) {
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
-	$rule .= "-o $diface ";
+	if ( $restriction == PREROUTE_RESTRICT ) {
+	    add_command( $chainref , ('   ' x $detectcount) . "dests=\$(find_interface_addresses $diface)" );
+	    add_command( $chainref , ('   ' x $detectcount) . 'for dest in $dests; do' );
+	    $rule .= '-d $dest';
+	    $detectcount++;
+	} else {
+	    $rule .= "-o $diface ";
+	}
+    }   
+    #
+    # If people are too lazy to specify their configuration fully, we don't go out of our way to reduce the number of rules.
+    #
+    if ( $detectcount ) {
+	my $newchainref = new_anon_chain( $chainref );
+
+	add_command $chainref, qq(emit "-A $chain $rule -j $newchainref->{name}");
+
+	while ( $detectcount-- ) { 
+	    add_command( $chainref, ('   ' x $detectcount) . 'fi' ); 
+	}
+
+	$chainref = $newchainref;
+	$rule     = '';
     }
     
     #
@@ -1006,7 +1052,6 @@ sub expand_rule( $$$$$$$$$$ )
     #
     # Determine if there is Source Exclusion
     #
-
     if ( $inets ) {
 	if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $inets = $1;
@@ -1028,9 +1073,7 @@ sub expand_rule( $$$$$$$$$$ )
 
     #
     # Determine if there is Destination Exclusion
-    #    $dexcl = '';
-
-
+    #
     if ( $dnets ) {
 	if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $dnets = $1;
@@ -1121,7 +1164,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Log rule
 	#
-	log_rule_limit $loglevel , $echainref , $chainref->{name}, $disposition , '',  $logtag , 'add' , '' if $loglevel;
+	log_rule_limit $loglevel , $echainref , $chain, $disposition , '',  $logtag , 'add' , '' if $loglevel;
 	#
 	# Generate Final Rule
 	# 
@@ -1136,7 +1179,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( split /,/, $inets ) {
 		$inet = match_source_net $inet;
 		for my $dnet ( split /,/, $dnets ) {
-		    log_rule_limit $loglevel , $chainref , $chainref->{name}, $disposition , '' , $logtag , 'add' , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
+		    log_rule_limit $loglevel , $chainref , $chain, $disposition , '' , $logtag , 'add' , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
 		    add_rule $chainref, $rule . $inet . match_dest_net( $dnet ) . $onet . $target unless $disposition eq 'LOG';
 		}
 	    }

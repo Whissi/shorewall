@@ -388,6 +388,7 @@ sub process_action3( $$$$$ ) {
 	my ( $action , $level ) = split_action $target;
 	
 	expand_rule ( $chainref ,
+		      NO_RESTRICT ,
 		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user , 
 		      $source ,
 		      $dest ,

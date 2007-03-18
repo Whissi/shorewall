@@ -209,7 +209,7 @@ sub setup_one_masq($$$$$$)
     #
     # And Generate the Rule(s)
     #
-    expand_rule ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface), $rule, $networks, $destnets, '', $target, '', '' , '';
+    expand_rule ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface), POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
 
     progress_message "   Masq record \"$line\" $done";
 

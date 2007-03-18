@@ -41,6 +41,9 @@ our @EXPORT = qw( STANDARD
 		  ACTION
 		  MACRO
 		  LOGRULE
+		  NO_RESTRICT
+		  PREROUTE_RESTRICT
+		  POSTROUTE_RESTRICT
 		  
 		  add_rule
 		  insert_rule
@@ -198,6 +201,13 @@ our %targets = ('ACCEPT'       => STANDARD,
 		'forwardUPnP'  => BUILTIN  + ACTION,
 		'Limit'        => BUILTIN  + ACTION,
 		);
+
+#
+# expand_rule() restrictions
+#
+use constant { NO_RESTRICT        => 0,
+	       PREROUTE_RESTRICT  => 1,
+	       POSTROUTE_RESTRICT => 2 };
 #
 # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
 #
@@ -208,7 +218,9 @@ my $exclseq = 0;
 my $ipsetmatch   = 0;
 my $iprangematch = 0;
 #
-
+# Keep track of whether there are run-time commands in the chain rules
+#
+my $slowstart = 0;
 #
 # Add a rule to a chain. Arguments are:
 #
@@ -226,6 +238,24 @@ sub add_rule($$)
 
     $iprangematch = 0;
     $ipsetmatch   = 0;
+}
+
+#
+# Add a run-time command to a chain. Arguments are:
+#
+#    Chain reference , Command
+#
+sub add_command($$)
+{
+    my ($chainref, $command) = @_;
+    
+    $command =~ s/^/~/mg;
+
+    push @{$chainref->{rules}}, $command;
+
+    $chainref->{referenced} = 1;
+
+    $slowstart = 1;
 }
 
 #
@@ -904,9 +934,9 @@ sub log_rule( $$$$ ) {
 #
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
 # 
-sub expand_rule( $$$$$$$$$ )
+sub expand_rule( $$$$$$$$$$ )
 {
-    my ($chainref , $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
+    my ($chainref , $restrictions, $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
 
     #
@@ -1146,7 +1176,7 @@ sub insertnatjump( $$$$ ) {
 sub create_netfilter_load() {
     emit 'setup_netfilter()';
     emit '{';
-    emit '    iptables-restore << __EOF__';
+    emit( $slowstart ? '    iptables_slow_restore << __EOF__' : '    iptables-restore << __EOF__' );
 
     for my $table qw/raw nat mangle filter/ {
 	emit "*$table";

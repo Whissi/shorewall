@@ -193,6 +193,7 @@ sub setup_blacklist() {
 
 		expand_rule 
 		    ensure_filter_chain( 'blacklst' , 0 ) ,
+		    NO_RESTRICT ,
 		    do_proto( $protocol , $ports, '' ) ,
 		    $networks ,
 		    '' ,
@@ -906,6 +907,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	#
 	expand_rule
 	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ) ,
+	    PREROUTE_RESTRICT ,
 	    $rule ,
 	    $source ,
 	    $origdest ,
@@ -929,6 +931,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
  
 	expand_rule
 	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	    PREROUTE_RESTRICT ,
 	    $rule ,
 	    $source ,
 	    $dest ,
@@ -950,6 +953,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 
 	expand_rule
 	    ensure_chain ('filter', $chain ) ,
+	    NO_RESTRICT ,
 	    $rule ,
 	    $source ,
 	    $dest ,

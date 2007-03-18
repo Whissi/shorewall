@@ -164,19 +164,28 @@ sub setup_one_masq($$$$$$)
     # Handle Protocol and Ports
     #
     $rule .= do_proto $proto, $ports, '';
+    #
+    # Do we need to detect the source addresses at run-time?
+    #
+    my $detectinterface = '';
 
+    unless ( $networks =~ /.*\..*\./ ) {
+	$detectinterface = $networks;
+	$networks = '';
+    }
+	
     #
     # Parse the ADDRESSES column
     #
     if ( $addresses ) {
 	if ( $addresses =~ /^SAME:nodst:/ ) {
-	    $target = '-j SAME ';
+	    $target = '-j SAME --nodst';
 	    $addresses =~ s/.*://;
 	    for my $addr ( split /,/, $addresses ) {
 		$target .= "--to $addr ";
 	    }
 	} elsif (  $addresses =~ /^SAME:nodst:/ ) {
-	    $target = '-j SAME --nodst ';
+	    $target = '-j SAME ';
 	    $addresses =~ s/.*://;
 	    for my $addr ( split /,/, $addresses ) {
 		$target .= "--to $addr ";

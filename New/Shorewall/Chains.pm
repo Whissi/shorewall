@@ -1025,10 +1025,10 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $detectcount ) {
 	my $newchainref = new_anon_chain( $chainref );
 
-	add_command $chainref, qq(emit "-A $chain $rule -j $newchainref->{name}");
+	add_command $chainref, ('   ' x $detectcount) . qq(emit "-A $chain $rule -j $newchainref->{name}");
 
 	while ( $detectcount-- ) { 
-	    add_command( $chainref, ('   ' x $detectcount) . 'fi' ); 
+	    add_command( $chainref, ('   ' x $detectcount) . 'done' ); 
 	}
 
 	$chainref = $newchainref;

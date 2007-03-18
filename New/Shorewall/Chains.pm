@@ -978,9 +978,11 @@ sub expand_rule( $$$$$$$$$$ )
     #
     if ( $iiface ) {
 	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
+
 	if ( $restriction == POSTROUTE_RESTRICT ) {
-	    add_command( $chainref , ('   ' x $detectcount) . "sources=\$(get_routed_networks $iiface)" );
-	    add_command( $chainref , ('   ' x $detectcount) . 'for source in $sources; do' );
+	    add_command( $chainref , ('    ' x $detectcount) . "sources=\$(get_routed_networks $iiface)" );
+	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$sourcess" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"") );
+	    add_command( $chainref , ('    ' x $detectcount) . 'for source in $sources; do' );
 	    $rule .= '-s $source';
 	    $detectcount++;
 	} else {
@@ -1010,9 +1012,12 @@ sub expand_rule( $$$$$$$$$$ )
     #
     if ( $diface ) {
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
+
 	if ( $restriction == PREROUTE_RESTRICT ) {
-	    add_command( $chainref , ('   ' x $detectcount) . "dests=\$(find_interface_addresses $diface)" );
-	    add_command( $chainref , ('   ' x $detectcount) . 'for dest in $dests; do' );
+	    add_command( $chainref , ('    ' x $detectcount) . "dests=\$(find_interface_addresses $diface)" );
+	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"") );
+
+	    add_command( $chainref , ('    ' x $detectcount) . 'for dest in $dests; do' );
 	    $rule .= '-d $dest';
 	    $detectcount++;
 	} else {
@@ -1025,10 +1030,10 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $detectcount ) {
 	my $newchainref = new_anon_chain( $chainref );
 
-	add_command $chainref, ('   ' x $detectcount) . qq(emit "-A $chain $rule -j $newchainref->{name}");
+	add_command $chainref, ('    ' x $detectcount) . qq(emit "-A $chain $rule -j $newchainref->{name}");
 
 	while ( $detectcount-- ) { 
-	    add_command( $chainref, ('   ' x $detectcount) . 'done' ); 
+	    add_command( $chainref, ('    ' x $detectcount) . 'done' ); 
 	}
 
 	$chainref = $newchainref;

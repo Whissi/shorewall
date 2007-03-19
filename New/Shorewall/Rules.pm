@@ -1229,7 +1229,8 @@ sub generate_matrix() {
 
 		create_zone_dyn_chain $zone, $frwd_ref && $config{DYNAMIC_ZONES} && (@$source_ref || $type ne 'ipsec4' );
 		
-		while ( my ( $interface, $arrayref ) = each %$source_ref ) {
+		for my $interface ( keys %$source_ref ) {
+		    my $arrayref = $source_ref->{$interface};
 		    for my $hostref ( @{$arrayref} ) {
 			my $ipsec_match = match_ipsec_in $zone , $hostref;
 			for my $net ( @{$hostref->{hosts}} ) {
@@ -1268,7 +1269,8 @@ sub generate_matrix() {
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
 	for my $typeref ( values %$source_hosts_ref ) {
-	    while ( my ( $interface, $arrayref ) = each %$typeref ) {
+	    for my $interface (keys %$typeref ) {
+		my $arrayref = $typeref->{$interface};
 		for my $hostref ( @$arrayref ) {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref; 
@@ -1412,7 +1414,8 @@ sub generate_matrix() {
 	    
 	    if ( $complex ) {
 		for my $typeref ( values %$dest_hosts_ref ) {
-		    while ( my ( $interface , $arrayref ) = each %$typeref ) {
+		    for my $interface ( keys %$typeref ) {
+			my $arrayref = $typeref->{$interface};
 			for my $hostref ( @$arrayref ) {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref; 
@@ -1425,13 +1428,15 @@ sub generate_matrix() {
 		}
 	    } else {
 		for my $typeref ( values %$source_hosts_ref ) {
-		    while ( my ( $interface , $arrayref ) = each %$typeref ) {
+		    for my $interface ( keys %$typeref ) {
+			my $arrayref = $typeref->{$interface};
 			my $chain3ref = $filter_table->{forward_chain $interface};
 			for my $hostref ( @$arrayref ) {
 			    for my $net ( @{$hostref->{hosts}} ) {
 				my $source_match = match_source_net $net;
 				for my $type1ref ( values %$dest_hosts_ref ) {
-				    while ( my ( $interface1, $array1ref ) = each %$type1ref ) {
+				    for my $interface1 ( keys %$type1ref ) {
+					my $array1ref = $type1ref->{$interface1};
 					for my $host1ref ( @$array1ref ) {
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref; 
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
@@ -1457,7 +1462,8 @@ sub generate_matrix() {
 		    add_rule $frwd_ref , "-j $last_chain";
 		} else {
 		    for my $typeref ( values %$source_hosts_ref ) {
-			while ( my ( $interface , $arrayref ) = each %$typeref ) {
+			for my $interface ( keys %$typeref ) {
+			    my $arrayref = $typeref->{$interface};
 			    my $chain2ref = $filter_table->{forward_chain $interface};
 			    for my $hostref ( @$arrayref ) {
 				for my $net ( @{$hostref->{hosts}} ) {

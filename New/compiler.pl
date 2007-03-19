@@ -320,7 +320,7 @@ stop_firewall() {
 	    emit '';
 
 	    for my $hosts ( @$criticalhosts ) {
-                my ( $interface, $host ) = ( split /,/, $hosts );
+                my ( $interface, $host ) = ( split /:/, $hosts );
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
@@ -712,6 +712,7 @@ sub compile_firewall( $ ) {
 	generate_script_3;
 	finalize_object;
 	generate_aux_config;
+
     }
 }
 

@@ -194,7 +194,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    validate_mark $mark;
 
 	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes' 
-		if $cmd || $chain eq 'tcpre' || numeric_value( $cmd ) <= 0xFF || $config{HIGH_ROUTE_MARKS};
+		if $cmd && $chain eq 'tcpre' && numeric_value( $cmd ) < 0xFF && $config{HIGH_ROUTE_MARKS};
 	}
 
     expand_rule 

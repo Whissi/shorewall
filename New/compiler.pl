@@ -83,7 +83,7 @@ sub generate_script_1 {
 	emit 'CONFDIR=/etc/shorewall';
 	emit 'VARDIR=/var/lib/shorewall\n';
 	emit 'PRODUCT=\'Shorewall\'';
-	emit '. /usr/share/shoreall/lib.base';
+	emit '. /usr/share/shorewall/lib.base';
     }
 	
     emit '';
@@ -92,6 +92,7 @@ sub generate_script_1 {
 	emit "run_${exit}_exit() {";
 	push_indent;
 	append_file $exit;
+	emit 'true';
 	pop_indent;
 	emit "}\n";
     }
@@ -111,7 +112,7 @@ sub generate_script_1 {
 	emit '    fatal_error "This script requires Shorewall which do not appear to be installed on this system (did you forget \"-e\" when you compiled?)"';
 	emit 'fi';
 	emit '';
-	emit 'local version=\$(cat \${SHAREDIR}/version)';
+	emit 'local version=$(cat ${SHAREDIR}/version)';
 	emit '';
 	emit 'if [ ${SHOREWALL_LIBVERSION:-0} -lt 30203 ]; then';
 	emit '    fatal_error "This script requires Shorewall version 3.3.3 or later; current version is $version"';
@@ -514,7 +515,7 @@ sub generate_script_3() {
 
     pop_indent;
 
-    emit "}/n";
+    emit "}\n";
 
     progress_message2 "Creating iptables-restore input...";
     create_netfilter_load;

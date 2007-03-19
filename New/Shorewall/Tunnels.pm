@@ -123,8 +123,12 @@ sub setup_tunnels() {
 	
 	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
 	
-	$port     = $p     if $p;
-	$protocol = $proto if $proto;
+	if ( $p ) {
+	    $port = $p;
+	    $protocol = $proto;
+	} elsif ( $proto ) {
+	    $port = $proto;
+	}
 	
 	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
 	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
@@ -138,8 +142,12 @@ sub setup_tunnels() {
 	
 	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
 	
-	$port     = $p     if $p;
-	$protocol = $proto if $proto;
+	if ( $p ) {
+	    $port = $p;
+	    $protocol = $proto;
+	} elsif ( $proto ) {
+	    $port = $proto;
+	}
 	
 	add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
 	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
@@ -153,8 +161,12 @@ sub setup_tunnels() {
 	
 	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
 	
-	$port     = $p     if $p;
-	$protocol = $proto if $proto;
+	if ( $p ) {
+	    $port = $p;
+	    $protocol = $proto;
+	} elsif ( $proto ) {
+	    $port = $proto;
+	}
 
 	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
 	add_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";

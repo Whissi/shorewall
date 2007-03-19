@@ -46,9 +46,9 @@ sub setup_one_proxy_arp( $$$$$ ) {
     $haveroute = '-' unless $haveroute;
 
     if ( "\L$haveroute" eq 'no' || $haveroute eq '-' ) {
-	$haveroute = 0;
+	$haveroute = '';
     } elsif ( "\L$haveroute" eq 'yes' ) {
-	$haveroute = 1;
+	$haveroute = 'yes';
     } else {
 	fatal_error "Invalid value ($haveroute) for HAVEROUTE in Proxy Arp Entry \"$line\"";
     }
@@ -56,9 +56,9 @@ sub setup_one_proxy_arp( $$$$$ ) {
     $persistent = '-' unless $persistent;
 
     if ( "\L$persistent" eq 'no' || $persistent eq '-' ) {
-	$persistent = 0;
+	$persistent = '';
     } elsif ( "\L$persistent" eq 'yes' ) {
-	$persistent = 1;
+	$persistent = 'yes';
     } else {
 	fatal_error "Invalid value ($persistent) for PERSISTENT in Proxy Arp Entry \"$line\"";
     }

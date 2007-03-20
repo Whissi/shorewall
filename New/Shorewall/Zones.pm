@@ -192,8 +192,6 @@ sub determine_zones()
 
 	fatal_error("Invalid zone file entry: $line") if $extra;
 	
-	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
-
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;
 	    @parents = split ',', $2;
@@ -208,6 +206,7 @@ sub determine_zones()
 
 	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $env{MAXZONENAMELENGTH};
 	fatal_error "Invalid zone name: $zone" if $zone =~ /^all2|2all$/;
+	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
 
 	my $zoneref = $zones{$zone} = {};
 	$zoneref->{parents}    = \@parents;

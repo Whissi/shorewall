@@ -41,7 +41,7 @@
 #       This program performs rudimentary shell variable expansion on action and macro files.
 
 use strict;
-use lib '/usr/share/shorewall/Shorewall';
+use lib '/usr/share/shorewall';
 use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Chains;

@@ -94,7 +94,12 @@ sub warning_message
 sub fatal_error
 {
     print STDERR "   ERROR: @_\n";
-    close $object, if $object;
+
+    if ( $object ) {
+	close $object;
+	unlink $tempfile;
+    }
+
     system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
     die;
 }

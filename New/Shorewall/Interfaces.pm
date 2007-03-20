@@ -169,6 +169,8 @@ sub validate_interfaces_file()
 	    $interfaces{$interface}{broadcast} = \@broadcast;
 	}
 
+	my $optionsref = {};
+
 	if ( $options )
 	{
 	    my %options;
@@ -188,12 +190,12 @@ sub validate_interfaces_file()
 
 	    $zoneref->{options}{in_out}{routeback} = 1 if $options{routeback};
 
-	    $interfaces{$interface}{options} = \%options;
+	    $interfaces{$interface}{options} = $optionsref = \%options;
 	}
 
 	push @interfaces, $interface;
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@allipv4, {} ) if $zone;
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@allipv4, $optionsref ) if $zone;
 	
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

@@ -421,7 +421,7 @@ sub setup_traffic_shaping() {
 
     close TC;
 
-    my $devnum = 0;
+    my $devnum = 1;
 
     $prefix = '10' if @tcdevices > 10;
 
@@ -439,13 +439,14 @@ sub setup_traffic_shaping() {
 	emit "${dev}_exists=Yes";
 	emit "qt tc qdisc del dev $device root";
 	emit "qt tc qdisc del dev $device ingress";
+	emit "run_tc qdisc add dev $device root handle $devnum: htb default ${prefix}${defmark}";
 	emit "${dev}_mtu=\$(get_device_mtu $device)";
 	emit "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu";
 	
 	my $inband = rate_to_kbit $devref->{in_bandwidth};
 
 	if ( $inband ) {
-	    emit "run_tc add dev $device handle ffff: ingress";
+	    emit "run_tc qdisc add dev $device handle ffff: ingress";
 	    emit "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1";
 	}
 

@@ -1329,7 +1329,7 @@ sub generate_matrix() {
 		    # One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		    #
 		    no warnings;
-		    next if (  %{ $zoneref->{interfaces}} < 2 ) && ! ( $zoneref->{options}{routeback} || @$exclusions );
+		    next if (  %{ $zoneref->{interfaces}} < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 		}
 		
 		if ( $chain =~ /2all$/ ) {
@@ -1381,7 +1381,7 @@ sub generate_matrix() {
 		# One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		#
 		no warnings;
-		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{routeback} || @$exclusions );
+		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 	    }
 
 	    my $chainref    = $filter_table->{$chain};

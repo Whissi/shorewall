@@ -81,7 +81,7 @@ sub generate_script_1 {
     } else {
 	emit 'SHAREDIR=/usr/share/shorewall';
 	emit 'CONFDIR=/etc/shorewall';
-	emit 'VARDIR=/var/lib/shorewall\n';
+	emit 'VARDIR=/var/lib/shorewall';
 	emit 'PRODUCT=\'Shorewall\'';
 	emit '. /usr/share/shorewall/lib.base';
     }

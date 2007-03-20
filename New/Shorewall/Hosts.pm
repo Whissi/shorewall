@@ -50,6 +50,8 @@ sub validate_hosts_file()
 			tcpflags => 1,
 			);
 
+    my $ipsec = 0;
+
     open HOSTS, "$ENV{TMP_DIR}/hosts" or fatal_error "Unable to open stripped hosts file: $!";
 
     while ( $line = <HOSTS> ) {
@@ -89,6 +91,7 @@ sub validate_hosts_file()
 		if ( $option eq 'ipsec' ) {
 		    $type = 'ipsec';
 		    $zoneref->{options}{complex} = 1;
+		    $ipsec = 1;
 		} elsif ( $validoptions{$option}) {
 		    $options{$option} = 1;
 		} else {
@@ -107,6 +110,8 @@ sub validate_hosts_file()
     }
 
     close HOSTS;
+
+    $capabilities{POLICY_MATCH} = '' unless $ipsec or $zones{ipsec};
 }
 #
 # Returns a reference to a array of host entries. Each entry is a 

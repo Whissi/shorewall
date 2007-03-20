@@ -296,9 +296,9 @@ sub rate_to_kbit( $ ) {
 }
 
 sub calculate_quantum( $ ) {
-    my $rate = rate_to_kbit $_[0];
+    my $rate = $_[0];
     
-    int( $rate * ( 128 / $r2q ));
+    eval "int( ( $rate * 128 ) / $r2q )";
 }    
 
 sub validate_tc_device( $$$ ) {
@@ -458,6 +458,8 @@ sub setup_traffic_shaping() {
 	emit "fi\n";
     }
 
+    my $lastdevice = '';
+
     for my $class ( @tcclasses ) {
 	my ( $device, $mark ) = split /:/, $class;
 	my $devref  = $tcdevices{$device};
@@ -466,10 +468,21 @@ sub setup_traffic_shaping() {
 	my $rate    = $tcref->{rate};
 	my $quantum = calculate_quantum $rate;
 	my $dev     = chain_base $device;
+
+	if ( $lastdevice ne $device ) {
+	    if ( $lastdevice ) {
+		pop_indent;
+		emit "fi\n";
+	    }
+
+	    emit qq(if [ -n "\$${dev}_exists" ]; then);
+	    push_indent;
+	    $lastdevice = $device;
+	}
 	
 	emit "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum";
-	emit qq(run_tc "class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} mtu \$${dev}_mtu quantum \$quantum");
-	emit qq(run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10);
+	emit "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} mtu \$${dev}_mtu quantum \$quantum";
+	emit "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10";
 	#
 	# add filters
 	#
@@ -489,7 +502,13 @@ sub setup_traffic_shaping() {
 	    emit "run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
 	}
 
-	save_progress_message_short "   TC Class $device:$mark defined.";
+	save_progress_message_short qq("   TC Class $class defined.");
+	emit '';
+    }
+    
+    if ( $lastdevice ) {
+	pop_indent;
+	emit "fi\n";
     }
 }
 

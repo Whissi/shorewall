@@ -296,7 +296,7 @@ sub rate_to_kbit( $ ) {
 }
 
 sub calculate_quantum( $ ) {
-    my $rate = $_[0];
+    my $rate = rate_to_kbit $_[0];
     
     eval "int( ( $rate * 128 ) / $r2q )";
 }    
@@ -307,9 +307,12 @@ sub validate_tc_device( $$$ ) {
     fatal_error "Duplicate device ( $device ) in tcdevice \"$line\""    if $tcdevices{$device};
     fatal_error "Invalid device name ( $device ) in tcdevice \"$line\"" if $device =~ /[:+]/;
 
+    rate_to_kbit $inband;
+    rate_to_kbit $outband;
+
     $tcdevices{$device} = {};
-    $tcdevices{$device}{in_bandwidth}  = rate_to_kbit $inband;
-    $tcdevices{$device}{out_bandwidth} = rate_to_kbit $outband;
+    $tcdevices{$device}{in_bandwidth}  = $inband;
+    $tcdevices{$device}{out_bandwidth} = $outband;
     
     push @tcdevices, $device;
 }
@@ -319,7 +322,9 @@ sub convert_rate( $$ ) {
 
     $rate =~ s/\bfull\b/$full/g;
 
-    eval "int( $rate )";
+    $rate = eval "int( $rate )";
+
+    "${rate}kbit";
 }
 
 sub validate_tc_class( $$$$$$ ) {
@@ -333,7 +338,7 @@ sub validate_tc_class( $$$$$$ ) {
     
     my $devref = $tcdevices{$device};
     fatal_error "Unknown Device ( $device ) in tcclass \"$line\"" unless $devref;
-    my $full  = $devref->{out_bandwidth};
+    my $full  = rate_to_kbit $devref->{out_bandwidth};
 
     $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
@@ -435,13 +440,13 @@ sub setup_traffic_shaping() {
 	emit "qt tc qdisc del dev $device root";
 	emit "qt tc qdisc del dev $device ingress";
 	emit "${dev}_mtu=\$(get_device_mtu $device)";
-	emit qq(run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu");
+	emit "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu";
 	
 	my $inband = rate_to_kbit $devref->{in_bandwidth};
 
 	if ( $inband ) {
 	    emit "run_tc add dev $device handle ffff: ingress";
-	    emit "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate $inband burst 10k drop flowid :1";
+	    emit "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1";
 	}
 
 	$devref->{number} = $devnum++; 

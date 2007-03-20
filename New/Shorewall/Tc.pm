@@ -32,6 +32,7 @@ use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Chains;
+use Shorewall::Interfaces;
 
 use strict;
 
@@ -307,7 +308,7 @@ sub validate_tc_device( $$$ ) {
     fatal_error "Invalid device name ( $device ) in tcdevice \"$line\"" if $device =~ /[:+]/;
 
     $tcdevices{$device} = {};
-    $tcdevices{$device}{in_bandsidth}  = rate_to_kbit $inband;
+    $tcdevices{$device}{in_bandwidth}  = rate_to_kbit $inband;
     $tcdevices{$device}{out_bandwidth} = rate_to_kbit $outband;
     
     push @tcdevices, $device;
@@ -318,7 +319,7 @@ sub convert_rate( $$ ) {
 
     $rate =~ s/\bfull\b/$full/g;
 
-    int( $rate );
+    eval "int( $rate )";
 }
 
 sub validate_tc_class( $$$$$$ ) {
@@ -436,7 +437,7 @@ sub setup_traffic_shaping() {
 	emit "${dev}_mtu=\$(get_device_mtu $device)";
 	emit qq(run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu");
 	
-	my $inband = rate_to_kbit $devref->{in_band};
+	my $inband = rate_to_kbit $devref->{in_bandwidth};
 
 	if ( $inband ) {
 	    emit "run_tc add dev $device handle ffff: ingress";

@@ -675,6 +675,8 @@ sub do_proto( $$$ )
 	    $proto = $2 ? $3 : 'tcp';
 	    $ports = 'ipp2p' unless $ports;
 	    $output .= "-p $proto -m ipp2p --$ports ";
+	} else {
+	    $output .= "-p $proto ";
 	}
     } elsif ( $ports || $sports ) {
 	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO, rule \"$line\""

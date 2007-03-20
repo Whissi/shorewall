@@ -311,7 +311,7 @@ stop_firewall() {
     if ( @$criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
 	    emit '    for chain in INPUT OUTPUT; do';
-	    emit '        setpolicy \$chain ACCEPT';
+	    emit '        setpolicy $chain ACCEPT';
 	    emit "    done\n";
 
 	    emit "    setpolicy FORWARD DROP\n";

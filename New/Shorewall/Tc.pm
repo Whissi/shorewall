@@ -368,7 +368,7 @@ sub validate_tc_class( $$$$$$ ) {
 	} elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
 	    push @{$tcref->{tos}}, "$option/0xff";
 	} elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
-	    push @{$tcref->{tos}}, "$option/0xff";
+	    push @{$tcref->{tos}}, $option;
 	} else {
 	    fatal_error "Unknown option ( $option ) for tcclass \"$line\"";
 	}
@@ -503,7 +503,7 @@ sub setup_traffic_shaping() {
 	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
 	   
-	for my $tospair ( @{$devref->{tos}} ) {
+	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(//), $tospair;
 	    emit "run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
 	}

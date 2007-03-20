@@ -1235,6 +1235,8 @@ sub insertnatjump( $$$$ ) {
     }
 }
 
+my @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
+
 sub create_netfilter_load() {
     emit 'setup_netfilter()';
     emit '{';
@@ -1242,16 +1244,23 @@ sub create_netfilter_load() {
 
     for my $table qw/raw nat mangle filter/ {
 	emit "*$table";
+		
 	my @chains;
+	
+	for my $chain ( @builtins ) {
+	    my $chainref = $chain_table{$table}{$chain};
+	    if ( $chainref ) {
+		emit ":$chain $chainref->{policy} [0:0]";
+		push @chains, $chainref;
+	    }
+	}
+
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
-	    if ( $chainref->{builtin} ) {
-		emit ":$chainref->{name} $chainref->{policy} [0:0]";
-	    } else {
+	    unless ( $chainref->{builtin} ) {
 		emit ":$chainref->{name} - [0:0]";
+		push @chains, $chainref;
 	    }
-
-	    push @chains, $chainref;
 	}
 
 	for my $chainref ( @chains ) {

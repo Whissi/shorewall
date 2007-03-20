@@ -49,9 +49,9 @@ use Shorewall::Zones;
 use Shorewall::Interfaces;
 use Shorewall::Hosts;
 use Shorewall::Nat;
+use Shorewall::Providers;
 use Shorewall::Tc;
 use Shorewall::Tunnels;
-use Shorewall::Providers;
 use Shorewall::Policy;
 use Shorewall::Macros;
 use Shorewall::Actions;
@@ -645,9 +645,10 @@ sub compile_firewall( $ ) {
 	emit 'restore_default_route';
     }
     #
-    # Traffic Shaping
+    # TCRules and Traffic Shaping
     #
-    setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
+    progress_message2 "Processing TC Rules...";                  
+    setup_tc;
     #
     # Setup Masquerading/SNAT
     #
@@ -689,12 +690,6 @@ sub compile_firewall( $ ) {
     #
     progress_message2 "$doing one-to-one NAT...";                
     setup_nat;
-    #
-    # TCRules
-    #
-    progress_message2 "Processing TC Rules...";                  
-    process_tcrules;
-    #
     # Accounting.
     #
     progress_message2 "Setting UP Accounting...";                

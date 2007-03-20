@@ -31,7 +31,7 @@ use Shorewall::Chains;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers );
+our @EXPORT = qw( setup_providers %routemarked_interfaces $routemarked_interfaces);
 our @EXPORT_OK = ( );
 our @VERSION = 1.00;
 
@@ -40,6 +40,9 @@ use constant { LOCAL_NUMBER   => 255,
 	       DEFAULT_NUMBER => 253,
 	       UNSPEC_NUMBER  => 0
 	       };
+
+our %routemarked_interfaces;
+our $routemarked_interfaces = 0;
 
 my $balance             = 0;
 my $first_default_route = 1;
@@ -51,8 +54,6 @@ my %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
 		   unspec  => { number => UNSPEC_NUMBER  , mark => 0 } );
 
 my @providers;
-my %routemarked_interfaces;
-my $routemarked_interfaces = 0;
 
 #
 # Set up marking for 'tracked' interfaces. Unline in Shorewall 3.x, we add these rules inconditionally, even if the associated interface isn't up.

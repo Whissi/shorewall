@@ -67,6 +67,7 @@ our @EXPORT = qw( STANDARD
 		  new_chain
 		  ensure_chain
 		  ensure_filter_chain
+		  ensure_mangle_chain
 		  new_standard_chain
 		  new_builtin_chain
 		  initialize_chain_table
@@ -466,6 +467,16 @@ sub ensure_filter_chain( $$ )
 
     $chainref->{referenced} = 1;
 	    
+    $chainref;
+}
+
+sub ensure_mangle_chain($) {
+    my $chain = $_[0];
+
+    my $chainref = ensure_chain 'mangle', $chain;
+    
+    $chainref->{referenced} = 1;
+
     $chainref;
 }
 

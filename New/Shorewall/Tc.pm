@@ -33,11 +33,12 @@ use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Chains;
 use Shorewall::Interfaces;
+use Shorewall::Providers;
 
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( process_tcrules setup_traffic_shaping );
+our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule );
 our @VERSION = 1.00;
 
@@ -220,39 +221,6 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 }
 	
 #
-# Process the tcrules file
-#
-sub process_tcrules() {
-    
-    open TC, "$ENV{TMP_DIR}/tcrules" or fatal_error "Unable to open stripped tcrules file: $!";
-
-    while ( $line = <TC> ) {
-
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $extra ) = split /\s+/, $line;
-
-	if ( $mark eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		$comment =~ s/\s*$//;
-	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-	    }
-	} else {
-	    fatal_error "Invalid tcrule: \"$line\"" if $extra;
-	    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
-	}
-	
-    }
-
-    close TC;
-
-    $comment = '';
-}
-
-#
 # Perl version of Arn Bernin's 'tc4shorewall'.
 #
 # TCDevices Table
@@ -313,7 +281,7 @@ sub validate_tc_device( $$$ ) {
     $tcdevices{$device} = {};
     $tcdevices{$device}{in_bandwidth}  = $inband;
     $tcdevices{$device}{out_bandwidth} = $outband;
-    
+
     push @tcdevices, $device;
 }
 
@@ -366,8 +334,10 @@ sub validate_tc_class( $$$$$$ ) {
 	} elsif ( $option eq 'tcp-ack' ) {
 	    $tcref->{tcp_ack} = 1;
 	} elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
+	    ( undef, $option ) = split /=/, $option;
 	    push @{$tcref->{tos}}, "$option/0xff";
 	} elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
+	    ( undef, $option ) = split /=/, $option;
 	    push @{$tcref->{tos}}, $option;
 	} else {
 	    fatal_error "Unknown option ( $option ) for tcclass \"$line\"";
@@ -470,7 +440,8 @@ sub setup_traffic_shaping() {
 	my ( $device, $mark ) = split /:/, $class;
 	my $devref  = $tcdevices{$device};
 	my $tcref   = $tcclasses{$device}{$mark};
-	my $classid = "$devref->{number}:${prefix}${mark}";
+	my $devnum  = $devref->{number};
+	my $classid = "$devnum:${prefix}${mark}";
 	my $rate    = $tcref->{rate};
 	my $quantum = calculate_quantum $rate;
 	my $dev     = chain_base $device;
@@ -493,7 +464,7 @@ sub setup_traffic_shaping() {
 	# add filters
 	#
 	if ( "$capabilities{CLASSIFY_TARGET}" && known_interface $device ) {
-	    emit "run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
+	    add_rule ensure_chain( 'mangle' , 'tcpost' ), " -o $device -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
 	} else {
 	    emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid";
 	}
@@ -504,7 +475,7 @@ sub setup_traffic_shaping() {
 
 	   
 	for my $tospair ( @{$tcref->{tos}} ) {
-	    my ( $tos, $mask ) = split q(//), $tospair;
+	    my ( $tos, $mask ) = split q(/), $tospair;
 	    emit "run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
 	}
 
@@ -515,6 +486,77 @@ sub setup_traffic_shaping() {
     if ( $lastdevice ) {
 	pop_indent;
 	emit "fi\n";
+    }
+}
+
+#
+# Process the tcrules file and setup traffic shaping
+#
+sub setup_tc() {
+
+    ensure_mangle_chain 'tcpre';
+
+    if ( $capabilities{MANGLE_FORWARD} ) {
+	ensure_mangle_chain 'tcfor';
+	ensure_mangle_chain 'tcpost';
+    }
+    
+    open TC, "$ENV{TMP_DIR}/tcrules" or fatal_error "Unable to open stripped tcrules file: $!";
+
+    while ( $line = <TC> ) {
+
+	chomp $line;
+	$line =~ s/\s+/ /g;
+
+	my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $extra ) = split /\s+/, $line;
+
+	if ( $mark eq 'COMMENT' ) {
+	    if ( $capabilities{COMMENTS} ) {
+		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+		$comment =~ s/\s*$//;
+	    } else {
+		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+	    }
+	} else {
+	    fatal_error "Invalid tcrule: \"$line\"" if $extra;
+	    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
+	}
+	
+    }
+
+    close TC;
+
+    $comment = '';
+
+    my $mark_part = '';
+
+    if ( $routemarked_interfaces && ! $config{TC_EXPERT} ) {
+	$mark_part = '-m mark --mark 0/0xFF00';
+	
+	for my $interface ( keys %routemarked_interfaces ) {
+	    add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
+	}
+    }
+
+    add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
+    add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcpre";
+
+    if ( $capabilities{MANGLE_FORWARD} ) {
+	add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
+	add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
+    }
+
+    if ( $config{HIGH_ROUTE_MARKS} ) {
+	for my $chain qw(INPUT FORWARD POSTROUTING) {
+	    insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark -0xFF';
+	}
+    }
+
+    if ( $config{TC_SCRIPT} ) {
+	save_progress_message 'Setting up Traffic Control...';
+	append_file $config{TC_SCRIPT};
+    } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
+	setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
     }
 }
 

@@ -141,6 +141,9 @@ sub finalize_object() {
 #
 sub emit ( $ ) {
     if ( $object ) {
+	#
+	# 'compile' as opposed to 'check'
+	#
 	my $line = $_[0];
 
 	unless ( $line =~ /^\s*$/ ) {
@@ -164,6 +167,10 @@ sub emit_unindented( $ ) {
     print $object "$_[0]\n" if $object;
 }
 
+#
+# Write passed message to the object with no indentation or added newline.
+#
+
 sub emit_as_is( $ ) {
     print $object "$_[0]" if $object;
 }
@@ -172,7 +179,11 @@ sub emit_as_is( $ ) {
 # Write a progress_message2 command to the output file.
 #
 sub save_progress_message( $ ) {
-    emit "\nprogress_message2 $_[0]\n" if $object;
+    emit "\nprogress_message2 @_\n" if $object;
+}
+
+sub save_progress_message_short( $ ) {
+    emit "progress_message $_[0]" if $object;
 }
 
 sub progress_message {
@@ -211,10 +222,6 @@ sub push_indent() {
 
 sub pop_indent() {
     $indent = substr( $indent , 0 , ( length $indent ) - 4 );
-}
-
-sub save_progress_message_short( $ ) {
-    emit "progress_message $_[0]" if $object;
 }
 
 #

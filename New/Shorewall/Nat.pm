@@ -35,6 +35,9 @@ our @EXPORT = qw( setup_masq setup_nat );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
+my @addresses_to_add;
+my %addresses_to_add;
+
 #
 # Handle IPSEC Options in a masq record
 #
@@ -130,14 +133,14 @@ sub setup_one_masq($$$$$$)
     # Parse the remaining part of the INTERFACE column
     #
     if ( $fullinterface =~ /^([^:]+)::([^:]*)$/ ) {
-	$add_snat_aliases = undef;
+	$add_snat_aliases = 0;
 	$destnets = $2;
 	$fullinterface = $1;
     } elsif ( $fullinterface =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
 	$destnets = $2;
 	$fullinterface = $1;
     } elsif ( $fullinterface =~ /^([^:]+):$/ ) {
-	$add_snat_aliases = undef;
+	$add_snat_aliases = 0;
 	$fullinterface = $1;
     } elsif ( $fullinterface =~ /^([^:]+):([^:]*)$/ ) {
 	my ( $one, $two ) = ( $1, $2 );
@@ -205,15 +208,17 @@ sub setup_one_masq($$$$$$)
 
 	    $target .= $addrlist;
 	}
+    } else {
+	$add_snat_aliases = 0;
     }
-
     #
     # And Generate the Rule(s)
     #
     expand_rule $chainref , POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
 
-    progress_message "   Masq record \"$line\" $done";
 
+    progress_message "   Masq record \"$line\" $done";
+    
 }
 
 #

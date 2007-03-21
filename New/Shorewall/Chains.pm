@@ -1254,6 +1254,11 @@ sub create_netfilter_load() {
     }
 
     emit '__EOF__';
+
+    emit 'if [ $? != 0 ]; then';
+    emit '    fatal_error "iptables-restore Failed"';
+    emit "fi\n";
+
     emit "}\n";
 }
        

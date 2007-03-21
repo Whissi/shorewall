@@ -589,19 +589,20 @@ sub process_actions3 () {
 	
 	my @tag = split /,/, $tag;
 	
-	my $count = $tag[1] + 1;
-	
 	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
-	
-	add_rule $chainref, '-m recent --name $tag[0] --set';
+
+	my $set   = $tag[0];
+	my $count = $tag[1] + 1;
+
+	add_rule $chainref, "-m recent --name $set --set";
 	
 	if ( $level ) {
 	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
 	    add_rule $xchainref, '-j DROP';
-	    add_rule $chainref,  "-m recent --name $tag[0] --update --seconds $tag[2] --hitcount $count -j $chainref->{name}%";
+	    add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $chainref->{name}%";
 	} else {
-	    add_rule $chainref, "-m recent --update --name $tag[0] --seconds $tag[2] --hitcount $count -j DROP";
+	    add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
 	}
 	
 	add_rule $chainref, '-j ACCEPT';

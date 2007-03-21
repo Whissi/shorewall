@@ -32,7 +32,6 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( add_group_to_zone 
 		  validate_interfaces_file
-		  dump_interface_info 
 		  known_interface 
 		  find_interfaces_by_option
 		  get_interface_option
@@ -204,47 +203,6 @@ sub validate_interfaces_file()
     }		
 		
     close INTERFACES;
-}
-
-#
-# Dump the tables built by validate_interface_file
-#
-sub dump_interface_info()
-{
-    print "\n";
-
-    for my $interface ( @interfaces ) {
-	my $interfaceref = $interfaces{$interface};
-	print "Interface: $interface\n";
-	my $root = $interfaceref->{root};
-	print "   Root = $root\n";
-	my $bcastref = $interfaceref->{broadcast};
-	if ( $bcastref ) {
-	    my $spaces = '';
-	    print '   Broadcast: ';
-	    for my $addr (@$bcastref) {
-		print "${spaces}${addr}\n";
-		$spaces = '              ';
-	    }
-	}
-
-	my $options = $interfaceref->{options};
-
-	if ( $options ) {
-	    print '     Options: ';
-	    my $spaces = '';
-	    for my $option ( keys %$options ) {
-		my $val = ${$options}{$option};
-		print "${spaces}${option} = $val\n";
-		$spaces = '              ';
-	    }
-	}
-
-	my $zone = $interfaceref->{zone};
-	print "        zone: $zone\n" if $zone;
-    }
-
-    print "\n";
 }
 
 #

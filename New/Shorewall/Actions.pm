@@ -42,7 +42,6 @@ our @EXPORT = qw( merge_levels
 		  process_actions1
 		  process_actions2
 		  process_actions3
-		  dump_action_table
 		  
 		  %usedactions 
 		  %default_actions 
@@ -633,29 +632,6 @@ sub process_actions3 () {
 	    process_action3 $chainref, $wholeaction, $action, $level, $tag;
 	}
     }   
-}
-
-sub dump_action_table() {
-    my $action;
-
-    print "\n";
-
-    for $action ( sort keys %actions ) {
-	print "Action $action\n";
-	my $already = 0;
-	for my $requires ( keys %{$actions{$action}{requires}} ) {
-	    print "   Requires:\n" unless $already;
-	    print "      $requires\n";
-	    $already = 1;
-	}
-    }
-
-    print "\nAction Chains:\n";
-
-    for $action ( sort keys %usedactions ) {
-	$action .= ':none' unless $action =~ /:/;
-	print "   $action = $logactionchains{$action}{name}\n";
-    }
 }
 
 1;

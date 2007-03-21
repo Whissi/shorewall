@@ -36,7 +36,6 @@ our @EXPORT = qw( NOTHING
 		  IPSECMODE
 	     
 		  determine_zones
-		  dump_zone_info
 		  zone_report
 
 		  @zones 
@@ -264,93 +263,6 @@ sub determine_zones()
 	    }
 	}
     }
-}
-
-#
-# Dump out all information about zones.
-#
-sub dump_zone_info() 
-{
-    print "\n";
-
-    for my $zone ( @zones )
-    {
-	my $zoneref   = $zones{$zone};
-	my $typeref   = $zoneref->{hosts};
-	my $optionref = $zoneref->{options};
-	my $zonetype  = $zoneref->{type};
-
-	print "Zone: $zone\n";
-
-	print "   Type: $zonetype\n";
-	print "   Parents:\n";
-
-	my $parentsref = $zoneref->{parents};
-
-	for my $parent ( @$parentsref ) {
-	    print "      $parent\n";
-	}
-
-	if ( %$optionref ) {
-	    print "   Options:\n";
-
-	    for my $opttype ( keys %$optionref ) {
-		if ( $opttype eq 'complex' ) {
-		    print "      Complex: $optionref->{$opttype}\n";
-		} else {
-		    print "      $opttype:\n";
-		    while ( my ( $option, $val ) = each %{$optionref->{$opttype}} ) { print "         $option=$val\n"; }
-		}
-	    }
-	}
-	
-	if ( $typeref ) {
-	    print "   Host Groups:\n";
-	    while ( my ( $type, $interfaceref ) =  ( each %$typeref ) ) {
-		print "      Type: $type\n";
-	
-		for my $interface ( sort keys %$interfaceref ) {
-		    my $arrayref = $interfaceref->{$interface};
-		    
-		    print "         Interface: $interface\n";
-		    
-		    for my $groupref ( @$arrayref ) {
-			my $hosts     = $groupref->{hosts};
-			my $options   = $groupref->{options};
-			my $ipsec     = $groupref->{ipsec};
-			
-			if ( $ipsec ) {
-			    print "            Ipsec: $ipsec\n" ;
-			}
-
-			if ( $hosts ) {
-			    my $space = '';
-			    print "            Hosts: " ;
-			    for my $host ( @{$hosts} ) {
-				print "${space}${host}\n";
-				$space = '            ';
-			    }
-			}       
-			
-			if ( $options ) {
-			    print "            Options: ";
-			    for my $option (sort keys %$options ) {
-				print "$option ";
-			    }
-			    print "\n";
-			}
-		    }
-		}
-	    }
-	} else {
-	    #
-	    # Empty ?
-	    #
-	    print "   ***Empty***\n" if $zonetype ne 'firewall';
-	}
-    }
-
-    print "\n";
 }
 
 #

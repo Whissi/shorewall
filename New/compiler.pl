@@ -31,7 +31,6 @@
 #	    EXPORT=Yes                          -e option specified to /sbin/shorewall
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
-#           DEBUG=Yes                           Debugging Enabled
 #           VERSION                             Shorewall Version
 #           TMP_DIR                             Temporary Directory containing stripped copies
 #                                               of all configuration files. Shell variable substitution 
@@ -587,19 +586,16 @@ sub compile_firewall( $ ) {
     #
     progress_message2 "Validating interfaces file...";           
     validate_interfaces_file;             
-    dump_interface_info                if $ENV{DEBUG};
     #
     # Process the hosts file.
     #
     progress_message2 "Validating hosts file...";                
     validate_hosts_file;
-
-    if ( $ENV{DEBUG} ) {
-	dump_zone_info;
-    } elsif ( $ENV{VERBOSE} > 1 ) {
-	progress_message "Determining Hosts in Zones...";        
-	zone_report;
-    }
+    #
+    # Report zone contents
+    #
+    progress_message "Determining Hosts in Zones...";        
+    zone_report;
     #
     # Do action pre-processing.
     #
@@ -684,7 +680,6 @@ sub compile_firewall( $ ) {
     #
     progress_message2 'Applying Policies...';                    
     apply_policy_rules;                    
-    dump_action_table         if $ENV{DEBUG};
     #
     # Setup Nat
     #
@@ -703,7 +698,6 @@ sub compile_firewall( $ ) {
 	#
 	progress_message2 'Generating Rule Matrix...';           
 	generate_matrix;                       
-	dump_chain_table               if $ENV{DEBUG};
 	generate_script_3;
 	finalize_object;
 	#
@@ -718,7 +712,6 @@ sub compile_firewall( $ ) {
 #                        E x e c u t i o n   S t a r t s   H e r e
 #
 
-$ENV{VERBOSE} = 2 if $ENV{DEBUG};
 #
 # Get shorewall.conf and capabilities.
 #

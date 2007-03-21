@@ -71,7 +71,6 @@ our @EXPORT = qw( STANDARD
 		  new_standard_chain
 		  new_builtin_chain
 		  initialize_chain_table
-		  dump_chain_table
 		  finish_section
 		  newexclusionchain
 		  clearrule
@@ -523,43 +522,6 @@ sub initialize_chain_table()
     if ( $capabilities{MANGLE_FORWARD} ) {
 	for my $chain qw/ FORWARD POSTROUTING / {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
-	}
-    }
-}
-
-#
-# Dump the contents of the Chain Table
-#
-sub dump_chain_table()
-{
-    print "\n";
-
-    for my $table qw/filter nat mangle/ {
-	print "Table: $table\n";
-
-	for my $chain ( sort keys %{$chain_table{$table}} ) {
-	    my $chainref = $chain_table{$table}{$chain};
-	    print "   Chain $chain:\n";
-	    
-	    if ( $chainref->{is_policy} ) {
-		print "      This is a policy chain\n";
-		my $val = $chainref->{is_optional} ? 'Yes' : 'No';
-		print "         Optional:  $val\n";
-		print "         Log Level: $chainref->{loglevel}\n" if $chainref->{loglevel};
-		print "         Syn Parms: $chainref->{synparams}\n" if $chainref->{synparams};
-		print "         Default:   $chainref->{default}\n" if $chainref->{default};
-	    }
-		
-	    print "      Policy chain: $chainref->{policychain}{name}\n" if $chainref->{policychain} ;
-	    print "      Policy: $chainref->{policy}\n"                  if $chainref->{policy};
-	    print "      Referenced\n" if $chainref->{referenced};
-
-	    if ( @{$chainref->{rules}} ) {
-		print "      Rules:\n";
-		for my $rule (  @{$chainref->{rules}} ) {
-		    print "         $rule\n";
-		}
-	    }   
 	}
     }
 }

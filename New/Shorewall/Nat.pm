@@ -361,3 +361,5 @@ sub setup_nat() {
 
     $comment = '';
 }
+
+1;

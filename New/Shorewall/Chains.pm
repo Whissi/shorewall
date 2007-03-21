@@ -808,12 +808,14 @@ sub do_user( $ ) {
 }
 
 #
-# Create a "-m tos" match for the passed TOS[/MASK]
+# Create a "-m tos" match for the passed TOS
 #
 sub do_tos( $ ) {
     my $tos = $_[0];
+    
+    $tos = '-' unless $tos;
 
-    $tos && $tos ne '-' ? "-m tos --tos $tos " : '';
+    $tos ne '-' ? "-m tos --tos $tos " : '';
 }    
 	
 #
@@ -821,6 +823,7 @@ sub do_tos( $ ) {
 #
 sub iprange_match() {
     my $match = '';
+
     unless ( $iprangematch ) {
 	$match = '-m iprange ';
 	$iprangematch = 1;
@@ -859,7 +862,7 @@ sub match_dest_net( $ ) {
     if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 
-	iprange_match . "${invert}--src-range $net ";
+	iprange_match . "${invert}--dst-range $net ";
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-d ! $net ";

@@ -84,6 +84,7 @@ our @EXPORT = qw( STANDARD
 		  do_test
 		  do_ratelimit
 		  do_user
+		  do_tos
 		  iprange_match
 		  match_source_net
 		  match_dest_net
@@ -805,6 +806,15 @@ sub do_user( $ ) {
 
     $rule;
 }
+
+#
+# Create a "-m tos" match for the passed TOS[/MASK]
+#
+sub do_tos( $ ) {
+    my $tos = $_[0];
+
+    $tos && $tos ne '-' ? "-m tos --tos $tos " : '';
+}    
 	
 #
 # Avoid generating a second '-m iprange' in a single rule.

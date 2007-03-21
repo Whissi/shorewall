@@ -207,7 +207,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     expand_rule 
 	ensure_chain( 'mangle' , $chain ) ,
 	NO_RESTRICT ,
-	do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) ,
+	do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
 	$source ,
 	$dest ,
 	'' ,

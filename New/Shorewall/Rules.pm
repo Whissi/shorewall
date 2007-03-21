@@ -37,10 +37,23 @@ use Shorewall::Proc;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( add_common_rules setup_mac_lists process_criticalhosts process_routestopped process_rules generate_matrix setup_mss );
+our @EXPORT = qw( add_common_rules 
+		  setup_mac_lists
+		  process_criticalhosts
+		  process_routestopped
+		  process_rules
+		  generate_matrix
+		  setup_mss
+
+		  @rule_chains
+		  );
 our @EXPORT_OK = qw( process_rule process_rule1 );
 our @VERSION = 1.00;
 
+#
+# Keep track of chains for the /var/lib/shorewall[-lite]/chains file
+#
+our @rule_chains;
 #
 # Set to one if we find a SECTION
 #
@@ -1265,6 +1278,12 @@ sub generate_matrix() {
 		insert_exclusions $dnat_ref, $exclusions if $dnat_ref->{referenced};
 	    }
 	}
+
+	if ( $config{DYNAMIC_ZONES} ) {
+	    push @rule_chains , [ $firewall_zone , $zone , $chain1 ];
+	    push @rule_chains , [ $zone , $firewall_zone , $chain2 ];
+	}
+
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
@@ -1373,6 +1392,8 @@ sub generate_matrix() {
 	    my $chain = rules_target $zone, $zone1;
 
 	    next unless $chain;
+
+	    push @rule_chains, [ $zone , $zone1 , $chain ] if $config{DYNAMIC_ZONES};
 	    
 	    my $num_ifaces = 0;
 	    

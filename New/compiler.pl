@@ -143,6 +143,8 @@ sub generate_script_1 {
 	emit '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"';
     }
 
+    append_file 'params' if $config{EXPORTPARAMS};
+
     emit '';
     emit "STOPPING=";
     emit "COMMENT=\n";        # Fixme -- eventually this goes but it's ok now to maintain compability with lib.base
@@ -510,6 +512,14 @@ sub generate_script_3() {
   
     for $line ( @proxyarp ) {
 	emit_unindented $line;
+    }
+
+    emit_unindented '__EOF__';
+
+    emit 'cat > ${VARDIR}/chains << __EOF__';
+  
+    for my $arrayref ( @rule_chains ) {
+	emit_unindented "@$arrayref";
     }
 
     emit_unindented '__EOF__';

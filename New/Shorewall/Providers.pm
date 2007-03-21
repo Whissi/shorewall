@@ -31,7 +31,7 @@ use Shorewall::Chains;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers %routemarked_interfaces $routemarked_interfaces);
+our @EXPORT = qw( setup_providers @routemarked_interfaces);
 our @EXPORT_OK = ( );
 our @VERSION = 1.00;
 
@@ -42,7 +42,7 @@ use constant { LOCAL_NUMBER   => 255,
 	       };
 
 our %routemarked_interfaces;
-our $routemarked_interfaces = 0;
+our @routemarked_interfaces;
 
 my $balance             = 0;
 my $first_default_route = 1;
@@ -241,7 +241,7 @@ sub setup_providers() {
 		    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface};
 		    fatal_error "The 'track' option requires a numeric value in the MARK column - Provider \"$line\"" if $mark eq '-';
 		    $routemarked_interfaces{$interface} = $mark;
-		    $routemarked_interfaces++;
+		    push @routemarked_interfaces, $interface;
 		} elsif ( $option =~ /^balance=(\d+)/ ) {
 		    balance_default_route $1 , $gateway, $interface;
 		} elsif ( $option eq 'balance' ) {
@@ -437,7 +437,7 @@ sub setup_providers() {
     pop_indent;
     emit "fi\n";
     
-    setup_route_marking if $routemarked_interfaces;
+    setup_route_marking if @routemarked_interfaces;
 
 }
 

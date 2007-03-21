@@ -5660,7 +5660,13 @@ usage() {
 #
 debug='-w'
 
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; debug='-wd' ; shift ; }
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+
+if [ "$PROFILE" ]; then
+    debug='-wd:DProf'
+elif [ "$DEBUG" ]; then
+    debug='-wd'
+fi
 
 NOLOCK=
 

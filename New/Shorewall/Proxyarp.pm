@@ -32,13 +32,13 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( 
 		  setup_proxy_arp
-		  @proxyarp
+		  dump_proxy_arp
 		  );
 
 our @EXPORT_OK = qw( );
 our @VERSION = 1.00;
 
-our @proxyarp;
+my @proxyarp;
 
 sub setup_one_proxy_arp( $$$$$ ) {
     my ( $address, $interface, $external, $haveroute, $persistent) = @_;
@@ -125,6 +125,12 @@ else
     error_message \"WARNING: Unable to enable proxy ARP on $interface\"
 fi\n";
 	}
+    }
+}
+
+sub dump_proxy_arp() {
+    for $line ( @proxyarp ) {
+	emit_unindented $line;
     }
 }
 

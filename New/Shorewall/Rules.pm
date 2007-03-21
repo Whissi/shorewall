@@ -44,8 +44,7 @@ our @EXPORT = qw( add_common_rules
 		  process_rules
 		  generate_matrix
 		  setup_mss
-
-		  @rule_chains
+		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 );
 our @VERSION = 1.00;
@@ -53,7 +52,7 @@ our @VERSION = 1.00;
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
 #
-our @rule_chains;
+my @rule_chains;
 #
 # Set to one if we find a SECTION
 #
@@ -1543,5 +1542,11 @@ sub setup_mss( $ ) {
 
     add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option";
 }
+
+sub dump_rule_chains() {
+    for my $arrayref ( @rule_chains ) {
+	emit_unindented "@$arrayref";
+    }
+}    
 
 1;

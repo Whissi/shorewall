@@ -37,6 +37,7 @@ our @EXPORT = qw( NOTHING
 	     
 		  determine_zones
 		  zone_report
+		  dump_zone_contents
 
 		  @zones 
 		  %zones
@@ -301,6 +302,47 @@ sub zone_report()
 	}
     
 	print STDERR "      *** $zone is an EMPTY ZONE ***\n" unless $printed || $type eq 'firewall';
+    }
+}
+
+sub dump_zone_contents() 
+{
+    for my $zone ( @zones )
+    {
+	my $zoneref    = $zones{$zone};
+	my $hostref    = $zoneref->{hosts};
+	my $type       = $zoneref->{type};
+	my $optionref  = $zoneref->{options};
+	my $exclusions = $zoneref->{exclusions};
+	my $entry      =  "$zone $type";
+
+	if ( $hostref ) {
+	    for my $type ( sort keys %$hostref ) {
+		my $interfaceref = $hostref->{$type};
+		
+		for my $interface ( sort keys %$interfaceref ) {
+		    my $arrayref = $interfaceref->{$interface};
+		    for my $groupref ( @$arrayref ) {
+			my $hosts     = $groupref->{hosts};
+			if ( $hosts ) {
+			    my $grouplist = join ',', ( @$hosts );
+			    $entry .= " $interface:$grouplist";
+			}
+		    }
+
+		}
+	    }
+	}
+
+	if ( @$exclusions ) {
+	    $entry .= ' exclude';
+       
+	    for my $host ( @$exclusions ) {
+		$entry .= " $host";
+	    }
+	}   
+	
+	emit_unindented $entry;
     }
 }
 

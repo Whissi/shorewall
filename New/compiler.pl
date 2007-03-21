@@ -509,19 +509,21 @@ sub generate_script_2 () {
 sub generate_script_3() {
 
     emit 'cat > ${VARDIR}/proxyarp << __EOF__';
-  
-    for $line ( @proxyarp ) {
-	emit_unindented $line;
-    }
 
+    dump_proxy_arp;
+  
     emit_unindented '__EOF__';
 
     emit 'cat > ${VARDIR}/chains << __EOF__';
-  
-    for my $arrayref ( @rule_chains ) {
-	emit_unindented "@$arrayref";
-    }
 
+    dump_rule_chains;
+    
+    emit_unindented '__EOF__';
+
+    emit 'cat > ${VARDIR}/zones << __EOF__';
+
+    dump_zone_contents;
+    
     emit_unindented '__EOF__';
 
     pop_indent;

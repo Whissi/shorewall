@@ -413,7 +413,7 @@ stop_firewall() {
 	emit 'progress_message2 IP Forwarding Disabled!';
     }
     
-    append_file 'stopped';
+    emit 'run_stopped_exit';
 
     pop_indent;
 
@@ -706,6 +706,9 @@ sub compile_firewall( $ ) {
 	dump_chain_table               if $ENV{DEBUG};
 	generate_script_3;
 	finalize_object;
+	#
+	# And generate the auxilary config file
+	#
 	generate_aux_config;
 
     }

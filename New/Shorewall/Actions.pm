@@ -36,7 +36,7 @@ our @EXPORT = qw( merge_levels
 		  split_action 
 		  isolate_basic_target
 		  add_requiredby 
-		  createlogactionchain 
+		  createlogactionchain
 		  createactionchain 
 		  find_logactionchain
 		  process_actions1
@@ -185,11 +185,21 @@ sub createlogactionchain( $$ ) {
 
     $level = 'none' unless $level;
 
-    $logactionchains{"$action:$level"} = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
+    $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
 
-    #
-    # Fixme -- action file
-    #
+    unless ( $targets{$action} & STANDARD ) {
+	my $file = find_file $chain;
+
+	if ( -f $file ) {
+	    progress_message "Processing $file...";
+
+	    unless ( my $return = do $file ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+		fatal_error "Couldn't do $file: $!"    unless defined $return;
+		fatal_error "Couldn't run $file"       unless $return;
+	    }
+	}
+    }
 }
 
 #

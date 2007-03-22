@@ -302,6 +302,7 @@ sub apply_policy_rules() {
 	    }
 
 	    if ( $name =~ /^all2|2all$/ ) {
+		run_user_exit $chainref;
 		policy_rules $chainref , $policy, $loglevel , $default;
 	    }
 
@@ -311,7 +312,11 @@ sub apply_policy_rules() {
     for my $zone ( @zones ) {
 	for my $zone1 ( @zones ) {
 	    my $chainref = $filter_table->{"${zone}2${zone1}"};
-	    default_policy $chainref, $zone, $zone1 if $chainref->{referenced};
+
+	    if ( $chainref->{referenced} ) {
+		run_user_exit $chainref;
+		default_policy $chainref, $zone, $zone1;
+	    }
 	}
     }
 }
@@ -327,6 +332,8 @@ sub apply_policy_rules() {
 #
 sub complete_standard_chain ( $$$ ) {
     my ( $stdchainref, $zone, $zone2 ) = @_;
+
+    run_user_exit $stdchainref;
 
     my $ruleschainref = $filter_table->{"${zone}2${zone2}"};
     my ( $policy, $loglevel, $default ) = ( 'DROP', 'info', $config{DROP_DEFAULT} );

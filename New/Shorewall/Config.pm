@@ -28,7 +28,7 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file get_configuration report_capabilities propagateconfig append_file generate_aux_config %config %env %capabilities );
+our @EXPORT = qw(find_file get_configuration report_capabilities propagateconfig append_file run_user_exit generate_aux_config %config %env %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -523,6 +523,24 @@ sub append_file( $ ) {
 	    copy1 $user_exit;
 	}
     }   
+}
+
+#
+# Run a Perl extension script
+#
+sub run_user_exit( $ ) {
+    my $chainref = $_[0];
+    my $file = find_file $chainref->{name};
+
+    if ( -f $file ) {
+	progress_message "Processing $file...";
+
+	unless (my $return = do $file) {
+	    fatal_error "Couldn't parse $file: $@" if $@;
+	    fatal_error "Couldn't do $file: $!"    unless defined $return;
+	    fatal_error "Couldn't run $file"       unless $return;
+	}
+    }
 }
 
 sub generate_aux_config() {

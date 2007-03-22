@@ -164,7 +164,6 @@ sub setup_one_masq($$$$$$)
     #
     $networks = ALLIPv4 unless $networks;
     $destnets = ALLIPv4 unless $destnets;
-
     #
     # Handle Protocol and Ports
     #
@@ -189,11 +188,11 @@ sub setup_one_masq($$$$$$)
 	    }
 	} elsif ( $addresses eq 'detect' ) {
 	    $target = '-j SNAT $addrlist';
-	    add_command( $chainref , "addresses=\$(find_interface_addresses $interface); \\" );
-	    add_command( $chainref , qq([ -z "\$addresses" ] && fatal_error "Unable to determine the IP address(es) of $interface"; \\) );
+	    add_command( $chainref , "addresses=\$(find_interface_addresses $interface);" );
+	    add_command( $chainref , qq([ -z "\$addresses" ] && fatal_error "Unable to determine the IP address(es) of $interface";) );
 	    add_command( $chainref , 'addrlist=; \\' );
-	    add_command( $chainref , 'for address in $addresses; do \\' );
-	    add_command( $chainref , '    addrlist="$addrlist --to-source $address \\";' );
+	    add_command( $chainref , 'for address in $addresses; do' );
+	    add_command( $chainref , '    addrlist="$addrlist --to-source $address";' );
 	    add_command( $chainref , 'done' );
 	} else {
 	    my $addrlist = '';

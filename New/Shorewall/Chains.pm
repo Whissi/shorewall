@@ -973,8 +973,8 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
 
 	if ( $restriction == POSTROUTE_RESTRICT ) {
-	    add_command( $chainref , ('    ' x $detectcount) . "sources=\$(get_routed_networks $iiface);" );
-	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$sourcess" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"";) );
+	    add_command( $chainref , ('    ' x $detectcount) . "sources=\$(get_routed_networks $iiface)" );
+	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$sources" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"") );
 	    add_command( $chainref , ('    ' x $detectcount) . 'for source in $sources; do' );
 	    $rule .= '-s $source';
 	    $detectcount++;
@@ -1007,8 +1007,8 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
 
 	if ( $restriction == PREROUTE_RESTRICT ) {
-	    add_command( $chainref , ('    ' x $detectcount) . "dests=\$(find_interface_addresses $diface);" );
-	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\";") );
+	    add_command( $chainref , ('    ' x $detectcount) . "dests=\$(find_interface_addresses $diface)" );
+	    add_command( $chainref , ('    ' x $detectcount) . qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"") );
 
 	    add_command( $chainref , ('    ' x $detectcount) . 'for dest in $dests; do' );
 	    $rule .= '-d $dest';
@@ -1023,7 +1023,7 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $detectcount ) {
 	my $newchainref = new_anon_chain( $chainref );
 
-	add_command $chainref, ('    ' x $detectcount) . qq(emit "-A $chain $rule -j $newchainref->{name}";);
+	add_command $chainref, ('    ' x $detectcount) . qq(echo "-A $chain $rule -j $newchainref->{name}" >&3;);
 
 	while ( $detectcount-- ) { 
 	    add_command( $chainref, ('    ' x $detectcount) . 'done' ); 
@@ -1239,6 +1239,7 @@ sub emitr( $ ) {
 	emit $rule;
     } else {
 	unless ( $state == CAT_STATE ) {
+	    emit '';
 	    emit 'cat >&3 << __EOF__';
 	    $state = CAT_STATE;
 	}
@@ -1299,7 +1300,7 @@ sub create_netfilter_load() {
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';
 
-    emit 'iptables-restore << $TEMPFILE' if $slowstart;
+    emit 'iptables-restore < $TEMPFILE' if $slowstart;
     emit 'if [ $? != 0 ]; then';
     emit '    fatal_error "iptables-restore Failed"';
     emit "fi\n";

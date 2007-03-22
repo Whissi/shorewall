@@ -217,6 +217,22 @@ sub setup_one_masq($$$$$$)
     #
     expand_rule $chainref , POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
 
+    if ( $add_snat_aliases ) {
+	my ( $interface, $alias ) = split /:/, $fullinterface;
+	$alias = 0 unless defined $alias;
+	for my $address ( split /,/, $addresses ) {
+	    my ( $addrs, $port ) = split /:/, $address;
+	    next unless $addrs;
+	    for my $addr ( ip_range_explicit $addrs ) {
+		unless ( $addresses_to_add{$addr} ) {
+		    emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
+		    $addresses_to_add{$addr} = 1;
+		    push @addresses_to_add, "$interface:$alias";
+		    $alias++;
+		}
+	    }
+	}
+    }
 
     progress_message "   Masq record \"$line\" $done";
     
@@ -303,9 +319,8 @@ sub do_one_nat( $$$$$ )
 	if ( $interface =~ s/:$// ) {
 	    $add_ip_aliases = '';
 	} else {
-	    #
-	    # Fixme
-	    #
+	    my ( $iface , undef ) = split /:/, $interface;
+	    emit "del_ip_addr $external $iface" unless $config{RETAIN_ALIASES};
 	}
     } else {
 	$interface =~ s/:$//;
@@ -324,9 +339,13 @@ sub do_one_nat( $$$$$ )
 	
     add_nat_rule 'OUTPUT' , "-d $external$policyout -j DNAT --to-destination $internal " if $localnat;
 
-    #
-    # Fixme -- add_ip_aliases
-    #
+    if ( $add_ip_aliases ) {
+	unless ( $addresses_to_add{$external} ) {
+	    $addresses_to_add{$external} = 1;
+	    push @addresses_to_add, "$external $interface";
+	}
+    }
+
     progress_message "   NAT entry \"$line\" $done";
 }
 

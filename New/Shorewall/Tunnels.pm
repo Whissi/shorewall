@@ -64,7 +64,8 @@ sub setup_tunnels() {
 	if ( $kind eq 'ipsec' ) {
 	    add_rule $inchainref, "-p udp $source --dport $options";
 	} else {
-	    add_rule $inchainref, "-p udp $source -m multiport --dports 500,4500 $options";
+	    add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
+	    add_rule $outchainref, "-p udp $dest   -m multiport --dports 500,4500 $options";
 	}
 	
 	for my $zone ( split /,/, $gatewayzones ) {

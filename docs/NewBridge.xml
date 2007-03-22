@@ -44,10 +44,6 @@
     later. If you are running a version of Shorewall earlier than Shorewall
     3.3.3 then please see the documentation for that
     release.</emphasis></para>
-
-    <para><emphasis role="bold">This configuration is not as secure as the one
-    described in <ulink url="bridge.html">another article</ulink> but it has
-    the advantage that it works with all kernel versions.</emphasis></para>
   </caution>
 
   <section>
@@ -83,6 +79,33 @@
           <para>Section 4 of RFC 1812 describes the conditions under which a
           router may or must forward broadcasts.</para>
         </note>
+      </listitem>
+    </orderedlist>
+
+    <para>The technique described in this article differs from that in <ulink
+    url="bridge.html">Shorewall and Bridged Firewalls</ulink> in that it
+    defines zones in terms of ip addresses (networks, hosts, and/or ranges)
+    accessed through the bridge device rather than in terms of ports on the
+    bridge. While using ports is more convenient, it requires a
+    fully-functional <emphasis>physdev match </emphasis> capability in your
+    kernel and iptables. Beginning with Linux kernel version 2.6.20, the
+    physdev match capability was reduced in function to the point where in can
+    no longer be used for Shorewall zone definition. To work around this
+    functional step backward, the technique described below can be
+    used.</para>
+
+    <para>To summarize the changes required required to move from a
+    <emphasis>Shorewall and Bridged Firewalls</emphasis> configuration to this
+    new type:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Set BRIDGING=No in shorewall.conf</para>
+      </listitem>
+
+      <listitem>
+        <para>Modify your <filename>/etc/shorewall/hosts</filename> file to
+        use IP addresses rather than bridge ports to define your zones.</para>
       </listitem>
     </orderedlist>
   </section>

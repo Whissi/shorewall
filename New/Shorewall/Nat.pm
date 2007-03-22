@@ -27,6 +27,7 @@ use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Chains;
+use Shorewall::IPAddrs;
 
 use strict;
 

@@ -236,7 +236,7 @@ sub add_command($$)
 {
     my ($chainref, $command) = @_;
     
-    $command =~ s/^/~/mg;
+    $command =~ s/^/~/;
 
     push @{$chainref->{rules}}, $command;
 
@@ -1299,7 +1299,8 @@ sub create_netfilter_load() {
 
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';
-
+    emit ' exec 3>&-';
+    emit '';
     emit 'iptables-restore < $TEMPFILE' if $slowstart;
     emit 'if [ $? != 0 ]; then';
     emit '    fatal_error "iptables-restore Failed"';

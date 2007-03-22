@@ -543,7 +543,6 @@ if [ $COMMAND = restore ]; then
         iptables-restore < $iptables_save_file
     else
         fatal_error "$iptables_save_file does not exist"
-        exit 2
     fi
     set_state "Started"
 else

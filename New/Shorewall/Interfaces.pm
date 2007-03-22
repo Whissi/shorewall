@@ -46,7 +46,6 @@ our @VERSION = 1.00;
 #     @interfaces lists the interface names in the order that they appear in the interfaces file.
 #
 #     %interfaces { <interface1> => { root        => <name without trailing '+'>
-#                                     broadcast   => [ <bcast1>, ... ]
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
@@ -162,10 +161,9 @@ sub validate_interfaces_file()
 
 	( $interfaces{$interface}{root} = $interface ) =~ s/\+$// ;
 
-	if ( $networks && $networks ne '-' )
+	if ( $networks && $networks ne '-' && $networks ne 'detect' )
 	{
-	    my @broadcast = split ',', $networks; 
-	    $interfaces{$interface}{broadcast} = \@broadcast;
+	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation:' . $networks;
 	}
 
 	my $optionsref = {};

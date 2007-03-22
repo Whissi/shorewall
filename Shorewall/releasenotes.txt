@@ -37,6 +37,12 @@ Problems corrected in Shorewall 3.4.2
     renamed /proc/net/nf_conntrack in kernel 2.6.20. The lib.cli
     library has been updated to look for both files.
 
+3)  Shoreall 3.4 was not consistent with respect to its treatment of
+    log level 'none' and 'none!' and built-in actions. In particular,
+    specifying 'none' with the Limit action produced a run-time error.
+    Shorewall now correctly suppresses generation of log messages when
+    a log level of 'none' or 'none!' is given to a built-in action.
+
 Migration Considerations:
 
 If you are migrating from a Shorewall version earlier than 3.2.0 then

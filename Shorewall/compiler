@@ -1453,6 +1453,15 @@ process_actions3()
 	xlevel=$2
 	xtag=$3
 
+	case $xlevel in
+	    none|none'!')
+		ylevel=
+		;;
+	    *)
+		ylevel=$xlevel;
+		;;
+	esac
+
 	save_progress_message "Creating action chain $xaction1"
 
 	#
@@ -1461,16 +1470,10 @@ process_actions3()
 	case $xaction1 in
 	    dropBcast)
 		if [ -n "$USEPKTTYPE" ]; then
-		    case $xlevel in
-			none'!')
-			    ;;
-			*)
-			    if [ -n "$xlevel" ]; then
-				log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -m pkttype --pkt-type broadcast
-				log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -m pkttype --pkt-type multicast
-			    fi
-			    ;;
-		    esac
+		    if [ -n "$ylevel" ]; then
+			log_rule_limit ${ylevel%\!} $xchain dropBcast DROP "" "$xtag" -A -m pkttype --pkt-type broadcast
+			log_rule_limit ${ylevel%\!} $xchain dropBcast DROP "" "$xtag" -A -m pkttype --pkt-type multicast
+		    fi
 
 		    run_iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
 		    run_iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP
@@ -1480,17 +1483,9 @@ process_actions3()
 
 ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
 __EOF__
-			    case $xlevel in
-				none*)
-				    ;;
-				*)
-				    [ -n "$xlevel" ] && \
-					indent >&3 << __EOF__
-   log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d \$address
+			[ -n "$ylevel" ] && indent >&3 << __EOF__
+   log_rule_limit ${ylevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d \$address
 __EOF__
-				    ;;
-			    esac
-
 			    indent >&3 << __EOF__
     run_iptables -A $xchain -d \$address -j DROP
 done
@@ -1499,14 +1494,7 @@ __EOF__
 		    done
 
 		    for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-			case $xlevel in
-			    none*)
-				;;
-			    *)
-				[ -n "$xlevel" ] && \
-				    log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d $address
-				;;
-			esac
+			[ -n "$ylevel" ] && log_rule_limit ${ylevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d $address
 
 			run_iptables -A $xchain -d $address -j DROP
 		    done
@@ -1514,16 +1502,10 @@ __EOF__
 		;;
 	    allowBcast)
 		if [ -n "$USEPKTTYPE" ]; then
-		    case $xlevel in
-			none'!')
-			    ;;
-			*)
-			    if [ -n "$xlevel" ]; then
-				log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -m pkttype --pkt-type broadcast
-				log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -m pkttype --pkt-type multicast
-			    fi
-			    ;;
-		    esac
+		    if [ -n "$ylevel" ]; then
+			log_rule_limit ${ylevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -m pkttype --pkt-type broadcast
+			log_rule_limit ${ylevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -m pkttype --pkt-type multicast
+		    fi
 
 		    run_iptables -A allowBcast -m pkttype --pkt-type broadcast -j ACCEPT
 		    run_iptables -A allowBcast -m pkttype --pkt-type multicast -j ACCEPT
@@ -1533,16 +1515,9 @@ __EOF__
 
 ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
 __EOF__
-			case $xlevel in
-			    none*)
-				;;
-			    *)
-				[ -n "$xlevel" ] && \
-				    indent >&3 << __EOF__
-   log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d \$address
+			[ -n "$ylevel" ] && indent >&3 << __EOF__
+   log_rule_limit ${ylevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d \$address
 __EOF__
-				;;
-			esac
 
 			indent >&3 << __EOF__
     run_iptables -A $xchain -d \$address -j ACCEPT
@@ -1552,53 +1527,46 @@ __EOF__
 		    done
 
 		    for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-			case $xlevel in
-			    none*)
-				;;
-			    *)
-				[ -n "$xlevel" ] && \
-				    log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d $address
-				;;
-			esac
+			[ -n "$ylevel" ] && log_rule_limit ${ylevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d $address
 
 			run_iptables -A $xchain -d $address -j ACCEPT
 		    done
 		fi
 		;;
 	    dropNotSyn)
-		[ -n "$xlevel" ] && \
-		    log_rule_limit ${xlevel%\!} $xchain dropNotSyn DROP "" "$xtag" -A -p tcp ! --syn
+		[ -n "$ylevel" ] && \
+		    log_rule_limit ${ylevel%\!} $xchain dropNotSyn DROP "" "$xtag" -A -p tcp ! --syn
 		run_iptables -A $xchain -p tcp ! --syn -j DROP
 		;;
 	    rejNotSyn)
-		[ -n "$xlevel" ] && \
-		    log_rule_limit ${xlevel%\!} $xchain rejNotSyn REJECT "" "$xtag" -A -p tcp ! --syn
+		[ -n "$ylevel" ] && \
+		    log_rule_limit ${ylevel%\!} $xchain rejNotSyn REJECT "" "$xtag" -A -p tcp ! --syn
 		run_iptables -A $xchain -p tcp ! --syn -j REJECT --reject-with tcp-reset
 		;;
 	    dropInvalid)
-		[ -n "$xlevel" ] && \
-		    log_rule_limit ${xlevel%\!} $xchain dropInvalid DROP "" "$xtag" -A -m state --state INVALID
+		[ -n "$ylevel" ] && \
+		    log_rule_limit ${ylevel%\!} $xchain dropInvalid DROP "" "$xtag" -A -m state --state INVALID
 		run_iptables -A $xchain -m state --state INVALID -j DROP
 		;;
 	    allowInvalid)
-		[ -n "$xlevel" ] && \
-		    log_rule_limit ${xlevel%\!} $xchain allowInvalid ACCEPT "" "$xtag" -A -m state --state INVALID
+		[ -n "$ylevel" ] && \
+		    log_rule_limit ${ylevel%\!} $xchain allowInvalid ACCEPT "" "$xtag" -A -m state --state INVALID
 		run_iptables -A $xchain -m state --state INVALID -j ACCEPT
 		;;
 	    forwardUPnP)
 		;;
 	    allowinUPnP)
-		if [ -n "$xlevel" ]; then
-		    log_rule_limit ${xlevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p udp --dport 1900
-		    log_rule_limit ${xlevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p tcp --dport 49152
+		if [ -n "$ylevel" ]; then
+		    log_rule_limit ${ylevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p udp --dport 1900
+		    log_rule_limit ${ylevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p tcp --dport 49152
 		fi
 
 		run_iptables -A $xchain -p udp --dport 1900  -j ACCEPT
 		run_iptables -A $xchain -p tcp --dport 49152 -j ACCEPT
 		;;
 	    allowoutUPnP)
-		[ -n "$xlevel" ] && \
-		    log_rule_limit ${xlevel%\!} $xchain allowoutUPnP ACCEPT "" "$xtag" -A -m owner --owner-cmd upnpd
+		[ -n "$ylevel" ] && \
+		    log_rule_limit ${ylevel%\!} $xchain allowoutUPnP ACCEPT "" "$xtag" -A -m owner --owner-cmd upnpd
 		run_iptables -A $xchain -m owner --cmd-owner upnpd -j ACCEPT
 		;;
 	    Limit)
@@ -1608,9 +1576,9 @@ __EOF__
 
 		run_iptables -A $xchain -m recent --name $1 --set
 
-		if [ -n "$xlevel" ]; then
+		if [ -n "$ylevel" ]; then
 		    run_iptables -N $xchain%
-		    log_rule_limit $xlevel $xchain% $1 DROP "" "" -A
+		    log_rule_limit $ylevel $xchain% $1 DROP "" "" -A
 		    run_iptables -A $xchain% -j DROP
 		    run_iptables -A $xchain -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $xchain%
 		else

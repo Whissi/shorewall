@@ -94,13 +94,6 @@ sub warning_message
 sub fatal_error
 {
     print STDERR "   ERROR: @_\n";
-
-    if ( $object ) {
-	close $object;
-	unlink $tempfile;
-    }
-
-    system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
     die;
 }
 
@@ -282,5 +275,14 @@ sub finalize_aux_config() {
 
     progress_message3 "Shorewall configuration compiled to $file";
 }
+
+END {
+    if ( $object ) {
+	close $object;
+	unlink $tempfile;
+    }
+
+    system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
+}	
 
 1;

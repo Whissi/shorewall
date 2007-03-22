@@ -1256,7 +1256,7 @@ sub create_netfilter_load() {
     if ( $slowstart ) {
 	emit 'TEMPFILE=$(mktempfile)';
 	emit '';
-	emit 'exec 3>>$OUTPUT';
+	emit 'exec 3>>$TEMPFILE';
     } else {
 	emit 'iptables-restore << __EOF__';
 	$state = CAT_STATE;

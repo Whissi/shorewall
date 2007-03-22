@@ -28,7 +28,7 @@
 # and /usr/share/shorewall-lite/shorecap.
 #
 
-SHOREWALL_LIBVERSION=30303
+SHOREWALL_LIBVERSION=30401
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -1434,4 +1434,66 @@ find_echo() {
     [ -n "$result" ] && { echo "$result -e"; return; }
 
     echo echo 
+}
+
+# Determine which version of mktemp is present (if any) and set MKTEMP accortingly:
+#
+#     None - No mktemp
+#     BSD  - BSD mktemp (Mandrake)
+#     STD  - mktemp.org mktemp
+#
+find_mktemp() {
+    local mktemp=`mywhich mktemp 2> /dev/null`
+
+    if [ -n "$mktemp" ]; then
+	if qt mktemp -V ; then
+	    MKTEMP=STD
+	else
+	    MKTEMP=BSD
+	fi
+    else
+	MKTEMP=None
+    fi
+}
+
+#
+# create a temporary file. If a directory name is passed, the file will be created in
+# that directory. Otherwise, it will be created in a temporary directory.
+#
+mktempfile() {
+
+    [ -z "$MKTEMP" ] && find_mktemp
+
+    if [ $# -gt 0 ]; then
+	case "$MKTEMP" in
+	    BSD)
+		mktemp $1/shorewall.XXXXXX
+		;;
+	    STD)
+		mktemp -p $1 shorewall.XXXXXX
+		;;
+	    None)
+		> $1/shorewall-$$ && echo $1/shorewall-$$
+		;;
+	    *)
+		error_message "ERROR:Internal error in mktempfile"
+		;;
+	esac
+    else
+	case "$MKTEMP" in
+	    BSD)
+		mktemp /tmp/shorewall.XXXXXX
+		;;
+	    STD)
+		mktemp -t shorewall.XXXXXX
+		;;
+	    None)
+		rm -f /tmp/shorewall-$$
+		> /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+		;;
+	    *)
+		error_message "ERROR:Internal error in mktempfile"
+		;;
+	esac
+    fi
 }

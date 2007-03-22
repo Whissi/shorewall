@@ -263,6 +263,7 @@ sub get_configuration() {
 		chomp $line;
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
+		$line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
 
 		if ( $line =~ /^([a-zA-Z]\w*)\s*=\s*(.*)$/ ) {
 		    my ($var, $val) = ($1, $2);

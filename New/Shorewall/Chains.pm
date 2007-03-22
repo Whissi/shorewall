@@ -1216,20 +1216,63 @@ sub insertnatjump( $$$$ ) {
 
 my @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
+use constant { NULL_STATE => 0 ,
+	       CAT_STATE  => 1 ,
+	       CMD_STATE  => 2 };
+
+my $state = NULL_STATE;
+
+sub emitr( $ ) {
+    my $rule = $_[0];
+
+    if ( substr( $rule, 0, 1 ) eq '~' ) {
+	#
+	# A command
+	#
+	unless ( $state == CMD_STATE ) {
+	    emit_unindented "__EOF__\n" if $state == CAT_STATE;
+	    $state = CMD_STATE;
+	}
+
+	$rule =~ s/~//;
+
+	emit $rule;
+    } else {
+	unless ( $state == CAT_STATE ) {
+	    emit 'cat >&3 << __EOF__';
+	    $state = CAT_STATE;
+	}
+
+	emit_unindented $rule;
+    }
+}
+
 sub create_netfilter_load() {
+    
     emit 'setup_netfilter()';
     emit '{';
-    emit( $slowstart ? '    iptables_slow_restore << __EOF__' : '    iptables-restore << __EOF__' );
+    push_indent;
+
+    if ( $slowstart ) {
+	emit 'TEMPFILE=$(mktempfile)';
+	emit '';
+	emit 'exec 3>>$OUTPUT';
+    } else {
+	emit 'iptables-restore << __EOF__';
+	$state = CAT_STATE;
+    }
+
+    emit '';
 
     for my $table qw/raw nat mangle filter/ {
-	emit "*$table";
+	emitr "*$table";
 		
 	my @chains;
 	
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		emit ":$chain $chainref->{policy} [0:0]";
+		emitr ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
 	}
@@ -1237,7 +1280,7 @@ sub create_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		emit ":$chainref->{name} - [0:0]";
+		emitr ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }
 	}
@@ -1246,18 +1289,24 @@ sub create_netfilter_load() {
 	    my $name = $chainref->{name};
 	    for my $rule ( @{$chainref->{rules}} ) {
 		$rule = "-A $name $rule" unless substr( $rule, 0, 1) eq '~';
-		emit_unindented $rule;
+		emitr $rule;
 	    }
 	}
 
-	emit 'COMMIT';
+	emitr 'COMMIT';
     }
 
-    emit '__EOF__';
+    emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';
+
+    emit 'iptables-restore << $TEMPFILE' if $slowstart;
     emit 'if [ $? != 0 ]; then';
     emit '    fatal_error "iptables-restore Failed"';
     emit "fi\n";
+
+    emit 'rm -f $TEMPFILE' if $slowstart;
+
+    pop_indent;
 
     emit "}\n";
 }

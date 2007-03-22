@@ -86,7 +86,8 @@ sub generate_script_1 {
 	emit 'PRODUCT=\'Shorewall\'';
 	emit '. /usr/share/shorewall/lib.base';
     }
-	
+
+    emit 'TEMPFILE=';
     emit '';
     
     for my $exit qw/init start tcclear started stop stopped/ {
@@ -115,8 +116,8 @@ sub generate_script_1 {
 	emit '';
 	emit 'local version=$(cat ${SHAREDIR}/version)';
 	emit '';
-	emit 'if [ ${SHOREWALL_LIBVERSION:-0} -lt 30203 ]; then';
-	emit '    fatal_error "This script requires Shorewall version 3.3.3 or later; current version is $version"';
+	emit 'if [ ${SHOREWALL_LIBVERSION:-0} -lt 30401 ]; then';
+	emit '    fatal_error "This script requires Shorewall version 3.4.2 or later; current version is $version"';
 	emit 'fi';
 	emit '#';
 	emit '# These variables are required by the library functions called in this script';
@@ -533,28 +534,47 @@ sub generate_script_3() {
 
     emit "#\n# Start/Restart the Firewall\n#";
     emit 'define_firewall() {';
-    emit '   setup_routing_and_traffic_shaping;';
-    emit '   setup_netfilter';
-    emit '   restore_dynamic_rules';
-    emit '   date > ${VARDIR}/restarted';
-    emit '   run_start_exit';
-    emit '   run_iptables -N shorewall';
-    emit '   set_state "Started"';
-    emit '   run_started_exit';
-    emit '';
-    emit '   cp -f $(my_pathname) ${VARDIR}/.restore
+    push_indent;
+    emit 'setup_routing_and_traffic_shaping;
 
-    case \$COMMAND in
-	start)
-	    logger -p kern.info "$PRODUCT started"
-	    ;;
-	restart)
-	    logger -p kern.info "$PRODUCT restarted"
-	    ;;
-	restore)
-	    logger -p kern.info "$PRODUCT restored"
-	    ;;
-    esac';
+if [ $COMMAND = restore ]; then
+    iptables_save_file=${VARDIR}/$(basename $0)-iptables
+    if [ -f $iptables_save_file ]; then
+        iptables-restore < $iptables_save_file
+    else
+        fatal_error "$iptables_save_file does not exist"
+        exit 2
+    fi
+    set_state "Started"
+else
+    setup_netfilter
+    restore_dynamic_rules
+    run_start_exit
+    $IPTABLES -N shorewall
+    set_state "Started"
+    run_started_exit
+
+    cp -f $(my_pathname) ${VARDIR}/.restore
+fi
+
+date > ${VARDIR}/restarted
+
+case $COMMAND in
+    start)
+        logger -p kern.info "$PRODUCT started"
+        ;;
+    restart)
+        logger -p kern.info "$PRODUCT restarted"
+        ;;
+    refresh)
+        logger -p kern.info "$PRODUCT refreshed"
+        ;;
+    restore)
+        logger -p kern.info "$PRODUCT restored"
+        ;;
+esac';
+
+    pop_indent;
 
     emit "}\n";
     

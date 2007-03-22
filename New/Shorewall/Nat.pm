@@ -342,7 +342,7 @@ sub do_one_nat( $$$$$ )
     if ( $add_ip_aliases ) {
 	unless ( $addresses_to_add{$external} ) {
 	    $addresses_to_add{$external} = 1;
-	    push @addresses_to_add, "$external $interface";
+	    push @addresses_to_add, ( $external , $interface );
 	}
     }
 

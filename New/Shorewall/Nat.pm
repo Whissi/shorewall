@@ -32,7 +32,7 @@ use Shorewall::IPAddrs;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_masq setup_nat );
+our @EXPORT = qw( setup_masq setup_nat add_addresses );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -227,7 +227,7 @@ sub setup_one_masq($$$$$$)
 		unless ( $addresses_to_add{$addr} ) {
 		    emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
 		    $addresses_to_add{$addr} = 1;
-		    push @addresses_to_add, "$interface:$alias";
+		    push @addresses_to_add, $addr, "$interface:$alias";
 		    $alias++;
 		}
 	    }
@@ -380,6 +380,20 @@ sub setup_nat() {
     close NAT;
 
     $comment = '';
+}
+
+sub add_addresses () {
+    if ( @addresses_to_add ) {
+	my $arg = '';
+
+	while ( @addresses_to_add ) {
+	    my $addr      = shift @addresses_to_add;
+	    my $interface = shift @addresses_to_add;
+	    $arg = "$arg $addr $interface";
+	}
+
+	emit "add_ip_aliases $arg";
+    }
 }
 
 1;

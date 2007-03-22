@@ -520,6 +520,10 @@ sub generate_script_3() {
     dump_zone_contents;
     emit_unindented '__EOF__';
 
+    emit '> ${VARDIR}/nat';
+
+    add_addresses;
+
     pop_indent;
 
     emit "}\n";

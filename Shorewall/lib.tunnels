@@ -67,6 +67,7 @@ setup_tunnels() # $1 = name of tunnels file
 	else
 	    run_iptables -A $inchain  -p udp $source --dport 500 $options
 	    run_iptables -A $inchain  -p udp $source --dport 4500 $options
+	    run_iptables -A $outchain -p udp $dest   --dport 4500 $options
 	fi
 
 	for z in $(separate_list $2); do

@@ -565,7 +565,7 @@ sub setup_mac_lists( $ ) {
     my $maclist_hosts = find_hosts_by_option 'maclist';
 
     for my $hostref ( @$maclist_hosts ) {
-	$maclist_interfaces{ $hostref->[0][0] } = 1;
+	$maclist_interfaces{ $hostref->[0] } = 1;
     }
 
     my @maclist_interfaces = ( sort keys %maclist_interfaces );

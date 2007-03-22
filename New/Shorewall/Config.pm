@@ -285,7 +285,7 @@ sub get_configuration() {
 	fatal_error "$file does not exist!";
     }
 
-    $file = find_file 'capabilities';
+    $file = "$ENV{TMP_DIR}/capabilities";
 
     if ( -f $file ) {
 	if ( -r _ ) {

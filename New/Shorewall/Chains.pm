@@ -244,9 +244,7 @@ sub add_command($$)
 {
     my ($chainref, $command) = @_;
     
-    $command =~ s/^/~/;
-
-    push @{$chainref->{rules}}, ( ( '    ' x $loopcount ) . $command );
+    push @{$chainref->{rules}}, '~' . ( ( '    ' x $loopcount ) . $command );
 
     $chainref->{referenced} = 1;
 
@@ -1014,7 +1012,7 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $dest ) {
 	if ( $dest eq '-' ) {
 	    $dest = '';
-	} elsif ( $restriction == PREROUTE_RESTRICTION $dest =~ /^detect:(.*)$/ ) {
+	} elsif ( $restriction == PREROUTE_RESTRICT && $dest =~ /^detect:(.*)$/ ) {
 	    #
 	    # DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
 	    #
@@ -1216,7 +1214,10 @@ sub expand_rule( $$$$$$$$$$ )
 	}
     }
 
-    add_command $chainref, 'done' while $loopcount--;
+    while ( $loopcount > 0 ) {
+	$loopcount--;
+	add_command $chainref, 'done';
+    }
 }
 
 #

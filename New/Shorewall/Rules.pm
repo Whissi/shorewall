@@ -913,30 +913,32 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	#
 	my $target = '';
 
-	if ( $action eq 'SAME' ) {
-	    fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
-	    $target = '-j SAME ';
-	    for my $serv ( split /,/, $server ) {
-		$target .= "--to $serv ";
-	    }
-
-	    $serverport = $ports;
-	} elsif ( $action eq ' -j DNAT' ) {
-	    $serverport = ":$serverport" if $serverport;
-	    for my $serv ( split /,/, $server ) {
-		$target .= "--to ${serv}${serverport} ";
-	    }
-	} else {
+	if ( $actiontype  & REDIRECT ) {
 	    $target = '-j REDIRECT --to-port ' . ( $serverport ? $serverport : $ports );
-	}
+	} else {
+	    if ( $action eq 'SAME' ) {
+		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
+		$target = '-j SAME ';
+		for my $serv ( split /,/, $server ) {
+		    $target .= "--to $serv ";
+		}
 
-	unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-	    if ( $config{DETECT_DNAT_ADDRS} ) {
-		my $interfacesref = $zones{$sourcezone}{interfaces};
-		my $interfaces = "@$interfacesref";
-		$origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
-	    } else {
-		$origdest = ALLIPv4;
+		$serverport = $ports;
+	    } elsif ( $action eq ' -j DNAT' ) {
+		$serverport = ":$serverport" if $serverport;
+		for my $serv ( split /,/, $server ) {
+		    $target .= "--to ${serv}${serverport} ";
+		}
+	    }
+
+	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
+		if ( $config{DETECT_DNAT_IPADDRS} ) {
+		    my $interfacesref = $zones{$sourcezone}{interfaces};
+		    my @interfaces = keys %$interfacesref;
+		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
+		} else {
+		    $origdest = ALLIPv4;
+		}
 	    }
 	}
 	#

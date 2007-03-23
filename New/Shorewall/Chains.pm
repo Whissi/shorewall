@@ -949,6 +949,31 @@ sub log_rule( $$$$ ) {
 
     log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $env{LOGLIMIT}, '', 'add', $predicates;
 }
+
+#
+# Keep track of which interfaces have active 'address' variables
+#
+my %interfaceaddrs;
+
+#
+# Returns the name of the shell variable holding the first address of the passed interface
+#
+sub interface_address( $ ) {
+    chain_base( $_[0] ) . '_address';
+}
+
+#
+# If this is the first time that the first address of an interface has been requested, emit a run-time command
+# that establishes the value of the associated address variable.
+#
+sub get_interface_address ( $$ ) {
+    my ($chainref, $interface ) = @_;
+
+    unless ( $interfaceaddrs{$interface } ) {
+	add_command $chainref, interface_address( $interface ) . "=\$(find_first_interface_address $interface)";
+	$interfaceaddrs{$interface} = 1;
+    }
+}
 	
 #
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
@@ -996,10 +1021,16 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
 
 	if ( $restriction == POSTROUTE_RESTRICT ) {
+	    #
+	    # An interface in the SOURCE column of a masq file
+	    #
 	    add_command( $chainref ,   "sources=\$(get_routed_networks $iiface)" );
 	    add_command( $chainref , qq([ -z "\$sources" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"") );
 	    add_command( $chainref ,   'for source in $sources; do' );
-	    $rule .= '-s $source';
+	    $rule .= '-s $source ';
+	    #
+	    # While $loopcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()' 
+	    #
 	    $loopcount++;
 	} else {
 	    $rule .= "-i $iiface ";
@@ -1022,15 +1053,17 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command $chainref, 'addresses=';
 		
 		for my $interface ( @interfaces ) {
-		    add_command $chainref , 'addresses="$addresses $(find_first_interface_address $interface)';
-		    add_command $chainref , 'for address in $addresses; do';
+		    get_interface_address $chainref, $interface;
+		    add_command $chainref , 'addresses="$addresses $' . interface_address( $interface ) . '"' ;
 		}
+		add_command $chainref , 'for address in $addresses; do';
+		$rule .= '-d $address ';
 		$loopcount++;
 	    } else {
-		add_command  $chainref , 'address= $(find_first_interface_address $interface)';
+		get_interface_address $chainref, $interfaces[0];
+		$rule .= '-d $' . interface_address( $interfaces[0] ) . ' ';
 	    }
 
-	    $rule .= '-d $address';
 	    $dest = '';
 	} elsif ( $dest =~ /^([^:]+):([^:]+)$/ ) {
 	    $diface = $1;
@@ -1043,6 +1076,7 @@ sub expand_rule( $$$$$$$$$$ )
     } else {
 	$dest = '';
     }
+
     #
     # Verify Destination Interface, if any
     #
@@ -1050,6 +1084,9 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
 
 	if ( $restriction == PREROUTE_RESTRICT ) {
+	    #
+	    # ADDRESS 'detect' in the masq file.
+	    #
 	    add_command $chainref ,   "dests=\$(find_interface_addresses $diface)";
 	    add_command $chainref , qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"");
 	    add_command $chainref ,   'for dest in $dests; do';
@@ -1064,34 +1101,45 @@ sub expand_rule( $$$$$$$$$$ )
 	if ( $origdest eq '-' ) {
 	    $origdest = '';	    
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
+	    #
+	    # Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
+	    #
 	    my @interfaces = split /\s+/, $1;
 
 	    if ( @interfaces > 1 ) {
 		add_command $chainref, 'addresses=';
 
 		for my $interface ( @interfaces ) {
-		    add_command  $chainref , 'addresses="$addresses $(find_first_interface_address $interface)"';
-		    add_command( $chainref , 'for address in $addresses; do' );
+		    get_interface_address $chainref, $interface;
+		    add_command  $chainref , qq(addresses="\$addresses \$(find_first_interface_address $interface)");
 		}
+
+		add_command( $chainref , 'for address in $addresses; do' );
+		$rule .= '-m conntrack --ctorigdst $address ';
 		$loopcount++;
 	    } else {
-		add_command  $chainref , 'address="$(find_first_interface_address $interface)"';
+		get_interface_address $chainref,  $interfaces[0];
+		$rule .= '-m conntrack --ctorigdst $' . interface_address ( $interfaces[0] ) . ' ';
+	    } 
+
+	    $origdest = '';
+	} else {
+	    if ( $origdest =~ /^([^!]+)?!([^!]+)$/ ) {
+		#
+		# Exclusion
+		#
+		$onets = $1;
+		$oexcl = $2;
+	    } else {
+		$oexcl = '';
 	    }
 
-	    $rule .= '-m conntrack --ctorigdst $address';
-	    $origdest = '';
-	} elsif ( $origdest =~ /^([^!]+)?!([^!]+)$/ ) {
-	    $onets = $1;
-	    $oexcl = $2;
-	} else {
-	    $oexcl = '';
-	}
-
-	if ( ! $onets ) {
-	    my @oexcl = split /,/, $oexcl;
-	    if ( @oexcl == 1 ) {
-		$rule .= "-m conntrack --ctorigdst ! $oexcl ";
-		$oexcl = '';
+	    if ( ! $onets ) {
+		my @oexcl = split /,/, $oexcl;
+		if ( @oexcl == 1 ) {
+		    $rule .= "-m conntrack --ctorigdst ! $oexcl ";
+		    $oexcl = '';
+		}
 	    }
 	}
     } else {

@@ -885,7 +885,6 @@ sub process_rule1 ( $$$$$$$$$ ) {
     #
     $rule = do_proto $proto, $ports, $sports . do_ratelimit( $ratelimit ) . ( do_user $user );
 
-    $origdest = ALLIPv4 unless $origdest and $origdest ne '-';
     #
     # Generate NAT rule(s), if any
     #
@@ -931,6 +930,13 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $target = '-j REDIRECT --to-port ' . ( $serverport ? $serverport : $ports );
 	}
 
+	unless ( $origdest and $origdest ne '-' ) {
+	    if ( $config{DETECT_DNAT_ADDRS} ) {
+		$origdest = 'detect';
+	    } else {
+		origdest = ALLIPv4;
+	    }
+	}
 	#
 	# And generate the nat table rule(s)
 	#
@@ -952,23 +958,27 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $rule = do_proto $proto, $ports, $sports . do_ratelimit( $ratelimit ) . do_user $user;
 	    $loglevel = '';
 	}
-    } elsif ( $actiontype & NONAT ) {
-	#
-	# NONAT or ACCEPT+ -- May not specify a destination interface
-	#
-	fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
- 
-	expand_rule
-	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
-	    PREROUTE_RESTRICT ,
-	    $rule ,
-	    $source ,
-	    $dest ,
-	    '' ,
-	    '-j RETURN ' ,
-	    $loglevel ,
-	    $action ,
-	    '';
+    } else {
+	$origdest = ALLIPv4 unless $origdest and $origdest ne '-';
+
+	if ( $actiontype & NONAT ) {
+	    #
+	    # NONAT or ACCEPT+ -- May not specify a destination interface
+	    #
+	    fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
+	    
+	    expand_rule
+		ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+		PREROUTE_RESTRICT ,
+		$rule ,
+		$source ,
+		$dest ,
+		'' ,
+		'-j RETURN ' ,
+		$loglevel ,
+		$action ,
+		'';
+	}
     }
     #
     # Add filter table rule, unless this is a NATONLY rule type

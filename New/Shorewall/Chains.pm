@@ -232,13 +232,19 @@ my $chainseq;
 #
 #    Chain reference , Command
 #
+
+#
+# Count of the number of unclosed loops in generated shell code
+#
+my $loopcount = 0;
+
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
     
     $command =~ s/^/~/;
 
-    push @{$chainref->{rules}}, $command;
+    push @{$chainref->{rules}}, ( ( '    ' x $loopcount ) . $command );
 
     $chainref->{referenced} = 1;
 
@@ -255,9 +261,13 @@ sub add_rule($$)
     
     $rule .= " -m comment --comment \"$comment\"" if $comment;
 
-    push @{$chainref->{rules}}, $rule;
+    if ( $loopcount ) {
+	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
+    } else {
+	push @{$chainref->{rules}}, $rule;
 
-    $chainref->{referenced} = 1;
+	$chainref->{referenced} = 1;
+    }
 
     $iprangematch = 0;
     $ipsetmatch   = 0;
@@ -271,6 +281,8 @@ sub add_rule($$)
 sub insert_rule($$$)
 {
     my ($chainref, $number, $rule) = @_;
+
+    fatal_error 'Internal Error in insert_rule()' if $loopcount;
     
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
@@ -927,46 +939,9 @@ sub log_rule_limit( $$$$$$$$ ) {
     if ( $command eq 'add' ) {
 	add_rule ( $chainref, $predicates . $prefix );
     } else {
+	fatal_error 'Internal Error in log_rule_limit()' if $loopcount;
 	insert_rule ( $chainref , 1 , $predicates . $prefix );
     }
-}
-
-sub log_rule_limit_command( $$$$$$$$ ) {
-    my ($loopcount, $level, $chainref, $chain, $disposition, $limit, $tag, $predicates ) = @_;
-
-    my $prefix;
-
-    $limit = $env{LOGLIMIT} unless $limit;
-
-    if ( $tag ) {
-	if ( $config{LOGTAGONLY} ) {
-	    $chain = $tag;
-	    $tag   = '';
-	} else {
-	    $tag .= ' ';
-	}
-    } else {
-	$tag = '' unless defined $tag;
-    }
-
-    if ( $env{LOGRULENUMBERS} ) {
-	$prefix = (sprintf $config{LOGFORMAT} , $chain , $chainref->{log}++, $disposition ) . $tag;
-    } else {
-	$prefix = (sprintf $config{LOGFORMAT} , $chain , $disposition) . $tag;
-    }
-
-    if ( length $prefix > 29 ) {
-	$prefix = substr $prefix, 0, 29;
-	warning_message "Log Prefix shortened to \"$prefix\"";
-    }
-
-    if ( $level eq 'ULOG' ) {
-	$prefix = "-j ULOG $env{LOGPARMS} --ulog-prefix \"$prefix\" ";
-    } else {
-	$prefix = "-j LOG $env{LOGPARMS} --log-level $level --log-prefix \"$prefix\" ";
-    }
-
-    add_command( $chainref, ( '    ' x $loopcount ) . "echo \"-A $chainref->{name} " . $predicates . $prefix . '" >&3' );
 }
 
 sub log_rule( $$$$ ) {
@@ -1020,11 +995,6 @@ sub expand_rule( $$$$$$$$$$ )
     }
 
     #
-    # Count of the number of unclosed loops in generated shell code
-    #
-    my $loopcount = 0;
-
-    #
     # Verify Inteface, if any
     #
     if ( $iiface ) {
@@ -1054,15 +1024,15 @@ sub expand_rule( $$$$$$$$$$ )
 	    my @interfaces = split /\s+/, $1;
 
 	    if ( @interfaces > 1 ) {
-		add_command $chainref, ('    ' x $loopcount) . "addresses=";
+		add_command $chainref, 'addresses=';
 		
 		for my $interface ( @interfaces ) {
-		    add_command  $chainref , ('    ' x $loopcount) . 'addresses="$addresses $(find_first_interface_address $interface)';
-		    add_command( $chainref , ('    ' x $loopcount) . 'for address in $addresses; do' );
+		    add_command $chainref , 'addresses="$addresses $(find_first_interface_address $interface)';
+		    add_command $chainref , 'for address in $addresses; do';
 		}
 		$loopcount++;
 	    } else {
-		add_command  $chainref , ('    ' x $loopcount) . 'address= $(find_first_interface_address $interface)';
+		add_command  $chainref , 'address= $(find_first_interface_address $interface)';
 	    }
 
 	    $rule .= '-d $address';
@@ -1085,10 +1055,9 @@ sub expand_rule( $$$$$$$$$$ )
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
 
 	if ( $restriction == PREROUTE_RESTRICT ) {
-	    add_command( $chainref , ('    ' x $loopcount) . "dests=\$(find_interface_addresses $diface)" );
-	    add_command( $chainref , ('    ' x $loopcount) . qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"") );
-
-	    add_command( $chainref , ('    ' x $loopcount) . 'for dest in $dests; do' );
+	    add_command $chainref ,   "dests=\$(find_interface_addresses $diface)";
+	    add_command $chainref , qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"");
+	    add_command $chainref ,   'for dest in $dests; do';
 	    $rule .= '-d $dest';
 	    $loopcount++;
 	} else {
@@ -1106,12 +1075,12 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command $chainref, ('    ' x $loopcount) . "addresses=";
 
 		for my $interface ( split /\s+/, $1 ) {
-		    add_command  $chainref , ('    ' x $loopcount) . 'addresses="$addresses $(find_first_interface_address $interface)"';
-		    add_command( $chainref , ('    ' x $loopcount) . 'for address in $addresses; do' );
+		    add_command  $chainref , 'addresses="$addresses $(find_first_interface_address $interface)"';
+		    add_command( $chainref , 'for address in $addresses; do' );
 		}
 		$loopcount++;
 	    } else {
-		add_command  $chainref , ('    ' x $loopcount) . 'address="$(find_first_interface_address $interface)"';
+		add_command  $chainref , 'address="$(find_first_interface_address $interface)"';
 	    }
 
 	    $rule .= '-m conntrack --ctorigdst $address';
@@ -1196,11 +1165,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( split /,/, $inets ) {
 		$inet = match_source_net $inet;
 		for my $dnet ( split /,/, $dnets ) {
-		    if ( $loopcount ) {
-			add_rule_comand( $chainref, $loopcount, $rule . $inet . ( match_dest_net $dnet ) . $onet . "-j $echain" );
-		    } else {
-			add_rule $chainref, $rule . $inet . ( match_dest_net $dnet ) . $onet . "-j $echain";
-		    }
+		    add_rule $chainref, $rule . $inet . ( match_dest_net $dnet ) . $onet . "-j $echain";
 		}
 	    }
 	}
@@ -1219,47 +1184,25 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Generate RETURNs for each exclusion
 	#
-	if ( $loopcount ) {
-	    for my $net ( split ',', $iexcl ) {
-		add_command( $echainref, ('    ' x $loopcount ) . "echo \"-A $echain " . ( match_source_net $net ) . '-j RETURN" >&3' );
-	    }
-
-	    for my $net ( split ',', $dexcl ) {
-		add_command( $echainref, ('    ' x $loopcount ) . "echo \"-A $echain " . ( match_dest_net $net ) . '-j RETURN" >&3' );
-	    }
-
-	    for my $net ( split ',', $oexcl ) {
-		add_command( $echainref, ('    ' x $loopcount ) . "echo \"-A $echain " . ( match_orig_dest $net ) . '-j RETURN" >&3' );
-	    }
-	    #
-	    # Log rule
-	    #
-	    log_rule_limit_command $loopcount, $loglevel , $echainref , $chain, $disposition , '',  $logtag , '' if $loglevel;
-	    #
-	    # Generate Final Rule
-	    # 
-	    add_command( $echainref, ('    ' x $loopcount ) . "echo \"-A $echain " . $exceptionrule . $target ) unless $disposition eq 'LOG';
-	} else {
-	    for my $net ( split ',', $iexcl ) {
-		add_rule $echainref, ( match_source_net $net ) . '-j RETURN';
-	    }
-
-	    for my $net ( split ',', $dexcl ) {
-		add_rule $echainref, ( match_dest_net $net ) . '-j RETURN';
-	    }
-
-	    for my $net ( split ',', $oexcl ) {
-		add_rule $echainref, ( match_orig_dest $net ) . '-j RETURN';
-	    }
-	    #
-	    # Log rule
-	    #
-	    log_rule_limit $loglevel , $echainref , $chain, $disposition , '',  $logtag , 'add' , '' if $loglevel;
-	    #
-	    # Generate Final Rule
-	    # 
-	    add_rule $echainref, $exceptionrule . $target unless $disposition eq 'LOG';
+	for my $net ( split ',', $iexcl ) {
+	    add_rule $echainref, ( match_source_net $net ) . '-j RETURN';
 	}
+
+	for my $net ( split ',', $dexcl ) {
+	    add_rule $echainref, ( match_dest_net $net ) . '-j RETURN';
+	}
+
+	for my $net ( split ',', $oexcl ) {
+	    add_rule $echainref, ( match_orig_dest $net ) . '-j RETURN';
+	}
+	#
+	# Log rule
+	#
+	log_rule_limit $loglevel , $echainref , $chain, $disposition , '',  $logtag , 'add' , '' if $loglevel;
+	#
+	# Generate Final Rule
+	# 
+	add_rule $echainref, $exceptionrule . $target unless $disposition eq 'LOG';
     } else {
 	#
 	# No exclusions
@@ -1269,21 +1212,14 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( split /,/, $inets ) {
 		$inet = match_source_net $inet;
 		for my $dnet ( split /,/, $dnets ) {
-		    if ( $loopcount ) {
-			log_rule_limit_command $loopcount, $loglevel , $chainref , $chain, $disposition , '' , $logtag , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
-			add_command( $chainref,  ('    ' x $loopcount ) . "echo \"-A $chain" . $rule . $inet . match_dest_net( $dnet ) . $onet . $target . '" >&3')  unless $disposition eq 'LOG';
-		    } else {
-			log_rule_limit $loglevel , $chainref , $chain, $disposition , '' , $logtag , 'add' , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
-			add_rule $chainref, $rule . $inet . match_dest_net( $dnet ) . $onet . $target unless $disposition eq 'LOG';
-		    }
+		    log_rule_limit $loglevel , $chainref , $chain, $disposition , '' , $logtag , 'add' , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
+		    add_rule $chainref, $rule . $inet . match_dest_net( $dnet ) . $onet . $target unless $disposition eq 'LOG';
 		}
 	    }
 	}
     }
 
-    while ( $loopcount-- ) { 
-	add_command( $chainref, ('    ' x $loopcount) . 'done' ); 
-    }    
+    add_command $chainref, 'done' while $loopcount--;
 }
 
 #

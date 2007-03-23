@@ -939,7 +939,6 @@ sub log_rule_limit( $$$$$$$$ ) {
     if ( $command eq 'add' ) {
 	add_rule ( $chainref, $predicates . $prefix );
     } else {
-	fatal_error 'Internal Error in log_rule_limit()' if $loopcount;
 	insert_rule ( $chainref , 1 , $predicates . $prefix );
     }
 }

@@ -204,7 +204,7 @@ sub setup_one_masq($$$$$$)
 		} else {
 		    $addr =~ s/^://;
 		    $addrlist .= "--to-ports $addr ";
-		} 
+		}
 	    }
 
 	    $target .= $addrlist;
@@ -219,7 +219,6 @@ sub setup_one_masq($$$$$$)
 
     if ( $add_snat_aliases ) {
 	my ( $interface, $alias ) = split /:/, $fullinterface;
-	$alias = 0 unless defined $alias;
 	for my $address ( split /,/, $addresses ) {
 	    my ( $addrs, $port ) = split /:/, $address;
 	    next unless $addrs;
@@ -227,8 +226,12 @@ sub setup_one_masq($$$$$$)
 		unless ( $addresses_to_add{$addr} ) {
 		    emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
 		    $addresses_to_add{$addr} = 1;
-		    push @addresses_to_add, $addr, "$interface:$alias";
-		    $alias++;
+		    if ( defined $alias ) {
+			push @addresses_to_add, $addr, "$interface:$alias";
+			$alias++;
+		    } else {
+			push @addresses_to_add, $addr, $interface;
+		    }
 		}
 	    }
 	}
@@ -312,8 +315,7 @@ sub do_one_nat( $$$$$ )
 	$policyout =  '-m policy --pol none --dir out';
     }
 
-    fatal_error "Invalid nat file entry \"$line\"" 
-	unless defined $interface and defined $internal;
+    fatal_error "Invalid nat file entry \"$line\"" unless defined $interface && defined $internal;
 
     if ( $add_ip_aliases ) {
 	if ( $interface =~ s/:$// ) {

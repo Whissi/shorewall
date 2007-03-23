@@ -29,6 +29,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( 
+		  ip_range_explicit
 		 );
 our @EXPORT_OK = qw( );
 our @VERSION = 1.00;

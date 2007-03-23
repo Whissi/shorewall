@@ -355,7 +355,7 @@ sub get_configuration() {
     default_yes_no 'CLEAR_TC'                   , 'Yes';
     default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
 
-    unless ( $config{IP_ADD_ALIASES} || $config{ADD_SNAT_ALIASES} ) {
+    unless ( $config{ADD_IP_ALIASES} || $config{ADD_SNAT_ALIASES} ) {
 	$config{RETAIN_ALIASES} = '';
     } else {
 	default_yes_no 'RETAIN_ALIASES'             , '';

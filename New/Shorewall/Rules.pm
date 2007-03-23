@@ -930,18 +930,20 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $target = '-j REDIRECT --to-port ' . ( $serverport ? $serverport : $ports );
 	}
 
-	unless ( $origdest and $origdest ne '-' ) {
+	unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
 	    if ( $config{DETECT_DNAT_ADDRS} ) {
-		$origdest = 'detect';
+		my $interfacesref = $zones{$sourcezone}{interfaces};
+		my $interfaces = "@$interfacesref";
+		$origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
 	    } else {
-		origdest = ALLIPv4;
+		$origdest = ALLIPv4;
 	    }
 	}
 	#
 	# And generate the nat table rule(s)
 	#
 	expand_rule
-	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ) ,
+	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
 	    PREROUTE_RESTRICT ,
 	    $rule ,
 	    $source ,
@@ -959,21 +961,27 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $loglevel = '';
 	}
     } else {
-	$origdest = ALLIPv4 unless $origdest and $origdest ne '-';
-
 	if ( $actiontype & NONAT ) {
 	    #
 	    # NONAT or ACCEPT+ -- May not specify a destination interface
 	    #
 	    fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
 	    
+	    $origdest = '' unless $origdest and $origdest ne '-';
+
+	    if ( $origdest eq 'detect' ) {
+		my $interfacesref = $zones{$sourcezone}{interfaces};
+		my $interfaces = "@$interfacesref";
+		$origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
+	    }
+
 	    expand_rule
 		ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
 		PREROUTE_RESTRICT ,
 		$rule ,
 		$source ,
 		$dest ,
-		'' ,
+		$origdest ,
 		'-j RETURN ' ,
 		$loglevel ,
 		$action ,

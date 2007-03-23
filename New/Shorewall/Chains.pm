@@ -234,7 +234,9 @@ my $chainseq;
 #
 
 #
-# Count of the number of unclosed loops in generated shell code
+# Count of the number of unclosed loops in generated shell code. We insert shell code
+# into the Chain tables 'rules' array (proceeded by '~'). create_netfilter_load() 
+# emits that code inline for execution at run-time.
 #
 my $loopcount = 0;
 
@@ -250,6 +252,7 @@ sub add_command($$)
 
     $slowstart = 1;
 }
+
 #
 # Add a rule to a chain. Arguments are:
 #
@@ -957,11 +960,6 @@ sub expand_rule( $$$$$$$$$$ )
     my ($chainref , $restriction, $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
-
-    sub finish_detect_loops( $$ ) {
-	my ( $chainref, $chain, $ruleref, $detectcount, $newchainneeded ) = @_;
-
-    }
     #
     # Handle Log Level
     #
@@ -971,7 +969,7 @@ sub expand_rule( $$$$$$$$$$ )
 	( $loglevel, $logtag ) = split /:/, $loglevel;
 	
 	if ( $loglevel =~ /^none!?$/i ) {
-	    return 1 if $disposition eq 'LOG';
+	    return if $disposition eq 'LOG';
 	    $loglevel = $logtag = '';
 	}
     }
@@ -1071,9 +1069,9 @@ sub expand_rule( $$$$$$$$$$ )
 	    my @interfaces = split /\s+/, $1;
 
 	    if ( @interfaces > 1 ) {
-		add_command $chainref, ('    ' x $loopcount) . "addresses=";
+		add_command $chainref, 'addresses=';
 
-		for my $interface ( split /\s+/, $1 ) {
+		for my $interface ( @interfaces ) {
 		    add_command  $chainref , 'addresses="$addresses $(find_first_interface_address $interface)"';
 		    add_command( $chainref , 'for address in $addresses; do' );
 		}
@@ -1292,14 +1290,14 @@ sub create_netfilter_load() {
 
     if ( $slowstart ) {
 	emit 'TEMPFILE=$(mktempfile)';
+	emit '[ -n "$TEMPFILE" ] || fatal_error "Cannot create temporary file in /tmp"';
 	emit '';
 	emit 'exec 3>>$TEMPFILE';
+	emit '';
     } else {
 	emit 'iptables-restore << __EOF__';
 	$state = CAT_STATE;
     }
-
-    emit '';
 
     for my $table qw/raw nat mangle filter/ {
 	emitr "*$table";

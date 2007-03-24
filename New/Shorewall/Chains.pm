@@ -217,7 +217,6 @@ my $exclseq = 0;
 #
 # Used to suppress duplicate match specifications.
 #
-my $ipsetmatch   = 0;
 my $iprangematch = 0;
 #
 # Keep track of whether there are run-time commands in the chain rules
@@ -271,7 +270,6 @@ sub add_rule($$)
     }
 
     $iprangematch = 0;
-    $ipsetmatch   = 0;
 }
 
 #
@@ -292,7 +290,6 @@ sub insert_rule($$$)
     $chainref->{referenced} = 1;
     
     $iprangematch = 0;
-    $ipsetmatch   = 0;
 }
 
 #
@@ -592,7 +589,7 @@ sub newexclusionchain() {
 }
 
 sub clearrule() {
-    $iprangematch = $ipsetmatch = 0;
+    $iprangematch = 0;
 }
 
 #

@@ -62,7 +62,7 @@ use Shorewall::Proxyarp;
 use constant { VERSION => '3.9.0-1' };
 
 sub generate_script_1 {
-    copy find_file 'prog.header';
+    copy '/usr/share/shorewall4/prog.header';
 
     my $date = localtime;
 
@@ -444,7 +444,7 @@ stop_firewall() {
 
 sub generate_script_2 () {
 
-    copy find_file 'prog.functions';
+    copy '/usr/share/shorewall4/prog.functions';
 
     emit '#';
     emit '# Setup Routing and Traffic Shaping';
@@ -577,7 +577,7 @@ esac';
 
     emit "}\n";
     
-    copy find_file 'prog.footer';	
+    copy '/usr/share/shorewall4/prog.footer';	
 }
 
 sub compile_firewall( $ ) {

@@ -1,5 +1,5 @@
 #
-# Shorewall 3.9 -- /usr/share/shorewall/Shorewall/Config.pm
+# Shorewall4 3.9 -- /usr/share/shorewall4/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -374,7 +374,13 @@ sub get_configuration() {
     default_yes_no 'LOGTAGONLY'                 , '';
     default_yes_no 'RFC1918_STRICT'             , '';
     default_yes_no 'SAVE_IPSETS'                , '';
+
+    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall4 ' . VERSION if $config{SAVE_IPSETS};
+
     default_yes_no 'MAPOLDACTIONS'              , '';
+
+    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall4 ' . VERSION if $config{MAPOLDACTIONS};
+
     default_yes_no 'FASTACCEPT'                 , '';
     default_yes_no 'IMPLICIT_CONTINUE'          , '';
     default_yes_no 'HIGH_ROUTE_MARKS'           , '';
@@ -564,11 +570,7 @@ sub generate_aux_config() {
 
     create_temp_aux_config;
 
-    my $date = localtime;
-
-    emit "#
-# Shorewall auxiliary configuration file created by Shorewall version $ENV{VERSION} - $date
-#";
+    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall4 version " . VERSION . ' - ' . localtime . "\n#" );
     
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;

@@ -1,5 +1,5 @@
 #
-# Shorewall 3.9 -- /usr/share/shorewall/Shorewall/Nat.pm
+# Shorewall4 3.9 -- /usr/share/shorewall4/Shorewall/Nat.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

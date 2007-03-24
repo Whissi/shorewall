@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall Compiler - V3.9
+#     The Shoreline Firewall4 (Shorewall4) Packet Filtering Firewall Compiler - V3.9
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -595,11 +595,11 @@ sub compile_firewall( $ ) {
 
     report_capabilities if $ENV{VERBOSE} > 1;
 
-    fatal_error( 'Shorewall ' . VERSION . ' requires Conntrack Match Support' )
+    fatal_error( 'Shorewall4 ' . VERSION . ' requires Conntrack Match Support' )
 	unless $capabilities{CONNTRACK_MATCH};
-    fatal_error( 'Shorewall ' . VERSION . ' requires Extended Multi-port Match Support' )
+    fatal_error( 'Shorewall4 ' . VERSION . ' requires Extended Multi-port Match Support' )
 	unless $capabilities{XMULTIPORT};
-    fatal_error( 'Shorewall ' . VERSION . ' requires Address Type Match Support' )
+    fatal_error( 'Shorewall4 ' . VERSION . ' requires Address Type Match Support' )
 	unless $capabilities{ADDRTYPE};
     fatal_error 'BRIDGING=Yes is not supported by the ' . VERSION . ' Perl-based compiler'
 	if $config{BRIDGING};

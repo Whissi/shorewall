@@ -1,5 +1,5 @@
 #
-# Shorewall 3.9 -- /usr/share/shorewall/Shorewall/Chains.pm
+# Shorewall4 3.9 -- /usr/share/shorewall4/Shorewall/Chains.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

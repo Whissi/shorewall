@@ -1,4 +1,4 @@
-%define name shorewall-pm
+%define name shorewall-pl
 %define version 3.9.0
 %define release 1
 %define prefix /usr
@@ -69,6 +69,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Nat.pm
 %attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Policy.pm
 %attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Proc.pm
+%attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Providers.pm
 %attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Proxyarp.pm
 %attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Rules.pm
 %attr(0555,root,root) /usr/share/shorewall-pl/Shorewall/Tc.pm

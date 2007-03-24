@@ -417,7 +417,7 @@ sub first_chains( $ ) #$1 = interface
 }
 
 #
-# Split a source or destination list but keep [...] together.
+# Split a source or destination host list but keep [...] together.
 #
 sub mysplit( $ ) {
     my @input = split /,/, $_[0];
@@ -432,7 +432,7 @@ sub mysplit( $ ) {
 		$element .= ( ',' . shift @input );
 	    }
 
-	    fatal_error "Invalid List $_[0]" unless substr( $element, -1, 1 ) eq ']';
+	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
 	}
     
 	push @result, $element;

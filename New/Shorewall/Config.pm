@@ -117,7 +117,7 @@ our %config =
 		USE_ACTIONS=> undef,
 		OPTIMIZE => undef,
 		EXPORTPARAMS => undef,
-		SHOREWALL4 => undef,
+		SHOREWALL_PL => undef,
 		#
 		# Packet Disposition
 		#

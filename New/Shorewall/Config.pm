@@ -107,7 +107,7 @@ our %config =
 		USE_ACTIONS=> undef,
 		OPTIMIZE => undef,
 		EXPORTPARAMS => undef,
-		EXPERIMENTAL => undef,
+		SHOREWALL4 => undef,
 		#
 		# Packet Disposition
 		#
@@ -365,6 +365,7 @@ sub get_configuration() {
     default_yes_no 'BLACKLISTNEWONLY'           , '';
     default_yes_no 'DISABLE_IPV6'               , '';
     default_yes_no 'DYNAMIC_ZONES'              , '';
+    default_yes_no 'BRIDGING'                   , '';
 
     fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option" if $config{DYNAMIC_ZONES} and $ENV{EXPORT};
     

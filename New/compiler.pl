@@ -40,7 +40,7 @@
 #       This program performs rudimentary shell variable expansion on action and macro files.
 
 use strict;
-use lib '/usr/share/shorewall';
+use lib '/usr/share/shorewall4';
 use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Chains;
@@ -601,7 +601,7 @@ sub compile_firewall( $ ) {
 	unless $capabilities{XMULTIPORT};
     fatal_error( 'Shorewall ' . VERSION . ' requires Address Type Match Support' )
 	unless $capabilities{ADDRTYPE};
-    fatal_error 'BRIDGING=Yes is not supported by the ' . VERSION . 'Perl-based compiler';
+    fatal_error 'BRIDGING=Yes is not supported by the ' . VERSION . ' Perl-based compiler'
 	if $config{BRIDGING};
     fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables'
 	if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};

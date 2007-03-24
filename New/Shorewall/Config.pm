@@ -33,6 +33,15 @@ our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
 #
+# Misc Globals
+#
+our %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
+		CONFDIR =>  '/etc/shorewall',
+		LOGPARMS => '',
+		VERSION =>  '3.9.0-1',
+	       );
+
+#
 # From shorewall.conf file
 #
 our %config =     
@@ -122,14 +131,6 @@ our %config =
 my @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK/;
 my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
-
-# Misc Globals
-#
-our %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
-	       CONFDIR =>  '/etc/shorewall',
-	       LOGPARMS => '',
-	       VERSION =>  '3.9.0',
-	       );
 
 #
 # From parsing the capabilities file
@@ -375,11 +376,11 @@ sub get_configuration() {
     default_yes_no 'RFC1918_STRICT'             , '';
     default_yes_no 'SAVE_IPSETS'                , '';
 
-    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall4 ' . VERSION if $config{SAVE_IPSETS};
+    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall4 ' . $env{VERSION} if $config{SAVE_IPSETS};
 
     default_yes_no 'MAPOLDACTIONS'              , '';
 
-    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall4 ' . VERSION if $config{MAPOLDACTIONS};
+    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall4 ' . $env{VERSION} if $config{MAPOLDACTIONS};
 
     default_yes_no 'FASTACCEPT'                 , '';
     default_yes_no 'IMPLICIT_CONTINUE'          , '';
@@ -570,7 +571,7 @@ sub generate_aux_config() {
 
     create_temp_aux_config;
 
-    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall4 version " . VERSION . ' - ' . localtime . "\n#" );
+    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall4 version " . $env{VERSION} . ' - ' . ( localtime ) . "\n#" );
     
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;

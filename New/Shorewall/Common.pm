@@ -34,6 +34,7 @@ our @EXPORT = qw(ALLIPv4
 
 		 warning_message 
 		 fatal_error
+		 mysplit
 		 create_temp_object
 		 finalize_object
 		 emit 
@@ -95,6 +96,34 @@ sub fatal_error
 {
     print STDERR "   ERROR: @_\n";
     die;
+}
+
+#
+# Split a comma-separated source or destination host list but keep [...] together.
+#
+sub mysplit( $ ) {
+    my @input = split /,/, $_[0];
+
+    return @input unless $_[0] =~ /\[/;
+
+    my @result;
+
+    while ( @input ) {
+	my $element = shift @input;
+
+	if ( $element =~ /\[/ ) {
+	    while ( ! ( $element =~ /\]/ ) ) {
+		last unless @input;
+		$element .= ( ',' . shift @input );
+	    }
+
+	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
+	}
+    
+	push @result, $element;
+    }
+
+    @result;
 }
 
 sub create_temp_object( $ ) {

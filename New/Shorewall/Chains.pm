@@ -417,31 +417,6 @@ sub first_chains( $ ) #$1 = interface
 }
 
 #
-# Split a source or destination host list but keep [...] together.
-#
-sub mysplit( $ ) {
-    my @input = split /,/, $_[0];
-    my @result;
-
-    while ( @input ) {
-	my $element = shift @input;
-
-	if ( $element =~ /\[/ ) {
-	    while ( ! ( $element =~ /\]/ ) ) {
-		last unless @input;
-		$element .= ( ',' . shift @input );
-	    }
-
-	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
-	}
-    
-	push @result, $element;
-    }
-
-    @result;
-}
-
-#
 # Create a new chain and return a reference to it.
 #
 sub new_chain($$)
@@ -833,6 +808,29 @@ sub iprange_match() {
 }
 
 #
+# Get set flags (ipsets).
+#
+sub get_set_flags( $$ ) {
+    my ( $setname, $option ) = @_;
+    my $options = $option;
+
+    fatal_error "Your kernel and/or iptables does not include ipset match: $setname" unless $capabilities{IPSET_MATCH};
+
+    if ( $setname =~ /(.*)\[([1-6])\]$/ ) {
+	$setname  = $1;
+	my $count = $2;
+	$options .= ",$option" while --$count > 0;
+    } elsif ( $setname =~ /(.+)\[(.*)\]$/ ) {
+	$setname = $1;
+	$options = $2;
+    }
+    
+    $setname =~ s/^\+//;
+
+    "--set $setname $options"
+}
+
+#
 # Match a Source. Currently only handles IP addresses and ranges
 #
 sub match_source_net( $ ) {
@@ -844,7 +842,9 @@ sub match_source_net( $ ) {
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
 	( $net = $2 ) =~ s/-/:/g;
-	"-m mac --mac-source $1 $net "
+	"-m mac --mac-source $1 $net ";
+    } elsif ( $net =~ /^(!?)\+/ ) {
+	'-m set ' . ( $1 ? '! ' : '' ) . get_set_flags $net, 'src'
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-s ! $net ";
@@ -863,6 +863,8 @@ sub match_dest_net( $ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 
 	iprange_match . "${invert}--dst-range $net ";
+    } elsif ( $net =~ /^(!?)\+/ ) {
+	'-m set ' . ( $1 ? '! ' : '' ) . get_set_flags $net, 'dst'
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-d ! $net ";
@@ -1159,7 +1161,7 @@ sub expand_rule( $$$$$$$$$$ )
 		$oexcl = '';
 	    }
 
-	    if ( ! $onets ) {
+	    unless ( $onets ) {
 		my @oexcl = mysplit $oexcl;
 		if ( @oexcl == 1 ) {
 		    $rule .= "-m conntrack --ctorigdst ! $oexcl ";
@@ -1182,7 +1184,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    $iexcl = '';
 	}
 
-	if ( ! $inets ) {
+	unless ( $inets ) {
 	    my @iexcl = mysplit $iexcl;
 	    if ( @iexcl == 1 ) {
 		$rule .= match_source_net "!$iexcl ";
@@ -1204,7 +1206,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    $dexcl = '';
 	}
 
-	if ( ! $dnets ) {
+	unless ( $dnets ) {
 	    my @dexcl = mysplit $dexcl;
 	    if ( @dexcl == 1 ) {
 		$rule .= match_dest_net "!$dexcl ";

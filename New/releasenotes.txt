@@ -8,25 +8,36 @@ a) The compiler is small.
 b) The compiler is very fast.
 c) The compiler generates a firewall script that uses iptables-restore;
 so the script is very fast.
+d) Use of the perl compiler is optional! The old slow clunky
+   Bourne-shell compiler is still there.
 
 The bad news:
 
-There are a number of incompatibilities between 3.9.0 and earlier
-versions.
+There are a number of incompatibilities between 3.9.0 using the
+Perl-based compiler and earlier versions.
 
-a) This version requires the addrtype match capability in your kernel
-   and iptables. This capability is in current distributions.
+a) This version requires the following capabilities in your kernel
+   and iptables. 
 
-b) The BROADCAST column in the interfaces file is essentailly unused;
+   - addrtype match
+   - conntrack match
+   - extended multiport match
+
+   These capabilities are in current distributions.
+
+b) BRIDGING=Yes is not supported. The kernel code necessary to
+   support this option was removed in Linux kernel 2.6.20. 
+
+c) The BROADCAST column in the interfaces file is essentailly unused;
    if you enter anything in this column but '-' or 'detect', you will
    receive a warning.
 
-c) Because the compiler is now written in Perl, your compile-time
+d) Because the compiler is now written in Perl, your compile-time
    extension scripts for earlier version will no longer work.
 
-d) The 'refresh' command is now synonamous with 'restart'.
+e) The 'refresh' command is now synonamous with 'restart'.
 
-e) Some run-time extension scripts are no longer supported because they
+f) Some run-time extension scripts are no longer supported because they
    make no sense (iptables-restore instantiates the new configuration
    atomically).
 
@@ -36,8 +47,8 @@ e) Some run-time extension scripts are no longer supported because they
 	refresh
 	refreshed
 
-f) Currently, 3.9.0 has no support for ipsets. That will change with
-   future releases but one thing is certain -- Shorewall is out of the
+g) Currently, support for ipsets is untested. That will change with
+   future releases but one thing is certain -- Shorewall is now out of the
    ipset load/reload business. If the Netfilter ruleset is never cleared,
    then there is no opportunity for Shorewall to load/reload your
    ipsets.

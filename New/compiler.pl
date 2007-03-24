@@ -601,8 +601,8 @@ sub compile_firewall( $ ) {
 	unless $capabilities{XMULTIPORT};
     fatal_error( 'Shorewall ' . VERSION . ' requires Address Type Match Support' )
 	unless $capabilities{ADDRTYPE};
-    fatal_error 'BRIDGING=Yes requires Physdev Match support in your Kernel and iptables'
-	if $config{BRIDGING} && ! $capabilities{PHYSDEV_MATCH};
+    fatal_error 'BRIDGING=Yes is not supported by the ' . VERSION . 'Perl-based compiler';
+	if $config{BRIDGING};
     fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables'
 	if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};
     fatal_error 'RFC1918_STRICT=Yes requires Connection Tracking match'

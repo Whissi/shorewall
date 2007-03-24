@@ -3,6 +3,30 @@ Shorewall-pl 3.9.0
 This companion product to Shorewall 3.4.2 and later includes a complete
 rewrite of the compiler in Perl.
 
+Shorewall-pl depends on Shorewall (3.4.2 or later). So if you want to use the
+new compiler, you must install both Shorewall and Shorewall-pl.
+
+Even if you install Shorewall-pl, you have a choice of which compiler you use.
+The choice is specified in the shorewall.conf file so you can select the
+compiler to use on a system-by-system basis when running Shorewall Lite on
+remote systems.
+
+I decided to make Shorewall-pl a separate product for several reasons:
+
+a) Embedded applications are unlikely to adopt Shorewall-pl; even Mini-Perl
+has a substantial disk and Ram footprint.
+
+b) Because of the gross incompatibilities between the new compiler and the
+old (see below), migration to the new compiler must be voluntary.
+
+c) By allowing Shorewall-pl to co-exist with the current Shorewall stable
+release (3.4), I'm hoping that the new compiler will get more testing and
+validation than it would if I were to package it with a new development
+version of Shorewall itself.
+
+d) Along the same vein, I think that users will be more likely to experiment
+with the new compiler if they can easily fall back to the old one if things
+get sticky.
 
 The good news:
 
@@ -99,7 +123,7 @@ variables that you set or create.
 
 To actually use the new compiler, add this to shorewall.conf:
 
-   SHOREWALL4=Yes
+   SHOREWALL_PL=Yes
 
 If you add this setting to /etc/shorewall/shorewall.conf then by
 default, the new compiler will be used on the system. If you add it to

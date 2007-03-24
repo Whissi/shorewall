@@ -143,11 +143,11 @@ sub new_action( $ ) {
 }
 
 #
-# Add an entry to the requiredby hash
+# Record a 'requires' relationship between a pair of actions.
 #
 sub add_requiredby ( $$ ) {
-    my ($requires , $requiredby ) = @_;
-    $actions{$requiredby}{requires}{$requires} = 1;
+    my ($requiredby , $requires ) = @_;
+    $actions{$requires}{requires}{$requiredby} = 1;
 }
 
 #
@@ -159,15 +159,10 @@ sub add_requiredby ( $$ ) {
 # set CHAIN to the name of the iptables chain where rules are to be added.
 # Similarly, LEVEL and TAG contain the log level and log tag respectively.
 #
-# For each <action>, we maintain two variables:
-#
-#    <action>_actchain - The action chain number.
-#    <action>_chains   - List of ( level[:tag] , chainname ) pairs
-#
 # The maximum length of a chain name is 30 characters -- since the log
 # action chain name is 2-3 characters longer than the base chain name,
 # this function truncates the original chain name where necessary before
-# it adds the leading "%" and trailing sequence number.#
+# it adds the leading "%" and trailing sequence number.
 # 
 sub createlogactionchain( $$ ) {
     my ( $action, $level ) = @_;
@@ -388,6 +383,7 @@ sub process_actions2 () {
 # Generate chain for non-builtin action invocation
 #	
 sub process_action3( $$$$$ ) {
+    my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
     #
     # This function is called to process each rule generated from an action file.
     #
@@ -408,7 +404,6 @@ sub process_action3( $$$$$ ) {
 		      '' );
     }
 
-    my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^($env{SHAREDIR})/ );
 

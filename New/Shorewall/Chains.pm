@@ -417,6 +417,31 @@ sub first_chains( $ ) #$1 = interface
 }
 
 #
+# Split a source or destination list but keep [...] together.
+#
+sub mysplit( $ ) {
+    my @input = split /,/, $_[0];
+    my @result;
+
+    while ( @input ) {
+	my $element = shift @input;
+
+	if ( $element =~ /\[/ ) {
+	    while ( ! ( $element =~ /\]/ ) ) {
+		last unless @input;
+		$element .= ( ',' . shift @input );
+	    }
+
+	    fatal_error "Invalid List $_[0]" unless substr( $element, -1, 1 ) eq ']';
+	}
+    
+	push @result, $element;
+    }
+
+    @result;
+}
+
+#
 # Create a new chain and return a reference to it.
 #
 sub new_chain($$)
@@ -1135,7 +1160,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    }
 
 	    if ( ! $onets ) {
-		my @oexcl = split /,/, $oexcl;
+		my @oexcl = mysplit $oexcl;
 		if ( @oexcl == 1 ) {
 		    $rule .= "-m conntrack --ctorigdst ! $oexcl ";
 		    $oexcl = '';
@@ -1158,7 +1183,7 @@ sub expand_rule( $$$$$$$$$$ )
 	}
 
 	if ( ! $inets ) {
-	    my @iexcl = split /,/, $iexcl;
+	    my @iexcl = mysplit $iexcl;
 	    if ( @iexcl == 1 ) {
 		$rule .= match_source_net "!$iexcl ";
 		$iexcl = '';
@@ -1180,7 +1205,7 @@ sub expand_rule( $$$$$$$$$$ )
 	}
 
 	if ( ! $dnets ) {
-	    my @dexcl = split /,/, $dexcl;
+	    my @dexcl = mysplit $dexcl;
 	    if ( @dexcl == 1 ) {
 		$rule .= match_dest_net "!$dexcl ";
 		$dexcl = '';
@@ -1203,11 +1228,11 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Use the current rule and sent all possible matches to the exclusion chain
 	#
-	for my $onet ( split /,/, $onets ) {
+	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
-	    for my $inet ( split /,/, $inets ) {
+	    for my $inet ( mysplit $inets ) {
 		$inet = match_source_net $inet;
-		for my $dnet ( split /,/, $dnets ) {
+		for my $dnet ( mysplit $dnets ) {
 		    add_rule $chainref, $rule . $inet . ( match_dest_net $dnet ) . $onet . "-j $echain";
 		}
 	    }
@@ -1227,15 +1252,15 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Generate RETURNs for each exclusion
 	#
-	for my $net ( split ',', $iexcl ) {
+	for my $net ( mysplit $iexcl ) {
 	    add_rule $echainref, ( match_source_net $net ) . '-j RETURN';
 	}
 
-	for my $net ( split ',', $dexcl ) {
+	for my $net ( mysplit $dexcl ) {
 	    add_rule $echainref, ( match_dest_net $net ) . '-j RETURN';
 	}
 
-	for my $net ( split ',', $oexcl ) {
+	for my $net ( mysplit $oexcl ) {
 	    add_rule $echainref, ( match_orig_dest $net ) . '-j RETURN';
 	}
 	#
@@ -1250,11 +1275,11 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# No exclusions
 	#
-	for my $onet ( split /,/, $onets ) {
+	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
-	    for my $inet ( split /,/, $inets ) {
+	    for my $inet ( mysplit $inets ) {
 		$inet = match_source_net $inet;
-		for my $dnet ( split /,/, $dnets ) {
+		for my $dnet ( mysplit $dnets ) {
 		    log_rule_limit $loglevel , $chainref , $chain, $disposition , '' , $logtag , 'add' , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
 		    add_rule $chainref, $rule . $inet . match_dest_net( $dnet ) . $onet . $target unless $disposition eq 'LOG';
 		}

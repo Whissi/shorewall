@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-#     The Shoreline Firewall4 (Shorewall4) Packet Filtering Firewall Compiler - V3.9
+#     The Shoreline Firewall4 (Shorewall-pl) Packet Filtering Firewall Compiler - V3.9
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -40,7 +40,7 @@
 #       This program performs rudimentary shell variable expansion on action and macro files.
 
 use strict;
-use lib '/usr/share/shorewall4';
+use lib '/usr/share/shorewall-pl';
 use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Chains;
@@ -60,7 +60,7 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
 sub generate_script_1 {
-    copy '/usr/share/shorewall4/prog.header';
+    copy $env{SHAREDIR4} . 'prog.header';
 
     my $date = localtime;
 
@@ -442,7 +442,7 @@ stop_firewall() {
 
 sub generate_script_2 () {
 
-    copy '/usr/share/shorewall4/prog.functions';
+    copy $env{SHAREDIR4} . 'prog.functions';
 
     emit '#';
     emit '# Setup Routing and Traffic Shaping';
@@ -575,7 +575,7 @@ esac';
 
     emit "}\n";
     
-    copy '/usr/share/shorewall4/prog.footer';	
+    copy $env{SHAREDIR4} . 'prog.footer';
 }
 
 sub compile_firewall( $ ) {
@@ -593,14 +593,12 @@ sub compile_firewall( $ ) {
 
     report_capabilities if $ENV{VERBOSE} > 1;
 
-    fatal_error( 'Shorewall4 ' . $env{VERSION} . ' requires Conntrack Match Support' )
+    fatal_error( 'Shorewall-pl ' . $env{VERSION} . ' requires Conntrack Match Support' )
 	unless $capabilities{CONNTRACK_MATCH};
-    fatal_error( 'Shorewall4 ' . $env{VERSION} . ' requires Extended Multi-port Match Support' )
+    fatal_error( 'Shorewall-pl ' . $env{VERSION} . ' requires Extended Multi-port Match Support' )
 	unless $capabilities{XMULTIPORT};
-    fatal_error( 'Shorewall4 ' . $env{VERSION} . ' requires Address Type Match Support' )
+    fatal_error( 'Shorewall-pl ' . $env{VERSION} . ' requires Address Type Match Support' )
 	unless $capabilities{ADDRTYPE};
-    fatal_error 'BRIDGING=Yes is not supported by the ' . $env{VERSION} . ' Perl-based compiler'
-	if $config{BRIDGING};
     fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables'
 	if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};
     fatal_error 'RFC1918_STRICT=Yes requires Connection Tracking match'

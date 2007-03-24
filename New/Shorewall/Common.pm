@@ -1,5 +1,5 @@
 #
-# Shorewall4 3.9 -- /usr/share/shorewall4/Shorewall/Common.pm
+# Shorewall-pl 3.9 -- /usr/share/shorewall-pl/Shorewall/Common.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

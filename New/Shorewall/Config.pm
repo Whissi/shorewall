@@ -1,5 +1,5 @@
 #
-# Shorewall4 3.9 -- /usr/share/shorewall4/Shorewall/Config.pm
+# Shorewall-pl 3.9 -- /usr/share/shorewall-pl/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -37,6 +37,7 @@ our @VERSION = 1.00;
 #
 our %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		CONFDIR =>  '/etc/shorewall',
+		SHAREDIR4 => '/usr/share/shorewall-pl/',
 		LOGPARMS => '',
 		VERSION =>  '3.9.0-1',
 	       );
@@ -366,9 +367,12 @@ sub get_configuration() {
     default_yes_no 'BLACKLISTNEWONLY'           , '';
     default_yes_no 'DISABLE_IPV6'               , '';
     default_yes_no 'DYNAMIC_ZONES'              , '';
-    default_yes_no 'BRIDGING'                   , '';
 
     fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option" if $config{DYNAMIC_ZONES} and $ENV{EXPORT};
+
+    default_yes_no 'BRIDGING'                   , '';
+
+    fatal_error 'BRIDGING=Yes is not supported by Shorewall-pl' . $env{VERSION} if $config{BRIDGING};
     
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
@@ -376,11 +380,11 @@ sub get_configuration() {
     default_yes_no 'RFC1918_STRICT'             , '';
     default_yes_no 'SAVE_IPSETS'                , '';
 
-    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall4 ' . $env{VERSION} if $config{SAVE_IPSETS};
+    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall-pl ' . $env{VERSION} if $config{SAVE_IPSETS};
 
     default_yes_no 'MAPOLDACTIONS'              , '';
 
-    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall4 ' . $env{VERSION} if $config{MAPOLDACTIONS};
+    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall-pl ' . $env{VERSION} if $config{MAPOLDACTIONS};
 
     default_yes_no 'FASTACCEPT'                 , '';
     default_yes_no 'IMPLICIT_CONTINUE'          , '';
@@ -571,7 +575,7 @@ sub generate_aux_config() {
 
     create_temp_aux_config;
 
-    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall4 version " . $env{VERSION} . ' - ' . ( localtime ) . "\n#" );
+    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall-pl version " . $env{VERSION} . ' - ' . ( localtime ) . "\n#" );
     
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;

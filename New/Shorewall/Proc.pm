@@ -1,5 +1,5 @@
 #
-# Shorewall 3.9 -- /usr/share/shorewall/Shorewall/Proc.pm
+# Shorewall 3.9 -- /usr/share/shorewall-pl/Shorewall/Proc.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

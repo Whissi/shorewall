@@ -495,9 +495,11 @@ sub ensure_mangle_chain($) {
 #
 sub new_builtin_chain($$$)
 {
-    my $chainref = new_chain $_[0],$_[1];
+    my ( $table, $chain, $policy ) = @_;
+    
+    my $chainref = new_chain $table, $chain;
     $chainref->{referenced} = 1;
-    $chainref->{policy}     = $_[2];
+    $chainref->{policy}     = $policy;
     $chainref->{builtin}    = 1;
 }
 
@@ -677,7 +679,7 @@ sub mac_match( $ ) {
     my $mac = $_[0];
 
     $mac =~ s/^(!?)~//;
-    $mac =~ s/^!// if my $invert = $1 ? '! ' : ''; 
+    $mac =~ s/^!// if my $invert = ( $1 ? '! ' : ''); 
     $mac =~ s/-/:/g;
 
     "--match mac --mac-source ${invert}$mac ";

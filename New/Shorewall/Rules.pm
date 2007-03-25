@@ -88,7 +88,10 @@ sub process_tos() {
 		$restriction = OUTPUT_RESTRICT;
 	    } else {
 		$chainref = $pretosref;
+		$src =~ s/^all://;
 	    }
+
+	    dst =~ s/^all://;
 	    
 	    expand_rule 
 		$chainref ,
@@ -104,8 +107,6 @@ sub process_tos() {
 	}
 
 	close TOS;
-
-	$comment = '';
     }
 }
 
@@ -784,12 +785,6 @@ sub process_rule1 ( $$$$$$$$$ ) {
     my $rule = '';
     my $actionchainref;
 
-    $ports     = '' unless defined $ports;
-    $sports    = '' unless defined $sports;
-    $origdest  = '' unless defined $origdest;
-    $ratelimit = '' unless defined $ratelimit;
-    $user      = '' unless defined $user;
-    
     #
     # Determine the validity of the action
     #
@@ -863,6 +858,14 @@ sub process_rule1 ( $$$$$$$$$ ) {
 
     fatal_error "Unknown source zone ($sourcezone) in rule \"$line\"" unless $zones{$sourcezone}; 
     fatal_error "Unknown destination zone ($destzone) in rule \"$line\"" unless $zones{$destzone};
+
+    my $restriction = NO_RESTRICT;
+
+    if ( $sourcezone eq $firewall_zone ) {
+	$restriction = $destzone eq $firewall_zone ? ALL_RESTRICT : OUTPUT_RESTRICT;
+    } else {
+	$restriction = INPUT_RESTRICT if $destzone eq $firewall_zone;
+    }
     #
     # Take care of chain
     #
@@ -996,7 +999,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 
 	expand_rule
 	    ensure_chain ('filter', $chain ) ,
-	    NO_RESTRICT ,
+	    $restriction ,
 	    $rule ,
 	    $source ,
 	    $dest ,

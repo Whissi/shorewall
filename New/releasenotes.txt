@@ -73,7 +73,19 @@ f) Some run-time extension scripts are no longer supported because they
 	refresh
 	refreshed
 
-g) Currently, support for ipsets is untested. That will change with
+g) The /etc/shorewall/tos file now has a format similar to the tcrules.
+
+   The SOURCE column may be one of the following:
+
+       [all:]<address>[,...]
+       [all:]<interface>[:<address>[,...]]
+       $FW[:<address>[,...]]
+
+   The DEST column may be one of the following:
+       [all:]<address>[,...]
+       [all:]<interface>[:<address>[,...]]
+
+h) Currently, support for ipsets is untested. That will change with
    future releases but one thing is certain -- Shorewall is now out of the
    ipset load/reload business. If the Netfilter ruleset is never cleared,
    then there is no opportunity for Shorewall to load/reload your

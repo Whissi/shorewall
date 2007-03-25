@@ -479,7 +479,7 @@ sub add_common_rules() {
     if ( @$list ) {
 	my $disposition;
 
-	progress_message2 "   $doing TCP Flags checking...";
+	progress_message2 "   $doing TCP Flags filtering...";
 	
 	$chainref = new_standard_chain 'tcpflags';
 

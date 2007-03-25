@@ -649,7 +649,7 @@ sub compile_firewall( $ ) {
     #
     # Do all of the zone-independent stuff
     #
-    progress_message2 "Setting up Common Rules...";              
+    progress_message2 "$doing Common Rules...";              
     add_common_rules;
     #
     # /proc stuff
@@ -672,11 +672,10 @@ sub compile_firewall( $ ) {
 	emit "\nundo_routing";
 	emit 'restore_default_route';
     }
-
     #
     # TCRules and Traffic Shaping
     #
-    progress_message2 "Processing TC Rules...";                  
+    progress_message2 "$doing TC Rules...";                  
     setup_tc;
     #
     # Setup Masquerading/SNAT
@@ -686,7 +685,7 @@ sub compile_firewall( $ ) {
     #
     # MACLIST Filtration
     #
-    progress_message2 "Setting up MAC Filtration -- Phase 1..."; 
+    progress_message2 "$doing MAC Filtration -- Phase 1..."; 
     setup_mac_lists 1;
     #
     # Process the rules file.
@@ -696,7 +695,7 @@ sub compile_firewall( $ ) {
     #
     # Add Tunnel rules.
     #
-    progress_message2 "Adding Tunnels...";                       
+    progress_message2 "$doing Tunnels...";                       
     setup_tunnels;
     #
     # Post-rules action processing.
@@ -706,7 +705,7 @@ sub compile_firewall( $ ) {
     #
     # MACLIST Filtration again
     #
-    progress_message2 "Setting up MAC Filtration -- Phase 2..."; 
+    progress_message2 "$doing MAC Filtration -- Phase 2..."; 
     setup_mac_lists 2;
     #
     # Apply Policies
@@ -726,7 +725,7 @@ sub compile_firewall( $ ) {
     #
     # Accounting.
     #
-    progress_message2 "Setting UP Accounting...";                
+    progress_message2 "$doing Accounting...";                
     setup_accounting;
 
     if ( $command eq 'check' ) {
@@ -743,7 +742,6 @@ sub compile_firewall( $ ) {
 	# And generate the auxilary config file
 	#
 	generate_aux_config if $ENV{EXPORT};
-
     }
 }
 

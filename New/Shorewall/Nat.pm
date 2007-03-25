@@ -102,15 +102,9 @@ sub setup_one_masq($$$$$$)
     my $target = '-j MASQUERADE ';
 
     #
-    # Take care of missing ADDRESSES column
-    #
-    $addresses = '' unless defined $addresses;
-    $addresses = '' if $addresses eq '-';
-
-    #
     # Handle IPSEC options, if any
     #
-    if ( $ipsec && $ipsec ne '-' ) {
+    if ( $ipsec ne '-' ) {
 	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $env{ORIGINAL_POLICY_MATCH};
 
 	if ( $ipsec =~ /^yes$/i ) {
@@ -162,8 +156,8 @@ sub setup_one_masq($$$$$$)
     #
     # If there is no source or destination then allow all addresses
     #
-    $networks = ALLIPv4 unless $networks;
-    $destnets = ALLIPv4 unless $destnets;
+    $networks = ALLIPv4 if $networks eq '-';
+    $destnets = ALLIPv4 if $destnets eq '-';
     #
     # Handle Protocol and Ports
     #
@@ -173,7 +167,7 @@ sub setup_one_masq($$$$$$)
     #
     # Parse the ADDRESSES column
     #
-    if ( $addresses ) {
+    if ( $addresses ne '-' ) {
 	if ( $addresses =~ /^SAME:nodst:/ ) {
 	    $target = '-j SAME --nodst';
 	    $addresses =~ s/.*://;

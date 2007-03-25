@@ -29,7 +29,8 @@
 #      -r      Build RPM
 #      -h      Build HTML documentation
 #      -x      Build XML documentation
-#      -s      Don't sign with GPG
+#      -s      Sign with GPG
+#      -p      Build Shorewall-pl
 #
 # If no options are given, all options are assumed.
 #
@@ -95,6 +96,11 @@ HASLITE=
 SIGN=
 MANPAGETAG=
 LITEMANPAGETAG=
+BUILDPERL=
+PERLDIR=
+PERLBRANCH=
+PERLRPMNAME=
+PERLTARBALL=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -196,6 +202,10 @@ while [ -z "$done" ]; do
 			SIGN=Yes
 			option=${option#s}
 			;;
+		    p*)
+			BUILDPERL=Yes
+			option=${option#p}
+			;;
 	    	    *)
 			usage
 			;;
@@ -250,6 +260,17 @@ case $VERSION in
 	MANPAGETAG=trunk/manpages
 	LITEMANPAGETAG=trunk/manpages-lite
 	;;
+     3.9.*)
+	SVNBRANCH="trunk/Shorewall"
+	LITESVNBRANCH="trunk/Shorewall-lite"
+	PERLBRANCH="trunk/New"
+	DOCTAG="trunk/docs"
+	XMLPROJ="docs-3.4"
+	SAMPLESTAG="trunk/Samples"
+	HASLITE=Yes
+	MANPAGETAG=trunk/manpages
+	LITEMANPAGETAG=trunk/manpages-lite
+	;;
    *)
 	echo "Unsupported Version: $VERSION"
 	exit 2
@@ -273,6 +294,9 @@ case $VERSION in
 	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
 	RPMNAME=shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	PERLRPMNAME=shorewall-pl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	PERLTARBALL=shorewall-pl-${VERSION%-*}.tgz
+	PERLDIR=shorewall-pl-${VERSION%-*}
 	;;
     *)
 	#
@@ -284,6 +308,9 @@ case $VERSION in
 	LITETARBALL=shorewall-lite-$VERSION.tgz
 	RPMNAME=shorewall-${VERSION}-1.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION}-1.noarch.rpm
+	PERLRPMNAME=shorewall-pl-${VERSION}-1.noarch.rpm
+	LITETARBALL=shorewall-pl-$VERSION.tgz
+	PERLDIR=shorewall-pl-$VERSION
 	;;
 esac
 
@@ -299,6 +326,38 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
+
+if [ -n "$BUILDPERL" ]; then
+    report "Shorewall-pl directory is $DIR/$PERLDIR"
+    report "Perl SVN tag is $PERLBRANCH"
+    report "Perl RPM is $PERLRPMNAME"
+
+    rm -rf $PERLDIR
+    	
+    progress_message "Exporting $PERLBRANCH from SVN..."
+    do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
+
+    progress_message "Creating $DIR/$PERLTARBALL..."
+    do_or_die "tar -zcvf $PERLTARBALL $PERLDIR >> $LOGFILE 2>&1"
+    do_or_die "tar -jcvf shorewall-pl-${VERSION%-*}.tar.bz2 $PERLDIR >> $LOGFILE 2>&1"
+
+    if [ -n "$SIGN" ]; then
+	for shoresuffix in tgz tar.bz2; do
+	    shoreball=shorewall-pl-${VERSION%-*}.${shoresuffix}
+	    report "GPG signing $DIR/$shoreball"
+	    rm -f ${shoreball}.asc
+	    do_or_die "$GPG $shoreball"
+	done
+    fi
+
+    progress_message "Building $LITERPMNAME..."
+
+    rm -rf $RPMDIR/BUILD/shorewall-pl-${VERSION%-*}*
+    do_or_die "cp shorewall-pl-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+    do_or_die "cp $PERLDIR/shorewall-pl.spec $RPMDIR/SPECS/"
+    do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-pl.spec >> $LOGFILE 2>&1"
+    do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME
+fi
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     progress_message "Exporting $SVNBRANCH from SVN..."

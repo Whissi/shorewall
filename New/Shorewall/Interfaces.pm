@@ -156,7 +156,7 @@ sub validate_interfaces_file()
 
 	( $interfaces{$interface}{root} = $interface ) =~ s/\+$// ;
 
-	if ( $networks && $networks ne '-' && $networks ne 'detect' )
+	if ( $networks && $networks ne 'detect' )
 	{
 	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation:' . $networks;
 	}

@@ -252,8 +252,6 @@ sub process_criticalhosts() {
 	    push @hosts, "$interface:$hosts";
 	}
 
-	$options = '-' unless $options;
-
 	unless ( $options eq '-' ) {
 	    for my $option (split /,/, $options ) {
 		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' ) {
@@ -294,8 +292,6 @@ sub process_routestopped() {
 	for my $host ( split /,/, $hosts ) {
 	    push @hosts, "$interface:$hosts";
 	}
-
-	$options = '-' unless $options;
 
 	unless ( $options eq '-' ) {
 	    for my $option (split /,/, $options ) {

@@ -603,10 +603,6 @@ sub do_proto( $$$ )
 
     my $output = '';
     
-    $proto  = '' unless defined $proto;
-    $ports  = '' unless defined $ports;
-    $sports = '' unless defined $sports;
-
     $proto  = '' if $proto  eq '-';
     $ports  = '' if $ports  eq '-';
     $sports = '' if $sports eq '-';
@@ -787,8 +783,6 @@ sub do_user( $ ) {
 sub do_tos( $ ) {
     my $tos = $_[0];
     
-    $tos = '-' unless $tos;
-
     $tos ne '-' ? "-m tos --tos $tos " : '';
 }    
 	

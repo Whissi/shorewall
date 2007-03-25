@@ -485,7 +485,7 @@ sub process_action3( $$$$$ ) {
 		    $mdest = '';
 		}
 
-		$mdest   = '' if $mdest   eq '-';
+		$mdest   = '' if $mdest eq '-';
 
 		$mproto  = merge_macro_column $mproto,  $proto;
 		$mports  = merge_macro_column $mports,  $ports;

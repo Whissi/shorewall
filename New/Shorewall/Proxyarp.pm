@@ -43,8 +43,6 @@ my @proxyarp;
 sub setup_one_proxy_arp( $$$$$ ) {
     my ( $address, $interface, $external, $haveroute, $persistent) = @_;
 
-    $haveroute = '-' unless $haveroute;
-
     if ( "\L$haveroute" eq 'no' || $haveroute eq '-' ) {
 	$haveroute = '';
     } elsif ( "\L$haveroute" eq 'yes' ) {
@@ -52,8 +50,6 @@ sub setup_one_proxy_arp( $$$$$ ) {
     } else {
 	fatal_error "Invalid value ($haveroute) for HAVEROUTE in Proxy Arp Entry \"$line\"";
     }
-
-    $persistent = '-' unless $persistent;
 
     if ( "\L$persistent" eq 'no' || $persistent eq '-' ) {
 	$persistent = '';

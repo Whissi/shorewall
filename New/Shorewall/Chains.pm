@@ -1434,7 +1434,7 @@ sub create_netfilter_load() {
     if ( $slowstart ) {
 	emit ' exec 3>&-';
 	emit '';
-	emit 'iptables-restore < $TEMPFILE' if $slowstart;
+	emit 'iptables-restore < $TEMPFILE';
     }
 
     emit 'if [ $? != 0 ]; then';

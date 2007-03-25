@@ -72,9 +72,35 @@ sub process_tos() {
 
 	while ( $line = <TOS> ) {
 	    
-	    my ($source, $dest, $proto, $sports, $ports ) = split_line 5, 'tos file';
+	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 'tos file';
 	    
-	    ### Fixme ###
+	    fatal_error "TOS field required: $line" unless $tos ne '-';
+
+	    my $chainref;
+
+	    my $restriction = NO_RESTRICT;
+
+	    my ( $srczone , $source ) = split /:/, $src;
+	    
+	    if ( $srczone eq $firewall_zone ) {
+		$chainref    = $outtosref;
+		$src         = $source || '-';
+		$restriction = OUTPUT_RESTRICT;
+	    } else {
+		$chainref = $pretosref;
+	    }
+	    
+	    expand_rule 
+		$chainref ,
+		$restriction ,
+		do_proto( $proto, $ports, $sports ) ,
+		$src ,
+		$dst ,
+		'' ,
+		"-j TOS --set-tos $tos" ,
+		'' ,
+		'' ,
+		'';
 	}
 
 	close TOS;

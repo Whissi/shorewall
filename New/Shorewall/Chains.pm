@@ -43,6 +43,8 @@ our @EXPORT = qw( STANDARD
 		  LOGRULE
 		  NO_RESTRICT
 		  PREROUTE_RESTRICT
+		  INPUT_RESTRICT
+		  OUTPUT_RESTRICT
 		  POSTROUTE_RESTRICT
 		  
 		  add_command
@@ -209,7 +211,11 @@ our %targets = ('ACCEPT'       => STANDARD,
 #
 use constant { NO_RESTRICT        => 0,
 	       PREROUTE_RESTRICT  => 1,
-	       POSTROUTE_RESTRICT => 2 };
+	       INPUT_RESTRICT     => 4,
+	       OUTPUT_RESTRICT    => 8,
+	       POSTROUTE_RESTRICT => 16,
+	       ALL_RESTRICT       => 12
+	       };
 #
 # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
 #
@@ -1068,7 +1074,7 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $iiface ) {
 	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
 
-	if ( $restriction == POSTROUTE_RESTRICT ) {
+	if ( $restriction & POSTROUTE_RESTRICT ) {
 	    #
 	    # An interface in the SOURCE column of a masq file
 	    #
@@ -1081,6 +1087,8 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    $loopcount++;
 	} else {
+	    fatal_error "Source Interface ( $iiface ) not allowed when the source zone is $firewall_zone: $line" 
+		if $restriction & OUTPUT_RESTRICT;
 	    $rule .= "-i $iiface ";
 	}
     }
@@ -1091,7 +1099,7 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $dest ) {
 	if ( $dest eq '-' ) {
 	    $dest = '';
-	} elsif ( $restriction == PREROUTE_RESTRICT && $dest =~ /^detect:(.*)$/ ) {
+	} elsif ( ( $restriction & PREROUTE_RESTRICT ) && $dest =~ /^detect:(.*)$/ ) {
 	    #
 	    # DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
 	    #
@@ -1131,7 +1139,7 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $diface ) {
 	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
 
-	if ( $restriction == PREROUTE_RESTRICT ) {
+	if ( $restriction & PREROUTE_RESTRICT ) {
 	    #
 	    # ADDRESS 'detect' in the masq file.
 	    #
@@ -1141,6 +1149,8 @@ sub expand_rule( $$$$$$$$$$ )
 	    $rule .= '-d $dest';
 	    $loopcount++;
 	} else {
+	    fatal_error "Destination Interface ( $diface ) not allowed when the destination zone is $firewall_zone: $line"
+		if $restriction & INPUT_RESTRICT;
 	    $rule .= "-o $diface ";
 	}
     }   

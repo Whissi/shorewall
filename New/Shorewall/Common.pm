@@ -98,6 +98,14 @@ sub fatal_error
     die;
 }
 
+#
+# Pre-process a line from a configuration file.
+#
+#    chomp it.
+#    compress out redundent white space.
+#    ensure that it has an appropriate number of columns.
+#    supply '-' in omitted trailing columns.
+#
 sub split_line( $$ ) {
     my ( $columns, $description ) = @_;
 

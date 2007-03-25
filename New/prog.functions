@@ -125,22 +125,6 @@ run_tc() {
     fi
 }
 
-#
-# Functions to appease unconverted extension scripts
-#
-save_command()
-{
-    return 0
-}
-
-run_and_save_command() {
-    eval $@
-}
-
-ensure_and_save_command() {
-    eval $@ || fatal_error "Command \"$@\" failed"
-}
-
 restore_dynamic_rules() {
     if [ -f ${VARDIR}/save ]; then
 	progress_message2 "Setting up dynamic rules..."

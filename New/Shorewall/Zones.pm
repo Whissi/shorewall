@@ -227,6 +227,10 @@ sub determine_zones()
 
 	my %zone_hash;
 
+	$options      = '' if $options     eq '-';
+	$in_options   = '' if $in_options  eq '-';
+	$out_options  = '' if $out_options eq '-';
+
 	$zone_hash{in_out}   = parse_zone_option_list( $options || '');
 	$zone_hash{in}       = parse_zone_option_list( $in_options || '');
 	$zone_hash{out}      = parse_zone_option_list( $out_options || '');

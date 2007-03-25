@@ -77,7 +77,7 @@ sub validate_hosts_file()
 
 	my $optionsref;
 	
-	if ( $options && $options ne '-' ) {
+	if ( $options ne '-' ) {
 	    my @options = split ',', $options;
 	    my %options;
 

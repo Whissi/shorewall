@@ -323,24 +323,26 @@ sub validate_tc_class( $$$$$$ ) {
     $tcref->{ceiling}  = convert_rate $full, $ceil;
     $tcref->{priority} = defined $prio ? $prio : 1;
 
-    for my $option ( split /,/, "\L$options" ) {
-	my $optval = $tosoptions{$option};
-	
-	$option = $optval if $optval;
-	
-	if ( $option eq 'default' ) {
-	    fatal_error "Only one default class may be specified for device $device" if $devref->{default};
-	    $devref->{default} = $markval;
-	} elsif ( $option eq 'tcp-ack' ) {
-	    $tcref->{tcp_ack} = 1;
-	} elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
-	    ( undef, $option ) = split /=/, $option;
-	    push @{$tcref->{tos}}, "$option/0xff";
-	} elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
-	    ( undef, $option ) = split /=/, $option;
-	    push @{$tcref->{tos}}, $option;
-	} else {
-	    fatal_error "Unknown option ( $option ) for tcclass \"$line\"";
+    unless ( $options eq '-' ) {
+	for my $option ( split /,/, "\L$options" ) {
+	    my $optval = $tosoptions{$option};
+	    
+	    $option = $optval if $optval;
+	    
+	    if ( $option eq 'default' ) {
+		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
+		$devref->{default} = $markval;
+	    } elsif ( $option eq 'tcp-ack' ) {
+		$tcref->{tcp_ack} = 1;
+	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
+		( undef, $option ) = split /=/, $option;
+		push @{$tcref->{tos}}, "$option/0xff";
+	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
+		( undef, $option ) = split /=/, $option;
+		push @{$tcref->{tos}}, $option;
+	    } else {
+		fatal_error "Unknown option ( $option ) for tcclass \"$line\"";
+	    }
 	}
     }
 

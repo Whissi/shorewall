@@ -356,7 +356,7 @@ if [ -n "$BUILDPERL" ]; then
     do_or_die "cp shorewall-pl-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
     do_or_die "cp $PERLDIR/shorewall-pl.spec $RPMDIR/SPECS/"
     do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-pl.spec >> $LOGFILE 2>&1"
-    do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME
+    do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME  .
 fi
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then

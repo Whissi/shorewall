@@ -95,12 +95,8 @@ sub setup_proxy_arp() {
 	open PA, "$ENV{TMP_DIR}/proxyarp" or fatal_error "Unable to open stripped proxyarp file: $!";
 
 	while ( $line = <PA> ) {
-	    chomp $line;
-	    $line =~ s/\s+/ /g;
 	    
-	    my ( $address, $interface, $external, $haveroute, $persistent, $extra ) = split /\s+/, $line;
-	    
-	    fatal_error "Invalid proxyarp file entry: \"$line\"" if $extra;
+	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 5, 'proxyarp file';
 
 	    $set{$interface}  = 1;
 	    $reset{$external} = 1 unless $set{$external};

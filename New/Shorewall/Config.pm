@@ -37,7 +37,7 @@ our @VERSION = 1.00;
 #
 our %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		CONFDIR =>  '/etc/shorewall',
-		SHAREDIR4 => '/usr/share/shorewall-pl/',
+		SHAREDIRPL => '/usr/share/shorewall-pl/',
 		LOGPARMS => '',
 		VERSION =>  '3.9.0-1',
 	       );
@@ -392,10 +392,9 @@ sub get_configuration() {
     default_yes_no 'TC_EXPERT'                  , '';
     default_yes_no 'USE_ACTIONS'                , 'Yes';
     default_yes_no 'EXPORTPARAMS'               , '';
+    default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
-
-    fatal_error 'HIGH_ROUTE_MARKS=Yes requires extended MARK support' if $config{HIGH_ROUTE_MARKS} and ! $capabilities{XCONNMARK};
 
     default 'BLACKLIST_DISPOSITION'             , 'DROP';
     
@@ -445,11 +444,6 @@ sub get_configuration() {
 	}
     }
 
-    if ( $config{MANGLE_ENABLED} ) {
-	fatal_error 'Traffic Shaping requires mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
-    }
-
-    default 'MARK_IN_FORWARD_CHAIN' , '';
     default 'RESTOREFILE'           , 'restore';
     default 'DROP_DEFAULT'          , 'Drop';
     default 'REJECT_DEFAULT'        , 'Reject';

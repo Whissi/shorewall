@@ -131,12 +131,8 @@ sub validate_policy()
     open POLICY, "$ENV{TMP_DIR}/policy" or fatal_error "Unable to open stripped policy file: $!";
 
     while ( $line = <POLICY> ) {
-	chomp $line;
-	$line =~ s/\s+/ /g;
 
-	my ( $client, $server, $policy, $loglevel, $synparams , $extra ) = split /\s+/, $line;
-	
-	fatal_error "Invalid policy file entry: $line" if $extra;
+	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 5, 'policy file';
 
 	$loglevel  = '' unless defined $loglevel;
 	$synparams = '' unless defined $synparams;

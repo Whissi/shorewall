@@ -60,7 +60,7 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
 sub generate_script_1 {
-    copy $env{SHAREDIR4} . 'prog.header';
+    copy $env{SHAREDIRPL} . 'prog.header';
 
     my $date = localtime;
 
@@ -442,7 +442,7 @@ stop_firewall() {
 
 sub generate_script_2 () {
 
-    copy $env{SHAREDIR4} . 'prog.functions';
+    copy $env{SHAREDIRPL} . 'prog.functions';
 
     emit '#';
     emit '# Setup Routing and Traffic Shaping';
@@ -575,7 +575,7 @@ esac';
 
     emit "}\n";
     
-    copy $env{SHAREDIR4} . 'prog.footer';
+    copy $env{SHAREDIRPL} . 'prog.footer';
 }
 
 sub compile_firewall( $ ) {
@@ -603,6 +603,11 @@ sub compile_firewall( $ ) {
 	if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};
     fatal_error 'RFC1918_STRICT=Yes requires Connection Tracking match'
 	if $config{RFC1918_STRICT} && ! $capabilities{CONNTRACK_MATCH};
+    fatal_error 'HIGH_ROUTE_MARKS=Yes requires extended MARK support'
+	if $config{HIGH_ROUTE_MARKS} && ! $capabilities{XCONNMARK};
+    if ( $config{MANGLE_ENABLED} ) {
+	fatal_error 'Traffic Shaping requires mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
+    }
     #
     # Process the zones file.
     #
@@ -730,7 +735,7 @@ sub compile_firewall( $ ) {
 	#
 	# And generate the auxilary config file
 	#
-	generate_aux_config;
+	generate_aux_config if $ENV{EXPORT};
 
     }
 }

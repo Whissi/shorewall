@@ -72,12 +72,9 @@ sub process_tos() {
 
 	while ( $line = <TOS> ) {
 	    
-	    chomp $line;
-	    $line =~ s/\s+/ /g;
+	    my ($source, $dest, $proto, $sports, $ports ) = split_line 5, 'tos file';
 	    
-	    my ($source, $dest, $proto, $sports, $ports, $extra) = split /\s+/, $line;
-	    
-	    fatal_error "Invalid tos file entry: \"$line\"" if $extra;
+	    ### Fixme ###
 	}
 
 	close TOS;
@@ -111,10 +108,8 @@ sub setup_rfc1918_filteration( $ ) {
     open RFC, "$ENV{TMP_DIR}/rfc1918" or fatal_error "Unable to open stripped rfc1918 file: $!"; 
 	    
     while ( $line = <RFC> ) {
-	chomp $line;
-	$line =~ s/\s+/ /g;
 
-	my ( $networks, $target, $extra ) = split /\s+/, $line;
+	my ( $networks, $target ) = split_line 2, 'rfc1918 file';
 	
 	my $s_target;
 
@@ -196,12 +191,7 @@ sub setup_blacklist() {
 
 	    while ( $line = <BL> ) {
 	    
-		chomp $line;
-		$line =~ s/\s+/ /g;
-	    
-		my ( $networks, $protocol, $ports , $extra ) = split /\s+/, $line;
-	
-		fatal_error "Invalid blacklist entry: \"$line\"" if $extra;
+		my ( $networks, $protocol, $ports ) = split_line 3, 'blacklist file';
 
 		expand_rule 
 		    ensure_filter_chain( 'blacklst' , 0 ) ,
@@ -251,14 +241,8 @@ sub process_criticalhosts() {
     while ( $line = <RS> ) {
 
 	my $routeback = 0;
-	    
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
 	
-	my ($interface, $hosts, $options, $extra) = split /\s+/, $line;
-	
-	fatal_error "Invalid routestopped file entry: \"$line\"" if $extra;
+	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
 
@@ -301,13 +285,7 @@ sub process_routestopped() {
 
 	my $routeback = 0;
 	    
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	
-	my ($interface, $hosts, $options, $extra) = split /\s+/, $line;
-	
-	fatal_error "Invalid routestopped file entry: \"$line\"" if $extra;
+	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
 
@@ -595,10 +573,7 @@ sub setup_mac_lists( $ ) {
 
 	while ( $line = <MAC> ) {
 
-	    chomp $line;
-	    $line =~ s/\s+/ /g;
-
-	    my ( $disposition, $interface, $mac, $addresses , $extra ) = split /\s+/, $line;
+	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 4, 'maclist file';
 
 	    if ( $disposition eq 'COMMENT' ) {
 		if ( $capabilities{COMMENTS} ) {
@@ -608,8 +583,6 @@ sub setup_mac_lists( $ ) {
 		    warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 		}
 	    } else {
-		fatal_error "Invalid maclist entry: \"$line\"" if $extra;
-	       
 		( $disposition, my $level ) = split /:/, $disposition;
 
 		my $targetref = $maclist_targets{$disposition};
@@ -711,11 +684,10 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	chomp $line;
 	next if $line =~ /^\s*#/;
 	next if $line =~ /^\s*$/;
-	$line =~ s/\s+/ /g;
 	$line =~ s/#.*$//;
 	$line = expand_shell_variables $line unless $standard;
 		
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split /\s+/, $line;
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
 	
 	$mtarget = merge_levels $target, $mtarget;
 	
@@ -1119,10 +1091,7 @@ sub process_rules() {
 
     while ( $line = <RULES> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $extra ) = split /\s+/, $line;
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = split_line 9, 'rules file';
 
 	if ( $target eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -1134,7 +1103,7 @@ sub process_rules() {
 	} elsif ( $target eq 'SECTION' ) {
 	    fatal_error "Invalid SECTION $source" unless defined $sections{$source};
 	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
-	    fatal_error "Invalid Section $source $dest" if $dest;
+	    fatal_error "Invalid Section $source $dest" if $dest && $dest ne '-';
 	    $sectioned = 1;
 	    $sections{$source} = 1;
 
@@ -1148,7 +1117,6 @@ sub process_rules() {
 
 	    $section = $source;
 	} else {
-	    fatal_error "Invalid rules file entry: \"$line\"" if $extra;
 	    process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
 	}
     }

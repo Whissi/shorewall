@@ -250,10 +250,7 @@ sub setup_masq()
 
     while ( $line = <MASQ> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $extra) = split /\s+/, $line;
+	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 6, 'masq file';
 
 	if ( $fullinterface eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -263,7 +260,6 @@ sub setup_masq()
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
 	} else {
-	    fatal_error "Invalid masq file entry: \"$line\"" if $extra;
 	    setup_one_masq $fullinterface, $networks, $addresses, $proto, $ports, $ipsec;
 	}
     }
@@ -360,10 +356,7 @@ sub setup_nat() {
 
     while ( $line = <NAT> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ( $external, $interface, $internal, $allints, $localnat, $extra ) = split /\s+/, $line;
+	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 5, 'nat file';
 
 	if ( $external eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -373,7 +366,6 @@ sub setup_nat() {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
 	} else {
-	    fatal_error "Invalid nat file entry: \"$line\"" if $extra;
 	    do_one_nat $external, $interface, $internal, $allints, $localnat;
 	}
 	

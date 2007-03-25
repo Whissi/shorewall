@@ -56,12 +56,7 @@ sub validate_hosts_file()
 
     while ( $line = <HOSTS> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ($zone, $hosts, $options, $extra) = split /\s+/, $line;
-
-	fatal_error "Invalid hosts file entry: $line" if $extra;
+	my ($zone, $hosts, $options ) = split_line 3, 'hosts file';
 
 	my $zoneref = $zones{$zone};
 	my $type    = $zoneref->{type};
@@ -77,7 +72,7 @@ sub validate_hosts_file()
 	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
 	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
 	} else {
-	    fatal_error "Invalid HOSTS(S) column contents: $hosts";
+	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
 
 	my $optionsref;

@@ -135,13 +135,8 @@ sub validate_interfaces_file()
 
     while ( $line = <INTERFACES> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ($zone, $interface, $networks, $options, $extra) = split /\s+/, $line;
+	my ($zone, $interface, $networks, $options ) = split_line 4, 'interfaces file';
 	my $zoneref;
-
-	fatal_error "Invalid interfaces entry: $line" if $extra;
 
 	if ( $zone eq '-' ) {
 	    $zone = '';
@@ -153,7 +148,7 @@ sub validate_interfaces_file()
 	}
 
 	$networks = '' if $networks eq '-';
-	$options  = '' if $networks eq '-';
+	$options  = '' if $options  eq '-';
 
 	fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
 

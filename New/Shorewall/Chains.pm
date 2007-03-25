@@ -977,6 +977,34 @@ sub log_rule( $$$$ ) {
 }
 
 #
+# Split a comma-separated source or destination host list but keep [...] together.
+#
+sub mysplit( $ ) {
+    my @input = split /,/, $_[0];
+
+    return @input unless $_[0] =~ /\[/;
+
+    my @result;
+
+    while ( @input ) {
+	my $element = shift @input;
+
+	if ( $element =~ /\[/ ) {
+	    while ( ! ( $element =~ /\]/ ) ) {
+		last unless @input;
+		$element .= ( ',' . shift @input );
+	    }
+
+	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
+	}
+    
+	push @result, $element;
+    }
+
+    @result;
+}
+
+#
 # Keep track of which interfaces have active 'address' variables
 #
 my %interfaceaddrs;

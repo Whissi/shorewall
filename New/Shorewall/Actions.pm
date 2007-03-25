@@ -259,9 +259,7 @@ sub process_actions1() {
 	open F, "$ENV{TMP_DIR}/$file" or fatal_error "Unable to open stripped $file file: $!";
 	
 	while ( $line = <F> ) {
-	    chomp $line;
-	    my ( $action , $extra ) = split /\s+/, $line;
-	    fatal_error "Invalid Action: $line" if $extra;
+	    my ( $action ) = split_line 1, 'action file';
 	    
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -293,12 +291,9 @@ sub process_actions1() {
 		chomp $line;
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
-		$line =~ s/\s+/ /g;
 		$line =~ s/#.*$//;
 		
-		( my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) , $extra ) = split /\s+/, $line;
-		
-		fatal_error "Invalid action rule \"$line\"\n" if $extra;
+		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 8, 'action file';
 
 		my ( $target, $level ) = split_action $wholetarget;
 		
@@ -324,13 +319,10 @@ sub process_actions1() {
 
 			while ( $line = <M> ) {
 			    next if $line =~ /^\s*#/;
-			    $line =~ s/\s+/ /g;
 			    $line =~ s/#.*$//;
 			    next if $line =~ /^\s*$/;
 			    
-			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser, $mextra ) = split /\s+/, $line;
-
-			    fatal_error "Invalid macro rule \"$line\"" if $mextra;
+			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 8, 'macro file';
 
 			    $mtarget =~ s/:.*$//;
 
@@ -417,11 +409,10 @@ sub process_action3( $$$$$ ) {
 	chomp $line;
 	next if $line =~ /^\s*#/;
 	next if $line =~ /^\s*$/;
-	$line =~ s/\s+/ /g;
 	$line =~ s/#.*$//;	
 	$line = expand_shell_variables $line unless $standard;
 		
-	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user , $extra ) = split /\s+/, $line;
+	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 8, 'action file';
 
 	my $target2 = merge_levels $wholeaction, $target;
 
@@ -458,11 +449,10 @@ sub process_action3( $$$$$ ) {
 	    while ( $line = <M> ) {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
-		$line =~ s/\s+/ /g;
 		$line =~ s/#.*$//;
 		$line = expand_shell_variables $line unless $standard;
 
-		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split /\s+/, $line;
+		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
 		
 		if ( $mtarget =~ /^PARAM:?/ ) {
 		    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;

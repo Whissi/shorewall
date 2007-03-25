@@ -34,7 +34,7 @@ our @EXPORT = qw(ALLIPv4
 
 		 warning_message 
 		 fatal_error
-		 mysplit
+		 split_line
 		 create_temp_object
 		 finalize_object
 		 emit 
@@ -98,34 +98,24 @@ sub fatal_error
     die;
 }
 
-#
-# Split a comma-separated source or destination host list but keep [...] together.
-#
-sub mysplit( $ ) {
-    my @input = split /,/, $_[0];
+sub split_line( $$ ) {
+    my ( $columns, $description ) = @_;
 
-    return @input unless $_[0] =~ /\[/;
+    chomp $line;
+	
+    $line =~ s/\s+/ /g;
 
-    my @result;
+    my @line = split /\s+/, $line;
 
-    while ( @input ) {
-	my $element = shift @input;
-
-	if ( $element =~ /\[/ ) {
-	    while ( ! ( $element =~ /\]/ ) ) {
-		last unless @input;
-		$element .= ( ',' . shift @input );
-	    }
-
-	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
-	}
+    return @line if $line[0] eq 'COMMENT';
     
-	push @result, $element;
-    }
+    fatal_error "Invalid $description entry: $line" if @line > $columns;
 
-    @result;
+    push @line, '-' while @line < $columns;
+
+    @line;
 }
-
+    
 sub create_temp_object( $ ) {
     my $objectfile = $_[0];
     my $suffix;

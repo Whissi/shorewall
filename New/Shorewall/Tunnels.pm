@@ -234,10 +234,7 @@ sub setup_tunnels() {
 
     while ( $line = <TUNNELS> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ( $kind, $zone, $gateway, $gatewayzones, $extra ) = split /\s+/, $line;
+	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line 4, 'tunnels file';
 
 	if ( $kind eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -247,7 +244,6 @@ sub setup_tunnels() {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
 	} else {
-	    fatal_error "Invalid Tunnels file entry: \"$line\"" if $extra;
 	    setup_one_tunnel $kind, $zone, $gateway, $gatewayzones;
 	}
     }

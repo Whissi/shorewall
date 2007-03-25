@@ -119,7 +119,7 @@ my @tccmd = ( { pattern   => 'SAVE' ,
 	      );
 
 sub process_tc_rule( $$$$$$$$$$ ) {
-    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $extra ) = @_;
+    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = @_;
 
     my $original_mark = $mark;
 
@@ -357,12 +357,9 @@ sub setup_traffic_shaping() {
 
 	while ( $line = <TD> ) {
 
-	    chomp $line;
-	    $line =~ s/\s+/ /g;
+	    my ( $device, $inband, $outband ) = split_line 3, 'tcdevices';
 
-	    my ( $device, $inband, $outband, $extra ) = split /\s+/, $line;
-
-	    fatal_error "Invalid tcdevices entry: \"$line\"" if $extra || ! $outband;
+	    fatal_error "Invalid tcdevices entry: \"$line\"" if $outband eq '-';
 	    validate_tc_device( $device, $inband, $outband );
 	}
 	
@@ -378,12 +375,8 @@ sub setup_traffic_shaping() {
 
 	while ( $line = <TC> ) {
 
-	    chomp $line;
-	    $line =~ s/\s+/ /g;
-
-	    my ( $device, $mark, $rate, $ceil, $prio, $options, $extra ) = split /\s+/, $line;
-
-	    fatal_error "Invalid tcclasses entry: \"$line\"" if $extra || ! $ceil;
+	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 6, 'tcclasses file';
+	    
 	    validate_tc_class( $device, $mark, $rate, $ceil, $prio, $options );
 	}
 	
@@ -505,10 +498,7 @@ sub setup_tc() {
 
     while ( $line = <TC> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
-
-	my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $extra ) = split /\s+/, $line;
+	my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
 
 	if ( $mark eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -518,7 +508,6 @@ sub setup_tc() {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
 	} else {
-	    fatal_error "Invalid tcrule: \"$line\"" if $extra;
 	    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
 	}
 	

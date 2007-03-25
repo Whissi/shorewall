@@ -359,12 +359,8 @@ sub setup_providers() {
     open PV, "$ENV{TMP_DIR}/providers" or fatal_error "Unable to open stripped providers file: $!";
 
     while ( $line = <PV> ) {
-	chomp $line;
-	$line =~ s/\s+/ /g;
 	
-	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy, $extra ) = split /\s+/, $line;
-
-	fatal_error "Invalid providers entry: $line" if $extra;
+	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 8, 'providers file';
 
 	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
 
@@ -418,12 +414,7 @@ sub setup_providers() {
 	    open RR, "$ENV{TMP_DIR}/route_rules" or fatal_error "Unable to open stripped route rules file: $!";
 
 	    while ( $line = <RR> ) {
-		chomp $line;
-		$line =~ s/\s+/ /g;
-		
-		my ( $source, $dest, $provider, $priority, $extra ) = split /\s+/, $line;
-
-		fatal_error "Invalid providers entry: $line" if $extra;
+		my ( $source, $dest, $provider, $priority ) = split_line 4, 'route_rules file';
 		
 		add_an_rtrule( $source, $dest, $provider , $priority );
 	    }

@@ -114,12 +114,8 @@ sub setup_accounting() {
 
     while ( $line = <ACC> ) {
 
-	chomp $line;
-	$line =~ s/\s+/ /g;
+	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = split_line 8, 'Accounting File';
 
-	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $extra ) = split /\s+/, $line;
-
-	accounting_error if $extra;
 	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user;
     }
 	

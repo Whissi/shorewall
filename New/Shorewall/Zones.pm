@@ -183,14 +183,10 @@ sub determine_zones()
     open ZONES, "$ENV{TMP_DIR}/zones" or fatal_error "Unable to open stripped zones file: $!";
 
     while ( $line = <ZONES> ) {
-	chomp $line;
-	$line =~ s/\s+/ /g;
 	
 	my @parents;
 
-	my ($zone, $type, $options, $in_options, $out_options, $extra) = split /\s+/, $line;
-
-	fatal_error("Invalid zone file entry: $line") if $extra;
+	my ($zone, $type, $options, $in_options, $out_options ) = split_line 5, 'zones file';
 	
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;

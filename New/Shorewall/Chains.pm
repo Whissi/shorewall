@@ -46,6 +46,7 @@ our @EXPORT = qw( STANDARD
 		  INPUT_RESTRICT
 		  OUTPUT_RESTRICT
 		  POSTROUTE_RESTRICT
+		  ALL_RESTRICT
 		  
 		  add_command
 		  add_rule
@@ -306,6 +307,7 @@ sub chain_base($) {
 
     $chain =~ s/^@/at_/;
     $chain =~ s/[.\-%@]/_/g;
+    $chain =~ s/\+$//;
     $chain;
 }
 

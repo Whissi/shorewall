@@ -47,11 +47,11 @@ use Shorewall::Chains;
 use Shorewall::Zones;
 use Shorewall::Interfaces;
 use Shorewall::Hosts;
+use Shorewall::Policy;
 use Shorewall::Nat;
 use Shorewall::Providers;
 use Shorewall::Tc;
 use Shorewall::Tunnels;
-use Shorewall::Policy;
 use Shorewall::Macros;
 use Shorewall::Actions;
 use Shorewall::Accounting;
@@ -672,6 +672,7 @@ sub compile_firewall( $ ) {
 	emit "\nundo_routing";
 	emit 'restore_default_route';
     }
+
     #
     # TCRules and Traffic Shaping
     #
@@ -717,6 +718,12 @@ sub compile_firewall( $ ) {
     #
     progress_message2 "$doing one-to-one NAT...";                
     setup_nat;
+    #
+    # Setup NETMAP
+    #
+    progress_message2 "$doing NETMAP...";                
+    setup_netmap;
+    #
     # Accounting.
     #
     progress_message2 "Setting UP Accounting...";                

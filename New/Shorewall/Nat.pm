@@ -32,7 +32,7 @@ use Shorewall::IPAddrs;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_masq setup_nat add_addresses );
+our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -374,6 +374,32 @@ sub setup_nat() {
     close NAT;
 
     $comment = '';
+}
+
+#
+# Setup Network Mapping
+#
+sub setup_netmap() {
+    
+    open NM, "$ENV{TMP_DIR}/netmap" or fatal_error "Unable to open stripped netmap file: $!";
+
+    while ( $line = <NM> ) {
+
+	my ( $type, $net1, $interface, $net2 ) = split_line 4, 'netmap file';
+
+	if ( $type eq 'DNAT' ) {
+	    add_rule ensure_chain( 'nat' , input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";
+	} elsif ( $type eq 'SNAT' ) {
+	    add_rule ensure_chain( 'nat' , output_chain $interface ) , "-s $net1 -j NETMAP --to $net2";
+	} else {
+	    fatal_error "Invalid type $type in netmap entry \"$line\"";
+	}
+
+	progress_message "   Network $net1 on $interface mapped to $net2 ($type)";
+
+    }
+
+    close NM;
 }
 
 sub add_addresses () {

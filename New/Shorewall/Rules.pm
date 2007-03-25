@@ -91,7 +91,7 @@ sub process_tos() {
 		$src =~ s/^all:?//;
 	    }
 
-	    dst =~ s/^all:?//;
+	    $dst =~ s/^all:?//;
 	    
 	    expand_rule 
 		$chainref ,

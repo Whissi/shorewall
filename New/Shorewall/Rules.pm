@@ -88,10 +88,10 @@ sub process_tos() {
 		$restriction = OUTPUT_RESTRICT;
 	    } else {
 		$chainref = $pretosref;
-		$src =~ s/^all://;
+		$src =~ s/^all:?//;
 	    }
 
-	    dst =~ s/^all://;
+	    dst =~ s/^all:?//;
 	    
 	    expand_rule 
 		$chainref ,

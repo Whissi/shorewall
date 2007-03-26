@@ -301,7 +301,7 @@ sub zone_report()
 	    }
 	}
     
-	print STDERR "      *** $zone is an EMPTY ZONE ***\n" unless $printed || $type eq 'firewall';
+	warning_message "*** $zone is an EMPTY ZONE ***" unless $printed || $type eq 'firewall';
     }
 }
 

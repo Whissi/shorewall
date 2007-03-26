@@ -113,9 +113,7 @@ sub merge_levels ($$) {
 # Get Macro Name
 #
 sub isolate_basic_target( $ ) {
-    my $result = ( split '/' , $_[0] )[0];
-
-    ( split /:/, $result )[0];
+    ( split '/', ( split /:/ , $_[0] )[0] )[0];
 }
 
 #

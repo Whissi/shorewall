@@ -180,6 +180,9 @@ sub emit ( $ ) {
     }
 }
 
+#
+# Jacket for emit() that produces the same result as 'emit join( "\n", ... )'
+#
 sub emitj {
     if ( $object ) {
 	#

@@ -306,7 +306,7 @@ sub chain_base($) {
     my $chain = $_[0];
 
     $chain =~ s/^@/at_/;
-    $chain =~ s/[.\-%@]/_/g;
+    $chain =~ tr/[.\-%@]/_/;
     $chain =~ s/\+$//;
     $chain;
 }
@@ -316,7 +316,7 @@ sub chain_base($) {
 #
 sub forward_chain($)
 {
-    chain_base $_[0] . '_fwd';
+    chain_base( $_[0] ) . '_fwd';
 }
 
 #
@@ -324,7 +324,7 @@ sub forward_chain($)
 #
 sub input_chain($)
 {
-    chain_base $_[0] . '_in';
+    chain_base( $_[0] ) . '_in';
 }
 
 #
@@ -332,7 +332,7 @@ sub input_chain($)
 #
 sub output_chain($)
 {
-    chain_base $_[0] . '_out';
+    chain_base( $_[0] ) . '_out';
 }
 
 #
@@ -340,7 +340,7 @@ sub output_chain($)
 #
 sub masq_chain($)
 {
-    chain_base $_[0] . '_masq';
+    chain_base( $_[0] ) . '_masq';
 }
 
 #
@@ -354,12 +354,12 @@ sub syn_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    chain_base $_[0] . '_mac';
+    chain_base( $_[0] ) . '_mac';
 }
 
 sub macrecent_target($)
 {
-     $config{MACLIST_TTL} ? chain_base $_[0] . '_rec' : 'RETURN';
+     $config{MACLIST_TTL} ? chain_base( $_[0] ) . '_rec' : 'RETURN';
 }
 
 #
@@ -367,22 +367,22 @@ sub macrecent_target($)
 #
 sub dynamic_fwd( $ )
 {
-    chain_base $_[0] . '_dynf';
+    chain_base( $_[0] ) . '_dynf';
 }
 
 sub dynamic_in( $ )
 {
-    chain_base $_[0] . '_dyni';
+    chain_base( $_[0] ) . '_dyni';
 }
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    chain_base $_[0] . '_out';
+    chain_base( $_[0] ) . '_out';
 }
 
 sub dynamic_chains( $ ) #$1 = interface
 {
-    my $c = chain_base $_[0];
+    my $c = chain_base( $_[0] );
 
     [ $c . '_dyni' , $c . '_dynf' , $c . '_dyno' ];
 }
@@ -392,7 +392,7 @@ sub dynamic_chains( $ ) #$1 = interface
 #
 sub dnat_chain( $ )
 {
-    chain_base $_[0] . '_dnat';
+    chain_base( $_[0] ) . '_dnat';
 }
 
 #
@@ -400,7 +400,7 @@ sub dnat_chain( $ )
 #
 sub snat_chain( $ )
 {
-    chain_base $_[0] . '_snat';
+    chain_base( $_[0] ) . '_snat';
 }
 
 #
@@ -408,7 +408,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    chain_base $_[0] . '_ecn';
+    chain_base( $_[0] ) . '_ecn';
 }
 
 #

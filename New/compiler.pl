@@ -298,7 +298,6 @@ stop_firewall() {
     fi
 
     rm -f \${VARDIR}/proxyarp
-
 EOF
 
     emit '    delete_tc1' if $config{CLEAR_TC};
@@ -327,13 +326,13 @@ EOF
 		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
 
-	    emit "
+	    emit <<EOF;
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
     done
-";
+EOF
 	} else {
-	    emit "
+	    emit <<EOF;
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain ACCEPT
     done
@@ -341,7 +340,7 @@ EOF
     setpolicy FORWARD DROP
 
     deleteallchains
-";
+EOF
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /,/, $hosts );
@@ -352,16 +351,16 @@ EOF
 		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
 
-	    emit "
+	    emit <<EOF;
     setpolicy INPUT DROP
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
     done
-";
+EOF
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
-	emit "
+	emit <<EOF;
     for chain in INPUT OUTPUT FORWARD; do
 	setpolicy \$chain DROP
     done
@@ -380,7 +379,8 @@ EOF
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
     done
-";
+
+EOF
     }
 
     push_indent;
@@ -417,6 +417,7 @@ EOF
     pop_indent;
 
     emit <<EOF;
+
     set_state \"Stopped\"
 
     logger -p kern.info \"\$PRODUCT Stopped\"
@@ -434,7 +435,6 @@ EOF
 	;;
     esac
 }
-
 EOF
 
 }

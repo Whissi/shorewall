@@ -33,7 +33,6 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( merge_levels 
-		  split_action 
 		  isolate_basic_target
 		  add_requiredby 
 		  createlogactionchain
@@ -111,21 +110,12 @@ sub merge_levels ($$) {
     $subordinate;
 }
 
-#
-# Return ( action, level[:tag] ) from passed full action 
-#
-sub split_action ( $ ) {
-    my $action = $_[0];
-    my @a = split /:/ , $action;
-    fatal_error "Invalid ACTION $action in rule \"$line\"" if ( $action =~ /::/ ) || ( @a > 3 );
-    ( shift @a, join ":", @a );
-}
-
-#
 # Get Macro Name
 #
 sub isolate_basic_target( $ ) {
-    ( split '/' , $_[0] )[0];
+    my $result = ( split '/' , $_[0] )[0];
+
+    ( split /:/, $result )[0];
 }
 
 #

@@ -720,7 +720,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	}
 
 	my $action     = isolate_basic_target $mtarget;
-	my $actiontype = $targets{$action};
+	my $actiontype = $targets{$action} || 0;
 
 	if ( $actiontype & ACTION ) {
 	    unless ( $usedactions{$action} ) {

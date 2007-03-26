@@ -33,6 +33,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( find_macro
 		  expand_shell_variables
+		  split_action 
 		  substitute_action 
 		  merge_macro_source_dest 
 		  merge_macro_column
@@ -67,6 +68,17 @@ sub expand_shell_variables( $ ) {
     my $line = $_[0]; $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/; $line;
 }
     
+#
+# Return ( action, level[:tag] ) from passed full action 
+#
+sub split_action ( $ ) {
+    my $action = $_[0];
+    my @a = split /:/ , $action;
+    fatal_error "Invalid ACTION $action in rule \"$line\"" if ( $action =~ /::/ ) || ( @a > 3 );
+    ( shift @a, join ":", @a );
+}
+
+#
 # This function substitutes the second argument for the first part of the first argument up to the first colon (":")
 #
 # Example:

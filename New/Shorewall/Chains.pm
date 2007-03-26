@@ -1022,13 +1022,10 @@ sub interface_address( $ ) {
 # If this is the first time that the first address of an interface has been requested, emit a run-time command
 # that establishes the value of the associated address variable.
 #
-sub get_interface_address ( $$ ) {
-    my ($chainref, $interface ) = @_;
+sub get_interface_address ( $ ) {
+    my ( $interface ) = $_[0];
 
-    unless ( $interfaceaddrs{$interface } ) {
-	add_command $chainref, interface_address( $interface ) . "=\$(find_first_interface_address $interface)";
-	$interfaceaddrs{$interface} = 1;
-    }
+    $interfaceaddrs{$interface} = interface_address( $interface ) . "=\$(find_first_interface_address $interface)";
 }
 	
 #
@@ -1111,14 +1108,14 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command $chainref, 'addresses=';
 		
 		for my $interface ( @interfaces ) {
-		    get_interface_address $chainref, $interface;
+		    get_interface_address $interface;
 		    add_command $chainref , join( '', 'addresses="$addresses $', interface_address( $interface ). '"' );
 		}
 		add_command $chainref , 'for address in $addresses; do';
 		$rule .= '-d $address ';
 		$loopcount++;
 	    } else {
-		get_interface_address $chainref, $interfaces[0];
+		get_interface_address $interfaces[0];
 		$rule .= join ( '', '-d $', interface_address( $interfaces[0] ), ' ' );
 	    }
 
@@ -1170,7 +1167,7 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command $chainref, 'addresses=';
 
 		for my $interface ( @interfaces ) {
-		    get_interface_address $chainref, $interface;
+		    get_interface_address $interface;
 		    add_command  $chainref , qq(addresses="\$addresses \$(find_first_interface_address $interface)");
 		}
 
@@ -1178,7 +1175,7 @@ sub expand_rule( $$$$$$$$$$ )
 		$rule .= '-m conntrack --ctorigdst $address ';
 		$loopcount++;
 	    } else {
-		get_interface_address $chainref,  $interfaces[0];
+		get_interface_address $interfaces[0];
 		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
 	    } 
 
@@ -1383,7 +1380,9 @@ my $state = NULL_STATE;
 sub emitr( $ ) {
     my $rule = $_[0];
 
-    if ( substr( $rule, 0, 1 ) eq '~' ) {
+    unless ( $slowstart ) {
+	emit_unindented $rule;
+    } elsif ( substr( $rule, 0, 1 ) eq '~' ) {
 	#
 	# A command
 	#
@@ -1411,6 +1410,12 @@ sub create_netfilter_load() {
     emit 'setup_netfilter()';
     emit '{';
     push_indent;
+
+    for ( values %interfaceaddrs ) {
+	emit $_;
+    }
+
+    emit '';
 
     if ( $slowstart ) {
 	emit 'TEMPFILE=$(mktempfile)';

@@ -181,10 +181,12 @@ sub emit ( $ ) {
 }
 
 #
-# Jacket for emit() that produces the same result as 'emit join( "\n", ... )'
+# Jacket for emit() that accepts an indefinite number of arguments; each argument will be emitted as a separate line
 #
 sub emitj {
-    emit join ( "\n", @_ ) if $object;
+    if ( $object ) {
+	for ( @_ ) { emit $_ };
+    }
 }
 	    
 

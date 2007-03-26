@@ -782,21 +782,22 @@ sub process_macro ( $$$$$$$$$$$ ) {
 sub process_rule1 ( $$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = @_;
     my ( $action, $loglevel) = split_action $target;
+    my ( $basictarget, $param ) = split '/', $action;
     my $rule = '';
     my $actionchainref;
 
     #
     # Determine the validity of the action
     #
-    my $actiontype = $targets{$action} || find_macro( isolate_basic_target $action );
+    my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
 
     fatal_error "Unknown action ($action) in rule \"$line\"" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
 	process_macro 
-	    $macros{isolate_basic_target $action}, $
+	    $macros{$basictarget}, 
 	    target , 
-	    (split '/', $action)[1] , 
+	    $param , 
 	    $source, 
 	    $dest, 
 	    $proto, 

@@ -482,15 +482,16 @@ sub generate_script_2 () {
     emit '';
 
     for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-	emit "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)";
-	emit 'if [ -n "$addr" ]; then';
-	emit q(    addr=$(echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'));
-	emit '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do';
-        emit '        if in_network $addr $network; then';
-        emit "            startup_error \"The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"";
-        emit '        fi';
-	emit '    done';
-	emit "fi\n";
+	emit join( "\n",
+		   "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
+		   'if [ -n "$addr" ]; then',
+		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
+		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
+		   '        if in_network $addr $network; then',
+		   "            startup_error \"The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
+		   '        fi',
+		   '    done',
+		   "fi\n" );
     }
 
     emit "run_init_exit\n";

@@ -100,21 +100,20 @@ sub setup_providers() {
 	
 	$match =~ s/ /\|/g;
 	
-	emit join ( "\n",
-		    "ip route show table $duplicate | while read net route; do",
-		    '    case $net in',
-		    '        default|nexthop)',
-		    '            ;;',
-		    '        *)',
-		    "            run_ip route add table $number \$net \$route",
-		    '            case $(find_device $route) in',
-		    "                $match)",
-		    "                    run_ip route add table $number \$net \$route",
-		    '                    ;;',
-		    '            esac',
-		    '            ;;',
-		    '    esac',
-		    "done\n" );
+	emitj ( "ip route show table $duplicate | while read net route; do",
+		'    case $net in',
+		'        default|nexthop)',
+		'            ;;',
+		'        *)',
+		"            run_ip route add table $number \$net \$route",
+		'            case $(find_device $route) in',
+		"                $match)",
+		"                    run_ip route add table $number \$net \$route",
+		'                    ;;',
+		'            esac',
+		'            ;;',
+		'    esac',
+		"done\n" );
     }
 
     sub balance_default_route( $$$ ) {
@@ -186,14 +185,13 @@ sub setup_providers() {
 	$gateway = '-' unless $gateway;
 
 	if ( $gateway eq 'detect' ) {
-	    emit join( "\n",
-		       "gateway=\$(detect_gateway $interface)\n",
-		       'if [ -n "$gateway" ]; then',
-		       "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number",
-		       "    run_ip route add default via \$gateway dev $interface table $number",
-		       'else',
-		       "    fatal_error \"Unable to detect the gateway through interface $interface\"",
-		       "fi\n" );
+	    emitj ( "gateway=\$(detect_gateway $interface)\n",
+		    'if [ -n "$gateway" ]; then',
+		    "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number",
+		    "    run_ip route add default via \$gateway dev $interface table $number",
+		    'else',
+		    "    fatal_error \"Unable to detect the gateway through interface $interface\"",
+		    "fi\n" );
 	} elsif ( $gateway && $gateway ne '-' ) {
 	    emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
 	    emit "run_ip route add default via $gateway dev $interface table $number";
@@ -262,13 +260,12 @@ sub setup_providers() {
 	    
 	    emit "\nrulenum=0\n";
 	    
-	    emit join( "\n" ,
-		       "find_interface_addresses $interface | while read address; do",
-		       '    qt ip rule del from $address',
-		       "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
-		       "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
-		       '    rulenum=$(($rulenum + 1))',
-		       'done' );
+	    emitj ( "find_interface_addresses $interface | while read address; do",
+		    '    qt ip rule del from $address',
+		    "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
+		    "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
+		    '    rulenum=$(($rulenum + 1))',
+		    'done' );
 	} else {	    
 	    emit "\nfind_interface_addresses $interface | while read address; do";
 	    emit '    qt ip rule del from $address';
@@ -345,23 +342,22 @@ sub setup_providers() {
     emit "\nif [ -z \"\$NOROUTES\" ]; then";
     push_indent;
 
-    emit join( "\n",
-	       '#',
-	       '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
-	       '#',
-	       'undo_routing',
-	       '#',
-	       '# Save current routing table database so that it can be restored later',
-	       '#',
-	       'cp /etc/iproute2/rt_tables ${VARDIR}/',
-	       '#',
-	       '# Capture the default route(s) if we don\'t have it (them) already.',
-	       '#',
-	       '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
-	       '#',
-	       '# Initialize the file that holds \'undo\' commands',
-	       '#',
-	       '> ${VARDIR}/undo_routing' );
+    emitj ( '#',
+	    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
+	    '#',
+	    'undo_routing',
+	    '#',
+	    '# Save current routing table database so that it can be restored later',
+	    '#',
+	    'cp /etc/iproute2/rt_tables ${VARDIR}/',
+	    '#',
+	    '# Capture the default route(s) if we don\'t have it (them) already.',
+	    '#',
+	    '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+	    '#',
+	    '# Initialize the file that holds \'undo\' commands',
+	    '#',
+	    '> ${VARDIR}/undo_routing' );
     
     save_progress_message 'Adding Providers...';
     
@@ -387,15 +383,14 @@ sub setup_providers() {
 
     if ( $providers ) {
 	if ( $balance ) {
-	    emit join ( "\n",
-			'if [ -n "$DEFAULT_ROUTE" ]; then',
-			'    run_ip route replace default scope global $DEFAULT_ROUTE',
-			"    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
-			'else',
-			'    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',
-			'    restore_default_route',
-			'fi',
-			'' );
+	    emitj ( 'if [ -n "$DEFAULT_ROUTE" ]; then',
+		    '    run_ip route replace default scope global $DEFAULT_ROUTE',
+		    "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
+		    'else',
+		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',
+		    '    restore_default_route',
+		    'fi',
+		    '' );
 	} else {
 	    emit "#\n# We don't have any 'balance' providers so we restore any default route that we've saved\n#";
 	    emit 'restore_default_route';

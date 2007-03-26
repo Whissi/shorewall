@@ -37,7 +37,8 @@ our @EXPORT = qw(ALLIPv4
 		 split_line
 		 create_temp_object
 		 finalize_object
-		 emit 
+		 emit
+		 emitj
 		 emit_unindented
 		 emit_as_is
 		 save_progress_message
@@ -178,6 +179,18 @@ sub emit ( $ ) {
 	}
     }
 }
+
+sub emitj {
+    if ( $object ) {
+	#
+	# 'compile' as opposed to 'check'
+	#
+	for my $line ( @_ ) {
+	    emit $line;
+	}
+    }
+}
+	    
 
 #
 # Write passed message to the object with no indentation.

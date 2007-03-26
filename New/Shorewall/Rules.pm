@@ -166,7 +166,7 @@ sub setup_rfc1918_filteration( $ ) {
 	my $ipsec     = $hostref->[1];
 	my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in "  : '';
 	for my $chain ( @{first_chains $interface}) {
-	    add_rule $filter_table->{$chain} , '-m state --state NEW ' . match_source_net( $hostref->[2]) . "${policy}-j norfc1918";
+	    add_rule $filter_table->{$chain} , join( '', '-m state --state NEW ', match_source_net( $hostref->[2]) , "${policy}-j norfc1918" );
 	}
     }
 }
@@ -214,7 +214,7 @@ sub setup_blacklist() {
 
 	    open BL, "$ENV{TMP_DIR}/blacklist" or fatal_error "Unable to open stripped blacklist file: $!";
 
-	    progress_message( "      Processing " . find_file 'blacklist' . '...' );
+	    progress_message( join( '', '      Processing ', find_file( 'blacklist' ), '...' ) );
 
 	    while ( $line = <BL> ) {
 	    
@@ -437,7 +437,7 @@ sub add_common_rules() {
 	    my $ipsec  = $hostref->[1];
 	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    for $chain ( @{first_chains $interface}) {
-		add_rule $filter_table->{$chain} , '-m state --state NEW,INVALID ' . match_source_net( $hostref->[2]) . "${policy}-j smurfs";
+		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j smurfs" );
 	    }
 	}
     }
@@ -516,7 +516,7 @@ sub add_common_rules() {
 	    my $ipsec  = $hostref->[1];
 	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    for $chain ( @{first_chains $interface}) {
-		add_rule $filter_table->{$chain} , '-p tcp ' . match_source_net( $hostref->[2]) . "${policy}-j tcpflags";
+		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2]), "${policy}-j tcpflags" );
 	    }
 	}
     }
@@ -827,7 +827,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	if ( $dest eq '-' ) {
 	    $dest = "$firewall_zone";
 	} else {
-	    $dest = "$firewall_zone" . '::' . "$dest";
+	    $dest = join( '', $firewall_zone, '::', $dest );
 	}
     } elsif ( $action eq 'REJECT' ) {
 	$action = 'reject';
@@ -875,12 +875,12 @@ sub process_rule1 ( $$$$$$$$$ ) {
     # Validate Policy
     #
     my $policy   = $chainref->{policy};
-    fatal_error "No policy defined from $sourcezone to zone $destzone" unless $policy;
+    fatal_error "No policy defined from zone $sourcezone to zone $destzone" unless $policy;
     fatal_error "Rules may not override a NONE policy: rule \"$line\"" if $policy eq 'NONE';
     #
     # Generate Fixed part of the rule
     #
-    $rule = do_proto $proto, $ports, $sports . do_ratelimit( $ratelimit ) . ( do_user $user );
+    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit ) , do_user( $user ) );
 
     #
     # Generate NAT rule(s), if any
@@ -956,7 +956,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	# After NAT, the destination port will be the server port; Also, we log NAT rules in the nat table rather than in the filter table.
 	#
 	unless ( $actiontype & NATONLY ) {
-	    $rule = do_proto $proto, $ports, $sports . do_ratelimit( $ratelimit ) . do_user $user;
+	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit ), do_user $user );
 	    $loglevel = '';
 	}
     } else {
@@ -1204,7 +1204,7 @@ sub generate_matrix() {
 	
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    insert_rule $chainref , $num++, "-i $interface " . match_source_net( $host ) . '-j RETURN';
+	    insert_rule $chainref , $num++, join( '', "-i $interface ", match_source_net( $host ), '-j RETURN' );
 	}
     }
 
@@ -1216,7 +1216,7 @@ sub generate_matrix() {
 	
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    add_rule $chainref , "-i $interface " . match_source_net( $host ) . '-j RETURN';
+	    add_rule $chainref , join( '', "-i $interface ", match_source_net( $host ), '-j RETURN' );
 	}
     }    
     #
@@ -1278,7 +1278,7 @@ sub generate_matrix() {
 			for my $net ( @{$hostref->{hosts}} ) {
 			    add_rule
 				find_chainref( 'filter' , forward_chain $interface ) , 
-				match_source_net $net . $ipsec_match . "-j $frwd_ref->n{name}";
+				match_source_net join( '', $net, $ipsec_match, "-j $frwd_ref->n{name}" );
 			}
 		    }
 		}
@@ -1328,25 +1328,25 @@ sub generate_matrix() {
 
 			if ( $chain1 ) {
 			    if ( @$exclusions ) {
-				add_rule $filter_table->{output_chain $interface} , $dest . $ipsec_out_match . "-j ${zone}_output";
+				add_rule $filter_table->{output_chain $interface} , join( '', $dest, $ipsec_out_match, "-j ${zone}_output" );
 				add_rule $filter_table->{"${zone}_output"} , "-j $chain1";
 			    } else {
-				add_rule $filter_table->{output_chain $interface} , $dest . $ipsec_out_match . "-j $chain1";
+				add_rule $filter_table->{output_chain $interface} , join( '', $dest, $ipsec_out_match, "-j $chain1" );
 			    }
 			}
 			
-			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, ( "-i $interface " . $source . $ipsec_in_match );
+			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, join( '', "-i $interface ", $source, $ipsec_in_match );
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {
-				add_rule $filter_table->{input_chain $interface}, $source . $ipsec_in_match . "-j ${zone}_input";
+				add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j ${zone}_input" );
 				add_rule $filter_table->{"${zone}_input"} , "-j $chain2";
 			    } else {
-				add_rule $filter_table->{input_chain $interface}, $source . $ipsec_in_match . "-j $chain2";
+				add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j $chain2" );
 			    }
 			}
 
-			add_rule $filter_table->{forward_chain $interface} , $source . $ipsec_in_match . "-j $frwd_ref->{name}"
+			add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
 			    if $complex && $hostref->{ipsec} ne 'ipsec';
 		    }
 		}
@@ -1470,7 +1470,7 @@ sub generate_matrix() {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref; 
 				for my $net ( @{$hostref->{hosts}} ) {
-				    add_rule $frwd_ref, "-o $interface " . match_dest_net($net) . $ipsec_out_match . "-j $chain";
+				    add_rule $frwd_ref, join( '', "-o $interface ", match_dest_net($net), $ipsec_out_match, "-j $chain" );
 				}
 			    }
 			}
@@ -1491,7 +1491,9 @@ sub generate_matrix() {
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref; 
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
-						    add_rule $chain3ref, "-o $interface1 " . $source_match . match_dest_net($net1) . $ipsec_out_match . "-j $chain";
+						    add_rule 
+							$chain3ref , 
+							join( '', "-o $interface1 ", $source_match, match_dest_net($net1), $ipsec_out_match, "-j $chain" );
 						}
 					    }
 					}

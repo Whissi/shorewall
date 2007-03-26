@@ -250,7 +250,7 @@ sub add_command($$)
 {
     my ($chainref, $command) = @_;
     
-    push @{$chainref->{rules}}, '~' . ( ( '    ' x $loopcount ) . $command );
+    push @{$chainref->{rules}}, join ('', '~', '    ' x $loopcount, $command );
 
     $chainref->{referenced} = 1;
 
@@ -845,7 +845,7 @@ sub match_source_net( $ ) {
 	( $net = $2 ) =~ s/-/:/g;
 	"-m mac --mac-source $1 $net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
-	'-m set ' . ( $1 ? '! ' : '' ) . get_set_flags $net, 'src'
+	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-s ! $net ";
@@ -865,7 +865,7 @@ sub match_dest_net( $ ) {
 
 	iprange_match . "${invert}--dst-range $net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
-	'-m set ' . ( $1 ? '! ' : '' ) . get_set_flags $net, 'dst'
+	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-d ! $net ";
@@ -1112,14 +1112,14 @@ sub expand_rule( $$$$$$$$$$ )
 		
 		for my $interface ( @interfaces ) {
 		    get_interface_address $chainref, $interface;
-		    add_command $chainref , 'addresses="$addresses $' . interface_address( $interface ) . '"' ;
+		    add_command $chainref , join( '', 'addresses="$addresses $', interface_address( $interface ). '"' );
 		}
 		add_command $chainref , 'for address in $addresses; do';
 		$rule .= '-d $address ';
 		$loopcount++;
 	    } else {
 		get_interface_address $chainref, $interfaces[0];
-		$rule .= '-d $' . interface_address( $interfaces[0] ) . ' ';
+		$rule .= join ( '', '-d $', interface_address( $interfaces[0] ), ' ' );
 	    }
 
 	    $dest = '';
@@ -1179,7 +1179,7 @@ sub expand_rule( $$$$$$$$$$ )
 		$loopcount++;
 	    } else {
 		get_interface_address $chainref,  $interfaces[0];
-		$rule .= '-m conntrack --ctorigdst $' . interface_address ( $interfaces[0] ) . ' ';
+		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
 	    } 
 
 	    $origdest = '';
@@ -1268,7 +1268,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( mysplit $inets ) {
 		$inet = match_source_net $inet;
 		for my $dnet ( mysplit $dnets ) {
-		    add_rule $chainref, $rule . $inet . ( match_dest_net $dnet ) . $onet . "-j $echain";
+		    add_rule $chainref, join( '', $rule, $inet, match_dest_net( $dnet ), $onet, "-j $echain" );
 		}
 	    }
 	}
@@ -1315,8 +1315,23 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( mysplit $inets ) {
 		$inet = match_source_net $inet;
 		for my $dnet ( mysplit $dnets ) {
-		    log_rule_limit $loglevel , $chainref , $chain, $disposition , '' , $logtag , 'add' , $rule . $inet . match_dest_net( $dnet ) . $onet if $loglevel;
-		    add_rule $chainref, $rule . $inet . match_dest_net( $dnet ) . $onet . $target unless $disposition eq 'LOG';
+		    if ( $loglevel ) {
+			log_rule_limit 
+			    $loglevel , 
+			    $chainref , 
+			    $chain, 
+			    $disposition , 
+			    '' , 
+			    $logtag , 
+			    'add' , 
+			    join( '', $rule,  $inet, match_dest_net( $dnet ), $onet );
+		    }
+
+		    unless ( $disposition eq 'LOG' ) {
+			add_rule 
+			    $chainref, 
+			    join( '', $rule, $inet, match_dest_net( $dnet ), $onet, $target  );
+		    }
 		}
 	    }
 	}

@@ -139,8 +139,8 @@ sub generate_script_1 {
 		'[ -n "${VERBOSE:=0}" ]',
 		'[ -n "${RESTOREFILE:=$RESTOREFILE}" ]',
 		'[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"',
-		join( '', 'VERSION="', $env{VERSION}, '"' ) ,
-		"PATH=\"$config{PATH}\"" ,
+		qq(VERSION="$env{VERSION}") ,
+		qq(PATH="$config{PATH}") ,
 		'TERMINATOR=fatal_error' );
     
     if ( $config{IPTABLES} ) {

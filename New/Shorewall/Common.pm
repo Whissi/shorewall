@@ -184,14 +184,7 @@ sub emit ( $ ) {
 # Jacket for emit() that produces the same result as 'emit join( "\n", ... )'
 #
 sub emitj {
-    if ( $object ) {
-	#
-	# 'compile' as opposed to 'check'
-	#
-	for my $line ( @_ ) {
-	    emit $line;
-	}
-    }
+    emit join ( "\n", @_ ) if $object;
 }
 	    
 

@@ -327,6 +327,7 @@ EOF
 	    }
 
 	    emit <<EOF;
+
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
     done
@@ -365,9 +366,10 @@ EOF
 	setpolicy \$chain DROP
     done
 
-    deleteallchains";
+    deleteallchains
+EOF
     } else {
-	emit "
+	emit <<EOF;
     for chain in INPUT FORWARD; do
 	setpolicy \$chain DROP
     done

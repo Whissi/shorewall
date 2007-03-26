@@ -243,9 +243,9 @@ sub report_capabilities() {
 	print "   $capdesc{$cap}: ";
 	print $capabilities{$cap} ? "Available\n" : "Not Available\n";
     }
-    
+
     print "Shorewall has detected the following capabilities:\n";
-	
+
     for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {
 	report_capability $cap;
     }
@@ -373,7 +373,7 @@ sub get_configuration() {
     default_yes_no 'BRIDGING'                   , '';
 
     fatal_error 'BRIDGING=Yes is not supported by Shorewall-pl' . $env{VERSION} if $config{BRIDGING};
-    
+
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
     default_yes_no 'LOGTAGONLY'                 , '';
@@ -397,7 +397,7 @@ sub get_configuration() {
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
     default 'BLACKLIST_DISPOSITION'             , 'DROP';
-    
+
     my $val;
 
     $env{MACLIST_TARGET} = 'reject';
@@ -415,7 +415,7 @@ sub get_configuration() {
     } else {
 	$config{MACLIST_DISPOSITION} = 'REJECT';
     }
-    
+
     if ( $val = $config{MACLIST_TABLE} ) {
 	if ( $val eq 'mangle' ) {
 	    fatal_error 'MACLIST_DISPOSITION=REJECT is not allowed with MACLIST_TABLE=mangle' if $config{MACLIST_DISPOSITION} eq 'REJECT';
@@ -431,7 +431,7 @@ sub get_configuration() {
     } else {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
-	
+
     $env{TC_SCRIPT} = '';
 
     if ( $val = "\L$config{TC_ENABLED}" ) {
@@ -451,7 +451,7 @@ sub get_configuration() {
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
     default 'IPSECFILE'             , 'ipsec';
-    
+
     for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT ACCEPT_DEFAULT/ {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
@@ -477,7 +477,7 @@ sub get_configuration() {
 	};
 
 	fatal_error "Invalid LOGFORMAT ($val)" if $@;
-	    
+
 	fatal_error "LOGFORMAT string is longer than 29 characters: \"$val\"" 
 	    if length $result > 29;
 
@@ -514,7 +514,7 @@ sub propagateconfig() {
 	my $value = $config{$option} || '';
 	emit "$option=\"$value\"";
     }
-    
+
     for my $option ( @Shorewall::Config::propagateenv ) {
 	my $value = $env{$option} || '';
 	emit "$option=\"$value\"";
@@ -529,7 +529,7 @@ sub append_file( $ ) {
 	    save_progress_message "Processing $user_exit ...";
 	    copy1 $user_exit;
 	}
-    }   
+    }
 }
 
 #
@@ -570,7 +570,7 @@ sub generate_aux_config() {
     create_temp_aux_config;
 
     emit( "#\n# Shorewall auxiliary configuration file created by Shorewall-pl version " . $env{VERSION} . ' - ' . ( localtime ) . "\n#" );
-    
+
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;
     }

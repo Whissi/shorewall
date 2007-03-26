@@ -71,9 +71,9 @@ sub process_tos() {
 	open TOS, "$ENV{TMP_DIR}/tos" or fatal_error "Unable to open stripped tos file: $!";
 
 	while ( $line = <TOS> ) {
-	    
+
 	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 'tos file';
-	    
+
 	    fatal_error "TOS field required: $line" unless $tos ne '-';
 
 	    my $chainref;
@@ -81,7 +81,7 @@ sub process_tos() {
 	    my $restriction = NO_RESTRICT;
 
 	    my ( $srczone , $source ) = split /:/, $src;
-	    
+
 	    if ( $srczone eq $firewall_zone ) {
 		$chainref    = $outtosref;
 		$src         = $source || '-';
@@ -92,7 +92,7 @@ sub process_tos() {
 	    }
 
 	    $dst =~ s/^all:?//;
-	    
+
 	    expand_rule 
 		$chainref ,
 		$restriction ,
@@ -133,11 +133,11 @@ sub setup_rfc1918_filteration( $ ) {
     } 
 
     open RFC, "$ENV{TMP_DIR}/rfc1918" or fatal_error "Unable to open stripped rfc1918 file: $!"; 
-	    
+
     while ( $line = <RFC> ) {
 
 	my ( $networks, $target ) = split_line 2, 'rfc1918 file';
-	
+
 	my $s_target;
 
 	if ( $target eq 'logdrop' ) {
@@ -202,9 +202,9 @@ sub setup_blacklist() {
 
 	if ( $level ) {
 	    my $chainref = new_standard_chain 'blacklog';
-	
+
 	    log_rule_limit( $level , $chainref , 'blacklst' , $disposition , "$env{LOGLIMIT}" , '', 'add',	'' );
-	
+
 	    add_rule $chainref, "-j $target" ;
 
 	    $target = 'blacklog';
@@ -217,7 +217,7 @@ sub setup_blacklist() {
 	    progress_message( join( '', '      Processing ', find_file( 'blacklist' ), '...' ) );
 
 	    while ( $line = <BL> ) {
-	    
+
 		my ( $networks, $protocol, $ports ) = split_line 3, 'blacklist file';
 
 		expand_rule 
@@ -231,7 +231,7 @@ sub setup_blacklist() {
 		    '' ,
 		    $disposition ,
 		    '';
-	
+
 		progress_message "         \"$line\" added to blacklist";
 	    }
 	}
@@ -239,14 +239,14 @@ sub setup_blacklist() {
 	close BL;
 
 	my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
-    
+
 	for my $hostref ( @$hosts ) {
 	    my $interface = $hostref->[0];
 	    my $ipsec     = $hostref->[1];
 	    my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network   = $hostref->[2];
 	    my $source    = match_source_net $network;
-	    
+ 
 	    for my $chain ( @{first_chains $interface}) {
 		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
 	    }
@@ -268,7 +268,7 @@ sub process_criticalhosts() {
     while ( $line = <RS> ) {
 
 	my $routeback = 0;
-	
+
 	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
@@ -309,7 +309,7 @@ sub process_routestopped() {
     while ( $line = <RS> ) {
 
 	my $routeback = 0;
-	    
+
 	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
@@ -327,7 +327,7 @@ sub process_routestopped() {
 			warning_message "Duplicate 'routeback' option ignored in routestopped entry \"$line\"";
 		    } else {
 			$routeback = 1;
-			
+
 			for my $host ( split /,/, $hosts ) {
 			    my $source = match_source_net $host;
 			    my $dest   = match_dest_net   $host;
@@ -342,7 +342,7 @@ sub process_routestopped() {
 		} elsif ( $option eq 'dest' ) {
 		    for my $host ( split /,/, $hosts ) {
 			$dest{"$interface:$host"} = 1;
-		    }		    
+		    }
 		} else {
 		    warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"" unless $option eq 'critical';
 		}
@@ -358,10 +358,10 @@ sub process_routestopped() {
 	my ( $interface, $h ) = split /:/, $host;
 	my $source  = match_source_net $h;
 	my $dest    = match_dest_net $h;
-	
+
 	emit "\$IPTABLES INPUT -i $interface $source ACCEPT";
 	emit "\$IPTABLES OUTPUT -o $interface $dest ACCEPT"    if $config{ADMINISABSENTMINDED};
-	
+
 	my $matched = 0;
 
 	if ( $source{$host} ) {
@@ -373,7 +373,7 @@ sub process_routestopped() {
 	    emit "\$IPTABLES FORWARD -o $interface $dest ACCEPT";
 	    $matched = 1;
 	}
-	    
+
 	unless ( $matched ) {
 	    for my $host1 ( @allhosts ) {
 		unless ( $host eq $host1 ) {
@@ -405,7 +405,7 @@ sub add_common_rules() {
     new_standard_chain 'dynamic';
 
     my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
-    
+
     for $interface ( @interfaces ) {
 	for $chain ( input_chain $interface , forward_chain $interface ) {
 	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
@@ -429,7 +429,7 @@ sub add_common_rules() {
     } elsif ( @$list ) {
 	fatal_error "The nosmurfs option requires Address Type Match in your kernel and iptables";
     }
-    
+
     if ( @$list ) {
 	progress_message2 '   Adding Anti-smurf Rules';
 	for my $hostref  ( @$list ) {
@@ -441,9 +441,9 @@ sub add_common_rules() {
 	    }
 	}
     }
-		
+
     add_rule $rejectref , '-p tcp -j REJECT --reject-with tcp-reset';
-   
+
     if ( $capabilities{ENHANCED_REJECT} ) {
 	add_rule $rejectref , '-p udp -j REJECT';
 	add_rule $rejectref, '-p icmp -j REJECT --reject-with icmp-host-unreachable';
@@ -480,20 +480,20 @@ sub add_common_rules() {
 	my $disposition;
 
 	progress_message2 "   $doing TCP Flags filtering...";
-	
+
 	$chainref = new_standard_chain 'tcpflags';
 
 	if ( $config{TCP_FLAGS_LOG_LEVEL} ) {
 	    my $logflagsref = new_standard_chain 'logflags';
-	    
+
 	    my $savelogparms = $env{LOGPARMS};
 
 	    $env{LOGPARMS} = "$env{LOGPARMS} --log-ip-options" unless $config{TCP_FLAGS_LOG_LEVEL} eq 'ULOG';
-	    
+
 	    log_rule $config{TCP_FLAGS_LOG_LEVEL} , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
-	    
+
 	    $env{LOGPARMS} = $savelogparms;
-									
+
 	    if ( $config{TCP_FLAGS_DISPOSITION} eq 'REJECT' ) {
 		add_rule $logflagsref , '-j REJECT --reject-with tcp-reset';
 	    } else {
@@ -527,13 +527,13 @@ sub add_common_rules() {
 		new_standard_chain $chain;
 	    }
 	}
-	
+
 	(new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1; 
-	    
+
 	add_rule $filter_table->{input_chain $interface},  "-j $chain";
 	add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
 	add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
-    }	
+    }
 
     $list = find_interfaces_by_option 'upnp';
 
@@ -570,16 +570,16 @@ sub setup_mac_lists( $ ) {
     }
 
     my @maclist_interfaces = ( sort keys %maclist_interfaces );
-    
+
     progress_message "   $doing MAC Verification for @maclist_interfaces -- Phase $phase...";
 
     if ( $phase == 1 ) {
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
-	    
+
 	    add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
 		if ( $table eq 'mangle' ) && $interfaces{$interface}{options}{dhcp};
-	    
+
 	    if ( $config{MACLIST_TTL} ) {
 		my $chain1ref = new_chain $table, macrecent_target $interface;
 
@@ -709,11 +709,11 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	next if $line =~ /^\s*$/;
 	$line =~ s/#.*$//;
 	$line = expand_shell_variables $line unless $standard;
-		
+
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
-	
+
 	$mtarget = merge_levels $target, $mtarget;
-	
+
 	if ( $mtarget =~ /^PARAM:?/ ) {
 	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
 	    $mtarget = substitute_action $param,  $mtarget;
@@ -727,7 +727,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 		createactionchain $mtarget;
 		$usedactions{$mtarget} = 1;
 	    }
-	    
+
 	    $mtarget = find_logactionchain $mtarget;
 	} else {
 	    fatal_error "Invalid Action ($mtarget) in rule \"$line\""  unless $actiontype & STANDARD;
@@ -746,7 +746,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	}
 
 	$msource = '' if $msource eq '-';
-		
+
 	if ( $mdest ) {
 	    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
 		$mdest = $dest || '';
@@ -766,7 +766,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	$msports = merge_macro_column $msports, $sports;
 	$mrate   = merge_macro_column $mrate,   $rate;
 	$muser   = merge_macro_column $muser,   $user;
-	
+
 	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $rate, $user;
 
 	progress_message "   Rule \"$line\" $done";    }
@@ -794,9 +794,9 @@ sub process_rule1 ( $$$$$$$$$ ) {
     fatal_error "Unknown action ($action) in rule \"$line\"" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
-	process_macro 
-	    $macros{$basictarget}, 
-	    target , 
+	process_macro
+	    $macros{$basictarget},
+	    $target , 
 	    $param , 
 	    $source, 
 	    $dest, 
@@ -848,7 +848,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	$sourcezone = $source;
 	$source = ALLIPv4;
     }
-    
+
     if ( $dest =~ /^(.+?):(.*)/ ) {
 	$destzone = $1;
 	$dest = $2;
@@ -966,7 +966,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    # NONAT or ACCEPT+ -- May not specify a destination interface
 	    #
 	    fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
-	    
+
 	    $origdest = '' unless $origdest and $origdest ne '-';
 
 	    if ( $origdest eq 'detect' ) {
@@ -1146,7 +1146,7 @@ sub process_rules() {
 	    process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
 	}
     }
-	
+
     close RULES;
 
     $comment = '';
@@ -1172,16 +1172,16 @@ sub generate_matrix() {
 	my ( $zone, $zone1 ) = @_;
 	my $chain = "${zone}2${zone1}";
 	my $chainref = $filter_table->{$chain};
-	
+
 	return $chain   if $chainref && $chainref->{referenced};
 	return 'ACCEPT' if $zone eq $zone1;
-    
+
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $chainref->{policychain};
 	    return $policyref->{name} if $policyref;
 	    fatal_error "No policy defined for zone $zone to zone $zone1";
 	}
-	
+
 	'';
     }
 
@@ -1200,9 +1200,9 @@ sub generate_matrix() {
     #
     sub insert_exclusions( $$ ) {
 	my ( $chainref, $exclusionsref ) = @_;
-	
+
 	my $num = 1;
-	
+
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
 	    insert_rule $chainref , $num++, join( '', "-i $interface ", match_source_net( $host ), '-j RETURN' );
@@ -1214,12 +1214,13 @@ sub generate_matrix() {
     #
     sub add_exclusions ( $$ ) {
 	my ( $chainref, $exclusionsref ) = @_;
-	
+
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
 	    add_rule $chainref , join( '', "-i $interface ", match_source_net( $host ), '-j RETURN' );
 	}
-    }    
+    }
+
     #
     # Generate_Matrix() Starts Here
     #
@@ -1241,7 +1242,7 @@ sub generate_matrix() {
 
     addnatjump 'PREROUTING'  , 'nat_in'  , '';
     addnatjump 'POSTROUTING' , 'nat_out' , '';
-	
+
     for my $interface ( @interfaces ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , "-i $interface ";
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , "-o $interface ";
@@ -1256,7 +1257,7 @@ sub generate_matrix() {
 	    my $num = 1;
 	    my $in_ref  = new_standard_chain "${zone}_input";
 	    my $out_ref = new_standard_chain "${zone}_output";
-	    
+
 	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target $zone, $zone eq 'ACCEPT';
 
 	    for my $host ( @$exclusions ) {
@@ -1265,13 +1266,13 @@ sub generate_matrix() {
 		add_rule $in_ref   , "-i $interface -s $net -j RETURN";
 		add_rule $out_ref  , "-i $interface -s $net -j RETURN";
 	    }
-	    
+
 	    if ( $capabilities{POLICY_MATCH} ) {
 		my $type       = $zoneref->{type};
 		my $source_ref = $zoneref->{hosts}{ipsec} || [];
 
 		create_zone_dyn_chain $zone, $frwd_ref && $config{DYNAMIC_ZONES} && (@$source_ref || $type ne 'ipsec4' );
-		
+
 		for my $interface ( keys %$source_ref ) {
 		    my $arrayref = $source_ref->{$interface};
 		    for my $hostref ( @{$arrayref} ) {
@@ -1283,7 +1284,7 @@ sub generate_matrix() {
 			}
 		    }
 		}
-	    }   
+	    }
 	}
     }
     #
@@ -1335,7 +1336,7 @@ sub generate_matrix() {
 				add_rule $filter_table->{output_chain $interface} , join( '', $dest, $ipsec_out_match, "-j $chain1" );
 			    }
 			}
-			
+
 			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, join( '', "-i $interface ", $source, $ipsec_in_match );
 
 			if ( $chain2 ) {
@@ -1366,11 +1367,11 @@ sub generate_matrix() {
 	    for my $zone1 ( grep $zones{$_}{type} ne 'firewall' , @zones )  {
 		my $zone1ref = $zones{$zone1};
 		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
-		
+
 		next if $policy  eq 'NONE';
-		
+
 		my $chain = rules_target $zone, $zone1;
-		
+
 		next unless $chain;
 
 		if ( $zone eq $zone1 ) {
@@ -1380,7 +1381,7 @@ sub generate_matrix() {
 		    no warnings;
 		    next if (  %{ $zoneref->{interfaces}} < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 		}
-		
+
 		if ( $chain =~ /2all$/ ) {
 		    if ( $chain ne $last_chain ) {
 			$last_chain = $chain;
@@ -1398,7 +1399,7 @@ sub generate_matrix() {
 		    $last_chain = '';
 		}
 	    }
-	    
+
 	    if ( $last_chain && @temp_zones == 1 ) {
 		push @dest_zones, @temp_zones;
 		$last_chain = '';
@@ -1424,9 +1425,9 @@ sub generate_matrix() {
 	    next unless $chain;
 
 	    push @rule_chains, [ $zone , $zone1 , $chain ] if $config{DYNAMIC_ZONES};
-	    
+
 	    my $num_ifaces = 0;
-	    
+
 	    if ( $zone eq $zone1 ) {
 		#
 		# One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
@@ -1437,9 +1438,9 @@ sub generate_matrix() {
 
 	    my $chainref    = $filter_table->{$chain};
 	    my $exclusions1 = $zone1ref->{exclusions};
-	    
+
 	    my $dest_hosts_ref = $zone1ref->{hosts};
-	    
+
 	    if ( @$exclusions1 ) {
 		if ( $chain eq "all2$zone1" ) {
 		    unless ( $chain_exclusions{$chain} ) {
@@ -1448,7 +1449,7 @@ sub generate_matrix() {
 		    }
 		} elsif ( $chain =~ /2all$/ ) {
 		    my $chain1 = $policy_exclusions{"${chain}_${zone1}"};
-		    
+
 		    unless ( $chain ) {
 			$chain1 = newexclusionchain;
 			$policy_exclusions{"${chain}_${zone1}"} = $chain1;
@@ -1456,13 +1457,13 @@ sub generate_matrix() {
 			add_exclusions $chain1ref, $exclusions1;
 			add_rule $chain1ref, "-j $chain";
 		    }
-		    
+
 		    $chain = $chain1;
 		} else {
 		    insert_exclusions $chainref , $exclusions1;
 		}
 	    }
-	    
+
 	    if ( $complex ) {
 		for my $typeref ( values %$dest_hosts_ref ) {
 		    for my $interface ( keys %$typeref ) {
@@ -1580,6 +1581,6 @@ sub dump_rule_chains() {
     for my $arrayref ( @rule_chains ) {
 	emit_unindented "@$arrayref";
     }
-}    
+}
 
 1;

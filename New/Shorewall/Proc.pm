@@ -79,7 +79,7 @@ fi
 	for my $interface ( @$interfaces1 ) {
 	    my $file  = "/proc/sys/net/ipv4/conf/$interface/arp_ignore";
 	    my $value = get_interface_option $interface, 'arp_ignore';
-	    
+
 	    fatal_error "Internal Error in setup_arp_filtering()" unless defined $value;
 
 	    emit "if [ -f $file ]; then
@@ -100,7 +100,7 @@ sub setup_route_filtering() {
     my $interfaces = find_interfaces_by_option 'routefilter';
 
     if ( @$interfaces || $config{ROUTE_FILTER} ) {
-	
+
 	progress_message2 "$doing Kernel Route Filtering...";
 
 	save_progress_message "Setting up Route Filtering...";
@@ -120,7 +120,7 @@ else
 fi
 ";
 	}
-	
+
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
 	if ( $config{ROUTE_FILTER} ) {
@@ -140,7 +140,7 @@ sub setup_martian_logging() {
     my $interfaces = find_interfaces_by_option 'logmartians';
 
     if ( @$interfaces || $config{LOG_MARTIANS} ) {
-	
+
 	progress_message2 "$doing Martian Logging...";
 
 	save_progress_message "Setting up Martian Logging...";
@@ -160,7 +160,7 @@ else
 fi
 ";
 	}
-	
+
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
 
 	if ( $config{LOG_MARTIANS} ) {
@@ -170,7 +170,7 @@ fi
 
     }
 }
-    
+
 #
 # Source Routing
 #

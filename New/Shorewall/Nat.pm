@@ -142,7 +142,7 @@ sub setup_one_masq($$$$$$)
 	if ( $2 =~ /\./ ) {
 	    $fullinterface = $one;
 	    $destnets = $two;
-	}	
+	}
     } 
 
     #
@@ -162,7 +162,7 @@ sub setup_one_masq($$$$$$)
     # Handle Protocol and Ports
     #
     $rule .= do_proto $proto, $ports, '';
-	
+
     my $detectaddress = 0;
     #
     # Parse the ADDRESSES column
@@ -232,7 +232,7 @@ sub setup_one_masq($$$$$$)
     }
 
     progress_message "   Masq record \"$line\" $done";
-    
+
 }
 
 #
@@ -294,7 +294,7 @@ sub do_one_nat( $$$$$ )
     sub add_nat_rule( $$ ) {
 	add_rule ensure_chain( 'nat', $_[0] ) , $_[1];
     }
-    
+
     my $add_ip_aliases = $config{ADD_IP_ALIASES};
 
     my $policyin = '';
@@ -320,7 +320,7 @@ sub do_one_nat( $$$$$ )
 
     validate_nat_column 'ALL INTERFACES', \$allints;
     validate_nat_column 'LOCAL'         , \$localnat;
-    
+
     if ( $allints ) {
 	add_nat_rule 'nat_in' ,  "-d $external $policyin  -j DNAT --to-destination $internal";
 	add_nat_rule 'nat_out' , "-s $internal $policyout -j SNAT --to-source $external";
@@ -328,7 +328,7 @@ sub do_one_nat( $$$$$ )
 	add_nat_rule input_chain( $interface ) ,  "-d $external $policyin -j DNAT --to-destination $internal";
 	add_nat_rule output_chain( $interface ) , "-s $internal $policyout -j SNAT --to-source $external";
     }
-	
+
     add_nat_rule 'OUTPUT' , "-d $external$policyout -j DNAT --to-destination $internal " if $localnat;
 
     if ( $add_ip_aliases ) {
@@ -345,7 +345,7 @@ sub do_one_nat( $$$$$ )
 # Process NAT file
 #
 sub setup_nat() {
-    
+
     open NAT, "$ENV{TMP_DIR}/nat" or fatal_error "Unable to open stripped nat file: $!";
 
     while ( $line = <NAT> ) {
@@ -362,7 +362,7 @@ sub setup_nat() {
 	} else {
 	    do_one_nat $external, $interface, $internal, $allints, $localnat;
 	}
-	
+
     }
 
     close NAT;
@@ -374,7 +374,7 @@ sub setup_nat() {
 # Setup Network Mapping
 #
 sub setup_netmap() {
-    
+
     open NM, "$ENV{TMP_DIR}/netmap" or fatal_error "Unable to open stripped netmap file: $!";
 
     while ( $line = <NM> ) {

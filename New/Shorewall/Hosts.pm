@@ -45,7 +45,7 @@ sub validate_hosts_file()
 			maclist => 1,
 			norfc1918 => 1,
 			nosmurfs => 1,
-			routeback => 1,		
+			routeback => 1,
 			routefilter => 1,
 			tcpflags => 1,
 			);
@@ -76,7 +76,7 @@ sub validate_hosts_file()
 	}
 
 	my $optionsref;
-	
+
 	if ( $options ne '-' ) {
 	    my @options = split ',', $options;
 	    my %options;

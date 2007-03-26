@@ -45,7 +45,7 @@ sub new_policy_chain($$$)
     my ($chain, $policy, $optional) = @_;
 
     my $chainref = new_chain 'filter', $chain; 
-    
+
     $chainref->{is_policy}   = 1;
     $chainref->{policy}      = $policy;
     $chainref->{is_optional} = $optional;
@@ -87,12 +87,12 @@ sub validate_policy()
 			  QUEUE => undef,
 			  NONE => undef
 			  );
-    
+
     my %map = ( DROP_DEFAULT   => 'DROP' ,
 		REJECT_DEFAULT => 'REJECT' ,
 		ACCEPT_DEFAULT => 'ACCEPT' ,
 		QUEUE_DEFAULT  => 'QUEUE' );
-	  
+
     my $zone;
 
     use constant { OPTIONAL => 1 };
@@ -101,7 +101,7 @@ sub validate_policy()
 	my $action = $config{$option};
 	next if $action eq 'none';
 	my $actiontype = $targets{$action};
-  
+
 	if ( defined $actiontype ) {
 	    fatal_error "Invalid setting ($action) for $option" unless $actiontype & ACTION;
 	} else {
@@ -115,7 +115,7 @@ sub validate_policy()
 
 	$default_actions{$map{$option}} = $action;
     }
-    
+
     for $zone ( @zones ) {
 	push @policy_chains, ( new_policy_chain "${zone}2${zone}", 'ACCEPT', OPTIONAL );
 
@@ -138,7 +138,7 @@ sub validate_policy()
 	$synparams = '' unless defined $synparams;
 	$loglevel  = '' if $loglevel  eq '-';
 	$synparams = '' if $synparams eq '-';
-	
+
 	my $clientwild = ( "\L$client" eq 'all' );
 
 	fatal_error "Undefined zone $client" unless $clientwild || $zones{$client};
@@ -153,7 +153,7 @@ sub validate_policy()
 	    $default = 'none';
 	} elsif ( $default ) {
 	    my $defaulttype = $targets{$default};
-	    
+
 	    if ( $defaulttype & ACTION ) {
 		unless ( $usedactions{$default} ) {
 		    $usedactions{$default} = 1;
@@ -161,7 +161,7 @@ sub validate_policy()
 		}
 	    } else {
 		fatal_error "Unknown Default Action ($default) in policy \"$line\"";
-	    }	    
+	    }
 	} else {
 	    $default = $default_actions{$policy} || '';
 	}
@@ -174,13 +174,13 @@ sub validate_policy()
 	    fatal_error "$client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
 	}
-	
+
 	my $chain = "${client}2${server}";
 	my $chainref;
 
 	if ( defined $filter_table->{$chain} ) {
 	    $chainref = $filter_table->{$chain};
-	    
+
 	    if ( $chainref->{is_policy} ) {
 		if ( $chainref->{is_optional} ) {
 		    $chainref->{is_optional} = 0;
@@ -221,13 +221,13 @@ sub validate_policy()
 		set_policy_chain "${client}2${zone}", $chainref, $policy;
 		print_policy $client, $zone, $policy, $chain;
 	    }
-	    
+
 	} else {
 	    print_policy $client, $server, $policy, $chain;
 	}
     }
 
-    close POLICY;	    
+    close POLICY;
 }
 
 #
@@ -281,7 +281,7 @@ sub default_policy( $$$ ) {
     }
 
     progress_message "   Policy $policy from $_[1] to $_[2] using chain $chainref->{name}";
-    
+
 }
 
 sub apply_policy_rules() {

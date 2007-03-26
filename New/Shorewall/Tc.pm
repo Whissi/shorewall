@@ -49,7 +49,7 @@ my %tcs = ( t => { chain  => 'tcpost',
 	    ct => { chain  => 'tcpost' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
-		    fw       => 1 			
+		    fw       => 1
 		    } ,
 	    c  => { target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
@@ -91,7 +91,7 @@ use constant { NOMARK    => 0 ,
 	       SMALLMARK => 1 ,
 	       HIGHMARK  => 2 
 	       };
-	       
+
 my @tccmd = ( { pattern   => 'SAVE' ,
 		target    => 'CONNMARK --save-mark --mask' ,
 		mark      => SMALLMARK ,
@@ -142,7 +142,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
     if ( $designator ) {
 	$tcsref = $tcs{$designator};
-	
+
 	if ( $tcsref ) {
 	    if ( $chain eq 'tcout' ) {
 		fatal_error "Invalid chain designator for source $firewall_zone; rule \"$line\"" unless $tcsref->{fw};
@@ -151,7 +151,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    $chain    = $tcsref->{chain}  if $tcsref->{chain};
 	    $target   = $tcsref->{target} if $tcsref->{target};
 	    $mark     = "$mark/0xFF"      if $connmark = $tcsref->{connmark};
-	    
+
 	} else {
 	    fatal_error "Invalid MARK ($original_mark) in rule \"$line\"" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
 	    $chain   = 'tcpost';
@@ -173,12 +173,12 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 		for my $tccmd ( @tccmd ) {
 		    if ( $cmd =~ /^($tccmd->{pattern})$/ ) {
 			fatal_error "$mark not valid with :C[FP]" if $connmark;
-			
+
 			$target      = "$tccmd->{target} ";
 			my $marktype = $tccmd->{mark};
-			
+
 			$mark   =~ s/^[!&]//;
-			
+
 			if ( $rest ) {
 			    fatal_error "Invalid MARK ($original_mark)" if $marktype == NOMARK;
 
@@ -192,12 +192,12 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 			} elsif ( $tccmd->{mask} ) {
 			    $mark = $tccmd->{mask};
 			}
-			
+
 			last MARK;
 		    }
 		}
 	    }
-	    
+
 	    validate_mark $mark;
 
 	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes' 
@@ -215,11 +215,11 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	'' ,
 	'' ,
 	'';
-    
+
     progress_message "   TC Rule \"$line\" $done";
-    
+
 }
-	
+
 #
 # Perl version of Arn Bernin's 'tc4shorewall'.
 #
@@ -265,9 +265,8 @@ sub rate_to_kbit( $ ) {
 
 sub calculate_quantum( $ ) {
     my $rate = rate_to_kbit $_[0];
-    
     eval "int( ( $rate * 128 ) / $r2q )";
-}    
+}
 
 sub validate_tc_device( $$$ ) {
     my ( $device, $inband, $outband ) = @_;
@@ -303,7 +302,7 @@ sub validate_tc_class( $$$$$$ ) {
 		       'tos-maximize-reliability' => 'tos=0x04/0x04' ,
 		       'tos-minimize-cost'        => 'tos=0x02/0x02' ,
 		       'tos-normal-service'       => 'tos=0x00/0x1e' );
-    
+
     my $devref = $tcdevices{$device};
     fatal_error "Unknown Device ( $device ) in tcclass \"$line\"" unless $devref;
     my $full  = rate_to_kbit $devref->{out_bandwidth};
@@ -326,9 +325,9 @@ sub validate_tc_class( $$$$$$ ) {
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, "\L$options" ) {
 	    my $optval = $tosoptions{$option};
-	    
+
 	    $option = $optval if $optval;
-	    
+
 	    if ( $option eq 'default' ) {
 		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
 		$devref->{default} = $markval;
@@ -347,7 +346,7 @@ sub validate_tc_class( $$$$$$ ) {
     }
 
     push @tcclasses, "$device:$markval";
-}    
+}
 
 sub setup_traffic_shaping() {
     if ( -s "$ENV{TMP_DIR}/tcdevices" ) {
@@ -364,7 +363,6 @@ sub setup_traffic_shaping() {
 	    fatal_error "Invalid tcdevices entry: \"$line\"" if $outband eq '-';
 	    validate_tc_device( $device, $inband, $outband );
 	}
-	
     }
 
     close TD;
@@ -378,10 +376,9 @@ sub setup_traffic_shaping() {
 	while ( $line = <TC> ) {
 
 	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 6, 'tcclasses file';
-	    
+
 	    validate_tc_class( $device, $mark, $rate, $ceil, $prio, $options );
 	}
-	
     }
 
     close TC;
@@ -398,7 +395,7 @@ sub setup_traffic_shaping() {
 	fatal_error "Option default is not defined for any class in tcclasses for interface $device" unless $defmark;
 
 	emit "if interface_is_usable $device; then";
-	
+
 	push_indent;
 
 	emit "${dev}_exists=Yes";
@@ -407,7 +404,7 @@ sub setup_traffic_shaping() {
 	emit "run_tc qdisc add dev $device root handle $devnum: htb default ${prefix}${defmark}";
 	emit "${dev}_mtu=\$(get_device_mtu $device)";
 	emit "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu";
-	
+
 	my $inband = rate_to_kbit $devref->{in_bandwidth};
 
 	if ( $inband ) {
@@ -451,7 +448,7 @@ sub setup_traffic_shaping() {
 	    push_indent;
 	    $lastdevice = $device;
 	}
-	
+
 	emit "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum";
 	emit "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} mtu \$${dev}_mtu quantum \$quantum";
 	emit "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10";
@@ -468,7 +465,7 @@ sub setup_traffic_shaping() {
 	#
 	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
-	   
+
 	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(/), $tospair;
 	    emit "run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
@@ -477,7 +474,7 @@ sub setup_traffic_shaping() {
 	save_progress_message_short qq("   TC Class $class defined.");
 	emit '';
     }
-    
+
     if ( $lastdevice ) {
 	pop_indent;
 	emit "fi\n";
@@ -495,7 +492,7 @@ sub setup_tc() {
 	ensure_mangle_chain 'tcfor';
 	ensure_mangle_chain 'tcpost';
     }
-    
+
     open TC, "$ENV{TMP_DIR}/tcrules" or fatal_error "Unable to open stripped tcrules file: $!";
 
     while ( $line = <TC> ) {
@@ -512,7 +509,7 @@ sub setup_tc() {
 	} else {
 	    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
 	}
-	
+
     }
 
     close TC;
@@ -523,7 +520,7 @@ sub setup_tc() {
 
     if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
 	$mark_part = '-m mark --mark 0/0xFF00';
-	
+
 	for my $interface ( @routemarked_interfaces ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
 	}

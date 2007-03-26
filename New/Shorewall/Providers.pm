@@ -61,10 +61,10 @@ my @providers;
 sub setup_route_marking() {
     my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFFFF' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
-    
+
     add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     add_rule $mangle_table->{OUTPUT} , " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
-    
+
     my $chainref = new_chain 'mangle', 'routemark';
 
     while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
@@ -95,11 +95,11 @@ sub setup_providers() {
 
     sub copy_and_edit_table( $$$ ) {
 	my ( $duplicate, $number, $copy ) = @_;
-	
+
 	my $match = $copy;
-	
+
 	$match =~ s/ /\|/g;
-	
+
 	emitj ( "ip route show table $duplicate | while read net route; do",
 		'    case $net in',
 		'        default|nexthop)',
@@ -118,18 +118,18 @@ sub setup_providers() {
 
     sub balance_default_route( $$$ ) {
 	my ( $weight, $gateway, $interface ) = @_;
-	
+
 	$balance = 1;
-	
+
 	emit '';
-    
+
 	if ( $first_default_route ) {
 	    if ( $gateway ) {
 		emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight\"";
 	    } else {
 		emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight\"";
 	    }
-	    
+
 	    $first_default_route = 0;
 	} else {
 	    if ( $gateway ) {
@@ -139,15 +139,15 @@ sub setup_providers() {
 	    }
 	}
     }
-    
+
     sub add_a_provider( $$$$$$$$ ) {
 
 	my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
-	
+
 	fatal_error 'Providers require mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
-	
+
 	fatal_error "Duplicate provider ( $table )" if $providers{$table};
-	
+
 	for my $provider ( keys %providers  ) {
 	    fatal_error "Duplicate provider number ( $number )" if $providers{$provider}{number} == $number;
 	}
@@ -161,7 +161,7 @@ sub setup_providers() {
 	emit "${iface}_up=Yes";
 	emit "qt ip route flush table $number";
 	emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
-    
+
 	$duplicate = '-' unless $duplicate;
 	$copy      = '-' unless $copy;
 
@@ -173,7 +173,7 @@ sub setup_providers() {
 		    my @c = ( split /,/, $copy );
 		    $copy = "@c";
 		}
-		
+
 		copy_and_edit_table( $duplicate, $number ,$copy );
 	    } else {
 		copy_table ( $duplicate, $number );
@@ -199,7 +199,7 @@ sub setup_providers() {
 	    $gateway = '';
 	    emit "run_ip route add default dev $interface table $number";
 	}
-	
+
 	$mark = '-' unless $mark;
 
 	my $val = 0;
@@ -207,15 +207,15 @@ sub setup_providers() {
 	if ( $mark ne '-' ) {
 
 	    $val = numeric_value $mark;
-	    
+
 	    verify_mark $mark;
-	    
+
 	    if ( $val < 256) {
 		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
 	    } else {
 		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
 	    }
-	    
+
 	    for my $provider ( keys %providers  ) {
 		my $num = $providers{$provider}{mark};
 		fatal_error "Duplicate mark value ( $mark )" if $num == $val;
@@ -254,48 +254,48 @@ sub setup_providers() {
 		}
 	    }
 	}
-	
+
 	if ( $loose ) {
 	    my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
-	    
+
 	    emit "\nrulenum=0\n";
-	    
+
 	    emitj ( "find_interface_addresses $interface | while read address; do",
 		    '    qt ip rule del from $address',
 		    "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
 		    "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
 		    '    rulenum=$(($rulenum + 1))',
 		    'done' );
-	} else {	    
+	} else {
 	    emit "\nfind_interface_addresses $interface | while read address; do";
 	    emit '    qt ip rule del from $address';
 	    emit 'done';
 	}
-	
+
 	emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
 
 	pop_indent;
 	emit 'else';
-	
+
 	if ( $optional ) {
 	    emit "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"";
 	    emit "    ${iface}_up=";
 	} else {
 	    emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
 	}
-	
-	emit "fi\n";	
+
+	emit "fi\n";
     }
 
     sub add_an_rtrule( $$$$ ) {
 	my ( $source, $dest, $provider, $priority ) = @_;
-	
-	unless ( $providers{$provider} ) {	
+
+	unless ( $providers{$provider} ) {
 	    my $found = 0;
-	    
+
 	    if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
 		my $provider_number = numeric_value $provider;
-		
+
 		for my $provider ( keys %providers ) {
 		    if ( $providers{$provider}{number} == $provider_number ) {
 			$found = 1;
@@ -303,17 +303,17 @@ sub setup_providers() {
 		    }
 		}
 	    }
-	    
+
 	    fatal_error "Unknown provider $provider in route rule \"$line\"" unless $found;
 	}
-	
+
 	$source = '-' unless $source;
 	$dest   = '-' unless $dest;
 
 	fatal_error "You must specify either the source or destination in an rt rule: \"$line\"" if $source eq '-' && $dest eq '-';
-	
+
 	$dest = $dest eq '-' ? '' : "to $dest";
-	
+
 	if ( $source eq '-' ) {
 	    $source = '';
 	} elsif ( $source =~ /:/ ) { 
@@ -324,11 +324,11 @@ sub setup_providers() {
 	} else {
 	    $source = "iif $source";
 	}
-	
+
 	fatal_error "Invalid priority ($priority) in rule \"$line\"" unless $priority && $priority =~ /^\d{1,5}$/;
-	
+
 	$priority = "priority $priority";
-	
+
 	emit "qt ip rule del $source $dest $priority";
 	emit "run_ip rule add $source $dest $priority table $provider";
 	emit "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing";
@@ -358,15 +358,15 @@ sub setup_providers() {
 	    '# Initialize the file that holds \'undo\' commands',
 	    '#',
 	    '> ${VARDIR}/undo_routing' );
-    
+
     save_progress_message 'Adding Providers...';
-    
+
     emit 'DEFAULT_ROUTE=';
 
     open PV, "$ENV{TMP_DIR}/providers" or fatal_error "Unable to open stripped providers file: $!";
 
     while ( $line = <PV> ) {
-	
+
 	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 8, 'providers file';
 
 	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
@@ -392,8 +392,10 @@ sub setup_providers() {
 		    'fi',
 		    '' );
 	} else {
-	    emit "#\n# We don't have any 'balance' providers so we restore any default route that we've saved\n#";
-	    emit 'restore_default_route';
+	    emitj( '#',
+		   '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
+		   '#',
+		   'restore_default_route' );
 	}
 
 	emit 'cat > /etc/iproute2/rt_tables <<EOF';
@@ -412,7 +414,7 @@ sub setup_providers() {
 
 	emit 'echocommand=$(find_echo)';
 	emit '';
-	
+
 	for my $table ( @providers ) {
 	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	}
@@ -427,7 +429,7 @@ sub setup_providers() {
 
 	    while ( $line = <RR> ) {
 		my ( $source, $dest, $provider, $priority ) = split_line 4, 'route_rules file';
-		
+
 		add_an_rtrule( $source, $dest, $provider , $priority );
 	    }
 
@@ -439,7 +441,7 @@ sub setup_providers() {
     emit 'run_ip route flush cache';
     pop_indent;
     emit "fi\n";
-    
+
     setup_route_marking if @routemarked_interfaces;
 
 }

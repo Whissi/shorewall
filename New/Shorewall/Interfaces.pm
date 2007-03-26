@@ -87,7 +87,7 @@ sub add_group_to_zone($$$$$)
 		$ifacezone = $zone if $host eq ALLIPv4;
 	    }
 	}
-	    
+
 	push @$new, $switched ? "$interface:$host" : $host;
     }
 
@@ -111,7 +111,8 @@ sub add_group_to_zone($$$$$)
 
 #
 # Parse the interfaces file.
-#	 
+#
+ 
 sub validate_interfaces_file()
 {
     my %validoptions = (arp_filter => 1,
@@ -124,7 +125,7 @@ sub validate_interfaces_file()
 			norfc1918 => 1,
 			nosmurfs => 1,
 			proxyarp => 1,
-			routeback => 1,		
+			routeback => 1,
 			routefilter => 1,
 			sourceroute => 1,
 			tcpflags => 1,
@@ -188,13 +189,13 @@ sub validate_interfaces_file()
 	push @interfaces, $interface;
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@allipv4, $optionsref ) if $zone;
-	
+
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$line\" Validated";
 
-    }		
-		
+    }
+
     close INTERFACES;
 }
 

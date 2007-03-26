@@ -41,7 +41,7 @@ our @EXPORT = qw( merge_levels
 		  process_actions1
 		  process_actions2
 		  process_actions3
-		  
+
 		  %usedactions 
 		  %default_actions 
 		  %actions
@@ -160,7 +160,7 @@ sub createlogactionchain( $$ ) {
     my $chainref;
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
-	
+
     while ( $chain_table{'%' . $chain . $actionref->{actchain}} ) {
 	$chain = substr $chain, 0, 27 if $actionref->{actchain} == 10 and length $chain == 28;
     }
@@ -237,7 +237,7 @@ sub find_logactionchain( $ ) {
 # The final phase (process_actions3) is to traverse the keys of %usedactions populating each chain appropriately
 # by reading the action definition files and creating rules. Note that a given action definition file is
 # processed once for each unique [:level[:tag]] applied to an invocation of the action.
-#    
+#
 sub process_actions1() {
 
     for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
@@ -246,10 +246,10 @@ sub process_actions1() {
 
     for my $file qw/actions.std actions/ {
 	open F, "$ENV{TMP_DIR}/$file" or fatal_error "Unable to open stripped $file file: $!";
-	
+
 	while ( $line = <F> ) {
 	    my ( $action ) = split_line 1, 'action file';
-	    
+
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
 		$action =~ s/:.*$//;
@@ -281,18 +281,18 @@ sub process_actions1() {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
 		$line =~ s/#.*$//;
-		
+
 		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 8, 'action file';
 
 		my ( $target, $level ) = split_action $wholetarget;
-		
+
 		$level = 'none' unless $level;
 
 		my $targettype = $targets{$target};
 
 		if ( defined $targettype ) {
 		    next if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
-		  
+
 		    fatal_error "Invalid TARGET ($target) in action rule \"$line\"" if $targettype & STANDARD;
 
 		    add_requiredby $wholetarget, $action if $targettype & ACTION;
@@ -303,14 +303,14 @@ sub process_actions1() {
 			my $macrofile = $macros{$target};
 
 			progress_message "   ..Expanding Macro $macrofile...";
-			
+
 			open M, $macrofile or fatal_error "Unable to open $macrofile: $!";
 
 			while ( $line = <M> ) {
 			    next if $line =~ /^\s*#/;
 			    $line =~ s/#.*$//;
 			    next if $line =~ /^\s*$/;
-			    
+
 			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 8, 'macro file';
 
 			    $mtarget =~ s/:.*$//;
@@ -324,7 +324,6 @@ sub process_actions1() {
 			}
 
 			progress_message "   ..End Macro";
-			
 			close M;
 		    } else {
 			fatal_error "Invalid TARGET ($target) in rule \"$line\"";
@@ -359,10 +358,10 @@ sub process_actions2 () {
 	}
     }
 }
-		
+
 #
 # Generate chain for non-builtin action invocation
-#	
+#
 sub process_action3( $$$$$ ) {
     my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
     #
@@ -370,9 +369,9 @@ sub process_action3( $$$$$ ) {
     #
     sub process_action( $$$$$$$$$$ ) {
 	my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
-	
+
 	my ( $action , $level ) = split_action $target;
-	
+
 	expand_rule ( $chainref ,
 		      NO_RESTRICT ,
 		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user , 
@@ -400,7 +399,7 @@ sub process_action3( $$$$$ ) {
 	next if $line =~ /^\s*$/;
 	$line =~ s/#.*$//;	
 	$line = expand_shell_variables $line unless $standard;
-		
+
 	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 8, 'action file';
 
 	my $target2 = merge_levels $wholeaction, $target;
@@ -432,9 +431,9 @@ sub process_action3( $$$$$ ) {
 	    progress_message "..Expanding Macro $fn...";
 
 	    open M, $fn or fatal_error "Can't open $fn: $!";
-	    
+
 	    my $standard = ( $fn =~ /^($env{SHAREDIR})/ );
-	    
+
 	    while ( $line = <M> ) {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
@@ -442,7 +441,7 @@ sub process_action3( $$$$$ ) {
 		$line = expand_shell_variables $line unless $standard;
 
 		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
-		
+
 		if ( $mtarget =~ /^PARAM:?/ ) {
 		    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
 		    $mtarget = substitute_action $param,  $mtarget;
@@ -461,7 +460,7 @@ sub process_action3( $$$$$ ) {
 		}
 
 		$msource = '' if $msource eq '-';
-		
+
 		if ( $mdest ) {
 		    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
 			$mdest = $dest || '';
@@ -486,7 +485,7 @@ sub process_action3( $$$$$ ) {
 	    }
 
 	    close M;
-	    
+
 	    progress_message '..End Macro'
 
 	} else {
@@ -495,7 +494,7 @@ sub process_action3( $$$$$ ) {
     }
 
     $comment = '';
-}	
+}
 
 sub process_actions3 () {
     #
@@ -503,83 +502,83 @@ sub process_actions3 () {
     #
     sub dropBcast( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	if ( $level ) {
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
 	}
-	
+
 	add_rule $chainref, '-m pkttype --pkt-type broadcast -j DROP';
 	add_rule $chainref, '-m pkttype --pkt-type multicast -j DROP';
     }
-    
+
     sub allowBcast( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	if ( $level ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
 	}
-	
+
 	add_rule $chainref, '-m pkttype --pkt-type broadcast -j ACCEPT';
 	add_rule $chainref, '-m pkttype --pkt-type multicast -j ACCEPT';
     }
-    
+
     sub dropNotSyn ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
 	add_rule $chainref , '-p tcp ! --syn -j DROP';
     }
-    
+
     sub rejNotSyn ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
 	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
 	add_rule $chainref , '-p tcp ! --syn -j REJECT';
     }
-    
+
     sub dropInvalid ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level;    
 	add_rule $chainref , '-m state --state INVALID -j REJECT';
     }
 
     sub allowInvalid ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level;    
 	add_rule $chainref , '-m state --state INVALID -j ACCEPT';
     }
-    
+
     sub forwardUPnP ( $$$ ) {
     }
 
     sub allowinUPnP ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	if ( $level ) {
 	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
 	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
 	}
-	
+
 	add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
 	add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
     }
-    
+
     sub Limit( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
-	
+
 	my @tag = split /,/, $tag;
-	
+
 	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
 
 	my $set   = $tag[0];
 	my $count = $tag[1] + 1;
 
 	add_rule $chainref, "-m recent --name $set --set";
-	
+
 	if ( $level ) {
 	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
@@ -588,7 +587,7 @@ sub process_actions3 () {
 	} else {
 	    add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
 	}
-	
+
 	add_rule $chainref, '-j ACCEPT';
     }
 
@@ -609,14 +608,14 @@ sub process_actions3 () {
 
 	$level = '' unless defined $level;
 	$tag   = '' unless defined $tag;
-	
+
 	if ( $targets{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;
 	    $builtinops{$action}->($chainref, $level, $tag);
 	} else {
 	    process_action3 $chainref, $wholeaction, $action, $level, $tag;
 	}
-    }   
+    }
 }
 
 1;

@@ -58,11 +58,7 @@ use Shorewall::Accounting;
 use Shorewall::Rules;
 use Shorewall::Proc;
 use Shorewall::Proxyarp;
-#
-# Emacs doesn't handle 'here documents' in Perl Mode nearly as well as it does in Shell mode
-# (it basically doesn't understand it at all and gets lost). So I use a number of rather
-# awkward styles in place of 'here docs'.
-#
+
 sub generate_script_1 {
     copy $env{SHAREDIRPL} . 'prog.header';
 
@@ -75,9 +71,8 @@ sub generate_script_1 {
 		'CONFDIR=/etc/shorewall-lite',
 		'VARDIR=/var/lib/shorewall-lite',
 		'PRODUCT="Shorewall Lite"' );
-	
+
 	copy "$env{SHAREDIR}/lib.base";
-	
 	emitj ( '################################################################################',
 	        '# End of /usr/share/shorewall/lib.base',
 	        '################################################################################' );
@@ -91,7 +86,7 @@ sub generate_script_1 {
 
     emit 'TEMPFILE=';
     emit '';
-    
+
     for my $exit qw/init start tcclear started stop stopped/ {
 	emit "run_${exit}_exit() {";
 	push_indent;
@@ -100,12 +95,12 @@ sub generate_script_1 {
 	pop_indent;
 	emit "}\n";
     }
-    
+
     emit 'initialize()';
     emit '{';
 
     push_indent;
-    
+
     if ( $ENV{EXPORT} ) {
 	emitj ( '#',
 		'# These variables are required by the library functions called in this script',
@@ -128,7 +123,7 @@ sub generate_script_1 {
     }
 
     propagateconfig;
-	
+
     emitj ( '[ -n "${COMMAND:=restart}" ]',
 	    '[ -n "${VERBOSE:=0}" ]',
 	    '[ -n "${RESTOREFILE:=$RESTOREFILE}" ]',
@@ -136,7 +131,7 @@ sub generate_script_1 {
 	    qq(VERSION="$env{VERSION}") ,
 	    qq(PATH="$config{PATH}") ,
 	    'TERMINATOR=fatal_error' );
-    
+
     if ( $config{IPTABLES} ) {
 	emit "IPTABLES=\"$config{IPTABLES}\"\n";
 	emit "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\"";
@@ -155,16 +150,16 @@ sub generate_script_1 {
 	    '# The library requires that ${VARDIR} exist',
 	    '#',
 	    '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}' );
-    
+
     pop_indent;
-    
+
     emit "}\n";
-        
+
 }
 
 sub compile_stop_firewall() {
 
-    emit "
+    emit <<EOF;
 #
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
@@ -213,7 +208,7 @@ stop_firewall() {
 	            logger -p kern.err \"ERROR:\$PRODUCT restore failed\"
 	            ;;
             esac
-            
+
             if [ \"\$RESTOREFILE\" = NONE ]; then
                 COMMAND=clear
                 clear_firewall
@@ -302,20 +297,24 @@ stop_firewall() {
         done
     fi
 
-    rm -f \${VARDIR}/proxyarp\n";
+    rm -f \${VARDIR}/proxyarp
+
+EOF
 
     emit '    delete_tc1' if $config{CLEAR_TC};
     emit '    undo_routing';
     emit '    restore_default_route';
-    
+
     my $criticalhosts = process_criticalhosts;
 
     if ( @$criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
 	    emitj ( '    for chain in INPUT OUTPUT; do',
 		    '        setpolicy $chain ACCEPT',
-		    "    done\n",
-		    "    setpolicy FORWARD DROP\n",
+		    '    done',
+		    '',
+		    '    setpolicy FORWARD DROP',
+		    '',
 		    '    deleteallchains',
 		    '' );
 
@@ -327,7 +326,7 @@ stop_firewall() {
 		emit "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
 		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
-	    
+
 	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
@@ -412,12 +411,12 @@ stop_firewall() {
 	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
 	emit 'progress_message2 IP Forwarding Disabled!';
     }
-    
+
     emit 'run_stopped_exit';
 
     pop_indent;
 
-    emit "
+    emit <<EOF;
     set_state \"Stopped\"
 
     logger -p kern.info \"\$PRODUCT Stopped\"
@@ -434,7 +433,9 @@ stop_firewall() {
 	kill \$\$
 	;;
     esac
-}\n";
+}
+
+EOF
 
 }
 

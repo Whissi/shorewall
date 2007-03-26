@@ -34,7 +34,7 @@ our @EXPORT = qw( NOTHING
 		  NETWORK
 		  IPSECPROTO
 		  IPSECMODE
-	     
+
 		  determine_zones
 		  zone_report
 		  dump_zone_contents
@@ -147,17 +147,17 @@ sub parse_zone_option_list($)
 		$val = $2;
 		$e   = $1;
 	    }
-	    
+
 	    $fmt = $validoptions{$e};
 
 	    fatal_error "Invalid Option ($e)" unless $fmt;
-	    
+
 	    if ( $fmt eq NOTHING ) {
 		fatal_error "Option $e does not take a value: Zone \"$line\"" if defined $val;
 	    } else {
 		fatal_error "Invalid value ($val) for option \"$e\" in Zone \"$line\"" unless $val =~ /^($fmt)$/;
 	    }
-	    
+
 	    if ( $key{$e} ) {
 		$h{$e} = $val;
 	    } else {
@@ -175,7 +175,7 @@ sub parse_zone_option_list($)
 
 #
 # Parse the zones file.
-#     
+#
 sub determine_zones()
 {
     my @z;
@@ -183,11 +183,11 @@ sub determine_zones()
     open ZONES, "$ENV{TMP_DIR}/zones" or fatal_error "Unable to open stripped zones file: $!";
 
     while ( $line = <ZONES> ) {
-	
+
 	my @parents;
 
 	my ($zone, $type, $options, $in_options, $out_options ) = split_line 5, 'zones file';
-	
+
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;
 	    @parents = split ',', $2;
@@ -281,11 +281,11 @@ sub zone_report()
 	progress_message "   $zone ($type)";
 
 	my $printed = 0;
-	
+
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
 		my $interfaceref = $hostref->{$type};
-		
+
 		for my $interface ( sort keys %$interfaceref ) {
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
@@ -300,7 +300,7 @@ sub zone_report()
 		}
 	    }
 	}
-    
+
 	warning_message "*** $zone is an EMPTY ZONE ***" unless $printed || $type eq 'firewall';
     }
 }
@@ -319,7 +319,7 @@ sub dump_zone_contents()
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
 		my $interfaceref = $hostref->{$type};
-		
+
 		for my $interface ( sort keys %$interfaceref ) {
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
@@ -336,12 +336,12 @@ sub dump_zone_contents()
 
 	if ( @$exclusions ) {
 	    $entry .= ' exclude';
-       
+
 	    for my $host ( @$exclusions ) {
 		$entry .= " $host";
 	    }
-	}   
-	
+	}
+
 	emit_unindented $entry;
     }
 }

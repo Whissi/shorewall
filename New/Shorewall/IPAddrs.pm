@@ -52,7 +52,7 @@ sub decodeaddr( $ ) {
     my @address = split /\./, $address;
 
     my $result = shift @address;
-    
+
     for my $a ( @address ) {
 	$result = ( $result << 8 ) | $a;
     }
@@ -84,10 +84,10 @@ sub ip_range_explicit( $ ) {
 
     if ( defined $high ) {
 	fatal_error "Invalid IP address ( $high )" unless valid_address $high;
-	
+
 	my $first = decodeaddr $low;
 	my $last  = decodeaddr $high;
-	
+
 	fatal_error "Invalid IP Range ( $range )" unless $first <= $last;
 
 	while ( ++$first <= $last ) {

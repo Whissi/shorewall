@@ -55,7 +55,7 @@ sub process_accounting_rule( $$$$$$$$ ) {
     }
 
     $chain = 'accounting' unless $chain and $chain ne '-';
-    
+
     my $chainref = ensure_filter_chain $chain , 0;
 
     my $target = '';
@@ -118,7 +118,7 @@ sub setup_accounting() {
 
 	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user;
     }
-	
+
     close ACC;
 
     if ( $filter_table->{accounting} ) {

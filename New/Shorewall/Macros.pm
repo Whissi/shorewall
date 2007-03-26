@@ -59,7 +59,7 @@ sub find_macro( $ )
 	$macros{$macro} = $macrofile;
 	$targets{$macro} = MACRO;
     }
-}    
+}
 
 #
 # Macro and action files can have shell variables embedded. This function expands them from %ENV.
@@ -67,7 +67,7 @@ sub find_macro( $ )
 sub expand_shell_variables( $ ) {
     my $line = $_[0]; $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/; $line;
 }
-    
+
 #
 # Return ( action, level[:tag] ) from passed full action 
 #
@@ -112,7 +112,7 @@ sub merge_macro_source_dest( $$ ) {
 	    return "$invocation:$body";
 	}
     }
-    
+
     $body || '';
 }
 

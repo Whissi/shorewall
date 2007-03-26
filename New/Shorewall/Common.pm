@@ -52,7 +52,7 @@ our @EXPORT = qw(ALLIPv4
 		 copy1
 		 create_temp_aux_config
 		 finalize_aux_config
-		 
+
 		 @allipv4
 		 @rfc1918_networks
 		 $line
@@ -111,20 +111,20 @@ sub split_line( $$ ) {
     my ( $columns, $description ) = @_;
 
     chomp $line;
-	
+
     $line =~ s/\s+/ /g;
 
     my @line = split /\s+/, $line;
 
     return @line if $line[0] eq 'COMMENT';
-    
+
     fatal_error "Invalid $description entry: $line" if @line > $columns;
 
     push @line, '-' while @line < $columns;
 
     @line;
 }
-    
+
 sub create_temp_object( $ ) {
     my $objectfile = $_[0];
     my $suffix;
@@ -174,7 +174,7 @@ sub emit ( $ ) {
 	    print $object "$line\n";
 	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	} else {
-	    print $object "\n" unless $lastlineblank;
+    print $object "\n" unless $lastlineblank;
 	    $lastlineblank = 1;
 	}
     }
@@ -188,7 +188,7 @@ sub emitj {
 	for ( @_ ) { emit $_ };
     }
 }
-	    
+
 
 #
 # Write passed message to the object with no indentation.
@@ -261,14 +261,14 @@ sub pop_indent() {
 sub copy( $ ) {
     if ( $object ) {
 	my $file = $_[0];
-    
+
 	open IF , $file or fatal_error "Unable to open $file: $!";
-	    
+
 	while ( my $line = <IF> ) {
 	    $line =~ s/^/$indent/ if $indent;
 	    print $object $line;
 	}
-	
+
 	close IF;
     }
 }
@@ -276,9 +276,9 @@ sub copy( $ ) {
 sub copy1( $ ) {
     if ( $object ) {
 	my $file = $_[0];
-    
+
 	open IF , $file or fatal_error "Unable to open $file: $!";
-	    
+
 	my $do_indent = 1;
 
 	while ( my $line = <IF> ) {
@@ -287,12 +287,12 @@ sub copy1( $ ) {
 		$do_indent = 1;
 		next;
 	    }
-	    
+
 	    $line =~ s/^/$indent/ if $indent && $do_indent;
 	    print $object $line;
 	    $do_indent = ! ( $line =~ /\\$/ );
 	}
-	
+
 	close IF;
     }
 }
@@ -321,6 +321,6 @@ END {
     }
 
     system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
-}	
+}
 
 1;

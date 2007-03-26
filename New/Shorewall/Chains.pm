@@ -47,7 +47,7 @@ our @EXPORT = qw( STANDARD
 		  OUTPUT_RESTRICT
 		  POSTROUTE_RESTRICT
 		  ALL_RESTRICT
-		  
+
 		  add_command
 		  add_rule
 		  insert_rule
@@ -99,7 +99,7 @@ our @EXPORT = qw( STANDARD
 		  addnatjump
 		  insertnatjump
 		  create_netfilter_load
-		  
+
 		  @policy_chains 
 		  %chain_table 
 		  $nat_table 
@@ -249,7 +249,7 @@ my $loopcount = 0;
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
-    
+
     push @{$chainref->{rules}}, join ('', '~', '    ' x $loopcount, $command );
 
     $chainref->{referenced} = 1;
@@ -265,7 +265,7 @@ sub add_command($$)
 sub add_rule($$)
 {
     my ($chainref, $rule) = @_;
-    
+
     $rule .= " -m comment --comment \"$comment\"" if $comment;
 
     if ( $loopcount ) {
@@ -289,13 +289,13 @@ sub insert_rule($$$)
     my ($chainref, $number, $rule) = @_;
 
     fatal_error 'Internal Error in insert_rule()' if $loopcount;
-    
+
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
     splice @{$chainref->{rules}}, $number - 1, 0,  $rule;
 
     $chainref->{referenced} = 1;
-    
+
     $iprangematch = 0;
 }
 
@@ -429,7 +429,7 @@ sub new_chain($$)
     my ($table, $chain) = @_;
     my %ch;
     my @rules;
-    
+
     $ch{name} = $chain;
     $ch{log} = 1 if $env{LOGRULENUMBERS};
     $ch{rules} = \@rules;
@@ -456,7 +456,7 @@ sub ensure_chain($$)
     my ($table, $chain) = @_;
 
     my $ref =  $chain_table{$table}{$chain};
-    
+
     return $ref if $ref;
 
     new_chain $table, $chain;
@@ -484,7 +484,7 @@ sub ensure_filter_chain( $$ )
     }
 
     $chainref->{referenced} = 1;
-	    
+
     $chainref;
 }
 
@@ -492,7 +492,7 @@ sub ensure_mangle_chain($) {
     my $chain = $_[0];
 
     my $chainref = ensure_chain 'mangle', $chain;
-    
+
     $chainref->{referenced} = 1;
 
     $chainref;
@@ -504,7 +504,7 @@ sub ensure_mangle_chain($) {
 sub new_builtin_chain($$$)
 {
     my ( $table, $chain, $policy ) = @_;
-    
+
     my $chainref = new_chain $table, $chain;
     $chainref->{referenced} = 1;
     $chainref->{policy}     = $policy;
@@ -515,7 +515,7 @@ sub new_standard_chain($) {
     my $chainref = new_chain 'filter' ,$_[0];
     $chainref->{referenced} = 1;
     $chainref;
-}    
+}
 
 #
 # Add all builtin chains to the chain table
@@ -538,7 +538,7 @@ sub initialize_chain_table()
     for my $chain qw/PREROUTING INPUT FORWARD OUTPUT POSTROUTING/ {
 	new_builtin_chain 'mangle', $chain, 'ACCEPT';
     }
-	
+
     if ( $capabilities{MANGLE_FORWARD} ) {
 	for my $chain qw/ FORWARD POSTROUTING / {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
@@ -554,7 +554,7 @@ sub finish_chain_section ($$) {
     my $chain = $chainref->{name};
 
     add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
-    
+
     if ($sections{RELATED} ) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
@@ -575,7 +575,7 @@ sub finish_chain_section ($$) {
 	    }
 	}
     }
-}		    
+}
 
 #
 # Do section-end processing
@@ -610,7 +610,7 @@ sub do_proto( $$$ )
     my ($proto, $ports, $sports ) = @_;
 
     my $output = '';
-    
+
     $proto  = '' if $proto  eq '-';
     $ports  = '' if $ports  eq '-';
     $sports = '' if $sports eq '-';
@@ -624,14 +624,14 @@ sub do_proto( $$$ )
 
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
-		    
+
 		    for my $port ( @ports ) {
 			if ( $port =~ /:/ ) {
 			    fatal_error "Port range in a list requires Extended Multiport Support in your kernel/iptables: $ports" unless $capabilities{XMULTIPORT};
 			    $count++;
 			} 
 		    }
- 
+
 		    fatal_error "Too many entries in port list: $ports" if $count > 15;
 
 		    $output .= "-m multiport --dports $ports ";
@@ -639,21 +639,21 @@ sub do_proto( $$$ )
 		    $output .= "--dport $ports ";
 		}
 	    }
-			
+
 	    if ( $sports ) {
 		my @ports = split /,/, $sports;
 		my $count = @ports; 
 
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
-		    
+
 		    for my $port ( @ports ) {
 			if ( $port =~ /:/ ) {
 			    fatal_error "Port range in a list requires Extended Multiport Support in your kernel/iptables: $sports" unless $capabilities{XMULTIPORT};
 			    $count++;
 			}
 		    }
- 
+
 		    fatal_error "Too many entries in port list: $sports" if $count > 15;
 
 		    $output .= "-m multiport --sports $sports ";
@@ -726,17 +726,17 @@ sub validate_mark( $ ) {
 sub do_test ( $$ )
 {
     my ($testval, $mask) = @_;
-    
+
     return '' unless $testval and $testval ne '-';
 
     my $invert = $testval =~ s/^!// ? '! ' : '';
     my $match =  $testval =~ s/:C$// ? '-m connmark ' : '-m mark ';
-    
+
     $testval .= '/0xFF' unless ( $testval =~ '/' );
 
     "${invert}$match $testval ";
 }
-    
+
 
 #
 # Create a "-m limit" match for the passed LIMIT/BURST
@@ -745,7 +745,7 @@ sub do_ratelimit( $ ) {
     my $rate = $_[0];
 
     return '' unless $rate and $rate ne '-';
-    
+
     if ( $rate =~ /^([^:]+):([^:]+)$/ ) {
 	"-m limit --limit $1 --limit-burst $2 ";
     } else {
@@ -769,7 +769,7 @@ sub do_user( $ ) {
 	$rule .= "--cmd-owner $2 " if $2;
 	$user = $1;
     }
-	
+
     if ( $user =~ /^!(.*):(.*)$/ ) {
 	$rule .= "! --uid-owner $1 " if $1;
 	$rule .= "! --gid-owner $2 " if $2;
@@ -790,10 +790,10 @@ sub do_user( $ ) {
 #
 sub do_tos( $ ) {
     my $tos = $_[0];
-    
+
     $tos ne '-' ? "-m tos --tos $tos " : '';
-}    
-	
+}
+
 #
 # Avoid generating a second '-m iprange' in a single rule.
 #
@@ -825,7 +825,7 @@ sub get_set_flags( $$ ) {
 	$setname = $1;
 	$options = $2;
     }
-    
+
     $setname =~ s/^\+//;
 
     "--set $setname $options"
@@ -836,7 +836,7 @@ sub get_set_flags( $$ ) {
 #
 sub match_source_net( $ ) {
     my $net = $_[0];
-    
+ 
     if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 
@@ -859,7 +859,7 @@ sub match_source_net( $ ) {
 #
 sub match_dest_net( $ ) {
     my $net = $_[0];
-    
+
     if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 
@@ -881,7 +881,7 @@ sub match_orig_dest ( $ ) {
     my $net = $_[0];
 
     return '' if $net eq ALLIPv4;
-    
+ 
     if ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-m conntrack --ctorigdst ! $net ";
@@ -908,7 +908,7 @@ sub match_ipsec_in( $$ ) {
 	'';
     }
 }
-    
+ 
 #
 # Match Dest IPSEC
 #
@@ -926,7 +926,7 @@ sub match_ipsec_out( $$ ) {
 	'';
     }
 }
-    
+
 #
 # Generate a log message
 #
@@ -999,7 +999,7 @@ sub mysplit( $ ) {
 
 	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
 	}
-    
+
 	push @result, $element;
     }
 
@@ -1027,7 +1027,7 @@ sub get_interface_address ( $ ) {
 
     $interfaceaddrs{$interface} = interface_address( $interface ) . "=\$(find_first_interface_address $interface)";
 }
-	
+
 #
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
 # 
@@ -1043,7 +1043,7 @@ sub expand_rule( $$$$$$$$$$ )
 
     if ( $loglevel ) {
 	( $loglevel, $logtag ) = split /:/, $loglevel;
-	
+
 	if ( $loglevel =~ /^none!?$/i ) {
 	    return if $disposition eq 'LOG';
 	    $loglevel = $logtag = '';
@@ -1106,7 +1106,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    if ( @interfaces > 1 ) {
 		add_command $chainref, 'addresses=';
-		
+
 		for my $interface ( @interfaces ) {
 		    get_interface_address $interface;
 		    add_command $chainref , join( '', 'addresses="$addresses $', interface_address( $interface ). '"' );
@@ -1152,11 +1152,11 @@ sub expand_rule( $$$$$$$$$$ )
 		if $restriction & INPUT_RESTRICT;
 	    $rule .= "-o $diface ";
 	}
-    }   
+    }
 
     if ( $origdest ) {
 	if ( $origdest eq '-' ) {
-	    $origdest = '';	    
+	    $origdest = '';
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #
 	    # Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
@@ -1256,7 +1256,7 @@ sub expand_rule( $$$$$$$$$$ )
 	# We have non-trivial exclusion -- need to create an exclusion chain
 	#
 	my $echain = newexclusionchain;
-	
+
 	#
 	# Use the current rule and sent all possible matches to the exclusion chain
 	#
@@ -1275,7 +1275,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	$inets = ALLIPv4;
 	$dnets = ALLIPv4;
-	
+
 	#
 	# Create the Exclusion Chain
 	#
@@ -1347,7 +1347,7 @@ sub addnatjump( $$$ ) {
     my ( $source , $dest, $predicates ) = @_;
 
     my $destref   = $nat_table->{$dest} || {};
-    
+
     if ( $destref->{referenced} ) {
 	add_rule $nat_table->{$source} , $predicates . "-j $dest";
     } else {
@@ -1359,9 +1359,9 @@ sub addnatjump( $$$ ) {
 #
 sub insertnatjump( $$$$ ) {
     my ( $source, $dest, $countref, $predicates ) = @_;
-    
+
     my $destref   = $nat_table->{$dest} || {};
-    
+
     if ( $destref->{referenced} ) {
 	insert_rule $nat_table->{$source} , ($$countref)++, $predicates . "-j $dest";
     } else {
@@ -1406,7 +1406,7 @@ sub emitr( $ ) {
 }
 
 sub create_netfilter_load() {
-    
+
     emit 'setup_netfilter()';
     emit '{';
     push_indent;
@@ -1430,9 +1430,9 @@ sub create_netfilter_load() {
 
     for my $table qw/raw nat mangle filter/ {
 	emitr "*$table";
-		
+
 	my @chains;
-	
+
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
@@ -1479,5 +1479,5 @@ sub create_netfilter_load() {
 
     emit "}\n";
 }
-       
+
 1;

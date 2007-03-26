@@ -69,7 +69,7 @@ sub setup_one_proxy_arp( $$$$$ ) {
 fi
 
 progress_message \"   Host $address connected to $interface added to ARP on $external\"\n";
-	
+
     push @proxyarp, "$address $interface $external $haveroute";
 
     progress_message "   Host $address connected to $interface added to ARP on $external";
@@ -91,7 +91,7 @@ sub setup_proxy_arp() {
 	open PA, "$ENV{TMP_DIR}/proxyarp" or fatal_error "Unable to open stripped proxyarp file: $!";
 
 	while ( $line = <PA> ) {
-	    
+
 	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 5, 'proxyarp file';
 
 	    $set{$interface}  = 1;

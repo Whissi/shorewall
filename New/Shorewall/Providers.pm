@@ -100,20 +100,21 @@ sub setup_providers() {
 	
 	$match =~ s/ /\|/g;
 	
-	emit "ip route show table $duplicate | while read net route; do";
-	emit '    case $net in';
-	emit '        default|nexthop)';
-	emit '            ;;';
-	emit '        *)';
-	emit "            run_ip route add table $number \$net \$route";
-	emit '            case $(find_device $route) in';
-	emit "                $match)";
-	emit "                    run_ip route add table $number \$net \$route";
-	emit '                    ;;';
-	emit '            esac';
-	emit '            ;;';
-	emit '    esac';
-	emit "done\n";
+	emit join ( "\n",
+		    "ip route show table $duplicate | while read net route; do",
+		    '    case $net in',
+		    '        default|nexthop)',
+		    '            ;;',
+		    '        *)',
+		    "            run_ip route add table $number \$net \$route",
+		    '            case $(find_device $route) in',
+		    "                $match)",
+		    "                    run_ip route add table $number \$net \$route",
+		    '                    ;;',
+		    '            esac',
+		    '            ;;',
+		    '    esac',
+		    "done\n" );
     }
 
     sub balance_default_route( $$$ ) {
@@ -185,14 +186,14 @@ sub setup_providers() {
 	$gateway = '-' unless $gateway;
 
 	if ( $gateway eq 'detect' ) {
-	    emit "gateway=\$(detect_gateway $interface)\n";
-	    
-	    emit 'if [ -n "$gateway" ]; then';
-	    emit "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number";
-	    emit "    run_ip route add default via \$gateway dev $interface table $number";
-	    emit 'else';
-	    emit "    fatal_error \"Unable to detect the gateway through interface $interface\"";
-	    emit "fi\n";
+	    emit join( "\n",
+		       "gateway=\$(detect_gateway $interface)\n",
+		       'if [ -n "$gateway" ]; then',
+		       "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number",
+		       "    run_ip route add default via \$gateway dev $interface table $number",
+		       'else',
+		       "    fatal_error \"Unable to detect the gateway through interface $interface\"",
+		       "fi\n" );
 	} elsif ( $gateway && $gateway ne '-' ) {
 	    emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
 	    emit "run_ip route add default via $gateway dev $interface table $number";
@@ -261,12 +262,13 @@ sub setup_providers() {
 	    
 	    emit "\nrulenum=0\n";
 	    
-	    emit "find_interface_addresses $interface | while read address; do";
-	    emit '    qt ip rule del from $address';
-	    emit "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number";
-	    emit "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing";
-	    emit '    rulenum=$(($rulenum + 1))';
-	    emit 'done';
+	    emit join( "\n" ,
+		       "find_interface_addresses $interface | while read address; do",
+		       '    qt ip rule del from $address',
+		       "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
+		       "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
+		       '    rulenum=$(($rulenum + 1))',
+		       'done' );
 	} else {	    
 	    emit "\nfind_interface_addresses $interface | while read address; do";
 	    emit '    qt ip rule del from $address';
@@ -343,14 +345,23 @@ sub setup_providers() {
     emit "\nif [ -z \"\$NOROUTES\" ]; then";
     push_indent;
 
-    emit "#\n# Undo any changes made since the last time that we [re]started -- this will not restore the default route\n#";
-    emit 'undo_routing';
-    emit "#\n# Save current routing table database so that it can be restored later\n#";
-    emit 'cp /etc/iproute2/rt_tables ${VARDIR}/';
-    emit "#\n# Capture the default route(s) if we don't have it (them) already.\n#";
-    emit '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route';
-    emit "#\n# Initialize the file that holds 'undo' commands\n#";
-    emit '> ${VARDIR}/undo_routing';
+    emit join( "\n",
+	       '#',
+	       '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
+	       '#',
+	       'undo_routing',
+	       '#',
+	       '# Save current routing table database so that it can be restored later',
+	       '#',
+	       'cp /etc/iproute2/rt_tables ${VARDIR}/',
+	       '#',
+	       '# Capture the default route(s) if we don\'t have it (them) already.',
+	       '#',
+	       '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+	       '#',
+	       '# Initialize the file that holds \'undo\' commands',
+	       '#',
+	       '> ${VARDIR}/undo_routing' );
     
     save_progress_message 'Adding Providers...';
     
@@ -376,27 +387,33 @@ sub setup_providers() {
 
     if ( $providers ) {
 	if ( $balance ) {
-	    emit 'if [ -n "$DEFAULT_ROUTE" ]; then';
-	    emit '    run_ip route replace default scope global $DEFAULT_ROUTE';
-	    emit "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"";
-	    emit 'else';
-	    emit '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"';
-	    emit '    restore_default_route';
-	    emit 'fi';
-	    emit '';
+	    emit join ( "\n",
+			'if [ -n "$DEFAULT_ROUTE" ]; then',
+			'    run_ip route replace default scope global $DEFAULT_ROUTE',
+			"    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
+			'else',
+			'    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',
+			'    restore_default_route',
+			'fi',
+			'' );
 	} else {
 	    emit "#\n# We don't have any 'balance' providers so we restore any default route that we've saved\n#";
 	    emit 'restore_default_route';
 	}
 
 	emit 'cat > /etc/iproute2/rt_tables <<EOF';
-	emit_unindented "#\n# reserved values\n#";
-	emit_unindented "255\tlocal";
-	emit_unindented "254\tmain";
-	emit_unindented "253\tdefault";
-	emit_unindented "0\tunspec";
-	emit_unindented "#\n# local\n#";
-	emit_unindented "EOF\n";
+	emit_unindented join( "\n",
+			      '#',
+			      '# reserved values',
+			      '#',
+			      "255\tlocal",
+			      "254\tmain",
+			      "253\tdefault",
+			      "0\tunspec",
+			      '#',
+			      '# local',
+			      '#',
+			      "EOF\n" );
 
 	emit 'echocommand=$(find_echo)';
 	emit '';

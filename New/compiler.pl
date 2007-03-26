@@ -593,8 +593,8 @@ sub compile_firewall( $ ) {
 
     fatal_error join( '', 'Shorewall-pl ', $env{VERSION}, ' requires Conntrack Match Support' )
 	unless $capabilities{CONNTRACK_MATCH};
-    fatal_error join ( '', 'Shorewall-pl ', $env{VERSION}, ' requires Extended Multi-port Match Support' )
-	unless $capabilities{XMULTIPORT};
+    fatal_error join ( '', 'Shorewall-pl ', $env{VERSION}, ' requires Multi-port Match Support' )
+	unless $capabilities{MULTIPORT};
     fatal_error join( '', 'Shorewall-pl ', $env{VERSION}, ' requires Address Type Match Support' )
 	unless $capabilities{ADDRTYPE};
     fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables'

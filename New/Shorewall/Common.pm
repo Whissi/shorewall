@@ -170,7 +170,7 @@ sub emit ( $ ) {
 	unless ( $line =~ /^\s*$/ ) {
 	    $line =~ s/^\n// if $lastlineblank;
 	    $line =~ s/^/$indent/gm if $indent;
-	    1 while $line =~ s/^        /\t/m;
+	    $line =~ s/        /\t/gm;
 	    print $object "$line\n";
 	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	} else {
@@ -181,7 +181,7 @@ sub emit ( $ ) {
 }
 
 #
-# Jacket for emit() that accepts an indefinite number of arguments; each argument will be emitted as a separate line
+# Version of emit() that accepts an indefinite number of arguments; each argument will be emitted as a separate line
 #
 sub emitj {
     if ( $object ) {
@@ -193,7 +193,7 @@ sub emitj {
 		my $line = $_;
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
-		1 while $line =~ s/^        /\t/;
+		$line =~ s/        /\t/g;
 		print $object "$line\n";
 		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	    } else {

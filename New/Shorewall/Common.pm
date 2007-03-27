@@ -174,7 +174,7 @@ sub emit ( $ ) {
 	    print $object "$line\n";
 	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	} else {
-    print $object "\n" unless $lastlineblank;
+	    print $object "\n" unless $lastlineblank;
 	    $lastlineblank = 1;
 	}
     }
@@ -185,7 +185,22 @@ sub emit ( $ ) {
 #
 sub emitj {
     if ( $object ) {
-	for ( @_ ) { emit $_ };
+	#
+	# 'compile' as opposed to 'check'
+	#
+	for ( @_ ) {
+	    unless ( /^\s*$/ ) {
+		my $line = $_;
+		$line =~ s/^\n// if $lastlineblank;
+		$line =~ s/^/$indent/gm if $indent;
+		1 while $line =~ s/^        /\t/;
+		print $object "$line\n";
+		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
+	    } else {
+		print $object "\n" unless $lastlineblank;
+		$lastlineblank = 1;
+	    }
+	}
     }
 }
 

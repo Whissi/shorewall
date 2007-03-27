@@ -73,9 +73,10 @@ sub generate_script_1 {
 		'PRODUCT="Shorewall Lite"' );
 
 	copy "$env{SHAREDIR}/lib.base";
+
 	emitj ( '################################################################################',
-	        '# End of /usr/share/shorewall/lib.base',
-	        '################################################################################' );
+		'# End of /usr/share/shorewall/lib.base',
+		'################################################################################' );
     } else {
 	emitj ( 'SHAREDIR=/usr/share/shorewall',
 		'CONFDIR=/etc/shorewall',
@@ -86,15 +87,16 @@ sub generate_script_1 {
 
     emit 'TEMPFILE=';
     emit '';
-
-    for my $exit qw/init start tcclear started stop stopped/ {
-	emit "run_${exit}_exit() {";
-	push_indent;
-	append_file $exit;
-	emit 'true';
-	pop_indent;
-	emit "}\n";
-    }
+    
+    for my $exit qw/init start tcclear started stop stopped/
+    {
+	 emit "run_${exit}_exit() {";
+	 push_indent;
+	 append_file $exit;
+	 emit 'true';
+	 pop_indent;
+	 emit "}\n";
+     }
 
     emit 'initialize()';
     emit '{';
@@ -159,8 +161,7 @@ sub generate_script_1 {
 
 sub compile_stop_firewall() {
 
-    emit <<EOF;
-#
+    emit "#
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
 stop_firewall() {
@@ -298,7 +299,7 @@ stop_firewall() {
     fi
 
     rm -f \${VARDIR}/proxyarp
-EOF
+";
 
     emit '    delete_tc1' if $config{CLEAR_TC};
     emit '    undo_routing';
@@ -326,25 +327,23 @@ EOF
 		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
 
-	    emit <<EOF;
-
+	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain DROP
     done
-EOF
-	} else {
-	    emit <<EOF;
+";
+	  } else {
+	    emit "
     for chain in INPUT OUTPUT; do
 	setpolicy \$chain ACCEPT
     done
 
     setpolicy FORWARD DROP
 
-    deleteallchains
-EOF
+    deleteallchains";
 
 	    for my $hosts ( @$criticalhosts ) {
-                my ( $interface, $host ) = ( split /,/, $hosts );
+                my ( $interface, $host ) = ( split /:/, $hosts );
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
@@ -352,25 +351,22 @@ EOF
 		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
 	    }
 
-	    emit <<EOF;
+	    emit "
+
     setpolicy INPUT DROP
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done
-EOF
+    done";
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
-	emit <<EOF;
-    for chain in INPUT OUTPUT FORWARD; do
+	emit "for chain in INPUT OUTPUT FORWARD; do
 	setpolicy \$chain DROP
     done
 
-    deleteallchains
-EOF
-    } else {
-	emit <<EOF;
-    for chain in INPUT FORWARD; do
+    deleteallchains"
+} else {
+	    emit "for chain in INPUT FORWARD; do
 	setpolicy \$chain DROP
     done
 
@@ -380,10 +376,8 @@ EOF
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done
-
-EOF
-    }
+    done";
+	}
 
     push_indent;
 
@@ -418,8 +412,7 @@ EOF
 
     pop_indent;
 
-    emit <<EOF;
-
+    emit "
     set_state \"Stopped\"
 
     logger -p kern.info \"\$PRODUCT Stopped\"
@@ -437,7 +430,7 @@ EOF
 	;;
     esac
 }
-EOF
+";
 
 }
 

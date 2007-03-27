@@ -98,19 +98,22 @@ sub generate_script_1 {
 	emitj ( 'SHAREDIR=/usr/share/shorewall-lite',
 		'CONFDIR=/etc/shorewall-lite',
 		'VARDIR=/var/lib/shorewall-lite',
-		'PRODUCT="Shorewall Lite"' );
+		'PRODUCT="Shorewall Lite"'
+		);
 
 	copy "$env{SHAREDIR}/lib.base";
 
 	emitj ( '################################################################################',
 		'# End of /usr/share/shorewall/lib.base',
-		'################################################################################' );
+		'################################################################################'
+		);
     } else {
 	emitj ( 'SHAREDIR=/usr/share/shorewall',
 		'CONFDIR=/etc/shorewall',
 		'VARDIR=/var/lib/shorewall',
 		'PRODUCT=\'Shorewall\'',
-		'. /usr/share/shorewall/lib.base' );
+		'. /usr/share/shorewall/lib.base'
+		);
     }
 
     emit "TEMPFILE=\n";
@@ -159,16 +162,19 @@ sub generate_script_1 {
 	    '[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"',
 	    qq(VERSION="$env{VERSION}") ,
 	    qq(PATH="$config{PATH}") ,
-	    'TERMINATOR=fatal_error' );
+	    'TERMINATOR=fatal_error'
+	    );
 
     if ( $config{IPTABLES} ) {
 	emitj( "IPTABLES=\"$config{IPTABLES}\"",
 	       '',
-	       "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\"" );
+	       "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\""
+	       );
     } else {
 	emitj( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
 	       '',
-	       '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"' );
+	       '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
+	       );
     }
 
     append_file 'params' if $config{EXPORTPARAMS};
@@ -179,7 +185,8 @@ sub generate_script_1 {
 	    '#',
 	    '# The library requires that ${VARDIR} exist',
 	    '#',
-	    '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}' );
+	    '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
+	    );
 
     pop_indent;
 
@@ -330,8 +337,10 @@ stop_firewall() {
 ";
 
     emit '    delete_tc1' if $config{CLEAR_TC};
-    emit '    undo_routing';
-    emit '    restore_default_route';
+
+    emitj( '    undo_routing',
+	   '    restore_default_route' 
+	   );
 
     my $criticalhosts = process_criticalhosts;
 
@@ -344,15 +353,17 @@ stop_firewall() {
 		    '    setpolicy FORWARD DROP',
 		    '',
 		    '    deleteallchains',
-		    '' );
+		    ''
+		    );
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /:/, $hosts );
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emit "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
-		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
+		emitj( "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
+		       "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		       );
 	    }
 
 	    emit "
@@ -376,8 +387,9 @@ stop_firewall() {
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emit "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT";
-		emit "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT";
+		emitj( "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
+		       "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		       );
 	    }
 
 	    emit "
@@ -415,8 +427,9 @@ stop_firewall() {
 
     process_routestopped;
 
-    emit '$IPTABLES -A INPUT  -i lo -j ACCEPT';
-    emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT';
+    emitj( '$IPTABLES -A INPUT  -i lo -j ACCEPT',
+	   '$IPTABLES -A OUTPUT -o lo -j ACCEPT'
+	   );
     emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
@@ -433,11 +446,12 @@ stop_firewall() {
     emit '';
 
     if ( $config{IP_FORWARDING} =~ /on/i ) {
-	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Enabled';
+	emitj( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
+	       'progress_message2 IP Forwarding Enabled' );
     } elsif ( $config{IP_FORWARDING} =~ /off/i ) {
-	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Disabled!';
+	emitj( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
+	       'progress_message2 IP Forwarding Disabled!'
+	       );
     }
 
     emit 'run_stopped_exit';
@@ -470,10 +484,11 @@ sub generate_script_2 () {
 
     copy $env{SHAREDIRPL} . 'prog.functions';
 
-    emit '#';
-    emit '# Setup Routing and Traffic Shaping';
-    emit '#';
-    emit 'setup_routing_and_traffic_shaping() {';
+    emitj( '#',
+	   '# Setup Routing and Traffic Shaping',
+	   '#',
+	   'setup_routing_and_traffic_shaping() {'
+	   );
 
     push_indent;
     
@@ -486,8 +501,9 @@ sub generate_script_2 () {
 
 	if ( $mf ne "$env{SHAREDIR}/module" && -f $mf ) {
 
-	    emit 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir';
-	    emit 'cat > ${VARDIR}/.modules << EOF';
+	    emitj( 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir',
+		   'cat > ${VARDIR}/.modules << EOF'
+		   );
 
 	    open MF, $mf or fatal_error "Unable to open $mf: $!";
 
@@ -519,10 +535,14 @@ sub generate_script_2 () {
 		"fi\n" );
     }
 
-    emit "run_init_exit\n";
-    emit 'qt $IPTABLES -L shorewall -n && qt $IPTABLES -F shorewall && qt $IPTABLES -X shorewall';
-    emit '';
-    emit "delete_proxyarp\n";
+    emitj ( 'run_init_exit',
+	    '',
+	    'qt $IPTABLES -L shorewall -n && qt $IPTABLES -F shorewall && qt $IPTABLES -X shorewall',
+	    '',
+	    'delete_proxyarp',
+	    ''
+	    );
+    
     emit "delete_tc1\n"   if $config{CLEAR_TC};
 
     emit "disable_ipv6\n" if $config{DISABLE_IPV6};

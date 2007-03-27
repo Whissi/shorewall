@@ -336,23 +336,25 @@ stop_firewall() {
     rm -f \${VARDIR}/proxyarp
 ";
 
-    emit '    delete_tc1' if $config{CLEAR_TC};
+    push_indent;
 
-    emitj( '    undo_routing',
-	   '    restore_default_route' 
+    emit 'delete_tc1' if $config{CLEAR_TC};
+
+    emitj( 'undo_routing',
+	   'restore_default_route' 
 	   );
 
     my $criticalhosts = process_criticalhosts;
 
     if ( @$criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
-	    emitj ( '    for chain in INPUT OUTPUT; do',
-		    '        setpolicy $chain ACCEPT',
-		    '    done',
+	    emitj ( 'for chain in INPUT OUTPUT; do',
+		    '    setpolicy $chain ACCEPT',
+		    'done',
 		    '',
-		    '    setpolicy FORWARD DROP',
+		    'setpolicy FORWARD DROP',
 		    '',
-		    '    deleteallchains',
+		    'deleteallchains',
 		    ''
 		    );
 
@@ -361,75 +363,72 @@ stop_firewall() {
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emitj( "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
-		       "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		emitj( "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
+		       "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
 		       );
 	    }
 
-	    emit "
-    for chain in INPUT OUTPUT; do
-	setpolicy \$chain DROP
-    done
-";
+	    emitj( '',
+		   'for chain in INPUT OUTPUT; do',
+		   '    setpolicy $chain DROP',
+		   "done\n"
+		   );
 	  } else {
-	    emit "
-    for chain in INPUT OUTPUT; do
-	setpolicy \$chain ACCEPT
-    done
-
-    setpolicy FORWARD DROP
-
-    deleteallchains
-";
+	    emitj( '',
+		   'for chain in INPUT OUTPUT; do',
+		   '    setpolicy \$chain ACCEPT',
+		   'done',
+		   '',
+		   'setpolicy FORWARD DROP',
+		   '',
+		   "deleteallchains\n"
+		   );
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /:/, $hosts );
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emitj( "    \$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
-		       "    \$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		emitj( "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
+		       "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
 		       );
 	    }
 
-	    emit "
-
-    setpolicy INPUT DROP
-
-    for chain in INPUT FORWARD; do
-	setcontinue \$chain
-    done
-";
+	    emitj ( "\nsetpolicy INPUT DROP",
+		    '',
+		    'for chain in INPUT FORWARD; do',
+		    '    setcontinue $chain',
+		    "done\n"
+		    );
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
-	emit "for chain in INPUT OUTPUT FORWARD; do
-	setpolicy \$chain DROP
-    done
-
-    deleteallchains
-"
-} else {
-	    emit "for chain in INPUT FORWARD; do
-	setpolicy \$chain DROP
-    done
-
-    setpolicy OUTPUT ACCEPT
-
-    deleteallchains
-
-    for chain in INPUT FORWARD; do
-	setcontinue \$chain
-    done
-";
+	emitj( 'for chain in INPUT OUTPUT FORWARD; do',
+	       '    setpolicy $chain DROP',
+	       'done',
+	       '',
+	       "deleteallchains\n"
+	       );
+    } else {
+	    emitj( 'for chain in INPUT FORWARD; do',
+		   '    setpolicy $chain DROP',
+		   'done',
+		   '',
+		   'setpolicy OUTPUT ACCEPT',
+		   '',
+		   'deleteallchains',
+		   '',
+		   'for chain in INPUT FORWARD; do',
+		   '    setcontinue $chain',
+		   "done\n",
+		   );
 	}
-
-    push_indent;
 
     process_routestopped;
 
     emitj( '$IPTABLES -A INPUT  -i lo -j ACCEPT',
 	   '$IPTABLES -A OUTPUT -o lo -j ACCEPT'
 	   );
+
     emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';

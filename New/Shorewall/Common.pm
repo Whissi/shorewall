@@ -125,36 +125,6 @@ sub split_line( $$ ) {
     @line;
 }
 
-sub create_temp_object( $ ) {
-    my $objectfile = $_[0];
-    my $suffix;
-
-    eval {
-	( $file, $dir, $suffix ) = fileparse( $objectfile );
-	$dir = abs_path $dir;
-	fatal_error "Directory $dir does not exist" unless -d $dir;
-	fatal_error "$dir is a Symbolic Link" if -l $dir;
-	fatal_error "$objectfile is a Directory" if -d $objectfile;
-	fatal_error "$dir is a Symbolic Link" if -l $objectfile;
-	fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
-	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
-    };
-
-    die if $@;
-
-    $file = "$file.$suffix" if $suffix;
-    $dir .= '/' unless substr( $dir, -1, 1 ) eq '/';
-    $file = $dir . $file;
-
-}
-
-sub finalize_object() {
-    close $object;
-    $object = 0;
-    rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
-    chmod 0700, $file;
-}
-
 #
 # Write the argument to the object file (if any) with the current indentation.
 # 
@@ -206,7 +176,7 @@ sub emitj {
 
 
 #
-# Write passed message to the object with no indentation.
+# Write passed message to the object with newline but no indentation.
 #
 
 sub emit_unindented( $ ) {
@@ -312,6 +282,43 @@ sub copy1( $ ) {
     }
 }
 
+sub create_temp_object( $ ) {
+    my $objectfile = $_[0];
+    my $suffix;
+
+    eval {
+	( $file, $dir, $suffix ) = fileparse( $objectfile );
+    };
+
+    die $@ if $@;
+
+    fatal_error "Directory $dir does not exist" unless -d $dir;
+    fatal_error "$dir is a Symbolic Link" if -l $dir;
+    fatal_error "$objectfile is a Directory" if -d $objectfile;
+    fatal_error "$dir is a Symbolic Link" if -l $objectfile;
+    fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
+
+    eval {
+	$dir = abs_path $dir;
+	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
+    };
+
+    die $@ if $@;
+
+    $file = "$file.$suffix" if $suffix;
+    $dir .= '/' unless substr( $dir, -1, 1 ) eq '/';
+    $file = $dir . $file;
+
+}
+
+sub finalize_object() {
+    close $object;
+    $object = 0;
+    rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
+    chmod 0700, $file;
+    progress_message3 "Shorewall configuration compiled to $file" unless $ENV{EXPORT};
+}
+
 sub create_temp_aux_config() {
     eval {
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
@@ -325,7 +332,6 @@ sub finalize_aux_config() {
     close $object;
     $object = 0;
     rename $tempfile, "$file.conf" or fatal_error "Cannot Rename $tempfile to $file.conf: $!";
-
     progress_message3 "Shorewall configuration compiled to $file";
 }
 

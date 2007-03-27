@@ -98,6 +98,7 @@ our @EXPORT = qw( STANDARD
 		  expand_rule
 		  addnatjump
 		  insertnatjump
+		  get_interface_addresses
 		  create_netfilter_load
 
 		  @policy_chains 
@@ -1007,9 +1008,11 @@ sub mysplit( $ ) {
 }
 
 #
-# Keep track of which interfaces have active 'address' variables
+# Keep track of which interfaces have active 'address', 'addresses' and 'networks' variables
 #
+my %interfaceaddr;
 my %interfaceaddrs;
+my %interfacenets;
 
 #
 # Returns the name of the shell variable holding the first address of the passed interface
@@ -1019,13 +1022,61 @@ sub interface_address( $ ) {
 }
 
 #
-# If this is the first time that the first address of an interface has been requested, emit a run-time command
-# that establishes the value of the associated address variable.
+# Record that the ruleset requires the first IP address on the passed interface 
 #
 sub get_interface_address ( $ ) {
     my ( $interface ) = $_[0];
+    
+    my $variable = interface_address( $interface );
 
-    $interfaceaddrs{$interface} = interface_address( $interface ) . "=\$(find_first_interface_address $interface)";
+    $interfaceaddr{$interface} = "$variable=\$(find_first_interface_address $interface)";
+
+    "\$$variable";
+}
+
+#
+# Returns the name of the shell variable holding the addresses of the passed interface
+#
+sub interface_addresses( $ ) {
+    chain_base( $_[0] ) . '_addresses';
+}
+
+#
+# Record that the ruleset requires the IP addresses on the passed interface 
+#
+sub get_interface_addresses ( $ ) {
+    my ( $interface ) = $_[0];
+    
+    my $variable = interface_addresses( $interface );
+
+    $interfaceaddr{$interface} = qq($variable=\$(get_interface_addresses $interface)
+[ -n "\$$variable" ] || fatal_error "Unable to determine the IP address(es) of $interface"
+);
+
+    "\$$variable";
+}
+
+#
+# Returns the name of the shell variable holding the networks routed out of the passed interface
+#
+sub interface_nets( $ ) {
+    chain_base( $_[0] ) . '_networks';
+}
+
+#
+# Record that the ruleset requires the first IP address on the passed interface 
+#
+sub get_interface_nets ( $ ) {
+    my ( $interface ) = $_[0];
+
+    my $variable = interface_nets( $interface );
+
+    $interfaceaddr{$interface} = qq($variable=\$(get_routed_networks $interface)
+[ -n "\$$variable" ] || fatal_error "Unable to determine the routes through interface \\"$interface\\""
+);
+
+    "\$$variable";
+    
 }
 
 #
@@ -1077,9 +1128,10 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    # An interface in the SOURCE column of a masq file
 	    #
-	    add_command( $chainref ,   "sources=\$(get_routed_networks $iiface)" );
-	    add_command( $chainref , qq([ -z "\$sources" ] && fatal_error "Unable to determine the routes through interface \"$iiface\"") );
-	    add_command( $chainref ,   'for source in $sources; do' );
+	    my $networks = get_interface_nets ( $iiface );
+
+	    add_command( $chainref , join( '', 'for source in ', $networks, '; do' ) );
+
 	    $rule .= '-s $source ';
 	    #
 	    # While $loopcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()' 
@@ -1105,18 +1157,18 @@ sub expand_rule( $$$$$$$$$$ )
 	    my @interfaces = split /\s+/, $1;
 
 	    if ( @interfaces > 1 ) {
-		add_command $chainref, 'addresses=';
+		my $list = "";
 
 		for my $interface ( @interfaces ) {
-		    get_interface_address $interface;
-		    add_command $chainref , join( '', 'addresses="$addresses $', interface_address( $interface ). '"' );
+		    $list = join( ' ', $list , get_interface_address( $interface ) );
 		}
-		add_command $chainref , 'for address in $addresses; do';
+
+		add_command( $chainref , "for address in $list; do" );
+
 		$rule .= '-d $address ';
 		$loopcount++;
 	    } else {
-		get_interface_address $interfaces[0];
-		$rule .= join ( '', '-d $', interface_address( $interfaces[0] ), ' ' );
+		$rule .= join ( '', '-d ', get_interface_address( $interfaces[0] ), ' ' );
 	    }
 
 	    $dest = '';
@@ -1164,14 +1216,13 @@ sub expand_rule( $$$$$$$$$$ )
 	    my @interfaces = split /\s+/, $1;
 
 	    if ( @interfaces > 1 ) {
-		add_command $chainref, 'addresses=';
+		my $list = "";
 
 		for my $interface ( @interfaces ) {
-		    get_interface_address $interface;
-		    add_command  $chainref , qq(addresses="\$addresses \$(find_first_interface_address $interface)");
+		    $list = join( ' ', $list , get_interface_address( $interface ) );
 		}
 
-		add_command( $chainref , 'for address in $addresses; do' );
+		add_command( $chainref , "for address in $list; do" );
 		$rule .= '-m conntrack --ctorigdst $address ';
 		$loopcount++;
 	    } else {
@@ -1410,9 +1461,18 @@ sub create_netfilter_load() {
     emitj( 'setup_netfilter()',
 	   '{'
 	   );
+
     push_indent;
 
+    for ( values %interfaceaddr ) {
+	emit $_;
+    }
+
     for ( values %interfaceaddrs ) {
+	emit $_;
+    }
+
+    for ( values %interfacenets ) {
 	emit $_;
     }
 

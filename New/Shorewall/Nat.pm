@@ -181,10 +181,8 @@ sub setup_one_masq($$$$$$)
 		$target .= "--to $addr ";
 	    }
 	} elsif ( $addresses eq 'detect' ) {
-	    add_command( $chainref , "addresses=\$(find_interface_addresses $interface);" );
-	    add_command( $chainref , qq([ -z "\$addresses" ] && fatal_error "Unable to determine the IP address(es) of $interface";) );
 	    add_command( $chainref , 'addrlist=' );
-	    add_command( $chainref , 'for address in $addresses; do' );
+	    add_command( $chainref , join( '', 'for address in ' , get_interface_addresses( $interface ), '; do' ) );
 	    add_command( $chainref , '    addrlist="$addrlist --to-source $address"' );
 	    add_command( $chainref , 'done' );
 
@@ -289,7 +287,9 @@ sub validate_nat_column( $$ ) {
 #
 sub do_one_nat( $$$$$ )
 {
-    my ( $external, $interface, $internal, $allints, $localnat ) = @_;
+    my ( $external, $fullinterface, $internal, $allints, $localnat ) = @_;
+
+    my ( $interface, $alias ) = split /:/, $fullinterface;
 
     sub add_nat_rule( $$ ) {
 	add_rule ensure_chain( 'nat', $_[0] ) , $_[1];
@@ -334,7 +334,7 @@ sub do_one_nat( $$$$$ )
     if ( $add_ip_aliases ) {
 	unless ( $addresses_to_add{$external} ) {
 	    $addresses_to_add{$external} = 1;
-	    push @addresses_to_add, ( $external , $interface );
+	    push @addresses_to_add, ( $external , $fullinterface );
 	}
     }
 

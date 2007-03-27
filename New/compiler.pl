@@ -82,7 +82,7 @@ use Shorewall::Proxyarp;
 #
 #     Now I could spend my time trying to configure cperl-mode to do what I want; but why?
 #     Like most Open Source Software, it's documentation is pathetic. I would rather spend
-#     my time making Shorewall better rather than working around braindead editing modes.
+#     my time making Shorewall better as opposed to working around braindead editing modes.
 # 
 #     Bottom line. I use quoting techinques other than 'here documents'.
 #

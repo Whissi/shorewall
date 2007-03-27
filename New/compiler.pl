@@ -340,7 +340,8 @@ stop_firewall() {
 
     setpolicy FORWARD DROP
 
-    deleteallchains";
+    deleteallchains
+";
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /:/, $hosts );
@@ -357,14 +358,16 @@ stop_firewall() {
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done";
+    done
+";
 	}
     } elsif ( ! $config{ADMINISABSENTMINDED} ) {
 	emit "for chain in INPUT OUTPUT FORWARD; do
 	setpolicy \$chain DROP
     done
 
-    deleteallchains"
+    deleteallchains
+"
 } else {
 	    emit "for chain in INPUT FORWARD; do
 	setpolicy \$chain DROP
@@ -376,7 +379,8 @@ stop_firewall() {
 
     for chain in INPUT FORWARD; do
 	setcontinue \$chain
-    done";
+    done
+";
 	}
 
     push_indent;

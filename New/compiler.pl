@@ -113,8 +113,7 @@ sub generate_script_1 {
 		'. /usr/share/shorewall/lib.base' );
     }
 
-    emit 'TEMPFILE=';
-    emit '';
+    emit "TEMPFILE=\n";
     
     for my $exit qw/init start tcclear started stop stopped/ {
 	emit "run_${exit}_exit() {";
@@ -125,8 +124,9 @@ sub generate_script_1 {
 	emit "}\n";
     }
 
-    emit 'initialize()';
-    emit '{';
+    emitj ( 'initialize()', 
+	    '{' 
+	    );
 
     push_indent;
 
@@ -167,7 +167,7 @@ sub generate_script_1 {
 	       "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\"" );
     } else {
 	emitj( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
-	       ''
+	       '',
 	       '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"' );
     }
 

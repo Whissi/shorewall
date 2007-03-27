@@ -59,6 +59,34 @@ use Shorewall::Rules;
 use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
+#
+# Note to the reader.
+#
+#     I use Emacs perl-mode. It's advantages are:
+#
+#         It's color theme is visible to color-blind people like me.
+#         It's indentation scheme is exactly the way I like.
+#
+#      But:
+#
+#         It doesn't understand 'here documents'.
+#
+#     I've tried cperl-mode. It's adavantages are:
+#         
+#         It understands 'here documents'.
+#
+#     But:
+#
+#         It's color theme drives my eyes crazy.
+#         It's indentation scheme is unfathomable.
+#
+#     Now I could spend my time trying to configure cperl-mode to do what I want; but why?
+#     Like most Open Source Software, it's documentation is pathetic. I would rather spend
+#     my time making Shorewall better rather than working around braindead editing modes.
+# 
+#     Bottom line. I use quoting techinques other than 'here documents'.
+#
+
 sub generate_script_1 {
     copy $env{SHAREDIRPL} . 'prog.header';
 
@@ -88,15 +116,14 @@ sub generate_script_1 {
     emit 'TEMPFILE=';
     emit '';
     
-    for my $exit qw/init start tcclear started stop stopped/
-    {
-	 emit "run_${exit}_exit() {";
-	 push_indent;
-	 append_file $exit;
-	 emit 'true';
-	 pop_indent;
-	 emit "}\n";
-     }
+    for my $exit qw/init start tcclear started stop stopped/ {
+	emit "run_${exit}_exit() {";
+	push_indent;
+	append_file $exit;
+	emit 'true';
+	pop_indent;
+	emit "}\n";
+    }
 
     emit 'initialize()';
     emit '{';
@@ -135,12 +162,13 @@ sub generate_script_1 {
 	    'TERMINATOR=fatal_error' );
 
     if ( $config{IPTABLES} ) {
-	emit "IPTABLES=\"$config{IPTABLES}\"\n";
-	emit "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\"";
+	emitj( "IPTABLES=\"$config{IPTABLES}\"",
+	       '',
+	       "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\"" );
     } else {
-	emit '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)';
-	emit '';
-	emit '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"';
+	emitj( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
+	       ''
+	       '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"' );
     }
 
     append_file 'params' if $config{EXPORTPARAMS};

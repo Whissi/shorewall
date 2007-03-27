@@ -398,18 +398,20 @@ sub setup_traffic_shaping() {
 
 	push_indent;
 
-	emit "${dev}_exists=Yes";
-	emit "qt tc qdisc del dev $device root";
-	emit "qt tc qdisc del dev $device ingress";
-	emit "run_tc qdisc add dev $device root handle $devnum: htb default ${prefix}${defmark}";
-	emit "${dev}_mtu=\$(get_device_mtu $device)";
-	emit "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu";
+	emitj( "${dev}_exists=Yes",
+	       "qt tc qdisc del dev $device root",
+	       "qt tc qdisc del dev $device ingress",
+	       "run_tc qdisc add dev $device root handle $devnum: htb default ${prefix}${defmark}",
+	       "${dev}_mtu=\$(get_device_mtu $device)",
+	       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu"
+	       );
 
 	my $inband = rate_to_kbit $devref->{in_bandwidth};
 
 	if ( $inband ) {
-	    emit "run_tc qdisc add dev $device handle ffff: ingress";
-	    emit "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1";
+	    emitj( "run_tc qdisc add dev $device handle ffff: ingress",
+		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   );
 	}
 
 	$devref->{number} = $devnum++; 
@@ -449,9 +451,10 @@ sub setup_traffic_shaping() {
 	    $lastdevice = $device;
 	}
 
-	emit "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum";
-	emit "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} mtu \$${dev}_mtu quantum \$quantum";
-	emit "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10";
+	emitj( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
+	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} mtu \$${dev}_mtu quantum \$quantum",
+	       "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10"
+	       );
 	#
 	# add filters
 	#

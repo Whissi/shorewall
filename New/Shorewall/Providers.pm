@@ -82,15 +82,16 @@ sub setup_providers() {
     sub copy_table( $$ ) {
 	my ( $duplicate, $number ) = @_;
 
-	emit "ip route show table $duplicate | while read net route; do";
-	emit '    case $net in';
-	emit '        default|nexthop)';
-	emit '            ;;';
-	emit '        *)';
-	emit "            run_ip route add table $number \$net \$route";
-	emit '            ;;';
-	emit '    esac';
-	emit "done\n";
+	emitj( "ip route show table $duplicate | while read net route; do",
+	       '    case $net in',
+	       '        default|nexthop)',
+	       '            ;;',
+	       '        *)',
+	       "            run_ip route add table $number \$net \$route",
+	       '            ;;',
+	       '    esac',
+	       "done\n"
+	       );
     }
 
     sub copy_and_edit_table( $$$ ) {
@@ -221,11 +222,12 @@ sub setup_providers() {
 		fatal_error "Duplicate mark value ( $mark )" if $num == $val;
 	    }
 
-
-	    emit "qt ip rule del fwmark $mark";
 	    my $pref = 10000 + $val;
-	    emit "run_ip rule add fwmark $mark pref $pref table $number";
-	    emit "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing";
+
+	    emitj( "qt ip rule del fwmark $mark",
+		   "run_ip rule add fwmark $mark pref $pref table $number",
+		   "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
+		   );
 	}
 
 	$providers{$table}         = {};
@@ -265,11 +267,13 @@ sub setup_providers() {
 		    "    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
 		    "    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
 		    '    rulenum=$(($rulenum + 1))',
-		    'done' );
+		    'done'
+		    );
 	} else {
-	    emit "\nfind_interface_addresses $interface | while read address; do";
-	    emit '    qt ip rule del from $address';
-	    emit 'done';
+	    emitj( "\nfind_interface_addresses $interface | while read address; do",
+		   '    qt ip rule del from $address',
+		   'done'
+		   );
 	}
 
 	emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
@@ -278,8 +282,9 @@ sub setup_providers() {
 	emit 'else';
 
 	if ( $optional ) {
-	    emit "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"";
-	    emit "    ${iface}_up=";
+	    emitj( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
+		   "    ${iface}_up="
+		   );
 	} else {
 	    emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
 	}
@@ -329,9 +334,10 @@ sub setup_providers() {
 
 	$priority = "priority $priority";
 
-	emit "qt ip rule del $source $dest $priority";
-	emit "run_ip rule add $source $dest $priority table $provider";
-	emit "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing";
+	emitj( "qt ip rule del $source $dest $priority",
+	       "run_ip rule add $source $dest $priority table $provider",
+	       "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing"
+	       );
 	progress_message "   Routing rule \"$line\" $done";
     }
     #
@@ -340,6 +346,7 @@ sub setup_providers() {
     progress_message2 "$doing $fn ...";
 
     emit "\nif [ -z \"\$NOROUTES\" ]; then";
+
     push_indent;
 
     emitj ( '#',
@@ -399,6 +406,7 @@ sub setup_providers() {
 	}
 
 	emit 'cat > /etc/iproute2/rt_tables <<EOF';
+
 	emit_unindented join( "\n",
 			      '#',
 			      '# reserved values',
@@ -412,8 +420,7 @@ sub setup_providers() {
 			      '#',
 			      "EOF\n" );
 
-	emit 'echocommand=$(find_echo)';
-	emit '';
+	emit "echocommand=\$(find_echo)\n";
 
 	for my $table ( @providers ) {
 	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
@@ -437,8 +444,7 @@ sub setup_providers() {
 	}
     }
 
-    emit '';
-    emit 'run_ip route flush cache';
+    emit "\nrun_ip route flush cache";
     pop_indent;
     emit "fi\n";
 

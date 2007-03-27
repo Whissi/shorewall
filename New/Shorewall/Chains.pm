@@ -1407,8 +1407,9 @@ sub emitr( $ ) {
 
 sub create_netfilter_load() {
 
-    emit 'setup_netfilter()';
-    emit '{';
+    emitj( 'setup_netfilter()',
+	   '{'
+	   );
     push_indent;
 
     for ( values %interfaceaddrs ) {
@@ -1418,11 +1419,12 @@ sub create_netfilter_load() {
     emit '';
 
     if ( $slowstart ) {
-	emit 'TEMPFILE=$(mktempfile)';
-	emit '[ -n "$TEMPFILE" ] || fatal_error "Cannot create temporary file in /tmp"';
-	emit '';
-	emit 'exec 3>>$TEMPFILE';
-	emit '';
+	emitj( 'TEMPFILE=$(mktempfile)',
+	       '[ -n "$TEMPFILE" ] || fatal_error "Cannot create temporary file in /tmp"',
+	       '',
+	       'exec 3>>$TEMPFILE',
+	       ''
+	       );
     } else {
 	emit 'iptables-restore << __EOF__';
 	$state = CAT_STATE;
@@ -1464,14 +1466,16 @@ sub create_netfilter_load() {
     emit '';
 
     if ( $slowstart ) {
-	emit ' exec 3>&-';
-	emit '';
-	emit 'iptables-restore < $TEMPFILE';
+	emitj( ' exec 3>&-',
+	       '',
+	       'iptables-restore < $TEMPFILE'
+	       );
     }
 
-    emit 'if [ $? != 0 ]; then';
-    emit '    fatal_error "iptables-restore Failed"';
-    emit "fi\n";
+    emitj( 'if [ $? != 0 ]; then',
+	   '    fatal_error "iptables-restore Failed"',
+	   "fi\n"
+	   );
 
     emit 'rm -f $TEMPFILE' if $slowstart;
 

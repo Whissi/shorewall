@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Script to install Shorewall-pl.
+# Script to install Shorewall-perl.
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -117,7 +117,7 @@ while [ $# -gt 0 ] ; do
 	    usage 0
 	    ;;
         -v)
-	    echo "Shorewall-pl Installer Version $VERSION"
+	    echo "Shorewall-perl Installer Version $VERSION"
 	    exit 0
 	    ;;
 	-n)
@@ -150,42 +150,42 @@ fi
 #
 cd "$(dirname $0)"
 
-echo "Installing Shorewall-pl Version $VERSION"
+echo "Installing Shorewall-perl Version $VERSION"
 
 #
-# /usr/share/shorewall-pl if needed
+# /usr/share/shorewall-perl if needed
 #
-mkdir -p ${PREFIX}/usr/share/shorewall-pl/Shorewall
+mkdir -p ${PREFIX}/usr/share/shorewall-perl/Shorewall
 
-chmod 755 ${PREFIX}/usr/share/shorewall-pl
-chmod 755 ${PREFIX}/usr/share/shorewall-pl/Shorewall
+chmod 755 ${PREFIX}/usr/share/shorewall-perl
+chmod 755 ${PREFIX}/usr/share/shorewall-perl/Shorewall
 
 #
 # Install the Compiler
 #
 
-install_file compiler.pl ${PREFIX}/usr/share/shorewall-pl/compiler.pl 0555
+install_file compiler.pl ${PREFIX}/usr/share/shorewall-perl/compiler.pl 0555
 
 echo
-echo "Compiler installed in ${PREFIX}/usr/share/shorewall-pl/compiler.pl"
+echo "Compiler installed in ${PREFIX}/usr/share/shorewall-perl/compiler.pl"
 
 #
 # Install the libraries
 #
 for f in Shorewall/*.pm ; do
-    install_file $f ${PREFIX}/usr/share/shorewall-pl/$f 0644
-    echo "Library ${f%.*} file installed as ${PREFIX}/usr/share/shorewall-pl/$f"
+    install_file $f ${PREFIX}/usr/share/shorewall-perl/$f 0644
+    echo "Library ${f%.*} file installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
 
 #
 # Install the program skeleton files
 #
 for f in prog.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall-pl/$f 0644
-    echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall-pl/$f"
+    install_file $f ${PREFIX}/usr/share/shorewall-perl/$f 0644
+    echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
 
 #
 #  Report Success
 #
-echo "Shorewall-pl Version $VERSION Installed"
+echo "Shorewall-perl Version $VERSION Installed"

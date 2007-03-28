@@ -1,25 +1,25 @@
-Shorewall-pl 3.9.0
+Shorewall-perl 3.9.0
 
 This companion product to Shorewall 3.4.2 and later includes a complete
 rewrite of the compiler in Perl.
 
-Shorewall-pl depends on Shorewall (3.4.2 or later). So if you want to use the
-new compiler, you must install both Shorewall and Shorewall-pl.
+Shorewall-perl depends on Shorewall (3.4.2 or later). So if you want to use the
+new compiler, you must install both Shorewall and Shorewall-perl.
 
-Even if you install Shorewall-pl, you have a choice of which compiler you use.
+Even if you install Shorewall-perl, you have a choice of which compiler you use.
 The choice is specified in the shorewall.conf file so you can select the
 compiler to use on a system-by-system basis when running Shorewall Lite on
 remote systems.
 
-I decided to make Shorewall-pl a separate product for several reasons:
+I decided to make Shorewall-perl a separate product for several reasons:
 
-a) Embedded applications are unlikely to adopt Shorewall-pl; even Mini-Perl
+a) Embedded applications are unlikely to adopt Shorewall-perl; even Mini-Perl
 has a substantial disk and Ram footprint.
 
 b) Because of the gross incompatibilities between the new compiler and the
 old (see below), migration to the new compiler must be voluntary.
 
-c) By allowing Shorewall-pl to co-exist with the current Shorewall stable
+c) By allowing Shorewall-perl to co-exist with the current Shorewall stable
 release (3.4), I'm hoping that the new compiler will get more testing and
 validation than it would if I were to package it with a new development
 version of Shorewall itself.
@@ -122,8 +122,8 @@ Installation
 
 Either 
 
-   $ tar -jxf shorewall-pl-3.9.0.tar.bz2
-   $ cd shorewall-pl-3.9.0
+   $ tar -jxf shorewall-perl-3.9.0.tar.bz2
+   $ cd shorewall-perl-3.9.0
    $ ./install.sh
 
 or
@@ -136,7 +136,7 @@ Using the New compiler
 By default, the old Bourne-shell based compiler will be used. 
 
 There is one change in Shorewall operation that is triggered when
-/usr/share/shorewall-pl exists and is either a directory or a symbolic
+/usr/share/shorewall-perl exists and is either a directory or a symbolic
 link that points to a directory: Your params file will be processed
 with the shell's '-a' option set which will automatically export any
 variables that you set or create in that file. Since the params file is
@@ -146,7 +146,7 @@ should it be used.
 
 To actually use the new compiler, add this to shorewall.conf:
 
-   SHOREWALL_PL=Yes
+   SHOREWALL_PERL=Yes
 
 If you add this setting to /etc/shorewall/shorewall.conf then by
 default, the new compiler will be used on the system. If you add it to

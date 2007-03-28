@@ -1,5 +1,5 @@
 #
-# Shorewall-pl 3.9 -- /usr/share/shorewall-pl/Shorewall/Proxyarp.pm
+# Shorewall-perl 3.9 -- /usr/share/shorewall-perl/Shorewall/Proxyarp.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

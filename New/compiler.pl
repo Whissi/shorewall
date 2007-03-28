@@ -397,27 +397,27 @@ stop_firewall() {
 		    "done\n"
 		    );
 	}
-    } elsif ( ! $config{ADMINISABSENTMINDED} ) {
+    } elsif ( $config{ADMINISABSENTMINDED} ) {
+	emitj( 'for chain in INPUT FORWARD; do',
+	       '    setpolicy $chain DROP',
+	       'done',
+	       '',
+	       'setpolicy OUTPUT ACCEPT',
+	       '',
+	       'deleteallchains',
+	       '',
+	       'for chain in INPUT FORWARD; do',
+	       '    setcontinue $chain',
+	       "done\n",
+	       );
+    } else {
 	emitj( 'for chain in INPUT OUTPUT FORWARD; do',
 	       '    setpolicy $chain DROP',
 	       'done',
 	       '',
 	       "deleteallchains\n"
 	       );
-    } else {
-	    emitj( 'for chain in INPUT FORWARD; do',
-		   '    setpolicy $chain DROP',
-		   'done',
-		   '',
-		   'setpolicy OUTPUT ACCEPT',
-		   '',
-		   'deleteallchains',
-		   '',
-		   'for chain in INPUT FORWARD; do',
-		   '    setcontinue $chain',
-		   "done\n",
-		   );
-	}
+    }
 
     process_routestopped;
 

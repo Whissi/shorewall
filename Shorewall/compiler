@@ -5668,13 +5668,13 @@ case "$COMMAND" in
     check)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	[ -n "$SHOREWALL_PL" ] && exec perl $debug /usr/share/shorewall-pl/compiler.pl || compile_firewall
+	[ -n "$SHOREWALL_PERL" ] && exec perl $debug /usr/share/shorewall-perl/compiler.pl || compile_firewall
 	;;
 
     compile)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	[ -n "$SHOREWALL_PL" ] && exec perl $debug /usr/share/shorewall-pl/compiler.pl $2 || compile_firewall $2
+	[ -n "$SHOREWALL_PERL" ] && exec perl $debug /usr/share/shorewall-perl/compiler.pl $2 || compile_firewall $2
 	;;
 
     call)

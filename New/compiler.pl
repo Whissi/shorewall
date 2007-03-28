@@ -83,6 +83,14 @@ use Shorewall::Proxyarp;
 #     Bottom line. I use quoting techinques other than 'here documents'.
 #
 
+#
+# First stage of script generation.
+#
+#    Copy the prog.header to the generated script.
+#    Generate the various user-exit jacket functions.
+#    Generate the 'initialize()' function.
+#
+
 sub generate_script_1 {
     copy $env{SHAREDIRPL} . 'prog.header';
 
@@ -147,14 +155,14 @@ sub generate_script_1 {
 		'#',
 		'# These variables are required by the library functions called in this script',
 		'#',
-		"CONFIG_PATH=\"$config{CONFIG_PATH}\"" );
+		qq(CONFIG_PATH="$config{CONFIG_PATH}") );
     }
 
     propagateconfig;
 
     emitj ( '[ -n "${COMMAND:=restart}" ]',
 	    '[ -n "${VERBOSE:=0}" ]',
-	    '[ -n "${RESTOREFILE:=$RESTOREFILE}" ]',
+	    qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]),
 	    '[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"',
 	    qq(VERSION="$env{VERSION}") ,
 	    qq(PATH="$config{PATH}") ,
@@ -162,9 +170,9 @@ sub generate_script_1 {
 	    );
 
     if ( $config{IPTABLES} ) {
-	emitj( "IPTABLES=\"$config{IPTABLES}\"",
+	emitj( qq(IPTABLES="$config{IPTABLES}"),
 	       '',
-	       "[ -x \"$config{IPTABLES}\" ] || startup_error \"IPTABLES=$config{IPTABLES} does not exist or is not executable\""
+	       '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
 	       );
     } else {
 	emitj( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
@@ -177,7 +185,8 @@ sub generate_script_1 {
 
     emitj ( '',
 	    "STOPPING=",
-	    "COMMENT=\n",        # Maintain compability with lib.base
+	    'COMMENT=',        # Maintain compability with lib.base
+	    '',
 	    '#',
 	    '# The library requires that ${VARDIR} exist',
 	    '#',
@@ -186,106 +195,106 @@ sub generate_script_1 {
 
     pop_indent;
 
-    emit "}\n";
+    emit "}\n"; # End of initialize()
 
 }
 
 sub compile_stop_firewall() {
 
-    emit "#
-# Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
+    emit '#
+# Stop/restore the firewall after an error or because of a \'stop\' or \'clear\' command
 #
 stop_firewall() {
 
     deletechain() {
-	qt \$IPTABLES -L \$1 -n && qt \$IPTABLES -F \$1 && qt \$IPTABLES -X \$1
+	qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1
     }
 
     deleteallchains() {
-	\$IPTABLES -F
-	\$IPTABLES -X
+	$IPTABLES -F
+	$IPTABLES -X
     }
 
     setcontinue() {
-	\$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	$IPTABLES -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
 
     delete_nat() {
-	\$IPTABLES -t nat -F
-	\$IPTABLES -t nat -X
+	$IPTABLES -t nat -F
+	$IPTABLES -t nat -X
 
-	if [ -f \${VARDIR}/nat ]; then
+	if [ -f ${VARDIR}/nat ]; then
 	    while read external interface; do
-		del_ip_addr \$external \$interface
-	    done < \${VARDIR}/nat
+		del_ip_addr $external $interface
+	    done < ${VARDIR}/nat
 
-	    rm -f \${VARDIR}/nat
+	    rm -f ${VARDIR}/nat
 	fi
     }
 
-    case \$COMMAND in
+    case $COMMAND in
 	stop|clear)
 	    ;;
 	*)
 	    set +x
 
-            case \$COMMAND in
+            case $COMMAND in
 	        start)
-	            logger -p kern.err \"ERROR:\$PRODUCT start failed\"
+	            logger -p kern.err "ERROR:$PRODUCT start failed"
 	            ;;
 	        restart)
-	            logger -p kern.err \"ERROR:\$PRODUCT restart failed\"
+	            logger -p kern.err "ERROR:$PRODUCT restart failed"
 	            ;;
 	        restore)
-	            logger -p kern.err \"ERROR:\$PRODUCT restore failed\"
+	            logger -p kern.err "ERROR:$PRODUCT restore failed"
 	            ;;
             esac
 
-            if [ \"\$RESTOREFILE\" = NONE ]; then
+            if [ "$RESTOREFILE" = NONE ]; then
                 COMMAND=clear
                 clear_firewall
-                echo \"\$PRODUCT Cleared\"
+                echo "$PRODUCT Cleared"
 
-	        kill \$\$
+	        kill $$
 	        exit 2
             else
-	        RESTOREPATH=\${VARDIR}/\$RESTOREFILE
+	        RESTOREPATH=${VARDIR}/$RESTOREFILE
 
-	        if [ -x \$RESTOREPATH ]; then
+	        if [ -x $RESTOREPATH ]; then
 
-		    if [ -x \${RESTOREPATH}-ipsets ]; then
+		    if [ -x ${RESTOREPATH}-ipsets ]; then
 		        progress_message2 Restoring Ipsets...
 		        #
 		        # We must purge iptables to be sure that there are no
 		        # references to ipsets
 		        #
 		        for table in mangle nat filter; do
-			    \$IPTABLES -t \$table -F
-			    \$IPTABLES -t \$table -X
+			    $IPTABLES -t $table -F
+			    $IPTABLES -t $table -X
 		        done
 
-		        \${RESTOREPATH}-ipsets
+		        ${RESTOREPATH}-ipsets
 		    fi
 
-		    echo Restoring \${PRODUCT:=Shorewall}...
+		    echo Restoring ${PRODUCT:=Shorewall}...
 
-		    if \$RESTOREPATH restore; then
-		        echo \"\$PRODUCT restored from \$RESTOREPATH\"
-		        set_state \"Started\"
+		    if $RESTOREPATH restore; then
+		        echo "$PRODUCT restored from $RESTOREPATH"
+		        set_state "Started"
 		    else
-		        set_state \"Unknown\"
+		        set_state "Unknown"
 		    fi
 
-	            kill \$\$
+	            kill $$
 	            exit 2
 	        fi
             fi
 	    ;;
     esac
 
-    set_state \"Stopping\"
+    set_state "Stopping"
 
-    STOPPING=\"Yes\"
+    STOPPING="Yes"
 
     TERMINATOR=
 
@@ -295,42 +304,42 @@ stop_firewall() {
 
     run_stop_exit;
 
-    if [ -n \"\$MANGLE_ENABLED\" ]; then
+    if [ -n "$MANGLE_ENABLED" ]; then
 	run_iptables -t mangle -F
 	run_iptables -t mangle -X
 	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    qt \$IPTABLES -t mangle -P \$chain ACCEPT
+	    qt $IPTABLES -t mangle -P $chain ACCEPT
 	done
     fi
 
-    if [ -n \"\$RAW_TABLE\" ]; then
+    if [ -n "$RAW_TABLE" ]; then
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do
-	    qt \$IPTABLES -t raw -P \$chain ACCEPT
+	    qt $IPTABLES -t raw -P $chain ACCEPT
 	done
     fi
 
-    if [ -n \"\$NAT_ENABLED\" ]; then
+    if [ -n "$NAT_ENABLED" ]; then
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    qt \$IPTABLES -t nat -P \$chain ACCEPT
+	    qt $IPTABLES -t nat -P $chain ACCEPT
 	done
     fi
 
-    if [ -f \${VARDIR}/proxyarp ]; then
+    if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
-	    qt arp -i \$external -d \$address pub
-	    [ -z \"\${haveroute}\${NOROUTES}\" ] && qt ip route del \$address dev \$interface
-	done < \${VARDIR}/proxyarp
+	    qt arp -i $external -d $address pub
+	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	done < ${VARDIR}/proxyarp
 
         for f in /proc/sys/net/ipv4/conf/*; do
-            [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+            [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
         done
     fi
 
-    rm -f \${VARDIR}/proxyarp
-";
+    rm -f ${VARDIR}/proxyarp
+';
 
     push_indent;
 
@@ -453,28 +462,36 @@ stop_firewall() {
 
     pop_indent;
 
-    emit "
-    set_state \"Stopped\"
+    emit '
+    set_state "Stopped"
 
-    logger -p kern.info \"\$PRODUCT Stopped\"
+    logger -p kern.info "$PRODUCT Stopped"
 
-    case \$COMMAND in
+    case $COMMAND in
     stop|clear)
 	;;
     *)
 	#
 	# The firewall is being stopped when we were trying to do something
-	# else. Remove the lock file and Kill the shell in case we're in a
-	# subshell
+	# else. Kill the shell in case we\'re running in a subshell
 	#
-	kill \$\$
+	kill $$
 	;;
     esac
 }
-";
+';
 
 }
 
+#
+# Second Phase of Script Generation
+#
+#    copies the 'prog.functions' file into the script
+#    generates the first part of 'setup_routing_and_traffic_shaping()'
+#
+#        The bulk of that function is produced by the various config file
+#        parsing routines that are called directly out of 'compiler()'.
+#
 sub generate_script_2 () {
 
     copy $env{SHAREDIRPL} . 'prog.functions';
@@ -524,7 +541,7 @@ sub generate_script_2 () {
 		'    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
 		'    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
 		'        if in_network $addr $network; then',
-		"            startup_error \"The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
+		"            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
 		'        fi',
 		'    done',
 		"fi\n" );
@@ -538,14 +555,21 @@ sub generate_script_2 () {
 	    ''
 	    );
     
-    emit "delete_tc1\n"   if $config{CLEAR_TC};
-
-    emit "disable_ipv6\n" if $config{DISABLE_IPV6};
-
+    emit "delete_tc1\n"            if $config{CLEAR_TC};
+    emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
     setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
 
 }
 
+#
+# Third (final stage of script generation).
+#
+#    Generate the end of 'setup_routing_and_traffic_shaping()':
+#        Generate code for loading the various files in /var/lib/shorewall[-lite]
+#        Generate code to add IP addresses under ADD_IP_ALIASES and ADD_SNAT_ALIASES
+#    Generate the 'setup_netfilter()' function that runs iptables-restore.
+#    Generate the 'define_firewall()' function.  
+#
 sub generate_script_3() {
 
     emit 'cat > ${VARDIR}/proxyarp << __EOF__';
@@ -619,18 +643,15 @@ esac';
     copy $env{SHAREDIRPL} . 'prog.footer';
 }
 
-sub compile_firewall( $ ) {
+#
+#  The Compiler.
+#
+#    If the argument is non-null, it names the script file to generate. 
+#    Otherwise, this is a 'check' command and no script is produced.
+#
+sub compiler( $ ) {
     
     my $objectfile = $_[0];
-
-    ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
-
-    initialize_chain_table;
-
-    if ( $command eq 'compile' ) {
-	create_temp_object( $objectfile );
-	generate_script_1;
-    }
 
     report_capabilities if $ENV{VERBOSE} > 1;
 
@@ -649,6 +670,16 @@ sub compile_firewall( $ ) {
     if ( $config{MANGLE_ENABLED} ) {
 	fatal_error 'Traffic Shaping requires mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
     }
+
+    ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
+
+    initialize_chain_table;
+
+    if ( $command eq 'compile' ) {
+	create_temp_object( $objectfile );
+	generate_script_1;
+    }
+
     #
     # Process the zones file.
     #
@@ -772,7 +803,7 @@ sub compile_firewall( $ ) {
     progress_message2 'Generating Rule Matrix...';         
     generate_matrix;
     generate_script_3;
-    
+
     if ( $command eq 'check' ) {
 	progress_message3 "Shorewall configuration verified";
     } else {
@@ -798,4 +829,4 @@ get_configuration;
 #
 # Compile/Check the configuration.
 #
-compile_firewall $ARGV[0];
+compiler $ARGV[0];

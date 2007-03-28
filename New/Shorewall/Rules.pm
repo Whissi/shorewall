@@ -37,7 +37,8 @@ use Shorewall::Proc;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( add_common_rules 
+our @EXPORT = qw( process_tos
+		  add_common_rules 
 		  setup_mac_lists
 		  process_criticalhosts
 		  process_routestopped
@@ -59,13 +60,13 @@ my @rule_chains;
 my $sectioned = 0;
 
 sub process_tos() {
-    my $chain    = 'pretos';
-    my $stdchain = 'PREROUTING';
+    my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
+    my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
 
     if ( -s "$ENV{TMP_DIR}/tos" ) {
 	progress_message2 'Setting up TOS...';
 
-	my $pretosref = new_chain 'mangle' , 'pretos';
+	my $pretosref = new_chain 'mangle' , $chain;
 	my $outtosref = new_chain 'mangle' , 'outtos';
 
 	open TOS, "$ENV{TMP_DIR}/tos" or fatal_error "Unable to open stripped tos file: $!";
@@ -107,6 +108,9 @@ sub process_tos() {
 	}
 
 	close TOS;
+
+	add_rule $mangle_table->{$stdchain}, "-j $chain";
+	add_rule $mangle_table->{OUTPUT},    "-j outtos";
     }
 }
 

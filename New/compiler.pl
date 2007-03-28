@@ -750,6 +750,10 @@ sub compiler( $ ) {
     progress_message2 "$doing TC Rules...";                  
     setup_tc;
     #
+    # TOS
+    #
+    process_tos;
+    #
     # Setup Masquerading/SNAT
     #
     progress_message2 "$doing Masq file...";                     

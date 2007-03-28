@@ -28,7 +28,7 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file get_configuration report_capabilities propagateconfig append_file run_user_exit generate_aux_config %config %env %capabilities );
+our @EXPORT = qw(find_file expand_shell_variables get_configuration report_capabilities propagateconfig append_file run_user_exit generate_aux_config %config %env %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -252,6 +252,13 @@ sub report_capabilities() {
 }
 
 #
+# Some files can have shell variables embedded. This function expands them from %ENV.
+#
+sub expand_shell_variables( $ ) {
+    my $line = $_[0]; $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/; $line;
+}
+
+#
 # Read the shorewall.conf file and establish global hashes %config and %env.
 #
 sub get_configuration() {
@@ -265,7 +272,8 @@ sub get_configuration() {
 		chomp $line;
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
-		$line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
+
+		expand_shell_variables( $line );
 
 		if ( $line =~ /^([a-zA-Z]\w*)\s*=\s*(.*)$/ ) {
 		    my ($var, $val) = ($1, $2);

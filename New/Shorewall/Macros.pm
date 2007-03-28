@@ -32,7 +32,6 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( find_macro
-		  expand_shell_variables
 		  split_action 
 		  substitute_action 
 		  merge_macro_source_dest 
@@ -59,13 +58,6 @@ sub find_macro( $ )
 	$macros{$macro} = $macrofile;
 	$targets{$macro} = MACRO;
     }
-}
-
-#
-# Macro and action files can have shell variables embedded. This function expands them from %ENV.
-#
-sub expand_shell_variables( $ ) {
-    my $line = $_[0]; $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/; $line;
 }
 
 #

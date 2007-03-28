@@ -339,7 +339,7 @@ lib_load() # $1 = Name of the Library, $2 = Error Message heading if the library
     eval loaded=\$LIB_${1}_LOADED
 
     if [ -z "$loaded" ]; then
-	if [ -n "$SHOREWALL_PERL" ]; then
+	if [ "$SHOREWALL_COMPILER" = perl ]; then
 	    eval LIB_${1}_LOADED=Yes
 	    return
 	fi

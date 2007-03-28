@@ -769,15 +769,16 @@ sub compile_firewall( $ ) {
     progress_message2 "$doing Accounting...";                
     setup_accounting;
 
+    progress_message2 'Generating Rule Matrix...';         
+    generate_matrix;
+    generate_script_3;
+    
     if ( $command eq 'check' ) {
 	progress_message3 "Shorewall configuration verified";
     } else {
 	#
 	# Finish the script.
 	#
-	progress_message2 'Generating Rule Matrix...';           
-	generate_matrix;                       
-	generate_script_3;
 	finalize_object;
 	#
 	# And generate the auxilary config file

@@ -1405,6 +1405,7 @@ sub addnatjump( $$$ ) {
 	clearrule;
     }
 }
+
 #
 # If the destination chain exists, then at the position in the source chain given by $$countref, add a jump to the destination.
 #

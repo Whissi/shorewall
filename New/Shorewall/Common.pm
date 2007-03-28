@@ -135,7 +135,7 @@ sub emit ( $ ) {
 	#
 	# 'compile' as opposed to 'check'
 	#
-	my $line = $_[0];
+	my $line = $_[0]; # This copy is necessary :-(. We modify the value below and we can't modify subroutine arguments.
 
 	unless ( $line =~ /^\s*$/ ) {
 	    $line =~ s/^\n// if $lastlineblank;
@@ -160,7 +160,7 @@ sub emitj {
 	#
 	for ( @_ ) {
 	    unless ( /^\s*$/ ) {
-		my $line = $_;
+		my $line = $_; # This copy is necessary :-(. We modify the value below and we can't modify subroutine arguments.
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/g;

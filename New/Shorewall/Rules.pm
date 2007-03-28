@@ -163,9 +163,7 @@ sub setup_ecn()
 	    }
 
 	    for my $host ( @hosts ) {
-		my ( $interface, $net ) = ( @$host );
-
-		add_rule $mangle_table->{ecn_chain $interface}, join ('', '-p tcp ', match_dest_net( $net ) , ' -j ECN --ecn-tcp-remove' );
+		add_rule $mangle_table->{ecn_chain $host->[0]}, join ('', '-p tcp ', match_dest_net( $host->[1] ) , ' -j ECN --ecn-tcp-remove' );
 	    }
 	}
     }

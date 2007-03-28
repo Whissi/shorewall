@@ -988,7 +988,9 @@ sub process_rule1 ( $$$$$$$$$ ) {
 		}
 	    }
 
-	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
+	    if ( $origdest && $origdest ne '-' ) {
+		require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in non-NAT rule' ) unless $actiontype & NATRULE;
+	    } elsif ( $origdest ne 'detect' ) {
 		if ( $config{DETECT_DNAT_IPADDRS} ) {
 		    my $interfacesref = $zones{$sourcezone}{interfaces};
 		    my @interfaces = keys %$interfacesref;

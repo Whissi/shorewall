@@ -28,7 +28,19 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file expand_shell_variables get_configuration report_capabilities propagateconfig append_file run_user_exit generate_aux_config %config %env %capabilities );
+our @EXPORT = qw(find_file 
+                 expand_shell_variables 
+                 get_configuration
+                 require_capability
+                 report_capabilities
+                 propagateconfig
+                 append_file
+                 run_user_exit
+                 generate_aux_config
+
+                 %config
+                 %env
+                 %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -249,6 +261,13 @@ sub report_capabilities() {
     for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {
 	report_capability $cap;
     }
+}
+
+sub require_capability( $$ ) {
+    my ( $capability, $description ) = @_;
+
+    fatal_error "$description requires $capdesc{$capability} in your kernel and iptables"
+      unless $capabilities{$capability};
 }
 
 #

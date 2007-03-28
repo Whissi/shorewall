@@ -738,7 +738,6 @@ sub do_test ( $$ )
     "${invert}$match $testval ";
 }
 
-
 #
 # Create a "-m limit" match for the passed LIMIT/BURST
 #
@@ -882,6 +881,7 @@ sub match_orig_dest ( $ ) {
     my $net = $_[0];
 
     return '' if $net eq ALLIPv4;
+    return '' unless $capabilities{CONNTRACK_MATCH};
  
     if ( $net =~ /^!/ ) {
 	$net =~ s/!//;
@@ -1207,7 +1207,7 @@ sub expand_rule( $$$$$$$$$$ )
     }
 
     if ( $origdest ) {
-	if ( $origdest eq '-' ) {
+	if ( $origdest eq '-' || ! $capabilities{CONNTRACK_MATCH} ) {
 	    $origdest = '';
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #

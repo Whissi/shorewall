@@ -179,7 +179,7 @@ sub compile_stop_firewall() {
 
     emit <<'EOF';
 #
-# Stop/restore the firewall after an error or because of a \'stop\' or \'clear\' command
+# Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
 stop_firewall() {
 
@@ -544,6 +544,7 @@ sub generate_script_2 () {
 #    Generate the end of 'setup_routing_and_traffic_shaping()':
 #        Generate code for loading the various files in /var/lib/shorewall[-lite]
 #        Generate code to add IP addresses under ADD_IP_ALIASES and ADD_SNAT_ALIASES
+#
 #    Generate the 'setup_netfilter()' function that runs iptables-restore.
 #    Generate the 'define_firewall()' function.  
 #
@@ -575,7 +576,9 @@ sub generate_script_3() {
     emit "#\n# Start/Restart the Firewall\n#";
     emit 'define_firewall() {';
     push_indent;
-    emit 'setup_routing_and_traffic_shaping;
+
+    emit<<'EOF';
+setup_routing_and_traffic_shaping;
 
 if [ $COMMAND = restore ]; then
     iptables_save_file=${VARDIR}/$(basename $0)-iptables
@@ -611,7 +614,8 @@ case $COMMAND in
     restore)
         logger -p kern.info "$PRODUCT restored"
         ;;
-esac';
+esac
+EOF
 
     pop_indent;
 
@@ -632,21 +636,11 @@ sub compiler( $ ) {
 
     report_capabilities if $ENV{VERBOSE} > 1;
 
-    fatal_error join( '', 'Shorewall-perl ', $env{VERSION}, ' requires Conntrack Match Support' )
-	unless $capabilities{CONNTRACK_MATCH};
-    fatal_error join ( '', 'Shorewall-perl ', $env{VERSION}, ' requires Multi-port Match Support' )
-	unless $capabilities{MULTIPORT};
-    fatal_error join( '', 'Shorewall-perl ', $env{VERSION}, ' requires Address Type Match Support' )
-	unless $capabilities{ADDRTYPE};
-    fatal_error 'MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables'
-	if $config{MACLIST_TTL} && ! $capabilities{RECENT_MATCH};
-    fatal_error 'RFC1918_STRICT=Yes requires Connection Tracking match'
-	if $config{RFC1918_STRICT} && ! $capabilities{CONNTRACK_MATCH};
-    fatal_error 'HIGH_ROUTE_MARKS=Yes requires extended MARK support'
-	if $config{HIGH_ROUTE_MARKS} && ! $capabilities{XCONNMARK};
-    if ( $config{MANGLE_ENABLED} ) {
-	fatal_error 'Traffic Shaping requires mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
-    }
+    require_capability( 'MULTIPORT'       , "Shorewall-perl $env{VERSION}" ); 
+    require_capability( 'ADDRTYPE'        , "Shorewall-perl $env{VERSION}" );
+    require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' )           if $config{MACLIST_TTL};
+    require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' )  if $config{HIGH_ROUTE_MARKS};
+    require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping'      )  if $config{TC_ENABLED};
 
     ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
 

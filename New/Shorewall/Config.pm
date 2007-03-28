@@ -218,7 +218,7 @@ sub find_file($)
 sub default ( $$ ) {
     my ( $var, $val ) = @_;
 
-    $config{$var} = $val unless defined $config{$var};
+    $config{$var} = $val unless defined $config{$var} && $config{$var} ne '';
 }
 
 sub default_yes_no ( $$ ) {

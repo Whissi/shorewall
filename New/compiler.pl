@@ -754,6 +754,10 @@ sub compiler( $ ) {
     #
     process_tos;
     #
+    # ECN
+    #
+    setup_ecn;
+    #
     # Setup Masquerading/SNAT
     #
     progress_message2 "$doing Masq file...";                     

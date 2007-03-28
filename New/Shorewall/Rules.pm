@@ -38,6 +38,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( process_tos
+		  setup_ecn
 		  add_common_rules 
 		  setup_mac_lists
 		  process_criticalhosts
@@ -111,6 +112,62 @@ sub process_tos() {
 
 	add_rule $mangle_table->{$stdchain}, "-j $chain";
 	add_rule $mangle_table->{OUTPUT},    "-j outtos";
+    }
+}
+
+#
+# Setup ECN disabling rules
+#
+sub setup_ecn()
+{
+    my %interfaces;
+    my @hosts;
+
+    if ( -s "$ENV{TMP_DIR}/ecn" ) {
+	
+	progress_message2 join( '' , '$doing ', find_file( 'ecn' ), '...' );
+
+	open ECN, "$ENV{TMP_DIR}/ecn" or fatal_error "Unable to open stripped ecn file: $!";
+
+	while ( $line = <ECN> ) {
+
+	    my ($interface, $hosts ) = split_line 2, 'ecn file';
+
+	    fatal_error "Unknown interface ( $interface ) in ECN entry \"$line\"" unless known_interface $interface;
+
+	    $interfaces{$interface} = 1;
+
+	    $hosts = ALLIPv4 if $hosts eq '-';
+
+	    for my $host( split /,/, $hosts ) {
+		push @hosts, [ $interface, $host ];
+	    }
+	}
+
+	close ECN;
+
+	if ( @hosts ) {
+	    my @interfaces = ( keys %interfaces );
+
+	    progress_message "$doing ECN control on @interfaces...";
+
+	    for my $interface ( @interfaces ) {
+		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
+		
+		if ( $capabilities{MANGLE_FORWARD} ) {
+		    add_rule $mangle_table->{POSTROUTING}, "-p tcp -o $interface -j $chainref->{name}";
+		} else {
+		    add_rule $mangle_table->{PREROUTING}, "-p tcp -o $interface -j $chainref->{name}";
+		    add_rule $mangle_table->{OUTPUT},     "-p tcp -o $interface -j $chainref->{name}";
+		}
+	    }
+
+	    for my $host ( @hosts ) {
+		my ( $interface, $net ) = ( @$host );
+
+		add_rule $mangle_table->{ecn_chain $interface}, join ('', '-p tcp ', match_dest_net( $net ) , ' -j ECN --ecn-tcp-remove' );
+	    }
+	}
     }
 }
 

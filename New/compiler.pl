@@ -60,30 +60,6 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
 #
-# Note to the reader.
-#
-#     I use Emacs perl-mode. It's advantages are:
-#
-#         It's color theme is visible to color-blind people like me.
-#         It's indentation scheme is exactly the way I like.
-#
-#      But:
-#
-#         It doesn't understand 'here documents'.
-#
-#     I've tried cperl-mode. It's adavantages are:
-#         
-#         It understands 'here documents'.
-#
-#     But:
-#
-#         It's color theme drives my eyes crazy.
-#         It's indentation scheme is unfathomable.
-#
-#     Bottom line. I use quoting techinques other than 'here documents'.
-#
-
-#
 # First stage of script generation.
 #
 #    Copy the prog.header to the generated script.
@@ -201,7 +177,8 @@ sub generate_script_1 {
 
 sub compile_stop_firewall() {
 
-    emit '#
+    emit <<'EOF';
+#
 # Stop/restore the firewall after an error or because of a \'stop\' or \'clear\' command
 #
 stop_firewall() {
@@ -339,7 +316,7 @@ stop_firewall() {
     fi
 
     rm -f ${VARDIR}/proxyarp
-';
+EOF
 
     push_indent;
 

@@ -734,8 +734,8 @@ sub compiler( $ ) {
     # Setup Masquerading/SNAT
     #
     if ( -s "$ENV{TMP_DIR}/masq" ) {
-	require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
 	progress_message2 "$doing Masq file...";                     
+	require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
 	setup_masq;
     }
     #
@@ -772,16 +772,16 @@ sub compiler( $ ) {
     # Setup Nat
     #
     if ( -s "$ENV{TMP_DIR}/nat" ) {
-	require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
 	progress_message2 "$doing one-to-one NAT...";                
+	require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
 	setup_nat;
     }
     #
     # Setup NETMAP
     #
     if ( -s "$ENV{TMP_DIR}/nat" ) {
-	require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
 	progress_message2 "$doing NETMAP...";                
+	require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
 	setup_netmap;
     }
     #

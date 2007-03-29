@@ -80,6 +80,8 @@ my $indent        = '';
 my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
 
+my $exitstatus = 0;
+
 #
 # Fatal Error
 #
@@ -87,12 +89,7 @@ sub fatal_error
 {
     print STDERR "   ERROR: @_\n";
 
-    if ( $object ) {
-	close $object;
-	unlink $tempfile;
-    }
-
-    system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
+    $exitstatus = 1;
 
     exit 1;
 }
@@ -338,6 +335,17 @@ sub finalize_aux_config() {
     $object = 0;
     rename $tempfile, "$file.conf" or fatal_error "Cannot Rename $tempfile to $file.conf: $!";
     progress_message3 "Shorewall configuration compiled to $file";
+}
+
+END {
+    if ( $object ) {
+	close $object;
+	unlink $tempfile;
+    }
+
+    system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
+
+    $? = $exitstatus;
 }
 
 1;

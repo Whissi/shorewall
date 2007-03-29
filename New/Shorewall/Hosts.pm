@@ -52,9 +52,9 @@ sub validate_hosts_file()
 
     my $ipsec = 0;
 
-    open HOSTS, "$ENV{TMP_DIR}/hosts" or fatal_error "Unable to open stripped hosts file: $!";
+    open_file 'hosts';
 
-    while ( $line = <HOSTS> ) {
+    while ( read_a_line ) {
 
 	my ($zone, $hosts, $options ) = split_line 3, 'hosts file';
 
@@ -103,8 +103,6 @@ sub validate_hosts_file()
 
 	progress_message "   Host \"$line\" validated";
     }
-
-    close HOSTS;
 
     $capabilities{POLICY_MATCH} = '' unless $ipsec or $zones{ipsec};
 }

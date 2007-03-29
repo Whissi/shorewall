@@ -101,6 +101,7 @@ sub setup_one_masq($$$$$$)
     my $destnets = '';
     my $target = '-j MASQUERADE ';
 
+    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
     #
     # Handle IPSEC options, if any
     #
@@ -238,9 +239,9 @@ sub setup_one_masq($$$$$$)
 #
 sub setup_masq() 
 {
-    open MASQ, "$ENV{TMP_DIR}/masq" or fatal_error "Unable to open stripped zones file: $!";
+    open_file 'masq';
 
-    while ( $line = <MASQ> ) {
+    while ( read_a_line ) {
 
 	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 6, 'masq file';
 
@@ -255,8 +256,6 @@ sub setup_masq()
 	    setup_one_masq $fullinterface, $networks, $addresses, $proto, $ports, $ipsec;
 	}
     }
-
-    close MASQ;
 
     $comment = '';
 
@@ -299,6 +298,8 @@ sub do_one_nat( $$$$$ )
 
     my $policyin = '';
     my $policyout = '';
+
+    require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
 
     if ( $capabilities{POLICY_MATCH} ) {
 	$policyin = ' -m policy --pol none --dir in';
@@ -346,9 +347,9 @@ sub do_one_nat( $$$$$ )
 #
 sub setup_nat() {
 
-    open NAT, "$ENV{TMP_DIR}/nat" or fatal_error "Unable to open stripped nat file: $!";
+    open_file 'nat';
 
-    while ( $line = <NAT> ) {
+    while ( read_a_line ) {
 
 	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 5, 'nat file';
 
@@ -365,8 +366,6 @@ sub setup_nat() {
 
     }
 
-    close NAT;
-
     $comment = '';
 }
 
@@ -375,11 +374,13 @@ sub setup_nat() {
 #
 sub setup_netmap() {
 
-    open NM, "$ENV{TMP_DIR}/netmap" or fatal_error "Unable to open stripped netmap file: $!";
+    open_file 'netmap';
 
-    while ( $line = <NM> ) {
+    while ( read_a_line ) {
 
 	my ( $type, $net1, $interface, $net2 ) = split_line 4, 'netmap file';
+
+	require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
 
 	if ( $type eq 'DNAT' ) {
 	    add_rule ensure_chain( 'nat' , input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";
@@ -393,7 +394,6 @@ sub setup_netmap() {
 
     }
 
-    close NM;
 }
 
 sub add_addresses () {

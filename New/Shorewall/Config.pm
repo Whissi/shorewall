@@ -295,7 +295,7 @@ sub open_file( $ ) {
 
     fatal_error 'Internal Error in open_file()' if defined $currentfile;
 
-    if ( -f $fname ) {
+    if ( -f $fname && -s _ ) {
 	open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
     }
 }
@@ -321,16 +321,35 @@ sub pop_open() {
     $currentfile = pop @openstack;
 }    
 
+#
+# Read a line from the current open stack.
+#
+#   - Ignore blank or comment-only lines.
+#   - Remove trailing comments.
+#   - Compress out extra whitespace.
+#   - Handle Line Continuation
+#   - Expand shell variables from $ENV.
+#   - Handle INCLUDE <filename>
+#
+
 sub read_a_line {
     while ( $currentfile ) {
-	while ( $line = <$currentfile> ) {
-	    next if $line =~ /^\s*#/;
-	    next if $line =~ /^\s*$/;
-	    chomp $line;
 
-	    $line =~ s/#.*$//;
+	$line = '';
+
+	while ( my $nextline = <$currentfile> ) {
+	    next if $nextline =~ /^\s*#/;
+	    next if $nextline =~ /^\s*$/;
+	    $nextline =~ s/#.*$//;
 	    
-	    expand_shell_variables( $line );
+	    chomp $nextline;
+
+	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
+		$line .= substr( $nextline, 0, -1 );
+		next;
+	    }
+
+	    $line = expand_shell_variables( $line ? $line . $nextline : $nextline );
 
 	    if ( $line =~ /^\s*INCLUDE\s/ ) {
 		

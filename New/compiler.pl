@@ -710,13 +710,7 @@ sub compiler( $ ) {
     #
     # [Re-]establish Routing
     # 
-    if ( -s "$ENV{TMP_DIR}/providers" ) {
-	require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' );
-	setup_providers;
-    } else {
-	emit "\nundo_routing";
-	emit 'restore_default_route';
-    }
+    setup_providers;
     #
     # TCRules and Traffic Shaping
     #
@@ -733,11 +727,8 @@ sub compiler( $ ) {
     #
     # Setup Masquerading/SNAT
     #
-    if ( -s "$ENV{TMP_DIR}/masq" ) {
-	progress_message2 "$doing Masq file...";                     
-	require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
-	setup_masq;
-    }
+    progress_message2 "$doing Masq file...";                     
+    setup_masq;
     #
     # MACLIST Filtration
     #
@@ -771,19 +762,13 @@ sub compiler( $ ) {
     #
     # Setup Nat
     #
-    if ( -s "$ENV{TMP_DIR}/nat" ) {
-	progress_message2 "$doing one-to-one NAT...";                
-	require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
-	setup_nat;
-    }
+    progress_message2 "$doing one-to-one NAT...";                
+    setup_nat;
     #
     # Setup NETMAP
     #
-    if ( -s "$ENV{TMP_DIR}/nat" ) {
-	progress_message2 "$doing NETMAP...";                
-	require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
-	setup_netmap;
-    }
+    progress_message2 "$doing NETMAP...";                
+    setup_netmap;
     #
     # Accounting.
     #

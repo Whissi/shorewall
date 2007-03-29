@@ -349,14 +349,16 @@ sub validate_tc_class( $$$$$$ ) {
 }
 
 sub setup_traffic_shaping() {
-    if ( -s "$ENV{TMP_DIR}/tcdevices" ) {
-	save_progress_message "Setting up Traffic Control...";
-	my $fn = find_file 'tcdevices';
+    save_progress_message "Setting up Traffic Control...";
+
+    my $fn = find_file 'tcdevices';
+
+    if ( -f $fn ) {
 	progress_message2 "$doing $fn...";
 
-	open TD, "$ENV{TMP_DIR}/tcdevices" or fatal_error "Unable to open stripped tcdevices file: $!";
+	open_file $fn;
 
-	while ( $line = <TD> ) {
+	while ( read_a_line ) {
 
 	    my ( $device, $inband, $outband ) = split_line 3, 'tcdevices';
 
@@ -365,23 +367,20 @@ sub setup_traffic_shaping() {
 	}
     }
 
-    close TD;
+    $fn = find_file 'tcclasses';
 
-    if ( -s "$ENV{TMP_DIR}/tcclasses" ) {
-	my $fn = find_file 'tcdevices';
+    if ( -f $fn ) {
 	progress_message2 "$doing $fn...";
 
-	open TC, "$ENV{TMP_DIR}/tcclasses" or fatal_error "Unable to open stripped tcclasses file: $!";
+	open_file $fn;
 
-	while ( $line = <TC> ) {
+	while ( read_a_line ) {
 
 	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 6, 'tcclasses file';
 
 	    validate_tc_class( $device, $mark, $rate, $ceil, $prio, $options );
 	}
     }
-
-    close TC;
 
     my $devnum = 1;
 
@@ -496,13 +495,14 @@ sub setup_tc() {
 	ensure_mangle_chain 'tcpost';
     }
 
-    if ( -s "$ENV{TMP_DIR}/tcrules" ) {
-	require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' );
+    my $fn = find_file 'tcrules';
 
-	open TC, "$ENV{TMP_DIR}/tcrules" or fatal_error "Unable to open stripped tcrules file: $!";
+    if ( -f $fn ) {
 
-	while ( $line = <TC> ) {
+	require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' ) if open_file $fn;
 
+	while ( read_a_line ) {
+	    
 	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
 
 	    if ( $mark eq 'COMMENT' ) {
@@ -517,8 +517,6 @@ sub setup_tc() {
 	    }
 	    
 	}
-
-	close TC;
 
 	$comment = '';
     }
@@ -554,7 +552,7 @@ sub setup_tc() {
 	save_progress_message 'Setting up Traffic Control...';
 	append_file $config{TC_SCRIPT};
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
-	setup_traffic_shaping if -s "$ENV{TMP_DIR}/tcdevices";
+	setup_traffic_shaping;
     }
 }
 

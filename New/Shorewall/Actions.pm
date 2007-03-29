@@ -378,20 +378,15 @@ sub process_action3( $$$$$ ) {
     }
 
     my $actionfile = find_file "action.$action";
-    my $standard = ( $actionfile =~ /^($env{SHAREDIR})/ );
-
+    my $standard = ( $actionfile =~ /^$env{SHAREDIR}/ );
+    
     fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
-
+    
     progress_message2 "Processing $actionfile for chain $chainref->{name}...";
 
-    open A, $actionfile or fatal_error "Unable to open $actionfile: $!";
+    open_file $actionfile;
 
-    while ( $line = <A> ) {
-	chomp $line;
-	next if $line =~ /^\s*#/;
-	next if $line =~ /^\s*$/;
-	$line =~ s/#.*$//;	
-	$line = expand_shell_variables $line unless $standard;
+    while ( read_a_line ) {
 
 	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 8, 'action file';
 
@@ -423,15 +418,11 @@ sub process_action3( $$$$$ ) {
 
 	    progress_message "..Expanding Macro $fn...";
 
-	    open M, $fn or fatal_error "Can't open $fn: $!";
+	    push_open $fn;
 
 	    my $standard = ( $fn =~ /^($env{SHAREDIR})/ );
 
-	    while ( $line = <M> ) {
-		next if $line =~ /^\s*#/;
-		next if $line =~ /^\s*$/;
-		$line =~ s/#.*$//;
-		$line = expand_shell_variables $line unless $standard;
+	    while ( read_a_line ) {
 
 		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
 
@@ -477,7 +468,7 @@ sub process_action3( $$$$$ ) {
 		process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser;
 	    }
 
-	    close M;
+	    pop_open;
 
 	    progress_message '..End Macro'
 

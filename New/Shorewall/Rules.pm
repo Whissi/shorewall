@@ -64,15 +64,13 @@ sub process_tos() {
     my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
     my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
 
-    if ( -s "$ENV{TMP_DIR}/tos" ) {
+    if ( open_file 'tos' ) {
 	progress_message2 'Setting up TOS...';
 
 	my $pretosref = new_chain 'mangle' , $chain;
 	my $outtosref = new_chain 'mangle' , 'outtos';
 
-	open TOS, "$ENV{TMP_DIR}/tos" or fatal_error "Unable to open stripped tos file: $!";
-
-	while ( $line = <TOS> ) {
+	while ( read_a_line ) {
 
 	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 'tos file';
 
@@ -108,8 +106,6 @@ sub process_tos() {
 		'';
 	}
 
-	close TOS;
-
 	add_rule $mangle_table->{$stdchain}, "-j $chain";
 	add_rule $mangle_table->{OUTPUT},    "-j outtos";
     }
@@ -123,13 +119,11 @@ sub setup_ecn()
     my %interfaces;
     my @hosts;
 
-    if ( -s "$ENV{TMP_DIR}/ecn" ) {
+    if ( open_file 'ecn' ) {
 	
 	progress_message2 join( '' , '$doing ', find_file( 'ecn' ), '...' );
 
-	open ECN, "$ENV{TMP_DIR}/ecn" or fatal_error "Unable to open stripped ecn file: $!";
-
-	while ( $line = <ECN> ) {
+	while ( read_a_line ) {
 
 	    my ($interface, $hosts ) = split_line 2, 'ecn file';
 
@@ -143,8 +137,6 @@ sub setup_ecn()
 		push @hosts, [ $interface, $host ];
 	    }
 	}
-
-	close ECN;
 
 	if ( @hosts ) {
 	    my @interfaces = ( keys %interfaces );
@@ -189,9 +181,9 @@ sub setup_rfc1918_filteration( $ ) {
 
     $chainref = new_standard_chain 'rfc1918d' if $config{RFC1918_STRICT};
 
-    open RFC, "$ENV{TMP_DIR}/rfc1918" or fatal_error "Unable to open stripped rfc1918 file: $!"; 
+    open_file 'rfc1918';
 
-    while ( $line = <RFC> ) {
+    while ( read_a_line ) {
 
 	my ( $networks, $target ) = split_line 2, 'rfc1918 file';
 
@@ -213,8 +205,6 @@ sub setup_rfc1918_filteration( $ ) {
 	    add_rule $chainref , match_orig_dest( $network ) . "-j $target" ;
 	}
     }
-
-    close RFC;
 
     add_rule $norfc1918ref , '-j rfc1918d' if $config{RFC1918_STRICT};
 
@@ -267,13 +257,11 @@ sub setup_blacklist() {
 	    $target = 'blacklog';
 	}
 
-	if ( -s "$ENV{TMP_DIR}/blacklist" ) {
-
-	    open BL, "$ENV{TMP_DIR}/blacklist" or fatal_error "Unable to open stripped blacklist file: $!";
+	if ( open_file 'blacklist' ) {
 
 	    progress_message( join( '', '      Processing ', find_file( 'blacklist' ), '...' ) );
 
-	    while ( $line = <BL> ) {
+	    while ( read_a_line ) {
 
 		my ( $networks, $protocol, $ports ) = split_line 3, 'blacklist file';
 
@@ -292,8 +280,6 @@ sub setup_blacklist() {
 		progress_message "         \"$line\" added to blacklist";
 	    }
 	}
-
-	close BL;
 
 	my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
 
@@ -320,9 +306,9 @@ sub process_criticalhosts() {
 
     @critical = ();
 
-    open RS, "$ENV{TMP_DIR}/routestopped" or fatal_error "Unable to open stripped routestopped file: $!";
+    open_file $fn;
 
-    while ( $line = <RS> ) {
+    while ( read_a_line ) {
 
 	my $routeback = 0;
 
@@ -349,8 +335,6 @@ sub process_criticalhosts() {
 	}
     }
 
-    close RS;
-
     \@critical;
 }
 
@@ -361,9 +345,9 @@ sub process_routestopped() {
 
     progress_message2 "$doing $fn...";
 
-    open RS, "$ENV{TMP_DIR}/routestopped" or fatal_error "Unable to open stripped routestopped file: $!";
+    open_file $fn;
 
-    while ( $line = <RS> ) {
+    while ( read_a_line ) {
 
 	my $routeback = 0;
 
@@ -408,8 +392,6 @@ sub process_routestopped() {
 
 	push @allhosts, @hosts;
     }
-
-    close RS;
 
     for my $host ( @allhosts ) {
 	my ( $interface, $h ) = split /:/, $host;
@@ -649,9 +631,9 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
 
-	open MAC, "$ENV{TMP_DIR}/maclist" or fatal_error "Unable to open stripped maclist file: $!";
+	open_file 'maclist';
 
-	while ( $line = <MAC> ) {
+	while ( read_a_line ) {
 
 	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 4, 'maclist file';
 
@@ -694,8 +676,6 @@ sub setup_mac_lists( $ ) {
 		progress_message "      Maclist entry \"$line\" $done";
 	    }
 	}
-
-	close MAC;
 
 	$comment = '';
         #
@@ -758,14 +738,9 @@ sub process_macro ( $$$$$$$$$$$ ) {
 
     progress_message "..Expanding Macro $macrofile...";
 
-    open M, $macrofile or fatal_error "Unable to open $macrofile: $!";
+    push_open $macrofile;
 
-    while ( $line = <M> ) {
-	chomp $line;
-	next if $line =~ /^\s*#/;
-	next if $line =~ /^\s*$/;
-	$line =~ s/#.*$//;
-	$line = expand_shell_variables $line unless $standard;
+    while ( read_a_line ) {
 
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
 
@@ -828,7 +803,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 
 	progress_message "   Rule \"$line\" $done";    }
 
-    close M;
+    pop_open;
 
     progress_message '..End Macro'
 }
@@ -1186,9 +1161,9 @@ sub process_rule ( $$$$$$$$$ ) {
 #
 sub process_rules() {
 
-    open RULES, "$ENV{TMP_DIR}/rules" or fatal_error "Unable to open stripped rules file: $!";
+    open_file 'rules';
 
-    while ( $line = <RULES> ) {
+    while ( read_a_line ) {
 
 	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = split_line 9, 'rules file';
 
@@ -1219,8 +1194,6 @@ sub process_rules() {
 	    process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
 	}
     }
-
-    close RULES;
 
     $comment = '';
     $section = 'DONE';

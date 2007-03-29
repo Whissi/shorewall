@@ -1447,7 +1447,7 @@ sub emitr( $ ) {
 	    $state = CMD_STATE;
 	}
 
-	$rule =~ s/~//;
+	$rule = substr( $rule, 1 );
 
 	emit $rule;
     } else {

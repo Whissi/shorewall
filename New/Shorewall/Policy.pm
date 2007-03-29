@@ -128,9 +128,9 @@ sub validate_policy()
 	}
     }
 
-    open POLICY, "$ENV{TMP_DIR}/policy" or fatal_error "Unable to open stripped policy file: $!";
+    open_file 'policy';
 
-    while ( $line = <POLICY> ) {
+    while ( read_a_line ) {
 
 	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 5, 'policy file';
 
@@ -226,8 +226,6 @@ sub validate_policy()
 	    print_policy $client, $server, $policy, $chain;
 	}
     }
-
-    close POLICY;
 }
 
 #

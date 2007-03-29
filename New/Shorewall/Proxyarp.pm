@@ -82,15 +82,13 @@ sub setup_proxy_arp() {
 
     my $interfaces= find_interfaces_by_option 'proxyarp';
 
-    if ( @$interfaces || -s "$ENV{TMP_DIR}/proxyarp" ) {
+    if ( @$interfaces || open_file 'proxyarp' ) {
 
 	save_progress_message "Setting up Proxy ARP...";
 
 	my ( %set, %reset );
 
-	open PA, "$ENV{TMP_DIR}/proxyarp" or fatal_error "Unable to open stripped proxyarp file: $!";
-
-	while ( $line = <PA> ) {
+	while ( read_a_line ) {
 
 	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 5, 'proxyarp file';
 
@@ -99,8 +97,6 @@ sub setup_proxy_arp() {
 
 	    setup_one_proxy_arp( $address, $interface, $external, $haveroute, $persistent );
 	}
-
-	close PA;
 
 	for my $interface ( keys %reset ) {
 	    emit "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" unless $set{interface};

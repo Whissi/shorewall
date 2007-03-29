@@ -230,9 +230,9 @@ sub setup_tunnels() {
     #
     # Setup_Tunnels() Starts Here
     #
-    open TUNNELS, "$ENV{TMP_DIR}/tunnels" or fatal_error "Unable to open stripped tunnels file: $!";
+    open_file 'tunnels';
 
-    while ( $line = <TUNNELS> ) {
+    while ( read_a_line ) {
 
 	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line 4, 'tunnels file';
 
@@ -247,8 +247,6 @@ sub setup_tunnels() {
 	    setup_one_tunnel $kind, $zone, $gateway, $gatewayzones;
 	}
     }
-
-    close TUNNELS;
 
     $comment = '';
 }

@@ -343,38 +343,42 @@ sub setup_providers() {
     }
     #
     #   Setup_Providers() Starts Here....
-    # 
+    #
     progress_message2 "$doing $fn ...";
 
-    emit "\nif [ -z \"\$NOROUTES\" ]; then";
+    open_file 'providers';
 
-    push_indent;
+    while ( read_a_line ) {
 
-    emitj ( '#',
-	    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
-	    '#',
-	    'undo_routing',
-	    '#',
-	    '# Save current routing table database so that it can be restored later',
-	    '#',
-	    'cp /etc/iproute2/rt_tables ${VARDIR}/',
-	    '#',
-	    '# Capture the default route(s) if we don\'t have it (them) already.',
-	    '#',
-	    '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
-	    '#',
-	    '# Initialize the file that holds \'undo\' commands',
-	    '#',
-	    '> ${VARDIR}/undo_routing' );
+	unless ( $providers ) {
+	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' );
+	    
+	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
-    save_progress_message 'Adding Providers...';
+	    push_indent;
 
-    emit 'DEFAULT_ROUTE=';
+	    emitj ( '#',
+		    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
+		    '#',
+		    'undo_routing',
+		    '#',
+		    '# Save current routing table database so that it can be restored later',
+		    '#',
+		    'cp /etc/iproute2/rt_tables ${VARDIR}/',
+		    '#',
+		    '# Capture the default route(s) if we don\'t have it (them) already.',
+		    '#',
+		    '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+		    '#',
+		    '# Initialize the file that holds \'undo\' commands',
+		    '#',
+		    '> ${VARDIR}/undo_routing' );
+	    
+	    save_progress_message 'Adding Providers...';
 
-    open PV, "$ENV{TMP_DIR}/providers" or fatal_error "Unable to open stripped providers file: $!";
-
-    while ( $line = <PV> ) {
-
+	    emit 'DEFAULT_ROUTE=';
+	}
+	
 	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 8, 'providers file';
 
 	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
@@ -386,8 +390,6 @@ sub setup_providers() {
 	progress_message "   Provider \"$line\" $done";
 
     }
-
-    close PV;
 
     if ( $providers ) {
 	if ( $balance ) {
@@ -427,30 +429,32 @@ sub setup_providers() {
 	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	}
 
-	if ( -s "$ENV{TMP_DIR}/route_rules" ) {
-	    my $fn = find_file 'route_rules';
+	my $fn = find_file 'route_rules';
+
+	if ( -f $fn ) {
 	    progress_message2 "$doing $fn...";
 
 	    emit '';
 
-	    open RR, "$ENV{TMP_DIR}/route_rules" or fatal_error "Unable to open stripped route rules file: $!";
+	    open_file $fn;
 
-	    while ( $line = <RR> ) {
+	    while ( read_a_line ) {
+
 		my ( $source, $dest, $provider, $priority ) = split_line 4, 'route_rules file';
 
 		add_an_rtrule( $source, $dest, $provider , $priority );
 	    }
-
-	    close RR;
 	}
+
+	emit "\nrun_ip route flush cache";
+	pop_indent;
+	emit "fi\n";
+	
+	setup_route_marking if @routemarked_interfaces;
+    } else {
+	emit "\nundo_routing";
+	emit 'restore_default_route';
     }
-
-    emit "\nrun_ip route flush cache";
-    pop_indent;
-    emit "fi\n";
-
-    setup_route_marking if @routemarked_interfaces;
-
 }
 
 1;

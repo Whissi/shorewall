@@ -132,9 +132,9 @@ sub validate_interfaces_file()
 			upnp => 1,
 			);
 
-    open INTERFACES, "$ENV{TMP_DIR}/interfaces" or fatal_error "Unable to open stripped interfaces file: $!";
+    open_file 'interfaces';
 
-    while ( $line = <INTERFACES> ) {
+    while ( read_a_line ) {
 
 	my ($zone, $interface, $networks, $options ) = split_line 4, 'interfaces file';
 	my $zoneref;
@@ -195,8 +195,6 @@ sub validate_interfaces_file()
 	progress_message "   Interface \"$line\" Validated";
 
     }
-
-    close INTERFACES;
 }
 
 #

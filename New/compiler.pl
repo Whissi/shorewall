@@ -641,6 +641,7 @@ sub compiler( $ ) {
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' )           if $config{MACLIST_TTL};
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' )  if $config{HIGH_ROUTE_MARKS};
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping'      )  if $config{TC_ENABLED};
+    require_capability( 'CONNTRACK_MATCH' , 'RFC1918_STRICT=Yes'   )  if $config{RFC1918_STRICT};
 
     ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
 
@@ -710,6 +711,7 @@ sub compiler( $ ) {
     # [Re-]establish Routing
     # 
     if ( -s "$ENV{TMP_DIR}/providers" ) {
+	require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' );
 	setup_providers;
     } else {
 	emit "\nundo_routing";
@@ -731,8 +733,11 @@ sub compiler( $ ) {
     #
     # Setup Masquerading/SNAT
     #
-    progress_message2 "$doing Masq file...";                     
-    setup_masq;
+    if ( -s "$ENV{TMP_DIR}/masq" ) {
+	require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
+	progress_message2 "$doing Masq file...";                     
+	setup_masq;
+    }
     #
     # MACLIST Filtration
     #
@@ -766,13 +771,19 @@ sub compiler( $ ) {
     #
     # Setup Nat
     #
-    progress_message2 "$doing one-to-one NAT...";                
-    setup_nat;
+    if ( -s "$ENV{TMP_DIR}/nat" ) {
+	require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
+	progress_message2 "$doing one-to-one NAT...";                
+	setup_nat;
+    }
     #
     # Setup NETMAP
     #
-    progress_message2 "$doing NETMAP...";                
-    setup_netmap;
+    if ( -s "$ENV{TMP_DIR}/nat" ) {
+	require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
+	progress_message2 "$doing NETMAP...";                
+	setup_netmap;
+    }
     #
     # Accounting.
     #

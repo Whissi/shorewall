@@ -496,50 +496,57 @@ sub setup_tc() {
 	ensure_mangle_chain 'tcpost';
     }
 
-    open TC, "$ENV{TMP_DIR}/tcrules" or fatal_error "Unable to open stripped tcrules file: $!";
+    if ( -s "$ENV{TMP_DIR}/tcrules" ) {
+	require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' );
 
-    while ( $line = <TC> ) {
+	open TC, "$ENV{TMP_DIR}/tcrules" or fatal_error "Unable to open stripped tcrules file: $!";
 
-	my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
+	while ( $line = <TC> ) {
 
-	if ( $mark eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		$comment =~ s/\s*$//;
+	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
+
+	    if ( $mark eq 'COMMENT' ) {
+		if ( $capabilities{COMMENTS} ) {
+		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+		    $comment =~ s/\s*$//;
+		} else {
+		    warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+		}
 	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
 	    }
-	} else {
-	    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
+	    
 	}
 
+	close TC;
+
+	$comment = '';
     }
 
-    close TC;
+    if ( $capabilities{MANGLE_ENABLED} ) {
 
-    $comment = '';
+	my $mark_part = '';
 
-    my $mark_part = '';
+	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
+	    $mark_part = '-m mark --mark 0/0xFF00';
 
-    if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	$mark_part = '-m mark --mark 0/0xFF00';
-
-	for my $interface ( @routemarked_interfaces ) {
-	    add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
+	    for my $interface ( @routemarked_interfaces ) {
+		add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
+	    }
 	}
-    }
 
-    add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
-    add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcpre";
+	add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
+	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcpre";
 
-    if ( $capabilities{MANGLE_FORWARD} ) {
-	add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
-	add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
-    }
+	if ( $capabilities{MANGLE_FORWARD} ) {
+	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
+	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
+	}
 
-    if ( $config{HIGH_ROUTE_MARKS} ) {
-	for my $chain qw(INPUT FORWARD POSTROUTING) {
-	    insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark -0xFF';
+	if ( $config{HIGH_ROUTE_MARKS} ) {
+	    for my $chain qw(INPUT FORWARD POSTROUTING) {
+		insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark -0xFF';
+	    }
 	}
     }
 

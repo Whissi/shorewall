@@ -187,9 +187,7 @@ sub setup_rfc1918_filteration( $ ) {
 
     add_rule $rfc1918ref , '-j DROP';
 
-    if ( $config{RFC1918_STRICT} ) {
-	$chainref = new_standard_chain 'rfc1918d';
-    } 
+    $chainref = new_standard_chain 'rfc1918d' if $config{RFC1918_STRICT};
 
     open RFC, "$ENV{TMP_DIR}/rfc1918" or fatal_error "Unable to open stripped rfc1918 file: $!"; 
 
@@ -948,6 +946,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     if ( $actiontype & NATRULE ) {
 	my ( $server, $serverport , $natchain );
 	fatal_error "$target rules not allowed in the $section SECTION"  if $section ne 'NEW';
+	require_capability( 'NAT_ENABLED' , "$basictarget rules" );
 	#
 	# Isolate server port
 	#

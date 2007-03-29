@@ -32,7 +32,6 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(ALLIPv4
 
-		 split_line
 		 create_temp_object
 		 finalize_object
 		 emit
@@ -88,39 +87,6 @@ sub fatal_error
     print STDERR "   ERROR: @_\n";
 
     exit 1;
-}
-
-#
-# When splitting a line, don't pad out the columns with '-' if the first column contains one of these
-#
-
-my %no_pad = ( COMMENT => 1,
-	       SECTION => 1 );
-
-#
-# Pre-process a line from a configuration file.
-#
-#    chomp it.
-#    compress out redundent white space.
-#    ensure that it has an appropriate number of columns.
-#    supply '-' in omitted trailing columns.
-#
-sub split_line( $$ ) {
-    my ( $columns, $description ) = @_;
-
-    chomp $line;
-
-    $line =~ s/\s+/ /g;
-
-    my @line = split /\s+/, $line;
-
-    return @line if $no_pad{$line[0]};
-
-    fatal_error "Invalid $description entry: $line" if @line > $columns;
-
-    push @line, '-' while @line < $columns;
-
-    @line;
 }
 
 #

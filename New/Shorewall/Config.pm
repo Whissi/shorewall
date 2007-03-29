@@ -32,6 +32,7 @@ our @EXPORT = qw(
 		 warning_message 
 		 fatal_error
                  find_file
+                 split_line
                  open_file
                  push_open
                  pop_open
@@ -228,19 +229,15 @@ my $currentlinenumber = 0;
 #
 sub warning_message 
 {
-    if ( $currentfile ) {
-	print STDERR "   WARNING: @_ : $currentfilename#$currentlinenumber\n";
-    } else {
-	print STDERR "   WARNING: @_\n";
-    }
+    my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
+
+    print STDERR "   WARNING: @_$lineinfo\n";
 }
 
 sub fatal_error	{
-    if ( $currentfile ) {
-	print STDERR "   ERROR: @_ : $currentfilename#$currentlinenumber\n";
-    } else {
-	print STDERR "   ERROR: @_\n";
-    }
+    my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
+
+    print STDERR "   ERROR: @_$lineinfo\n";
 
     exit 1;
 }
@@ -259,14 +256,45 @@ sub find_file($)
     my $directory;
 
     for $directory ( split ':', $ENV{CONFIG_PATH} ) {
-	my $file = "$directory/$filename";
-	if ( -f $file ) {
-	    $file =~ s|//|/|g;
-	    return $file;
-	}
+	$directory = "$directory/" unless substr( $directory, -1, 1 ) eq '/';
+	my $file = "$directory$filename";
+	return $file if -f $file;
     }
 
     "$env{CONFDIR}/$filename";
+}
+
+#
+# When splitting a line, don't pad out the columns with '-' if the first column contains one of these
+#
+
+my %no_pad = ( COMMENT => 1,
+	       SECTION => 1 );
+
+#
+# Pre-process a line from a configuration file.
+#
+#    chomp it.
+#    compress out redundent white space.
+#    ensure that it has an appropriate number of columns.
+#    supply '-' in omitted trailing columns.
+#
+sub split_line( $$ ) {
+    my ( $columns, $description ) = @_;
+
+    chomp $line;
+
+    $line =~ s/\s+/ /g;
+
+    my @line = split /\s+/, $line;
+
+    return @line if $no_pad{$line[0]};
+
+    fatal_error "Invalid $description entry (too many columns)" if @line > $columns;
+
+    push @line, '-' while @line < $columns;
+
+    @line;
 }
 
 sub default ( $$ ) {
@@ -439,7 +467,7 @@ sub get_configuration() {
 
     if ( -f $file ) {
 	if ( -r _ ) {
-	    open $currentfile , $file or fatal_error "Unable to open $file: $!";
+	    open_file $file;
 
 	    while ( read_a_line ) {
 		if ( $line =~ /^([a-zA-Z]\w*)\s*=\s*(.*)$/ ) {
@@ -492,14 +520,6 @@ sub get_configuration() {
 	}
     } else {
 	fatal_error "$file does not exist!";
-    }
-
-    if ( $ENV{DEBUG} ) {
-	print "\n";
-	print "Capabilities:\n";
-	for my $var (sort keys %capabilities) {
-	    print "   $var=$capabilities{$var}\n";
-	}
     }
 
     $env{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
@@ -658,26 +678,6 @@ sub get_configuration() {
     } else {
 	$env{LOGFORMAT}='Shorewall:%s:%s:';
 	$env{MAXZONENAMELENGTH} = 5;
-    }
-
-    if ( $ENV{DEBUG} ) {
-	print "\n";
-	print "Configuration:\n";
-
-	for my $var (sort keys %config) {
-	    if ( defined $config{$var} ) {
-		print "   $var=$config{$var}\n";
-	    } else {
-		print "   $var=\n";
-	    }
-	}
-
-	print "\n";
-	print "Environment:\n";
-
-	for my $var (sort keys %env) {
-	    print "   $var=$env{$var}\n" if $env{$var};
-	}
     }
 
 }

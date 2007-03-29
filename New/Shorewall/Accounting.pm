@@ -110,16 +110,14 @@ sub process_accounting_rule( $$$$$$$$ ) {
 
 sub setup_accounting() {
 
-    open ACC, "$ENV{TMP_DIR}/accounting" or fatal_error "Unable to open stripped accounting file: $!";
+    open_file 'accounting';
 
-    while ( $line = <ACC> ) {
+    while ( read_a_line ) {
 
 	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = split_line 8, 'Accounting File';
 
 	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user;
     }
-
-    close ACC;
 
     if ( $filter_table->{accounting} ) {
 	for my $chain qw/INPUT FORWARD OUTPUT/ {

@@ -243,11 +243,11 @@ sub process_actions1() {
     for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
 	new_action $act;
     }
+    
+    for my $file ( qw/actions.std actions/ ) {
+	open_file $file;
 
-    for my $file qw/actions.std actions/ {
-	open F, "$ENV{TMP_DIR}/$file" or fatal_error "Unable to open stripped $file file: $!";
-
-	while ( $line = <F> ) {
+	while ( read_a_line ) {
 	    my ( $action ) = split_line 1, 'action file';
 
 	    if ( $action =~ /:/ ) {
@@ -274,13 +274,9 @@ sub process_actions1() {
 
 	    progress_message2 "   Pre-processing $actionfile...";
 
-	    open A, $actionfile or fatal_error "Unable to open $actionfile: $!";
+	    push_open( $actionfile );
 
-	    while ( $line = <A> ) {
-		chomp $line;
-		next if $line =~ /^\s*#/;
-		next if $line =~ /^\s*$/;
-		$line =~ s/#.*$//;
+	    while ( read_a_line ) {
 
 		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 8, 'action file';
 
@@ -304,13 +300,9 @@ sub process_actions1() {
 
 			progress_message "   ..Expanding Macro $macrofile...";
 
-			open M, $macrofile or fatal_error "Unable to open $macrofile: $!";
+			push_open( $macrofile );
 
-			while ( $line = <M> ) {
-			    next if $line =~ /^\s*#/;
-			    $line =~ s/#.*$//;
-			    next if $line =~ /^\s*$/;
-
+			while ( read_a_line ) {
 			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 8, 'macro file';
 
 			    $mtarget =~ s/:.*$//;
@@ -324,15 +316,16 @@ sub process_actions1() {
 			}
 
 			progress_message "   ..End Macro";
-			close M;
+
+			pop_open;
 		    } else {
 			fatal_error "Invalid TARGET ($target) in rule \"$line\"";
 		    }
 		}
 	    }
-	    close A;
+
+	    pop_open;
 	}
-	close F;
     }
 }
 

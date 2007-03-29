@@ -28,7 +28,11 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(find_file 
+our @EXPORT = ( qw(find_file
+                 open_file
+                 push_open
+                 pop_open
+                 read_a_line
                  expand_shell_variables 
                  get_configuration
                  require_capability
@@ -40,7 +44,7 @@ our @EXPORT = qw(find_file
 
                  %config
                  %env
-                 %capabilities );
+                 %capabilities ) );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -283,8 +287,42 @@ sub expand_shell_variables( $ ) {
 my @openstack;
 my $currentfile;
 
+#
+# Open a file, setting $currentfile. 
+#
+sub open_file( $ ) {
+    my $fname = find_file $_[0];
+
+    fatal_error 'Internal Error in open_file()' if defined $currentfile;
+
+    if ( -f $fname ) {
+	open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
+    }
+}
+
+#
+# Allow nested opens
+#
+my @pushstack;
+
+sub push_open( $ ) {
+
+    push @openstack, $currentfile;
+    my @a = @openstack;
+    push @pushstack, \@a;
+    @openstack = ();
+    $currentfile = undef;
+    open_file( $_[0] );
+
+}
+
+sub pop_open() {
+    @openstack   = @{pop @pushstack};
+    $currentfile = pop @openstack;
+}    
+
 sub read_a_line {
-    while ( 1 ) {
+    while ( $currentfile ) {
 	while ( $line = <$currentfile> ) {
 	    next if $line =~ /^\s*#/;
 	    next if $line =~ /^\s*$/;
@@ -321,8 +359,6 @@ sub read_a_line {
 	}
 	
 	close $currentfile;
-
-	return 0 unless @openstack;
 
 	$currentfile = pop @openstack;
     }

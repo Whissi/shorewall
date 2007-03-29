@@ -180,9 +180,9 @@ sub determine_zones()
 {
     my @z;
 
-    open ZONES, "$ENV{TMP_DIR}/zones" or fatal_error "Unable to open stripped zones file: $!";
+    open_file 'zones';
 
-    while ( $line = <ZONES> ) {
+    while ( read_a_line ) {
 
 	my @parents;
 
@@ -243,8 +243,6 @@ sub determine_zones()
 
 	push @z, $zone;
     }
-
-    close ZONES;
 
     my $pushed = 1;
     my %ordered;

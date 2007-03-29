@@ -211,7 +211,7 @@ stop_firewall() {
     }
 
     case $COMMAND in
-	stop|clear)
+	stop|clear|restore)
 	    ;;
 	*)
 	    set +x

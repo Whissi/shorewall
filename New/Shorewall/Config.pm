@@ -237,9 +237,9 @@ sub warning_message
 
 sub fatal_error	{
     if ( $currentfile ) {
-	Shorewall::Common::fatal_error "@_ : $currentfilename#$currentlinenumber";
+	print STDERR "   ERROR: @_ : $currentfilename#$currentlinenumber\n";
     } else {
-	Shorewall::Common::fatal_error	@_;
+	print STDERR "   ERROR: @_\n";
     }
 
     exit 1;

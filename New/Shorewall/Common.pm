@@ -80,16 +80,12 @@ my $indent        = '';
 my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
 
-my $exitstatus = 0;
-
 #
 # Fatal Error
 #
 sub fatal_error
 {
     print STDERR "   ERROR: @_\n";
-
-    $exitstatus = 1;
 
     exit 1;
 }
@@ -342,6 +338,8 @@ END {
 	close $object;
 	unlink $tempfile;
     }
+
+    my $exitstatus = $?; #Get's changed by system()
 
     system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
 

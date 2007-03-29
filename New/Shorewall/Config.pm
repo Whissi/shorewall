@@ -280,27 +280,28 @@ sub expand_shell_variables( $ ) {
 #
 # Stash away file references here when we encounter INCLUDE
 #
-my @filestack;
+my @openstack;
 my $currentfile;
 
 sub read_a_line {
-
     while ( 1 ) {
 	while ( $line = <$currentfile> ) {
-	    chomp $line;
 	    next if $line =~ /^\s*#/;
 	    next if $line =~ /^\s*$/;
+	    chomp $line;
+
 	    $line =~ s/#.*$//;
 	    
 	    expand_shell_variables( $line );
 
-	    my @line = split /\s+/, $line;
+	    if ( $line =~ /^\s*INCLUDE\s/ ) {
+		
+		my @line = split /\s+/, $line;
 	
-	    if ( $line[0] eq 'INCLUDE' ) {
 		fatal_error "Missing file name after 'INCLUDE'" unless @line > 1;
 		fatal_error "Invalid INCLUDE command: $line"    if @line > 2;
 		
-		if ( @filestack == 4 ) {
+		if ( @openstack == 4 ) {
 		    warning_message "INCLUDEs nested too deeply; $line ignored";
 		    next;
 		}
@@ -309,7 +310,7 @@ sub read_a_line {
 		
 		fatal_error "$filename not found" unless ( -f $filename );
 		
-		push @filestack, $currentfile;
+		push @openstack, $currentfile;
 
 		$currentfile = undef;
 		
@@ -321,14 +322,16 @@ sub read_a_line {
 	
 	close $currentfile;
 
-	return 0 unless @filestack;
+	return 0 unless @openstack;
 
-	$currentfile = pop @filestack;
+	$currentfile = pop @openstack;
     }
 }
 
 #
-# Read the shorewall.conf file and establish global hashes %config and %env.
+# - Read the shorewall.conf file
+# - Read the capabilities file created by the compiler front-end
+# - establish global hashes %config , %env and %capabilities
 #
 sub get_configuration() {
     my $file = find_file 'shorewall.conf';

@@ -227,10 +227,6 @@ my $exclseq = 0;
 #
 my $iprangematch = 0;
 #
-# Keep track of whether there are run-time commands in the chain rules
-#
-my $slowstart = 0;
-#
 # Sequence for naming temporary chains
 #
 my $chainseq;
@@ -254,8 +250,6 @@ sub add_command($$)
     push @{$chainref->{rules}}, join ('', '~', '    ' x $loopcount, $command );
 
     $chainref->{referenced} = 1;
-
-    $slowstart = 1;
 }
 
 #
@@ -1433,16 +1427,10 @@ use constant { NULL_STATE => 0 ,
 
 my $state = NULL_STATE;
 
-my $rulenumber = 0;
-
 sub emitr( $ ) {
     my $rule = $_[0];
 
-    unless ( $slowstart ) {
-	$rulenumber++;
-	substr($rule, 80) = "#$rulenumber" unless length $rule >= 80;
-	emit_unindented $rule;
-    } elsif ( substr( $rule, 0, 1 ) eq '~' ) {
+    if ( substr( $rule, 0, 1 ) eq '~' ) {
 	#
 	# A command
 	#
@@ -1487,12 +1475,7 @@ sub create_netfilter_load() {
 
     emit '';
 
-    if ( $slowstart ) {
-	emit 'exec 3>${VARDIR}/.iptables-input';
-    } else {
-	emit 'iptables-restore << __EOF__';
-	$state = CAT_STATE;
-    }
+    emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
     for my $table qw/raw nat mangle filter/ {
 	emitr "*$table";
@@ -1529,15 +1512,13 @@ sub create_netfilter_load() {
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';
 
-    if ( $slowstart ) {
-	emitj( ' exec 3>&-',
-	       '',
-	       'iptables-restore < ${VARDIR}/.iptables_input'
-	       );
-    }
+    emitj( ' exec 3>&-',
+	   '',
+	   'iptables-restore < ${VARDIR}/.iptables-restore-input'
+	 );
 
     emitj( 'if [ $? != 0 ]; then',
-	   '    fatal_error "iptables-restore Failed"',
+	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
 	   "fi\n"
 	   );
 

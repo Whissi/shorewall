@@ -32,8 +32,6 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(ALLIPv4
 
-		 warning_message 
-		 fatal_error
 		 split_line
 		 create_temp_object
 		 finalize_object
@@ -81,14 +79,6 @@ my $lastlineblank = 0;   # Avoid extra blank lines in the output
 my $indent        = '';
 my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
-
-#
-# Issue a Warning Message
-#
-sub warning_message 
-{
-    print STDERR "   WARNING: @_\n";
-}
 
 #
 # Fatal Error

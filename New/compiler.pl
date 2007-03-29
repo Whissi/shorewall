@@ -36,6 +36,7 @@
 #                                               of all configuration files. Shell variable substitution 
 #                                               has been performed on these files.
 #           TIMESTAMP=Yes                       -t option specified to /sbin/shorewall
+#           FW                                  Firewall zone (for shell-variable expansion).
 #
 #       This program performs rudimentary shell variable expansion on action and macro files.
 

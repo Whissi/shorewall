@@ -28,7 +28,10 @@ use warnings;
 use Shorewall::Common;
 
 our @ISA = qw(Exporter);
-our @EXPORT = ( qw(find_file
+our @EXPORT = qw(
+		 warning_message 
+		 fatal_error
+                 find_file
                  open_file
                  push_open
                  pop_open
@@ -44,7 +47,7 @@ our @EXPORT = ( qw(find_file
 
                  %config
                  %env
-                 %capabilities ) );
+                 %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -210,6 +213,37 @@ my %capdesc = ( NAT_ENABLED     => 'NAT',
 		COMMENTS        => 'Comments',
 		ADDRTYPE        => 'Address Type Match',
 		);
+
+#
+# Stash away file references here when we encounter INCLUDE
+#
+my @openstack;
+my $currentfile;
+my $currentfilename;
+my $currentlinenumber = 0;
+
+#
+# Issue a Warning Message
+#
+sub warning_message 
+{
+    if ( $currentfile ) {
+	print STDERR "   WARNING: @_ : $currentfilename#$currentlinenumber\n";
+    } else {
+	print STDERR "   WARNING: @_\n";
+    }
+}
+
+sub fatal_error	{
+    if ( $currentfile ) {
+	print STDERR "   ERROR: @_ : $currentfilename#$currentlinenumber\n";
+    } else {
+	print STDERR "   ERROR: @_\n";
+    }
+
+    die "Terminated\n";
+}
+
 #
 # Search the CONFIG_PATH for the passed file
 #
@@ -282,12 +316,6 @@ sub expand_shell_variables( $ ) {
 }
 
 #
-# Stash away file references here when we encounter INCLUDE
-#
-my @openstack;
-my $currentfile;
-
-#
 # Open a file, setting $currentfile. 
 #
 sub open_file( $ ) {
@@ -297,6 +325,8 @@ sub open_file( $ ) {
 
     if ( -f $fname && -s _ ) {
 	open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
+	$currentlinenumber = 0;
+	$currentfilename   = $fname;
     }
 }
 
@@ -307,7 +337,7 @@ my @pushstack;
 
 sub push_open( $ ) {
 
-    push @openstack, $currentfile;
+    push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];
     my @a = @openstack;
     push @pushstack, \@a;
     @openstack = ();
@@ -318,7 +348,14 @@ sub push_open( $ ) {
 
 sub pop_open() {
     @openstack   = @{pop @pushstack};
-    $currentfile = pop @openstack;
+
+    my $arrayref = pop @openstack;
+
+    if ( $arrayref ) {
+	( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
+    } else {
+	$currentfile = undef;
+    }
 }    
 
 #
@@ -338,6 +375,7 @@ sub read_a_line {
 	$line = '';
 
 	while ( my $nextline = <$currentfile> ) {
+	    $currentlinenumber++;
 	    next if $nextline =~ /^\s*#/;
 	    next if $nextline =~ /^\s*$/;
 	    $nextline =~ s/#.*$//;
@@ -357,17 +395,13 @@ sub read_a_line {
 	
 		fatal_error "Missing file name after 'INCLUDE'" unless @line > 1;
 		fatal_error "Invalid INCLUDE command: $line"    if @line > 2;
-		
-		if ( @openstack == 4 ) {
-		    warning_message "INCLUDEs nested too deeply; $line ignored";
-		    next;
-		}
+		fatal_error "INCLUDEs nested too deeply: $line" if @openstack >= 4;
 		
 		my $filename = find_file $line[1];
 		
-		fatal_error "$filename not found" unless ( -f $filename );
+		fatal_error "INCLUDed file $filename not found" unless ( -f $filename );
 		
-		push @openstack, $currentfile;
+		push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];
 
 		$currentfile = undef;
 		
@@ -378,8 +412,14 @@ sub read_a_line {
 	}
 	
 	close $currentfile;
+	
+	my $arrayref = pop @openstack;
 
-	$currentfile = pop @openstack;
+	if ( $arrayref ) {
+	    ( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
+	} else {
+	    $currentfile = undef;
+	}
     }
 }
 

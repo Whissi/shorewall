@@ -310,8 +310,8 @@ sub read_a_line {
 		fatal_error "$filename not found" unless ( -f $filename );
 		
 		push @filestack, $currentfile;
-		
-		$currentfile = '';
+
+		$currentfile = undef;
 		
 		open $currentfile, $filename or fatal_error "Unable to open $filename: $!";
 	    } else {

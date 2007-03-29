@@ -344,15 +344,13 @@ sub setup_providers() {
     #
     #   Setup_Providers() Starts Here....
     #
-    progress_message2 "$doing $fn ...";
-
-    open_file 'providers';
+    open_file $fn;
 
     while ( read_a_line ) {
-
 	unless ( $providers ) {
+	    progress_message2 "$doing $fn ...";
 	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' );
-	    
+
 	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
 	    push_indent;

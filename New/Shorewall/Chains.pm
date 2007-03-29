@@ -1433,10 +1433,14 @@ use constant { NULL_STATE => 0 ,
 
 my $state = NULL_STATE;
 
+my $rulenumber = 0;
+
 sub emitr( $ ) {
     my $rule = $_[0];
 
     unless ( $slowstart ) {
+	$rulenumber++;
+	substr($rule, 80) = "#$rulenumber" unless length $rule >= 80;
 	emit_unindented $rule;
     } elsif ( substr( $rule, 0, 1 ) eq '~' ) {
 	#
@@ -1484,12 +1488,7 @@ sub create_netfilter_load() {
     emit '';
 
     if ( $slowstart ) {
-	emitj( 'TEMPFILE=$(mktempfile)',
-	       '[ -n "$TEMPFILE" ] || fatal_error "Cannot create temporary file in /tmp"',
-	       '',
-	       'exec 3>>$TEMPFILE',
-	       ''
-	       );
+	emit 'exec 3>${VARDIR}/.iptables-input';
     } else {
 	emit 'iptables-restore << __EOF__';
 	$state = CAT_STATE;
@@ -1533,7 +1532,7 @@ sub create_netfilter_load() {
     if ( $slowstart ) {
 	emitj( ' exec 3>&-',
 	       '',
-	       'iptables-restore < $TEMPFILE'
+	       'iptables-restore < ${VARDIR}/.iptables_input'
 	       );
     }
 
@@ -1541,8 +1540,6 @@ sub create_netfilter_load() {
 	   '    fatal_error "iptables-restore Failed"',
 	   "fi\n"
 	   );
-
-    emit 'rm -f $TEMPFILE' if $slowstart;
 
     pop_indent;
 

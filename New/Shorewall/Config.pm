@@ -218,6 +218,7 @@ my %capdesc = ( NAT_ENABLED     => 'NAT',
 # Stash away file references here when we encounter INCLUDE
 #
 my @openstack;
+
 my $currentfile;
 my $currentfilename;
 my $currentlinenumber = 0;
@@ -259,7 +260,10 @@ sub find_file($)
 
     for $directory ( split ':', $ENV{CONFIG_PATH} ) {
 	my $file = "$directory/$filename";
-	return $file if -f $file;
+	if ( -f $file ) {
+	    $file =~ s|//|/|g;
+	    return $file;
+	}
     }
 
     "$env{CONFDIR}/$filename";
@@ -406,6 +410,8 @@ sub read_a_line {
 		$currentfile = undef;
 		
 		open $currentfile, $filename or fatal_error "Unable to open $filename: $!";
+
+		$line='';
 	    } else {
 		return 1;
 	    }

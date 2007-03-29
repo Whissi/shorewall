@@ -227,6 +227,9 @@ sub setup_tunnels() {
 
 	progress_message "   Tunnel \"$line\" $done";
     }
+
+    my $first_entry = 1;
+
     #
     # Setup_Tunnels() Starts Here
     #
@@ -235,6 +238,11 @@ sub setup_tunnels() {
     while ( read_a_line ) {
 
 	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line 4, 'tunnels file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing Tunnels...";                       
+	    $first_entry = 0;
+	}
 
 	if ( $kind eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {

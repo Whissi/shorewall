@@ -65,14 +65,20 @@ sub process_tos() {
     my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
 
     if ( open_file 'tos' ) {
-	progress_message2 'Setting up TOS...';
+	my $first_entry = 1;
 
-	my $pretosref = new_chain 'mangle' , $chain;
-	my $outtosref = new_chain 'mangle' , 'outtos';
-
+	my ( $pretosref, $outtosref );
+	
 	while ( read_a_line ) {
 
 	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 'tos file';
+
+	    if ( $first_entry ) {
+		progress_message2 'Setting up TOS...';
+		$pretosref = ensure_chain 'mangle' , $chain;
+		$outtosref = ensure_chain 'mangle' , 'outtos';
+		$first_entry = 0;
+	    }
 
 	    fatal_error "TOS field required: $line" unless $tos ne '-';
 
@@ -106,8 +112,10 @@ sub process_tos() {
 		'';
 	}
 
-	add_rule $mangle_table->{$stdchain}, "-j $chain";
-	add_rule $mangle_table->{OUTPUT},    "-j outtos";
+	unless ( $first_entry ) {
+	    add_rule $mangle_table->{$stdchain}, "-j $chain";
+	    add_rule $mangle_table->{OUTPUT},    "-j outtos";
+	}
     }
 }
 
@@ -121,7 +129,7 @@ sub setup_ecn()
 
     if ( open_file 'ecn' ) {
 	
-	progress_message2 join( '' , '$doing ', find_file( 'ecn' ), '...' );
+	progress_message2 join( '' , "$doing ", find_file( 'ecn' ), '...' );
 
 	while ( read_a_line ) {
 

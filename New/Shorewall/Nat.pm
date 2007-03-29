@@ -101,7 +101,6 @@ sub setup_one_masq($$$$$$)
     my $destnets = '';
     my $target = '-j MASQUERADE ';
 
-    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
     #
     # Handle IPSEC options, if any
     #
@@ -239,11 +238,19 @@ sub setup_one_masq($$$$$$)
 #
 sub setup_masq() 
 {
+    my $first_entry = 1;
+
     open_file 'masq';
 
     while ( read_a_line ) {
 
 	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 6, 'masq file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing Masq file...";                     
+	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
+	    $first_entry = 0;
+	}
 
 	if ( $fullinterface eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -299,8 +306,6 @@ sub do_one_nat( $$$$$ )
     my $policyin = '';
     my $policyout = '';
 
-    require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
-
     if ( $capabilities{POLICY_MATCH} ) {
 	$policyin = ' -m policy --pol none --dir in';
 	$policyout =  '-m policy --pol none --dir out';
@@ -347,11 +352,19 @@ sub do_one_nat( $$$$$ )
 #
 sub setup_nat() {
 
+    my $first_entry = 1;
+
     open_file 'nat';
 
     while ( read_a_line ) {
 
 	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 5, 'nat file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing one-to-one NAT...";                
+	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
+	    $first_entry = 0;
+	}
 
 	if ( $external eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
@@ -374,13 +387,19 @@ sub setup_nat() {
 #
 sub setup_netmap() {
 
+    my $first_entry = 1;
+
     open_file 'netmap';
 
     while ( read_a_line ) {
 
 	my ( $type, $net1, $interface, $net2 ) = split_line 4, 'netmap file';
 
-	require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
+	if ( $first_entry ) {
+	    progress_message2 "$doing NETMAP...";                
+	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
+	    $first_entry = 0;
+	}
 
 	if ( $type eq 'DNAT' ) {
 	    add_rule ensure_chain( 'nat' , input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";

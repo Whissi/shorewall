@@ -666,12 +666,11 @@ sub compiler( $ ) {
     #
     # Process the hosts file.
     #
-    progress_message2 "Validating hosts file...";                
     validate_hosts_file;
     #
     # Report zone contents
     #
-    progress_message "Determining Hosts in Zones...";        
+    progress_message2 "Determining Hosts in Zones...";        
     zone_report;
     #
     # Do action pre-processing.
@@ -715,7 +714,6 @@ sub compiler( $ ) {
     #
     # TCRules and Traffic Shaping
     #
-    progress_message2 "$doing TC Rules...";                  
     setup_tc;
     #
     # TOS
@@ -728,7 +726,6 @@ sub compiler( $ ) {
     #
     # Setup Masquerading/SNAT
     #
-    progress_message2 "$doing Masq file...";                     
     setup_masq;
     #
     # MACLIST Filtration
@@ -743,7 +740,6 @@ sub compiler( $ ) {
     #
     # Add Tunnel rules.
     #
-    progress_message2 "$doing Tunnels...";                       
     setup_tunnels;
     #
     # Post-rules action processing.
@@ -763,12 +759,10 @@ sub compiler( $ ) {
     #
     # Setup Nat
     #
-    progress_message2 "$doing one-to-one NAT...";                
     setup_nat;
     #
     # Setup NETMAP
     #
-    progress_message2 "$doing NETMAP...";                
     setup_netmap;
     #
     # Accounting.

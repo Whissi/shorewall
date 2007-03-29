@@ -349,18 +349,24 @@ sub validate_tc_class( $$$$$$ ) {
 }
 
 sub setup_traffic_shaping() {
+    my $first_entry = 1;
+
     save_progress_message "Setting up Traffic Control...";
 
     my $fn = find_file 'tcdevices';
 
     if ( -f $fn ) {
-	progress_message2 "$doing $fn...";
 
 	open_file $fn;
 
 	while ( read_a_line ) {
 
 	    my ( $device, $inband, $outband ) = split_line 3, 'tcdevices';
+
+	    if ( $first_entry ) {
+		progress_message2 "$doing $fn...";
+		$first_entry = 0;
+	    }
 
 	    fatal_error "Invalid tcdevices entry: \"$line\"" if $outband eq '-';
 	    validate_tc_device( $device, $inband, $outband );
@@ -370,11 +376,16 @@ sub setup_traffic_shaping() {
     $fn = find_file 'tcclasses';
 
     if ( -f $fn ) {
-	progress_message2 "$doing $fn...";
+	$first_entry = 1;
 
 	open_file $fn;
 
 	while ( read_a_line ) {
+
+	    if ( $first_entry ) {
+		progress_message2 "$doing $fn...";
+		$first_entry = 0;
+	    }
 
 	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 6, 'tcclasses file';
 
@@ -488,23 +499,31 @@ sub setup_traffic_shaping() {
 #
 sub setup_tc() {
 
-    ensure_mangle_chain 'tcpre';
+    my $first_entry = 1; 
 
-    if ( $capabilities{MANGLE_FORWARD} ) {
-	ensure_mangle_chain 'tcfor';
-	ensure_mangle_chain 'tcpost';
+    if ( $capabilities{MANGLE_ENABLED} ) {
+	ensure_mangle_chain 'tcpre';
+
+	if ( $capabilities{MANGLE_FORWARD} ) {
+	    ensure_mangle_chain 'tcfor';
+	    ensure_mangle_chain 'tcpost';
+	}
     }
 
     my $fn = find_file 'tcrules';
 
-    if ( -f $fn ) {
-
-	require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' ) if open_file $fn;
+    if ( open_file $fn ) {
 
 	while ( read_a_line ) {
 	    
 	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
 
+	    if ( $first_entry ) {
+		progress_message2 "$doing TC Rules...";                  
+		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' );
+		$first_entry = 0;
+	    }
+	    
 	    if ( $mark eq 'COMMENT' ) {
 		if ( $capabilities{COMMENTS} ) {
 		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;

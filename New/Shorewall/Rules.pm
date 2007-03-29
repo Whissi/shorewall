@@ -980,10 +980,11 @@ sub process_rule1 ( $$$$$$$$$ ) {
 		}
 
 		$serverport = $ports;
-	    } elsif ( $action eq ' -j DNAT' ) {
+	    } elsif ( $action eq 'DNAT' ) {
+		$target = '-j DNAT ';
 		$serverport = ":$serverport" if $serverport;
 		for my $serv ( split /,/, $server ) {
-		    $target .= "--to ${serv}${serverport} ";
+		    $target .= "--to-destination ${serv}${serverport} ";
 		}
 	    }
 
@@ -1019,6 +1020,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	unless ( $actiontype & NATONLY ) {
 	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit ), do_user $user );
 	    $loglevel = '';
+	    $dest     = $server;
+	    $action   = 'ACCEPT';
 	}
     } else {
 	if ( $actiontype & NONAT ) {

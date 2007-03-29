@@ -56,11 +56,14 @@ my %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
 my @providers;
 
 #
-# Set up marking for 'tracked' interfaces. Unline in Shorewall 3.x, we add these rules inconditionally, even if the associated interface isn't up.
+# Set up marking for 'tracked' interfaces. Unline in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.
 #
 sub setup_route_marking() {
     my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFFFF' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
+
+    require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' );
+    require_capability( 'CONNMARK' ,       'the provider \'track\' option' );
 
     add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     add_rule $mangle_table->{OUTPUT} , " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
@@ -144,8 +147,6 @@ sub setup_providers() {
     sub add_a_provider( $$$$$$$$ ) {
 
 	my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
-
-	fatal_error 'Providers require mangle support in your kernel and iptables' unless $capabilities{MANGLE_ENABLED};
 
 	fatal_error "Duplicate provider ( $table )" if $providers{$table};
 

@@ -1243,6 +1243,7 @@ sub expand_rule( $$$$$$$$$$ )
 		$oexcl = $2;
 	    } else {
 		$oexcl = '';
+		$onets = $origdest;
 	    }
 
 	    unless ( $onets ) {

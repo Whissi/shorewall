@@ -504,24 +504,24 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	if ( $level ) {
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type MULTICAST';
 	}
 
-	add_rule $chainref, '-m pkttype --pkt-type broadcast -j DROP';
-	add_rule $chainref, '-m pkttype --pkt-type multicast -j DROP';
+	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
+	add_rule $chainref, '-m addrtype --dst-type MULTICAST -j DROP';
     }
 
     sub allowBcast( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
 	if ( $level ) {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type broadcast';
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m pkttype --pkt-type multicast';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type MULTICAST';
 	}
 
-	add_rule $chainref, '-m pkttype --pkt-type broadcast -j ACCEPT';
-	add_rule $chainref, '-m pkttype --pkt-type multicast -j ACCEPT';
+	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
+	add_rule $chainref, '-m addrtype --dst-type MULTICAST -j ACCEPT';
     }
 
     sub dropNotSyn ( $$$ ) {
@@ -576,6 +576,8 @@ sub process_actions3 () {
 
 	my $set   = $tag[0];
 	my $count = $tag[1] + 1;
+
+	require_capability( 'RECENT_MATCH' , 'Limit rules' );
 
 	add_rule $chainref, "-m recent --name $set --set";
 

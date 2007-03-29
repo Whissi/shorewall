@@ -100,6 +100,13 @@ sub fatal_error
 }
 
 #
+# When splitting a line, don't pad out the columns with '-' if the first column contains one of these
+#
+
+my %no_pad = ( COMMENT => 1,
+	       SECTION => 1 );
+
+#
 # Pre-process a line from a configuration file.
 #
 #    chomp it.
@@ -116,7 +123,7 @@ sub split_line( $$ ) {
 
     my @line = split /\s+/, $line;
 
-    return @line if $line[0] eq 'COMMENT';
+    return @line if $no_pad{$line[0]};
 
     fatal_error "Invalid $description entry: $line" if @line > $columns;
 

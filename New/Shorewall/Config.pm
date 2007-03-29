@@ -278,6 +278,56 @@ sub expand_shell_variables( $ ) {
 }
 
 #
+# Stash away file references here when we encounter INCLUDE
+#
+my @filestack;
+my $currentfile;
+
+sub read_a_line {
+
+    while ( 1 ) {
+	while ( $line = <$currentfile> ) {
+	    chomp $line;
+	    next if $line =~ /^\s*#/;
+	    next if $line =~ /^\s*$/;
+	    $line =~ s/#.*$//;
+	    
+	    expand_shell_variables( $line );
+
+	    my @line = split /\s+/, $line;
+	
+	    if ( $line[0] eq 'INCLUDE' ) {
+		fatal_error "Missing file name after 'INCLUDE'" unless @line > 1;
+		fatal_error "Invalid INCLUDE command: $line"    if @line > 2;
+		
+		if ( @filestack == 4 ) {
+		    warning_message "INCLUDEs nested too deeply; $line ignored";
+		    next;
+		}
+		
+		my $filename = find_file $line[1];
+		
+		fatal_error "$filename not found" unless ( -f $filename );
+		
+		push @filestack, $currentfile;
+		
+		$currentfile = '';
+		
+		open $currentfile, $filename or fatal_error "Unable to open $filename: $!";
+	    } else {
+		return 1;
+	    }
+	}
+	
+	close $currentfile;
+
+	return 0 unless @filestack;
+
+	$currentfile = pop @filestack;
+    }
+}
+
+#
 # Read the shorewall.conf file and establish global hashes %config and %env.
 #
 sub get_configuration() {
@@ -285,15 +335,9 @@ sub get_configuration() {
 
     if ( -f $file ) {
 	if ( -r _ ) {
-	    open CONFIG , $file or fatal_error "Unable to open $file: $!";
+	    open $currentfile , $file or fatal_error "Unable to open $file: $!";
 
-	    while ( $line = <CONFIG> ) {
-		chomp $line;
-		next if $line =~ /^\s*#/;
-		next if $line =~ /^\s*$/;
-
-		expand_shell_variables( $line );
-
+	    while ( read_a_line ) {
 		if ( $line =~ /^([a-zA-Z]\w*)\s*=\s*(.*)$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
@@ -306,8 +350,6 @@ sub get_configuration() {
 		    fatal_error "Unrecognized entry in $file: $line";
 		}
 	    }
-
-	    close CONFIG;
 	} else {
 	    fatal_error "Cannot read $file (Hint: Are you root?)";
 	}

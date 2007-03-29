@@ -851,6 +851,9 @@ sub process_rule1 ( $$$$$$$$$ ) {
     fatal_error "Unknown action ($action) in rule \"$line\"" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
+	#
+	# We will be called recursively for each rule in the macro body
+	#
 	process_macro
 	    $macros{$basictarget},
 	    $target , 
@@ -988,9 +991,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 		}
 	    }
 
-	    if ( $origdest && $origdest ne '-' ) {
-		require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in non-NAT rule' ) unless $actiontype & NATRULE;
-	    } elsif ( $origdest ne 'detect' ) {
+	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
 		if ( $config{DETECT_DNAT_IPADDRS} ) {
 		    my $interfacesref = $zones{$sourcezone}{interfaces};
 		    my @interfaces = keys %$interfacesref;
@@ -1015,7 +1016,10 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $action , 
 	    $serverport ? do_proto( $proto, '', '' ) : '';
 	#
-	# After NAT, the destination port will be the server port; Also, we log NAT rules in the nat table rather than in the filter table.
+	# After NAT:
+	#   - the destination port will be the server port
+	#   - the destination IP   will be the server IP
+	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
 	#
 	unless ( $actiontype & NATONLY ) {
 	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit ), do_user $user );
@@ -1059,6 +1063,12 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	if ( $actiontype & ACTION ) {
 	    $action = (find_logactionchain $target)->{name};
 	    $loglevel = '';
+	}
+
+	unless ( $origdest eq '-' ) {
+	    require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in non-NAT rule' ) unless $actiontype & NATRULE;
+	} else {
+	    $origdest = '';
 	}
 
 	expand_rule
@@ -1192,7 +1202,7 @@ sub process_rules() {
 	} elsif ( $target eq 'SECTION' ) {
 	    fatal_error "Invalid SECTION $source" unless defined $sections{$source};
 	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
-	    fatal_error "Invalid Section $source $dest" if $dest && $dest ne '-';
+	    fatal_error "Invalid Section $source $dest" if $dest;
 	    $sectioned = 1;
 	    $sections{$source} = 1;
 

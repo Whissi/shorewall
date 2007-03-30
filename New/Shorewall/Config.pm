@@ -479,7 +479,7 @@ sub get_configuration() {
 	    open_file $file;
 
 	    while ( read_a_line ) {
-		if ( $line =~ /^([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+		if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
 			warning_message "Unknown configuration option \"$var\" ignored";
@@ -509,7 +509,7 @@ sub get_configuration() {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
 
-		if ( $line =~ /^([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+		if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $capabilities{$var} ) {
 			warning_message "Unknown capability \"$var\" ignored";

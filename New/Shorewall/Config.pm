@@ -282,10 +282,6 @@ my %no_pad = ( COMMENT => 1,
 sub split_line( $$ ) {
     my ( $columns, $description ) = @_;
 
-    chomp $line;
-
-    $line =~ s/\s+/ /g;
-
     my @line = split /\s+/, $line;
 
     return @line if $no_pad{$line[0]};
@@ -344,7 +340,10 @@ sub require_capability( $$ ) {
 # Some files can have shell variables embedded. This function expands them from %ENV.
 #
 sub expand_shell_variables( $ ) {
-    my $line = $_[0]; $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/; $line;
+    my $line = $_[0]; 
+    $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
+    $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
+    $line;
 }
 
 #

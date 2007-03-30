@@ -120,6 +120,7 @@ our @VERSION = 1.00;
 #    @policy_chains is a list of references to policy chains in the filter table
 #
 #    %chain_table { <table> => { <chain1>  => { name         => <chain name>
+#                                               table        => <table name>
 #                                               is_policy    => 0|1
 #                                               is_optionsl  => 0|1
 #                                               referenced   => 0|1      
@@ -132,7 +133,8 @@ our @VERSION = 1.00;
 #                                                                 <rule2>
 #                                                                 ...
 #                                                               ]
-#                                             }
+#                                             } ,
+#                                <chain2> => ...
 #                              }
 #                 }
 #
@@ -692,6 +694,7 @@ sub mac_match( $ ) {
 #
 sub numeric_value ( $ ) {
     my $mark = $_[0];
+    fatal_error "Invalid Numeric Value" unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
     $mark =~ /^0x/ ? hex $mark : $mark =~ /^0/ ? oct $mark : $mark;
 }
 
@@ -703,7 +706,7 @@ sub verify_mark( $ ) {
     my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFFFF : 0xFF;
 
     fatal_error "Invalid Mark or Mask value: $mark" 
-	unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ && numeric_value( $mark ) <= $limit;
+	unless numeric_value( $mark ) <= $limit;
 }
 
 sub verify_small_mark( $ ) {
@@ -837,7 +840,6 @@ sub match_source_net( $ ) {
  
     if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
-
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
 	( $net = $2 ) =~ s/-/:/g;
@@ -861,7 +863,6 @@ sub match_dest_net( $ ) {
 
     if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
-
 	iprange_match . "${invert}--dst-range $net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' );

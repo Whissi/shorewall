@@ -324,18 +324,22 @@ sub setup_blacklist() {
 
 sub process_criticalhosts() {
 
-    my $fn = find_file 'routestopped';
-    my  @critical;
+    my  @critical = ();
 
-    @critical = ();
+    my $fn = open_file $fn;
 
-    open_file $fn;
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my $routeback = 0;
 
 	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn for critical hosts...";
+	    $first_entry = 0;
+	}
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
 

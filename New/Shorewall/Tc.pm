@@ -92,26 +92,26 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2 
 	       };
 
-my @tccmd = ( { pattern   => 'SAVE' ,
+my @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		target    => 'CONNMARK --save-mark --mask' ,
 		mark      => SMALLMARK ,
 		mask      => '0xFF'
 		} ,
-	      { pattern   => 'RESTORE' ,
-		target => 'CONNMARK --restore-mark --mask' ,
+	      { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
+		target    => 'CONNMARK --restore-mark --mask' ,
 		mark      => SMALLMARK ,
 		mask      => '0xFF'
 		} ,
-	      { pattern   => 'CONTINUE',
+	      { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
 		target    => 'RETURN' ,
 		mark      => NOMARK ,
 		mask      => '' 
 		} ,
-	      { pattern   => '\|.*' ,
+	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
 		target    => 'MARK --or-mark' ,
 		mark      => HIGHMARK ,
 		mask      => '' } ,
-	      { pattern   => '&.*' ,
+	      { match     => sub ( $ ) { $_[0] =~ '&.*' },
 		target    => 'MARK --and-mark ' ,
 		mark      => HIGHMARK ,
 		mask      => '' 
@@ -171,7 +171,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    {
 	  PATTERN:
 		for my $tccmd ( @tccmd ) {
-		    if ( $cmd =~ /^($tccmd->{pattern})$/ ) {
+		    if ( $tccmd->{match}($cmd) ) {
 			fatal_error "$mark not valid with :C[FP]" if $connmark;
 
 			$target      = "$tccmd->{target} ";

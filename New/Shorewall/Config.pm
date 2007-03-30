@@ -215,6 +215,7 @@ my %capdesc = ( NAT_ENABLED     => 'NAT',
 		ADDRTYPE        => 'Address Type Match',
 		);
 
+my @config_path;
 #
 # Stash away file references here when we encounter INCLUDE
 #
@@ -255,8 +256,7 @@ sub find_file($)
 
     my $directory;
 
-    for $directory ( split ':', $ENV{CONFIG_PATH} ) {
-	$directory = "$directory/" unless substr( $directory, -1, 1 ) eq '/';
+    for $directory ( @config_path ) {
 	my $file = "$directory$filename";
 	return $file if -f $file;
     }
@@ -294,17 +294,17 @@ sub split_line( $$ ) {
 }
 
 #
-# Some files can have shell variables embedded. This function expands them from %ENV.
+# Config files can have shell variables embedded. This function expands them from %ENV.
 #
 sub expand_shell_variables( $ ) {
     my $line = $_[0]; 
-    $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
-    $line = $1 . ( $ENV{$2} || '' ) . $3 while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
+    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
+    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
     $line;
 }
 
 #
-# Open a file, setting $currentfile. Returns the absolute pathname if the file
+# Open a file, setting $currentfile. Returns the file's absolute pathname if the file
 # exists, is non-empty  and was successfully opened. Terminates with a fatal error
 # if the file exists, is non-empty, but the open fails.
 #
@@ -466,6 +466,13 @@ sub require_capability( $$ ) {
 # - establish global hashes %config , %env and %capabilities
 #
 sub get_configuration() {
+
+    @config_path = split /:/, $ENV{CONFIG_PATH};
+
+    for ( @config_path ) {
+	$_ .= '/' unless m|//$|;
+    }
+
     my $file = find_file 'shorewall.conf';
 
     if ( -f $file ) {

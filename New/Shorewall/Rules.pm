@@ -326,7 +326,7 @@ sub process_criticalhosts() {
 
     my  @critical = ();
 
-    my $fn = open_file $fn;
+    my $fn = open_file 'routestopped';
 
     my $first_entry = 1;
 

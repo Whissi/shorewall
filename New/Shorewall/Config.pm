@@ -293,49 +293,6 @@ sub split_line( $$ ) {
     @line;
 }
 
-sub default ( $$ ) {
-    my ( $var, $val ) = @_;
-
-    $config{$var} = $val unless defined $config{$var} && $config{$var} ne '';
-}
-
-sub default_yes_no ( $$ ) {
-    my ( $var, $val ) = @_;
-
-    my $curval = "\L$config{$var}";
-
-    if ( $curval ) {
-	if (  $curval eq 'no' ) {
-	    $config{$var} = '';
-	} else {
-	    fatal_error "Invalid value for $var ($val)" unless $curval eq 'yes';
-	}
-    } else {
-	$config{$var} = $val;
-    }
-}
-
-sub report_capabilities() {
-    sub report_capability( $ ) {
-	my $cap = $_[0];
-	print "   $capdesc{$cap}: ";
-	print $capabilities{$cap} ? "Available\n" : "Not Available\n";
-    }
-
-    print "Shorewall has detected the following capabilities:\n";
-
-    for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {
-	report_capability $cap;
-    }
-}
-
-sub require_capability( $$ ) {
-    my ( $capability, $description ) = @_;
-
-    fatal_error "$description requires $capdesc{$capability} in your kernel and iptables"
-      unless $capabilities{$capability};
-}
-
 #
 # Some files can have shell variables embedded. This function expands them from %ENV.
 #
@@ -454,6 +411,49 @@ sub read_a_line {
 	    $currentfile = undef;
 	}
     }
+}
+
+sub default ( $$ ) {
+    my ( $var, $val ) = @_;
+
+    $config{$var} = $val unless defined $config{$var} && $config{$var} ne '';
+}
+
+sub default_yes_no ( $$ ) {
+    my ( $var, $val ) = @_;
+
+    my $curval = "\L$config{$var}";
+
+    if ( $curval ) {
+	if (  $curval eq 'no' ) {
+	    $config{$var} = '';
+	} else {
+	    fatal_error "Invalid value for $var ($val)" unless $curval eq 'yes';
+	}
+    } else {
+	$config{$var} = $val;
+    }
+}
+
+sub report_capabilities() {
+    sub report_capability( $ ) {
+	my $cap = $_[0];
+	print "   $capdesc{$cap}: ";
+	print $capabilities{$cap} ? "Available\n" : "Not Available\n";
+    }
+
+    print "Shorewall has detected the following capabilities:\n";
+
+    for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {
+	report_capability $cap;
+    }
+}
+
+sub require_capability( $$ ) {
+    my ( $capability, $description ) = @_;
+
+    fatal_error "$description requires $capdesc{$capability} in your kernel and iptables"
+      unless $capabilities{$capability};
 }
 
 #

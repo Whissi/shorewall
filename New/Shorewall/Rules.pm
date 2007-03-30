@@ -1242,7 +1242,7 @@ sub process_rules() {
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
 #
-# The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of rules.
+# The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
 # 
 sub generate_matrix() {
     #
@@ -1304,15 +1304,15 @@ sub generate_matrix() {
 	}
     }
 
-    #
-    # Generate_Matrix() Starts Here
-    #
     my $prerouting_rule  = 1;
     my $postrouting_rule = 1;
     my $exclusion_seq    = 1;
     my %chain_exclusions;
     my %policy_exclusions;
 
+    #
+    # Generate_Matrix() Starts Here
+    #
     for my $interface ( @interfaces ) {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), "-o $interface ";
     }

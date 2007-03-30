@@ -126,7 +126,12 @@
     instructions.</para>
 
     <para>Shorewall views the network where it is running as being composed of
-    a set of zones. In this guide, we will use the following zones:</para>
+    a set of zones. A zone is one or more hosts, which can be defined
+    as individual hosts or networks in
+    <filename class="directory">/etc/shorewall/hosts</filename>, or as
+    an entire interface in <filename
+    class="directory">/etc/shorewall/interfaces</filename>. In this
+    guide, we will use the following zones:</para>
 
     <variablelist>
       <varlistentry>
@@ -1075,7 +1080,7 @@ Destination     Gateway         Genmask         Flgs MSS Win irtt Iface
 
       <para>When sending packets over Ethernet, IP addresses aren't used.
       Rather Ethernet addressing is based on <emphasis>Media Access
-      Control</emphasis> (MAC) addresses. Each Ethernet device has it's own
+      Control</emphasis> (MAC) addresses. Each Ethernet device has its own
       unique MAC address which is burned into a PROM on the device during
       manufacture. You can obtain the MAC of an Ethernet device using the
       <quote>ip</quote> utility:</para>
@@ -1792,7 +1797,7 @@ ACCEPT   net             $FW                tcp    ssh     #SSH to the
       <para>The above discussion reflects my personal preference for using
       Proxy ARP for my servers in my DMZ and SNAT/NAT for my local systems. I
       prefer to use NAT only in cases where a system that is part of an RFC
-      1918 subnet needs to have it's own public IP.</para>
+      1918 subnet needs to have its own public IP.</para>
 
       <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
@@ -1907,7 +1912,7 @@ ACCEPT   net             $FW                tcp    ssh     #SSH to the
     systems named www.foobar.net and mail.foobar.net and you want the three
     local systems named "winken.foobar.net, blinken.foobar.net and
     nod.foobar.net. You want your firewall to be known as firewall.foobar.net
-    externally and it's interface to the local network to be know as
+    externally and its interface to the local network to be know as
     gateway.foobar.net and its interface to the dmz as dmz.foobar.net. Let's
     have the DNS server on 192.0.2.177 which will also be known by the name
     ns1.foobar.net.</para>

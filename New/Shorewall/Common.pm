@@ -56,6 +56,7 @@ our @EXPORT = qw(ALLIPv4
 		 $command
 		 $doing
 		 $done
+                 $verbose
 		 );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
@@ -73,11 +74,17 @@ our $line = '';          # Current config file line
 
 our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
+our $verbose;
+
 my $object = 0;          # Object file Handle Reference
 my $lastlineblank = 0;   # Avoid extra blank lines in the output
 my $indent        = '';
 my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
+
+BEGIN {
+    $verbose = $ENV{VERBOSE} || 0;
+}
 
 #
 # Fatal Error
@@ -166,28 +173,27 @@ sub save_progress_message_short( $ ) {
     emit "progress_message $_[0]" if $object;
 }
 
-sub progress_message {
-    if ( $ENV{VERBOSE} > 1 ) {
-	my $ts = '';
-	$ts = ( localtime ) . ' ' if $ENV{TIMESTAMP};
-	print "${ts}@_\n";
-    }
-}
-
 sub timestamp() {
     my ($sec, $min, $hr) = ( localtime ) [0,1,2];
     printf '%02d:%02d:%02d ', $hr, $min, $sec;
 }
 
+sub progress_message {
+    if ( $verbose > 1 ) {
+	timestamp if $ENV{TIMESTAMP};
+	print "@_\n";
+    }
+}
+
 sub progress_message2 {
-    if ( $ENV{VERBOSE} > 0 ) {
+    if ( $verbose > 0 ) {
 	timestamp if $ENV{TIMESTAMP};
 	print "@_\n";
     }
 }
 
 sub progress_message3 {
-    if ( $ENV{VERBOSE} >= 0 ) {
+    if ( $verbose >= 0 ) {
 	timestamp if $ENV{TIMESTAMP};
 	print "@_\n";
     }

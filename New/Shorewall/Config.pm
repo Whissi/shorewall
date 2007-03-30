@@ -370,9 +370,10 @@ sub read_a_line {
 	    $currentlinenumber++;
 	    next if $nextline =~ /^\s*#/;
 	    next if $nextline =~ /^\s*$/;
+
 	    $nextline =~ s/#.*$//;
-	    
 	    chomp $nextline;
+	    $nextline =~ s/\s+/ /g if $verbose >= 2;
 
 	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
 		$line .= substr( $nextline, 0, -1 );
@@ -480,14 +481,14 @@ sub get_configuration() {
 	    open_file $file;
 
 	    while ( read_a_line ) {
-		if ( $line =~ /^([a-zA-Z]\w*)\s*=\s*(.*)$/ ) {
+		if ( $line =~ /^([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
 			warning_message "Unknown configuration option \"$var\" ignored";
 			next;
 		    }
 
-		    $config{$var} = $val =~ /\"([^\"]*)\"$/ ? $1 : $val;
+		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 		} else {
 		    fatal_error "Unrecognized entry in $file: $line";
 		}
@@ -510,7 +511,7 @@ sub get_configuration() {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
 
-		if ( $line =~ /^([a-zA-Z]\w*)\s*=\s*(.*)$/ ) {
+		if ( $line =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $capabilities{$var} ) {
 			warning_message "Unknown capability \"$var\" ignored";

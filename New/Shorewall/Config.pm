@@ -353,7 +353,6 @@ sub pop_open() {
 #
 #   - Ignore blank or comment-only lines.
 #   - Remove trailing comments.
-#   - Compress out extra whitespace.
 #   - Handle Line Continuation (We don't continue comment lines, thus avoiding user frustration
 #     when the last line of a comment inadvertently ends with '\').
 #   - Expand shell variables from $ENV.
@@ -373,7 +372,6 @@ sub read_a_line {
 
 	    $nextline =~ s/#.*$//;
 	    chomp $nextline;
-	    $nextline =~ s/\s+/ /g if $verbose >= 2;
 
 	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
 		$line .= substr( $nextline, 0, -1 );
@@ -511,7 +509,7 @@ sub get_configuration() {
 		next if $line =~ /^\s*#/;
 		next if $line =~ /^\s*$/;
 
-		if ( $line =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
+		if ( $line =~ /^([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $capabilities{$var} ) {
 			warning_message "Unknown capability \"$var\" ignored";

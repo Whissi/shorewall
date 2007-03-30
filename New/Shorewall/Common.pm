@@ -181,7 +181,9 @@ sub timestamp() {
 sub progress_message {
     if ( $verbose > 1 ) {
 	timestamp if $ENV{TIMESTAMP};
-	print "@_\n";
+	my $line = join( ' ', @_ );
+	$line =~ s/\s+/ /g;
+	print "$line\n";
     }
 }
 

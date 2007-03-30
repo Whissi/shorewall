@@ -656,12 +656,10 @@ sub compiler( $ ) {
     #
     # Process the zones file.
     #
-    progress_message2 "Determining Zones...";                    
     determine_zones;
     #
     # Process the interfaces file.
     #
-    progress_message2 "Validating interfaces file...";           
     validate_interfaces_file;             
     #
     # Process the hosts file.
@@ -680,7 +678,6 @@ sub compiler( $ ) {
     #
     # Process the Policy File.
     #
-    progress_message2 "Validating Policy file...";               
     validate_policy;
     #
     # Compile the 'stop_firewall()' function
@@ -693,7 +690,6 @@ sub compiler( $ ) {
     #
     # Do all of the zone-independent stuff
     #
-    progress_message2 "$doing Common Rules...";              
     add_common_rules;
     #
     # /proc stuff
@@ -735,7 +731,6 @@ sub compiler( $ ) {
     #
     # Process the rules file.
     #
-    progress_message2 "$doing Rules...";                         
     process_rules;
     #
     # Add Tunnel rules.
@@ -767,7 +762,6 @@ sub compiler( $ ) {
     #
     # Accounting.
     #
-    progress_message2 "$doing Accounting...";                
     setup_accounting;
 
     progress_message2 'Generating Rule Matrix...';         

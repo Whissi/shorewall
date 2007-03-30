@@ -304,7 +304,9 @@ sub expand_shell_variables( $ ) {
 }
 
 #
-# Open a file, setting $currentfile. 
+# Open a file, setting $currentfile. Returns the absolute pathname if the file
+# exists, is non-empty  and was successfully opened. Terminates with a fatal error
+# if the file exists, is non-empty, but the open fails.
 #
 sub open_file( $ ) {
     my $fname = find_file $_[0];
@@ -352,7 +354,8 @@ sub pop_open() {
 #   - Ignore blank or comment-only lines.
 #   - Remove trailing comments.
 #   - Compress out extra whitespace.
-#   - Handle Line Continuation
+#   - Handle Line Continuation (We don't continue comment lines, thus avoiding user frustration
+#     when the last line of a comment inadvertently ends with '\').
 #   - Expand shell variables from $ENV.
 #   - Handle INCLUDE <filename>
 #
@@ -363,6 +366,7 @@ sub read_a_line {
 	$line = '';
 
 	while ( my $nextline = <$currentfile> ) {
+
 	    $currentlinenumber++;
 	    next if $nextline =~ /^\s*#/;
 	    next if $nextline =~ /^\s*$/;

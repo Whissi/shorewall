@@ -81,8 +81,11 @@ progress_message \"   Host $address connected to $interface added to ARP on $ext
 sub setup_proxy_arp() {
 
     my $interfaces= find_interfaces_by_option 'proxyarp';
+    my $fn = open_file 'proxyarp';
 
-    if ( @$interfaces || open_file 'proxyarp' ) {
+    if ( @$interfaces || $fn ) {
+
+	my $first_entry = 1;
 
 	save_progress_message "Setting up Proxy ARP...";
 
@@ -92,6 +95,11 @@ sub setup_proxy_arp() {
 
 	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 5, 'proxyarp file';
 
+	    if ( $first_entry ) {
+		progress_message2 "$doing $fn...";
+		$first_entry = 0;
+	    }
+	    
 	    $set{$interface}  = 1;
 	    $reset{$external} = 1 unless $set{$external};
 

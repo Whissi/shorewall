@@ -79,7 +79,6 @@ sub setup_route_marking() {
 }
 
 sub setup_providers() {
-    my $fn = find_file 'providers';
     my $providers = 0;
 
     sub copy_table( $$ ) {
@@ -344,7 +343,7 @@ sub setup_providers() {
     #
     #   Setup_Providers() Starts Here....
     #
-    open_file $fn;
+    my $fn = open_file 'providers';
 
     while ( read_a_line ) {
 	unless ( $providers ) {
@@ -427,17 +426,21 @@ sub setup_providers() {
 	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	}
 
-	my $fn = find_file 'route_rules';
+	my $fn = open_file 'route_rules';
 
-	if ( -f $fn ) {
-	    progress_message2 "$doing $fn...";
+	if ( $fn ) {
+
+	    my $first_entry = 0;
 
 	    emit '';
 
-	    open_file $fn;
-
 	    while ( read_a_line ) {
 
+		if ( $first_entry ) {
+		    progress_message2 "$doing $fn...";
+		    $first_entry = 0;
+		}
+		
 		my ( $source, $dest, $provider, $priority ) = split_line 4, 'route_rules file';
 
 		add_an_rtrule( $source, $dest, $provider , $priority );

@@ -110,12 +110,19 @@ sub process_accounting_rule( $$$$$$$$ ) {
 
 sub setup_accounting() {
 
-    open_file 'accounting';
+    my $first_entry = 1;
+
+    my $fn = open_file 'accounting';
 
     while ( read_a_line ) {
 
 	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = split_line 8, 'Accounting File';
 
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";                
+	    $first_entry = 0;
+	}
+    
 	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user;
     }
 

@@ -53,14 +53,14 @@ sub validate_hosts_file()
     my $ipsec = 0;
     my $first_entry = 1;
 
-    open_file 'hosts';
+    my $fn = open_file 'hosts';
 
     while ( read_a_line ) {
 
 	my ($zone, $hosts, $options ) = split_line 3, 'hosts file';
 
 	if ( $first_entry ) {
-	    progress_message2 "Validating hosts file...";
+	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
 

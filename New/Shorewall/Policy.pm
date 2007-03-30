@@ -128,14 +128,19 @@ sub validate_policy()
 	}
     }
 
-    open_file 'policy';
+    my $fn = open_file 'policy';
+
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 5, 'policy file';
 
-	$loglevel  = '' unless defined $loglevel;
-	$synparams = '' unless defined $synparams;
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";
+	    $first_entry = 0;
+	}
+
 	$loglevel  = '' if $loglevel  eq '-';
 	$synparams = '' if $synparams eq '-';
 

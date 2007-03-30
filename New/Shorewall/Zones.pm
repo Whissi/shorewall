@@ -180,13 +180,20 @@ sub determine_zones()
 {
     my @z;
 
-    open_file 'zones';
+    my $fn = open_file 'zones';
+
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my @parents;
 
 	my ($zone, $type, $options, $in_options, $out_options ) = split_line 5, 'zones file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";                       
+	    $first_entry = 0;
+	}
 
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;

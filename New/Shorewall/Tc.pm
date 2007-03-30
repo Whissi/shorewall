@@ -349,15 +349,12 @@ sub validate_tc_class( $$$$$$ ) {
 }
 
 sub setup_traffic_shaping() {
-    my $first_entry = 1;
-
     save_progress_message "Setting up Traffic Control...";
 
-    my $fn = find_file 'tcdevices';
+    my $fn = open_file 'tcdevices';
 
-    if ( -f $fn ) {
-
-	open_file $fn;
+    if ( $fn ) {
+	my $first_entry = 1;
 
 	while ( read_a_line ) {
 
@@ -373,12 +370,10 @@ sub setup_traffic_shaping() {
 	}
     }
 
-    $fn = find_file 'tcclasses';
+    $fn = open_file 'tcclasses';
 
-    if ( -f $fn ) {
-	$first_entry = 1;
-
-	open_file $fn;
+    if ( $fn ) {
+	my $first_entry = 1;
 
 	while ( read_a_line ) {
 
@@ -510,16 +505,14 @@ sub setup_tc() {
 	}
     }
 
-    my $fn = find_file 'tcrules';
-
-    if ( open_file $fn ) {
+    if ( my $fn = open_file 'tcrules' ) {
 
 	while ( read_a_line ) {
 	    
 	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
 
 	    if ( $first_entry ) {
-		progress_message2 "$doing TC Rules...";                  
+		progress_message2 "$doing $fn...";                  
 		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' );
 		$first_entry = 0;
 	    }

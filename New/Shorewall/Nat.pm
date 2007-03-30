@@ -240,14 +240,14 @@ sub setup_masq()
 {
     my $first_entry = 1;
 
-    open_file 'masq';
+    my $fn = open_file 'masq';
 
     while ( read_a_line ) {
 
 	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 6, 'masq file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing Masq file...";                     
+	    progress_message2 "$doing $fn...";                     
 	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
 	    $first_entry = 0;
 	}
@@ -354,14 +354,14 @@ sub setup_nat() {
 
     my $first_entry = 1;
 
-    open_file 'nat';
+    my $fn = open_file 'nat';
 
     while ( read_a_line ) {
 
 	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 5, 'nat file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing one-to-one NAT...";                
+	    progress_message2 "$doing $fn...";                
 	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
 	    $first_entry = 0;
 	}
@@ -389,14 +389,14 @@ sub setup_netmap() {
 
     my $first_entry = 1;
 
-    open_file 'netmap';
+    my $fn = open_file 'netmap';
 
     while ( read_a_line ) {
 
 	my ( $type, $net1, $interface, $net2 ) = split_line 4, 'netmap file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing NETMAP...";                
+	    progress_message2 "$doing $fn...";                
 	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
 	    $first_entry = 0;
 	}

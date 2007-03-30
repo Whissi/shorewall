@@ -64,7 +64,7 @@ sub process_tos() {
     my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
     my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
 
-    if ( open_file 'tos' ) {
+    if ( my $fn = open_file 'tos' ) {
 	my $first_entry = 1;
 
 	my ( $pretosref, $outtosref );
@@ -74,7 +74,7 @@ sub process_tos() {
 	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 'tos file';
 
 	    if ( $first_entry ) {
-		progress_message2 'Setting up TOS...';
+		progress_message2 "$doing $fn...";
 		$pretosref = ensure_chain 'mangle' , $chain;
 		$outtosref = ensure_chain 'mangle' , 'outtos';
 		$first_entry = 0;
@@ -127,13 +127,18 @@ sub setup_ecn()
     my %interfaces;
     my @hosts;
 
-    if ( open_file 'ecn' ) {
-	
-	progress_message2 join( '' , "$doing ", find_file( 'ecn' ), '...' );
+    if ( my $fn = open_file 'ecn' ) {
+
+	my $first_entry = 1;
 
 	while ( read_a_line ) {
 
 	    my ($interface, $hosts ) = split_line 2, 'ecn file';
+
+	    if ( $first_entry ) {
+		progress_message2 "$doing $fn...";
+		$first_entry = 0;
+	    }
 
 	    fatal_error "Unknown interface ( $interface )" unless known_interface $interface;
 
@@ -189,13 +194,20 @@ sub setup_rfc1918_filteration( $ ) {
 
     $chainref = new_standard_chain 'rfc1918d' if $config{RFC1918_STRICT};
 
-    open_file 'rfc1918';
+    my $fn = open_file 'rfc1918';
+
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my ( $networks, $target ) = split_line 2, 'rfc1918 file';
 
 	my $s_target;
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";
+	    $first_entry = 0;
+	}
 
 	if ( $target eq 'logdrop' ) {
 	    $target   = 'rfc1918';
@@ -249,8 +261,6 @@ sub setup_blacklist() {
 
 	my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
 
-	progress_message2 "   Setting up Blacklist...";
-
 	new_standard_chain 'blacklst';
 
 	my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
@@ -265,13 +275,18 @@ sub setup_blacklist() {
 	    $target = 'blacklog';
 	}
 
-	if ( open_file 'blacklist' ) {
+	if ( my $fn = open_file 'blacklist' ) {
 
-	    progress_message( join( '', '      Processing ', find_file( 'blacklist' ), '...' ) );
+	    my $first_entry = 1;
 
 	    while ( read_a_line ) {
 
 		my ( $networks, $protocol, $ports ) = split_line 3, 'blacklist file';
+
+		if ( $first_entry ) {
+		    progress_message2 "$doing $fn...";
+		    $first_entry = 0;
+		}
 
 		expand_rule 
 		    ensure_filter_chain( 'blacklst' , 0 ) ,
@@ -348,18 +363,22 @@ sub process_criticalhosts() {
 
 sub process_routestopped() {
 
-    my $fn = find_file 'routestopped';
     my ( @allhosts, %source, %dest );
 
-    progress_message2 "$doing $fn...";
+    my $fn = open_file 'routestopped';
 
-    open_file $fn;
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my $routeback = 0;
 
 	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";
+	    $first_entry = 0;
+	}
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
 
@@ -478,7 +497,7 @@ sub add_common_rules() {
     }
 
     if ( @$list ) {
-	progress_message2 '   Adding Anti-smurf Rules';
+	progress_message2 'Adding Anti-smurf Rules';
 	for my $hostref  ( @$list ) {
 	    $interface = $hostref->[0];
 	    my $ipsec  = $hostref->[1];
@@ -502,7 +521,7 @@ sub add_common_rules() {
     $list = find_interfaces_by_option 'dhcp';
 
     if ( @$list ) {
-	progress_message2 '   Adding rules for DHCP';
+	progress_message2 'Adding rules for DHCP';
 
 	for $interface ( @$list ) {
 	    for $chain ( @{first_chains $interface}) {
@@ -515,18 +534,14 @@ sub add_common_rules() {
 
     $list = find_hosts_by_option 'norfc1918';
 
-    if ( @$list ) {
-	progress_message2 '   Enabling RFC1918 Filtering';
-
-	setup_rfc1918_filteration $list;
-    }
+    setup_rfc1918_filteration $list if @$list;
 
     $list = find_hosts_by_option 'tcpflags';
 
     if ( @$list ) {
 	my $disposition;
 
-	progress_message2 "   $doing TCP Flags filtering...";
+	progress_message2 "$doing TCP Flags filtering...";
 
 	$chainref = new_standard_chain 'tcpflags';
 
@@ -585,7 +600,7 @@ sub add_common_rules() {
     $list = find_interfaces_by_option 'upnp';
 
     if ( @$list ) {
-	progress_message2 '   $doing UPnP';
+	progress_message2 '$doing UPnP';
 
 	(new_chain 'nat', 'UPnP')->{referenced} = 1;
 
@@ -639,11 +654,18 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
 
-	open_file 'maclist';
+	my $fn = open_file 'maclist';
+
+	my $first_entry = 1;
 
 	while ( read_a_line ) {
 
 	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 4, 'maclist file';
+
+	    if ( $first_entry ) {
+		progress_message2 "$doing $fn...";
+		$first_entry = 0;
+	    }
 
 	    if ( $disposition eq 'COMMENT' ) {
 		if ( $capabilities{COMMENTS} ) {
@@ -1169,11 +1191,18 @@ sub process_rule ( $$$$$$$$$ ) {
 #
 sub process_rules() {
 
-    open_file 'rules';
+    my $fn = open_file 'rules';
+
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = split_line 9, 'rules file';
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";
+	    $first_entry = 0;
+	}
 
 	if ( $target eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {

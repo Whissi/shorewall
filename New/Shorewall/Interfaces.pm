@@ -132,12 +132,19 @@ sub validate_interfaces_file()
 			upnp => 1,
 			);
 
-    open_file 'interfaces';
+    my $fn = open_file 'interfaces';
+
+    my $first_entry = 1;
 
     while ( read_a_line ) {
 
 	my ($zone, $interface, $networks, $options ) = split_line 4, 'interfaces file';
 	my $zoneref;
+
+	if ( $first_entry ) {
+	    progress_message2 "$doing $fn...";                       
+	    $first_entry = 0;
+	}
 
 	if ( $zone eq '-' ) {
 	    $zone = '';

@@ -233,14 +233,14 @@ sub setup_tunnels() {
     #
     # Setup_Tunnels() Starts Here
     #
-    open_file 'tunnels';
+    my $fn = open_file 'tunnels';
 
     while ( read_a_line ) {
 
 	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line 4, 'tunnels file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing Tunnels...";                       
+	    progress_message2 "$doing $fn...";                       
 	    $first_entry = 0;
 	}
 

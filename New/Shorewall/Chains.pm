@@ -132,6 +132,9 @@ our @VERSION = 1.00;
 #                                                                 <rule2>
 #                                                                 ...
 #                                                               ]
+#                                             }
+#                              }
+#                 }
 #
 #       'is_optional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
 #       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are optional.

@@ -145,7 +145,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
 	if ( $tcsref ) {
 	    if ( $chain eq 'tcout' ) {
-		fatal_error "Invalid chain designator for source $firewall_zone; rule \"$line\"" unless $tcsref->{fw};
+		fatal_error "Invalid chain designator for source $firewall_zone" unless $tcsref->{fw};
 	    }
 
 	    $chain    = $tcsref->{chain}  if $tcsref->{chain};

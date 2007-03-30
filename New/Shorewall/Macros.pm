@@ -66,7 +66,7 @@ sub find_macro( $ )
 sub split_action ( $ ) {
     my $action = $_[0];
     my @a = split /:/ , $action;
-    fatal_error "Invalid ACTION $action in rule \"$line\"" if ( $action =~ /::/ ) || ( @a > 3 );
+    fatal_error "Invalid ACTION ($action)" if ( $action =~ /::/ ) || ( @a > 3 );
     ( shift @a, join ":", @a );
 }
 

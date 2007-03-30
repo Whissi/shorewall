@@ -150,7 +150,7 @@ sub setup_one_masq($$$$$$)
     #
     ( my $interface = $fullinterface ) =~ s/:.*//;
 
-    fatal_error "Unknown interface $interface, rule \"$line\"" unless $interfaces{$interface}{root};
+    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
 
     my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
     #
@@ -280,7 +280,7 @@ sub validate_nat_column( $$ ) {
 	    if ( ( $val eq 'no' ) || ( $val eq '-' ) ) {
 		$$ref = '';
 	    } else {
-		fatal_error "Invalid value ($val) for $_[0] in NAT entry \"$line\"";
+		fatal_error "Invalid value ($val) for $_[0]";
 	    }
 	}
     } else {
@@ -311,7 +311,7 @@ sub do_one_nat( $$$$$ )
 	$policyout =  '-m policy --pol none --dir out';
     }
 
-    fatal_error "Invalid nat file entry \"$line\"" unless defined $interface && defined $internal;
+    fatal_error "Invalid nat file entry" unless defined $interface && defined $internal;
 
     if ( $add_ip_aliases ) {
 	if ( $interface =~ s/:$// ) {
@@ -406,7 +406,7 @@ sub setup_netmap() {
 	} elsif ( $type eq 'SNAT' ) {
 	    add_rule ensure_chain( 'nat' , output_chain $interface ) , "-s $net1 -j NETMAP --to $net2";
 	} else {
-	    fatal_error "Invalid type $type in netmap entry \"$line\"";
+	    fatal_error "Invalid type ($type)";
 	}
 
 	progress_message "   Network $net1 on $interface mapped to $net2 ($type)";

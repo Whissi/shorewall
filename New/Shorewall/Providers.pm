@@ -241,7 +241,7 @@ sub setup_providers() {
 	    for my $option ( split /,/, $options ) {
 		if ( $option eq 'track' ) {
 		    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface};
-		    fatal_error "The 'track' option requires a numeric value in the MARK column - Provider \"$line\"" if $mark eq '-';
+		    fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
 		    $routemarked_interfaces{$interface} = $mark;
 		    push @routemarked_interfaces, $interface;
 		} elsif ( $option =~ /^balance=(\d+)/ ) {
@@ -253,7 +253,7 @@ sub setup_providers() {
 		} elsif ( $option eq 'optional' ) {
 		    $optional = 1;
 		} else {
-		    fatal_error "Invalid option ($option) in provider \"$line\"";
+		    fatal_error "Invalid option ($option)";
 		}
 	    }
 	}
@@ -310,13 +310,13 @@ sub setup_providers() {
 		}
 	    }
 
-	    fatal_error "Unknown provider $provider in route rule \"$line\"" unless $found;
+	    fatal_error "Unknown provider ($provider)" unless $found;
 	}
 
 	$source = '-' unless $source;
 	$dest   = '-' unless $dest;
 
-	fatal_error "You must specify either the source or destination in an rt rule: \"$line\"" if $source eq '-' && $dest eq '-';
+	fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
 	$dest = $dest eq '-' ? '' : "to $dest";
 
@@ -331,7 +331,7 @@ sub setup_providers() {
 	    $source = "iif $source";
 	}
 
-	fatal_error "Invalid priority ($priority) in rule \"$line\"" unless $priority && $priority =~ /^\d{1,5}$/;
+	fatal_error "Invalid priority ($priority)" unless $priority && $priority =~ /^\d{1,5}$/;
 
 	$priority = "priority $priority";
 

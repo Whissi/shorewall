@@ -153,9 +153,9 @@ sub parse_zone_option_list($)
 	    fatal_error "Invalid Option ($e)" unless $fmt;
 
 	    if ( $fmt eq NOTHING ) {
-		fatal_error "Option $e does not take a value: Zone \"$line\"" if defined $val;
+		fatal_error "Option $e does not take a value" if defined $val;
 	    } else {
-		fatal_error "Invalid value ($val) for option \"$e\" in Zone \"$line\"" unless $val =~ /^($fmt)$/;
+		fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
 	    }
 
 	    if ( $key{$e} ) {

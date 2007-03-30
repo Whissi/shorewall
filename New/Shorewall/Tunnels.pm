@@ -45,7 +45,7 @@ sub setup_tunnels() {
 
 	( $kind, my $qualifier ) = split /:/, $kind;
 
-	fatal_error "Invalid IPSEC modifier ($qualifier) in tunnel \"$line\"" if $qualifier && ( $qualifier ne 'noah' );
+	fatal_error "Invalid IPSEC modifier ($qualifier)" if $qualifier && ( $qualifier ne 'noah' );
 
 	my $noah = $qualifier || ($kind ne 'ipsec' );
 
@@ -69,7 +69,7 @@ sub setup_tunnels() {
 	}
 
 	for my $zone ( split /,/, $gatewayzones ) {
-	    fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+	    fatal_error "Invalid zone ($zone)" unless $zones{$zone}{type} eq 'ipv4';
 	    $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
 	    $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
 
@@ -194,7 +194,7 @@ sub setup_tunnels() {
     sub setup_one_tunnel($$$$) {
 	my ( $kind , $zone, $gateway, $gatewayzones ) = @_;
 
-	fatal_error "Invalid zone ($zone) in tunnel \"$line\"" unless $zones{$zone}{type} eq 'ipv4';
+	fatal_error "Invalid zone ($zone)" unless $zones{$zone}{type} eq 'ipv4';
 
 	my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
 	my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
@@ -221,7 +221,7 @@ sub setup_tunnels() {
 
 	my $tunnelref = $tunneltypes{ $type };
 
-	fatal_error "Tunnels of type $type are not supported: Tunnel \"$line\"" unless $tunnelref;
+	fatal_error "Tunnels of type $type are not supported" unless $tunnelref;
 
 	$tunnelref->{function}->( $inchainref, $outchainref, @{$tunnelref->{params}} );
 

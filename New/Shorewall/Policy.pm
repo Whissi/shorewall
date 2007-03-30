@@ -160,7 +160,7 @@ sub validate_policy()
 		    createactionchain $default;
 		}
 	    } else {
-		fatal_error "Unknown Default Action ($default) in policy \"$line\"";
+		fatal_error "Unknown Default Action ($default)";
 	    }
 	} else {
 	    $default = $default_actions{$policy} || '';

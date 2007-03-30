@@ -509,7 +509,7 @@ sub get_configuration() {
 
 		    $capabilities{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
 		} else {
-		    fatal_error "Unrecognized entry in $file: $line";
+		    fatal_error "Unrecognized entry";
 		}
 	    }
 

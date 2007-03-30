@@ -80,7 +80,7 @@ sub process_tos() {
 		$first_entry = 0;
 	    }
 
-	    fatal_error "TOS field required: $line" unless $tos ne '-';
+	    fatal_error "TOS field required" unless $tos ne '-';
 
 	    my $chainref;
 
@@ -135,7 +135,7 @@ sub setup_ecn()
 
 	    my ($interface, $hosts ) = split_line 2, 'ecn file';
 
-	    fatal_error "Unknown interface ( $interface ) in ECN entry \"$line\"" unless known_interface $interface;
+	    fatal_error "Unknown interface ( $interface )" unless known_interface $interface;
 
 	    $interfaces{$interface} = 1;
 
@@ -336,7 +336,7 @@ sub process_criticalhosts() {
 		    if ( $option eq 'critical' ) {
 			push @critical, @hosts; 
 		    } else {
-			warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"";
+			warning_message "Unknown routestopped option ( $option ) ignored";
 		    }
 		}
 	    }
@@ -373,7 +373,7 @@ sub process_routestopped() {
 	    for my $option (split /,/, $options ) {
 		if ( $option eq 'routeback' ) {
 		    if ( $routeback ) {
-			warning_message "Duplicate 'routeback' option ignored in routestopped entry \"$line\"";
+			warning_message "Duplicate 'routeback' option ignored";
 		    } else {
 			$routeback = 1;
 
@@ -393,7 +393,7 @@ sub process_routestopped() {
 			$dest{"$interface:$host"} = 1;
 		    }
 		} else {
-		    warning_message "Unknown routestopped option ( $option ) ignored in routestopped entry \"$line\"" unless $option eq 'critical';
+		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
 		}
 	    }
 	}
@@ -657,9 +657,9 @@ sub setup_mac_lists( $ ) {
 
 		my $targetref = $maclist_targets{$disposition};
 
-		fatal_error "Invalid DISPOSITION ( $disposition) in rule \"$line\"" if ( $table eq 'mangle' ) && ! $targetref->{mangle};
+		fatal_error "Invalid DISPOSITION ( $disposition)" if ( $table eq 'mangle' ) && ! $targetref->{mangle};
 
-		fatal_error "No hosts on $interface have the maclist option specified: \"$line\"" unless $maclist_interfaces{$interface};
+		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
 
 		my $chainref = $chain_table{$table}{( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface )};
 
@@ -770,7 +770,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 
 	    $mtarget = find_logactionchain $mtarget;
 	} else {
-	    fatal_error "Invalid Action ($mtarget) in rule \"$line\""  unless $actiontype & STANDARD;
+	    fatal_error "Invalid Action ($mtarget)"  unless $actiontype & STANDARD;
 	}
 
 	if ( $msource ) {
@@ -831,7 +831,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     #
     my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
 
-    fatal_error "Unknown action ($action) in rule \"$line\"" unless $actiontype;
+    fatal_error "Unknown action ($action)" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
 	#
@@ -900,8 +900,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	$dest = ALLIPv4;
     }
 
-    fatal_error "Unknown source zone ($sourcezone) in rule \"$line\"" unless $zones{$sourcezone}; 
-    fatal_error "Unknown destination zone ($destzone) in rule \"$line\"" unless $zones{$destzone};
+    fatal_error "Unknown source zone ($sourcezone)"    unless $zones{$sourcezone}; 
+    fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
 
     my $restriction = NO_RESTRICT;
 
@@ -920,7 +920,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     #
     my $policy   = $chainref->{policy};
     fatal_error "No policy defined from zone $sourcezone to zone $destzone" unless $policy;
-    fatal_error "Rules may not override a NONE policy: rule \"$line\"" if $policy eq 'NONE';
+    fatal_error "Rules may not override a NONE policy"                      if $policy eq 'NONE';
     #
     # Generate Fixed part of the rule
     #
@@ -948,8 +948,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	#
 	$ports = $serverport if $serverport;
 
-	fatal_error "A server must be specified in the DEST column in $action rules: \"$line\"" unless ( $actiontype & REDIRECT ) || $server;
-	fatal_error "Invalid server ($server), rule: \"$line\"" if $server =~ /:/;
+	fatal_error "A server must be specified in the DEST column in $action rules" unless ( $actiontype & REDIRECT ) || $server;
+	fatal_error "Invalid server ($server)" if $server =~ /:/;
 	#
 	# Generate the target
 	#
@@ -1015,7 +1015,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    #
 	    # NONAT or ACCEPT+ -- May not specify a destination interface
 	    #
-	    fatal_error "Invalid DEST ($dest) in $action rule \"$line\"" if $dest =~ /:/;
+	    fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
 
 	    $origdest = '' unless $origdest and $origdest ne '-';
 

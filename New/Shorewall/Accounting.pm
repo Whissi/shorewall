@@ -45,7 +45,7 @@ sub process_accounting_rule( $$$$$$$$ ) {
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = @_;
 
     sub accounting_error() {
-	warning_message "Invalid Accounting rule \"$line\"";
+	warning_message "Invalid Accounting rule";
     }
 
     sub jump_to_chain( $ ) {

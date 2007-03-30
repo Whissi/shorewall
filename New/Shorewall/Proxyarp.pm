@@ -48,7 +48,7 @@ sub setup_one_proxy_arp( $$$$$ ) {
     } elsif ( "\L$haveroute" eq 'yes' ) {
 	$haveroute = 'yes';
     } else {
-	fatal_error "Invalid value ($haveroute) for HAVEROUTE in Proxy Arp Entry \"$line\"";
+	fatal_error "Invalid value ($haveroute) for HAVEROUTE";
     }
 
     if ( "\L$persistent" eq 'no' || $persistent eq '-' ) {
@@ -56,7 +56,7 @@ sub setup_one_proxy_arp( $$$$$ ) {
     } elsif ( "\L$persistent" eq 'yes' ) {
 	$persistent = 'yes';
     } else {
-	fatal_error "Invalid value ($persistent) for PERSISTENT in Proxy Arp Entry \"$line\"";
+	fatal_error "Invalid value ($persistent) for PERSISTENT";
     }
 
     unless ( $haveroute ) {

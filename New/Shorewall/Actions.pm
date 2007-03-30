@@ -289,7 +289,7 @@ sub process_actions1() {
 		if ( defined $targettype ) {
 		    next if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
 
-		    fatal_error "Invalid TARGET ($target) in action rule \"$line\"" if $targettype & STANDARD;
+		    fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 
 		    add_requiredby $wholetarget, $action if $targettype & ACTION;
 		} else {
@@ -311,7 +311,7 @@ sub process_actions1() {
 
 			    $targettype = 0 unless defined $targettype;
 
-			    fatal_error "Invalid target ($mtarget) in rule \"$line\"" 
+			    fatal_error "Invalid target ($mtarget)" 
 				unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $mtarget eq 'LOG' );
 			}
 
@@ -319,7 +319,7 @@ sub process_actions1() {
 
 			pop_open;
 		    } else {
-			fatal_error "Invalid TARGET ($target) in rule \"$line\"";
+			fatal_error "Invalid TARGET ($target)";
 		    }
 		}
 	    }

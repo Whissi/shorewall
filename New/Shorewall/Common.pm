@@ -305,7 +305,7 @@ END {
 	unlink $tempfile;
     }
 
-    my $exitstatus = $?; #Get's changed by system()
+    my $exitstatus = $?; #Changed by system()
 
     system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
 

@@ -50,6 +50,7 @@ our @VERSION = 1.00;
 #                                                      ...
 #                                                    }
 #                                     zone        => <zone name>
+#                                   }
 #                 }
 #
 our @interfaces;
@@ -164,10 +165,7 @@ sub validate_interfaces_file()
 
 	( $interfaces{$interface}{root} = $interface ) =~ s/\+$// ;
 
-	if ( $networks && $networks ne 'detect' )
-	{
-	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation:' . $networks;
-	}
+	warning_message 'Shorewall no longer uses broadcast addresses in rule generation:' . $networks if $networks && $networks ne 'detect';
 
 	my $optionsref = {};
 

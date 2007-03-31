@@ -256,25 +256,26 @@ sub setup_syn_flood_chains() {
 sub setup_blacklist() {
 
     my $hosts = find_hosts_by_option 'blacklist';
+    my $chainref;
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
 
     if ( @$hosts ) {
-
-	my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-
-	new_standard_chain 'blacklst';
-
-	my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
+	$chainref = new_standard_chain 'blacklst';
 
 	if ( $level ) {
-	    my $chainref = new_standard_chain 'blacklog';
+	    my $logchainref = new_standard_chain 'blacklog';
 
-	    log_rule_limit( $level , $chainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    add_rule $chainref, "-j $target" ;
+	    add_rule $logchainref, "-j $target" ;
 
 	    $target = 'blacklog';
 	}
+    }
 
+  BLACKLIST:
+    {
 	if ( my $fn = open_file 'blacklist' ) {
 
 	    my $first_entry = 1;
@@ -284,22 +285,28 @@ sub setup_blacklist() {
 		my ( $networks, $protocol, $ports ) = split_line 3, 'blacklist file';
 
 		if ( $first_entry ) {
+		    unless  ( @$hosts ) {
+			warning_message "The entries in $fn have been ignored because there are no 'blacklist' interfaces";
+			close_file;
+			last BLACKLIST;
+		    }
+
 		    progress_message2 "$doing $fn...";
 		    $first_entry = 0;
 		}
 
-		expand_rule 
-		    ensure_filter_chain( 'blacklst' , 0 ) ,
-		    NO_RESTRICT ,
-		    do_proto( $protocol , $ports, '' ) ,
-		    $networks ,
-		    '' ,
-		    '' ,
-		    "-j $target" ,
-		    '' ,
-		    $disposition ,
-		    '';
-
+		expand_rule( 
+			    $chainref ,
+			    NO_RESTRICT ,
+			    do_proto( $protocol , $ports, '' ) ,
+			    $networks ,
+			    '' ,
+			    '' ,
+			    "-j $target" ,
+			    '' ,
+			    $disposition ,
+			    '' );
+	    
 		progress_message "         \"$line\" added to blacklist";
 	    }
 	}
@@ -312,11 +319,11 @@ sub setup_blacklist() {
 	    my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network   = $hostref->[2];
 	    my $source    = match_source_net $network;
- 
+	
 	    for my $chain ( @{first_chains $interface}) {
 		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
 	    }
-
+	    
 	    progress_message "   Blacklisting enabled on ${interface}:${network}";
 	}
     }

@@ -34,6 +34,7 @@ our @EXPORT = qw(
                  find_file
                  split_line
                  open_file
+                 close_file
                  push_open
                  pop_open
                  read_a_line
@@ -255,9 +256,7 @@ sub find_file($)
 {
     my $filename=$_[0];
 
-    if ( $filename =~ '/.*' ) {
-	return $filename;
-    }
+    return $filename if $filename =~ '/.*';
 
     my $directory;
 
@@ -322,6 +321,25 @@ sub open_file( $ ) {
 	open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
 	$currentlinenumber = 0;
 	$currentfilename   = $fname;
+    }
+}
+
+#
+# This function is normally called in read_a_line() when EOF is reached. Clients of the 
+# module may also call the function to close the file before EOF
+#
+
+sub close_file() {
+    if ( $currentfile ) {
+	close $currentfile;
+	
+	my $arrayref = pop @openstack;
+
+	if ( $arrayref ) {
+	    ( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
+	} else {
+	    $currentfile = undef;
+	}
     }
 }
 
@@ -402,6 +420,7 @@ sub read_a_line {
 		$currentfile = undef;
 		
 		open $currentfile, $filename or fatal_error "Unable to open $filename: $!";
+
 		$currentfilename   = $filename;
 		$currentlinenumber = 0;
 		$line              = '';
@@ -410,15 +429,7 @@ sub read_a_line {
 	    }
 	}
 	
-	close $currentfile;
-	
-	my $arrayref = pop @openstack;
-
-	if ( $arrayref ) {
-	    ( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
-	} else {
-	    $currentfile = undef;
-	}
+	close_file;
     }
 }
 
@@ -601,6 +612,9 @@ sub get_configuration( $ ) {
     default_yes_no 'HIGH_ROUTE_MARKS'           , '';
     default_yes_no 'TC_EXPERT'                  , '';
     default_yes_no 'USE_ACTIONS'                , 'Yes';
+
+    warning_message 'USE_ACTIONS=No is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{USE_ACTIONS};
+
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
 
@@ -688,8 +702,7 @@ sub get_configuration( $ ) {
 
 	fatal_error "Invalid LOGFORMAT ($val)" if $@;
 
-	fatal_error "LOGFORMAT string is longer than 29 characters: \"$val\"" 
-	    if length $result > 29;
+	fatal_error "LOGFORMAT string is longer than 29 characters: \"$val\"" if length $result > 29;
 
 	$globals{MAXZONENAMELENGTH} = int ( 5 + ( ( 29 - (length $result ) ) / 2) );
     } else {

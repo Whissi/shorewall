@@ -428,6 +428,8 @@ sub read_a_line {
 		    $currentfile = undef;
 		    do_open_file $filename;
 		}
+
+		$line = '';
 	    } else {
 		return 1;
 	    }

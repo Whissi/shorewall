@@ -125,7 +125,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
     ( $mark, my $designator ) = split /:/, $mark;
 
-    my $chain  = $env{MARKING_CHAIN};
+    my $chain  = $globals{MARKING_CHAIN};
     my $target = 'MARK --set-mark';
     my $tcsref;
     my $connmark = 0;

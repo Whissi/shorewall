@@ -268,7 +268,7 @@ sub setup_blacklist() {
 	if ( $level ) {
 	    my $chainref = new_standard_chain 'blacklog';
 
-	    log_rule_limit( $level , $chainref , 'blacklst' , $disposition , "$env{LOGLIMIT}" , '', 'add',	'' );
+	    log_rule_limit( $level , $chainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
 	    add_rule $chainref, "-j $target" ;
 
@@ -467,7 +467,7 @@ sub add_common_rules() {
 
     my $rejectref = new_standard_chain 'reject';
 
-    $level = $env{BLACKLIST_LOG_LEVEL} || 'info';
+    $level = $globals{BLACKLIST_LOG_LEVEL} || 'info';
 
     add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
     add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'REJECT' , $level ;
@@ -554,13 +554,13 @@ sub add_common_rules() {
 	if ( $config{TCP_FLAGS_LOG_LEVEL} ) {
 	    my $logflagsref = new_standard_chain 'logflags';
 
-	    my $savelogparms = $env{LOGPARMS};
+	    my $savelogparms = $globals{LOGPARMS};
 
-	    $env{LOGPARMS} = "$env{LOGPARMS} --log-ip-options" unless $config{TCP_FLAGS_LOG_LEVEL} eq 'ULOG';
+	    $globals{LOGPARMS} = "$globals{LOGPARMS} --log-ip-options" unless $config{TCP_FLAGS_LOG_LEVEL} eq 'ULOG';
 
 	    log_rule $config{TCP_FLAGS_LOG_LEVEL} , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
 
-	    $env{LOGPARMS} = $savelogparms;
+	    $globals{LOGPARMS} = $savelogparms;
 
 	    if ( $config{TCP_FLAGS_DISPOSITION} eq 'REJECT' ) {
 		add_rule $logflagsref , '-j REJECT --reject-with tcp-reset';
@@ -732,7 +732,7 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
     } else {
-	my $target      = $env{MACLIST_TARGET};
+	my $target      = $globals{MACLIST_TARGET};
 	my $level       = $config{MACLIST_LOG_LEVEL};
 	my $disposition = $config{MACLIST_DISPOSITION};
 
@@ -770,7 +770,7 @@ sub process_rule1 ( $$$$$$$$$ );
 sub process_macro ( $$$$$$$$$$$ ) {
     my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user) = @_;
 
-    my $standard = ( $macrofile =~ /^($env{SHAREDIR})/ );
+    my $standard = ( $macrofile =~ /^($globals{SHAREDIR})/ );
 
     progress_message "..Expanding Macro $macrofile...";
 

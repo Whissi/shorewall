@@ -378,7 +378,7 @@ sub process_action3( $$$$$ ) {
     }
 
     my $actionfile = find_file "action.$action";
-    my $standard = ( $actionfile =~ /^$env{SHAREDIR}/ );
+    my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
     
     fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
     
@@ -420,7 +420,7 @@ sub process_action3( $$$$$ ) {
 
 	    push_open $fn;
 
-	    my $standard = ( $fn =~ /^($env{SHAREDIR})/ );
+	    my $standard = ( $fn =~ /^($globals{SHAREDIR})/ );
 
 	    while ( read_a_line ) {
 

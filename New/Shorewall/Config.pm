@@ -47,7 +47,7 @@ our @EXPORT = qw(
                  generate_aux_config
 
                  %config
-                 %env
+                 %globals
                  %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
@@ -55,12 +55,12 @@ our @VERSION = 1.00;
 #
 # Misc Globals
 #
-our %env  =   ( SHAREDIR => '/usr/share/shorewall' ,
-		CONFDIR =>  '/etc/shorewall',
-		SHAREDIRPL => '/usr/share/shorewall-perl/',
-		LOGPARMS => '',
-		VERSION =>  '3.9.0-1',
-	       );
+our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
+		    CONFDIR =>  '/etc/shorewall',
+		    SHAREDIRPL => '/usr/share/shorewall-perl/',
+		    LOGPARMS => '',
+		    VERSION =>  '3.9.0-1',
+		  );
 
 #
 # From shorewall.conf file
@@ -266,7 +266,7 @@ sub find_file($)
 	return $file if -f $file;
     }
 
-    "$env{CONFDIR}/$filename";
+    "$globals{CONFDIR}/$filename";
 }
 
 #
@@ -468,9 +468,11 @@ sub require_capability( $$ ) {
 #
 # - Read the shorewall.conf file
 # - Read the capabilities file created by the compiler front-end
-# - establish global hashes %config , %env and %capabilities
+# - establish global hashes %config , %globals and %capabilities
 #
-sub get_configuration() {
+sub get_configuration( $ ) {
+
+    my $export = $_[0];
 
     @config_path = split /:/, $ENV{CONFIG_PATH};
 
@@ -537,16 +539,16 @@ sub get_configuration() {
 	fatal_error "$file does not exist!";
     }
 
-    $env{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
+    $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
-	$env{LOGLIMIT} = '-m limit';
-	$env{LOGLIMIT} .= " --limit $config{LOGRATE}"        if $config{LOGRATE};
-	$env{LOGLIMIT} .= " --limit-burst $config{LOGBURST}" if $config{LOGBURST};
+	$globals{LOGLIMIT} = '-m limit';
+	$globals{LOGLIMIT} .= " --limit $config{LOGRATE}"        if $config{LOGRATE};
+	$globals{LOGLIMIT} .= " --limit-burst $config{LOGBURST}" if $config{LOGBURST};
     } else {
-	$env{LOGLIMIT} = '';
+	$globals{LOGLIMIT} = '';
     }
 
     if ( $config{IP_FORWARDING} ) {
@@ -576,11 +578,11 @@ sub get_configuration() {
     default_yes_no 'DISABLE_IPV6'               , '';
     default_yes_no 'DYNAMIC_ZONES'              , '';
 
-    fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option" if $config{DYNAMIC_ZONES} and $ENV{EXPORT};
+    fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option" if $config{DYNAMIC_ZONES} && $export;
 
     default_yes_no 'BRIDGING'                   , '';
 
-    fatal_error 'BRIDGING=Yes is not supported by Shorewall-perl' . $env{VERSION} if $config{BRIDGING};
+    fatal_error 'BRIDGING=Yes is not supported by Shorewall-perl' . $globals{VERSION} if $config{BRIDGING};
 
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
@@ -588,11 +590,11 @@ sub get_configuration() {
     default_yes_no 'RFC1918_STRICT'             , '';
     default_yes_no 'SAVE_IPSETS'                , '';
 
-    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall-perl ' . $env{VERSION} if $config{SAVE_IPSETS};
+    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{SAVE_IPSETS};
 
     default_yes_no 'MAPOLDACTIONS'              , '';
 
-    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall-perl ' . $env{VERSION} if $config{MAPOLDACTIONS};
+    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{MAPOLDACTIONS};
 
     default_yes_no 'FASTACCEPT'                 , '';
     default_yes_no 'IMPLICIT_CONTINUE'          , '';
@@ -608,14 +610,14 @@ sub get_configuration() {
 
     my $val;
 
-    $env{MACLIST_TARGET} = 'reject';
+    $globals{MACLIST_TARGET} = 'reject';
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {
 	unless ( $val eq 'REJECT' ) {
 	    if ( $val eq 'DROP' ) {
-		$env{MACLIST_TARGET} = 'DROP';
+		$globals{MACLIST_TARGET} = 'DROP';
 	    } elsif ( $val eq 'ACCEPT' ) {
-		$env{MACLIST_TARGET} = 'RETURN';
+		$globals{MACLIST_TARGET} = 'RETURN';
 	    } else {
 		fatal_error "Invalid value ( $config{MACLIST_DISPOSITION} ) for MACLIST_DISPOSITION"
 		}
@@ -640,7 +642,7 @@ sub get_configuration() {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
 
-    $env{TC_SCRIPT} = '';
+    $globals{TC_SCRIPT} = '';
 
     if ( $val = "\L$config{TC_ENABLED}" ) {
 	if ( $val eq 'yes' ) {
@@ -670,14 +672,14 @@ sub get_configuration() {
 
     fatal_error "Invalid IPSECFILE value ($config{IPSECFILE}" unless $config{IPSECFILE} eq 'zones';
 
-    $env{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
+    $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 
     if ( $val = $config{LOGFORMAT} ) {
 	my $result;
 
 	eval {
 	    if ( $val =~ /%d/ ) {
-		$env{LOGRULENUMBERS} = 'Yes';
+		$globals{LOGRULENUMBERS} = 'Yes';
 		$result = sprintf "$val", 'fooxx2barxx', 1, 'ACCEPT';
 	    } else {
 		$result = sprintf "$val", 'fooxx2barxx', 'ACCEPT';
@@ -689,10 +691,10 @@ sub get_configuration() {
 	fatal_error "LOGFORMAT string is longer than 29 characters: \"$val\"" 
 	    if length $result > 29;
 
-	$env{MAXZONENAMELENGTH} = int ( 5 + ( ( 29 - (length $result ) ) / 2) );
+	$globals{MAXZONENAMELENGTH} = int ( 5 + ( ( 29 - (length $result ) ) / 2) );
     } else {
-	$env{LOGFORMAT}='Shorewall:%s:%s:';
-	$env{MAXZONENAMELENGTH} = 5;
+	$globals{LOGFORMAT}='Shorewall:%s:%s:';
+	$globals{MAXZONENAMELENGTH} = 5;
     }
 
 }
@@ -704,7 +706,7 @@ sub propagateconfig() {
     }
 
     for my $option ( @Shorewall::Config::propagateenv ) {
-	my $value = $env{$option} || '';
+	my $value = $globals{$option} || '';
 	emit "$option=\"$value\"";
     }
 }
@@ -712,7 +714,7 @@ sub propagateconfig() {
 sub append_file( $ ) {
     my $user_exit = find_file $_[0];
 
-    unless ( $user_exit =~ /$env{SHAREDIR}/ ) {
+    unless ( $user_exit =~ /$globals{SHAREDIR}/ ) {
 	if ( -f $user_exit ) {
 	    save_progress_message "Processing $user_exit ...";
 	    copy1 $user_exit;
@@ -757,7 +759,7 @@ sub generate_aux_config() {
 
     create_temp_aux_config;
 
-    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version " . $env{VERSION} . ' - ' . ( localtime ) . "\n#" );
+    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version " . $globals{VERSION} . ' - ' . ( localtime ) . "\n#" );
 
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;

@@ -431,7 +431,7 @@ sub new_chain($$)
     my @rules;
 
     $ch{name} = $chain;
-    $ch{log} = 1 if $env{LOGRULENUMBERS};
+    $ch{log} = 1 if $globals{LOGRULENUMBERS};
     $ch{rules} = \@rules;
     $ch{table} = $table;
     $chain_table{$table}{$chain} = \%ch;
@@ -937,7 +937,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     my $prefix;
 
-    $limit = $env{LOGLIMIT} unless $limit;
+    $limit = $globals{LOGLIMIT} unless $limit;
 
     if ( $tag ) {
 	if ( $config{LOGTAGONLY} ) {
@@ -950,7 +950,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 	$tag = '' unless defined $tag;
     }
 
-    if ( $env{LOGRULENUMBERS} ) {
+    if ( $globals{LOGRULENUMBERS} ) {
 	$prefix = (sprintf $config{LOGFORMAT} , $chain , $chainref->{log}++, $disposition ) . $tag;
     } else {
 	$prefix = (sprintf $config{LOGFORMAT} , $chain , $disposition) . $tag;
@@ -962,9 +962,9 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 
     if ( $level eq 'ULOG' ) {
-	$prefix = "-j ULOG $env{LOGPARMS} --ulog-prefix \"$prefix\" ";
+	$prefix = "-j ULOG $globals{LOGPARMS} --ulog-prefix \"$prefix\" ";
     } else {
-	$prefix = "-j LOG $env{LOGPARMS} --log-level $level --log-prefix \"$prefix\" ";
+	$prefix = "-j LOG $globals{LOGPARMS} --log-level $level --log-prefix \"$prefix\" ";
     }
 
     if ( $command eq 'add' ) {
@@ -977,7 +977,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 sub log_rule( $$$$ ) {
     my ( $level, $chainref, $disposition, $predicates ) = @_;
 
-    log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $env{LOGLIMIT}, '', 'add', $predicates;
+    log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGLIMIT}, '', 'add', $predicates;
 }
 
 #

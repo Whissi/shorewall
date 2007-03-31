@@ -105,7 +105,7 @@ sub setup_one_masq($$$$$$)
     # Handle IPSEC options, if any
     #
     if ( $ipsec ne '-' ) {
-	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $env{ORIGINAL_POLICY_MATCH};
+	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
 
 	if ( $ipsec =~ /^yes$/i ) {
 	    $rule .= '-m policy --pol ipsec --dir out ';

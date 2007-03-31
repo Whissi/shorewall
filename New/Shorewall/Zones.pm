@@ -207,7 +207,7 @@ sub determine_zones()
 	    }
 	}
 
-	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $env{MAXZONENAMELENGTH};
+	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $globals{MAXZONENAMELENGTH};
 	fatal_error "Invalid zone name: $zone" if $zone =~ /^all2|2all$/;
 	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
 

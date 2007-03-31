@@ -491,6 +491,8 @@ sub add_common_rules() {
     if ( $capabilities{ADDRTYPE} ) {
 	$chainref = new_standard_chain 'smurfs';
 
+	add_rule $chainref , '-s 0.0.0.0 -j RETURN'; 
+
 	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
 	add_rule_pair $chainref, '-m addrtype --src-type MULTICAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
 

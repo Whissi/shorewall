@@ -316,7 +316,6 @@ END {
 	close $object;
 	unlink $tempfile;
     }
-
 }
 
 1;

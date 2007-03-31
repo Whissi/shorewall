@@ -772,7 +772,7 @@ sub generate_aux_config() {
 
     create_temp_aux_config;
 
-    emit( "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version " . $globals{VERSION} . ' - ' . ( localtime ) . "\n#" );
+    emit join ( '', "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version ", $globals{VERSION}, ' - ' , localtime , "\n#" );
 
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;
@@ -787,9 +787,7 @@ sub generate_aux_config() {
 END {
     if ( $tmp_dir ) {
 	my $exitstatus = $?; #Changed by system()
-
 	system "rm -rf $tmp_dir";
-	
 	$? = $exitstatus;
     }
 }

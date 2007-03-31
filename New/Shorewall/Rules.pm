@@ -1122,6 +1122,8 @@ sub process_rule ( $$$$$$$$$ ) {
 	$section = 'NEW';
 	$sectioned = 1;
     }
+
+    fatal_error "Invalid rules file entry" if $source eq '-' || $dest eq '-';
     #
     # Handle Wildcards
     #

@@ -154,23 +154,7 @@ j) Because the configuration files (with the exception of
    defined in /etc/shorewall/params and environmental variables
    (exported by the shell) can be used.
 
-h) Line continuation (lines ending in '\' are concatinated with the next
-   line) continues to be supported. Unlike the shell-based compiler,
-   however, the Perl-based compiler does not continue lines that end
-   in '#' comments. This avoids the confusing behavior where
-   the last line of a comment ends with '\', causing the
-   next (non-comment) line to be ignored.
-
-   Example (/etc/shorewall/tunnels):
-
-   # VPN from Atlanta \
-   openvpn-server     net	206.124.146.177    
-   
-   With the Shell-based compiler, the openvpn-server line is ignored
-   because it is combined with the preceding line; with the Perl-based
-   compiler, it is processed normally.
-
-i) USE_ACTIONS=No is not supported. That option is intended to minimize
+h) USE_ACTIONS=No is not supported. That option is intended to minimize
    Shorewall's footprint in embedded applications. As a consequence,
    Default Macros are not supported.
 

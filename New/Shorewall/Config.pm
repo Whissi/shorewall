@@ -38,7 +38,6 @@ our @EXPORT = qw(
                  push_open
                  pop_open
                  read_a_line
-                 expand_shell_variables 
                  get_configuration
                  require_capability
                  report_capabilities
@@ -277,7 +276,7 @@ my %no_pad = ( COMMENT => 1,
 
 #
 # Pre-process a line from a configuration file.
-#
+
 #    chomp it.
 #    compress out redundent white space.
 #    ensure that it has an appropriate number of columns.
@@ -298,34 +297,27 @@ sub split_line( $$ ) {
 }
 
 #
-# Config files can have shell variables embedded. This function expands them from %ENV.
-#
-sub expand_shell_variables( $ ) {
-    my $line = $_[0]; 
-    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
-    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
-    $line;
-}
-
-#
 # Open a file, setting $currentfile. Returns the file's absolute pathname if the file
 # exists, is non-empty  and was successfully opened. Terminates with a fatal error
 # if the file exists, is non-empty, but the open fails.
 #
+sub do_open_file( $ ) {
+    my $fname = $_[0];
+    open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
+    $currentlinenumber = 0;
+    $currentfilename   = $fname;
+}
+
 sub open_file( $ ) {
     my $fname = find_file $_[0];
 
     fatal_error 'Internal Error in open_file()' if defined $currentfile;
 
-    if ( -f $fname && -s _ ) {
-	open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
-	$currentlinenumber = 0;
-	$currentfilename   = $fname;
-    }
+    do_open_file $fname if -f $fname && -s _;
 }
 
 #
-# This function is normally called in read_a_line() when EOF is reached. Clients of the 
+# This function is normally called below in read_a_line() when EOF is reached. Clients of the 
 # module may also call the function to close the file before EOF
 #
 
@@ -376,8 +368,7 @@ sub pop_open() {
 #
 #   - Ignore blank or comment-only lines.
 #   - Remove trailing comments.
-#   - Handle Line Continuation (We don't continue comment lines, thus avoiding user frustration
-#     when the last line of a comment inadvertently ends with '\').
+#   - Handle Line Continuation
 #   - Expand shell variables from $ENV.
 #   - Handle INCLUDE <filename>
 #
@@ -390,19 +381,36 @@ sub read_a_line {
 	while ( my $nextline = <$currentfile> ) {
 
 	    $currentlinenumber++;
-	    next if $nextline =~ /^\s*#/;
-	    next if $nextline =~ /^\s*$/;
 
-	    $nextline =~ s/#.*$//;
+	    next if $nextline =~ /^\s*$/; # Ignore Blank Lines
+
 	    chomp $nextline;
-
+	    #
+	    # Check for continuation
+	    #
 	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
-		$line .= substr( $nextline, 0, -1 );
+		$line .= substr( $nextline, 0, -1 ); 
 		next;
 	    }
 
-	    $line = expand_shell_variables( $line ? $line . $nextline : $nextline );
-
+	    $line .= $nextline;
+	    #
+	    # Ignore ( concatenated ) lines that are nothing but comments
+	    #
+	    if ( $line =~ /^\s*#/ ) { 
+		$line = '';
+		next;
+	    }
+	    
+	    $line =~ s/#.*$//;       # Remove Trailing Comments
+	    $line =~ s/^\s+//;       # Remove Leading white space
+	    $line =~ s/\s+$//;       # Remove Trailing white space
+	    #
+	    # Expand Shell Variables using $ENV
+	    #
+	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
+	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
+	    
 	    if ( $line =~ /^\s*INCLUDE\s/ ) {
 		
 		my @line = split /\s+/, $line;
@@ -415,15 +423,11 @@ sub read_a_line {
 		
 		fatal_error "INCLUDed file $filename not found" unless ( -f $filename );
 		
-		push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];
-
-		$currentfile = undef;
-		
-		open $currentfile, $filename or fatal_error "Unable to open $filename: $!";
-
-		$currentfilename   = $filename;
-		$currentlinenumber = 0;
-		$line              = '';
+		if ( -s _ ) {
+		    push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];
+		    $currentfile = undef;
+		    do_open_file $filename;
+		}
 	    } else {
 		return 1;
 	    }

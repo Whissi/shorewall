@@ -382,8 +382,6 @@ sub read_a_line {
 
 	    $currentlinenumber++;
 
-	    next if $nextline =~ /^\s*$/; # Ignore Blank Lines
-
 	    chomp $nextline;
 	    #
 	    # Check for continuation
@@ -394,6 +392,8 @@ sub read_a_line {
 	    }
 
 	    $line .= $nextline;
+	    
+	    next if $line =~ /^\s*$/; # Ignore ( concatenated ) Blank Lines
 	    #
 	    # Ignore ( concatenated ) lines that are nothing but comments
 	    #

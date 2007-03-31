@@ -76,6 +76,8 @@ our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the
 
 our $verbose;
 
+my $timestamp;
+
 my $object = 0;          # Object file Handle Reference
 my $lastlineblank = 0;   # Avoid extra blank lines in the output
 my $indent        = '';
@@ -83,7 +85,8 @@ my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
 
 BEGIN {
-    $verbose = $ENV{VERBOSE} || 0;
+    $verbose   = $ENV{VERBOSE}   || 0;
+    $timestamp = $ENV{TIMESTAMP} || '';
 }
 
 #
@@ -180,7 +183,7 @@ sub timestamp() {
 
 sub progress_message {
     if ( $verbose > 1 ) {
-	timestamp if $ENV{TIMESTAMP};
+	timestamp if $timestamp;
 	my $line = join( ' ', @_ );
 	$line =~ s/\s+/ /g;
 	print "$line\n";
@@ -189,14 +192,14 @@ sub progress_message {
 
 sub progress_message2 {
     if ( $verbose > 0 ) {
-	timestamp if $ENV{TIMESTAMP};
+	timestamp if $timestamp;
 	print "@_\n";
     }
 }
 
 sub progress_message3 {
     if ( $verbose >= 0 ) {
-	timestamp if $ENV{TIMESTAMP};
+	timestamp if $timestamp;
 	print "@_\n";
     }
 }
@@ -283,12 +286,13 @@ sub create_temp_object( $ ) {
 
 }
 
-sub finalize_object() {
+sub finalize_object( $ ) {
+    my $export = $_[0];
     close $object;
     $object = 0;
     rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
     chmod 0700, $file;
-    progress_message3 "Shorewall configuration compiled to $file" unless $ENV{EXPORT};
+    progress_message3 "Shorewall configuration compiled to $file" unless $export;
 }
 
 sub create_temp_aux_config() {
@@ -313,11 +317,6 @@ END {
 	unlink $tempfile;
     }
 
-    my $exitstatus = $?; #Changed by system()
-
-    system "rm -rf $ENV{TMP_DIR}" if $ENV{TMP_DIR};
-
-    $? = $exitstatus;
 }
 
 1;

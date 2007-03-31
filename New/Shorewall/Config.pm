@@ -224,6 +224,11 @@ my @openstack;
 my $currentfile;
 my $currentfilename;
 my $currentlinenumber = 0;
+my $tmp_dir;
+
+BEGIN {
+    $tmp_dir = $ENV{TMP_DIR};
+}
 
 #
 # Issue a Warning Message
@@ -499,7 +504,7 @@ sub get_configuration() {
 	fatal_error "$file does not exist!";
     }
 
-    $file = "$ENV{TMP_DIR}/capabilities";
+    $file = "$tmp_dir/capabilities";
 
     if ( -f $file ) {
 	if ( -r _ ) {
@@ -762,6 +767,16 @@ sub generate_aux_config() {
 
     finalize_aux_config;
 
+}
+
+END {
+    if ( $tmp_dir ) {
+	my $exitstatus = $?; #Changed by system()
+
+	system "rm -rf $tmp_dir";
+	
+	$? = $exitstatus;
+    }
 }
 
 1;

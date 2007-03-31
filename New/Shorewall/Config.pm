@@ -397,7 +397,8 @@ sub read_a_line {
 		$currentfile = undef;
 		
 		open $currentfile, $filename or fatal_error "Unable to open $filename: $!";
-
+		$currentfilename   = $filename;
+		$currentlinenumber = 0;
 		$line='';
 	    } else {
 		return 1;

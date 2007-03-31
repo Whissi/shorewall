@@ -221,9 +221,9 @@ sub copy( $ ) {
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
-	while ( my $line = <IF> ) {
-	    $line =~ s/^/$indent/ if $indent;
-	    print $object $line;
+	while ( <IF> ) {
+	    s/^/$indent/ if $indent;
+	    print $object $_;
 	}
 
 	close IF;
@@ -238,16 +238,16 @@ sub copy1( $ ) {
 
 	my $do_indent = 1;
 
-	while ( my $line = <IF> ) {
-	    if ( $line =~ /^\s+$/ ) {
+	while ( <IF> ) {
+	    if ( /^\s+$/ ) {
 		print $object "\n";
 		$do_indent = 1;
 		next;
 	    }
 
-	    $line =~ s/^/$indent/ if $indent && $do_indent;
-	    print $object $line;
-	    $do_indent = ! ( $line =~ /\\$/ );
+	    s/^/$indent/ if $indent && $do_indent;
+	    print $object $_;
+	    $do_indent = ! ( /\\$/ );
 	}
 
 	close IF;

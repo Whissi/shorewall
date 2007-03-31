@@ -131,7 +131,7 @@ sub emitj {
 	#
 	for ( @_ ) {
 	    unless ( /^\s*$/ ) {
-		my $line = $_; #This copy is necessary because the actual arguments are almost always read-only.
+		my $line = $_; # This copy is necessary because the actual arguments are almost always read-only.
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/g;

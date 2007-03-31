@@ -122,7 +122,7 @@ sub emit ( $ ) {
 }
 
 #
-# Version of emit() that accepts an indefinite number of arguments; each argument will be emitted as a separate line
+# Version of emit() that accepts an indefinite number of scalar arguments; each argument will be emitted as a separate line
 #
 sub emitj {
     if ( $object ) {
@@ -131,7 +131,7 @@ sub emitj {
 	#
 	for ( @_ ) {
 	    unless ( /^\s*$/ ) {
-		my $line = $_; # This copy is necessary :-(. We modify the value below and we can't modify subroutine arguments.
+		my $line = $_; #This copy is necessary because the actual arguments are almost always read-only.
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/g;
@@ -239,7 +239,7 @@ sub copy1( $ ) {
 	my $do_indent = 1;
 
 	while ( <IF> ) {
-	    if ( /^\s+$/ ) {
+	    if ( /^\s*$/ ) {
 		print $object "\n";
 		$do_indent = 1;
 		next;

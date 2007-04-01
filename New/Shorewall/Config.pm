@@ -227,7 +227,9 @@ my $currentlinenumber = 0;
 my $tmp_dir;
 
 INIT {
-    $tmp_dir = $ENV{TMP_DIR};
+    $tmp_dir     = $ENV{TMP_DIR};
+    @config_path = split /:/, $ENV{CONFIG_PATH};
+
 }
 
 #
@@ -489,8 +491,6 @@ sub require_capability( $$ ) {
 sub get_configuration( $ ) {
 
     my $export = $_[0];
-
-    @config_path = split /:/, $ENV{CONFIG_PATH};
 
     for ( @config_path ) {
 	$_ .= '/' unless m|//$|;

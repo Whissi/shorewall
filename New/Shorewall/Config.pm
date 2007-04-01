@@ -393,6 +393,7 @@ sub read_a_line {
 
 	    $line .= $nextline;
 
+	    $line =~ s/#.*$//;       # Remove Trailing Comments
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
@@ -400,15 +401,7 @@ sub read_a_line {
 		$line = '';
 		next;
 	    }
-	    #
-	    # Ignore ( concatenated ) lines that are nothing but comments
-	    #
-	    if ( $line =~ /^\s*#/ ) { 
-		$line = '';
-		next;
-	    }
-	    
-	    $line =~ s/#.*$//;       # Remove Trailing Comments
+
 	    $line =~ s/^\s+//;       # Remove Leading white space
 	    $line =~ s/\s+$//;       # Remove Trailing white space
 	    #

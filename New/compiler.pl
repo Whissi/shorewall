@@ -62,7 +62,7 @@ use Shorewall::Proxyarp;
 
 my $export;
 
-BEGIN {
+INIT {
     $export = $ENV{EXPORT};
 }
 

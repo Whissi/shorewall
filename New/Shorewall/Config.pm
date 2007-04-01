@@ -226,7 +226,7 @@ my $currentfilename;
 my $currentlinenumber = 0;
 my $tmp_dir;
 
-BEGIN {
+INIT {
     $tmp_dir = $ENV{TMP_DIR};
 }
 
@@ -387,13 +387,13 @@ sub read_a_line {
 	    # Continuation
 	    #
 	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
-		$line .= substr( $nextline, 0, -1 ); 
+		$line .= substr( $nextline, 0, -1 );
 		next;
 	    }
 
 	    $line .= $nextline;
 
-	    $line =~ s/#.*$//;       # Remove Trailing Comments
+	    $line =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
@@ -410,7 +410,7 @@ sub read_a_line {
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
 	    
-	    if ( $line =~ /^\s*INCLUDE\s/ ) {
+	    if ( $line =~ /^INCLUDE\s/ ) {
 		
 		my @line = split /\s+/, $line;
 	
@@ -420,7 +420,7 @@ sub read_a_line {
 		
 		my $filename = find_file $line[1];
 		
-		fatal_error "INCLUDed file $filename not found" unless ( -f $filename );
+		fatal_error "INCLUDE file $filename not found" unless ( -f $filename );
 		
 		if ( -s _ ) {
 		    push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];

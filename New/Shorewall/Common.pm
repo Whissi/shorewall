@@ -84,7 +84,7 @@ my $indent        = '';
 my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
 
-BEGIN {
+INIT {
     $verbose   = $ENV{VERBOSE}   || 0;
     $timestamp = $ENV{TIMESTAMP} || '';
 }

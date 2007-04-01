@@ -484,6 +484,97 @@ sub report_capabilities() {
     }
 }
 
+sub mywhich( $ ) {
+    my $prog = $_[0];
+
+    for my $dir ( split /:/, $ENV{PATH} ) {
+	return "$dir/$prog" if -x "$dir/$prog";
+    }
+
+    '';
+}
+
+#
+# Determine which optional facilities are supported by iptables/netfilter
+#
+sub determine_capabilities() {
+    
+    my $iptables = $config{IPTABLES};
+
+    $capabilities{NAT_ENABLED}    = system( "$iptables -t nat -L -n > /dev/null 2>&1" )    == 0 ?  1 : 0;
+    $capabilities{MANGLE_ENABLED} = system( "$iptables -t mangle -L -n > /dev/null 2>&1" ) == 0 ?  1 : 0;
+
+    system( "$iptables -N fooX1234 > /dev/null 2>&1" );
+    
+    $capabilities{CONNTRACK_MATCH} = system( "$iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT > /dev/null 2>&1" )         == 0;
+    $capabilities{MULTIPORT}       = system( "$iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT > /dev/null 2>&1" )           == 0;
+    $capabilities{XMULTIPORT}      = system( "$iptables -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT > /dev/null 2>&1" )           == 0;
+    $capabilities{POLICY_MATCH}    = system( "$iptables -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT > /dev/null 2>&1" ) == 0;
+    $capabilities{PHYSDEV_MATCH}   = system( "$iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT > /dev/null 2>&1" )                 == 0;
+
+    if ( system( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT > /dev/null 2>&1" ) == 0 ) {
+	$capabilities{IPRANGE_MATCH} = 1;
+	unless ( $capabilities{KLUDGEFREE} ) {
+	    $capabilities{KLUDGEFREE} = system( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT > /dev/null 2>&1" ) == 0;
+	}
+    }
+
+    $capabilities{RECENT_MATCH} = system( "$iptables -A fooX1234 -m recent --update -j ACCEPT > /dev/null 2>&1" )     == 0;
+    $capabilities{OWNER_MATCH}  = system( "$iptables -A fooX1234 -m owner --uid-owner 0 -j ACCEPT > /dev/null 2>&1" ) == 0;
+
+    if ( system( "$iptables -A fooX1234 -m connmark --mark 2  -j ACCEPT > /dev/null 2>&1" ) == 0 ) {
+	$capabilities{CONNMARK_MATCH}  = 1;
+	$capabilities{XCONNMARK_MATCH} = system( "$iptables -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT > /dev/null 2>&1" ) == 0;
+    }
+	
+    $capabilities{IPP2P_MATCH}     = system( "$iptables -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT > /dev/null 2>&1" )                     == 0;
+    $capabilities{LENGTH_MATCH}    = system( "$iptables -A fooX1234 -m length --length 10:20 -j ACCEPT > /dev/null 2>&1" )                    == 0;
+    $capabilities{ENHANCED_REJECT} = system( "$iptables -A fooX1234 -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1" )          == 0;
+    $capabilities{COMMENTS}        = system( qq($iptables -A fooX1234 -j ACCEPT -m comment --comment "This is a comment"  > /dev/null 2>&1) ) == 0;
+
+    if  ( $capabilities{MANGLE_ENABLED} ) {
+	system( "$iptables -t mangle -N fooX1234 > /dev/null 2>&1" );
+
+	if ( system( "$iptables -t mangle -A fooX1234 -j MARK --set-mark 1 > /dev/null 2>&1" ) == 0 ) {
+	    $capabilities{MARK}  = 1;
+	    $capabilities{XMARK} = system( "$iptables -t mangle -A fooX1234 -j MARK --and-mark 0xFF > /dev/null 2>&1" ) == 0;
+	}
+
+	if ( system( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark > /dev/null 2>&1" ) == 0 ) {
+	    $capabilities{CONNMARK}  = 1;
+	    $capabilities{XCONNMARK} = system( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF > /dev/null 2>&1" ) == 0;
+	}
+
+	$capabilities{CLASSIFY_TARGET} = system( "$iptables -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1 > /dev/null 2>&1" ) == 0;
+	system( "$iptables -t mangle -F fooX1234 > /dev/null 2>&1" );
+	system( "$iptables -t mangle -X fooX1234 > /dev/null 2>&1" );
+
+	$capabilities{MANGLE_FORWARD} = system( "$iptables -t mangle -L FORWARD -n > /dev/null 2>&1" ) == 0;
+    }
+
+    $capabilities{RAW_TABLE} = system( "$iptables -t raw -L -n > /dev/null 2>&1" ) == 0;
+
+    if ( mywhich 'ipset' ) {
+	system( "ipset -X fooX1234 > /dev/null 2>&1" );
+
+	if ( system( "ipset -N fooX1234 > /dev/null 2>&1" ) ) {
+	    if ( system( "$iptables -A fooX1234 -m set --set fooX1234 src -j ACCEPT > /dev/null 2>&1" ) == 0 ) {
+		system( "$iptables -D fooX1234 -m set --set fooX1234 src -j ACCEPT > /dev/null 2>&1" );
+		$capabilities{IPSET_MATCH} = 1;
+	    }
+
+	    system( "ipset -X fooX1234 > /dev/null 2>&1" );
+	}
+    }
+
+    $capabilities{USEPKTTYPE} = system( "$iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT > /dev/null 2>&1" )  == 0;
+    $capabilities{ADDRTYPE}   = system( "$iptables -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT > /dev/null 2>&1" ) == 0;
+
+    system( "$iptables -F fooX1234 > /dev/null 2>&1" );
+    system( "$iptables -X fooX1234 > /dev/null 2>&1" );
+}
+    
+
 sub require_capability( $$ ) {
     my ( $capability, $description ) = @_;
 
@@ -526,42 +617,42 @@ sub get_configuration( $ ) {
 	fatal_error "$file does not exist!";
     }
 
-    $file = "$tmp_dir/capabilities";
-
-    if ( -f $file ) {
-	if ( -r _ ) {
-	    open CAPS , $file or fatal_error "Unable to open $file: $!";
-
-	    while ( $line = <CAPS> ) {
-		chomp $line;
-		next if $line =~ /^\s*#/;
-		next if $line =~ /^\s*$/;
-
-		if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
-		    my ($var, $val) = ($1, $2);
-		    unless ( exists $capabilities{$var} ) {
-			warning_message "Unknown capability \"$var\" ignored";
-			next;
-		    }
-
-		    $capabilities{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
-		} else {
-		    fatal_error "Unrecognized entry";
-		}
-	    }
-
-	    close CAPS;
-
-	} else {
-	    fatal_error "Cannot read $file (Hint: Are you root?)";
-	}
-    } else {
-	fatal_error "$file does not exist!";
-    }
-
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
+
+    my $uid = `id -u`;
+
+    chomp $uid;
+
+    if ( ! $export && $uid == 0 ) {
+	unless ( $config{IPTABLES} ) {
+	    $config{IPTABLES} = mywhich 'iptables';
+	    fatal_error "Can't find iptables executable" unless $config{IPTABLES};
+	} else {
+	    fatal_error "\$IPTABLES=$capabilities{IPTABLES} does not exist or is not executable" unless -x $capabilities{IPTABLES};
+	}
+    
+	unless ( open_file 'capabilities' ) {
+	    determine_capabilities;
+	}
+    } else {
+	fatal_error "The -e flag requires a capabilities file" unless open_file 'capabilities';
+    }
+
+    while ( read_a_line ) {
+	if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+	    my ($var, $val) = ($1, $2);
+	    unless ( exists $capabilities{$var} ) {
+		warning_message "Unknown capability \"$var\" ignored";
+		next;
+	    }
+
+	    $capabilities{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
+	} else {
+	    fatal_error "Unrecognized entry";
+	}
+    }
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
 	$globals{LOGLIMIT} = '-m limit';

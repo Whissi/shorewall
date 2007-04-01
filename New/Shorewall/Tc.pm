@@ -320,7 +320,7 @@ sub validate_tc_class( $$$$$$ ) {
     $tcref->{tos}      = [];
     $tcref->{rate}     = convert_rate $full, $rate;
     $tcref->{ceiling}  = convert_rate $full, $ceil;
-    $tcref->{priority} = defined $prio ? $prio : 1;
+    $tcref->{priority} = $prio eq '-' ? 1 : $prio;
 
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, "\L$options" ) {
@@ -358,7 +358,7 @@ sub setup_traffic_shaping() {
 
 	while ( read_a_line ) {
 
-	    my ( $device, $inband, $outband ) = split_line 3, 'tcdevices';
+	    my ( $device, $inband, $outband ) = split_line 3, 3, 'tcdevices';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
@@ -382,7 +382,7 @@ sub setup_traffic_shaping() {
 		$first_entry = 0;
 	    }
 
-	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 6, 'tcclasses file';
+	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 4, 6, 'tcclasses file';
 
 	    validate_tc_class( $device, $mark, $rate, $ceil, $prio, $options );
 	}
@@ -509,7 +509,7 @@ sub setup_tc() {
 
 	while ( read_a_line ) {
 	    
-	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 10, 'tcrules file';
+	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 2, 10, 'tcrules file';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";                  

@@ -139,7 +139,7 @@ sub validate_interfaces_file()
 
     while ( read_a_line ) {
 
-	my ($zone, $interface, $networks, $options ) = split_line 4, 'interfaces file';
+	my ($zone, $interface, $networks, $options ) = split_line 2, 4, 'interfaces file';
 	my $zoneref;
 
 	if ( $first_entry ) {

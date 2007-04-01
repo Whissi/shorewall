@@ -116,7 +116,7 @@ sub setup_accounting() {
 
     while ( read_a_line ) {
 
-	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = split_line 8, 'Accounting File';
+	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = split_line 1, 8, 'Accounting File';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";                

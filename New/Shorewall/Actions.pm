@@ -248,7 +248,7 @@ sub process_actions1() {
 	open_file $file;
 
 	while ( read_a_line ) {
-	    my ( $action ) = split_line 1, 'action file';
+	    my ( $action ) = split_line 1, 1, 'action file';
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -278,7 +278,7 @@ sub process_actions1() {
 
 	    while ( read_a_line ) {
 
-		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 8, 'action file';
+		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 1, 8, 'action file';
 
 		my ( $target, $level ) = split_action $wholetarget;
 
@@ -303,7 +303,7 @@ sub process_actions1() {
 			push_open( $macrofile );
 
 			while ( read_a_line ) {
-			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 8, 'macro file';
+			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 1, 8, 'macro file';
 
 			    $mtarget =~ s/:.*$//;
 
@@ -388,7 +388,7 @@ sub process_action3( $$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 8, 'action file';
+	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 1, 8, 'action file';
 
 	my $target2 = merge_levels $wholeaction, $target;
 
@@ -424,7 +424,7 @@ sub process_action3( $$$$$ ) {
 
 	    while ( read_a_line ) {
 
-		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
+		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
 
 		if ( $mtarget =~ /^PARAM:?/ ) {
 		    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;

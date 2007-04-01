@@ -244,7 +244,7 @@ sub setup_masq()
 
     while ( read_a_line ) {
 
-	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 6, 'masq file';
+	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 2, 6, 'masq file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";                     
@@ -358,7 +358,7 @@ sub setup_nat() {
 
     while ( read_a_line ) {
 
-	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 5, 'nat file';
+	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 3, 5, 'nat file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";                
@@ -393,7 +393,7 @@ sub setup_netmap() {
 
     while ( read_a_line ) {
 
-	my ( $type, $net1, $interface, $net2 ) = split_line 4, 'netmap file';
+	my ( $type, $net1, $interface, $net2 ) = split_line 4, 4, 'netmap file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";                

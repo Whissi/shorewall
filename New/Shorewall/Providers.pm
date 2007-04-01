@@ -163,9 +163,6 @@ sub setup_providers() {
 	emit "qt ip route flush table $number";
 	emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
-	$duplicate = '-' unless $duplicate;
-	$copy      = '-' unless $copy;
-
 	if ( $duplicate ne '-' ) {
 	    if ( $copy ne '-' ) {
 		if ( $copy eq 'none' ) {
@@ -312,9 +309,6 @@ sub setup_providers() {
 	    fatal_error "Unknown provider ($provider)" unless $found;
 	}
 
-	$source = '-' unless $source;
-	$dest   = '-' unless $dest;
-
 	fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
 	$dest = $dest eq '-' ? '' : "to $dest";
@@ -376,7 +370,7 @@ sub setup_providers() {
 	    emit 'DEFAULT_ROUTE=';
 	}
 	
-	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 8, 'providers file';
+	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
 	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
 
@@ -441,7 +435,7 @@ sub setup_providers() {
 		    $first_entry = 0;
 		}
 		
-		my ( $source, $dest, $provider, $priority ) = split_line 4, 'route_rules file';
+		my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
 
 		add_an_rtrule( $source, $dest, $provider , $priority );
 	    }

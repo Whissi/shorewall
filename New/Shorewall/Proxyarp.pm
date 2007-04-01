@@ -93,7 +93,7 @@ sub setup_proxy_arp() {
 
 	while ( read_a_line ) {
 
-	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 5, 'proxyarp file';
+	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 3, 5, 'proxyarp file';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";

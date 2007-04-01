@@ -57,7 +57,7 @@ sub validate_hosts_file()
 
     while ( read_a_line ) {
 
-	my ($zone, $hosts, $options ) = split_line 3, 'hosts file';
+	my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";

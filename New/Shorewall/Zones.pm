@@ -188,7 +188,7 @@ sub determine_zones()
 
 	my @parents;
 
-	my ($zone, $type, $options, $in_options, $out_options ) = split_line 5, 'zones file';
+	my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";                       

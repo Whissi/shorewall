@@ -71,7 +71,7 @@ sub process_tos() {
 	
 	while ( read_a_line ) {
 
-	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 'tos file';
+	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 6, 'tos file';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
@@ -133,7 +133,7 @@ sub setup_ecn()
 
 	while ( read_a_line ) {
 
-	    my ($interface, $hosts ) = split_line 2, 'ecn file';
+	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
@@ -200,7 +200,7 @@ sub setup_rfc1918_filteration( $ ) {
 
     while ( read_a_line ) {
 
-	my ( $networks, $target ) = split_line 2, 'rfc1918 file';
+	my ( $networks, $target ) = split_line 2, 2, 'rfc1918 file';
 
 	my $s_target;
 
@@ -282,7 +282,7 @@ sub setup_blacklist() {
 
 	    while ( read_a_line ) {
 
-		my ( $networks, $protocol, $ports ) = split_line 3, 'blacklist file';
+		my ( $networks, $protocol, $ports ) = split_line 1, 3, 'blacklist file';
 
 		if ( $first_entry ) {
 		    unless  ( @$hosts ) {
@@ -341,14 +341,14 @@ sub process_criticalhosts() {
 
 	my $routeback = 0;
 
-	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
+	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn for critical hosts...";
 	    $first_entry = 0;
 	}
 
-	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
+	$hosts = ALLIPv4 unless $hosts ne '-';
 
 	my @hosts;
 
@@ -384,7 +384,7 @@ sub process_routestopped() {
 
 	my $routeback = 0;
 
-	my ($interface, $hosts, $options ) = split_line 3, 'routestopped file';
+	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
@@ -673,7 +673,7 @@ sub setup_mac_lists( $ ) {
 
 	while ( read_a_line ) {
 
-	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 4, 'maclist file';
+	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 3, 4, 'maclist file';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
@@ -785,7 +785,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 8, 'macro file';
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
 
 	$mtarget = merge_levels $target, $mtarget;
 
@@ -1212,7 +1212,7 @@ sub process_rules() {
 
     while ( read_a_line ) {
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = split_line 9, 'rules file';
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = split_line 3, 9, 'rules file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";

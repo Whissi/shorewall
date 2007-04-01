@@ -291,16 +291,17 @@ my %no_pad = ( COMMENT => 1,
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #
-sub split_line( $$ ) {
-    my ( $columns, $description ) = @_;
+sub split_line( $$$ ) {
+    my ( $mincolumns, $maxcolumns, $description ) = @_;
 
     my @line = split /\s+/, $line;
 
     return @line if $no_pad{$line[0]};
 
-    fatal_error "Invalid $description entry (too many columns)" if @line > $columns;
+    fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
+    fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
 
-    push @line, '-' while @line < $columns;
+    push @line, '-' while @line < $maxcolumns;
 
     @line;
 }
@@ -687,7 +688,7 @@ sub get_configuration( $ ) {
     default 'OPTIMIZE'              , 0;
     default 'IPSECFILE'             , 'ipsec';
 
-    fatal_error "IPSECFILE=ipsec is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
+    fatal_error 'IPSECFILE=ipsec is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
 
     for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT ACCEPT_DEFAULT/ {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';

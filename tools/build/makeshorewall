@@ -30,7 +30,7 @@
 #      -h      Build HTML documentation
 #      -x      Build XML documentation
 #      -s      Sign with GPG
-#      -p      Build Shorewall-pl
+#      -p      Build shorewall-perl
 #
 # If no options are given, all options are assumed.
 #
@@ -294,9 +294,9 @@ case $VERSION in
 	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
 	RPMNAME=shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
-	PERLRPMNAME=shorewall-pl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
-	PERLTARBALL=shorewall-pl-${VERSION%-*}.tgz
-	PERLDIR=shorewall-pl-${VERSION%-*}
+	PERLRPMNAME=shorewall-perl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	PERLTARBALL=shorewall-perl-${VERSION%-*}.tgz
+	PERLDIR=shorewall-perl-${VERSION%-*}
 	;;
     *)
 	#
@@ -308,9 +308,9 @@ case $VERSION in
 	LITETARBALL=shorewall-lite-$VERSION.tgz
 	RPMNAME=shorewall-${VERSION}-1.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION}-1.noarch.rpm
-	PERLRPMNAME=shorewall-pl-${VERSION}-1.noarch.rpm
-	PERLDIR=shorewall-pl-$VERSION
-	PERLTARBALL=shorewall-pl-$VERSION.tgz
+	PERLRPMNAME=shorewall-perl-${VERSION}-1.noarch.rpm
+	PERLDIR=shorewall-perl-$VERSION
+	PERLTARBALL=shorewall-perl-$VERSION.tgz
 	;;
 esac
 
@@ -328,7 +328,7 @@ fi
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
 
 if [ -n "$BUILDPERL" ]; then
-    report "Shorewall-pl directory is $DIR/$PERLDIR"
+    report "shorewall-perl directory is $DIR/$PERLDIR"
     report "Perl SVN tag is $PERLBRANCH"
     report "Perl RPM is $PERLRPMNAME"
 
@@ -339,23 +339,24 @@ if [ -n "$BUILDPERL" ]; then
 
     progress_message "Creating $DIR/$PERLTARBALL..."
     do_or_die "tar -zcvf $PERLTARBALL $PERLDIR >> $LOGFILE 2>&1"
-    do_or_die "tar -jcvf shorewall-pl-${VERSION%-*}.tar.bz2 $PERLDIR >> $LOGFILE 2>&1"
+    do_or_die "tar -jcvf shorewall-perl-${VERSION%-*}.tar.bz2 $PERLDIR >> $LOGFILE 2>&1"
 
     if [ -n "$SIGN" ]; then
 	for shoresuffix in tgz tar.bz2; do
-	    shoreball=shorewall-pl-${VERSION%-*}.${shoresuffix}
+	    shoreball=shorewall-perl-${VERSION%-*}.${shoresuffix}
 	    report "GPG signing $DIR/$shoreball"
 	    rm -f ${shoreball}.asc
 	    do_or_die "$GPG $shoreball"
 	done
     fi
 
-    progress_message "Building $LITERPMNAME..."
+    progress_message "Building $PERLRPMNAME..."
 
-    rm -rf $RPMDIR/BUILD/shorewall-pl-${VERSION%-*}*
-    do_or_die "cp shorewall-pl-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
-    do_or_die "cp $PERLDIR/shorewall-pl.spec $RPMDIR/SPECS/"
-    do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-pl.spec >> $LOGFILE 2>&1"
+    test -n "$SIGN" && SIGN="--sign"
+    rm -rf $RPMDIR/BUILD/shorewall-perl-${VERSION%-*}*
+    do_or_die "cp shorewall-perl-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+    do_or_die "cp $PERLDIR/shorewall-perl.spec $RPMDIR/SPECS/"
+    do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-perl.spec >> $LOGFILE 2>&1"
     do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME  .
 fi
 

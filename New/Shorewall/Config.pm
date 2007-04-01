@@ -700,7 +700,7 @@ sub get_configuration( $ ) {
 	if ( $line =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 	    my ($var, $val) = ($1, $2);
 	    unless ( exists $capabilities{$var} ) {
-		warning_message "Unknown capability \"$var\" ignored";
+		warning_message "Unknown capability ($var) ignored";
 		next;
 	    }
 
@@ -711,9 +711,9 @@ sub get_configuration( $ ) {
     }
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
-	$globals{LOGLIMIT} = '-m limit';
-	$globals{LOGLIMIT} .= " --limit $config{LOGRATE}"        if $config{LOGRATE};
-	$globals{LOGLIMIT} .= " --limit-burst $config{LOGBURST}" if $config{LOGBURST};
+	 $globals{LOGLIMIT}  = '-m limit';
+	 $globals{LOGLIMIT} .= " --limit $config{LOGRATE}"        if $config{LOGRATE};
+	 $globals{LOGLIMIT} .= " --limit-burst $config{LOGBURST}" if $config{LOGBURST};
     } else {
 	$globals{LOGLIMIT} = '';
     }

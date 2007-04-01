@@ -225,6 +225,7 @@ sub determine_zones()
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined: $zone" if $firewall_zone;
 	    $firewall_zone = $zone;
+	    $ENV{FW} = $zone;
 	    $zoneref->{type} = "firewall";
 	} elsif ( $type eq '-' ) {
 	    $type = $zoneref->{type} = 'ipv4';

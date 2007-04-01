@@ -628,8 +628,7 @@ sub determine_capabilities() {
 
     system( "$iptables -F fooX1234 > /dev/null 2>&1" );
     system( "$iptables -X fooX1234 > /dev/null 2>&1" );
-}
-    
+}  
 
 sub require_capability( $$ ) {
     my ( $capability, $description ) = @_;

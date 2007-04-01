@@ -228,10 +228,8 @@ my @openstack;
 my $currentfile;
 my $currentfilename;
 my $currentlinenumber = 0;
-my $tmp_dir;
 
 INIT {
-    $tmp_dir     = $ENV{TMP_DIR};
     @config_path = split /:/, $ENV{CONFIG_PATH};
 
     for ( @config_path ) {
@@ -623,6 +621,8 @@ sub get_configuration( $ ) {
 
     my $uid = `id -u`;
 
+    fatal_error "Command 'id -u' failed" unless $? == 0;
+
     chomp $uid;
 
     if ( ! $export && $uid == 0 ) {
@@ -639,9 +639,12 @@ sub get_configuration( $ ) {
     } else {
 	fatal_error "The -e flag requires a capabilities file" unless open_file 'capabilities';
     }
-
+    #
+    # If we successfully called open_file above, then this loop will read the capabilities file.
+    # Otherwise, the first call to read_a_line() below will return false
+    #
     while ( read_a_line ) {
-	if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+	if ( $line =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 	    my ($var, $val) = ($1, $2);
 	    unless ( exists $capabilities{$var} ) {
 		warning_message "Unknown capability \"$var\" ignored";
@@ -650,7 +653,7 @@ sub get_configuration( $ ) {
 
 	    $capabilities{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
 	} else {
-	    fatal_error "Unrecognized entry";
+	    fatal_error "Unrecognized capabilities entry";
 	}
     }
 
@@ -887,14 +890,6 @@ sub generate_aux_config() {
 
     finalize_aux_config;
 
-}
-
-END {
-    if ( $tmp_dir ) {
-	my $exitstatus = $?; #Changed by system()
-	system "rm -rf $tmp_dir";
-	$? = $exitstatus;
-    }
 }
 
 1;

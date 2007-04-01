@@ -32,9 +32,6 @@
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
 #           VERSION                             Shorewall Version
-#           TMP_DIR                             Temporary Directory containing stripped copies
-#                                               of all configuration files. Shell variable substitution 
-#                                               has been performed on these files.
 #           TIMESTAMP=Yes                       -t option specified to /sbin/shorewall
 #           FW                                  Firewall zone (for shell-variable expansion).
 #

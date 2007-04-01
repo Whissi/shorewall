@@ -492,6 +492,64 @@ sub mywhich( $ ) {
     '';
 }
 
+sub load_kernel_modules( ) {
+    my $moduleloader = mywhich 'modprobe' ? 'modprobe' : 'insmod';
+
+    my $modulesdir = $config{MODULESDIR};
+
+    unless ( $modulesdir ) {
+	my $uname = `uname -r`;
+	fatal_error "The command 'uname -r' failed" unless $? == 0;
+	chomp $uname;
+	$modulesdir = "/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter";
+    }
+
+    my @moduledirectories = split /:/, $modulesdir;
+
+    if ( @moduledirectories && open_file 'modules' ) {
+	my %loadedmodules;
+	
+	progress_message "Loading Modules...";
+
+	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
+
+	while ( $line = <LSMOD> ) {
+	    my $module = ( split( /\s+/, $line ) )[0];
+	
+	    unless ( $module eq 'Module' ) {
+		$loadedmodules{$module} = 1;
+	    }
+	}
+	
+	close LSMOD;
+
+	$config{MODULE_SUFFIX} = 'o gz ko o.gz ko.gz' unless $config{MODULES_SUFFIX};
+
+	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
+
+	while ( read_a_line ) {
+	    fatal_error "Invalid modules file entry" unless ( $line =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
+	    my ( $module, $arguments ) = ( $1, $2 );
+	    unless ( $loadedmodules{ $module } ) {
+		for my $suffix ( @suffixes ) {
+		    for my $directory ( @moduledirectories ) {
+			my $modulefile = "$directory/$module.$suffix";
+			if ( -f $modulefile ) {
+			    if ( $moduleloader eq 'insmod' ) {
+				system ("insmod $modulefile $arguments" );
+			    } else {
+				system( "modprobe $module $arguments" );
+			    }
+
+			    $loadedmodules{ $module } = 1;
+			}
+		    }
+		}
+	    }
+	}
+    }   
+}
+
 #
 # Determine which optional facilities are supported by iptables/netfilter
 #
@@ -632,6 +690,8 @@ sub get_configuration( $ ) {
 	} else {
 	    fatal_error "\$IPTABLES=$capabilities{IPTABLES} does not exist or is not executable" unless -x $capabilities{IPTABLES};
 	}
+
+	load_kernel_modules;
     
 	unless ( open_file 'capabilities' ) {
 	    determine_capabilities;

@@ -31,7 +31,6 @@
 #	    EXPORT=Yes                          -e option specified to /sbin/shorewall
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
-#           VERSION                             Shorewall Version
 #           TIMESTAMP=Yes                       -t option specified to /sbin/shorewall
 #           FW                                  Firewall zone (for shell-variable expansion).
 #

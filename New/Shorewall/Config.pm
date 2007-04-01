@@ -87,12 +87,16 @@ our %config =
 		# Location of Files
 		#
 		IPTABLES => undef,
+		#
 		#PATH is inherited
+		#
 		PATH => undef,
 		SHOREWALL_SHELL => undef,
 		SUBSYSLOCK => undef,
 		MODULESDIR => undef,
+		#
 		#CONFIG_PATH is inherited
+		#
 		CONFIG_PATH => undef,
 		RESTOREFILE => undef,
 		IPSECFILE => undef,
@@ -230,6 +234,9 @@ INIT {
     $tmp_dir     = $ENV{TMP_DIR};
     @config_path = split /:/, $ENV{CONFIG_PATH};
 
+    for ( @config_path ) {
+	$_ .= '/' unless m|//$|;
+    }
 }
 
 #
@@ -492,10 +499,6 @@ sub get_configuration( $ ) {
 
     my $export = $_[0];
 
-    for ( @config_path ) {
-	$_ .= '/' unless m|//$|;
-    }
-
     my $file = find_file 'shorewall.conf';
 
     if ( -f $file ) {
@@ -602,6 +605,9 @@ sub get_configuration( $ ) {
 
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
+
+    warning_message 'DELAYBLACKLISTLOAD=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{DELAYBLACKLISTLOAD};
+
     default_yes_no 'LOGTAGONLY'                 , '';
     default_yes_no 'RFC1918_STRICT'             , '';
     default_yes_no 'SAVE_IPSETS'                , '';
@@ -680,6 +686,8 @@ sub get_configuration( $ ) {
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
     default 'IPSECFILE'             , 'ipsec';
+
+    fatal_error "IPSECFILE=ipsec is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
 
     for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT ACCEPT_DEFAULT/ {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';

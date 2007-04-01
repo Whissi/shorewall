@@ -1,5 +1,6 @@
-Shorewall-perl 3.9.0
-
+----------------------------------------------------------------------------
+                     Shorewall-perl 3.9.0
+----------------------------------------------------------------------------
 This companion product to Shorewall 3.4.2 and later includes a complete
 rewrite of the compiler in Perl.
 
@@ -27,21 +28,21 @@ version of Shorewall itself.
 d) Along the same vein, I think that users will be more likely to experiment
 with the new compiler if they can easily fall back to the old one if things
 get sticky.
-
-The good news:
-
+----------------------------------------------------------------------------
+                  T H E   G O O D   N E W S:
+----------------------------------------------------------------------------
 a) The compiler has a small disk footprint.
 b) The compiler is very fast.
 c) The compiler generates a firewall script that uses iptables-restore;
    so the script is very fast.
 d) Use of the perl compiler is optional! The old slow clunky
    Bourne-shell compiler is still available.
-
-The bad news:
-
+----------------------------------------------------------------------------
+		  T H E   B A D   N E W S:
+----------------------------------------------------------------------------
 There are a number of incompatibilities between the Perl-based compiler
 and the Bourne-shell one. Some of these will probably go away by first
-official release but some will not.
+official release but most will not.
 
 a) The Perl-based compiler requires the following capabilities in your
    kernel and iptables. 
@@ -152,15 +153,23 @@ j) Because the configuration files (with the exception of
    ($variable and ${variable}) are supported. The more exotic forms
    such as ${variable:=default} are not supported. Both variables
    defined in /etc/shorewall/params and environmental variables
-   (exported by the shell) can be used.
+   (exported by the shell) can be used in configuration files.
 
 h) USE_ACTIONS=No is not supported. That option is intended to minimize
    Shorewall's footprint in embedded applications. As a consequence,
    Default Macros are not supported.
 
-Installation
-------------
+i) DELAYBLACKLISTLOAD=Yes is not supported. The entire ruleset is
+   atomically loaded with one execution of iptables-restore.
 
+j) MAPOLDACTIONS=Yes is not supported. People should have converted to
+   using macros by now.
+
+k) The pre Shorewall-3.0 format of the zones file is not supported;
+   neither is the /etc/shorewall/ipsec file.
+----------------------------------------------------------------------------
+                      I N S T A L L A T I O N
+----------------------------------------------------------------------------
 Either 
 
    $ tar -jxf shorewall-perl-3.9.0.tar.bz2
@@ -170,10 +179,9 @@ Either
 or
 
    $ rpm -ivh shoreawll-pl-3.9.0-1.noarch.rpm
-
-Using the New compiler
-----------------------
-
+----------------------------------------------------------------------------
+               U S I N G   T H E   N E W   C O M P I L E R
+----------------------------------------------------------------------------
 By default, the old Bourne-shell based compiler will be used. 
 
 To use the new compiler, add this to shorewall.conf:

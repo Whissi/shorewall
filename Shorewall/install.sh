@@ -677,9 +677,9 @@ fi
 # Install the Man Pages
 #
 
-rm -f *.gz
-
 cd manpages
+
+rm -f *.gz
 
 for f in *.5; do
     gzip $f

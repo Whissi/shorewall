@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=3.4.1
+VERSION=3.4.2
 
 usage() # $1 = exit status
 {
@@ -332,9 +332,9 @@ echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
 # Install the Man Pages
 #
 
-rm -f *.gz
-
 cd manpages
+
+rm -f *.gz
 
 for f in *.5; do
     gzip $f

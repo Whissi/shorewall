@@ -676,13 +676,7 @@ sub get_configuration( $ ) {
 
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
 
-    my $uid = `id -u`;
-
-    fatal_error "Command 'id -u' failed" unless $? == 0;
-
-    chomp $uid;
-
-    if ( ! $export && $uid == 0 ) {
+    if ( ! $export && $> == 0 ) { # $> == $EUID
 	unless ( $config{IPTABLES} ) {
 	    $config{IPTABLES} = mywhich 'iptables';
 	    fatal_error "Can't find iptables executable" unless $config{IPTABLES};

@@ -384,7 +384,7 @@ sub read_a_line {
 
 	    chomp $nextline;
 	    #
-	    # Check for continuation
+	    # Continuation
 	    #
 	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
 		$line .= substr( $nextline, 0, -1 ); 
@@ -392,8 +392,14 @@ sub read_a_line {
 	    }
 
 	    $line .= $nextline;
-	    
-	    next if $line =~ /^\s*$/; # Ignore ( concatenated ) Blank Lines
+
+	    #
+	    # Ignore ( concatenated ) Blank Lines
+	    #
+	    if ( $line =~ /^\s*$/ ) { 
+		$line = '';
+		next;
+	    }
 	    #
 	    # Ignore ( concatenated ) lines that are nothing but comments
 	    #

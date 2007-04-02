@@ -156,7 +156,6 @@ our %config =
 my @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK/;
 my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
-
 #
 # From parsing the capabilities file
 #
@@ -230,6 +229,11 @@ my $currentfilename;
 my $currentlinenumber = 0;
 
 INIT {
+    #
+    # The shell 'compiler' program has already read shorewall.conf before starting us so the
+    # value of CONFIG_PATH is correct. We can thus use it here and ignore it's setting in
+    # shorewall.conf when we re-process that file in get_configuration().
+    #
     @config_path = split /:/, $ENV{CONFIG_PATH};
 
     for ( @config_path ) {
@@ -515,10 +519,7 @@ sub load_kernel_modules( ) {
 
 	while ( $line = <LSMOD> ) {
 	    my $module = ( split( /\s+/, $line ) )[0];
-	
-	    unless ( $module eq 'Module' ) {
-		$loadedmodules{$module} = 1;
-	    }
+	    $loadedmodules{$module} = 1 unless $module eq 'Module'
 	}
 	
 	close LSMOD;
@@ -531,8 +532,8 @@ sub load_kernel_modules( ) {
 	    fatal_error "Invalid modules file entry" unless ( $line =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {
-		for my $suffix ( @suffixes ) {
-		    for my $directory ( @moduledirectories ) {
+		for my $directory ( @moduledirectories ) {
+		    for my $suffix ( @suffixes ) {
 			my $modulefile = "$directory/$module.$suffix";
 			if ( -f $modulefile ) {
 			    if ( $moduleloader eq 'insmod' ) {
@@ -551,83 +552,90 @@ sub load_kernel_modules( ) {
 }
 
 #
+# Q[uie]t version of system(). Returns true for success
+#
+sub qt( $ ) {
+    system( "@_ > /dev/null 2>&1" ) == 0;
+}
+
+#
 # Determine which optional facilities are supported by iptables/netfilter
 #
 sub determine_capabilities() {
     
     my $iptables = $config{IPTABLES};
 
-    $capabilities{NAT_ENABLED}    = system( "$iptables -t nat -L -n > /dev/null 2>&1" )    == 0 ?  1 : 0;
-    $capabilities{MANGLE_ENABLED} = system( "$iptables -t mangle -L -n > /dev/null 2>&1" ) == 0 ?  1 : 0;
+    $capabilities{NAT_ENABLED}    = qt( "$iptables -t nat -L -n" );
+    $capabilities{MANGLE_ENABLED} = qt( "$iptables -t mangle -L -n" );
 
-    system( "$iptables -N fooX1234 > /dev/null 2>&1" );
+    qt( "$iptables -N fooX1234" );
     
-    $capabilities{CONNTRACK_MATCH} = system( "$iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT > /dev/null 2>&1" )         == 0;
-    $capabilities{MULTIPORT}       = system( "$iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT > /dev/null 2>&1" )           == 0;
-    $capabilities{XMULTIPORT}      = system( "$iptables -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT > /dev/null 2>&1" )           == 0;
-    $capabilities{POLICY_MATCH}    = system( "$iptables -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT > /dev/null 2>&1" ) == 0;
-    $capabilities{PHYSDEV_MATCH}   = system( "$iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT > /dev/null 2>&1" )                 == 0;
+    $capabilities{CONNTRACK_MATCH} = qt( "$iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+    $capabilities{MULTIPORT}       = qt( "$iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT" );
+    $capabilities{XMULTIPORT}      = qt( "$iptables -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT" );
+    $capabilities{POLICY_MATCH}    = qt( "$iptables -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
+    $capabilities{PHYSDEV_MATCH}   = qt( "$iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT" );
 
-    if ( system( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT > /dev/null 2>&1" ) == 0 ) {
+    if ( qt( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
 	$capabilities{IPRANGE_MATCH} = 1;
 	unless ( $capabilities{KLUDGEFREE} ) {
-	    $capabilities{KLUDGEFREE} = system( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT > /dev/null 2>&1" ) == 0;
+	    $capabilities{KLUDGEFREE} = qt( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
 	}
     }
 
-    $capabilities{RECENT_MATCH} = system( "$iptables -A fooX1234 -m recent --update -j ACCEPT > /dev/null 2>&1" )     == 0;
-    $capabilities{OWNER_MATCH}  = system( "$iptables -A fooX1234 -m owner --uid-owner 0 -j ACCEPT > /dev/null 2>&1" ) == 0;
+    $capabilities{RECENT_MATCH} = qt( "$iptables -A fooX1234 -m recent --update -j ACCEPT" );
+    $capabilities{OWNER_MATCH}  = qt( "$iptables -A fooX1234 -m owner --uid-owner 0 -j ACCEPT" );
 
-    if ( system( "$iptables -A fooX1234 -m connmark --mark 2  -j ACCEPT > /dev/null 2>&1" ) == 0 ) {
+    if ( qt( "$iptables -A fooX1234 -m connmark --mark 2  -j ACCEPT" )) {
 	$capabilities{CONNMARK_MATCH}  = 1;
-	$capabilities{XCONNMARK_MATCH} = system( "$iptables -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT > /dev/null 2>&1" ) == 0;
+	$capabilities{XCONNMARK_MATCH} = qt( "$iptables -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT" );
     }
 	
-    $capabilities{IPP2P_MATCH}     = system( "$iptables -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT > /dev/null 2>&1" )                     == 0;
-    $capabilities{LENGTH_MATCH}    = system( "$iptables -A fooX1234 -m length --length 10:20 -j ACCEPT > /dev/null 2>&1" )                    == 0;
-    $capabilities{ENHANCED_REJECT} = system( "$iptables -A fooX1234 -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1" )          == 0;
-    $capabilities{COMMENTS}        = system( qq($iptables -A fooX1234 -j ACCEPT -m comment --comment "This is a comment"  > /dev/null 2>&1) ) == 0;
+    $capabilities{IPP2P_MATCH}     = qt( "$iptables -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT" );
+    $capabilities{LENGTH_MATCH}    = qt( "$iptables -A fooX1234 -m length --length 10:20 -j ACCEPT" );
+    $capabilities{ENHANCED_REJECT} = qt( "$iptables -A fooX1234 -j REJECT --reject-with icmp-host-prohibited" );
+    $capabilities{COMMENTS}        = qt( qq($iptables -A fooX1234 -j ACCEPT -m comment --comment "This is a comment" ) );
 
     if  ( $capabilities{MANGLE_ENABLED} ) {
-	system( "$iptables -t mangle -N fooX1234 > /dev/null 2>&1" );
+	qt( "$iptables -t mangle -N fooX1234" );
 
-	if ( system( "$iptables -t mangle -A fooX1234 -j MARK --set-mark 1 > /dev/null 2>&1" ) == 0 ) {
+	if ( qt( "$iptables -t mangle -A fooX1234 -j MARK --set-mark 1" ) ) {
 	    $capabilities{MARK}  = 1;
-	    $capabilities{XMARK} = system( "$iptables -t mangle -A fooX1234 -j MARK --and-mark 0xFF > /dev/null 2>&1" ) == 0;
+	    $capabilities{XMARK} = qt( "$iptables -t mangle -A fooX1234 -j MARK --and-mark 0xFF" );
 	}
 
-	if ( system( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark > /dev/null 2>&1" ) == 0 ) {
+	if ( qt( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark" ) ) {
 	    $capabilities{CONNMARK}  = 1;
-	    $capabilities{XCONNMARK} = system( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF > /dev/null 2>&1" ) == 0;
+	    $capabilities{XCONNMARK} = qt( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF" );
 	}
 
-	$capabilities{CLASSIFY_TARGET} = system( "$iptables -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1 > /dev/null 2>&1" ) == 0;
-	system( "$iptables -t mangle -F fooX1234 > /dev/null 2>&1" );
-	system( "$iptables -t mangle -X fooX1234 > /dev/null 2>&1" );
+	$capabilities{CLASSIFY_TARGET} = qt( "$iptables -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1" );
+	qt( "$iptables -t mangle -F fooX1234" );
+	qt( "$iptables -t mangle -X fooX1234" );
 
-	$capabilities{MANGLE_FORWARD} = system( "$iptables -t mangle -L FORWARD -n > /dev/null 2>&1" ) == 0;
+	$capabilities{MANGLE_FORWARD} = qt( "$iptables -t mangle -L FORWARD -n" );
     }
 
-    $capabilities{RAW_TABLE} = system( "$iptables -t raw -L -n > /dev/null 2>&1" ) == 0;
+    $capabilities{RAW_TABLE} = qt( "$iptables -t raw -L -n" );
 
     if ( mywhich 'ipset' ) {
-	system( "ipset -X fooX1234 > /dev/null 2>&1" );
+	qt( "ipset -X fooX1234" );
 
-	if ( system( "ipset -N fooX1234 > /dev/null 2>&1" ) ) {
-	    if ( system( "$iptables -A fooX1234 -m set --set fooX1234 src -j ACCEPT > /dev/null 2>&1" ) == 0 ) {
-		system( "$iptables -D fooX1234 -m set --set fooX1234 src -j ACCEPT > /dev/null 2>&1" );
+	if ( qt( "ipset -N fooX1234" ) ) {
+	    if ( qt( "$iptables -A fooX1234 -m set --set fooX1234 src -j ACCEPT" ) ) {
+		qt( "$iptables -D fooX1234 -m set --set fooX1234 src -j ACCEPT" );
 		$capabilities{IPSET_MATCH} = 1;
 	    }
 
-	    system( "ipset -X fooX1234 > /dev/null 2>&1" );
+	    qt( "ipset -X fooX1234" );
 	}
     }
 
-    $capabilities{USEPKTTYPE} = system( "$iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT > /dev/null 2>&1" )  == 0;
-    $capabilities{ADDRTYPE}   = system( "$iptables -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT > /dev/null 2>&1" ) == 0;
+    $capabilities{USEPKTTYPE} = qt( "$iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT" );
+    $capabilities{ADDRTYPE}   = qt( "$iptables -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT" );
 
-    system( "$iptables -F fooX1234 > /dev/null 2>&1" );
-    system( "$iptables -X fooX1234 > /dev/null 2>&1" );
+    qt( "$iptables -F fooX1234" );
+    qt( "$iptables -X fooX1234" );
 }  
 
 sub require_capability( $$ ) {
@@ -692,6 +700,7 @@ sub get_configuration( $ ) {
     } else {
 	fatal_error "The -e flag requires a capabilities file" unless open_file 'capabilities';
     }
+
     #
     # If we successfully called open_file above, then this loop will read the capabilities file.
     # Otherwise, the first call to read_a_line() below will return false

@@ -217,6 +217,83 @@ get_config() {
 }
 
 #
+# Run the appropriate compiler
+#
+compiler() {
+    fatal_error() {
+	echo "   ERROR: $@" > &2
+	exit 2
+    }
+    #
+    # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
+    #
+    ensure_config_path
+    #
+    # Run the appropriate params file
+    #
+    [ -d /usr/share/shorewall-perl ] && set -a; 
+    
+    run_user_exit params
+
+    set +a
+
+    compiler=shell
+
+    if [ -d /usr/share/shorewall-shell ]; then
+	if [ -d /usr/share/shorewall-perl ]; then
+	    compiler=
+	fi
+    elif [ -d /usr/share/shorewall-perl ]; then
+	compiler=perl
+    else
+	fatal_error "No shorewall compiler installed"
+    fi
+
+    if [ -z "$compiler" ]; then
+        #
+        # Read the appropriate shorewall.conf to learn the setting of SHOREWALL_COMPILER
+        #
+	config=$(find_file shorewall.conf)
+
+	if [ -f $config ]; then
+	    if [ -r $config ]; then
+		progress_message "Processing $config..."
+		. $config
+	    else
+		startup_error "Cannot read $config (Hint: Are you root?)"
+	    fi
+	else
+	    startup_error "$config does not exist!"
+	fi
+        #
+        # And initiate the appropriate compiler
+        #
+	[ -n "$SHOREWALL_COMPILER" ] && compiler="$SHOREWALL_COMPILER"
+    fi
+    
+    case "$compiler" in
+	perl)
+	    #
+	    # Perl compiler -- set the appropriate Perl options
+	    #
+	    debugflags="-w"
+	    [ -n "$DEBUG" ]   && debugflags='-wd'
+	    [ -n "$PROFILE" ] && DEBUGFLAGS='-wd:DProf'
+	    perl $debugflags /usr/share/shorewall-perl/compiler.pl $@
+	    ;;
+	shell)
+	    #
+	    # Shell compiler -- run it
+	    #
+	    $SHOREWALL_SHELL /usr/share/shorewall-shell/compiler $@
+	    ;;
+	*)
+	    startup_error "Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER"
+	    ;;
+    esac
+}    
+
+#
 # Start Command Executor
 #
 start_command() {
@@ -229,7 +306,7 @@ start_command() {
 
 	progress_message3 "Compiling..."
 
-	if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.start; then
+	if compiler $debugging $nolock compile ${VARDIR}/.start; then
 	    ${VARDIR}/.start $debugging start
 	    rc=$?
 	else
@@ -366,11 +443,11 @@ compile_command() {
 			    option=${option#e}
 			    ;;
 			p*)
-			    export PROFILE=Yes
+			    PROFILE=Yes
 			    option=${option#p}
 			    ;;
 			d*)
-			    export DEBUG=Yes;
+			    DEBUG=Yes;
 			    option=${option#d}
 			    ;;
 			-)
@@ -419,7 +496,9 @@ compile_command() {
 
     progress_message3 "Compiling..."
 
-    exec $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging compile $file
+    compiler $debugging compile $file
+
+    exit
 }
 
 #
@@ -445,11 +524,11 @@ check_command() {
 			    option=${option#e}
 			    ;;
 			p*)
-			    export PROFILE=Yes
+			    PROFILE=Yes
 			    option=${option#p}
 			    ;;
 			d*)
-			    export DEBUG=Yes;
+			    DEBUG=Yes;
 			    option=${option#d}
 			    ;;
 			*)
@@ -491,7 +570,9 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    exec $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock check
+    compiler $debugging $nolock check
+
+    exit
 }
 
 #
@@ -562,7 +643,7 @@ restart_command() {
 
     progress_message3 "Compiling..."
 
-    if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.restart; then
+    if compiler $debugging $nolock compile ${VARDIR}/.restart; then
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
 	rc=$?
     else
@@ -630,7 +711,7 @@ refresh_command() {
 
     progress_message3 "Compiling..."
 
-    if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.refresh; then
+    if compiler $debugging $nolock compile ${VARDIR}/.refresh; then
 	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
     fi
 
@@ -735,7 +816,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	mutex_off
 	exit $status
@@ -866,7 +947,7 @@ try_command() {
 
     progress_message3 "Compiling..."
 
-    if ! $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	mutex_off
 	exit $status

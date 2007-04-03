@@ -5591,7 +5591,7 @@ __EOF__
 	progress_message3 "Shorewall configuration verified"
     else
 	INDENT=
-	mycat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
+	mycat ${SHELLSHAREDIR}/prog.header $OUTPUT ${SHELLSHAREDIR}/prog.footer > $outfile
 	chmod 700 $outfile
 	if [ -n "$EXPORT" ]; then
 	    exec 3>${outfile}.conf

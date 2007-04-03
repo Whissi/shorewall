@@ -1,0 +1,154 @@
+#!/bin/sh
+#
+#     The Shoreline Firewall (Shorewall) Wrapper for the Compiler - V3.9
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 2007 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#
+#	If an error occurs while starting or restarting the firewall, the
+#	firewall is automatically stopped.
+#
+#	Commands are:
+#
+#          compile check                        Verify the configuration files.
+#	   compile compile <path name>          Compile into <path name>
+#
+#	Environmental Variables:
+#
+#	    EXPORT=Yes                          -e option specified to /sbin/shorewall
+#	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
+#	    VERBOSE                             Standard Shorewall verbosity control.
+
+#
+# Fatal error -- stops the compiler after issuing the error message
+#
+fatal_error() # $* = Error Message
+{
+    echo "   ERROR: $@" >&2
+    exit 2
+}
+
+#
+# Initialize this program
+#
+do_initialize() {
+
+    # Run all utility programs using the C locale
+    #
+    # Thanks to Vincent Planchenault for this tip #
+
+    export LC_ALL=C
+
+    # Make sure umask is sane
+    umask 077
+
+    PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
+    ensure_config_path
+
+    VERSION_FILE=$SHAREDIR/version
+
+    [ -f $VERSION_FILE ] && VERSION=$(cat $VERSION_FILE)
+
+    [ -d /usr/share/shorewall-perl ] && set -a; 
+    
+    run_user_exit params
+
+    set +a
+
+}
+
+#
+# Give Usage Information
+#
+usage() {
+    echo "Usage: $0 [debug] check|compile <filename>}"
+    exit 1
+}
+
+#
+# E X E C U T I O N    B E G I N S   H E R E
+#
+#
+# Start trace if first arg is "debug"
+#
+debug='-w'
+
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+
+if [ "$PROFILE" ]; then
+    debug='-wd:DProf'
+elif [ "$DEBUG" ]; then
+    debug='-wd'
+fi
+
+NOLOCK=
+
+[ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
+
+trap "exit 2" 1 2 3 4 5 6 9
+
+SHAREDIR=/usr/share/shorewall
+VARDIR=/var/lib/shorewall
+[ -z "$EXPORT" ] && CONFDIR=/etc/shorewall || CONFDIR=${SHAREDIR}/configfiles
+
+[ -n "${VERBOSE:=2}" ]
+
+FUNCTIONS=${SHAREDIR}/lib.base
+
+if [ -f $FUNCTIONS ]; then
+    [ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
+    . $FUNCTIONS
+else
+    fatal_error "Installation Error: $FUNCTIONS does not exist!"
+fi
+
+PROGRAM=compiler
+
+COMMAND="$1"
+
+case "$COMMAND" in
+
+    check)
+	[ $# -ne 1 ] && usage
+	do_initialize
+	exec perl $debug /usr/share/shorewall-perl/compiler.pl
+	;;
+
+    compile)
+	[ $# -ne 2 ] && usage
+	do_initialize
+	exec perl $debug /usr/share/shorewall-perl/compiler.pl $2
+	;;
+
+    call)
+	#
+	# Undocumented way to call functions in ${SHAREDIR}/compiler directly
+	#
+	shift
+	do_initialize
+	EMPTY=
+	$@
+	;;
+
+    *)
+	usage
+	;;
+
+esac

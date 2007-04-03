@@ -228,19 +228,6 @@ my $currentfile;
 my $currentfilename;
 my $currentlinenumber = 0;
 
-INIT {
-    #
-    # The shell 'compiler' program has already read shorewall.conf before starting us so the
-    # value of CONFIG_PATH is correct. We can thus use it here and ignore it's setting in
-    # shorewall.conf when we re-process that file in get_configuration().
-    #
-    @config_path = split /:/, $ENV{CONFIG_PATH};
-
-    for ( @config_path ) {
-	$_ .= '/' unless m|//$|;
-    }
-}
-
 #
 # Issue a Warning Message
 #
@@ -646,6 +633,45 @@ sub require_capability( $$ ) {
 }
 
 #
+# Set default config path
+#
+sub ensure_config_path( $ ) {
+    my $export = $_[0];
+
+    my $f = "$globals{SHAREDIR}/configpath";
+
+    $ENV{CONFDIR} = $export ? '/usr/share/shorewall/configfiles/' : '/etc/shorewall/';
+    
+    unless ( $config{CONFIG_PATH} ) {
+	fatal_error "$f does not exist" unless -f $f;
+	
+	open $currentfile , '<', $f or fatal_error "Cannot open $f";
+
+	while ( read_a_line ) {
+	    if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+		my ($var, $val) = ($1, $2);
+		$config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val ) if exists $config{$var};
+	    } else {
+		fatal_error "Unrecognized entry";
+	    }
+	}
+	
+	fatal_error "CONFIG_PATH not found in $f" unless $config{CONFIG_PATH};
+    }
+
+    @config_path = split /:/, $config{CONFIG_PATH};
+
+    for ( @config_path ) {
+        $_ .= '/' unless m|//$|;
+    }
+
+    if ( my $sd = $ENV{SHOREWALL_DIR} ) {
+	$sd .= '/' unless $sd =~ m|//$|;
+	unshift @config_path, $sd if $sd ne $config_path[0];
+    }
+}
+
+#
 # - Read the shorewall.conf file
 # - Read the capabilities file created by the compiler front-end
 # - establish global hashes %config , %globals and %capabilities
@@ -653,6 +679,8 @@ sub require_capability( $$ ) {
 sub get_configuration( $ ) {
 
     my $export = $_[0];
+
+    ensure_config_path( $export );
 
     my $file = find_file 'shorewall.conf';
 
@@ -664,13 +692,13 @@ sub get_configuration( $ ) {
 		if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
-			warning_message "Unknown configuration option \"$var\" ignored";
+			warning_message "Unknown configuration option ($var) ignored";
 			next;
 		    }
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 		} else {
-		    fatal_error "Unrecognized entry in $file: $line";
+		    fatal_error "Unrecognized entry";
 		}
 	    }
 	} else {
@@ -680,7 +708,7 @@ sub get_configuration( $ ) {
 	fatal_error "$file does not exist!";
     }
 
-    $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
+    ensure_config_path( $export );
 
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
 
@@ -700,6 +728,8 @@ sub get_configuration( $ ) {
     } else {
 	fatal_error "The -e flag requires a capabilities file" unless open_file 'capabilities';
     }
+
+    $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     #
     # If we successfully called open_file above, then this loop will read the capabilities file.
@@ -879,7 +909,6 @@ sub get_configuration( $ ) {
 	$globals{LOGFORMAT}='Shorewall:%s:%s:';
 	$globals{MAXZONENAMELENGTH} = 5;
     }
-
 }
 
 sub propagateconfig() {

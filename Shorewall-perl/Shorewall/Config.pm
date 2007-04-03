@@ -217,10 +217,16 @@ my %capdesc = ( NAT_ENABLED     => 'NAT',
 		COMMENTS        => 'Comments',
 		ADDRTYPE        => 'Address Type Match',
 		);
-
+#
+# Directories to search for configuration files
+#
 my @config_path;
 #
 # Stash away file references here when we encounter INCLUDE
+#
+my @includestack;
+#
+# Allow nested opens
 #
 my @openstack;
 
@@ -324,7 +330,7 @@ sub close_file() {
     if ( $currentfile ) {
 	close $currentfile;
 	
-	my $arrayref = pop @openstack;
+	my $arrayref = pop @includestack;
 
 	if ( $arrayref ) {
 	    ( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
@@ -334,26 +340,21 @@ sub close_file() {
     }
 }
 
-#
-# Allow nested opens
-#
-my @pushstack;
-
 sub push_open( $ ) {
 
-    push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];
-    my @a = @openstack;
-    push @pushstack, \@a;
-    @openstack = ();
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+    my @a = @includestack;
+    push @openstack, \@a;
+    @includestack = ();
     $currentfile = undef;
     open_file( $_[0] );
 
 }
 
 sub pop_open() {
-    @openstack   = @{pop @pushstack};
+    @includestack = @{pop @openstack};
 
-    my $arrayref = pop @openstack;
+    my $arrayref = pop @includestack;
 
     if ( $arrayref ) {
 	( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
@@ -403,6 +404,7 @@ sub read_a_line {
 
 	    $line =~ s/^\s+//;       # Remove Leading white space
 	    $line =~ s/\s+$//;       # Remove Trailing white space
+
 	    #
 	    # Expand Shell Variables using $ENV
 	    #
@@ -415,14 +417,14 @@ sub read_a_line {
 	
 		fatal_error "Missing file name after 'INCLUDE'" unless @line > 1;
 		fatal_error "Invalid INCLUDE command: $line"    if @line > 2;
-		fatal_error "INCLUDEs nested too deeply: $line" if @openstack >= 4;
+		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;
 		
 		my $filename = find_file $line[1];
 		
 		fatal_error "INCLUDE file $filename not found" unless ( -f $filename );
 		
 		if ( -s _ ) {
-		    push @openstack, [ $currentfile, $currentfilename, $currentlinenumber ];
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 		    $currentfile = undef;
 		    do_open_file $filename;
 		}

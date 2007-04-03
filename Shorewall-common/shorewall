@@ -220,10 +220,16 @@ get_config() {
 # Run the appropriate compiler
 #
 compiler() {
+    local sc=/usr/share/shorewall-shell/compiler
+    local pc=/usr/share/shorewall-perl/compiler.pl
+    local command=$1
+
     fatal_error() {
 	echo "   ERROR: $@" >&2
 	exit 2
     }
+
+    shift
     #
     # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
     #
@@ -237,13 +243,13 @@ compiler() {
 
     set +a
 
-    compiler=shell
-
-    if [ -d /usr/share/shorewall-shell ]; then
-	if [ -d /usr/share/shorewall-perl ]; then
+    if [ -x $sc ]; then
+	if [ -x $pc ]; then
 	    compiler=
+	else
+	    compiler=shell
 	fi
-    elif [ -d /usr/share/shorewall-perl ]; then
+    elif [ -x $pc ]; then
 	compiler=perl
     else
 	fatal_error "No shorewall compiler installed"
@@ -251,7 +257,7 @@ compiler() {
 
     if [ -z "$compiler" ]; then
         #
-        # Read the appropriate shorewall.conf to learn the setting of SHOREWALL_COMPILER
+        # Both compilers installed. Read the appropriate shorewall.conf to learn the setting of SHOREWALL_COMPILER
         #
 	config=$(find_file shorewall.conf)
 
@@ -270,24 +276,27 @@ compiler() {
         #
 	[ -n "$SHOREWALL_COMPILER" ] && compiler="$SHOREWALL_COMPILER"
     fi
+
+    [ $command = exec ] || command=
     
     case "$compiler" in
 	perl)
 	    #
 	    # Perl compiler -- set the appropriate Perl options
 	    #
-	    [ "$1" = debug ] && DEBUG=Yes && shift
 	    debugflags="-w"
-	    [ -n "$DEBUG" ]   && debugflags='-wd'
-	    [ -n "$PROFILE" ] && DEBUGFLAGS='-wd:DProf'
-	    shift # Perl compiler doesn't need a command
-	    perl $debugflags /usr/share/shorewall-perl/compiler.pl $@
+	    [ "$1" = debug ]  && debugflags='-wd'       && shift
+	    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
+
+	    shift # Perl compiler only takes the output file as a argument
+
+	    $command perl $debugflags $pc $@
 	    ;;
 	shell)
 	    #
 	    # Shell compiler -- run it
 	    #
-	    $SHOREWALL_SHELL /usr/share/shorewall-shell/compiler $@
+	    $command $SHOREWALL_SHELL $sc $@
 	    ;;
 	*)
 	    startup_error "Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER"
@@ -308,7 +317,7 @@ start_command() {
 
 	progress_message3 "Compiling..."
 
-	if compiler $debugging $nolock compile ${VARDIR}/.start; then
+	if compiler run $debugging $nolock compile ${VARDIR}/.start; then
 	    ${VARDIR}/.start $debugging start
 	    rc=$?
 	else
@@ -498,9 +507,7 @@ compile_command() {
 
     progress_message3 "Compiling..."
 
-    compiler $debugging compile $file
-
-    exit
+    compiler exec $debugging compile $file
 }
 
 #
@@ -572,9 +579,7 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    compiler $debugging $nolock check
-
-    exit
+    compiler exec $debugging $nolock check
 }
 
 #
@@ -645,7 +650,7 @@ restart_command() {
 
     progress_message3 "Compiling..."
 
-    if compiler $debugging $nolock compile ${VARDIR}/.restart; then
+    if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
 	rc=$?
     else
@@ -713,7 +718,7 @@ refresh_command() {
 
     progress_message3 "Compiling..."
 
-    if compiler $debugging $nolock compile ${VARDIR}/.refresh; then
+    if compiler run $debugging $nolock compile ${VARDIR}/.refresh; then
 	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
     fi
 
@@ -818,7 +823,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	mutex_off
 	exit $status
@@ -949,7 +954,7 @@ try_command() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	mutex_off
 	exit $status

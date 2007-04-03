@@ -276,6 +276,7 @@ compiler() {
 	    #
 	    # Perl compiler -- set the appropriate Perl options
 	    #
+	    [ "$1" = debug ] && DEBUG=Yes && shift
 	    debugflags="-w"
 	    [ -n "$DEBUG" ]   && debugflags='-wd'
 	    [ -n "$PROFILE" ] && DEBUGFLAGS='-wd:DProf'

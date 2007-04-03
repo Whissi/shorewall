@@ -220,8 +220,9 @@ get_config() {
 # Run the appropriate compiler
 #
 compiler() {
-    local sc=/usr/share/shorewall-shell/compiler
-    local pc=/usr/share/shorewall-perl/compiler.pl
+    local sc=${SHELLSHAREDIR}/compiler
+    local pc=${PERLSHAREDIR}/compiler.pl
+    
     local command=$1
 
     fatal_error() {
@@ -281,9 +282,7 @@ compiler() {
     
     case "$compiler" in
 	perl)
-	    #
-	    # Perl compiler -- set the appropriate Perl options
-	    #
+	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
 	    debugflags="-w"
 	    [ "$1" = debug ]  && debugflags='-wd'       && shift
 	    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
@@ -293,9 +292,7 @@ compiler() {
 	    $command perl $debugflags $pc $@
 	    ;;
 	shell)
-	    #
-	    # Shell compiler -- run it
-	    #
+	    [ -x $sc ] || startup_error "SHOREWALL_COMPILER=shell requires the shorewall-shell package which is not installed"
 	    $command $SHOREWALL_SHELL $sc $@
 	    ;;
 	*)

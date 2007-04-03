@@ -33,6 +33,8 @@ SHOREWALL_LIBVERSION=30402
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
 [ -n "${CONFDIR:=/etc/shorewall}" ]
+SHELLSHAREDIR=/usr/share/shorewall-shell
+PERLSHAREDIR=/usr/share/shorewall-perl
 
 #
 # Message to stderr
@@ -339,11 +341,8 @@ lib_load() # $1 = Name of the Library, $2 = Error Message heading if the library
     eval loaded=\$LIB_${1}_LOADED
 
     if [ -z "$loaded" ]; then
-	if [ "$SHOREWALL_COMPILER" = perl ]; then
-	    eval LIB_${1}_LOADED=Yes
-	    return
-	fi
-
+	[ -f $lib ] || lib=${SHELLSHAREDIR}/lib.$1
+	
 	if [ -f $lib ]; then
 	    progress_message "Loading library $lib..."
 	    . $lib

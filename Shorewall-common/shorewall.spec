@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 3.4.2
+%define version 3.9.1
 %define release 1
 %define prefix /usr
 
@@ -22,6 +22,9 @@ Requires: iptables iproute
 The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 (iptables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
+
+To be fully functional, this package requires installation of either
+shorewall-shell or shorewall-perl 
 
 %prep
 
@@ -109,22 +112,11 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Drop
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
-%attr(0555,root,root) /usr/share/shorewall/compiler
 %attr(0555,root,root) /usr/share/shorewall/firewall
 %attr(0777,root,root) /usr/share/shorewall/functions
-%attr(0444,root,root) /usr/share/shorewall/lib.accounting
-%attr(0444,root,root) /usr/share/shorewall/lib.actions
 %attr(0444,root,root) /usr/share/shorewall/lib.base
 %attr(0444,root,root) /usr/share/shorewall/lib.cli
 %attr(0444,root,root) /usr/share/shorewall/lib.config
-%attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
-%attr(0444,root,root) /usr/share/shorewall/lib.maclist
-%attr(0444,root,root) /usr/share/shorewall/lib.nat
-%attr(0444,root,root) /usr/share/shorewall/lib.providers
-%attr(0444,root,root) /usr/share/shorewall/lib.proxyarp
-%attr(0444,root,root) /usr/share/shorewall/lib.tc
-%attr(0444,root,root) /usr/share/shorewall/lib.tcrules
-%attr(0444,root,root) /usr/share/shorewall/lib.tunnels
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall/macro.Amanda
 %attr(0644,root,root) /usr/share/shorewall/macro.Auth
@@ -187,8 +179,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Webmin
 %attr(0644,root,root) /usr/share/shorewall/macro.Whois
 %attr(0644,root,root) /usr/share/shorewall/modules
-%attr(0644,root,root) /usr/share/shorewall/prog.footer
-%attr(0644,root,root) /usr/share/shorewall/prog.header
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0555,root,root) /usr/share/shorewall/wait4ifup
@@ -260,6 +250,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Tue Apr 03 2007 Tom Eastep tom@shorewall.net
+- Updated to 3.9.1-1
 * Thu Mar 24 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.4.2-1
 * Thu Mar 15 2007 Tom Eastep tom@shorewall.net

@@ -77,9 +77,11 @@ VERSION=
 OLDVERSION=
 SHOREWALLDIR=
 SHOREWALLLITEDIR=
+SHELLDIR=
 SOURCEDIR=
 SVNBRANCH=
 LITESVNBRANCH=
+SHELLBRANCH=
 XMLPROJ=
 RPMNAME=
 LITERPMNAME=
@@ -96,11 +98,14 @@ HASLITE=
 SIGN=
 MANPAGETAG=
 LITEMANPAGETAG=
-BUILDPERL=
 PERLDIR=
+SHELLDIR=
 PERLBRANCH=
 PERLRPMNAME=
 PERLTARBALL=
+SHELLBRANCH=
+SHELLRPMNAME=
+SHELLTARBALL=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -202,9 +207,6 @@ while [ -z "$done" ]; do
 			SIGN=Yes
 			option=${option#s}
 			;;
-		    p*)
-			BUILDPERL=Yes
-			option=${option#p}
 			;;
 	    	    *)
 			usage
@@ -236,34 +238,11 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
-    3.0.*)
-	SVNBRANCH="branches/3.0/Shorewall"
-	DOCTAG="trunk/docs"
-	XMLPROJ="docs-3.0"
-	SAMPLESTAG="branches/3.0/Samples"
-	;;
-    3.2.*)
-	SVNBRANCH="branches/3.2/Shorewall"
-	LITESVNBRANCH="branches/3.2/Shorewall-lite"
-	DOCTAG="trunk/docs"
-	XMLPROJ="docs-3.2"
-	SAMPLESTAG="branches/3.2/Samples"
-	HASLITE=Yes
-	;;
-     3.4.*)
-	SVNBRANCH="branches/3.4/Shorewall"
-	LITESVNBRANCH="branches/3.4/Shorewall-lite"
-	DOCTAG="trunk/docs"
-	XMLPROJ="docs-3.4"
-	SAMPLESTAG="trunk/Samples"
-	HASLITE=Yes
-	MANPAGETAG=trunk/manpages
-	LITEMANPAGETAG=trunk/manpages-lite
-	;;
      3.9.*)
-	SVNBRANCH="trunk/Shorewall"
+	SVNBRANCH="trunk/Shorewall-common"
 	LITESVNBRANCH="trunk/Shorewall-lite"
-	PERLBRANCH="trunk/New"
+	PERLBRANCH="trunk/Shorewall-perl"
+	SHELLBRANCH="trunk/Shorewall-shell"
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-3.4"
 	SAMPLESTAG="trunk/Samples"
@@ -297,6 +276,9 @@ case $VERSION in
 	PERLRPMNAME=shorewall-perl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	PERLTARBALL=shorewall-perl-${VERSION%-*}.tgz
 	PERLDIR=shorewall-perl-${VERSION%-*}
+	SHELLRPMNAME=shorewall-shell-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	SHELLTARBALL=shorewall-shell-${VERSION%-*}.tgz
+	SHELLDIR=shorewall-shell-${VERSION%-*}
 	;;
     *)
 	#
@@ -311,6 +293,9 @@ case $VERSION in
 	PERLRPMNAME=shorewall-perl-${VERSION}-1.noarch.rpm
 	PERLDIR=shorewall-perl-$VERSION
 	PERLTARBALL=shorewall-perl-$VERSION.tgz
+	SHELLRPMNAME=shorewall-shell-${VERSION}-1.noarch.rpm
+	SHELLDIR=shorewall-shell-$VERSION
+	SHELLTARBALL=shorewall-shell-$VERSION.tgz
 	;;
 esac
 
@@ -319,19 +304,19 @@ HTMLDIR=shorewall-docs-html-$VERSION
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall directory is $DIR/$SHOREWALLDIR"
     report "Shorewall Lite directory is $DIR/$SHOREWALLLITEDIR"
+    report "Shorewall Shell directory is $DIR/$SHELLDIR"
+    report "Shorewall Perl directory is $DIR/$PERLDIR"
     report "SVN tag is $SVNBRANCH"
     report "Lite SVN tag is $LITESVNBRANCH"
-    [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL" && report "LITETARBALL is $LITETARBALL"
-    [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME" && report "LITERPM is $LITERPMNAME"
+    report "Shell SVN tag is $SHELLBRANCH"
+    report "Perl SVN tag is $PERLBRANCH"
+    [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL" && report "LITETARBALL is $LITETARBALL"&& report "SHELLTARBALL is $SHELLTARBALL"&& report "PERLTARBALL is $PERLTARBALL"
+    [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME" && report "LITERPM is $LITERPMNAME" && report "SHELLRPM is $SHELLRPMNAME" && report "PERLRPM is $PERLRPMNAME"
 fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
 
-if [ -n "$BUILDPERL" ]; then
-    report "shorewall-perl directory is $DIR/$PERLDIR"
-    report "Perl SVN tag is $PERLBRANCH"
-    report "Perl RPM is $PERLRPMNAME"
-
+if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     rm -rf $PERLDIR
     	
     progress_message "Exporting $PERLBRANCH from SVN..."
@@ -368,11 +353,10 @@ if [ -n "$BUILDPERL" ]; then
 	    do_or_die "md5sum $file >> $VERSION.md5sums"
 	    do_or_die "sha1sum $file >> $VERSION.sha1sums"
 	    ;;
-    esac
-done
-fi
+	esac
+    done
 
-if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
+
     progress_message "Exporting $SVNBRANCH from SVN..."
 
     rm -rf $SHOREWALLDIR

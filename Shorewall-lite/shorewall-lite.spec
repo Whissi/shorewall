@@ -99,7 +99,7 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
-* San Apr 07 2007 Tom Eastep tom@shorewall.net
+* Sat Apr 07 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.9.1-1
 * Thu Mar 15 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.4.1-1

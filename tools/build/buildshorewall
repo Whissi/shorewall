@@ -319,11 +319,16 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     rm -rf $SHOREWALLDIR
     rm -rf $SHOREWALLLITEDIR
+    rm -rf $PERLDIR
 
     do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
  
     progress_message "Exporting $LITESVNBRANCH from SVN..."
     do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    	
+    progress_message "Exporting $PERLBRANCH from SVN..."
+    do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
+
     do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     if [ -f $SHOREWALLDIR/lib.base ]; then
 	do_or_die "cp $SHOREWALLDIR/lib.base $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
@@ -386,11 +391,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     do_or_die "rm -rf $SHOREWALLDIR/debian"
 
-    rm -rf $PERLDIR
-    	
-    progress_message "Exporting $PERLBRANCH from SVN..."
-    do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
-    
     if [ -n "$BUILDTARBALL" ]; then
 	
 	progress_message "Creating $DIR/$TARBALL..."

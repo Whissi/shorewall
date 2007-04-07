@@ -658,13 +658,6 @@ done
 #
 ln -sf lib.base ${PREFIX}/usr/share/shorewall/functions
 #
-# Install the program skeleton files
-#
-for f in prog.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-    echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
-done
-#
 # Create the version file
 #
 echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version

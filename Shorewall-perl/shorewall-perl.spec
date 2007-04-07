@@ -1,5 +1,5 @@
 %define name shorewall-perl
-%define version 3.9.0
+%define version 3.9.1
 %define release 1
 %define prefix /usr
 
@@ -80,6 +80,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 
+* Sat Apr 07 2007 Tom Eastep tom@shorewall.net
+- Initial version 3.9.1-1
 * Sat Mar 24 2007 Tom Eastep tom@shorewall.net
 - Initial version 3.9.0-1
 

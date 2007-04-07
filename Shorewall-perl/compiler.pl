@@ -69,7 +69,9 @@ INIT {
 #    Generate the 'initialize()' function.
 #
 
-sub generate_script_1 {
+sub generate_script_1() {
+    my $export = $_[0];
+
     copy $globals{SHAREDIRPL} . 'prog.header';
 
     my $date = localtime;
@@ -488,22 +490,16 @@ sub generate_script_2 () {
     save_progress_message 'Initializing...';
     
     if ( $export ) {
-	my $mf = find_file 'modules';
+	my $fn = find_file 'modules';
 
-	if ( $mf ne "$globals{SHAREDIR}/module" && -f $mf ) {
-
-	    emitj( 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir',
-		   'cat > ${VARDIR}/.modules << EOF'
-		   );
-
-	    open MF, $mf or fatal_error "Unable to open $mf: $!";
-
-	    while ( my $line = <MF> ) { emit_as_is $line if $line =~ /^\s*loadmodule\b/; }
-
-	    close MF;
-
-	    emit_unindented "EOF\n";
-
+	if ( $fn ne "$globals{SHAREDIR}/modules" && -f $fn ) {
+	    emit 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir';
+	    emit 'cat > ${VARDIR}/.modules << EOF';
+	    open_file $fn;
+	    while ( read_a_line ) {
+		emit_unindented $line;
+	    }
+	    emit_unindented 'EOF';
 	    emit 'reload_kernel_modules < ${VARDIR}/.modules';
 	} else {
 	    emit 'load_kernel_modules Yes';

@@ -59,7 +59,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    CONFDIR =>  '/etc/shorewall',
 		    SHAREDIRPL => '/usr/share/shorewall-perl/',
 		    LOGPARMS => '',
-		    VERSION =>  '3.9.0-1',
+		    VERSION =>  '3.9.1',
 		  );
 
 #
@@ -647,7 +647,7 @@ sub ensure_config_path( $ ) {
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;
 	
-	open $currentfile , '<', $f or fatal_error "Cannot open $f";
+	open_file $f;
 
 	while ( read_a_line ) {
 	    if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {

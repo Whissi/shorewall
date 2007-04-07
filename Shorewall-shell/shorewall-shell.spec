@@ -65,19 +65,19 @@ fi
 %defattr(0644,root,root,0755)
 %attr(0755,root,root) %dir /usr/share/shorewall-shell
 
-%attr(0555,root,root) /usr/share/shorewall/compiler
-%attr(0444,root,root) /usr/share/shorewall/lib.accounting
-%attr(0444,root,root) /usr/share/shorewall/lib.actions
-%attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
-%attr(0444,root,root) /usr/share/shorewall/lib.maclist
-%attr(0444,root,root) /usr/share/shorewall/lib.nat
-%attr(0444,root,root) /usr/share/shorewall/lib.providers
-%attr(0444,root,root) /usr/share/shorewall/lib.proxyarp
-%attr(0444,root,root) /usr/share/shorewall/lib.tc
-%attr(0444,root,root) /usr/share/shorewall/lib.tcrules
-%attr(0444,root,root) /usr/share/shorewall/lib.tunnels
-%attr(0644,root,root) /usr/share/shorewall/prog.footer
-%attr(0644,root,root) /usr/share/shorewall/prog.header
+%attr(0555,root,root) /usr/share/shorewall-shell/compiler
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.accounting
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.actions
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.dynamiczones
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.maclist
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.nat
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.providers
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.proxyarp
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.tc
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.tcrules
+%attr(0444,root,root) /usr/share/shorewall-shell/lib.tunnels
+%attr(0644,root,root) /usr/share/shorewall-shell/prog.footer
+%attr(0644,root,root) /usr/share/shorewall-shell/prog.header
 
 %doc COPYING INSTALL 
 

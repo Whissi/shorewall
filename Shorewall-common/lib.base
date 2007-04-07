@@ -228,6 +228,8 @@ reload_kernel_modules() {
 	moduleloader=insmod
     fi
 
+    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+
     [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
     MODULES=$(lsmod | cut -d ' ' -f1)
 
@@ -256,6 +258,8 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
     fi
+
+    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
     [ -z "$MODULESDIR" ] && \
 	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter

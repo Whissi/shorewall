@@ -29,7 +29,7 @@
 #
 #   On the target system (the system where the firewall program is to run):
 #
-#       [ IPTABLES=<iptables binary> ] [ MODULESDIR=<kernel modules directory> ] shorecap > capabilities
+#       [ IPTABLES=<iptables binary> ] [ MODULESDIR=<kernel modules directory> ] [ MODULE_SUFFIX="<module suffix list>" ] shorecap > capabilities
 #
 #    Now move the capabilities file to the compilation system. The file must
 #    be placed in a directory on the CONFIG_PATH to be used when compiling firewalls
@@ -39,6 +39,7 @@
 #
 #        IPTABLES - iptables
 #        MODULESDIR - /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+#        MODULE_SUFFIX - "o gz ko o.gz ko.gz"
 #
 #    Shorewall need not be installed on the target system to run shorecap. If the '-e' flag is
 #    used during firewall compilation, then the generated firewall program will likewise not

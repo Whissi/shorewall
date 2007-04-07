@@ -30,7 +30,6 @@
 #      -h      Build HTML documentation
 #      -x      Build XML documentation
 #      -s      Sign with GPG
-#      -p      Build shorewall-perl
 #
 # If no options are given, all options are assumed.
 #
@@ -320,6 +319,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     rm -rf $SHOREWALLDIR
     rm -rf $SHOREWALLLITEDIR
     rm -rf $PERLDIR
+    rm -rf $SHELLDIR
 
     do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
  
@@ -328,6 +328,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     	
     progress_message "Exporting $PERLBRANCH from SVN..."
     do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
+
+    progress_message "Exporting $SHELLBRANCH from SVN..."
+    do_or_die "svn export --non-interactive --force ${SVN}/$SHELLBRANCH  $SHELLDIR >> $LOGFILE 2>&1"
 
     do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     if [ -f $SHOREWALLDIR/lib.base ]; then
@@ -343,6 +346,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fi
     do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $PERLDIR >> $LOGFILE 2>&1"
+    do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHELLDIR >> $LOGFILE 2>&1"
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
@@ -430,6 +434,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 		do_or_die "$GPG $shoreball"
 	    done
 	fi
+
+	progress_message "Creating $DIR/$SHELLARBALL..."
+	do_or_die "tar -zcvf $SHELLTARBALL $SHELLDIR >> $LOGFILE 2>&1"
+	do_or_die "tar -jcvf shorewall-shell-${VERSION%-*}.tar.bz2 $SHELLDIR >> $LOGFILE 2>&1"
+	
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		shoreball=shorewall-sell-${VERSION%-*}.${shoresuffix}
+		report "GPG signing $DIR/$shoreball"
+		rm -f ${shoreball}.asc
+		do_or_die "$GPG $shoreball"
+	    done
+	fi
     fi
 
     if [ -n "$BUILDRPM" ]; then
@@ -457,6 +474,14 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	do_or_die "cp $PERLDIR/shorewall-perl.spec $RPMDIR/SPECS/"
 	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-perl.spec >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME  .
+
+	progress_message "Building $SHELLRPMNAME..."
+
+	rm -rf $RPMDIR/BUILD/shorewall-shell-${VERSION%-*}*
+	do_or_die "cp shorewall-shell-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+	do_or_die "cp $SHELLDIR/shorewall-shell.spec $RPMDIR/SPECS/"
+	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-shell.spec >> $LOGFILE 2>&1"
+	do_or_die cp -a $RPMDIR/RPMS/noarch/$SHELLRPMNAME  .
     fi
 fi
 
@@ -656,6 +681,9 @@ case $VERSION in
 
 	do_or_die "md5sum shorewall-perl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.md5sums"
 	do_or_die "sha1sum shorewall-perl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
+
+	do_or_die "md5sum shorewall-shell-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.md5sums"
+	do_or_die "sha1sum shorewall-shell-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
 	;;
 esac
 
@@ -674,6 +702,7 @@ if [ -n "$OLDVERSION" ]; then
     diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
     diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
     diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
+    diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
     
 fi
 

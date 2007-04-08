@@ -16,6 +16,7 @@ URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: iptables iproute
+Provides: shorewall_compiler
 
 %description
 

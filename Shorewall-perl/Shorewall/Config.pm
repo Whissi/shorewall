@@ -29,7 +29,7 @@ use Shorewall::Common;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
-		 warning_message 
+		 warning_message
 		 fatal_error
                  find_file
                  split_line
@@ -65,7 +65,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 #
 # From shorewall.conf file
 #
-our %config =     
+our %config =
               ( STARTUP_ENABLED => undef,
 		VERBOSITY => undef,
 		#
@@ -159,7 +159,7 @@ my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 #
 # From parsing the capabilities file
 #
-our %capabilities = 
+our %capabilities =
              ( NAT_ENABLED => undef,
 	       MANGLE_ENABLED => undef,
 	       MULTIPORT => undef,
@@ -237,7 +237,7 @@ my $currentlinenumber = 0;
 #
 # Issue a Warning Message
 #
-sub warning_message 
+sub warning_message
 {
     my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
 
@@ -255,7 +255,7 @@ sub fatal_error	{
 #
 # Search the CONFIG_PATH for the passed file
 #
-sub find_file($) 
+sub find_file($)
 {
     my $filename=$_[0];
 
@@ -320,14 +320,14 @@ sub open_file( $ ) {
 }
 
 #
-# This function is normally called below in read_a_line() when EOF is reached. Clients of the 
+# This function is normally called below in read_a_line() when EOF is reached. Clients of the
 # module may also call the function to close the file before EOF
 #
 
 sub close_file() {
     if ( $currentfile ) {
 	close $currentfile;
-	
+
 	my $arrayref = pop @includestack;
 
 	if ( $arrayref ) {
@@ -363,7 +363,7 @@ sub pop_open() {
     } else {
 	$currentfile = undef;
     }
-}    
+}
 
 #
 # Read a line from the current include stack.
@@ -397,7 +397,7 @@ sub read_a_line {
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
-	    if ( $line =~ /^\s*$/ ) { 
+	    if ( $line =~ /^\s*$/ ) {
 		$line = '';
 		next;
 	    }
@@ -410,18 +410,18 @@ sub read_a_line {
 	    #
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
-	    
+
 	    if ( $line =~ /^INCLUDE\s/ ) {
-		
+
 		my @line = split /\s+/, $line;
-	
+
 		fatal_error "Invalid INCLUDE command: $line"    if @line != 2;
 		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;
-		
+
 		my $filename = find_file $line[1];
-		
+
 		fatal_error "INCLUDE file $filename not found" unless ( -f $filename );
-		
+
 		if ( -s _ ) {
 		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 		    $currentfile = undef;
@@ -433,7 +433,7 @@ sub read_a_line {
 		return 1;
 	    }
 	}
-	
+
 	close_file;
     }
 }
@@ -500,7 +500,7 @@ sub load_kernel_modules( ) {
 
     if ( @moduledirectories && open_file 'modules' ) {
 	my %loadedmodules;
-	
+
 	progress_message "Loading Modules...";
 
 	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
@@ -509,7 +509,7 @@ sub load_kernel_modules( ) {
 	    my $module = ( split( /\s+/, $line ) )[0];
 	    $loadedmodules{$module} = 1 unless $module eq 'Module'
 	}
-	
+
 	close LSMOD;
 
 	$config{MODULE_SUFFIX} = 'o gz ko o.gz ko.gz' unless $config{MODULES_SUFFIX};
@@ -536,7 +536,7 @@ sub load_kernel_modules( ) {
 		}
 	    }
 	}
-    }   
+    }
 }
 
 #
@@ -550,14 +550,14 @@ sub qt( $ ) {
 # Determine which optional facilities are supported by iptables/netfilter
 #
 sub determine_capabilities() {
-    
+
     my $iptables = $config{IPTABLES};
 
     $capabilities{NAT_ENABLED}    = qt( "$iptables -t nat -L -n" );
     $capabilities{MANGLE_ENABLED} = qt( "$iptables -t mangle -L -n" );
 
     qt( "$iptables -N fooX1234" );
-    
+
     $capabilities{CONNTRACK_MATCH} = qt( "$iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
     $capabilities{MULTIPORT}       = qt( "$iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT" );
     $capabilities{XMULTIPORT}      = qt( "$iptables -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT" );
@@ -578,7 +578,7 @@ sub determine_capabilities() {
 	$capabilities{CONNMARK_MATCH}  = 1;
 	$capabilities{XCONNMARK_MATCH} = qt( "$iptables -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT" );
     }
-	
+
     $capabilities{IPP2P_MATCH}     = qt( "$iptables -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT" );
     $capabilities{LENGTH_MATCH}    = qt( "$iptables -A fooX1234 -m length --length 10:20 -j ACCEPT" );
     $capabilities{ENHANCED_REJECT} = qt( "$iptables -A fooX1234 -j REJECT --reject-with icmp-host-prohibited" );
@@ -624,7 +624,7 @@ sub determine_capabilities() {
 
     qt( "$iptables -F fooX1234" );
     qt( "$iptables -X fooX1234" );
-}  
+}
 
 sub require_capability( $$ ) {
     my ( $capability, $description ) = @_;
@@ -642,10 +642,10 @@ sub ensure_config_path( $ ) {
     my $f = "$globals{SHAREDIR}/configpath";
 
     $ENV{CONFDIR} = $export ? '/usr/share/shorewall/configfiles/' : '/etc/shorewall/';
-    
+
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;
-	
+
 	open_file $f;
 
 	while ( read_a_line ) {
@@ -656,7 +656,7 @@ sub ensure_config_path( $ ) {
 		fatal_error "Unrecognized entry";
 	    }
 	}
-	
+
 	fatal_error "CONFIG_PATH not found in $f" unless $config{CONFIG_PATH};
     }
 
@@ -722,7 +722,7 @@ sub get_configuration( $ ) {
 	}
 
 	load_kernel_modules;
-    
+
 	unless ( open_file 'capabilities' ) {
 	    determine_capabilities;
 	}
@@ -759,7 +759,7 @@ sub get_configuration( $ ) {
     }
 
     if ( $config{IP_FORWARDING} ) {
-	fatal_error "Invalid value ( $config{IP_FORWARDING} ) for IP_FORWARDING" 
+	fatal_error "Invalid value ( $config{IP_FORWARDING} ) for IP_FORWARDING"
 	    unless $config{IP_FORWARDING} =~ /^(On|Off|Keep)$/i;
     } else {
 	$config{IP_FORWARDING} = 'On';
@@ -845,7 +845,7 @@ sub get_configuration( $ ) {
 	} else {
 	    fatal_error "Invalid value ($val) for MACLIST_TABLE option" unless $val eq 'filter';
 	}
-    } else {	
+    } else {
 	default 'MACLIST_TABLE' , 'filter';
     }
 

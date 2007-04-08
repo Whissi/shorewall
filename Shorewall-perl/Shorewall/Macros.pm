@@ -32,9 +32,9 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( find_macro
-		  split_action 
-		  substitute_action 
-		  merge_macro_source_dest 
+		  split_action
+		  substitute_action
+		  merge_macro_source_dest
 		  merge_macro_column
 
 		  %macros );
@@ -61,7 +61,7 @@ sub find_macro( $ )
 }
 
 #
-# Return ( action, level[:tag] ) from passed full action 
+# Return ( action, level[:tag] ) from passed full action
 #
 sub split_action ( $ ) {
     my $action = $_[0];

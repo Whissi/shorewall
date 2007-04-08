@@ -39,7 +39,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( process_tos
 		  setup_ecn
-		  add_common_rules 
+		  add_common_rules
 		  setup_mac_lists
 		  process_criticalhosts
 		  process_routestopped
@@ -68,7 +68,7 @@ sub process_tos() {
 	my $first_entry = 1;
 
 	my ( $pretosref, $outtosref );
-	
+
 	while ( read_a_line ) {
 
 	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 6, 'tos file';
@@ -99,7 +99,7 @@ sub process_tos() {
 
 	    $dst =~ s/^all:?//;
 
-	    expand_rule 
+	    expand_rule
 		$chainref ,
 		$restriction ,
 		do_proto( $proto, $ports, $sports ) ,
@@ -158,7 +158,7 @@ sub setup_ecn()
 
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
-		
+
 		if ( $capabilities{MANGLE_FORWARD} ) {
 		    add_rule $mangle_table->{POSTROUTING}, "-p tcp -o $interface -j $chainref->{name}";
 		} else {
@@ -295,7 +295,7 @@ sub setup_blacklist() {
 		    $first_entry = 0;
 		}
 
-		expand_rule( 
+		expand_rule(
 			    $chainref ,
 			    NO_RESTRICT ,
 			    do_proto( $protocol , $ports, '' ) ,
@@ -306,7 +306,7 @@ sub setup_blacklist() {
 			    '' ,
 			    $disposition ,
 			    '' );
-	    
+
 		progress_message "         \"$line\" added to blacklist";
 	    }
 	}
@@ -319,11 +319,11 @@ sub setup_blacklist() {
 	    my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network   = $hostref->[2];
 	    my $source    = match_source_net $network;
-	
+
 	    for my $chain ( @{first_chains $interface}) {
 		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
 	    }
-	    
+
 	    progress_message "   Blacklisting enabled on ${interface}:${network}";
 	}
     }
@@ -360,7 +360,7 @@ sub process_criticalhosts() {
 	    for my $option (split /,/, $options ) {
 		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' ) {
 		    if ( $option eq 'critical' ) {
-			push @critical, @hosts; 
+			push @critical, @hosts;
 		    } else {
 			warning_message "Unknown routestopped option ( $option ) ignored";
 		    }
@@ -498,7 +498,7 @@ sub add_common_rules() {
     if ( $capabilities{ADDRTYPE} ) {
 	$chainref = new_standard_chain 'smurfs';
 
-	add_rule $chainref , '-s 0.0.0.0 -j RETURN'; 
+	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 
 	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
 	add_rule_pair $chainref, '-m addrtype --src-type MULTICAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
@@ -603,7 +603,7 @@ sub add_common_rules() {
 	    }
 	}
 
-	(new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1; 
+	(new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1;
 
 	add_rule $filter_table->{input_chain $interface},  "-j $chain";
 	add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
@@ -752,7 +752,7 @@ sub setup_mac_lists( $ ) {
 		add_command $chainref, "    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do";
 		add_command $chainref, '        address=${address%/*}';
 		add_command $chainref, '        if [ -n "$broadcast" ]; then';
-		add_command $chainref, '            echo "-A $chain -s $address -d $broadcast -j RETURN" >&3'; 
+		add_command $chainref, '            echo "-A $chain -s $address -d $broadcast -j RETURN" >&3';
 		add_command $chainref, '        fi';
 		add_command $chainref, '';
 		add_command $chainref, '        echo "-A $chain -s $address -d 255.255.255.255 -j RETURN" >&3';
@@ -874,15 +874,15 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	#
 	process_macro
 	    $macros{$basictarget},
-	    $target , 
-	    $param , 
-	    $source, 
-	    $dest, 
-	    $proto, 
-	    $ports, 
-	    $sports, 
-	    $origdest, 
-	    $ratelimit, 
+	    $target ,
+	    $param ,
+	    $source,
+	    $dest,
+	    $proto,
+	    $ports,
+	    $sports,
+	    $origdest,
+	    $ratelimit,
 	    $user;
 	return;
     }
@@ -935,7 +935,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	$dest = ALLIPv4;
     }
 
-    fatal_error "Unknown source zone ($sourcezone)"    unless $zones{$sourcezone}; 
+    fatal_error "Unknown source zone ($sourcezone)"    unless $zones{$sourcezone};
     fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
 
     my $restriction = NO_RESTRICT;
@@ -1031,7 +1031,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    '' ,
 	    $target ,
 	    $loglevel ,
-	    $action , 
+	    $action ,
 	    $serverport ? do_proto( $proto, '', '' ) : '';
 	#
 	# After NAT:
@@ -1180,12 +1180,12 @@ sub process_rule ( $$$$$$$$$ ) {
 				    process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 				}
 			    }
-			} 
+			}
 		    }
 		} else {
 		    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 		}
-	    } 
+	    }
 	}
     } elsif ( $dest eq 'all' ) {
 	for my $zone1 ( @zones ) {
@@ -1258,7 +1258,7 @@ sub process_rules() {
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
 #
 # The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
-# 
+#
 sub generate_matrix() {
     #
     # Helper functions for generate_matrix()
@@ -1377,7 +1377,7 @@ sub generate_matrix() {
 			my $ipsec_match = match_ipsec_in $zone , $hostref;
 			for my $net ( @{$hostref->{hosts}} ) {
 			    add_rule
-				find_chainref( 'filter' , forward_chain $interface ) , 
+				find_chainref( 'filter' , forward_chain $interface ) ,
 				match_source_net join( '', $net, $ipsec_match, "-j $frwd_ref->n{name}" );
 			}
 		    }
@@ -1393,11 +1393,11 @@ sub generate_matrix() {
 	my $source_hosts_ref = $zoneref->{hosts};
 	my $chain1           = rules_target $firewall_zone , $zone;
 	my $chain2           = rules_target $zone, $firewall_zone;
-	my $complex          = $zoneref->{options}{complex} || 0; 
+	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $exclusions       = $zoneref->{exclusions};
 	my $need_broadcast   = {}; ### Fixme ###
-	my $frwd_ref         = 0; 
+	my $frwd_ref         = 0;
 	my $chain            = 0;
 
 	if ( $complex ) {
@@ -1421,7 +1421,7 @@ sub generate_matrix() {
 		my $arrayref = $typeref->{$interface};
 		for my $hostref ( @$arrayref ) {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
-		    my $ipsec_out_match = match_ipsec_out $zone , $hostref; 
+		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $source = match_source_net $net;
 			my $dest   = match_dest_net   $net;
@@ -1568,7 +1568,7 @@ sub generate_matrix() {
 			my $arrayref = $typeref->{$interface};
 			for my $hostref ( @$arrayref ) {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
-				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref; 
+				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				for my $net ( @{$hostref->{hosts}} ) {
 				    add_rule $frwd_ref, join( '', "-o $interface ", match_dest_net($net), $ipsec_out_match, "-j $chain" );
 				}
@@ -1588,11 +1588,11 @@ sub generate_matrix() {
 				    for my $interface1 ( keys %$type1ref ) {
 					my $array1ref = $type1ref->{$interface1};
 					for my $host1ref ( @$array1ref ) {
-					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref; 
+					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
-						    add_rule 
-							$chain3ref , 
+						    add_rule
+							$chain3ref ,
 							join( '', "-o $interface1 ", $source_match, match_dest_net($net1), $ipsec_out_match, "-j $chain" );
 						}
 					    }
@@ -1654,8 +1654,8 @@ sub generate_matrix() {
     if ( $config{LOGALLNEW} ) {
 	for my $table qw/mangle nat filter/ {
 	    for my $chain ( @{$builtins{$table}} ) {
-		log_rule_limit 
-		    $config{LOGALLNEW} , 
+		log_rule_limit
+		    $config{LOGALLNEW} ,
 		    $chain_table{$table}{$chain} ,
 		    $table ,
 		    $chain ,

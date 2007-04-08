@@ -53,7 +53,7 @@ my %tcs = ( t => { chain  => 'tcpost',
 		    } ,
 	    c  => { target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
-		    fw       => 1 
+		    fw       => 1
 		    } ,
 	    p  => { chain    => 'tcpre' ,
 		    connmark => 0 ,
@@ -89,7 +89,7 @@ my %tcs = ( t => { chain  => 'tcpost',
 
 use constant { NOMARK    => 0 ,
 	       SMALLMARK => 1 ,
-	       HIGHMARK  => 2 
+	       HIGHMARK  => 2
 	       };
 
 my @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
@@ -105,7 +105,7 @@ my @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 	      { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
 		target    => 'RETURN' ,
 		mark      => NOMARK ,
-		mask      => '' 
+		mask      => ''
 		} ,
 	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
 		target    => 'MARK --or-mark' ,
@@ -114,7 +114,7 @@ my @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 	      { match     => sub ( $ ) { $_[0] =~ '&.*' },
 		target    => 'MARK --and-mark ' ,
 		mark      => HIGHMARK ,
-		mask      => '' 
+		mask      => ''
 		}
 	      );
 
@@ -200,11 +200,11 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
 	    validate_mark $mark;
 
-	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes' 
+	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes'
 		if $cmd && $chain eq 'tcpre' && numeric_value( $cmd ) < 0xFF && $config{HIGH_ROUTE_MARKS};
 	}
 
-    expand_rule 
+    expand_rule
 	ensure_chain( 'mangle' , $chain ) ,
 	NO_RESTRICT ,
 	do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
@@ -227,7 +227,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 #
 # %tcdevices { <interface> -> {in_bandwidth => <value> ,
 #                              out_bandwidth => <value>
-#                              number => <ordinal> 
+#                              number => <ordinal>
 #                              default => <default class mark value> }
 #
 my @tcdevices;
@@ -419,7 +419,7 @@ sub setup_traffic_shaping() {
 		   );
 	}
 
-	$devref->{number} = $devnum++; 
+	$devref->{number} = $devnum++;
 
 	save_progress_message_short "   TC Device $device defined.";
 
@@ -494,7 +494,7 @@ sub setup_traffic_shaping() {
 #
 sub setup_tc() {
 
-    my $first_entry = 1; 
+    my $first_entry = 1;
 
     if ( $capabilities{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
@@ -508,15 +508,15 @@ sub setup_tc() {
     if ( my $fn = open_file 'tcrules' ) {
 
 	while ( read_a_line ) {
-	    
+
 	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 2, 10, 'tcrules file';
 
 	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";                  
+		progress_message2 "$doing $fn...";
 		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' );
 		$first_entry = 0;
 	    }
-	    
+
 	    if ( $mark eq 'COMMENT' ) {
 		if ( $capabilities{COMMENTS} ) {
 		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;
@@ -527,7 +527,7 @@ sub setup_tc() {
 	    } else {
 		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
 	    }
-	    
+
 	}
 
 	$comment = '';

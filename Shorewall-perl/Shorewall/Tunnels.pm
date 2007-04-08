@@ -51,12 +51,12 @@ sub setup_tunnels() {
 
 	my $options = '-m $state --state NEW -j ACCEPT';
 
-	add_rule $inchainref,  "-p 50 $source -j ACCEPT"; 
-	add_rule $outchainref, "-p 50 $dest   -j ACCEPT"; 
+	add_rule $inchainref,  "-p 50 $source -j ACCEPT";
+	add_rule $outchainref, "-p 50 $dest   -j ACCEPT";
 
 	unless ( $noah ) {
-	    add_rule $inchainref,  "-p 51 $source -j ACCEPT"; 
-	    add_rule $outchainref, "-p 51 $dest   -j ACCEPT"; 
+	    add_rule $inchainref,  "-p 51 $source -j ACCEPT";
+	    add_rule $outchainref, "-p 51 $dest   -j ACCEPT";
 	}
 
 	add_rule $outchainref,  "-p udp $dest --dport 500 $options";
@@ -240,7 +240,7 @@ sub setup_tunnels() {
 	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line 2, 4, 'tunnels file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";                       
+	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
 

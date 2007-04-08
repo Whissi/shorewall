@@ -39,9 +39,9 @@ our @EXPORT = qw( NOTHING
 		  zone_report
 		  dump_zone_contents
 
-		  @zones 
+		  @zones
 		  %zones
-		  $firewall_zone 
+		  $firewall_zone
 		  %interfaces );
 
 our @EXPORT_OK = ();
@@ -58,7 +58,7 @@ use constant { NOTHING    => 'NOTHING',
 	       };
 
 #
-# Zone Table. 
+# Zone Table.
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
@@ -66,7 +66,7 @@ use constant { NOTHING    => 'NOTHING',
 #                        options =>    { complex => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
-#                                        out     => < policy match string > 
+#                                        out     => < policy match string >
 #                                      }
 #                        parents =>    [ <parents> ]     Parents, Children and interfaces are listed by name
 #                        children =>   [ <children> ]
@@ -86,7 +86,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     $firewall_zone names the firewall zone.
 #
-our @zones; 
+our @zones;
 our %zones;
 our $firewall_zone;
 
@@ -170,7 +170,7 @@ sub parse_zone_option_list($)
 
     $h{ipsec} = $options ? "$options " : '';
 
-    \%h;   
+    \%h;
 }
 
 #
@@ -191,7 +191,7 @@ sub determine_zones()
 	my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";                       
+	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
 
@@ -266,7 +266,7 @@ sub determine_zones()
 		}
 		$ordered{$zone} = 1;
 		push @zones, $zone;
-		$pushed = 1; 
+		$pushed = 1;
 	    }
 	}
     }
@@ -275,7 +275,7 @@ sub determine_zones()
 #
 # Report about zones.
 #
-sub zone_report() 
+sub zone_report()
 {
     for my $zone ( @zones )
     {
@@ -311,7 +311,7 @@ sub zone_report()
     }
 }
 
-sub dump_zone_contents() 
+sub dump_zone_contents()
 {
     for my $zone ( @zones )
     {

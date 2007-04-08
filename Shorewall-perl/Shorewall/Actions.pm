@@ -32,18 +32,18 @@ use Shorewall::Macros;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( merge_levels 
+our @EXPORT = qw( merge_levels
 		  isolate_basic_target
-		  add_requiredby 
+		  add_requiredby
 		  createlogactionchain
-		  createactionchain 
+		  createactionchain
 		  find_logactionchain
 		  process_actions1
 		  process_actions2
 		  process_actions3
 
-		  %usedactions 
-		  %default_actions 
+		  %usedactions
+		  %default_actions
 		  %actions
 		  );
 our @EXPORT_OK = qw( );
@@ -100,7 +100,7 @@ sub merge_levels ($$) {
 	return "$target:$level:$tag"  if $level =~ /!$/;
 	return $subordinate           if $subparts >= 2;
 	return "$target:$level";
-    } 
+    }
 
     if ( @supparts == 2 ) {
 	return "$target:none!"        if $level eq 'none!';
@@ -152,7 +152,7 @@ sub add_requiredby ( $$ ) {
 # action chain name is 2-3 characters longer than the base chain name,
 # this function truncates the original chain name where necessary before
 # it adds the leading "%" and trailing sequence number.
-# 
+#
 sub createlogactionchain( $$ ) {
     my ( $action, $level ) = @_;
     my $chain = $action;
@@ -243,7 +243,7 @@ sub process_actions1() {
     for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
 	new_action $act;
     }
-    
+
     for my $file ( qw/actions.std actions/ ) {
 	open_file $file;
 
@@ -311,7 +311,7 @@ sub process_actions1() {
 
 			    $targettype = 0 unless defined $targettype;
 
-			    fatal_error "Invalid target ($mtarget)" 
+			    fatal_error "Invalid target ($mtarget)"
 				unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $mtarget eq 'LOG' );
 			}
 
@@ -329,8 +329,8 @@ sub process_actions1() {
     }
 }
 
-sub process_actions2 () {  
-    progress_message2 'Generating Transitive Closure of Used-action List...'; 
+sub process_actions2 () {
+    progress_message2 'Generating Transitive Closure of Used-action List...';
 
     my $changed = 1;
 
@@ -367,7 +367,7 @@ sub process_action3( $$$$$ ) {
 
 	expand_rule ( $chainref ,
 		      NO_RESTRICT ,
-		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user , 
+		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user ,
 		      $source ,
 		      $dest ,
 		      '', #Original Dest
@@ -379,9 +379,9 @@ sub process_action3( $$$$$ ) {
 
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
-    
+
     fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
-    
+
     progress_message2 "Processing $actionfile for chain $chainref->{name}...";
 
     open_file $actionfile;
@@ -474,7 +474,7 @@ sub process_action3( $$$$$ ) {
 
 	} else {
 	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user;
-	} 
+	}
     }
 
     $comment = '';
@@ -511,28 +511,28 @@ sub process_actions3 () {
     sub dropNotSyn ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
+	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level;
 	add_rule $chainref , '-p tcp ! --syn -j DROP';
     }
 
     sub rejNotSyn ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level;    
+	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level;
 	add_rule $chainref , '-p tcp ! --syn -j REJECT';
     }
 
     sub dropInvalid ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level;    
+	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level;
 	add_rule $chainref , '-m state --state INVALID -j REJECT';
     }
 
     sub allowInvalid ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level;    
+	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level;
 	add_rule $chainref , '-m state --state INVALID -j ACCEPT';
     }
 

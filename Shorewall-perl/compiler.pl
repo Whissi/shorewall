@@ -101,7 +101,7 @@ sub generate_script_1() {
     }
 
     emit "TEMPFILE=\n";
-    
+
     for my $exit qw/init start tcclear started stop stopped/ {
 	emit "run_${exit}_exit() {";
 	push_indent;
@@ -111,8 +111,8 @@ sub generate_script_1() {
 	emit "}\n";
     }
 
-    emitj ( 'initialize()', 
-	    '{' 
+    emitj ( 'initialize()',
+	    '{'
 	    );
 
     push_indent;
@@ -327,7 +327,7 @@ EOF
     emit 'delete_tc1' if $config{CLEAR_TC};
 
     emitj( 'undo_routing',
-	   'restore_default_route' 
+	   'restore_default_route'
 	   );
 
     my $criticalhosts = process_criticalhosts;
@@ -484,11 +484,11 @@ sub generate_script_2 () {
 	   );
 
     push_indent;
-    
+
     emit 'local restore_file=$1';
 
     save_progress_message 'Initializing...';
-    
+
     if ( $export ) {
 	my $fn = find_file 'modules';
 
@@ -529,7 +529,7 @@ sub generate_script_2 () {
 	    'delete_proxyarp',
 	    ''
 	    );
-    
+
     emit "delete_tc1\n"            if $config{CLEAR_TC};
     emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
     setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
@@ -544,7 +544,7 @@ sub generate_script_2 () {
 #        Generate code to add IP addresses under ADD_IP_ALIASES and ADD_SNAT_ALIASES
 #
 #    Generate the 'setup_netfilter()' function that runs iptables-restore.
-#    Generate the 'define_firewall()' function.  
+#    Generate the 'define_firewall()' function.
 #
 sub generate_script_3() {
 
@@ -618,23 +618,23 @@ EOF
     pop_indent;
 
     emit "}\n";
-    
+
     copy $globals{SHAREDIRPL} . 'prog.footer';
 }
 
 #
 #  The Compiler.
 #
-#    If the argument is non-null, it names the script file to generate. 
+#    If the argument is non-null, it names the script file to generate.
 #    Otherwise, this is a 'check' command and no script is produced.
 #
 sub compiler( $ ) {
-    
+
     my $objectfile = $_[0];
 
     report_capabilities if $verbose > 1;
 
-    require_capability( 'MULTIPORT'       , "Shorewall-perl $globals{VERSION}" ); 
+    require_capability( 'MULTIPORT'       , "Shorewall-perl $globals{VERSION}" );
     require_capability( 'ADDRTYPE'        , "Shorewall-perl $globals{VERSION}" );
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' )           if $config{MACLIST_TTL};
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' )  if $config{HIGH_ROUTE_MARKS};
@@ -657,7 +657,7 @@ sub compiler( $ ) {
     #
     # Process the interfaces file.
     #
-    validate_interfaces_file;             
+    validate_interfaces_file;
     #
     # Process the hosts file.
     #
@@ -665,12 +665,12 @@ sub compiler( $ ) {
     #
     # Report zone contents
     #
-    progress_message2 "Determining Hosts in Zones...";        
+    progress_message2 "Determining Hosts in Zones...";
     zone_report;
     #
     # Do action pre-processing.
     #
-    progress_message2 "Preprocessing Action Files...";           
+    progress_message2 "Preprocessing Action Files...";
     process_actions1;
     #
     # Process the Policy File.
@@ -702,7 +702,7 @@ sub compiler( $ ) {
     setup_proxy_arp;
     #
     # [Re-]establish Routing
-    # 
+    #
     setup_providers;
     #
     # TCRules and Traffic Shaping
@@ -723,7 +723,7 @@ sub compiler( $ ) {
     #
     # MACLIST Filtration
     #
-    progress_message2 "$doing MAC Filtration -- Phase 1..."; 
+    progress_message2 "$doing MAC Filtration -- Phase 1...";
     setup_mac_lists 1;
     #
     # Process the rules file.
@@ -741,13 +741,13 @@ sub compiler( $ ) {
     #
     # MACLIST Filtration again
     #
-    progress_message2 "$doing MAC Filtration -- Phase 2..."; 
+    progress_message2 "$doing MAC Filtration -- Phase 2...";
     setup_mac_lists 2;
     #
     # Apply Policies
     #
-    progress_message2 'Applying Policies...';                    
-    apply_policy_rules;                    
+    progress_message2 'Applying Policies...';
+    apply_policy_rules;
     #
     # Setup Nat
     #
@@ -761,7 +761,7 @@ sub compiler( $ ) {
     #
     setup_accounting;
 
-    progress_message2 'Generating Rule Matrix...';         
+    progress_message2 'Generating Rule Matrix...';
     generate_matrix;
     generate_script_3;
 

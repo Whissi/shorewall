@@ -36,7 +36,7 @@ our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
 #
-# Validates the hosts file. Generates entries in %zone{..}{hosts} 
+# Validates the hosts file. Generates entries in %zone{..}{hosts}
 #
 sub validate_hosts_file()
 {
@@ -113,8 +113,8 @@ sub validate_hosts_file()
     $capabilities{POLICY_MATCH} = '' unless $ipsec or $zones{ipsec};
 }
 #
-# Returns a reference to a array of host entries. Each entry is a 
-# reference to an array containing ( interface , group type {ipsec|none} , network ); 
+# Returns a reference to a array of host entries. Each entry is a
+# reference to an array containing ( interface , group type {ipsec|none} , network );
 #
 sub find_hosts_by_option( $ ) {
     my $option = $_[0];

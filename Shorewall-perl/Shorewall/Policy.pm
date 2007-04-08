@@ -44,7 +44,7 @@ sub new_policy_chain($$$)
 {
     my ($chain, $policy, $optional) = @_;
 
-    my $chainref = new_chain 'filter', $chain; 
+    my $chainref = new_chain 'filter', $chain;
 
     $chainref->{is_policy}   = 1;
     $chainref->{policy}      = $policy;
@@ -75,11 +75,11 @@ sub validate_policy()
     sub print_policy($$$$)
     {
 	my ( $source, $dest, $policy , $chain ) = @_;
-	progress_message "   Policy for $source to $dest is $policy using chain $chain" 
+	progress_message "   Policy for $source to $dest is $policy using chain $chain"
 	    unless ( $source eq $dest ) || ( $source eq 'all' ) || ( $dest eq 'all' );
     }
 
-    my %validpolicies = ( 
+    my %validpolicies = (
 			  ACCEPT => undef,
 			  REJECT => undef,
 			  DROP   => undef,

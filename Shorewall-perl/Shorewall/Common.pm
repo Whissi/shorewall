@@ -101,7 +101,7 @@ sub fatal_error
 
 #
 # Write the argument to the object file (if any) with the current indentation.
-# 
+#
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit ( $ ) {

@@ -30,7 +30,7 @@ use Shorewall::Interfaces;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( 
+our @EXPORT = qw(
 		  setup_proxy_arp
 		  dump_proxy_arp
 		  );
@@ -99,7 +99,7 @@ sub setup_proxy_arp() {
 		progress_message2 "$doing $fn...";
 		$first_entry = 0;
 	    }
-	    
+
 	    $set{$interface}  = 1;
 	    $reset{$external} = 1 unless $set{$external};
 

@@ -42,7 +42,7 @@ my %addresses_to_add;
 #
 # Handle IPSEC Options in a masq record
 #
-sub do_ipsec_options($) 
+sub do_ipsec_options($)
 {
     my %validoptions = ( strict       => NOTHING,
 		         next         => NOTHING,
@@ -143,7 +143,7 @@ sub setup_one_masq($$$$$$)
 	    $fullinterface = $one;
 	    $destnets = $two;
 	}
-    } 
+    }
 
     #
     # Isolate and verify the interface part
@@ -236,7 +236,7 @@ sub setup_one_masq($$$$$$)
 #
 # Process the masq file
 #
-sub setup_masq() 
+sub setup_masq()
 {
     my $first_entry = 1;
 
@@ -247,7 +247,7 @@ sub setup_masq()
 	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 2, 6, 'masq file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";                     
+	    progress_message2 "$doing $fn...";
 	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
 	    $first_entry = 0;
 	}
@@ -361,7 +361,7 @@ sub setup_nat() {
 	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 3, 5, 'nat file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";                
+	    progress_message2 "$doing $fn...";
 	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
 	    $first_entry = 0;
 	}
@@ -396,7 +396,7 @@ sub setup_netmap() {
 	my ( $type, $net1, $interface, $net2 ) = split_line 4, 4, 'netmap file';
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";                
+	    progress_message2 "$doing $fn...";
 	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
 	    $first_entry = 0;
 	}

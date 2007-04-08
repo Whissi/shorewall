@@ -30,9 +30,9 @@ use Shorewall::Zones;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( add_group_to_zone 
+our @EXPORT = qw( add_group_to_zone
 		  validate_interfaces_file
-		  known_interface 
+		  known_interface
 		  find_interfaces_by_option
 		  get_interface_option
 
@@ -113,7 +113,7 @@ sub add_group_to_zone($$$$$)
 #
 # Parse the interfaces file.
 #
- 
+
 sub validate_interfaces_file()
 {
     my %validoptions = (arp_filter => 1,
@@ -143,7 +143,7 @@ sub validate_interfaces_file()
 	my $zoneref;
 
 	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";                       
+	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
 

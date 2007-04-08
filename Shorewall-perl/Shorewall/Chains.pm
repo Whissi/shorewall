@@ -101,14 +101,14 @@ our @EXPORT = qw( STANDARD
 		  get_interface_addresses
 		  create_netfilter_load
 
-		  @policy_chains 
-		  %chain_table 
-		  $nat_table 
-		  $mangle_table 
+		  @policy_chains
+		  %chain_table
+		  $nat_table
+		  $mangle_table
 		  $filter_table
 		  $section
 		  %sections
-		  $comment 
+		  $comment
 		  %targets
 		  );
 our @EXPORT_OK = ();
@@ -123,7 +123,7 @@ our @VERSION = 1.00;
 #                                               table        => <table name>
 #                                               is_policy    => 0|1
 #                                               is_optionsl  => 0|1
-#                                               referenced   => 0|1      
+#                                               referenced   => 0|1
 #                                               policy       => <policy>
 #                                               loglevel     => <level>
 #                                               synparams    => <burst/limit>
@@ -143,10 +143,10 @@ our @VERSION = 1.00;
 #
 #       Only 'referenced' chains get written to the iptables-restore output.
 #
-#       'loglevel', 'synparams' and 'default' only apply to policy chains. 
+#       'loglevel', 'synparams' and 'default' only apply to policy chains.
 #
 our @policy_chains;
-our %chain_table = ( raw    => {} , 
+our %chain_table = ( raw    => {} ,
 		     mangle => {},
 		     nat    => {},
 		     filter => {} );
@@ -243,7 +243,7 @@ my $chainseq;
 
 #
 # Count of the number of unclosed loops in generated shell code. We insert shell code
-# into the Chain tables 'rules' array (proceeded by '~'). create_netfilter_load() 
+# into the Chain tables 'rules' array (proceeded by '~'). create_netfilter_load()
 # emits that code inline for execution at run-time.
 #
 my $loopcount = 0;
@@ -300,7 +300,7 @@ sub insert_rule($$$)
 }
 
 #
-# Form the name of a chain. 
+# Form the name of a chain.
 #
 sub chain_base($) {
     my $chain = $_[0];
@@ -547,7 +547,7 @@ sub initialize_chain_table()
 }
 
 #
-# Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain 
+# Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
 #
 sub finish_chain_section ($$) {
     my ($chainref, $state ) = @_;
@@ -562,7 +562,7 @@ sub finish_chain_section ($$) {
 		if ( $section eq 'DONE' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE)$/ ) {
 			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
-		    } 
+		    }
 		} else {
 		    add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 		}
@@ -579,7 +579,7 @@ sub finish_chain_section ($$) {
 
 #
 # Do section-end processing
-# 
+#
 sub finish_section ( $ ) {
     my $sections = $_[0];
 
@@ -620,7 +620,7 @@ sub do_proto( $$$ )
 	    $output = "-p $proto ";
 	    if ( $ports ) {
 		my @ports = split /,/, $ports;
-		my $count = @ports; 
+		my $count = @ports;
 
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
@@ -629,7 +629,7 @@ sub do_proto( $$$ )
 			if ( $port =~ /:/ ) {
 			    fatal_error "Port range in a list requires Extended Multiport Support in your kernel/iptables: $ports" unless $capabilities{XMULTIPORT};
 			    $count++;
-			} 
+			}
 		    }
 
 		    fatal_error "Too many entries in port list: $ports" if $count > 15;
@@ -642,7 +642,7 @@ sub do_proto( $$$ )
 
 	    if ( $sports ) {
 		my @ports = split /,/, $sports;
-		my $count = @ports; 
+		my $count = @ports;
 
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
@@ -683,7 +683,7 @@ sub mac_match( $ ) {
     my $mac = $_[0];
 
     $mac =~ s/^(!?)~//;
-    $mac =~ s/^!// if my $invert = ( $1 ? '! ' : ''); 
+    $mac =~ s/^!// if my $invert = ( $1 ? '! ' : '');
     $mac =~ s/-/:/g;
 
     "--match mac --mac-source ${invert}$mac ";
@@ -705,7 +705,7 @@ sub verify_mark( $ ) {
     my $mark  = $_[0];
     my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFFFF : 0xFF;
 
-    fatal_error "Invalid Mark or Mask value: $mark" 
+    fatal_error "Invalid Mark or Mask value: $mark"
 	unless numeric_value( $mark ) <= $limit;
 }
 
@@ -837,7 +837,7 @@ sub get_set_flags( $$ ) {
 #
 sub match_source_net( $ ) {
     my $net = $_[0];
- 
+
     if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	iprange_match . "${invert}--src-range $net ";
@@ -883,7 +883,7 @@ sub match_orig_dest ( $ ) {
 
     return '' if $net eq ALLIPv4;
     return '' unless $capabilities{CONNTRACK_MATCH};
- 
+
     if ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	"-m conntrack --ctorigdst ! $net ";
@@ -904,13 +904,13 @@ sub match_ipsec_in( $$ ) {
 
     if ( $zoneref->{type} eq 'ipsec4' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
-    } elsif ( $capabilities{POLICY_MATCH} ) { 
+    } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } else {
 	'';
     }
 }
- 
+
 #
 # Match Dest IPSEC
 #
@@ -922,7 +922,7 @@ sub match_ipsec_out( $$ ) {
 
     if ( $zoneref->{type} eq 'ipsec4' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
-    } elsif ( $capabilities{POLICY_MATCH} ) { 
+    } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
     } else {
 	'';
@@ -1023,11 +1023,11 @@ sub interface_address( $ ) {
 }
 
 #
-# Record that the ruleset requires the first IP address on the passed interface 
+# Record that the ruleset requires the first IP address on the passed interface
 #
 sub get_interface_address ( $ ) {
     my ( $interface ) = $_[0];
-    
+
     my $variable = interface_address( $interface );
 
     $interfaceaddr{$interface} = "$variable=\$(find_first_interface_address $interface)";
@@ -1043,11 +1043,11 @@ sub interface_addresses( $ ) {
 }
 
 #
-# Record that the ruleset requires the IP addresses on the passed interface 
+# Record that the ruleset requires the IP addresses on the passed interface
 #
 sub get_interface_addresses ( $ ) {
     my ( $interface ) = $_[0];
-    
+
     my $variable = interface_addresses( $interface );
 
     $interfaceaddr{$interface} = qq($variable=\$(get_interface_addresses $interface)
@@ -1065,7 +1065,7 @@ sub interface_nets( $ ) {
 }
 
 #
-# Record that the ruleset requires the first IP address on the passed interface 
+# Record that the ruleset requires the first IP address on the passed interface
 #
 sub get_interface_nets ( $ ) {
     my ( $interface ) = $_[0];
@@ -1077,12 +1077,12 @@ sub get_interface_nets ( $ ) {
 );
 
     "\$$variable";
-    
+
 }
 
 #
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
-# 
+#
 sub expand_rule( $$$$$$$$$$ )
 {
     my ($chainref , $restriction, $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
@@ -1135,11 +1135,11 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    $rule .= '-s $source ';
 	    #
-	    # While $loopcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()' 
+	    # While $loopcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()'
 	    #
 	    $loopcount++;
 	} else {
-	    fatal_error "Source Interface ( $iiface ) not allowed when the source zone is $firewall_zone: $line" 
+	    fatal_error "Source Interface ( $iiface ) not allowed when the source zone is $firewall_zone: $line"
 		if $restriction & OUTPUT_RESTRICT;
 	    $rule .= "-i $iiface ";
 	}
@@ -1229,7 +1229,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    } else {
 		get_interface_address $interfaces[0];
 		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
-	    } 
+	    }
 
 	    $origdest = '';
 	} else {
@@ -1324,7 +1324,7 @@ sub expand_rule( $$$$$$$$$$ )
 	}
 
 	#
-	# The final rule in the exclusion chain will not qualify the source or destination 
+	# The final rule in the exclusion chain will not qualify the source or destination
 	#
 	$inets = ALLIPv4;
 	$dnets = ALLIPv4;
@@ -1354,7 +1354,7 @@ sub expand_rule( $$$$$$$$$$ )
 	log_rule_limit $loglevel , $echainref , $chain, $disposition , '',  $logtag , 'add' , '' if $loglevel;
 	#
 	# Generate Final Rule
-	# 
+	#
 	add_rule $echainref, $exceptionrule . $target unless $disposition eq 'LOG';
     } else {
 	#
@@ -1366,20 +1366,20 @@ sub expand_rule( $$$$$$$$$$ )
 		$inet = match_source_net $inet;
 		for my $dnet ( mysplit $dnets ) {
 		    if ( $loglevel ) {
-			log_rule_limit 
-			    $loglevel , 
-			    $chainref , 
-			    $chain, 
-			    $disposition , 
-			    '' , 
-			    $logtag , 
-			    'add' , 
+			log_rule_limit
+			    $loglevel ,
+			    $chainref ,
+			    $chain,
+			    $disposition ,
+			    '' ,
+			    $logtag ,
+			    'add' ,
 			    join( '', $rule,  $inet, match_dest_net( $dnet ), $onet );
 		    }
 
 		    unless ( $disposition eq 'LOG' ) {
-			add_rule 
-			    $chainref, 
+			add_rule
+			    $chainref,
 			    join( '', $rule, $inet, match_dest_net( $dnet ), $onet, $target  );
 		    }
 		}

@@ -315,7 +315,7 @@ sub setup_providers() {
 
 	if ( $source eq '-' ) {
 	    $source = '';
-	} elsif ( $source =~ /:/ ) { 
+	} elsif ( $source =~ /:/ ) {
 	    ( my $interface, $source ) = split /:/, $source;
 	    $source = "iif $interface from $source";
 	} elsif ( $source =~ /\..*\..*/ ) {
@@ -364,12 +364,12 @@ sub setup_providers() {
 		    '# Initialize the file that holds \'undo\' commands',
 		    '#',
 		    '> ${VARDIR}/undo_routing' );
-	    
+
 	    save_progress_message 'Adding Providers...';
 
 	    emit 'DEFAULT_ROUTE=';
 	}
-	
+
 	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
 	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
@@ -434,7 +434,7 @@ sub setup_providers() {
 		    progress_message2 "$doing $fn...";
 		    $first_entry = 0;
 		}
-		
+
 		my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
 
 		add_an_rtrule( $source, $dest, $provider , $priority );
@@ -444,7 +444,7 @@ sub setup_providers() {
 	emit "\nrun_ip route flush cache";
 	pop_indent;
 	emit "fi\n";
-	
+
 	setup_route_marking if @routemarked_interfaces;
     } else {
 	emit "\nundo_routing";

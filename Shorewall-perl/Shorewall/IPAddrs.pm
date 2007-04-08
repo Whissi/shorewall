@@ -29,7 +29,7 @@ use Shorewall::Config;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( 
+our @EXPORT = qw(
 		  ip_range_explicit
 		 );
 our @EXPORT_OK = qw( );

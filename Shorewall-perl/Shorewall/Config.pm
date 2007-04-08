@@ -281,8 +281,6 @@ my %no_pad = ( COMMENT => 1,
 #
 # Pre-process a line from a configuration file.
 
-#    chomp it.
-#    compress out redundent white space.
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #
@@ -340,6 +338,10 @@ sub close_file() {
     }
 }
 
+#
+# The following two functions allow module clients to nest opens. This happens frequently
+# in the Actions module.
+#
 sub push_open( $ ) {
 
     push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
@@ -364,7 +366,7 @@ sub pop_open() {
 }    
 
 #
-# Read a line from the current open stack.
+# Read a line from the current include stack.
 #
 #   - Ignore blank or comment-only lines.
 #   - Remove trailing comments.
@@ -386,12 +388,10 @@ sub read_a_line {
 	    #
 	    # Continuation
 	    #
-	    if ( substr( $nextline, -1, 1 ) eq '\\' ) {
-		$line .= substr( $nextline, 0, -1 );
+	    if ( substr( ( $line .= $nextline ), -1, 1 ) eq '\\' ) {
+		$line = substr( $line, 0, -1 );
 		next;
 	    }
-
-	    $line .= $nextline;
 
 	    $line =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
 	    #
@@ -415,8 +415,7 @@ sub read_a_line {
 		
 		my @line = split /\s+/, $line;
 	
-		fatal_error "Missing file name after 'INCLUDE'" unless @line > 1;
-		fatal_error "Invalid INCLUDE command: $line"    if @line > 2;
+		fatal_error "Invalid INCLUDE command: $line"    if @line != 2;
 		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;
 		
 		my $filename = find_file $line[1];

@@ -38,7 +38,7 @@
     <title>Shorewall-perl - What is it?</title>
 
     <para>Shorewall-perl is a companion product to Shorewall. It requires
-    Shorewall 3.4.2 or later. </para>
+    Shorewall 3.4.2 or later.</para>
 
     <para>Shorewall-perl contains a re-implementation of the Shorewall
     compiler written in Perl. The advantages of using Shorewall-perl are over
@@ -60,6 +60,12 @@
       <listitem>
         <para>The Shorewall-perl compiler does more thorough checking of the
         configuration than the Shorewall-shell compiler does.</para>
+      </listitem>
+
+      <listitem>
+        <para>The error messages produced by the compiler are better, more
+        consistent and always include the file name and line number where the
+        error was detected.</para>
       </listitem>
 
       <listitem>
@@ -124,7 +130,7 @@
           </listitem>
 
           <listitem>
-            <para> Because the compiler is now written in Perl, your
+            <para>Because the compiler is now written in Perl, your
             compile-time extension scripts from earlier versions will no
             longer work. For now, if you want to use extension scripts, you
             will need to read the Perl code to see how the compiler operates
@@ -193,7 +199,7 @@
             by the Perl-based Compiler, the Netfilter ruleset is never
             cleared. That means that there is no opportunity for Shorewall to
             load/reload your ipsets since that cannot be done while there are
-            any current rules using ipsets. </para>
+            any current rules using ipsets.</para>
 
             <para>So:</para>
 
@@ -239,7 +245,7 @@ fi</programlisting>
           </listitem>
 
           <listitem>
-            <para> Because the configuration files (with the exception of
+            <para>Because the configuration files (with the exception of
             <filename>/etc/shorewall/params</filename>) are now processed by
             the Shorewall-perl compiler rather than by the shell, only the
             basic forms of Shell expansion ($variable and ${variable}) are
@@ -307,7 +313,7 @@ fi</programlisting>
     <caution>
       <para>Shorewall-perl is still part of the <ulink
       url="ReleaseModel.html">current development release</ulink>. Use it at
-      your own risk. </para>
+      your own risk.</para>
     </caution>
 
     <para>Either</para>

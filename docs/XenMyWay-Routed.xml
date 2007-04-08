@@ -187,11 +187,11 @@
         that boots Xen in Dom0.</para>
 
         <blockquote>
-          <programlisting>title XEN
-    root (hd0,1)
-    kernel /boot/xen.gz Dom0_mem=458752 sched=bvt
-    module /boot/vmlinuz-xen root=/dev/hda2 vga=0x31a selinux=0    resume=/dev/hda1  splash=silent showopts 
-    module /boot/initrd-xen</programlisting>
+          <programlisting>title Kernel-2.6.18.8-0.1-xen
+    root (hd0,5)
+    kernel /boot/xen.gz 
+    module /boot/vmlinuz-2.6.18.8-0.1-xen root=/dev/sda6 vga=0x31a resume=/dev/sda5 splash=silent showopts
+    module /boot/initrd-2.6.18.8-0.1-xen</programlisting>
         </blockquote>
 
         <para><filename>/etc/modprobe.conf.local</filename> (This may need to
@@ -208,29 +208,19 @@
         automatically by Xen's <emphasis>xendomains</emphasis> service.</para>
 
         <blockquote>
-          <programlisting>#  -*- mode: python; -*-
-
-# configuration name:
-name     = "lists"
-
-# usable ram:
-memory   = 512
-
-# kernel and initrd:
-kernel   = "/xen2/vmlinuz-xen"
-ramdisk  = "/xen2/initrd-xen"
-
-# boot device:
-root     = "/dev/hda3"
-
-# boot to run level:
-extra    = "3"
-
-# network interface:
-vif      = [ 'mac=aa:cc:00:00:00:01, <emphasis role="bold">ip=206.124.146.177, vifname=eth3</emphasis>' ]
-
-# storage devices:
-disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
+          <programlisting>disk = [ 'phy:/dev/sda9,hda,w', 'phy:/dev/hda,hdb,r' ]
+memory = 512
+vcpus = 1
+builder = 'linux'
+name = 'server'
+vif = [ 'mac=00:16:3e:b1:d7:90, <emphasis role="bold">ip=206.124.146.177, vifname=eth3</emphasis>' ]
+localtime = 0
+on_poweroff = 'destroy'
+on_reboot = 'restart'
+on_crash = 'restart'
+extra = ' TERM=xterm'
+bootloader = '/usr/lib/xen/boot/domUloader.py'
+bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'</programlisting>
 
           <para>Note that the vifname is set to 'eth3' for the virtual
           interface to this DomU. This will cause the Dom0 interface to the
@@ -293,32 +283,22 @@ gateway:~ #</programlisting>
         <note>
           <para>I have been asked a couple of times "How would I add another
           domU to the DMZ?" Here is a sample config file to add a second domU
-          named "server", boot device <filename>/dev/hdb1</filename> and IP
+          named "server", boot device <filename>/dev/sda10</filename> and IP
           address 206.124.146.179:</para>
 
-          <programlisting>#  -*- mode: python; -*-
-
-# configuration name:
-name     = "server"
-
-# usable ram:
-memory   = 512
-
-# kernel and initrd:
-kernel   = "/xen2/vmlinuz-xen"
-ramdisk  = "/xen2/initrd-xen"
-
-# boot device:
-root     = "/dev/hdb1"
-
-# boot to run level:
-extra    = "3"
-
-# network interface:
-vif      = [ 'mac=aa:cc:00:00:00:02, <emphasis role="bold">ip=206.124.146.179, vifname=eth4</emphasis>' ]
-
-# storage devices:
-disk     = [ 'phy:hdb1,hdb1,w' ]</programlisting>
+          <programlisting>disk = [ 'phy:/dev/sda10,hda,w', 'phy:/dev/hda,hdb,r' ]
+memory = 512
+vcpus = 1
+builder = 'linux'
+name = 'server'
+vif = [ 'mac=aa:cc:00:00:00:02, <emphasis role="bold">ip=206.124.146.179, vifname=eth4</emphasis>' ]
+localtime = 0
+on_poweroff = 'destroy'
+on_reboot = 'restart'
+on_crash = 'restart'
+extra = ' TERM=xterm'
+bootloader = '/usr/lib/xen/boot/domUloader.py'
+bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'</programlisting>
 
           <para>Note that this domU has its own vif named <filename
           class="devicefile">eth4</filename>.</para>

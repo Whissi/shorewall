@@ -556,7 +556,7 @@ sub setup_tc() {
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD POSTROUTING) {
-		insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark -0xFF';
+		insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark 0xFF';
 	    }
 	}
     }

@@ -1670,7 +1670,7 @@ sub generate_matrix() {
 
 sub setup_mss( $ ) {
     my $clampmss = $_[0];
-    my $option = "\Lclampmss" eq 'yes' ? '--clamp-mss-to-pmtu' : '--set-mss $clampmss';
+    my $option = "\L$clampmss" eq 'yes' ? '--clamp-mss-to-pmtu' : '--set-mss $clampmss';
 
     add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option";
 }

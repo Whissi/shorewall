@@ -1643,10 +1643,6 @@ sub generate_matrix() {
     add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
     add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
 
-    complete_standard_chain $filter_table->{INPUT}   , 'all' , $firewall_zone;
-    complete_standard_chain $filter_table->{OUTPUT}  , $firewall_zone , 'all';
-    complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all';
-
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
@@ -1656,6 +1652,10 @@ sub generate_matrix() {
 	    add_rule $filter_table->{$chain}, "-m state --state ESTABLISHED,RELATED -j ACCEPT";
 	}
     }
+
+    complete_standard_chain $filter_table->{INPUT}   , 'all' , $firewall_zone;
+    complete_standard_chain $filter_table->{OUTPUT}  , $firewall_zone , 'all';
+    complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all';
 
     if ( $config{LOGALLNEW} ) {
 	for my $table qw/mangle nat filter/ {

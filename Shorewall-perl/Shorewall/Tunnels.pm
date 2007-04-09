@@ -128,7 +128,11 @@ sub setup_tunnels() {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
-	    $protocol = $proto;
+	    if ( "\L$proto" =~ /udp|tcp/ ) {
+		$protocol = $proto;
+	    } else {
+		$port = $proto;
+	    }
 	}
 
 	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
@@ -147,7 +151,11 @@ sub setup_tunnels() {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
-	    $protocol = $proto;
+	    if ( "\L$proto" =~ /udp|tcp/ ) {
+		$protocol = $proto;
+	    } else {
+		$port = $proto;
+	    }
 	}
 
 	add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";

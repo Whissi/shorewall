@@ -546,7 +546,7 @@ sub setup_tc() {
 	}
 
 	add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
-	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcpre";
+	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
 	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';

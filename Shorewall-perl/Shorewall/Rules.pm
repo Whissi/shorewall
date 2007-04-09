@@ -1651,6 +1651,12 @@ sub generate_matrix() {
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
 
+    if ( $config{FASTACCEPT} ) {
+	for my $chain ( @{$builtins{filter}} ) {
+	    add_rule $filter_table->{$chain}, "-m state --state ESTABLISHED,RELATED -j ACCEPT";
+	}
+    }
+
     if ( $config{LOGALLNEW} ) {
 	for my $table qw/mangle nat filter/ {
 	    for my $chain ( @{$builtins{$table}} ) {

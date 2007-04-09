@@ -128,7 +128,7 @@ sub setup_tunnels() {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
-	    $port = $proto;
+	    $protocol = $proto;
 	}
 
 	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
@@ -147,7 +147,7 @@ sub setup_tunnels() {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
-	    $port = $proto;
+	    $protocol = $proto;
 	}
 
 	add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
@@ -166,7 +166,7 @@ sub setup_tunnels() {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
-	    $port = $proto;
+	    $protocol = $proto;
 	}
 
 	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";

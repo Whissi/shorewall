@@ -1647,12 +1647,6 @@ sub generate_matrix() {
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
 
-    if ( $config{FASTACCEPT} ) {
-	for my $chain ( @{$builtins{filter}} ) {
-	    add_rule $filter_table->{$chain}, "-m state --state ESTABLISHED,RELATED -j ACCEPT";
-	}
-    }
-
     complete_standard_chain $filter_table->{INPUT}   , 'all' , $firewall_zone;
     complete_standard_chain $filter_table->{OUTPUT}  , $firewall_zone , 'all';
     complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all';

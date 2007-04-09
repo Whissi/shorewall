@@ -109,7 +109,7 @@ sub process_accounting_rule( $$$$$$$$ ) {
 }
 
 sub setup_accounting() {
-
+    
     my $first_entry = 1;
 
     my $fn = open_file 'accounting';
@@ -127,8 +127,13 @@ sub setup_accounting() {
     }
 
     if ( $filter_table->{accounting} ) {
-	for my $chain qw/INPUT FORWARD OUTPUT/ {
+	for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
 	    insert_rule $filter_table->{$chain}, 1, '-j accounting';
+	    insert_rule $filter_table->{$chain}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
+	}
+    } elsif ( $config{FASTACCEPT} ) {
+	for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
+	    insert_rule $filter_table->{$chain}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
 	}
     }
 }

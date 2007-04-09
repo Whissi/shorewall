@@ -705,10 +705,6 @@ sub compiler( $ ) {
     #
     setup_providers;
     #
-    # TCRules and Traffic Shaping
-    #
-    setup_tc;
-    #
     # TOS
     #
     process_tos;
@@ -748,6 +744,10 @@ sub compiler( $ ) {
     #
     progress_message2 'Applying Policies...';
     apply_policy_rules;
+    #
+    # TCRules and Traffic Shaping
+    #
+    setup_tc;
     #
     # Setup Nat
     #

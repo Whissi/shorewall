@@ -195,15 +195,19 @@ if [ -n "$PREFIX" ]; then
 
 	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
 	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
-elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
-    DEBIAN=yes
-elif [ -f /etc/slackware-version ] ; then
-    DEST="/etc/rc.d"
-    INIT="rc.firewall"
-elif [ -f /etc/arch-release ] ; then
-      DEST="/etc/rc.d"
-      INIT="shorewall"
-      ARCHLINUX=yes
+else
+    [ -x /usr/share/shorewall-shell/compiler -o -x /usr/share/shorewall-perl/compiler.pl ] || \
+	{ echo "   ERROR: No Shorewall compiler is installed" >&2; exit 1; }
+    if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
+	DEBIAN=yes
+    elif [ -f /etc/slackware-version ] ; then
+	DEST="/etc/rc.d"
+	INIT="rc.firewall"
+    elif [ -f /etc/arch-release ] ; then
+	DEST="/etc/rc.d"
+	INIT="shorewall"
+	ARCHLINUX=yes
+    fi
 fi
 
 #

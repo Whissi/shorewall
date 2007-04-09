@@ -436,18 +436,18 @@ sub process_routestopped() {
 	my $source  = match_source_net $h;
 	my $dest    = match_dest_net $h;
 
-	emit "\$IPTABLES INPUT -i $interface $source ACCEPT";
-	emit "\$IPTABLES OUTPUT -o $interface $dest ACCEPT"    if $config{ADMINISABSENTMINDED};
+	emit "\$IPTABLES -A INPUT -i $interface $source -j ACCEPT";
+	emit "\$IPTABLES -A OUTPUT -o $interface $dest -j ACCEPT"    if $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 
 	if ( $source{$host} ) {
-	    emit "\$IPTABLES FORWARD -i $interface $source ACCEPT";
+	    emit "\$IPTABLES -A FORWARD -i $interface $source -j ACCEPT";
 	    $matched = 1;
 	}
 
 	if ( $dest{$host} ) {
-	    emit "\$IPTABLES FORWARD -o $interface $dest ACCEPT";
+	    emit "\$IPTABLES -A FORWARD -o $interface $dest -j ACCEPT";
 	    $matched = 1;
 	}
 
@@ -752,11 +752,11 @@ sub setup_mac_lists( $ ) {
 		add_command $chainref, "    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do";
 		add_command $chainref, '        address=${address%/*}';
 		add_command $chainref, '        if [ -n "$broadcast" ]; then';
-		add_command $chainref, '            echo "-A $chain -s $address -d $broadcast -j RETURN" >&3';
+		add_command $chainref, "            echo \"-A $chainref->{name} -s \$address -d \$broadcast -j RETURN\" >&3";
 		add_command $chainref, '        fi';
 		add_command $chainref, '';
-		add_command $chainref, '        echo "-A $chain -s $address -d 255.255.255.255 -j RETURN" >&3';
-		add_command $chainref, '        echo "-A $chain -s $address -d 224.0.0.0/4     -j RETURN" >&3';
+		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -d 255.255.255.255 -j RETURN\" >&3";
+		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4     -j RETURN\" >&3";
 		add_command $chainref, '    done';
 		add_command $chainref, 'else';
 		add_command $chainref, "    fatal_error \"Interface $interface must be up before Shorewall can start\"";

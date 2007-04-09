@@ -498,6 +498,7 @@ sub setup_tc() {
 
     if ( $capabilities{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
+	ensure_mangle_chain 'tcout';
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
 	    ensure_mangle_chain 'tcfor';

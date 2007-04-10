@@ -75,22 +75,71 @@ d) The BROADCAST column in the interfaces file is essentially unused;
    match requirement is relaxed.
 
 e) Because the compiler is now written in Perl, your compile-time
-   extension scripts from earlier versions will no longer work. For
-   now, if you want to use extension scripts, you will need to read the
-   Perl code to see how the compiler operates internally. I will
-   produce documentation before the first official release.
+   extension scripts from earlier versions will no longer work.
    Compile-time extension scripts are executed using the Perl
    'eval `cat <file>`' mechanism.
 
+   When a script is invoked, the $chainref scalar variable will hold a
+   reference to a chain table entry. 
+
+       $chainref->{name}  contains the name of the chain
+       $chainref->{table} holds the table name
+       
+       To add a rule to the chain:
+
+	  add_rule $chainref, <the rule>
+
+       Where
+
+          <the rule> is a scalar argument holding the rule text. Do not
+          include "-A <chain name>"
+
+       Example:
+
+          add_rule $chainref, '-j ACCEPT';
+
+       To insert a rule into the chain:
+
+          insert_rule $chainref, <rulenum>, <the rule>
+
+       The log_rule_limit function works like it does in the shell
+       compiler with two exceptions:
+
+          - You pass the chain reference rather than the name of the
+            chain.
+	  - The commands are 'add' and 'insert' rather than '-A' and
+            '-I'.
+	  - There is only a single "pass as-is to iptables" argument
+            (so you must quote that part).
+
+       Example:
+
+	  log_rule_limit
+	      'info' , 
+	      $chainref , 
+	      $chainref->{name},
+	      'DROP' , 
+	      '',    #Limit
+	      '' ,   #Log tag
+	      'add';	      
+
 f) The 'refresh' command is now synonymous with 'restart'.
 
-g) Some run-time scripts will need to be changed to write their
+g) The 'maclog' extension script will need to be changed to write its
    iptables commands to file descriptor 3 in iptables-restore format
    rather than running those commands.
 
 	maclog
 
-   Details to follow.
+   You can use this syntax:
+
+       echo -A $CHAIN <rest of rule> >&3
+
+   Example:
+
+       echo -A $CHAIN -p icmp -j RETURN >&3
+
+   You may not insert a rule into the chain -- you may only add rules.
 
    Some run-time scripts are simply eliminated because they no longer
    make any sense under Shorewall-perl:

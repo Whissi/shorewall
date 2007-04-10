@@ -49,6 +49,7 @@ our @EXPORT = qw( STANDARD
 		  ALL_RESTRICT
 
 		  add_command
+		  add_file
 		  add_rule
 		  insert_rule
 		  chain_base
@@ -256,6 +257,30 @@ sub add_command($$)
 
     $chainref->{referenced} = 1;
 }
+
+#
+# Copy a file into a chain's rules as a set of run-time commands
+#
+
+sub add_file( $$ ) {
+    my $chainref = $_[0];
+    my $file     = find_file $_[1];
+
+    if ( -f $file ) {
+	open EF , '<', $file or fatal_error "Unable to open $file";
+
+	add_command $chainref, qq(progress_message "Processing $file...");
+	add_command $chainref, '';
+
+	while ( $line = <EF> ) {
+	    add_command $chainref, $line;
+	}
+
+	add_command $chainref, '';
+
+	close EF;
+    }
+}    
 
 #
 # Add a rule to a chain. Arguments are:

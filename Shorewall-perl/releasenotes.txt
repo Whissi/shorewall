@@ -80,18 +80,25 @@ e) Because the compiler is now written in Perl, your compile-time
    Perl code to see how the compiler operates internally. I will
    produce documentation before the first official release.
    Compile-time extension scripts are executed using the Perl
-   'do FILE' mechanism.
+   'eval `cat <file>`' mechanism.
 
 f) The 'refresh' command is now synonymous with 'restart'.
 
-g) Some run-time extension scripts are no longer supported because they
-   make no sense (iptables-restore instantiates the new configuration
-   atomically).
+g) Some run-time scripts will need to be converted to write their
+   iptables commands to file descriptor 3 in iptables-restore format
+   rather than running those commands.
 
-	continue
 	initdone
-	continue
-	refresh
+	maclog
+
+   Details to follow.
+
+   Some run-time scripts are simply eliminated because they no longer
+   make any sense under Shorewall-perl:
+
+	continue  - Under Shorewall-perl, nothing is done between
+		    'continue' and 'initdone'
+	refresh   - The 'refresh' command is the same as 'restart'
 	refreshed
 
 h) The /etc/shorewall/tos file now has zone-independent SOURCE and DEST

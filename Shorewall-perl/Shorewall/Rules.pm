@@ -490,6 +490,8 @@ sub add_common_rules() {
 
 	new_standard_chain output_chain( $interface );
     }
+    
+    add_file $filter_table->{INPUT}, 'initdone';
 
     setup_blacklist;
 
@@ -762,6 +764,8 @@ sub setup_mac_lists( $ ) {
 		add_command $chainref, "    fatal_error \"Interface $interface must be up before Shorewall can start\"";
 		add_command $chainref, "fi\n";
 	    }
+
+	    add_file $chainref, 'maclog';
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '';
 	    add_rule $chainref, "-j $target";

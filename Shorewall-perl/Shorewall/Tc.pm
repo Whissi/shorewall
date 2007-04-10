@@ -249,23 +249,29 @@ my %tcdevices;
 my @tcclasses;
 my %tcclasses;
 
-my $r2q    = 10;
 my $prefix = '1';
 
 sub rate_to_kbit( $ ) {
     my $rate = $_[0];
 
     return $1          if $rate =~ /^(\d+)kbit$/i;
-    return $1 * 1024   if $rate =~ /^(\d+)mbit$/i;
-    return $1 * 8192   if $rate =~ /^(\d+)mbps$/i;
+    return $1 * 1000   if $rate =~ /^(\d+)mbit$/i;
+    return $1 * 8000   if $rate =~ /^(\d+)mbps$/i;
     return $1 * 8      if $rate =~ /^(\d+)kbps$/i;
-    return $rate / 128 if $rate =~ /^\d+$/;
+    return $rate / 125 if $rate =~ /^\d+$/;
     fatal_error "Invalid Rate ( $rate )";
 }
 
-sub calculate_quantum( $ ) {
+sub calculate_r2q( $ ) {
     my $rate = rate_to_kbit $_[0];
-    eval "int( ( $rate * 128 ) / $r2q )";
+    my $r2q= $rate / 200 ;
+    $r2q <= 5 ? 5 : $r2q;
+}
+
+sub calculate_quantum( $$ ) {
+    my ( $rate, $r2q ) = @_;
+    $rate = rate_to_kbit $rate;
+    eval "int( ( $rate * 125 ) / $r2q )";
 }
 
 sub validate_tc_device( $$$ ) {
@@ -395,9 +401,9 @@ sub setup_traffic_shaping() {
     for my $device ( @tcdevices ) {
 	my $dev     = chain_base( $device );
 	my $devref  = $tcdevices{$device};
-	my $defmark = $devref->{default};
+	my $defmark = $devref->{default} || 0;
 
-	fatal_error "Option default is not defined for any class in tcclasses for interface $device" unless $defmark;
+	$defmark = "${prefix}${defmark}" if $defmark;
 
 	emit "if interface_is_usable $device; then";
 
@@ -406,7 +412,7 @@ sub setup_traffic_shaping() {
 	emitj( "${dev}_exists=Yes",
 	       "qt tc qdisc del dev $device root",
 	       "qt tc qdisc del dev $device ingress",
-	       "run_tc qdisc add dev $device root handle $devnum: htb default ${prefix}${defmark}",
+	       "run_tc qdisc add dev $device root handle $devnum: htb default $defmark",
 	       "${dev}_mtu=\$(get_device_mtu $device)",
 	       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu"
 	       );
@@ -442,7 +448,8 @@ sub setup_traffic_shaping() {
 	my $devnum  = $devref->{number};
 	my $classid = "$devnum:${prefix}${mark}";
 	my $rate    = $tcref->{rate};
-	my $quantum = calculate_quantum $rate;
+	my $r2q     = calculate_r2q $devref->{out_bandwidth};
+	my $quantum = calculate_quantum $rate, $r2q;
 	my $dev     = chain_base $device;
 
 	if ( $lastdevice ne $device ) {

@@ -84,11 +84,10 @@ e) Because the compiler is now written in Perl, your compile-time
 
 f) The 'refresh' command is now synonymous with 'restart'.
 
-g) Some run-time scripts will need to be converted to write their
+g) Some run-time scripts will need to be changed to write their
    iptables commands to file descriptor 3 in iptables-restore format
    rather than running those commands.
 
-	initdone
 	maclog
 
    Details to follow.
@@ -96,8 +95,11 @@ g) Some run-time scripts will need to be converted to write their
    Some run-time scripts are simply eliminated because they no longer
    make any sense under Shorewall-perl:
 
-	continue  - Under Shorewall-perl, nothing is done between
-		    'continue' and 'initdone'
+	initdone  - The these two scripts assumed a model where the
+	continue    chains were built in parallel. In the
+		    iptables-restore model, chains are built serially
+		    within tables and tables are build serially.  
+
 	refresh   - The 'refresh' command is the same as 'restart'
 	refreshed
 

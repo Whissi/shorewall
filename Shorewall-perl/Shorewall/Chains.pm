@@ -273,6 +273,7 @@ sub add_file( $$ ) {
 	add_command $chainref, '';
 
 	while ( $line = <EF> ) {
+	    chomp $line;
 	    add_command $chainref, $line;
 	}
 

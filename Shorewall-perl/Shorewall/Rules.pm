@@ -491,8 +491,6 @@ sub add_common_rules() {
 	new_standard_chain output_chain( $interface );
     }
     
-    add_file $filter_table->{INPUT}, 'initdone';
-
     setup_blacklist;
 
     $list = find_hosts_by_option 'nosmurfs';
@@ -856,7 +854,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 }
 
 #
-# Once a rule has been completely resolved by macro expansion, it is processed by this function.
+# Once a rule has been completely resolved by macro expansion and wildcard (source and/or dest zone == 'all'), it is processed by this function.
 #
 sub process_rule1 ( $$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = @_;

@@ -1352,7 +1352,7 @@ delete_tc1()
 }
 
 #
-# Detect a device's MTU -- echos the passed device's MTU + 100
+# Detect a device's MTU -- echos the passed device's MTU
 #
 get_device_mtu() # $1 = device
 {
@@ -1366,7 +1366,8 @@ get_device_mtu() # $1 = device
 }
 
 #
-# Version of the above that doesn't generate any output for MTU 1500
+# Version of the above that doesn't generate any output for MTU 1500.
+# Generates 'mtu <mtu+>' otherwise, where <mtu+> is the device's MTU + 100
 #
 get_device_mtu1() # $1 = device
 {

@@ -150,6 +150,10 @@ restore_dynamic_rules() {
     fi
 }
 
+#
+# The following functions also appear in lib.base. They are duplicated here so that
+# restore scripts from prior versions continue to work.
+#
 get_device_mtu1() # $1 = device
 {
     local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
@@ -157,11 +161,9 @@ get_device_mtu1() # $1 = device
 
     if [ -n "$output" ]; then
 	mtu=$(find_mtu $output)
-    else
-	return
+	if [ -n "$mtu" ]; then
+	    [ $mtu = 1500 ] || echo mtu $(($mtu + 100))
+	fi
     fi
 
-    if [ -n "$mtu" ]; then
-	[ $mtu = 1500 ] || echo mtu $(($mtu + 100))
-    fi
 }

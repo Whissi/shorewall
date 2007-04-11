@@ -351,6 +351,13 @@ fi</programlisting>
          netmask 255.255.255.0
          post-up ethtool -K eth0 tx off</programlisting>
       </caution>
+
+      <caution>
+        <para>Update. Under SuSE 10.2, communication from a domU works okay
+        without running ethtool <emphasis role="bold">but traffic shaping in
+        dom0 doesn't work!</emphasis> So it's a good idea to run it just to be
+        safe.</para>
+      </caution>
     </section>
 
     <section id="Firewall">

@@ -327,6 +327,13 @@ fi</programlisting>
          post-up ethtool -K eth0 tx off</programlisting>
       </caution>
 
+      <caution>
+        <para>Update. Under SuSE 10.2, communication from a domU works okay
+        without running ethtool <emphasis role="bold">but traffic shaping in
+        dom0 doesn't work!</emphasis> So it's a good idea to run it just to be
+        safe.</para>
+      </caution>
+
       <para>SuSE 10.1 includes Xen 3.0.2 which supports PCI delegation. The
       network interfaces that connect to the net and wifi zones are delegated
       to the firewall DomU.</para>

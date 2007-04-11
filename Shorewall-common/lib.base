@@ -28,7 +28,7 @@
 # and /usr/share/shorewall-lite/shorecap.
 #
 
-SHOREWALL_LIBVERSION=30402
+SHOREWALL_LIBVERSION=30403
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -1352,7 +1352,7 @@ delete_tc1()
 }
 
 #
-# Detect a device's MTU
+# Detect a device's MTU -- echos the passed device's MTU + 100
 #
 get_device_mtu() # $1 = device
 {
@@ -1363,6 +1363,23 @@ get_device_mtu() # $1 = device
     else
 	echo 1500
     fi
+}
+
+#
+# Version of the above that doesn't generate any output for MTU 1500
+#
+get_device_mtu1() # $1 = device
+{
+    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local mtu
+
+    if [ -n "$output" ]; then
+	mtu=$(find_mtu $output)
+	if [ -n "$mtu" ]; then
+	    [ $mtu = 1500 ] || echo mtu $(($mtu + 100))
+	fi
+    fi
+
 }
 
 #

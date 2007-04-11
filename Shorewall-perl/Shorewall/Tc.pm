@@ -434,7 +434,7 @@ sub setup_traffic_shaping() {
 	emit 'else';
 	push_indent;
 
-	emit qq(error_message "\"WARNING: Device $device not up and configured -- traffic-shaping configuration skipped\"");
+	emit qq(error_message "WARNING: Device $device not up and configured -- traffic-shaping configuration skipped");
 	emit "${dev}_exists=";
 	pop_indent;
 	emit "fi\n";
@@ -480,7 +480,6 @@ sub setup_traffic_shaping() {
 	#options
 	#
 	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
-
 
 	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(/), $tospair;

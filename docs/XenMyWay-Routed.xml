@@ -330,16 +330,12 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'</programlisting>
 
         <para><command>ethtool -K eth0 tx off</command></para>
 
-        <para>Under <trademark>SuSE</trademark> 10.1, I placed the following
-        in <filename>/etc/sysconfig/network/if-up.d/resettx</filename> (that
-        file is executable):</para>
+        <para>Under <trademark>SuSE</trademark> 10.2, I placed the following
+        in
+        <filename><filename>/etc/sysconfig/network/ifcfg-eth-id-00:16:3e:b1:d7:90</filename></filename>
+        (the config file for eth0):</para>
 
-        <programlisting>#!/bin/sh
-
-if [ $2 = eth0 ]; then
-    ethtool -K eth0 tx off
-    echo "TX Checksum reset on eth0"
-fi</programlisting>
+        <programlisting>ETHTOOL_OPTIONS='-K iface tx off'</programlisting>
 
         <para>Under other distributions, the technique will vary. For example,
         under <trademark>Debian</trademark> or <trademark>Ubuntu</trademark>,
@@ -349,7 +345,7 @@ fi</programlisting>
         <programlisting> iface eth0 inet static
          address 206.124.146.177
          netmask 255.255.255.0
-         post-up ethtool -K eth0 tx off</programlisting>
+         <emphasis role="bold">post-up ethtool -K eth0 tx off</emphasis></programlisting>
       </caution>
 
       <caution>

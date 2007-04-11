@@ -414,7 +414,8 @@ sub setup_traffic_shaping() {
 	       "qt tc qdisc del dev $device ingress",
 	       "run_tc qdisc add dev $device root handle $devnum: htb default $defmark",
 	       "${dev}_mtu=\$(get_device_mtu $device)",
-	       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} mtu \$${dev}_mtu"
+	       "${dev}_mtu1=\$(get_device_mtu1 $device)",
+	       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1"
 	       );
 
 	my $inband = rate_to_kbit $devref->{in_bandwidth};
@@ -464,7 +465,7 @@ sub setup_traffic_shaping() {
 	}
 
 	emitj( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
-	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} mtu \$${dev}_mtu quantum \$quantum",
+	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
 	       "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10"
 	       );
 	#

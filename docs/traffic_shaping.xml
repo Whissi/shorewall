@@ -1008,6 +1008,40 @@ ppp0            4       90kbit          200kbit         3           default</pro
   </section>
 
   <section>
+    <title>A Warning to Xen Users</title>
+
+    <para>If you are running traffic shaping in your dom0 and traffic shaping
+    doesn't seem to be limiting outgoing traffic properly, it may be due to
+    "checksum offloading" in your domU(s). Check the output of "shorewall show
+    tc". Here's an excerpt from the output of that command:</para>
+
+    <programlisting>class htb 1:130 parent 1:1 leaf 130: prio 3 quantum 1500 rate 76000bit <emphasis
+        role="bold">ceil 230000bit</emphasis> burst 1537b/8 mpu 0b overhead 0b cburst 1614b/8 mpu 0b overhead 0b level 0 
+ Sent 559018700 bytes 75324 pkt (dropped 0, overlimits 0 requeues 0) 
+ <emphasis role="bold">rate 299288bit</emphasis> 3pps backlog 0b 0p requeues 0 
+ lended: 53963 borrowed: 21361 <emphasis role="bold">giants: 90174</emphasis>
+ tokens: -26688 ctokens: -14783</programlisting>
+
+    <para>There are two obvious problems in the above output:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The rate (299288) is considerably larger than the ceiling
+        (230000).</para>
+      </listitem>
+
+      <listitem>
+        <para>There are a large number (90174) of giants reported.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>This problem will be corrected by disabling "checksum offloading" in
+    your domU(s) using the <command>ethtool</command> utility. See the <ulink
+    url="XenMyWay-Routed.html">one of the Xen articles</ulink> for
+    instructions.</para>
+  </section>
+
+  <section>
     <title id="tcstart">Using your own tc script</title>
 
     <section id="owntcstart">

@@ -59,59 +59,14 @@
     (most notably <trademark>SUSE</trademark> 9.1 through 10.0).</para>
   </warning>
 
-  <important>
-    <para>You must have <emphasis role="bold">BOTH</emphasis> the
-    Netfilter+ipsec patches and the policy match patch. <emphasis
-    role="bold">One without the other will not work</emphasis>.</para>
-
-    <para>Here's a combination of components that I know works:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>Kernel 2.6.11 from kernel.org. Patched with:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>The five patches in <ulink
-            url="http://shorewall.net/pub/shorewall/contrib/IPSEC/2.6.11">http://shorewall.net/pub/shorewall/contrib/IPSEC/2.6.11</ulink></para>
-          </listitem>
-
-          <listitem>
-            <para>The "policy match" extension from the Patch-o-matic-ng CVS
-            snapshot from 2005-May-04 (be sure to NOT try to apply the
-            ipsec-NN patches from patch-o-matic-ng).</para>
-          </listitem>
-        </itemizedlist>
-      </listitem>
-
-      <listitem>
-        <para>iptables 1.3.1 patched with the "policy match" extension from
-        the Patch-o-matic-ng CVS snapshot from 2005-May-04.</para>
-      </listitem>
-
-      <listitem>
-        <para>ipsec-tools 0.5.2 compiled from source. I've also had success
-        with:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>ipsec-tools 0.5.2 and racoon 0.5.2 from Debian
-            Sarge/testing</para>
-          </listitem>
-
-          <listitem>
-            <para>The ipsec-tools 0.5 rpm from <trademark>SUSE</trademark>
-            9.3.</para>
-          </listitem>
-        </itemizedlist>
-      </listitem>
-    </orderedlist>
-  </important>
-
   <warning>
     <para>As of this writing, the Netfilter+ipsec and policy match support are
     broken when used with a bridge device. The problem has been reported to
-    the responsible Netfilter developer who has confirmed the problem.</para>
+    the responsible Netfilter developer who has confirmed the problem. The
+    problem was presumably corrected in Kernel 2.6.20 as a result of the
+    removal of defered FORWARD/OUTPUT processing of traffic destined for a
+    bridge. See the <ulink url="NewBridge.html">"<emphasis>Bridging without
+    using physdev match support</emphasis>"</ulink> article.</para>
   </warning>
 
   <section>
@@ -364,6 +319,27 @@ vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ips
 loc              vpn                    ACCEPT
 vpn              loc                    ACCEPT</programlisting>
     </blockquote>
+
+    <para>If you need access from each firewall to hosts in the other network,
+    then you could add:</para>
+
+    <blockquote>
+      <programlisting>#SOURCE          DESTINATION            POLICY          LEVEL       BURST:LIMIT
+$FW              vpn                    ACCEPT</programlisting>
+    </blockquote>
+
+    <para>If you need access between the firewall's, you should describe the
+    access in your /etc/shorewall/rules file. For example, to allow SSH access
+    from System B, add this rule on system A:</para>
+
+    <blockquote>
+      <programlisting>#ACTION    SOURCE           DESTINATION      PROTO        POLICY
+ACCEPT     vpn:134.28.54.2  $FW</programlisting>
+    </blockquote>
+
+    <para>Note that your Security Policies must also be set up to send traffic
+    between 134.28.54.2 and 206.162.148.9 through the tunnel (see
+    below).</para>
 
     <para>Once you have these entries in place, restart Shorewall (type
     shorewall restart); you are now ready to configure IPSEC.</para>

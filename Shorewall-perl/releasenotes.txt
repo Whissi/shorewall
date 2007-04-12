@@ -77,7 +77,9 @@ d) The BROADCAST column in the interfaces file is essentially unused;
 e) Because the compiler is now written in Perl, your compile-time
    extension scripts from earlier versions will no longer work.
    Compile-time extension scripts are executed using the Perl
-   'eval `cat <file>`' mechanism.
+   'eval `cat <file>`' mechanism. Be sure that each script returns a
+   'true' value; otherwise, the compiler will assume that the script
+   failed and will abort the compilation.
 
    When a script is invoked, the $chainref scalar variable will hold a
    reference to a chain table entry. 

@@ -145,21 +145,82 @@
           </listitem>
 
           <listitem>
-            <para>Some run-time extension scripts are no longer supported
-            because they make no sense (iptables-restore instantiates the new
-            configuration atomically).</para>
+            <para>Because the compiler is now written in Perl, your
+            compile-time extension scripts from earlier versions will no
+            longer work. Compile-time extension scripts are executed using the
+            Perl 'eval `cat &lt;file&gt;`' mechanism. Be sure that each script
+            returns a 'true' value; otherwise, the compiler will assume that
+            the script failed and will abort the compilation.</para>
+
+            <para>When a script is invoked, the $chainref scalar variable will
+            hold a reference to a chain table entry.</para>
 
             <simplelist>
-              <member>continue</member>
+              <member>$chainref-&gt;{name} contains the name of the
+              chain</member>
 
-              <member>initdone</member>
-
-              <member>continue</member>
-
-              <member>refresh</member>
-
-              <member>refreshed</member>
+              <member>$chainref-&gt;{table} holds the table name</member>
             </simplelist>
+
+            <para>To add a rule to the chain:</para>
+
+            <simplelist>
+              <member>add_rule $chainref, &lt;<replaceable>the
+              rule</replaceable>&gt;</member>
+            </simplelist>
+
+            <para>Where</para>
+
+            <simplelist>
+              <member>&lt;<replaceable>the rule</replaceable>&gt; is a scalar
+              argument holding the rule text. Do not include "-A
+              &lt;<replaceable>chain name</replaceable>&gt;"</member>
+            </simplelist>
+
+            <para>Example:</para>
+
+            <simplelist>
+              <member>add_rule $chainref, '-j ACCEPT';</member>
+            </simplelist>
+
+            <para>To insert a rule into the chain:</para>
+
+            <simplelist>
+              <member>insert_rule $chainref,
+              &lt;<replaceable>rulenum</replaceable>&gt;, &lt;<replaceable>the
+              rule</replaceable>&gt;</member>
+            </simplelist>
+
+            <para>The log_rule_limit function works like it does in the shell
+            compiler with two exceptions:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>You pass the chain reference rather than the name of the
+                chain.</para>
+              </listitem>
+
+              <listitem>
+                <para>The commands are 'add' and 'insert' rather than '-A' and
+                '-I'.</para>
+              </listitem>
+
+              <listitem>
+                <para>There is only a single "pass as-is to iptables" argument
+                (so you must quote that par</para>
+              </listitem>
+            </itemizedlist>
+
+            <para>Example:</para>
+
+            <programlisting>    log_rule_limit
+              'info' , 
+              $chainref , 
+              $chainref-&gt;{name},
+              'DROP' , 
+              '',    #Limit
+              '' ,   #Log tag
+              'add';         </programlisting>
           </listitem>
 
           <listitem>

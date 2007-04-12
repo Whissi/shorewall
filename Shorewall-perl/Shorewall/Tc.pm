@@ -449,8 +449,7 @@ sub setup_traffic_shaping() {
 	my $devnum  = $devref->{number};
 	my $classid = "$devnum:${prefix}${mark}";
 	my $rate    = $tcref->{rate};
-	my $r2q     = calculate_r2q $devref->{out_bandwidth};
-	my $quantum = calculate_quantum $rate, $r2q;
+	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
 
 	if ( $lastdevice ne $device ) {

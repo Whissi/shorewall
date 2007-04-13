@@ -70,7 +70,6 @@ INIT {
 #
 
 sub generate_script_1() {
-    my $export = $_[0];
 
     copy $globals{SHAREDIRPL} . 'prog.header';
 
@@ -161,7 +160,7 @@ sub generate_script_1() {
 	       );
     }
 
-    append_file 'params' if $export;
+    append_file 'params' if $config{EXPORTPARAMS};
 
     emitj ( '',
 	    "STOPPING=",

@@ -350,6 +350,12 @@ start_command() {
 			    finished=1
 			    option=
 			    ;;
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
+			    ;;
 			f*)
 			    FAST=Yes
 			    option=${option#f}
@@ -452,17 +458,15 @@ compile_command() {
 			    EXPORT=Yes
 			    option=${option#e}
 			    ;;
-			P*)
-			    PROFILE=Yes
-			    option=${option#P}
-			    ;;
 			p*)
-			    SHOREWALL_COMPILER=perl
+			    PROFILE=Yes
 			    option=${option#p}
 			    ;;
-			s*)
-			    SHOREWALL_COMPILER=shell
-			    option=${option#s}
+			C)
+			    [ $# -gt 0 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$1
+			    option=
+			    shift
 			    ;;
 			d*)
 			    DEBUG=Yes;
@@ -539,17 +543,9 @@ check_command() {
 			    EXPORT=Yes
 			    option=${option#e}
 			    ;;
-			P*)
-			    PROFILE=Yes
-			    option=${option#P}
-			    ;;
 			p*)
-			    SHOREWALL_COMPILER=perl
-			    option=${option#p}
-			    ;;
-			s*)
-			    SHOREWALL_COMPILER=shell
-			    option=${option#s}
+			    PROFILE=Yes
+			    option=${option#d}
 			    ;;
 			d*)
 			    DEBUG=Yes;
@@ -619,13 +615,11 @@ restart_command() {
 			    NOROUTES=Yes
 			    option=${option#n}
 			    ;;
-			p*)
-			    SHOREWALL_COMPILER=perl
-			    option=${option#p}
-			    ;;
-			s*)
-			    SHOREWALL_COMPILER=shell
-			    option=${option#s}
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
 			    ;;
 			*)
 			    usage 1
@@ -704,13 +698,11 @@ refresh_command() {
 			    finished=1
 			    option=
 			    ;;
-			p*)
-			    SHOREWALL_COMPILER=perl
-			    option=${option#p}
-			    ;;
-			s*)
-			    SHOREWALL_COMPILER=shell
-			    option=${option#s}
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
 			    ;;
 			*)
 			    usage 1
@@ -789,13 +781,11 @@ safe_commands() {
 			    NOROUTES=Yes
 			    option=${option#n}
 			    ;;
-			p*)
-			    SHOREWALL_COMPILER=perl
-			    option=${option#p}
-			    ;;
-			s*)
-			    SHOREWALL_COMPILER=shell
-			    option=${option#s}
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
 			    ;;
 			*)
 			    usage 1
@@ -941,13 +931,11 @@ try_command() {
 			    NOROUTES=Yes
 			    option=${option#n}
 			    ;;
-			p*)
-			    SHOREWALL_COMPILER=perl
-			    option=${option#p}
-			    ;;
-			s*)
-			    SHOREWALL_COMPILER=shell
-			    option=${option#s}
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
 			    ;;
 			*)
 			    usage 1
@@ -1070,6 +1058,12 @@ reload_command() # $* = original arguments less the command.
 			    option=
 			    shift
 			    ;;
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1165,6 +1159,12 @@ export_command() # $* = original arguments less the command.
 			    finished=1
 			    option=
 			    ;;
+			C)
+			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
+			    ;;
 			*)
 			    fatal_error "Unrecognized option \"$option\""
 			    ;;
@@ -1219,38 +1219,38 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ <directory> ]"
+    echo "   check [ -e ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   clear"
-    echo "   compile [ -e ] [ <directory name> ] <path name>"
+    echo "   compile [ -e ] [ -C {shell|perl} ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
-    echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
+    echo "   export [ -C {shell|perl} ] [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
+    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ -C {shell|perl} ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
-    echo "   refresh"
+    echo "   refresh [ -C {shell|perl} ]"
     echo "   reject <address> ..."
-    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
+    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -C {shell|perl} ] [ <directory> ] <system>"
     echo "   reset"
-    echo "   restart [ -n ] [ <directory> ]"
+    echo "   restart [ -n ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones]"
-    echo "   start [ -f ] [ -n ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   stop"
     echo "   status"
-    echo "   try <directory> [ <timeout> ]"
+    echo "   try [ -C {shell|perl} ] <directory> [ <timeout> ]"
     echo "   version"
-    echo "   safe-start [ <directory> ]"
-    echo "   safe-restart [ <directory> ]"
+    echo "   safe-start [ -C {shell|perl} ] [ <directory> ]"
+    echo "   safe-restart [ -C {shell|perl} ] [ <directory> ]"
     echo
     exit $1
 }

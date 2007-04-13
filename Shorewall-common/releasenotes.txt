@@ -1,4 +1,4 @@
-Shorewall 3.9.1
+Shorewall 3.9.2
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -6,7 +6,7 @@ Shorewall 3.9.1
    Shorewall-perl compiler. See the "New Features" section below.
 
 2) You are now offered a choice as to which compiler(s) you install. In
-   3.9.1, there are the following packages:
+   3.9.2, there are the following packages:
 
    - Shorewall ( common files )
    - Shorewall-shell ( the shell-based compiler )
@@ -15,7 +15,14 @@ Shorewall 3.9.1
 You must install Shorewall and at least one of the compiler packages
 (you may install them both).
 
-Problems corrected in Shorewall 3.9.1
+Problems corrected in Shorewall 3.9.2
+
+1)  When the -e flag was passed to the compiler, the generated script
+    looked for the file /usr/share/shorewall/lib.base. This totally
+    broke Shorewall Lite.
+
+2)  The params file was being copied into the generated script
+    independent of the setting of EXPORTPARAMS. 
 
 Migration Considerations:
 
@@ -24,26 +31,26 @@ Migration Considerations:
 
     If you attempt to upgrade using the RPM, you get this result:
 
-    gateway:~ # rpm -Uvh shorewall-3.9.1-1.noarch.rpm 
+    gateway:~ # rpm -Uvh shorewall-3.9.2-1.noarch.rpm 
     error: Failed dependencies:
-        shorewall_compiler is needed by shorewall-3.9.1-1.noarch
+        shorewall_compiler is needed by shorewall-3.9.2-1.noarch
     gateway:~ #
 
     You must either:
 
-	rpm -U shorewall-3.9.1.noarch.rpm shorewall-shell-3.9.1.noarch.rpm
+	rpm -U shorewall-3.9.2.noarch.rpm shorewall-shell-3.9.2.noarch.rpm
 
     or
 
-	rpm -U shorewall-3.9.1.noarch.rpm shorewall-perl-3.9.1.noarch.rpm
+	rpm -U shorewall-3.9.2.noarch.rpm shorewall-perl-3.9.2.noarch.rpm
 	
     or
-	rpm -i shorewall-shell-3.9.1.noarch.rpm
-	rpm -U shorewall-3.9.1.noarch.rpm
+	rpm -i shorewall-shell-3.9.2.noarch.rpm
+	rpm -U shorewall-3.9.2.noarch.rpm
 
     or
-	rpm -i shorewall-perl-3.9.1.noarch.rpm
-	rpm -U shorewall-3.9.1.noarch.rpm
+	rpm -i shorewall-perl-3.9.2.noarch.rpm
+	rpm -U shorewall-3.9.2.noarch.rpm
 
     If you are upgrading using the tarball, you must install either
     shorewall-shell or shorewall-perl before you upgrade
@@ -58,27 +65,25 @@ Migration Considerations:
 ----------------------------------------------------------------------------
                          N E W  F E A T U R E S
 ----------------------------------------------------------------------------
-                          Shorewall-perl 3.9.1
-----------------------------------------------------------------------------
 This companion product to Shorewall 3.4.2 and later includes a complete
 rewrite of the compiler in Perl.
 
 I decided to make Shorewall-perl a separate product for several reasons:
 
 a) Embedded applications are unlikely to adopt Shorewall-perl; even Mini-Perl
-has a substantial disk and Ram footprint.
+   has a substantial disk and Ram footprint.
 
 b) Because of the gross incompatibilities between the new compiler and the
-old (see below), migration to the new compiler must be voluntary.
+   old (see below), migration to the new compiler must be voluntary.
 
 c) By allowing Shorewall-perl to co-exist with the current Shorewall stable
-release (3.4), I'm hoping that the new compiler will get more testing and
-validation than it would if I were to package it with a new development
-version of Shorewall itself.
+   release (3.4), I'm hoping that the new compiler will get more testing and
+   validation than it would if I were to package it with a new development
+   version of Shorewall itself.
 
 d) Along the same vein, I think that users will be more likely to experiment
-with the new compiler if they can easily fall back to the old one if things
-get sticky.
+   with the new compiler if they can easily fall back to the old one if things
+   get sticky.
 ----------------------------------------------------------------------------
                   T H E   G O O D   N E W S:
 ----------------------------------------------------------------------------

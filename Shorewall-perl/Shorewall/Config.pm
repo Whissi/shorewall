@@ -959,7 +959,7 @@ sub generate_aux_config() {
 
 	my $value = $config{$option};
 
-	emit "[ -n \"\${$option:=$value}\" ]" if $value;
+	emit "[ -n \"\${$option:=$value}\" ]" if $value ne '';
     }
 
     sub conditionally_add_option1( $ ) {

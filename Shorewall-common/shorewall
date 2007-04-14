@@ -225,11 +225,6 @@ compiler() {
     
     local command=$1
 
-    fatal_error() {
-	echo "   ERROR: $@" >&2
-	exit 2
-    }
-
     shift
     #
     # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
@@ -333,10 +328,7 @@ start_command() {
 	exit 0
     fi
 
-    if [ -z "$STARTUP_ENABLED" ]; then
-	error_message "ERROR: Startup is disabled"
-	exit 2
-    fi
+    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -351,7 +343,7 @@ start_command() {
 			    option=
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -463,7 +455,7 @@ compile_command() {
 			    option=${option#p}
 			    ;;
 			C)
-			    [ $# -gt 0 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 0 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$1
 			    option=
 			    shift
@@ -616,7 +608,7 @@ restart_command() {
 			    option=${option#n}
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -656,10 +648,7 @@ restart_command() {
 	    ;;
     esac
 
-    if [ -z "$STARTUP_ENABLED" ]; then
-	error_message "ERROR: Startup is disabled"
-	exit 2
-    fi
+    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     export NOROUTES
 
@@ -699,7 +688,7 @@ refresh_command() {
 			    option=
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -725,15 +714,9 @@ refresh_command() {
 	    ;;
     esac
 
-    if ! shorewall_is_started ; then
-	error_message "ERROR: Shorewall is not running"
-	exit 2
-    fi
+    shorewall_is_started || fatal_error "Shorewall is not running"
 
-    if [ -z "$STARTUP_ENABLED" ]; then
-	error_message "ERROR: Startup is disabled"
-	exit 2
-    fi
+    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     export NOROUTES
 
@@ -782,7 +765,7 @@ safe_commands() {
 			    option=${option#n}
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -822,10 +805,7 @@ safe_commands() {
 	    ;;
     esac
 
-    if [ -z "$STARTUP_ENABLED" ]; then
-	error_message "ERROR: Startup is disabled"
-	exit 2
-    fi
+    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     mutex_on
 
@@ -932,7 +912,7 @@ try_command() {
 			    option=${option#n}
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -966,10 +946,7 @@ try_command() {
 	    ;;
     esac
 
-    if [ -z "$STARTUP_ENABLED" ]; then
-	error_message "ERROR: Startup is disabled"
-	exit 2
-    fi
+    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     mutex_on
 
@@ -1059,7 +1036,7 @@ reload_command() # $* = original arguments less the command.
 			    shift
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -1105,6 +1082,7 @@ reload_command() # $* = original arguments less the command.
     if [ -n "$getcaps" ]; then
 	if [ -f $directory/shorewall.conf ]; then
 	    . $directory/shorewall.conf
+	    ensure_config_path
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
@@ -1156,7 +1134,7 @@ export_command() # $* = original arguments less the command.
 			    option=
 			    ;;
 			C)
-			    [ $# -gt 1 ] || { error_message "ERROR: -C must be followed by a compiler name"; exit 1; }
+			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
 			    SHOREWALL_COMPILER=$2
 			    option=
 			    shift
@@ -1535,8 +1513,7 @@ case "$COMMAND" in
 	    block DROP Dropped $*
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
-	    exit 2
+	    fatal_error "Shorewall is not started"
 	fi
 	;;
     logdrop)
@@ -1547,8 +1524,7 @@ case "$COMMAND" in
 	    block logdrop Dropped $*
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
-	    exit 2
+	    fatal_error "Shorewall is not started"
 	fi
 	;;
     reject|logreject)
@@ -1559,8 +1535,7 @@ case "$COMMAND" in
 	    block $COMMAND Rejected $*
 	    mutex_off
 	else
-	    error_message "ERROR: Shorewall is not started"
-	    exit 2
+	    fatal_error "Shorewall is not started"
 	fi
 	;;
     allow)

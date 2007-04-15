@@ -59,7 +59,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    CONFDIR =>  '/etc/shorewall',
 		    SHAREDIRPL => '/usr/share/shorewall-perl/',
 		    LOGPARMS => '',
-		    VERSION =>  '3.9.1',
+		    VERSION =>  '3.9.2',
 		  );
 
 #

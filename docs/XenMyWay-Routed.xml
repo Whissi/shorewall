@@ -130,7 +130,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>There are Two Xen domains.</para>
+    <para>There are three Xen domains.</para>
 
     <orderedlist>
       <listitem>
@@ -143,9 +143,15 @@
       </listitem>
 
       <listitem>
-        <para>The DomU (Domain name <emphasis role="bold">lists</emphasis>,
-        DNS name <emphasis role="bold">lists.shorewall.net</emphasis>) is used
-        as a public Web/FTP/Mail/DNS server.</para>
+        <para>A DomU (Domain name <emphasis role="bold">lists</emphasis>, DNS
+        name <emphasis role="bold">lists.shorewall.net</emphasis>) that is
+        used as a public Web/FTP/Mail/DNS server.</para>
+      </listitem>
+
+      <listitem>
+        <para>A DomU (Domain name <emphasis role="bold">test</emphasis>, DNS
+        name <emphasis role="bold">test.shorewall.net</emphasis>) that I use
+        for Shorewall testing.</para>
       </listitem>
     </orderedlist>
 
@@ -245,6 +251,27 @@ gateway:~ #</programlisting>
           address.</para>
         </blockquote>
 
+        <para><filename>/etc/xen/auto/02-test</filename> — configuration file
+        for the test domain.</para>
+
+        <blockquote>
+          <programlisting>disk = [ 'phy:/dev/hdb4,hda,w', 'phy:/dev/hda,hdb,r' ]
+memory = 512
+vcpus = 1
+builder = 'linux'
+name = 'test'
+vif = [ 'mac=00:16:3e:83:ad:28, <emphasis role="bold">ip=192.168.1.7</emphasis>, <emphasis
+              role="bold">vifname=eth4</emphasis>' ]
+localtime = 0
+on_poweroff = 'destroy'
+on_reboot = 'restart'
+on_crash = 'restart'
+extra = ' TERM=xterm'
+bootloader = '/usr/lib/xen/boot/domUloader.py'
+bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
+</programlisting>
+        </blockquote>
+
         <para>Excerpt from
         <filename>/etc/xen/xend-config.sxp</filename>:<blockquote>
             <programlisting>…
@@ -279,33 +306,6 @@ gateway:~ #</programlisting>
               work.</para>
             </important>
           </blockquote></para>
-
-        <note>
-          <para>I have been asked a couple of times "How would I add another
-          domU to the DMZ?" Here is a sample config file to add a second domU
-          named "server", boot device <filename>/dev/sda10</filename> and IP
-          address 206.124.146.179:</para>
-
-          <programlisting>disk = [ 'phy:/dev/sda10,hda,w', 'phy:/dev/hda,hdb,r' ]
-memory = 512
-vcpus = 1
-builder = 'linux'
-name = 'server'
-vif = [ 'mac=aa:cc:00:00:00:02, <emphasis role="bold">ip=206.124.146.179, vifname=eth4</emphasis>' ]
-localtime = 0
-on_poweroff = 'destroy'
-on_reboot = 'restart'
-on_crash = 'restart'
-extra = ' TERM=xterm'
-bootloader = '/usr/lib/xen/boot/domUloader.py'
-bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'</programlisting>
-
-          <para>Note that this domU has its own vif named <filename
-          class="devicefile">eth4</filename>.</para>
-
-          <para>The Shorewall configuration would need to be adjusted
-          accordingly.</para>
-        </note>
       </blockquote>
 
       <para>With both Xen domains up and running, the system looks as shown in
@@ -324,9 +324,9 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'</programlisting>
         showed that UDP packets from the <emphasis
         role="bold">lists</emphasis> DomU had incorrect checksums. That
         problem was corrected by arranging for the following command to be
-        executed in the <emphasis role="bold">lists</emphasis> domain when its
-        <filename class="devicefile">eth0</filename> device was brought
-        up:</para>
+        executed in the <emphasis role="bold">lists</emphasis> and <emphasis
+        role="bold">test</emphasis> domains when the <filename
+        class="devicefile">eth0</filename> device was brought up:</para>
 
         <para><command>ethtool -K eth0 tx off</command></para>
 
@@ -487,6 +487,7 @@ INT_IF=br0
 DMZ_IF=eth3
 EXT_IF=eth0
 WIFI_IF=eth2
+TEST_IF=eth4
 
 OMAK=&lt;IP address at our second home&gt;
 
@@ -502,6 +503,7 @@ OMAK=&lt;IP address at our second home&gt;
 net     $EXT_IF         206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs
 dmz     $DMZ_IF         192.168.0.255           logmartians
 loc     $INT_IF         192.168.1.255           dhcp,routeback,logmartians
+loc     $TEST_IF        -
 wifi    $WIFI_IF        192.168.3.255           dhcp,maclist
 vpn     tun+            -
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
@@ -531,6 +533,7 @@ $EXT_IF                 192.168.0.0/22  206.124.146.179
         <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
 192.168.1.1     $EXT_IF         $INT_IF         yes
 206.124.146.177 $DMZ_IF         $EXT_IF         yes
+192.168.1.7     $TEST_IF        $INT_IF         yes
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
         <para><filename>/etc/shorewall/tunnels</filename>:</para>

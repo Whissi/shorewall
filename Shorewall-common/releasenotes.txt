@@ -24,6 +24,16 @@ Problems corrected in Shorewall 3.9.2
 2)  The params file was being copied into the generated script
     independent of the setting of EXPORTPARAMS. 
 
+Other changes in Shorewall 3.9.2
+
+1)  A LOCKFILE option has been added to shorewall.conf. This file is
+    used to serialize updates to the active firewall configuration.
+
+    If not specified, the defaults are:
+
+       Shorewall - /var/lib/shorewall/lock
+       Shorewall Lite - /var/lib/shorewall-lite/lock
+
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must

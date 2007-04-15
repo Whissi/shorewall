@@ -5079,6 +5079,7 @@ __EOF__
     cat >&3 << __EOF__
     VERSION="$VERSION"
     SUBSYSLOCK="$SUBSYSLOCK"
+    LOCKFILE="$LOCKFILE"
     PATH="$PATH"
     TERMINATOR=fatal_error
 
@@ -5600,7 +5601,7 @@ __EOF__
 # Shorewall auxiliary configuration file created by Shorewall version $VERSION - $(date)
 #
 __EOF__
-	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS; do
+	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE LOCKFILE SAVE_IPSETS; do
 		conditionally_add_option $option
 	    done
 

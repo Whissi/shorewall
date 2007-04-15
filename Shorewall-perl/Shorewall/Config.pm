@@ -26,6 +26,7 @@ package Shorewall::Config;
 use strict;
 use warnings;
 use Shorewall::Common;
+use File::Basename;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
@@ -100,6 +101,7 @@ our %config =
 		CONFIG_PATH => undef,
 		RESTOREFILE => undef,
 		IPSECFILE => undef,
+		LOCKFILE => undef,
 		#
 		# Default Actions/Macros
 		#
@@ -153,7 +155,7 @@ our %config =
 #
 # Config options and global settings that are to be copied to object
 #
-my @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK/;
+my @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE/;
 my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
 #
@@ -910,6 +912,20 @@ sub get_configuration( $ ) {
 	$globals{LOGFORMAT}='Shorewall:%s:%s:';
 	$globals{MAXZONENAMELENGTH} = 5;
     }
+
+    if ( $config{LOCKFILE} ) {
+	my ( $file, $dir, $suffix );
+
+	eval {
+	    ( $file, $dir, $suffix ) = fileparse( $config{LOCKFILE} );
+	};
+
+	die $@ if $@;
+
+	fatal_error "LOCKFILE=$config{LOCKFILE}: Directory $dir does not exist" unless -d $dir;
+    } else {
+	$config{LOCKFILE} = '';
+    }
 }
 
 sub propagateconfig() {
@@ -974,7 +990,7 @@ sub generate_aux_config() {
 
     emit join ( '', "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version ", $globals{VERSION}, ' - ' , localtime , "\n#" );
 
-    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE SAVE_IPSETS) {
+    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;
     }
 

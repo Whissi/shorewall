@@ -300,7 +300,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 mutex_on()
 {
     local try=0
-    local lockf=${VARDIR}/lock
+    local lockf=${LOCKFILE:=${VARDIR}/lock}
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
@@ -331,7 +331,7 @@ mutex_on()
 #
 mutex_off()
 {
-    rm -f ${VARDIR}/lock
+    rm -f ${LOCKFILE:=${VARDIR}/lock}
 }
 
 #

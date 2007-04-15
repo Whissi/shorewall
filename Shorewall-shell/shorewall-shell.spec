@@ -1,5 +1,5 @@
 %define name shorewall-shell
-%define version 3.9.1
+%define version 3.9.2
 %define release 1
 %define prefix /usr
 
@@ -83,6 +83,8 @@ fi
 %doc COPYING INSTALL 
 
 %changelog
+* Sat Apr 14 2007 Tom Eastep tom@shorewall.net
+- Updated to 3.9.2-1
 * Tue Apr 03 2007 Tom Eastep tom@shorewall.net
 - Initial Version
 

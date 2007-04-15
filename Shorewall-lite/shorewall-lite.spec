@@ -1,5 +1,5 @@
 %define name shorewall-lite
-%define version 3.9.1
+%define version 3.9.2
 %define release 1
 %define prefix /usr
 
@@ -99,6 +99,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Sat Apr 14 2007 Tom Eastep tom@shorewall.net
+- Updated to 3.9.2-1
 * Sat Apr 07 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.9.1-1
 * Thu Mar 15 2007 Tom Eastep tom@shorewall.net

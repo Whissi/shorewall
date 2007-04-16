@@ -25,7 +25,23 @@ Problems corrected in Shorewall 3.9.2
     independent of the setting of EXPORTPARAMS.
 
 3)  The 'refresh' command no longer fails with an error
-    'define_firewalll: not found'. 
+    'define_firewalll: not found'.
+
+5) An wildcard interface in /etc/shorewall/hosts resulted in a
+   compilation error.
+
+   Example:
+
+	vpn	tun+:0.0.0.0/0	ipsec
+
+6)  Non-calculated rates that specified a unit resulted in a
+    compilation error. Non-calculated rates are those that are not
+    calculated from 'full'.
+
+    Example:
+
+	eth1.100        1       24kbit  full    2       default
+                                ------
 
 Other changes in Shorewall 3.9.2
 

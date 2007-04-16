@@ -82,7 +82,7 @@ fi
 %doc COPYING INSTALL 
 
 %changelog
-* Mon Arp 16 2007 Tom EAstep tom@shorewall.net
+* Mon Apr 16 2007 Tom Eastep tom@shorewall.net
 - Moved lib.dynamiczones to Shorewall-common
 * Sat Apr 14 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.9.2-1

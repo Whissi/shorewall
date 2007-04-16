@@ -293,10 +293,13 @@ sub validate_tc_device( $$$ ) {
 sub convert_rate( $$ ) {
     my ($full, $rate) = @_;
 
-    $rate =~ s/\bfull\b/$full/g;
-
-    $rate = eval "int( $rate )";
-
+    if ( $rate =~ /\bfull\b/ ) {
+	$rate =~ s/\bfull\b/$full/g;
+	$rate = eval "int( $rate )";
+    } else {
+	$rate = rate_to_kbit $rate
+    }
+	
     "${rate}kbit";
 }
 

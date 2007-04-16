@@ -72,7 +72,7 @@ sub validate_hosts_file()
 
 	my $interface;
 
-	if ( $hosts =~ /^([\w.@%-]+):(.*)$/ ) {
+	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
 	    $interface = $1;
 	    $hosts = $2;
 	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
@@ -103,9 +103,7 @@ sub validate_hosts_file()
 	    $optionsref = \%options;
 	}
 
-	my @h = split ',', $hosts;
-
-	add_group_to_zone( $zone, $type , $interface, \@h , $optionsref);
+	add_group_to_zone( $zone, $type , $interface, [ split ',', $hosts ] , $optionsref);
 
 	progress_message "   Host \"$line\" validated";
     }

@@ -137,6 +137,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAP
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAPS
 %attr(0644,root,root) /usr/share/shorewall/macro.IPP
+%attr(0644,root,root) /usr/share/shorewall/macro.IPPserver
 %attr(0644,root,root) /usr/share/shorewall/macro.Jetdirect
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAP
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAPS

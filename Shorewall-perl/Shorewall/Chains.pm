@@ -142,7 +142,7 @@ our @VERSION = 1.00;
 #       'is_optional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
 #       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are optional.
 #
-#       Only 'referenced' chains get written to the iptables-restore output.
+#       Only 'referenced' chains get written to the iptables-restore input.
 #
 #       'loglevel', 'synparams' and 'default' only apply to policy chains.
 #
@@ -1449,14 +1449,23 @@ sub insertnatjump( $$$$ ) {
     }
 }
 
+#
+# What follows is the code that generates the input to iptables-restore
+#
 my @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
-use constant { NULL_STATE => 0 ,
-	       CAT_STATE  => 1 ,
-	       CMD_STATE  => 2 };
+#
+# State of the generator.
+#
+use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptables-restore input
+	       CAT_STATE  => 1 ,   # Generating iptables-restore input
+	       CMD_STATE  => 2 };  # Generating shell commands.
 
 my $state = NULL_STATE;
 
+#
+# Emits the passed 'rule'
+#
 sub emitr( $ ) {
     my $rule = $_[0];
 
@@ -1483,6 +1492,9 @@ sub emitr( $ ) {
     }
 }
 
+#
+# Generate the netfilter input
+#
 sub create_netfilter_load() {
 
     emitj( 'setup_netfilter()',
@@ -1490,7 +1502,9 @@ sub create_netfilter_load() {
 	   );
 
     push_indent;
-
+    #
+    # Establish the values of shell variables used in the following shell commands and/or 'here documents' input.
+    #
     for ( values %interfaceaddr ) {
 	emit $_;
     }
@@ -1504,14 +1518,19 @@ sub create_netfilter_load() {
     }
 
     emit '';
-
+    #
+    # We always write the input into a file then pass the file to iptables-restore. That way, if things go wrong,
+    # the user (and Shorewall support) has something to look at to determine the error
+    #
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    for my $table qw/raw nat mangle filter/ {
+    for my $table ( qw/raw nat mangle filter/  ) {
 	emitr "*$table";
 
 	my @chains;
-
+	#
+	# iptables-restore seems to be quite picky about the order of the builtin chains
+	#
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
@@ -1519,7 +1538,9 @@ sub create_netfilter_load() {
 		push @chains, $chainref;
 	    }
 	}
-
+	#
+	# First create the chains in the current table
+	#
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
@@ -1527,7 +1548,9 @@ sub create_netfilter_load() {
 		push @chains, $chainref;
 	    }
 	}
-
+	#
+	# then emit the rules
+	#
 	for my $chainref ( @chains ) {
 	    my $name = $chainref->{name};
 	    for my $rule ( @{$chainref->{rules}} ) {
@@ -1535,13 +1558,17 @@ sub create_netfilter_load() {
 		emitr $rule;
 	    }
 	}
-
+	#
+	# Commit the changes to the table
+	#
 	emitr 'COMMIT';
     }
 
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';
-
+    #
+    # Now generate the actual iptabes-restore command
+    #
     emitj( ' exec 3>&-',
 	   '',
 	   'iptables-restore < ${VARDIR}/.iptables-restore-input'

@@ -257,7 +257,7 @@ unless (-r "zones") {
 
 for (stripfile "zones") {
     chomp;
-    my ($zone, $details) = split /\s+/, $_, 2;
+    my ($zone, $details) = split /[\s:]+/, $_, 2;
     push @globalzones, $zone;
     $globalzones{ $zone } = $details;
 }

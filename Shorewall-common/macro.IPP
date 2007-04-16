@@ -3,7 +3,7 @@
 #
 # /usr/share/shorewall/macro.IPP
 #
-#	This macro handles Internet Priting Protocol (IPP).
+#	This macro handles Internet Printing Protocol (IPP).
 #
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/

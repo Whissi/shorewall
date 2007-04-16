@@ -37,7 +37,6 @@ our @EXPORT = qw(ALLIPv4
 		 emit
 		 emitj
 		 emit_unindented
-		 emit_as_is
 		 save_progress_message
 		 save_progress_message_short
 		 progress_message
@@ -74,13 +73,12 @@ our $line = '';          # Current config file line
 
 our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
-our $verbose;
+our $verbose;            # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
 
-my $timestamp;
-
-my $object = 0;          # Object file Handle Reference
+my $timestamp;           # If true, we are to timestamp each progress message
+my $object = 0;          # Object (script) file Handle Reference
 my $lastlineblank = 0;   # Avoid extra blank lines in the output
-my $indent        = '';
+my $indent        = '';  # Current indentation
 my ( $dir, $file );      # Object's Directory and File
 my $tempfile;            # Temporary File Name
 
@@ -158,29 +156,30 @@ sub emit_unindented( $ ) {
 }
 
 #
-# Write passed message to the object with no indentation or added newline.
-#
-
-sub emit_as_is( $ ) {
-    print $object "$_[0]" if $object;
-}
-
-#
-# Write a progress_message2 command to the output file.
+# Write a progress_message2 command with surrounding blank lines to the output file.
 #
 sub save_progress_message( $ ) {
     emit "\nprogress_message2 @_\n" if $object;
 }
 
+#
+# Write a progress_message command to the output file.
+#
 sub save_progress_message_short( $ ) {
     emit "progress_message $_[0]" if $object;
 }
 
+#
+# Print the current TOD to STDOUT.
+# 
 sub timestamp() {
     my ($sec, $min, $hr) = ( localtime ) [0,1,2];
     printf '%02d:%02d:%02d ', $hr, $min, $sec;
 }
 
+#
+# Write a message if $verbose >= 2
+#
 sub progress_message {
     if ( $verbose > 1 ) {
 	timestamp if $timestamp;
@@ -190,6 +189,9 @@ sub progress_message {
     }
 }
 
+#
+# Write a message if $verbose >= 1
+#
 sub progress_message2 {
     if ( $verbose > 0 ) {
 	timestamp if $timestamp;
@@ -197,6 +199,9 @@ sub progress_message2 {
     }
 }
 
+#
+# Write a message if $verbose >= 0
+#
 sub progress_message3 {
     if ( $verbose >= 0 ) {
 	timestamp if $timestamp;
@@ -233,6 +238,9 @@ sub copy( $ ) {
     }
 }
 
+#
+# This one handles line continuation.
+
 sub copy1( $ ) {
     if ( $object ) {
 	my $file = $_[0];
@@ -257,6 +265,10 @@ sub copy1( $ ) {
     }
 }
 
+#
+# Create the temporary object file -- the passed file name is the name of the final file.
+# We create a temporary file in the same directory so that we can use rename to finalize it.
+#
 sub create_temp_object( $ ) {
     my $objectfile = $_[0];
     my $suffix;
@@ -278,7 +290,7 @@ sub create_temp_object( $ ) {
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
-    die $@ if $@;
+    die if $@;
 
     $file = "$file.$suffix" if $suffix;
     $dir .= '/' unless substr( $dir, -1, 1 ) eq '/';
@@ -286,6 +298,9 @@ sub create_temp_object( $ ) {
 
 }
 
+#
+# Finalize the object file
+#
 sub finalize_object( $ ) {
     my $export = $_[0];
     close $object;
@@ -295,6 +310,9 @@ sub finalize_object( $ ) {
     progress_message3 "Shorewall configuration compiled to $file" unless $export;
 }
 
+#
+# Create the temporary aux config file.
+#
 sub create_temp_aux_config() {
     eval {
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
@@ -304,6 +322,9 @@ sub create_temp_aux_config() {
 
 }
 
+#
+# Finalize the aux config file.
+#
 sub finalize_aux_config() {
     close $object;
     $object = 0;

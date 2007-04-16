@@ -117,6 +117,7 @@ fi
 %attr(0444,root,root) /usr/share/shorewall/lib.base
 %attr(0444,root,root) /usr/share/shorewall/lib.cli
 %attr(0444,root,root) /usr/share/shorewall/lib.config
+%attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall/macro.Amanda
 %attr(0644,root,root) /usr/share/shorewall/macro.Auth
@@ -251,6 +252,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Mon Arp 16 2007 Tom EAstep tom@shorewall.net
+- Moved lib.dynamiczones from Shorewall-shell
 * Sat Apr 14 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.9.2-1
 * Tue Apr 03 2007 Tom Eastep tom@shorewall.net

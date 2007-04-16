@@ -69,7 +69,6 @@ fi
 %attr(0555,root,root) /usr/share/shorewall-shell/compiler
 %attr(0444,root,root) /usr/share/shorewall-shell/lib.accounting
 %attr(0444,root,root) /usr/share/shorewall-shell/lib.actions
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.dynamiczones
 %attr(0444,root,root) /usr/share/shorewall-shell/lib.maclist
 %attr(0444,root,root) /usr/share/shorewall-shell/lib.nat
 %attr(0444,root,root) /usr/share/shorewall-shell/lib.providers
@@ -83,6 +82,8 @@ fi
 %doc COPYING INSTALL 
 
 %changelog
+* Mon Arp 16 2007 Tom EAstep tom@shorewall.net
+- Moved lib.dynamiczones to Shorewall-common
 * Sat Apr 14 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.9.2-1
 * Tue Apr 03 2007 Tom Eastep tom@shorewall.net

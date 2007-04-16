@@ -47,7 +47,18 @@ Problems corrected in Shorewall 3.9.2
     'shorewall clear' failed with the diagnostic:
 
     ERROR: USE_ACTIONS=Yes requires the Shorewall Library actions
-    (/usr/share/shorewall-shell/lib.actions) which is not installed
+    (/usr/share/shorewall-shell/lib.actions) which is not installed.
+
+8)  When shorewall-shell was not installed, 'shorewall add' and
+    'shorewall clear' failed with the diagnostic:
+
+    ERROR: The add command requires the Shorewall library dynamiczones
+    (/usr/share/shorewall-shell/lib.dynamiczones) which is not
+    installed
+
+    With shorewall-shell installed, 'shorewall add' failed with:
+
+    ERROR: Only one firewall zone may be defined
 
 Other changes in Shorewall 3.9.2
 

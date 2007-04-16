@@ -232,9 +232,9 @@ my @includestack;
 #
 my @openstack;
 
-my $currentfile;
-my $currentfilename;
-my $currentlinenumber = 0;
+my $currentfile;             # File handle reference
+my $currentfilename;         # File NAME
+my $currentlinenumber = 0;   # Line number
 
 #
 # Issue a Warning Message
@@ -246,6 +246,9 @@ sub warning_message
     print STDERR "   WARNING: @_$lineinfo\n";
 }
 
+#
+# Issue fatal error message and die
+#
 sub fatal_error	{
     my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
 
@@ -261,7 +264,7 @@ sub find_file($)
 {
     my $filename=$_[0];
 
-    return $filename if $filename =~ '/.*';
+    return $filename if substr( $filename, 0, 1 ) eq '/';
 
     my $directory;
 
@@ -440,18 +443,24 @@ sub read_a_line {
     }
 }
 
+#
+# Provide the passed default value for the passed configuration variable
+#
 sub default ( $$ ) {
     my ( $var, $val ) = @_;
 
     $config{$var} = $val unless defined $config{$var} && $config{$var} ne '';
 }
 
+#
+# Provide a default value for a yes/no configuration variable.
+#
 sub default_yes_no ( $$ ) {
     my ( $var, $val ) = @_;
 
     my $curval = "\L$config{$var}";
 
-    if ( $curval ) {
+    if ( defined $curval && $curval ne '' ) {
 	if (  $curval eq 'no' ) {
 	    $config{$var} = '';
 	} else {
@@ -462,6 +471,9 @@ sub default_yes_no ( $$ ) {
     }
 }
 
+#
+# Produce a report of the detected capabilities
+#
 sub report_capabilities() {
     sub report_capability( $ ) {
 	my $cap = $_[0];
@@ -476,6 +488,9 @@ sub report_capabilities() {
     }
 }
 
+#
+# Search the current PATH for the passed executable
+#
 sub mywhich( $ ) {
     my $prog = $_[0];
 
@@ -486,6 +501,9 @@ sub mywhich( $ ) {
     '';
 }
 
+#
+# Load the kernel modules defined in the 'modules' file.
+#
 sub load_kernel_modules( ) {
     my $moduleloader = mywhich 'modprobe' ? 'modprobe' : 'insmod';
 
@@ -628,6 +646,9 @@ sub determine_capabilities() {
     qt( "$iptables -X fooX1234" );
 }
 
+#
+# Require the passed capability
+#
 sub require_capability( $$ ) {
     my ( $capability, $description ) = @_;
 
@@ -676,7 +697,7 @@ sub ensure_config_path( $ ) {
 
 #
 # - Read the shorewall.conf file
-# - Read the capabilities file created by the compiler front-end
+# - Read the capabilities file, if any
 # - establish global hashes %config , %globals and %capabilities
 #
 sub get_configuration( $ ) {
@@ -928,6 +949,9 @@ sub get_configuration( $ ) {
     }
 }
 
+#
+# The values of the options in @Shorewall:Config::propagateconfig are copied to the object file in OPTION=<value> format.
+#
 sub propagateconfig() {
     for my $option ( @Shorewall::Config::propagateconfig ) {
 	my $value = $config{$option} || '';
@@ -940,6 +964,9 @@ sub propagateconfig() {
     }
 }
 
+#
+# Add a shell script file to the output script
+#
 sub append_file( $ ) {
     my $user_exit = find_file $_[0];
 
@@ -969,6 +996,9 @@ sub run_user_exit( $ ) {
     }
 }
 
+#
+# Generate the aux config file for Shorewall Lite
+#
 sub generate_aux_config() {
     sub conditionally_add_option( $ ) {
 	my $option = $_[0];

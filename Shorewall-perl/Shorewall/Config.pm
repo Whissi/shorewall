@@ -31,7 +31,7 @@ use File::Basename;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		 warning_message
-		 fatal_error
+                 fatal_error
                  find_file
                  split_line
                  open_file

@@ -154,8 +154,15 @@ loc     eth2            -</programlisting>
 
               <listitem>
                 <para>Turn on kernel route filtering for this interface
-                (anti-spoofing measure). This option can also be enabled
-                globally in the <ulink
+                (anti-spoofing measure).</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
+
+                <para>This option can also be enabled globally in the <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5)
                 file.</para>
               </listitem>
@@ -185,6 +192,12 @@ loc     eth2            -</programlisting>
                 <programlisting>        teastep@lists:~$ <command>cat /proc/sys/net/ipv4/conf/eth0/rp_filter </command>
         1
         teastep@lists:~$ </programlisting>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
 
                 <para>This option may also be enabled globally in the <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5)
@@ -238,7 +251,11 @@ loc     eth2            -</programlisting>
                 url="shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).
                 This option is intended solely for use with Proxy ARP
                 sub-networking as described at: <ulink
-                url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html</ulink></para>
+                url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html</ulink><note>
+                    <para>This option does not work with a wild-card
+                    <replaceable>interface</replaceable> name (e.g., eth0.+)
+                    in the INTERFACE column.</para>
+                  </note></para>
               </listitem>
             </varlistentry>
 
@@ -264,6 +281,12 @@ loc     eth2            -</programlisting>
                 If not specified, the interface can respond to ARP who-has
                 requests for IP addresses on any of the firewall's interface.
                 The interface must be up when Shorewall is started.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
               </listitem>
             </varlistentry>
 
@@ -289,6 +312,12 @@ loc     eth2            -</programlisting>
                 <para>4-7 - reserved</para>
 
                 <para>8 - do not reply for all local addresses</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
 
                 <warning>
                   <para>Do not specify <emphasis
@@ -339,6 +368,12 @@ loc     eth2            -</programlisting>
                 to 1). Only set this option if you know what you are doing.
                 This might represent a security risk and is not usually
                 needed.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
               </listitem>
             </varlistentry>
 

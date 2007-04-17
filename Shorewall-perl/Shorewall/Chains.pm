@@ -403,7 +403,7 @@ sub dynamic_in( $ )
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    chain_base( $_[0] ) . '_out';
+    chain_base( $_[0] ) . '_dyno';
 }
 
 sub dynamic_chains( $ ) #$1 = interface

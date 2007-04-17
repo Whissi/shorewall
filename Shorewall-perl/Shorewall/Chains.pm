@@ -688,8 +688,12 @@ sub do_proto( $$$ )
 		}
 	    }
 	} elsif ( $proto =~ /^(icmp|1)$/i ) {
-	    $output .= "-p icmp --icmp-type $ports " if $ports;
-	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports;
+	    my @ports = split /,/, $ports;
+	    my $count = @ports;
+	    fatal_error 'Multiple ICMP types are not permitted' if $count > 1;
+	    $output .= "-p icmp ";
+	    $output .= "--icmp-type $ports " if $count;
+	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne "";
 	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all)))?$/i ) {
 	    require_capability( 'IPP2P' , 'PROTO = ipp2p' );
 	    $proto = $2 ? $3 : 'tcp';

@@ -644,9 +644,9 @@ sub do_proto( $$$ )
     if ( $proto ) {
 	if ( $proto =~ /^(tcp|udp|6|17)$/i ) {
 	    $output = "-p $proto ";
-	    my @ports = split /,/, $ports;
-	    if ( @ports ) {
-		if ( @ports > 1 ) {
+
+	    if ( $ports ) {
+		if ( $ports =~ tr/,/,/ > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
 
 		    fatal_error "Too many entries in port list: $ports" if $ports =~ tr/,:/,:/ > 14;
@@ -657,9 +657,8 @@ sub do_proto( $$$ )
 		}
 	    }
 
-	    @ports = split /,/, $sports;
-	    if ( @ports ) {
-		if ( @ports > 1 ) {
+	    if ( $sports ) {
+		if ( $sports =~ tr/,/,/ > 1 ) {	
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
 		    
 		    fatal_error "Too many entries in port list: $sports" if $sports =~ tr/,:/,:/ > 14;

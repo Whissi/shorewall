@@ -820,7 +820,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 		    shift
 		    fatal_error "$@"
 		else
-		    "WARNING: default route ignored on interface $1"
+		    error_message "WARNING: default route ignored on interface $1"
 		fi
 	    else
 		[ "$address" = "${address%/*}" ] && address="${address}/32"

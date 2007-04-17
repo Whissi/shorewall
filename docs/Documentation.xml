@@ -646,6 +646,12 @@ child:parnt1,parnt2  ipv4</programlisting>
                 the single HUB/Switch should have this option specified). Note
                 that using such a configuration in a production environment is
                 strongly recommended against.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
               </listitem>
             </varlistentry>
 
@@ -675,7 +681,11 @@ child:parnt1,parnt2  ipv4</programlisting>
                 <para>If no &lt;<emphasis>number</emphasis>&gt; is given then
                 the value 1 is assumed</para>
 
-                <para><warning>
+                <para><note>
+                    <para>This option does not work with a wild-card
+                    <replaceable>interface</replaceable> name (e.g., eth0.+)
+                    in the INTERFACE column.</para>
+                  </note><warning>
                     <para><emphasis role="bold">DO NOT SPECIFY arp_ignore FOR
                     ANY INTERFACE INVOLVED IN PROXY ARP</emphasis>.</para>
                   </warning></para>
@@ -763,6 +773,12 @@ child:parnt1,parnt2  ipv4</programlisting>
                 would be routed outbound through another interface on the
                 firewall.</para>
 
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
+
                 <warning>
                   <para>If you specify this option for an interface then the
                   interface must be up prior to starting the firewall.</para>
@@ -833,6 +849,12 @@ child:parnt1,parnt2  ipv4</programlisting>
                 (/proc/sys/net/ipv4/conf/&lt;<emphasis>interface</emphasis>&gt;/log_martians
                 will be set to 1). See also the LOG_MARTIANS option in <link
                 linkend="Conf">shorewall.conf</link>.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
               </listitem>
             </varlistentry>
 

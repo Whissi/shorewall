@@ -1,4 +1,4 @@
-Shorewall 3.9.2
+Shorewall 3.9.3
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -15,75 +15,19 @@ Shorewall 3.9.2
 You must install Shorewall and at least one of the compiler packages
 (you may install them both).
 
-Problems corrected in Shorewall 3.9.2
+Problems corrected in Shorewall 3.9.3
 
-1)  When the -e flag was passed to the compiler, the generated script
-    looked for the file /usr/share/shorewall/lib.base. This totally
-    broke Shorewall Lite.
+1)  If a rule specified a source or destination port of 0 for TCP or UDP it was 
+    ignored.
 
-2)  The params file was being copied into the generated script
-    independent of the setting of EXPORTPARAMS.
+    The test for the presence of a source or destination port if the protocol is 
+    not specified also ignored port 0.
 
-3)  The 'refresh' command no longer fails with an error
-    'define_firewalll: not found'.
+    Patch courtesy of Steven Springl.
 
-5) An wildcard interface in /etc/shorewall/hosts resulted in a
-   compilation error.
+Other changes in Shorewall 3.9.3
 
-   Example:
-
-	vpn	tun+:0.0.0.0/0	ipsec
-
-6)  Non-calculated rates that specified a unit resulted in a
-    compilation error. Non-calculated rates are those that are not
-    calculated from 'full'.
-
-    Example:
-
-	eth1.100        1       24kbit  full    2       default
-                                ------
-
-7)  When shorewall-shell was not installed, 'shorewall stop' and
-    'shorewall clear' failed with the diagnostic:
-
-    ERROR: USE_ACTIONS=Yes requires the Shorewall Library actions
-    (/usr/share/shorewall-shell/lib.actions) which is not installed.
-
-8)  When shorewall-shell was not installed, 'shorewall add' and
-    'shorewall clear' failed with the diagnostic:
-
-    ERROR: The add command requires the Shorewall library dynamiczones
-    (/usr/share/shorewall-shell/lib.dynamiczones) which is not
-    installed
-
-    With shorewall-shell installed, 'shorewall add' failed with:
-
-    ERROR: Only one firewall zone may be defined
-
-9) 'shorewall add' and 'shorewall delete' now work again.
-
-10) A syntax error in the lib.base Shell library has been corrected.
-
-11) When ROUTE_FILTER=Yes in shorewall.conf, Shorewall no longer clears
-    the rp_filter flag for all interfaces.
-
-12) When LOG_MARTIANS=Yes in shorewall.conf, Shorewall no longer clears
-    the log_martians flag for all interfaces.
-
-13) Thanks to Steven Springl, various problems with ICMP rules have
-    been corrected.
-
-Other changes in Shorewall 3.9.2
-
-1)  A LOCKFILE option has been added to shorewall.conf. This file is
-    used to serialize updates to the active firewall configuration.
-
-    If not specified, the defaults are:
-
-       Shorewall - /var/lib/shorewall/lock
-       Shorewall Lite - /var/lib/shorewall-lite/lock
-
-2)  A new IPPserver macro has been added for CUPS print servers.
+None.
 
 Migration Considerations:
 

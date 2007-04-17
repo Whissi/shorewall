@@ -644,9 +644,9 @@ sub do_proto( $$$ )
     if ( $proto ) {
 	if ( $proto =~ /^(tcp|udp|6|17)$/i ) {
 	    $output = "-p $proto ";
-	    if ( $ports ) {
-		my @ports = split /,/, $ports;
-		my $count = @ports;
+	    my @ports = split /,/, $ports;
+	    my $count = @ports;
+	    if ( $count ) {
 
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
@@ -666,9 +666,9 @@ sub do_proto( $$$ )
 		}
 	    }
 
-	    if ( $sports ) {
-		my @ports = split /,/, $sports;
-		my $count = @ports;
+	    @ports = split /,/, $sports;
+	    $count = @ports;
+	    if ( $count ) {
 
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
@@ -693,16 +693,17 @@ sub do_proto( $$$ )
 	    fatal_error 'Multiple ICMP types are not permitted' if $count > 1;
 	    $output .= "-p icmp ";
 	    $output .= "--icmp-type $ports " if $count;
-	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne "";
+	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
 	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all)))?$/i ) {
 	    require_capability( 'IPP2P' , 'PROTO = ipp2p' );
 	    $proto = $2 ? $3 : 'tcp';
 	    $ports = 'ipp2p' unless $ports;
 	    $output .= "-p $proto -m ipp2p --$ports ";
 	} else {
+	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $proto, rule \"$line\"" if $ports ne '' || $sports ne '';
 	    $output .= "-p $proto ";
 	}
-    } elsif ( $ports || $sports ) {
+    } elsif ( $ports ne '' || $sports ne '' ) {
 	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO, rule \"$line\""
     }
 

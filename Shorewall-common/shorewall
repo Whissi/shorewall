@@ -247,11 +247,7 @@ compiler() {
     if [ -n "$SHOREWALL_COMPILER" ]; then
 	compiler="$SHOREWALL_COMPILER"
     elif [ -x $sc ]; then
-	if [ -x $pc ]; then
-	    compiler=
-	else
-	    compiler=shell
-	fi
+	compiler=shell
     elif [ -x $pc ]; then
 	compiler=perl
     else

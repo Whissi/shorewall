@@ -645,19 +645,11 @@ sub do_proto( $$$ )
 	if ( $proto =~ /^(tcp|udp|6|17)$/i ) {
 	    $output = "-p $proto ";
 	    my @ports = split /,/, $ports;
-	    my $count = @ports;
-	    if ( $count ) {
-		if ( $count > 1 ) {
+	    if ( @ports ) {
+		if ( @ports > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
 
-		    my @ranges = grep /:/, @ports;
-
-		    if ( @ranges ) {
-			fatal_error "Port range in a list requires Extended Multiport Support in your kernel/iptables: $ports" unless $capabilities{XMULTIPORT};
-			$count += @ranges;
-		    }
-
-		    fatal_error "Too many entries in port list: $ports" if $count > 15;
+		    fatal_error "Too many entries in port list: $ports" if $ports =~ tr/,:/,:/ > 14;
 
 		    $output .= "-m multiport --dports $ports ";
 		}  else {
@@ -666,20 +658,12 @@ sub do_proto( $$$ )
 	    }
 
 	    @ports = split /,/, $sports;
-	    $count = @ports;
-	    if ( $count ) {
-		if ( $count > 1 ) {
+	    if ( @ports ) {
+		if ( @ports > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
-
-		    my @ranges = grep /:/, @ports;
-
-		    if ( @ranges ) {
-			fatal_error "Port range in a list requires Extended Multiport Support in your kernel/iptables: $ports" unless $capabilities{XMULTIPORT};
-			$count += @ranges;
-		    }
-
-		    fatal_error "Too many entries in port list: $sports" if $count > 15;
-
+		    
+		    fatal_error "Too many entries in port list: $sports" if $sports =~ tr/,:/,:/ > 14;
+		    
 		    $output .= "-m multiport --sports $sports ";
 		}  else {
 		    $output .= "--sport $sports ";

@@ -105,10 +105,12 @@ sub setup_route_filtering() {
 
 	save_progress_message "Setting up Route Filtering...";
 
-	emit "for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/log_martians ] && echo 0 > \$f/rp_filter
+	unless ( $config{ROUTE_FILTER} ) {
+	    emit "for f in /proc/sys/net/ipv4/conf/*; do
+    [ -f \$f/rp_filter ] && echo 0 > \$f/rp_filter
 done
 ";
+	}
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
@@ -121,12 +123,8 @@ fi
 ";
 	}
 
-	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
-
-	if ( $config{ROUTE_FILTER} ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
-	}
+	emit 'echo 1 0 /proc/sys/net/ipv4/conf/all/rp_filter';
+	emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter' if $config{ROUTE_FILTER};
 
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";
     }
@@ -162,11 +160,7 @@ fi
 	}
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
-
-	if ( $config{LOG_MARTIANS} ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
-	}
+	emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians' if $config{LOG_MARTIANS};
 
     }
 }

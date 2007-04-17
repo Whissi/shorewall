@@ -3715,13 +3715,16 @@ __EOF__
 
 	save_progress_message "Setting up Route Filtering..."
 
-	indent >&3 << __EOF__
+	if [ -z "$ROUTE_FILTER" ]; THEN
+	    indent >&3 << __EOF__
 
 for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/log_martians ] && echo 0 > \$f/rp_filter
+    [ -f \$f/rp_filter ] && echo 0 > \$f/rp_filter
 done
 
 __EOF__
+	fi
+
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/rp_filter
 
@@ -3738,7 +3741,6 @@ __EOF__
 
 	if [ -n "$ROUTE_FILTER" ]; then
 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
-	    save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
 	fi
 
 	save_command "[ -n \"\$NOROUTES\" ] || ip route flush cache"
@@ -3754,13 +3756,16 @@ __EOF__
 
 	save_progress_message "Setting up Martian Logging..."
 
-	indent >&3 << __EOF__
+	if [ -z "$LOG_MARTIANS" ]; then
+	    indent >&3 << __EOF__
 
 for f in /proc/sys/net/ipv4/conf/*; do
     [ -f \$f/log_martians ] && echo 0 > \$f/log_martians
 done
 
 __EOF__
+	fi
+
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/log_martians
 
@@ -3774,9 +3779,10 @@ fi
 __EOF__
 	    done
 
+	save_command "echo 1 > /proc/sys/net/ipv4/conf/all/log_martians"
+	
 	if [ -n "$LOG_MARTIANS" ]; then
 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/log_martians"
-	    save_command "echo 1 > /proc/sys/net/ipv4/conf/all/log_martians"
 	fi
 
     fi

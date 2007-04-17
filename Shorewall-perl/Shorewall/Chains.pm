@@ -669,10 +669,9 @@ sub do_proto( $$$ )
 		}
 	    }
 	} elsif ( $proto =~ /^(icmp|1)$/i ) {
-	    my @ports = split /,/, $ports;
-	    fatal_error 'Multiple ICMP types are not permitted' if @ports > 1;
+	    fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
 	    $output .= "-p icmp ";
-	    $output .= "--icmp-type $ports " if @ports;
+	    $output .= "--icmp-type $ports " if $ports;
 	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
 	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all)))?$/i ) {
 	    require_capability( 'IPP2P' , 'PROTO = ipp2p' );
@@ -695,7 +694,7 @@ sub mac_match( $ ) {
 
     $mac =~ s/^(!?)~//;
     $mac =~ s/^!// if my $invert = ( $1 ? '! ' : '');
-    $mac =~ s/-/:/g;
+    $mac =~ tr/-/:/;
 
     "--match mac --mac-source ${invert}$mac ";
 }

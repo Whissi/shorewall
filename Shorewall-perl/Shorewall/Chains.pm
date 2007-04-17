@@ -647,7 +647,6 @@ sub do_proto( $$$ )
 	    my @ports = split /,/, $ports;
 	    my $count = @ports;
 	    if ( $count ) {
-
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
 
@@ -669,7 +668,6 @@ sub do_proto( $$$ )
 	    @ports = split /,/, $sports;
 	    $count = @ports;
 	    if ( $count ) {
-
 		if ( $count > 1 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
 
@@ -689,10 +687,9 @@ sub do_proto( $$$ )
 	    }
 	} elsif ( $proto =~ /^(icmp|1)$/i ) {
 	    my @ports = split /,/, $ports;
-	    my $count = @ports;
-	    fatal_error 'Multiple ICMP types are not permitted' if $count > 1;
+	    fatal_error 'Multiple ICMP types are not permitted' if @ports > 1;
 	    $output .= "-p icmp ";
-	    $output .= "--icmp-type $ports " if $count;
+	    $output .= "--icmp-type $ports " if @ports;
 	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
 	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all)))?$/i ) {
 	    require_capability( 'IPP2P' , 'PROTO = ipp2p' );

@@ -51,14 +51,6 @@ our %macros;
 sub setup_arp_filtering() {
     save_progress_message "Setting up ARP filtering...";
 
-    emit "for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/arp_filter ] && echo 0 > \$f/arp_filter
-    [ -f \$f/arp_ignore ] && echo 0 > \$f/arp_ignore
-done
-";
-
-    emit '';
-
     my $interfaces  = find_interfaces_by_option 'arp_filter';
     my $interfaces1 = find_interfaces_by_option 'arp_ignore';
 

@@ -772,7 +772,7 @@ sub do_user( $ ) {
     my $user = $_[0];
     my $rule = '-m owner ';
 
-    return '' unless $user and $user ne '-';
+    return '' unless defined $user and $user ne '-';
 
     if ( $user =~ /^(!)?(.*)\+(.*)$/ ) {
 	$rule .= "! --cmd-owner $2 " if $2;

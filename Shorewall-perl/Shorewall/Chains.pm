@@ -454,11 +454,10 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
     my %ch;
-    my @rules;
 
     $ch{name} = $chain;
-    $ch{log} = 1 if $globals{LOGRULENUMBERS};
-    $ch{rules} = \@rules;
+    $ch{log}  = 1 if $globals{LOGRULENUMBERS};
+    $ch{rules} = [];
     $ch{table} = $table;
     $chain_table{$table}{$chain} = \%ch;
     \%ch;

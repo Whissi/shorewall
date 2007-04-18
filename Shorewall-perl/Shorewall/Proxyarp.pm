@@ -125,10 +125,11 @@ sub setup_proxy_arp() {
 	}
 
 	for my $interface ( @$interfaces ) {
+	    my $value = get_interface_option $interface, 'proxyarp';
 	    emitj( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
-		   "    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		   "    echo $value > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
 	    emitj( 'else' ,
-		   "    error_message \"WARNING: Unable to enable proxy ARP on $interface\"" ) unless interface_is_optional( $interface ); 
+		   "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface ); 
 	    emit   "fi\n";
 	}
     }

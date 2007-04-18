@@ -67,9 +67,11 @@ done
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
+	    my $value = get_interface_option $interface, 'arp_filter';
+
 	    emitj( '',
 		   "if [ -f $file ]; then",
-		   "    echo 1 > $file");
+		   "    echo $value > $file");
 	    emitj( 'else',
 		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
 	    emit   "fi\n";
@@ -103,23 +105,18 @@ sub setup_route_filtering() {
 
 	save_progress_message "Setting up Route Filtering...";
 
-	unless ( $config{ROUTE_FILTER} ) {
-	    emitj( "for f in /proc/sys/net/ipv4/conf/*; do" ,
-		   "    [ -f \$f/rp_filter ] && echo 0 > \$f/rp_filter" ,
-		   "done\n" );
-	}
-
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
+	    my $value = get_interface_option $interface, 'routefilter';
 
 	    emitj( "if [ -f $file ]; then" ,
-		   "    echo 1 > $file" );
+		   "    echo $value > $file" );
 	    emitj( 'else' ,
 		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless interface_is_optional( $interface);
 	    emit   "fi\n";
 	}
 
-	emit 'echo 1 0 /proc/sys/net/ipv4/conf/all/rp_filter';
+	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter' if $config{ROUTE_FILTER};
 
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";
@@ -139,12 +136,9 @@ sub setup_martian_logging() {
 
 	save_progress_message "Setting up Martian Logging...";
 
-	emitj( "for f in /proc/sys/net/ipv4/conf/*; do" ,
-	       "    [ -f \$f/log_martians ] && echo 0 > \$f/log_martians" ,
-	       "done\n" );
-
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
+	    my $value = get_interface_option $interface, 'logmartians';
 
 	    emitj( "if [ -f $file ]; then" ,
 		   "    echo 1 > $file" );
@@ -167,10 +161,6 @@ sub setup_source_routing() {
 
     save_progress_message 'Setting up Accept Source Routing...';
 
-    emitj( "for f in /proc/sys/net/ipv4/conf/*; do" ,
-	   "    [ -f \$f/accept_source_route ] && echo 0 > \$f/accept_source_route" ,
-	   "done\n" );
-
     my $interfaces = find_interfaces_by_option 'sourceroute';
 
     if ( @$interfaces ) {
@@ -180,9 +170,10 @@ sub setup_source_routing() {
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/accept_source_route";
+	    my $value = get_interface_option $interface, 'logmartians';
 
 	    emitj( "if [ -f $file ]; then" ,
-		   "    echo 1 > $file" );
+		   "    echo $value > $file" );
 	    emitj( 'else' ,
 		   "    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"" ) unless interface_is_optional( $interface);
 	    emit   "fi\n";

@@ -35,6 +35,7 @@ our @EXPORT = qw( add_group_to_zone
 		  known_interface
                   interface_is_optional
 		  find_interfaces_by_option
+		  find_interfaces_by_option1
 		  get_interface_option
 
 		  @interfaces  );
@@ -117,22 +118,26 @@ sub add_group_to_zone($$$$$)
 
 sub validate_interfaces_file()
 {
-    my %validoptions = (arp_filter => 1,
-			arp_ignore => 1,
-			blacklist => 1,
-			detectnets => 1,
-			dhcp => 1,
-			maclist => 1,
-			logmartians => 1,
-			norfc1918 => 1,
-			nosmurfs => 1,
-			optional => 1,
-			proxyarp => 1,
-			routeback => 1,
-			routefilter => 1,
-			sourceroute => 1,
-			tcpflags => 1,
-			upnp => 1,
+    use constant { SIMPLE_IF_OPTION  => 1,
+		   BINARY_IF_OPTION  => 2,
+                   ENUM_IF_OPTION    => 3 };
+
+    my %validoptions = (arp_filter  => BINARY_IF_OPTION,
+			arp_ignore  => ENUM_IF_OPTION,
+			blacklist   => SIMPLE_IF_OPTION,
+			detectnets  => SIMPLE_IF_OPTION,
+			dhcp        => SIMPLE_IF_OPTION,
+			maclist     => SIMPLE_IF_OPTION,
+			logmartians => BINARY_IF_OPTION,
+			norfc1918   => SIMPLE_IF_OPTION,
+			nosmurfs    => SIMPLE_IF_OPTION,
+			optional    => SIMPLE_IF_OPTION,
+			proxyarp    => BINARY_IF_OPTION,
+			routeback   => SIMPLE_IF_OPTION,
+			routefilter => BINARY_IF_OPTION,
+			sourceroute => BINARY_IF_OPTION,
+			tcpflags    => SIMPLE_IF_OPTION,
+			upnp        => SIMPLE_IF_OPTION,
 			);
 
     my $fn = open_file 'interfaces';
@@ -179,12 +184,29 @@ sub validate_interfaces_file()
 	    {
 		next if $option eq '-';
 
-		if ( $validoptions{$option} ) {
-		    $options{$option} = 1;
-		} elsif ( $option =~ /^arp_filter=([1-3,8])$/ ) {
-		    $options{arp_filter} = $1;
-		} else {
+		( $option, my $value ) = split /=/, $option;
+
+		my $type = $validoptions{$option};
+
+		unless ( $type ) {
 		    warning_message("Invalid Interface option ($option) ignored");
+		} elsif ( $type == SIMPLE_IF_OPTION ) {
+		    fatal_error "Option $option does not take a value" if defined $value;
+		    $options{$option} = 1;
+		} elsif ( $type == BINARY_IF_OPTION ) {
+		    $value = 1 unless defined $value;
+		    fatal_error "Option value for $option must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
+		    $options{$option} = $value;
+		} elsif ( $type == ENUM_IF_OPTION ) {
+		    if ( $option eq 'arp_filter' ) {
+			if ( $value =~ /^[1-3,8]$/ ) {
+			    $options{arp_filter} = $value;
+			} else {
+			    fatal_error "Invalid value ($value) for arp_filter";
+			}
+		    } else {
+			fatal_error "Internal Error in validate_interfaces_file"
+		    }
 		}
 	    }
 
@@ -248,8 +270,25 @@ sub find_interfaces_by_option( $ ) {
 
     for my $interface ( @interfaces ) {
 	my $optionsref = $interfaces{$interface}{options};
-	if ( $optionsref && $optionsref->{$option} ) {
-	    push @ints , $interface;
+	if ( $optionsref && defined $optionsref->{$option} ) {
+	    push @ints , $interface
+	}
+    }
+
+    \@ints;
+}
+
+#
+# Returns reference to array of [ name, value ] pairs for interfaces with the passed option
+#
+sub find_interfaces_by_option1( $ ) {
+    my $option = $_[0];
+    my @ints = ();
+
+    for my $interface ( @interfaces ) {
+	my $optionsref = $interfaces{$interface}{options};
+	if ( $optionsref && defined $optionsref->{$option} ) {
+	    push @ints , [ $interface, $optionsref->{$option} ]
 	}
     }
 

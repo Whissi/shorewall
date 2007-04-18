@@ -904,7 +904,6 @@ sub match_orig_dest ( $ ) {
     }
 }
 
-
 #
 # Match Source IPSEC
 #
@@ -1090,9 +1089,9 @@ sub get_interface_nets ( $ ) {
     my $variable = interface_nets( $interface );
 
     if ( interface_is_optional $interface ) {
-	$interfaceaddr{$interface} = qq($variable=\$(get_routed_networks $interface)\n);
+	$interfacenets{$interface} = qq($variable=\$(get_routed_networks $interface)\n);
     } else {
-	$interfaceaddr{$interface} = qq($variable=\$(get_routed_networks $interface)
+	$interfacenets{$interface} = qq($variable=\$(get_routed_networks $interface)
 [ -n "\$$variable" ] || fatal_error "Unable to determine the routes through interface \\"$interface\\""
 );
     }

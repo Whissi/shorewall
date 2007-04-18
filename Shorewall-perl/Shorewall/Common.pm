@@ -20,6 +20,10 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This is the lowes level Shorewall module. It provides very basic 
+#   services such as creation of temporary 'object' files, writing
+#   into those files (emitters) and finalizing those files (renaming 
+#   them to their final name and setting their mode appropriately).
 #
 package Shorewall::Common;
 require Exporter;

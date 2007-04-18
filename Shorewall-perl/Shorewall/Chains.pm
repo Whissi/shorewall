@@ -20,6 +20,9 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#  This is the low-level iptables module. It provides the basic services 
+#  of chain and rule creation. It is used by the higher level modules such
+#  as Rules to create iptables-restore input.
 #
 package Shorewall::Chains;
 require Exporter;

@@ -20,6 +20,10 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This module is responsible for lower level configuration file handling.
+#   It also exports functions for generating warning and error messages.
+#   The get_configuration function parses the shorewall.conf, capabilities and 
+#   modules files during compiler startup.
 #
 package Shorewall::Config;
 

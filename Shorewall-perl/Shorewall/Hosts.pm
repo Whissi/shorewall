@@ -20,6 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#  This module contains the code for dealing with the /etc/shorewall/hosts
+#  file.
 #
 package Shorewall::Hosts;
 require Exporter;

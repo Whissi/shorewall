@@ -20,6 +20,10 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This module contains the code that deals with entries in /proc.
+#
+#   Note: The /proc/sys/net/ipv4/conf/x/proxy_arp flag is handled
+#         in the Proxyarp module.
 #
 package Shorewall::Proc;
 require Exporter;

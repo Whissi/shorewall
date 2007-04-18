@@ -25,6 +25,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This module deals with Traffic Shaping and the tcrules file.
 #
 package Shorewall::Tc;
 require Exporter;

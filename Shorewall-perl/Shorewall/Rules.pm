@@ -20,6 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This module contains the high-level code for dealing with rules.
 #
 package Shorewall::Rules;
 require Exporter;

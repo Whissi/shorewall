@@ -20,6 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This module contains code for dealing with the /etc/shorewall/masq,
+#   /etc/shorewall/nat and /etc/shorewall/netmap files.
 #
 package Shorewall::Nat;
 require Exporter;

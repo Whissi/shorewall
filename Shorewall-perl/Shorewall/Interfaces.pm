@@ -20,7 +20,11 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
+#   This Module contains the code for processing the /etc/shorewall/interfaces
+#   file. It also exports 'add_group_to_zone()' which other modules call to
+#   alter zone membership.
 #
+
 package Shorewall::Interfaces;
 require Exporter;
 use Shorewall::Common;

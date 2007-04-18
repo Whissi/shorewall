@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 3.9.2
+%define version 3.9.3
 %define release 1
 %define prefix /usr
 
@@ -252,6 +252,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Wed Apr 18 2007 Tom Eastep tom@shorewall.net
+- Updated to 3.9.3-1
 * Mon Apr 16 2007 Tom Eastep tom@shorewall.net
 - Moved lib.dynamiczones from Shorewall-shell
 * Sat Apr 14 2007 Tom Eastep tom@shorewall.net

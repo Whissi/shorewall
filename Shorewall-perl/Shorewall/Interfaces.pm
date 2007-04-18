@@ -33,6 +33,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( add_group_to_zone
 		  validate_interfaces_file
 		  known_interface
+                  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option
 
@@ -125,6 +126,7 @@ sub validate_interfaces_file()
 			logmartians => 1,
 			norfc1918 => 1,
 			nosmurfs => 1,
+			optional => 1,
 			proxyarp => 1,
 			routeback => 1,
 			routefilter => 1,
@@ -227,6 +229,14 @@ sub known_interface($)
     }
 
     0;
+}
+
+#
+# Return the 'optional' setting of the passed interface
+#
+sub interface_is_optional($) {
+    my $optionsref = $interfaces{$_[0]}{options};
+    $optionsref && $optionsref->{optional};
 }
 
 #

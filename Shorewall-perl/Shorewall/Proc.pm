@@ -67,13 +67,12 @@ done
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
-	    emit "
-if [ -f $file ]; then
-    echo 1 > $file
-else
-    error_message \"WARNING: Cannot set ARP filtering on $interface\"
-fi
-";
+	    emitj( '',
+		   "if [ -f $file ]; then",
+		   "    echo 1 > $file");
+	    emitj( 'else',
+		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
+	    emit   "fi\n";
 	}
 
 	for my $interface ( @$interfaces1 ) {
@@ -82,12 +81,11 @@ fi
 
 	    fatal_error "Internal Error in setup_arp_filtering()" unless defined $value;
 
-	    emit "if [ -f $file ]; then
-    echo $value > $file
-else
-    error_message \"WARNING: Cannot set ARP filtering on $interface\"
-fi
-";
+	    emitj( "if [ -f $file ]; then",
+		   "    echo $value > $file");
+	    emitj( 'else',
+		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
+	    emit   "fi\n";
 	}
     }
 }
@@ -106,21 +104,19 @@ sub setup_route_filtering() {
 	save_progress_message "Setting up Route Filtering...";
 
 	unless ( $config{ROUTE_FILTER} ) {
-	    emit "for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/rp_filter ] && echo 0 > \$f/rp_filter
-done
-";
+	    emitj( "for f in /proc/sys/net/ipv4/conf/*; do" ,
+		   "    [ -f \$f/rp_filter ] && echo 0 > \$f/rp_filter" ,
+		   "done\n" );
 	}
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
 
-	    emit "if [ -f $file ]; then
-    echo 1 > $file
-else
-    error_message \"WARNING: Cannot set route filtering on $interface\"
-fi
-";
+	    emitj( "if [ -f $file ]; then" ,
+		   "    echo 1 > $file" );
+	    emitj( 'else' ,
+		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless interface_is_optional( $interface);
+	    emit   "fi\n";
 	}
 
 	emit 'echo 1 0 /proc/sys/net/ipv4/conf/all/rp_filter';
@@ -143,20 +139,19 @@ sub setup_martian_logging() {
 
 	save_progress_message "Setting up Martian Logging...";
 
-	emit "for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/log_martians ] && echo 0 > \$f/log_martians
-done
-";
+	emitj( "for f in /proc/sys/net/ipv4/conf/*; do" ,
+	       "    [ -f \$f/log_martians ] && echo 0 > \$f/log_martians" ,
+	       "done\n" );
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
 
-	    emit "if [ -f $file ]; then
-    echo 1 > $file
-else
-    error_message \"WARNING: Cannot set Martian logging on $interface\"
-fi
-";
+	    emitj( "if [ -f $file ]; then" ,
+		   "    echo 1 > $file" );
+
+	    emitj( 'else' ,
+		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface); 
+	    emit   "fi\n";
 	}
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
@@ -172,10 +167,9 @@ sub setup_source_routing() {
 
     save_progress_message 'Setting up Accept Source Routing...';
 
-    emit "for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/accept_source_route ] && echo 0 > \$f/accept_source_route
-done
-";
+    emitj( "for f in /proc/sys/net/ipv4/conf/*; do" ,
+	   "    [ -f \$f/accept_source_route ] && echo 0 > \$f/accept_source_route" ,
+	   "done\n" );
 
     my $interfaces = find_interfaces_by_option 'sourceroute';
 
@@ -187,12 +181,11 @@ done
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/accept_source_route";
 
-	    emit "if [ -f $file ]; then
-    echo 1 > $file
-else
-    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"
-fi
-";
+	    emitj( "if [ -f $file ]; then" ,
+		   "    echo 1 > $file" );
+	    emitj( 'else' ,
+		   "    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"" ) unless interface_is_optional( $interface);
+	    emit   "fi\n";
 	}
     }
 }

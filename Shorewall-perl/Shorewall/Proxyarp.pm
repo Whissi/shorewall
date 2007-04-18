@@ -64,11 +64,11 @@ sub setup_one_proxy_arp( $$$$$ ) {
 	$haveroute = 1 if $persistent;
     }
 
-    emit "if ! arp -i $external -Ds $address $external pub; then
-    fatal_error \"Command 'arp -i $external -Ds $address $external pub' failed\"
-fi
-
-progress_message \"   Host $address connected to $interface added to ARP on $external\"\n";
+    emitj( "if ! arp -i $external -Ds $address $external pub; then",
+	   "    fatal_error \"Command 'arp -i $external -Ds $address $external pub' failed\"" ,
+	   'fi' ,
+	   '',
+	   "progress_message \"   Host $address connected to $interface added to ARP on $external\"\n" );
 
     push @proxyarp, "$address $interface $external $haveroute";
 
@@ -106,20 +106,30 @@ sub setup_proxy_arp() {
 	    setup_one_proxy_arp( $address, $interface, $external, $haveroute, $persistent );
 	}
 
+	emit '';
+
 	for my $interface ( keys %reset ) {
-	    emit "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" unless $set{interface};
+	    unless ( $set{interface} ) {
+		emitj ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
+			"    echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		emit    "fi\n";
+	    }
 	}
 
 	for my $interface ( keys %set ) {
-	    emit "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp";
+	    emitj ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
+		    "    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+	    emitj ( 'else' ,
+		    "    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $interface\"" ) unless interface_is_optional( $interface );
+	    emit    "fi\n";
 	}
 
 	for my $interface ( @$interfaces ) {
-	    emit "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then
-    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
-else
-    error_message \"WARNING: Unable to enable proxy ARP on $interface\"
-fi\n";
+	    emitj( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
+		   "    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+	    emitj( 'else' ,
+		   "    error_message \"WARNING: Unable to enable proxy ARP on $interface\"" ) unless interface_is_optional( $interface ); 
+	    emit   "fi\n";
 	}
     }
 }

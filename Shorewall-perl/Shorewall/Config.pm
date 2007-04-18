@@ -31,25 +31,25 @@ use File::Basename;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		 warning_message
-	         fatal_error
-	         find_file
-	         split_line
-	         open_file
-	         close_file
-	         push_open
-	         pop_open
-	         read_a_line
-	         get_configuration
-	         require_capability
-	         report_capabilities
-	         propagateconfig
-	         append_file
-	         run_user_exit
-	         generate_aux_config
+		 fatal_error
+		 find_file
+		 split_line
+		 open_file
+		 close_file
+		 push_open
+		 pop_open
+		 read_a_line
+		 get_configuration
+		 require_capability
+		 report_capabilities
+		 propagateconfig
+		 append_file
+		 run_user_exit
+		 generate_aux_config
 
-	         %config
-	         %globals
-	         %capabilities );
+		 %config
+		 %globals
+		 %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 

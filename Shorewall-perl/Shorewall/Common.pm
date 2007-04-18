@@ -55,7 +55,7 @@ our @EXPORT = qw(ALLIPv4
 		 $command
 		 $doing
 		 $done
-	         $verbose
+		 $verbose
 		 );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;

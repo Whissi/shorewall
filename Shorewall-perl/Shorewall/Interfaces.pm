@@ -33,7 +33,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( add_group_to_zone
 		  validate_interfaces_file
 		  known_interface
-	          interface_is_optional
+		  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option
 
@@ -119,7 +119,7 @@ sub validate_interfaces_file()
 {
     use constant { SIMPLE_IF_OPTION  => 1,
 		   BINARY_IF_OPTION  => 2,
-	           ENUM_IF_OPTION    => 3 };
+		   ENUM_IF_OPTION    => 3 };
 
     my %validoptions = (arp_filter  => BINARY_IF_OPTION,
 			arp_ignore  => ENUM_IF_OPTION,

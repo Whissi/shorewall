@@ -37,6 +37,9 @@ Problems corrected in Shorewall 3.9.3
    - All addresses
    - Routed networks
 
+5) The 'dropInvalid' now correctly generates a DROP rule rather than a
+   REJECT rule.
+
 Other changes in Shorewall 3.9.3
 
 1)  An 'optional' option has been added to
@@ -69,6 +72,9 @@ Other changes in Shorewall 3.9.3
     is assumed. Shorewall will modify only the setting of those
     interfaces for which the option is specified and will set the
     option to the given value.
+
+    A fatal compilation error is also generated if you specify one of
+    these options with a wildcard interface (one ending with '+').
 
 Migration Considerations:
 

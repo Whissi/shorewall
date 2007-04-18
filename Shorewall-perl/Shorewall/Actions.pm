@@ -526,7 +526,7 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level;
-	add_rule $chainref , '-m state --state INVALID -j REJECT';
+	add_rule $chainref , '-m state --state INVALID -j DROP';
     }
 
     sub allowInvalid ( $$$ ) {

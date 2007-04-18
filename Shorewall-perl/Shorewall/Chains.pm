@@ -853,8 +853,9 @@ sub match_source_net( $ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
-	( $net = $2 ) =~ s/-/:/g;
-	"-m mac --mac-source $1 $net ";
+	( $net = $2 ) =~ tr/-/:/;
+	my $invert = $1 ? '! ' : '';
+	"-m mac --mac-source ${invert}$net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );

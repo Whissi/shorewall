@@ -770,7 +770,7 @@ sub do_ratelimit( $ ) {
 #
 sub do_user( $ ) {
     my $user = $_[0];
-    my $rule = ' -m owner';
+    my $rule = '-m owner ';
 
     return '' unless $user and $user ne '-';
 
@@ -1041,8 +1041,9 @@ sub get_interface_address ( $ ) {
     my ( $interface ) = $_[0];
 
     my $variable = interface_address( $interface );
+    my $function = interface_is_optional( $interface ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
 
-    $interfaceaddr{$interface} = "$variable=\$(find_first_interface_address $interface)";
+    $interfaceaddr{$interface} = "$variable=\$($function $interface)";
 
     "\$$variable";
 }
@@ -1062,10 +1063,14 @@ sub get_interface_addresses ( $ ) {
 
     my $variable = interface_addresses( $interface );
 
-    $interfaceaddr{$interface} = qq($variable=\$(get_interface_addresses $interface)
+    if ( interface_is_optional $interface ) {
+	$interfaceaddrs{$interface} = qq($variable=\$(get_interface_addresses $interface)\n);
+    } else {
+	$interfaceaddrs{$interface} = qq($variable=\$(get_interface_addresses $interface)
 [ -n "\$$variable" ] || fatal_error "Unable to determine the IP address(es) of $interface"
 );
-
+    }
+    
     "\$$variable";
 }
 
@@ -1084,9 +1089,13 @@ sub get_interface_nets ( $ ) {
 
     my $variable = interface_nets( $interface );
 
-    $interfaceaddr{$interface} = qq($variable=\$(get_routed_networks $interface)
+    if ( interface_is_optional $interface ) {
+	$interfaceaddr{$interface} = qq($variable=\$(get_routed_networks $interface)\n);
+    } else {
+	$interfaceaddr{$interface} = qq($variable=\$(get_routed_networks $interface)
 [ -n "\$$variable" ] || fatal_error "Unable to determine the routes through interface \\"$interface\\""
 );
+    }
 
     "\$$variable";
 

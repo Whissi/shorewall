@@ -646,7 +646,7 @@ sub do_proto( $$$ )
 	    $output = "-p $proto ";
 
 	    if ( $ports ) {
-		if ( $ports =~ tr/,/,/ > 1 ) {
+		if ( $ports =~ tr/,/,/ > 0 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
 
 		    fatal_error "Too many entries in port list: $ports" if $ports =~ tr/,:/,:/ > 14;
@@ -658,7 +658,7 @@ sub do_proto( $$$ )
 	    }
 
 	    if ( $sports ) {
-		if ( $sports =~ tr/,/,/ > 1 ) {	
+		if ( $sports =~ tr/,/,/ > 0 ) {	
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
 		    
 		    fatal_error "Too many entries in port list: $sports" if $sports =~ tr/,:/,:/ > 14;

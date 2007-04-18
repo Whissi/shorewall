@@ -35,7 +35,6 @@ our @EXPORT = qw( add_group_to_zone
 		  known_interface
                   interface_is_optional
 		  find_interfaces_by_option
-		  find_interfaces_by_option1
 		  get_interface_option
 
 		  @interfaces  );
@@ -170,7 +169,14 @@ sub validate_interfaces_file()
 
 	fatal_error "Invalid Interface Name: $interface" if $interface =~ /:|^\+$/;
 
-	( $interfaces{$interface}{root} = $interface ) =~ s/\+$// ;
+	my $wildcard = 0;
+
+	if ( $interface =~ /\+$/ ) {
+	    $wildcard = 1;
+	    $interfaces{$interface}{root} = substr( $interface, 0, -1 );
+	} else {	    
+	    $interfaces{$interface}{root} = $interface;
+	}
 
 	warning_message 'Shorewall no longer uses broadcast addresses in rule generation:' . $networks if $networks && $networks ne 'detect';
 
@@ -186,18 +192,18 @@ sub validate_interfaces_file()
 
 		( $option, my $value ) = split /=/, $option;
 
-		my $type = $validoptions{$option};
-
-		unless ( $type ) {
-		    warning_message("Invalid Interface option ($option) ignored");
-		} elsif ( $type == SIMPLE_IF_OPTION ) {
+		fatal_error "Invalid Interface option ($option)" unless my $type = $validoptions{$option};
+		
+		if ( $type == SIMPLE_IF_OPTION ) {
 		    fatal_error "Option $option does not take a value" if defined $value;
 		    $options{$option} = 1;
 		} elsif ( $type == BINARY_IF_OPTION ) {
 		    $value = 1 unless defined $value;
 		    fatal_error "Option value for $option must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
+		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
 		    $options{$option} = $value;
 		} elsif ( $type == ENUM_IF_OPTION ) {
+		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
 		    if ( $option eq 'arp_filter' ) {
 			if ( $value =~ /^[1-3,8]$/ ) {
 			    $options{arp_filter} = $value;
@@ -272,23 +278,6 @@ sub find_interfaces_by_option( $ ) {
 	my $optionsref = $interfaces{$interface}{options};
 	if ( $optionsref && defined $optionsref->{$option} ) {
 	    push @ints , $interface
-	}
-    }
-
-    \@ints;
-}
-
-#
-# Returns reference to array of [ name, value ] pairs for interfaces with the passed option
-#
-sub find_interfaces_by_option1( $ ) {
-    my $option = $_[0];
-    my @ints = ();
-
-    for my $interface ( @interfaces ) {
-	my $optionsref = $interfaces{$interface}{options};
-	if ( $optionsref && defined $optionsref->{$option} ) {
-	    push @ints , [ $interface, $optionsref->{$option} ]
 	}
     }
 

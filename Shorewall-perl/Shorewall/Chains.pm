@@ -634,9 +634,11 @@ sub clearrule() {
 sub do_proto( $$$ )
 {
     my ($proto, $ports, $sports ) = @_;
-
+    #
+    # Return the number of ports represented by the passed list
+    #
     sub port_count( $ ) {
-	$_[0] =~ tr/,:/,:/;
+	( $_[0] =~ tr/,:/,:/ ) + 1;
     }
 
     my $output = '';
@@ -652,7 +654,7 @@ sub do_proto( $$$ )
 	    if ( $ports ) {
 		if ( $ports =~ tr/,/,/ > 0 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
-		    fatal_error "Too many entries in port list: $ports" if port_count( $ports ) > 14;
+		    fatal_error "Too many entries in port list: $ports" if port_count( $ports ) > 15;
 		    $output .= "-m multiport --dports $ports ";
 		}  else {
 		    $output .= "--dport $ports ";
@@ -662,7 +664,7 @@ sub do_proto( $$$ )
 	    if ( $sports ) {
 		if ( $sports =~ tr/,/,/ > 0 ) {	
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
-		    fatal_error "Too many entries in port list: $sports" if port_count( $sports ) > 14;
+		    fatal_error "Too many entries in port list: $sports" if port_count( $sports ) > 15;
 		    $output .= "-m multiport --sports $sports ";
 		}  else {
 		    $output .= "--sport $sports ";

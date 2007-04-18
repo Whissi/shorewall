@@ -114,14 +114,14 @@ our %interfaces;
 sub parse_zone_option_list($)
 {
     my %validoptions = ( mss          => NUMERIC,
-		         strict       => NOTHING,
-		         next         => NOTHING,
-		         reqid        => NUMERIC,
-		         spi          => NUMERIC,
-		         proto        => IPSECPROTO,
-		         mode         => IPSECMODE,
-		         "tunnel-src" => NETWORK,
-		         "tunnel-dst" => NETWORK,
+			 strict       => NOTHING,
+			 next         => NOTHING,
+			 reqid        => NUMERIC,
+			 spi          => NUMERIC,
+			 proto        => IPSECPROTO,
+			 mode         => IPSECMODE,
+			 "tunnel-src" => NETWORK,
+			 "tunnel-dst" => NETWORK,
 		       );
 
     #

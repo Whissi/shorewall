@@ -31,25 +31,25 @@ use File::Basename;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		 warning_message
-                 fatal_error
-                 find_file
-                 split_line
-                 open_file
-                 close_file
-                 push_open
-                 pop_open
-                 read_a_line
-                 get_configuration
-                 require_capability
-                 report_capabilities
-                 propagateconfig
-                 append_file
-                 run_user_exit
-                 generate_aux_config
+	         fatal_error
+	         find_file
+	         split_line
+	         open_file
+	         close_file
+	         push_open
+	         pop_open
+	         read_a_line
+	         get_configuration
+	         require_capability
+	         report_capabilities
+	         propagateconfig
+	         append_file
+	         run_user_exit
+	         generate_aux_config
 
-                 %config
-                 %globals
-                 %capabilities );
+	         %config
+	         %globals
+	         %capabilities );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -67,7 +67,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 # From shorewall.conf file
 #
 our %config =
-              ( STARTUP_ENABLED => undef,
+	      ( STARTUP_ENABLED => undef,
 		VERBOSITY => undef,
 		#
 		# Logging
@@ -162,7 +162,7 @@ my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 # From parsing the capabilities file
 #
 our %capabilities =
-             ( NAT_ENABLED => undef,
+	     ( NAT_ENABLED => undef,
 	       MANGLE_ENABLED => undef,
 	       MULTIPORT => undef,
 	       XMULTIPORT => undef,
@@ -686,7 +686,7 @@ sub ensure_config_path( $ ) {
     @config_path = split /:/, $config{CONFIG_PATH};
 
     for ( @config_path ) {
-        $_ .= '/' unless m|//$|;
+	$_ .= '/' unless m|//$|;
     }
 
     if ( my $sd = $ENV{SHOREWALL_DIR} ) {

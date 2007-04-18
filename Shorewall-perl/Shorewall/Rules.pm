@@ -721,9 +721,9 @@ sub setup_mac_lists( $ ) {
 	}
 
 	$comment = '';
-        #
-        # Generate jumps from the input and forward chains
-        #
+	#
+	# Generate jumps from the input and forward chains
+	#
 	for my $hostref ( @$maclist_hosts ) {
 	    my $interface = $hostref->[0];
 	    my $ipsec  = $hostref->[1];

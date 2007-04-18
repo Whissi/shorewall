@@ -45,30 +45,30 @@ my %addresses_to_add;
 sub do_ipsec_options($)
 {
     my %validoptions = ( strict       => NOTHING,
-		         next         => NOTHING,
-		         reqid        => NUMERIC,
-		         spi          => NUMERIC,
-		         proto        => IPSECPROTO,
-		         mode         => IPSECMODE,
-		         "tunnel-src" => NETWORK,
-		         "tunnel-dst" => NETWORK,
+			 next         => NOTHING,
+			 reqid        => NUMERIC,
+			 spi          => NUMERIC,
+			 proto        => IPSECPROTO,
+			 mode         => IPSECMODE,
+			 "tunnel-src" => NETWORK,
+			 "tunnel-dst" => NETWORK,
 		       );
     my $list=$_[0];
     my $options = '-m policy';
     my $fmt;
 
     for my $e ( split ',' , $list ) {
-        my $val    = undef;
+	my $val    = undef;
 	my $invert = '';
 
-        if ( $e =~ /([\w-]+)!=(.+)/ ) {
-            $val    = $2;
-            $e      = $1;
+	if ( $e =~ /([\w-]+)!=(.+)/ ) {
+	    $val    = $2;
+	    $e      = $1;
 	    $invert = '! ';
-        } elsif ( $e =~ /([\w-]+)=(.+)/ ) {
-            $val = $2;
-            $e   = $1;
-        }
+	} elsif ( $e =~ /([\w-]+)=(.+)/ ) {
+	    $val = $2;
+	    $e   = $1;
+	}
 
 	$fmt = $validoptions{$e};
 

@@ -25,12 +25,50 @@ Problems corrected in Shorewall 3.9.3
 
     Patch courtesy of Steven Springl.
 
+2)  An entry in the USER/GROUP column no longer generates a corrupted rule.
+
+3)  The value zero (0) is no longer ignored in the USER/GROUP column.
+
+4)  A number of problems associated with detected addresses and routed
+    networks were corrected. These problems surfaced only when the same
+    interface required more than one of the following to be detected:
+
+   - First address
+   - All addresses
+   - Routed networks
+
 Other changes in Shorewall 3.9.3
 
 1)  An 'optional' option has been added to
     /etc/shorewall/interfaces. When 'optional' is specified for an
-    interface, Shorewall will be silent when it is not possible to
-    modify the interface's /proc/sys/net/ipv4/conf/ attributes. 
+    interface, Shorewall will be silent when:
+
+    - a /proc/sys/net/ipv4/conf/ entry for the interface cannot be
+      modified (including for proxy ARP).
+
+    - The first address of the interface cannot be obtained.
+
+    I specify 'optional' on interfaces to Xen virtual machines that may
+    or may not be running when Shorewall is [re]started.
+
+2)  The treatment of the followint interface options has changed under
+    Shorewall-perl.
+
+    -	arp_filter
+    -	routefilter
+    -   logmartians
+    -	proxy_arp
+    -	sourceroute
+
+    With the Shorewall-shell compiler, Shorewall resets these options
+    on all interfaces then sets the option on those interfaces
+    for which the option is defined in /etc/shorewall/interfaces.
+
+    Under Shorewall-perl, these options can be specified with the value
+    0 or 1 (e.g., proxy_arp=0). If no value is specified, the value 1
+    is assumed. Shorewall will modify only the setting of those
+    interfaces for which the option is specified and will set the
+    option to the given value.
 
 Migration Considerations:
 

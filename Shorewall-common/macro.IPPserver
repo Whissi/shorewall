@@ -15,6 +15,12 @@
 #	Example for a two-interface firewall which acts as a print
 #	server for loc:
 #		IPPserver/ACCEPT loc $FW
+#	
+#	NOTE: If you want both to serve requests for local printers and
+#	listen to requests for remote printers (i.e. your CUPS server is
+#	also a client), you need to apply the rule twice, e.g.
+#		IPPserver/ACCEPT loc $FW
+#		IPPserver/ACCEPT $FW loc
 #
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/

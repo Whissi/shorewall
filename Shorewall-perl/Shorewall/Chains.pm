@@ -1256,6 +1256,8 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    $origdest = '';
 	} else {
+	    fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/;
+
 	    if ( $origdest =~ /^([^!]+)?!([^!]+)$/ ) {
 		#
 		# Exclusion
@@ -1283,6 +1285,8 @@ sub expand_rule( $$$$$$$$$$ )
     # Determine if there is Source Exclusion
     #
     if ( $inets ) {
+	fatal_error "Invalid SOURCE" if  $inets =~ /^([^!]+)?,!([^!]+)$/;
+	
 	if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $inets = $1;
 	    $iexcl = $2;
@@ -1296,6 +1300,7 @@ sub expand_rule( $$$$$$$$$$ )
 		$rule .= match_source_net "!$iexcl ";
 		$iexcl = '';
 	    }
+	
 	}
     } else {
 	$iexcl = '';
@@ -1305,6 +1310,8 @@ sub expand_rule( $$$$$$$$$$ )
     # Determine if there is Destination Exclusion
     #
     if ( $dnets ) {
+	fatal_error "Invalid DEST" if  $inets =~ /^([^!]+)?,!([^!]+)$/;
+	
 	if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $dnets = $1;
 	    $dexcl = $2;
@@ -1331,6 +1338,8 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain
 	#
+	fatal_error "Exclusion is not possible in CONTINUE rules" if $disposition eq 'RETURN';
+
 	my $echain = newexclusionchain;
 
 	#

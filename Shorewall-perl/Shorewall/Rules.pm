@@ -1247,7 +1247,11 @@ sub process_rules() {
 
 	    $section = $source;
 	} else {
-	    process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
+	    if ( "\L$source" =~ /^none(:.*)?$/ || "\L$dest" =~ /^none(:.*)?$/ ) {
+		progress_message "Rule \"$line\" ignored."
+	    } else {
+		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
+	    }
 	}
     }
 

@@ -36,7 +36,7 @@ for project in $PROJECTS; do
     cd $HOMEDIR/$project
     $SVN_BIN  update --non-interactive | while read UA file; do 
 	case $UA in
-	    U|P)
+	    U|P|G)
 		publish $file
 		;;
 	    A)

@@ -37,8 +37,18 @@ Problems corrected in Shorewall 3.9.3
    - All addresses
    - Routed networks
 
-5) The 'dropInvalid' built-in action now correctly generates a DROP
-   rule rather than a REJECT rule.
+5)  The 'dropInvalid' built-in action now correctly generates a DROP
+    rule rather than a REJECT rule.
+
+6)  The Shorewall-perl compiler was not treating 'none' in the SOURCE
+    or DEST column of the rules file correctly.
+
+7)  The Shorewall-perl compiler did not accept 'tcp:syn' in the PROTO
+    column.
+
+8)  The Shorewall-perl compiler generated an invalid rule when 
+    $FW was the SOURCE of a SAME rule (iptables/netfilter do not
+    support SAME in the OUTPUT chain).
 
 Other changes in Shorewall 3.9.3
 

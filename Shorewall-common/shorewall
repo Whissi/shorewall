@@ -1432,8 +1432,8 @@ case "$COMMAND" in
 	start_command $@
 	;;
     stop|reset|clear)
-	get_config
 	[ $# -ne 1 ] && usage 1
+	get_config
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	;;
@@ -1458,8 +1458,8 @@ case "$COMMAND" in
 	check_command $@
 	;;
     add|delete)
-	get_config
 	[ $# -lt 3 ] && usage 1
+	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
@@ -1479,6 +1479,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
+	get_config
 	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started ; then

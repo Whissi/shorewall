@@ -120,6 +120,32 @@
 #
 get_config() {
 
+    ensure_config_path
+
+    if [ "$1" = Yes ]; then
+	params=$(find_file params)
+
+	if [ -f $params ]; then
+	    . $params
+	fi
+    fi
+
+    config=$(find_file shorewall.conf)
+    
+    if [ -f $config ]; then
+	if [ -r $config ]; then
+	    . $config
+	else
+	    echo "Cannot read $config! (Hint: Are you root?)" >&2
+	    exit 1
+	fi
+    else
+	echo "$config does not exist!" >&2
+	exit 2
+    fi
+
+    ensure_config_path
+    
     if [ -z "$EXPORT" -a "$(id -u)" = 0 ]; then
 	#
 	# This block is avoided for compile for export and when the user isn't root
@@ -1357,26 +1383,6 @@ for library in $LIBRARIES; do
     fi
 done
 
-ensure_config_path
-
-config=$(find_file shorewall.conf)
-
-if [ -f $config ]; then
-    if [ -r $config ]; then
-	. $config
-    else
-	echo "Cannot read $config! (Hint: Are you root?)" >&2
-	exit 1
-    fi
-else
-    echo "$config does not exist!" >&2
-    exit 2
-fi
-
-ensure_config_path
-
-get_config
-
 if [ ! -f $FIREWALL ]; then
     echo "   ERROR: Shorewall is not properly installed" >&2
     if [ -L $FIREWALL ]; then
@@ -1421,43 +1427,53 @@ COMMAND=$1
 
 case "$COMMAND" in
     start)
+	get_config
 	shift
 	start_command $@
 	;;
     stop|reset|clear)
+	get_config
 	[ $# -ne 1 ] && usage 1
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	;;
     compile)
+	get_config
 	shift
 	compile_command $@
 	;;
     restart)
+	get_config
 	shift
 	restart_command $@
 	;;
     refresh)
+	get_config
 	shift
 	refresh_command $@
 	;;
     check)
+	get_config
 	shift
 	check_command $@
 	;;
     add|delete)
+	get_config
 	[ $# -lt 3 ] && usage 1
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
+	get_config Yes
     	shift
     	show_command $@
 	;;
     load|reload)
+	get_config
 	shift
 	reload_command $@
 	;;
     export)
+	get_config
 	shift
 	export_command $@
 	;;
@@ -1488,10 +1504,12 @@ case "$COMMAND" in
 	exit $status
 	;;
     dump)
+	get_config Yes
     	shift
     	dump_command $@
 	;;
     hits)
+	get_config Yes
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
 	hits_command
@@ -1500,13 +1518,16 @@ case "$COMMAND" in
 	echo $version
 	;;
     try)
+	get_config
 	shift
 	try_command $@
 	;;
     logwatch)
+	get_config Yes
 	logwatch_command $@
 	;;
     drop)
+	get_config
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
@@ -1518,6 +1539,7 @@ case "$COMMAND" in
 	fi
 	;;
     logdrop)
+	get_config
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
@@ -1529,6 +1551,7 @@ case "$COMMAND" in
 	fi
 	;;
     reject|logreject)
+	get_config
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
@@ -1540,9 +1563,11 @@ case "$COMMAND" in
 	fi
 	;;
     allow)
+	get_config
 	allow_command $@
 	;;
     save)
+	get_config
 	[ -n "$debugging" ] && set -x
 
 	case $# in
@@ -1567,6 +1592,7 @@ case "$COMMAND" in
 	[ "$nolock" ] || mutex_off
 	;;
     forget)
+	get_config
 	case $# in
 	1)
 	    ;;
@@ -1650,10 +1676,12 @@ case "$COMMAND" in
 	esac
 	;;
     restore)
+	get_config
 	shift
 	restore_command $@
         ;;
     call)
+	get_config
 	[ -n "$debugging" ] && set -x
 	#
 	# Undocumented way to call functions in ${SHAREDIR}/functions directly
@@ -1666,6 +1694,7 @@ case "$COMMAND" in
 	usage
 	;;
     safe-restart|safe-start)
+	get_config
 	shift
 	safe_commands $@
 	;;

@@ -998,6 +998,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	} else {
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
+		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq $firewall_zone;
 		$target = '-j SAME ';
 		for my $serv ( split /,/, $server ) {
 		    $target .= "--to $serv ";

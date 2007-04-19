@@ -650,8 +650,13 @@ sub do_proto( $$$ )
     $sports = '' if $sports eq '-';
 
     if ( $proto ) {
-	if ( $proto =~ /^(tcp|udp|6|17)$/i ) {
-	    $output = "-p $proto ";
+	if ( $proto =~ /^((tcp|6)((:syn)?))|(udp|17)$/ ) {
+
+	    if ( $3 ) {
+		$output = '-p tcp --syn ';
+	    } else {
+		$output  = "-p $proto ";
+	    }
 
 	    if ( $ports ) {
 		if ( $ports =~ tr/,/,/ > 0 ) {
@@ -1338,7 +1343,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain
 	#
-	fatal_error "Exclusion is not possible in CONTINUE rules" if $disposition eq 'RETURN';
+	fatal_error "Exclusion is not possible in CONTINUE/NONAT rules" if $disposition eq 'RETURN';
 
 	my $echain = newexclusionchain;
 

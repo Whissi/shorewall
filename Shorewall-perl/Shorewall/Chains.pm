@@ -1256,7 +1256,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    $origdest = '';
 	} else {
-	    fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/;
+	    fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/ || $origdest =~ /.*!.*!/;
 
 	    if ( $origdest =~ /^([^!]+)?!([^!]+)$/ ) {
 		#
@@ -1285,7 +1285,7 @@ sub expand_rule( $$$$$$$$$$ )
     # Determine if there is Source Exclusion
     #
     if ( $inets ) {
-	fatal_error "Invalid SOURCE" if  $inets =~ /^([^!]+)?,!([^!]+)$/;
+	fatal_error "Invalid SOURCE" if $inets =~ /^([^!]+)?,!([^!]+)$/ || $inets =~ /.*!.*!/;
 	
 	if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $inets = $1;
@@ -1310,7 +1310,7 @@ sub expand_rule( $$$$$$$$$$ )
     # Determine if there is Destination Exclusion
     #
     if ( $dnets ) {
-	fatal_error "Invalid DEST" if  $inets =~ /^([^!]+)?,!([^!]+)$/;
+	fatal_error "Invalid DEST" if  $dnets =~ /^([^!]+)?,!([^!]+)$/ || $dnets =~ /.*!.*!/;
 	
 	if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $dnets = $1;

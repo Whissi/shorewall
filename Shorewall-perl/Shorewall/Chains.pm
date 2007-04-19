@@ -192,7 +192,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 our %targets = ('ACCEPT'       => STANDARD,
 		'ACCEPT+'      => STANDARD  + NONAT,
 		'ACCEPT!'      => STANDARD,
-		'NONAT'        => STANDARD  + NONAT,
+		'NONAT'        => STANDARD  + NONAT + NATONLY,
 		'DROP'         => STANDARD,
 		'DROP!'        => STANDARD,
 		'REJECT'       => STANDARD,

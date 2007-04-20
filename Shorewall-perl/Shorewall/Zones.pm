@@ -256,6 +256,8 @@ sub determine_zones()
 	push @z, $zone;
     }
 
+    fatal_error "No firewall zone defined" unless $firewall_zone;
+    
     my $pushed = 1;
     my %ordered;
 

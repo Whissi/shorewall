@@ -1187,7 +1187,7 @@ sub process_rule ( $$$$$$$$$ ) {
 			}
 		    }
 		} else {
-		    ( ( my $destzone ) , undef ) = split /:/, $dest;
+		    my $destzone = (split /:/, $dest)[0];
 		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
 		    if ( $policychainref->{policy} ne 'NONE' ) {
 			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user;

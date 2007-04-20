@@ -1188,18 +1188,40 @@ sub process_rule ( $$$$$$$$$ ) {
 		    }
 		} else {
 		    my $destzone = (split /:/, $dest)[0];
+		    fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
 		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
-		    if ( $policychainref->{policy} ne 'NONE' ) {
+		    fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;
+		    if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
+			if ( $optimize > 0 ) {
+			    my $loglevel = $policychainref->{loglevel};
+			    if ( $loglevel ) {
+				next if $target eq "${policy}:$loglevel}";
+			    } else {
+				next if $action eq $policy;
+			    }
+			}
 			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 		    }
 		}
 	    }
 	}
     } elsif ( $dest eq 'all' ) {
-	for my $zone1 ( @zones ) {
-	    my $zone = ( split /:/, $source )[0];
-	    if ( ( $includedstfw || ( $zones{$zone1}{type} ne 'firewall') ) &&( ( $zone ne $zone1 ) || $intrazone) ) {
-		process_rule1 $target, $source, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user;
+	for my $zone ( @zones ) {
+	    my $sourcezone = ( split /:/, $source )[0];
+	    if ( ( $includedstfw || ( $zones{$zone}{type} ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
+		fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
+		my $policychainref = $filter_table->{"${sourcezone}2${zone}"}{policychain};
+		if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
+		    if ( $optimize > 0 ) {
+			my $loglevel = $policychainref->{loglevel};
+			if ( $loglevel ) {
+			    next if $target eq "${policy}:$loglevel}";
+			} else {
+			    next if $action eq $policy;
+			}
+		    }
+		}
+		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 	    }
 	}
     } else {

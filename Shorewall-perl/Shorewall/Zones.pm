@@ -106,6 +106,9 @@ our $firewall_zone;
 #
 our %interfaces;
 
+my %reservedName = ( all => 1,
+		     none => 1 );
+
 #
 # Parse the passed option list and return a reference to a hash as follows:
 #
@@ -209,7 +212,7 @@ sub determine_zones()
 	}
 
 	fatal_error "Invalid zone name: $zone" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $globals{MAXZONENAMELENGTH};
-	fatal_error "Invalid zone name: $zone" if $zone =~ /^all2|2all$/;
+	fatal_error "Invalid zone name: $zone"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
 	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
 
 	my $zoneref = $zones{$zone} = {};

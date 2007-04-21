@@ -137,14 +137,13 @@ sub setup_martian_logging() {
 	    my $value = get_interface_option $interface, 'logmartians';
 
 	    emitj( "if [ -f $file ]; then" ,
-		   "    echo 1 > $file" );
+		   "    echo $value > $file" );
 
 	    emitj( 'else' ,
 		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface); 
 	    emit   "fi\n";
 	}
 
-	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians' if $config{LOG_MARTIANS};
 
     }

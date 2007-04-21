@@ -115,9 +115,9 @@ sub setup_route_filtering() {
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
 	if ( $config{ROUTE_FILTER} ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter' 
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	} else {
-	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter' 
+	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	}
 
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";

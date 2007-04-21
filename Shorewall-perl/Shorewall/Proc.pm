@@ -113,7 +113,12 @@ sub setup_route_filtering() {
 	}
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
-	emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter' if $config{ROUTE_FILTER};
+
+	if ( $config{ROUTE_FILTER} ) {
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter' 
+	} else {
+	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter' 
+	}
 
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";
     }
@@ -171,7 +176,7 @@ sub setup_source_routing() {
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/accept_source_route";
-	    my $value = get_interface_option $interface, 'logmartians';
+	    my $value = get_interface_option $interface, 'sourceroute';
 
 	    emitj( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );

@@ -144,7 +144,10 @@ sub setup_martian_logging() {
 	    emit   "fi\n";
 	}
 
-	emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians' if $config{LOG_MARTIANS};
+	if ( $config{LOG_MARTIANS} ) {
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
+	}
 
     }
 }

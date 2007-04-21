@@ -67,130 +67,130 @@ Migration Considerations:
 ----------------------------------------------------------------------------
 1)  Shorewall-perl
 
-This companion product to Shorewall 3.4.2 and later includes a complete
-rewrite of the compiler in Perl.
+    This companion product to Shorewall 3.4.2 and later includes a complete
+    rewrite of the compiler in Perl.
 
-I decided to make Shorewall-perl a separate product for several reasons:
+    I decided to make Shorewall-perl a separate product for several reasons:
 
-a) Embedded applications are unlikely to adopt Shorewall-perl; even Mini-Perl
-   has a substantial disk and Ram footprint.
+    a) Embedded applications are unlikely to adopt Shorewall-perl; even
+       Mini-Perl has a substantial disk and Ram footprint.
 
-b) Because of the gross incompatibilities between the new compiler and the
-   old (see below), migration to the new compiler must be voluntary.
+    b) Because of the gross incompatibilities between the new compiler and the
+       old (see below), migration to the new compiler must be voluntary.
 
-c) By allowing Shorewall-perl to co-exist with the current Shorewall stable
-   release (3.4), I'm hoping that the new compiler will get more testing and
-   validation than it would if I were to package it with a new development
-   version of Shorewall itself.
+    c) By allowing Shorewall-perl to co-exist with the current
+       Shorewall stable release (3.4), I'm hoping that the new compiler
+       will get more testing and validation than it would if I were to
+       package it with a new development version of Shorewall itself.
 
-d) Along the same vein, I think that users will be more likely to experiment
-   with the new compiler if they can easily fall back to the old one if things
-   get sticky.
-----------------------------------------------------------------------------
-                  T H E   G O O D   N E W S:
-----------------------------------------------------------------------------
-a) The compiler has a small disk footprint.
-b) The compiler is very fast.
-c) The compiler generates a firewall script that uses iptables-restore;
-   so the script is very fast.
-d) Use of the perl compiler is optional! The old slow clunky
-   Bourne-shell compiler is still available.
-----------------------------------------------------------------------------
-		  T H E   B A D   N E W S:
-----------------------------------------------------------------------------
-There are a number of incompatibilities between the Perl-based compiler
-and the Bourne-shell one. Some of these will probably go away by first
-official release but most will not.
+    d) Along the same vein, I think that users will be more likely to
+       experiment with the new compiler if they can easily fall back to
+       the old one if things get sticky.
+    ------------------------------------------------------------------------
+                      T H E   G O O D   N E W S:
+    ------------------------------------------------------------------------
+    a) The compiler has a small disk footprint.
+    b) The compiler is very fast.
+    c) The compiler generates a firewall script that uses iptables-restore;
+       so the script is very fast.
+    d) Use of the perl compiler is optional! The old slow clunky
+       Bourne-shell compiler is still available.
+    ------------------------------------------------------------------------
+                      T H E   B A D   N E W S:
+    ------------------------------------------------------------------------
+    There are a number of incompatibilities between the Perl-based compiler
+    and the Bourne-shell one. Some of these will probably go away by first
+    official release but most will not.
 
-a) The Perl-based compiler requires the following capabilities in your
-   kernel and iptables.
+    a) The Perl-based compiler requires the following capabilities in your
+       kernel and iptables.
 
-   - addrtype match (may be relaxed later)
-   - multiport match (will not be relaxed)
+       - addrtype match (may be relaxed later)
+       - multiport match (will not be relaxed)
 
-   These capabilities are in current distributions.
+       These capabilities are in current distributions.
 
-b) Now that Netfilter has features to deal reasonably with port lists,
-   I see no reason to duplicate those features in Shorewall. The
-   Bourne-shell compiler goes to great pain (in some cases) to
-   break very long port lists ( > 15 where port ranges in lists count
-   as two ports) into individual rules. In the new compiler, I'm
-   avoiding the ugliness required to do that. The new compiler just
-   generates an error if your list is too long. It will also produce
-   an error if you insert a port range into a port list and you don't
-   have extended multiport support.
+    b) Now that Netfilter has features to deal reasonably with port lists,
+       I see no reason to duplicate those features in Shorewall. The
+       Bourne-shell compiler goes to great pain (in some cases) to
+       break very long port lists ( > 15 where port ranges in lists count
+       as two ports) into individual rules. In the new compiler, I'm
+       avoiding the ugliness required to do that. The new compiler just
+       generates an error if your list is too long. It will also produce
+       an error if you insert a port range into a port list and you don't
+       have extended multiport support.
 
-c) BRIDGING=Yes is not supported. The kernel code necessary to
-   support this option was removed in Linux kernel 2.6.20.
+    c) BRIDGING=Yes is not supported. The kernel code necessary to
+       support this option was removed in Linux kernel 2.6.20.
 
-d) The BROADCAST column in the interfaces file is essentially unused;
-   if you enter anything in this column but '-' or 'detect', you will
-   receive a warning. This will be relaxed if and when the addrtype
-   match requirement is relaxed.
+    d) The BROADCAST column in the interfaces file is essentially unused;
+       if you enter anything in this column but '-' or 'detect', you will
+       receive a warning. This will be relaxed if and when the addrtype
+       match requirement is relaxed.
 
-e) Because the compiler is now written in Perl, your compile-time
-   extension scripts from earlier versions will no longer work.
-   Compile-time extension scripts are executed using the Perl
-   'eval `cat <file>`' mechanism. Be sure that each script returns a
-   'true' value; otherwise, the compiler will assume that the script
-   failed and will abort the compilation.
+    e) Because the compiler is now written in Perl, your compile-time
+       extension scripts from earlier versions will no longer work.
+       Compile-time extension scripts are executed using the Perl
+       'eval `cat <file>`' mechanism. Be sure that each script returns a
+       'true' value; otherwise, the compiler will assume that the script
+       failed and will abort the compilation.
 
-   When a script is invoked, the $chainref scalar variable will hold a
-   reference to a chain table entry. 
+       When a script is invoked, the $chainref scalar variable will hold a
+       reference to a chain table entry. 
 
-       $chainref->{name}  contains the name of the chain
-       $chainref->{table} holds the table name
+           $chainref->{name}  contains the name of the chain
+           $chainref->{table} holds the table name
        
-       To add a rule to the chain:
+           To add a rule to the chain:
 
-	  add_rule $chainref, <the rule>
+	      add_rule $chainref, <the rule>
 
-       Where
+           Where
 
-          <the rule> is a scalar argument holding the rule text. Do not
-          include "-A <chain name>"
+              <the rule> is a scalar argument holding the rule text. Do
+              not include "-A <chain name>"
 
-       Example:
+           Example:
 
-          add_rule $chainref, '-j ACCEPT';
+              add_rule $chainref, '-j ACCEPT';
 
-       To insert a rule into the chain:
+           To insert a rule into the chain:
 
-          insert_rule $chainref, <rulenum>, <the rule>
+              insert_rule $chainref, <rulenum>, <the rule>
 
-       The log_rule_limit function works like it does in the shell
-       compiler with two exceptions:
+           The log_rule_limit function works like it does in the shell
+           compiler with two exceptions:
 
-          - You pass the chain reference rather than the name of the
-            chain.
-	  - The commands are 'add' and 'insert' rather than '-A' and
-            '-I'.
-	  - There is only a single "pass as-is to iptables" argument
-            (so you must quote that part).
+              - You pass the chain reference rather than the name of
+                the chain.
+	      - The commands are 'add' and 'insert' rather than '-A'
+                and '-I'.
+	      - There is only a single "pass as-is to iptables"
+                argument (so you must quote that part).
 
-       Example:
+           Example:
 
-	  log_rule_limit
-	      'info' , 
-	      $chainref , 
-	      $chainref->{name},
-	      'DROP' , 
-	      '',    #Limit
-	      '' ,   #Log tag
-	      'add';	      
+	      log_rule_limit
+	          'info' , 
+	          $chainref , 
+	          $chainref->{name},
+	          'DROP' , 
+	          '',    #Limit
+	          '' ,   #Log tag
+	          'add';	      
 
-f) The 'refresh' command is now synonymous with 'restart'.
+    f) The 'refresh' command is now synonymous with 'restart'.
 
-g) Some run-time scripts will need to be changed to write their
-   iptables commands to file descriptor 3 in iptables-restore format
-   rather than running those commands.
+    g) Some run-time scripts will need to be changed to write their
+       iptables commands to file descriptor 3 in iptables-restore
+       format rather than running those commands.
 
-	maclog
+	    maclog
 
-   Details to follow.
+       Details to follow.
 
-   Some run-time scripts are simply eliminated because they no longer
-   make any sense under Shorewall-perl:
+       Some run-time scripts are simply eliminated because they no
+       longer make any sense under Shorewall-perl:
 
 	initdone  - The these two scripts assumed a model where the
 	continue    chains were built in parallel. In the
@@ -200,34 +200,37 @@ g) Some run-time scripts will need to be changed to write their
 	refresh   - The 'refresh' command is the same as 'restart'
 	refreshed
 
-h) The /etc/shorewall/tos file now has zone-independent SOURCE and DEST
-   columns as do all other files except the rules and policy files.
+    h) The /etc/shorewall/tos file now has zone-independent SOURCE and
+       DEST columns as do all other files except the rules and policy
+       files.
 
-   The SOURCE column may be one of the following:
+       The SOURCE column may be one of the following:
 
-       [all:]<address>[,...]
-       [all:]<interface>[:<address>[,...]]
-       $FW[:<address>[,...]]
+           [all:]<address>[,...]
+           [all:]<interface>[:<address>[,...]]
+           $FW[:<address>[,...]]
 
-   The DEST column may be one of the following:
-       [all:]<address>[,...]
-       [all:]<interface>[:<address>[,...]]
+       The DEST column may be one of the following:
+       
+           [all:]<address>[,...]
+           [all:]<interface>[:<address>[,...]]
 
-   This is a permanent change. The old zone-based rules have never
-   worked right and this is a good time to replace them. I've tried to
-   make the new syntax cover the most common cases without requiring
-   change to existing files. In particular, it will handle the tos file
-   released with Shorewall 1.4 and earlier.
+       This is a permanent change. The old zone-based rules have never
+       worked right and this is a good time to replace them. I've tried
+       to make the new syntax cover the most common cases without
+       requiring change to existing files. In particular, it will
+       handle the tos file released with Shorewall 1.4 and earlier.
 
-i) Currently, support for ipsets is untested. That will change with
-   future pre-releases but one thing is certain -- Shorewall is now out
-   of the ipset load/reload business. With scripts generated by the
-   Perl-based Compiler, the Netfilter ruleset is never cleared. That
-   means that there is no opportunity for Shorewall to load/reload your
-   ipsets since that cannot be done while there are any current rules
-   using ipsets.
+    i) Currently, support for ipsets is untested. That will change with
+       future pre-releases but one thing is certain -- Shorewall is now
+       out of the ipset load/reload business. With scripts generated by
+       the Perl-based Compiler, the Netfilter ruleset is never
+       cleared. That means that there is no opportunity for Shorewall
+       to load/reload your ipsets since that cannot be done while there
+       are any current rules using ipsets.
 
-   So:
+       So:
+
 	i)   Your ipsets must be loaded before Shorewall starts. You
 	     are free to try to do that with the following code in
 	     /etc/shorewall/start:
@@ -247,36 +250,37 @@ i) Currently, support for ipsets is untested. That will change with
 	     'shorewall stop' - 'shorewall start' sequence if you
 	     use ipsets in your routestopped file (see below).
 
-	ii)  Your ipsets may not be reloaded until Shorewall is stopped or
-	     cleared.
+	ii)  Your ipsets may not be reloaded until Shorewall is stopped
+	     or cleared.
 
 	iii) If you specify ipsets in your routestopped file then
 	     Shorewall must be cleared in order to reload your ipsets.
 
-   As a consequence, scripts generated by the Perl-based compiler will
-   ignore /etc/shorewall/ipsets and will issue a warning if you set
-   SAVE_IPSETS=Yes in shorewall.conf.
+       As a consequence, scripts generated by the Perl-based compiler
+       will ignore /etc/shorewall/ipsets and will issue a warning if
+       you set SAVE_IPSETS=Yes in shorewall.conf.
 
-j) Because the configuration files (with the exception of
-   /etc/shorewall/params) are now processed by the Perl-based compiler
-   rather than by the shell, only the basic forms of Shell expansion
-   ($variable and ${variable}) are supported. The more exotic forms
-   such as ${variable:=default} are not supported. Both variables
-   defined in /etc/shorewall/params and environmental variables
-   (exported by the shell) can be used in configuration files.
+    j) Because the configuration files (with the exception of
+       /etc/shorewall/params) are now processed by the Perl-based
+       compiler rather than by the shell, only the basic forms of Shell
+       expansion ($variable and ${variable}) are supported. The more
+       exotic forms such as ${variable:=default} are not
+       supported. Both variables defined in /etc/shorewall/params and
+       environmental variables (exported by the shell) can be used in
+       configuration files.
 
-h) USE_ACTIONS=No is not supported. That option is intended to minimize
-   Shorewall's footprint in embedded applications. As a consequence,
-   Default Macros are not supported.
+    h) USE_ACTIONS=No is not supported. That option is intended to
+    minimize Shorewall's footprint in embedded applications. As a
+    consequence, Default Macros are not supported.
 
-i) DELAYBLACKLISTLOAD=Yes is not supported. The entire ruleset is
-   atomically loaded with one execution of iptables-restore.
+    i) DELAYBLACKLISTLOAD=Yes is not supported. The entire ruleset is
+       atomically loaded with one execution of iptables-restore.
 
-j) MAPOLDACTIONS=Yes is not supported. People should have converted to
-   using macros by now.
+    j) MAPOLDACTIONS=Yes is not supported. People should have converted
+    to using macros by now.
 
-k) The pre Shorewall-3.0 format of the zones file is not supported;
-   neither is the /etc/shorewall/ipsec file.
+    k) The pre Shorewall-3.0 format of the zones file is not supported;
+       neither is the /etc/shorewall/ipsec file.
 
 2)  An 'optional' option has been added to
     /etc/shorewall/interfaces. When 'optional' is specified for an
@@ -341,6 +345,18 @@ used when you compile from that directory.
 
 If you only install one compiler, it is suggested that you do not set
 SHOREWALL_COMPILER.
+
+If you install Shorewall-perl under Shorewall 3.9.2 or later, you can
+select the compiler to use on the command line using the 'C option:
+
+       '-C shell' means use the shell compiler
+       '-C perl' means use the perl compiler
+
+The -C option overrides the setting in shorewall.conf. 
+
+Example:
+
+	shorewall restart -C perl
 
 Regardless of the setting of SHOREWALL_COMPILER, there is one change in
 Shorewall operation that is triggered simply by installing

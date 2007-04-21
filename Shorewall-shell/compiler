@@ -3715,7 +3715,7 @@ __EOF__
 
 	save_progress_message "Setting up Route Filtering..."
 
-	if [ -z "$ROUTE_FILTER" ]; then
+	if [ "$ROUTE_FILTER" = no ]; then
 	    indent >&3 << __EOF__
 
 for f in /proc/sys/net/ipv4/conf/*; do
@@ -3739,7 +3739,7 @@ __EOF__
 
 	save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
 
-	if [ -n "$ROUTE_FILTER" ]; then
+	if [ "$ROUTE_FILTER" = yes ]; then
 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
 	fi
 
@@ -3756,7 +3756,7 @@ __EOF__
 
 	save_progress_message "Setting up Martian Logging..."
 
-	if [ -z "$LOG_MARTIANS" ]; then
+	if [ "$LOG_MARTIANS" = no ]; then
 	    indent >&3 << __EOF__
 
 for f in /proc/sys/net/ipv4/conf/*; do
@@ -3779,7 +3779,7 @@ fi
 __EOF__
 	    done
 	
-	if [ -n "$LOG_MARTIANS" ]; then
+	if [ "$LOG_MARTIANS" = yes ]; then
 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/log_martians"
 	fi
 

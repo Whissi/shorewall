@@ -208,11 +208,11 @@ sub validate_interfaces_file()
 		    $options{$option} = $value;
 		} elsif ( $type == ENUM_IF_OPTION ) {
 		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
-		    if ( $option eq 'arp_filter' ) {
+		    if ( $option eq 'arp_ignore' ) {
 			if ( $value =~ /^[1-3,8]$/ ) {
-			    $options{arp_filter} = $value;
+			    $options{arp_ignore} = $value;
 			} else {
-			    fatal_error "Invalid value ($value) for arp_filter";
+			    fatal_error "Invalid value ($value) for arp_ignore";
 			}
 		    } else {
 			fatal_error "Internal Error in validate_interfaces_file"

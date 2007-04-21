@@ -792,10 +792,22 @@ sub get_configuration( $ ) {
 	$config{IP_FORWARDING} = 'On';
     }
 
+    if ( $config{ROUTE_FILTER} ) {
+	fatal_error "Invalid value ( $config{ROUTE_FILTER} ) for ROUTE_FILTER"
+	    unless $config{ROUTE_FILTER} =~ /^(Yes|No|Keep)$/i;
+    } else {
+	$config{ROUTE_FILTER} = 'Keep';
+    }
+
+    if ( $config{LOG_MARTIANS} ) {
+	fatal_error "Invalid value ( $config{LOG_MARTIANS} ) for LOG_MARTIANS"
+	    unless $config{LOG_MARTIANS} =~ /^(Yes|No|Keep)$/i;
+    } else {
+	$config{LOG_MARTIANS} = 'Keep';
+    }
+
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
-    default_yes_no 'ROUTE_FILTER'               , '';
-    default_yes_no 'LOG_MARTIANS'               , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'CLEAR_TC'                   , 'Yes';

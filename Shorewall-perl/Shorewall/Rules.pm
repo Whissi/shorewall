@@ -1108,7 +1108,9 @@ sub process_rule1 ( $$$$$$$$$ ) {
 }
 
 #
-# Process a Record in the rules file
+# Process a Record in the rules file 
+#
+#     Deals with the ugliness of wildcard zones ('all' in rules).
 #
 sub process_rule ( $$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = @_;

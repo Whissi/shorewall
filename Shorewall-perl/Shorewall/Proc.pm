@@ -95,7 +95,7 @@ sub setup_route_filtering() {
 
     my $interfaces = find_interfaces_by_option 'routefilter';
 
-    if ( @$interfaces || $config{ROUTE_FILTER} ) {
+    if ( @$interfaces || ! ( $config{ROUTE_FILTER} =~ /keep/i ) ) {
 
 	progress_message2 "$doing Kernel Route Filtering...";
 
@@ -114,9 +114,9 @@ sub setup_route_filtering() {
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
-	if ( $config{ROUTE_FILTER} ) {
+	if ( $config{ROUTE_FILTER} =~ /yes/i ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
-	} else {
+	} elsif (  $config{ROUTE_FILTER} =~ /no/i ) {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	}
 
@@ -131,7 +131,7 @@ sub setup_route_filtering() {
 sub setup_martian_logging() {
     my $interfaces = find_interfaces_by_option 'logmartians';
 
-    if ( @$interfaces || $config{LOG_MARTIANS} ) {
+    if ( @$interfaces || ! ( $config{LOG_MARTIANS} =~ /keep/i ) ) {
 
 	progress_message2 "$doing Martian Logging...";
 
@@ -149,14 +149,13 @@ sub setup_martian_logging() {
 	    emit   "fi\n";
 	}
 
-	if ( $config{LOG_MARTIANS} ) {
+	if ( $config{LOG_MARTIANS} =~ /yes/i ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
-	} else {
+	} elsif ( $config{LOG_MARTIANS} =~ /no/i ) {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians';
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/log_martians';
 	}
-
     }
 }
 

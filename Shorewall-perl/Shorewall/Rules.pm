@@ -1190,17 +1190,19 @@ sub process_rule ( $$$$$$$$$ ) {
 		    my $destzone = (split /:/, $dest)[0];
 		    fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
 		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
-		    fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;
-		    if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
-			if ( $optimize > 0 ) {
-			    my $loglevel = $policychainref->{loglevel};
-			    if ( $loglevel ) {
-				next if $target eq "${policy}:$loglevel}";
-			    } else {
-				next if $action eq $policy;
+		    if ( $intrazone || ( $zone ne $destzone ) ) {
+			fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;
+			if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
+			    if ( $optimize > 0 ) {
+				my $loglevel = $policychainref->{loglevel};
+				if ( $loglevel ) {
+				    next if $target eq "${policy}:$loglevel}";
+				} else {
+				    next if $action eq $policy;
+				}
 			    }
+			    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 			}
-			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user;
 		    }
 		}
 	    }

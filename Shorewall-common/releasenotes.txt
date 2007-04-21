@@ -15,95 +15,14 @@ Shorewall 3.9.3
 You must install Shorewall and at least one of the compiler packages
 (you may install them both).
 
-Problems corrected in Shorewall 3.9.3
+Problems corrected in 3.9.4.
 
-1)  If a rule specified a source or destination port of 0 for TCP or UDP it was 
-    ignored.
+1)  The value zero was being ignored in SOURCE PORT(S) and DEST PORT(S)
+    columns.
 
-    The test for the presence of a source or destination port if the protocol is 
-    not specified also ignored port 0.
+Other changes in Shorewall 3.9.4
 
-    Patch courtesy of Steven Springl.
-
-2)  An entry in the USER/GROUP column no longer generates a corrupted rule.
-
-3)  The value zero (0) is no longer ignored in the USER/GROUP column.
-
-4)  A number of problems associated with detected addresses and routed
-    networks were corrected. These problems surfaced only when the same
-    interface required more than one of the following to be detected:
-
-   - First address
-   - All addresses
-   - Routed networks
-
-5)  The 'dropInvalid' built-in action now correctly generates a DROP
-    rule rather than a REJECT rule.
-
-6)  The Shorewall-perl compiler was not treating 'none' in the SOURCE
-    or DEST column of the rules file correctly.
-
-7)  The Shorewall-perl compiler did not accept 'tcp:syn' in the PROTO
-    column.
-
-8)  The Shorewall-perl compiler generated an invalid rule when 
-    $FW was the SOURCE of a SAME rule (iptables/netfilter do not
-    support SAME in the OUTPUT chain).
-
-9)  When 'all' appeared in the SOURCE column and there were any NONE
-    policies, then a compilation error occurred.
-
-        ERROR: Rules may not override a NONE policy
-
-10) The reserved zone names 'all' and 'none' were not being flagged
-    when used as the name of a zone.
-
-11) The Shorewall-perl compiler now raises an error if there is no
-    firewall zone declared.
-
-12) If 'all' appeared in the SOURCE column and an undefined zone was
-    specified in the DEST column of /etc/shorewall/rules, then a Perl
-    run-time diagnostic was produced.
-
-Other changes in Shorewall 3.9.3
-
-1)  An 'optional' option has been added to
-    /etc/shorewall/interfaces. When 'optional' is specified for an
-    interface, Shorewall will be silent when:
-
-    - a /proc/sys/net/ipv4/conf/ entry for the interface cannot be
-      modified (including for proxy ARP).
-
-    - The first address of the interface cannot be obtained.
-
-    I specify 'optional' on interfaces to Xen virtual machines that may
-    or may not be running when Shorewall is [re]started.
-
-2)  The treatment of the following interface options has changed under
-    Shorewall-perl.
-
-    -	arp_filter
-    -	routefilter
-    -   logmartians
-    -	proxy_arp
-    -	sourceroute
-
-    With the Shorewall-shell compiler, Shorewall resets these options
-    on all interfaces then sets the option on those interfaces
-    for which the option is defined in /etc/shorewall/interfaces.
-
-    Under Shorewall-perl, these options can be specified with the value
-    0 or 1 (e.g., proxy_arp=0). If no value is specified, the value 1
-    is assumed. Shorewall will modify only the setting of those
-    interfaces for which the option is specified and will set the
-    option to the given value.
-
-    A fatal compilation error is also generated if you specify one of
-    these options with a wildcard interface (one ending with '+').
-
-3)  Thanks to Paul Gear, an IPPServer macro has been added. Be sure to
-    read the comments in the macro file before trying to use this
-    macro.
+None.
 
 Migration Considerations:
 
@@ -146,6 +65,8 @@ Migration Considerations:
 ----------------------------------------------------------------------------
                          N E W  F E A T U R E S
 ----------------------------------------------------------------------------
+1)  Shorewall-perl
+
 This companion product to Shorewall 3.4.2 and later includes a complete
 rewrite of the compiler in Perl.
 
@@ -356,6 +277,45 @@ j) MAPOLDACTIONS=Yes is not supported. People should have converted to
 
 k) The pre Shorewall-3.0 format of the zones file is not supported;
    neither is the /etc/shorewall/ipsec file.
+
+2)  An 'optional' option has been added to
+    /etc/shorewall/interfaces. When 'optional' is specified for an
+    interface, Shorewall will be silent when:
+
+    - a /proc/sys/net/ipv4/conf/ entry for the interface cannot be
+      modified (including for proxy ARP).
+
+    - The first address of the interface cannot be obtained.
+
+    I specify 'optional' on interfaces to Xen virtual machines that may
+    or may not be running when Shorewall is [re]started.
+
+3)  The treatment of the following interface options has changed under
+    Shorewall-perl.
+
+    -	arp_filter
+    -	routefilter
+    -   logmartians
+    -	proxy_arp
+    -	sourceroute
+
+    With the Shorewall-shell compiler, Shorewall resets these options
+    on all interfaces then sets the option on those interfaces
+    for which the option is defined in /etc/shorewall/interfaces.
+
+    Under Shorewall-perl, these options can be specified with the value
+    0 or 1 (e.g., proxy_arp=0). If no value is specified, the value 1
+    is assumed. Shorewall will modify only the setting of those
+    interfaces for which the option is specified and will set the
+    option to the given value.
+
+    A fatal compilation error is also generated if you specify one of
+    these options with a wildcard interface (one ending with '+').
+
+4)  Thanks to Paul Gear, an IPPServer macro has been added. Be sure to
+    read the comments in the macro file before trying to use this
+    macro.
+
 ----------------------------------------------------------------------------
                       P R E R E Q U I S I T E S
 ----------------------------------------------------------------------------
@@ -390,5 +350,56 @@ or create in that file to be automatically exported. Since the params
 file is processed before shorewall.conf, using -a insures that the
 settings of your params variables are available to the new compiler
 should it's use be specified in shorewall.conf.
+----------------------------------------------------------------------------
+                      C H A N G E  H I S T O R Y
+----------------------------------------------------------------------------
+Problems corrected in Shorewall 3.9.3
 
+1)  If a rule specified a source or destination port of 0 for TCP or UDP it was 
+    ignored.
+
+    The test for the presence of a source or destination port if the protocol is 
+    not specified also ignored port 0.
+
+    Patch courtesy of Steven Springl.
+
+2)  An entry in the USER/GROUP column no longer generates a corrupted rule.
+
+3)  The value zero (0) is no longer ignored in the USER/GROUP column.
+
+4)  A number of problems associated with detected addresses and routed
+    networks were corrected. These problems surfaced only when the same
+    interface required more than one of the following to be detected:
+
+   - First address
+   - All addresses
+   - Routed networks
+
+5)  The 'dropInvalid' built-in action now correctly generates a DROP
+    rule rather than a REJECT rule.
+
+6)  The Shorewall-perl compiler was not treating 'none' in the SOURCE
+    or DEST column of the rules file correctly.
+
+7)  The Shorewall-perl compiler did not accept 'tcp:syn' in the PROTO
+    column.
+
+8)  The Shorewall-perl compiler generated an invalid rule when 
+    $FW was the SOURCE of a SAME rule (iptables/netfilter do not
+    support SAME in the OUTPUT chain).
+
+9)  When 'all' appeared in the SOURCE column and there were any NONE
+    policies, then a compilation error occurred.
+
+        ERROR: Rules may not override a NONE policy
+
+10) The reserved zone names 'all' and 'none' were not being flagged
+    when used as the name of a zone.
+
+11) The Shorewall-perl compiler now raises an error if there is no
+    firewall zone declared.
+
+12) If 'all' appeared in the SOURCE column and an undefined zone was
+    specified in the DEST column of /etc/shorewall/rules, then a Perl
+    run-time diagnostic was produced.
 

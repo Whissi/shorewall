@@ -986,7 +986,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT               && XMULTIPORT=Yes
     qt $IPTABLES -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT     && POLICY_MATCH=Yes
 
-    if qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT; then
+    if qt $IPTABLES -A fooX1234 -m physdev --physdev-out eth0 -j ACCEPT; then
 	PHYSDEV_MATCH=Yes
     fi
 

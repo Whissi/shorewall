@@ -95,11 +95,20 @@ sub setup_route_filtering() {
 
     my $interfaces = find_interfaces_by_option 'routefilter';
 
-    if ( @$interfaces || ! ( $config{ROUTE_FILTER} =~ /keep/i ) ) {
+    if ( @$interfaces || $config{ROUTE_FILTER} ) {
 
 	progress_message2 "$doing Kernel Route Filtering...";
 
 	save_progress_message "Setting up Route Filtering...";
+
+
+	if ( $config{ROUTE_FILTER} ) {
+	    my $val = $config{ROUTE_FILTER} eq 'yes' ? 1 : 0;
+
+	    emitj ( 'for file in /proc/sys/net/ipv4/conf/*; do',
+		    "    [ -f \$file/rp_filter ] && echo $val > \$file/rp_filter",
+		    'done' );
+	}
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
@@ -114,9 +123,9 @@ sub setup_route_filtering() {
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
-	if ( $config{ROUTE_FILTER} =~ /yes/i ) {
+	if ( $config{ROUTE_FILTER} eq 'yes' ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
-	} elsif (  $config{ROUTE_FILTER} =~ /no/i ) {
+	} elsif (  $config{ROUTE_FILTER} eq 'no' ) {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	}
 
@@ -131,11 +140,19 @@ sub setup_route_filtering() {
 sub setup_martian_logging() {
     my $interfaces = find_interfaces_by_option 'logmartians';
 
-    if ( @$interfaces || ! ( $config{LOG_MARTIANS} =~ /keep/i ) ) {
+    if ( @$interfaces || $config{LOG_MARTIANS} ) {
 
 	progress_message2 "$doing Martian Logging...";
 
 	save_progress_message "Setting up Martian Logging...";
+
+	if ( $config{LOG_MARTIANS} ) {
+	    my $val = $config{LOG_MARTIANS} eq 'yes' ? 1 : 0;
+
+	    emitj ( 'for file in /proc/sys/net/ipv4/conf/*; do',
+		    "    [ -f \$file/log_martians ] && echo $val > \$file/log_martians",
+		    'done' );
+	}
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
@@ -149,10 +166,10 @@ sub setup_martian_logging() {
 	    emit   "fi\n";
 	}
 
-	if ( $config{LOG_MARTIANS} =~ /yes/i ) {
+	if ( $config{LOG_MARTIANS} eq 'yes' ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
-	} elsif ( $config{LOG_MARTIANS} =~ /no/i ) {
+	} elsif ( $config{LOG_MARTIANS} eq 'no' ) {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians';
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/log_martians';
 	}

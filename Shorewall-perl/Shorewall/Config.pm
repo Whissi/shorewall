@@ -474,7 +474,26 @@ sub default_yes_no ( $$ ) {
 	$config{$var} = $val;
     }
 }
+#
+# Check a tri-valued variable
+#
+sub check_trivalue( $ ) {
+    my $var = $_[0];
+    my $val = "\L$config{$var}";
 
+    if ( defined $val ) {
+	if ( $val eq 'yes' ) {
+	    $config{$var} = 'yes';
+	} elsif ( $val eq 'no' ) {
+	    $config{$var} = 'no';
+	} elsif ( $val eq 'keep' ) {
+	    $config{$var} = '';
+	} elsif ( $val ne '' ) {
+	    fatal_error "Invalid value ( $val ) for $var";
+	}
+    }
+}
+    
 #
 # Produce a report of the detected capabilities
 #
@@ -792,19 +811,8 @@ sub get_configuration( $ ) {
 	$config{IP_FORWARDING} = 'On';
     }
 
-    if ( $config{ROUTE_FILTER} ) {
-	fatal_error "Invalid value ( $config{ROUTE_FILTER} ) for ROUTE_FILTER"
-	    unless $config{ROUTE_FILTER} =~ /^(Yes|No|Keep)$/i;
-    } else {
-	$config{ROUTE_FILTER} = 'Keep';
-    }
-
-    if ( $config{LOG_MARTIANS} ) {
-	fatal_error "Invalid value ( $config{LOG_MARTIANS} ) for LOG_MARTIANS"
-	    unless $config{LOG_MARTIANS} =~ /^(Yes|No|Keep)$/i;
-    } else {
-	$config{LOG_MARTIANS} = 'Keep';
-    }
+    check_trivalue ( 'ROUTE_FILTER' );
+    check_trivalue ( 'LOG_MARTIANS' );
 
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';

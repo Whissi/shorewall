@@ -477,20 +477,24 @@ sub default_yes_no ( $$ ) {
 #
 # Check a tri-valued variable
 #
-sub check_trivalue( $ ) {
-    my $var = $_[0];
+sub check_trivalue( $$ ) {
+    my ( $var, $default) = @_;
     my $val = "\L$config{$var}";
 
     if ( defined $val ) {
-	if ( $val eq 'yes' ) {
+	if ( $val eq 'yes' || $val eq 'on' ) {
 	    $config{$var} = 'yes';
-	} elsif ( $val eq 'no' ) {
+	} elsif ( $val eq 'no' || $val eq 'off' ) {
 	    $config{$var} = 'no';
 	} elsif ( $val eq 'keep' ) {
 	    $config{$var} = '';
-	} elsif ( $val ne '' ) {
+	} elsif ( $val eq '' ) {
+	    $config{var} = $default
+	} else {
 	    fatal_error "Invalid value ( $val ) for $var";
 	}
+    } else {
+	$config{var} = $default
     }
 }
     
@@ -811,8 +815,8 @@ sub get_configuration( $ ) {
 	$config{IP_FORWARDING} = 'On';
     }
 
-    check_trivalue ( 'ROUTE_FILTER' );
-    check_trivalue ( 'LOG_MARTIANS' );
+    check_trivalue ( 'ROUTE_FILTER', '' );
+    check_trivalue ( 'LOG_MARTIANS', '' );
 
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';

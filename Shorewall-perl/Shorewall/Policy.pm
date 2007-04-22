@@ -190,6 +190,7 @@ sub validate_policy()
 	    if ( $chainref->{is_policy} ) {
 		if ( $chainref->{is_optional} ) {
 		    $chainref->{is_optional} = 0;
+		    $chainref->{policy} = $policy;
 		} else {
 		    fatal_error "Duplicate policy: $client $server $policy";
 		}

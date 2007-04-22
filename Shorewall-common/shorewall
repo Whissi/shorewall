@@ -308,7 +308,7 @@ compiler() {
 	perl)
 	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
 	    debugflags="-w"
-	    [ -n "$DEBUG" ]   && debugflags='-wd'       && shift
+	    [ -n "$DEBUG" ]   && debugflags='-wd'
 	    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
 
 	    shift # Perl compiler only takes the output file as a argument

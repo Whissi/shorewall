@@ -483,9 +483,9 @@ sub check_trivalue( $$ ) {
 
     if ( defined $val ) {
 	if ( $val eq 'yes' || $val eq 'on' ) {
-	    $config{$var} = 'yes';
+	    $config{$var} = 'on';
 	} elsif ( $val eq 'no' || $val eq 'off' ) {
-	    $config{$var} = 'no';
+	    $config{$var} = 'off';
 	} elsif ( $val eq 'keep' ) {
 	    $config{$var} = '';
 	} elsif ( $val eq '' ) {
@@ -808,15 +808,10 @@ sub get_configuration( $ ) {
 	$globals{LOGLIMIT} = '';
     }
 
-    if ( $config{IP_FORWARDING} ) {
-	fatal_error "Invalid value ( $config{IP_FORWARDING} ) for IP_FORWARDING"
-	    unless $config{IP_FORWARDING} =~ /^(On|Off|Keep)$/i;
-    } else {
-	$config{IP_FORWARDING} = 'On';
-    }
-
-    check_trivalue ( 'ROUTE_FILTER', '' );
-    check_trivalue ( 'LOG_MARTIANS', '' );
+    check_trivalue ( 'IP_FORWARDING', 'on' );
+    check_trivalue ( 'ROUTE_FILTER',  '' );
+    check_trivalue ( 'LOG_MARTIANS',  '' );
+ 
 
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';

@@ -103,7 +103,7 @@ sub setup_route_filtering() {
 
 
 	if ( $config{ROUTE_FILTER} ) {
-	    my $val = $config{ROUTE_FILTER} eq 'yes' ? 1 : 0;
+	    my $val = $config{ROUTE_FILTER} eq 'on' ? 1 : 0;
 
 	    emitj ( 'for file in /proc/sys/net/ipv4/conf/*; do',
 		    "    [ -f \$file/rp_filter ] && echo $val > \$file/rp_filter",
@@ -123,9 +123,9 @@ sub setup_route_filtering() {
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
-	if ( $config{ROUTE_FILTER} eq 'yes' ) {
+	if ( $config{ROUTE_FILTER} eq 'on' ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
-	} elsif (  $config{ROUTE_FILTER} eq 'no' ) {
+	} elsif (  $config{ROUTE_FILTER} eq 'off' ) {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	}
 
@@ -147,7 +147,7 @@ sub setup_martian_logging() {
 	save_progress_message "Setting up Martian Logging...";
 
 	if ( $config{LOG_MARTIANS} ) {
-	    my $val = $config{LOG_MARTIANS} eq 'yes' ? 1 : 0;
+	    my $val = $config{LOG_MARTIANS} eq 'on' ? 1 : 0;
 
 	    emitj ( 'for file in /proc/sys/net/ipv4/conf/*; do',
 		    "    [ -f \$file/log_martians ] && echo $val > \$file/log_martians",
@@ -166,10 +166,10 @@ sub setup_martian_logging() {
 	    emit   "fi\n";
 	}
 
-	if ( $config{LOG_MARTIANS} eq 'yes' ) {
+	if ( $config{LOG_MARTIANS} eq 'on' ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
-	} elsif ( $config{LOG_MARTIANS} eq 'no' ) {
+	} elsif ( $config{LOG_MARTIANS} eq 'off' ) {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians';
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/log_martians';
 	}
@@ -204,10 +204,10 @@ sub setup_source_routing() {
 }
 
 sub setup_forwarding() {
-    if ( "\L$config{IP_FORWARDING}" eq 'on' ) {
+    if ( $config{IP_FORWARDING} eq 'on' ) {
 	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
 	emit 'progress_message2 IP Forwarding Enabled';
-    } elsif ( "\L$config{IP_FORWARDING}" eq 'off' ) {
+    } elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
 	emit 'progress_message2 IP Forwarding Disabled!';
     }

@@ -429,10 +429,10 @@ EOF
 
     emit '';
 
-    if ( $config{IP_FORWARDING} =~ /on/i ) {
+    if ( $config{IP_FORWARDING} eq 'on' ) {
 	emitj( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
 	       'progress_message2 IP Forwarding Enabled' );
-    } elsif ( $config{IP_FORWARDING} =~ /off/i ) {
+    } elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	emitj( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
 	       'progress_message2 IP Forwarding Disabled!'
 	       );

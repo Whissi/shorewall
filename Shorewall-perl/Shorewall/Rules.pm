@@ -1496,8 +1496,8 @@ sub generate_matrix() {
 
 	if ( $chain1 ) {
 	    for my $interface ( keys %needbroadcast ) {
-		add_rule filter_table{out_chain $interface} , "-d 255.255.255.255 -j $chain1";
-		add_rule filter_table{out_chain $interface} , "-d 224.0.0.0/4     -j $chain1";
+		add_rule filter_table{output_chain $interface} , "-d 255.255.255.255 -j $chain1";
+		add_rule filter_table{output_chain $interface} , "-d 224.0.0.0/4     -j $chain1";
 	    }
 	}
 

@@ -147,9 +147,12 @@ sub get_routed_networks ( $$ ) {
 
 sub validate_interfaces_file()
 {
-    use constant { SIMPLE_IF_OPTION  => 1,
-		   BINARY_IF_OPTION  => 2,
-		   ENUM_IF_OPTION    => 3 };
+    use constant { SIMPLE_IF_OPTION   => 1,
+		   BINARY_IF_OPTION   => 2,
+		   ENUM_IF_OPTION     => 3, 
+	           MASK_IF_OPTION     => 3,
+	           
+	           IF_OPTION_ZONEONLY => 4 };
 
     my %validoptions = (arp_filter  => BINARY_IF_OPTION,
 			arp_ignore  => ENUM_IF_OPTION,
@@ -162,7 +165,7 @@ sub validate_interfaces_file()
 			nosmurfs    => SIMPLE_IF_OPTION,
 			optional    => SIMPLE_IF_OPTION,
 			proxyarp    => BINARY_IF_OPTION,
-			routeback   => SIMPLE_IF_OPTION,
+			routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
 			routefilter => BINARY_IF_OPTION,
 			sourceroute => BINARY_IF_OPTION,
 			tcpflags    => SIMPLE_IF_OPTION,
@@ -228,7 +231,11 @@ sub validate_interfaces_file()
 		( $option, my $value ) = split /=/, $option;
 
 		fatal_error "Invalid Interface option ($option)" unless my $type = $validoptions{$option};
+
+		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
 		
+		$type &= MASK_IF_OPTION;
+
 		if ( $type == SIMPLE_IF_OPTION ) {
 		    fatal_error "Option $option does not take a value" if defined $value;
 		    $options{$option} = 1;

@@ -1,214 +1,234 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8">
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
   <title>Shoreline Firewall (Shorewall) 3.*</title>
-  <base target="_self">
-  <meta name="GENERATOR" content="OpenOffice.org 2.0  (Linux)">
+  <base  target="_self">
   <meta name="CREATED" content="20040920;15031500">
   <meta name="CHANGED"
- content="$Id$">
+  content="$Id$">
 </head>
+
 <body dir="ltr" lang="en-US">
 <h1>Shoreline Firewall (Shorewall)</h1>
-<p>Copyright
-© 2001-2007 Thomas M. Eastep</p>
-<p>Permission is granted to copy, distribute and/or modify this
-document under the terms of the GNU Free Documentation License,
-Version 1.2 or any later version published by the Free Software
-Foundation; with no Invariant Sections, with no Front-Cover, and with
-no Back-Cover Texts. A copy of the license is included in the section
-entitled “<a href="GnuCopyright.htm" target="_self">GNU Free
-Documentation License</a>”.</p>
-<p>2007-04-19</p>
+
+<p>Copyright © 2001-2007 Thomas M. Eastep</p>
+
+<p>Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or any
+later version published by the Free Software Foundation; with no Invariant
+Sections, with no Front-Cover, and with no Back-Cover Texts. A copy of the
+license is included in the section entitled “<a href="GnuCopyright.htm"
+target="_self">GNU Free Documentation License</a>”.</p>
+
+<p>2007-04-22</p>
 <hr style="width: 100%; height: 2px;">
+
 <h2>Table of Contents</h2>
-<p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
-to Shorewall</a></p>
-<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#Glossary">Glossary</a><br>
-<a href="#WhatIs">What
-is Shorewall?</a><br>
+
+<p style="margin-left: 0.42in; margin-bottom: 0in;"><a
+href="#Intro">Introduction to Shorewall</a></p>
+
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a
+href="#Glossary">Glossary</a><br>
+<a href="#WhatIs">What is Shorewall?</a><br>
 <a href="#Releases">Current Shorewall Releases</a><br>
-<a href="#GettingStarted">Getting Started with
-Shorewall</a><br>
+<a href="#GettingStarted">Getting Started with Shorewall</a><br>
 <a href="#Info">Looking for Information?</a><br>
 <a href="#License">License</a></p>
+
 <p style="margin-left: 0.42in;"><br>
 <a href="#Leaf">Leaf</a><br>
 <a href="#OpenWRT">OpenWRT</a><br>
 <a href="#Donations">Donations</a></p>
+
 <h2><a name="Intro"></a>Introduction to Shorewall</h2>
+
 <h3><a name="Glossary"></a>Glossary</h3>
 <ul>
-  <li>
-    <p style="margin-bottom: 0in;"><a href="http://www.netfilter.org/"
- target="_top">Netfilter</a> - the packet filter facility built into
-the 2.4 and later Linux kernels.</p>
+  <li><p style="margin-bottom: 0in;"><a href="http://www.netfilter.org/"
+    target="_top">Netfilter</a> - the packet filter facility built into the
+    2.4 and later Linux kernels.</p>
   </li>
-  <li>
-    <p style="margin-bottom: 0in;">ipchains - the packet filter
-facility built into the 2.2 Linux kernels. Also the name of the utility
-program used to configure and control that facility. Netfilter can be
-used in ipchains compatibility mode.</p>
+  <li><p style="margin-bottom: 0in;">ipchains - the packet filter facility
+    built into the 2.2 Linux kernels. Also the name of the utility program
+    used to configure and control that facility. Netfilter can be used in
+    ipchains compatibility mode.</p>
   </li>
-  <li>
-    <p>iptables - the utility program used to configure and control
-Netfilter. The term 'iptables' is often used to refer to the
-combination of iptables+Netfilter (with Netfilter not in ipchains
-compatibility mode).</p>
+  <li><p>iptables - the utility program used to configure and control
+    Netfilter. The term 'iptables' is often used to refer to the combination
+    of iptables+Netfilter (with Netfilter not in ipchains compatibility
+    mode).</p>
   </li>
 </ul>
+
 <h3><a name="WhatIs"></a>What is Shorewall?</h3>
-<p style="margin-left: 0.42in;">The Shoreline Firewall, more commonly
-known as "Shorewall", is a high-level tool for configuring
-Netfilter. You describe your firewall/gateway requirements using
-entries in a set of configuration files. Shorewall reads those
-configuration files and with the help of the iptables utility,
-Shorewall configures Netfilter to match your requirements. Shorewall
-can be used on a dedicated firewall system, a multi-function
-gateway/router/server or on a standalone GNU/Linux system. Shorewall
-does not use Netfilter's ipchains compatibility mode; as a consequence,
-Shorewall can
-take advantage of Netfilter's connection state tracking
-capabilities to create a stateful firewall.<br>
+
+<p style="margin-left: 0.42in;">The Shoreline Firewall, more commonly known
+as "Shorewall", is a high-level tool for configuring Netfilter. You describe
+your firewall/gateway requirements using entries in a set of configuration
+files. Shorewall reads those configuration files and with the help of the
+iptables utility, Shorewall configures Netfilter to match your requirements.
+Shorewall can be used on a dedicated firewall system, a multi-function
+gateway/router/server or on a standalone GNU/Linux system. Shorewall does not
+use Netfilter's ipchains compatibility mode; as a consequence, Shorewall can
+take advantage of Netfilter's connection state tracking capabilities to
+create a stateful firewall.<br>
 <br>
-Shorewall is <u>not</u> a daemon. Once Shorewall
-has configured Netfilter, it's job is complete and there is
-no Shorewall code left running in the system. The <a
- href="starting_and_stopping_shorewall.htm">/sbin/shorewall
+Shorewall is <u>not</u> a daemon. Once Shorewall has configured Netfilter,
+it's job is complete and there is no Shorewall code left running in the
+system. The <a href="starting_and_stopping_shorewall.htm">/sbin/shorewall
 program can be used at any time to monitor the Netfilter firewall</a>.</p>
-<p style="margin-left: 0.42in;">Shorewall is not the easiest to use of
-the available iptables configuration tools but I believe that it is
-the most flexible and powerful. So if you are looking for a simple
-point-and-click set-and-forget Linux firewall solution that requires
-a minimum of networking knowledge, I would encourage you to check out
-the following alternatives:</p>
+
+<p style="margin-left: 0.42in;">Shorewall is not the easiest to use of the
+available iptables configuration tools but I believe that it is the most
+flexible and powerful. So if you are looking for a simple point-and-click
+set-and-forget Linux firewall solution that requires a minimum of networking
+knowledge, I would encourage you to check out the following alternatives:</p>
 <ul>
-  <li>
-    <p style="margin-bottom: 0in;"><a href="http://www.m0n0.ch/wall">m0n0wall</a>
-(FreeBSD Based) </p>
+  <li><p style="margin-bottom: 0in;"><a
+    href="http://www.m0n0.ch/wall">m0n0wall</a> (FreeBSD Based) </p>
   </li>
-  <li>
-    <p><a href="http://www.fs-security.com/">Firestarter</a></p>
+  <li><p><a href="http://www.fs-security.com/">Firestarter</a></p>
   </li>
 </ul>
-<p style="margin-left: 0.42in;">On the other hand, if you are looking
-for a Linux firewall solution that can handle complex and fast
-changing network environments then Shorewall is a logical choice.</p>
-<p style="margin-left: 0.42in;">To see some of the many things that
-you can do with Shorewall, see the <a href="shorewall_features.htm">Shorewall
+
+<p style="margin-left: 0.42in;">On the other hand, if you are looking for a
+Linux firewall solution that can handle complex and fast changing network
+environments then Shorewall is a logical choice.</p>
+
+<p style="margin-left: 0.42in;">To see some of the many things that you can
+do with Shorewall, see the <a href="shorewall_features.htm">Shorewall
 Features page</a>.<br>
 </p>
+
 <h3><a name="Releases"></a>Current Shorewall Releases</h3>
+
 <p style="margin-left: 40px;">The <span style="font-weight: bold;">current
-Stable Release</span> version
-is&nbsp; 3.4.2<br>
+Stable Release</span> version is  3.4.2<br>
 </p>
 <ul style="margin-left: 40px;">
   <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.2/releasenotes.txt">release
-notes</a> <br>
+    href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.2/releasenotes.txt">release
+    notes</a> <br>
   </li>
   <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.2/known_problems.txt">known
-problems</a> and <a
- href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.2/errata/">updates</a>.</li>
+    href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.2/known_problems.txt">known
+    problems</a> and <a
+    href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.2/errata/">updates</a>.</li>
 </ul>
-<div style="margin-left: 40px;">The <span style="font-weight: bold;">previous
-Stable Release</span> version is 3.2.10<br>
+
+<div style="margin-left: 40px;">
+The <span style="font-weight: bold;">previous Stable Release</span> version
+is 3.2.10<br>
+
 <ul>
   <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/releasenotes.txt">release
-notes</a> <br>
+    href="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/releasenotes.txt">release
+    notes</a> <br>
   </li>
   <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/known_problems.txt">known
-problems</a> and <a
- href="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/">updates</a>.</li>
+    href="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/known_problems.txt">known
+    problems</a> and <a
+    href="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/">updates</a>.</li>
 </ul>
-The <span style="font-weight: bold;">current Development
-Release</span> is 3.9.2<br>
+The <span style="font-weight: bold;">current Development Release</span> is
+3.9.3<br>
+
 <ul>
   <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/development/3.9/shorewall-3.9.2/releasenotes.txt">release
-notes</a> <br>
+    href="http://www1.shorewall.net/pub/shorewall/development/3.9/shorewall-3.9.3/releasenotes.txt">release
+    notes</a> <br>
   </li>
   <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/development/3.9/shorewall-3.9.2/known_problems.txt">known
-problems</a> and <a
- href="http://www1.shorewall.net/pub/shorewall/development/3.9/shorewall-3.9.2/errata/">updates</a>.</li>
+    href="http://www1.shorewall.net/pub/shorewall/development/3.9/shorewall-3.9.3/known_problems.txt">known
+    problems</a> and <a
+    href="http://www1.shorewall.net/pub/shorewall/development/3.9/shorewall-3.9.3/errata/">updates</a>.</li>
 </ul>
-<div style="margin-left: 40px;">Read about the<a href="Shorewall-4.html">
-New Development Release here</a>.<br>
+
+<div style="margin-left: 40px;">
+Read about the<a href="Shorewall-4.html">New Development Release here</a>.<br>
 </div>
 </div>
-<div style="margin-left: 40px;"><br>
+
+<div style="margin-left: 40px;">
+<br>
 Get them from the <a href="download.htm">download sites</a></div>
+
 <h3><a name="GettingStarted"></a>Getting Started with Shorewall</h3>
-<p style="margin-left: 0.42in;">New to Shorewall? Download the current
-Stable version (see above) then select the <a
- href="shorewall_quickstart_guide.htm">QuickStart
-Guide</a> that most closely matches your environment and follow the
-step by step instructions.</p>
+
+<p style="margin-left: 0.42in;">New to Shorewall? Download the current Stable
+version (see above) then select the <a
+href="shorewall_quickstart_guide.htm">QuickStart Guide</a> that most closely
+matches your environment and follow the step by step instructions.</p>
+
 <h3><a name="Info"></a>Looking for Information?</h3>
-<p style="margin-left: 0.42in;">The <a href="Documentation.html">Documentation
-Index</a> is a good place to start as is the Site Search in the frame
-above.</p>
+
+<p style="margin-left: 0.42in;">The <a
+href="Documentation.html">Documentation Index</a> is a good place to start as
+is the Site Search in the frame above.</p>
+
 <h3><a name="License"></a>License</h3>
+
 <p style="margin-left: 0.42in;">This program is free software; you can
 redistribute it and/or modify it under the terms of <a
- href="http://www.gnu.org/licenses/gpl.html">Version
-2 of the GNU General Public License</a> as published by the Free
-Software Foundation.</p>
-<p style="margin-left: 0.42in;">This program is distributed in the
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE. See the GNU General Public License for more detail.</p>
-<p style="margin-left: 0.42in;">You should have received a copy of the
-GNU General Public License along with this program; if not, write to
-the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
-02139, USA</p>
-<p style="margin-left: 0.42in;">Permission is granted to copy,
-distribute and/or modify this document under the terms of the GNU
-Free Documentation License, Version 1.2 or any later version
-published by the Free Software Foundation; with no Invariant
-Sections, with no Front-Cover, and with no Back-Cover Texts. A copy
-of the license is included in the section entitled "GNU Free
-Documentation License".</p>
+href="http://www.gnu.org/licenses/gpl.html">Version 2 of the GNU General
+Public License</a> as published by the Free Software Foundation.</p>
+
+<p style="margin-left: 0.42in;">This program is distributed in the hope that
+it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more detail.</p>
+
+<p style="margin-left: 0.42in;">You should have received a copy of the GNU
+General Public License along with this program; if not, write to the Free
+Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA</p>
+
+<p style="margin-left: 0.42in;">Permission is granted to copy, distribute
+and/or modify this document under the terms of the GNU Free Documentation
+License, Version 1.2 or any later version published by the Free Software
+Foundation; with no Invariant Sections, with no Front-Cover, and with no
+Back-Cover Texts. A copy of the license is included in the section entitled
+"GNU Free Documentation License".</p>
 <hr>
+
 <h2><a name="Leaf"></a>Leaf</h2>
+
 <p><font color="#000080"><a href="http://leaf.sourceforge.net/"
- target="_top"><font color="#000080"><img src="images/leaflogo.gif"
- name="Graphic1" alt="(Leaf Logo)" align="bottom" border="1" height="39"
- width="52"></font></a></font>
-LEAF is an open source project which provides a Firewall/router on a
-floppy, CD or CF. Several LEAF distributions including Bering and
-Bering-uClibc use Shorewall as their Netfilter configuration tool.</p>
+target="_top"><font color="#000080"><img src="images/leaflogo.gif"
+name="Graphic1" alt="(Leaf Logo)" align="bottom" border="1" height="39"
+width="52" /></font></a></font> LEAF is an open source project which provides
+a Firewall/router on a floppy, CD or CF. Several LEAF distributions including
+Bering and Bering-uClibc use Shorewall as their Netfilter configuration
+tool.</p>
 <hr>
+
 <h2><a name="OpenWRT"></a>OpenWRT</h2>
+
 <p style="margin-bottom: 0in;"><font color="#000000"><a
- href="http://openwrt.org/"><font color="#000080"><img
- src="images/openwrt.png" name="graphics1" alt="(OpenWRT Logo)"
- align="bottom" border="1" height="34" hspace="4" width="91"></font></a></font>OpenWRT
-is a project which provides open source firmware for Linksys WRT54G
-wireless routers. Two different Shorewall packages are available for
-OpenWRT.</p>
+href="http://openwrt.org/"><font color="#000080"><img
+src="images/openwrt.png" name="graphics1" alt="(OpenWRT Logo)" align="bottom"
+border="1" height="34" hspace="4" width="91" /></font></a></font>OpenWRT is a
+project which provides open source firmware for Linksys WRT54G wireless
+routers. Two different Shorewall packages are available for OpenWRT.</p>
 <hr>
+
 <h2><a name="Donations"></a>Donations</h2>
+
 <p><a href="http://www.alz.org/" target="_top"><font color="#000080"><img
- src="images/alz_logo2.gif" name="Graphic2"
- alt="(Alzheimer's Association Logo)" align="right" border="1"
- height="66" width="306"></font></a><a href="http://www.starlight.org/"
- target="_top"><font color="#000080"><img src="images/newlog.gif"
- name="Graphic3" alt="(Starlight Foundation Logo)" align="right"
- border="1" height="108" width="65"></font></a>Shorewall
-is free but if you try it and find it useful, please consider making
-a donation to the <a href="http://www.alz.org/" target="_top">Alzheimer's
-Association</a> or to the <a href="http://www.starlight.org/"
- target="_top">Starlight
-Children's Foundation</a>. <br>
+src="images/alz_logo2.gif" name="Graphic2"
+alt="(Alzheimer's Association Logo)" align="right" border="1" height="66"
+width="306" /></font></a><a href="http://www.starlight.org/"
+target="_top"><font color="#000080"><img src="images/newlog.gif"
+name="Graphic3" alt="(Starlight Foundation Logo)" align="right" border="1"
+height="108" width="65" /></font></a>Shorewall is free but if you try it and
+find it useful, please consider making a donation to the <a
+href="http://www.alz.org/" target="_top">Alzheimer's Association</a> or to
+the <a href="http://www.starlight.org/" target="_top">Starlight Children's
+Foundation</a>. <br>
 <br>
 Thank You</p>
+
 <p align="left"><br>
 <br>
 </p>

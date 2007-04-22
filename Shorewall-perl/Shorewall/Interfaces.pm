@@ -208,7 +208,14 @@ sub validate_interfaces_file()
 	    $interfaces{$interface}{root} = $interface;
 	}
 
-	warning_message 'Shorewall no longer uses broadcast addresses in rule generation:' . $networks if $networks && $networks ne 'detect';
+	unless ( $networks eq '' || $networks eq 'detect' ) {
+
+	    for my $address ( split /,/, $networks ) {
+		fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+	    }
+
+	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation';
+	}
 
 	my $optionsref = {};
 

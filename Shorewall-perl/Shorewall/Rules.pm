@@ -1437,6 +1437,7 @@ sub generate_matrix() {
 	my $need_broadcast   = {}; ### Fixme ###
 	my $frwd_ref         = 0;
 	my $chain            = 0;
+	my %needbroadcast;
 
 	if ( $complex ) {
 	    $frwd_ref = $filter_table->{"${zone}_frwd"};
@@ -1486,10 +1487,20 @@ sub generate_matrix() {
 
 			add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
 			    if $complex && $hostref->{ipsec} ne 'ipsec';
+
+			$needbroadcast{$interface} = 1 if get_interface_option $interface, 'detectnets';
 		    }
 		}
 	    }
 	}
+
+	if ( $chain1 ) {
+	    for my $interface ( keys %needbroadcast ) {
+		add_rule filter_table{out_chain $interface} , "-d 255.255.255.255 -j $chain1";
+		add_rule filter_table{out_chain $interface} , "-d 224.0.0.0/4     -j $chain1";
+	    }
+	}
+
 	#
 	#                           F O R W A R D I N G
 	#

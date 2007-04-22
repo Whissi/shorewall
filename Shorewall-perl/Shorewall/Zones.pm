@@ -115,7 +115,7 @@ my %reservedName = ( all => 1,
 # => mss   = <MSS setting>
 # => ipsec = <-m policy arguments to match options>
 #
-sub parse_zone_option_list($)
+sub parse_zone_option_list($$)
 {
     my %validoptions = ( mss          => NUMERIC,
 			 strict       => NOTHING,
@@ -133,7 +133,7 @@ sub parse_zone_option_list($)
     #
     my %key = ( mss => "mss" );
 
-    my $list=$_[0];
+    my ( $list, $zonetype ) = @_;
     my %h;
     my $options = '';
     my $fmt;
@@ -166,6 +166,7 @@ sub parse_zone_option_list($)
 	    if ( $key{$e} ) {
 		$h{$e} = $val;
 	    } else {
+		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype eq 'ipsec4';
 		$options .= $invert;
 		$options .= "--$e ";
 		$options .= "$val "if defined $val;
@@ -244,9 +245,9 @@ sub determine_zones()
 	$in_options   = '' if $in_options  eq '-';
 	$out_options  = '' if $out_options eq '-';
 
-	$zone_hash{in_out}   = parse_zone_option_list( $options || '');
-	$zone_hash{in}       = parse_zone_option_list( $in_options || '');
-	$zone_hash{out}      = parse_zone_option_list( $out_options || '');
+	$zone_hash{in_out}   = parse_zone_option_list( $options || '',$zoneref->{type} );
+	$zone_hash{in}       = parse_zone_option_list( $in_options || '', $zoneref->{type} );
+	$zone_hash{out}      = parse_zone_option_list( $out_options || '', $zoneref->{type} );
 	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
 
 	$zoneref->{options}    = \%zone_hash;

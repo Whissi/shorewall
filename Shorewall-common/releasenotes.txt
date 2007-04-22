@@ -27,6 +27,15 @@ Problems corrected in 3.9.4.
 
 4)  The 'detectnets' option was accepted but did nothing.
 
+5)  Run-time errors were reported if interface or zone options were
+    missing a value. 
+
+6)  The routeback option was accepted on multi-zone interfaces; the
+    documentation indicates that this option is not appropriate on such
+    interfaces.
+
+7)  'shorewall check -d' resulted in a run-time error.
+
 Other changes in Shorewall 3.9.4
 
 1)  The LOG_MARTIANS and ROUTE_FILTER options are not tri-valued.
@@ -294,6 +303,10 @@ Migration Considerations:
 
     k) The pre Shorewall-3.0 format of the zones file is not supported;
        neither is the /etc/shorewall/ipsec file.
+
+    l) BLACKLISTNEWONLY=No is not permitted with FASTACCEPT=Yes. This
+       combination doesn't work in previous versions of Shorewall so
+       the Perl-based compiler simply rejects it.
 
 2)  An 'optional' option has been added to
     /etc/shorewall/interfaces. When 'optional' is specified for an

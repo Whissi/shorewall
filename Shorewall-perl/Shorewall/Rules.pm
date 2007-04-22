@@ -733,7 +733,7 @@ sub setup_mac_lists( $ ) {
 	    my $target = mac_chain $interface;
 	    if ( $table eq 'filter' ) {
 		for my $chain ( @{first_chains $interface}) {
-		    add_rule $filter_table->{$chain} , "${source}-m state --statue NEW ${policy}-j $target";
+		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
 	    } else {
 		add_rule $mangle_table->{PREROUTING}, "-i $interface ${source}-m state --state NEW ${policy}-j $target";

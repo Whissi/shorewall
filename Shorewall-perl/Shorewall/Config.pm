@@ -853,6 +853,9 @@ sub get_configuration( $ ) {
     warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{MAPOLDACTIONS};
 
     default_yes_no 'FASTACCEPT'                 , '';
+
+    fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
+
     default_yes_no 'IMPLICIT_CONTINUE'          , '';
     default_yes_no 'HIGH_ROUTE_MARKS'           , '';
     default_yes_no 'TC_EXPERT'                  , '';

@@ -77,8 +77,9 @@ sub do_ipsec_options($)
 	fatal_error "Invalid Option ($e)" unless $fmt;
 
 	if ( $fmt eq NOTHING ) {
-	    fatal_error "Option $e does not take a value" if defined $val;
+	    fatal_error "Option \"$e\" does not take a value" if defined $val;
 	} else {
+	    fatal_error "Missing value for option \"$e\""        unless defined $val;
 	    fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
 	}
 

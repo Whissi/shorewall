@@ -115,20 +115,20 @@ sub add_group_to_zone($$$$$)
     push @{$arrayref}, \%h;
 }
 
+#
+# Return a list of networks routed out of the passed interface
+#
 sub get_routed_networks ( $$ ) {
     my ( $interface , $error_message ) = @_;
     my @networks;
 
-    if ( open IP , '-|' , "ip route show dev $interface 2> /dev/null" ) {
+    if ( open IP , '-|' , "/sbin/ip route show dev $interface 2> /dev/null" ) {
 	while ( my $route = <IP> ) {
 	    $route =~ s/^\s+//;
 	    my $network = ( split /\s+/, $route )[0];
 	    if ( $network eq 'default' ) {
-		if ( $error_message ) {
-		    fatal_error $error_message;
-		} else {
-		    warning_message "default route ignored on interface $interface";
-		}
+		fatal_error $error_message if $error_message;
+		warning_message "default route ignored on interface $interface";
 	    } else {
 		my ( $address, $vlsm ) = split '/', $network;
 		$vlsm = 32 unless defined $vlsm;
@@ -136,11 +136,7 @@ sub get_routed_networks ( $$ ) {
 	    }
 	}
 	close IP
-    } else {
-	fatal_error "Cannot get routes through interface $interface";
     }
-
-    fatal_error "detectnets: There are no routes through interface $interface" unless @networks;
 
     @networks;
 }
@@ -252,17 +248,25 @@ sub validate_interfaces_file()
 		}
 	    }
 
-	    $zoneref->{options}{in_out}{routeback} = 1 if $options{routeback};
-	    
+	    $zoneref->{options}{in_out}{routeback} = 1 if $options{routeback};    
 	}
 	
 	$interfaces{$interface}{options} = $optionsref = \%options;
 
 	push @interfaces, $interface;
 
-	my @networks = $options{detectnets} ? get_routed_networks( $interface , "detectnets not allowed on interface with default route - $interface" ) : @allipv4;
+	my @networks;
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
+	if ( $options{detectnets} ) {
+	    fatal_error "'detectnets' not allowed with multi-zone interface" unless $zone;
+	    fatal_error "The 'detectnets' option may not be used with a wild-card interface name" if $wildcard;
+	    @networks = get_routed_networks( $interface, 'detectnets not allowed on interface with default route' );
+	    fatal_error "No routes through 'detectnets' interface $interface" unless @networks || $options{optional};
+	} else {
+	    @networks = @allipv4;
+	}
+
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if @networks;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

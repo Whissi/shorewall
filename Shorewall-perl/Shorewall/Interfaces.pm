@@ -266,7 +266,7 @@ sub validate_interfaces_file()
 	    @networks = @allipv4;
 	}
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if @networks;
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

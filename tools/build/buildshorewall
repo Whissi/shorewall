@@ -359,7 +359,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fgrep VERSION=$VERSION $SHELLDIR/install.sh > /dev/null 2>&1 || fatal_error "Shell install.sh has wrong version"
 
     fgrep VERSION=$VERSION $PERLDIR/install.sh > /dev/null 2>&1   || fatal_error "Perl install.sh has wrong version"
-    fgrep 'VERSION =>  \'$VERSION\'' $PERLDIR/Shorewall/Config.pm || fatal_error "Perl Config.pm has wrong version"
+    fgrep "VERSION =>  '$VERSION'" $PERLDIR/Shorewall/Config.pm > /dev/null 2>&1 || fatal_error "Perl Config.pm has wrong version"
 
     if [ -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
@@ -644,7 +644,6 @@ fi
 		do_or_die "$GPG $betaball"
 	    done
 	fi
-
 
 	progress_message "Creating $DIR/shorewall-lite-$VERSION..."
 

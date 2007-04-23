@@ -761,6 +761,8 @@ sub get_configuration( $ ) {
 
     ensure_config_path( $export );
 
+    default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
+
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
 
     if ( ! $export && $> == 0 ) { # $> == $EUID

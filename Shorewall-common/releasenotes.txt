@@ -1,4 +1,4 @@
-Shorewall 3.9.3
+Shorewall 3.9.5
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -15,45 +15,14 @@ Shorewall 3.9.3
 You must install Shorewall and at least one of the compiler packages
 (you may install them both).
 
-Problems corrected in 3.9.4.
+Problems corrected in 3.9.5.
 
-1)  The value zero was being ignored in SOURCE PORT(S) and DEST PORT(S)
-    columns.
-
-2)  logmartions=0 was being treated the same as logmartians=1.
-
-3)  The 'arp_ignore' interface option caused an internal error in
-    validate_interfaces_file() and other errors.
-
-4)  The 'detectnets' option was accepted but did nothing.
-
-5)  Run-time errors were reported if interface or zone options were
-    missing a value. 
-
-6)  The routeback option was accepted on multi-zone interfaces; the
-    documentation indicates that this option is not appropriate on such
-    interfaces.
-
-7)  'shorewall check -d' resulted in a run-time error.
-
-8)  Intra-zone policies other than ACCEPT didn't work.
-
-9)  When MACLIST_TABLE=filter, MAC validation produced invalid
-    iptables-restore input.
-
+1)  Setting DYNAMIC_ZONES=Yes produced lots of Perl run-time errors in
+    some configurations.
+    
 Other changes in Shorewall 3.9.4
 
-1)  The LOG_MARTIANS and ROUTE_FILTER options are not tri-valued.
-
-	Yes -  Same as before
-	No  -  Same as before except that it applies regardless of
-	       whether any interfaces have the logmartians/routefilter
-	       option
-	Keep - Shorewall ignores the option entirely.
-
-2)  The 'optional' interface option can now work with 'maclist'; an
-    optional interface that specifies 'maclist' will not prevent
-    Shorewall from [re]starting successfully.
+None.
 
 Migration Considerations:
 
@@ -361,6 +330,14 @@ Migration Considerations:
 4)  Thanks to Paul Gear, an IPPServer macro has been added. Be sure to
     read the comments in the macro file before trying to use this
     macro.
+
+5)  The LOG_MARTIANS and ROUTE_FILTER options are now tri-valued.
+
+	Yes -  Same as before
+	No  -  Same as before except that it applies regardless of
+	       whether any interfaces have the logmartians/routefilter
+	       option
+	Keep - Shorewall ignores the option entirely.
 
 ----------------------------------------------------------------------------
                       P R E R E Q U I S I T E S

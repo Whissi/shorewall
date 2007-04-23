@@ -571,9 +571,9 @@ sub setup_tc() {
 	}
     }
 
-    if ( $config{TC_SCRIPT} ) {
+    if ( $globals{TC_SCRIPT} ) {
 	save_progress_message 'Setting up Traffic Control...';
-	append_file $config{TC_SCRIPT};
+	append_file $globals{TC_SCRIPT};
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
 	setup_traffic_shaping;
     }

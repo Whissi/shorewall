@@ -489,7 +489,7 @@ sub check_trivalue( $$ ) {
 	} elsif ( $val eq 'keep' ) {
 	    $config{$var} = '';
 	} elsif ( $val eq '' ) {
-	    $config{var} = $default
+	    $config{$var} = $default
 	} else {
 	    fatal_error "Invalid value ( $val ) for $var";
 	}
@@ -818,7 +818,11 @@ sub get_configuration( $ ) {
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'CLEAR_TC'                   , 'Yes';
-    default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
+    if ( defined $config{CLAMPMSS} ) {
+	default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
+    } else {
+	$config{CLAMPMSS} = '';
+    }
 
     unless ( $config{ADD_IP_ALIASES} || $config{ADD_SNAT_ALIASES} ) {
 	$config{RETAIN_ALIASES} = '';
@@ -906,10 +910,13 @@ sub get_configuration( $ ) {
 
     $globals{TC_SCRIPT} = '';
 
+    default 'TC_ENABLED' , 'Internal';
+
     if ( $val = "\L$config{TC_ENABLED}" ) {
 	if ( $val eq 'yes' ) {
 	    $file = find_file 'tcstart';
 	    fatal_error "Unable to find tcstart file" unless -f $file;
+	    $globals{TC_SCRIPT} = $file;
 	} elsif ( $val ne 'internal' ) {
 	    fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
 	    $config{TC_ENABLED} = '';
@@ -922,7 +929,7 @@ sub get_configuration( $ ) {
     default 'QUEUE_DEFAULT'         , 'none';
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
-    default 'IPSECFILE'             , 'ipsec';
+    default 'IPSECFILE'             , 'zones';
 
     fatal_error 'IPSECFILE=ipsec is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
 
@@ -956,7 +963,7 @@ sub get_configuration( $ ) {
 
 	$globals{MAXZONENAMELENGTH} = int ( 5 + ( ( 29 - (length $result ) ) / 2) );
     } else {
-	$globals{LOGFORMAT}='Shorewall:%s:%s:';
+	$config{LOGFORMAT}='Shorewall:%s:%s:';
 	$globals{MAXZONENAMELENGTH} = 5;
     }
 

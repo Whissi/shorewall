@@ -836,7 +836,8 @@ sub process_macro ( $$$$$$$$$$$ ) {
 
 	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $rate, $user;
 
-	progress_message "   Rule \"$line\" $done";    }
+	progress_message "   Rule \"$line\" $done";
+    }
 
     pop_open;
 

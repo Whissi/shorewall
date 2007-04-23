@@ -356,6 +356,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fgrep VERSION=$VERSION $SHOREWALLLITEDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "Lite uninstall.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLLITEDIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite fallback.sh has wrong version"
 
+    fgrep VERSION=$VERSION $SHELLDIR/install.sh > /dev/null 2>&1     || fatal_error "Shell install.sh has wrong version"
+
+    fgrep 'VERSION =>  \'$VERSION\'' $PERLDIR/Shorewall/Config.pm || fatal_error "Perl Config.pm has wrong version"
+
     if [ -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
 	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLESTAG Samples >> $LOGFILE 2>&1"

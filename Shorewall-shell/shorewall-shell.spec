@@ -1,5 +1,5 @@
 %define name shorewall-shell
-%define version 3.9.3
+%define version 3.9.4
 %define release 1
 %define prefix /usr
 
@@ -63,6 +63,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING INSTALL 
 
 %changelog
+* Mon Apr 23 2007 Tom Eastep tom@shorewall.net
+- Updated to 3.9.4-1
 * Wed Apr 18 2007 Tom Eastep tom@shorewall.net
 - Updated to 3.9.3-1
 * Mon Apr 16 2007 Tom Eastep tom@shorewall.net

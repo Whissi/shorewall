@@ -651,8 +651,6 @@ sub setup_mac_lists( $ ) {
 
     if ( $phase == 1 ) {
 
-	save_progress_message "Setting up MAC Verification" if @maclist_interfaces;
-
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 
@@ -752,19 +750,11 @@ sub setup_mac_lists( $ ) {
 	    my $chain    = $chainref->{name};
 
 	    if ( $config{MACLIST_LOG_LEVEL} || $config{MACLIST_DISPOSITION} != 'ACCEPT' ) {
-		add_command $chainref, "if interface_is_usable $interface; then";
-		add_command $chainref, "    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do";
-		add_command $chainref, '        address=${address%/*}';
-		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3";
-		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type MULTICAST -j RETURN\" >&3";
-		add_command $chainref, '    done';
-		
-		unless ( interface_is_optional $interface ) {
-		    add_command $chainref, 'else';
-		    add_command $chainref, "    fatal_error \"Interface $interface must be up before Shorewall can start\"";
-		}
-		
-		add_command $chainref, "fi\n";
+		my $variable = get_interface_addresses $interface;
+		add_command $chainref, "for address in $variable; do";
+		add_command $chainref, "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3";
+		add_command $chainref, "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type MULTICAST -j RETURN\" >&3";
+		add_command $chainref, 'done';
 	    }
 
 	    add_file $chainref, 'maclog';

@@ -1071,9 +1071,9 @@ sub get_interface_addresses ( $ ) {
     my $variable = interface_addresses( $interface );
 
     if ( interface_is_optional $interface ) {
-	$interfaceaddrs{$interface} = qq($variable=\$(get_interface_addresses $interface)\n);
+	$interfaceaddrs{$interface} = qq($variable=\$(find_interface_addresses $interface)\n);
     } else {
-	$interfaceaddrs{$interface} = qq($variable=\$(get_interface_addresses $interface)
+	$interfaceaddrs{$interface} = qq($variable=\$(find_interface_addresses $interface)
 [ -n "\$$variable" ] || fatal_error "Unable to determine the IP address(es) of $interface"
 );
     }

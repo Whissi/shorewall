@@ -496,19 +496,15 @@ sub add_common_rules() {
 
     $list = find_hosts_by_option 'nosmurfs';
 
-    if ( $capabilities{ADDRTYPE} ) {
-	$chainref = new_standard_chain 'smurfs';
+    $chainref = new_standard_chain 'smurfs';
 
-	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 
-	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-	add_rule_pair $chainref, '-m addrtype --src-type MULTICAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-
-	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
-	add_rule $rejectref , '-m addrtype --src-type MULTICAST -j DROP';
-    } elsif ( @$list ) {
-	fatal_error "The nosmurfs option requires Address Type Match in your kernel and iptables";
-    }
+    add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
+    add_rule_pair $chainref, '-m addrtype --src-type MULTICAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
+    
+    add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+    add_rule $rejectref , '-m addrtype --src-type MULTICAST -j DROP';
 
     if ( @$list ) {
 	progress_message2 'Adding Anti-smurf Rules';

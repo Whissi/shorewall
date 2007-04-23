@@ -759,8 +759,12 @@ sub setup_mac_lists( $ ) {
 		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -d 255.255.255.255 -j RETURN\" >&3";
 		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4     -j RETURN\" >&3";
 		add_command $chainref, '    done';
-		add_command $chainref, 'else';
-		add_command $chainref, "    fatal_error \"Interface $interface must be up before Shorewall can start\"";
+
+		unless ( interface_is_optional $interface ) {
+		    add_command $chainref, 'else';
+		    add_command $chainref, "    fatal_error \"Interface $interface must be up before Shorewall can start\"";
+		}
+
 		add_command $chainref, "fi\n";
 	    }
 

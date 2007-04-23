@@ -751,7 +751,7 @@ find_interface_by_mac() {
 # Determine if Interface is up
 #
 interface_is_up() {
-    [ -n "$(ip link ls dev $1 | grep -e '[<,]UP[,>]')" ]
+    [ -n "$(ip link ls dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
 }
 
 #

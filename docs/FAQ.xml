@@ -845,6 +845,26 @@ to debug/develop the newnat interface.</programlisting></para>
       url="SimpleBridge.html">Shorewall Simple Bridge
       documentation</ulink>.</para>
     </section>
+
+    <section>
+      <title>(FAQ 63) I just upgraded my kernel to 2.6.20 and my
+      bridge/firewall stopped working. What is wrong?</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> In kernel 2.6.20, the
+      Netfilter <firstterm>physdev match</firstterm> feature was changed such
+      that it is no longer capable of matching the output device of
+      non-bridged traffic. You will see messages such as the following in your
+      log:</para>
+
+      <programlisting>Apr 20 15:03:50 wookie kernel: [14736.560947] physdev match: using --physdev-out in the OUTPUT, FORWARD and POSTROUTING chains for
+                                                             non-bridged traffic is not supported anymore.</programlisting>
+
+      <para>This kernel change, while necessary, means that Shorewall zones
+      may no longer be defined in terms of bridge ports. See <ulink
+      url="NewBridge.html">the new bridging documentation</ulink> for
+      information about configuring a bridge/firewall under kernel 2.6.20 and
+      later.</para>
+    </section>
   </section>
 
   <section>

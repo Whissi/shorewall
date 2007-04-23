@@ -109,6 +109,13 @@
     systems (including Dom0).</para>
 
     <caution>
+      <para>The Shorewall configuration shown in this article does not work
+      with kernel 2.6.20 and later. For new Xen installations, I strongly
+      recommend against a bridged Xen Domain 0 unless you <ulink
+      url="XenMyWay.html">run Shorewall in a DomU</ulink>.</para>
+    </caution>
+
+    <caution>
       <para>I find a bridged Xen Domain 0 to be an arcane environment in which
       to try to use Netfilter (and hence Shorewall). As the number of
       interfaces and bridges increase, complexity increases geometrically. I

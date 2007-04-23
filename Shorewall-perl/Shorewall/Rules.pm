@@ -650,6 +650,8 @@ sub setup_mac_lists( $ ) {
     progress_message "   $doing MAC Verification for @maclist_interfaces -- Phase $phase...";
 
     if ( $phase == 1 ) {
+	save_progress_message "Setting up MAC Verification" if @maclist_interfaces;
+
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 

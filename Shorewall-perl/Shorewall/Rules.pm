@@ -755,19 +755,15 @@ sub setup_mac_lists( $ ) {
 		add_command $chainref, "if interface_is_usable $interface; then";
 		add_command $chainref, "    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do";
 		add_command $chainref, '        address=${address%/*}';
-		add_command $chainref, '        if [ -n "$broadcast" ]; then';
-		add_command $chainref, "            echo \"-A $chainref->{name} -s \$address -d \$broadcast -j RETURN\" >&3";
-		add_command $chainref, '        fi';
-		add_command $chainref, '';
-		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -d 255.255.255.255 -j RETURN\" >&3";
-		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4     -j RETURN\" >&3";
+		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3";
+		add_command $chainref, "        echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type MULTICAST -j RETURN\" >&3";
 		add_command $chainref, '    done';
-
+		
 		unless ( interface_is_optional $interface ) {
 		    add_command $chainref, 'else';
 		    add_command $chainref, "    fatal_error \"Interface $interface must be up before Shorewall can start\"";
 		}
-
+		
 		add_command $chainref, "fi\n";
 	    }
 

@@ -64,6 +64,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    CONFDIR =>  '/etc/shorewall',
 		    SHAREDIRPL => '/usr/share/shorewall-perl/',
 		    LOGPARMS => '',
+		    TC_SCRIPT => '',
 		    VERSION =>  '3.9.4',
 		  );
 
@@ -778,8 +779,10 @@ sub get_configuration( $ ) {
 	unless ( open_file 'capabilities' ) {
 	    determine_capabilities;
 	}
-    } else {
+    } elsif ( $export ) {
 	fatal_error "The -e flag requires a capabilities file" unless open_file 'capabilities';
+    } else {
+	fatal_error "Compiling under an ordinary user id requires a capabilities file" unless open_file 'capabilities';
     }
 
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
@@ -909,8 +912,6 @@ sub get_configuration( $ ) {
     } else {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
-
-    $globals{TC_SCRIPT} = '';
 
     default 'TC_ENABLED' , 'Internal';
 

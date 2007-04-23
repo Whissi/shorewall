@@ -598,14 +598,15 @@ sub add_common_rules() {
 	    for $chain ( @{dynamic_chains $interface} ) {
 		new_standard_chain $chain;
 	    }
-	}
 
-	(new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1;
+	    (new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1;
 
-	add_rule $filter_table->{input_chain $interface},  "-j $chain";
-	add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
-	add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
+	    add_rule $filter_table->{input_chain $interface},  "-j $chain";
+	    add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
+	    add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
+	}	
     }
+
 
     $list = find_interfaces_by_option 'upnp';
 

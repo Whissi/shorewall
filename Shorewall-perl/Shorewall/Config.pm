@@ -780,9 +780,9 @@ sub get_configuration( $ ) {
 	    determine_capabilities;
 	}
     } elsif ( $export ) {
-	fatal_error "The -e flag requires a capabilities file" unless open_file 'capabilities';
+	open_file 'capabilities' or fatal_error "The -e flag requires a capabilities file";
     } else {
-	fatal_error "Compiling under an ordinary user id requires a capabilities file" unless open_file 'capabilities';
+	open_file 'capabilities' or fatal_error "Compiling under an ordinary user id requires a capabilities file";
     }
 
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
@@ -817,7 +817,6 @@ sub get_configuration( $ ) {
     check_trivalue ( 'ROUTE_FILTER',  '' );
     check_trivalue ( 'LOG_MARTIANS',  '' );
  
-
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
@@ -915,15 +914,15 @@ sub get_configuration( $ ) {
 
     default 'TC_ENABLED' , 'Internal';
 
-    if ( $val = "\L$config{TC_ENABLED}" ) {
-	if ( $val eq 'yes' ) {
-	    $file = find_file 'tcstart';
-	    fatal_error "Unable to find tcstart file" unless -f $file;
-	    $globals{TC_SCRIPT} = $file;
-	} elsif ( $val ne 'internal' ) {
-	    fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
-	    $config{TC_ENABLED} = '';
-	}
+    $val = "\L$config{TC_ENABLED}";
+
+    if ( $val eq 'yes' ) {
+	$file = find_file 'tcstart';
+	fatal_error "Unable to find tcstart file" unless -f $file;
+	$globals{TC_SCRIPT} = $file;
+    } elsif ( $val ne 'internal' ) {
+	fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
+	$config{TC_ENABLED} = '';
     }
 
     default 'RESTOREFILE'           , 'restore';

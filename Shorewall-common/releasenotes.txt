@@ -51,6 +51,10 @@ Other changes in Shorewall 3.9.4
 	       option
 	Keep - Shorewall ignores the option entirely.
 
+2)  The 'optional' interface option can now work with 'maclist'; an
+    optional interface that specifies 'maclist' will not prevent
+    Shorewall from [re]starting successfully.
+
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must
@@ -324,6 +328,13 @@ Migration Considerations:
 
     I specify 'optional' on interfaces to Xen virtual machines that may
     or may not be running when Shorewall is [re]started.
+
+    CAUTION: Use 'optional' at your own risk. If you [re]start
+    Shorewall when an 'optional' interface is not available and then do
+    a 'shorewall save', subsequent 'shorewall restore' and 'shorewall -f
+    start' operations will instantiate a ruleset that does not support
+    that interface, even if it is available at the time of the
+    restore/start.
 
 3)  The treatment of the following interface options has changed under
     Shorewall-perl.

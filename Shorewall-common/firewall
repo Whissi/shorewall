@@ -378,11 +378,11 @@ stop_firewall() {
     done
 
     case "$IP_FORWARDING" in
-	On|on|ON)
+	On|on|ON|Yes|yes|YES)
 	    echo 1 > /proc/sys/net/ipv4/ip_forward
 	    progress_message2 "IP Forwarding Enabled"
 	    ;;
-	Off|off|OFF)
+	Off|off|OFF|No|no|NO)
 	    echo 0 > /proc/sys/net/ipv4/ip_forward
 	    progress_message2 "IP Forwarding Disabled!"
 	    ;;

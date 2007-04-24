@@ -1121,13 +1121,15 @@ sub expand_rule( $$$$$$$$$$ )
     #
     my $logtag;
 
-    if ( $loglevel ) {
+    if ( $loglevel ne '' ) {
 	( $loglevel, $logtag ) = split /:/, $loglevel;
 
 	if ( $loglevel =~ /^none!?$/i ) {
 	    return if $disposition eq 'LOG';
 	    $loglevel = $logtag = '';
 	}
+	
+	$loglevel = validate_level( $loglevel );
     }
     #
     # Isolate Source Interface, if any

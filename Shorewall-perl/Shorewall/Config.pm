@@ -43,6 +43,7 @@ our @EXPORT = qw(
 		 push_open
 		 pop_open
 		 read_a_line
+		 validate_level
 		 get_configuration
 		 require_capability
 		 report_capabilities
@@ -475,6 +476,52 @@ sub default_yes_no ( $$ ) {
 	$config{$var} = $val;
     }
 }
+
+my %validlevels = ( debug   => 7,
+		    info    => 6,
+		    notice  => 5, 
+		    warning => 4, 
+		    warn    => 4, 
+		    err     => 3,
+		    error   => 3,
+		    crit    => 2, 
+		    alert   => 1, 
+		    emerg   => 0, 
+		    panic   => 0,
+		    none    => ''
+		    ULOG    => 'ULOG' );
+
+#
+# Validate a log level
+#
+sub validate_level( $ ) {
+    my $level = $_[0];
+
+    if ( defined $level && $level ne '' ) {
+	my $value = $validlevels{$level};
+	return $value if defined $value;
+	return $level if $level =~ /^[0-7]$/;
+	fatal_error "Invalid log level ($level)";
+    }
+
+    '';
+}
+
+#
+# Validate a log level and supply default
+#
+sub default_log_level( $$ ) {
+    my ( $level, $default ) = @_;
+
+    my $value = $config{$level};
+
+    unless ( defined $value ) {
+	$config{$level} = $default;
+    } else {
+	$config{$level} = validate_level $value;
+    }
+}
+
 #
 # Check a tri-valued variable
 #
@@ -877,6 +924,13 @@ sub get_configuration( $ ) {
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
     default 'BLACKLIST_DISPOSITION'             , 'DROP';
+
+    default_log_level 'BLACKLIST_LOGLEVEL',  '';
+    default_log_level 'MACLIST_LOG_LEVEL',   '';
+    default_log_level 'TCP_FLAGS_LOG_LEVEL', '';
+    default_log_level 'RFC1918_LOG_LEVEL',   6;
+    default_log_level 'SMURF_LOG_LEVEL',     '';
+    default_log_level 'LOGALLNEW',           '';
 
     my $val;
 

@@ -216,7 +216,7 @@ sub setup_rfc1918_filteration( $ ) {
 	} elsif ( $target eq 'DROP' ) {
 	    $s_target = 'DROP';
 	} elsif ( $target eq 'RETURN' ) {
-	    $s_target = $config{RFC1918_LOG_LEVEL} ? 'rfc1918d' : 'RETURN';
+	    $s_target = $config{RFC1918_STRICT} ? 'rfc1918d' : 'RETURN';
 	} else {
 	    fatal_error "Invalid target ($target) for $networks";
 	}

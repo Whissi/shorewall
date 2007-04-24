@@ -488,7 +488,7 @@ my %validlevels = ( debug   => 7,
 		    alert   => 1, 
 		    emerg   => 0, 
 		    panic   => 0,
-		    none    => ''
+		    none    => '',
 		    ULOG    => 'ULOG' );
 
 #

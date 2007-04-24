@@ -1702,7 +1702,7 @@ sub generate_matrix() {
 		    '' ,
 		    '' ,
 		    'insert' ,
-		    '-m state --state NEW';
+		    '-m state --state NEW ';
 	    }
 	}
     }

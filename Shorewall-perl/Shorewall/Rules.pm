@@ -607,7 +607,6 @@ sub add_common_rules() {
 	}	
     }
 
-
     $list = find_interfaces_by_option 'upnp';
 
     if ( @$list ) {
@@ -638,6 +637,11 @@ sub setup_mac_lists( $ ) {
 
     my $maclist_hosts = find_hosts_by_option 'maclist';
 
+    my $target      = $globals{MACLIST_TARGET};
+    my $level       = $config{MACLIST_LOG_LEVEL};
+    my $disposition = $config{MACLIST_DISPOSITION};
+    my $ttl         = $config{MACLIST_TTL};
+    
     for my $hostref ( @$maclist_hosts ) {
 	$maclist_interfaces{ $hostref->[0] } = 1;
     }
@@ -654,12 +658,12 @@ sub setup_mac_lists( $ ) {
 	    add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
 		if ( $table eq 'mangle' ) && $interfaces{$interface}{options}{dhcp};
 
-	    if ( $config{MACLIST_TTL} ) {
+	    if ( $ttl ) {
 		my $chain1ref = new_chain $table, macrecent_target $interface;
 
 		my $chain = $chainref->{name};
 
-		add_rule $chainref, "-m recent --rcheck --seconds $config{MACLIST_TTL} --name $chain -j RETURN";
+		add_rule $chainref, "-m recent --rcheck --seconds $ttl --name $chain -j RETURN";
 		add_rule $chainref, "-j $chain1ref->{name}";
 		add_rule $chainref, "-m recent --update --name $chain -j RETURN";
 		add_rule $chainref, "-m recent --set --name $chain";
@@ -695,7 +699,7 @@ sub setup_mac_lists( $ ) {
 
 		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
 
-		my $chainref = $chain_table{$table}{( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface )};
+		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 
 		$mac       = '' unless $mac && ( $mac ne '-' );
 		$addresses = '' unless $addresses && ( $addresses ne '-' );
@@ -738,12 +742,8 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
     } else {
-	my $target      = $globals{MACLIST_TARGET};
-	my $level       = $config{MACLIST_LOG_LEVEL};
-	my $disposition = $config{MACLIST_DISPOSITION};
-
 	for my $interface ( @maclist_interfaces ) {
-	    my $chainref = $chain_table{$table}{( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface )};
+	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = $chainref->{name};
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {

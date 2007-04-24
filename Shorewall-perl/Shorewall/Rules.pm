@@ -475,7 +475,7 @@ sub add_common_rules() {
 
     my $rejectref = new_standard_chain 'reject';
 
-    $level = $globals{BLACKLIST_LOG_LEVEL} || 'info';
+    $level = $config{BLACKLIST_LOGLEVEL};
 
     add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
     add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'REJECT' , $level ;

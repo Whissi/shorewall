@@ -522,7 +522,7 @@ sub default_log_level( $$ ) {
 
     my $value = $config{$level};
 
-    unless ( defined $value ) {
+    unless ( defined $value && $value ne '' ) {
 	$config{$level} = $default;
     } else {
 	$config{$level} = validate_level $value;
@@ -935,7 +935,7 @@ sub get_configuration( $ ) {
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
     default_log_level 'MACLIST_LOG_LEVEL',   '';
     default_log_level 'TCP_FLAGS_LOG_LEVEL', '';
-    default_log_level 'RFC1918_LOG_LEVEL',   6;
+    default_log_level 'RFC1918_LOG_LEVEL',    6;
     default_log_level 'SMURF_LOG_LEVEL',     '';
     default_log_level 'LOGALLNEW',           '';
 

@@ -337,7 +337,7 @@ sub complete_standard_chain ( $$$ ) {
     run_user_exit $stdchainref;
 
     my $ruleschainref = $filter_table->{"${zone}2${zone2}"};
-    my ( $policy, $loglevel, $default ) = ( 'DROP', 'info', $config{DROP_DEFAULT} );
+    my ( $policy, $loglevel, $default ) = ( 'DROP', 6, $config{DROP_DEFAULT} );
     my $policychainref;
 
     $policychainref = $ruleschainref->{policychain} if $ruleschainref;

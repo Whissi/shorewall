@@ -54,7 +54,9 @@ our @EXPORT = qw(
 
 		 %config
 		 %globals
-		 %capabilities );
+		 %capabilities
+		 %protocols
+		 %services );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -196,6 +198,11 @@ our %capabilities =
 	       COMMENTS => undef,
 	       ADDRTYPE => undef,
 	       );
+#
+# /etc/protocols and /etc/services
+#
+our %protocols;
+our %services;
 
 my %capdesc = ( NAT_ENABLED     => 'NAT',
 		MANGLE_ENABLED  => 'Packet Mangling',
@@ -1035,6 +1042,30 @@ sub get_configuration( $ ) {
 	fatal_error "LOCKFILE=$config{LOCKFILE}: Directory $dir does not exist" unless -d $dir;
     } else {
 	$config{LOCKFILE} = '';
+    }
+
+    open_file '/etc/protocols' or fatal_error "Cannot open /etc/protocols: $!";
+
+    while ( read_a_line ) {
+	my ( $proto1, $number, $proto2, $proto3 ) = split_line( 2, 4, '/etc/protocols entry');
+
+	$protocols{ $proto1 } = $number;
+	$protocols{ $proto2 } = $number unless $proto2 eq '-' || $proto3 ne '-';
+    }
+
+    
+    open_file '/etc/services' or fatal_error "Cannot open /etc/services: $!";
+
+    while ( read_a_line ) {
+	my ( $name1, $proto_number, @names ) = split_line( 2, 10, '/etc/services entry');
+
+	my ( $number, $proto ) = split '/', $proto_number;
+
+	$services{ $name1 } = $number;
+	
+	while ( defined ( $name1 = shift @names ) && $name1 ne '-' ) {
+	    $services{ $name1 } = $number;
+	}
     }
 }
 

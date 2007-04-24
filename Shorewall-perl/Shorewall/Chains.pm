@@ -630,6 +630,104 @@ sub clearrule() {
     $iprangematch = 0;
 }
 
+sub validate_proto( $ ) {
+    my $proto = $_[0];
+    my $value = $protocols{$proto};
+    return $value if defined $value;
+    return $proto if $proto =~ /^(\d+)$/ && $proto <= 65535;
+    return $proto if $proto eq 'all';
+    fatal_error "Invalid/Unknown protocol ($proto)";
+}
+
+sub validate_portpair( $ ) {
+    my $portpair = $_[0];
+
+    fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/:/:/ > 1;
+
+    $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
+    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
+
+    my @ports = split/:/, $portpair;
+
+    for my $port ( @ports ) {
+	my $value = $services{$port};
+
+	unless ( defined $value ) {
+	    $value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
+	}
+	
+	fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
+
+	$port = $value;
+    }
+
+    if ( @ports == 2 ) {
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+    }
+
+    join ':', @ports;
+
+}
+
+sub validate_port_list( $ ) {
+    my $result = '';
+
+    for my $port ( split/,/, $_[0] ) {
+	my $value = validate_portpair( $port );
+	$result = $result ? join ',', $result, $value : $value;
+    }
+
+    $result;
+}
+
+my %icmp_types = ( any                          => 'any',
+		   'echo-reply'                 => 0,
+		   'destination-unreachable'    => 3,
+		   'network-unreachable'        => '3/0',
+		   'host-unreachable'           => '3/1',
+		   'protocol-unreachable'       => '3/2',
+		   'port-unreachable'           => '3/3',
+		   'fragmentation-needed'       => '3/4',
+		   'source-route-failed'        => '3/5',
+		   'network-unknown'            => '3/6',
+		   'host-unknown'               => '3/7',
+		   'network-prohibited'         => '3/9',
+		   'host-prohibited'            => '3/10',
+		   'TOS-network-unreachable'    => '3/11',
+		   'TOS-host-unreachable'       => '3/12',
+		   'communication-prohibited'   => '3/13',
+		   'host-precedence-violation'  => '3/14',
+		   'precedence-cutoff'          => '3/15',
+		   'source-quench'              => 4,
+		   'redirect'                   => 5,
+		   'network-redirect'           => '5/0',
+		   'host-redirect'              => '5/1',
+		   'TOS-network-redirect'       => '5/2',
+		   'TOS-host-redirect'          => '5/3',
+		   'echo-request'               => '8',
+		   'router-advertisement'       => 9,
+		   'router-solicitation'        => 10,
+		   'time-exceeded'              => 11,
+		   'ttl-zero-during-transit'    => '11/0',
+		   'ttl-zero-during-reassembly' => '11/1',
+		   'parameter-problem'          => 12,
+		   'ip-header-bad'              => '12/0',
+		   'required-option-missing'    => '12/1',
+		   'timestamp-request'          => 13,
+		   'timestamp-reply'            => 14,
+		   'address-mask-request'       => 17,
+		   'address-mask-reply'         => 18 );
+
+sub validate_icmp( $ ) {
+    my $type = $_[0];
+
+    my $value = $icmp_types{$type};
+
+    return $value if defined $value;
+    return $type  if $type =~ /^(\d+)(\/\d+)?$/;
+    fatal_error "Invalid ICMP Type ($type)"
+}
+
 #
 # Handle parsing of PROTO, DEST PORT(S) , SOURCE PORTS(S). Returns the appropriate match string.
 #
@@ -653,8 +751,9 @@ sub do_proto( $$$ )
 	if ( $proto =~ /^((tcp|6)((:syn)?))|(udp|17)$/ ) {
 
 	    if ( $3 ) {
-		$output = '-p tcp --syn ';
+		$output = '-p 6 --syn ';
 	    } else {
+		$proto   = $protocols{$proto} if defined $protocols{$proto};
 		$output  = "-p $proto ";
 	    }
 
@@ -662,8 +761,10 @@ sub do_proto( $$$ )
 		if ( $ports =~ tr/,/,/ > 0 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
 		    fatal_error "Too many entries in port list: $ports" if port_count( $ports ) > 15;
+		    $ports = validate_port_list $ports;
 		    $output .= "-m multiport --dports $ports ";
 		}  else {
+		    $ports   = validate_portpair $ports;
 		    $output .= "--dport $ports ";
 		}
 	    }
@@ -672,15 +773,22 @@ sub do_proto( $$$ )
 		if ( $sports =~ tr/,/,/ > 0 ) {	
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
 		    fatal_error "Too many entries in port list: $sports" if port_count( $sports ) > 15;
+		    $sports = validate_port_list $sports;
 		    $output .= "-m multiport --sports $sports ";
 		}  else {
+		    $sports  = validate_portpair $sports;
 		    $output .= "--sport $sports ";
 		}
 	    }
 	} elsif ( $proto =~ /^(icmp|1)$/i ) {
 	    fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
 	    $output .= "-p icmp ";
-	    $output .= "--icmp-type $ports " if $ports;
+
+	    if ( $ports ne '' ) {
+		$ports = validate_icmp $ports;
+		$output .= "--icmp-type $ports ";
+	    }
+
 	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
 	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all)))?$/i ) {
 	    require_capability( 'IPP2P' , 'PROTO = ipp2p' );
@@ -689,6 +797,7 @@ sub do_proto( $$$ )
 	    $output .= "-p $proto -m ipp2p --$ports ";
 	} else {
 	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $proto, rule \"$line\"" if $ports ne '' || $sports ne '';
+	    $proto = validate_proto $proto;
 	    $output .= "-p $proto ";
 	}
     } elsif ( $ports ne '' || $sports ne '' ) {
@@ -1013,7 +1122,7 @@ sub mysplit( $ ) {
 	my $element = shift @input;
 
 	if ( $element =~ /\[/ ) {
-	    while ( ! ( $element =~ /\]/ ) ) {
+	    while ( substr( $element, -1, 1 ) ne ']' ) {
 		last unless @input;
 		$element .= ( ',' . shift @input );
 	    }

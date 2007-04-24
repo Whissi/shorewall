@@ -178,7 +178,7 @@ sub setup_ecn()
 sub add_rule_pair( $$$$ ) {
     my ($chainref , $predicate , $target , $level ) = @_;
 
-    log_rule $level, $chainref, $target,  , $predicate,  if $level;
+    log_rule $level, $chainref, $target,  , $predicate,  if defined $level && $level ne '';
     add_rule $chainref , "${predicate}-j $target";
 }
 
@@ -248,7 +248,8 @@ sub setup_syn_flood_chains() {
 	    $burst = $burst ? "--limit-burst $burst " : '';
 	    my $synchainref = new_chain 'filter' , syn_chain $chainref->{name};
 	    add_rule $synchainref , "-m limit --limit $limit ${burst}-j RETURN";
-	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5' , '' , 'add' , '' if $level;
+	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5' , '' , 'add' , ''
+		if defined $level && $level ne '';
 	    add_rule $synchainref, '-j DROP';
 	}
     }
@@ -264,7 +265,7 @@ sub setup_blacklist() {
     if ( @$hosts ) {
 	$chainref = new_standard_chain 'blacklst';
 
-	if ( $level ) {
+	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
@@ -555,7 +556,7 @@ sub add_common_rules() {
 
 	$chainref = new_standard_chain 'tcpflags';
 
-	if ( $config{TCP_FLAGS_LOG_LEVEL} ) {
+	if ( $config{TCP_FLAGS_LOG_LEVEL} ne ''  ) {
 	    my $logflagsref = new_standard_chain 'logflags';
 
 	    my $savelogparms = $globals{LOGPARMS};
@@ -711,11 +712,13 @@ sub setup_mac_lists( $ ) {
 		if ( $addresses ) {
 		    for my $address ( split ',', $addresses ) {
 			my $source = match_source_net $address;
-			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}" if $level;
+			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}" 
+			    if defined $level && $level ne '';
 			add_rule $chainref , "${mac}${source}-j $targetref->{target}";
 		    }
 		} else {
-		    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac if $level;
+		    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
+			if defined $level && $level ne '';
 		    add_rule $chainref , "$mac-j $targetref->{target}";
 		}
 
@@ -1168,7 +1171,7 @@ sub process_rule ( $$$$$$$$$ ) {
 				if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 				    if ( $optimize > 0 ) {
 					my $loglevel = $policychainref->{loglevel};
-					if ( $loglevel ) {
+					if ( $loglevel ne '' ) {
 					    next if $target eq "${policy}:$loglevel}";
 					} else {
 					    next if $action eq $policy;
@@ -1188,7 +1191,7 @@ sub process_rule ( $$$$$$$$$ ) {
 			if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 			    if ( $optimize > 0 ) {
 				my $loglevel = $policychainref->{loglevel};
-				if ( $loglevel ) {
+				if ( $loglevel ne '') {
 				    next if $target eq "${policy}:$loglevel}";
 				} else {
 				    next if $action eq $policy;
@@ -1209,7 +1212,7 @@ sub process_rule ( $$$$$$$$$ ) {
 		if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 		    if ( $optimize > 0 ) {
 			my $loglevel = $policychainref->{loglevel};
-			if ( $loglevel ) {
+			if ( $loglevel ne '' ) {
 			    next if $target eq "${policy}:$loglevel}";
 			} else {
 			    next if $action eq $policy;

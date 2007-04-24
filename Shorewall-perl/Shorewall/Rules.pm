@@ -746,7 +746,7 @@ sub setup_mac_lists( $ ) {
 	    my $chainref = $chain_table{$table}{( $config{MACLIST_TTL} ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = $chainref->{name};
 
-	    if ( $config{MACLIST_LOG_LEVEL} ne '' || $config{MACLIST_DISPOSITION} ne 'ACCEPT' ) {
+	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		my $variable = get_interface_addresses $interface;
 		add_command $chainref, "for address in $variable; do";
 		add_command $chainref, "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3";
@@ -756,7 +756,7 @@ sub setup_mac_lists( $ ) {
 
 	    add_file $chainref, 'maclog';
 
-	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $config{MACLIST_LOG_LEVEL} ne '';
+	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
 	    add_rule $chainref, "-j $target";
 	}
     }

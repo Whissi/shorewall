@@ -54,10 +54,10 @@
       </listitem>
     </itemizedlist>
 
-    <para> Shorewall version 4 offers you a choice. You can continue to use
-    the existing shell-based implementation or you can use a new
-    implementation of the Shorewall compiler written in the Perl programming
-    language. The new compiler:</para>
+    <para>Shorewall version 4 offers you a choice. You can continue to use the
+    existing shell-based implementation or you can use a new implementation of
+    the Shorewall compiler written in the Perl programming language. The new
+    compiler:</para>
 
     <itemizedlist>
       <listitem>
@@ -98,7 +98,7 @@
 
       <listitem>
         <para>Shorewall-perl - the new Perl-based compiler. May be installed
-        under Shorewall 3.4.2 or 3.9.x.</para>
+        under Shorewall 3.4.2 or later or 3.9.x.</para>
       </listitem>
 
       <listitem>
@@ -194,34 +194,27 @@
       </listitem>
 
       <listitem>
-        <para>Because the compiler is now written in Perl, your compile-time
-        extension scripts from earlier versions will no longer work. For now,
-        if you want to use extension scripts, you will need to read the Perl
-        code to see how the compiler operates internally. I will produce
-        documentation before the first official release. Compile-time
-        extension scripts are executed using the Perl 'do FILE'
-        mechanism.</para>
-      </listitem>
-
-      <listitem>
         <para>The 'refresh' command is now synonymous with 'restart'.</para>
       </listitem>
 
       <listitem>
-        <para> Because the compiler is now written in Perl, your compile-time
+        <para>Because the compiler is now written in Perl, your compile-time
         extension scripts from earlier versions will no longer work.
         Compile-time extension scripts are executed using the Perl 'eval `cat
         &lt;file&gt;`' mechanism. Be sure that each script returns a 'true'
         value; otherwise, the compiler will assume that the script failed and
         will abort the compilation.</para>
 
-        <para>When a script is invoked, the $chainref scalar variable will
-        hold a reference to a chain table entry.</para>
+        <para>When a script is invoked, the <emphasis
+        role="bold">$chainref</emphasis> scalar variable will hold a reference
+        to a chain table entry.</para>
 
         <simplelist>
-          <member>$chainref-&gt;{name} contains the name of the chain</member>
+          <member><emphasis role="bold">$chainref-&gt;{name}</emphasis>
+          contains the name of the chain</member>
 
-          <member>$chainref-&gt;{table} holds the table name</member>
+          <member><emphasis role="bold">$chainref-&gt;{table}</emphasis> holds
+          the table name</member>
         </simplelist>
 
         <para>To add a rule to the chain:</para>
@@ -269,7 +262,7 @@
 
           <listitem>
             <para>There is only a single "pass as-is to iptables" argument (so
-            you must quote that par</para>
+            you must quote that part</para>
           </listitem>
         </itemizedlist>
 
@@ -282,7 +275,8 @@
               'DROP' , 
               '',    #Limit
               '' ,   #Log tag
-              'add';         </programlisting>
+              'add'
+              '-p tcp ';         </programlisting>
       </listitem>
 
       <listitem>
@@ -396,6 +390,12 @@ fi</programlisting>
       <listitem>
         <para>The pre Shorewall-3.0 format of the zones file is not supported;
         neither is the <filename>/etc/shorewall/ipsec</filename> file.</para>
+      </listitem>
+
+      <listitem>
+        <para>BLACKLISTNEWONLY=No is not permitted with FASTACCEPT=Yes. This
+        combination doesn't work in previous versions of Shorewall so the
+        Perl-based compiler simply rejects it.</para>
       </listitem>
     </orderedlist>
   </section>

@@ -1388,7 +1388,7 @@ sub generate_matrix() {
 	    my $in_ref  = new_standard_chain "${zone}_input";
 	    my $out_ref = new_standard_chain "${zone}_output";
 
-	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target $zone, $zone eq 'ACCEPT';
+	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 
 	    for my $host ( @$exclusions ) {
 		my ( $interface, $net ) = split /:/, $host;

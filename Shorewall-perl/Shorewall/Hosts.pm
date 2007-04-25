@@ -105,8 +105,15 @@ sub validate_hosts_file()
 	    $optionsref = \%options;
 	}
 
+	#
+	# Looking for the '!' at the beginning of a list element is more straight-foward than looking for it in the middle.
+	#
+	# Be sure we don't have a ',!' in the original
+	#
 	fatal_error "Invalid hosts list" if $hosts =~ /,!/;
-
+	#
+	# Now add a comma before '!'. Do it globally - add_group_to_zone() correctly checks for multiple exclusions
+	#
 	$hosts =~ s/!/,!/g;
 
 	add_group_to_zone( $zone, $type , $interface, [ split ',', $hosts ] , $optionsref);

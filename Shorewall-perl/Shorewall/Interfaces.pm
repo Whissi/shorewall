@@ -81,10 +81,10 @@ sub add_group_to_zone($$$$$)
     $ifacezone = '' unless defined $ifacezone;
 
     for my $host ( @$networks ) {
-	if ( $host =~ /^!.*/ ) {
-	    fatal_error "Invalid host group: @$networks" if $switched;
+	if ( substr( $host, 0, 1 ) eq '!' ) {
+	    fatal_error "Only one exclusion allowed in a host list" if $switched;
 	    $switched = 1;
-	    $host =~ s/^!//;
+	    $host = substr( $host, 1 );
 	    $new = \@exclusions;
 	}
 

@@ -104,7 +104,7 @@ sub add_group_to_zone($$$$$)
     $interfaceref = ( $typeref->{$type}           || ( $interfaceref = $typeref->{$type} = {} ) );
     $arrayref     = ( $interfaceref->{$interface} || ( $interfaceref->{$interface} = [] ) );
 
-    $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 );
+    $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 ) || ( @exclusions );
 
     my %h;
 

@@ -217,6 +217,7 @@ sub setup_one_masq($$$$$$)
 	for my $address ( split /,/, $addresses ) {
 	    my ( $addrs, $port ) = split /:/, $address;
 	    next unless $addrs;
+	    next if $addrs eq 'detect';
 	    for my $addr ( ip_range_explicit $addrs ) {
 		unless ( $addresses_to_add{$addr} ) {
 		    emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};

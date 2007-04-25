@@ -205,7 +205,7 @@ sub validate_policy()
 	    push @policy_chains, ( $chainref );
 	}
 
-	$chainref->{loglevel}  = $loglevel  if $loglevel;
+	$chainref->{loglevel}  = $loglevel  if defined $loglevel && $loglevel ne '';
 	$chainref->{synparams} = $synparams if $synparams;
 	$chainref->{default}   = $default   if $default;
 
@@ -243,7 +243,7 @@ sub policy_rules( $$$$ ) {
 
     add_rule $chainref, "-j $default" if $default && $default ne 'none';
 
-    log_rule $loglevel , $chainref , $target , '' if $loglevel;
+    log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 
     fatal_error "Null target in policy_rules()" unless $target;
 

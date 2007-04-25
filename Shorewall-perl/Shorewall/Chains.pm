@@ -462,6 +462,7 @@ sub new_chain($$)
     $ch{log}  = 1 if $globals{LOGRULENUMBERS};
     $ch{rules} = [];
     $ch{table} = $table;
+    $ch{loglevel} = '';
     $chain_table{$table}{$chain} = \%ch;
     \%ch;
 }

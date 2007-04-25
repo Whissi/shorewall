@@ -249,7 +249,7 @@ sub setup_syn_flood_chains() {
 	    my $synchainref = new_chain 'filter' , syn_chain $chainref->{name};
 	    add_rule $synchainref , "-m limit --limit $limit ${burst}-j RETURN";
 	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5' , '' , 'add' , ''
-		if defined $level && $level ne '';
+		if $level ne '';
 	    add_rule $synchainref, '-j DROP';
 	}
     }
@@ -1171,7 +1171,7 @@ sub process_rule ( $$$$$$$$$ ) {
 				if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 				    if ( $optimize > 0 ) {
 					my $loglevel = $policychainref->{loglevel};
-					if ( defined $loglevel && $loglevel ne '' ) {
+					if ( $loglevel ne '' ) {
 					    next if $target eq "${policy}:$loglevel}";
 					} else {
 					    next if $action eq $policy;
@@ -1191,7 +1191,7 @@ sub process_rule ( $$$$$$$$$ ) {
 			if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 			    if ( $optimize > 0 ) {
 				my $loglevel = $policychainref->{loglevel};
-				if ( defined $loglevel && $loglevel ne '') {
+				if ( $loglevel ne '') {
 				    next if $target eq "${policy}:$loglevel}";
 				} else {
 				    next if $action eq $policy;
@@ -1212,7 +1212,7 @@ sub process_rule ( $$$$$$$$$ ) {
 		if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 		    if ( $optimize > 0 ) {
 			my $loglevel = $policychainref->{loglevel};
-			if ( defined $loglevel && $loglevel ne '' ) {
+			if ( $loglevel ne '' ) {
 			    next if $target eq "${policy}:$loglevel}";
 			} else {
 			    next if $action eq $policy;

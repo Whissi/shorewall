@@ -105,6 +105,10 @@ sub validate_hosts_file()
 	    $optionsref = \%options;
 	}
 
+	fatal_error "Invalid hosts list" if $hosts =~ /,!/;
+
+	$hosts =~ s/!/,!/g;
+
 	add_group_to_zone( $zone, $type , $interface, [ split ',', $hosts ] , $optionsref);
 
 	progress_message "   Host \"$line\" validated";

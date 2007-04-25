@@ -1335,7 +1335,7 @@ sub generate_matrix() {
 
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    insert_rule $chainref , $num++, join( '', "-i $interface ", match_source_net( $host ), '-j RETURN' );
+	    insert_rule $chainref , $num++, join( '', "-i $interface ", match_source_net( $net ), '-j RETURN' );
 	}
     }
 

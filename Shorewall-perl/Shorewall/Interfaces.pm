@@ -84,6 +84,7 @@ sub add_group_to_zone($$$$$)
 	if ( $host =~ /^!.*/ ) {
 	    fatal_error "Invalid host group: @$networks" if $switched;
 	    $switched = 1;
+	    $host =~ s/^!//;
 	    $new = \@exclusions;
 	}
 

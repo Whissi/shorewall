@@ -932,7 +932,7 @@ sub iprange_match() {
     require_capability( 'IPRANGE_MATCH' , 'Address Ranges' );
     unless ( $iprangematch ) {
 	$match = '-m iprange ';
-	$iprangematch = 1;
+	$iprangematch = 1 unless $capabilities{KLUDGEFREE};
     }
 
     $match;

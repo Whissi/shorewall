@@ -414,6 +414,7 @@ sub process_routestopped() {
 			    my $dest   = match_dest_net   $host;
 
 			    emit "run_iptables -A FORWARD -i $interface -o $interface $source $dest -j ACCEPT";
+			    clearrule;
 			}
 		    }
 		} elsif ( $option eq 'source' ) {
@@ -459,6 +460,7 @@ sub process_routestopped() {
 		    my ( $interface1, $h1 ) = split /:/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    emit "\$IPTABLES -A FORWARD -i $interface -o $interface1 $source $dest1 -j ACCEPT";
+		    clearrule;
 		}
 	    }
 	}
@@ -1456,7 +1458,6 @@ sub generate_matrix() {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
-			my $source = match_source_net $net;
 			my $dest   = match_dest_net   $net;
 
 			if ( $chain1 ) {
@@ -1467,6 +1468,8 @@ sub generate_matrix() {
 				add_rule $filter_table->{output_chain $interface} , join( '', $dest, $ipsec_out_match, "-j $chain1" );
 			    }
 			}
+
+			my $source = match_source_net $net;
 
 			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, join( '', "-i $interface ", $source, $ipsec_in_match );
 

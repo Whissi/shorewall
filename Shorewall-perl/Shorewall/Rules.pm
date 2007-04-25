@@ -1171,7 +1171,7 @@ sub process_rule ( $$$$$$$$$ ) {
 				if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 				    if ( $optimize > 0 ) {
 					my $loglevel = $policychainref->{loglevel};
-					if ( $loglevel ne '' ) {
+					if ( defined $loglevel && $loglevel ne '' ) {
 					    next if $target eq "${policy}:$loglevel}";
 					} else {
 					    next if $action eq $policy;
@@ -1191,7 +1191,7 @@ sub process_rule ( $$$$$$$$$ ) {
 			if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 			    if ( $optimize > 0 ) {
 				my $loglevel = $policychainref->{loglevel};
-				if ( $loglevel ne '') {
+				if ( defined $loglevel && $loglevel ne '') {
 				    next if $target eq "${policy}:$loglevel}";
 				} else {
 				    next if $action eq $policy;
@@ -1212,7 +1212,7 @@ sub process_rule ( $$$$$$$$$ ) {
 		if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
 		    if ( $optimize > 0 ) {
 			my $loglevel = $policychainref->{loglevel};
-			if ( $loglevel ne '' ) {
+			if ( defined $loglevel && $loglevel ne '' ) {
 			    next if $target eq "${policy}:$loglevel}";
 			} else {
 			    next if $action eq $policy;

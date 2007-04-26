@@ -177,7 +177,7 @@ sub setup_one_masq($$$$$$)
 	    for my $addr ( split /,/, $addresses ) {
 		$target .= "--to $addr ";
 	    }
-	} elsif ( $addresses =~ /^SAME:nodst:/ ) {
+	} elsif ( $addresses =~ /^SAME:/ ) {
 	    $target = '-j SAME ';
 	    $addresses =~ s/.*://;
 	    for my $addr ( split /,/, $addresses ) {

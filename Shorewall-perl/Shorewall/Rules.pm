@@ -1458,7 +1458,7 @@ sub generate_matrix() {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
-			my $dest   = match_dest_net   $net;
+			my $dest   = match_dest_net $net;
 
 			if ( $chain1 ) {
 			    if ( @$exclusions ) {
@@ -1629,7 +1629,6 @@ sub generate_matrix() {
 			my $chain3ref = $filter_table->{forward_chain $interface};
 			for my $hostref ( @$arrayref ) {
 			    for my $net ( @{$hostref->{hosts}} ) {
-				my $source_match = match_source_net $net;
 				for my $type1ref ( values %$dest_hosts_ref ) {
 				    for my $interface1 ( keys %$type1ref ) {
 					my $array1ref = $type1ref->{$interface1};
@@ -1637,9 +1636,12 @@ sub generate_matrix() {
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
+						    #
+						    # We have to defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
+						    #
 						    add_rule
 							$chain3ref ,
-							join( '', "-o $interface1 ", $source_match, match_dest_net($net1), $ipsec_out_match, "-j $chain" );
+							join( '', "-o $interface1 ", match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" );
 						}
 					    }
 					}

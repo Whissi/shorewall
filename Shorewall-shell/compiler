@@ -5507,15 +5507,15 @@ __EOF__
     save_progress_message "Activating Rules..."
     activate_rules
 
-    if [ -n "$ALIASES_TO_ADD" ]; then
-	save_command add_ip_aliases $ALIASES_TO_ADD
-    fi
-
     for file in chains nat proxyarp zones; do
 	save_command "cat > \${VARDIR}/$file $LEFTSHIFT __EOF__"
 	cat $STATEDIR/$file >&3
 	save_command_unindented __EOF__
     done
+
+    if [ -n "$ALIASES_TO_ADD" ]; then
+	save_command add_ip_aliases $ALIASES_TO_ADD
+    fi
 
     cat >&3 << __EOF__
 

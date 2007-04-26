@@ -732,7 +732,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     shift 7
 
-    save_command "do_log_rule_limit \"$level\" \"$chain\" \"$displayChain\" \"$disposition\" \"$limit\" \"$tag\" \"$command\" $@"
+    save_command "do_log_rule_limit \"$level\" \"$chain\" \"$displayChain\" \"$disposition\" \"$limit\" \"$tag\" \"$command\" $(fix_bang $@)"
 }
 
 log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule

@@ -192,7 +192,7 @@ setup_mac_lists() # $1 = Phase Number
 	    if [ -z "$addresses" ]; then
 		[ -n "$level" ] && \
 		    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
-		run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
+		run_iptables2 -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
 	    else
 		for address in $(separate_list $addresses) ; do
 		    [ -n "$level" ] && \
@@ -213,12 +213,12 @@ setup_mac_lists() # $1 = Phase Number
 	    case $MACLIST_TABLE in
 		filter)
 		    for chain in $(first_chains $interface) ; do
-			run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
+			run_iptables2 -A $chain $(match_source_hosts $hosts) -m state --state NEW \
 			    $policy -j $(mac_chain $interface)
 		    done
 		    ;;
 		*)
-		    run_iptables -t mangle -A PREROUTING -i $interface $(match_source_hosts $hosts) -m state --state NEW \
+		    run_iptables2 -t mangle -A PREROUTING -i $interface $(match_source_hosts $hosts) -m state --state NEW \
 			$policy -j $(mac_chain $interface)
 		    ;;
 	    esac

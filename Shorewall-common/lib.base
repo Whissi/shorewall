@@ -1177,7 +1177,7 @@ add_ip_aliases() # $* = List of addresses
 
 	ip addr add ${external}${val} dev $interface $label
 	[ -n "$arping" ] && qt $arping -U -c 2 -I $interface $external
-	echo "$external $interface" >> $STATEDIR/nat
+	echo "$external $interface" >> $VARDIR/nat
 	[ -n "$label" ] && label="with $label"
 	progress_message "   IP Address $external added to interface $interface $label"
     }

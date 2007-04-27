@@ -52,6 +52,7 @@ our @EXPORT = qw( STANDARD
 		  ALL_RESTRICT
 
 		  add_command
+		  add_commands
 		  add_file
 		  add_rule
 		  insert_rule
@@ -261,6 +262,17 @@ sub add_command($$)
     $chainref->{referenced} = 1;
 }
 
+sub add_commands {
+    my $chainref = shift @_;
+   
+    for my $command ( @_ ) {
+	push @{$chainref->{rules}}, join ('', '~', '    ' x $loopcount, $command );
+    }
+
+    $chainref->{referenced} = 1;
+}
+
+
 #
 # Copy a file into a chain's rules as a set of run-time commands
 #
@@ -272,8 +284,9 @@ sub add_file( $$ ) {
     if ( -f $file ) {
 	open EF , '<', $file or fatal_error "Unable to open $file";
 
-	add_command $chainref, qq(progress_message "Processing $file...");
-	add_command $chainref, '';
+	add_commands( $chainref, 
+		      qq(progress_message "Processing $file..."),
+		      '' );
 
 	while ( $line = <EF> ) {
 	    chomp $line;
@@ -1335,9 +1348,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    # ADDRESS 'detect' in the masq file.
 	    #
-	    add_command $chainref ,   "dests=\$(find_interface_addresses $diface)";
-	    add_command $chainref , qq([ -z "\$dests" ] && fatal_error "Unable to determine the address(es) of interface \"$diface\"");
-	    add_command $chainref ,   'for dest in $dests; do';
+	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest';
 	    $loopcount++;
 	} else {

@@ -753,10 +753,11 @@ sub setup_mac_lists( $ ) {
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		my $variable = get_interface_addresses $interface;
-		add_command $chainref, "for address in $variable; do";
-		add_command $chainref, "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3";
-		add_command $chainref, "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type MULTICAST -j RETURN\" >&3";
-		add_command $chainref, 'done';
+		add_commands( $chainref, 
+			      "for address in $variable; do",
+			      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
+			      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type MULTICAST -j RETURN\" >&3",
+			      'done' );
 	    }
 
 	    add_file $chainref, 'maclog';

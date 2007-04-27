@@ -184,11 +184,11 @@ sub setup_one_masq($$$$$$)
 		$target .= "--to $addr ";
 	    }
 	} elsif ( $addresses eq 'detect' ) {
-	    add_command( $chainref , 'addrlist=' );
-	    add_command( $chainref , join( '', 'for address in ' , get_interface_addresses( $interface ), '; do' ) );
-	    add_command( $chainref , '    addrlist="$addrlist --to-source $address"' );
-	    add_command( $chainref , 'done' );
-
+	    add_commands( $chainref , 
+			  'addrlist=',
+			  join( '', 'for address in ' , get_interface_addresses( $interface ), '; do' ),
+			  '    addrlist="$addrlist --to-source $address"',
+			  'done' );
 	    $target = '-j SNAT $addrlist';
 	} else {
 	    my $addrlist = '';

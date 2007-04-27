@@ -570,6 +570,12 @@ check_command() {
 			    DEBUG=Yes;
 			    option=${option#d}
 			    ;;
+			C)
+			    [ $# -gt 0 ] || fatal_error "-C must be followed by a compiler name"
+			    SHOREWALL_COMPILER=$2
+			    option=
+			    shift
+			    ;;
 			*)
 			    usage 1
 			    ;;

@@ -56,7 +56,7 @@ sub do_ipsec_options($)
 			 "tunnel-dst" => NETWORK,
 		       );
     my $list=$_[0];
-    my $options = '-m policy ';
+    my $options = '-m policy --pol ipsec --dir out ';
     my $fmt;
 
     for my $e ( split ',' , $list ) {

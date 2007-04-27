@@ -172,7 +172,7 @@ sub setup_one_masq($$$$$$)
     #
     if ( $addresses ne '-' ) {
 	if ( $addresses =~ /^SAME:nodst:/ ) {
-	    $target = '-j SAME --nodst';
+	    $target = '-j SAME --nodst ';
 	    $addresses =~ s/.*://;
 	    for my $addr ( split /,/, $addresses ) {
 		$target .= "--to $addr ";

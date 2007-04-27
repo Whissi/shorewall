@@ -349,7 +349,7 @@ addresses=\$(find_interface_addresses $interface)
 
 if [ -n "\$addresses" ]; then
     for address in \$addresses; do
-        addrlist="$addrlist --to-source $address"
+        addrlist="$addrlist --to-source \$address"
     done
 else
     fatal_error "Unable to determine the IP address(es) of $interface"

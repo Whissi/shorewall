@@ -104,6 +104,20 @@ list_search() # $1 = element to search for , $2-$n = list
 }
 
 #
+# Undo the effect of 'separate_list()'
+#
+combine_list()
+{
+    local f o=
+
+    for f in $* ; do
+        o="${o:+$o,}$f"
+    done
+
+    echo $o
+}
+
+#
 # Suppress all output for a command
 #
 qt()

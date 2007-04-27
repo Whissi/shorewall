@@ -66,6 +66,7 @@ our @VERSION = 1.00;
 our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    CONFDIR =>  '/etc/shorewall',
 		    SHAREDIRPL => '/usr/share/shorewall-perl/',
+		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    VERSION =>  '3.9.4',
@@ -158,7 +159,6 @@ our %config =
 		MACLIST_DISPOSITION => undef,
 		TCP_FLAGS_DISPOSITION => undef,
 		BLACKLIST_DISPOSITION => undef,
-		ORIGINAL_POLICY_MATCH => undef,
 		);
 #
 # Config options and global settings that are to be copied to object
@@ -839,7 +839,6 @@ sub get_configuration( $ ) {
 	open_file 'capabilities' or fatal_error "Compiling under an ordinary user id requires a capabilities file";
     }
 
-    $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     #
     # If we successfully called open_file above, then this loop will read the capabilities file.
@@ -858,6 +857,8 @@ sub get_configuration( $ ) {
 	    fatal_error "Unrecognized capabilities entry";
 	}
     }
+
+    $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
 	 $globals{LOGLIMIT}  = '-m limit';

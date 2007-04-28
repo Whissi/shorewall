@@ -136,6 +136,8 @@ our @VERSION = 1.00;
 #                                               synparams    => <burst/limit>
 #                                               default      => <default action>
 #                                               policy_chain => <ref to policy chain -- self-reference if this is a policy chain>
+#                                               loopcount    => <number of open loops in runtime commands>
+#                                               cmdcount     => <number of client open loops or blocks in runtime commands>
 #                                               rules        => [ <rule1>
 #                                                                 <rule2>
 #                                                                 ...
@@ -249,34 +251,21 @@ my $chainseq;
 #
 
 #
-# Count of the number of unclosed loops in generated shell code. We insert shell code
-# into the Chain tables 'rules' array (proceeded by '~'). create_netfilter_load()
-# emits that code inline for execution at run-time.
-#
-my $loopcount = 0;
-
-#
-# External count that clients of the module can manipulate to cause commands to be 
-# generated rather than rules.
-#
-my $cmdcount = 0;
-
-#
 # Functions to manipulate cmdcount
 #
-sub push_cmd_mode() {
-    $cmdcount++;
+sub push_cmd_mode( $ ) {
+    $_[0]->{cmdcount}++;
 }
 
 sub pop_cmd_mode() {
-    fatal_error "Internal error in pop_cmd_mode()" if --$cmdcount < 0;
+    fatal_error "Internal error in pop_cmd_mode()" if --$_[0]->{cmdcount} < 0;
 }
 
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
 
-    push @{$chainref->{rules}}, join ('', '~', '    ' x ( $loopcount + $cmdcount ), $command );
+    push @{$chainref->{rules}}, join ('', '~', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
 
     $chainref->{referenced} = 1;
 }
@@ -285,7 +274,7 @@ sub add_commands {
     my $chainref = shift @_;
    
     for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '~', '    ' x ( $loopcount + $cmdcount ), $command );
+	push @{$chainref->{rules}}, join ('', '~', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
     }
 
     $chainref->{referenced} = 1;
@@ -329,7 +318,7 @@ sub add_rule($$)
 
     $rule .= " -m comment --comment \"$comment\"" if $comment;
 
-    if ( $loopcount || $cmdcount ) {
+    if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
 	push @{$chainref->{rules}}, $rule;
@@ -349,7 +338,7 @@ sub insert_rule($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    fatal_error 'Internal Error in insert_rule()' if $loopcount || $cmdcount;
+    fatal_error 'Internal Error in insert_rule()' if $chainref->{loopcount} || $chainref->{cmdcount};
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
@@ -495,6 +484,8 @@ sub new_chain($$)
     $ch{rules} = [];
     $ch{table} = $table;
     $ch{loglevel} = '';
+    $ch{loopcount} = 0;
+    $ch{cmdcount}  = 0;
     $chain_table{$table}{$chain} = \%ch;
     \%ch;
 }
@@ -1309,7 +1300,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    # While $loopcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()'
 	    #
-	    $loopcount++;
+	    $chainref->{loopcount}++;
 	} else {
 	    fatal_error "Source Interface ( $iiface ) not allowed when the source zone is $firewall_zone: $line"
 		if $restriction & OUTPUT_RESTRICT;
@@ -1339,7 +1330,7 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command( $chainref , "for address in $list; do" );
 
 		$rule .= '-d $address ';
-		$loopcount++;
+		$chainref->{loopcount}++;
 	    } else {
 		$rule .= join ( '', '-d ', get_interface_address( $interfaces[0] ), ' ' );
 	    }
@@ -1369,7 +1360,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest';
-	    $loopcount++;
+	    $chainref->{loopcount}++;
 	} else {
 	    fatal_error "Destination Interface ( $diface ) not allowed when the destination zone is $firewall_zone: $line"
 		if $restriction & INPUT_RESTRICT;
@@ -1395,7 +1386,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 		add_command( $chainref , "for address in $list; do" );
 		$rule .= '-m conntrack --ctorigdst $address ';
-		$loopcount++;
+		$chainref->{loopcount}++;
 	    } else {
 		get_interface_address $interfaces[0];
 		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
@@ -1441,7 +1432,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    $iexcl = '';
 	}
 
-	unless ( $inets ) {
+	unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
 	    my @iexcl = mysplit $iexcl;
 	    if ( @iexcl == 1 ) {
 		$rule .= match_source_net "!$iexcl ";
@@ -1566,8 +1557,8 @@ sub expand_rule( $$$$$$$$$$ )
 	}
     }
 
-    while ( $loopcount > 0 ) {
-	$loopcount--;
+    while ( $chainref->{loopcount} > 0 ) {
+	$chainref->{loopcount}--;
 	add_command $chainref, 'done';
     }
 }

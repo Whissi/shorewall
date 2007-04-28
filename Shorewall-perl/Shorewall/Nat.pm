@@ -190,6 +190,14 @@ sub setup_one_masq($$$$$$)
 			  '    addrlist="$addrlist --to-source $address"',
 			  'done' );
 	    $target = '-j SNAT $addrlist';
+
+	    if ( interface_is_optional $interface ) {
+		add_commands( $chainref,
+			      '',
+			      'if [ -n "$addrlist" ]; then' );
+		push_cmd_mode( $chainref );
+		$detectaddress = 1;
+	    }
 	} else {
 	    my $addrlist = '';
 	    for my $addr ( split /,/, $addresses ) {
@@ -211,6 +219,11 @@ sub setup_one_masq($$$$$$)
     # And Generate the Rule(s)
     #
     expand_rule $chainref , POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
+
+    if ( $detectaddress ) {
+	pop_cmd_mode( $chainref );
+	add_command( $chainref , 'fi' );
+    }
 
     if ( $add_snat_aliases ) {
 	my ( $interface, $alias ) = split /:/, $fullinterface;

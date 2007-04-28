@@ -51,6 +51,8 @@ our @EXPORT = qw( STANDARD
 		  POSTROUTE_RESTRICT
 		  ALL_RESTRICT
 
+		  push_cmd_mode
+		  pop_cmd_mode
 		  add_command
 		  add_commands
 		  add_file
@@ -253,11 +255,28 @@ my $chainseq;
 #
 my $loopcount = 0;
 
+#
+# External count that clients of the module can manipulate to cause commands to be 
+# generated rather than rules.
+#
+my $cmdcount = 0;
+
+#
+# Functions to manipulate cmdcount
+#
+sub push_cmd_mode() {
+    $cmdcount++;
+}
+
+sub pop_cmd_mode() {
+    fatal_error "Internal error in pop_cmd_mode()" if --$cmdcount < 0;
+}
+
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
 
-    push @{$chainref->{rules}}, join ('', '~', '    ' x $loopcount, $command );
+    push @{$chainref->{rules}}, join ('', '~', '    ' x ( $loopcount + $cmdcount ), $command );
 
     $chainref->{referenced} = 1;
 }
@@ -266,7 +285,7 @@ sub add_commands {
     my $chainref = shift @_;
    
     for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '~', '    ' x $loopcount, $command );
+	push @{$chainref->{rules}}, join ('', '~', '    ' x ( $loopcount + $cmdcount ), $command );
     }
 
     $chainref->{referenced} = 1;
@@ -310,7 +329,7 @@ sub add_rule($$)
 
     $rule .= " -m comment --comment \"$comment\"" if $comment;
 
-    if ( $loopcount ) {
+    if ( $loopcount || $cmdcount ) {
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
 	push @{$chainref->{rules}}, $rule;
@@ -330,7 +349,7 @@ sub insert_rule($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    fatal_error 'Internal Error in insert_rule()' if $loopcount;
+    fatal_error 'Internal Error in insert_rule()' if $loopcount || $cmdcount;
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 

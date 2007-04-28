@@ -257,7 +257,7 @@ sub push_cmd_mode( $ ) {
     $_[0]->{cmdcount}++;
 }
 
-sub pop_cmd_mode() {
+sub pop_cmd_mode( $ ) {
     fatal_error "Internal error in pop_cmd_mode()" if --$_[0]->{cmdcount} < 0;
 }
 

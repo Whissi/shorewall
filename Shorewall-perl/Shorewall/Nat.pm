@@ -28,6 +28,7 @@ require Exporter;
 use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
+use Shorewall::Interfaces;
 use Shorewall::Chains;
 use Shorewall::IPAddrs;
 

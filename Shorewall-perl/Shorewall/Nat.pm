@@ -185,17 +185,13 @@ sub setup_one_masq($$$$$$)
 		$target .= "--to $addr ";
 	    }
 	} elsif ( $addresses eq 'detect' ) {
-	    add_commands( $chainref , 
-			  'addrlist=',
-			  join( '', 'for address in ' , get_interface_addresses( $interface ), '; do' ),
-			  '    addrlist="$addrlist --to-source $address"',
-			  'done' );
-	    $target = '-j SNAT $addrlist';
+	    my $variable = get_interface_address $interface;
+	    $target = "-j SNAT --to-source $variable";
 
 	    if ( interface_is_optional $interface ) {
 		add_commands( $chainref,
 			      '',
-			      'if [ -n "$addrlist" ]; then' );
+			      "if [ \"$variable\" != 0.0.0.0 ]; then" );
 		push_cmd_mode( $chainref );
 		$detectaddress = 1;
 	    }

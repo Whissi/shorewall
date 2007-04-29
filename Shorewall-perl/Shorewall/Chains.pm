@@ -105,6 +105,7 @@ our @EXPORT = qw( STANDARD
 		  expand_rule
 		  addnatjump
 		  insertnatjump
+		  get_interface_address
 		  get_interface_addresses
 		  create_netfilter_load
 

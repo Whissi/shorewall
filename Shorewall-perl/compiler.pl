@@ -529,16 +529,14 @@ sub generate_script_2 () {
 	    ''
 	    );
  
-    if ( $capabilities{NAT_ENABLED} && ! $config{RETAIN_ALIASES} ) {
-	emitj( '',
-	       'if [ -f ${VARDIR}/nat ]; then',
+    if ( $capabilities{NAT_ENABLED} ) {
+	emitj( 'if [ -f ${VARDIR}/nat ]; then',
 	       '    while read external interface; do',
 	       '        del_ip_addr $external $interface',
 	       '    done < ${VARDIR}/nat',
 	       '',
 	       '    rm -f ${VARDIR}/nat',
-	       'fi',
-	       '' );
+	       "fi\n" );
     }
 
     emit "delete_tc1\n"            if $config{CLEAR_TC};
@@ -571,7 +569,7 @@ sub generate_script_3() {
     dump_zone_contents;
     emit_unindented '__EOF__';
 
-    emit '> ${VARDIR}/nat' unless $config{RETAIN_ALIASES};
+    emit '> ${VARDIR}/nat';
 
     add_addresses;
 

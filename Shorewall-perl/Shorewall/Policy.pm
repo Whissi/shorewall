@@ -155,18 +155,20 @@ sub validate_policy()
 
 	( $policy , my $default ) = split /:/, $policy;
 
-	if ( "\L$policy" eq 'none' ) {
-	    $default = 'none';
-	} elsif ( $default ) {
-	    my $defaulttype = $targets{$default};
-
-	    if ( $defaulttype & ACTION ) {
-		unless ( $usedactions{$default} ) {
-		    $usedactions{$default} = 1;
-		    createactionchain $default;
-		}
+	if ( $default ) {
+	    if ( "\L$default" eq 'none' ) {
+		$default = 'none';
 	    } else {
-		fatal_error "Unknown Default Action ($default)";
+		my $defaulttype = $targets{$default} || 0;
+
+		if ( $defaulttype & ACTION ) {
+		    unless ( $usedactions{$default} ) {
+			$usedactions{$default} = 1;
+			createactionchain $default;
+		    }
+		} else {
+		    fatal_error "Unknown Default Action ($default)";
+		}
 	    }
 	} else {
 	    $default = $default_actions{$policy} || '';
@@ -175,10 +177,10 @@ sub validate_policy()
 	fatal_error "Invalid policy $policy" unless exists $validpolicies{$policy};
 
 	if ( $policy eq 'NONE' ) {
-	    fatal_error "$client, $server, $policy, $loglevel, $synparams: NONE policy not allowed to/from firewall zone"
-		if ( $zones{$client}{type} eq 'firewall' ) || ( $zones{$server}{type} eq 'firewall' );
 	    fatal_error "$client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
+	    fatal_error "$client, $server, $policy, $loglevel, $synparams: NONE policy not allowed to/from firewall zone"
+		if ( $zones{$client}{type} eq 'firewall' ) || ( $zones{$server}{type} eq 'firewall' );
 	}
 
 	my $chain = "${client}2${server}";

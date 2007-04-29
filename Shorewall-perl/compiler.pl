@@ -528,6 +528,18 @@ sub generate_script_2 () {
 	    'delete_proxyarp',
 	    ''
 	    );
+ 
+    if ( $capabilities{NAT_ENABLED} && ! $config{RETAIN_ALIASES} ) {
+	emitj( '',
+	       'if [ -f ${VARDIR}/nat ]; then',
+	       '    while read external interface; do',
+	       '        del_ip_addr $external $interface',
+	       '    done < ${VARDIR}/nat',
+	       '',
+	       '    rm -f ${VARDIR}/nat',
+	       'fi',
+	       '' );
+    }
 
     emit "delete_tc1\n"            if $config{CLEAR_TC};
     emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
@@ -559,7 +571,7 @@ sub generate_script_3() {
     dump_zone_contents;
     emit_unindented '__EOF__';
 
-    emit '> ${VARDIR}/nat';
+    emit '> ${VARDIR}/nat' unless $config{RETAIN_ALIASES};
 
     add_addresses;
 

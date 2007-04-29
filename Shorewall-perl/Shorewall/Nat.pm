@@ -415,6 +415,8 @@ sub setup_netmap() {
 	    $first_entry = 0;
 	}
 
+	fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
+
 	if ( $type eq 'DNAT' ) {
 	    add_rule ensure_chain( 'nat' , input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";
 	} elsif ( $type eq 'SNAT' ) {

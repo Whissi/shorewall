@@ -711,7 +711,7 @@ sub determine_capabilities() {
     if ( mywhich 'ipset' ) {
 	qt( "ipset -X fooX1234" );
 
-	if ( qt( "ipset -N fooX1234" ) ) {
+	if ( qt( "ipset -N fooX1234 iphash" ) ) {
 	    if ( qt( "$iptables -A fooX1234 -m set --set fooX1234 src -j ACCEPT" ) ) {
 		qt( "$iptables -D fooX1234 -m set --set fooX1234 src -j ACCEPT" );
 		$capabilities{IPSET_MATCH} = 1;

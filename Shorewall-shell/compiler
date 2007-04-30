@@ -2134,6 +2134,9 @@ process_rule() # $1 = target
 	*!)
 	    target=${target%!}
 	    ;;
+    esac
+
+    case $target in
 	ACCEPT+|NONAT)
 	    [ $SECTION = NEW ] || fatal_error "$target rules are not allowed in the $SECTION SECTION"
 	    nonat=Yes

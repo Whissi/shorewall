@@ -825,7 +825,7 @@ sub get_configuration( $ ) {
 	    $config{IPTABLES} = mywhich 'iptables';
 	    fatal_error "Can't find iptables executable" unless $config{IPTABLES};
 	} else {
-	    fatal_error "\$IPTABLES=$capabilities{IPTABLES} does not exist or is not executable" unless -x $config{IPTABLES};
+	    fatal_error "\$IPTABLES=$config{IPTABLES} does not exist or is not executable" unless -x $config{IPTABLES};
 	}
 
 	load_kernel_modules;

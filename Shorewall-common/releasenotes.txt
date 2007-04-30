@@ -24,8 +24,11 @@ Problems corrected in 3.9.5.
 
 3)  Setting MACLIST_LOG_LEVEL="" and MACLIST_DISPOSITION=ACCEPT or
     MACLIST_DISPOSITION=REJECT resulted in Perl run-time errors.
+
+4)  Many more .... (I gave up trying to document them all; check the
+    SVN history if you are interested).
     
-Other changes in Shorewall 3.9.4
+Other changes in Shorewall 3.9.5
 
 1)  The Shorewall-perl compiler now validates all log levels. It also
     validates all protocol names against /etc/protocols and all service
@@ -281,8 +284,8 @@ Migration Considerations:
        configuration files.
 
     h) USE_ACTIONS=No is not supported. That option is intended to
-    minimize Shorewall's footprint in embedded applications. As a
-    consequence, Default Macros are not supported.
+       minimize Shorewall's footprint in embedded applications. As a
+       consequence, Default Macros are not supported.
 
     i) DELAYBLACKLISTLOAD=Yes is not supported. The entire ruleset is
        atomically loaded with one execution of iptables-restore.
@@ -296,6 +299,25 @@ Migration Considerations:
     l) BLACKLISTNEWONLY=No is not permitted with FASTACCEPT=Yes. This
        combination doesn't work in previous versions of Shorewall so
        the Perl-based compiler simply rejects it.
+
+    m) Shorewall-perl has a single rule generator that is used for all
+       rule-oriented files. So it is important that the syntax is
+       consistent between files.
+       
+       With shorewall-shell, there is a special syntax in the SOURCE
+       column of /etc/shorewall/masq to designate "all traffic entering
+       the firewall on this interface except...".
+
+       Example:
+
+       #INTERFACE	SOURCE			ADDRESSES
+       eth0		eth1!192.168.4.9	...
+
+       Shorewall-perl uses syntax that is consistent with the rest of
+       Shorewall:
+
+       #INTERFACE	SOURCE			ADDRESSES
+       eth0		eth1:!192.168.4.9	...
 
 2)  An 'optional' option has been added to
     /etc/shorewall/interfaces. When 'optional' is specified for an
@@ -448,4 +470,5 @@ Problems corrected in Shorewall 3.9.3
 12) If 'all' appeared in the SOURCE column and an undefined zone was
     specified in the DEST column of /etc/shorewall/rules, then a Perl
     run-time diagnostic was produced.
+
 

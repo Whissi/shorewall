@@ -169,10 +169,9 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     unless ( $classid ) {
       MARK:
 	{
-	  PATTERN:
 	    for my $tccmd ( @tccmd ) {
 		if ( $tccmd->{match}($cmd) ) {
-		    fatal_error "$mark not valid with :C[FP]" if $connmark;
+		    fatal_error "$mark not valid with :C[FPT]" if $connmark;
 		    
 		    $target      = "$tccmd->{target} ";
 		    my $marktype = $tccmd->{mark};

@@ -765,11 +765,13 @@ setup_syn_flood_chain ()
 	    ;;
     esac
 
-    run_iptables -N $chain
-    run_iptables -A $chain -m limit --limit $limit $limit_burst -j RETURN
-    [ -n "$3" ] && \
-	log_rule_limit $3 $chain $chain DROP "-m limit --limit 5/min --limit-burst 5" "" ""
-    run_iptables -A $chain -j DROP
+    if ! havechain $chain ; then
+	run_iptables -N $chain
+	run_iptables -A $chain -m limit --limit $limit $limit_burst -j RETURN
+	[ -n "$3" ] && \
+	    log_rule_limit $3 $chain $chain DROP "-m limit --limit 5/min --limit-burst 5" "" ""
+	run_iptables -A $chain -j DROP
+    fi
 }
 
 setup_syn_flood_chains()

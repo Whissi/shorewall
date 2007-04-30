@@ -43,46 +43,46 @@ our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule );
 our @VERSION = 1.00;
 
-my %tcs = ( t => { chain  => 'tcpost',
+my %tcs = ( T => { chain  => 'tcpost',
 		   connmark => 0,
 		   fw       => 1
 		   } ,
-	    ct => { chain  => 'tcpost' ,
+	    CT => { chain  => 'tcpost' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
 		    fw       => 1
 		    } ,
-	    c  => { target => 'CONNMARK --set-mark' ,
+	    C  => { target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
 		    fw       => 1
 		    } ,
-	    p  => { chain    => 'tcpre' ,
+	    P  => { chain    => 'tcpre' ,
 		    connmark => 0 ,
 		    fw       => 0
 		    } ,
-	    cp => { chain    => 'tcpre' ,
+	    CP => { chain    => 'tcpre' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
 		    fw       => 0
 		    } ,
-	    f =>  { chain    => 'tcfor' ,
+	    F =>  { chain    => 'tcfor' ,
 		    connmark => 0 ,
 		    fw       => 0
 		    } ,
-	    cf => { chain    => 'tcfor' ,
+	    CF => { chain    => 'tcfor' ,
 		    fw       => 0 ,
 		    connmark => 1 ,
 		    } ,
-	    t  => { chain    => 'tcpost' ,
+	    T  => { chain    => 'tcpost' ,
 		    connmark => 0 ,
 		    fw       => 0
 		    } ,
-	    ct => { chain    => 'tcpost' ,
+	    CT => { chain    => 'tcpost' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
 		    fw       => 0
 		    } ,
-	    c  => { target => 'CONNMARK --set-mark' ,
+	    C  => { target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
 		    fw       => 0
 		    }
@@ -166,36 +166,34 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
     my ($cmd, $rest) = split '/', $mark;
 
-    unless ( $classid )
+    unless ( $classid ) {
+      MARK:
 	{
-	  MARK:
-	    {
 	  PATTERN:
-		for my $tccmd ( @tccmd ) {
-		    if ( $tccmd->{match}($cmd) ) {
-			fatal_error "$mark not valid with :C[FP]" if $connmark;
+	    for my $tccmd ( @tccmd ) {
+		if ( $tccmd->{match}($cmd) ) {
+		    fatal_error "$mark not valid with :C[FP]" if $connmark;
+		    
+		    $target      = "$tccmd->{target} ";
+		    my $marktype = $tccmd->{mark};
 
-			$target      = "$tccmd->{target} ";
-			my $marktype = $tccmd->{mark};
+		    $mark   =~ s/^[!&]//;
 
-			$mark   =~ s/^[!&]//;
-
-			if ( $rest ) {
-			    fatal_error "Invalid MARK ($original_mark)" if $marktype == NOMARK;
-
-			    $mark = $rest if $tccmd->{mask};
-
-			    if ( $marktype == SMALLMARK ) {
-				verify_small_mark $mark;
-			    } else {
-				validate_mark $mark;
-			    }
-			} elsif ( $tccmd->{mask} ) {
-			    $mark = $tccmd->{mask};
+		    if ( $rest ) {
+			fatal_error "Invalid MARK ($original_mark)" if $marktype == NOMARK;
+			
+			$mark = $rest if $tccmd->{mask};
+			
+			if ( $marktype == SMALLMARK ) {
+			    verify_small_mark $mark;
+			} else {
+			    validate_mark $mark;
 			}
-
-			last MARK;
+		    } elsif ( $tccmd->{mask} ) {
+			$mark = $tccmd->{mask};
 		    }
+		    
+		    last MARK;
 		}
 	    }
 
@@ -204,6 +202,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes'
 		if $cmd && $chain eq 'tcpre' && numeric_value( $cmd ) < 0xFF && $config{HIGH_ROUTE_MARKS};
 	}
+    }
 
     expand_rule
 	ensure_chain( 'mangle' , $chain ) ,

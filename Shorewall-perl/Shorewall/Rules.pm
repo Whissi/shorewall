@@ -912,6 +912,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	$action = 'reject';
     } elsif ( $action eq 'CONTINUE' ) {
 	$action = 'RETURN';
+    } elsif ( $actiontype & LOGRULE ) {
+	fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne '';
     }
     #
     # Isolate and validate source and destination zones

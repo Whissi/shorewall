@@ -1119,8 +1119,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! ssh ${root}@${system} "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES /usr/share/shorewall-lite/shorecap > ${LITEDIR}/capabilities" || \
-	   ! scp ${root}@$system:${LITEDIR}/capabilities $directory; then
+	if ! ssh ${root}@${system} "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES /usr/share/shorewall-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi

@@ -766,7 +766,7 @@ setup_syn_flood_chain ()
     esac
 
     if ! havechain $chain ; then
-	run_iptables -N $chain
+	createchain $chain no
 	run_iptables -A $chain -m limit --limit $limit $limit_burst -j RETURN
 	[ -n "$3" ] && \
 	    log_rule_limit $3 $chain $chain DROP "-m limit --limit 5/min --limit-burst 5" "" ""

@@ -197,6 +197,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 #
 our %targets = ('ACCEPT'       => STANDARD,
 		'ACCEPT+'      => STANDARD  + NONAT,
+		'ACCEPT-'      => STANDARD
 		'ACCEPT!'      => STANDARD,
 		'NONAT'        => STANDARD  + NONAT + NATONLY,
 		'DROP'         => STANDARD,
@@ -209,7 +210,9 @@ our %targets = ('ACCEPT'       => STANDARD,
 		'REDIRECT-'    => NATRULE  + REDIRECT + NATONLY,
 		'LOG'          => STANDARD + LOGRULE,
 		'CONTINUE'     => STANDARD,
+		'CONTINUE!'    => STANDARD,
 		'QUEUE'        => STANDARD,
+		'QUEUE!'       => STANDARD,
 		'SAME'         => NATRULE,
 		'SAME-'        => NATRULE  + NATONLY,
 		'dropBcast'    => BUILTIN  + ACTION,

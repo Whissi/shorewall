@@ -110,7 +110,6 @@ sub setup_providers() {
 		'        default|nexthop)',
 		'            ;;',
 		'        *)',
-		"            run_ip route add table $number \$net \$route",
 		'            case $(find_device $route) in',
 		"                $match)",
 		"                    run_ip route add table $number \$net \$route",

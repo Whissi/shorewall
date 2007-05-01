@@ -112,9 +112,8 @@ sub merge_macro_source_dest( $$ ) {
 sub merge_macro_column( $$ ) {
     my ( $body, $invocation ) = @_;
 
-    if ( defined $invocation && $invocation ne '' ) {
-	return ( $body || '') if $invocation eq '-';
-	$invocation || '';
+    if ( defined $invocation && $invocation ne '' && $invocation ne '-' ) {
+	$invocation;
     } else {
 	$body || '';
     }

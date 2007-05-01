@@ -505,6 +505,7 @@ sub validate_level( $ ) {
     my $level = $_[0];
 
     if ( defined $level && $level ne '' ) {
+	$level =~ s/!$//;
 	my $value = $validlevels{$level};
 	return $value if defined $value;
 	return $level if $level =~ /^[0-7]$/;

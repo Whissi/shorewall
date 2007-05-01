@@ -117,7 +117,7 @@ sub merge_macro_column( $$ ) {
     if ( defined $invocation && $invocation ne '' && $invocation ne '-' ) {
 	$invocation;
     } else {
-	$body || '';
+	$body;
     }
 }
 

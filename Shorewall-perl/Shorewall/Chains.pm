@@ -792,7 +792,7 @@ sub do_proto( $$$ )
 		    fatal_error "Too many entries in port list: $ports" if port_count( $ports ) > 15;
 		    $ports = validate_port_list $ports;
 		    $output .= "-m multiport --dports $ports ";
-		    $dismultiport = 0;
+		    $dismultiport = 1;
 		}  else {
 		    $ports   = validate_portpair $ports;
 		    $output .= "--dport $ports ";

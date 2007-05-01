@@ -784,12 +784,15 @@ sub do_proto( $$$ )
 		$output  = "-p $proto ";
 	    }
 
+	    my $dismultiport = 0;
+
 	    if ( $ports ne '' ) {
 		if ( $ports =~ tr/,/,/ > 0 ) {
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
 		    fatal_error "Too many entries in port list: $ports" if port_count( $ports ) > 15;
 		    $ports = validate_port_list $ports;
 		    $output .= "-m multiport --dports $ports ";
+		    $dismultiport = 0;
 		}  else {
 		    $ports   = validate_portpair $ports;
 		    $output .= "--dport $ports ";
@@ -797,7 +800,7 @@ sub do_proto( $$$ )
 	    }
 
 	    if ( $sports ne '' ) {
-		if ( $sports =~ tr/,/,/ > 0 ) {	
+		if ( $sports =~ tr/,/,/ > 0 || $dismultiport ) {	
 		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
 		    fatal_error "Too many entries in port list: $sports" if port_count( $sports ) > 15;
 		    $sports = validate_port_list $sports;

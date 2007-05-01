@@ -775,9 +775,9 @@ sub do_proto( $$$ )
     $sports = '' if $sports eq '-';
 
     if ( $proto ) {
-	if ( $proto =~ /^((tcp|6)((:syn)?))|(udp|17)$/ ) {
+	if ( $proto =~ /^(((tcp|6)((:syn)?))|(udp|17))$/ ) {
 
-	    if ( $3 ) {
+	    if ( $4 ) {
 		$output = '-p 6 --syn ';
 	    } else {
 		$proto   = $protocols{$proto} if defined $protocols{$proto};
@@ -817,7 +817,7 @@ sub do_proto( $$$ )
 	    }
 
 	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
-	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all)))?$/i ) {
+	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
 	    require_capability( 'IPP2P_MATCH' , 'PROTO = ipp2p' );
 	    $proto = $2 ? $3 : 'tcp';
 	    $ports = 'ipp2p' unless $ports;

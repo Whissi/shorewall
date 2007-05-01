@@ -72,7 +72,7 @@ sub process_tos() {
 
 	while ( read_a_line ) {
 
-	    my ($src, $dst, $proto, $sports, $ports , $tos ) = split_line 6, 6, 'tos file';
+	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file';
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
@@ -103,7 +103,7 @@ sub process_tos() {
 	    expand_rule
 		$chainref ,
 		$restriction ,
-		do_proto( $proto, $ports, $sports ) ,
+		do_proto( $proto, $ports, $sports ) . do_test( $mark , 0xFF ) ,
 		$src ,
 		$dst ,
 		'' ,
@@ -768,13 +768,13 @@ sub setup_mac_lists( $ ) {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$ );
 
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$ ) {
-    my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user) = @_;
+sub process_macro ( $$$$$$$$$$$$ ) {
+    my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark ) = @_;
 
     my $standard = ( $macrofile =~ /^($globals{SHAREDIR})/ );
 
@@ -841,7 +841,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	$mrate   = merge_macro_column $mrate,   $rate;
 	$muser   = merge_macro_column $muser,   $user;
 
-	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser;
+	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser, $mark;
 
 	progress_message "   Rule \"$line\" $done";
     }
@@ -854,8 +854,8 @@ sub process_macro ( $$$$$$$$$$$ ) {
 #
 # Once a rule has been completely resolved by macro expansion and wildcard (source and/or dest zone == 'all'), it is processed by this function.
 #
-sub process_rule1 ( $$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = @_;
+sub process_rule1 ( $$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = split '/', $action;
     my $rule = '';
@@ -883,7 +883,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 	    $sports,
 	    $origdest,
 	    $ratelimit,
-	    $user;
+	    $user,
+	    $mark;
 	return;
     }
     #
@@ -961,7 +962,7 @@ sub process_rule1 ( $$$$$$$$$ ) {
     #
     # Generate Fixed part of the rule
     #
-    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit ) , do_user( $user ) );
+    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit ) , do_user( $user ) , do_test( $mark , 0xFF ) );
 
     #
     # Generate NAT rule(s), if any
@@ -1111,8 +1112,8 @@ sub process_rule1 ( $$$$$$$$$ ) {
 #
 #     Deals with the ugliness of wildcard zones ('all' in rules).
 #
-sub process_rule ( $$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = @_;
+sub process_rule ( $$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = @_;
     my $intrazone = 0;
     my $includesrcfw = 1;
     my $includedstfw = 1;
@@ -1182,7 +1183,7 @@ sub process_rule ( $$$$$$$$$ ) {
 					    next if $action eq $policy;
 					}
 				    }
-				    process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user;
+				    process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 				}
 			    }
 			}
@@ -1202,7 +1203,7 @@ sub process_rule ( $$$$$$$$$ ) {
 				    next if $action eq $policy;
 				}
 			    }
-			    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user;
+			    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 			}
 		    }
 		}
@@ -1224,11 +1225,11 @@ sub process_rule ( $$$$$$$$$ ) {
 			}
 		    }
 		}
-		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user;
+		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 	    }
 	}
     } else {
-	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
+	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
     }
 
     progress_message "   Rule \"$thisline\" $done";
@@ -1245,7 +1246,7 @@ sub process_rules() {
 
     while ( read_a_line ) {
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user ) = split_line 3, 9, 'rules file';
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line 3, 10, 'rules file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
@@ -1279,7 +1280,7 @@ sub process_rules() {
 	    if ( "\L$source" =~ /^none(:.*)?$/ || "\L$dest" =~ /^none(:.*)?$/ ) {
 		progress_message "Rule \"$line\" ignored."
 	    } else {
-		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user;
+		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 	    }
 	}
     }

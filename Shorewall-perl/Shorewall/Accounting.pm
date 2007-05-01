@@ -61,7 +61,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     my $target = '';
 
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, 0xFF );
     my $rule2 = 0;
 
     unless ( $action eq 'COUNT' ) {
@@ -117,14 +117,14 @@ sub setup_accounting() {
 
     while ( read_a_line ) {
 
-	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = split_line 1, 8, 'Accounting File';
+	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line 1, 9, 'Accounting File';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
 
-	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user;
+	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark;
     }
 
     if ( $filter_table->{accounting} ) {

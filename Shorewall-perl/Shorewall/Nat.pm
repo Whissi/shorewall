@@ -169,7 +169,7 @@ sub setup_one_masq($$$$$$$)
     #
     # Handle Mark
     #
-    rule .= do_test $mark if $mark ne '-';
+    $rule .= do_test( $mark, 0xFF) if $mark ne '-';
 
     my $detectaddress = 0;
     #

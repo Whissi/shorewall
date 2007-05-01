@@ -104,6 +104,8 @@ sub merge_macro_source_dest( $$ ) {
 	    return "$body:$invocation" if $invocation =~ /.*?\.*?\.|^\+|^~|^!~/;
 	    return "$invocation:$body";
 	}
+
+	return $invocation;
     }
 
     $body || '';

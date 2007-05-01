@@ -1621,6 +1621,7 @@ __EOF__
 #	 ratelimit	= Optional rate limiting clause
 #	 userandgroup	= -m owner clause
 #	 userspec	= User name
+#	 mark		= Packet mark
 #	 logtag		= Log tag
 #	 policy		= Applicable Policy
 #
@@ -1762,6 +1763,7 @@ add_a_rule() {
     servport=$serverport
     multiport=
     user="$userandgroup"
+    mrk="$mark"
 
     # Restore $chain to the canonical chain.
 
@@ -1808,7 +1810,7 @@ add_a_rule() {
 		#
 		# This function is called from process_default_macro() after rules are DONE
 		#
-		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" ] ; then
+		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" -a -z "$mark" ] ; then
 		    error_message "WARNING -- Rule \"$rule\" is a POLICY"
 		    error_message "	   -- and should be moved to the policy file"
 		fi
@@ -1867,7 +1869,7 @@ add_a_rule() {
 			if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 			    if [ "$addr" = detect ]; then
 				indent >&3 << __EOF__
-    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
+    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user $mrk -j $target
 done
 
 __EOF__
@@ -1875,44 +1877,44 @@ __EOF__
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-					    $user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
+					    $user $mrk $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
 				    fi
 
 				    run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
-					$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
+					$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user $mrk -j $target
 				done
 			    fi
 			else
 			    if [ -n "$loglevel" -a -z "$natrule" ]; then
-				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
 				    $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 			    fi
 
 			    if [ -n "$nonat" ]; then
 				addnatrule $(dnat_chain $source) $proto $multiport \
-				    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $user -j RETURN
+				    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $user $mrk -j RETURN
 			    fi
 
 			    if [ "$logtarget" != NONAT ]; then
 				run_iptables2 -A $chain $state $proto $multiport $cli $sports \
-				    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
+				    $(dest_ip_range $srv) $dports $ratelimit $user $mrk -j $target
 			    fi
 			fi
 		    done
 		done
 	    else
 		if [ -n "$loglevel" -a -z "$natrule" ]; then
-		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
 			$state $(fix_bang $proto $sports $multiport $cli $dports)
 		fi
 
 		[ -n "$nonat" ] && \
 		    addnatrule $(dnat_chain $source) $proto $multiport \
-		    $cli $sports $dports $ratelimit $user -j RETURN
+		    $cli $sports $dports $ratelimit $user $mrk -j RETURN
 
 		    [ "$logtarget" != NONAT ] && \
 			run_iptables2 -A $chain $state $proto $multiport $cli $sports \
-			$dports $ratelimit $user -j $target
+			$dports $ratelimit $user $mrk -j $target
 	    fi
 	fi
     else
@@ -1926,37 +1928,37 @@ __EOF__
 	if [ -n "$addr" ]; then
 	    for adr in $(separate_list $addr); do
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
 			$state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
 		fi
 
 		if [ "$logtarget" != LOG ]; then
 		    if [ -n "$nonat" ]; then
 			addnatrule $(dnat_chain $source) $proto $multiport \
-			    $cli $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j RETURN
+			    $cli $sports $dports $ratelimit $user $mrk  -m conntrack --ctorigdst $adr -j RETURN
 		    fi
 
 		    if [ "$logtarget" != NONAT ]; then
 			run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
-			    $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j $target
+			    $sports $dports $ratelimit $user $mrk  -m conntrack --ctorigdst $adr -j $target
 		    fi
 		fi
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+		log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
 		    $state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 	    fi
 
 	    if [ "$logtarget" != LOG ]; then
 		if [ -n "$nonat" ]; then
 		    addnatrule $(dnat_chain $source) $proto $multiport \
-			$cli $sports $dports $ratelimit $user -j RETURN
+			$cli $sports $dports $ratelimit $user $mrk -j RETURN
 		fi
 
 		if [ "$logtarget" != NONAT ]; then
 		    run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
-			$sports $dports $ratelimit $user -j $target
+			$sports $dports $ratelimit $user $mrk -j $target
 		fi
 	    fi
 	fi
@@ -2038,6 +2040,21 @@ process_ratelimit() {
 }
 
 #
+# Process the MARK column contents
+#
+process_mark() {
+    [ "x$mark" = "x-" ] && mark=
+
+    if [ -n "$mark" ]; then
+        if [ "$mark" = "${mark%!*}" ]; then
+            mark="-m mark --mark $mark"
+        else
+            mark="-m mark ! --mark ${mark#*!}"
+        fi
+    fi
+}
+
+#
 # Combine a source/dest from the macro body with one from the macro invocation
 #
 merge_macro_source_dest() # $1 = source/dest from macro body, $2 = source/dest from invocation
@@ -2070,6 +2087,7 @@ process_rule() # $1 = target
                # $7 = address
                # $8 = ratelimit
                # $9 = userspec
+               # $10= mark
 {
     local target="$1"
     local clients="$2"
@@ -2080,11 +2098,14 @@ process_rule() # $1 = target
     local address="$7"
     local ratelimit="$8"
     local userspec="$9"
+    local mark="${10}"
     local userandgroup=
     local logtag=
     local nonat=
 
     # # # # # F u n c t i o n   B o d y # # # # #
+
+    process_mark
 
     process_ratelimit
 
@@ -2427,6 +2448,7 @@ process_macro() # $1 = target
                # $7 = address
                # $8 = ratelimit
                # $9 = userspec
+               # $10= mark
 {
     local itarget="$1"
     local param="$2"
@@ -2438,6 +2460,7 @@ process_macro() # $1 = target
     local iaddress="$8"
     local iratelimit="$9"
     local iuserspec="${10}"
+    local imark="${11}"
 
     progress_message "..Expanding Macro $(find_file macro.${itarget%%:*})..."
 
@@ -2506,7 +2529,7 @@ process_macro() # $1 = target
 	[ -n "$iuserspec" ]  && [ "x${iuserspec}" != x- ]  && muserspec=$iuserspec
 
 	rule="$mtarget ${mclients=-} ${mservers:=-} ${mprotocol:=-} ${mports:=-} ${mcports:=-} ${xaddress:=-} ${mratelimit:=-} ${muserspec:=-}"
-	process_rule $mtarget $mclients $mservers $mprotocol $mports $mcports ${iaddress:=-} $mratelimit $muserspec
+	process_rule $mtarget $mclients $mservers $mprotocol $mports $mcports ${iaddress:=-} $mratelimit $muserspec $imark
 
     done < $TMP_DIR/macro.${itarget%%:*}
 
@@ -2545,10 +2568,10 @@ process_rules()
 			    fi
 			fi
 			if [ "$1" = Yes ]; then
-			    process_macro $xtarget "$xparam" $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
+			    process_macro $xtarget "$xparam" $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark
 			else
-			    rule="$xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
-			    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
+			    rule="$xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark"
+			    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark
 			fi
 		    fi
 		fi
@@ -2612,16 +2635,16 @@ process_rules()
 	esac
 
 	if [ "$1" = Yes ]; then
-	    process_macro $xtarget "$xparam" $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
+	    process_macro $xtarget "$xparam" $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark
 	else
-	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
-	    process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
+	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark"
+	    process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark
 	fi
     }
 
-    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
+    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec xmark; do
 	if [ "x$xclients" = xnone -o "x$servers" = xnone ]; then
-	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
+	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark"
 	    progress_message "   Rule \"$rule\" ignored."
 	    continue
 	fi
@@ -2638,7 +2661,7 @@ process_rules()
 		;;
 	    COMMENT)
 		if [ -n "$COMMENTS" ]; then
-		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
+		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark)
 		    save_command COMMENT=\"$comment\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
@@ -2703,7 +2726,7 @@ process_rules()
 			    strip_file $f $fn
 			    do_it Yes
 			else
-			    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
+			    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark"
 			    fatal_error "Invalid Action in rule \"$rule\""
 			fi
 		    fi
@@ -2942,6 +2965,15 @@ process_tos_rule() {
 
     protocol="${protocol:+-p $protocol}"
 
+    [ "x$mark" = x- ] && mark=
+    if [ -n "$mark" ]; then
+        if [ "$mark" = "${mark%!*}" ]; then
+            mark="-m mark --mark $mark"
+        else
+            mark="-m mark ! --mark ${mark#*!}"
+        fi
+    fi
+
     tos="-j TOS --set-tos $tos"
 
     case "$dstzone" in
@@ -2964,24 +2996,24 @@ process_tos_rule() {
 	case $srczone in
 	$FW)
 	    run_iptables2 -t mangle -A outtos \
-		$protocol $dest $dports $sports $tos
+		$protocol $dest $dports $sports $mark $tos
 	    ;;
 	all|ALL)
 	    run_iptables2 -t mangle -A outtos \
-		$protocol $dest $dports $sports $tos
+		$protocol $dest $dports $sports $mark $tos
 	    run_iptables2 -t mangle -A $chain \
-		$protocol $dest $dports $sports $tos
+		$protocol $dest $dports $sports $mark $tos
 	    ;;
 	*)
 	    if [ -n "$src" ]; then
 		run_iptables2 -t mangle -A $chain $src \
-		    $protocol $dest $dports $sports $tos
+		    $protocol $dest $dports $sports $mark $tos
 	    else
 		eval hosts=\$${srczone}_hosts
 
 		for host in $hosts; do
 		    run_iptables2 -t mangle -A $chain $(match_source $host) \
-			$protocol $dest $dports $sports $tos
+			$protocol $dest $dports $sports $mark $tos
 		done
 	    fi
 	    ;;
@@ -3013,8 +3045,8 @@ process_tos() # $1 = name of tos file
 	createmanglechain $chain
 	createmanglechain outtos
 
-	while read src dst protocol sport dport tos; do
-	    rule="$(echo $src $dst $protocol $sport $dport $tos)"
+	while read src dst protocol sport dport tos mark; do
+	    rule="$(echo $src $dst $protocol $sport $dport $tos $mark)"
 	    process_tos_rule
 	done < $TMP_DIR/tos
 

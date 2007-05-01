@@ -35,11 +35,11 @@ process_accounting_rule() {
     user1=
 
     accounting_error() {
-	error_message "WARNING: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport $user
+	error_message "WARNING: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport $user $mark
     }
 
     accounting_interface_error() {
-	error_message "WARNING: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport $user
+	error_message "WARNING: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport $user $mark
     }
 
     accounting_interface_verify() {
@@ -195,6 +195,18 @@ process_accounting_rule() {
 	    ;;
     esac
 
+    [ -n "$mark" ] && case $mark in
+        -|any|all)
+            mark=
+            ;;
+        !*)
+            rule="$rule -m mark ! --mark ${mark#*!}"
+            ;;
+        *)
+            rule="$rule -m mark --mark $mark"
+            ;;
+    esac
+
     case $action in
 	COUNT)
 	    ;;
@@ -239,7 +251,7 @@ setup_accounting() # $1 = Name of accounting file
 
     save_progress_message "Setting up Accounting..."
 
-    while read action chain source dest proto port sport user ; do
+    while read action chain source dest proto port sport user mark ; do
 	process_accounting_rule
     done < $TMP_DIR/accounting
 

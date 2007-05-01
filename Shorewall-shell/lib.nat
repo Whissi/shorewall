@@ -154,6 +154,8 @@ setup_masq()
 	[ "x$proto" = x- ] && proto=
 	[ "x$ports" = x- ] && ports=
 
+	[ "x$mark" = x- ] && mark=
+
 	if [ -n "$proto" ]; then
 
 	    displayproto="($proto)"
@@ -203,6 +205,15 @@ setup_masq()
 	    [ -n "$ports" ] && fatal_error "Ports only allowed with UDP or TCP ($ports)"
 	fi
 
+	if [ -n "$mark" ]; then
+	    displaymark="($mark)"
+	    if [ "$mark" = "${mark%!*}" ]; then
+	        mark="-m mark --mark $mark"
+	    else
+	        mark="-m mark ! --mark ${mark#*!}"
+	    fi
+	fi
+
 	destination=${destnets:=0.0.0.0/0}
 
 	[ -z "$pre_nat" ] && chain=$(masq_chain $interface) || chain=$(snat_chain $interface)
@@ -217,7 +228,7 @@ setup_masq()
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
-			addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
+			addnatrule $chain $(source_ip_range $s) $proto $ports $mark $policy -j $newchain
 		    done
 		    networks=
 		elif [ -n "$detectinterface" ]; then
@@ -228,7 +239,7 @@ networks="\$(get_routed_networks $detectinterface)"
 [ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
 for network in \$networks; do
-    run_iptables -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
+    run_iptables -t nat -A $chain -s \$network $proto $ports $mark $policy -j $newchain
 done
 
 __EOF__
@@ -252,7 +263,7 @@ __EOF__
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $policy -j $newchain
+				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $mark $policy -j $newchain
 			    done
 			done
 		    elif [ -n "$detectinterface" ]; then
@@ -266,7 +277,7 @@ for network in \$networks; do
 __EOF__
 			for destnet in $(separate_list $destnets); do
 			    indent >&3 << __EOF__
-    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $mark $policy -j $newchain
 __EOF__
 			done
 			indent >&3 << __EOF__
@@ -275,7 +286,7 @@ done
 __EOF__
 		    else
 			for destnet in $(separate_list $destnets); do
-			    addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
+			    addnatrule $chain $(dest_ip_range $destnet) $proto $ports $mark $policy -j $newchain
 			done
 		    fi
 
@@ -379,7 +390,7 @@ __EOF__
 	if [ -n "$networks" ]; then
 	    for network in $networks; do
 		for destnet in $(separate_list $destnets); do
-		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $policy -j $target $addrlist
+		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $mark $policy -j $target $addrlist
 		done
 
 		if [ -n "$addresses" ]; then
@@ -399,7 +410,7 @@ for network in \$networks; do
 __EOF__
 	    for destnet in $(separate_list $destnets); do
 		indent >&3 << __EOF__
-    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $mark $policy -j $target $addrlist
 __EOF__
 	    done
 
@@ -417,7 +428,7 @@ __EOF__
 
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+		addnatrule $chain $(dest_ip_range $destnet) $proto $ports $mark $policy -j $target $addrlist
 	    done
 
 	    if [ -n "$addresses" ]; then
@@ -433,11 +444,11 @@ __EOF__
 	progress_message2 "$DOING Masquerading/SNAT"
 	save_progress_message "Setting up Masquerading/SNAT..."
 
-	while read fullinterface networks addresses proto ports ipsec; do
+	while read fullinterface networks addresses proto ports ipsec mark; do
 	    if [ -n "$NAT_ENABLED" ]; then
 		if [ "x$fullinterface" = xCOMMENT ]; then
 		    if [ -n "$COMMENTS" ]; then
-			comment=$(echo $networks $addresses $proto $ports $ipsec)
+			comment=$(echo $networks $addresses $proto $ports $ipsec $mark)
 			save_command COMMENT=\"$comment\"
 		    else
 			error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"

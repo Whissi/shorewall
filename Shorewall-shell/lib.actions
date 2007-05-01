@@ -245,6 +245,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
                  # $8 = cports
                  # $9 = ratelimit
                  # $10 = userspec
+                 # $11 = mark
 {
     local chain="$1"
     local action="$2"
@@ -256,6 +257,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
     local cports="$8"
     local ratelimit="$9"
     local userspec="${10}"
+    local mark="${11}"
     local userandgroup=
     local logtag=
 
@@ -320,6 +322,16 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	esac
 
 	[ "$userandgroup" = "-m owner" ] && userandgroup=
+    fi
+
+    [ "x$mark" = "x-" ] && mark=
+
+    if [ -n "$mark" ]; then
+        if [ "$mark" = "${mark%!*}" ]; then
+            mark="-m mark --mark $mark"
+        else
+            mark="-m mark ! --mark ${mark#*!}"
+        fi
     fi
 
     # Isolate log level
@@ -579,7 +591,7 @@ process_actions1() {
 		if [ -f $fn ]; then
 		    progress_message2 "   Pre-processing $fn..."
 		    strip_file $f $fn
-		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec $xmark; do
 			temp="${xtarget%%:*}"
 			case "$temp" in
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
@@ -600,7 +612,7 @@ process_actions1() {
 						ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 						    ;;
 						*)
-						    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
+						    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xmark"
 						    fatal_error "Invalid Macro Parameter in rule \"$rule\""
 						    ;;
 					    esac
@@ -633,7 +645,7 @@ process_actions1() {
 
 					    progress_message "   ..End Macro"
 					else
-					    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
+					    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xmark"
 					    fatal_error "Invalid TARGET in rule \"$rule\""
 					fi
 				    fi
@@ -715,7 +727,7 @@ process_action3() {
 
     progress_message2 "$DOING $(find_file $f) for Chain $xchain..."
 
-    while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
+    while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec xmark; do
 	#
 	# Generate the target:level:tag to pass to process_action()
 	#
@@ -734,7 +746,7 @@ process_action3() {
 		;;
 	    COMMENT)
 		if [ -n "$COMMENTS" ]; then
-		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)
+		    comment=$(echo $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xmark)
 		    save_command COMMENT=\"$comment\"
 		else
 		    error_message "COMMENT ignored --  requires comment support in iptables/Netfilter"
@@ -817,13 +829,13 @@ process_action3() {
 		[ -n "$xratelimit" ] && [ "x${xratelimit}" != x- ] && mratelimit=$xratelimit
 		[ -n "$xuserspec" ]  && [ "x${xuserspec}" != x- ]  && muserspec=$xuserspec
 
-		rule="$mtarget ${mclients:=-} ${mservers:=-} ${mprotocol:=-} ${mports:=-} ${mcports:=-} ${mratelimit:-} ${muserspec:=-}"
-		process_action $xchain $xaction1 $mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec
+		rule="$mtarget ${mclients:=-} ${mservers:=-} ${mprotocol:=-} ${mports:=-} ${mcports:=-} ${mratelimit:-} ${muserspec:=-} $xmark"
+		process_action $xchain $xaction1 $mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec $xmark
 	    done < $TMP_DIR/macro.$xtarget1
 	    progress_message "..End Macro"
 	else
-	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-	    process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
+	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xmark"
+	    process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xmark
 	fi
     done < $TMP_DIR/$f
 

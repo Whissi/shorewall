@@ -95,9 +95,9 @@ sub do_ipsec_options($)
 #
 # Process a single rule from the the masq file
 #
-sub setup_one_masq($$$$$$)
+sub setup_one_masq($$$$$$$)
 {
-    my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = @_;
+    my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark) = @_;
 
     my $rule = '';
     my $pre_nat;
@@ -166,6 +166,10 @@ sub setup_one_masq($$$$$$)
     # Handle Protocol and Ports
     #
     $rule .= do_proto $proto, $ports, '';
+    #
+    # Handle Mark
+    #
+    rule .= do_test $mark if $mark ne '-';
 
     my $detectaddress = 0;
     #
@@ -258,7 +262,7 @@ sub setup_masq()
 
     while ( read_a_line ) {
 
-	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec) = split_line 2, 6, 'masq file';
+	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line 2, 7, 'masq file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
@@ -274,7 +278,7 @@ sub setup_masq()
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
 	} else {
-	    setup_one_masq $fullinterface, $networks, $addresses, $proto, $ports, $ipsec;
+	    setup_one_masq $fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark;
 	}
     }
 

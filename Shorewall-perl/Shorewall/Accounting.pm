@@ -42,8 +42,8 @@ our @VERSION = 1.00;
 #
 my $jumpchainref;
 
-sub process_accounting_rule( $$$$$$$$ ) {
-    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user ) = @_;
+sub process_accounting_rule( $$$$$$$$$ ) {
+    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = @_;
 
     sub accounting_error() {
 	warning_message "Invalid Accounting rule";
@@ -61,7 +61,7 @@ sub process_accounting_rule( $$$$$$$$ ) {
 
     my $target = '';
 
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark );
     my $rule2 = 0;
 
     unless ( $action eq 'COUNT' ) {

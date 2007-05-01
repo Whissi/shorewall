@@ -841,7 +841,7 @@ sub process_macro ( $$$$$$$$$$$ ) {
 	$mrate   = merge_macro_column $mrate,   $rate;
 	$muser   = merge_macro_column $muser,   $user;
 
-	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $rate, $user;
+	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser;
 
 	progress_message "   Rule \"$line\" $done";
     }

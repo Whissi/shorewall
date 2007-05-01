@@ -987,7 +987,7 @@ sub get_set_flags( $$ ) {
 
     $setname =~ s/^\+//;
 
-    "--set $setname $options"
+    "--set $setname $options "
 }
 
 #

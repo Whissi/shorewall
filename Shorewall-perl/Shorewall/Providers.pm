@@ -101,17 +101,13 @@ sub setup_providers() {
     sub copy_and_edit_table( $$$ ) {
 	my ( $duplicate, $number, $copy ) = @_;
 
-	my $match = $copy;
-
-	$match =~ s/ /\|/g;
-
 	emitj ( "ip route show table $duplicate | while read net route; do",
 		'    case $net in',
 		'        default|nexthop)',
 		'            ;;',
 		'        *)',
 		'            case $(find_device $route) in',
-		"                $match)",
+		"                $copy)",
 		"                    run_ip route add table $number \$net \$route",
 		'                    ;;',
 		'            esac',
@@ -165,17 +161,16 @@ sub setup_providers() {
 	emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
 	if ( $duplicate ne '-' ) {
-	    if ( $copy ne '-' ) {
+	    if ( $copy eq '-' ) {
+		copy_table ( $duplicate, $number );
+	    } else {
 		if ( $copy eq 'none' ) {
 		    $copy = $interface;
 		} else {
-		    my @c = ( split /,/, $copy );
-		    $copy = "@c";
+		    $copy =~ tr/,/|/;
 		}
 
 		copy_and_edit_table( $duplicate, $number ,$copy );
-	    } else {
-		copy_table ( $duplicate, $number );
 	    }
 	} else {
 	    fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';

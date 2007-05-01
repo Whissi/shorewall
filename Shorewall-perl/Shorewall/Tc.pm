@@ -176,7 +176,11 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 		    $target      = "$tccmd->{target} ";
 		    my $marktype = $tccmd->{mark};
 
-		    $mark   =~ s/^[!&]//;
+		    if ( $marktype == NOMARK ) {
+			$mark = ''
+		    } else {
+			$mark =~ s/^[|&]//;
+		    }
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($original_mark)" if $marktype == NOMARK;

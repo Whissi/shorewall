@@ -176,8 +176,6 @@ sub setup_providers() {
 	    fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
 	}
 
-	$gateway = '-' unless $gateway;
-
 	if ( $gateway eq 'detect' ) {
 	    emitj ( "gateway=\$(detect_gateway $interface)\n",
 		    'if [ -n "$gateway" ]; then',
@@ -193,8 +191,6 @@ sub setup_providers() {
 	    $gateway = '';
 	    emit "run_ip route add default dev $interface table $number";
 	}
-
-	$mark = '-' unless $mark;
 
 	my $val = 0;
 

@@ -886,11 +886,11 @@ sub do_test ( $$ )
     return '' unless $testval and $testval ne '-';
 
     my $invert = $testval =~ s/^!// ? '! ' : '';
-    my $match =  $testval =~ s/:C$// ? '-m connmark ' : '-m mark ';
+    my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";
 
     $testval .= '/0xFF' unless ( $testval =~ '/' );
 
-    "${invert}$match $testval ";
+    "$match $testval ";
 }
 
 #

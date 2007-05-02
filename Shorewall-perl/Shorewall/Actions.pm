@@ -116,7 +116,7 @@ sub merge_levels ($$) {
 # Get Macro Name -- strips away trailing /* and :* from the first column in a rule, macro or action.
 #
 sub isolate_basic_target( $ ) {
-    ( split '/', ( split /:/ , $_[0] )[0] )[0];
+    ( split '[/:]', $_[0])[0];
 }
 
 #

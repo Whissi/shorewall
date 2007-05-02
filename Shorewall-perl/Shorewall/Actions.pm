@@ -264,7 +264,11 @@ sub process_actions1() {
 		fatal_error "Invalid Action Name: $action";
 	    }
 
+	    $targets{$action} = ACTION;
+
 	    fatal_error "Invalid Action Name: $action" unless "\L$action" =~ /^[a-z]\w*$/;
+
+	    new_action $action;
 
 	    my $actionfile = find_file "action.$action";
 
@@ -288,6 +292,8 @@ sub process_actions1() {
 		    next if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
 
 		    fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
+
+		    fatal_error "An action may not invoke itself" if $target eq $action;
 
 		    add_requiredby $wholetarget, $action if $targettype & ACTION;
 		} else {
@@ -323,10 +329,6 @@ sub process_actions1() {
 	    }
 
 	    pop_open;
-
-	    $targets{$action} = ACTION;
-
-	    new_action $action;
 	}
     }
 }

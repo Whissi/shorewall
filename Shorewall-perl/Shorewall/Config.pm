@@ -654,55 +654,57 @@ sub qt( $ ) {
 #
 sub determine_capabilities() {
 
-    my $iptables = $config{IPTABLES};
+    my $iptables  = $config{IPTABLES};
+    my $pid       = $$;
+    my $sillyname = "fooX$pid";
 
     $capabilities{NAT_ENABLED}    = qt( "$iptables -t nat -L -n" );
     $capabilities{MANGLE_ENABLED} = qt( "$iptables -t mangle -L -n" );
 
-    qt( "$iptables -N fooX1234" );
+    qt( "$iptables -N $sillyname" );
 
-    $capabilities{CONNTRACK_MATCH} = qt( "$iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
-    $capabilities{MULTIPORT}       = qt( "$iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT" );
-    $capabilities{XMULTIPORT}      = qt( "$iptables -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT" );
-    $capabilities{POLICY_MATCH}    = qt( "$iptables -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
-    $capabilities{PHYSDEV_MATCH}   = qt( "$iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT" );
+    $capabilities{CONNTRACK_MATCH} = qt( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+    $capabilities{MULTIPORT}       = qt( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" );
+    $capabilities{XMULTIPORT}      = qt( "$iptables -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
+    $capabilities{POLICY_MATCH}    = qt( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
+    $capabilities{PHYSDEV_MATCH}   = qt( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" );
 
-    if ( qt( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
+    if ( qt( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
 	$capabilities{IPRANGE_MATCH} = 1;
 	unless ( $capabilities{KLUDGEFREE} ) {
-	    $capabilities{KLUDGEFREE} = qt( "$iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+	    $capabilities{KLUDGEFREE} = qt( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
 	}
     }
 
-    $capabilities{RECENT_MATCH} = qt( "$iptables -A fooX1234 -m recent --update -j ACCEPT" );
-    $capabilities{OWNER_MATCH}  = qt( "$iptables -A fooX1234 -m owner --uid-owner 0 -j ACCEPT" );
+    $capabilities{RECENT_MATCH} = qt( "$iptables -A $sillyname -m recent --update -j ACCEPT" );
+    $capabilities{OWNER_MATCH}  = qt( "$iptables -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
 
-    if ( qt( "$iptables -A fooX1234 -m connmark --mark 2  -j ACCEPT" )) {
+    if ( qt( "$iptables -A $sillyname -m connmark --mark 2  -j ACCEPT" )) {
 	$capabilities{CONNMARK_MATCH}  = 1;
-	$capabilities{XCONNMARK_MATCH} = qt( "$iptables -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT" );
+	$capabilities{XCONNMARK_MATCH} = qt( "$iptables -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
     }
 
-    $capabilities{IPP2P_MATCH}     = qt( "$iptables -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT" );
-    $capabilities{LENGTH_MATCH}    = qt( "$iptables -A fooX1234 -m length --length 10:20 -j ACCEPT" );
-    $capabilities{ENHANCED_REJECT} = qt( "$iptables -A fooX1234 -j REJECT --reject-with icmp-host-prohibited" );
-    $capabilities{COMMENTS}        = qt( qq($iptables -A fooX1234 -j ACCEPT -m comment --comment "This is a comment" ) );
+    $capabilities{IPP2P_MATCH}     = qt( "$iptables -A $sillyname -p tcp -m ipp2p --ipp2p -j ACCEPT" );
+    $capabilities{LENGTH_MATCH}    = qt( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
+    $capabilities{ENHANCED_REJECT} = qt( "$iptables -A $sillyname -j REJECT --reject-with icmp-host-prohibited" );
+    $capabilities{COMMENTS}        = qt( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );
 
     if  ( $capabilities{MANGLE_ENABLED} ) {
-	qt( "$iptables -t mangle -N fooX1234" );
+	qt( "$iptables -t mangle -N $sillyname" );
 
-	if ( qt( "$iptables -t mangle -A fooX1234 -j MARK --set-mark 1" ) ) {
+	if ( qt( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" ) ) {
 	    $capabilities{MARK}  = 1;
-	    $capabilities{XMARK} = qt( "$iptables -t mangle -A fooX1234 -j MARK --and-mark 0xFF" );
+	    $capabilities{XMARK} = qt( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
 	}
 
-	if ( qt( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark" ) ) {
+	if ( qt( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" ) ) {
 	    $capabilities{CONNMARK}  = 1;
-	    $capabilities{XCONNMARK} = qt( "$iptables -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF" );
+	    $capabilities{XCONNMARK} = qt( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
 	}
 
-	$capabilities{CLASSIFY_TARGET} = qt( "$iptables -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1" );
-	qt( "$iptables -t mangle -F fooX1234" );
-	qt( "$iptables -t mangle -X fooX1234" );
+	$capabilities{CLASSIFY_TARGET} = qt( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
+	qt( "$iptables -t mangle -F $sillyname" );
+	qt( "$iptables -t mangle -X $sillyname" );
 
 	$capabilities{MANGLE_FORWARD} = qt( "$iptables -t mangle -L FORWARD -n" );
     }
@@ -710,23 +712,23 @@ sub determine_capabilities() {
     $capabilities{RAW_TABLE} = qt( "$iptables -t raw -L -n" );
 
     if ( mywhich 'ipset' ) {
-	qt( "ipset -X fooX1234" );
+	qt( "ipset -X $sillyname" );
 
-	if ( qt( "ipset -N fooX1234 iphash" ) ) {
-	    if ( qt( "$iptables -A fooX1234 -m set --set fooX1234 src -j ACCEPT" ) ) {
-		qt( "$iptables -D fooX1234 -m set --set fooX1234 src -j ACCEPT" );
+	if ( qt( "ipset -N $sillyname iphash" ) ) {
+	    if ( qt( "$iptables -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
+		qt( "$iptables -D $sillyname -m set --set $sillyname src -j ACCEPT" );
 		$capabilities{IPSET_MATCH} = 1;
 	    }
 
-	    qt( "ipset -X fooX1234" );
+	    qt( "ipset -X $sillyname" );
 	}
     }
 
-    $capabilities{USEPKTTYPE} = qt( "$iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT" );
-    $capabilities{ADDRTYPE}   = qt( "$iptables -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT" );
+    $capabilities{USEPKTTYPE} = qt( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
+    $capabilities{ADDRTYPE}   = qt( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
 
-    qt( "$iptables -F fooX1234" );
-    qt( "$iptables -X fooX1234" );
+    qt( "$iptables -F $sillyname" );
+    qt( "$iptables -X $sillyname" );
 }
 
 #

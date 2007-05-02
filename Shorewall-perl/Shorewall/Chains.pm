@@ -1541,7 +1541,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( mysplit $inets ) {
 		$inet = match_source_net $inet;
 		for my $dnet ( mysplit $dnets ) {
-		    if ( $loglevel ) {
+		    if ( $loglevel ne '' ) {
 			log_rule_limit
 			    $loglevel ,
 			    $chainref ,

@@ -101,7 +101,7 @@ sub merge_levels ($$) {
 	return "$target:none!:$tag"   if $level eq 'none!';
 	return "$target:$level:$tag"  if $level =~ /!$/;
 	return $subordinate           if $subparts >= 2;
-	return "$target:$level";
+	return "$target:$level:$tag";
     }
 
     if ( @supparts == 2 ) {

@@ -107,7 +107,9 @@ our $firewall_zone;
 our %interfaces;
 
 my %reservedName = ( all => 1,
-		     none => 1 );
+		     none => 1,
+		     SOURCE => 1,
+		     DEST => 1 );
 
 #
 # Parse the passed option list and return a reference to a hash as follows:

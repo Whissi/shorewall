@@ -921,19 +921,19 @@ sub do_user( $ ) {
     return '' unless defined $user and $user ne '-';
 
     if ( $user =~ /^(!)?(.*)\+(.*)$/ ) {
-	$rule .= "! --cmd-owner $2 " if $2;
+	$rule .= "! --cmd-owner $2 " if defined $2 && $2 ne '';
 	$user = "!$1";
     } elsif ( $user =~ /^(.*)\+(.*)$/ ) {
-	$rule .= "--cmd-owner $2 " if $2;
+	$rule .= "--cmd-owner $2 " if defined $2 && $2 ne '';
 	$user = $1;
     }
 
     if ( $user =~ /^!(.*):(.*)$/ ) {
-	$rule .= "! --uid-owner $1 " if $1;
-	$rule .= "! --gid-owner $2 " if $2;
+	$rule .= "! --uid-owner $1 " if defined $1 && $1 ne '';
+	$rule .= "! --gid-owner $2 " if defined $2 && $2 ne '';
     } elsif ( $user =~ /^(.*):(.*)$/ ) {
-	$rule .= "--uid-owner $1 " if $1;
-	$rule .= "--gid-owner $2 " if $2;
+	$rule .= "--uid-owner $1 " if defined $1 && $1 ne '';
+	$rule .= "--gid-owner $2 " if defined $2 && $2 ne '';
     } elsif ( $user =~ /^!/ ) {
 	$rule .= "! --uid-owner $user ";
     } else {

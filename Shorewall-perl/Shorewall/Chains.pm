@@ -1120,9 +1120,9 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 
     if ( $level eq 'ULOG' ) {
-	$prefix = "-j ULOG $globals{LOGPARMS} --ulog-prefix \"$prefix\" ";
+	$prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \"$prefix\" ";
     } else {
-	$prefix = "-j LOG $globals{LOGPARMS} --log-level $level --log-prefix \"$prefix\" ";
+	$prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
     }
 
     if ( $command eq 'add' ) {

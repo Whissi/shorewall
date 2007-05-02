@@ -563,7 +563,7 @@ sub add_common_rules() {
 
 	    my $savelogparms = $globals{LOGPARMS};
 
-	    $globals{LOGPARMS} = "$globals{LOGPARMS} --log-ip-options" unless $config{TCP_FLAGS_LOG_LEVEL} eq 'ULOG';
+	    $globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options " unless $config{TCP_FLAGS_LOG_LEVEL} eq 'ULOG';
 
 	    log_rule $config{TCP_FLAGS_LOG_LEVEL} , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
 

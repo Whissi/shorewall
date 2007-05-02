@@ -293,6 +293,8 @@ sub process_actions1() {
 
 		    fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 
+		    fatal_error "An action may not invoke itself" if $target eq $action;
+
 		    add_requiredby $wholetarget, $action if $targettype & ACTION;
 		} else {
 		    $target =~ s!/.*$!!;

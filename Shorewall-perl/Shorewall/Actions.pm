@@ -80,7 +80,7 @@ my %logactionchains;
 # Maps each used macro to it's 'macro. ...' file.
 #
 #
-# This function determines the logging for a subordinate action or a rule within a subordinate action
+# This function determines the logging for a subordinate action or a rule within a superior action
 #
 sub merge_levels ($$) {
     my ( $superior, $subordinate ) = @_;
@@ -179,7 +179,7 @@ sub createlogactionchain( $$ ) {
 	if ( -f $file ) {
 	    progress_message "Processing $file...";
 
-	    unless ( my $return = do $file ) {
+	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
 		fatal_error "Couldn't do $file: $!"    unless defined $return;
 		fatal_error "Couldn't run $file"       unless $return;

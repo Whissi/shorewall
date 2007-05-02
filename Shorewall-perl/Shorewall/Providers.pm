@@ -61,7 +61,7 @@ my @providers;
 # Set up marking for 'tracked' interfaces. Unline in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.
 #
 sub setup_route_marking() {
-    my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFFFF' : '0xFF';
+    my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
 
     require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' );

@@ -602,6 +602,7 @@ process_actions1() {
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 				;;
 			    COMMENT)
+				[ "$temp" = "$xtarget" ] || fatal_error "Invalid TARGET in rule \"$rule\""
 				;;
 			    *)
 				if list_search $temp $ACTIONS; then

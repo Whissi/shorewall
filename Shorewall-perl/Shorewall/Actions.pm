@@ -296,7 +296,7 @@ sub process_actions1() {
 		    fatal_error "An action may not invoke itself" if $target eq $action;
 
 		    add_requiredby $wholetarget, $action if $targettype & ACTION;
-		} else {
+		} elsif ( $target ne 'COMMENT' ) {
 		    $target =~ s!/.*$!!;
 
 		    if ( find_macro $target ) {
@@ -396,6 +396,17 @@ sub process_action3( $$$$$ ) {
 
 	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 1, 8, 'action file';
 
+	if ( $target eq 'COMMENT' ) {
+	    if ( $capabilities{COMMENTS} ) {
+		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+		$comment =~ s/\s*$//;
+	    } else {
+		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+	    }
+
+	    next;
+	}
+
 	my $target2 = merge_levels $wholeaction, $target;
 
 	my ( $action2 , $level2 ) = split_action $target2;
@@ -403,14 +414,7 @@ sub process_action3( $$$$$ ) {
 	my $action2type = $targets{isolate_basic_target $action2};
 
 	unless ( $action2type == STANDARD ) {
-	    if ( $target eq 'COMMENT' ) {
-		if ( $capabilities{COMMENTS} ) {
-		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		    $comment =~ s/\s*$//;
-		} else {
-		    warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-		}
-	    } elsif ( $action2type & ACTION ) {
+	    if ( $action2type & ACTION ) {
 		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
 	    } else {
 		die "Internal Error" unless $action2type == MACRO || $action2type & LOGRULE;

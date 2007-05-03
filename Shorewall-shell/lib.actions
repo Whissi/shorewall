@@ -147,7 +147,8 @@ add_an_action()
 	;;
     *:*)
 	action_interface_verify ${server%:*}
-	serv="$(match_dest_dev ${server%:*}) $(dest_ip_range ${server#*:})"
+	dest_interface=$(match_dest_dev ${server%:*})
+	serv=${server#*:}
 	;;
     *.*.*|+*|!+*)
 	serv=$server
@@ -218,11 +219,11 @@ add_an_action()
 	    for srv in $(firewall_ip_range $serv1); do
 		if [ -n "$loglevel" ]; then
 		    log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
-			$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
+			$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dest_interface $dports)
 		fi
 
 		run_iptables2 -A $chain1 $proto $multiport $cli $sports \
-		    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
+		    $(dest_ip_range $srv) $dest_interface $dports $ratelimit $user -j $target
 	    done
 	done
     else

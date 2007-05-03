@@ -1916,6 +1916,9 @@ __EOF__
 			run_iptables2 -A $chain $state $proto $multiport $cli $sports \
 			$dports $ratelimit $user $mrk -j $target
 	    fi
+	elif [ "$addr" = detect ]; then
+	    save_command 'done'
+	    save_command ''
 	fi
     else
 

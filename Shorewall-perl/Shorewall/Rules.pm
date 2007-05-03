@@ -65,6 +65,12 @@ sub process_tos() {
     my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
     my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
 
+    my %tosoptions = ( 'minimize-delay'       => 0x10 ,
+		       'maximize-throughput'  => 0x08 ,
+		       'maximize-reliability' => 0x04 ,
+		       'minimize-cost'        => 0x02 ,
+		       'normal-service'       => 0x00 );
+
     if ( my $fn = open_file 'tos' ) {
 	my $first_entry = 1;
 
@@ -83,6 +89,12 @@ sub process_tos() {
 
 	    fatal_error "TOS field required" unless $tos ne '-';
 
+	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) { 
+		$tos = $tosval;
+	    } elsif ( numeric_value( $tos ) > 0x1e ) {
+		fatal_error "Invalid TOS value";
+	    }
+		
 	    my $chainref;
 
 	    my $restriction = NO_RESTRICT;

@@ -173,12 +173,39 @@ sub createlogactionchain( $$ ) {
 
     $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
 
+    mark_referenced $chainref; # Just in case the action body is empty.
+
     unless ( $targets{$action} & STANDARD ) {
+	
 	my $file = find_file $chain;
 
 	if ( -f $file ) {
 	    progress_message "Processing $file...";
 
+	    unless ( my $return = eval `cat $file` ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+		fatal_error "Couldn't do $file: $!"    unless defined $return;
+		fatal_error "Couldn't run $file"       unless $return;
+	    }
+	}
+    }
+}
+
+sub createsimpleactionchain( $ ) {
+    my $action  = shift;
+    my $chainref = new_chain 'filter', $action;
+    
+    $logactionchains{"$action:none"} = $chainref;
+	
+    mark_referenced $chainref; # Just in case the action body is empty.
+
+    unless ( $targets{$action} & STANDARD ) {
+	
+	my $file = find_file $action;
+
+	if ( -f $file ) {
+	    progress_message "Processing $file...";
+	    
 	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
 		fatal_error "Couldn't do $file: $!"    unless defined $return;
@@ -194,14 +221,16 @@ sub createlogactionchain( $$ ) {
 sub createactionchain( $ ) {
     my ( $action , $level ) = split_action $_[0];
 
-    if ( $level ) {
+    my $chainref;
+
+    if ( $level ne '' ) {
 	if ( $level eq 'none' ) {
-	    $logactionchains{"$action:none"} = new_chain 'filter', $action;
+	    createsimpleactionchain $action;
 	} else {
 	    createlogactionchain $action , $level;
 	}
     } else {
-	$logactionchains{"$action:none"} = new_chain 'filter', $action;
+	createsimpleactionchain $action;
     }
 }
 
@@ -345,7 +374,7 @@ sub process_actions2 () {
 	for my $target (keys %usedactions) {
 	    my ($action, $level) = split_action $target;
 	    my $actionref = $actions{$action};
-	    die "Null Action Reference in process_actions2" unless $actionref;
+	    fatal_error "Null Action Reference in process_actions2" unless $actionref;
 	    for my $action1 ( keys %{$actionref->{requires}} ) {
 		my $action2 = merge_levels $target, $action1;
 		unless ( $usedactions{ $action2 } ) {
@@ -385,8 +414,6 @@ sub process_action3( $$$$$ ) {
 
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
-
-    mark_referenced $chainref; # Just in case the action body is empty.
 
     fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
 

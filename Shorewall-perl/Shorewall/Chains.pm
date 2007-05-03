@@ -897,6 +897,8 @@ sub do_test ( $$ )
     my $invert = $testval =~ s/^!// ? '! ' : '';
     my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";
 
+    validate_mark $testval;
+
     $testval .= '/0xFF' unless ( $testval =~ '/' );
 
     "$match $testval ";

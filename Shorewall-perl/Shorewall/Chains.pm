@@ -914,7 +914,7 @@ sub do_ratelimit( $$ ) {
 
     fatal_error "Rate Limiting not available with $action" if $norate{$action};
 
-    if ( $rate =~ /^(\d+(\/(sec|hour|day)))?:(\d+)$/ ) {
+    if ( $rate =~ /^(\d+(\/(sec|hour|day))?):(\d+)$/ ) {
 	"-m limit --limit $1 --limit-burst $4 ";
     } elsif ( $rate =~ /^(\d+)(\/(sec|hour|day))?$/ )  {
 	"-m limit --limit $rate ";

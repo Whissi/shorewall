@@ -411,7 +411,7 @@ sub process_action3( $$$$$ ) {
 	    } elsif ( $action2type & ACTION ) {
 		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
 	    } else {
-		die "Internal Error" unless $action2type == MACRO;
+		die "Internal Error" unless $action2type == MACRO || $action2type & LOGRULE;
 	    }
 	}
 

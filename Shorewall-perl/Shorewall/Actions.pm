@@ -296,7 +296,9 @@ sub process_actions1() {
 		    fatal_error "An action may not invoke itself" if $target eq $action;
 
 		    add_requiredby $wholetarget, $action if $targettype & ACTION;
-		} elsif ( $target ne 'COMMENT' ) {
+		} elsif ( $target eq 'COMMENT' ) {
+		    fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
+		} else {
 		    $target =~ s!/.*$!!;
 
 		    if ( find_macro $target ) {

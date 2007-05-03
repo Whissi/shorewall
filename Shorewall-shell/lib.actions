@@ -145,6 +145,10 @@ add_an_action()
     case "$server" in
     -)
 	;;
+    *:*)
+	action_interface_verify ${server%:*}
+	serv="$(match_dest_dev ${server%:*}) $(dest_ip_range ${server#*:})"
+	;;
     *.*.*|+*|!+*)
 	serv=$server
 	;;

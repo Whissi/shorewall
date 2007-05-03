@@ -55,6 +55,7 @@ our @EXPORT = qw( STANDARD
 		  pop_cmd_mode
 		  add_command
 		  add_commands
+		  mark_referenced
 		  add_file
 		  add_rule
 		  insert_rule
@@ -283,6 +284,11 @@ sub add_commands {
     $chainref->{referenced} = 1;
 }
 
+sub mark_referenced( $ ) {
+    my $chainref = shift @_;
+
+    $chainref->{referenced} = 1;
+}
 
 #
 # Copy a file into a chain's rules as a set of run-time commands

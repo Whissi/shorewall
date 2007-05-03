@@ -384,6 +384,8 @@ sub process_action3( $$$$$ ) {
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
 
+    mark_referenced $chainref; # Just in case the action body is empty.
+
     fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
 
     progress_message2 "Processing $actionfile for chain $chainref->{name}...";

@@ -1668,6 +1668,9 @@ sub create_netfilter_load() {
 	   );
 
     push_indent;
+
+    save_progress_message "Preparing iptables-restore input...";
+
     #
     # Establish the values of shell variables used in the following shell commands and/or 'here documents' input.
     #
@@ -1736,6 +1739,8 @@ sub create_netfilter_load() {
     # Now generate the actual iptabes-restore command
     #
     emitj( ' exec 3>&-',
+	   '',
+	   'progress_message2 "Running iptables-restore..."',
 	   '',
 	   'iptables-restore < ${VARDIR}/.iptables-restore-input'
 	 );

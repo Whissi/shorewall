@@ -816,7 +816,7 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 
 	    $mtarget = find_logactionchain $mtarget;
 	} else {
-	    fatal_error "Invalid Action ($mtarget)"  unless $actiontype & ( STANDARD | NATRULE );
+	    fatal_error "Invalid Action ($mtarget)"  unless $actiontype & ( STANDARD + NATRULE );
 	}
 
 	if ( $msource ) {

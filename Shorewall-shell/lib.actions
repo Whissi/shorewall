@@ -602,8 +602,10 @@ process_actions1() {
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 				;;
 			    COMMENT)
-				rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xmark"
-				[ "$temp" = "$xtarget" ] || fatal_error "Invalid TARGET in rule \"$rule\""
+				if [ "$temp" != "$xtarget" ]; then
+				    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xmark"
+				    fatal_error "Invalid TARGET in rule \"$rule\""
+				fi
 				;;
 			    *)
 				if list_search $temp $ACTIONS; then

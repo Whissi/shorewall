@@ -962,7 +962,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     #
     # Generate Fixed part of the rule
     #
-    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit ) , do_user( $user ) , do_test( $mark , 0xFF ) );
+    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );
 
     #
     # Generate NAT rule(s), if any
@@ -1044,7 +1044,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
 	#
 	unless ( $actiontype & NATONLY ) {
-	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit ), do_user $user );
+	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user );
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';

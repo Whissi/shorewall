@@ -223,7 +223,7 @@ sub createactionchain( $ ) {
 
     my $chainref;
 
-    if ( $level ne '' ) {
+    if ( defined $level && $level ne '' ) {
 	if ( $level eq 'none' ) {
 	    createsimpleactionchain $action;
 	} else {
@@ -402,7 +402,7 @@ sub process_action3( $$$$$ ) {
 
 	expand_rule ( $chainref ,
 		      NO_RESTRICT ,
-		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate ) . do_user $user ,
+		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user ,
 		      $source ,
 		      $dest ,
 		      '', #Original Dest

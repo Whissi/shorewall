@@ -184,12 +184,12 @@ our $comment = '';
 #  Target Table. Each entry maps a target to a set of flags defined as follows.
 #
 use constant { STANDARD => 1,              #defined by Netfilter
-	       NATRULE  => 2,              #Involved NAT
+	       NATRULE  => 2,              #Involves NAT
 	       BUILTIN  => 4,              #A built-in action
 	       NONAT    => 8,              #'NONAT' or 'ACCEPT+'
 	       NATONLY  => 16,             #'DNAT-' or 'REDIRECT-'
 	       REDIRECT => 32,             #'REDIRECT'
-	       ACTION   => 64,             #An action
+	       ACTION   => 64,             #An action (may be built-in)
 	       MACRO    => 128,            #A Macro
 	       LOGRULE  => 256,            #'LOG'
 	   };
@@ -905,10 +905,12 @@ sub do_test ( $$ )
 #
 # Create a "-m limit" match for the passed LIMIT/BURST
 #
-sub do_ratelimit( $ ) {
-    my $rate = $_[0];
+sub do_ratelimit( $$ ) {
+    my ( $rate, $action ) = @_;
 
     return '' unless $rate and $rate ne '-';
+
+    fatal_error "Rate Limiting not available with DROP" if $action eq 'DROP';
 
     if ( $rate =~ /^([^:]+):([^:]+)$/ ) {
 	"-m limit --limit $1 --limit-burst $2 ";

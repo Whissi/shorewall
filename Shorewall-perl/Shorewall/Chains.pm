@@ -858,7 +858,7 @@ sub mac_match( $ ) {
 #
 sub numeric_value ( $ ) {
     my $mark = $_[0];
-    fatal_error "Invalid Numeric Value" unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
+    fatal_error "Invalid Numeric Value ($mark)" unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
     $mark =~ /^0x/ ? hex $mark : $mark =~ /^0/ ? oct $mark : $mark;
 }
 

@@ -902,6 +902,8 @@ sub do_test ( $$ )
     "$match $testval ";
 }
 
+my %norate = ( DROP => 1, REJECT => 1 );
+
 #
 # Create a "-m limit" match for the passed LIMIT/BURST
 #
@@ -910,7 +912,7 @@ sub do_ratelimit( $$ ) {
 
     return '' unless $rate and $rate ne '-';
 
-    fatal_error "Rate Limiting not available with DROP" if $action eq 'DROP';
+    fatal_error "Rate Limiting not available with $action" if $norate{$action};
 
     if ( $rate =~ /^([^:]+):([^:]+)$/ ) {
 	"-m limit --limit $1 --limit-burst $2 ";

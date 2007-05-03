@@ -2169,6 +2169,7 @@ process_rule() # $1 = target
 	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with DROP"
 	    ;;
 	REJECT)
+	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with REJECT"
 	    target=reject
 	    ;;
 	CONTINUE)

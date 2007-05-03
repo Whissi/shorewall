@@ -1269,6 +1269,8 @@ sub expand_rule( $$$$$$$$$$ )
 	}
 	
 	$loglevel = validate_level( $loglevel );
+    } elsif ( $disposition eq 'LOG' ) {
+	fatal_error "LOG requires a level";
     }
     #
     # Isolate Source Interface, if any

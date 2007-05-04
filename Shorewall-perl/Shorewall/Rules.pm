@@ -1200,7 +1200,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    }
 		} else {
 		    my $destzone = (split /:/, $dest)[0];
-		    fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
+		    $destzone = $firewall_zone unless $zones{$destzone}; # We will revalidate the destination zone in process_rule1
 		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
 			fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;

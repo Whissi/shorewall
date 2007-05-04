@@ -752,7 +752,7 @@ sub ensure_config_path( $ ) {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = '/usr/share/shorewall/configfiles/' if $export;
+    $globals{CONFDIR} = '/usr/share/shorewall/configfiles/' if $export || $> != 0;
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;

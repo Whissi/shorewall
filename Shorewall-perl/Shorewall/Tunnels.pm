@@ -69,27 +69,29 @@ sub setup_tunnels() {
 	    add_rule $outchainref, "-p udp $dest   -m multiport --dports 500,4500 $options";
 	}
 
-	for my $zone ( split /,/, $gatewayzones ) {
-	    fatal_error "Invalid zone ($zone)" unless $zones{$zone}{type} eq 'ipv4';
-	    $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
-	    $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
-
-	    unless ( $capabilities{POLICY_MATCH} ) {
-		add_rule $inchainref,  "-p 50 $source -j ACCEPT";
-		add_rule $outchainref, "-p 50 $dest -j ACCEPT";
-
-		unless ( $noah ) {
-		    add_rule $inchainref,  "-p 51 $source -j ACCEPT";
-		    add_rule $outchainref, "-p 51 $dest -j ACCEPT";
+	unless ( $gatewayzones eq '-' ) {
+	    for my $zone ( split /,/, $gatewayzones ) {
+		fatal_error "Invalid zone ($zone)" unless $zones{$zone}{type} eq 'ipv4';
+		$inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
+		$outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+		
+		unless ( $capabilities{POLICY_MATCH} ) {
+		    add_rule $inchainref,  "-p 50 $source -j ACCEPT";
+		    add_rule $outchainref, "-p 50 $dest -j ACCEPT";
+		    
+		    unless ( $noah ) {
+			add_rule $inchainref,  "-p 51 $source -j ACCEPT";
+			add_rule $outchainref, "-p 51 $dest -j ACCEPT";
+		    }
 		}
-	    }
-
-	    if ( $kind eq 'ipsec' ) {
-		add_rule $inchainref,  "-p udp $source --dport 500 $options";
-		add_rule $outchainref, "-p udp $dest --dport 500 $options";
-	    } else {
-		add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
-		add_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
+		
+		if ( $kind eq 'ipsec' ) {
+		    add_rule $inchainref,  "-p udp $source --dport 500 $options";
+		    add_rule $outchainref, "-p udp $dest --dport 500 $options";
+		} else {
+		    add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
+		    add_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
+		}
 	    }
 	}
     }

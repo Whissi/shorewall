@@ -204,6 +204,9 @@ our %capabilities =
 our %protocols;
 our %services;
 
+#
+# Capabilities
+#
 my %capdesc = ( NAT_ENABLED     => 'NAT',
 		MANGLE_ENABLED  => 'Packet Mangling',
 		MULTIPORT       => 'Multi-port Match' ,
@@ -749,7 +752,7 @@ sub ensure_config_path( $ ) {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $ENV{CONFDIR} = $export ? '/usr/share/shorewall/configfiles/' : '/etc/shorewall/';
+    $globals{CONFDIR} = '/usr/share/shorewall/configfiles/' if $export;
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;

@@ -884,19 +884,18 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	#
 	# We will be called recursively for each rule in the macro body
 	#
-	process_macro
-	    $macros{$basictarget},
-	    $target ,
-	    $param ,
-	    $source,
-	    $dest,
-	    $proto,
-	    $ports,
-	    $sports,
-	    $origdest,
-	    $ratelimit,
-	    $user,
-	    $mark;
+	process_macro( $macros{$basictarget},
+		       $target ,
+		       $param ,
+		       $source,
+		       $dest,
+		       $proto,
+		       $ports,
+		       $sports,
+		       $origdest,
+		       $ratelimit,
+		       $user,
+		       $mark );
 	return;
     }
     #
@@ -995,6 +994,9 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	    $server = $dest;
 	    $serverport = '';
 	}
+
+	fatal_error "DNAT Rules Require a Server" if $basictarget eq 'DNAT' && $server eq ALLIPv4;
+
 	#
 	# After DNAT, dest port will be the server port
 	#
@@ -1040,17 +1042,16 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	expand_rule
-	    ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
-	    PREROUTE_RESTRICT ,
-	    $rule ,
-	    $source ,
-	    $origdest ,
-	    '' ,
-	    $target ,
-	    $loglevel ,
-	    $action ,
-	    $serverport ? do_proto( $proto, '', '' ) : '';
+	expand_rule ( ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
+		      PREROUTE_RESTRICT ,
+		      $rule ,
+		      $source ,
+		      $origdest ,
+		      '' ,
+		      $target ,
+		      $loglevel ,
+		      $action ,
+		      $serverport ? do_proto( $proto, '', '' ) : '' );
 	#
 	# After NAT:
 	#   - the destination port will be the server port
@@ -1078,17 +1079,16 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 		$origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
 	    }
 
-	    expand_rule
-		ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
-		PREROUTE_RESTRICT ,
-		$rule ,
-		$source ,
-		$dest ,
-		$origdest ,
-		'-j RETURN ' ,
-		$loglevel ,
-		$action ,
-		'';
+	    expand_rule( ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+			 PREROUTE_RESTRICT ,
+			 $rule ,
+			 $source ,
+			 $dest ,
+			 $origdest ,
+			 '-j RETURN ' ,
+			 $loglevel ,
+			 $action ,
+			 '' );
 	}
     }
     #
@@ -1107,17 +1107,16 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	    $origdest = '';
 	}
 
-	expand_rule
-	    ensure_chain ('filter', $chain ) ,
-	    $restriction ,
-	    $rule ,
-	    $source ,
-	    $dest ,
-	    $origdest ,
-	    "-j $action " ,
-	    $loglevel ,
-	    $action ,
-	    '';
+	expand_rule( ensure_chain ('filter', $chain ) ,
+		     $restriction ,
+		     $rule ,
+		     $source ,
+		     $dest ,
+		     $origdest ,
+		     "-j $action " ,
+		     $loglevel ,
+		     $action ,
+		     '' );
     }
 }
 

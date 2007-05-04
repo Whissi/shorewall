@@ -950,7 +950,9 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	$dest = ALLIPv4;
     }
 
+    fatal_error "Missing source zone" if $sourcezone eq '-';
     fatal_error "Unknown source zone ($sourcezone)"    unless $zones{$sourcezone};
+    fatal_error "Missing destination zone" if $destzone eq '-';
     fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
 
     my $restriction = NO_RESTRICT;

@@ -1238,6 +1238,9 @@ createactionchain() # $1 = Action, including log level and tag if any
 	    set -- $(split $1)
 	    createlogactionchain $1 $2:$3
 	    ;;
+	*:)
+	    create_simple_chain ${1%:*}
+	    ;;
 	*:*)
 	    set -- $(split $1)
 
@@ -1267,6 +1270,10 @@ find_logactionchain() # $1 = Action, including log level and tag if any
     }
 
     case $fullaction in
+	*:)
+	    find_simpleaction
+	    return
+	    ;;
 	*:*)
 	    level=${fullaction#*:}
 	    if [ "x$level" = xnone ]; then
@@ -2128,6 +2135,9 @@ process_rule() # $1 = target
 	    none*)
 		loglevel=
 		[ $target = LOG ] && return
+		;;
+	    *)
+		[ -n "$loglevel" ] || target=${target%:*}
 		;;
 	esac
 

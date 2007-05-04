@@ -97,7 +97,7 @@ sub setup_tunnels() {
     }
 
     sub setup_one_other {
-	my ($inchainref, $outchainref, $kind, $source, $dest , $protocol) = @_;
+	my ($inchainref, $outchainref, $source, $dest , $protocol) = @_;
 
 	add_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
 	add_rule $outchainref , "-p $protocol $dest -j ACCEPT";

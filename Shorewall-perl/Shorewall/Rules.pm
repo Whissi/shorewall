@@ -1141,7 +1141,6 @@ sub process_rule ( $$$$$$$$$$ ) {
 	$sectioned = 1;
     }
 
-    fatal_error "Invalid rules file entry" if $source eq '-' || $dest eq '-';
     #
     # Handle Wildcards
     #
@@ -1258,7 +1257,7 @@ sub process_rules() {
 
     while ( read_a_line ) {
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line 3, 10, 'rules file';
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line 1, 10, 'rules file';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";

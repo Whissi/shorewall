@@ -515,6 +515,7 @@ compile_command() {
     case $# in
 	1)
 	    file=$1
+	    [ -d $file ] && echo "   ERROR: $file is a directory" >&2 && exit 2;
 	    ;;
 	2)
 	    [ -n "$SHOREWALL_DIR" ] && usage 2

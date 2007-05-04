@@ -827,7 +827,7 @@ sub do_proto( $$$ )
 
 	    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
 	} elsif ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
-	    require_capability( 'IPP2P_MATCH' , 'PROTO = ipp2p' );
+	    require_capability( 'IPP2P_MATCH' , 'PROTO = ipp2p' , 's' );
 	    $proto = $2 ? $3 : 'tcp';
 	    $ports = 'ipp2p' unless $ports;
 	    $output .= "-p $proto -m ipp2p --$ports ";
@@ -972,7 +972,7 @@ sub do_tos( $ ) {
 sub iprange_match() {
     my $match = '';
 
-    require_capability( 'IPRANGE_MATCH' , 'Address Ranges' );
+    require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
     unless ( $iprangematch ) {
 	$match = '-m iprange ';
 	$iprangematch = 1 unless $capabilities{KLUDGEFREE};
@@ -1018,7 +1018,7 @@ sub match_source_net( $ ) {
 	my $invert = $1 ? '! ' : '';
 	"-m mac --mac-source ${invert}$net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
-	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' );
+	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
@@ -1038,7 +1038,7 @@ sub match_dest_net( $ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	iprange_match . "${invert}--dst-range $net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
-	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' );
+	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
 	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;

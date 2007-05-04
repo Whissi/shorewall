@@ -64,8 +64,8 @@ sub setup_route_marking() {
     my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
     my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
 
-    require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' );
-    require_capability( 'CONNMARK' ,       'the provider \'track\' option' );
+    require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' , 's' );
+    require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
 
     add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     add_rule $mangle_table->{OUTPUT} , " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
@@ -334,7 +334,7 @@ sub setup_providers() {
     while ( read_a_line ) {
 	unless ( $providers ) {
 	    progress_message2 "$doing $fn ...";
-	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' );
+	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
 
 	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
 

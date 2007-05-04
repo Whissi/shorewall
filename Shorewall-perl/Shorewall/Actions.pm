@@ -600,7 +600,7 @@ sub process_actions3 () {
 	my $set   = $tag[0];
 	my $count = $tag[1] + 1;
 
-	require_capability( 'RECENT_MATCH' , 'Limit rules' );
+	require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
 
 	add_rule $chainref, "-m recent --name $set --set";
 

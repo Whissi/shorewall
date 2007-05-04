@@ -734,10 +734,10 @@ sub determine_capabilities() {
 #
 # Require the passed capability
 #
-sub require_capability( $$ ) {
-    my ( $capability, $description ) = @_;
+sub require_capability( $$$ ) {
+    my ( $capability, $description, $singular ) = @_;
 
-    fatal_error "$description requires $capdesc{$capability} in your kernel and iptables"
+    fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables"
       unless $capabilities{$capability};
 }
 

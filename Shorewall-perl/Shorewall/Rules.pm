@@ -981,9 +981,9 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     # Generate NAT rule(s), if any
     #
     if ( $actiontype & NATRULE ) {
-	my ( $server, $serverport , $natchain );
+	my ( $server, $serverport );
 	fatal_error "$target rules not allowed in the $section SECTION"  if $section ne 'NEW';
-	require_capability( 'NAT_ENABLED' , "$basictarget rules" );
+	require_capability( 'NAT_ENABLED' , "$basictarget rules", '' );
 	#
 	# Isolate server port
 	#
@@ -1100,7 +1100,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	}
 
 	unless ( $origdest eq '-' ) {
-	    require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in non-NAT rule' ) unless $actiontype & NATRULE;
+	    require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in a non-NAT rule', 's' ) unless $actiontype & NATRULE;
 	} else {
 	    $origdest = '';
 	}

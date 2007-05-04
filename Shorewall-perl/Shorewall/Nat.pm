@@ -266,7 +266,7 @@ sub setup_masq()
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
-	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' );
+	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' , 's' );
 	    $first_entry = 0;
 	}
 
@@ -380,7 +380,7 @@ sub setup_nat() {
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
-	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file' );
+	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file', 's' );
 	    $first_entry = 0;
 	}
 
@@ -415,7 +415,7 @@ sub setup_netmap() {
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
-	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' );
+	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' , 's' );
 	    $first_entry = 0;
 	}
 

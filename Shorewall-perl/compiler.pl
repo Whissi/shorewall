@@ -643,12 +643,12 @@ sub compiler( $ ) {
 
     report_capabilities if $verbose > 1;
 
-    require_capability( 'MULTIPORT'       , "Shorewall-perl $globals{VERSION}" );
-    require_capability( 'ADDRTYPE'        , "Shorewall-perl $globals{VERSION}" );
-    require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' )           if $config{MACLIST_TTL};
-    require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' )  if $config{HIGH_ROUTE_MARKS};
-    require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping'      )  if $config{TC_ENABLED};
-    require_capability( 'CONNTRACK_MATCH' , 'RFC1918_STRICT=Yes'   )  if $config{RFC1918_STRICT};
+    require_capability( 'MULTIPORT'       , "Shorewall-perl $globals{VERSION}" , 's' );
+    require_capability( 'ADDRTYPE'        , "Shorewall-perl $globals{VERSION}" , 's' );
+    require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
+    require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{HIGH_ROUTE_MARKS};
+    require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
+    require_capability( 'CONNTRACK_MATCH' , 'RFC1918_STRICT=Yes' , 's'   )  if $config{RFC1918_STRICT};
 
     ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
 

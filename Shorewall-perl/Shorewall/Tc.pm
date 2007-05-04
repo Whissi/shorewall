@@ -528,7 +528,7 @@ sub setup_tc() {
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
-		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' );
+		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's' );
 		$first_entry = 0;
 	    }
 

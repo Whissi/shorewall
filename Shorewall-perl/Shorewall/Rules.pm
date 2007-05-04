@@ -995,14 +995,12 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	    $serverport = '';
 	}
 
-	fatal_error "DNAT Rules Require a Server" if $basictarget eq 'DNAT' && $server eq ALLIPv4;
-
 	#
 	# After DNAT, dest port will be the server port
 	#
 	$ports = $serverport if $serverport;
 
-	fatal_error "A server must be specified in the DEST column in $action rules" unless ( $actiontype & REDIRECT ) || $server;
+	fatal_error "A server must be specified in the DEST column in $action rules" unless ( $actiontype & REDIRECT ) || $server ne ALLIPv4;
 	fatal_error "Invalid server ($server)" if $server =~ /:/;
 	#
 	# Generate the target

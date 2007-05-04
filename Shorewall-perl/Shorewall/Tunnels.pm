@@ -50,7 +50,7 @@ sub setup_tunnels() {
 
 	my $noah = $qualifier || ($kind ne 'ipsec' );
 
-	my $options = '-m $state --state NEW -j ACCEPT';
+	my $options = '-m state --state NEW -j ACCEPT';
 
 	add_rule $inchainref,  "-p 50 $source -j ACCEPT";
 	add_rule $outchainref, "-p 50 $dest   -j ACCEPT";

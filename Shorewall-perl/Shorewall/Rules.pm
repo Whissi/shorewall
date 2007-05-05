@@ -82,8 +82,8 @@ sub process_tos() {
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
-		$pretosref = ensure_chain 'mangle' , $chain;
-		$outtosref = ensure_chain 'mangle' , 'outtos';
+		mark_referenced( $pretosref = ensure_chain 'mangle' , $chain );
+		mark_referenced( $outtosref = ensure_chain 'mangle' , 'outtos' );
 		$first_entry = 0;
 	    }
 

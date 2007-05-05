@@ -127,7 +127,7 @@ sub setup_tunnels() {
 
 	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
 
-	if ( $p ) {
+	if ( defined $p && $p ne '' ) {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
@@ -150,7 +150,7 @@ sub setup_tunnels() {
 
 	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
 
-	if ( $p ) {
+	if ( defined $p && $p ne '' ) {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {
@@ -173,7 +173,7 @@ sub setup_tunnels() {
 
 	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
 
-	if ( $p ) {
+	if ( defined $p && $p ne '' ) {
 	    $port = $p;
 	    $protocol = $proto;
 	} elsif ( $proto ) {

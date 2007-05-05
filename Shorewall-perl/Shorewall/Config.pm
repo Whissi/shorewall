@@ -69,7 +69,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '3.9.5',
+		    VERSION =>  '3.9.6',
 		  );
 
 #

@@ -52,6 +52,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
 	$jumpchainref = ensure_chain( 'filter', $jumpchain );
+	mark_referenced $jumpchainref;
 	"-j $jumpchain";
     }
 

@@ -82,8 +82,8 @@ sub process_tos() {
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
-		mark_referenced( $pretosref = ensure_chain 'mangle' , $chain );
-		mark_referenced( $outtosref = ensure_chain 'mangle' , 'outtos' );
+		$pretosref = ensure_chain 'mangle' , $chain;
+		$outtosref = ensure_chain 'mangle' , 'outtos';
 		$first_entry = 0;
 	    }
 
@@ -126,8 +126,8 @@ sub process_tos() {
 	}
 
 	unless ( $first_entry ) {
-	    add_rule $mangle_table->{$stdchain}, "-j $chain";
-	    add_rule $mangle_table->{OUTPUT},    "-j outtos";
+	    add_rule $mangle_table->{$stdchain}, "-j $chain" if $pretosref->{referenced};
+	    add_rule $mangle_table->{OUTPUT},    "-j outtos" if $outtosref->{referenced};
 	}
     }
 }

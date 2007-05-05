@@ -130,7 +130,7 @@ sub setup_tunnels() {
 	if ( defined $p && $p ne '' ) {
 	    $port = $p;
 	    $protocol = $proto;
-	} elsif ( $proto ) {
+	} elsif ( defined $proto && $proto ne '' ) {
 	    if ( "\L$proto" =~ /udp|tcp/ ) {
 		$protocol = $proto;
 	    } else {
@@ -153,7 +153,7 @@ sub setup_tunnels() {
 	if ( defined $p && $p ne '' ) {
 	    $port = $p;
 	    $protocol = $proto;
-	} elsif ( $proto ) {
+	} elsif ( defined $proto && $proto ne '' ) {
 	    if ( "\L$proto" =~ /udp|tcp/ ) {
 		$protocol = $proto;
 	    } else {
@@ -176,7 +176,7 @@ sub setup_tunnels() {
 	if ( defined $p && $p ne '' ) {
 	    $port = $p;
 	    $protocol = $proto;
-	} elsif ( $proto ) {
+	} elsif ( defined $proto && $proto ne '' ) {
 	    if ( "\L$proto" =~ /udp|tcp/ ) {
 		$protocol = $proto;
 	    } else {

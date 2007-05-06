@@ -1075,9 +1075,9 @@ sub match_ipsec_in( $$ ) {
     my $optionsref = $zoneref->{options};
 
     if ( $zoneref->{type} eq 'ipsec4' ) {
-	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec} ";
+	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
-	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec} ";
+	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } else {
 	'';
     }
@@ -1093,9 +1093,9 @@ sub match_ipsec_out( $$ ) {
     my $optionsref = $zoneref->{options};
 
     if ( $zoneref->{type} eq 'ipsec4' ) {
-	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec} ";
+	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
-	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec} "
+	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
     } else {
 	'';
     }

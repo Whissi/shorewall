@@ -139,7 +139,7 @@ sub find_hosts_by_option( $ ) {
 	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {
-		    if ( $host->{$option} ) {
+		    if ( $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
 			    push @hosts, [ $interface, $type eq 'ipsec4' ? 'ipsec' : 'none' , $net ];
 			}

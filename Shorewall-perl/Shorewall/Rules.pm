@@ -1429,7 +1429,7 @@ sub generate_matrix() {
 			for my $net ( @{$hostref->{hosts}} ) {
 			    add_rule
 				$filter_table->{forward_chain $interface} ,
-				match_source_net join( '', $net, $ipsec_match, "-j $frwd_ref->n{name}" );
+				match_source_net join( '', $net, $ipsec_match, "-j $frwd_ref->{name}" );
 			}
 		    }
 		}

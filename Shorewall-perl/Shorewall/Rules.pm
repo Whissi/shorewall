@@ -1608,7 +1608,7 @@ sub generate_matrix() {
 		} elsif ( $chain =~ /2all$/ ) {
 		    my $chain1 = $policy_exclusions{"${chain}_${zone1}"};
 
-		    unless ( $chain ) {
+		    unless ( $chain1 ) {
 			$chain1 = newexclusionchain;
 			$policy_exclusions{"${chain}_${zone1}"} = $chain1;
 			my $chain1ref = ensure_filter_chain $chain1, 0;

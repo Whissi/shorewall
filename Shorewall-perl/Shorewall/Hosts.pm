@@ -114,7 +114,11 @@ sub validate_hosts_file()
 	#
 	# Now add a comma before '!'. Do it globally - add_group_to_zone() correctly checks for multiple exclusions
 	#
-	$hosts =~ s/!/,!/g;
+	if ( substr($hosts, 0, 1 ) eq '!' ) {
+	    $hosts = join( '', ALLIPv4 , ',', $hosts );
+	} else {
+	    $hosts =~ s/!/,!/g  
+	}
 
 	add_group_to_zone( $zone, $type , $interface, [ split( ',', $hosts ) ] , $optionsref);
 

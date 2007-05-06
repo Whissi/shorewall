@@ -81,7 +81,6 @@ sub add_group_to_zone($$$$$)
     $ifacezone = '' unless defined $ifacezone;
 
     for my $host ( @$networks ) {
-	next unless $host;
 	if ( substr( $host, 0, 1 ) eq '!' ) {
 	    fatal_error "Only one exclusion allowed in a host list" if $switched;
 	    $switched = 1;

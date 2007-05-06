@@ -1415,9 +1415,12 @@ sub generate_matrix() {
 
 	    if ( $capabilities{POLICY_MATCH} ) {
 		my $type       = $zoneref->{type};
-		my $source_ref = $zoneref->{hosts}{ipsec} || [];
+		my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
 
-		create_zone_dyn_chain $zone, $frwd_ref && $config{DYNAMIC_ZONES} && (@$source_ref || $type ne 'ipsec4' );
+		if ( $config{DYNAMIC_ZONES} ) {
+		    no warnings;
+		    create_zone_dyn_chain $zone, $frwd_ref if (%$source_ref || $type ne 'ipsec4' );
+		}
 
 		for my $interface ( keys %$source_ref ) {
 		    my $arrayref = $source_ref->{$interface};
@@ -1425,7 +1428,7 @@ sub generate_matrix() {
 			my $ipsec_match = match_ipsec_in $zone , $hostref;
 			for my $net ( @{$hostref->{hosts}} ) {
 			    add_rule
-				find_chainref( 'filter' , forward_chain $interface ) ,
+				$filter_table->{forward_chain $interface} ,
 				match_source_net join( '', $net, $ipsec_match, "-j $frwd_ref->n{name}" );
 			}
 		    }

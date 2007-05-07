@@ -83,7 +83,7 @@ sub validate_hosts_file()
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
 
-	my $optionsref;
+	my $optionsref = {};
 
 	if ( $options ne '-' ) {
 	    my @options = split ',', $options;
@@ -139,8 +139,7 @@ sub find_hosts_by_option( $ ) {
 	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {
-		    my $optionsref = $host->{options};
-		    if ( $optionsref && $optionsref->{$option} ) {
+		    if ( $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
 			    push @hosts, [ $interface, $type eq 'ipsec4' ? 'ipsec' : 'none' , $net ];
 			}

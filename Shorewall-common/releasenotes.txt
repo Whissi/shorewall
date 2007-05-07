@@ -29,7 +29,13 @@ Problems corrected in 3.9.7.
 
 3)  A number of problems with handling the hosts file have been
     corrected. These problems are characterized by Perl run-time
-    errors.
+    errors and incorrect rules, including:
+
+    -   Not an ARRAY reference at
+        /usr/share/shorewall-perl/Shorewall/Rules.pm line 1420.
+
+    -   -A eth0_fwd -s 192.168.0.0/24-m policy --dir in --pol ipsec -j 
+	HASH(0x8345924)->n{name} 
 
 Other changes in Shorewall 3.9.6.
 

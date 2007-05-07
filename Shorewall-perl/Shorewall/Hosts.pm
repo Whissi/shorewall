@@ -125,7 +125,7 @@ sub validate_hosts_file()
 	progress_message "   Host \"$line\" validated";
     }
 
-    $capabilities{POLICY_MATCH} = '' unless $ipsec || ipseczones;
+    $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
 }
 #
 # Returns a reference to a array of host entries. Each entry is a

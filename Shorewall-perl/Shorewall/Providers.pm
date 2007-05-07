@@ -184,6 +184,7 @@ sub setup_providers() {
 		    'else',
 		    "    fatal_error \"Unable to detect the gateway through interface $interface\"",
 		    "fi\n" );
+	    $gateway = '$gateway';
 	} elsif ( $gateway && $gateway ne '-' ) {
 	    emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
 	    emit "run_ip route add default via $gateway dev $interface table $number";

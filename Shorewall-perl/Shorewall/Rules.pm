@@ -1583,7 +1583,7 @@ sub generate_matrix() {
 
 	    my $chain = rules_target $zone, $zone1;
 
-	    next unless $chain;
+	    next unless $chain; # CONTINUE policy with no rules
 
 	    push @rule_chains, [ $zone , $zone1 , $chain ] if $config{DYNAMIC_ZONES};
 
@@ -1654,7 +1654,7 @@ sub generate_matrix() {
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
 						    #
-						    # We have to defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
+						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
 						    #
 						    add_rule
 							$chain3ref ,

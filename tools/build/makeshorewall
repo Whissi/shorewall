@@ -122,7 +122,13 @@ do_or_die()
 }
 
 fatal_error() {
-    progress_message "$*"
+    progress_message "$*"    3.0.*)
+	SVNBRANCH="branches/3.0/Shorewall"
+	DOCTAG="trunk/docs"
+	XMLPROJ="docs-3.0"
+	SAMPLESTAG="branches/3.0/Samples"
+	;;
+
     exit 2
 }
 
@@ -236,16 +242,10 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
-    3.0.*)
-	SVNBRANCH="branches/3.0/Shorewall"
-	DOCTAG="trunk/docs"
-	XMLPROJ="docs-3.0"
-	SAMPLESTAG="branches/3.0/Samples"
-	;;
     3.2.*)
 	SVNBRANCH="branches/3.2/Shorewall"
 	LITESVNBRANCH="branches/3.2/Shorewall-lite"
-	DOCTAG="trunk/docs"
+	DOCTAG="branches/3.4/docs"
 	XMLPROJ="docs-3.2"
 	SAMPLESTAG="branches/3.2/Samples"
 	HASLITE=Yes
@@ -253,23 +253,12 @@ case $VERSION in
      3.4.*)
 	SVNBRANCH="branches/3.4/Shorewall"
 	LITESVNBRANCH="branches/3.4/Shorewall-lite"
-	DOCTAG="trunk/docs"
+	DOCTAG="branches/3.4/docs"
 	XMLPROJ="docs-3.4"
 	SAMPLESTAG="trunk/Samples"
 	HASLITE=Yes
-	MANPAGETAG=trunk/manpages
-	LITEMANPAGETAG=trunk/manpages-lite
-	;;
-     3.9.*)
-	SVNBRANCH="trunk/Shorewall"
-	LITESVNBRANCH="trunk/Shorewall-lite"
-	PERLBRANCH="trunk/New"
-	DOCTAG="trunk/docs"
-	XMLPROJ="docs-3.4"
-	SAMPLESTAG="trunk/Samples"
-	HASLITE=Yes
-	MANPAGETAG=trunk/manpages
-	LITEMANPAGETAG=trunk/manpages-lite
+	MANPAGETAG=branches/3.4/manpages
+	LITEMANPAGETAG=branches/3.4/manpages-lite
 	;;
    *)
 	echo "Unsupported Version: $VERSION"

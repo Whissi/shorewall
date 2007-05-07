@@ -125,11 +125,11 @@ sub validate_hosts_file()
 	progress_message "   Host \"$line\" validated";
     }
 
-    $capabilities{POLICY_MATCH} = '' unless $ipsec or $zones{ipsec};
+    $capabilities{POLICY_MATCH} = '' unless $ipsec || ipseczones;
 }
 #
 # Returns a reference to a array of host entries. Each entry is a
-# reference to an array containing ( interface , group type {ipsec|none} , network );
+# reference to an array containing ( interface , polciy match type {ipsec|none} , network );
 #
 sub find_hosts_by_option( $ ) {
     my $option = $_[0];
@@ -141,7 +141,7 @@ sub find_hosts_by_option( $ ) {
 		for my $host ( @{$arrayref} ) {
 		    if ( $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $type eq 'ipsec4' ? 'ipsec' : 'none' , $net ];
+			    push @hosts, [ $interface, $host->{ipsec} , $net ];
 			}
 		    }
 		}

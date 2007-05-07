@@ -39,6 +39,7 @@ our @EXPORT = qw( NOTHING
 		  determine_zones
 		  zone_report
 		  dump_zone_contents
+		  ipseczones
 
 		  @zones
 		  %zones
@@ -280,6 +281,17 @@ sub determine_zones()
 	    }
 	}
     }
+}
+
+#
+# Return true of we have any ipsec zones
+#
+sub ipseczones() {
+    for my $zoneref ( values %zones ) {
+	return 1 if $zoneref->{type} eq 'ipsec4';
+    }
+
+    0;
 }
 
 #

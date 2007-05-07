@@ -150,13 +150,6 @@ sub find_hosts_by_option( $ ) {
 	}
     }
 
-    for my $interface ( @interfaces ) {
-	my $optionsref = $interfaces{$interface}{options};
-	if ( $optionsref && $optionsref->{$option} ) {
-	    push @hosts, [ $interface, 'none', ALLIPv4 ];
-	}
-    }
-
     \@hosts;
 }
 

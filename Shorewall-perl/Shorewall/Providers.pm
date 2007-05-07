@@ -207,8 +207,7 @@ sub setup_providers() {
 		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
 	    }
 
-	    for my $provider ( keys %providers  ) {
-		my $num = $providers{$provider}{mark};
+	    for my $num ( values %providers  ) {
 		fatal_error "Duplicate mark value ( $mark )" if $num == $val;
 	    }
 

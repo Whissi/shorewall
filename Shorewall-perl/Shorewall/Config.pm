@@ -44,6 +44,7 @@ our @EXPORT = qw(
 		 pop_open
 		 read_a_line
 		 validate_level
+		 qt
 		 get_configuration
 		 require_capability
 		 report_capabilities

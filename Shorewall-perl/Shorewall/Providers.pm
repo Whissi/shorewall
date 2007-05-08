@@ -186,7 +186,9 @@ sub setup_providers() {
 		    "fi\n" );
 	    $gateway = '$gateway';
 	} elsif ( $gateway && $gateway ne '-' ) {
-	    emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
+	    validate_address $gateway;
+	    my $variable = get_interface_address $interface;
+	    emit "run_ip route replace $gateway src $variable dev $interface table $number";
 	    emit "run_ip route add default via $gateway dev $interface table $number";
 	} else {
 	    $gateway = '';

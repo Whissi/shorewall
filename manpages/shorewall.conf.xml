@@ -257,6 +257,26 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">BLACKLISTNEWONLY=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis>, blacklists are only consulted for new
+          connections. When set to <emphasis role="bold">No</emphasis> or
+          <emphasis role="bold">no</emphasis>, blacklists are consulted for
+          every packet (will slow down your firewall noticably if you have
+          large blacklists). If the BLACKLISTNEWONLY option is not set or is
+          set to the empty value then BLACKLISTNEWONLY=No is assumed.</para>
+
+          <note>
+            <para>BLACKLISTNEWONLY=No is incompatible with
+            FASTACCEPT=Yes.</para>
+          </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">BRIDGING=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
@@ -363,6 +383,11 @@
           role="bold">shorewall</emphasis> [<emphasis
           role="bold">re</emphasis>]<emphasis
           role="bold">start</emphasis>.</para>
+
+          <note>
+            <para>DELAYBLACKLISTLOAD=Yes is not supported by
+            Shorewall-perl.</para>
+          </note>
         </listitem>
       </varlistentry>
 
@@ -429,6 +454,11 @@
           set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
           or RELATED sections of <ulink
           url="shorewall-rules.html">shorewall-rules</ulink>(5).</para>
+
+          <note>
+            <para>FASTACCEPT=Yes is incompatible with
+            BLACKLISTNEWONLY=No.</para>
+          </note>
         </listitem>
       </varlistentry>
 
@@ -574,7 +604,8 @@
 
       <varlistentry>
         <term><emphasis role="bold">LOG_MARTIANS=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|Keep]</term>
 
         <listitem>
           <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
@@ -585,6 +616,15 @@
           zero. If you do not enable martian logging for all interfaces, you
           may still enable it for individual interfaces using the <emphasis
           role="bold">logmartians</emphasis> interface option in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+
+          <para>The value <emphasis role="bold">Keep</emphasis> is only
+          allowed under Shorewall-perl. It causes Shorewall to ignore the
+          option. If the option is set to <emphasis
+          role="bold">Yes</emphasis>, then martians are logged on all
+          interfaces. If the option is set to <emphasis
+          role="bold">No</emphasis>, then martian logging is disabled on all
+          interfaces except those specified in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
         </listitem>
       </varlistentry>
@@ -807,7 +847,13 @@
           parameterized macros. For compatibility, Shorewall can map the old
           names into invocations of the new macros if you set
           MAPOLDACTIONS=Yes. If this option is not set or is set to the empty
-          value (MAPOLDACTIONS="") then MAPOLDACTIONS=Yes is assumed</para>
+          value (MAPOLDACTIONS="") then MAPOLDACTIONS=Yes is assumed.</para>
+
+          <note>
+            <para>MAPOLDACTIONS=Yes is not supported by Shorewall-perl. With
+            Shorewall-perl, if MAPOLDACTIONS is not set or is set to the ampty
+            value then MAPOLDACTIONS=No is assumed.</para>
+          </note>
         </listitem>
       </varlistentry>
 
@@ -942,6 +988,60 @@
 
       <varlistentry>
         <term><emphasis
+        role="bold">RCP_COMMAND="</emphasis><replaceable>command</replaceable><emphasis
+        role="bold">"</emphasis></term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">RSH_COMMAND="</emphasis><replaceable>command</replaceable><emphasis
+        role="bold">"</emphasis></term>
+
+        <listitem>
+          <para>Eariler generations of Shorewall Lite required that remote
+          root login via ssh be enabled in order to use the
+          <command>load</command> and <command>reload</command> commands.
+          Beginning with release 3.9.5, you may define an alternative means
+          for accessing the remote firewall system. In that release, two new
+          options were added to shorewall.conf:<simplelist>
+              <member>RSH_COMMAND</member>
+
+              <member>RCP_COMMAND</member>
+            </simplelist>The default values for these are as
+          follows:<simplelist>
+              <member>RSH_COMMAND: ssh ${root}@${system} ${command}</member>
+
+              <member>RCP_COMMAND: scp ${files}
+              ${root}@${system}:${destination}</member>
+            </simplelist>Shell variables that will be set when the commands
+          are envoked are as follows:<simplelist>
+              <member><replaceable>root</replaceable> - root user. Normally
+              <option>root</option> but may be overridden using the '-r'
+              option.</member>
+
+              <member><replaceable>system</replaceable> - The name/IP address
+              of the remote firewall system.</member>
+
+              <member><replaceable>command</replaceable> - For RSH_COMMAND,
+              the command to be executed on the firewall system.</member>
+
+              <member><replaceable>files</replaceable> - For RCP_COMMAND, a
+              space-separated list of files to be copied to the remote
+              firewall system.</member>
+
+              <member><replaceable>destination</replaceable> - The directory
+              on the remote system that the files are to be copied
+              into.</member>
+            </simplelist></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
         role="bold">RESTOREFILE=</emphasis><emphasis>filename</emphasis></term>
 
         <listitem>
@@ -1025,7 +1125,8 @@
 
       <varlistentry>
         <term><emphasis role="bold">ROUTE_FILTER=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|Keep]</term>
 
         <listitem>
           <para>If this parameter is given the value <emphasis
@@ -1034,6 +1135,15 @@
           interfaces which are brought up while Shorewall is in the started
           state. The default value is <emphasis
           role="bold">no</emphasis>.</para>
+
+          <para>The value <emphasis role="bold">Keep</emphasis> is only
+          allowed under Shorewall-perl. It causes Shorewall to ignore the
+          option. If the option is set to <emphasis
+          role="bold">Yes</emphasis>, then route filtering occurs on all
+          interfaces. If the option is set to <emphasis
+          role="bold">No</emphasis>, then route filtering is disabled on all
+          interfaces except those specified in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -1182,6 +1292,10 @@
           a sizable amount of code to implement. By setting USE_ACTIONS=No,
           embedded Shorewall installations can omit the large library
           /usr/share/shorewall/lib.actions.</para>
+
+          <note>
+            <para>USE_ACTIONS=No is not supported by Shorewall-perl.</para>
+          </note>
         </listitem>
       </varlistentry>
 

@@ -92,6 +92,11 @@ loc     eth2            -</programlisting>
           <para>If you don't want to give a value for this column but you want
           to enter a value in the OPTIONS column, enter <emphasis
           role="bold">-</emphasis> in this column.</para>
+
+          <para><emphasis role="bold">Note to Shorewall-perl users:</emphasis>
+          Shorewall-perl only supports <option>detect</option> in this column.
+          If you specify <replaceable>address</replaceable>es, a compilation
+          warning will be issued.</para>
         </listitem>
       </varlistentry>
 
@@ -107,173 +112,7 @@ loc     eth2            -</programlisting>
 
           <variablelist>
             <varlistentry>
-              <term><emphasis role="bold">dhcp</emphasis></term>
-
-              <listitem>
-                <para>Specify this option when any of the following are
-                true:</para>
-
-                <orderedlist spacing="compact">
-                  <listitem>
-                    <para>the interface gets its IP address via DHCP</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>the interface is used by a DHCP server running on
-                    the firewall</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>you have a static IP but are on a LAN segment with
-                    lots of DHCP clients.</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>the interface is a bridge with a DHCP server on one
-                    port and DHCP clients on another port.</para>
-                  </listitem>
-                </orderedlist>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">norfc1918</emphasis></term>
-
-              <listitem>
-                <para>This interface should not receive any packets whose
-                source is in one of the ranges reserved by RFC 1918 (i.e.,
-                private or "non-routable" addresses). If packet mangling or
-                connection-tracking match is enabled in your kernel, packets
-                whose destination addresses are reserved by RFC 1918 are also
-                rejected.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">routefilter</emphasis></term>
-
-              <listitem>
-                <para>Turn on kernel route filtering for this interface
-                (anti-spoofing measure).</para>
-
-                <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
-                </note>
-
-                <para>This option can also be enabled globally in the <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5)
-                file.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">logmartians</emphasis></term>
-
-              <listitem>
-                <para>Turn on kernel martian logging (logging of packets with
-                impossible source addresses. It is strongly suggested that if
-                you set <emphasis role="bold">routefilter</emphasis> on an
-                interface that you also set <emphasis
-                role="bold">logmartians</emphasis>. Even if you do not specify
-                the <option>routefilter</option> option, it is a good idea to
-                specify <option>logmartians</option> because your distribution
-                may be enabling route filtering without you knowing it.</para>
-
-                <para>To find out if route filtering is set on a given
-                <replaceable>interface</replaceable>, check the contents of
-                <filename>/proc/sys/net/ipv4/conf/<replaceable>interface</replaceable>/rp_filter</filename>
-                — a non-zero value indicates that route filtering is
-                enabled.</para>
-
-                <para>Example:</para>
-
-                <programlisting>        teastep@lists:~$ <command>cat /proc/sys/net/ipv4/conf/eth0/rp_filter </command>
-        1
-        teastep@lists:~$ </programlisting>
-
-                <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
-                </note>
-
-                <para>This option may also be enabled globally in the <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5)
-                file.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">blacklist</emphasis></term>
-
-              <listitem>
-                <para>Check packets arriving on this interface against the
-                <ulink
-                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
-                file.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">maclist</emphasis></term>
-
-              <listitem>
-                <para>Connection requests from this interface are compared
-                against the contents of <ulink
-                url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
-                this option is specified, the interface must be an ethernet
-                NIC and must be up before Shorewall is started.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">tcpflags</emphasis></term>
-
-              <listitem>
-                <para>Packets arriving on this interface are checked for
-                certain illegal combinations of TCP flags. Packets found to
-                have such a combination of flags are handled according to the
-                setting of TCP_FLAGS_DISPOSITION after having been logged
-                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">proxyarp</emphasis></term>
-
-              <listitem>
-                <para>Sets
-                /proc/sys/net/ipv4/conf/<emphasis>interface</emphasis>/proxy_arp.
-                Do NOT use this option if you are employing Proxy ARP through
-                entries in <ulink
-                url="shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).
-                This option is intended solely for use with Proxy ARP
-                sub-networking as described at: <ulink
-                url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html</ulink><note>
-                    <para>This option does not work with a wild-card
-                    <replaceable>interface</replaceable> name (e.g., eth0.+)
-                    in the INTERFACE column.</para>
-                  </note></para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">routeback</emphasis></term>
-
-              <listitem>
-                <para>If specified, indicates that Shorewall should include
-                rules that allow filtering traffic arriving on this interface
-                back out that same interface. This option is also required
-                when you have used a wildcard in the INTERFACE column if you
-                want to allow traffic between the interfaces that match the
-                wildcard.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">arp_filter</emphasis></term>
+              <term><emphasis role="bold">arp_filter[={0|1}]</emphasis></term>
 
               <listitem>
                 <para>If specified, this interface will only respond to ARP
@@ -281,6 +120,13 @@ loc     eth2            -</programlisting>
                 If not specified, the interface can respond to ARP who-has
                 requests for IP addresses on any of the firewall's interface.
                 The interface must be up when Shorewall is started.</para>
+
+                <para>The option value (0 or 1) may only be specified if you
+                are using Shorewall-perl. With Shorewall-perl, only those
+                interfaces with the <option>arp_filter</option> option will
+                have their setting changes; the value assigned to the setting
+                will be the value specified (if any) or 1 if no value is
+                given.</para>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -328,16 +174,13 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">nosmurfs</emphasis></term>
+              <term><emphasis role="bold">blacklist</emphasis></term>
 
               <listitem>
-                <para>Filter packets for smurfs (packets with a broadcast
-                address as the source).</para>
-
-                <para>Smurfs will be optionally logged based on the setting of
-                SMURF_LOG_LEVEL in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). After
-                logging, the packets are dropped.</para>
+                <para>Check packets arriving on this interface against the
+                <ulink
+                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
+                file.</para>
               </listitem>
             </varlistentry>
 
@@ -358,7 +201,230 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">sourceroute</emphasis></term>
+              <term><emphasis role="bold">dhcp</emphasis></term>
+
+              <listitem>
+                <para>Specify this option when any of the following are
+                true:</para>
+
+                <orderedlist spacing="compact">
+                  <listitem>
+                    <para>the interface gets its IP address via DHCP</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface is used by a DHCP server running on
+                    the firewall</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>you have a static IP but are on a LAN segment with
+                    lots of DHCP clients.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface is a bridge with a DHCP server on one
+                    port and DHCP clients on another port.</para>
+                  </listitem>
+                </orderedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">logmartians[={0|1}]</emphasis></term>
+
+              <listitem>
+                <para>Turn on kernel martian logging (logging of packets with
+                impossible source addresses. It is strongly suggested that if
+                you set <emphasis role="bold">routefilter</emphasis> on an
+                interface that you also set <emphasis
+                role="bold">logmartians</emphasis>. Even if you do not specify
+                the <option>routefilter</option> option, it is a good idea to
+                specify <option>logmartians</option> because your distribution
+                may be enabling route filtering without you knowing it.</para>
+
+                <para>The option value (0 or 1) may only be specified if you
+                are using Shorewall-perl. With Shorewall-perl, only those
+                interfaces with the <option>logmartians</option> option will
+                have their setting changes; the value assigned to the setting
+                will be the value specified (if any) or 1 if no value is
+                given.</para>
+
+                <para>To find out if route filtering is set on a given
+                <replaceable>interface</replaceable>, check the contents of
+                <filename>/proc/sys/net/ipv4/conf/<replaceable>interface</replaceable>/rp_filter</filename>
+                — a non-zero value indicates that route filtering is
+                enabled.</para>
+
+                <para>Example:</para>
+
+                <programlisting>        teastep@lists:~$ <command>cat /proc/sys/net/ipv4/conf/eth0/rp_filter </command>
+        1
+        teastep@lists:~$ </programlisting>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
+
+                <blockquote>
+                  <para>This option may also be enabled globally in the <ulink
+                  url="shorewall.conf.html">shorewall.conf</ulink>(5)
+                  file.</para>
+                </blockquote>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">maclist</emphasis></term>
+
+              <listitem>
+                <para>Connection requests from this interface are compared
+                against the contents of <ulink
+                url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
+                this option is specified, the interface must be an ethernet
+                NIC and must be up before Shorewall is started.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">norfc1918</emphasis></term>
+
+              <listitem>
+                <para>This interface should not receive any packets whose
+                source is in one of the ranges reserved by RFC 1918 (i.e.,
+                private or "non-routable" addresses). If packet mangling or
+                connection-tracking match is enabled in your kernel, packets
+                whose destination addresses are reserved by RFC 1918 are also
+                rejected.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">nosmurfs</emphasis></term>
+
+              <listitem>
+                <para>Filter packets for smurfs (packets with a broadcast
+                address as the source).</para>
+
+                <para>Smurfs will be optionally logged based on the setting of
+                SMURF_LOG_LEVEL in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5). After
+                logging, the packets are dropped.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">optional</emphasis></term>
+
+              <listitem>
+                <para>Only supported by Shorewall-perl. When
+                <option>optional</option> is specified for an interface,
+                Shorewall will be silent when:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>a <filename
+                    class="directory">/proc/sys/net/ipv4/conf/</filename>
+                    entry for the interface cannot be modified (including for
+                    proxy ARP).</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The first address of the interface cannot be
+                    obtained.</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para>I specify <option>optional</option> on interfaces to Xen
+                virtual machines that may or may not be running when Shorewall
+                is [re]started.</para>
+
+                <caution>
+                  <para>Use <option>optional</option> at your own risk. If you
+                  [re]start Shorewall when an 'optional' interface is not
+                  available and then do a <command>shorewall save</command>,
+                  subsequent <command>shorewall restore</command> and
+                  <command>shorewall -f start</command> operations will
+                  instantiate a ruleset that does not support that interface,
+                  even if it is available at the time of the
+                  restore/start.</para>
+                </caution>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proxyarp[={0|1}]</emphasis></term>
+
+              <listitem>
+                <para>Sets
+                /proc/sys/net/ipv4/conf/<emphasis>interface</emphasis>/proxy_arp.
+                Do NOT use this option if you are employing Proxy ARP through
+                entries in <ulink
+                url="shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).
+                This option is intended solely for use with Proxy ARP
+                sub-networking as described at: <ulink
+                url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html.
+                </ulink><note>
+                    <para>This option does not work with a wild-card
+                    <replaceable>interface</replaceable> name (e.g., eth0.+)
+                    in the INTERFACE column.</para>
+                  </note>The option value (0 or 1) may only be specified if
+                you are using Shorewall-perl. With Shorewall-perl, only those
+                interfaces with the <option>proxyarp</option> option will have
+                their setting changes; the value assigned to the setting will
+                be the value specified (if any) or 1 if no value is
+                given.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">routeback</emphasis></term>
+
+              <listitem>
+                <para>If specified, indicates that Shorewall should include
+                rules that allow filtering traffic arriving on this interface
+                back out that same interface. This option is also required
+                when you have used a wildcard in the INTERFACE column if you
+                want to allow traffic between the interfaces that match the
+                wildcard.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">routefilter[={0|1}]</emphasis></term>
+
+              <listitem>
+                <para>Turn on kernel route filtering for this interface
+                (anti-spoofing measure).</para>
+
+                <para>The option value (0 or 1) may only be specified if you
+                are using Shorewall-perl. With Shorewall-perl, only those
+                interfaces with the <option>routefilter</option> option will
+                have their setting changes; the value assigned to the setting
+                will be the value specified (if any) or 1 if no value is
+                given.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card
+                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
+                  the INTERFACE column.</para>
+                </note>
+
+                <blockquote>
+                  <para>This option can also be enabled globally in the <ulink
+                  url="shorewall.conf.html">shorewall.conf</ulink>(5)
+                  file.</para>
+                </blockquote>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">sourceroute[={0|1}]</emphasis></term>
 
               <listitem>
                 <para>If this option is not specified for an interface, then
@@ -369,11 +435,30 @@ loc     eth2            -</programlisting>
                 This might represent a security risk and is not usually
                 needed.</para>
 
+                <para>The option value (0 or 1) may only be specified if you
+                are using Shorewall-perl. With Shorewall-perl, only those
+                interfaces with the <option>sourceroute</option> option will
+                have their setting changes; the value assigned to the setting
+                will be the value specified (if any) or 1 if no value is
+                given.</para>
+
                 <note>
                   <para>This option does not work with a wild-card
                   <replaceable>interface</replaceable> name (e.g., eth0.+) in
                   the INTERFACE column.</para>
                 </note>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">tcpflags</emphasis></term>
+
+              <listitem>
+                <para>Packets arriving on this interface are checked for
+                certain illegal combinations of TCP flags. Packets found to
+                have such a combination of flags are handled according to the
+                setting of TCP_FLAGS_DISPOSITION after having been logged
+                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
               </listitem>
             </varlistentry>
 

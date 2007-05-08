@@ -577,6 +577,8 @@ sub generate_script_3() {
 
     emit "}\n";
 
+    set_global_variables;
+
     progress_message2 "Creating iptables-restore input...";
     create_netfilter_load;
 
@@ -585,6 +587,9 @@ sub generate_script_3() {
     push_indent;
 
     emit<<'EOF';
+
+set_global_variables;
+
 setup_routing_and_traffic_shaping;
 
 if [ $COMMAND = restore ]; then

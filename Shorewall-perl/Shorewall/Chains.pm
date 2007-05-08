@@ -110,6 +110,7 @@ our @EXPORT = qw( STANDARD
 		  insertnatjump
 		  get_interface_address
 		  get_interface_addresses
+		  set_global_variables
 		  create_netfilter_load
 
 		  @policy_chains
@@ -1716,6 +1717,43 @@ sub emitr( $ ) {
 }
 
 #
+# Generate function that sets global variables
+#
+sub set_global_variables() {
+
+    my $nonempty = 0;
+
+    emitj( 'set_global_variables()',
+	   '{'
+	   );
+
+    push_indent;
+    #
+    # Establish the values of shell variables used in the following shell commands and/or 'here documents' input.
+    #
+    for ( values %interfaceaddr ) {
+	emit $_;
+	$nonempty = 1;
+    }
+
+    for ( values %interfaceaddrs ) {
+	emit $_;
+	$nonempty = 1;
+    }
+
+    for ( values %interfacenets ) {
+	emit $_;
+	$nonempty = 1;
+    }
+
+    emit "true" unless $nonempty;
+
+    pop_indent;
+
+    emit "}\n";
+}
+
+#
 # Generate the netfilter input
 #
 sub create_netfilter_load() {
@@ -1727,21 +1765,6 @@ sub create_netfilter_load() {
     push_indent;
 
     save_progress_message "Preparing iptables-restore input...";
-
-    #
-    # Establish the values of shell variables used in the following shell commands and/or 'here documents' input.
-    #
-    for ( values %interfaceaddr ) {
-	emit $_;
-    }
-
-    for ( values %interfaceaddrs ) {
-	emit $_;
-    }
-
-    for ( values %interfacenets ) {
-	emit $_;
-    }
 
     emit '';
     #

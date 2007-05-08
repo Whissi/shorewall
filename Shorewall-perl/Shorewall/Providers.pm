@@ -177,9 +177,10 @@ sub setup_providers() {
 	}
 
 	if ( $gateway eq 'detect' ) {
+	    my $variable = get_interface_address $interface;
 	    emitj ( "gateway=\$(detect_gateway $interface)\n",
 		    'if [ -n "$gateway" ]; then',
-		    "    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number",
+		    "    run_ip route replace $variable dev $interface table $number",
 		    "    run_ip route add default via \$gateway dev $interface table $number",
 		    'else',
 		    "    fatal_error \"Unable to detect the gateway through interface $interface\"",
@@ -187,7 +188,8 @@ sub setup_providers() {
 	    $gateway = '$gateway';
 	} elsif ( $gateway && $gateway ne '-' ) {
 	    validate_address $gateway;
-	    emit "run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number";
+	    my $variable = get_interface_address $interface;
+	    emit "run_ip route replace $gateway src $variable dev $interface table $number";
 	    emit "run_ip route add default via $gateway dev $interface table $number";
 	} else {
 	    $gateway = '';

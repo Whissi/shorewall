@@ -808,14 +808,7 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 	my $action     = isolate_basic_target $mtarget;
 	my $actiontype = $targets{$action} || 0;
 
-	if ( $actiontype & ACTION ) {
-	    unless ( $usedactions{$action} ) {
-		createactionchain $mtarget;
-		$usedactions{$mtarget} = 1;
-	    }
-
-	    $mtarget = find_logactionchain $mtarget;
-	} else {
+	unless ( $actiontype & ACTION ) {
 	    fatal_error "Invalid Action ($mtarget)"  unless $actiontype & ( STANDARD + NATRULE );
 	}
 

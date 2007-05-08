@@ -1721,36 +1721,21 @@ sub emitr( $ ) {
 #
 sub set_global_variables() {
 
-    my $nonempty = 0;
-
-    emitj( 'set_global_variables()',
-	   '{'
-	   );
-
-    push_indent;
     #
     # Establish the values of shell variables used in the following shell commands and/or 'here documents' input.
     #
     for ( values %interfaceaddr ) {
 	emit $_;
-	$nonempty = 1;
     }
 
     for ( values %interfaceaddrs ) {
 	emit $_;
-	$nonempty = 1;
     }
 
     for ( values %interfacenets ) {
 	emit $_;
-	$nonempty = 1;
     }
 
-    emit "true" unless $nonempty;
-
-    pop_indent;
-
-    emit "}\n";
 }
 
 #
@@ -1818,7 +1803,7 @@ sub create_netfilter_load() {
     #
     # Now generate the actual iptabes-restore command
     #
-    emitj( ' exec 3>&-',
+    emitj( 'exec 3>&-',
 	   '',
 	   'progress_message2 "Running iptables-restore..."',
 	   '',

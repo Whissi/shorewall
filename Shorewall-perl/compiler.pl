@@ -577,8 +577,6 @@ sub generate_script_3() {
 
     emit "}\n";
 
-    set_global_variables;
-
     progress_message2 "Creating iptables-restore input...";
     create_netfilter_load;
 
@@ -586,9 +584,13 @@ sub generate_script_3() {
     emit 'define_firewall() {';
     push_indent;
 
-    emit<<'EOF';
+    emit '';
 
-set_global_variables;
+    set_global_variables;
+
+    emit '';
+
+    emit<<'EOF';
 
 setup_routing_and_traffic_shaping;
 

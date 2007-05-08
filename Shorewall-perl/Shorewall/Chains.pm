@@ -659,7 +659,7 @@ sub finish_section ( $ ) {
 # Helper for set_mss
 #
 sub set_mss1( $$ ) {
-    my ( $chain, $mss ) =  ($_[0], $_[1]);
+    my ( $chain, $mss ) =  @_;
     my $chainref = ensure_chain 'filter', $chain;
     my $policy   = $chainref->{policy};
 
@@ -686,6 +686,9 @@ sub set_mss( $$$ ) {
     }
 }
 
+#
+# Interate over non-firewall zones adding TCPMSS rules as appropriate
+#
 sub setup_zone_mss() {
     for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
 	my $zoneref = $zones{$zone};

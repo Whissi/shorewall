@@ -1151,7 +1151,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     my $prefix;
 
-    $limit = $globals{LOGLIMIT} unless $limit && $limit ne '-' && $limit ne '';
+    $limit = $globals{LOGLIMIT} unless $limit && $limit ne '-';
 
     $predicates .= $limit;
 

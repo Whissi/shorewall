@@ -1054,6 +1054,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	#   - the destination port will be the server port
 	#   - the destination IP   will be the server IP
 	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
+	#   - the target will be ACCEPT.
 	#
 	unless ( $actiontype & NATONLY ) {
 	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user );

@@ -977,7 +977,12 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     #
     $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );
 
-    $rule .= "-m state --state $section " if $section eq 'ESTABLISHED' || $section eq 'RELATED';
+    if ( $section eq 'ESTABLISHED' || $section eq 'RELATED' ) {
+	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
+	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & NONAT;
+	$rule .= "-m state --state $section " 
+    }
+
     #
     # Generate NAT rule(s), if any
     #

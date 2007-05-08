@@ -31,6 +31,8 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
+		  validate_net
+		  validate_range
 		  ip_range_explicit
 		 );
 our @EXPORT_OK = qw( );
@@ -46,6 +48,16 @@ sub valid_address( $ ) {
     }
 
     1;
+}
+
+sub validate_net( $ ) {
+    my ($net, $vlsm) = split '/', $_[0];
+
+    if ( defined $vlsm ) {
+        fatal_error "Invalid VLSM ($vlsm)" unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
+    }
+
+    fatal_error "Invalid IP address ($net)" unless valid_address $net;
 }
 
 sub decodeaddr( $ ) {
@@ -73,6 +85,18 @@ sub encodeaddr( $ ) {
 
     $result;
 }
+
+sub validate_range( $$ ) {
+    my ( $low, $high ) = @_;
+
+    fatal_error "Invalid IP address ( $low )" unless valid_address $low;
+    fatal_error "Invalid IP address ( $high )" unless valid_address $high;
+
+    my $first = decodeaddr $low;
+    my $last  = decodeaddr $high;
+
+    fatal_error "Invalid IP Range ( $low-$high )" unless $first <= $last;
+}   
 
 sub ip_range_explicit( $ ) {
     my $range = $_[0];

@@ -31,6 +31,7 @@ use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Interfaces;
+use Shorewall::IPAddrs;
 
 use strict;
 
@@ -1054,8 +1055,10 @@ sub get_set_flags( $$ ) {
 sub match_source_net( $ ) {
     my $net = $_[0];
 
-    if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
+    if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
+	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
+	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
 	( $net = $2 ) =~ tr/-/:/;
@@ -1066,8 +1069,11 @@ sub match_source_net( $ ) {
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
+	validate_net $net;
+	validate_net $net;
 	"-s ! $net ";
     } else {
+	validate_net $net;
 	$net eq ALLIPv4 ? '' : "-s $net ";
     }
 }
@@ -1078,16 +1084,20 @@ sub match_source_net( $ ) {
 sub match_dest_net( $ ) {
     my $net = $_[0];
 
-    if ( $net =~ /^(!?).*\..*\..*\..*-.*\..*\..*\..*/ ) {
+    if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
+	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
+	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--dst-range $net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
 	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
+	validate_net $net;
 	"-d ! $net ";
     } else {
+	validate_net $net;
 	$net eq ALLIPv4 ? '' : "-d $net ";
     }
 }
@@ -1155,7 +1165,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     unless ( $predicates =~ /-m limit / ) {
 	$limit = $globals{LOGLIMIT} unless $limit && $limit ne '-';
-	$predicates .= $limit;
+	$predicates .= $limit if $limit;
     }
 
     if ( $tag ) {
@@ -1504,7 +1514,7 @@ sub expand_rule( $$$$$$$$$$ )
 	unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
 	    my @iexcl = mysplit $iexcl;
 	    if ( @iexcl == 1 ) {
-		$rule .= match_source_net "!$iexcl ";
+		$rule .= match_source_net "!$iexcl";
 		$iexcl = '';
 	    }
 	
@@ -1529,7 +1539,7 @@ sub expand_rule( $$$$$$$$$$ )
 	unless ( $dnets ) {
 	    my @dexcl = mysplit $dexcl;
 	    if ( @dexcl == 1 ) {
-		$rule .= match_dest_net "!$dexcl ";
+		$rule .= match_dest_net "!$dexcl";
 		$dexcl = '';
 	    }
 	}

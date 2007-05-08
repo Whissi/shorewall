@@ -1151,7 +1151,9 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     my $prefix;
 
-    $limit = $globals{LOGLIMIT} unless $limit;
+    $limit = $globals{LOGLIMIT} unless $limit && $limit ne '-';
+
+    $predicates .= $limit;
 
     if ( $tag ) {
 	if ( $config{LOGTAGONLY} ) {

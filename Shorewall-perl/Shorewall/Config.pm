@@ -867,9 +867,9 @@ sub get_configuration( $ ) {
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
-	 $globals{LOGLIMIT}  = '-m limit';
-	 $globals{LOGLIMIT} .= " --limit $config{LOGRATE}"        if $config{LOGRATE};
-	 $globals{LOGLIMIT} .= " --limit-burst $config{LOGBURST}" if $config{LOGBURST};
+	 $globals{LOGLIMIT}  = '-m limit ';
+	 $globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if $config{LOGRATE};
+	 $globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if $config{LOGBURST};
     } else {
 	$globals{LOGLIMIT} = '';
     }

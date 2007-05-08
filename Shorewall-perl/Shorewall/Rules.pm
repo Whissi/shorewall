@@ -260,7 +260,7 @@ sub setup_syn_flood_chains() {
 	    $burst = $burst ? "--limit-burst $burst " : '';
 	    my $synchainref = new_chain 'filter' , syn_chain $chainref->{name};
 	    add_rule $synchainref , "-m limit --limit $limit ${burst}-j RETURN";
-	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5' , '' , 'add' , ''
+	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''
 		if $level ne '';
 	    add_rule $synchainref, '-j DROP';
 	}

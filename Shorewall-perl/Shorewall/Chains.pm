@@ -661,9 +661,8 @@ sub finish_section ( $ ) {
 sub set_mss1( $$ ) {
     my ( $chain, $mss ) =  @_;
     my $chainref = ensure_chain 'filter', $chain;
-    my $policy   = $chainref->{policy};
 
-    if ( "$policy" ne 'NONE' ) {
+    if ( $chainref->{policy} ne 'NONE' ) {
 	insert_rule $chainref, 1, "-p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $mss"
     }
 }

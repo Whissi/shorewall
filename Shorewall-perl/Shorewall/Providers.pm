@@ -207,8 +207,8 @@ sub setup_providers() {
 		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
 	    }
 
-	    for my $num ( values %providers  ) {
-		fatal_error "Duplicate mark value ( $mark )" if $num == $val;
+	    for my $providerref ( values %providers  ) {
+		fatal_error "Duplicate mark value ( $mark )" if $providerref->{mark} == $val;
 	    }
 
 	    my $pref = 10000 + $val;

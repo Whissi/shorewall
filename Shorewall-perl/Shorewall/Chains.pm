@@ -1716,23 +1716,34 @@ sub emitr( $ ) {
     }
 }
 
+my $emitted_comment = 0;
+
+sub emit_comment() {
+    unless ( $emitted_comment ) {
+	emitj ( '#',
+		'# Establish the values of shell variables used in the following function calls',
+		'#' );
+	$emitted_comment = 1;
+    }
+}
+
 #
-# Generate function that sets global variables
+# Generate setting of global variables
 #
 sub set_global_variables() {
 
-    #
-    # Establish the values of shell variables used in the following shell commands and/or 'here documents' input.
-    #
     for ( values %interfaceaddr ) {
+	emit_comment;
 	emit $_;
     }
 
     for ( values %interfaceaddrs ) {
+	emit_comment;
 	emit $_;
     }
 
     for ( values %interfacenets ) {
+	emit_comment;
 	emit $_;
     }
 

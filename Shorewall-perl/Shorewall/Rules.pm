@@ -970,7 +970,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     #
     $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );
 
-    if ( $section eq 'ESTABLISHED' || $section eq 'RELATED' ) {
+    unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & NONAT;
 	$rule .= "-m state --state $section " 
@@ -1061,32 +1061,30 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	    $dest     = $server;
 	    $action   = 'ACCEPT';
 	}
-    } else {
-	if ( $actiontype & NONAT ) {
-	    #
-	    # NONAT or ACCEPT+ -- May not specify a destination interface
-	    #
-	    fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
+    } elsif ( $actiontype & NONAT ) {
+	#
+	# NONAT or ACCEPT+ -- May not specify a destination interface
+	#
+	fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
 
-	    $origdest = '' unless $origdest and $origdest ne '-';
+	$origdest = '' unless $origdest and $origdest ne '-';
 
-	    if ( $origdest eq 'detect' ) {
-		my $interfacesref = $zones{$sourcezone}{interfaces};
-		my $interfaces = "@$interfacesref";
-		$origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
-	    }
-
-	    expand_rule( ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
-			 PREROUTE_RESTRICT ,
-			 $rule ,
-			 $source ,
-			 $dest ,
-			 $origdest ,
-			 '-j RETURN ' ,
-			 $loglevel ,
-			 $action ,
-			 '' );
+	if ( $origdest eq 'detect' ) {
+	    my $interfacesref = $zones{$sourcezone}{interfaces};
+	    my $interfaces = "@$interfacesref";
+	    $origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
 	}
+
+	expand_rule( ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+		     PREROUTE_RESTRICT ,
+		     $rule ,
+		     $source ,
+		     $dest ,
+		     $origdest ,
+		     '-j RETURN ' ,
+		     $loglevel ,
+		     $action ,
+		     '' );
     }
     #
     # Add filter table rule, unless this is a NATONLY rule type

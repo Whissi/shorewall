@@ -584,14 +584,11 @@ sub generate_script_3() {
     emit 'define_firewall() {';
     push_indent;
 
-    emit '';
-
     set_global_variables;
 
     emit '';
 
     emit<<'EOF';
-
 setup_routing_and_traffic_shaping;
 
 if [ $COMMAND = restore ]; then

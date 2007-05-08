@@ -539,7 +539,7 @@ sub ensure_filter_chain( $$ )
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
 	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
-	} elsif ( $section eq 'ESTABLISHED' ) {
+	} elsif ( $section eq 'RELATED' ) {
 	    finish_chain_section $chainref , 'ESTABLISHED';
 	}
     }
@@ -646,7 +646,7 @@ sub finish_section ( $ ) {
 
     for my $zone ( @zones ) {
 	for my $zone1 ( @zones ) {
-	    my $chainref = $chain_table{'filter'}{"$zone}2${zone1}"};
+	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
 	    if ( $chainref->{referenced} ) {
 		finish_chain_section $chainref, $sections;
 	    }

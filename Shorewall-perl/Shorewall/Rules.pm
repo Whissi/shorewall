@@ -977,6 +977,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     #
     $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );
 
+    $rule .= "-m state --state $section " if $section eq 'ESTABLISHED' || $section eq 'RELATED';
     #
     # Generate NAT rule(s), if any
     #
@@ -1277,10 +1278,10 @@ sub process_rules() {
 	    $sectioned = 1;
 	    $sections{$source} = 1;
 
-	    if ( $section eq 'RELATED' ) {
+	    if ( $source eq 'RELATED' ) {
 		$sections{ESTABLISHED} = 1;
 		finish_section 'ESTABLISHED';
-	    } elsif ( $section eq 'NEW' ) {
+	    } elsif ( $source eq 'NEW' ) {
 		@sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
 		finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
 	    }

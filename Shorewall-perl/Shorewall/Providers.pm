@@ -232,7 +232,7 @@ sub setup_providers() {
 		    fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
 		    $routemarked_interfaces{$interface} = $mark;
 		    push @routemarked_interfaces, $interface;
-		} elsif ( $option =~ /^balance=(\d+)/ ) {
+		} elsif ( $option =~ /^balance=(\d+)$/ ) {
 		    balance_default_route $1 , $gateway, $interface;
 		} elsif ( $option eq 'balance' ) {
 		    balance_default_route 1 , $gateway, $interface;

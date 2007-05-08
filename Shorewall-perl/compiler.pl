@@ -710,6 +710,10 @@ sub compiler( $ ) {
     #
     setup_proxy_arp;
     #
+    # Handle MSS setings in the zones file
+    #
+    setup_zone_mss;
+    #
     # [Re-]establish Routing
     #
     setup_providers;

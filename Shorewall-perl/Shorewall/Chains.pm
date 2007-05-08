@@ -83,6 +83,7 @@ our @EXPORT = qw( STANDARD
 		  new_builtin_chain
 		  initialize_chain_table
 		  finish_section
+		  setup_zone_mss
 		  newexclusionchain
 		  clearrule
 		  do_proto
@@ -653,6 +654,47 @@ sub finish_section ( $ ) {
 	}
     }
 }
+
+#
+# Helper for set_mss
+#
+sub set_mss1( $$ ) {
+    my ( $chain, $mss ) =  ($_[0], $_[1]);
+    my $chainref = ensure_chain 'filter', $chain;
+    my $policy   = $chainref->{policy};
+
+    if ( "$policy" ne 'NONE' ) {
+	insert_rule $chainref, 1, "-p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $mss"
+    }
+}
+
+#
+# Set up rules to set MSS to and/or from zone "$zone"
+#
+sub set_mss( $$$ ) {
+    my ( $zone, $mss, $direction) = @_;
+
+    for my $z ( @zones ) {
+	if ( $direction eq '_in' ) {
+	    set_mss1 "${zone}2${z}" , $mss;
+	} elsif ( $direction eq '_out' ) {
+	    set_mss1 "${z}2${zone}", $mss;
+	} else {
+	    set_mss1 "${z}2${zone}", $mss;
+	    set_mss1 "${zone}2${z}", $mss;
+	}
+    }
+}
+
+sub setup_zone_mss() {
+    for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
+	my $zoneref = $zones{$zone};
+
+	set_mss( $zone, $zoneref->{options}{in_out}{mss}, ''     ) if $zoneref->{options}{in_out}{mss};
+	set_mss( $zone, $zoneref->{options}{in}{mss},     '_in'  ) if $zoneref->{options}{in}{mss};
+	set_mss( $zone, $zoneref->{options}{out}{mss},    '_out' ) if $zoneref->{options}{out}{mss};
+    }
+}	
 
 sub newexclusionchain() {
     my $seq = $exclseq++;

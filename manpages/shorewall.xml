@@ -46,6 +46,12 @@
 
       <arg><option>-e</option></arg>
 
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
+
+      <arg><option>-d</option></arg>
+
+      <arg><option>-p</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -65,6 +71,12 @@
       <arg choice="plain"><option>compile</option></arg>
 
       <arg><option>-e</option></arg>
+
+      <arg><option>-C</option> <option>{shell|perl}</option> </arg>
+
+      <arg><option>-d</option></arg>
+
+      <arg><option>-p</option></arg>
 
       <arg><replaceable>directory</replaceable></arg>
 
@@ -111,7 +123,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>export</option></arg>
+      <arg choice="plain"><option>export</option><arg><option>-C</option>
+      <option>{shell|perl}</option></arg></arg>
 
       <arg choice="opt"><replaceable>directory1</replaceable></arg>
 
@@ -185,6 +198,8 @@
 
       <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
 
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
 
       <arg choice="plain"><replaceable>system</replaceable></arg>
@@ -253,6 +268,8 @@
 
       <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
 
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
 
       <arg choice="plain"><replaceable>system</replaceable></arg>
@@ -264,6 +281,8 @@
       <arg>-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>restart</option></arg>
+
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
 
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
@@ -285,6 +304,12 @@
 
       <arg choice="plain"><option>safe-restart</option></arg>
 
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
+
+      <arg><option>-d</option></arg>
+
+      <arg><option>-p</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -294,6 +319,12 @@
       <arg>-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>safe-start</option></arg>
+
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
+
+      <arg><option>-d</option></arg>
+
+      <arg><option>-p</option></arg>
 
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
@@ -387,6 +418,8 @@
 
       <arg choice="plain"><option>start</option></arg>
 
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
+
       <arg><option>-f</option></arg>
 
       <arg><replaceable>directory</replaceable></arg>
@@ -414,6 +447,8 @@
       <arg>-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>try</option></arg>
+
+      <arg><option>-C</option> <option>{shell|perl}</option></arg>
 
       <arg choice="plain"><replaceable>directory</replaceable></arg>
 
@@ -505,6 +540,20 @@
           produced using the command <emphasis role="bold">shorewall-lite show
           -f capabilities &gt; capabities</emphasis> on a system with
           Shorewall Lite installed.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
+
+          <para>The <option>-d</option> option only works when the compiler is
+          Shorewall-perl. It causes the compiler to be run under control of
+          the Perl debugger.</para>
+
+          <para>The <option>-p</option> option only works when the compiler is
+          Shorewall-perl. It causes the compiler to be profiled via the Perl
+          <option>-wd:DProf</option> command-line option.</para>
         </listitem>
       </varlistentry>
 
@@ -536,6 +585,20 @@
           role="bold">shorewall-lite show -f capabilities &gt;
           capabities</emphasis> on a system with Shorewall Lite
           installed</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
+
+          <para>The <option>-d</option> option only works when the compiler is
+          Shorewall-perl. It causes the compiler to be run under control of
+          the Perl debugger.</para>
+
+          <para>The <option>-p</option> option only works when the compiler is
+          Shorewall-perl. It causes the compiler to be profiled via the Perl
+          <option>-wd:DProf</option> command-line option.</para>
         </listitem>
       </varlistentry>
 
@@ -588,6 +651,12 @@
         <listitem>
           <para>If <emphasis>directory1</emphasis> is omitted, the current
           working directory is assumed.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
 
           <para>Allows a non-root user to compile a shorewall script and stage
           it on a system (provided that the user has access to the system via
@@ -695,6 +764,12 @@
           <para>If <option>-r</option> is included, it specifies that the root
           user on <replaceable>system</replaceable> is named
           <replaceable>root-user-name</replaceable> rather than "root".</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -782,6 +857,12 @@
           <para>If <option>-r</option> is included, it specifies that the root
           user on <replaceable>system</replaceable> is named
           <replaceable>root-user-name</replaceable> rather than "root".</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -804,6 +885,12 @@
           <emphasis>directory</emphasis> is included in the command, Shorewall
           will look in that <emphasis>directory</emphasis> first for
           configuration files.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -836,6 +923,12 @@
           configuration is restored from the saved configuration. If a
           directory is given, then Shorewall will look in that directory first
           when opening configuration files.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -850,6 +943,12 @@
           shorewall clear is performed for you. If a directory is given, then
           Shorewall will look in that directory first when opening
           configuration files.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -1025,6 +1124,12 @@
           option in <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5)
           will be restored if that saved configuration exists and has been
           modified more recently than the files in /etc/shorewall.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -1077,6 +1182,12 @@
           role="bold">clear</emphasis> or <emphasis
           role="bold">restore</emphasis> is performed after
           <replaceable>timeout</replaceable> seconds.</para>
+
+          <para>The <option>-C</option> option determines the compiler to use
+          (Shorewall-shell or Shorewall-perl). If not specified, the
+          SHOREWALL_COMPILER setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
+          compiler to use.</para>
         </listitem>
       </varlistentry>
 

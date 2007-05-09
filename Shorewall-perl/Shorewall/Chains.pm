@@ -331,6 +331,12 @@ sub add_rule($$)
     $rule .= " -m comment --comment \"$comment\"" if $comment;
 
     if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
+	#
+	# The shell has this wonderful habit of removing quote marks. Certain rule constructs such
+	# as --comment and --log-prefix quote the associated value. The following statement
+	# will add an escape to each double quote in the rule so that when the rule is finally
+	# written to the iptables-input file, it will still have quote marks.
+	#
 	$rule =~ s/"/\\"/g;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {

@@ -995,9 +995,9 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	}
 
 	#
-	# After DNAT, dest port will be the server port
+	# After DNAT, dest port will be the server port. Capture it here because $serverport gets modified below.
 	#
-	$ports = $serverport if $serverport;
+	my $servport = $serverport ne '' ? $serverport : $ports;
 
 	fatal_error "A server must be specified in the DEST column in $action rules" unless ( $actiontype & REDIRECT ) || $server ne ALLIPv4;
 	fatal_error "Invalid server ($server)" if $server =~ /:/;
@@ -1007,7 +1007,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	my $target = '';
 
 	if ( $actiontype  & REDIRECT ) {
-	    $target = '-j REDIRECT --to-port ' . ( $serverport ? $serverport : $ports );
+	    $target = '-j REDIRECT --to-port ' . ( $serverport ne '' ? $serverport : $ports );
 	} else {
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
@@ -1016,8 +1016,6 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 		for my $serv ( split /,/, $server ) {
 		    $target .= "--to $serv ";
 		}
-
-		$serverport = $ports;
 	    } elsif ( $action eq 'DNAT' ) {
 		$target = '-j DNAT ';
 		$serverport = ":$serverport" if $serverport;
@@ -1057,7 +1055,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	#   - the target will be ACCEPT.
 	#
 	unless ( $actiontype & NATONLY ) {
-	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user );
+	    $rule = join( '', do_proto( $proto, $servport, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , 0xFF ) );
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';

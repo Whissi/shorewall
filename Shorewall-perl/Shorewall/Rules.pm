@@ -701,7 +701,6 @@ sub setup_mac_lists( $ ) {
 	    if ( $disposition eq 'COMMENT' ) {
 		if ( $capabilities{COMMENTS} ) {
 		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		    $comment =~ s/\s*$//;
 		} else {
 		    warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 		}
@@ -1267,7 +1266,6 @@ sub process_rules() {
 	if ( $target eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
 		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		$comment =~ s/\s*$//;
 	    } else {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }

@@ -273,7 +273,6 @@ sub setup_masq()
 	if ( $fullinterface eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
 		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		$comment =~ s/\s*$//;
 	    } else {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }
@@ -387,7 +386,6 @@ sub setup_nat() {
 	if ( $external eq 'COMMENT' ) {
 	    if ( $capabilities{COMMENTS} ) {
 		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		$comment =~ s/\s*$//;
 	    } else {
 		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
 	    }

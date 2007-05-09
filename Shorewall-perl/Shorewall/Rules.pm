@@ -1174,7 +1174,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 
     my $action = isolate_basic_target $target;
 
-    $optimize = 0 if $action =~ /!^/;
+    $optimize = 0 if $action =~ /!$/;
 
     if ( $source eq 'all' ) {
 	for my $zone ( @zones ) {

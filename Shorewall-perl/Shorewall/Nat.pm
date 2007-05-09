@@ -271,11 +271,7 @@ sub setup_masq()
 	}
 
 	if ( $fullinterface eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-	    }
+	    process_comment;
 	} else {
 	    setup_one_masq $fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark;
 	}
@@ -384,11 +380,7 @@ sub setup_nat() {
 	}
 
 	if ( $external eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-	    }
+	    process_comment;
 	} else {
 	    do_one_nat $external, $interface, $internal, $allints, $localnat;
 	}

@@ -533,11 +533,7 @@ sub setup_tc() {
 	    }
 
 	    if ( $mark eq 'COMMENT' ) {
-		if ( $capabilities{COMMENTS} ) {
-		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		} else {
-		    warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-		}
+		process_comment;
 	    } else {
 		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
 	    }

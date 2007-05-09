@@ -263,11 +263,7 @@ sub setup_tunnels() {
 	}
 
 	if ( $kind eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-	    }
+	    process_comment;
 	} else {
 	    setup_one_tunnel $kind, $zone, $gateway, $gatewayzones;
 	}

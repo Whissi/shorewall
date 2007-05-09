@@ -699,11 +699,7 @@ sub setup_mac_lists( $ ) {
 	    }
 
 	    if ( $disposition eq 'COMMENT' ) {
-		if ( $capabilities{COMMENTS} ) {
-		    ( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-		} else {
-		    warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-		}
+		process_comment;
 	    } else {
 		( $disposition, my $level ) = split /:/, $disposition;
 
@@ -1264,11 +1260,7 @@ sub process_rules() {
 	}
 
 	if ( $target eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-	    }
+	    process_comment;
 	} elsif ( $target eq 'SECTION' ) {
 	    fatal_error "Invalid SECTION $source" unless defined $sections{$source};
 	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};

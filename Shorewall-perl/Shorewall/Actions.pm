@@ -426,12 +426,7 @@ sub process_action3( $$$$$ ) {
 	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 1, 8, 'action file';
 
 	if ( $target eq 'COMMENT' ) {
-	    if ( $capabilities{COMMENTS} ) {
-		( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	    } else {
-		warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
-	    }
-
+	    process_comment;
 	    next;
 	}
 

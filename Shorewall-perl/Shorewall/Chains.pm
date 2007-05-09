@@ -52,6 +52,7 @@ our @EXPORT = qw( STANDARD
 		  POSTROUTE_RESTRICT
 		  ALL_RESTRICT
 
+		  process_comment
 		  push_cmd_mode
 		  pop_cmd_mode
 		  add_command
@@ -257,6 +258,17 @@ my $chainseq;
 #    Chain reference , Command
 #
 
+#
+# Process a COMMENT line (in $line) 
+#
+sub process_comment() {
+    if ( $capabilities{COMMENTS} ) {
+	( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+	fatal_error "COMMENT lines may not contain double quotes" if $comment =~ /"/;
+    } else {
+	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+    }
+}
 #
 # Functions to manipulate cmdcount
 #

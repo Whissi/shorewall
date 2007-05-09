@@ -328,20 +328,12 @@ sub add_rule($$)
 {
     my ($chainref, $rule) = @_;
 
-    $rule .= " -m comment --comment \"$comment\"" if $comment;
-
     if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
-	#
-	# The shell has this wonderful habit of removing quote marks. Certain rule constructs such
-	# as --comment and --log-prefix quote the associated value. The following statement
-	# will add an escape to each double quote in the rule so that when the rule is finally
-	# written to the iptables-input file, it will still have quote marks.
-	#
-	$rule =~ s/"/\\"/g;
+	$rule .= " -m comment --comment \\\"$comment\\\"" if $comment;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
+	$rule .= " -m comment --comment \"$comment\"" if $comment;
 	push @{$chainref->{rules}}, $rule;
-
 	$chainref->{referenced} = 1;
     }
 
@@ -1198,10 +1190,22 @@ sub log_rule_limit( $$$$$$$$ ) {
 	warning_message "Log Prefix shortened to \"$prefix\"";
     }
 
-    if ( $level eq 'ULOG' ) {
-	$prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \"$prefix\" ";
+    if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
+	#
+	# The rule will be converted to an "echo" shell command. We must insure that the 
+	# quotes are preserved in the iptables-input file.
+	#
+	if ( $level eq 'ULOG' ) {
+	    $prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \\\"$prefix\\\" ";
+	} else {
+	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \\\"$prefix\\\" ";
+	}
     } else {
-	$prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
+	if ( $level eq 'ULOG' ) {
+	    $prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \"$prefix\" ";
+	} else {
+	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
+	}
     }
 
     if ( $command eq 'add' ) {

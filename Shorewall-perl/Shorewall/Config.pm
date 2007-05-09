@@ -310,6 +310,7 @@ sub split_line( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes" if $line =~ /"/;
+    fatal_error "Shorewall Configuration file entries may not contain backslash characters" if $line =~ /\\/;
 
     my @line = split /\s+/, $line;
 

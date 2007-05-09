@@ -264,7 +264,6 @@ my $chainseq;
 sub process_comment() {
     if ( $capabilities{COMMENTS} ) {
 	( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	fatal_error "Invalid COMMENT line" if length $line >= 2 && substr( $line, -1) eq '\\';
     } else {
 	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
     }

@@ -309,8 +309,7 @@ my %no_pad = ( COMMENT => 1,
 sub split_line( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
-    fatal_error "Shorewall Configuration file entries may not contain double quotes" if $line =~ /"/;
-    fatal_error "Shorewall Configuration file entries may not contain backslash characters" if $line =~ /\\/;
+    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /"`\\/;
 
     my @line = split /\s+/, $line;
 

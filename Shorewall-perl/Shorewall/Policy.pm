@@ -135,12 +135,12 @@ sub validate_policy()
 
     while ( read_a_line ) {
 
-	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 3, 5, 'policy file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
+
+	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 3, 5, 'policy file';
 
 	$loglevel  = '' if $loglevel  eq '-';
 	$synparams = '' if $synparams eq '-';

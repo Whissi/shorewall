@@ -195,14 +195,14 @@ sub determine_zones()
 
     while ( read_a_line ) {
 
-	my @parents;
-
-	my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
+
+	my @parents;
+
+	my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
 
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;

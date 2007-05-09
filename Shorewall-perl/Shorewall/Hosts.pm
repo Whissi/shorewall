@@ -59,12 +59,12 @@ sub validate_hosts_file()
 
     while ( read_a_line ) {
 
-	my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
+
+	my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file';
 
 	my $zoneref = $zones{$zone};
 	my $type    = $zoneref->{type};

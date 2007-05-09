@@ -264,7 +264,6 @@ my $chainseq;
 sub process_comment() {
     if ( $capabilities{COMMENTS} ) {
 	( $comment = $line ) =~ s/^\s*COMMENT\s*//;
-	fatal_error "COMMENT lines may not contain double quotes" if $comment =~ /"/;
 	fatal_error "Invalid COMMENT line" if length $line >= 2 && substr( $line, -1) eq '\\';
     } else {
 	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
@@ -315,7 +314,7 @@ sub add_file( $$ ) {
     my $file     = find_file $_[1];
 
     if ( -f $file ) {
-	open EF , '<', $file or fatal_error "Unable to open $file";
+	open EF , '<', $file or fatal_error "Unable to open $file: $!";
 
 	add_commands( $chainref, 
 		      qq(progress_message "Processing $file..."),

@@ -309,9 +309,13 @@ my %no_pad = ( COMMENT => 1,
 sub split_line( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
+    fatal_error "Shorewall Configuration file entries may not contain double quotes" if $line =~ /"/;
+
     my @line = split /\s+/, $line;
 
     return @line if $no_pad{$line[0]};
+
+    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $line =~ /'/;
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;

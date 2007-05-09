@@ -1117,7 +1117,7 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 #
 # Process a Record in the rules file 
 #
-#     Deals with the ugliness of wildcard zones ('all' in rules).
+#     Deals with the ugliness of wildcard zones ('all' in SOURCE and/or DEST column).
 #
 sub process_rule ( $$$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = @_;
@@ -1150,6 +1150,8 @@ sub process_rule ( $$$$$$$$$$ ) {
 	} elsif ( $source eq 'all-' ) {
 	    $source = 'all';
 	    $includesrcfw = 0;
+	} else {
+	    fatal_error "Invalid SOURCE ($source)" unless $source eq 'all';
 	}
     }
 
@@ -1161,10 +1163,13 @@ sub process_rule ( $$$$$$$$$$ ) {
 	    $dest = 'all';
 	    $intrazone = 1;
 	    $includedstfw = 0;
-	} elsif ( $source eq 'all-' ) {
+	} elsif ( $dest eq 'all-' ) {
 	    $dest = 'all';
 	    $includedstfw = 0;
+	} else {
+	    fatal_error "Invalid DEST ($dest)" unless $dest eq 'all';
 	}
+	    
     }
 
     my $action = isolate_basic_target $target;

@@ -331,6 +331,7 @@ sub add_rule($$)
     $rule .= " -m comment --comment \"$comment\"" if $comment;
 
     if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
+	$rule =~ s/"/\\"/g;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
 	push @{$chainref->{rules}}, $rule;

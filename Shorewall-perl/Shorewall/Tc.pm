@@ -372,12 +372,12 @@ sub setup_traffic_shaping() {
 
 	while ( read_a_line ) {
 
-	    my ( $device, $inband, $outband ) = split_line 3, 3, 'tcdevices';
-
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
 		$first_entry = 0;
 	    }
+
+	    my ( $device, $inband, $outband ) = split_line 3, 3, 'tcdevices';
 
 	    fatal_error "Invalid tcdevices entry" if $outband eq '-';
 	    validate_tc_device( $device, $inband, $outband );
@@ -524,13 +524,13 @@ sub setup_tc() {
 
 	while ( read_a_line ) {
 
-	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 2, 10, 'tcrules file';
-
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
 		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's' );
 		$first_entry = 0;
 	    }
+
+	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 2, 10, 'tcrules file';
 
 	    if ( $mark eq 'COMMENT' ) {
 		process_comment;

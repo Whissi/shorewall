@@ -78,14 +78,14 @@ sub process_tos() {
 
 	while ( read_a_line ) {
 
-	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file';
-
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
 		$pretosref = ensure_chain 'mangle' , $chain;
 		$outtosref = ensure_chain 'mangle' , 'outtos';
 		$first_entry = 0;
 	    }
+
+	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file';
 
 	    fatal_error "TOS field required" unless $tos ne '-';
 
@@ -146,12 +146,12 @@ sub setup_ecn()
 
 	while ( read_a_line ) {
 
-	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file';
-
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
 		$first_entry = 0;
 	    }
+
+	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file';
 
 	    fatal_error "Unknown interface ( $interface )" unless known_interface $interface;
 
@@ -213,14 +213,14 @@ sub setup_rfc1918_filteration( $ ) {
 
     while ( read_a_line ) {
 
-	my ( $networks, $target ) = split_line 2, 2, 'rfc1918 file';
-
-	my $s_target;
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
+
+	my ( $networks, $target ) = split_line 2, 2, 'rfc1918 file';
+
+	my $s_target;
 
 	if ( $target eq 'logdrop' ) {
 	    $target   = 'rfc1918';
@@ -296,8 +296,6 @@ sub setup_blacklist() {
 
 	    while ( read_a_line ) {
 
-		my ( $networks, $protocol, $ports ) = split_line 1, 3, 'blacklist file';
-
 		if ( $first_entry ) {
 		    unless  ( @$hosts ) {
 			warning_message "The entries in $fn have been ignored because there are no 'blacklist' interfaces";
@@ -308,6 +306,8 @@ sub setup_blacklist() {
 		    progress_message2 "$doing $fn...";
 		    $first_entry = 0;
 		}
+
+		my ( $networks, $protocol, $ports ) = split_line 1, 3, 'blacklist file';
 
 		expand_rule(
 			    $chainref ,
@@ -355,12 +355,12 @@ sub process_criticalhosts() {
 
 	my $routeback = 0;
 
-	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn for critical hosts...";
 	    $first_entry = 0;
 	}
+
+	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
 	$hosts = ALLIPv4 unless $hosts ne '-';
 
@@ -398,12 +398,12 @@ sub process_routestopped() {
 
 	my $routeback = 0;
 
-	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
+
+	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
 
@@ -691,12 +691,12 @@ sub setup_mac_lists( $ ) {
 
 	while ( read_a_line ) {
 
-	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 3, 4, 'maclist file';
-
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
 		$first_entry = 0;
 	    }
+
+	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 3, 4, 'maclist file';
 
 	    if ( $disposition eq 'COMMENT' ) {
 		process_comment;
@@ -1252,12 +1252,12 @@ sub process_rules() {
 
     while ( read_a_line ) {
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line 1, 10, 'rules file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
+
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line 1, 10, 'rules file';
 
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;

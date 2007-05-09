@@ -262,13 +262,13 @@ sub setup_masq()
 
     while ( read_a_line ) {
 
-	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line 2, 7, 'masq file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' , 's' );
 	    $first_entry = 0;
 	}
+
+	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line 2, 7, 'masq file';
 
 	if ( $fullinterface eq 'COMMENT' ) {
 	    process_comment;
@@ -371,13 +371,13 @@ sub setup_nat() {
 
     while ( read_a_line ) {
 
-	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 3, 5, 'nat file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file', 's' );
 	    $first_entry = 0;
 	}
+
+	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 3, 5, 'nat file';
 
 	if ( $external eq 'COMMENT' ) {
 	    process_comment;
@@ -401,13 +401,13 @@ sub setup_netmap() {
 
     while ( read_a_line ) {
 
-	my ( $type, $net1, $interface, $net2 ) = split_line 4, 4, 'netmap file';
-
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' , 's' );
 	    $first_entry = 0;
 	}
+
+	my ( $type, $net1, $interface, $net2 ) = split_line 4, 4, 'netmap file';
 
 	fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
 

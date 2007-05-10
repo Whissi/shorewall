@@ -268,7 +268,7 @@ sub setup_masq()
 	    $first_entry = 0;
 	}
 
-	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line 2, 7, 'masq file';
+	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line1 2, 7, 'masq file';
 
 	if ( $fullinterface eq 'COMMENT' ) {
 	    process_comment;
@@ -377,7 +377,7 @@ sub setup_nat() {
 	    $first_entry = 0;
 	}
 
-	my ( $external, $interface, $internal, $allints, $localnat ) = split_line 3, 5, 'nat file';
+	my ( $external, $interface, $internal, $allints, $localnat ) = split_line1 3, 5, 'nat file';
 
 	if ( $external eq 'COMMENT' ) {
 	    process_comment;

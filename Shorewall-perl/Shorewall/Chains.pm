@@ -657,6 +657,10 @@ sub finish_chain_section ($$) {
 sub finish_section ( $ ) {
     my $sections = $_[0];
 
+    for my $section ( split /,/, $sections ) {
+	$sections{$section} = 1;
+    }
+
     for my $zone ( @zones ) {
 	for my $zone1 ( @zones ) {
 	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};

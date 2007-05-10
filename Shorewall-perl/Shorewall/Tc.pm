@@ -530,7 +530,7 @@ sub setup_tc() {
 		$first_entry = 0;
 	    }
 
-	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line 2, 10, 'tcrules file';
+	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line1 2, 10, 'tcrules file';
 
 	    if ( $mark eq 'COMMENT' ) {
 		process_comment;

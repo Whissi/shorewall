@@ -38,6 +38,8 @@ our @EXPORT = qw(
 		 fatal_error
 		 find_file
 		 split_line
+		 split_line1
+		 split_line2
 		 open_file
 		 close_file
 		 push_open
@@ -294,13 +296,6 @@ sub find_file($)
 }
 
 #
-# When splitting a line, don't pad out the columns with '-' if the first column contains one of these
-#
-
-my %no_pad = ( COMMENT => 1,
-	       SECTION => 1 );
-
-#
 # Pre-process a line from a configuration file.
 
 #    ensure that it has an appropriate number of columns.
@@ -309,11 +304,58 @@ my %no_pad = ( COMMENT => 1,
 sub split_line( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
+    fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $line =~ /["'`\\]/;
+
+    my @line = split /\s+/, $line;
+
+    fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
+    fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
+
+    push @line, '-' while @line < $maxcolumns;
+
+    @line;
+}
+
+sub split_line1( $$$ ) {
+    my ( $mincolumns, $maxcolumns, $description ) = @_;
+
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
 
     my @line = split /\s+/, $line;
 
-    return @line if $no_pad{$line[0]};
+    return @line if $line[0] eq 'COMMENT';
+
+    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $line =~ /'/;
+
+    fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
+    fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
+
+    push @line, '-' while @line < $maxcolumns;
+
+    @line;
+}
+
+#
+# When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
+#
+
+my %no_pad = ( COMMENT => 0,
+	       SECTION => 2 );
+
+sub split_line2( $$$ ) {
+    my ( $mincolumns, $maxcolumns, $description ) = @_;
+
+    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
+
+    my @line = split /\s+/, $line;
+
+    my $first   = $line[0];
+    my $columns = $no_pad{$first};
+
+    if ( defined $columns ) {
+	fatal_error "Invalid $first entry" if $columns && @line != $columns;
+	return @line 
+    }
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes" if $line =~ /'/;
 

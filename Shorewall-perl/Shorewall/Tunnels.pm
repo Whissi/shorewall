@@ -260,7 +260,7 @@ sub setup_tunnels() {
 	    $first_entry = 0;
 	}
 
-	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line 2, 4, 'tunnels file';
+	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 2, 4, 'tunnels file';
 
 	if ( $kind eq 'COMMENT' ) {
 	    process_comment;

@@ -696,7 +696,7 @@ sub setup_mac_lists( $ ) {
 		$first_entry = 0;
 	    }
 
-	    my ( $disposition, $interface, $mac, $addresses  ) = split_line 3, 4, 'maclist file';
+	    my ( $disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
 
 	    if ( $disposition eq 'COMMENT' ) {
 		process_comment;
@@ -1257,7 +1257,7 @@ sub process_rules() {
 	    $first_entry = 0;
 	}
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line 1, 10, 'rules file';
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line2 1, 10, 'rules file';
 
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;

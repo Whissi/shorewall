@@ -423,7 +423,7 @@ sub process_action3( $$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line 1, 8, 'action file';
+	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line1 1, 8, 'action file';
 
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;

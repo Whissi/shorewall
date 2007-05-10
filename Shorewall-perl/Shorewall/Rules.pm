@@ -549,7 +549,7 @@ sub add_common_rules() {
 	progress_message2 'Adding rules for DHCP';
 
 	for $interface ( @$list ) {
-	    for $chain ( @{first_chains $interface}) {
+	    for $chain ( input_chain $interface, output_chain $interface ) {
 		add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
 	    }
 

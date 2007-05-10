@@ -866,8 +866,7 @@ sub do_proto( $$$ )
 	    }
 
 	    if ( $sports ne '' ) {
-		if ( $sports =~ tr/,/,/ > 0 || $multiport ) {	
-		    fatal_error "Port list requires Multiport support in your kernel/iptables: $sports" unless $capabilities{MULTIPORT};
+		if ( $multiport ) {	
 		    fatal_error "Too many entries in port list: $sports" if port_count( $sports ) > 15;
 		    $sports = validate_port_list $sports;
 		    $output .= "-m multiport --sports $sports ";

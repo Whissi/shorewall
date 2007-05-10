@@ -1127,7 +1127,7 @@ sub process_rule ( $$$$$$$$$$ ) {
     #
     unless ( $sectioned ) {
 	finish_section 'ESTABLISHED,RELATED';
-	$section = 'NEW';
+	$sections{$section = 'NEW'} = 1;
 	$sectioned = 1;
     }
 

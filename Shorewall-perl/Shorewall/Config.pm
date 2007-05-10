@@ -316,6 +316,9 @@ sub split_line( $$$ ) {
     @line;
 }
 
+#
+# Version of 'split_line' that handles COMMENT lines
+#
 sub split_line1( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
@@ -342,6 +345,9 @@ sub split_line1( $$$ ) {
 my %no_pad = ( COMMENT => 0,
 	       SECTION => 2 );
 
+#
+# Version of 'split_line' used on rules file entries
+#
 sub split_line2( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 

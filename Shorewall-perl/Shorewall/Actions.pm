@@ -592,6 +592,11 @@ sub process_actions3 () {
 	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
 
 	my $set   = $tag[0];
+
+	for my $index ( 1..2 ) {
+	    fatal_error "Max connections and interval in Limit rules must be numeric" unless $tag[$index] =~ /^\d+$/
+	}
+
 	my $count = $tag[1] + 1;
 
 	require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );

@@ -589,12 +589,12 @@ sub process_actions3 () {
 
 	my @tag = split /,/, $tag;
 
-	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag' unless @tag == 3;
+	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')' unless @tag == 3;
 
 	my $set   = $tag[0];
 
 	for ( @tag[1,2] ) {
-	    fatal_error "Max connections and interval in Limit rules must be numeric" unless /^\d+$/
+	    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
 	}
 
 	my $count = $tag[1] + 1;

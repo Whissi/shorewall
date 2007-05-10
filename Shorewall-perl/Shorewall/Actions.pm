@@ -593,8 +593,8 @@ sub process_actions3 () {
 
 	my $set   = $tag[0];
 
-	for my $index ( 1..2 ) {
-	    fatal_error "Max connections and interval in Limit rules must be numeric" unless $tag[$index] =~ /^\d+$/
+	for ( @tag[1,2] ) {
+	    fatal_error "Max connections and interval in Limit rules must be numeric" unless /^\d+$/
 	}
 
 	my $count = $tag[1] + 1;

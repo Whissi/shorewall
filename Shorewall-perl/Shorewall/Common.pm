@@ -71,7 +71,7 @@ our @allipv4 = ( '0.0.0.0/0' );
 
 use constant { ALLIPv4 => '0.0.0.0/0' };
 
-our @rfc1918_networks = ( "10.0.0.0/24", "172.16.0.0/12", "192.168.0.0/16" );
+our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
 our $line = '';          # Current config file line
 

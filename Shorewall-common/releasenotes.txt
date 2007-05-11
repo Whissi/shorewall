@@ -60,6 +60,22 @@ Other changes in Shorewall 3.9.7.
     in rules. DNS names are resolved and an error is issued for any
     name that cannot be resolved.
 
+2)  Shorewall-perl now checks configuration files for the presense of
+    characters that can cause problems if they are allowed into the
+    generated firewall script:
+
+    -	Double Quotes. These are prohibited except in the
+        shorewall.conf and params files.
+
+    -	Single Quotes. These are prohibited except in the
+        shorewall.conf and params files and in COMMENT lines.
+
+    -   Single back quotes. These are prohibited except in the 
+	shorewall.conf and params files.
+
+    -   Backslash. Probibited except as the last character on a line to
+        denote line continuation.
+
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must

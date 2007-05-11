@@ -29,6 +29,7 @@ package Shorewall::Interfaces;
 require Exporter;
 use Shorewall::Common;
 use Shorewall::Config;
+use Shorewall::IPAddrs;
 use Shorewall::Zones;
 
 use strict;

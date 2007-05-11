@@ -34,8 +34,7 @@ use Cwd 'abs_path';
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(ALLIPv4
-
+our @EXPORT = qw(
 		 create_temp_object
 		 finalize_object
 		 emit
@@ -53,8 +52,6 @@ our @EXPORT = qw(ALLIPv4
 		 create_temp_aux_config
 		 finalize_aux_config
 
-		 @allipv4
-		 @rfc1918_networks
 		 $line
 		 $command
 		 $doing
@@ -63,15 +60,6 @@ our @EXPORT = qw(ALLIPv4
 		 );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
-
-#
-# Some IPv4 useful stuff
-#
-our @allipv4 = ( '0.0.0.0/0' );
-
-use constant { ALLIPv4 => '0.0.0.0/0' };
-
-our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
 our $line = '';          # Current config file line
 

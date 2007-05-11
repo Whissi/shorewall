@@ -30,14 +30,27 @@ use Shorewall::Config;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(
+our @EXPORT = qw( ALLIPv4
+
 		  validate_address
 		  validate_net
 		  validate_range
 		  ip_range_explicit
+
+		  @allipv4
+		  @rfc1918_networks
 		 );
 our @EXPORT_OK = qw( );
 our @VERSION = 1.00;
+
+#
+# Some IPv4 useful stuff
+#
+our @allipv4 = ( '0.0.0.0/0' );
+
+use constant { ALLIPv4 => '0.0.0.0/0' };
+
+our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
 sub valid_address( $ ) {
     my $address = $_[0];

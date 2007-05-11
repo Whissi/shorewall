@@ -27,6 +27,7 @@ package Shorewall::Nat;
 require Exporter;
 use Shorewall::Common;
 use Shorewall::Config;
+use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Interfaces;
 use Shorewall::Chains;

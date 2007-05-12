@@ -191,7 +191,7 @@ sub setup_ecn()
 sub add_rule_pair( $$$$ ) {
     my ($chainref , $predicate , $target , $level ) = @_;
 
-    log_rule $level, $chainref, $target,  , $predicate,  if defined $level && $level ne '';
+    log_rule( $level, $chainref, "\U$target", $predicate )  if defined $level && $level ne '';
     add_rule $chainref , "${predicate}-j $target";
 }
 

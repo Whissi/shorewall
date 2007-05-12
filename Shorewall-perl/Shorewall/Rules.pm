@@ -62,6 +62,8 @@ my @rule_chains;
 #
 my $sectioned = 0;
 
+use constant { MAX_MACRO_NEST_LEVEL => 5 };
+
 sub process_tos() {
     my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
     my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
@@ -501,7 +503,7 @@ sub add_common_rules() {
     my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
 
     for $interface ( @interfaces ) {
-	for $chain ( input_chain $interface , forward_chain $interface ) {
+	for $chain ( @{first_chains $interface} ) {
 	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
 	}
 
@@ -615,7 +617,7 @@ sub add_common_rules() {
 		new_standard_chain $chain;
 	    }
 
-	    (new_chain 'nat' , $chain = dynamic_in($interface) )->{referenced} = 1;
+	    mark_referenced( new_chain 'nat' , $chain = dynamic_in($interface) );
 
 	    add_rule $filter_table->{input_chain $interface},  "-j $chain";
 	    add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
@@ -628,7 +630,7 @@ sub add_common_rules() {
     if ( @$list ) {
 	progress_message2 '$doing UPnP';
 
-	(new_chain 'nat', 'UPnP')->{referenced} = 1;
+	mark_referenced( new_chain( 'nat', 'UPnP' ) );
 
 	for $interface ( @$list ) {
 	    add_rule $nat_table->{PREROUTING} , "-i $interface -j UPnP";
@@ -784,8 +786,6 @@ sub process_rule1 ( $$$$$$$$$$ );
 sub process_macro ( $$$$$$$$$$$$ ) {
     my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark ) = @_;
 
-    my $standard = ( $macrofile =~ /^($globals{SHAREDIR})/ );
-
     progress_message "..Expanding Macro $macrofile...";
 
     push_open $macrofile;
@@ -797,15 +797,15 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 	$mtarget = merge_levels $target, $mtarget;
 
 	if ( $mtarget =~ /^PARAM:?/ ) {
-	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
-	    $mtarget = substitute_action $param,  $mtarget;
+	    fatal_error 'PARAM requires a parameter to be supplied in macro invocation' unless $param ne '';
+	    $mtarget = substitute_param $param,  $mtarget;
 	}
 
 	my $action     = isolate_basic_target $mtarget;
-	my $actiontype = $targets{$action} || 0;
+	my $actiontype = $targets{$action} || find_macro( $action );
 
 	unless ( $actiontype & ACTION ) {
-	    fatal_error "Invalid Action ($mtarget)"  unless $actiontype & ( STANDARD + NATRULE );
+	    fatal_error "Invalid Action ($mtarget) in macro"  unless $actiontype & ( STANDARD + NATRULE + MACRO );
 	}
 
 	if ( $msource ) {
@@ -852,6 +852,10 @@ sub process_macro ( $$$$$$$$$$$$ ) {
     progress_message '..End Macro'
 }
 
+my $macro_nest_level = 0;
+my $current_param = '';
+my @param_stack;
+
 #
 # Once a rule has been completely resolved by macro expansion and wildcard (source and/or dest zone == 'all'), it is processed by this function.
 #
@@ -862,6 +866,8 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     my $rule = '';
     my $actionchainref;
 
+    $param = '' unless defined $param;
+
     #
     # Determine the validity of the action
     #
@@ -871,11 +877,18 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 
     if ( $actiontype == MACRO ) {
 	#
-	# We will be called recursively for each rule in the macro body
+	# Will call process_rule1() recursively for each rule in the macro body
 	#
+	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
+
+	if ( $param ne '' ) {
+	    push @param_stack, $current_param;
+	    $current_param = $param;
+	}
+
 	process_macro( $macros{$basictarget},
 		       $target ,
-		       $param ,
+		       $current_param,
 		       $source,
 		       $dest,
 		       $proto,
@@ -885,6 +898,11 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 		       $ratelimit,
 		       $user,
 		       $mark );
+
+	$macro_nest_level--;
+
+	$current_param = pop @param_stack if $param ne '';
+
 	return;
     }
     #

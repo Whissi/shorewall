@@ -461,7 +461,7 @@ sub process_action3( $$$$$ ) {
 
 		if ( $mtarget =~ /^PARAM:?/ ) {
 		    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
-		    $mtarget = substitute_action $param,  $mtarget;
+		    $mtarget = substitute_param $param,  $mtarget;
 		}
 
 		if ( $msource ) {

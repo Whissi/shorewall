@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( find_macro
 		  split_action
-		  substitute_action
+		  substitute_param
 		  merge_macro_source_dest
 		  merge_macro_column
 
@@ -76,11 +76,11 @@ sub split_action ( $ ) {
 #
 # Example:
 #
-#         substitute_action DNAT PARAM:info:FTP
+#         substitute_param DNAT PARAM:info:FTP
 #
 #         produces "DNAT:info:FTP"
 #
-sub substitute_action( $$ ) {
+sub substitute_param( $$ ) {
     my ( $param, $action ) = @_;
 
     if ( $action =~ /:/ ) {

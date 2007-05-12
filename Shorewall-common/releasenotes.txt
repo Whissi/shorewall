@@ -76,6 +76,14 @@ Other changes in Shorewall 3.9.7.
     -   Backslash. Probibited except as the last character on a line to
         denote line continuation.
 
+3)  Macros may now invoke other macros with the restriction that such
+    macros may not be invoked within an action body.
+
+    When marcros are invoked recursively, the parameter passed to an
+    invocation are automatically propagated to lower level macros.
+
+    Macro invocations may be nested to a maximum level of 5.
+
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must

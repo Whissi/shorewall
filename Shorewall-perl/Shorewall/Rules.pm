@@ -494,7 +494,7 @@ sub add_common_rules() {
     $level = $config{BLACKLIST_LOGLEVEL};
 
     add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
-    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'REJECT' , $level ;
+    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
 
     new_standard_chain 'dynamic';
 

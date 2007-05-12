@@ -58,6 +58,8 @@ sub find_macro( $ )
     if ( -f $macrofile ) {
 	$macros{$macro} = $macrofile;
 	$targets{$macro} = MACRO;
+    } else {
+	0;
     }
 }
 

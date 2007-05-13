@@ -248,7 +248,7 @@ sub find_logactionchain( $ ) {
 }
 
 #
-# The next three functions implement the three phases of action processing.
+# The functions process_actions1-3() implement the three phases of action processing.
 #
 # The first phase (process_actions1) occurs before the rules file is processed. ${SHAREDIR}/actions.std
 # and ${CONFDIR}/actions are scanned (in that order) and for each action:
@@ -269,6 +269,62 @@ sub find_logactionchain( $ ) {
 # by reading the action definition files and creating rules. Note that a given action definition file is
 # processed once for each unique [:level[:tag]] applied to an invocation of the action.
 #
+
+sub process_macro1 ( $$ ) {
+    my ( $action, $macrofile ) = @_;
+
+    progress_message "   ..Expanding Macro $macrofile...";
+
+    push_open( $macrofile );
+
+    while ( read_a_line ) {
+	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 1, 8, 'macro file';
+
+	$mtarget =~ s/:.*$//;
+
+	my $targettype = $targets{$mtarget};
+
+	$targettype = 0 unless defined $targettype;
+
+	fatal_error "Invalid target ($mtarget)"
+	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $mtarget eq 'LOG' );
+    }
+    
+    progress_message "   ..End Macro $macrofile";
+    
+    pop_open;
+}
+
+sub process_action1 ( $$ ) {
+    my ( $action, $wholetarget ) = @_;
+    
+    my ( $target, $level ) = split_action $wholetarget;
+
+    $level = 'none' unless $level;
+
+    my $targettype = $targets{$target};
+
+    if ( defined $targettype ) {
+	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
+	
+	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
+	
+	fatal_error "An action may not invoke itself" if $target eq $action;
+
+	add_requiredby $wholetarget, $action if $targettype & ACTION;
+    } elsif ( $target eq 'COMMENT' ) {
+	fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
+    } else {
+	$target =~ s!/.*$!!;
+
+	if ( find_macro $target ) {
+	    process_macro1( $action, $macros{$target} );
+	} else {
+	    fatal_error "Invalid TARGET ($target)";
+	}
+    }
+}
+   
 sub process_actions1() {
 
     for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
@@ -311,52 +367,8 @@ sub process_actions1() {
 
 		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 1, 8, 'action file';
 
-		my ( $target, $level ) = split_action $wholetarget;
+		process_action1( $action, $wholetarget );
 
-		$level = 'none' unless $level;
-
-		my $targettype = $targets{$target};
-
-		if ( defined $targettype ) {
-		    next if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
-
-		    fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
-
-		    fatal_error "An action may not invoke itself" if $target eq $action;
-
-		    add_requiredby $wholetarget, $action if $targettype & ACTION;
-		} elsif ( $target eq 'COMMENT' ) {
-		    fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
-		} else {
-		    $target =~ s!/.*$!!;
-
-		    if ( find_macro $target ) {
-			my $macrofile = $macros{$target};
-
-			progress_message "   ..Expanding Macro $macrofile...";
-
-			push_open( $macrofile );
-
-			while ( read_a_line ) {
-			    my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 1, 8, 'macro file';
-
-			    $mtarget =~ s/:.*$//;
-
-			    $targettype = $targets{$mtarget};
-
-			    $targettype = 0 unless defined $targettype;
-
-			    fatal_error "Invalid target ($mtarget)"
-				unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $mtarget eq 'LOG' );
-			}
-
-			progress_message "   ..End Macro";
-
-			pop_open;
-		    } else {
-			fatal_error "Invalid TARGET ($target)";
-		    }
-		}
 	    }
 
 	    pop_open;

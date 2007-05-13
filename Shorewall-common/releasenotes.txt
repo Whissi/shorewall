@@ -60,30 +60,6 @@ Other changes in Shorewall 3.9.7.
     in rules. DNS names are resolved and an error is issued for any
     name that cannot be resolved.
 
-2)  Shorewall-perl now checks configuration files for the presense of
-    characters that can cause problems if they are allowed into the
-    generated firewall script:
-
-    -	Double Quotes. These are prohibited except in the
-        shorewall.conf and params files.
-
-    -	Single Quotes. These are prohibited except in the
-        shorewall.conf and params files and in COMMENT lines.
-
-    -   Single back quotes. These are prohibited except in the 
-	shorewall.conf and params files.
-
-    -   Backslash. Probibited except as the last character on a line to
-        denote line continuation.
-
-3)  Macros may now invoke other macros with the restriction that such
-    macros may not be invoked within an action body.
-
-    When marcros are invoked recursively, the parameter passed to an
-    invocation are automatically propagated to lower level macros.
-
-    Macro invocations may be nested to a maximum level of 5.
-
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must

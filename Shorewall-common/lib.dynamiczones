@@ -76,6 +76,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
     while [ $# -gt 1 ]; do
 	interface=${1%%:*}
 	host=${1#*:}
+	[ "$host" = "$1" ] && host=
         #
         # Be sure that the interface was dynamic at last [re]start
         #
@@ -258,6 +259,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while [ $# -gt 1 ]; do
 	interface=${1%%:*}
 	host=${1#*:}
+	[ "$host" = "$1" ] && host=
         #
         # Be sure that the interface was dynamic at last [re]start
         #

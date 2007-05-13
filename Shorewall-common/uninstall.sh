@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=3.9.6
+VERSION=3.9.7
 
 usage() # $1 = exit status
 {

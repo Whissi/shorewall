@@ -400,30 +400,93 @@ sub process_actions2 () {
 }
 
 #
+# This function is called to process each rule generated from an action file.
+#
+sub process_action( $$$$$$$$$$ ) {
+    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
+
+    my ( $action , $level ) = split_action $target;
+
+    expand_rule ( $chainref ,
+		  NO_RESTRICT ,
+		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user ,
+		  $source ,
+		  $dest ,
+		  '', #Original Dest
+		  '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action),
+		  $level ,
+		  $action ,
+		  '' );
+}
+
+#
+# Expand Macro in action file4s.
+#
+sub process_macro3( $$$$$$$$$$$ ) {
+    my ( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
+
+    progress_message "..Expanding Macro $fn...";
+
+    push_open $fn;
+
+    my $standard = ( $fn =~ /^($globals{SHAREDIR})/ );
+
+    while ( read_a_line ) {
+	
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
+
+	if ( $mtarget =~ /^PARAM:?/ ) {
+	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
+	    $mtarget = substitute_param $param,  $mtarget;
+	}
+
+	if ( $msource ) {
+	    if ( ( $msource eq '-' ) || ( $msource eq 'SOURCE' ) ) {
+		$msource = $source || '';
+	    } elsif ( $msource eq 'DEST' ) {
+		$msource = $dest || '';
+	    } else {
+		$msource = merge_macro_source_dest $msource, $source;
+	    }
+	} else {
+	    $msource = '';
+	}
+
+	$msource = '' if $msource eq '-';
+
+	if ( $mdest ) {
+	    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
+		$mdest = $dest || '';
+	    } elsif ( $mdest eq 'SOURCE' ) {
+		$mdest = $source || '';
+	    } else {
+		$mdest = merge_macro_source_dest $mdest, $dest;
+	    }
+	} else {
+	    $mdest = '';
+	}
+	
+	$mdest   = '' if $mdest eq '-';
+
+	$mproto  = merge_macro_column $mproto,  $proto;
+	$mports  = merge_macro_column $mports,  $ports;
+	$msports = merge_macro_column $msports, $sports;
+	$mrate   = merge_macro_column $mrate,   $rate;
+	$muser   = merge_macro_column $muser,   $user;
+	
+	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser;
+    }
+
+    pop_open;
+    
+    progress_message '..End Macro'
+}
+
+#
 # Generate chain for non-builtin action invocation
 #
 sub process_action3( $$$$$ ) {
     my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
-    #
-    # This function is called to process each rule generated from an action file.
-    #
-    sub process_action( $$$$$$$$$$ ) {
-	my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
-
-	my ( $action , $level ) = split_action $target;
-
-	expand_rule ( $chainref ,
-		      NO_RESTRICT ,
-		      do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user ,
-		      $source ,
-		      $dest ,
-		      '', #Original Dest
-		      '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action),
-		      $level ,
-		      $action ,
-		      '' );
-    }
-
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
 
@@ -461,62 +524,7 @@ sub process_action3( $$$$$ ) {
 
 	    fatal_error "Null Macro" unless my $fn = $macros{$action2};
 
-	    progress_message "..Expanding Macro $fn...";
-
-	    push_open $fn;
-
-	    my $standard = ( $fn =~ /^($globals{SHAREDIR})/ );
-
-	    while ( read_a_line ) {
-
-		my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
-
-		if ( $mtarget =~ /^PARAM:?/ ) {
-		    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
-		    $mtarget = substitute_param $param,  $mtarget;
-		}
-
-		if ( $msource ) {
-		    if ( ( $msource eq '-' ) || ( $msource eq 'SOURCE' ) ) {
-			$msource = $source || '';
-		    } elsif ( $msource eq 'DEST' ) {
-			$msource = $dest || '';
-		    } else {
-			$msource = merge_macro_source_dest $msource, $source;
-		    }
-		} else {
-		    $msource = '';
-		}
-
-		$msource = '' if $msource eq '-';
-
-		if ( $mdest ) {
-		    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
-			$mdest = $dest || '';
-		    } elsif ( $mdest eq 'SOURCE' ) {
-			$mdest = $source || '';
-		    } else {
-			$mdest = merge_macro_source_dest $mdest, $dest;
-		    }
-		} else {
-		    $mdest = '';
-		}
-
-		$mdest   = '' if $mdest eq '-';
-
-		$mproto  = merge_macro_column $mproto,  $proto;
-		$mports  = merge_macro_column $mports,  $ports;
-		$msports = merge_macro_column $msports, $sports;
-		$mrate   = merge_macro_column $mrate,   $rate;
-		$muser   = merge_macro_column $muser,   $user;
-
-		process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser;
-	    }
-
-	    pop_open;
-
-	    progress_message '..End Macro'
-
+	    process_macro3( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user );
 	} else {
 	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user;
 	}

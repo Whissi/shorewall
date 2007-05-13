@@ -804,9 +804,7 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 	my $action     = isolate_basic_target $mtarget;
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	unless ( $actiontype & ACTION ) {
-	    fatal_error "Invalid Action ($mtarget) in macro"  unless $actiontype & ( STANDARD + NATRULE + MACRO );
-	}
+	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO );
 
 	if ( $msource ) {
 	    if ( ( $msource eq '-' ) || ( $msource eq 'SOURCE' ) ) {
@@ -849,7 +847,7 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 
     pop_open;
 
-    progress_message '..End Macro'
+    progress_message "..End Macro $macrofile"
 }
 
 my $macro_nest_level = 0;

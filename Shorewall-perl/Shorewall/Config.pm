@@ -122,6 +122,11 @@ our %config =
 		ACCEPT_DEFAULT => undef,
 		QUEUE_DEFAULT => undef,
 		#
+		# RSH/RCP Commands
+		#
+		RSH_COMMAND => undef,
+		RCP_COMMAND => undef,
+		#
 		# Firewall Options
 		#
 		BRIDGING => undef,

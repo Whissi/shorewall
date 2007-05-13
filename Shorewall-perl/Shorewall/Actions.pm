@@ -315,7 +315,13 @@ sub process_action1 ( $$ ) {
     } elsif ( $target eq 'COMMENT' ) {
 	fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
     } else {
-	$target =~ s!/.*$!!;
+	( $target, my $param ) = split '/', $target;
+
+	if ( defined $param ) {
+	    my $paramtype = $targets{$param} || 0;
+
+	    fatal_error "Parameter value not allowed in action files ($param)" if $paramtype & NATRULE;
+	}
 
 	if ( find_macro $target ) {
 	    process_macro1( $action, $macros{$target} );

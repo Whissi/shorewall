@@ -46,7 +46,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	if ! $IPTABLES $@ ; then
-	    error_message "ERROR: Can't add $newhost to zone $zone"
+	    error_message "ERROR: Can't add ${newhost#+} to zone $zone"
 	fi
     }
 

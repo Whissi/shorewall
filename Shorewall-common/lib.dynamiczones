@@ -126,11 +126,14 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 		    ;;
 		*)
 		    for h in $hostlist; do
-			list_search +$h $hosts
-			if [ "$?" -gt 0 ]; then
-			    newhostlist="$newhostlist +$h"
+			if ! list_search +$h $hosts; then
+			    if ! list_search $h $hosts; then
+				newhostlist="$newhostlist +$h"
+			    else
+				error_message "$h is already in zone $zone"
+			    fi
 			else
-			    error_message "$h already in zone $zone"
+			    error_message "$h is already in zone $zone"
 			fi
 		    done
 

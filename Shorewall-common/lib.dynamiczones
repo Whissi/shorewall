@@ -46,7 +46,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	if ! $IPTABLES $@ ; then
-	    error_message "ERROR: Can't add ${newhost#+} to zone $zone"
+	    error_message "ERROR: Can't add $newhost to zone $zone"
 	fi
     }
 
@@ -154,11 +154,11 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
     # Create a new Zone state file
     #
     for newhost in $newhostlist; do
+	newhost=${newhost#+}
         #
         # Isolate interface and host parts
         #
 	interface=${newhost%%:*}
-	interface=${interface#+}
 	host=${newhost#*:}
         #
         # If the zone passed in the command has a dnat chain then insert a rule in
@@ -220,7 +220,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 	    fi
 	done < ${VARDIR}/chains
 
-	progress_message "${newhost#+} added to zone $zone"
+	progress_message "$newhost added to zone $zone"
 
     done
 

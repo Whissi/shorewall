@@ -1420,25 +1420,25 @@ sub generate_matrix() {
 		add_rule $in_ref   , "-i $interface -s $net -j RETURN";
 		add_rule $out_ref  , "-i $interface -s $net -j RETURN";
 	    }
+	}
 
-	    if ( $capabilities{POLICY_MATCH} ) {
-		my $type       = $zoneref->{type};
-		my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
+	if ( $capabilities{POLICY_MATCH} ) {
+	    my $type       = $zoneref->{type};
+	    my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
 
-		if ( $config{DYNAMIC_ZONES} ) {
-		    no warnings;
-		    create_zone_dyn_chain $zone, $frwd_ref if (%$source_ref || $type ne 'ipsec4' );
-		}
+	    if ( $config{DYNAMIC_ZONES} ) {
+		no warnings;
+		create_zone_dyn_chain $zone, $frwd_ref if (%$source_ref || $type eq 'ipsec4' );
+	    }
 
-		for my $interface ( keys %$source_ref ) {
-		    my $arrayref = $source_ref->{$interface};
-		    for my $hostref ( @{$arrayref} ) {
-			my $ipsec_match = match_ipsec_in $zone , $hostref;
-			for my $net ( @{$hostref->{hosts}} ) {
-			    add_rule
-				$filter_table->{forward_chain $interface} ,
+	    for my $interface ( keys %$source_ref ) {
+		my $arrayref = $source_ref->{$interface};
+		for my $hostref ( @{$arrayref} ) {
+		    my $ipsec_match = match_ipsec_in $zone , $hostref;
+		    for my $net ( @{$hostref->{hosts}} ) {
+			add_rule
+			    $filter_table->{forward_chain $interface} ,
 				join( '', match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" );
-			}
 		    }
 		}
 	    }

@@ -863,6 +863,8 @@ sub do_proto( $$$ )
 		    $ports   = validate_portpair $ports;
 		    $output .= "--dport $ports ";
 		}
+	    } else {
+		$multiport = ( ( $sports =~ tr/,/,/ ) > 0 );
 	    }
 
 	    if ( $sports ne '' ) {

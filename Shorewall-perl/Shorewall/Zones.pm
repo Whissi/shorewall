@@ -251,7 +251,7 @@ sub determine_zones()
 	$zone_hash{in_out}   = parse_zone_option_list( $options || '',$zoneref->{type} );
 	$zone_hash{in}       = parse_zone_option_list( $in_options || '', $zoneref->{type} );
 	$zone_hash{out}      = parse_zone_option_list( $out_options || '', $zoneref->{type} );
-	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
+	$zone_hash{complex}  = ($zoneref->{type} eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
 
 	$zoneref->{options}    = \%zone_hash;
 	$zoneref->{interfaces} = {};

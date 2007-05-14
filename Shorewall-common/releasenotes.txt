@@ -1,4 +1,4 @@
-Shorewall 3.9.7
+Shorewall 3.9.8
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -15,74 +15,45 @@ Shorewall 3.9.7
 You must install Shorewall and at least one of the compiler packages
 (you may install them both).
 
-Problems corrected in 3.9.7.
+Problems corrected in 3.9.8.
 
-1)  Several problems relating to exclusion in the hosts file have been
-    corrected.
+1)  The commands "shorewall add/delete <interface> <zone>" no longer
+    case lots of error messages to be issued.
 
-    Symptoms included:
+2)  A port list in a SOURCE PORT(S) column now works when the DEST
+    PORT(S) list is empty.
 
-        Access to an undefined value at Rules.pm line 1656.
-	Incorrect rule generation.
+3)  A run-time error no longer occurs when an IP address is specified
+    in the GATEWAY column of /etc/shorewall/providers.
 
-2)  Specifying 'maclist' in the hosts file's OPTION column now works.
+Other changes in Shorewall 3.9.8.
 
-3)  A number of problems with handling the hosts file have been
-    corrected. These problems are characterized by Perl run-time
-    errors and incorrect rules, including:
+1)  The "shorewall show zones" command now flags zone members that have
+    been added using "shorewall add" by preceding them with a plus sign
+    ("+").
 
-    -   Not an ARRAY reference at
-        /usr/share/shorewall-perl/Shorewall/Rules.pm line 1420.
+    Example:
 
-    -   -A eth0_fwd -s 192.168.0.0/24-m policy --dir in --pol ipsec -j 
-	HASH(0x8345924)->n{name} 
+    Shorewall 3.9.4 Zones at gateway - Mon May 14 07:48:16 PDT 2007
 
-4)  A value of 'detect' in the GATEWAY column of the providers file no
-    longer generates an error during [re]start.
+    fw (firewall)
+    net (ipv4)
+        eth0:0.0.0.0/0
+    loc (ipv4)
+	br0:0.0.0.0/0
+	eth4:0.0.0.0/0
+	eth5:0.0.0.0/0
+	+eth1:0.0.0.0/0
+    dmz (ipv4)
+	eth3:0.0.0.0/0
+    vpn (ipv4)
+	tun+:0.0.0.0/0
 
-5)  The command 'shorewall check -p' resulted in an indefinite loop.
-
-6)  A number of problems having to do with SECTIONs in the rules file
-    have been corrected.
-
-7)  The mss zone option now works correctly.
-
-8)  The LOGBURST and LOGLIMIT options in shorewall.conf now work
-    correctly
-
-9)  Previously, COMMENT lines could result in invalid iptables-restore
-    input being generated. The quote marks around the comment string 
-    were being removed during iptables-restore input generation.
-
-Other changes in Shorewall 3.9.7.
-
-1)  Shorewall-perl now validates all IP addresses and addresses ranges
-    in rules. DNS names are resolved and an error is issued for any
-    name that cannot be resolved.
-
-2)  Shorewall-perl now checks configuration files for the presense of
-    characters that can cause problems if they are allowed into the
-    generated firewall script:
-
-    -	Double Quotes. These are prohibited except in the
-        shorewall.conf and params files.
-
-    -	Single Quotes. These are prohibited except in the
-        shorewall.conf and params files and in COMMENT lines.
-
-    -   Single back quotes. These are prohibited except in the 
-	shorewall.conf and params files.
-
-    -   Backslash. Probibited except as the last character on a line to
-        denote line continuation.
-
-3)  Macros may now invoke other macros with the restriction that such
-    macros may not be invoked within an action body.
-
-    When marcros are invoked recursively, the parameter passed to an
-    invocation are automatically propagated to lower level macros.
-
-    Macro invocations may be nested to a maximum level of 5.
+    In the above output, "eth1:0.0.0.0/0" was dynamically added to the
+    'loc' zone. As part of this change, "shorewall delete" will only
+    delete entries that have been added dynamically. In earlier
+    versions, any entry could be deleted although the ruleset was only
+    changed by deleting entries that had been added dynamically.
 
 Migration Considerations:
 
@@ -457,6 +428,35 @@ Migration Considerations:
 8)  SOURCE and DEST are now reserved zone names to avoid problems with
     bi-directional macro definitions which use these as names as key
     words.
+
+9)  Shorewall-perl now validates all IP addresses and addresses ranges
+    in rules. DNS names are resolved and an error is issued for any
+    name that cannot be resolved.
+
+10) Shorewall-perl now checks configuration files for the presense of
+    characters that can cause problems if they are allowed into the
+    generated firewall script:
+
+    -	Double Quotes. These are prohibited except in the
+        shorewall.conf and params files.
+
+    -	Single Quotes. These are prohibited except in the
+        shorewall.conf and params files and in COMMENT lines.
+
+    -   Single back quotes. These are prohibited except in the 
+	shorewall.conf and params files.
+
+    -   Backslash. Probibited except as the last character on a line to
+        denote line continuation.
+
+11) Under Shorewall-perl, macros may now invoke other macros with the
+    restriction that such macros may not be invoked within an action
+    body.
+
+    When marcros are invoked recursively, the parameter passed to an
+    invocation are automatically propagated to lower level macros.
+
+    Macro invocations may be nested to a maximum level of 5.
 
 ----------------------------------------------------------------------------
                       P R E R E Q U I S I T E S

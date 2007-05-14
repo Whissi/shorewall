@@ -126,9 +126,9 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 		    ;;
 		*)
 		    for h in $hostlist; do
-			list_search $h $hosts
+			list_search +$h $hosts
 			if [ "$?" -gt 0 ]; then
-			    newhostlist="$newhostlist $h"
+			    newhostlist="$newhostlist +$h"
 			else
 			    error_message "$h already in zone $zone"
 			fi
@@ -155,6 +155,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
         # Isolate interface and host parts
         #
 	interface=${newhost%%:*}
+	interface=${interface#+}
 	host=${newhost#*:}
         #
         # If the zone passed in the command has a dnat chain then insert a rule in
@@ -308,19 +309,25 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	    for host in $hostlist; do
 		found=
 		for h in $temp; do
-		    if [ "$h" = "$host" ]; then
+		    if [ "$h" = "+$host" ]; then
 			found=Yes
+			break
+		    fi
+
+		    if [ "$h" = "$host" ]; then
+			found=No
 			break
 		    fi
 		done
 
 		[ -n "$found" ] || error_message "WARNING: $host does not appear to be in zone $zone"
+		[ "$found" = No ] && startup_error "$host is a permanent member of zone $zone"
 	    done
 
 	    for h in $temp; do
 		found=
 		for host in $hostlist; do
-		    if [ "$h" = "$host" ]; then
+		    if [ "$h" = "+$host" ]; then
 			found=Yes
 			break
 		    fi

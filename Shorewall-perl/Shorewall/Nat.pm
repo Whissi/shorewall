@@ -349,7 +349,7 @@ sub do_one_nat( $$$$$ )
 	add_nat_rule output_chain( $interface ) , "-s $internal $policyout -j SNAT --to-source $external";
     }
 
-    add_nat_rule 'OUTPUT' , "-d $external$policyout -j DNAT --to-destination $internal " if $localnat;
+    add_nat_rule 'OUTPUT' , "-d $external $policyout -j DNAT --to-destination $internal " if $localnat;
 
     if ( $add_ip_aliases ) {
 	unless ( $addresses_to_add{$external} ) {

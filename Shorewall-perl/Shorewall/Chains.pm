@@ -893,12 +893,12 @@ sub do_proto( $$$ )
 	    $ports = 'ipp2p' unless $ports;
 	    $output .= "-p $proto -m ipp2p --$ports ";
 	} else {
-	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $proto, rule \"$line\"" if $ports ne '' || $sports ne '';
+	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $proto" if $ports ne '' || $sports ne '';
 	    $proto = validate_proto $proto;
 	    $output .= "-p $proto ";
 	}
     } elsif ( $ports ne '' || $sports ne '' ) {
-	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO, rule \"$line\""
+	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO"
     }
 
     $output;
@@ -1365,9 +1365,10 @@ sub expand_rule( $$$$$$$$$$ )
 	if ( $loglevel =~ /^none!?$/i ) {
 	    return if $disposition eq 'LOG';
 	    $loglevel = $logtag = '';
+	} else {
+	    $loglevel = validate_level( $loglevel );
+	    $logtag   = '' unless defined $logtag;
 	}
-	
-	$loglevel = validate_level( $loglevel );
     } elsif ( $disposition eq 'LOG' ) {
 	fatal_error "LOG requires a level";
     }
@@ -1390,10 +1391,10 @@ sub expand_rule( $$$$$$$$$$ )
     }
 
     #
-    # Verify Inteface, if any
+    # Verify Interface, if any
     #
     if ( $iiface ) {
-	fatal_error "Unknown Interface ($iiface): \"$line\"" unless known_interface $iiface;
+	fatal_error "Unknown Interface ($iiface)" unless known_interface $iiface;
 
 	if ( $restriction & POSTROUTE_RESTRICT ) {
 	    #
@@ -1409,7 +1410,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    $chainref->{loopcount}++;
 	} else {
-	    fatal_error "Source Interface ( $iiface ) not allowed when the source zone is $firewall_zone: $line"
+	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone"
 		if $restriction & OUTPUT_RESTRICT;
 	    $rule .= "-i $iiface ";
 	}
@@ -1459,7 +1460,7 @@ sub expand_rule( $$$$$$$$$$ )
     # Verify Destination Interface, if any
     #
     if ( $diface ) {
-	fatal_error "Unknown Interface ($diface) in rule \"$line\"" unless known_interface $diface;
+	fatal_error "Unknown Interface ($diface)" unless known_interface $diface;
 
 	if ( $restriction & PREROUTE_RESTRICT ) {
 	    #
@@ -1469,7 +1470,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    $rule .= '-d $dest';
 	    $chainref->{loopcount}++;
 	} else {
-	    fatal_error "Destination Interface ( $diface ) not allowed when the destination zone is $firewall_zone: $line"
+	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone"
 		if $restriction & INPUT_RESTRICT;
 	    $rule .= "-o $diface ";
 	}
@@ -1593,9 +1594,11 @@ sub expand_rule( $$$$$$$$$$ )
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
 	    for my $inet ( mysplit $inets ) {
-		$inet = match_source_net $inet;
 		for my $dnet ( mysplit $dnets ) {
-		    add_rule $chainref, join( '', $rule, $inet, match_dest_net( $dnet ), $onet, "-j $echain" );
+		    #
+		    # We defer evaluating the source net match to accomodate system without $capabilities{KLUDGEFREE}
+		    #
+		    add_rule $chainref, join( '', $rule, match_source_net( $inet), match_dest_net( $dnet ), $onet, "-j $echain" );
 		}
 	    }
 	}
@@ -1640,7 +1643,9 @@ sub expand_rule( $$$$$$$$$$ )
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
 	    for my $inet ( mysplit $inets ) {
-		$inet = match_source_net $inet;
+		#
+		# We defer evaluating the source net match to accomodate system without $capabilities{KLUDGEFREE}
+		#
 		for my $dnet ( mysplit $dnets ) {
 		    if ( $loglevel ne '' ) {
 			log_rule_limit
@@ -1651,13 +1656,13 @@ sub expand_rule( $$$$$$$$$$ )
 			    '' ,
 			    $logtag ,
 			    'add' ,
-			    join( '', $rule,  $inet, match_dest_net( $dnet ), $onet );
+			    join( '', $rule, match_source_net( $inet) , match_dest_net( $dnet ), $onet );
 		    }
 
 		    unless ( $disposition eq 'LOG' ) {
 			add_rule
 			    $chainref,
-			    join( '', $rule, $inet, match_dest_net( $dnet ), $onet, $target  );
+			    join( '', $rule, match_source_net ($inet), match_dest_net( $dnet ), $onet, $target  );
 		    }
 		}
 	    }

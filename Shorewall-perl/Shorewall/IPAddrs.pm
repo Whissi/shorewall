@@ -66,7 +66,7 @@ sub valid_address( $ ) {
 
 sub validate_address( $ ) {
     unless ( valid_address $_[0] ) {
-	fatal_error "Unknown Host ($_[0])" unless qt "host $_[0]";
+	fatal_error "Unknown Host ($_[0])" unless defined gethostbyname $_[0];
     }
 }
 

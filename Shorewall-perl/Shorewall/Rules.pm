@@ -1308,7 +1308,7 @@ sub process_rules() {
 }
 
 #
-# To quote an old comment, generate_matrix makes a sows ear out of a silk purse.
+# To quote an old comment, "generate_matrix makes a sows ear out of a silk purse".
 #
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
@@ -1375,15 +1375,23 @@ sub generate_matrix() {
 	}
     }
 
+    #
+    # Set a breakpoint in this function if you want to step through generate_matrix(). 
+    #
+    sub start_matrix() {
+    }
+
+    #
+    # Generate_Matrix() Starts Here
+    #
+    start_matrix;
+
     my $prerouting_rule  = 1;
     my $postrouting_rule = 1;
     my $exclusion_seq    = 1;
     my %chain_exclusions;
     my %policy_exclusions;
 
-    #
-    # Generate_Matrix() Starts Here
-    #
     for my $interface ( @interfaces ) {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), "-o $interface ";
     }
@@ -1456,7 +1464,6 @@ sub generate_matrix() {
 	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $exclusions       = $zoneref->{exclusions};
-	my $need_broadcast   = {}; ### Fixme ###
 	my $frwd_ref         = 0;
 	my $chain            = 0;
 	my %needbroadcast;
@@ -1549,7 +1556,7 @@ sub generate_matrix() {
 		    # One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
 		    #
 		    no warnings;
-		    next if (  %{ $zoneref->{interfaces}} < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+		    next if ( %{ $zoneref->{interfaces} } < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 		}
 
 		if ( $chain =~ /2all$/ ) {

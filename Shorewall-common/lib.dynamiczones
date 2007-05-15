@@ -186,7 +186,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 			eval dest_hosts=\"\$${z2}_hosts\"
 
 			for h in $dest_hosts; do
-			    [ "$h" = exclude ] && break;			    
+			    [ "$h" = exclude ] && break			    
 			    iface=${h%%:*}
 			    iface=${iface#+}
 			    hosts=${h#*:}
@@ -207,7 +207,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 		    eval source_hosts=\"\$${z1}_hosts\"
 
 		    for h in $source_hosts; do
-			[ "$h" = exclude ] && break;
+			[ "$h" = exclude ] && break
 			iface=${h%%:*}
 			iface=${iface#+}
 			hosts=${h#*:}
@@ -377,7 +377,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 			[ "$z2" = "$zone" ] && dest_hosts="$dest_hosts $hostlist"
 
 			for h in $dest_hosts; do
-			    [ "$h" = exclude ] && break;
+			    [ "$h" = exclude ] && break
 			    iface=${h%%:*}
 			    iface=${iface#+}
 			    hosts=${h#*:}
@@ -395,7 +395,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    eval source_hosts=\"\$${z1}_hosts\"
 
 		    for h in $source_hosts; do
-			[ "$h" = exclude ] && break;
+			[ "$h" = exclude ] && break
 			iface=${h%%:*}
 			iface=${iface#+}
 			hosts=${h#*:}

@@ -548,11 +548,11 @@ sub process_actions3 () {
 
 	if ( $level ) {
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type MULTICAST';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4';
 	}
 
 	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
-	add_rule $chainref, '-m addrtype --dst-type MULTICAST -j DROP';
+	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
     }
 
     sub allowBcast( $$$ ) {
@@ -560,11 +560,11 @@ sub process_actions3 () {
 
 	if ( $level ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type MULTICAST';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4';
 	}
 
 	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
-	add_rule $chainref, '-m addrtype --dst-type MULTICAST -j ACCEPT';
+	add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
     }
 
     sub dropNotSyn ( $$$ ) {

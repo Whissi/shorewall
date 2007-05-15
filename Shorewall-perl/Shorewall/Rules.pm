@@ -519,10 +519,10 @@ sub add_common_rules() {
     add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 
     add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-    add_rule_pair $chainref, '-m addrtype --src-type MULTICAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
+    add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     
     add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
-    add_rule $rejectref , '-m addrtype --src-type MULTICAST -j DROP';
+    add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
 
     if ( @$list ) {
 	progress_message2 'Adding Anti-smurf Rules';
@@ -766,7 +766,7 @@ sub setup_mac_lists( $ ) {
 		add_commands( $chainref, 
 			      "for address in $variable; do",
 			      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
-			      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type MULTICAST -j RETURN\" >&3",
+			      "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
 			      'done' );
 	    }
 
@@ -1520,7 +1520,7 @@ sub generate_matrix() {
 	if ( $chain1 ) {
 	    for my $interface ( keys %needbroadcast ) {
 		add_rule $filter_table->{output_chain $interface} , "-m addrtype --dst-type BROADCAST -j $chain1";
-		add_rule $filter_table->{output_chain $interface} , "-m addrtype --dst-type MULTICAST -j $chain1";
+		add_rule $filter_table->{output_chain $interface} , "-d 224.0.0.0/4 -j $chain1";
 	    }
 	}
 

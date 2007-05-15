@@ -5,51 +5,51 @@ literpm=
 perldir=
 shelldir=
 
-DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging//shorewall-$1"
+DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging//shorewall-$1"
 
 case $1 in
     3.9.*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	;;
     3.*[13579].*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	;;
     *.*[13579].*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	;;
     3.*Beta*|*RC*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     *.*Beta*|*RC*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     3.[2468].*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	;;
     *.[2468].*)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/development/staging//${1%.*}shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/development/staging//${1%.*}shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	;;
     *)
-	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	;;
 esac

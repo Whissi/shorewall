@@ -1436,9 +1436,10 @@ sub generate_matrix() {
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
-			add_rule
-			    $filter_table->{forward_chain $interface} ,
-				join( '', match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" );
+			add_rule( 
+				 $filter_table->{forward_chain $interface} ,
+				 join( '', match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" )
+				);
 		    }
 		}
 	    }
@@ -1664,9 +1665,10 @@ sub generate_matrix() {
 						    #
 						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
 						    #
-						    add_rule
-							$chain3ref ,
-							join( '', "-o $interface1 ", match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" );
+						    add_rule(
+							     $chain3ref ,
+							     join( '', "-o $interface1 ", match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" )
+							    );
 						}
 					    }
 					}

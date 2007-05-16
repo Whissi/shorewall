@@ -260,6 +260,10 @@ compiler() {
     local command=$1
 
     shift
+    
+    if [ -z "$EXPORT" -a $(id -u) -ne 0 ]; then
+	startup_error "Ordinary users may only comple for export (-e option)"
+    fi
     #
     # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
     #

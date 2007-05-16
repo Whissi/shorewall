@@ -485,7 +485,7 @@ sub read_a_line {
 	    $line =~ s/\s+$//;       # Remove Trailing white space
 
 	    #
-	    # Expand Shell Variables using $ENV
+	    # Expand Shell Variables using %ENV 
 	    #
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
@@ -805,12 +805,11 @@ sub require_capability( $$$ ) {
 #
 # Set default config path
 #
-sub ensure_config_path( $ ) {
-    my $export = $_[0];
+sub ensure_config_path() {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = '/usr/share/shorewall/configfiles/' if $export || $> != 0;
+    $globals{CONFDIR} = '/usr/share/shorewall/configfiles/' if $> != 0;
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;
@@ -850,7 +849,7 @@ sub get_configuration( $ ) {
 
     my $export = $_[0];
 
-    ensure_config_path( $export );
+    ensure_config_path;
 
     my $file = find_file 'shorewall.conf';
 
@@ -878,7 +877,7 @@ sub get_configuration( $ ) {
 	fatal_error "$file does not exist!";
     }
 
-    ensure_config_path( $export );
+    ensure_config_path;
 
     default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
 
@@ -897,12 +896,9 @@ sub get_configuration( $ ) {
 	unless ( open_file 'capabilities' ) {
 	    determine_capabilities;
 	}
-    } elsif ( $export ) {
-	open_file 'capabilities' or fatal_error "The -e flag requires a capabilities file";
     } else {
-	open_file 'capabilities' or fatal_error "Compiling under an ordinary user id requires a capabilities file";
+	open_file 'capabilities' or fatal_error "The -e flag requires a capabilities file";
     }
-
 
     #
     # If we successfully called open_file above, then this loop will read the capabilities file.

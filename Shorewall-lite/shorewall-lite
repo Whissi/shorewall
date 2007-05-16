@@ -785,6 +785,7 @@ case "$COMMAND" in
 	;;
     ipdecimal)
 	[ -n "$debugging" ] && set -x
+	[ $# -eq 2 ] || usage 1
 	case $2 in
 	    *.*.*.*)
 		valid_address $2 || fatal_error "Invalid IP address: $2"

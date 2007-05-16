@@ -816,6 +816,8 @@ sub ensure_config_path() {
 
 	open_file $f;
 
+	$ENV{CONFDIR} = $globals{CONFDIR};
+
 	while ( read_a_line ) {
 	    if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		my ($var, $val) = ($1, $2);

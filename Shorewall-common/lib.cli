@@ -635,6 +635,17 @@ dump_command() {
     clear_term
     echo "$PRODUCT $version Dump at $HOSTNAME - $(date)"
     echo
+    if [ -f /usr/share/shorewall-shell/version ]; then
+	echo "   Shorewall-shell $(cat /usr/share/shorewall-shell/version)"
+	if [ -f /usr/share/shorewall-perl/version ]; then
+	    echo "   Shorewall-perl  $(cat /usr/share/shorewall-perl/version)"
+	fi
+	echo 
+    elif [ -f /usr/share/shorewall-perl/version ]; then
+	echo "   Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
+	echo
+    fi
+    
     show_reset
     host=$(echo $HOSTNAME | sed 's/\..*$//')
     $IPTABLES -L $IPT_OPTIONS
@@ -980,6 +991,7 @@ allow_command() {
 	exit 2
     fi
 }
+
 #
 # 'logwatch' command executor
 #

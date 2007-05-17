@@ -44,7 +44,9 @@ sub setup_tunnels() {
     sub setup_one_ipsec {
 	my ($inchainref, $outchainref, $kind, $source, $dest, $gatewayzones) = @_;
 
-	( $kind, my $qualifier ) = split /:/, $kind;
+	( $kind, my ( $qualifier , $remainder ) ) = split( /:/, $kind, 3 );
+
+	fatal_error "Invalid IPSEC modified ($qualifier:$remainder)" if defined $remainder;
 
 	fatal_error "Invalid IPSEC modifier ($qualifier)" if $qualifier && ( $qualifier ne 'noah' );
 
@@ -126,7 +128,9 @@ sub setup_tunnels() {
 	my $protocol = 'udp';
 	my $port     = 1194;
 
-	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	( $kind, my ( $proto, $p, $remainder ) ) = split( /:/, $kind, 4 );
+
+	fatal_error "Invalid port ($p:$remainder)" if defined $remainder;
 
 	if ( defined $p && $p ne '' ) {
 	    $port = $p;
@@ -149,7 +153,9 @@ sub setup_tunnels() {
 	my $protocol = 'udp';
 	my $port     = 1194;
 
-	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	( $kind, my ( $proto, $p , $remainder ) ) = split( /:/, $kind, 4 );
+
+	fatal_error "Invalid port ($p:$remainder)" if defined $remainder;
 
 	if ( defined $p && $p ne '' ) {
 	    $port = $p;
@@ -172,7 +178,9 @@ sub setup_tunnels() {
 	my $protocol = 'udp';
 	my $port     = 1194;
 
-	( $kind, my ( $proto, $p ) ) = split /:/, $kind;
+	( $kind, my ( $proto, $p , $remainder ) ) = split( /:/, $kind, 4 );
+
+	fatal_error "Invalid port ($p:$remainder)" if defined $remainder;
 
 	if ( defined $p && $p ne '' ) {
 	    $port = $p;

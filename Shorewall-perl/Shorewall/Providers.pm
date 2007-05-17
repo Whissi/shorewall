@@ -312,7 +312,8 @@ sub setup_providers() {
 	if ( $source eq '-' ) {
 	    $source = '';
 	} elsif ( $source =~ /:/ ) {
-	    ( my $interface, $source ) = split /:/, $source;
+	    ( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
+	    fatal_error "Invalid SOURCE" if defined $remainder;
 	    $source = "iif $interface from $source";
 	} elsif ( $source =~ /\..*\..*/ ) {
 	    $source = "from $source";

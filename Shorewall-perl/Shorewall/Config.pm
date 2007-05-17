@@ -311,7 +311,7 @@ sub split_line( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $line =~ /["'`\\]/;
 
-    my @line = split /\s+/, $line;
+    my @line = split( /\s+/, $line, $maxcolumns + 1 );
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
@@ -329,7 +329,7 @@ sub split_line1( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
 
-    my @line = split /\s+/, $line;
+    my @line = split( /\s+/, $line, $maxcolumns + 1);
 
     return @line if $line[0] eq 'COMMENT';
 
@@ -358,7 +358,7 @@ sub split_line2( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
 
-    my @line = split /\s+/, $line;
+    my @line = split( /\s+/, $line, $maxcolumns + 1 );
 
     my $first   = $line[0];
     my $columns = $no_pad{$first};
@@ -492,7 +492,7 @@ sub read_a_line {
 
 	    if ( $line =~ /^INCLUDE\s/ ) {
 
-		my @line = split /\s+/, $line;
+		my @line = split /\s+/, $line, 3;
 
 		fatal_error "Invalid INCLUDE command: $line"    if @line != 2;
 		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;
@@ -670,7 +670,7 @@ sub load_kernel_modules( ) {
 	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
 
 	while ( $line = <LSMOD> ) {
-	    my $module = ( split( /\s+/, $line ) )[0];
+	    my $module = ( split( /\s+/, $line, 2 ) )[0];
 	    $loadedmodules{$module} = 1 unless $module eq 'Module'
 	}
 

@@ -88,7 +88,7 @@ sub process_tos() {
 		$first_entry = 0;
 	    }
 
-	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file';
+	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file entry';
 
 	    fatal_error "TOS field required" unless $tos ne '-';
 
@@ -102,7 +102,9 @@ sub process_tos() {
 
 	    my $restriction = NO_RESTRICT;
 
-	    my ( $srczone , $source ) = split /:/, $src;
+	    my ( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
+
+	    fatal_error "Invalid SOURCE" if defined $remainder;
 
 	    if ( $srczone eq $firewall_zone ) {
 		$chainref    = $outtosref;
@@ -154,7 +156,7 @@ sub setup_ecn()
 		$first_entry = 0;
 	    }
 
-	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file';
+	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file entry';
 
 	    fatal_error "Unknown interface ( $interface )" unless known_interface $interface;
 
@@ -259,7 +261,8 @@ sub setup_syn_flood_chains() {
 	my $limit = $chainref->{synparams};
 	if ( $limit ) {
 	    my $level = $chainref->{loglevel};
-	    ( $limit, my $burst ) = split ':', $limit;
+	    ( $limit, my ( $burst, $remainder) ) = split( ':', $limit, 3 );
+	    fatal_error "Invalid BURST/LIMIT" if defined $remainder;
 	    $burst = $burst ? "--limit-burst $burst " : '';
 	    my $synchainref = new_chain 'filter' , syn_chain $chainref->{name};
 	    add_rule $synchainref , "-m limit --limit $limit ${burst}-j RETURN";
@@ -704,7 +707,9 @@ sub setup_mac_lists( $ ) {
 	    if ( $disposition eq 'COMMENT' ) {
 		process_comment;
 	    } else {
-		( $disposition, my $level ) = split /:/, $disposition;
+		( $disposition, my ( $level, $remainder) ) = split( /:/, $disposition, 3 );
+
+		fatal_error "Invalid log level" if defined $remainder;
 
 		my $targetref = $maclist_targets{$disposition};
 
@@ -1212,7 +1217,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 			}
 		    }
 		} else {
-		    my $destzone = (split /:/, $dest)[0];
+		    my $destzone = (split( /:/, $dest, 2 ) )[0];
 		    $destzone = $firewall_zone unless $zones{$destzone}; # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
 		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
@@ -1234,7 +1239,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 	}
     } elsif ( $dest eq 'all' ) {
 	for my $zone ( @zones ) {
-	    my $sourcezone = ( split /:/, $source )[0];
+	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
 	    if ( ( $includedstfw || ( $zones{$zone}{type} ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
 		fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
 		my $policychainref = $filter_table->{"${sourcezone}2${zone}"}{policychain};

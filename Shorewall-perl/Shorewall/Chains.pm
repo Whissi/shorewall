@@ -740,7 +740,9 @@ sub validate_portpair( $ ) {
     $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
     $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
 
-    my @ports = split/:/, $portpair;
+    my @ports = split/:/, $portpair, 3;
+
+    fatal_error "Invalid port range" if @ports == 3;
 
     for my $port ( @ports ) {
 	my $value = $services{$port};
@@ -1360,7 +1362,9 @@ sub expand_rule( $$$$$$$$$$ )
     my $logtag;
 
     if ( $loglevel ne '' ) {
-	( $loglevel, $logtag ) = split /:/, $loglevel;
+	( $loglevel, $logtag, my $remainder ) = split( /:/, $loglevel, 3 );
+
+	fatal_error "Invalid log tag" if defined $remainder;
 
 	if ( $loglevel =~ /^none!?$/i ) {
 	    return if $disposition eq 'LOG';

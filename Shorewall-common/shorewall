@@ -1551,6 +1551,12 @@ case "$COMMAND" in
 	;;
     version)
 	echo $version
+	if [ -f /usr/share/shorewall-shell/version ]; then
+	    echo "Shorewall-shell $(cat /usr/share/shorewall-shell/version)"
+	fi
+	if [ -f /usr/share/shorewall-perl/version ]; then
+	    echo "Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
+	fi
 	;;
     try)
 	get_config

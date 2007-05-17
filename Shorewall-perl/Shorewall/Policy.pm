@@ -153,7 +153,9 @@ sub validate_policy()
 
 	fatal_error "Undefined zone $server" unless $serverwild || $zones{$server};
 
-	( $policy , my $default ) = split /:/, $policy;
+	( $policy , my ( $default, $remainder ) ) = split( /:/, $policy, 3 );
+
+	fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
 
 	if ( $default ) {
 	    if ( "\L$default" eq 'none' ) {

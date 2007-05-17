@@ -228,7 +228,8 @@ sub setup_one_masq($$$$$$$)
     }
 
     if ( $add_snat_aliases ) {
-	my ( $interface, $alias ) = split /:/, $fullinterface;
+	my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
+	fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
 	for my $address ( split /,/, $addresses ) {
 	    my ( $addrs, $port ) = split /:/, $address;
 	    next unless $addrs;
@@ -309,7 +310,9 @@ sub do_one_nat( $$$$$ )
 {
     my ( $external, $fullinterface, $internal, $allints, $localnat ) = @_;
 
-    my ( $interface, $alias ) = split /:/, $fullinterface;
+    my ( $interface, $alias, $remainder ) = split( /:/, $fullinterface, 3 );
+
+    fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
 
     sub add_nat_rule( $$ ) {
 	add_rule ensure_chain( 'nat', $_[0] ) , $_[1];

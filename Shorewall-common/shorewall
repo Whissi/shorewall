@@ -405,7 +405,7 @@ start_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
+	    [ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then

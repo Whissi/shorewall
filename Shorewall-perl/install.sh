@@ -185,6 +185,7 @@ for f in prog.* ; do
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
 
+echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #
 #  Report Success
 #

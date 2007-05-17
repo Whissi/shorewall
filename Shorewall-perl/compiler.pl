@@ -800,6 +800,7 @@ sub compiler( $ ) {
 #                        E x e c u t i o n   S t a r t s   H e r e
 #
 
+my $objectfile = $ARGV[0];
 #
 # Get shorewall.conf and capabilities.
 #
@@ -807,4 +808,4 @@ get_configuration( $export );
 #
 # Compile/Check the configuration.
 #
-compiler $ARGV[0];
+compiler $objectfile;

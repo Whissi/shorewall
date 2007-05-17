@@ -248,6 +248,7 @@ for f in prog.* ; do
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall-shell/$f"
 done
 
+echo $VERSION > ${PREFIX}/usr/share/shorewall-shell/version
 #
 #  Report Success
 #

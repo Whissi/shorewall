@@ -59,6 +59,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0444,root,root) /usr/share/shorewall-shell/lib.tunnels
 %attr(0644,root,root) /usr/share/shorewall-shell/prog.footer
 %attr(0644,root,root) /usr/share/shorewall-shell/prog.header
+%attr(0644,root,root) /usr/share/shorewall-shell/version
 
 %doc COPYING INSTALL 
 

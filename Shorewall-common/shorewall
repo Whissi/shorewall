@@ -405,7 +405,7 @@ start_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -983,6 +983,12 @@ try_command() {
 	2)
 	    handle_directory $1
 	    timeout=$2
+	    case $timeout in 
+		*[!0-9]*)
+                    echo "   ERROR: Invalid timeout ($timeout)" >&2;
+		    exit 1
+		    ;;
+	    esac
 	    ;;
 	*)
 	    usage 1

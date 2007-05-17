@@ -210,7 +210,11 @@ Migration Considerations:
 	          '' ,   #Log tag
 	          'add';	      
 
-    f) The 'refresh' command is now synonymous with 'restart'.
+    f) The 'refresh' command is now works like 'restart' with the
+       following exceptions:
+
+       - The refresh command is rejected if Shorewall is not running.
+       - A directory name may not be specified in the refresh command.
 
     g) Some run-time scripts will need to be changed to write their
        iptables commands to file descriptor 3 in iptables-restore

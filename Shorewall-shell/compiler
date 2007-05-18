@@ -958,7 +958,7 @@ setup_tc1() {
     # packets that are not part of a marked connection to the 'tcpre/tcout' chains.
     #
     if [ -n "$ROUTEMARK_INTERFACES" -a -z "$TC_EXPERT" ]; then
-	mark_part="-m mark --mark 0/0xFF00"
+	[ -n "$HIGH_ROUTE_MARKS" ] && mark_part="-m mark --mark 0/0xFF00" || mark_part="-m mark --mark 0/0xFF00"
 	#
 	# But let marks in tcpre override those assigned by 'track'
 	#

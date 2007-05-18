@@ -550,7 +550,7 @@ sub setup_tc() {
 	my $mark_part = '';
 
 	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = '-m mark --mark 0/0xFF00';
+	    $mark_part = $config{HIGH_ROUTE_MARKS} ? '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
 
 	    for my $interface ( @routemarked_interfaces ) {
 		add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";

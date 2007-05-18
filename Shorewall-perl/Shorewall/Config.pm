@@ -1171,10 +1171,10 @@ sub run_user_exit( $ ) {
     if ( -f $file ) {
 	progress_message "Processing $file...";
 
-	unless (my $return = eval `cat $file`) {
+	unless (my $return = eval `cat $file` ) {
 	    fatal_error "Couldn't parse $file: $@" if $@;
 	    fatal_error "Couldn't do $file: $!"    unless defined $return;
-	    fatal_error "Couldn't run $file"       unless $return;
+	    fatal_error "Couldn't run $file";
 	}
     }
 }

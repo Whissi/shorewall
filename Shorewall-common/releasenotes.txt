@@ -166,6 +166,14 @@ Migration Considerations:
        'true' value; otherwise, the compiler will assume that the script
        failed and will abort the compilation.
 
+       All scripts will need to begin with the following line:
+
+	   use Shorewall::Chains;
+
+       For more complex scripts, you may need to 'use' other Shorewall
+       Perl modules -- browse /usr/share/shorewall-perl/Shorewall/ to
+       see what's available.
+
        When a script is invoked, the $chainref scalar variable will hold a
        reference to a chain table entry. 
 
@@ -174,7 +182,7 @@ Migration Considerations:
        
            To add a rule to the chain:
 
-	      add_rule $chainref, <the rule>
+	      add_rule( $chainref, <the rule> );
 
            Where
 
@@ -183,11 +191,11 @@ Migration Considerations:
 
            Example:
 
-              add_rule $chainref, '-j ACCEPT';
+              add_rule( $chainref, '-j ACCEPT' );
 
            To insert a rule into the chain:
 
-              insert_rule $chainref, <rulenum>, <the rule>
+              insert_rule( $chainref, <rulenum>, <the rule> );
 
            The log_rule_limit function works like it does in the shell
            compiler with two exceptions:
@@ -201,16 +209,18 @@ Migration Considerations:
 
            Example:
 
-	      log_rule_limit
-	          'info' , 
-	          $chainref , 
-	          $chainref->{name},
-	          'DROP' , 
-	          '',    #Limit
-	          '' ,   #Log tag
-	          'add';	      
+	      log_rule_limit(
+	      	             'info' , 
+			      $chainref ,	     
+			      $chainref->{name},
+			      'DROP' , 
+			      '',      #Limit
+			      '' ,     #Log tag
+			      'add',   #Command
+			      '-p tcp' #Pass as-is
+                             ); 
 
-    f) The 'refresh' command is now works like 'restart' with the
+    f) The 'refresh' command now works like 'restart' with the
        following exceptions:
 
        - The refresh command is rejected if Shorewall is not running.

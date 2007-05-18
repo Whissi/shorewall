@@ -235,20 +235,6 @@ start_command() {
     case $# in
 	0)
 	    ;;
-	1)
-	    [ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
-
-	    if [ ! -d $1 ]; then
-		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
-		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
-		fi
-	    fi
-
-	    SHOREWALL_DIR=$
-	    export SHOREWALL_DIR
-	    ;;
 	*)
 	    usage 1
 	    ;;
@@ -335,20 +321,6 @@ restart_command() {
     case $# in
 	0)
 	    ;;
-	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
-
-	    if [ ! -d $1 ]; then
-		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
-		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
-		fi
-	    fi
-
-	    SHOREWALL_DIR=$1
-	    export SHOREWALL_DIR
-	    ;;
 	*)
 	    usage 1
 	    ;;
@@ -393,11 +365,11 @@ usage() # $1 = exit status
     echo "   logwatch [<refresh interval>]"
     echo "   reject <address> ..."
     echo "   reset"
-    echo "   restart [ -n ] [ <directory> ]"
+    echo "   restart [ -n ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [ -f ] [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|ip|log|mangle|nat|routing|tc|zones]"
-    echo "   start [ -f ] [ -n ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ]"
     echo "   stop"
     echo "   status"
     echo "   version"
@@ -422,7 +394,6 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
     shift
 fi
 
-SHOREWALL_DIR=
 IPT_OPTIONS="-nv"
 FAST=
 VERBOSE_OFFSET=0
@@ -447,25 +418,6 @@ while [ $finished -eq 0 ]; do
 
 	    while [ -n "$option" ]; do
 		case $option in
-		    c)
-			[ $# -eq 1 ] && usage 1
-
-			if [ ! -d $2 ]; then
-			    if [ -e $2 ]; then
-				echo "$2 is not a directory" >&2 && exit 2
-			    else
-				echo "Directory $2 does not exist" >&2 && exit 2
-			    fi
-			fi
-
-			SHOREWALL_DIR=$2
-			option=
-			shift
-			;;
-		    e*)
-			EXPORT=Yes
-			option=${option#e}
-			;;
 		    x*)
 			IPT_OPTIONS="-xnv"
 			option=${option#x}
@@ -511,7 +463,6 @@ if [ $# -eq 0 ]; then
     usage 1
 fi
 
-[ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 

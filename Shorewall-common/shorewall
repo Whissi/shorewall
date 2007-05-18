@@ -1164,8 +1164,8 @@ reload_command() # $* = original arguments less the command.
 	    rsh_command "/sbin/shorewall-lite $debugging $verbose restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose restart" && \
-	    progress_message3 "System $system reloaded" || saveit=
+	    rsh_command "/sbin/shorewall-lite $debugging $verbose start" && \
+	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then

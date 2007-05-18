@@ -1067,7 +1067,7 @@ rcp_command() {
 #
 reload_command() # $* = original arguments less the command.
 {
-    local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps= root=root
+    local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps= root=root compiler=
 
     [ -n "$LITEDIR" ] || fatal_error "ERROR: LITEDIR not defined in ${SHAREDIR}/configpath"
 
@@ -1099,7 +1099,7 @@ reload_command() # $* = original arguments less the command.
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
+			    compiler="-C $2"
 			    option=
 			    shift
 			    ;;
@@ -1155,7 +1155,7 @@ reload_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
+    if shorewall $debugging $verbose compile -e $compiler $directory $directory/firewall && \
 	progress_message "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${LITEDIR}
     then

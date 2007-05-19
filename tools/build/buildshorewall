@@ -667,9 +667,37 @@ fi
 	do_or_die "tar -zcvf shorewall-lite-${VERSION}.tgz shorewall-lite-$VERSION >> $LOGFILE 2>&1"
 	do_or_die "tar -jcvf shorewall-lite-$VERSION.tar.bz2 shorewall-lite-$VERSION >> $LOGFILE 2>&1"
 	
+	progress_message "Creating $DIR/shorewall-lite-$VERSION..."
+
+	rm -rf shorewall-shell-$VERSION
+
+	do_or_die mv $SHELLDIR shorewall-shell-$VERSION
+
+	progress_message "Creating $DIR/shorewall-shell-${VERSION}.tgz ..."
+
+	do_or_die "tar -zcvf shorewall-shell-${VERSION}.tgz shorewall-shell-$VERSION >> $LOGFILE 2>&1"
+	do_or_die "tar -jcvf shorewall-shell-$VERSION.tar.bz2 shorewall-shell-$VERSION >> $LOGFILE 2>&1"
+	
+	rm -rf shorewall-perl-$VERSION
+
+	do_or_die mv $PERLDIR shorewall-perl-$VERSION
+
+	progress_message "Creating $DIR/shorewall-perl-${VERSION}.tgz ..."
+
+	do_or_die "tar -zcvf shorewall-perl-${VERSION}.tgz shorewall-perl-$VERSION >> $LOGFILE 2>&1"
+	do_or_die "tar -jcvf shorewall-perl-$VERSION.tar.bz2 shorewall-perl-$VERSION >> $LOGFILE 2>&1"
+	
 	if [ -n "$SIGN" ]; then
 	    for shoresuffix in tgz tar.bz2; do
 		betaball=shorewall-lite-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$betaball tarball"
+		rm -f ${betaball}.asc
+		do_or_die "$GPG $betaball"
+		betaball=shorewall-shell-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$betaball tarball"
+		rm -f ${betaball}.asc
+		do_or_die "$GPG $betaball"
+		betaball=shorewall-shell-$VERSION.${shoresuffix}
 		report "GPG signing $DIR/$betaball tarball"
 		rm -f ${betaball}.asc
 		do_or_die "$GPG $betaball"

@@ -338,6 +338,34 @@ fi</programlisting>
             supported; neither is the
             <filename>/etc/shorewall/ipsec</filename> file.</para>
           </listitem>
+
+          <listitem>
+            <para>BLACKLISTNEWONLY=No is not permitted with FASTACCEPT=Yes.
+            This combination doesn't work in previous versions of Shorewall so
+            the Perl-based compiler simply rejects it.</para>
+          </listitem>
+
+          <listitem>
+            <para>Shorewall-perl has a single rule generator that is used for
+            all rule-oriented files. So it is important that the syntax is
+            consistent between files.</para>
+
+            <para>With shorewall-shell, there is a special syntax in the
+            SOURCE column of /etc/shorewall/masq to designate "all traffic
+            entering the firewall on this interface except...".</para>
+
+            <para>Example:<programlisting>#INTERFACE       SOURCE                  ADDRESSES
+eth0             eth1!192.168.4.9        ...</programlisting>Shorewall-perl
+            uses syntax that is consistent with the rest of
+            Shorewall:<programlisting>#INTERFACE       SOURCE                  ADDRESSES
+eth0             eth1:!192.168.4.9       ...</programlisting></para>
+          </listitem>
+
+          <listitem>
+            <para>The 'allowoutUPnP' built-in action is no longer supported.
+            In kernel 2.6.14, the Netfilter team have removed support for '-m
+            owner --owner-cmd' which that action depended on.</para>
+          </listitem>
         </orderedlist>
       </listitem>
     </itemizedlist>
@@ -451,8 +479,8 @@ fi</programlisting>
           <member>'-C shell' means use the shell compiler</member>
 
           <member>'-C perl' means use the perl compiler</member>
-        </simplelist>The -C option overrides the setting in shorewall.conf.
-      </para>
+        </simplelist>The -C option overrides the setting in
+      shorewall.conf.</para>
 
       <para>Example:<programlisting><command>shorewall restart -C perl</command></programlisting>Regardless
       of the setting of SHOREWALL_COMPILER, there is one change in Shorewall

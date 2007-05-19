@@ -38,7 +38,7 @@
     <title>Introduction</title>
 
     <para>Shorewall version 4 is currently in development and is available for
-    testing as the 3.9.x series.</para>
+    beta testing.</para>
 
     <para>Shorewall version 4 represents a substantial shift in direction for
     Shorewall. Up to now</para>
@@ -85,7 +85,7 @@
     <para>You can download the development version of Shorewall Version 4 from
     any of the download sites with the exception of SourceForge. It is
     contained in the <filename
-    class="directory">/pub/shorewall/development/3.9/</filename>
+    class="directory">/pub/shorewall/development/4.0</filename>
     directory.</para>
 
     <para>Shorewall 4 contains four packages:</para>
@@ -98,7 +98,7 @@
 
       <listitem>
         <para>Shorewall-perl - the new Perl-based compiler. May be installed
-        under Shorewall 3.4.2 or later or 3.9.x.</para>
+        under Shorewall 3.4.2 or later or 4.0.x.</para>
       </listitem>
 
       <listitem>
@@ -397,6 +397,28 @@ fi</programlisting>
         combination doesn't work in previous versions of Shorewall so the
         Perl-based compiler simply rejects it.</para>
       </listitem>
+
+      <listitem>
+        <para>Shorewall-perl has a single rule generator that is used for all
+        rule-oriented files. So it is important that the syntax is consistent
+        between files.</para>
+
+        <para>With shorewall-shell, there is a special syntax in the SOURCE
+        column of /etc/shorewall/masq to designate "all traffic entering the
+        firewall on this interface except...".</para>
+
+        <para>Example:<programlisting>#INTERFACE       SOURCE                  ADDRESSES
+eth0             eth1!192.168.4.9        ...</programlisting>Shorewall-perl
+        uses syntax that is consistent with the rest of
+        Shorewall:<programlisting>#INTERFACE       SOURCE                  ADDRESSES
+eth0             eth1:!192.168.4.9       ...</programlisting> </para>
+      </listitem>
+
+      <listitem>
+        <para>The 'allowoutUPnP' built-in action is no longer supported. In
+        kernel 2.6.14, the Netfilter team have removed support for '-m owner
+        --owner-cmd' which that action depended on.</para>
+      </listitem>
     </orderedlist>
   </section>
 
@@ -408,24 +430,36 @@ fi</programlisting>
 
     <para>If you install both compilers, then the compiler actually used
     depends on the SHOREWALL_COMPILER setting in
-    <filename>shorewall.conf</filename>. The value of this new option can be
-    either 'perl' or 'shell'.</para>
+    <filename>shorewall.conf</filename>.</para>
 
-    <para>If you add 'SHOREWALL_COMPILER=shell' to
+    <para>The value of this new option can be either 'perl' or 'shell'.</para>
+
+    <para>If you add 'SHOREWALL_COMPILER=perl' to
     <filename>/etc/shorewall/shorewall.conf</filename> then by default, the
     new compiler will be used on the system. If you add it to
     <filename>shorewall.conf</filename> in a separate directory (such as a
     Shorewall-lite export directory) then the new compiler will only be used
-    when you compile from that directory. If you only install one compiler, it
-    is suggested that you do not set SHOREWALL_COMPILER. Regardless of the
-    setting of SHOREWALL_COMPILER, there is one change in Shorewall operation
-    that is triggered simply by installing shorewall-perl. Your
-    <filename>params</filename> file will be processed during compilation with
-    the shell's '-a' option which causes any variables that you set or create
-    in that file to be automatically exported. Since the params file is
-    processed before <filename>shorewall.conf</filename>, using -a insures
-    that the settings of your params variables are available to the new
-    compiler should it's use be specified in
-    <filename>shorewall.conf</filename>.</para>
+    when you compile from that directory.</para>
+
+    <para>If you only install one compiler, it is suggested that you do not
+    set SHOREWALL_COMPILER.</para>
+
+    <para>You can select the compiler to use on the command line using the 'C
+    option:<simplelist>
+        <member>'-C shell' means use the shell compiler</member>
+
+        <member>'-C perl' means use the perl compiler</member>
+      </simplelist>The -C option overrides the setting in
+    shorewall.conf.</para>
+
+    <para>Example:<programlisting><command>shorewall restart -C perl</command></programlisting>Regardless
+    of the setting of SHOREWALL_COMPILER, there is one change in Shorewall
+    operation that is triggered simply by installing shorewall-perl. Your
+    params file will be processed during compilation with the shell's '-a'
+    option which causes any variables that you set or create in that file to
+    be automatically exported. Since the params file is processed before
+    shorewall.conf, using -a insures that the settings of your params
+    variables are available to the new compiler should its use be specified in
+    shorewall.conf.</para>
   </section>
 </article>

@@ -543,7 +543,7 @@ show_command() {
 			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
 			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
 			echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
-			echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
+			echo "allowoutUPnP        # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
 			echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
 			echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
 			cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'

@@ -829,17 +829,22 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
-	    if [ "x$address" = xdefault ]; then
-		if [ $# -gt 1 ]; then
-		    shift
-		    fatal_error "$@"
-		else
-		    error_message "WARNING: default route ignored on interface $1"
-		fi
-	    else
-		[ "$address" = "${address%/*}" ] && address="${address}/32"
-		echo $address
-	    fi
+	    case "$address" in
+		default)
+		    if [ $# -gt 1 ]; then
+			shift
+			fatal_error "$@"
+		    else
+			echo "WARNING: default route ignored on interface $1"
+		    fi
+		    ;;
+		multicast|broadcast|prohibit|nat|throw|via)
+		    ;;
+		*)
+		    [ "$address" = "${address%/*}" ] && address="${address}/32"
+		    echo $address
+		    ;;
+	    esac
         done
 }
 

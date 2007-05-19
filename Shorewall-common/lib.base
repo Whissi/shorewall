@@ -835,7 +835,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 			shift
 			fatal_error "$@"
 		    else
-			echo "WARNING: default route ignored on interface $1"
+			echo "WARNING: default route ignored on interface $1" >&2
 		    fi
 		    ;;
 		multicast|broadcast|prohibit|nat|throw|via)

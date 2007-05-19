@@ -578,7 +578,7 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level;
-	add_rule $chainref , '-p tcp ! --syn -j REJECT';
+	add_rule $chainref , '-p tcp ! --syn -j REJECT --reject-with tcp-reset';
     }
 
     sub dropInvalid ( $$$ ) {

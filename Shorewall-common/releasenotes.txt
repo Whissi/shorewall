@@ -55,6 +55,15 @@ Other changes in Shorewall 3.9.8.
     versions, any entry could be deleted although the ruleset was only
     changed by deleting entries that had been added dynamically.
 
+2)  The 'shorewall version' command now lists the version of the
+    installed compiler(s):
+
+    gateway:/bulk/backup # shorewall version
+    4.0.0-Beta1
+    Shorewall-shell 4.0.0-Beta1
+    Shorewall-perl 4.0.0-Beta1
+    gateway:/bulk/backup # 
+
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must
@@ -347,6 +356,10 @@ Migration Considerations:
 
        #INTERFACE	SOURCE			ADDRESSES
        eth0		eth1:!192.168.4.9	...
+
+    n) The 'allowoutUPnP' built-in action is no longer supported. The
+       Netfilter team have removed support for '-m owner --owner-cmd'
+       which that action depended on. 
 
 2)  An 'optional' option has been added to
     /etc/shorewall/interfaces. When 'optional' is specified for an

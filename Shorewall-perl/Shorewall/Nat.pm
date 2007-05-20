@@ -124,11 +124,7 @@ sub setup_one_masq($$$$$$$)
     #
     # Leading '+'
     #
-    if ( $fullinterface =~ /^\+/ ) {
-	$pre_nat = 1;
-	$fullinterface =~ s/\+//;
-    }
-
+    $pre_nat = 1 if $fullinterface =~ s/^\+//;
     #
     # Parse the remaining part of the INTERFACE column
     #

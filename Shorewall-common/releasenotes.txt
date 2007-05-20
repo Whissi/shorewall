@@ -194,6 +194,15 @@ Migration Considerations:
             initdone
 	    maclog
 
+       Note that in the 'initdone' script, there is no default chain
+       ($chainref). You can objtain a reference to a standard chain by:
+
+           my $chainref = $chain_table{<table>}{<chain name>};
+
+       Example:
+
+           my $chainref = $chain_table{'filter'}{'INPUT'};
+
        Some run-time scripts are simply eliminated because they no
        longer make any sense under Shorewall-perl:
 

@@ -1,4 +1,4 @@
-Shorewall 4.0.0 Beta 1
+Shorewall 4.0.0 Beta 2
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -17,52 +17,14 @@ You must install Shorewall and at least one of the compiler packages
 
 Problems corrected in 4.0.0 Beta 1.
 
-1)  The commands "shorewall add/delete <interface> <zone>" no longer
-    case lots of error messages to be issued.
+1)  If an interfaces named in the SOURCE column of /etc/shorewall/masq had a 
+    default route, an iptables-restore failure previously resulted.
 
-2)  A port list in a SOURCE PORT(S) column now works when the DEST
-    PORT(S) list is empty.
+Other changes in Shorewall 4.0.0 Beta 2.
 
-3)  A run-time error no longer occurs when an IP address is specified
-    in the GATEWAY column of /etc/shorewall/providers.
-
-Other changes in Shorewall 4.0.0 Beta 1.
-
-1)  The "shorewall show zones" command now flags zone members that have
-    been added using "shorewall add" by preceding them with a plus sign
-    ("+").
-
-    Example:
-
-    Shorewall 3.9.4 Zones at gateway - Mon May 14 07:48:16 PDT 2007
-
-    fw (firewall)
-    net (ipv4)
-        eth0:0.0.0.0/0
-    loc (ipv4)
-	br0:0.0.0.0/0
-	eth4:0.0.0.0/0
-	eth5:0.0.0.0/0
-	+eth1:0.0.0.0/0
-    dmz (ipv4)
-	eth3:0.0.0.0/0
-    vpn (ipv4)
-	tun+:0.0.0.0/0
-
-    In the above output, "eth1:0.0.0.0/0" was dynamically added to the
-    'loc' zone. As part of this change, "shorewall delete" will only
-    delete entries that have been added dynamically. In earlier
-    versions, any entry could be deleted although the ruleset was only
-    changed by deleting entries that had been added dynamically.
-
-2)  The 'shorewall version' command now lists the version of the
-    installed compiler(s):
-
-    gateway:/bulk/backup # shorewall version
-    4.0.0-Beta1
-    Shorewall-shell 4.0.0-Beta1
-    Shorewall-perl 4.0.0-Beta1
-    gateway:/bulk/backup # 
+1)  The 'initdone' extension script has been restored as a compile-time
+    script. The 'maclog' extension script has been converted from a
+    run-time script to a compile-time script.
 
 Migration Considerations:
 
@@ -113,19 +75,10 @@ Migration Considerations:
     I decided to make Shorewall-perl a separate product for several reasons:
 
     a) Embedded applications are unlikely to adopt Shorewall-perl; even
-       Mini-Perl has a substantial disk and Ram footprint.
+       Mini-Perl has a substantial disk and RAM footprint.
 
     b) Because of the gross incompatibilities between the new compiler and the
        old (see below), migration to the new compiler must be voluntary.
-
-    c) By allowing Shorewall-perl to co-exist with the current
-       Shorewall stable release (3.4), I'm hoping that the new compiler
-       will get more testing and validation than it would if I were to
-       package it with a new development version of Shorewall itself.
-
-    d) Along the same vein, I think that users will be more likely to
-       experiment with the new compiler if they can easily fall back to
-       the old one if things get sticky.
     ------------------------------------------------------------------------
                       T H E   G O O D   N E W S:
     ------------------------------------------------------------------------
@@ -235,22 +188,18 @@ Migration Considerations:
        - The refresh command is rejected if Shorewall is not running.
        - A directory name may not be specified in the refresh command.
 
-    g) Some run-time scripts will need to be changed to write their
-       iptables commands to file descriptor 3 in iptables-restore
-       format rather than running those commands.
+    g) Some run-time scripts have been converted to compile time
+       scripts:
 
+            initdone
 	    maclog
-
-       Details to follow.
 
        Some run-time scripts are simply eliminated because they no
        longer make any sense under Shorewall-perl:
 
-	initdone  - The these two scripts assumed a model where the
-	continue    chains were built in parallel. In the
-		    iptables-restore model, chains are built serially
-		    within tables and tables are build serially.  
-
+	continue  - This script was designed to allow you to add
+	            special rules during [re]start.
+	            Shorewall-perl doesn't need such rules.
 	refresh   - The 'refresh' command is the same as 'restart'
 	refreshed
 
@@ -361,9 +310,41 @@ Migration Considerations:
        Netfilter team have removed support for '-m owner --owner-cmd'
        which that action depended on. 
 
+    o) The treatment of the following interface options has changed under
+       Shorewall-perl.
+
+       - arp_filter
+       - routefilter
+       - logmartians
+       - proxy_arp
+       - sourceroute
+
+       With the Shorewall-shell compiler, Shorewall resets these options
+       on all interfaces then sets the option on those interfaces
+       for which the option is defined in /etc/shorewall/interfaces.
+
+       Under Shorewall-perl, these options can be specified with the value
+       0 or 1 (e.g., proxy_arp=0). If no value is specified, the value 1
+       is assumed. Shorewall will modify only the setting of those
+       interfaces for which the option is specified and will set the
+       option to the given value.
+
+       A fatal compilation error is also generated if you specify one of
+       these options with a wildcard interface (one ending with '+').
+
+    p) The LOG_MARTIANS and ROUTE_FILTER options are now tri-valued in
+       Shorewall-perl.
+
+	Yes -  Same as before
+	No  -  Same as before except that it applies regardless of
+	       whether any interfaces have the logmartians/routefilter
+	       option
+	Keep - Shorewall ignores the option entirely.
+
 2)  An 'optional' option has been added to
-    /etc/shorewall/interfaces. When 'optional' is specified for an
-    interface, Shorewall will be silent when:
+    /etc/shorewall/interfaces. This option is recognized by
+    Shorewall-perl but not by Shorewall-shell. When 'optional' is
+    specified for an interface, Shorewall will be silent when:
 
     - a /proc/sys/net/ipv4/conf/ entry for the interface cannot be
       modified (including for proxy ARP).
@@ -380,41 +361,11 @@ Migration Considerations:
     that interface, even if it is available at the time of the
     restore/start.
 
-3)  The treatment of the following interface options has changed under
-    Shorewall-perl.
-
-    -	arp_filter
-    -	routefilter
-    -   logmartians
-    -	proxy_arp
-    -	sourceroute
-
-    With the Shorewall-shell compiler, Shorewall resets these options
-    on all interfaces then sets the option on those interfaces
-    for which the option is defined in /etc/shorewall/interfaces.
-
-    Under Shorewall-perl, these options can be specified with the value
-    0 or 1 (e.g., proxy_arp=0). If no value is specified, the value 1
-    is assumed. Shorewall will modify only the setting of those
-    interfaces for which the option is specified and will set the
-    option to the given value.
-
-    A fatal compilation error is also generated if you specify one of
-    these options with a wildcard interface (one ending with '+').
-
-4)  Thanks to Paul Gear, an IPPServer macro has been added. Be sure to
+3)  Thanks to Paul Gear, an IPPServer macro has been added. Be sure to
     read the comments in the macro file before trying to use this
     macro.
 
-5)  The LOG_MARTIANS and ROUTE_FILTER options are now tri-valued.
-
-	Yes -  Same as before
-	No  -  Same as before except that it applies regardless of
-	       whether any interfaces have the logmartians/routefilter
-	       option
-	Keep - Shorewall ignores the option entirely.
-
-6)  Eariler generations of Shorewall Lite required that remote root
+4)  Eariler generations of Shorewall Lite required that remote root
     login via ssh be enabled in order to use the 'load' and 'reload'
     commands.
 
@@ -448,19 +399,20 @@ Migration Considerations:
        destination - The directory on the remote system that the files 
                      are to be copied into. 
 
-7)  The accounting, masq, rules and tos files now have a 'MARK' column
+5)  The accounting, masq, rules and tos files now have a 'MARK' column
     similar to the column of the same name in the tcrules file. This
-    column allows filtering by MARK and CONNMARK value.
+    column allows filtering by MARK and CONNMARK value (CONNMARK is
+    only accepted under Shorewall Perl).
 
-8)  SOURCE and DEST are now reserved zone names to avoid problems with
+6)  SOURCE and DEST are now reserved zone names to avoid problems with
     bi-directional macro definitions which use these as names as key
     words.
 
-9)  Shorewall-perl now validates all IP addresses and addresses ranges
+7)  Shorewall-perl validates all IP addresses and addresses ranges
     in rules. DNS names are resolved and an error is issued for any
     name that cannot be resolved.
 
-10) Shorewall-perl now checks configuration files for the presense of
+8)  Shorewall-perl checks configuration files for the presense of
     characters that can cause problems if they are allowed into the
     generated firewall script:
 
@@ -476,7 +428,7 @@ Migration Considerations:
     -   Backslash. Probibited except as the last character on a line to
         denote line continuation.
 
-11) Under Shorewall-perl, macros may now invoke other macros with the
+9)  Under Shorewall-perl, macros may invoke other macros with the
     restriction that such macros may not be invoked within an action
     body.
 
@@ -484,6 +436,42 @@ Migration Considerations:
     invocation are automatically propagated to lower level macros.
 
     Macro invocations may be nested to a maximum level of 5.
+
+12) The "shorewall show zones" command now flags zone members that have
+    been added using "shorewall add" by preceding them with a plus sign
+    ("+").
+
+    Example:
+
+    Shorewall 3.9.4 Zones at gateway - Mon May 14 07:48:16 PDT 2007
+
+    fw (firewall)
+    net (ipv4)
+        eth0:0.0.0.0/0
+    loc (ipv4)
+	br0:0.0.0.0/0
+	eth4:0.0.0.0/0
+	eth5:0.0.0.0/0
+	+eth1:0.0.0.0/0
+    dmz (ipv4)
+	eth3:0.0.0.0/0
+    vpn (ipv4)
+	tun+:0.0.0.0/0
+
+    In the above output, "eth1:0.0.0.0/0" was dynamically added to the
+    'loc' zone. As part of this change, "shorewall delete" will only
+    delete entries that have been added dynamically. In earlier
+    versions, any entry could be deleted although the ruleset was only
+    changed by deleting entries that had been added dynamically.
+
+13) The 'shorewall version' command now lists the version of the
+    installed compiler(s):
+
+    gateway:/bulk/backup # shorewall version
+    4.0.0-Beta1
+    Shorewall-shell 4.0.0-Beta1
+    Shorewall-perl 4.0.0-Beta1
+    gateway:/bulk/backup # 
 
 ----------------------------------------------------------------------------
                       P R E R E Q U I S I T E S
@@ -511,8 +499,8 @@ used when you compile from that directory.
 If you only install one compiler, it is suggested that you do not set
 SHOREWALL_COMPILER.
 
-If you install Shorewall-perl under Shorewall 3.9.2 or later, you can
-select the compiler to use on the command line using the 'C option:
+You can also select the compiler to use on the command line using the
+'C option:
 
        '-C shell' means use the shell compiler
        '-C perl' means use the perl compiler
@@ -531,4 +519,3 @@ or create in that file to be automatically exported. Since the params
 file is processed before shorewall.conf, using -a insures that the
 settings of your params variables are available to the new compiler
 should its use be specified in shorewall.conf.
-

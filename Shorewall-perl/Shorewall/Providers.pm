@@ -59,7 +59,7 @@ my %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
 my @providers;
 
 #
-# Set up marking for 'tracked' interfaces. Unline in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.
+# Set up marking for 'tracked' interfaces. Unlike in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.
 #
 sub setup_route_marking() {
     my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
@@ -69,7 +69,7 @@ sub setup_route_marking() {
     require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
 
     add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
-    add_rule $mangle_table->{OUTPUT} , " -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    add_rule $mangle_table->{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
 
     my $chainref = new_chain 'mangle', 'routemark';
 
@@ -147,8 +147,8 @@ sub setup_providers() {
 
 	fatal_error "Duplicate provider ( $table )" if $providers{$table};
 
-	for my $provider ( keys %providers  ) {
-	    fatal_error "Duplicate provider number ( $number )" if $providers{$provider}{number} == $number;
+	for my $providerref ( values %providers  ) {
+	    fatal_error "Duplicate provider number ( $number )" if $providerref->{number} == $number;
 	}
 
 	emit "#\n# Add Provider $table ($number)\n#";

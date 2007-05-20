@@ -73,14 +73,14 @@ sub validate_address( $ ) {
 }
 
 sub validate_net( $ ) {
-    my ($net, $vlsm) = split '/', $_[0];
+    my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
 
     if ( defined $vlsm ) {
-        fatal_error "Invalid VLSM ($vlsm)" unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
-	fatal_error "Invalid IP address ($net)" unless valid_address $net;
+        fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
+	fatal_error "Invalid Network address ($_[0])" if defined $rest;
+	fatal_error "Invalid IP address ($net)"       unless valid_address $net;
     } else {
-	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/';
-	fatal_error "Invalid Network address ($_[0])" unless defined $net;
+	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
 	validate_address $net;
     }
 }

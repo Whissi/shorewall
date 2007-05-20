@@ -777,7 +777,7 @@ sub setup_mac_lists( $ ) {
 			      'done' );
 	    }
 
-	    run_user_exit1 'maclog';
+	    run_user_exit2( 'maclog', $chainref );
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
 	    add_rule $chainref, "-j $target";

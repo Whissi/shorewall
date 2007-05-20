@@ -54,6 +54,7 @@ our @EXPORT = qw(
 		 append_file
 		 run_user_exit
 		 run_user_exit1
+		 run_user_exit2
 		 generate_aux_config
 
 		 %config
@@ -1199,6 +1200,33 @@ sub run_user_exit1( $ ) {
 		fatal_error "Couldn't run $file";
 	    }
 	}
+
+	pop_open;
+    }
+}
+
+sub run_user_exit2( $$ ) {
+    my ($file, $chainref) = ( find_file $_[0], $_[1] );
+
+    if ( -f $file ) {
+	progress_message "Processing $file...";
+	#
+	# File may be empty -- in which case eval would fail
+	#
+	push_open $file;
+
+	if ( read_a_line ) {
+	    close_file;
+
+	    unless (my $return = eval `cat $file` ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+		fatal_error "Couldn't do $file: $!"    unless defined $return;
+		fatal_error "Couldn't run $file";
+	    }
+	}
+
+	pop_open;
+	
     }
 }
 

@@ -513,7 +513,7 @@ sub add_common_rules() {
 	new_standard_chain output_chain( $interface );
     }
 
-    run_user_exit 'initdone';
+    run_user_exit1 'initdone';
     
     setup_blacklist;
 
@@ -777,7 +777,7 @@ sub setup_mac_lists( $ ) {
 			      'done' );
 	    }
 
-	    run_user_exit 'maclog';
+	    run_user_exit1 'maclog';
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
 	    add_rule $chainref, "-j $target";

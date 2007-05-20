@@ -466,8 +466,9 @@ EOF
 #
 # Second Phase of Script Generation
 #
-#    copies the 'prog.functions' file into the script
-#    generates the first part of 'setup_routing_and_traffic_shaping()'
+#    copies the 'prog.functions' file into the script, generates
+#    generates clear_routing_and_traffic_shaping() and the first part of 
+#    'setup_routing_and_traffic_shaping()'
 #
 #        The bulk of that function is produced by the various config file
 #        parsing routines that are called directly out of 'compiler()'.
@@ -476,10 +477,11 @@ sub generate_script_2 () {
 
     copy $globals{SHAREDIRPL} . 'prog.functions';
 
-    emitj( '#',
-	   '# Setup Routing and Traffic Shaping',
+    emitj( '',
 	   '#',
-	   'setup_routing_and_traffic_shaping() {'
+	   '# Clear Routing and Traffic Shaping',
+	   '#',
+	   'clear_routing_and_traffic_shaping() {'
 	   );
 
     push_indent;
@@ -543,6 +545,17 @@ sub generate_script_2 () {
     emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
     setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
 
+    pop_indent;
+
+    emit "}\n";
+
+    emitj( '#',
+	   '# Setup Routing and Traffic Shaping',
+	   '#',
+	   'setup_routing_and_traffic_shaping() {'
+	   );
+
+    push_indent;
 }
 
 #
@@ -584,12 +597,14 @@ sub generate_script_3() {
     emit 'define_firewall() {';
     push_indent;
 
+    emit "\nclear_routing_and_traffic_shaping";
+
     set_global_variables;
 
     emit '';
 
     emit<<'EOF';
-setup_routing_and_traffic_shaping;
+setup_routing_and_traffic_shaping
 
 if [ $COMMAND = restore ]; then
     iptables_save_file=${VARDIR}/$(basename $0)-iptables

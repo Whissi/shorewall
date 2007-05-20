@@ -35,8 +35,8 @@
   </articleinfo>
 
   <caution>
-    <para>This article applies to Shorewall 3.0 and later. If you are running
-    a version of Shorewall earlier than Shorewall 3.0.0 then please see the
+    <para>This article applies to Shorewall 4.0 and later. If you are running
+    a version of Shorewall earlier than Shorewall 4.0.0 then please see the
     documentation for that release.</para>
   </caution>
 
@@ -537,7 +537,8 @@ acton:info:test  $FW              net</programlisting>
 
     <para>There may be cases where you wish to create a chain with rules that
     can't be constructed using the tools defined in the action.template. In
-    that case, you can use an extension script.<note>
+    that case, you can use an <ulink
+    url="shorewall_extension_scripts.htm">extension script</ulink>.<note>
         <para>If you actually need an action to drop broadcast packets, use
         the <command>dropBcast</command> standard action rather than create
         one like this.</para>
@@ -548,9 +549,16 @@ acton:info:test  $FW              net</programlisting>
 
       <para>/etc/shorewall/actions<programlisting>DropBcasts</programlisting></para>
 
-      <para>/etc/shorewall/action.DropBcasts<programlisting># This file is empty</programlisting></para>
+      <para>/etc/shorewall/action.DropBcasts<programlisting># This file is empty</programlisting>When
+      using Shorewall-shell:</para>
 
-      <para>/etc/shorewall/DropBcasts<programlisting>run_iptables -A DropBcasts -m pkttype --pkttype broadcast -j DROP</programlisting></para>
+      <para><blockquote>
+          <para>/etc/shorewall/DropBcasts<programlisting>run_iptables -A DropBcasts -m pkttype --pkttype broadcast -j DROP</programlisting></para>
+        </blockquote>When using Shorewall-Perl:<blockquote>
+          <para>/etc/shorewall/DropBcasts<programlisting>use Shorewall::Chains;
+
+add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );</programlisting></para>
+        </blockquote></para>
     </example>
 
     <para>For a richer example, see <ulink url="PortKnocking.html">this

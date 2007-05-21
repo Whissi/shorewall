@@ -470,8 +470,15 @@ EOF
 #    clear_routing_and_traffic_shaping() and the first part of 
 #    'setup_routing_and_traffic_shaping()'
 #
-#        The bulk of that function is produced by the various config file
-#        parsing routines that are called directly out of 'compiler()'.
+#    The bulk of that function is produced by the various config file
+#    parsing routines that are called directly out of 'compiler()'.
+#
+#    We create two separate functions rather than one so that the
+#    define_firewall() shell can set global IP configuration variables
+#    after the old config has been cleared and before we start instantiating
+#    the new config. That way, the variables reflect the way that the
+#    distribution's tools have configured IP without any Shorewall
+#    modifications.
 #
 sub generate_script_2 () {
 
@@ -552,13 +559,14 @@ sub generate_script_2 () {
 	   'setup_routing_and_traffic_shaping() {'
 	   );
 
+    push_indent;
+
     setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
 
-    push_indent;
 }
 
 #
-# Third (final stage of script generation).
+# Third (final) stage of script generation.
 #
 #    Generate the end of 'setup_routing_and_traffic_shaping()':
 #        Generate code for loading the various files in /var/lib/shorewall[-lite]

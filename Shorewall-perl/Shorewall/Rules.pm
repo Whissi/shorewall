@@ -1193,6 +1193,8 @@ sub process_rule ( $$$$$$$$$$ ) {
 
     my $action = isolate_basic_target $target;
 
+    fatal_error "Invalid or missing ACTION ( $target )" unless defined $action;
+
     $optimize = 0 if $action =~ /!$/;
 
     if ( $source eq 'all' ) {

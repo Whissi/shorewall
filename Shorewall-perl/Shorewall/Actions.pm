@@ -323,6 +323,8 @@ sub process_action1 ( $$ ) {
 	    fatal_error "Parameter value not allowed in action files ($param)" if $paramtype & NATRULE;
 	}
 
+	fatal_error "Invalid or missing ACTION ( $wholetarget )" unless defined $target;
+
 	if ( find_macro $target ) {
 	    process_macro1( $action, $macros{$target} );
 	} else {

@@ -808,7 +808,10 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 	    $mtarget = substitute_param $param,  $mtarget;
 	}
 
-	my $action     = isolate_basic_target $mtarget;
+	my $action = isolate_basic_target $mtarget;
+
+	fatal_error "Invalid or missing ACTION ( $mtarget )" unless defined $action;
+
 	my $actiontype = $targets{$action} || find_macro( $action );
 
 	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO );

@@ -3555,9 +3555,11 @@ __EOF__
 
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
-		is_bridge=$( brctl show 2> /dev/null | grep "^$interface[[:space:]]" )
-		[ -n "$is_bridge" ] && \
-		    do_iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
+		indent >&3 << __EOF__		
+is_bridge="\$( brctl show 2> /dev/null | grep '^$interface[[:space:]]' )"
+[ -n "\$is_bridge" ] && \
+    run_iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
+__EOF__
             fi
 	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
 	    run_iptables -A $(out_chain $interface)   -p udp --dport 67:68 -j ACCEPT

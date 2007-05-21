@@ -467,7 +467,7 @@ EOF
 # Second Phase of Script Generation
 #
 #    copies the 'prog.functions' file into the script, generates
-#    generates clear_routing_and_traffic_shaping() and the first part of 
+#    clear_routing_and_traffic_shaping() and the first part of 
 #    'setup_routing_and_traffic_shaping()'
 #
 #        The bulk of that function is produced by the various config file
@@ -485,8 +485,6 @@ sub generate_script_2 () {
 	   );
 
     push_indent;
-
-    emit 'local restore_file=$1';
 
     save_progress_message 'Initializing...';
 
@@ -543,7 +541,6 @@ sub generate_script_2 () {
 
     emit "delete_tc1\n"            if $config{CLEAR_TC};
     emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
-    setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
 
     pop_indent;
 
@@ -554,6 +551,8 @@ sub generate_script_2 () {
 	   '#',
 	   'setup_routing_and_traffic_shaping() {'
 	   );
+
+    setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
 
     push_indent;
 }

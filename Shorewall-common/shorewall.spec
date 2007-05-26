@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 4.0.0
-%define release 0Beta1
+%define release 0Beta2
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.

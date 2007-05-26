@@ -58,7 +58,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">HOST(S)</emphasis> —
-        <emphasis>interface</emphasis>:{[<emphasis>bridge-port</emphasis>:]{<emphasis>address-or-range</emphasis>[<emphasis
+        <emphasis>interface</emphasis>:{[{<emphasis>address-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...|<emphasis
         role="bold">+</emphasis><emphasis>ipset</emphasis>}[<emphasis>exclusion</emphasis>]</term>
 
@@ -82,20 +82,6 @@
               <para>An IP address range of the form
               <emphasis>low.address</emphasis>-<emphasis>high.address</emphasis>.
               Your kernel and iptables must have iprange match support.</para>
-            </listitem>
-
-            <listitem>
-              <para>A physical <emphasis>bridge-port</emphasis> name; only
-              allowed when the interface names a bridge created by the
-              <command>brctl(8) addbr</command> command. This port must not be
-              defined in <ulink
-              url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
-              and may be optionally followed by a colon (":") and a host or
-              network IP or a range. See <ulink
-              url="http://www.shorewall.net/bridge.html">http://www.shorewall.net/bridge.html</ulink>
-              for details. Specifying a physical port name requires that you
-              have BRIDGING=Yes in <ulink
-              url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
             </listitem>
 
             <listitem>

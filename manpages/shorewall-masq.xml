@@ -45,7 +45,7 @@
         role="bold">+</emphasis>]<emphasis>interface</emphasis>[<emphasis
         role="bold">:</emphasis>[<emphasis>digit</emphasis>]][<emphasis
         role="bold">:</emphasis>[<emphasis>address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address</emphasis>]...][<emphasis>exclusion</emphasis>]</term>
+        role="bold">,</emphasis><emphasis>address</emphasis>]...[<emphasis>exclusion</emphasis>]]</term>
 
         <listitem>
           <para>Outgoing <emphasis>interface</emphasis>. This is usually your
@@ -89,8 +89,8 @@
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> (Formerly called SUBNET)
         —
-        {<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address</emphasis>]}[<emphasis>exclusion</emphasis>]</term>
+        {<emphasis>interface</emphasis>[[:]<emphasis>exclusion</emphasis>]|<emphasis>address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address</emphasis>][<emphasis>exclusion</emphasis>]}</term>
 
         <listitem>
           <para>Set of hosts that you wish to masquerade. You can specify this
@@ -104,9 +104,16 @@
           append an <emphasis>exclusion</emphasis> ("!" and a comma-separated
           list of IP addresses (host or net) that you wish to exclude (see
           <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5))).</para>
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5))).
+          Note that with Shorewall-perl, a colon (":") must appear between an
+          <replaceable>interface</replaceable> name and the
+          <replaceable>exclusion</replaceable>;</para>
 
-          <para>Example: eth1!192.168.1.4,192.168.32.0/27</para>
+          <para>Example (shorewall-shell):
+          eth1!192.168.1.4,192.168.32.0/27</para>
+
+          <para>Example (shorewall-perl):
+          eth1:!192.168.1.4,192.168.32.0/27</para>
 
           <para>In that example traffic from eth1 would be masqueraded unless
           it came from 192.168.1.4 or 196.168.32.0/27</para>

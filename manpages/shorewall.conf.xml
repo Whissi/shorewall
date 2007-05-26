@@ -282,8 +282,10 @@
 
         <listitem>
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
-          role="bold">yes</emphasis>, enables Shorewall Bridging
-          support.</para>
+          role="bold">yes</emphasis>, enables Shorewall Bridging support.<note>
+              <para>BRIDGING=Yes may not work properly with Linux kernel
+              2.6.20 or later and is not supported by Shorewall-perl.</para>
+            </note></para>
         </listitem>
       </varlistentry>
 
@@ -443,11 +445,11 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>Normally, Shorewall accepting ESTABLISHED/RELATED packets
-          until these packets reach the chain in which the original connection
-          was accepted. So for packets going from the 'loc' zone to the 'net'
-          zone, ESTABLISHED/RELATED packets are ACCEPTED in the 'loc2net'
-          chain.</para>
+          <para>Normally, Shorewall defers accepting ESTABLISHED/RELATED
+          packets until these packets reach the chain in which the original
+          connection was accepted. So for packets going from the 'loc' zone to
+          the 'net' zone, ESTABLISHED/RELATED packets are ACCEPTED in the
+          'loc2net' chain.</para>
 
           <para>If you set FASTACCEPT=Yes, then ESTABLISHED/RELEATED packets
           are accepted early in the INPUT, FORWARD and OUTPUT chains. If you

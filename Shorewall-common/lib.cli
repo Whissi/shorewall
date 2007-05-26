@@ -698,7 +698,7 @@ dump_command() {
 
     if qt mywhich lsmod; then
 	heading "Modules"
-	lsmod | grep -E '^ip_|^ipt_|^iptable_'
+	lsmod | grep -E '^(ip_|ipt_|iptable_|nf_|xt_)' | sort
     fi
 
     determine_capabilities

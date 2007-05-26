@@ -644,8 +644,8 @@ sub finish_chain_section ($$) {
 	} else {
 	    my $policychainref = $chainref->{policychain};
 	    if ( $policychainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', "\@$policychainref->{name}";
-		add_rule $synchainref, "-p tcp --syn -j $synchainref->{name}";
+		my $synchainref = ensure_chain 'filter', syn_chain $policychainref->{name};
+		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 	    }
 	}
     }

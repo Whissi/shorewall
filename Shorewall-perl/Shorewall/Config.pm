@@ -74,7 +74,7 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.0-Beta1',
+		    VERSION =>  '4.0.0-Beta2',
 		  );
 
 #
@@ -171,7 +171,7 @@ our %config =
 		BLACKLIST_DISPOSITION => undef,
 		);
 #
-# Config options and global settings that are to be copied to object
+# Config options and global settings that are to be copied to object script
 #
 my @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE/;
 my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;

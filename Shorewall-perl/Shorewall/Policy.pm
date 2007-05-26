@@ -209,9 +209,9 @@ sub validate_policy()
 	    push @policy_chains, ( $chainref );
 	}
 
-	$chainref->{loglevel}  = $loglevel  if defined $loglevel && $loglevel ne '';
-	$chainref->{synparams} = $synparams if $synparams;
-	$chainref->{default}   = $default   if $default;
+	$chainref->{loglevel}  = $loglevel                         if defined $loglevel && $loglevel ne '';
+	$chainref->{synparams} = do_ratelimit $synparams, 'ACCEPT' if $synparams ne '';
+	$chainref->{default}   = $default                          if $default;
 
 	if ( $clientwild ) {
 	    if ( $serverwild ) {

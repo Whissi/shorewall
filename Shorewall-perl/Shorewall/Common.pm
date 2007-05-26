@@ -127,7 +127,7 @@ sub emitj {
 		my $line = $_; # This copy is necessary because the actual arguments are almost always read-only.
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
-		$line =~ s/        /\t/g;
+		$line =~ s/        /\t/gm;
 		print $object "$line\n";
 		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	    } else {
@@ -137,7 +137,6 @@ sub emitj {
 	}
     }
 }
-
 
 #
 # Write passed message to the object with newline but no indentation.
@@ -269,12 +268,13 @@ sub create_temp_object( $ ) {
 	( $file, $dir, $suffix ) = fileparse( $objectfile );
     };
 
-    die $@ if $@;
+    die if $@;
 
-    fatal_error "Directory $dir does not exist" unless -d $dir;
-    fatal_error "$dir is a Symbolic Link" if -l $dir;
-    fatal_error "$objectfile is a Directory" if -d $objectfile;
-    fatal_error "$dir is a Symbolic Link" if -l $objectfile;
+    fatal_error "Directory $dir does not exist"  unless -d $dir;
+    fatal_error "Directory $dir is not writable" unless -w _;
+    fatal_error "$dir is a Symbolic Link"        if -l $dir;
+    fatal_error "$objectfile is a Directory"     if -d $objectfile;
+    fatal_error "$dir is a Symbolic Link"        if -l $objectfile;
     fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
 
     eval {
@@ -282,7 +282,7 @@ sub create_temp_object( $ ) {
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
-    die if $@;
+    fatal_error "Unable to create temporary file in directory $dir" if $@;
 
     $file = "$file.$suffix" if $suffix;
     $dir .= '/' unless substr( $dir, -1, 1 ) eq '/';

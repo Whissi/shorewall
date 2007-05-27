@@ -985,6 +985,10 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     fatal_error "No policy defined from zone $sourcezone to zone $destzone" unless $policy;
     fatal_error "Rules may not override a NONE policy"                      if $policy eq 'NONE';
     #
+    # For compatibility with older Shorewall versions
+    #
+    $origdest = ALLIPv4 if $origdest eq 'all';
+    #
     # Generate Fixed part of the rule
     #
     $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );

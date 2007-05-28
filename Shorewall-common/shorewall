@@ -152,15 +152,17 @@ get_config() {
 	#
 	export CONFIG_PATH
 
-	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
+	if [ "$2" = Yes ]; then
+	    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
-	if [ -n "$(syslog_circular_buffer)" ]; then
-	    LOGREAD="logread"
-	elif [ -f $LOGFILE ]; then
-	    LOGREAD="cat $LOGFILE"
-	else
-	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
-	    exit 2
+	    if [ -n "$(syslog_circular_buffer)" ]; then
+		LOGREAD="logread"
+	    elif [ -f $LOGFILE ]; then
+		LOGREAD="cat $LOGFILE"
+	    else
+		echo "LOGFILE ($LOGFILE) does not exist!" >&2
+		exit 2
+	    fi
 	fi
 
 	if [ -n "$IPTABLES" ]; then
@@ -196,20 +198,22 @@ get_config() {
 
 	export RESTOREFILE
 
-	case $STARTUP_ENABLED in
-	    No|no|NO)
-                echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
-		STARTUP_ENABLED=
-		;;
-	    Yes|yes|YES)
-	        ;;
-	    *)
-		if [ -n "$STARTUP_ENABLED" ]; then
-		    echo "   ERROR: Invalid Value for STARTUP_ENABLE: $STARTUP_ENABLED" >&2
+	if [ "$2" = Yes ]; then
+	    case $STARTUP_ENABLED in
+		No|no|NO)
+		    echo "   ERROR: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
 		    exit 2
-		fi
-		;;
-	esac
+		    ;;
+		Yes|yes|YES)
+		    ;;
+		*)
+		    if [ -n "$STARTUP_ENABLED" ]; then
+			echo "   ERROR: Invalid Value for STARTUP_ENABLE: $STARTUP_ENABLED" >&2
+			exit 2
+		    fi
+		    ;;
+	    esac
+	fi
 
 	case ${TC_ENABLED:=Internal} in
 	    No|NO|no)
@@ -1461,7 +1465,7 @@ COMMAND=$1
 
 case "$COMMAND" in
     start)
-	get_config
+	get_config No Yes
 	shift
 	start_command $@
 	;;
@@ -1477,12 +1481,12 @@ case "$COMMAND" in
 	compile_command $@
 	;;
     restart)
-	get_config
+	get_config No Yes
 	shift
 	restart_command $@
 	;;
     refresh)
-	get_config
+	get_config No Yes
 	shift
 	refresh_command $@
 	;;

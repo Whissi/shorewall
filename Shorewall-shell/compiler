@@ -5457,7 +5457,7 @@ __EOF__
 	createchain $(out_chain $interface) no
     done
 
-    if [ -s $TMP_DIR/proxyarp ]; then
+    if [ -n "$LIB_proxyarp_LOADED" ]; then
 	progress_message2 "$DOING Proxy ARP"
 	setup_proxy_arp
     else

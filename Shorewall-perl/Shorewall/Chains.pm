@@ -1353,7 +1353,17 @@ sub get_interface_nets ( $ ) {
 #
 sub expand_rule( $$$$$$$$$$ )
 {
-    my ($chainref , $restriction, $rule, $source, $dest, $origdest, $target, $loglevel , $disposition, $exceptionrule ) = @_;
+    my ($chainref ,    # Chain 
+	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
+	$rule,         # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST 
+	$source,       # SOURCE 
+	$dest,         # DEST 
+	$origdest,     # ORIGINAL DEST 
+	$target,       # Target ('-j' part of the rule) 
+	$loglevel ,    # Log level (and tag) 
+	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...) 
+	$exceptionrule # Caller's matches used in exclusion case
+       ) = @_;
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
     #

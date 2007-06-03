@@ -104,8 +104,7 @@ sub generate_script_1() {
     for my $exit qw/init start tcclear started stop stopped clear/ {
 	emit "run_${exit}_exit() {";
 	push_indent;
-	append_file $exit;
-	emit 'true';
+	append_file $exit or emit 'true';
 	pop_indent;
 	emit "}\n";
     }

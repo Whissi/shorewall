@@ -1210,7 +1210,8 @@ sub process_rule ( $$$$$$$$$$ ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
 				my $policychainref = $filter_table->{"${zone}2${zone1}"}{policychain};
 				fatal_error "No policy from zone $zone to zone $zone1" unless $policychainref;
-				if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
+				my $policy = $policychainref->{policy};
+				unless ( $policy eq 'NONE' ) {
 				    if ( $optimize > 0 ) {
 					my $loglevel = $policychainref->{loglevel};
 					if ( $loglevel ne '' ) {
@@ -1230,7 +1231,8 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
 			fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;
-			if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
+			my $policy = $policychainref->{policy};
+			unless ( $policy eq 'NONE' ) {
 			    if ( $optimize > 0 ) {
 				my $loglevel = $policychainref->{loglevel};
 				if ( $loglevel ne '') {
@@ -1251,7 +1253,8 @@ sub process_rule ( $$$$$$$$$$ ) {
 	    if ( ( $includedstfw || ( $zones{$zone}{type} ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
 		fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
 		my $policychainref = $filter_table->{"${sourcezone}2${zone}"}{policychain};
-		if ( ( ( my $policy ) = $policychainref->{policy} ) ne 'NONE' ) {
+		my $policy = $policychainref->{policy};
+		unless ( $policy eq 'NONE' ) {
 		    if ( $optimize > 0 ) {
 			my $loglevel = $policychainref->{loglevel};
 			if ( $loglevel ne '' ) {

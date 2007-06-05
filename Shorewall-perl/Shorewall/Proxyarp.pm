@@ -38,7 +38,7 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( );
 our @VERSION = 1.00;
 
-my @proxyarp;
+our @proxyarp;
 
 sub setup_one_proxy_arp( $$$$$ ) {
     my ( $address, $interface, $external, $haveroute, $persistent) = @_;

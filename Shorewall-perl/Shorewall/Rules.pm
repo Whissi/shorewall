@@ -56,11 +56,11 @@ our @VERSION = 1.00;
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
 #
-my @rule_chains;
+our @rule_chains;
 #
 # Set to one if we find a SECTION
 #
-my $sectioned = 0;
+our $sectioned = 0;
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 

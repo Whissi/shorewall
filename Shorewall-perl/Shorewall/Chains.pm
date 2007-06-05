@@ -243,15 +243,15 @@ use constant { NO_RESTRICT        => 0,
 #
 # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
 #
-my $exclseq = 0;
+our $exclseq = 0;
 #
 # Used to suppress duplicate match specifications.
 #
-my $iprangematch = 0;
+our $iprangematch = 0;
 #
 # Sequence for naming temporary chains
 #
-my $chainseq;
+our $chainseq;
 #
 # Add a run-time command to a chain. Arguments are:
 #

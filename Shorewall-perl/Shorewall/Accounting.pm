@@ -40,9 +40,10 @@ our @VERSION = 1.00;
 #
 # Accounting
 #
-my $jumpchainref;
-
 sub process_accounting_rule( $$$$$$$$$ ) {
+    
+    our $jumpchainref;
+
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = @_;
 
     sub accounting_error() {

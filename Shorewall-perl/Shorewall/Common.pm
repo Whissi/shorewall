@@ -67,12 +67,12 @@ our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the
 
 our $verbose;            # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
 
-my $timestamp;           # If true, we are to timestamp each progress message
-my $object = 0;          # Object (script) file Handle Reference
-my $lastlineblank = 0;   # Avoid extra blank lines in the output
-my $indent        = '';  # Current indentation
-my ( $dir, $file );      # Object's Directory and File
-my $tempfile;            # Temporary File Name
+our $timestamp;           # If true, we are to timestamp each progress message
+our $object = 0;          # Object (script) file Handle Reference
+our $lastlineblank = 0;   # Avoid extra blank lines in the output
+our $indent        = '';  # Current indentation
+our ( $dir, $file );      # Object's Directory and File
+our $tempfile;            # Temporary File Name
 
 INIT {
     $verbose   = $ENV{VERBOSE}   || 0;

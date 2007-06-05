@@ -173,8 +173,8 @@ our %config =
 #
 # Config options and global settings that are to be copied to object script
 #
-my @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE/;
-my @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
+our @propagateconfig = qw/ CLEAR_TC DISABLE_IPV6 ADMINISABSENTMINDED IP_FORWARDING MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
+our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
 #
 # From parsing the capabilities file
@@ -217,50 +217,50 @@ our %services;
 #
 # Capabilities
 #
-my %capdesc = ( NAT_ENABLED     => 'NAT',
-		MANGLE_ENABLED  => 'Packet Mangling',
-		MULTIPORT       => 'Multi-port Match' ,
-		XMULTIPORT      => 'Extended Multi-port Match',
-		CONNTRACK_MATCH => 'Connection Tracking Match',
-		USEPKTTYPE      => 'Packet Type Match',
-		POLICY_MATCH    => 'Policy Match',
-		PHYSDEV_MATCH   => 'Physdev Match',
-		LENGTH_MATCH    => 'Packet length Match',
-		IPRANGE_MATCH   => 'IP Range Match',
-		RECENT_MATCH    => 'Recent Match',
-		OWNER_MATCH     => 'Owner Match',
-		IPSET_MATCH     => 'Ipset Match',
-		CONNMARK        => 'CONNMARK Target',
-		XCONNMARK       => 'Extended CONNMARK Target',
-		CONNMARK_MATCH  => 'Connmark Match',
-		XCONNMARK_MATCH => 'Extended Connmark Match',
-		RAW_TABLE       => 'Raw Table',
-		IPP2P_MATCH     => 'IPP2P Match',
-		CLASSIFY_TARGET => 'CLASSIFY Target',
-		ENHANCED_REJECT => 'Extended Reject',
-		KLUDGEFREE      => 'Repeat match',
-		MARK            => 'MARK Target',
-		XMARK           => 'Extended Mark Target',
-		MANGLE_FORWARD  => 'Mangle FORWARD Chain',
-		COMMENTS        => 'Comments',
-		ADDRTYPE        => 'Address Type Match',
-		);
+our %capdesc = ( NAT_ENABLED     => 'NAT',
+		 MANGLE_ENABLED  => 'Packet Mangling',
+		 MULTIPORT       => 'Multi-port Match' ,
+		 XMULTIPORT      => 'Extended Multi-port Match',
+		 CONNTRACK_MATCH => 'Connection Tracking Match',
+		 USEPKTTYPE      => 'Packet Type Match',
+		 POLICY_MATCH    => 'Policy Match',
+		 PHYSDEV_MATCH   => 'Physdev Match',
+		 LENGTH_MATCH    => 'Packet length Match',
+		 IPRANGE_MATCH   => 'IP Range Match',
+		 RECENT_MATCH    => 'Recent Match',
+		 OWNER_MATCH     => 'Owner Match',
+		 IPSET_MATCH     => 'Ipset Match',
+		 CONNMARK        => 'CONNMARK Target',
+		 XCONNMARK       => 'Extended CONNMARK Target',
+		 CONNMARK_MATCH  => 'Connmark Match',
+		 XCONNMARK_MATCH => 'Extended Connmark Match',
+		 RAW_TABLE       => 'Raw Table',
+		 IPP2P_MATCH     => 'IPP2P Match',
+		 CLASSIFY_TARGET => 'CLASSIFY Target',
+		 ENHANCED_REJECT => 'Extended Reject',
+		 KLUDGEFREE      => 'Repeat match',
+		 MARK            => 'MARK Target',
+		 XMARK           => 'Extended Mark Target',
+		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
+		 COMMENTS        => 'Comments',
+		 ADDRTYPE        => 'Address Type Match',
+	       );
 #
 # Directories to search for configuration files
 #
-my @config_path;
+our @config_path;
 #
 # Stash away file references here when we encounter INCLUDE
 #
-my @includestack;
+our @includestack;
 #
 # Allow nested opens
 #
-my @openstack;
+our @openstack;
 
-my $currentfile;             # File handle reference
-my $currentfilename;         # File NAME
-my $currentlinenumber = 0;   # Line number
+our $currentfile;             # File handle reference
+our $currentfilename;         # File NAME
+our $currentlinenumber = 0;   # Line number
 
 #
 # Issue a Warning Message
@@ -1135,15 +1135,15 @@ sub get_configuration( $ ) {
 }
 
 #
-# The values of the options in @Shorewall:Config::propagateconfig are copied to the object file in OPTION=<value> format.
+# The values of the options in @propagateconfig are copied to the object file in OPTION=<value> format.
 #
 sub propagateconfig() {
-    for my $option ( @Shorewall::Config::propagateconfig ) {
+    for my $option ( @propagateconfig ) {
 	my $value = $config{$option} || '';
 	emit "$option=\"$value\"";
     }
 
-    for my $option ( @Shorewall::Config::propagateenv ) {
+    for my $option ( @propagateenv ) {
 	my $value = $globals{$option} || '';
 	emit "$option=\"$value\"";
     }

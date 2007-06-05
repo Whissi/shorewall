@@ -55,7 +55,7 @@ use Shorewall::Rules;
 use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
-my $export;
+our $export;
 
 INIT {
     $export = $ENV{EXPORT};

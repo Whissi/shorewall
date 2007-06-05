@@ -43,10 +43,10 @@ our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule );
 our @VERSION = 1.00;
 
-my %tcs = ( T => { chain  => 'tcpost',
-		   connmark => 0,
-		   fw       => 1
-		   } ,
+our %tcs = ( T => { chain  => 'tcpost',
+		    connmark => 0,
+		    fw       => 1
+		  } ,
 	    CT => { chain  => 'tcpost' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
@@ -93,11 +93,11 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
-my @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
-		target    => 'CONNMARK --save-mark --mask' ,
-		mark      => SMALLMARK ,
-		mask      => '0xFF'
-		} ,
+our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
+		 target    => 'CONNMARK --save-mark --mask' ,
+		 mark      => SMALLMARK ,
+		 mask      => '0xFF'
+	       } ,
 	      { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
 		target    => 'CONNMARK --restore-mark --mask' ,
 		mark      => SMALLMARK ,

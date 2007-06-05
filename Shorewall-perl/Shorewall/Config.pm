@@ -1157,7 +1157,7 @@ sub append_file( $ ) {
     my $user_exit = find_file $_[0];
     my $result = 0;
 
-    unless ( $user_exit =~ /$globals{SHAREDIR}/ ) {
+    unless ( $user_exit =~ /^($globals{SHAREDIR})/ ) {
 	if ( -f $user_exit ) {
 	    $result = 1;
 	    save_progress_message "Processing $user_exit ...";

@@ -27,6 +27,7 @@ package Shorewall::Accounting;
 require Exporter;
 use Shorewall::Common;
 use Shorewall::Config;
+use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains;
 
@@ -63,6 +64,10 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     my $target = '';
 
+    $proto  = ''    if $proto  eq 'any';
+    $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
+    $sports = ''    if $sports eq 'any' || $sports eq 'all';
+
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, 0xFF );
     my $rule2 = 0;
 
@@ -83,6 +88,9 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	    }
 	}
     }
+
+    $source = ALLIPv4 if $source eq 'any' || $source eq 'all';
+    $dest   = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
 
     expand_rule
 	$chainref ,

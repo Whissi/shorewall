@@ -757,7 +757,7 @@ sub setup_mac_lists( $ ) {
 		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
 	    } else {
-		add_rule $mangle_table->{PREROUTING}, match_source_interface( $interface ) . "${source}-m state --state NEW ${policy}-j $target";
+		add_rule $mangle_table->{PREROUTING}, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}-j $target";
 	    }
 	}
     } else {

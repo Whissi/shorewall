@@ -151,8 +151,10 @@ sub get_routed_networks ( $$ ) {
 # Parse the interfaces file.
 #
 
-sub validate_interfaces_file()
+sub validate_interfaces_file( $ )
 {
+    my $export = shift;
+
     use constant { SIMPLE_IF_OPTION   => 1,
 		   BINARY_IF_OPTION   => 2,
 		   ENUM_IF_OPTION     => 3, 
@@ -230,7 +232,6 @@ sub validate_interfaces_file()
 		}
 	    }
 	    
-	    $interfaces{$interface}{ports}++;
 	    $interfaces{$port}{bridge} = $bridge = $interface;
 	    $interface = $port;
 	} else {
@@ -318,10 +319,11 @@ sub validate_interfaces_file()
 	my @networks;
 
 	if ( $options{detectnets} ) {
-	    fatal_error "'detectnets' not allowed with multi-zone interface" unless $zone;
+	    fatal_error "The 'detectnets' option is not allowed with multi-zone interface" unless $zone;
 	    fatal_error "The 'detectnets' option may not be used with a wild-card interface name" if $wildcard;
+	    fatal_error "The 'detectnets' option may not be used with the '-e' compiler option" if $export;
 	    @networks = get_routed_networks( $interface, 'detectnets not allowed on interface with default route' );
-	    fatal_error "No routes through 'detectnets' interface $interface" unless @networks || $options{optional};
+	    fatal_error "No routes found through 'detectnets' interface $interface" unless @networks || $options{optional};
 	} else {
 	    @networks = @allipv4;
 	}

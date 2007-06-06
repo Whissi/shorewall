@@ -221,29 +221,23 @@ sub determine_zones()
 	fatal_error "Invalid zone name: $zone"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
 	fatal_error( "Duplicate zone name: $zone\n" ) if $zones{$zone};
 
-	my $zoneref = $zones{$zone} = {};
-	$zoneref->{parents}    = \@parents;
-	$zoneref->{exclusions} = [];
-	$zoneref->{bridge}     = '';
-
 	$type = "ipv4" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $zoneref->{type} = 'ipv4';
+	    $type = 'ipv4';
 	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $zoneref->{type} = 'ipsec4';
+	    $type = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $zoneref->{type} = 'bport4';
-	    
+	    $type = 'bport4';
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined: $zone" if $firewall_zone;
 	    $firewall_zone = $zone;
 	    $ENV{FW} = $zone;
-	    $zoneref->{type} = "firewall";
+	    $type = "firewall";
 	} elsif ( $type eq '-' ) {
-	    $type = $zoneref->{type} = 'ipv4';
+	    $type = 'ipv4';
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -254,16 +248,20 @@ sub determine_zones()
 	$in_options   = '' if $in_options  eq '-';
 	$out_options  = '' if $out_options eq '-';
 
-	$zone_hash{in_out}   = parse_zone_option_list( $options || '', $zoneref->{type} );
-	$zone_hash{in}       = parse_zone_option_list( $in_options || '', $zoneref->{type} );
-	$zone_hash{out}      = parse_zone_option_list( $out_options || '', $zoneref->{type} );
-	$zone_hash{complex}  = ($zoneref->{type} eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
+	$zone_hash{in_out}   = parse_zone_option_list( $options || '', $type );
+	$zone_hash{in}       = parse_zone_option_list( $in_options || '', $type );
+	$zone_hash{out}      = parse_zone_option_list( $out_options || '', $type );
+	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
 
-	$zoneref->{options}    = \%zone_hash;
-	$zoneref->{interfaces} = {};
-	$zoneref->{children}   = [];
-	$zoneref->{hosts}      = {};
-
+	$zones{$zone} = { type       => $type,
+			  parents    => \@parents, 
+			  exclusions => [], 
+			  bridge     => '',
+			  options    => \%zone_hash,
+			  interfaces => {} ,
+			  children   => [] ,
+			  hosts      => {}
+			};
 	push @z, $zone;
     }
 

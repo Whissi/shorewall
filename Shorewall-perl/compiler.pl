@@ -691,7 +691,7 @@ sub compiler( $ ) {
     #
     # Process the interfaces file.
     #
-    validate_interfaces_file;
+    validate_interfaces_file ( $export );
     #
     # Process the hosts file.
     #

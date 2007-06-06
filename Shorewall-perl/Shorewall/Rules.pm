@@ -978,7 +978,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     # Check for illegal bridge port rule
     #
-    if ( $zones{$sourcezone}->{type} eq 'bport4' ) {
+    if ( $zones{$destzone}->{type} eq 'bport4' ) {
 	unless ( $zones{$sourcezone}{bridge} eq $zones{$destzone}{bridge} ) {
 	    return 1 if $wildcard;
 	    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
@@ -1174,7 +1174,6 @@ sub process_rule ( $$$$$$$$$$ ) {
     my $intrazone = 0;
     my $includesrcfw = 1;
     my $includedstfw = 1;
-    my $optimize = $config{OPTIMIZE};
     my $thisline = $line;
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
@@ -1225,8 +1224,6 @@ sub process_rule ( $$$$$$$$$$ ) {
     my $action = isolate_basic_target $target;
 
     fatal_error "Invalid or missing ACTION ( $target )" unless defined $action;
-
-    $optimize = 0 if $action =~ /!$/;
 
     if ( $source eq 'all' ) {
 	for my $zone ( @zones ) {

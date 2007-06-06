@@ -234,12 +234,6 @@ sub determine_zones()
 	    $zoneref->{type} = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    fatal_error "Bridge Port zones must have a single parent zone" unless @parents == 1;
-
-	    for my $p ( @parents ) {
-		my $interfaceref =  $interfaces{$1};
-		fatal_error "Parent Zone $p is not associated with device $1" unless $interfaceref && $interfaceref->{zone} eq $zone;
-	    }
-
 	    $zoneref->{type} = 'bport4';
 	    
 	} elsif ( $type eq 'firewall' ) {

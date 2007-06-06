@@ -38,6 +38,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( add_group_to_zone
 		  validate_interfaces_file
 		  known_interface
+		  port_to_bridge
 		  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option
@@ -182,13 +183,15 @@ sub validate_interfaces_file()
 
     my $first_entry = 1;
 
+    my @ifaces;
+
     while ( read_a_line ) {
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
-
+	
 	my ($zone, $interface, $networks, $options ) = split_line 2, 4, 'interfaces file';
 	my $zoneref;
 	my $bridge = '';
@@ -209,23 +212,32 @@ sub validate_interfaces_file()
 
 	fatal_error "Invalid INTERFACE" if defined $extra || ! $interface;	
 
-	fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
-
-	fatal_error "Invalid Interface Name: $interface" if $interface eq '+';
+	fatal_error "Invalid Interface Name ( $interface )" if $interface eq '+';
 
 	if ( defined $port ) {
 	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
 	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
+	    fatal_error "Duplicate Interface ( $port )" if $interfaces{$port};
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Invalid Bridge Port Name ($port)"   unless $port =~ /^([\w.@%-]+\+?)$/;
+	    fatal_error "Invalid Interface Name ( $interface:$port )" unless $port =~ /^[\w.@%-]+\+?$/;
 	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
+
+	    if ( $zone ) {
+		if ( $zoneref->{bridge} ) {
+		    fatal_error "Bridge Port zones may only be associated with a single bridge" if $zoneref->{bridge} ne $interface;
+		} else {
+		    $zoneref->{bridge} = $interface;
+		}
+	    }
+
 	    $interfaces{$port}{bridge} = $bridge = $interface;
 	    $interface = $port;
 	} else {
+	    fatal_error "Duplicate Interface ( $interface )" if $interfaces{$interface};
 	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
 	    $interfaces{$interface}{bridge} = $interface;
 	}
-
+    
 	my $wildcard = 0;
 
 	if ( $interface =~ /\+$/ ) {
@@ -234,7 +246,7 @@ sub validate_interfaces_file()
 	} else {	    
 	    $interfaces{$interface}{root} = $interface;
 	}
-
+    
 	unless ( $networks eq '' || $networks eq 'detect' ) {
 
 	    for my $address ( split /,/, $networks ) {
@@ -300,7 +312,7 @@ sub validate_interfaces_file()
 	
 	$interfaces{$interface}{options} = $optionsref = \%options;
 
-	push @interfaces, $interface;
+	push @ifaces, $interface;
 
 	my @networks;
 
@@ -316,10 +328,27 @@ sub validate_interfaces_file()
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
-
+    
 	progress_message "   Interface \"$line\" Validated";
 
     }
+
+    #
+    # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge
+    #
+    for my $interface ( @ifaces ) {
+	my $interfaceref = $interfaces{$interface};
+	
+	next if $interfaceref->{options}{port};
+	
+	if ( $interfaceref->{options}{bridge} ) {
+	    for my $port ( grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces ) {
+		push @interfaces, $port;
+	    }
+	}
+	
+	push @interfaces, $interface;
+    }	
 }
 
 #
@@ -347,6 +376,24 @@ sub known_interface($)
     }
 
     0;
+}
+
+#
+# Return the bridge associated with the passed interface. If the interface is not a bridge port,
+# return ''
+#
+sub port_to_bridge( $ ) {
+    my $portref = $interfaces{$_[0]};
+    return $portref && $portref->{options}{port} ? $portref->{bridge} : '';
+}
+
+#
+# Return the bridge associated with the passed interface. If the interface is not a bridge port, return 
+# the name of the interface itself.
+#
+sub source_port_to_bridge( $ ) {
+    my $portref = $interfaces{$_[0]};
+    return $portref ? $portref->{bridge} : '';
 }
 
 #

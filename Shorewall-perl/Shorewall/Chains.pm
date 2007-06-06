@@ -98,6 +98,8 @@ our @EXPORT = qw( STANDARD
 		  do_ratelimit
 		  do_user
 		  do_tos
+		  match_source_dev
+		  match_dest_dev
 		  iprange_match
 		  match_source_net
 		  match_dest_net
@@ -1030,6 +1032,32 @@ sub do_tos( $ ) {
 }
 
 #
+# Match Source Interface
+#
+sub match_source_dev( $ ) {
+    my $interface = shift;
+    my $interfaceref =  $interfaces{$interface};
+    if ( $interfaceref->{options}{port} ) {
+	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
+    } else {
+	"-i $interface ";
+    }
+}    
+
+#
+# Match Dest device
+#
+sub match_dest_dev( $ ) {
+    my $interface = shift;
+    my $interfaceref =  $interfaces{$interface};
+    if ( $interfaceref->{options}{port} ) {
+	"-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
+    } else {
+	"-o $interface ";
+    }
+}    
+
+#
 # Avoid generating a second '-m iprange' in a single rule.
 #
 sub iprange_match() {
@@ -1414,6 +1442,8 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    # An interface in the SOURCE column of a masq file
 	    #
+	    fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
+
 	    my $networks = get_interface_nets ( $iiface );
 
 	    add_command( $chainref , join( '', 'for source in ', $networks, '; do' ) );
@@ -1424,9 +1454,8 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    $chainref->{loopcount}++;
 	} else {
-	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone"
-		if $restriction & OUTPUT_RESTRICT;
-	    $rule .= "-i $iiface ";
+	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone" if $restriction & OUTPUT_RESTRICT;
+	    $rule .= match_source_dev( $iiface );
 	}
     }
 
@@ -1480,13 +1509,19 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    # ADDRESS 'detect' in the masq file.
 	    #
+	    fatal_error "Bridge port ( $diface) not allowed" if port_to_bridge( $diface );
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest';
 	    $chainref->{loopcount}++;
 	} else {
-	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone"
-		if $restriction & INPUT_RESTRICT;
-	    $rule .= "-o $diface ";
+	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
+
+	    if ( $iiface ) {
+		my $bridge = port_to_bridge( $diface );
+		fatal_error "Source interface ( $iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
+	    }
+
+	    $rule .= match_dest_dev( $diface );
 	}
     }
 

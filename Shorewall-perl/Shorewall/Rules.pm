@@ -1375,32 +1375,6 @@ sub generate_matrix() {
     }
 
     #
-    # Match Source Interface
-    #
-    sub match_source_dev( $ ) {
-	my $interface = shift;
-	my $interfaceref =  $interfaces{$interface};
-	if ( $interfaceref->{options}{port} ) {
-	    "-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
-	} else {
-	    "-i $interface ";
-	}
-    }    
-
-    #
-    # Match Dest device
-    #
-    sub match_dest_dev( $ ) {
-	my $interface = shift;
-	my $interfaceref =  $interfaces{$interface};
-	if ( $interfaceref->{options}{port} ) {
-	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
-	} else {
-	    "-o $interface ";
-	}
-    }    
-
-    #
     # Insert the passed exclusions at the front of the passed chain.
     #
     sub insert_exclusions( $$ ) {
@@ -1611,6 +1585,10 @@ sub generate_matrix() {
 		    next if ( %{ $zoneref->{interfaces} } < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 		}
 
+		if ( $zone1ref->{type} eq 'bport4' ) {
+		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
+		}
+
 		if ( $chain =~ /2all$/ ) {
 		    if ( $chain ne $last_chain ) {
 			$last_chain = $chain;
@@ -1663,6 +1641,10 @@ sub generate_matrix() {
 		#
 		no warnings;
 		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+	    }
+
+	    if ( $zone1ref->{type} eq 'bport4' ) {
+		next ZONE1 unless $zoneref->{bridge} eq $zone1ref->{bridge};
 	    }
 
 	    my $chainref    = $filter_table->{$chain};

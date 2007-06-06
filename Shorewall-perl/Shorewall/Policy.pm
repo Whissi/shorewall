@@ -185,6 +185,13 @@ sub validate_policy()
 		if ( $zones{$client}{type} eq 'firewall' ) || ( $zones{$server}{type} eq 'firewall' );
 	}
 
+	unless ( $clientwild || $serverwild ) {
+	    if ( $zones{$server}{type} eq 'bport4' ) {
+		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge" 
+		    unless $zones{$client}{bridge} eq $zones{$server}{bridge};
+	    }
+	}   
+
 	my $chain = "${client}2${server}";
 	my $chainref;
 

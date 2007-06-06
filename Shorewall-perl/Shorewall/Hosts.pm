@@ -84,6 +84,15 @@ sub validate_hosts_file()
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
 
+	if ( $type eq 'bport4' ) {
+	    if ( $zoneref->{bridge} eq '' ) {
+		fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
+		$zoneref->{bridge} = $interfaces{$interface}{bridge};
+	    } elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
+		fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
+	    }
+	}
+
 	my $optionsref = {};
 
 	if ( $options ne '-' ) {

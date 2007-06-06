@@ -56,6 +56,7 @@ our @VERSION = 1.00;
 #                                                      ...
 #                                                    }
 #                                     zone        => <zone name>
+#                                     bridge      => <bridge>
 #                                   }
 #                 }
 #
@@ -161,6 +162,7 @@ sub validate_interfaces_file()
     my %validoptions = (arp_filter  => BINARY_IF_OPTION,
 			arp_ignore  => ENUM_IF_OPTION,
 			blacklist   => SIMPLE_IF_OPTION,
+			bridge      => SIMPLE_IF_OPTION,
 			detectnets  => SIMPLE_IF_OPTION,
 			dhcp        => SIMPLE_IF_OPTION,
 			maclist     => SIMPLE_IF_OPTION,
@@ -189,6 +191,7 @@ sub validate_interfaces_file()
 
 	my ($zone, $interface, $networks, $options ) = split_line 2, 4, 'interfaces file';
 	my $zoneref;
+	my $bridge = '';
 
 	if ( $zone eq '-' ) {
 	    $zone = '';
@@ -202,9 +205,26 @@ sub validate_interfaces_file()
 	$networks = '' if $networks eq '-';
 	$options  = '' if $options  eq '-';
 
+	( $interface, my ($port, $extra) ) = split /:/ , $interface, 3;
+
+	fatal_error "Invalid INTERFACE" if defined $extra || ! $interface;	
+
 	fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
 
-	fatal_error "Invalid Interface Name: $interface" if $interface =~ /:|^\+$/;
+	fatal_error "Invalid Interface Name: $interface" if $interface eq '+';
+
+	if ( defined $port ) {
+	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
+	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
+	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
+	    fatal_error "Invalid Bridge Port Name ($port)"   unless $port =~ /^([\w.@%-]+\+?)$/;
+	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
+	    $interfaces{$port}{bridge} = $bridge = $interface;
+	    $interface = $port;
+	} else {
+	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
+	    $interfaces{$interface}{bridge} = $interface;
+	}
 
 	my $wildcard = 0;
 
@@ -229,6 +249,8 @@ sub validate_interfaces_file()
 	my %options;
 	
 	if ( $options ) {
+	    fatal_error "Bridge Ports may not have options" if defined $port;
+
 	    for my $option (split ',', $options ) {
 		next if $option eq '-';
 
@@ -266,7 +288,14 @@ sub validate_interfaces_file()
 		}
 	    }
 
-	    $zoneref->{options}{in_out}{routeback} = 1 if $options{routeback};    
+	    $zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
+
+	    if ( $options{bridge} ) {
+		require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
+		fatal_error "Bridges may not have wildcard names" if $wildcard;
+	    }
+	} elsif ( defined $port ) {
+	    $options{port} = 1;
 	}
 	
 	$interfaces{$interface}{options} = $optionsref = \%options;

@@ -782,13 +782,13 @@ sub setup_mac_lists( $ ) {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$ );
 
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$ ) {
-    my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark ) = @_;
+sub process_macro ( $$$$$$$$$$$$$ ) {
+    my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $wildcard ) = @_;
 
     progress_message "..Expanding Macro $macrofile...";
 
@@ -847,7 +847,7 @@ sub process_macro ( $$$$$$$$$$$$ ) {
 	$mrate   = merge_macro_column $mrate,   $rate;
 	$muser   = merge_macro_column $muser,   $user;
 
-	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser, $mark;
+	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser, $mark, $wildcard;
 
 	progress_message "   Rule \"$line\" $done";
     }
@@ -864,8 +864,8 @@ my @param_stack;
 #
 # Once a rule has been completely resolved by macro expansion and wildcard (source and/or dest zone == 'all'), it is processed by this function.
 #
-sub process_rule1 ( $$$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = @_;
+sub process_rule1 ( $$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = split '/', $action;
     my $rule = '';
@@ -902,7 +902,8 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 		       $origdest,
 		       $ratelimit,
 		       $user,
-		       $mark );
+		       $mark,
+		       $wildcard );
 
 	$macro_nest_level--;
 
@@ -974,6 +975,15 @@ sub process_rule1 ( $$$$$$$$$$ ) {
 	$restriction = INPUT_RESTRICT if $destzone eq $firewall_zone;
     }
     #
+    # Check for illegal bridge port rule
+    #
+    if ( $zones{$sourcezone}->{type} eq 'bport4' ) {
+	unless ( $zones{$sourcezone}{bridge} eq $zones{$destzone}{bridge} ) {
+	    return 1 if $wildcard;
+	    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
+	}
+    }
+    #
     # Take care of chain
     #
     my $chain    = "${sourcezone}2${destzone}";
@@ -982,8 +992,13 @@ sub process_rule1 ( $$$$$$$$$$ ) {
     # Validate Policy
     #
     my $policy   = $chainref->{policy};
+
     fatal_error "No policy defined from zone $sourcezone to zone $destzone" unless $policy;
-    fatal_error "Rules may not override a NONE policy"                      if $policy eq 'NONE';
+
+    if ( $policy eq 'NONE' ) {
+	return 1 if $wildcard;
+	fatal_error "Rules may not override a NONE policy";
+    }
     #
     # For compatibility with older Shorewall versions
     #
@@ -1211,17 +1226,15 @@ sub process_rule ( $$$$$$$$$$ ) {
 				my $policychainref = $filter_table->{"${zone}2${zone1}"}{policychain};
 				fatal_error "No policy from zone $zone to zone $zone1" unless $policychainref;
 				my $policy = $policychainref->{policy};
-				unless ( $policy eq 'NONE' ) {
-				    if ( $optimize > 0 ) {
-					my $loglevel = $policychainref->{loglevel};
-					if ( $loglevel ne '' ) {
-					    next if $target eq "${policy}:$loglevel}";
-					} else {
-					    next if $action eq $policy;
-					}
+				if ( $optimize > 0 ) {
+				    my $loglevel = $policychainref->{loglevel};
+				    if ( $loglevel ne '' ) {
+					next if $target eq "${policy}:$loglevel}";
+				    } else {
+					next if $action eq $policy;
 				    }
-				    process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 				}
+				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 			    }
 			}
 		    }
@@ -1232,17 +1245,15 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
 			fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;
 			my $policy = $policychainref->{policy};
-			unless ( $policy eq 'NONE' ) {
-			    if ( $optimize > 0 ) {
-				my $loglevel = $policychainref->{loglevel};
-				if ( $loglevel ne '') {
-				    next if $target eq "${policy}:$loglevel}";
-				} else {
-				    next if $action eq $policy;
-				}
+			if ( $optimize > 0 ) {
+			    my $loglevel = $policychainref->{loglevel};
+			    if ( $loglevel ne '') {
+				next if $target eq "${policy}:$loglevel}";
+			    } else {
+				next if $action eq $policy;
 			    }
-			    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 			}
+			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 		    }
 		}
 	    }
@@ -1254,21 +1265,19 @@ sub process_rule ( $$$$$$$$$$ ) {
 		fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
 		my $policychainref = $filter_table->{"${sourcezone}2${zone}"}{policychain};
 		my $policy = $policychainref->{policy};
-		unless ( $policy eq 'NONE' ) {
-		    if ( $optimize > 0 ) {
-			my $loglevel = $policychainref->{loglevel};
-			if ( $loglevel ne '' ) {
-			    next if $target eq "${policy}:$loglevel}";
-			} else {
-			    next if $action eq $policy;
-			}
+		if ( $optimize > 0 ) {
+		    my $loglevel = $policychainref->{loglevel};
+		    if ( $loglevel ne '' ) {
+			next if $target eq "${policy}:$loglevel}";
+		    } else {
+			next if $action eq $policy;
 		    }
 		}
-		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
+		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 	    }
 	}
     } else {
-	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
+	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 0;
     }
 
     progress_message "   Rule \"$thisline\" $done";
@@ -1366,6 +1375,32 @@ sub generate_matrix() {
     }
 
     #
+    # Match Source Interface
+    #
+    sub match_source_dev( $ ) {
+	my $interface = shift;
+	my $interfaceref =  $interfaces{$interface};
+	if ( $interfaceref->{options}{port} ) {
+	    "-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
+	} else {
+	    "-i $interface ";
+	}
+    }    
+
+    #
+    # Match Dest device
+    #
+    sub match_dest_dev( $ ) {
+	my $interface = shift;
+	my $interfaceref =  $interfaces{$interface};
+	if ( $interfaceref->{options}{port} ) {
+	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
+	} else {
+	    "-o $interface ";
+	}
+    }    
+
+    #
     # Insert the passed exclusions at the front of the passed chain.
     #
     sub insert_exclusions( $$ ) {
@@ -1375,7 +1410,7 @@ sub generate_matrix() {
 
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    insert_rule $chainref , $num++, join( '', "-i $interface ", match_source_net( $net ), '-j RETURN' );
+	    insert_rule $chainref , $num++, join( '', match_source_dev $interface , match_source_net( $net ), '-j RETURN' );
 	}
     }
 
@@ -1387,7 +1422,7 @@ sub generate_matrix() {
 
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    add_rule $chainref , join( '', "-i $interface ", match_source_net( $net ), '-j RETURN' );
+	    add_rule $chainref , join( '', match_source_dev $interface, match_source_net( $net ), '-j RETURN' );
 	}
     }
 
@@ -1409,12 +1444,12 @@ sub generate_matrix() {
     my %policy_exclusions;
 
     for my $interface ( @interfaces ) {
-	addnatjump 'POSTROUTING' , snat_chain( $interface ), "-o $interface ";
+	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
     }
 
     if ( $config{DYNAMIC_ZONES} ) {
 	for my $interface ( @interfaces ) {
-	    addnatjump 'PREROUTING' , dynamic_in( $interface ), "-i $interface ";
+	    addnatjump 'PREROUTING' , dynamic_in( $interface ), match_source_dev( $interface );
 	}
     }
 
@@ -1422,8 +1457,8 @@ sub generate_matrix() {
     addnatjump 'POSTROUTING' , 'nat_out' , '';
 
     for my $interface ( @interfaces ) {
-	addnatjump 'PREROUTING'  , input_chain( $interface )  , "-i $interface ";
-	addnatjump 'POSTROUTING' , output_chain( $interface ) , "-o $interface ";
+	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
+	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
     }
 
     for my $zone ( grep $zones{$_}{options}{complex} , @zones ) {
@@ -1440,9 +1475,10 @@ sub generate_matrix() {
 
 	    for my $host ( @$exclusions ) {
 		my ( $interface, $net ) = split /:/, $host;
-		add_rule $frwd_ref , "-i $interface -s $net -j RETURN";
-		add_rule $in_ref   , "-i $interface -s $net -j RETURN";
-		add_rule $out_ref  , "-i $interface -s $net -j RETURN";
+		my $rule = match_source_interface( $interface ) . "-s $net -j RETURN";
+		add_rule $frwd_ref , $rule;
+		add_rule $in_ref   , $rule;
+		add_rule $out_ref  , $rule;
 	    }
 	}
 
@@ -1520,7 +1556,7 @@ sub generate_matrix() {
 
 			my $source = match_source_net $net;
 
-			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, join( '', "-i $interface ", $source, $ipsec_in_match );
+			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {
@@ -1665,7 +1701,7 @@ sub generate_matrix() {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				for my $net ( @{$hostref->{hosts}} ) {
-				    add_rule $frwd_ref, join( '', "-o $interface ", match_dest_net($net), $ipsec_out_match, "-j $chain" );
+				    add_rule $frwd_ref, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match, "-j $chain" );
 				}
 			    }
 			}
@@ -1690,7 +1726,7 @@ sub generate_matrix() {
 						    #
 						    add_rule(
 							     $chain3ref ,
-							     join( '', "-o $interface1 ", match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" )
+							     join( '', match_dest_dev($interface), match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" )
 							    );
 						}
 					    }
@@ -1730,10 +1766,10 @@ sub generate_matrix() {
     # Now add the jumps to the interface chains from FORWARD, INPUT, OUTPUT and POSTROUTING
     #
     for my $interface ( @interfaces ) {
-	add_rule $filter_table->{FORWARD} , "-i $interface -j " . forward_chain $interface;
-	add_rule $filter_table->{INPUT}   , "-i $interface -j " . input_chain $interface;
-	add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface;
-	addnatjump 'POSTROUTING' , masq_chain( $interface ) , "-o $interface ";
+	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . forward_chain $interface;
+	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . input_chain $interface;
+	add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless $interfaces{$interface}{options}{port};
+	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
     }
 
     my $chainref = $filter_table->{"${firewall_zone}2${firewall_zone}"};

@@ -73,6 +73,7 @@ use constant { NOTHING    => 'NOTHING',
 #                        parents =>    [ <parents> ]     Parents, Children and interfaces are listed by name
 #                        children =>   [ <children> ]
 #                        interfaces => [ <interfaces> ]
+#                        bridge =>     <bridge>
 #                        hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
 #                                                                  options => { <option1> => <value1>
 #                                                                               ...
@@ -223,6 +224,7 @@ sub determine_zones()
 	my $zoneref = $zones{$zone} = {};
 	$zoneref->{parents}    = \@parents;
 	$zoneref->{exclusions} = [];
+	$zoneref->{bridge}     = '';
 
 	$type = "ipv4" unless $type;
 
@@ -230,6 +232,16 @@ sub determine_zones()
 	    $zoneref->{type} = 'ipv4';
 	} elsif ( $type =~ /^ipsec4?$/i ) {
 	    $zoneref->{type} = 'ipsec4';
+	} elsif ( $type =~ /^bport4?$/i ) {
+	    fatal_error "Bridge Port zones must have a single parent zone" unless @parents == 1;
+
+	    for my $p ( @parents ) {
+		my $interfaceref =  $interfaces{$1};
+		fatal_error "Parent Zone $p is not associated with device $1" unless $interfaceref && $interfaceref->{zone} eq $zone;
+	    }
+
+	    $zoneref->{type} = 'bport4';
+	    
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined: $zone" if $firewall_zone;

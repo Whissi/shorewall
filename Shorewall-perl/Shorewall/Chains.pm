@@ -1037,7 +1037,7 @@ sub do_tos( $ ) {
 sub match_source_dev( $ ) {
     my $interface = shift;
     my $interfaceref =  $interfaces{$interface};
-    if ( $interfaceref->{options}{port} ) {
+    if ( $interfaceref && $interfaceref->{options}{port} ) {
 	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
     } else {
 	"-i $interface ";
@@ -1050,7 +1050,7 @@ sub match_source_dev( $ ) {
 sub match_dest_dev( $ ) {
     my $interface = shift;
     my $interfaceref =  $interfaces{$interface};
-    if ( $interfaceref->{options}{port} ) {
+    if ( $interfaceref && $interfaceref->{options}{port} ) {
 	"-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
     } else {
 	"-o $interface ";

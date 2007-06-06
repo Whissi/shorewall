@@ -233,7 +233,7 @@ sub determine_zones()
 	} elsif ( $type =~ /^ipsec4?$/i ) {
 	    $zoneref->{type} = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
-	    fatal_error "Bridge Port zones must have a single parent zone" unless @parents == 1;
+	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
 	    $zoneref->{type} = 'bport4';
 	    
 	} elsif ( $type eq 'firewall' ) {
@@ -363,7 +363,6 @@ sub dump_zone_contents()
 			    $entry .= " $interface:$grouplist";
 			}
 		    }
-
 		}
 	    }
 	}

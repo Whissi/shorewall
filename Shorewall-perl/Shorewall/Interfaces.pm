@@ -229,7 +229,8 @@ sub validate_interfaces_file()
 		    $zoneref->{bridge} = $interface;
 		}
 	    }
-
+	    
+	    $interfaces{$interface}{ports}++;
 	    $interfaces{$port}{bridge} = $bridge = $interface;
 	    $interface = $port;
 	} else {
@@ -246,7 +247,7 @@ sub validate_interfaces_file()
 	} else {	    
 	    $interfaces{$interface}{root} = $interface;
 	}
-    
+
 	unless ( $networks eq '' || $networks eq 'detect' ) {
 
 	    for my $address ( split /,/, $networks ) {
@@ -339,7 +340,16 @@ sub validate_interfaces_file()
     for my $interface ( @ifaces ) {
 	my $interfaceref = $interfaces{$interface};
 	
-	push @interfaces, ( grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces ) if $interfaceref->{options}{bridge};
+	if ( $interfaceref->{options}{bridge} ) {
+	    my @ports = grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces;
+
+	    if ( @ports ) {
+		push @interfaces, @ports;
+	    } else {
+		$interfaceref->{options}{routeback} = 1; #so the bridge will work properly
+	    }
+	}
+
 	push @interfaces, $interface unless $interfaceref->{options}{port};
     }	
 }
@@ -356,14 +366,14 @@ sub known_interface($)
     return 1 if exists $interfaces{$interface};
 
     for my $i ( @interfaces ) {
-	my $val = $interfaces{$i}{root};
+	my $interfaceref = $interfaces{$i};
+	my $val = $interfaceref->{root};
 	next if $val eq $i;
-	my $len = length $val;
-	if ( substr( $interface, 0, $len ) eq $val ) {
+	if ( substr( $interface, 0, length $val ) eq $val ) {
 	    #
 	    # Cache this result for future reference
 	    #
-	    $interfaces{$interface} = undef;
+	    $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} };
 	    return 1;
 	}
     }

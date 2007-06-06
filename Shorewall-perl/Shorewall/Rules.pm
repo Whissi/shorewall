@@ -558,7 +558,7 @@ sub add_common_rules() {
 		add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
 	    }
 
-	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interfaces{$interface}{options}{routeback};
+	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interfaces{$interface}{options}{bridge};
 	}
     }
 
@@ -635,7 +635,7 @@ sub add_common_rules() {
 	mark_referenced( new_chain( 'nat', 'UPnP' ) );
 
 	for $interface ( @$list ) {
-	    add_rule $nat_table->{PREROUTING} , "-i $interface -j UPnP";
+	    add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
 	}
     }
 
@@ -757,7 +757,7 @@ sub setup_mac_lists( $ ) {
 		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
 	    } else {
-		add_rule $mangle_table->{PREROUTING}, "-i $interface ${source}-m state --state NEW ${policy}-j $target";
+		add_rule $mangle_table->{PREROUTING}, match_source_interface( $interface ) . "${source}-m state --state NEW ${policy}-j $target";
 	    }
 	}
     } else {

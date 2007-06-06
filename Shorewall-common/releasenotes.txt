@@ -73,7 +73,24 @@ Other changes in Shorewall 4.0.0 Beta 3.
 	net	eth0	-	...
 	loc	br0	-	...
 	lan	eth1
-	vpn	tap0	
+	vpn	tap0
+
+    When using the /etc/shorewall/hosts file to define a bport4 zone,
+    you specify only the port name:
+
+    Example:
+
+    /etc/shorewall/zones:
+
+	fw	firewall
+	net	ipv4
+	loc	ipv4
+	lan:loc	bport
+	vpn:loc bport
+
+    /etc/shorewall/hosts
+
+	lan	eth1:192.168.2.0/24	...	
 
 Migration Considerations:
 

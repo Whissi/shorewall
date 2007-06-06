@@ -244,14 +244,13 @@ sub validate_policy()
 #
 sub policy_rules( $$$$ ) {
     my ( $chainref , $target, $loglevel, $default ) = @_;
-
-    add_rule $chainref, "-j $default" if $default && $default ne 'none';
-
-    log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
-
-    fatal_error "Null target in policy_rules()" unless $target;
-
-    add_rule $chainref , ( '-j ' . ( $target eq 'REJECT' ? 'reject' : $target ) ) unless $target eq 'CONTINUE';
+   
+    unless ( $target eq 'NONE' ) {
+	add_rule $chainref, "-j $default" if $default && $default ne 'none';
+	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
+	fatal_error "Null target in policy_rules()" unless $target;
+	add_rule $chainref , ( '-j ' . ( $target eq 'REJECT' ? 'reject' : $target ) ) unless $target eq 'CONTINUE';
+    }
 }
 
 sub report_syn_flood_protection() {

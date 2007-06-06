@@ -1726,7 +1726,7 @@ sub generate_matrix() {
 						    #
 						    add_rule(
 							     $chain3ref ,
-							     join( '', match_dest_dev($interface), match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" )
+							     join( '', match_dest_dev($interface1), match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" )
 							    );
 						}
 					    }

@@ -870,14 +870,15 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     my ( $basictarget, $param ) = split '/', $action;
     my $rule = '';
     my $actionchainref;
+    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;
 
     $param = '' unless defined $param;
-
+    
     #
     # Determine the validity of the action
     #
     my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
-
+    
     fatal_error "Unknown action ($action)" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
@@ -890,7 +891,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    push @param_stack, $current_param;
 	    $current_param = $param;
 	}
-
+	
 	process_macro( $macros{$basictarget},
 		       $target ,
 		       $current_param,
@@ -906,7 +907,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		       $wildcard );
 
 	$macro_nest_level--;
-
+	
 	$current_param = pop @param_stack if $param ne '';
 
 	return;
@@ -945,7 +946,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     my $sourcezone;
     my $destzone;
-
+    
     if ( $source =~ /^(.+?):(.*)/ ) {
 	$sourcezone = $1;
 	$source = $2;
@@ -961,7 +962,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$destzone = $dest;
 	$dest = ALLIPv4;
     }
-
+    
     fatal_error "Missing source zone" if $sourcezone eq '-';
     fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
     fatal_error "Missing destination zone" if $destzone eq '-';
@@ -998,6 +999,17 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     if ( $policy eq 'NONE' ) {
 	return 1 if $wildcard;
 	fatal_error "Rules may not override a NONE policy";
+    }
+    #
+    # Handle Optimization
+    #
+    if ( $optimize > 0 ) {
+	my $loglevel = $chainref->{policychain}{loglevel};
+	if ( $loglevel ne '' ) {
+	    return 1 if $target eq "${policy}:$loglevel}";
+	} else {
+	    return 1 if $basictarget eq $policy;
+	}
     }
     #
     # For compatibility with older Shorewall versions
@@ -1223,17 +1235,6 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    for my $zone1 ( @zones ) {
 			if ( $includedstfw || ( $zones{$zone1}{type} ne 'firewall' ) ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
-				my $policychainref = $filter_table->{"${zone}2${zone1}"}{policychain};
-				fatal_error "No policy from zone $zone to zone $zone1" unless $policychainref;
-				my $policy = $policychainref->{policy};
-				if ( $optimize > 0 ) {
-				    my $loglevel = $policychainref->{loglevel};
-				    if ( $loglevel ne '' ) {
-					next if $target eq "${policy}:$loglevel}";
-				    } else {
-					next if $action eq $policy;
-				    }
-				}
 				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 			    }
 			}
@@ -1241,18 +1242,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 		} else {
 		    my $destzone = (split( /:/, $dest, 2 ) )[0];
 		    $destzone = $firewall_zone unless $zones{$destzone}; # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
-		    my $policychainref = $filter_table->{"${zone}2${destzone}"}{policychain};
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
-			fatal_error "No policy from zone $zone to zone $destzone" unless $policychainref;
-			my $policy = $policychainref->{policy};
-			if ( $optimize > 0 ) {
-			    my $loglevel = $policychainref->{loglevel};
-			    if ( $loglevel ne '') {
-				next if $target eq "${policy}:$loglevel}";
-			    } else {
-				next if $action eq $policy;
-			    }
-			}
 			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 		    }
 		}
@@ -1262,17 +1252,6 @@ sub process_rule ( $$$$$$$$$$ ) {
 	for my $zone ( @zones ) {
 	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
 	    if ( ( $includedstfw || ( $zones{$zone}{type} ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
-		fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
-		my $policychainref = $filter_table->{"${sourcezone}2${zone}"}{policychain};
-		my $policy = $policychainref->{policy};
-		if ( $optimize > 0 ) {
-		    my $loglevel = $policychainref->{loglevel};
-		    if ( $loglevel ne '' ) {
-			next if $target eq "${policy}:$loglevel}";
-		    } else {
-			next if $action eq $policy;
-		    }
-		}
 		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 	    }
 	}

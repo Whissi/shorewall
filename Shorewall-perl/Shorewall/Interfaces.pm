@@ -339,15 +339,8 @@ sub validate_interfaces_file()
     for my $interface ( @ifaces ) {
 	my $interfaceref = $interfaces{$interface};
 	
-	next if $interfaceref->{options}{port};
-	
-	if ( $interfaceref->{options}{bridge} ) {
-	    for my $port ( grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces ) {
-		push @interfaces, $port;
-	    }
-	}
-	
-	push @interfaces, $interface;
+	push @interfaces, ( grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces ) if $interfaceref->{options}{bridge};
+	push @interfaces, $interface unless $interfaceref->{options}{port};
     }	
 }
 

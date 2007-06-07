@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 3.9 -- /usr/share/shorewall-perl/Shorewall/Zones.pm
+# Shorewall-perl 3.9 -- /usr/share/shorewall-perl/Shorewall/Zones.pm      
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -40,6 +40,7 @@ our @EXPORT = qw( NOTHING
 		  zone_report
 		  dump_zone_contents
 		  haveipseczones
+		  single_interface
 
 		  @zones
 		  %zones
@@ -376,5 +377,23 @@ sub dump_zone_contents()
 	emit_unindented $entry;
     }
 }
+
+#
+# If the passed zone is associated with a single interface, the name of the interface is returned. Otherwise, the funtion returns '';
+#
+sub single_interface( $ ) {
+    my $zone = $_[0];
+    my $zoneref = $zones{$zone};
+    fatal_error "Internal Error in single_zone()" unless $zoneref;
+
+    {
+	no warnings;
+	if ( %{$zoneref->{interfaces}} == 1 ) {
+	    ( keys %{$zoneref->{interfaces}} )[0];
+	} else {
+	    '';
+	}
+    }
+} 
 
 1;

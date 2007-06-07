@@ -188,7 +188,7 @@ sub validate_policy()
 	unless ( $clientwild || $serverwild ) {
 	    if ( $zones{$server}{type} eq 'bport4' ) {
 		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge" 
-		    unless $zones{$client}{bridge} eq $zones{$server}{bridge};
+		    unless $zones{$client}{bridge} eq $zones{$server}{bridge} || single_interface( $client ) eq $zones{$server}{bridge};
 	    }
 	}   
 

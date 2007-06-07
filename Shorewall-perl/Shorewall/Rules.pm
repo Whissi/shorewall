@@ -979,7 +979,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     # Check for illegal bridge port rule
     #
     if ( $zones{$destzone}->{type} eq 'bport4' ) {
-	unless ( $zones{$sourcezone}{bridge} eq $zones{$destzone}{bridge} ) {
+	unless ( $zones{$sourcezone}{bridge} eq $zones{$destzone}{bridge} || single_interface( $sourcezone ) eq $zones{$destzone}{bridge} ) {
 	    return 1 if $wildcard;
 	    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
 	}

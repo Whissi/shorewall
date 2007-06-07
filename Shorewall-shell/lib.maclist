@@ -235,7 +235,7 @@ setup_mac_lists() # $1 = Phase Number
 		if [ -n "$MACLIST_LOG_LEVEL" -o $MACLIST_DISPOSITION != ACCEPT ]; then
 		    indent >&3 << __EOF__
 
-if interface_is_usable $interface; then
+if interface_is_up $interface; then
     ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
         address=\${address%/*}
         if [ -n "\$broadcast" ]; then

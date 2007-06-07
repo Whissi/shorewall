@@ -766,7 +766,7 @@ sub setup_mac_lists( $ ) {
 	    my $chain    = $chainref->{name};
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
-		my $variable = get_interface_addresses $interface;
+		my $variable = get_interface_addresses $interfaces{$interface}{bridge};
 		add_commands( $chainref, 
 			      "for address in $variable; do",
 			      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",

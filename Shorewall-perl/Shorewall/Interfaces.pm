@@ -365,7 +365,7 @@ sub known_interface($)
 {
     my $interface = $_[0];
 
-    return 1 if exists $interfaces{$interface};
+    return 1 if $interfaces{$interface};
 
     for my $i ( @interfaces ) {
 	my $interfaceref = $interfaces{$i};

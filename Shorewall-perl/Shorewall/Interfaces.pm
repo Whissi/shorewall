@@ -42,7 +42,6 @@ our @EXPORT = qw( add_group_to_zone
 		  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option
-		  clear_interface_option
 
 		  @interfaces  );
 our @EXPORT_OK = ();
@@ -325,6 +324,7 @@ sub validate_interfaces_file( $ )
 	    fatal_error "The 'detectnets' option may not be used with the '-e' compiler option" if $export;
 	    @networks = get_routed_networks( $interface, 'detectnets not allowed on interface with default route' );
 	    fatal_error "No routes found through 'detectnets' interface $interface" unless @networks || $options{optional};
+	    delete $options{maclist} unless @networks;
 	} else {
 	    @networks = @allipv4;
 	}
@@ -434,15 +434,6 @@ sub get_interface_option( $$ ) {
     my ( $interface, $option ) = @_;
 
     $interfaces{$interface}{options}{$option};
-}
-
-#
-# Clear an option for an interface
-#
-sub clear_interface_option( $$ ) {
-    my ( $interface, $option ) = @_;
-
-    delete $interfaces{$interface}{options}{$option};
 }
 
 1;

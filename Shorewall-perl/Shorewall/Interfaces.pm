@@ -42,6 +42,7 @@ our @EXPORT = qw( add_group_to_zone
 		  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option
+		  clear_interface_option
 
 		  @interfaces  );
 our @EXPORT_OK = ();
@@ -433,6 +434,15 @@ sub get_interface_option( $$ ) {
     my ( $interface, $option ) = @_;
 
     $interfaces{$interface}{options}{$option};
+}
+
+#
+# Clear an option for an interface
+#
+sub clear_interface_option( $$ ) {
+    my ( $interface, $option ) = @_;
+
+    delete $interfaces{$interface}{options}{$option};
 }
 
 1;

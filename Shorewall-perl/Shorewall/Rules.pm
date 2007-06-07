@@ -714,7 +714,14 @@ sub setup_mac_lists( $ ) {
 
 		fatal_error "Invalid DISPOSITION ( $disposition)" if ( $table eq 'mangle' ) && ! $targetref->{mangle};
 
-		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
+		unless ( $maclist_interfaces{$interface} ) {
+		    if ( get_interface_option( $interface, 'optional' ) && get_interface_option( $interface, 'detectnets' ) ) {
+			clear_interface_option( $interface, 'maclist' );
+			next;
+		    } 
+		
+		    fatal_error "No hosts on $interface have the maclist option specified";
+		}
 
 		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 

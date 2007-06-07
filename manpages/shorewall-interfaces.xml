@@ -55,7 +55,9 @@ loc     eth2            -</programlisting>
 
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> —
-        <emphasis>interface</emphasis></term>
+        <emphasis>interface</emphasis><emphasis
+        role="bold">[:</emphasis><emphasis>port</emphasis><emphasis
+        role="bold">]</emphasis></term>
 
         <listitem>
           <para>Name of interface. Each interface may be listed only once in
@@ -70,6 +72,12 @@ loc     eth2            -</programlisting>
 
           <para>There is no need to define the loopback interface (lo) in this
           file.</para>
+
+          <para>(Shorewall-perl only) If a <replaceable>port</replaceable> is
+          given, then the <replaceable>interface</replaceable> must have been
+          defined previously with the <option>bridge</option> option. The
+          OPTIONS column must be empty when a <replaceable>port</replaceable>
+          is given.</para>
         </listitem>
       </varlistentry>
 
@@ -182,6 +190,15 @@ loc     eth2            -</programlisting>
                 <ulink
                 url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
                 file.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">bridge</emphasis></term>
+
+              <listitem>
+                <para>(Shorewall-perl only) Designates the interface as a
+                bridge.</para>
               </listitem>
             </varlistentry>
 

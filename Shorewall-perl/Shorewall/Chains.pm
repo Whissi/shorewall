@@ -235,12 +235,12 @@ our %targets = ('ACCEPT'       => STANDARD,
 #
 # expand_rule() restrictions
 #
-use constant { NO_RESTRICT        => 0,
-	       PREROUTE_RESTRICT  => 1,
-	       INPUT_RESTRICT     => 4,
-	       OUTPUT_RESTRICT    => 8,
-	       POSTROUTE_RESTRICT => 16,
-	       ALL_RESTRICT       => 12
+use constant { NO_RESTRICT        => 0,   # Both -i and -o may be used in the rule
+	       PREROUTE_RESTRICT  => 1,   # PREROUTING chain rule - -o converted to -d <address list> using main routing table
+	       INPUT_RESTRICT     => 4,   # INPUT chain rule  - -o not allowed
+	       OUTPUT_RESTRICT    => 8,   # OUTPUT chain rule - -i not allowed
+	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
+	       ALL_RESTRICT       => 12   # INPUT_RESTRICT + OUTPUT_RESTRICT (fw->fw rule - neither -i nor -o allowed)
 	       };
 #
 # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...

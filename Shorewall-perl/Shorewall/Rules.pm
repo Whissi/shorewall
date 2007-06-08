@@ -1332,7 +1332,7 @@ sub generate_matrix() {
 	my $chainref = $filter_table->{$chain};
 
 	return $chain   if $chainref && $chainref->{referenced};
-	return 'ACCEPT' if $zone eq $zone1 && @{$zones{$zone}{exclusions}} == 0;
+	return 'ACCEPT' if $zone eq $zone1;
 
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $chainref->{policychain};

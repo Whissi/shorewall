@@ -63,6 +63,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Actions.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Chains.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Common.pm
+%attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Compiler.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Config.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Hosts.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Interfaces.pm

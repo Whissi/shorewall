@@ -1423,7 +1423,6 @@ sub generate_matrix() {
 	my $exclusions = $zoneref->{exclusions};
 
 	if ( @$exclusions ) {
-	    my $num = 1;
 	    my $in_ref  = new_standard_chain "${zone}_input";
 	    my $out_ref = new_standard_chain "${zone}_output";
 

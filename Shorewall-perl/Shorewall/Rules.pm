@@ -1324,7 +1324,7 @@ sub generate_matrix() {
     # Helper functions for generate_matrix()
     #-----------------------------------------
     #
-    # Return the target for rules from the $zone to $zone1.
+    # Return the target for rules from $zone to $zone1.
     #
     sub rules_target( $$ ) {
 	my ( $zone, $zone1 ) = @_;
@@ -1332,7 +1332,7 @@ sub generate_matrix() {
 	my $chainref = $filter_table->{$chain};
 
 	return $chain   if $chainref && $chainref->{referenced};
-	return 'ACCEPT' if $zone eq $zone1;
+	return 'ACCEPT' if $zone eq $zone1 && @{$zones{$zone}{exclusions}} == 0;
 
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $chainref->{policychain};
@@ -1414,6 +1414,9 @@ sub generate_matrix() {
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
     }
 
+    #
+    # Special processing for complex zones
+    #
     for my $zone ( grep $zones{$_}{options}{complex} , @zones ) {
 	my $frwd_ref   = new_standard_chain "${zone}_frwd";
 	my $zoneref    = $zones{$zone};
@@ -1649,7 +1652,8 @@ sub generate_matrix() {
 		    }
 
 		    $chain = $chain1;
-		} elsif ( $chain ne 'ACCEPT' ) {
+		} else {
+		    fatal_error "Fatal Error in generate_matrix()" if $chain eq 'ACCEPT';
 		    insert_exclusions $chainref , $exclusions1;
 		}
 	    }

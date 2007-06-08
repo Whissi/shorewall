@@ -1850,7 +1850,14 @@ sub create_netfilter_load() {
     #
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    for my $table ( qw/raw nat mangle filter/  ) {
+    my @table_list;
+
+    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
+    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
+    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED};
+    push @table_list, 'filter';
+
+    for my $table ( @table_list ) {
 	emitr "*$table";
 
 	my @chains;

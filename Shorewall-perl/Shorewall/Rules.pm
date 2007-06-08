@@ -1363,7 +1363,7 @@ sub generate_matrix() {
 
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    insert_rule $chainref , $num++, join( '', match_source_dev $interface , match_source_net( $net ), '-j RETURN' );
+	    insert_rule $chainref , $num++, join( '', match_dest_dev $interface , match_dest_net( $net ), '-j RETURN' );
 	}
     }
 
@@ -1375,7 +1375,7 @@ sub generate_matrix() {
 
 	for my $host ( @{$exclusionsref} ) {
 	    my ( $interface, $net ) = split /:/, $host;
-	    add_rule $chainref , join( '', match_source_dev $interface, match_source_net( $net ), '-j RETURN' );
+	    add_rule $chainref , join( '', match_dest_dev $interface, match_dest_net( $net ), '-j RETURN' );
 	}
     }
 

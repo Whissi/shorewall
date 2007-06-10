@@ -59,17 +59,6 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	"-j $jumpchain";
     }
 
-    my $restriction = NO_RESTRICT;
-
-    if ( @bridges && $source =~ /^$firewall_zone:?/ ) {
-	$restriction = OUTPUT_RESTRICT;
-	$chain = 'accountout' unless $chain and $chain ne '-';
-    } else {
-	$chain = 'accounting' unless $chain and $chain ne '-';
-    }
-
-    my $chainref = ensure_filter_chain $chain , 0;
-
     my $target = '';
 
     $proto  = ''    if $proto  eq 'any';
@@ -97,8 +86,36 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	}
     }
 
+    my $restriction = NO_RESTRICT;
+
     $source = ALLIPv4 if $source eq 'any' || $source eq 'all';
-    $dest   = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
+
+    if ( @bridges ) {
+	if ( $source =~ /^$firewall_zone:?/ ) {
+	    $restriction = OUTPUT_RESTRICT;
+	    $chain = 'accountout' unless $chain and $chain ne '-';
+	} else {
+	    $chain = 'accounting' unless $chain and $chain ne '-';
+	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIPv4 ) {
+		expand_rule(
+			    ensure_filter_chain( 'accountout' , 0 ) ,
+			    OUTPUT_RESTRICT ,
+			    $rule ,
+			    $source ,
+			    $dest = ALLIPv4 ,
+			    '' ,
+			    $target ,
+			    '' ,
+			    '' ,
+			    ''  );
+	    }
+	}
+    } else {
+	$chain = 'accounting';
+	$dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
+    }
+
+    my $chainref = ensure_filter_chain $chain , 0;
 
     expand_rule
 	$chainref ,

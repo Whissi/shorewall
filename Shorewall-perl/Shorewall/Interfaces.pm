@@ -395,8 +395,7 @@ sub port_to_bridge( $ ) {
 }
 
 #
-# Return the bridge associated with the passed interface. If the interface is not a bridge port, return 
-# the name of the interface itself.
+# Return the bridge associated with the passed interface.
 #
 sub source_port_to_bridge( $ ) {
     my $portref = $interfaces{$_[0]};

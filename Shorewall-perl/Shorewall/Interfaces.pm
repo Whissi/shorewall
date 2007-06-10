@@ -39,6 +39,7 @@ our @EXPORT = qw( add_group_to_zone
 		  validate_interfaces_file
 		  known_interface
 		  port_to_bridge
+		  source_port_to_bridge
 		  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option

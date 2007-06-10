@@ -1,4 +1,4 @@
-Shorewall 4.0.0 Beta 4
+Shorewall 4.0.0 Beta 5
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -15,85 +15,19 @@ Shorewall 4.0.0 Beta 4
 You must install Shorewall and at least one of the compiler packages
 (you may install them both).
 
-Problems corrected in 4.0.0 Beta 4.
+Problems corrected in 4.0.0 Beta 5.
 
-1)  Wildcard rules (with 'all' in the SOURCE and/or DEST columns)
-    attempt to override NONE policies with the result that the compile
-    phase fails (Shorewall-perl only).
+1)  With Shorewall-perl, if a bridge port is used to qualify the SOURCE
+    in a rule where there is also a DEST interface, then the following
+    diagnostic is produced:
 
-2)  When exclusion is used in the /etc/shorewall/hosts file, correct
-    rules are now generated.
+    Undefined subroutine &Shorewall::Chains::source_port_to_bridge called 
+    at /usr/share/shorewall-perl/Shorewall/Chains.pm line 1521, <$currentfile> 
+    line 363.
 
-Other changes in Shorewall 4.0.0 Beta 3.
+Other changes in Shorewall 4.0.0 Beta 5.
 
-1)  Shorewall-perl has a new implementation of bridging code that works
-    with kernels 2.6.20 and later. This new implementation may be used
-    where it is desired to control traffic through a bridge.
-
-    The new implementation includes the following features:
-
-    a)  A new "Bridge Port" zone type is defined. Specify 'bport' or
-        'bport4' in the TYPE column of /etc/shorewall/zones.
-
-	Bridge Port zones must be a sub-zone of a regular ipv4 zone
-	that represents all hosts attached to the bridge.
-
-    b)  A new 'bridge' option is defined for entries in
-        /etc/shorewall/interfaces. Bridges should have this option
-        specified if traffic through the bridge is to be controlled
-        with rules/policies.
-
-    c)  Bridge ports must now be defined in
-        /etc/shorewall/interfaces. The INTERFACE column contains both
-	the bridge name and the port name separated by a colon (e.g.,
-        "br0:eth1"). No OPTIONS are allowed for bridge ports. The
-        bridge must be defined before its ports.
-
-    Bridge Port (BP) zones have a number of limitations:
-
-    a)  Each BP zone may only be associated with ports on a single
-        bridge.
-
-    b)  BP zones may not be associated with interfaces that are not
-        bridge ports.
-
-    c)  You may not have policies or rules where the DEST is a BP zone
-        but the source is not a BP zone. If you need such rules, you
-        must use the BP zone's parent zone as the DEST.
-
-    Example (Bridge br0 with ports eth1 and tap0):
-
-    /etc/shorewall/zones:
-
-	fw	firewall
-	net	ipv4
-	loc	ipv4
-	lan:loc	bport
-	vpn:loc bport
-
-    /etc/shorewall/interfaces:
-
-	net	eth0	-	...
-	loc	br0	-	...
-	lan	eth1
-	vpn	tap0
-
-    When using the /etc/shorewall/hosts file to define a bport4 zone,
-    you specify only the port name:
-
-    Example:
-
-    /etc/shorewall/zones:
-
-	fw	firewall
-	net	ipv4
-	loc	ipv4
-	lan:loc	bport
-	vpn:loc bport
-
-    /etc/shorewall/hosts
-
-	lan	eth1:192.168.2.0/24	...	
+None.
 
 Migration Considerations:
 

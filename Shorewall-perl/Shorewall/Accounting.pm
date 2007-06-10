@@ -102,7 +102,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     expand_rule
 	$chainref ,
-	NO_RESTRICT ,
+	$restriction ,
 	$rule ,
 	$source ,
 	$dest ,
@@ -115,7 +115,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     if ( $rule2 ) {
 	expand_rule
 	    $jumpchainref ,
-	    NO_RESTRICT ,
+	    $restriction ,
 	    $rule ,
 	    $source ,
 	    $dest ,

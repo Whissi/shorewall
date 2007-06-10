@@ -44,7 +44,8 @@ our @EXPORT = qw( add_group_to_zone
 		  find_interfaces_by_option
 		  get_interface_option
 
-		  @interfaces  );
+		  @interfaces
+		  @bridges );
 our @EXPORT_OK = ();
 our @VERSION = 1.00;
 
@@ -64,6 +65,7 @@ our @VERSION = 1.00;
 #
 our @interfaces;
 our %interfaces;
+our @bridges;
 
 sub add_group_to_zone($$$$$)
 {
@@ -308,6 +310,7 @@ sub validate_interfaces_file( $ )
 	    if ( $options{bridge} ) {
 		require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 		fatal_error "Bridges may not have wildcard names" if $wildcard;
+		push @bridges, $interface;
 	    }
 	} elsif ( defined $port ) {
 	    $options{port} = 1;

@@ -29,6 +29,7 @@ use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
+use Shorewall::Interfaces;
 use Shorewall::Chains;
 
 use strict;
@@ -58,8 +59,13 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	"-j $jumpchain";
     }
 
-    unless ( $chain and $chain ne '-' ) {
-	$chain = $source =~ /^$firewall_zone:?/ ? 'accountout' : 'accounting';
+    my $restriction = NO_RESTRICT;
+
+    if ( @bridges && $source =~ /^$firewall_zone:?/ ) {
+	$restriction = OUTPUT_RESTRICT;
+	$chain = 'accountout' unless $chain and $chain ne '-';
+    } else {
+	$chain = 'accounting' unless $chain and $chain ne '-';
     }
 
     my $chainref = ensure_filter_chain $chain , 0;
@@ -139,22 +145,35 @@ sub setup_accounting() {
 	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark;
     }
 
-    if ( $filter_table->{accounting} ) {
-	for my $chain ( qw/INPUT FORWARD/ ) {
-	    insert_rule $filter_table->{$chain}, 1, '-j accounting';
-	    insert_rule $filter_table->{$chain}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
+    if ( @bridges ) {
+	if ( $filter_table->{accounting} ) {
+	    for my $chain ( qw/INPUT FORWARD/ ) {
+		insert_rule $filter_table->{$chain}, 1, '-j accounting';
+		insert_rule $filter_table->{$chain}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
+	    }
+	} elsif ( $config{FASTACCEPT} ) {
+	    for my $chain ( qw/INPUT FORWARD/ ) {
+		insert_rule $filter_table->{$chain}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
+	    }
 	}
-    } elsif ( $config{FASTACCEPT} ) {
-	for my $chain ( qw/INPUT FORWARD/ ) {
-	    insert_rule $filter_table->{$chain}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
-	}
-    }
 
-    if ( $filter_table->{accountout} ) {
-	insert_rule $filter_table->{OUTPUT}, 1, '-j accountout';
-	insert_rule $filter_table->{OUTPUT}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
-    } elsif ( $config{FASTACCEPT} ) {
-	insert_rule $filter_table->{OUTPUT}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
+	if ( $filter_table->{accountout} ) {
+	    insert_rule $filter_table->{OUTPUT}, 1, '-j accountout';
+	    insert_rule $filter_table->{OUTPUT}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
+	} elsif ( $config{FASTACCEPT} ) {
+	    insert_rule $filter_table->{OUTPUT}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
+	}
+    } else {
+	if ( $filter_table->{accounting} ) {
+	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
+		insert_rule $filter_table->{$chain}, 1, '-j accounting';
+		insert_rule $filter_table->{$chain}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
+	    }
+	} elsif ( $config{FASTACCEPT} ) {
+	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
+		insert_rule $filter_table->{$chain}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
+	    }
+	}
     }
 }
 

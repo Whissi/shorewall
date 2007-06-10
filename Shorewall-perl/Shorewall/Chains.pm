@@ -1511,9 +1511,10 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    fatal_error "Bridge port ( $diface) not allowed" if port_to_bridge( $diface );
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
-	    $rule .= '-d $dest';
+	    $rule .= '-d $dest ';
 	    $chainref->{loopcount}++;
 	} else {
+	    fatal_error "Bridge Port ( $diface ) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
 
 	    if ( $iiface ) {

@@ -91,9 +91,12 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     $source = ALLIPv4 if $source eq 'any' || $source eq 'all';
 
     if ( @bridges ) {
-	if ( $source =~ /^$firewall_zone:?/ ) {
+	if ( $source =~ /^$firewall_zone:?(.*)$/ ) {
+	    $source = $1;
+	    $source = ALLIPv4 unless $source;
 	    $restriction = OUTPUT_RESTRICT;
 	    $chain = 'accountout' unless $chain and $chain ne '-';
+	    $dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
 	} else {
 	    $chain = 'accounting' unless $chain and $chain ne '-';
 	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIPv4 ) {

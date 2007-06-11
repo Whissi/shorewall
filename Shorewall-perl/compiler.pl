@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-#     The Shoreline Firewall4 (Shorewall-perl) Packet Filtering Firewall Compiler - V3.9
+#     The Shoreline Firewall4 (Shorewall-perl) Packet Filtering Firewall Compiler - V4.0
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -25,31 +25,32 @@
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
-use Shorewall::Common qw/ $verbose $timestamp /;
-use Shorewall::Config qw/ fatal_error $shorewall_dir /;
-use Shorewall::Compiler qw/ compiler $export /;
+use Shorewall::Config qw( fatal_error );
+use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage() {
     print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ <filename> ]\n";
     exit 1;
 }
-
+#
+#                                     E x e c u t i o n   S t a r t s   H e r e
+#
 Getopt::Long::Configure ('bundling');
 
-my $result = GetOptions('export'      => \$export,
-			'e'           => \$export,
-			'directory=s' => \$shorewall_dir,
-			'd=s'         => \$shorewall_dir,
-			'verbose=i'   => \$verbose,
-			'v=i'         => \$verbose,
-			'timestamp'   => \$timestamp,
-			't'           => \$timestamp );
+my $result = GetOptions('export'      => \$Shorewall::Compiler::export,
+			'e'           => \$Shorewall::Compiler::export,
+			'directory=s' => \$Shorewall::Config::shorewall_dir,
+			'd=s'         => \$Shorewall::Config::shorewall_dir,
+			'verbose=i'   => \$Shorewall::Common::verbose,
+			'v=i'         => \$Shorewall::Common::verbose,
+			'timestamp'   => \$Shorewall::Common::timestamp,
+			't'           => \$Shorewall::Common::timestamp );
 
 usage unless $result;
 
-if ( $shorewall_dir ne '' ) {
-    fatal_error "$shorewall_dir is not an existing directory" unless -d $shorewall_dir;
+if ( $Shorewall::Config::shorewall_dir ne '' ) {
+    fatal_error "$Shorewall::Config::shorewall_dir is not an existing directory" unless -d $Shorewall::Config::shorewall_dir;
 }
 
 usage unless @ARGV < 2;

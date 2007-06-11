@@ -43,11 +43,28 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( compiler );
+our @EXPORT = qw( compiler configure );
 our @EXPORT_OK = qw( $export );
 our @VERSION = 1.00;
 
 our $export = 0;
+
+#
+# Configure the compiler
+#
+sub configure( $$$$ ) {
+    my ( $export_param, $shorewall_dir, $verbose, $timestamp) = @_;
+
+    $export = $export_param if $export_param;
+    
+    if ( $shorewall_dir ne '' ) {
+	fatal_error "$shorewall_dir is not an existing directory" unless -d $shorewall_dir;
+	set_shorewall_dir( $shorewall_dir );
+    }
+
+    set_verbose( $verbose )     unless $verbose eq '';
+    set_timestamp( $timestamp ) unless $timestamp eq '';
+}
 
 #
 # First stage of script generation.

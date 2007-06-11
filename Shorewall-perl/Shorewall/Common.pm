@@ -42,6 +42,8 @@ our @EXPORT = qw(
 		 emit_unindented
 		 save_progress_message
 		 save_progress_message_short
+		 set_timestamp
+		 set_verbose
 		 progress_message
 		 progress_message2
 		 progress_message3
@@ -78,9 +80,7 @@ our $tempfile;            # Temporary File Name
 #
 sub fatal_error
 {
-    print STDERR "   ERROR: @_\n";
-
-    exit 1;
+    die "   ERROR: @_\n";
 }
 
 #
@@ -152,6 +152,20 @@ sub save_progress_message( $ ) {
 #
 sub save_progress_message_short( $ ) {
     emit "progress_message $_[0]" if $object;
+}
+
+#
+# Set $timestamp
+# 
+sub set_timestamp( $ ) {
+    $timestamp = shift;
+}
+
+#
+# Set $verbose
+# 
+sub set_verbose( $ ) {
+    $verbose = shift;
 }
 
 #

@@ -25,7 +25,6 @@
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
-use Shorewall::Config qw( fatal_error );
 use Shorewall::Compiler;
 use Getopt::Long;
 
@@ -38,21 +37,26 @@ sub usage() {
 #
 Getopt::Long::Configure ('bundling');
 
-my $result = GetOptions('export'      => \$Shorewall::Compiler::export,
-			'e'           => \$Shorewall::Compiler::export,
-			'directory=s' => \$Shorewall::Config::shorewall_dir,
-			'd=s'         => \$Shorewall::Config::shorewall_dir,
-			'verbose=i'   => \$Shorewall::Common::verbose,
-			'v=i'         => \$Shorewall::Common::verbose,
-			'timestamp'   => \$Shorewall::Common::timestamp,
-			't'           => \$Shorewall::Common::timestamp );
+my ( $export , $shorewall_dir, $verbose, $timestamp ) = qw( 0 '' '' '' );
 
-usage unless $result;
+my $result = GetOptions('export'      => \$export,
+			'e'           => \$export,
+			'directory=s' => \$shorewall_dir,
+			'd=s'         => \$shorewall_dir,
+			'verbose=i'   => \$verbose,
+			'v=i'         => \$verbose,
+			'timestamp'   => \$timestamp,
+			't'           => \$timestamp );
 
-if ( $Shorewall::Config::shorewall_dir ne '' ) {
-    fatal_error "$Shorewall::Config::shorewall_dir is not an existing directory" unless -d $Shorewall::Config::shorewall_dir;
+usage unless $result && @ARGV < 2;
+
+eval {
+    configure( $export, $shorewall_dir, $verbose, $timestamp );
+    compiler $ARGV[0];
+};
+
+if ( $@ ) {
+    print STDERR $@;
+    exit 1;
 }
 
-usage unless @ARGV < 2;
-
-compiler $ARGV[0];

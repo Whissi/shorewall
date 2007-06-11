@@ -36,6 +36,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		 warning_message
 		 fatal_error
+		 set_shorewall_dir
 		 find_file
 		 split_line
 		 split_line1
@@ -281,9 +282,15 @@ sub warning_message
 sub fatal_error	{
     my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
 
-    print STDERR "   ERROR: @_$lineinfo\n";
+    die "   ERROR: @_$lineinfo\n";
+ 
+}
 
-    exit 1;
+#
+# Set $shorewall_dir
+#
+sub set_shorewall_dir( $ ) {
+    $shorewall_dir = shift;
 }
 
 #

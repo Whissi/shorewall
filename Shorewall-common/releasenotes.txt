@@ -27,7 +27,79 @@ Problems corrected in 4.0.0 Beta 5.
 
 Other changes in Shorewall 4.0.0 Beta 5.
 
-None.
+1)  The Perl compiler is now externalized. Both the program
+    'compiler.pl' and the Perl Module interface
+    are now documented.
+
+    The compiler program is /usr/share/shorewall-perl/compiler.pl:
+
+	compiler.pl [ <options> ] [ <filename> ]
+
+    If a <filename> is given, then the configuration will be compiled
+    output placed in the named file. If <filename> is not given, then
+    the configuration will simply be syntax checked.
+
+    Options are:
+
+    -v <verbosity>
+    --verbosity=<verbosity>
+    
+	The <verbosity> is a number between 0 and 2 and corresponds to
+	the VERBOSITY setting in shorewall.conf. This setting controls
+	the verbosity of the compiler itself.
+
+    -e
+    --export
+
+	If given, the configuration will be compiled for export to
+	another system.
+
+    -d <directory>
+    --directory=<directory>
+
+	If this option is omitted, the configuration in /etc/shorewall
+	is compiled/checked. Otherwise, the configuration in the named
+	directory will be compiled/checked.
+
+    -t
+    --timestamp
+
+	If given, each progress message issued by the compiler and by
+	the compiled program will be timestamped.
+
+    Example (compiles the configuration in the current directory 
+             generating a script named 'firewall' and using VERBOSITY
+             2).
+
+       /usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall
+
+    To use the Shorewall::Compiler module:
+
+       use lib '/usr/share/shorewall-perl';
+       use Shorewall::Compiler;
+
+       Two functions are exported:
+
+	   configure( $export, $directory, $verbose, $timestamp )
+
+	       The arguments corresponding to the similarly-named
+	       run-line options. If passed as '', the value will be
+	       ignored.
+
+	       configure will raise an exception with die if $directory
+	       is passed and does not name an existing directory.
+
+	       Example: configure( '', '.', 2, '' );
+
+	   compiler( $objectfile )
+
+	       The compiler function accepts 1 argument. If it corresponds to
+	       the <filename> run-line argument. If the argument is
+	       false, then a check is performed; otherwise, the
+	       configuration is compiled into the named file.
+
+	       Compilation errors cause the compiler to raise an exception via
+	       die. 
 
 Migration Considerations:
 
@@ -560,6 +632,7 @@ Migration Considerations:
 - Perl Cwd Module
 - Perl File::Basename Module
 - Perl File::Temp Module
+- Perl Getopt::Long Module
 ----------------------------------------------------------------------------
                U S I N G   T H E   N E W   C O M P I L E R
 ----------------------------------------------------------------------------

@@ -319,10 +319,10 @@
           for. This is the last class to get additional bandwidth and the last
           to get serviced by the scheduler because of the low priority.</para>
 
-          <programlisting>        #INTERFACE  MARK  RATE    CEIL      MARK    OPTIONS
-        ppp0        1     100kbit 180kbit   1       tos=0x68/0xfc,tos=0xb8/0xfc
-        ppp0        2     full/4  full      2       tcp-ack,tos-minimize-delay
-        ppp0        3     full/4  full      3       default
+          <programlisting>        #INTERFACE  MARK  RATE    CEIL      PRIORITY    OPTIONS
+        ppp0        1     100kbit 180kbit   1           tos=0x68/0xfc,tos=0xb8/0xfc
+        ppp0        2     full/4  full      2           tcp-ack,tos-minimize-delay
+        ppp0        3     full/4  full      3           default
         ppp0        4     full/8  full*8/10 4</programlisting>
         </listitem>
       </varlistentry>

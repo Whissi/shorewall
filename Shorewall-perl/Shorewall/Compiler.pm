@@ -21,14 +21,6 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#	Environmental Variables (Normally set up by /sbin/shorewall):
-#
-#	    EXPORT=Yes                          -e option specified to /sbin/shorewall
-#	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
-#	    VERBOSE                             Standard Shorewall verbosity control.
-#           TIMESTAMP=Yes                       -t option specified to /sbin/shorewall
-#
-#       This program performs rudimentary shell variable expansion on action and macro files.
 
 package Shorewall::Compiler;
 require Exporter;
@@ -52,14 +44,10 @@ use Shorewall::Proxyarp;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
-our @EXPORT_OK = qw( );
+our @EXPORT_OK = qw( $export );
 our @VERSION = 1.00;
 
-our $export;
-
-INIT {
-    $export = $ENV{EXPORT};
-}
+our $export = 0;
 
 #
 # First stage of script generation.

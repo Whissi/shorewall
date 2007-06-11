@@ -21,24 +21,32 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#	Commands are:
+# See usage() function below for command line syntax.
 #
-#          compiler.pl                          Verify the configuration files.
-#	   compile <path name>                  Compile into <path name>
-#
-#	Environmental Variables are set up by the Compiler wrapper ('compiler' program).
-#
-#	    EXPORT=Yes                          -e option specified to /sbin/shorewall
-#	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
-#	    VERBOSE                             Standard Shorewall verbosity control.
-#           TIMESTAMP=Yes                       -t option specified to /sbin/shorewall
-#
-#       This program performs rudimentary shell variable expansion on action and macro files.
-
 use strict;
 use lib '/usr/share/shorewall-perl';
-use Shorewall::Compiler;
+use Shorewall::Common qw( $verbose $timestamp );
+use Shorewall::Config qw( fatal_error $shorewall_dir );
+use Shorewall::Compiler qw( compiler $export );
+use Getopt::Long;
+
 #
 # Compile/Check the configuration.
 #
+sub usage() {
+    print STDERR "usage: compiler.pl [ --export ] [ --directory <directory> ] [ --verbose {0-2} ] [ --timestamp ] [ <filename> ]\n";
+    exit 1;
+}
+
+my $result = GetOptions('export'      => \$export,
+			'directory=s' => \$shorewall_dir,
+			'verbose=i'   => \$verbose,
+			'timestamp'   => \$timestamp );
+
+usage unless $result;
+
+if ( $shorewall_dir ne '' ) {
+    fatal_error "$shorewall_dir is not an existing directory" unless -d $shorewall_dir;
+}
+
 compiler $ARGV[0];

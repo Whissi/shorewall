@@ -62,7 +62,8 @@ our @EXPORT = qw(
 		 %capabilities
 		 %protocols
 		 %services );
-our @EXPORT_OK = ();
+
+our @EXPORT_OK = qw( $shorewall_dir );
 our @VERSION = 1.00;
 
 #
@@ -261,6 +262,8 @@ our @openstack;
 our $currentfile;             # File handle reference
 our $currentfilename;         # File NAME
 our $currentlinenumber = 0;   # Line number
+
+our $shorewall_dir = '';      #Shorewall Directory
 
 #
 # Issue a Warning Message
@@ -838,9 +841,9 @@ sub ensure_config_path() {
 	$_ .= '/' unless m|//$|;
     }
 
-    if ( my $sd = $ENV{SHOREWALL_DIR} ) {
-	$sd .= '/' unless $sd =~ m|//$|;
-	unshift @config_path, $sd if $sd ne $config_path[0];
+    if ( $shorewall_dir ) {
+	$shorewall_dir .= '/' unless $shorewall_dir =~ m|//$|;
+	unshift @config_path, $shorewall_dir if $shorewall_dir ne $config_path[0];
     }
 }
 
@@ -941,6 +944,7 @@ sub get_configuration( $ ) {
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'CLEAR_TC'                   , 'Yes';
+
     if ( defined $config{CLAMPMSS} ) {
 	default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
     } else {

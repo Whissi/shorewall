@@ -319,14 +319,19 @@ compiler() {
     
     case "$compiler" in
 	perl)
-	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
 	    debugflags="-w"
 	    [ -n "$DEBUG" ]   && debugflags='-wd'
 	    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
 
 	    shift # Perl compiler only takes the output file as a argument
 
-	    $command perl $debugflags $pc $@
+	    options="--verbose $VERBOSE ";
+	    [ -n "$EXPORT" ] && options="$options --export ";
+	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory $SHOREWALL_DIR ";
+	    [ -n "$TIMESTAMP" ] && options="$options --timestamp" ;
+	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
+
+	    $command perl $debugflags $pc $options $@
 	    ;;
 	shell)
 	    [ -x $sc ] || startup_error "SHOREWALL_COMPILER=shell requires the shorewall-shell package which is not installed"

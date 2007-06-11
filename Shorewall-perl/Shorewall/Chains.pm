@@ -1392,8 +1392,10 @@ sub expand_rule( $$$$$$$$$$ )
 	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...) 
 	$exceptionrule # Caller's matches used in exclusion case
        ) = @_;
+
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
+
     #
     # Handle Log Level
     #
@@ -1685,7 +1687,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Generate Final Rule
 	#
-	add_rule $echainref, $exceptionrule . $target unless $disposition eq 'LOG';
+	add_rule( $echainref, $exceptionrule . $target ) unless $disposition eq 'LOG';
     } else {
 	#
 	# No exclusions

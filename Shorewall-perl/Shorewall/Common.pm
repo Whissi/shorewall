@@ -58,26 +58,20 @@ our @EXPORT = qw(
 		 $done
 		 $verbose
 		 );
-our @EXPORT_OK = ();
+our @EXPORT_OK = qw( $timestamp );
 our @VERSION = 1.00;
 
 our $line = '';          # Current config file line
 
 our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
-our $verbose;            # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
-
-our $timestamp;           # If true, we are to timestamp each progress message
+our $verbose = 0;         # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
+our $timestamp = '';      # If true, we are to timestamp each progress message
 our $object = 0;          # Object (script) file Handle Reference
 our $lastlineblank = 0;   # Avoid extra blank lines in the output
 our $indent        = '';  # Current indentation
 our ( $dir, $file );      # Object's Directory and File
 our $tempfile;            # Temporary File Name
-
-INIT {
-    $verbose   = $ENV{VERBOSE}   || 0;
-    $timestamp = $ENV{TIMESTAMP} || '';
-}
 
 #
 # Fatal Error

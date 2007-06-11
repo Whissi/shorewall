@@ -195,42 +195,93 @@ ftp&gt;</programlisting>
 
     <programlisting><command>uname -r</command></programlisting>
 
+    <important>
+      <para>Note: If you are running kernel 3.6.20 or later, then the module
+      names are <emphasis role="bold">nf_nat_ftp</emphasis> and <emphasis
+      role="bold">nf_conntrack_ftp</emphasis> and they are normally loaded
+      from
+      /lib/modules/&lt;<emphasis>kernel-version</emphasis>&gt;/kernel/net/netfilter/.
+      Shorewall version 3.2.10 or later is required if you wish these modules
+      to be loaded automatically by Shorewall.</para>
+    </important>
+
     <example>
-      <title></title>
+      <title>Example (Kernel 3.2.20)</title>
 
       <programlisting>[root@lists etc]# lsmod
 Module                  Size  Used by    Not tainted
-autofs                 12148   0  (autoclean) (unused)
-ipt_TOS                 1560  12  (autoclean)
-ipt_LOG                 4120   5  (autoclean)
-ipt_REDIRECT            1304   1  (autoclean)
-ipt_REJECT              3736   4  (autoclean)
-ipt_state               1048  13  (autoclean)
-ip_nat_irc              3152   0  (unused)
-<emphasis role="bold">ip_nat_ftp              3888   0  (unused)</emphasis>
-ip_conntrack_irc        3984   1
-<emphasis role="bold">ip_conntrack_ftp        5008   1</emphasis>
-ipt_multiport           1144   2  (autoclean)
-ipt_conntrack           1592   0  (autoclean)
-iptable_filter          2316   1  (autoclean)
-iptable_mangle          2680   1  (autoclean)
-iptable_nat            20568   3  (autoclean) [ipt_REDIRECT ip_nat_irc ip_nat_ftp]
-ip_conntrack           26088   5  (autoclean) [ipt_REDIRECT ipt_state ip_nat_irc
-                                              ip_nat_ftp ip_conntrack_irc ip_conntrack_ftp
-                                              ipt_conntrack iptable_nat]
-ip_tables              14488  12  [ipt_TOS ipt_LOG ipt_REDIRECT ipt_REJECT ipt_state
-                                  ipt_multiport ipt_conntrack iptable_filter
-                                  iptable_mangle iptable_nat]
-tulip                  42464   0  (unused)
-e100                   50596   1
-keybdev                 2752   0  (unused)
-mousedev                5236   0  (unused)
-hid                    20868   0  (unused)
-input                   5632   0  [keybdev mousedev hid]
-usb-uhci               24684   0  (unused)
-usbcore                73280   1  [hid usb-uhci]
-ext3                   64704   2
-jbd                    47860   2  [ext3]
+iptable_filter          3072  1 
+iptable_mangle          2816  0 
+iptable_nat             7684  0 
+iptable_raw             2048  0 
+ip_tables              12232  4 iptable_raw,iptable_mangle,iptable_nat,iptable_filter
+ipt_addrtype            1920  0 
+ipt_ah                  2048  0 
+ipt_CLUSTERIP           8708  0 
+ipt_ecn                 2304  0 
+ipt_ECN                 3072  0 
+ipt_iprange             1920  0 
+ipt_LOG                 6528  0 
+ipt_MASQUERADE          3456  0 
+ipt_NETMAP              2048  0 
+ipt_owner               2048  0 
+ipt_recent              9496  0 
+ipt_REDIRECT            2048  0 
+ipt_REJECT              4608  0 
+ipt_SAME                2432  0 
+ipt_TCPMSS              4096  0 
+ipt_tos                 1664  0 
+ipt_TOS                 2304  0 
+ipt_ttl                 1920  0 
+ipt_TTL                 2432  0 
+ipt_ULOG                8068  0 
+nf_conntrack           59864  28 ipt_MASQUERADE,ipt_CLUSTERIP,nf_nat_tftp,nf_nat_snmp_basic,nf_nat_sip,nf_nat_pptp,nf_nat_irc,nf_nat_h323,nf_nat_ftp,nf_nat_amanda,nf_conntrack_ama
+nda,nf_conntrack_tftp,nf_conntrack_sip,nf_conntrack_proto_sctp,nf_conntrack_pptp,nf_conntrack_proto_gre,nf_conntrack_netlink,nf_conntrack_netbios_ns,nf_conntrack_irc,nf_conntrack_
+h323,nf_conntrack_ftp,xt_helper,xt_state,xt_connmark,xt_conntrack,iptable_nat,nf_nat,nf_conntrack_ipv4
+nf_conntrack_amanda     5248  1 nf_nat_amanda
+<emphasis role="bold">nf_conntrack_ftp</emphasis>        9728  1 nf_nat_ftp
+nf_conntrack_h323      50396  1 nf_nat_h323
+nf_conntrack_ipv4      17932  2 iptable_nat
+nf_conntrack_irc        7064  1 nf_nat_irc
+nf_conntrack_netbios_ns     3072  0 
+nf_conntrack_netlink    26240  0 
+nf_conntrack_pptp       6912  1 nf_nat_pptp
+nf_conntrack_proto_gre     5632  1 nf_conntrack_pptp
+nf_conntrack_proto_sctp     8328  0 
+nf_conntrack_sip        9748  1 nf_nat_sip
+nf_conntrack_tftp       5780  1 nf_nat_tftp
+nf_nat                 17964  14 ipt_SAME,ipt_REDIRECT,ipt_NETMAP,ipt_MASQUERADE,nf_nat_tftp,nf_nat_sip,nf_nat_pptp,nf_nat_proto_gre,nf_nat_irc,nf_nat_h323,nf_nat_ftp,nf_nat_amand
+a,nf_conntrack_netlink,iptable_nat
+nf_nat_amanda           2432  0 
+<emphasis role="bold">nf_nat_ftp</emphasis>              3584  0 
+nf_nat_h323             7808  0 
+nf_nat_irc              2816  0 
+nf_nat_pptp             3840  0 
+nf_nat_proto_gre        3204  1 nf_nat_pptp
+nf_nat_sip              4608  0 
+nf_nat_snmp_basic      10372  0 
+nf_nat_tftp             1920  0 
+xt_CLASSIFY             1920  0 
+xt_comment              1920  0 
+xt_connmark             2432  0 
+xt_conntrack            2944  0 
+xt_dccp                 3588  0 
+xt_hashlimit           10252  0 
+xt_helper               2688  0 
+xt_length               1920  0 
+xt_limit                2688  0 
+xt_mac                  1920  0 
+xt_mark                 1920  0 
+xt_MARK                 2304  0 
+xt_multiport            3328  1 
+xt_NFLOG                2176  0 
+xt_NFQUEUE              2048  0 
+xt_physdev              2704  2 
+xt_pkttype              1920  0 
+xt_policy               3840  0 
+xt_state                2560  0 
+xt_tcpmss               2304  0 
+xt_tcpudp               3328  0 
 [root@lists etc]#</programlisting>
     </example>
 

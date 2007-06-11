@@ -31,16 +31,20 @@ use Shorewall::Compiler qw/ compiler $export /;
 use Getopt::Long;
 
 sub usage() {
-    print STDERR "usage: compiler.pl [ --export ] [ --directory <directory> ] [ --verbose {0-2} ] [ --timestamp ] [ <filename> ]\n";
+    print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ <filename> ]\n";
     exit 1;
 }
 
 Getopt::Long::Configure ('bundling');
 
 my $result = GetOptions('export'      => \$export,
+			'e'           => \$export,
 			'directory=s' => \$shorewall_dir,
+			'd=s'         => \$shorewall_dir,
 			'verbose=i'   => \$verbose,
-			'timestamp'   => \$timestamp );
+			'v=i'         => \$verbose,
+			'timestamp'   => \$timestamp,
+			't'           => \$timestamp );
 
 usage unless $result;
 

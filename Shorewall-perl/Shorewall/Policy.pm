@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 3.9 -- /usr/share/shorewall-perl/Shorewall/Policy.pm
+# Shorewall-perl 4.0 -- /usr/share/shorewall-perl/Shorewall/Policy.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

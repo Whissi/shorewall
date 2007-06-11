@@ -169,6 +169,7 @@ sub setup_one_masq($$$$$$$)
     $rule .= do_test( $mark, 0xFF) if $mark ne '-';
 
     my $detectaddress = 0;
+    my $exceptionrule = '';
     #
     # Parse the ADDRESSES column
     #
@@ -202,9 +203,11 @@ sub setup_one_masq($$$$$$$)
 		if ( $addr =~ /^.*\..*\..*\./ ) {
 		    $target = '-j SNAT ';
 		    $addrlist .= "--to-source $addr ";
+		    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 		} else {
 		    $addr =~ s/^://;
 		    $addrlist .= "--to-ports $addr ";
+		    $exceptionrule = do_proto( $proto, '', '' );
 		}
 	    }
 
@@ -216,7 +219,16 @@ sub setup_one_masq($$$$$$$)
     #
     # And Generate the Rule(s)
     #
-    expand_rule $chainref , POSTROUTE_RESTRICT , $rule, $networks, $destnets, '', $target, '', '' , '';
+    expand_rule( $chainref , 
+		 POSTROUTE_RESTRICT ,
+		 $rule ,
+		 $networks ,
+		 $destnets ,
+		 '' ,
+		 $target ,
+		 '' ,
+		 '' ,
+		 $exceptionrule );
 
     if ( $detectaddress ) {
 	pop_cmd_mode( $chainref );

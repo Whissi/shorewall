@@ -93,16 +93,33 @@ Other changes in Shorewall 4.0.0 Beta 5.
 
 	   compiler( $objectfile )
 
-	       The compiler function accepts 1 argument. If it corresponds to
-	       the <filename> run-line argument. If the argument is
-	       false, then a check is performed; otherwise, the
-	       configuration is compiled into the named file.
+	       The compiler function accepts 1 argument corresponding
+	       to the <filename> run-line argument. If the argument is
+	       false, then a syntax check of the configuration is
+	       performed;  otherwise, the configuration is compiled
+	       into the file named in the argument.
 
-	       Compilation errors cause the compiler to raise an exception via
-	       die.
+	       Compilation errors cause the compiler to raise an
+	       exception via die.
 
 	       Important: The 'compiler' function may only be called
-	       once in the block containing 'use Shorewall::Compiler'.
+	       once in the block containing 'use
+	       Shorewall::Compiler'. So you probably want to code this
+	       as:
+
+	       ...
+	       {
+	           use Shorewall::Compiler;
+
+		   eval {
+			configure( ... )
+			compiler( ... )
+		   }
+
+		   if ( $@ ) {
+		        <compilation failed>
+                   }
+              }
 
 Migration Considerations:
 

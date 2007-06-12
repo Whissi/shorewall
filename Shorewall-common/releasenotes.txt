@@ -27,9 +27,9 @@ Problems corrected in 4.0.0 Beta 5.
 
 Other changes in Shorewall 4.0.0 Beta 5.
 
-1)  The Perl compiler is now externalized. Both the program
-    'compiler.pl' and the Perl Module interface
-    are now documented.
+1)  The Perl compiler is now externalized. Currently only the
+    compiler.pl program is documented but eventually, I plan to also
+    document the Perl Module interface. 
 
     The compiler program is /usr/share/shorewall-perl/compiler.pl:
 
@@ -83,60 +83,6 @@ Other changes in Shorewall 4.0.0 Beta 5.
 	   --export		  EXPORT
 	   --directory		  SHOREWALL_DIR
 	   --timestamp		  TIMESTAMP
-
-    To use the Shorewall::Compiler module:
-
-       use lib '/usr/share/shorewall-perl';
-       use Shorewall::Compiler;
-
-       Two functions are exported:
-
-	   configure( $export, $directory, $verbose, $timestamp )
-
-	       The arguments correspond to the similarly-named
-	       run-line options. Values passed as empty strings are
-	       ignored.
-
-	       The function will raise an exception with die if
-	       $directory is not '' and does not name an existing
-	       directory.
-
-	       Example: configure( '', '.', 2, '' );
-
-	   compiler( $objectfile )
-
-	       The compiler function accepts 1 argument corresponding
-	       to the <filename> run-line argument. If the argument is
-	       false, then a syntax check of the configuration is
-	       performed;  otherwise, the configuration is compiled
-	       into the file named in the argument.
-
-	       Compilation errors cause the compiler to raise an
-	       exception via die.
-
-	       Important: The 'compiler' function may only be called
-	       once in the block containing 'use
-	       Shorewall::Compiler'. So you probably want to code this
-	       as:
-
-	       ...
-	       {
-	           use Shorewall::Compiler;
-
-		   eval {
-			configure( ... )
-			compiler( ... )
-		   };
-
-		   if ( $@ ) {
-		        <compilation failed>
-                   }
-              }
-
-	 Warning: There is currently a memory leak in the compiler
-	 caused by hard reference loops. I'll work to correct that
-	 problem but it is not a high priority since compiler.pl only
-	 calls Shorewall::Compiler::compiler once then exits.
 
 Migration Considerations:
 
@@ -225,7 +171,7 @@ Migration Considerations:
        an error if you insert a port range into a port list and you don't
        have extended multiport support.
 
-    c) The old BRIDGEING=Yes support has been replaced by new bridge
+    c) The old BRIDGING=Yes support has been replaced by new bridge
        support that uses the reduced 'physdev match' capabilities found
        in kernel 2.6.20 and later. This new implementation may be used
        where it is desired to control traffic through a bridge.
@@ -235,19 +181,19 @@ Migration Considerations:
        a)  A new "Bridge Port" zone type is defined. Specify 'bport' or
 	   'bport4' in the TYPE column of /etc/shorewall/zones.
 
-	   Bridge Port zones must be a sub-zone of a regular ipv4 zone
+	   Bridge Port zones should be a sub-zone of a regular ipv4 zone
 	   that represents all hosts attached to the bridge.
 
        b)  A new 'bridge' option is defined for entries in	
 	   /etc/shorewall/interfaces. Bridges should have this option
-	   specified if traffic through the bridge is to be controlled
-	   with rules/policies.
+	   specified.
 
        c)  Bridge ports must now be defined in
 	   /etc/shorewall/interfaces. The INTERFACE column contains
 	   both the bridge name and the port name separated by a colon
 	   (e.g., "br0:eth1"). No OPTIONS are allowed for bridge
-	   ports. The bridge must be defined before its ports.
+	   ports. The bridge must be defined before its ports and must
+	   have the 'bridge' option.
 
        Bridge Port (BP) zones have a number of limitations:
 

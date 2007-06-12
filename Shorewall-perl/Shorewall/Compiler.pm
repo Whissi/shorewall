@@ -43,29 +43,14 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( compiler configure );
+our @EXPORT = qw( compiler EXPORT TIMESTAMP );
 our @EXPORT_OK = qw( $export );
 our @VERSION = 1.00;
 
 our $export = 0;
 
-#
-# Configure the compiler
-#
-sub configure( $$$$ ) {
-    my ( $export_param, $shorewall_dir, $verbose, $timestamp) = @_;
-
-    $export = $export_param if $export_param;
-    
-    if ( $shorewall_dir ne '' ) {
-	fatal_error "$shorewall_dir is not an existing directory" unless -d $shorewall_dir;
-	set_shorewall_dir( $shorewall_dir );
-    }
-
-    set_verbose( $verbose )     unless $verbose eq '';
-    set_timestamp( $timestamp ) unless $timestamp eq '';
-}
-
+use constant { EXPORT => 0x01 ,
+	       TIMESTAMP => 0x02 };
 #
 # First stage of script generation.
 #
@@ -664,12 +649,21 @@ EOF
 #
 #  The Compiler.
 #
-#    If the argument is non-null, it names the script file to generate.
+#    If the first argument is non-null, it names the script file to generate.
 #    Otherwise, this is a 'check' command and no script is produced.
 #
-sub compiler( $ ) {
+sub compiler( $$$$ ) {
 
-    my $objectfile = $_[0];
+    my ( $objectfile, $directory, $verbosity, $options ) = @_;
+
+    if ( $directory ne '' ) {
+	fatal_error "$directory is not an existing directory" unless -d $directory;
+	set_shorewall_dir( $directory );
+    }
+
+    set_verbose( $verbosity ) unless $verbosity eq '';
+    $export = 1               if $options & EXPORT;
+    set_timestamp( 1 )        if $options & TIMESTAMP;
     #
     # Get shorewall.conf and capabilities.
     #

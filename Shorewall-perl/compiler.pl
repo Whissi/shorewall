@@ -31,12 +31,16 @@ sub usage() {
     print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ <filename> ]\n";
     exit 1;
 }
+
 #
 #                                     E x e c u t i o n   S t a r t s   H e r e
 #
-Getopt::Long::Configure ('bundling');
+my $export        = $ENV{EXPORT}        || 0;
+my $shorewall_dir = $ENV{SHOREWALL_DIR} || '';
+my $verbose       = $ENV{VERBOSE}       || 0;
+my $timestamp     = $ENV{TIMESTAMP}     || '';
 
-my ( $export , $shorewall_dir, $verbose, $timestamp ) = ( 0, '', '', '' );
+Getopt::Long::Configure ('bundling');
 
 my $result = GetOptions('export'      => \$export,
 			'e'           => \$export,
@@ -48,7 +52,7 @@ my $result = GetOptions('export'      => \$export,
 			't'           => \$timestamp );
 
 usage unless $result && @ARGV < 2;
-
+    
 eval {
     use Shorewall::Compiler;
     configure( $export, $shorewall_dir, $verbose, $timestamp );

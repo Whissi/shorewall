@@ -17,9 +17,9 @@ You must install Shorewall and at least one of the compiler packages
 
 Problems corrected in 4.0.0 Beta 5.
 
-1)  With Shorewall-perl, if a bridge port is used to qualify the SOURCE
-    in a rule where there is also a DEST interface, then the following
-    diagnostic is produced:
+1)  With Shorewall-perl, if a bridge port was used to qualify the SOURCE
+    in a rule where there was also a DEST interface, then the following
+    diagnostic was produced:
 
     Undefined subroutine &Shorewall::Chains::source_port_to_bridge called 
     at /usr/share/shorewall-perl/Shorewall/Chains.pm line 1521, <$currentfile> 
@@ -73,6 +73,17 @@ Other changes in Shorewall 4.0.0 Beta 5.
 
        /usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall
 
+    Note: For compatibility with Shorewall 3.4.2 and later 3.4
+    releases, options not passed on the run-line get their values from
+    environmental variables:
+
+	   Option                 Variable
+
+	   --verbosity		  VERBOSE
+	   --export		  EXPORT
+	   --directory		  SHOREWALL_DIR
+	   --timestamp		  TIMESTAMP
+
     To use the Shorewall::Compiler module:
 
        use lib '/usr/share/shorewall-perl';
@@ -82,12 +93,13 @@ Other changes in Shorewall 4.0.0 Beta 5.
 
 	   configure( $export, $directory, $verbose, $timestamp )
 
-	       The arguments corresponding to the similarly-named
-	       run-line options. If passed as '', the value will be
+	       The arguments correspond to the similarly-named
+	       run-line options. Values passed as empty strings are
 	       ignored.
 
-	       configure will raise an exception with die if $directory
-	       is passed and does not name an existing directory.
+	       The function will raise an exception with die if
+	       $directory is not '' and does not name an existing
+	       directory.
 
 	       Example: configure( '', '.', 2, '' );
 
@@ -114,12 +126,17 @@ Other changes in Shorewall 4.0.0 Beta 5.
 		   eval {
 			configure( ... )
 			compiler( ... )
-		   }
+		   };
 
 		   if ( $@ ) {
 		        <compilation failed>
                    }
               }
+
+	 Warning: There is currently a memory leak in the compiler
+	 caused by hard reference loops. I'll work to correct that
+	 problem but it is not a high priority since compiler.pl only
+	 calls Shorewall::Compiler::compiler once then exits.
 
 Migration Considerations:
 
@@ -128,26 +145,26 @@ Migration Considerations:
 
     If you attempt to upgrade using the RPM, you get this result:
 
-    gateway:~ # rpm -Uvh shorewall-3.9.2-1.noarch.rpm 
+    gateway:~ # rpm -Uvh shorewall-4.0.0.noarch.rpm 
     error: Failed dependencies:
-        shorewall_compiler is needed by shorewall-3.9.2-1.noarch
+        shorewall_compiler is needed by shorewall-4.0.0-1.noarch
     gateway:~ #
 
     You must either:
 
-	rpm -U shorewall-3.9.2.noarch.rpm shorewall-shell-3.9.2.noarch.rpm
+	rpm -U shorewall-4.0.0.noarch.rpm shorewall-shell-4.0.0.noarch.rpm
 
     or
 
-	rpm -U shorewall-3.9.2.noarch.rpm shorewall-perl-3.9.2.noarch.rpm
+	rpm -U shorewall-4.0.0.noarch.rpm shorewall-perl-4.0.0.noarch.rpm
 	
     or
-	rpm -i shorewall-shell-3.9.2.noarch.rpm
-	rpm -U shorewall-3.9.2.noarch.rpm
+	rpm -i shorewall-shell-4.0.0.noarch.rpm
+	rpm -U shorewall-4.0.0.noarch.rpm
 
     or
-	rpm -i shorewall-perl-3.9.2.noarch.rpm
-	rpm -U shorewall-3.9.2.noarch.rpm
+	rpm -i shorewall-perl-4.0.0.noarch.rpm
+	rpm -U shorewall-4.0.0.noarch.rpm
 
     If you are upgrading using the tarball, you must install either
     shorewall-shell or shorewall-perl before you upgrade

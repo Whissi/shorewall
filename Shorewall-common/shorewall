@@ -152,7 +152,7 @@ get_config() {
 	#
 	export CONFIG_PATH
 
-	if [ "$2" = Yes ]; then
+	if [ "$3" = Yes ]; then
 	    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
 	    if [ -n "$(syslog_circular_buffer)" ]; then
@@ -1506,7 +1506,7 @@ case "$COMMAND" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
-	get_config Yes
+	get_config Yes No Yes
     	shift
     	show_command $@
 	;;
@@ -1548,7 +1548,7 @@ case "$COMMAND" in
 	exit $status
 	;;
     dump)
-	get_config Yes
+	get_config Yes No Yes
     	shift
     	dump_command $@
 	;;
@@ -1575,7 +1575,7 @@ case "$COMMAND" in
 	try_command $@
 	;;
     logwatch)
-	get_config Yes
+	get_config Yes Yes Yes
 	banner="Shorewall-$version Logwatch at $HOSTNAME -"
 	logwatch_command $@
 	;;

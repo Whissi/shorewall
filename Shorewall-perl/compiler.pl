@@ -49,13 +49,11 @@ my $result = GetOptions('export'      => \$export,
 
 usage unless $result && @ARGV < 2;
 
- {
-     eval {
-	 use Shorewall::Compiler;
-	 configure( $export, $shorewall_dir, $verbose, $timestamp );
-	 compiler $ARGV[0];
-     };
- }
+eval {
+    use Shorewall::Compiler;
+    configure( $export, $shorewall_dir, $verbose, $timestamp );
+    compiler $ARGV[0];
+};
 
 if ( $@ ) {
     print STDERR $@;

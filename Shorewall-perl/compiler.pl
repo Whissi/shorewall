@@ -25,7 +25,6 @@
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
-use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage() {
@@ -37,7 +36,7 @@ sub usage() {
 #
 Getopt::Long::Configure ('bundling');
 
-my ( $export , $shorewall_dir, $verbose, $timestamp ) = qw( 0 '' '' '' );
+my ( $export , $shorewall_dir, $verbose, $timestamp ) = ( 0, '', '', '' );
 
 my $result = GetOptions('export'      => \$export,
 			'e'           => \$export,
@@ -50,10 +49,13 @@ my $result = GetOptions('export'      => \$export,
 
 usage unless $result && @ARGV < 2;
 
-eval {
-    configure( $export, $shorewall_dir, $verbose, $timestamp );
-    compiler $ARGV[0];
-};
+ {
+     eval {
+	 use Shorewall::Compiler;
+	 configure( $export, $shorewall_dir, $verbose, $timestamp );
+	 compiler $ARGV[0];
+     };
+ }
 
 if ( $@ ) {
     print STDERR $@;

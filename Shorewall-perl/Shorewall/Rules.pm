@@ -1777,9 +1777,17 @@ sub generate_matrix() {
 
 sub setup_mss( $ ) {
     my $clampmss = $_[0];
-    my $option = "\L$clampmss" eq 'yes' ? '--clamp-mss-to-pmtu' : '--set-mss $clampmss';
+    my $option;
+    my $match = '';
 
-    add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option";
+    if ( "\L$clampmss" eq 'yes' ) {
+	$option = '--clamp-mss-to-pmtu';
+    } else {
+	$match  = "-m tcpmss --mss $clampmss: ";
+	$option = '--set-mss $clampmss';
+    }
+    
+    add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option";
 }
 
 sub dump_rule_chains() {

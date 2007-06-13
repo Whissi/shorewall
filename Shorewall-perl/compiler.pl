@@ -21,7 +21,25 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-# See usage() function below for command line syntax.
+# Usage:
+#
+#         compiler.pl [ <option> ... ] [ <filename> ]
+#
+#     Options:
+#
+#         --export                    # Compile for export
+#         --verbosity=<number>        # Set VERBOSITY
+#         --directory=<directory>     # Directory where configuration resides (default is /etc/shorewall)
+#         --timestamp                 # Timestamp all progress messages
+#
+# Default values for compiler options are given in environmental variables as follows:
+#
+#	   Option                 Variable
+#
+#	   --verbosity		  VERBOSE
+#	   --export		  EXPORT
+#	   --directory		  SHOREWALL_DIR
+#	   --timestamp		  TIMESTAMP
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
@@ -34,7 +52,7 @@ sub usage() {
 }
 
 #
-#                                     E x e c u t i o n   S t a r t s   H e r e
+#                                     E x e c u t i o n   B e g i n s   H e r e
 #
 my $export        = $ENV{EXPORT}        || 0;
 my $shorewall_dir = $ENV{SHOREWALL_DIR} || '';

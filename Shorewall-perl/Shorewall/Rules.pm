@@ -50,7 +50,7 @@ our @EXPORT = qw( process_tos
 		  setup_mss
 		  dump_rule_chains
 		  );
-our @EXPORT_OK = qw( process_rule process_rule1 );
+our @EXPORT_OK = qw( process_rule process_rule1 initialize );
 our @VERSION = 1.00;
 
 #
@@ -60,7 +60,16 @@ our @rule_chains;
 #
 # Set to one if we find a SECTION
 #
-our $sectioned = 0;
+our $sectioned;
+
+sub initialize() {
+    @rule_chains = ();
+    $sectioned = 0;
+}
+
+INIT {
+    initialize;
+}
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -1007,7 +1016,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     # Handle Optimization
     #
     if ( $optimize > 0 ) {
-	my $loglevel = $chainref->{policychain}{loglevel};
+	my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 	if ( $loglevel ne '' ) {
 	    return 1 if $target eq "${policy}:$loglevel}";
 	} else {
@@ -1335,7 +1344,7 @@ sub generate_matrix() {
 	return 'ACCEPT' if $zone eq $zone1;
 
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
-	    my $policyref = $chainref->{policychain};
+	    my $policyref = $filter_table->{$chainref->{policychain}};
 	    return $policyref->{name} if $policyref;
 	    fatal_error "No policy defined for zone $zone to zone $zone1";
 	}

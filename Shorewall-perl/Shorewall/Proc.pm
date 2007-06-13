@@ -46,9 +46,6 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( );
 our @VERSION = 1.00;
 
-
-our %macros;
-
 #
 # ARP Filtering
 #

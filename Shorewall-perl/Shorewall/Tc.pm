@@ -40,7 +40,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
-our @EXPORT_OK = qw( process_tc_rule );
+our @EXPORT_OK = qw( process_tc_rule initialize );
 our @VERSION = 1.00;
 
 our %tcs = ( T => { chain  => 'tcpost',
@@ -122,6 +122,11 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 our %classids;
 
 our @deferred_rules;
+
+sub initialize() {
+    %classids = ();
+    @deferred_rules = ();
+}
 
 sub process_tc_rule( $$$$$$$$$$ ) {
     my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = @_;

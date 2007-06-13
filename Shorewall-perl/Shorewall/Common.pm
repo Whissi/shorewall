@@ -60,20 +60,36 @@ our @EXPORT = qw(
 		 $done
 		 $verbose
 		 );
-our @EXPORT_OK = qw( $timestamp );
+our @EXPORT_OK = qw( $timestamp initialize );
 our @VERSION = 1.00;
 
-our $line = '';          # Current config file line
-
-our ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
-
-our $verbose = 0;         # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
-our $timestamp = '';      # If true, we are to timestamp each progress message
-our $object = 0;          # Object (script) file Handle Reference
-our $lastlineblank = 0;   # Avoid extra blank lines in the output
-our $indent        = '';  # Current indentation
+our $line;
+our ($command, $doing, $done );
+our $verbose;
+our $timestamp;
+our $object;
+our $lastlineblank;
+our $indent;
 our ( $dir, $file );      # Object's Directory and File
 our $tempfile;            # Temporary File Name
+
+sub initialize() {
+    $line = '';          # Current config file line
+
+    ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
+
+    $verbose = 0;              # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
+    $timestamp = '';           # If true, we are to timestamp each progress message
+    $object = 0;               # Object (script) file Handle Reference
+    $lastlineblank = 0;        # Avoid extra blank lines in the output
+    $indent        = '';       # Current indentation
+    ( $dir, $file ) = ('',''); # Object's Directory and File
+    $tempfile = '';            # Temporary File Name
+}
+
+INIT {
+    initialize;
+}
 
 #
 # Fatal Error

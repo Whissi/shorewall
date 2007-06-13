@@ -64,13 +64,60 @@ our @EXPORT = qw(
 		 %protocols
 		 %services );
 
-our @EXPORT_OK = qw( $shorewall_dir );
+our @EXPORT_OK = qw( $shorewall_dir initialize );
 our @VERSION = 1.00;
 
 #
 # Misc Globals
 #
-our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
+our %globals;
+#
+# From shorewall.conf file
+#
+our %config;
+#
+# Config options and global settings that are to be copied to object script
+#
+our @propagateconfig;
+our @propagateenv;
+#
+# From parsing the capabilities file
+#
+our %capabilities;
+#
+# /etc/protocols and /etc/services
+#
+our %protocols;
+our %services;
+
+#
+# Capabilities
+#
+our %capdesc;
+#
+# Directories to search for configuration files
+#
+our @config_path;
+#
+# Stash away file references here when we encounter INCLUDE
+#
+our @includestack;
+#
+# Allow nested opens
+#
+our @openstack;
+
+our $currentfile;             # File handle reference
+our $currentfilename;         # File NAME
+our $currentlinenumber;       # Line number
+
+our $shorewall_dir;           #Shorewall Directory
+
+sub initialize() {
+    #
+    # Misc Globals
+    #
+    %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    CONFDIR =>  '/etc/shorewall',
 		    SHAREDIRPL => '/usr/share/shorewall-perl/',
 		    ORIGINAL_POLICY_MATCH => '',
@@ -78,11 +125,10 @@ our %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    TC_SCRIPT => '',
 		    VERSION =>  '4.0.0-Beta4',
 		  );
-
-#
-# From shorewall.conf file
-#
-our %config =
+    #
+    # From shorewall.conf file
+    #
+    %config =
 	      ( STARTUP_ENABLED => undef,
 		VERBOSITY => undef,
 		#
@@ -172,16 +218,16 @@ our %config =
 		TCP_FLAGS_DISPOSITION => undef,
 		BLACKLIST_DISPOSITION => undef,
 		);
-#
-# Config options and global settings that are to be copied to object script
-#
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
-our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
+    #
+    # Config options and global settings that are to be copied to object script
+    #
+    @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
+    @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
-#
-# From parsing the capabilities file
-#
-our %capabilities =
+    #
+    # From parsing the capabilities file
+    #
+    %capabilities =
 	     ( NAT_ENABLED => undef,
 	       MANGLE_ENABLED => undef,
 	       MULTIPORT => undef,
@@ -210,16 +256,15 @@ our %capabilities =
 	       COMMENTS => undef,
 	       ADDRTYPE => undef,
 	       );
-#
-# /etc/protocols and /etc/services
-#
-our %protocols;
-our %services;
-
-#
-# Capabilities
-#
-our %capdesc = ( NAT_ENABLED     => 'NAT',
+    #
+    # /etc/protocols and /etc/services
+    #
+    %protocols = ();
+    %services  = ();
+    #
+    # Capabilities
+    #
+    %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MANGLE_ENABLED  => 'Packet Mangling',
 		 MULTIPORT       => 'Multi-port Match' ,
 		 XMULTIPORT      => 'Extended Multi-port Match',
@@ -247,24 +292,29 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 COMMENTS        => 'Comments',
 		 ADDRTYPE        => 'Address Type Match',
 	       );
-#
-# Directories to search for configuration files
-#
-our @config_path;
-#
-# Stash away file references here when we encounter INCLUDE
-#
-our @includestack;
-#
-# Allow nested opens
-#
-our @openstack;
+    #
+    # Directories to search for configuration files
+    #
+    @config_path = ();
+    #
+    # Stash away file references here when we encounter INCLUDE
+    #
+    @includestack = ();
+    #
+    # Allow nested opens
+    #
+    @openstack = ();
 
-our $currentfile;             # File handle reference
-our $currentfilename;         # File NAME
-our $currentlinenumber = 0;   # Line number
+    $currentfile = undef;     # File handle reference
+    $currentfilename = '';    # File NAME
+    $currentlinenumber = 0;   # Line number
 
-our $shorewall_dir = '';      #Shorewall Directory
+    $shorewall_dir = '';      #Shorewall Directory
+}
+
+INIT {
+    initialize;
+}
 
 #
 # Issue a Warning Message

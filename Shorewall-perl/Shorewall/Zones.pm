@@ -47,7 +47,7 @@ our @EXPORT = qw( NOTHING
 		  $firewall_zone
 		  %interfaces );
 
-our @EXPORT_OK = ();
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 #
@@ -113,6 +113,16 @@ our %reservedName = ( all => 1,
 		      none => 1,
 		      SOURCE => 1,
 		      DEST => 1 );
+
+sub initialize() {
+    @zones = ();
+    %zones = ();
+    %interfaces = ();
+}
+
+INIT {
+    initialize;
+}
 
 #
 # Parse the passed option list and return a reference to a hash as follows:

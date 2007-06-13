@@ -48,20 +48,19 @@ our @EXPORT = qw( merge_levels
 		  %default_actions
 		  %actions
 		  );
-our @EXPORT_OK = qw( );
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
 #
 our %usedactions;
+## Firewall to DMZ
 #
+
 # Default actions for each policy.
 #
-our %default_actions = ( DROP     => 'none' ,
-			 REJECT   => 'none' ,
-			 ACCEPT   => 'none' ,
-			 QUEUE    => 'none' );
+our %default_actions;
 
 #  Action Table
 #
@@ -82,6 +81,20 @@ my %logactionchains;
 #
 # This function determines the logging for a subordinate action or a rule within a superior action
 #
+
+sub initialize() {
+    %default_actions = ( DROP     => 'none' ,
+			 REJECT   => 'none' ,
+			 ACCEPT   => 'none' ,
+			 QUEUE    => 'none' );
+    %actions         = ();
+    %logactionchains = ();
+}
+
+INIT {
+    initialize;
+}
+
 sub merge_levels ($$) {
     my ( $superior, $subordinate ) = @_;
 

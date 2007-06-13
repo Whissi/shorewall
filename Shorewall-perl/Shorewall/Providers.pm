@@ -35,7 +35,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces);
-our @EXPORT_OK = ( );
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 use constant { LOCAL_NUMBER   => 255,
@@ -47,16 +47,30 @@ use constant { LOCAL_NUMBER   => 255,
 our %routemarked_interfaces;
 our @routemarked_interfaces;
 
-my $balance             = 0;
-my $first_default_route = 1;
+our $balance;
+our $first_default_route;
 
+our %providers;
 
-my %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
-		   main    => { number => MAIN_NUMBER    , mark => 0 } ,
-		   default => { number => DEFAULT_NUMBER , mark => 0 } ,
-		   unspec  => { number => UNSPEC_NUMBER  , mark => 0 } );
+our @providers;
 
-my @providers;
+sub initialize() {
+    @providers = ();
+    %routemarked_interfaces = ();
+    @routemarked_interfaces = ();
+    $balance             = 0;
+    $first_default_route = 1;
+
+    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
+		    main    => { number => MAIN_NUMBER    , mark => 0 } ,
+		    default => { number => DEFAULT_NUMBER , mark => 0 } ,
+		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 } );
+    @providers = ();
+}
+
+INIT {
+    initialize;
+}
 
 #
 # Set up marking for 'tracked' interfaces. Unlike in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.

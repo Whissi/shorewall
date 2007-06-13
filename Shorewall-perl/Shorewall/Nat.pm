@@ -43,6 +43,15 @@ our @VERSION = 1.00;
 our @addresses_to_add;
 our %addresses_to_add;
 
+sub initialize() {
+    @addresses_to_add = ();
+    %addresses_to_add = ();
+}
+
+INIT {
+    initialize;
+}
+
 #
 # Handle IPSEC Options in a masq record
 #

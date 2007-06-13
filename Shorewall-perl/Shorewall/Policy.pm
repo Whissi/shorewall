@@ -50,7 +50,9 @@ sub new_policy_chain($$$)
     $chainref->{is_policy}   = 1;
     $chainref->{policy}      = $policy;
     $chainref->{is_optional} = $optional;
-    $chainref->{policychain} = $chainref;
+    $chainref->{policychain} = $chain;
+
+    $chainref;
 }
 
 #
@@ -63,7 +65,7 @@ sub set_policy_chain($$$)
     my $chainref1 = $filter_table->{$chain1};
     $chainref1 = new_chain 'filter', $chain1 unless $chainref1;
     unless ( $chainref1->{policychain} ) {
-	$chainref1->{policychain} = $chainref;
+	$chainref1->{policychain} = $chainref->{name};
 	$chainref1->{policy} = $policy;
     }
 }
@@ -208,7 +210,7 @@ sub validate_policy()
 	    } else {
 		$chainref->{is_policy} = 1;
 		$chainref->{policy} = $policy;
-		$chainref->{policy_chain} = $chainref;
+		$chainref->{policychain} = $chain;
 		push @policy_chains, ( $chainref );
 	    }
 	} else {
@@ -266,7 +268,7 @@ sub report_syn_flood_protection() {
 
 sub default_policy( $$$ ) {
     my $chainref   = $_[0];
-    my $policyref  = $chainref->{policychain};
+    my $policyref  = $filter_table->{$chainref->{policychain}};
     my $synparams  = $policyref->{synparams};
     my $default    = $policyref->{default};
     my $policy     = $policyref->{policy};
@@ -350,7 +352,7 @@ sub complete_standard_chain ( $$$ ) {
     my ( $policy, $loglevel, $default ) = ( 'DROP', 6, $config{DROP_DEFAULT} );
     my $policychainref;
 
-    $policychainref = $ruleschainref->{policychain} if $ruleschainref;
+    $policychainref = $filter_table->{$ruleschainref->{policychain}} if $ruleschainref;
 
     ( $policy, $loglevel, $default ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
 

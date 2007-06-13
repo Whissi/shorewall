@@ -126,7 +126,7 @@ our @EXPORT = qw( STANDARD
 		  $comment
 		  %targets
 		  );
-our @EXPORT_OK = ();
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 #
@@ -163,32 +163,14 @@ our @VERSION = 1.00;
 #       'loglevel', 'synparams' and 'default' only apply to policy chains.
 #
 our @policy_chains;
-our %chain_table = ( raw    => {} ,
-		     mangle => {},
-		     nat    => {},
-		     filter => {} );
-
+our %chain_table;
 our $nat_table    = $chain_table{nat};
 our $mangle_table = $chain_table{mangle};
 our $filter_table = $chain_table{filter};
-
-#
-# These get set to 1 as sections are encountered.
-#
-our %sections = ( ESTABLISHED => 0,
-		  RELATED     => 0,
-		  NEW         => 0
-		  );
-#
-# Current rules file section.
-#
-our $section  = 'ESTABLISHED';
-#
-# Contents of last COMMENT line.
-#
+our %sections;
+our $section;
 our $comment = '';
-#  Target Table. Each entry maps a target to a set of flags defined as follows.
-#
+
 use constant { STANDARD => 1,              #defined by Netfilter
 	       NATRULE  => 2,              #Involves NAT
 	       BUILTIN  => 4,              #A built-in action
@@ -199,10 +181,51 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       MACRO    => 128,            #A Macro
 	       LOGRULE  => 256,            #'LOG'
 	   };
+our %targets;
 #
-#   As new targets (Actions and Macros) are discovered, they are added to the table
+# expand_rule() restrictions
 #
-our %targets = ('ACCEPT'       => STANDARD,
+use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and -o may be used in the rule
+	       PREROUTE_RESTRICT  => 1,   # PREROUTING chain rule  - -o converted to -d <address list> using main routing table
+	       INPUT_RESTRICT     => 4,   # INPUT chain rule       - -o not allowed
+	       OUTPUT_RESTRICT    => 8,   # OUTPUT chain rule      - -i not allowed
+	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
+	       ALL_RESTRICT       => 12   # fw->fw rule            - neither -i nor -o allowed
+	       };
+our $exclseq = 0;
+our $iprangematch = 0;
+our $chainseq;
+
+sub initialize() {
+    @policy_chains = ();
+    %chain_table = ( raw    => {} ,
+		     mangle => {},
+		     nat    => {},
+		     filter => {} );
+
+    $nat_table    = $chain_table{nat};
+    $mangle_table = $chain_table{mangle};
+    $filter_table = $chain_table{filter};
+
+    #
+    # These get set to 1 as sections are encountered.
+    #
+    %sections = ( ESTABLISHED => 0,
+		  RELATED     => 0,
+		  NEW         => 0
+		  );
+    #
+    # Current rules file section.
+    #
+    $section  = 'ESTABLISHED';
+    #
+    # Contents of last COMMENT line.
+    #
+    $comment = '';
+    #
+    #   As new targets (Actions and Macros) are discovered, they are added to the table
+    #
+    %targets = ('ACCEPT'       => STANDARD,
 		'ACCEPT+'      => STANDARD  + NONAT,
 		'ACCEPT!'      => STANDARD,
 		'NONAT'        => STANDARD  + NONAT + NATONLY,
@@ -231,29 +254,24 @@ our %targets = ('ACCEPT'       => STANDARD,
 		'forwardUPnP'  => BUILTIN  + ACTION,
 		'Limit'        => BUILTIN  + ACTION,
 		);
+    #
+    # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
+    #
+    $exclseq = 0;
+    #
+    # Used to suppress duplicate match specifications.
+    #
+    $iprangematch = 0;
+    #
+    # Sequence for naming temporary chains
+    #
+    our $chainseq;
+}
 
-#
-# expand_rule() restrictions
-#
-use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and -o may be used in the rule
-	       PREROUTE_RESTRICT  => 1,   # PREROUTING chain rule  - -o converted to -d <address list> using main routing table
-	       INPUT_RESTRICT     => 4,   # INPUT chain rule       - -o not allowed
-	       OUTPUT_RESTRICT    => 8,   # OUTPUT chain rule      - -i not allowed
-	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
-	       ALL_RESTRICT       => 12   # fw->fw rule            - neither -i nor -o allowed
-	       };
-#
-# Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
-#
-our $exclseq = 0;
-#
-# Used to suppress duplicate match specifications.
-#
-our $iprangematch = 0;
-#
-# Sequence for naming temporary chains
-#
-our $chainseq;
+INIT {
+    initialize;
+}
+
 #
 # Add a run-time command to a chain. Arguments are:
 #
@@ -644,7 +662,7 @@ sub finish_chain_section ($$) {
 		}
 	    }
 	} else {
-	    my $policychainref = $chainref->{policychain};
+	    my $policychainref = $filter_table->{$chainref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_chain $policychainref->{name};
 		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";

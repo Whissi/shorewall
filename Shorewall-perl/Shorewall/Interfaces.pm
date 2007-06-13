@@ -46,7 +46,7 @@ our @EXPORT = qw( add_group_to_zone
 
 		  @interfaces
 		  @bridges );
-our @EXPORT_OK = ();
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 #
@@ -66,6 +66,16 @@ our @VERSION = 1.00;
 our @interfaces;
 our %interfaces;
 our @bridges;
+
+sub initialize() {
+    @interfaces = ();
+    %interfaces = ();
+    @bridges    = ();
+}
+
+INIT {
+    initialize;
+}
 
 sub add_group_to_zone($$$$$)
 {
@@ -323,7 +333,7 @@ sub validate_interfaces_file( $ )
 	my @networks;
 
 	if ( $options{detectnets} ) {
-	    fatal_error "The 'detectnets' option is not allowed with multi-zone interface" unless $zone;
+	    fatal_error "The 'detectnets' option is not allowed on a multi-zone interface" unless $zone;
 	    fatal_error "The 'detectnets' option may not be used with a wild-card interface name" if $wildcard;
 	    fatal_error "The 'detectnets' option may not be used with the '-e' compiler option" if $export;
 	    @networks = get_routed_networks( $interface, 'detectnets not allowed on interface with default route' );

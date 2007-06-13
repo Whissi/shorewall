@@ -47,10 +47,27 @@ our @EXPORT = qw( compiler EXPORT TIMESTAMP );
 our @EXPORT_OK = qw( $export );
 our @VERSION = 1.00;
 
-our $export = 0;
+our $export;
+
+our $reused = 0;
 
 use constant { EXPORT => 0x01 ,
 	       TIMESTAMP => 0x02 };
+
+sub initialize() {
+    Shorewall::Common::initialize;
+    Shorewall::Config::initialize;
+    Shorewall::Chains::initialize;
+    Shorewall::Interfaces::initialize;
+    Shorewall::Accounting::initialize;
+    Shorewall::Actions::initialize;
+    Shorewall::Nat::initialize;
+    Shorewall::Providers::initialize;
+    Shorewall::Rules::initialize;
+    Shorewall::Tc::initialize;
+    Shorewall::Zones::initialize;
+}
+
 #
 # First stage of script generation.
 #
@@ -655,6 +672,10 @@ EOF
 sub compiler( $$$$ ) {
 
     my ( $objectfile, $directory, $verbosity, $options ) = @_;
+
+    $export = 0;
+
+    initialize if $reused++;
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;

@@ -45,6 +45,14 @@ our @VERSION = 1.00;
 
 our %macros;
 
+sub initialize() {
+    %macros = ();
+}
+
+INIT {
+    initialize;
+}
+
 #
 # Try to find a macro file -- RETURNS false if the file doesn't exist or MACRO if it does.
 # If the file exists, the macro is entered into the 'targets' table and the fully-qualified

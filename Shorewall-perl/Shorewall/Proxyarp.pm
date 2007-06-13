@@ -40,6 +40,10 @@ our @VERSION = 1.00;
 
 our @proxyarp;
 
+sub initialize() {
+    @proxyarp = ();
+}
+
 sub setup_one_proxy_arp( $$$$$ ) {
     my ( $address, $interface, $external, $haveroute, $persistent) = @_;
 

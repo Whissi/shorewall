@@ -39,6 +39,15 @@ our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
 our @VERSION = 1.00;
 
+sub initialize() {
+    our $jumpchainref;
+    $jumpchainref = undef;
+}
+
+INIT {
+    initialize;
+}
+
 #
 # Accounting
 #

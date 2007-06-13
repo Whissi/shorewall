@@ -119,6 +119,8 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		}
 	      );
 
+our %classids;
+
 sub process_tc_rule( $$$$$$$$$$ ) {
     my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = @_;
 
@@ -156,7 +158,12 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    $mark     = "$mark/0xFF"      if $connmark = $tcsref->{connmark};
 
 	} else {
-	    fatal_error "Invalid MARK ($original_mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
+	    fatal_error "Invalid MARK ($original_mark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
+
+	    if ( $config{TC_ENABLED} eq 'Internal' ) {
+		fatal_error "Unknown Class ($original_mark)}" unless $classids{$original_mark};
+	    }
+
 	    $chain   = 'tcpost';
 	    $classid = 1;
 	    $mark    = $original_mark;
@@ -462,6 +469,8 @@ sub setup_traffic_shaping() {
 	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
 
+	$classids{$classid}=$device;
+
 	if ( $lastdevice ne $device ) {
 	    if ( $lastdevice ) {
 		pop_indent;
@@ -522,29 +531,6 @@ sub setup_tc() {
 	}
     }
 
-    if ( my $fn = open_file 'tcrules' ) {
-
-	while ( read_a_line ) {
-
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's' );
-		$first_entry = 0;
-	    }
-
-	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line1 2, 10, 'tcrules file';
-
-	    if ( $mark eq 'COMMENT' ) {
-		process_comment;
-	    } else {
-		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
-	    }
-
-	}
-
-	$comment = '';
-    }
-
     if ( $capabilities{MANGLE_ENABLED} ) {
 
 	my $mark_part = '';
@@ -577,6 +563,29 @@ sub setup_tc() {
 	append_file $globals{TC_SCRIPT};
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
 	setup_traffic_shaping;
+    }
+    
+    if ( my $fn = open_file 'tcrules' ) {
+
+	while ( read_a_line ) {
+
+	    if ( $first_entry ) {
+		progress_message2 "$doing $fn...";
+		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's' );
+		$first_entry = 0;
+	    }
+
+	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line1 2, 10, 'tcrules file';
+
+	    if ( $mark eq 'COMMENT' ) {
+		process_comment;
+	    } else {
+		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
+	    }
+
+	}
+
+	$comment = '';
     }
 }
 

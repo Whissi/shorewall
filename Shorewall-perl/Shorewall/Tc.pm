@@ -121,6 +121,8 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 
 our %classids;
 
+our @deferred_rules;
+
 sub process_tc_rule( $$$$$$$$$$ ) {
     my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = @_;
 
@@ -135,6 +137,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     my $tcsref;
     my $connmark = 0;
     my $classid  = 0;
+    my $device;
 
     if ( $source ) {
 	if ( $source eq $firewall_zone ) {
@@ -161,7 +164,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    fatal_error "Invalid MARK ($original_mark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
 
 	    if ( $config{TC_ENABLED} eq 'Internal' ) {
-		fatal_error "Unknown Class ($original_mark)}" unless $classids{$original_mark};
+		fatal_error "Unknown Class ($original_mark)}" unless ( $device = $classids{$original_mark} );
 	    }
 
 	    $chain   = 'tcpost';
@@ -218,17 +221,22 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	}
     }
 
-    expand_rule
-	ensure_chain( 'mangle' , $chain ) ,
-	NO_RESTRICT ,
-	do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
-	$source ,
-	$dest ,
-	'' ,
-	"-j $target $mark" ,
-	'' ,
-	'' ,
-	'';
+    if ( my $result = expand_rule(
+				  ensure_chain( 'mangle' , $chain ) ,
+				  NO_RESTRICT ,
+				  do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
+				  $source ,
+				  $dest ,
+				  '' ,
+				  "-j $target $mark" ,
+				  '' ,
+				  '' ,
+				  '' ) ) {
+	#
+	# expand_rule() returns destination device if any
+	#
+	fatal_error "Class Id $original_mark is not associated with device $result" if $classid && $device ne $result;
+    }
 
     progress_message "   TC Rule \"$line\" $done";
 
@@ -490,7 +498,7 @@ sub setup_traffic_shaping() {
 	# add filters
 	#
 	if ( "$capabilities{CLASSIFY_TARGET}" && known_interface $device ) {
-	    add_rule ensure_chain( 'mangle' , 'tcpost' ), " -o $device -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
+	    push @deferred_rules, " -o $device -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
 	} else {
 	    emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid";
 	}
@@ -586,6 +594,10 @@ sub setup_tc() {
 	}
 
 	$comment = '';
+    }
+
+    for ( @deferred_rules ) {
+	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
     }
 }
 

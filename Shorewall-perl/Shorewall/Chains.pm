@@ -1379,6 +1379,8 @@ sub get_interface_nets ( $ ) {
 #
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
 #
+# Returns the destination interface specified in the rule, if any.
+#
 sub expand_rule( $$$$$$$$$$ )
 {
     my ($chainref ,    # Chain 
@@ -1526,6 +1528,8 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    $rule .= match_dest_dev( $diface );
 	}
+    } else {
+	$diface = '';
     }
 
     if ( $origdest ) {
@@ -1725,6 +1729,8 @@ sub expand_rule( $$$$$$$$$$ )
 	$chainref->{loopcount}--;
 	add_command $chainref, 'done';
     }
+
+    $diface;
 }
 
 #

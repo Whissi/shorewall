@@ -25,6 +25,7 @@
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
+use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage() {
@@ -53,20 +54,9 @@ my $result = GetOptions('export'      => \$export,
 
 usage unless $result && @ARGV < 2;
 
-eval {
-    use Shorewall::Compiler;
+my $options = 0;
 
-    my $options = 0;
+$options |= EXPORT    if $export;
+$options |= TIMESTAMP if $timestamp;
 
-    $options |= EXPORT    if $export;
-    $options |= TIMESTAMP if $timestamp;
-
-    compiler $ARGV[0], $shorewall_dir, $verbose, $options;
-};
-
-my $foo = EXPORT;
-
-if ( $@ ) {
-    print STDERR $@;
-    exit 1;
-}
+compiler $ARGV[0], $shorewall_dir, $verbose, $options;

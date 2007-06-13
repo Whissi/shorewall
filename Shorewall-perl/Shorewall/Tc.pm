@@ -498,7 +498,7 @@ sub setup_traffic_shaping() {
 	# add filters
 	#
 	if ( "$capabilities{CLASSIFY_TARGET}" && known_interface $device ) {
-	    push @deferred_rules, " -o $device -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
+	    push @deferred_rules, match_dest_dev( $device ) . "-m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
 	} else {
 	    emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid";
 	}
@@ -537,9 +537,6 @@ sub setup_tc() {
 	    ensure_mangle_chain 'tcfor';
 	    ensure_mangle_chain 'tcpost';
 	}
-    }
-
-    if ( $capabilities{MANGLE_ENABLED} ) {
 
 	my $mark_part = '';
 

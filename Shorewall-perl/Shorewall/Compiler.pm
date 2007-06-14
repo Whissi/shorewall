@@ -54,18 +54,23 @@ our $reused = 0;
 use constant { EXPORT => 0x01 ,
 	       TIMESTAMP => 0x02 };
 
-sub initialize() {
+#
+# Reinitilize the package-globals in the other modules
+#
+sub reinitialize() {
     Shorewall::Common::initialize;
     Shorewall::Config::initialize;
     Shorewall::Chains::initialize;
+    Shorewall::Zones::initialize;
     Shorewall::Interfaces::initialize;
-    Shorewall::Accounting::initialize;
-    Shorewall::Actions::initialize;
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize;
-    Shorewall::Rules::initialize;
     Shorewall::Tc::initialize;
-    Shorewall::Zones::initialize;
+    Shorewall::Macros::initialize;
+    Shorewall::Actions::initialize;
+    Shorewall::Accounting::initialize;
+    Shorewall::Rules::initialize;
+    Shorewall::Proxyarp::initialize;
 }
 
 #
@@ -675,7 +680,7 @@ sub compiler( $$$$ ) {
 
     $export = 0;
 
-    initialize if $reused++;
+    reinitialize if $reused++;
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;

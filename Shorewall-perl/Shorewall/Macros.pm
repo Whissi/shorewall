@@ -39,7 +39,7 @@ our @EXPORT = qw( find_macro
 		  merge_macro_column
 
 		  %macros );
-our @EXPORT_OK = qw( );
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 

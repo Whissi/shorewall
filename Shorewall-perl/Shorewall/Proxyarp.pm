@@ -35,13 +35,17 @@ our @EXPORT = qw(
 		  dump_proxy_arp
 		  );
 
-our @EXPORT_OK = qw( );
+our @EXPORT_OK = qw( initialize );
 our @VERSION = 1.00;
 
 our @proxyarp;
 
 sub initialize() {
     @proxyarp = ();
+}
+
+INIT {
+    initialize;
 }
 
 sub setup_one_proxy_arp( $$$$$ ) {

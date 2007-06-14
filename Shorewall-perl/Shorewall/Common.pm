@@ -73,6 +73,15 @@ our $indent;
 our ( $dir, $file );      # Object's Directory and File
 our $tempfile;            # Temporary File Name
 
+#
+# Initialize globals -- we take this novel approach to globals initialization to allow
+#                       the compiler to run multiple times in the same process. The
+#                       initialize() function does globals initialization for this
+#                       module and is called from an INIT block below. The function is
+#                       also called by Shorewall::Compiler::compiler at the beginning of
+#                       the second and subsequent calls to that function. 
+#
+
 sub initialize() {
     $line = '';          # Current config file line
 

@@ -76,10 +76,12 @@ our %actions;
 #
 my %logactionchains;
 #
-# Maps each used macro to it's 'macro. ...' file.
-#
-#
-# This function determines the logging for a subordinate action or a rule within a superior action
+# Initialize globals -- we take this novel approach to globals initialization to allow
+#                       the compiler to run multiple times in the same process. The
+#                       initialize() function does globals initialization for this
+#                       module and is called from an INIT block below. The function is
+#                       also called by Shorewall::Compiler::compiler at the beginning of
+#                       the second and subsequent calls to that function. 
 #
 
 sub initialize() {
@@ -95,6 +97,9 @@ INIT {
     initialize;
 }
 
+#
+# This function determines the logging for a subordinate action or a rule within a superior action
+#
 sub merge_levels ($$) {
     my ( $superior, $subordinate ) = @_;
 

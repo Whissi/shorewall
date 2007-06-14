@@ -164,12 +164,12 @@ our @VERSION = 1.00;
 #
 our @policy_chains;
 our %chain_table;
-our $nat_table    = $chain_table{nat};
-our $mangle_table = $chain_table{mangle};
-our $filter_table = $chain_table{filter};
+our $nat_table;
+our $mangle_table;
+our $filter_table;
 our %sections;
 our $section;
-our $comment = '';
+our $comment;
 
 use constant { STANDARD => 1,              #defined by Netfilter
 	       NATRULE  => 2,              #Involves NAT
@@ -181,6 +181,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       MACRO    => 128,            #A Macro
 	       LOGRULE  => 256,            #'LOG'
 	   };
+
 our %targets;
 #
 # expand_rule() restrictions
@@ -192,9 +193,18 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
 	       ALL_RESTRICT       => 12   # fw->fw rule            - neither -i nor -o allowed
 	       };
-our $exclseq = 0;
-our $iprangematch = 0;
+our $exclseq;
+our $iprangematch;
 our $chainseq;
+
+#
+# Initialize globals -- we take this novel approach to globals initialization to allow
+#                       the compiler to run multiple times in the same process. The
+#                       initialize() function does globals initialization for this
+#                       module and is called from an INIT block below. The function is
+#                       also called by Shorewall::Compiler::compiler at the beginning of
+#                       the second and subsequent calls to that function. 
+#
 
 sub initialize() {
     @policy_chains = ();

@@ -28,11 +28,14 @@ Problems corrected in 4.0.0 Beta 5.
 2)  'shorewall dump', 'shorewall show log' and 'shorewall logwatch'
     work again.
 
+3)  The 'mss' zone option and the CLAMPMSS=<number> option in
+    shorewall.conf could previously *increase* the MSS in a
+    packet; this possibility has been eliminated.
+
 Other changes in Shorewall 4.0.0 Beta 5.
 
-1)  The Perl compiler is now externalized. Currently only the
-    compiler.pl program is documented but eventually, I plan to also
-    document the Perl Module interface. "
+1)  The Perl compiler is now externalized. Both the compiler.pl program
+    and the Perl Module interface are documented.
 
     The compiler program is /usr/share/shorewall-perl/compiler.pl:
 
@@ -86,6 +89,37 @@ Other changes in Shorewall 4.0.0 Beta 5.
 	   --export		  EXPORT
 	   --directory		  SHOREWALL_DIR
 	   --timestamp		  TIMESTAMP
+
+    The Perl Module is externalized as follows:
+
+	use lib '/usr/share/shorewall-perl';
+	use Shorewall::Compiler;
+	
+	    compiler $filename, $directory, $verbose, $options
+
+    The arguments to the compiler function are as follows:
+
+	$filename -   Name of the compiled script to be created.
+                      If the arguments evaluates to false, the
+                      configuration is syntax checked
+		      
+        $directory -  The directory containing the configuration.
+		      If passed as '', then /etc/shorewall/ is assumed.
+
+	$verbose -    The verbosity level (0-2).
+
+	$options -    A bitmap of options. Shorewall::Compiler
+                      exports two constants to help building this
+		      argument:
+
+			EXPORT    = 0x01
+			TIMESTAMP = 0x02
+
+    The compiler raises an exception with 'die' if it encounters an
+    error; $@ contains the 'ERROR' messages describing the problem.
+    
+    The compiler function can be called repeatedly with different
+    inputs.
 
 2)  When TC_ENABLED=Internal, Shorewall-perl now validates classids in
     the MARK/CLASSIFY column of /etc/shorewall/tcrules against the

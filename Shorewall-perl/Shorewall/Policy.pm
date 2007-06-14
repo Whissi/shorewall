@@ -37,7 +37,6 @@ our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain );
 our @EXPORT_OK = qw(  );
 our @VERSION = 1.00;
 
-
 #
 # Create a new policy chain and return a reference to it.
 #

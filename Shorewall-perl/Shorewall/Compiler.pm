@@ -844,6 +844,8 @@ sub compiler( $$$$ ) {
 	#
 	generate_aux_config if $export;
     }
+
+    1;
 }
 
 1;

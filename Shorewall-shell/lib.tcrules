@@ -422,35 +422,17 @@ process_tc_rule()
 	    dests=${dests%!*}
 	    ;;
     esac
-    #
-    # This isn't as fancy as the code in the rules file processor. It only uses multiport match
-    # if the extended variety is available and then only on the destination port(s). 
-    #
-    if [ -n "$XMULTIPORT" ]; then
-	#
-	# Extended Multiport match can handle port ranges 
-	#
-	multiport="-m multiport --dports"
-	for source in $(separate_list $sources); do
-	    for dest in $(separate_list $dests); do
-		port=${ports:=-}
+
+    multiport=--dport
+    for source in $(separate_list $sources); do
+	for dest in $(separate_list $dests); do
+	    for port in $(separate_list ${ports:=-}); do
 		for sport in $(separate_list ${sports:=-}); do
 		    add_a_tc_rule
 		done
 	    done
 	done
-    else
-	multiport=--dport
-	for source in $(separate_list $sources); do
-	    for dest in $(separate_list $dests); do
-		for port in $(separate_list ${ports:=-}); do
-		    for sport in $(separate_list ${sports:=-}); do
-			add_a_tc_rule
-		    done
-		done
-	    done
-	done
-    fi
+    done
 
     progress_message "   TC Rule \"$rule\" $DONE"
     save_progress_message_short "   TC Rule \\\"$rule\\\" Added"

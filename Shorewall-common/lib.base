@@ -998,6 +998,7 @@ determine_capabilities() {
     MANGLE_FORWARD=
     COMMENTS=
     ADDRTYPE=
+    TCPMSS_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -1065,6 +1066,7 @@ determine_capabilities() {
 
     qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
     qt $IPTABLES -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
+    qt $IPTABLES -A fooX1234 -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
 
     qt $IPTABLES -F fooX1234
     qt $IPTABLES -X fooX1234
@@ -1109,6 +1111,7 @@ report_capabilities() {
 	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
 	report_capability "Comments" $COMMENTS
 	report_capability "Address Type Match" $ADDRTYPE
+	report_capability "TCPMSS Match" $TCPMSS_MATCH
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=

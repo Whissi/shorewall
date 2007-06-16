@@ -299,6 +299,7 @@ sub initialize() {
 		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
 		 COMMENTS        => 'Comments',
 		 ADDRTYPE        => 'Address Type Match',
+		 TCPMSS_MATCH    => 'TCP MSS',
 	       );
     #
     # Directories to search for configuration files
@@ -855,8 +856,9 @@ sub determine_capabilities() {
 	}
     }
 
-    $capabilities{USEPKTTYPE} = qt( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
-    $capabilities{ADDRTYPE}   = qt( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
+    $capabilities{USEPKTTYPE}   = qt( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
+    $capabilities{ADDRTYPE}     = qt( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
+    $capabilities{TCPMSS_MATCH} = qt( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" ); 
 
     qt( "$iptables -F $sillyname" );
     qt( "$iptables -X $sillyname" );

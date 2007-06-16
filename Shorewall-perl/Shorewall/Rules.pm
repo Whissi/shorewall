@@ -730,7 +730,7 @@ sub setup_mac_lists( $ ) {
 
 		my $targetref = $maclist_targets{$disposition};
 
-		fatal_error "Invalid DISPOSITION ( $disposition)" if ( $table eq 'mangle' ) && ! $targetref->{mangle};
+		fatal_error "Invalid DISPOSITION ( $disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
 
 		unless ( $maclist_interfaces{$interface} ) {
 		    next if get_interface_option( $interface, 'optional' ) && get_interface_option( $interface, 'detectnets' );
@@ -1792,7 +1792,7 @@ sub setup_mss( $ ) {
     if ( "\L$clampmss" eq 'yes' ) {
 	$option = '--clamp-mss-to-pmtu';
     } else {
-	$match  = "-m tcpmss --mss $clampmss: ";
+	$match  = "-m tcpmss --mss $clampmss: " if $capabilities{TCPMSS_MATCH};
 	$option = '--set-mss $clampmss';
     }
     

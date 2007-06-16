@@ -341,7 +341,7 @@ sub process_action1 ( $$ ) {
 	    fatal_error "Parameter value not allowed in action files ($param)" if $paramtype & NATRULE;
 	}
 
-	fatal_error "Invalid or missing ACTION ( $wholetarget )" unless defined $target;
+	fatal_error "Invalid or missing ACTION ($wholetarget)" unless defined $target;
 
 	if ( find_macro $target ) {
 	    process_macro1( $action, $macros{$target} );
@@ -372,18 +372,18 @@ sub process_actions1() {
 
 	    if ( $targets{$action} ) {
 		next if $targets{$action} & ACTION;
-		fatal_error "Invalid Action Name: $action";
+		fatal_error "Invalid Action Name ($action)";
 	    }
 
 	    $targets{$action} = ACTION;
 
-	    fatal_error "Invalid Action Name: $action" unless "\L$action" =~ /^[a-z]\w*$/;
+	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
 
 	    new_action $action;
 
 	    my $actionfile = find_file "action.$action";
 
-	    fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
+	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
 	    progress_message2 "   Pre-processing $actionfile...";
 
@@ -516,7 +516,7 @@ sub process_action3( $$$$$ ) {
     my $actionfile = find_file "action.$action";
     my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
 
-    fatal_error "Missing Action File: $actionfile" unless -f $actionfile;
+    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
     progress_message2 "Processing $actionfile for chain $chainref->{name}...";
 

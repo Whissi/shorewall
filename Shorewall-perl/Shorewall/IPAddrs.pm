@@ -114,13 +114,13 @@ sub encodeaddr( $ ) {
 sub validate_range( $$ ) {
     my ( $low, $high ) = @_;
 
-    fatal_error "Invalid IP address ( $low )" unless valid_address $low;
-    fatal_error "Invalid IP address ( $high )" unless valid_address $high;
+    fatal_error "Invalid IP address ($low)" unless valid_address $low;
+    fatal_error "Invalid IP address ($high)" unless valid_address $high;
 
     my $first = decodeaddr $low;
     my $last  = decodeaddr $high;
 
-    fatal_error "Invalid IP Range ( $low-$high )" unless $first <= $last;
+    fatal_error "Invalid IP Range ($low-$high)" unless $first <= $last;
 }   
 
 sub ip_range_explicit( $ ) {
@@ -129,17 +129,17 @@ sub ip_range_explicit( $ ) {
 
     my ( $low, $high ) = split /-/, $range;
 
-    fatal_error "Invalid IP address ( $low )" unless valid_address $low;
+    fatal_error "Invalid IP address ($low)" unless valid_address $low;
 
     push @result, $low;
 
     if ( defined $high ) {
-	fatal_error "Invalid IP address ( $high )" unless valid_address $high;
+	fatal_error "Invalid IP address ($high)" unless valid_address $high;
 
 	my $first = decodeaddr $low;
 	my $last  = decodeaddr $high;
 
-	fatal_error "Invalid IP Range ( $range )" unless $first <= $last;
+	fatal_error "Invalid IP Range ($range)" unless $first <= $last;
 
 	while ( ++$first <= $last ) {
 	    push @result, encodeaddr( $first );

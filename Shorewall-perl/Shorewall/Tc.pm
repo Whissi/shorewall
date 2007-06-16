@@ -295,7 +295,7 @@ sub rate_to_kbit( $ ) {
     return $1 * 8000   if $rate =~ /^(\d+)mbps$/i;
     return $1 * 8      if $rate =~ /^(\d+)kbps$/i;
     return $rate / 125 if $rate =~ /^\d+$/;
-    fatal_error "Invalid Rate ( $rate )";
+    fatal_error "Invalid Rate ($rate)";
 }
 
 sub calculate_r2q( $ ) {
@@ -313,8 +313,8 @@ sub calculate_quantum( $$ ) {
 sub validate_tc_device( $$$ ) {
     my ( $device, $inband, $outband ) = @_;
 
-    fatal_error "Duplicate device ( $device )"    if $tcdevices{$device};
-    fatal_error "Invalid device name ( $device )" if $device =~ /[:+]/;
+    fatal_error "Duplicate device ($device)"    if $tcdevices{$device};
+    fatal_error "Invalid device name ($device)" if $device =~ /[:+]/;
 
     rate_to_kbit $inband;
     rate_to_kbit $outband;
@@ -349,16 +349,16 @@ sub validate_tc_class( $$$$$$ ) {
 		       'tos-normal-service'       => 'tos=0x00/0x1e' );
 
     my $devref = $tcdevices{$device};
-    fatal_error "Unknown Device ( $device )" unless $devref;
+    fatal_error "Unknown Device ($device)" unless $devref;
     my $full  = rate_to_kbit $devref->{out_bandwidth};
 
     $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
 
-    fatal_error "Invalid Mark ( $mark )" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) < 0xff;
+    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) < 0xff;
 
     my $markval = numeric_value( $mark );
-    fatal_error "Duplicate Mark ( $mark )" if $tcref->{$markval};
+    fatal_error "Duplicate Mark ($mark)" if $tcref->{$markval};
 
     $tcref->{$markval} = {};
     $tcref             = $tcref->{$markval};
@@ -385,7 +385,7 @@ sub validate_tc_class( $$$$$$ ) {
 		( undef, $option ) = split /=/, $option;
 		push @{$tcref->{tos}}, $option;
 	    } else {
-		fatal_error "Unknown option ( $option )";
+		fatal_error "Unknown option ($option)";
 	    }
 	}
     }

@@ -113,7 +113,7 @@ sub process_tos() {
 	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) { 
 		$tos = $tosval;
 	    } elsif ( numeric_value( $tos ) > 0x1e ) {
-		fatal_error "Invalid TOS value";
+		fatal_error "Invalid TOS value ($tos)";
 	    }
 		
 	    my $chainref;
@@ -176,7 +176,7 @@ sub setup_ecn()
 
 	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file entry';
 
-	    fatal_error "Unknown interface ( $interface )" unless known_interface $interface;
+	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
 	    $interfaces{$interface} = 1;
 
@@ -730,7 +730,7 @@ sub setup_mac_lists( $ ) {
 
 		my $targetref = $maclist_targets{$disposition};
 
-		fatal_error "Invalid DISPOSITION ( $disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
+		fatal_error "Invalid DISPOSITION ($disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
 
 		unless ( $maclist_interfaces{$interface} ) {
 		    next if get_interface_option( $interface, 'optional' ) && get_interface_option( $interface, 'detectnets' );
@@ -828,7 +828,7 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
 	my $action = isolate_basic_target $mtarget;
 
-	fatal_error "Invalid or missing ACTION ( $mtarget )" unless defined $action;
+	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
@@ -1248,7 +1248,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 
     my $action = isolate_basic_target $target;
 
-    fatal_error "Invalid or missing ACTION ( $target )" unless defined $action;
+    fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
     if ( $source eq 'all' ) {
 	for my $zone ( @zones ) {

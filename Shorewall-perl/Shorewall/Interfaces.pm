@@ -236,14 +236,14 @@ sub validate_interfaces_file( $ )
 
 	fatal_error "Invalid INTERFACE" if defined $extra || ! $interface;	
 
-	fatal_error "Invalid Interface Name ( $interface )" if $interface eq '+';
+	fatal_error "Invalid Interface Name ($interface)" if $interface eq '+';
 
 	if ( defined $port ) {
 	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
 	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
-	    fatal_error "Duplicate Interface ( $port )" if $interfaces{$port};
+	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Invalid Interface Name ( $interface:$port )" unless $port =~ /^[\w.@%-]+\+?$/;
+	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
 
 	    if ( $zone ) {
@@ -257,7 +257,7 @@ sub validate_interfaces_file( $ )
 	    $interfaces{$port}{bridge} = $bridge = $interface;
 	    $interface = $port;
 	} else {
-	    fatal_error "Duplicate Interface ( $interface )" if $interfaces{$interface};
+	    fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
 	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
 	    $interfaces{$interface}{bridge} = $interface;
 	}

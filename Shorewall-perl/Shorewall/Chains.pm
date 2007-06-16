@@ -773,7 +773,7 @@ sub validate_portpair( $ ) {
 
     my @ports = split/:/, $portpair, 3;
 
-    fatal_error "Invalid port range" if @ports == 3;
+    fatal_error "Invalid port range ($portpair)" if @ports == 3;
 
     for my $port ( @ports ) {
 	my $value = $services{$port};
@@ -887,8 +887,8 @@ sub do_proto( $$$ )
 
 	    if ( $ports ne '' ) {
 		if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
-		    fatal_error "Port list requires Multiport support in your kernel/iptables: $ports" unless $capabilities{MULTIPORT};
-		    fatal_error "Too many entries in port list: $ports" if port_count( $ports ) > 15;
+		    fatal_error "Port list requires Multiport support in your kernel/iptables ($ports)" unless $capabilities{MULTIPORT};
+		    fatal_error "Too many entries in port list ($ports)" if port_count( $ports ) > 15;
 		    $ports = validate_port_list $ports;
 		    $output .= "-m multiport --dports $ports ";
 		    $multiport = 1;
@@ -902,7 +902,7 @@ sub do_proto( $$$ )
 
 	    if ( $sports ne '' ) {
 		if ( $multiport ) {	
-		    fatal_error "Too many entries in port list: $sports" if port_count( $sports ) > 15;
+		    fatal_error "Too many entries in port list ($sports)" if port_count( $sports ) > 15;
 		    $sports = validate_port_list $sports;
 		    $output .= "-m multiport --sports $sports ";
 		}  else {
@@ -963,7 +963,7 @@ sub verify_mark( $ ) {
     my $mark  = $_[0];
     my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFFFF : 0xFF;
 
-    fatal_error "Invalid Mark or Mask value: $mark"
+    fatal_error "Invalid Mark or Mask value ($mark)"
 	unless numeric_value( $mark ) <= $limit;
 }
 
@@ -1108,7 +1108,7 @@ sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
     my $options = $option;
 
-    fatal_error "Your kernel and/or iptables does not include ipset match: $setname" unless $capabilities{IPSET_MATCH};
+    fatal_error "Your kernel and/or iptables does not include ipset match ($setname)" unless $capabilities{IPSET_MATCH};
 
     if ( $setname =~ /(.*)\[([1-6])\]$/ ) {
 	$setname  = $1;
@@ -1542,17 +1542,17 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    # ADDRESS 'detect' in the masq file.
 	    #
-	    fatal_error "Bridge port ( $diface) not allowed" if port_to_bridge( $diface );
+	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest ';
 	    $chainref->{loopcount}++;
 	} else {
-	    fatal_error "Bridge Port ( $diface ) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
+	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
 
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );
-		fatal_error "Source interface ( $iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
+		fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
 	    }
 
 	    $rule .= match_dest_dev( $diface );

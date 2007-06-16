@@ -168,10 +168,10 @@ sub setup_providers() {
 
 	my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
 
-	fatal_error "Duplicate provider ( $table )" if $providers{$table};
+	fatal_error "Duplicate provider ($table)" if $providers{$table};
 
 	for my $providerref ( values %providers  ) {
-	    fatal_error "Duplicate provider number ( $number )" if $providerref->{number} == $number;
+	    fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
 	}
 
 	emit "#\n# Add Provider $table ($number)\n#";
@@ -235,7 +235,7 @@ sub setup_providers() {
 	    }
 
 	    for my $providerref ( values %providers  ) {
-		fatal_error "Duplicate mark value ( $mark )" if $providerref->{mark} == $val;
+		fatal_error "Duplicate mark value ($mark)" if $providerref->{mark} == $val;
 	    }
 
 	    my $pref = 10000 + $val;

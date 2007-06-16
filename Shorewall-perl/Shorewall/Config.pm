@@ -1,4 +1,4 @@
-#
+s#
 # Shorewall-perl 4.0 -- /usr/share/shorewall-perl/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
@@ -330,7 +330,7 @@ INIT {
 #
 sub warning_message
 {
-    my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
+    my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
 
     print STDERR "   WARNING: @_$lineinfo\n";
 }
@@ -339,7 +339,7 @@ sub warning_message
 # Issue fatal error message and die
 #
 sub fatal_error	{
-    my $lineinfo = $currentfile ?  " : $currentfilename ( line $currentlinenumber )" : '';
+    my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
 
     die "   ERROR: @_$lineinfo\n";
  
@@ -679,7 +679,7 @@ sub check_trivalue( $$ ) {
 	} elsif ( $val eq '' ) {
 	    $config{$var} = $default
 	} else {
-	    fatal_error "Invalid value ( $val ) for $var";
+	    fatal_error "Invalid value ($val) for $var";
 	}
     } else {
 	$config{var} = $default
@@ -1086,7 +1086,7 @@ sub get_configuration( $ ) {
 	    } elsif ( $val eq 'ACCEPT' ) {
 		$globals{MACLIST_TARGET} = 'RETURN';
 	    } else {
-		fatal_error "Invalid value ( $config{MACLIST_DISPOSITION} ) for MACLIST_DISPOSITION"
+		fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
 		}
 	}
     } else {
@@ -1158,7 +1158,7 @@ sub get_configuration( $ ) {
 
 	fatal_error "Invalid LOGFORMAT ($val)" if $@;
 
-	fatal_error "LOGFORMAT string is longer than 29 characters: \"$val\"" if length $result > 29;
+	fatal_error "LOGFORMAT string is longer than 29 characters ($val)" if length $result > 29;
 
 	$globals{MAXZONENAMELENGTH} = int ( 5 + ( ( 29 - (length $result ) ) / 2) );
     } else {

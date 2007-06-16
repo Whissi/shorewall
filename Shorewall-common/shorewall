@@ -859,7 +859,7 @@ safe_commands() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    mutex_on
+    [ "$nolock" ] || mutex_on
 
     if shorewall_is_started; then
 	running=Yes
@@ -886,7 +886,7 @@ safe_commands() {
 
     if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
-	mutex_off
+	[ "$nolock" ] || mutex_off
 	exit $status
     fi
 
@@ -916,14 +916,15 @@ safe_commands() {
 		${VARDIR}/.$command clear
 	    fi
 	    
-	    mutex_off
+	    [ "$nolock" ] || mutex_off
+
 	    echo "New configuration has been rejected and the old one restored"
 	    exit 2
 	fi
 
     fi
 
-    mutex_off
+    [ "$nolock" ] || mutex_off
 }
 
 #
@@ -1006,7 +1007,7 @@ try_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    mutex_on
+    [ "$nolock" ] || mutex_on
 
     if shorewall_is_started; then
 	running=Yes
@@ -1026,7 +1027,7 @@ try_command() {
 
     if ! compiler run $debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?
-	mutex_off
+	[ "$nolock" ] || mutex_off
 	exit $status
     fi
 
@@ -1053,7 +1054,7 @@ try_command() {
 	fi	    
     fi
 
-    mutex_off
+    [ "$nolock" ] || mutex_off
 
     return 0
 }
@@ -1584,9 +1585,9 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
-	    mutex_on
+	    [ "$nolock" ] || mutex_on
 	    block DROP Dropped $*
-	    mutex_off
+	    [ "$nolock" ] || mutex_off
 	else
 	    fatal_error "Shorewall is not started"
 	fi
@@ -1596,9 +1597,9 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
-	    mutex_on
+	    [ "$nolock" ] || mutex_on
 	    block logdrop Dropped $*
-	    mutex_off
+	    [ "$nolock" ] || mutex_off
 	else
 	    fatal_error "Shorewall is not started"
 	fi
@@ -1608,9 +1609,9 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
-	    mutex_on
+	    [ "$nolock" ] || mutex_on
 	    block $COMMAND Rejected $*
-	    mutex_off
+	    [ "$nolock" ] || mutex_off
 	else
 	    fatal_error "Shorewall is not started"
 	fi
@@ -1636,7 +1637,6 @@ case "$COMMAND" in
 	esac
 
 	RESTOREPATH=${VARDIR}/$RESTOREFILE
-	mutex_off
 
 	[ "$nolock" ] || mutex_on
 

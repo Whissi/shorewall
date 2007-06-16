@@ -4865,6 +4865,7 @@ compile_firewall() # $1 = File Name
     local IPTABLES_COMMAND=run_iptables
     local INDENT=""
     local checking= outfile=$1 dir=
+    local match=
 
     setup_mss()
     {
@@ -4874,6 +4875,7 @@ compile_firewall() # $1 = File Name
 		;;
 	    *)
 		option="--set-mss $CLAMPMSS"
+		[ "$TCPMSS_MATCH" ] && match="-m tcpmss --mss $CLAMPMSS: "
 		;;
 	esac
 

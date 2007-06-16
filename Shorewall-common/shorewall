@@ -1400,6 +1400,49 @@ while [ $finished -eq 0 ]; do
     esac
 done
 
+version_command() {
+    local finished=0 all=
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			a*)
+			    all=Yes
+			    option=${option#a}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ $# -gt 0 ] && usage 1
+
+    echo $version
+
+    if [ -n "$all" ]; then
+	if [ -f /usr/share/shorewall-perl/version ]; then
+	    echo "Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
+	fi
+    fi
+}
+
 if [ $# -eq 0 ]; then
     usage 1
 fi
@@ -1560,15 +1603,8 @@ case "$COMMAND" in
 	hits_command
 	;;
     version)
-	echo $version
-
-	if [ -f /usr/share/shorewall-shell/version ]; then
-	    echo "Shorewall-shell $(cat /usr/share/shorewall-shell/version)"
-	fi
-
-	if [ -f /usr/share/shorewall-perl/version ]; then
-	    echo "Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
-	fi
+	shift
+	version_command $@
 	;;
     try)
 	get_config

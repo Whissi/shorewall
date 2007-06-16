@@ -605,9 +605,9 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
-	    mutex_on
+	    [ -n "$nolock" ] || mutex_on
 	    block DROP Dropped $*
-	    mutex_off
+	    [ -n "$nolock" ] || mutex_off
 	else
 	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2
@@ -617,9 +617,9 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
-	    mutex_on
+	    [ -n "$nolock" ] || mutex_on
 	    block logdrop Dropped $*
-	    mutex_off
+	    [ -n "$nolock" ] || mutex_off
 	else
 	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2
@@ -629,9 +629,9 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
-	    mutex_on
+	    [ -n "$nolock" ] || mutex_on
 	    block $COMMAND Rejected $*
-	    mutex_off
+	    [ -n "$nolock" ] || mutex_off
 	else
 	    error_message "ERROR: Shorewall Lite is not started"
 	    exit 2

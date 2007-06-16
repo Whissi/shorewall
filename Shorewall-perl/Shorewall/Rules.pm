@@ -1009,7 +1009,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     # Take care of chain
     #
     my $chain    = "${sourcezone}2${destzone}";
-    my $chainref = ensure_filter_chain $chain, 1;
+    my $chainref = ensure_chain 'filter', $chain;
     #
     # Validate Policy
     #
@@ -1032,6 +1032,10 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    return 1 if $basictarget eq $policy;
 	}
     }
+    #
+    # Mark the chain as referenced and add appropriate rules from earlier sections.
+    #
+    $chainref = ensure_filter_chain $chain, 1;
     #
     # For compatibility with older Shorewall versions
     #

@@ -1,0 +1,55 @@
+--- /home/teastep/shorewall/branches/3.4/Shorewall/compiler	2007-06-16 07:39:45.000000000 -0700
++++ Shorewall-shell/compiler	2007-06-16 07:39:31.000000000 -0700
+@@ -3767,7 +3767,7 @@
+ 
+ 	save_progress_message "Setting up Route Filtering..."
+ 
+-	if [ -z "$ROUTE_FILTER" ]; then
++	if [ "$ROUTE_FILTER" = no ]; then
+ 	    indent >&3 << __EOF__
+ 
+ for f in /proc/sys/net/ipv4/conf/*; do
+@@ -3791,8 +3791,10 @@
+ 
+ 	save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
+ 
+-	if [ -n "$ROUTE_FILTER" ]; then
++	if [ "$ROUTE_FILTER" = yes ]; then
+ 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
++	elif [ "$ROUTE_FILTER" = no ]; then
++	    save_command "echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter"
+ 	fi
+ 
+ 	save_command "[ -n \"\$NOROUTES\" ] || ip route flush cache"
+@@ -3808,7 +3810,7 @@
+ 
+ 	save_progress_message "Setting up Martian Logging..."
+ 
+-	if [ -z "$LOG_MARTIANS" ]; then
++	if [ "$LOG_MARTIANS" = no ]; then
+ 	    indent >&3 << __EOF__
+ 
+ for f in /proc/sys/net/ipv4/conf/*; do
+@@ -3831,9 +3833,12 @@
+ __EOF__
+ 	    done
+ 	
+-	if [ -n "$LOG_MARTIANS" ]; then
++	if [ "$LOG_MARTIANS" = yes ]; then
+ 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/all/log_martians"
+ 	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/log_martians"
++	elif [ "$LOG_MARTIANS" = no ]; then
++	    save_command "echo 0 > /proc/sys/net/ipv4/conf/all/log_martians"
++	    save_command "echo 0 > /proc/sys/net/ipv4/conf/default/log_martians"
+ 	fi
+ 
+     fi
+@@ -4874,7 +4879,7 @@
+ 		;;
+ 	esac
+ 
+-	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option
++	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
+     }
+ 
+     progress_message2 "Initializing..."

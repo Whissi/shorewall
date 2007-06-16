@@ -957,7 +957,7 @@ allow_command() {
     [ -n "$debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
     if shorewall_is_started ; then
-	mutex_on
+	[ -n "$nolock" ] || mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
 	    case $1 in
@@ -985,7 +985,7 @@ allow_command() {
 		    ;;
 	    esac
 	done
-	mutex_off
+	[ -n "$nolock" ] || mutex_off
     else
 	error_message "ERROR: $PRODUCT is not started"
 	exit 2

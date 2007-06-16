@@ -1793,7 +1793,7 @@ sub setup_mss( $ ) {
 	$option = '--clamp-mss-to-pmtu';
     } else {
 	$match  = "-m tcpmss --mss $clampmss: " if $capabilities{TCPMSS_MATCH};
-	$option = '--set-mss $clampmss';
+	$option = "--set-mss $clampmss";
     }
     
     add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option";

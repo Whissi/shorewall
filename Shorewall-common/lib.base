@@ -29,11 +29,12 @@
 #
 
 SHOREWALL_LIBVERSION=40000
+SHOREWALL_CAPVERSION=30405
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
 [ -n "${CONFDIR:=/etc/shorewall}" ]
-SHELLSHAREDIR=/usr/share/shorewall-shell
+SHELLSHAREDIR=/usr/share/shorewall
 PERLSHAREDIR=/usr/share/shorewall-perl
 
 #
@@ -1070,6 +1071,8 @@ determine_capabilities() {
 
     qt $IPTABLES -F fooX1234
     qt $IPTABLES -X fooX1234
+
+    CAPVERSION=$SHOREWALL_CAPVERSION
 }
 
 report_capabilities() {
@@ -1154,6 +1157,8 @@ report_capabilities1() {
     report_capability1 MANGLE_FORWARD
     report_capability1 COMMENTS
     report_capability1 ADDRTYPE
+    
+    echo CAPVERSION=$SHOREWALL_CAPVERSION
 }
 
 #

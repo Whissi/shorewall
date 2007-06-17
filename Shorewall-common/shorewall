@@ -323,7 +323,11 @@ compiler() {
 	    [ -n "$DEBUG" ]   && debugflags='-wd'
 	    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
 
-	    shift # Perl compiler only takes the output file as a argument
+            # Perl compiler only takes the output file as a argument
+	    
+	    [ "$1" = debug ]  && shift;
+	    [ "$1" = nolock ] && shift;
+	    shift 
 
 	    options="--verbose $VERBOSE ";
 	    [ -n "$EXPORT" ] && options="$options --export ";
@@ -884,7 +888,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler run $debugging nolock ${VARDIR}/.$command; then
+    if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	[ -n "$nolock" ] || mutex_off
 	exit $status

@@ -1000,7 +1000,7 @@ sub get_configuration( $ ) {
     if ( $capabilities{CAPVERSION} ) {
 	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by Shorewall version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
     } else {
-	warning_message "Your capabilities file may be out of date";
+	warning_message "Your capabilities file may not contain all of the capabilities defined by Shorewall version $globals{VERSION}";
     }
 
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};

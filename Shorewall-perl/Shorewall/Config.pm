@@ -1,4 +1,4 @@
-s#
+#
 # Shorewall-perl 4.0 -- /usr/share/shorewall-perl/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
@@ -132,6 +132,7 @@ sub initialize() {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    VERSION =>  '4.0.0-Beta5',
+		    CAPVERSION => 30405 ,
 		  );
     #
     # From shorewall.conf file
@@ -263,6 +264,7 @@ sub initialize() {
 	       MANGLE_FORWARD => undef,
 	       COMMENTS => undef,
 	       ADDRTYPE => undef,
+	       CAPVERSION => undef,
 	       );
     #
     # /etc/protocols and /etc/services
@@ -300,6 +302,7 @@ sub initialize() {
 		 COMMENTS        => 'Comments',
 		 ADDRTYPE        => 'Address Type Match',
 		 TCPMSS_MATCH    => 'TCP MSS',
+		 CAPVERSION      => 'Capability Version',
 	       );
     #
     # Directories to search for configuration files
@@ -862,6 +865,8 @@ sub determine_capabilities() {
 
     qt( "$iptables -F $sillyname" );
     qt( "$iptables -X $sillyname" );
+
+    $capabilities{CAPVERSION} = $globals{CAPVERSION};
 }
 
 #
@@ -990,6 +995,12 @@ sub get_configuration( $ ) {
 	} else {
 	    fatal_error "Unrecognized capabilities entry";
 	}
+    }
+
+    if ( $capabilities{CAPVERSION} ) {
+	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by Shorewall version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
+    } else {
+	warning_message "Your capabilities file may be out of date";
     }
 
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};

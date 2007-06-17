@@ -884,7 +884,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler run $debugging nolock ${VARDIR}/.$command; then
 	status=$?
 	[ -n "$nolock" ] || mutex_off
 	exit $status

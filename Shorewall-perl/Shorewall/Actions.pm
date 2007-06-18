@@ -55,9 +55,7 @@ our @VERSION = 1.00;
 #  Used Actions. Each action that is actually used has an entry with value 1.
 #
 our %usedactions;
-## Firewall to DMZ
 #
-
 # Default actions for each policy.
 #
 our %default_actions;
@@ -85,6 +83,7 @@ my %logactionchains;
 #
 
 sub initialize() {
+    %usedactions     = ();
     %default_actions = ( DROP     => 'none' ,
 			 REJECT   => 'none' ,
 			 ACCEPT   => 'none' ,

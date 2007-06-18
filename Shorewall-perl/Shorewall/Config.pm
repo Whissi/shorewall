@@ -78,8 +78,8 @@ our %config;
 #
 # Config options and global settings that are to be copied to object script
 #
-our @propagateconfig;
-our @propagateenv;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
+our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 #
 # From parsing the capabilities file
 #
@@ -227,11 +227,6 @@ sub initialize() {
 		TCP_FLAGS_DISPOSITION => undef,
 		BLACKLIST_DISPOSITION => undef,
 		);
-    #
-    # Config options and global settings that are to be copied to object script
-    #
-    @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
-    @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 
     #
     # From parsing the capabilities file

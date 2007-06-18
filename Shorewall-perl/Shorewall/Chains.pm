@@ -275,7 +275,7 @@ sub initialize() {
     #
     # Sequence for naming temporary chains
     #
-    our $chainseq;
+    $chainseq = undef;
 }
 
 INIT {

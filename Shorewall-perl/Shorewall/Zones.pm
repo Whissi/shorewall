@@ -94,21 +94,6 @@ our @zones;
 our %zones;
 our $firewall_zone;
 
-#
-#     Interface Table.
-#
-#     @interfaces lists the interface names in the order that they appear in the interfaces file.
-#
-#     %interfaces { <interface1> => { root        => <name without trailing '+'>
-#                                     broadcast   => [ <bcast1>, ... ]
-#                                     options     => { <option1> = <val1> ,
-#                                                      ...
-#                                                    }
-#                                     zone        => <zone name>
-#                 }
-#
-our %interfaces;
-
 our %reservedName = ( all => 1,
 		      none => 1,
 		      SOURCE => 1,
@@ -126,7 +111,7 @@ our %reservedName = ( all => 1,
 sub initialize() {
     @zones = ();
     %zones = ();
-    %interfaces = ();
+    $firewall_zone = '';
 }
 
 INIT {

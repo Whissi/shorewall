@@ -64,7 +64,6 @@ our @providers;
 #
 
 sub initialize() {
-    @providers = ();
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
     $balance             = 0;

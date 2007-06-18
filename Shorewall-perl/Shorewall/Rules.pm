@@ -431,7 +431,7 @@ sub process_routestopped() {
 	my @hosts;
 
 	for my $host ( split /,/, $hosts ) {
-	    push @hosts, "$interface:$hosts";
+	    push @hosts, "$interface:$host";
 	}
 
 	unless ( $options eq '-' ) {

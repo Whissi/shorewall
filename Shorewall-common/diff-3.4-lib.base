@@ -1,6 +1,6 @@
---- /home/teastep/shorewall/branches/3.4/Shorewall/lib.base	2007-06-17 14:30:30.000000000 -0700
-+++ lib.base	2007-06-17 14:36:20.000000000 -0700
-@@ -28,7 +28,7 @@
+--- /home/teastep/shorewall/branches/3.4/Shorewall/lib.base	2007-06-17 14:36:04.000000000 -0700
++++ lib.base	2007-06-18 13:22:05.000000000 -0700
+@@ -28,13 +28,13 @@
  # and /usr/share/shorewall-lite/shorecap.
  #
  
@@ -9,6 +9,13 @@
  SHOREWALL_CAPVERSION=30405
  
  [ -n "${VARDIR:=/var/lib/shorewall}" ]
+ [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
+ [ -n "${CONFDIR:=/etc/shorewall}" ]
+-SHELLSHAREDIR=/usr/share/shorewall
++SHELLSHAREDIR=/usr/share/shorewall-shell
+ PERLSHAREDIR=/usr/share/shorewall-perl
+ 
+ #
 @@ -360,6 +360,8 @@
      eval loaded=\$LIB_${1}_LOADED
  

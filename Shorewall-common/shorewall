@@ -274,19 +274,15 @@ compiler() {
     # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
     #
     ensure_config_path
-    #
-    # Run the appropriate params file
-    #
-    [ -d /usr/share/shorewall-perl ] && set -a; 
-    
-    run_user_exit params
 
-    set +a
+    compiler=
 
     if [ -n "$SHOREWALL_COMPILER" ]; then
-	compiler="$SHOREWALL_COMPILER"
+	compiler="$SHOREWALL_COMPILER"              #Compiler specified in /etc/shorewall/shorewall.conf or on the run-line
     elif [ -x $sc ]; then
-	compiler=shell
+	if [ ! -x $pc ]; then
+	    compiler=shell
+	fi
     elif [ -x $pc ]; then
 	compiler=perl
     else
@@ -312,7 +308,13 @@ compiler() {
         #
         # And initiate the appropriate compiler
         #
-	[ -n "$SHOREWALL_COMPILER" ] && compiler="$SHOREWALL_COMPILER"
+	if [ -n "$SHOREWALL_COMPILER" ]; then
+	    compiler="$SHOREWALL_COMPILER"
+	elif [ -x $sc ]; then
+	    compiler=shell
+	else
+	    compiler=perl
+	fi
     fi
 
     [ $command = exec ] || command=
@@ -334,6 +336,12 @@ compiler() {
 	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory $SHOREWALL_DIR ";
 	    [ -n "$TIMESTAMP" ] && options="$options --timestamp" ;
 	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
+	    #
+	    # Run the appropriate params file
+	    #
+	    set -a; 
+	    run_user_exit params
+	    set +a
 
 	    $command perl $debugflags $pc $options $@
 	    ;;

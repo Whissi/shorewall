@@ -5696,15 +5696,7 @@ usage() {
 #
 # Start trace if first arg is "debug"
 #
-debug='-w'
-
 [ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
-
-if [ "$PROFILE" ]; then
-    debug='-wd:DProf'
-elif [ "$DEBUG" ]; then
-    debug='-wd'
-fi
 
 NOLOCK=
 

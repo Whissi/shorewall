@@ -23,7 +23,38 @@ Problems corrected in 4.0.0 Beta 6.
 
 Other changes in Shorewall 4.0.0 Beta 6
 
-None.
+1)  When a Shorewall release includes detection of an additional
+    capability, existing capabilities files become out of
+    date. Previously, this condition was not detected.
+
+    Beginning with this release, each generated capabilities file
+    contains a CAPVERSION specification which defines the capabilities
+    version of the file. If the CAPVERSION in a capabilities file is
+    less than the current CAPVERSION, then Shorewall will issue the
+    following message:
+
+    WARNING: <file> is out of date -- it does not contain all of
+    the capabilities defined by Shorewall version <version>
+
+    where
+
+	<file>    is the name of the capabilities file.
+	<version> is the current Shorewall version.
+
+    Existing capabilities file contain no CAPVERSION. When such a file
+    is read, Shorewall will issue this message:
+
+    WARNING: <file> may be not contain all of the capabilities defined
+    by Shorewall version <version>
+
+2)  When a directory is specified in a command such as 'start' or
+    'compile', Shorewall now reads the shorewall.conf file (if any) in
+    that directory before deciding which compiler to use. So if
+    SHOREWALL_COMPILER is not specified in
+    /etc/shorewall/shorewall.conf and the -C option was not specified
+    on the run-line, then if both Shorewall-shell and Shorewall-perl
+    are installed, the additional shorewall.conf file is read to see if
+    it specifies a SHOREWALL_COMPILER.
 
 Migration Considerations:
 

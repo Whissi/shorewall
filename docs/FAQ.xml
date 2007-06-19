@@ -1789,6 +1789,15 @@ iptables: Invalid argument
           <filename>/lib/iptables/libipt_policy.so</filename>.</para>
         </listitem>
       </itemizedlist>
+
+      <note>
+        <para>Beginning with Shorewall 3.4.0, Shorewall no longer attempts to
+        use policy match if you have no IPSEC zones and you have not specified
+        the <option>ipsec</option> option on any entry in
+        <filename>/etc/shorewall/hosts</filename>. The subject message will
+        still appear in your kernel log each time that Shorewall determines
+        the capabilities of your kernel/iptables.</para>
+      </note>
     </section>
 
     <section id="faq62">

@@ -383,6 +383,8 @@ sub process_criticalhosts() {
 
 	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
+	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+
 	$hosts = ALLIPv4 unless $hosts ne '-';
 
 	my @hosts;
@@ -425,6 +427,8 @@ sub process_routestopped() {
 	}
 
 	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
+
+	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
 	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
 

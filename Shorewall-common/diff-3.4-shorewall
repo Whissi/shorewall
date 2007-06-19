@@ -1,5 +1,5 @@
 --- /home/teastep/shorewall/branches/3.4/Shorewall/shorewall	2007-06-18 11:32:15.000000000 -0700
-+++ shorewall	2007-06-18 11:31:44.000000000 -0700
++++ shorewall	2007-06-19 06:36:20.000000000 -0700
 @@ -1305,7 +1305,7 @@
      echo "   stop"
      echo "   status"
@@ -20,3 +20,11 @@
  	if [ -f /usr/share/shorewall-perl/version ]; then
  	    echo "Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
  	fi
+@@ -1534,6 +1538,7 @@
+ 	[ $# -ne 1 ] && usage 1
+ 	get_config
+ 	export NOROUTES
++	[ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
+ 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+ 	;;
+     compile)

@@ -905,11 +905,11 @@ sub ensure_config_path() {
     @config_path = split /:/, $config{CONFIG_PATH};
 
     for ( @config_path ) {
-	$_ .= '/' unless m|//$|;
+	$_ .= '/' unless m|/$|;
     }
 
     if ( $shorewall_dir ) {
-	$shorewall_dir .= '/' unless $shorewall_dir =~ m|//$|;
+	$shorewall_dir .= '/' unless $shorewall_dir =~ m|/$|;
 	unshift @config_path, $shorewall_dir if $shorewall_dir ne $config_path[0];
     }
 }

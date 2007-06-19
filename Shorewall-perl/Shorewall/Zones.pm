@@ -338,7 +338,11 @@ sub zone_report()
 	    }
 	}
 
-	warning_message "*** $zone is an EMPTY ZONE ***" unless $printed || $type eq 'firewall';
+	unless ( $printed ) {
+	    fatal_error "No bridge has been associated with zone $zone" if $type eq 'bport4' && ! $zoneref->{bridge};
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type eq 'firewall';
+	}
+
     }
 }
 
@@ -352,6 +356,8 @@ sub dump_zone_contents()
 	my $optionref  = $zoneref->{options};
 	my $exclusions = $zoneref->{exclusions};
 	my $entry      =  "$zone $type";
+
+	$entry .= ":$zoneref->{bridge}" if $type eq 'bport4';
 
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {

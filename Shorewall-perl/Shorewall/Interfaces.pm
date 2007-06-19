@@ -243,7 +243,6 @@ sub validate_interfaces_file( $ )
 	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
 	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
 
 	    if ( $zone ) {
@@ -253,7 +252,13 @@ sub validate_interfaces_file( $ )
 		    $zoneref->{bridge} = $interface;
 		}
 	    }
-	    
+
+	    fatal_error "Bridge Ports may not have options" if $options && $options ne '-';
+
+	    next if $port eq '';
+
+	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
+
 	    $interfaces{$port}{bridge} = $bridge = $interface;
 	    $interface = $port;
 	} else {
@@ -285,7 +290,6 @@ sub validate_interfaces_file( $ )
 	my %options;
 	
 	if ( $options ) {
-	    fatal_error "Bridge Ports may not have options" if defined $port;
 
 	    for my $option (split ',', $options ) {
 		next if $option eq '-';
@@ -331,7 +335,7 @@ sub validate_interfaces_file( $ )
 		fatal_error "Bridges may not have wildcard names" if $wildcard;
 		push @bridges, $interface;
 	    }
-	} elsif ( defined $port ) {
+	} elsif ( $port ) {
 	    $options{port} = 1;
 	}
 	

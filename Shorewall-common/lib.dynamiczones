@@ -174,7 +174,6 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
         # Insert new rules into the filter table for the passed interface
         #
 	while read z1 z2 chain; do
-	    [ -z "$chain" ] && continue
 	    [ "$z1" = "$z2" ] && op="-I" || op="-A"
 	    if [ "$z1" = "$zone" ]; then
 		if [ "$z2" = "$FW" ]; then

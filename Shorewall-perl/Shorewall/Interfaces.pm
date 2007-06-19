@@ -245,6 +245,7 @@ sub validate_interfaces_file( $ )
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
 	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
+	    fatal_error "Bridge Ports are not compatible with DYNAMIC_ZONES=Yes" if $config{DYNAMIC_ZONES};
 
 	    if ( $zone ) {
 		if ( $zoneref->{bridge} ) {

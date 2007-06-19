@@ -1515,7 +1515,7 @@ sub generate_matrix() {
 	}
 
 	if ( $config{DYNAMIC_ZONES} ) {
-	    push @rule_chains , [ $firewall_zone , $zone , $chain1 ];
+	    push @rule_chains , [ $firewall_zone , $zone , $chain1 ] if $chain1;
 	    push @rule_chains , [ $zone , $firewall_zone , $chain2 ];
 	}
 

@@ -390,6 +390,7 @@ sub process_criticalhosts() {
 	my @hosts;
 
 	for my $host ( split /,/, $hosts ) {
+	    validate_net $host;
 	    push @hosts, "$interface:$host";
 	}
 
@@ -435,6 +436,7 @@ sub process_routestopped() {
 	my @hosts;
 
 	for my $host ( split /,/, $hosts ) {
+	    validate_net $host;
 	    push @hosts, "$interface:$host";
 	}
 
@@ -475,19 +477,21 @@ sub process_routestopped() {
 	my ( $interface, $h ) = split /:/, $host;
 	my $source  = match_source_net $h;
 	my $dest    = match_dest_net $h;
+	my $sourcei = match_source_dev $interface;
+	my $desti   = match_dest_dev $interface;
 
-	emit "\$IPTABLES -A INPUT -i $interface $source -j ACCEPT";
-	emit "\$IPTABLES -A OUTPUT -o $interface $dest -j ACCEPT"    if $config{ADMINISABSENTMINDED};
+	emit "\$IPTABLES -A INPUT $sourcei $source -j ACCEPT";
+	emit "\$IPTABLES -A OUTPUT $desti $dest -j ACCEPT"    if $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 
 	if ( $source{$host} ) {
-	    emit "\$IPTABLES -A FORWARD -i $interface $source -j ACCEPT";
+	    emit "\$IPTABLES -A FORWARD $sourcei $source -j ACCEPT";
 	    $matched = 1;
 	}
 
 	if ( $dest{$host} ) {
-	    emit "\$IPTABLES -A FORWARD -o $interface $dest -j ACCEPT";
+	    emit "\$IPTABLES -A FORWARD $desti $dest -j ACCEPT";
 	    $matched = 1;
 	}
 
@@ -496,7 +500,8 @@ sub process_routestopped() {
 		unless ( $host eq $host1 ) {
 		    my ( $interface1, $h1 ) = split /:/, $host1;
 		    my $dest1 = match_dest_net $h1;
-		    emit "\$IPTABLES -A FORWARD -i $interface -o $interface1 $source $dest1 -j ACCEPT";
+		    my $desti1 = match_dest_dev $interface1;
+		    emit "\$IPTABLES -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";
 		    clearrule;
 		}
 	    }

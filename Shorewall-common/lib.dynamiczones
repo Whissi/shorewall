@@ -107,6 +107,8 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
 
+    list_search $zone $BPORT_ZONES && startup_error "Bridge Port zones may not be dynamically modified"
+
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #

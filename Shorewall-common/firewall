@@ -1,15 +1,10 @@
 #!/bin/sh
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V3.4
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.0
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007 - Tom Eastep (teastep@shorewall.net)
-#
-#     tcstart from tc4shorewall       Version 0.5
-#     (c) 2005 Arne Bernin <arne@ucbering.de>
-#     Modified by Tom Eastep for integration into the Shorewall distribution
-#     published under GPL Version 2#
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -31,14 +26,13 @@
 #
 #	Commands are:
 #
-#	   shorewall restart			  Restarts the firewall
-#	   shorewall stop			  Stops the firewall
-#	   shorewall reset			  Resets iptables packet and
+#	   firewall stop			  Stops the firewall
+#	   firewall reset			  Resets iptables packet and
 #						  byte counts
-#	   shorewall clear			  Remove all Shorewall chains
+#	   firewall clear			  Remove all Shorewall chains
 #						  and rules/policies.
-#          shorewall add <iface>[:<host>] zone    Adds a host or subnet to a zone
-#          shorewall delete <iface>[:<host>] zone Deletes a host or subnet from a zone
+#          firewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
+#          firewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
 #
 # Mutual exclusion -- These functions are jackets for the mutual exclusion
 #		      routines in $FUNCTIONS. They invoke

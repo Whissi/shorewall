@@ -915,16 +915,9 @@ sub ensure_config_path() {
 }
 
 #
-# - Read the shorewall.conf file
-# - Read the capabilities file, if any
-# - establish global hashes %config , %globals and %capabilities
+# Small functions called by get_configuration. We separate them so profiling is more useful
 #
-sub get_configuration( $ ) {
-
-    my $export = $_[0];
-
-    ensure_config_path;
-
+sub process_shorewall_conf() {
     my $file = find_file 'shorewall.conf';
 
     if ( -f $file ) {
@@ -950,17 +943,14 @@ sub get_configuration( $ ) {
     } else {
 	fatal_error "$file does not exist!";
     }
+}
 
-    ensure_config_path;
-
-    default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
-
-    default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
-
+sub get_capabilities( $ ) {
+    my $export = $_[0];
+    
     if ( ! $export && $> == 0 ) { # $> == $EUID
 	unless ( $config{IPTABLES} ) {
-	    $config{IPTABLES} = mywhich 'iptables';
-	    fatal_error "Can't find iptables executable" unless $config{IPTABLES};
+	    fatal_error "Can't find iptables executable" unless $config{IPTABLES} = mywhich 'iptables';
 	} else {
 	    fatal_error "\$IPTABLES=$config{IPTABLES} does not exist or is not executable" unless -x $config{IPTABLES};
 	}
@@ -971,7 +961,10 @@ sub get_configuration( $ ) {
 	    determine_capabilities;
 	}
     } else {
-	open_file 'capabilities' or fatal_error "The -e flag requires a capabilities file";
+	unless ( open_file 'capabilities' ) {
+	    fatal_error "The -e flag requires a capabilities file" if $export;
+	    fatal_error "Compiling under non-root uid requires a capabilities file";
+	}
     }
 
     #
@@ -997,6 +990,28 @@ sub get_configuration( $ ) {
     } else {
 	warning_message "Your capabilities file may not contain all of the capabilities defined by Shorewall version $globals{VERSION}";
     }
+}
+
+#
+# - Read the shorewall.conf file
+# - Read the capabilities file, if any
+# - establish global hashes %config , %globals and %capabilities
+#
+sub get_configuration( $ ) {
+
+    my $export = $_[0];
+
+    ensure_config_path;
+
+    process_shorewall_conf;
+
+    ensure_config_path;
+
+    default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
+
+    default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
+
+    get_capabilities( $export );
 
     $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
@@ -1120,7 +1135,7 @@ sub get_configuration( $ ) {
     $val = "\L$config{TC_ENABLED}";
 
     if ( $val eq 'yes' ) {
-	$file = find_file 'tcstart';
+	my $file = find_file 'tcstart';
 	fatal_error "Unable to find tcstart file" unless -f $file;
 	$globals{TC_SCRIPT} = $file;
     } elsif ( $val ne 'internal' ) {

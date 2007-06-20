@@ -369,6 +369,8 @@ sub add_rule($$)
 {
     my ($chainref, $rule) = @_;
 
+    $iprangematch = 0;
+
     if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
 	$rule .= " -m comment --comment \\\"$comment\\\"" if $comment;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
@@ -377,8 +379,6 @@ sub add_rule($$)
 	push @{$chainref->{rules}}, $rule;
 	$chainref->{referenced} = 1;
     }
-
-    $iprangematch = 0;
 }
 
 #
@@ -396,9 +396,10 @@ sub insert_rule($$$)
 
     splice @{$chainref->{rules}}, $number - 1, 0,  $rule;
 
+    $iprangematch = 0;
+
     $chainref->{referenced} = 1;
 
-    $iprangematch = 0;
 }
 
 #

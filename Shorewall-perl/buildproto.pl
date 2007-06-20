@@ -1,5 +1,31 @@
 #! /usr/bin/perl -w
-
+#
+# Tool for building tables used to validate protocol and service names in Shorewall rules.
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#
+#  Usage:
+#
+#       buildproto.pl [ <directory> ]
+#
+#  Where:
+#
+#       <directory>   is the directory where the 'protocols' and 'services' files are
+#                     localed. If not specified, /etc is assumed.
+#
 use strict;
 use lib '/usr/share/shorewall-perl';
 use Shorewall::Common;
@@ -32,7 +58,7 @@ sub print_service( $$ ) {
     }
 }
 
-set_shorewall_dir($ARGV[0] ? $ARGV[0] : '.');
+set_shorewall_dir($ARGV[0] ? $ARGV[0] : '/etc');
 
 ensure_config_path;
 

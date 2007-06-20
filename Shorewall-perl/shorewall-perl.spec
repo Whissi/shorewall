@@ -1,6 +1,6 @@
 %define name shorewall-perl
 %define version 4.0.0
-%define release 0Beta5
+%define release 0Beta6
 %define prefix /usr
 
 Summary: Shoreline Firewall Perl-based compiler.
@@ -59,6 +59,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.functions
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.footer
 %attr(0644,root,root) /usr/share/shorewall-perl/version
+%attr(0444,root,root) /usr/share/shorewall-perl/protocols
+%attr(0444,root,root) /usr/share/shorewall-perl/services
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Accounting.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Actions.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Chains.pm

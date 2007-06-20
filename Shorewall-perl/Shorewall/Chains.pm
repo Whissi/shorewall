@@ -756,7 +756,6 @@ sub clearrule() {
 
 sub validate_proto( $ ) {
     my $proto = $_[0];
-    return $proto unless $config{VALIDATE_PORTS};
     my $value = $protocols{$proto};
     return $value if defined $value;
     return $proto if $proto =~ /^(\d+)$/ && $proto <= 65535;
@@ -774,22 +773,20 @@ sub validate_portpair( $ ) {
 
     my @ports = split/:/, $portpair, 2;
 
-    if ( $config{VALIDATE_PORTS} ) {
-	for my $port ( @ports ) {
-	    my $value = $services{$port};
-
-	    unless ( defined $value ) {
-		$value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
-	    }
+    for my $port ( @ports ) {
+	my $value = $services{$port};
+	
+	unless ( defined $value ) {
+	    $value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
+	}
 	    
-	    fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
+	fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
+	
+	$port = $value;
+    }
 
-	    $port = $value;
-	}
-
-	if ( @ports == 2 ) {
-	    fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
-	}
+    if ( @ports == 2 ) {
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
     }
 
     join ':', @ports;

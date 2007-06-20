@@ -185,6 +185,12 @@ for f in prog.* ; do
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
 
+#
+# Install the /etc/protocols and /etc/services used to generate tables
+#
+install_file protocols ${PREFIX}/usr/share/shorewall-perl/protocols 444
+install_file services  ${PREFIX}/usr/share/shorewall-perl/services  444
+
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #
 #  Report Success

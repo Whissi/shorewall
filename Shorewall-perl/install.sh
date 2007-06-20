@@ -186,9 +186,11 @@ for f in prog.* ; do
 done
 
 #
-# Install buildproto.pl
+# Install buildports.pl and create Shorewall::Ports
 #
 install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0555
+
+./buildports.pl > ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm
 
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #

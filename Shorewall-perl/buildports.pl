@@ -131,6 +131,8 @@ while ( read_a_line1 ) {
 
     my ( $number, $proto ) = split '/', $proto_number;
 
+    next unless $proto eq 'tcp' || $proto eq 'udp';
+
     print_service( $name1 , $number );
 
     while ( defined ( $name1 = shift @names ) && $name1 ne '-' ) {

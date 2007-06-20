@@ -31,6 +31,7 @@ usage() # $1 = exit status
     echo "       $ME -v"
     echo "       $ME -h"
     echo "       $ME -n"
+    echo "       $ME -n -P"
     exit $1
 }
 
@@ -110,6 +111,7 @@ if [ -z "$GROUP" ] ; then
 fi
 
 NOBACKUP=
+INSTALL_PORTS_PM=Yes
 
 while [ $# -gt 0 ] ; do
     case "$1" in
@@ -122,6 +124,9 @@ while [ $# -gt 0 ] ; do
 	    ;;
 	-n)
 	    NOBACKUP=Yes
+	    ;;
+	-P)
+	    INSTALL_PORTS_PM=
 	    ;;
 	*)
 	    usage 1
@@ -190,7 +195,7 @@ done
 #
 install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0555
 
-[ -z "$PREFIX" ] && ./buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm && chmod 0555 /usr/share/shorewall-perl/Shorewall/Ports.pm
+[ -n "$INSTALL_PORTS_PM" ] && ./buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm && chmod 0555 /usr/share/shorewall-perl/Shorewall/Ports.pm
 
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #

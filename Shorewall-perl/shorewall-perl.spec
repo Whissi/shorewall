@@ -37,7 +37,7 @@ compilation and execution.
 export PREFIX=$RPM_BUILD_ROOT ; \
 export OWNER=`id -n -u` ; \
 export GROUP=`id -n -g` ;\
-./install.sh -n
+./install.sh -n -P
 
 %clean
 rm -rf $RPM_BUILD_ROOT

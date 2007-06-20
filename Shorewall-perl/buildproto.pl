@@ -58,7 +58,7 @@ sub print_service( $$ ) {
     }
 }
 
-set_shorewall_dir($ARGV[0] ? $ARGV[0] : '/etc');
+set_shorewall_dir($ARGV[0] || '/etc');
 
 ensure_config_path;
 
@@ -68,9 +68,8 @@ print <<"EOF";
 #
 # Protocol and Services tables generated using buildproto.pl - $date
 #
+our %protocols = (
 EOF
-
-print "our %protocols = (\n";
 
 open_file 'protocols' or fatal_error "Cannot open protocols: $!";
 
@@ -81,7 +80,7 @@ while ( read_a_line1 ) {
     print_it( $proto2, $number ) unless $proto2 eq '-' || $proto3 ne '-';
 }
 
-print "\t\t  );\n\n";
+print "\t\t );\n\n";
 
 print "our %services  = (\n";
 
@@ -99,4 +98,4 @@ while ( read_a_line1 ) {
     }
 }
 
-print "\t\t  );\n";
+print "\t\t );\n";

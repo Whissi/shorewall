@@ -89,7 +89,7 @@ our %capabilities;
 #
 # /etc/protocols and /etc/services
 #
-# Protocol and Services tables generated using buildproto.pl - Wed Jun 19 21:05:31 2007
+# Protocol and Services tables generated using buildproto.pl - Wed Jun 20 12:47:57 2007
 #
 our %protocols = (
 		  ip			=> 0,
@@ -181,7 +181,7 @@ our %protocols = (
 		  SCTP			=> 132,
 		  fc			=> 133,
 		  FC			=> 133,
-		  );
+		 );
 
 our %services  = (
 		  tcpmux		=> 1,
@@ -570,7 +570,7 @@ our %services  = (
 		  dircproxy		=> 57000,
 		  tfido			=> 60177,
 		  fido			=> 60179,
-		  );
+		 );
 #
 # Capabilities
 #

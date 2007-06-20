@@ -72,6 +72,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Macros.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Nat.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Policy.pm
+%attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Ports.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Proc.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Providers.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Proxyarp.pm

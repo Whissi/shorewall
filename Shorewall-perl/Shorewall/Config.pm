@@ -125,7 +125,7 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.0-Beta5',
+		    VERSION =>  '4.0.0-Beta6',
 		    CAPVERSION => 30405 ,
 		  );
     #

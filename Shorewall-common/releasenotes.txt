@@ -67,6 +67,18 @@ Other changes in Shorewall 4.0.0 Beta 6
     are installed, the additional shorewall.conf file is read to see if
     it specifies a SHOREWALL_COMPILER.
 
+3)  Shorewall-perl validates protocol names and service names against
+    /etc/protocols and /etc/services. That's the good news. The bad
+    news is that this extra validation has a fixed overhead of almost
+    .8 seconds on my x86_64 box. This fixed cost is mostly attributable
+    to the cost of reading and digesting /etc/services.
+
+    To give people the choice of whether they want to incure this fixed
+    cost on each compilation, I've added a VALIDATE_PORTS option in
+    /etc/shorewall/shorewall.conf. If you set this to 'No', you can
+    save the extra processing time but the script may fail at runtime
+    because of typing errors.
+
 Migration Considerations:
 
 1)  You cannot simply upgrade your existing Shorewall package. You must

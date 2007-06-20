@@ -760,7 +760,7 @@ sub validate_proto( $ ) {
     return $value if defined $value;
     return $proto if $proto =~ /^(\d+)$/ && $proto <= 65535;
     return $proto if $proto eq 'all';
-    fatal_error "Invalid/Unknown protocol ($proto)";
+    fatal_error "Invalid/Unknown protocol ($proto)" if $config{VALIDATE_PORTS};
 }
 
 sub validate_portpair( $ ) {
@@ -782,9 +782,10 @@ sub validate_portpair( $ ) {
 	    $value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
 	}
 	
-	fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
-
-	$port = $value;
+	if ( $config{VALIDATE_PORTS} ) {
+	    fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
+	    $port = $value;
+	}
     }
 
     if ( @ports == 2 ) {

@@ -221,6 +221,10 @@ sub initialize() {
 		EXPORTPARAMS => undef,
 		SHOREWALL_COMPILER => undef,
 		#
+		# Compiler Options
+		#
+		VALIDATE_PORTS => undef,
+		#
 		# Packet Disposition
 		#
 		MACLIST_DISPOSITION => undef,
@@ -580,6 +584,27 @@ sub read_a_line {
 	    } else {
 		return 1;
 	    }
+	}
+
+	close_file;
+    }
+}
+
+#
+# Simple version of the above. Doesn't do line concatenation, shell variable expansion or INCLUDE processing
+#
+sub read_a_line1 {
+    while ( $currentfile ) {
+	while ( $line = <$currentfile> ) {
+	    $currentlinenumber++;
+	    next if $line =~ /^\s*#/;
+	    chomp $line;
+	    next if $line =~ /^\s*$/;
+	    $line =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
+	    $line =~ s/^\s+//;       # Remove Leading white space
+	    $line =~ s/\s+$//;       # Remove Trailing white space
+
+	    return 1;
 	}
 
 	close_file;
@@ -971,7 +996,7 @@ sub get_capabilities( $ ) {
     # If we successfully called open_file above, then this loop will read the capabilities file.
     # Otherwise, the first call to read_a_line() below will return false
     #
-    while ( read_a_line ) {
+    while ( read_a_line1 ) {
 	if ( $line =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 	    my ($var, $val) = ($1, $2);
 	    unless ( exists $capabilities{$var} ) {
@@ -989,6 +1014,31 @@ sub get_capabilities( $ ) {
 	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by Shorewall version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
     } else {
 	warning_message "Your capabilities file may not contain all of the capabilities defined by Shorewall version $globals{VERSION}";
+    }
+}
+
+sub get_protos_and_ports() {
+    open_file '/etc/protocols' or fatal_error "Cannot open /etc/protocols: $!";
+
+    while ( read_a_line1 ) {
+	my ( $proto1, $number, $proto2, $proto3 ) = split_line( 2, 4, '/etc/protocols entry');
+
+	$protocols{ $proto1 } = $number;
+	$protocols{ $proto2 } = $number unless $proto2 eq '-' || $proto3 ne '-';
+    }
+    
+    open_file '/etc/services' or fatal_error "Cannot open /etc/services: $!";
+
+    while ( read_a_line1 ) {
+	my ( $name1, $proto_number, @names ) = split_line( 2, 10, '/etc/services entry');
+
+	my ( $number, $proto ) = split '/', $proto_number;
+
+	$services{ $name1 } = $number;
+	
+	while ( defined ( $name1 = shift @names ) && $name1 ne '-' ) {
+	    $services{ $name1 } = $number;
+	}
     }
 }
 
@@ -1084,6 +1134,7 @@ sub get_configuration( $ ) {
 
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
+    default_yes_no 'VALIDATE_PORTS'             , 'Yes';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
@@ -1201,29 +1252,7 @@ sub get_configuration( $ ) {
 	$config{LOCKFILE} = '';
     }
 
-    open_file '/etc/protocols' or fatal_error "Cannot open /etc/protocols: $!";
-
-    while ( read_a_line ) {
-	my ( $proto1, $number, $proto2, $proto3 ) = split_line( 2, 4, '/etc/protocols entry');
-
-	$protocols{ $proto1 } = $number;
-	$protocols{ $proto2 } = $number unless $proto2 eq '-' || $proto3 ne '-';
-    }
-
-    
-    open_file '/etc/services' or fatal_error "Cannot open /etc/services: $!";
-
-    while ( read_a_line ) {
-	my ( $name1, $proto_number, @names ) = split_line( 2, 10, '/etc/services entry');
-
-	my ( $number, $proto ) = split '/', $proto_number;
-
-	$services{ $name1 } = $number;
-	
-	while ( defined ( $name1 = shift @names ) && $name1 ne '-' ) {
-	    $services{ $name1 } = $number;
-	}
-    }
+    get_protos_and_ports if $config{VALIDATE_PORTS};
 }
 
 #

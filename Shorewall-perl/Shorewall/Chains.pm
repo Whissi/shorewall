@@ -783,6 +783,8 @@ sub validate_portpair( $ ) {
 	    }
 	    
 	    fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
+
+	    $port = $value;
 	}
 
 	if ( @ports == 2 ) {

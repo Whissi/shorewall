@@ -761,6 +761,7 @@ sub validate_proto( $ ) {
     return $proto if $proto =~ /^(\d+)$/ && $proto <= 65535;
     return $proto if $proto eq 'all';
     fatal_error "Invalid/Unknown protocol ($proto)" if $config{VALIDATE_PORTS};
+    return $proto
 }
 
 sub validate_portpair( $ ) {

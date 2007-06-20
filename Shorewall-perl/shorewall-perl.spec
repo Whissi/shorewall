@@ -46,7 +46,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 
-/usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm
+/usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm && chmod 0555 /usr/share/shorewall-perl/Shorewall/Ports.pm
 
 %preun
 

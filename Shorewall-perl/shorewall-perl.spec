@@ -83,6 +83,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING releasenotes.txt
 
 %changelog
+* Wed Jun 20 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.0-0Beta6
+- Add new components.
 * Thu Jun 14 2007 Tom Eastep tom@shorewall.net
 - Updated to 4.0.0-0Beta5
 * Fri Jun 08 2007 Tom Eastep tom@shorewall.net

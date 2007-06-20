@@ -276,6 +276,7 @@ compiler() {
     ensure_config_path
 
     compiler=
+    haveparams=
 
     if [ -n "$SHOREWALL_COMPILER" ]; then
 	compiler="$SHOREWALL_COMPILER"              #Compiler specified in /etc/shorewall/shorewall.conf or on the run-line
@@ -293,17 +294,24 @@ compiler() {
         #
         # Both compilers installed. Read the appropriate shorewall.conf to learn the setting of SHOREWALL_COMPILER
         #
-	config=$(find_file shorewall.conf)
+	if [ -n "$SHOREWALL_DIR" ]; then
+	    [ -x $pc ] && set -a
+	    run_user_exit params
+	    set +a
+	    haveparams=Yes
 
-	if [ -f $config ]; then
-	    if [ -r $config ]; then
-		progress_message "Processing $config..."
-		. $config
+	    config=$(find_file shorewall.conf)
+
+	    if [ -f $config ]; then
+		if [ -r $config ]; then
+		    progress_message "Processing $config..."
+		    . $config
+		else
+		    startup_error "Cannot read $config (Hint: Are you root?)"
+		fi
 	    else
-		startup_error "Cannot read $config (Hint: Are you root?)"
+		startup_error "$config does not exist!"
 	    fi
-	else
-	    startup_error "$config does not exist!"
 	fi
         #
         # And initiate the appropriate compiler
@@ -339,9 +347,11 @@ compiler() {
 	    #
 	    # Run the appropriate params file
 	    #
-	    set -a; 
-	    run_user_exit params
-	    set +a
+	    if [ -z "$haveparams" ]; then
+		set -a; 
+		run_user_exit params
+		set +a
+	    fi
 
 	    $command perl $debugflags $pc $options $@
 	    ;;
@@ -1530,7 +1540,7 @@ COMMAND=$1
 
 case "$COMMAND" in
     start)
-	get_config No Yes
+	get_config Yes Yes
 	shift
 	start_command $@
 	;;
@@ -1542,22 +1552,22 @@ case "$COMMAND" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	;;
     compile)
-	get_config
+	get_config Yes
 	shift
 	compile_command $@
 	;;
     restart)
-	get_config No Yes
+	get_config Yes Yes
 	shift
 	restart_command $@
 	;;
     refresh)
-	get_config No Yes
+	get_config Yes Yes
 	shift
 	refresh_command $@
 	;;
     check)
-	get_config
+	get_config Yes
 	shift
 	check_command $@
 	;;
@@ -1572,12 +1582,12 @@ case "$COMMAND" in
     	show_command $@
 	;;
     load|reload)
-	get_config
+	get_config Yes
 	shift
 	reload_command $@
 	;;
     export)
-	get_config
+	get_config Yes
 	shift
 	export_command $@
 	;;
@@ -1624,7 +1634,7 @@ case "$COMMAND" in
 	version_command $@
 	;;
     try)
-	get_config
+	get_config Yes
 	shift
 	try_command $@
 	;;
@@ -1801,7 +1811,7 @@ case "$COMMAND" in
 	usage
 	;;
     safe-restart|safe-start)
-	get_config
+	get_config Yes
 	shift
 	safe_commands $@
 	;;

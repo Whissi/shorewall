@@ -54,13 +54,12 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,root,root) %dir /usr/share/shorewall-perl
 %attr(0755,root,root) %dir /usr/share/shorewall-perl/Shorewall
 
+%attr(555,root,root) /usr/share/shorewall-perl/buildproto.pl
 %attr(555,root,root) /usr/share/shorewall-perl/compiler.pl
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.header
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.functions
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.footer
 %attr(0644,root,root) /usr/share/shorewall-perl/version
-%attr(0444,root,root) /usr/share/shorewall-perl/protocols
-%attr(0444,root,root) /usr/share/shorewall-perl/services
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Accounting.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Actions.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Chains.pm

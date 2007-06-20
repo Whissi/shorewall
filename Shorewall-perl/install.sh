@@ -186,10 +186,9 @@ for f in prog.* ; do
 done
 
 #
-# Install the /etc/protocols and /etc/services used to generate tables
+# Install buildproto.pl
 #
-install_file protocols ${PREFIX}/usr/share/shorewall-perl/protocols 444
-install_file services  ${PREFIX}/usr/share/shorewall-perl/services  444
+install_file buildproto.pl ${PREFIX}/usr/share/shorewall-perl/buildproto.pl 0555
 
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #

@@ -26,7 +26,7 @@
 #   modules files during compiler startup.
 #
 #
-# Protocol and Services module generated using buildproto.pl - Wed Jun 20 13:47:35 2007
+# Protocol and Services module generated using buildports.pl - Wed Jun 20 14:03:53 2007
 #
 package Shorewall::Ports;
 

@@ -54,7 +54,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,root,root) %dir /usr/share/shorewall-perl
 %attr(0755,root,root) %dir /usr/share/shorewall-perl/Shorewall
 
-%attr(555,root,root) /usr/share/shorewall-perl/buildproto.pl
+%attr(555,root,root) /usr/share/shorewall-perl/buildports.pl
 %attr(555,root,root) /usr/share/shorewall-perl/compiler.pl
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.header
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.functions

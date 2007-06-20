@@ -66,13 +66,22 @@ Other changes in Shorewall 4.0.0 Beta 6
 
 3)  Previously, Shorewall-perl read /etc/protocols and /etc/services
     during compiler startup to build internal protocol and service
-    tables. This had a fixed cost of up to one second or more,
+    tables. This had a fixed cost of up to one half second or more,
     depending on the speed of the system and the distribution
     (The /etc/services released with OpenSuSE 10.2 is over 14,000
     lines!!) These tables are now initialized by the Perl compiler
-    which speeds up compilation considerably. The /etc/protocols and
-    /etc/services used to build these tables are from Ubuntu Fiesty
-    Fawn and are included in /usr/share/shorewall-perl/.
+    which speeds up compilation considerably. 
+
+    The file /usr/share/shorewall-perl/Shorewall/Ports.pm contains the
+    tables. As released from shorewall.net, the tables match
+    /etc/protocols and /etc/services from Ubuntu Feisty Fawn.
+
+    If you insist on having the tables match your own /etc/protocols
+    and /etc/services, then as root:
+
+	1. Backup your /usr/share/shorewall-perl/Shorewall/Ports.pm
+	   file.
+        2. /usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm
 
 Migration Considerations:
 

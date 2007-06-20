@@ -188,7 +188,7 @@ done
 #
 # Install buildproto.pl
 #
-install_file buildproto.pl ${PREFIX}/usr/share/shorewall-perl/buildproto.pl 0555
+install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0555
 
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #

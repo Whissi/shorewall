@@ -19,7 +19,7 @@
 #
 #  Usage:
 #
-#       buildproto.pl [ <directory> ] > /usr/share/shorewall-perl/Shorewall/Ports.pm
+#       buildports.pl [ <directory> ] > /usr/share/shorewall-perl/Shorewall/Ports.pm
 #
 #  Where:
 #
@@ -93,7 +93,7 @@ print <<"EOF";
 #   modules files during compiler startup.
 #
 #
-# Protocol and Services module generated using buildproto.pl - $date
+# Protocol and Services module generated using buildports.pl - $date
 #
 EOF
 
@@ -122,7 +122,7 @@ while ( read_a_line1 ) {
 
 print "\t\t );\n\n";
 
-print "our %services  = (\n";
+print "our \%services  = (\n";
 
 open_file 'services' or fatal_error "Cannot open services: $!";
 

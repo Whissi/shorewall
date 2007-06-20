@@ -30,7 +30,6 @@ package Shorewall::Config;
 use strict;
 use warnings;
 use Shorewall::Common;
-use Shorewall::Ports;
 use File::Basename;
 
 our @ISA = qw(Exporter);
@@ -63,9 +62,7 @@ our @EXPORT = qw(
 
 		 %config
 		 %globals
-		 %capabilities
-		 %protocols
-		 %services );
+		 %capabilities );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize );
 our @VERSION = 1.00;

@@ -40,7 +40,7 @@ sub print_it( $$ ) {
     my $tabs;
     my $length = length $name;
 
-    if ( $name =~ /[-.]/ ) {
+    if ( $name =~ /\W/ || $name =~ /^\d/ ) {
 	$tabs = "\t" x int ( ( 27 - $length ) / 8 );
 	print "${offset}'${name}'${tabs}=> $number,\n";
     } else {

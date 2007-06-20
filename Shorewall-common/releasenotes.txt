@@ -72,9 +72,17 @@ Other changes in Shorewall 4.0.0 Beta 6
     lines!!) These tables are now initialized by the Perl compiler
     which speeds up compilation considerably. 
 
-    The file /usr/share/shorewall-perl/Shorewall/Ports.pm contains the
-    tables. When you install Shorewall-perl using a tarball or .rpm, the 
-    tables match your system's /etc/protocols and /etc/services.
+    During installation, Shorewall generates the file
+    /usr/share/shorewall-perl/Shorewall/Ports.pm, using your
+    /etc/protocols and /etc/services as input.
+
+    To re-generate the file:
+
+	1. Backup your current /usr/share/shorewall-perl/Shorewall/Ports.pm
+	   file.
+        2. /usr/share/shorewall-perl/buildports.pl >
+	   /usr/share/shorewall-perl/Shorewall/Ports.pm
+	3. chmod 555 /usr/share/shorewall-perl/Shorewall/Ports.pm
 
 Migration Considerations:
 

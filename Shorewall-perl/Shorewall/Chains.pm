@@ -756,12 +756,12 @@ sub clearrule() {
 
 sub validate_proto( $ ) {
     my $proto = $_[0];
+    return $proto unless $config{VALIDATE_PORTS};
     my $value = $protocols{$proto};
     return $value if defined $value;
     return $proto if $proto =~ /^(\d+)$/ && $proto <= 65535;
     return $proto if $proto eq 'all';
-    fatal_error "Invalid/Unknown protocol ($proto)" if $config{VALIDATE_PORTS};
-    return $proto
+    fatal_error "Invalid/Unknown protocol ($proto)";
 }
 
 sub validate_portpair( $ ) {
@@ -772,25 +772,22 @@ sub validate_portpair( $ ) {
     $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
     $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
 
-    my @ports = split/:/, $portpair, 3;
+    my @ports = split/:/, $portpair, 2;
 
-    fatal_error "Invalid port range ($portpair)" if @ports == 3;
+    if ( $config{VALIDATE_PORTS} ) {
+	for my $port ( @ports ) {
+	    my $value = $services{$port};
 
-    for my $port ( @ports ) {
-	my $value = $services{$port};
-
-	unless ( defined $value ) {
-	    $value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
-	}
-	
-	if ( $config{VALIDATE_PORTS} ) {
+	    unless ( defined $value ) {
+		$value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
+	    }
+	    
 	    fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
-	    $port = $value;
 	}
-    }
 
-    if ( @ports == 2 ) {
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+	if ( @ports == 2 ) {
+	    fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+	}
     }
 
     join ':', @ports;

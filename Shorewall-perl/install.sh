@@ -195,7 +195,7 @@ done
 #
 install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0555
 
-[ -n "$INSTALL_PORTS_PM" ] && ./buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm && chmod 0555 /usr/share/shorewall-perl/Shorewall/Ports.pm
+[ -n "$INSTALL_PORTS_PM" ] && ./buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm && chmod 0644 /usr/share/shorewall-perl/Shorewall/Ports.pm
 
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #

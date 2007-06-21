@@ -701,7 +701,12 @@ sub report_capabilities() {
     sub report_capability( $ ) {
 	my $cap = $_[0];
 	print "   $capdesc{$cap}: ";
-	print $capabilities{$cap} ? "Available\n" : "Not Available\n";
+	if ( $cap eq 'CAPVERSION' ) {
+	    my $version = $capabilities{CAPVERSION};
+	    printf "%d.%d.%d\n", int( $version / 10000 ) , int ( ( $version % 10000 ) / 100 ) , int ( $version % 100 );
+	} else {
+	    print $capabilities{$cap} ? "Available\n" : "Not Available\n";
+	}
     }
 
     print "Shorewall has detected the following capabilities:\n";

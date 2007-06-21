@@ -76,7 +76,7 @@ Other changes in Shorewall 4.0.0 Beta 6
     /usr/share/shorewall-perl/Shorewall/Ports.pm, using your
     /etc/protocols and /etc/services as input.
 
-    To re-generate the more from those two files:
+    To re-generate the module from those two files:
 
 	1. Backup your current /usr/share/shorewall-perl/Shorewall/Ports.pm
 	   file.
@@ -84,15 +84,16 @@ Other changes in Shorewall 4.0.0 Beta 6
 	   /usr/share/shorewall-perl/Shorewall/Ports.pm
 
     Note: If the buildports.pl program fails to run to a successful
-    completion during installation, a default version of
-    module will be installed. That default module was generated from the
-    /etc/protocols and /etc/services shipped with Ubuntu Feisty Fawn.
+    completion during installation, a fallback version of
+    module will be installed. That fallback module was generated from
+    the /etc/protocols and /etc/services shipped with Ubuntu Feisty
+    Fawn.
 
-    Even if the buildports.pl program runs successfully, the default
+    Even if the buildports.pl program runs successfully, the fallback
     module is also installed as
-    /usr/share/shorewall-perl/Shorewall/DefaultPorts.pm. So if you
+    /usr/share/shorewall-perl/Shorewall/FallbackPorts.pm. So if you
     encounter problems with the generated module, simply copy the
-    default module to /usr/share/shorewall-perl/Shorewall/Ports.pm.
+    fallback module to /usr/share/shorewall-perl/Shorewall/Ports.pm.
 
 Migration Considerations:
 

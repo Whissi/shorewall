@@ -199,8 +199,8 @@ if [ -n "$INSTALL_PORTS_PM" ]; then
     if ./buildports.pl > ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm; then
 	chmod 0644 ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm
     else
-	echo "The buildports.pl tool failed -- installing the default Protocol/Ports Module"
-	cp -a ${PREFIX}/usr/share/shorewall-perl/Shorewall/DefaultPorts.pm ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm
+	echo "The buildports.pl tool failed -- installing the fallback Protocol/Ports Module"
+	cp -a ${PREFIX}/usr/share/shorewall-perl/Shorewall/FallbackPorts.pm ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm
     fi
 fi
 

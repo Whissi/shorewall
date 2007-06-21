@@ -46,7 +46,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 
-/usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm && chmod 0555 /usr/share/shorewall-perl/Shorewall/Ports.pm
+if /usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm; then
+    chmod 0555 /usr/share/shorewall-perl/Shorewall/Ports.pm
+else
+    echo "The buildports.pl tool failed -- installing the default Protocol/Ports Module"
+    cp -a /usr/share/shorewall-perl/Shorewall/DefaultPorts.pm /usr/share/shorewall-perl/Shorewall/Ports.pm
+fi
 
 %preun
 
@@ -68,6 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Common.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Compiler.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Config.pm
+%attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/DefaultPorts.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Hosts.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/Interfaces.pm
 %attr(0555,root,root) /usr/share/shorewall-perl/Shorewall/IPAddrs.pm

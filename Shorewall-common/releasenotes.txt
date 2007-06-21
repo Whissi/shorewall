@@ -72,17 +72,27 @@ Other changes in Shorewall 4.0.0 Beta 6
     lines!!) These tables are now initialized by the Perl compiler
     which speeds up compilation considerably. 
 
-    During installation, Shorewall generates the file
+    During installation, Shorewall generates the Perl module
     /usr/share/shorewall-perl/Shorewall/Ports.pm, using your
     /etc/protocols and /etc/services as input.
 
-    To re-generate the file:
+    To re-generate the more from those two files:
 
 	1. Backup your current /usr/share/shorewall-perl/Shorewall/Ports.pm
 	   file.
-        2. /usr/share/shorewall-perl/buildports.pl >
+        2. /usr/share/shorewall-perl/buildports.pl > \
 	   /usr/share/shorewall-perl/Shorewall/Ports.pm
-	3. chmod 555 /usr/share/shorewall-perl/Shorewall/Ports.pm
+
+    Note: If the buildports.pl program fails to run to a successful
+    completion during installation, a default version of
+    module will be installed. That default module was generated from the
+    /etc/protocols and /etc/services shipped with Ubuntu Feisty Fawn.
+
+    Even if the buildports.pl program runs successfully, the default
+    module is also installed as
+    /usr/share/shorewall-perl/Shorewall/DefaultPorts.pm. So if you
+    encounter problems with the generated module, simply copy the
+    default module to /usr/share/shorewall-perl/Shorewall/Ports.pm.
 
 Migration Considerations:
 

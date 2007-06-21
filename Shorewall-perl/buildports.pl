@@ -41,10 +41,12 @@ sub print_it( $$ ) {
     my $length = length $name;
 
     if ( $name =~ /\W/ || $name =~ /^\d/ ) {
-	$tabs = "\t" x int ( ( 27 - $length ) / 8 );
+	my $repeat = int ( ( 27 - $length ) / 8 );
+	$tabs = $repeat > 0 ? "\t" x $repeat : ' ';
 	print "${offset}'${name}'${tabs}=> $number,\n";
     } else {
-	$tabs = "\t" x int ( ( 29 - $length ) / 8 );
+	my $repeat = int ( ( 29 - $length ) / 8 );
+	$tabs = $repeat > 0 ? "\t" x $repeat : ' ';
 	print "${offset}${name}${tabs}=> $number,\n";
     }
 }

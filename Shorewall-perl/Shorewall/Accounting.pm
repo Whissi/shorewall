@@ -37,7 +37,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our @VERSION = 1.00;
+our $VERSION = 1.00;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow

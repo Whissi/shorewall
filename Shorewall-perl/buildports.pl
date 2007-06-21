@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-# Tool for building tables used to validate protocol and service names in Shorewall rules.
+# Tool for building Shorewall::Ports.
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -87,17 +87,14 @@ print <<"EOF";
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#   This module is responsible for lower level configuration file handling.
-#   It also exports functions for generating warning and error messages.
-#   The get_configuration function parses the shorewall.conf, capabilities and 
-#   modules files during compiler startup.
+# This module exports the %protocols and %services hashes built from 
+# /etc/protocols and /etc/services respectively.
 #
-#
-# Protocol and Services module generated using buildports.pl - $date
+# Module generated using buildports.pl $globals{VERSION} - $date
 #
 EOF
 
-print<<'EOF';
+print <<'EOF';
 package Shorewall::Ports;
 
 use strict;
@@ -106,7 +103,7 @@ use warnings;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( %protocols %services );
 our @EXPORT_OK = qw();
-our @VERSION = 1.00;
+our $VERSION = '1.00';
 
 our %protocols = (
 EOF
@@ -122,7 +119,7 @@ while ( read_a_line1 ) {
 
 print "\t\t );\n\n";
 
-print "our \%services  = (\n";
+print "our %services  = (\n";
 
 open_file 'services' or fatal_error "Cannot open services: $!";
 

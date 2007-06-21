@@ -66,6 +66,7 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw( $shorewall_dir initialize );
 our @VERSION = 1.00;
+our $VERSION = 1.00;
 
 #
 # Misc Globals

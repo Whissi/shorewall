@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_hosts_file find_hosts_by_option );
 our @EXPORT_OK = ();
-our @VERSION = 1.00;
+our $VERSION = 1.00;
 
 #
 # Validates the hosts file. Generates entries in %zone{..}{hosts}

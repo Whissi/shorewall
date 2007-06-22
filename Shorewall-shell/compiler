@@ -673,11 +673,11 @@ setup_forwarding() {
     progress_message2 "Compiling IP Forwarding..."
 
     case "$IP_FORWARDING" in
-	On|on)
+	On|on|ON|Yes|yes|YES)
 	    save_progress_message "IP Forwarding Enabled"
 	    save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
 	    ;;
-	Off|off)
+	Off|off|OFF|No|no|NO)
 	    save_progress_message "IP Forwarding Disabled!"
 	    save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
 	    ;;

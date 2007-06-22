@@ -1,5 +1,19 @@
---- /home/teastep/shorewall/branches/3.4/Shorewall/compiler	2007-06-16 07:39:45.000000000 -0700
-+++ Shorewall-shell/compiler	2007-06-16 07:39:31.000000000 -0700
+--- /home/teastep/shorewall/branches/3.4/Shorewall/compiler	2007-06-18 10:11:02.000000000 -0700
++++ compiler	2007-06-22 13:51:59.000000000 -0700
+@@ -673,11 +673,11 @@
+     progress_message2 "Compiling IP Forwarding..."
+ 
+     case "$IP_FORWARDING" in
+-	On|on)
++	On|on|ON|Yes|yes|YES)
+ 	    save_progress_message "IP Forwarding Enabled"
+ 	    save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
+ 	    ;;
+-	Off|off)
++	Off|off|OFF|No|no|NO)
+ 	    save_progress_message "IP Forwarding Disabled!"
+ 	    save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
+ 	    ;;
 @@ -3767,7 +3767,7 @@
  
  	save_progress_message "Setting up Route Filtering..."

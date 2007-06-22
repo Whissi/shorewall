@@ -850,7 +850,11 @@ sub validate_icmp( $ ) {
     my $value = $icmp_types{$type};
 
     return $value if defined $value;
-    return $type  if $type =~ /^(\d+)(\/\d+)?$/;
+
+    if ( $type =~ /^(\d+)(\/(\d+))?$/ ) {
+	return $type if $1 < 256 && ( ! $2 || $3 < 256 );
+    }
+
     fatal_error "Invalid ICMP Type ($type)"
 }
 

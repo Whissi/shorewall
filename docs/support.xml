@@ -127,9 +127,9 @@
         following.</para>
 
         <blockquote>
-          <para>If your VERBOSITY setting in shorewall.conf is less than 2,
-          then try running with a higher verbosity level by using the "-vv"
-          option:</para>
+          <para>If your VERBOSITY setting in shorewall.conf is less than 2 and
+          you are running the Shorewall-shell compiler, then try running with
+          a higher verbosity level by using the "-vv" option:</para>
 
           <blockquote>
             <programlisting><command>shorewall -vv [re]start</command></programlisting>
@@ -143,7 +143,9 @@
           <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
 
           <para>Forward the <filename>/tmp/trace</filename> file as an
-          attachment compressed with gzip or bzip2.</para>
+          attachment compressed with gzip or bzip2 (If you are running
+          Shorewall-perl, there is no need to compress the file — it will be
+          very short).</para>
 
           <para>If you are running Shorewall version 3.2.0 or later and
           compilation succeeds but the compiled program fails, then please

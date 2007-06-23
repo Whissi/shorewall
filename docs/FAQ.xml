@@ -78,24 +78,14 @@
       Simply copy the files you need from that directory to <filename
       class="directory">/etc/shorewall</filename> and modify the
       copies.</para>
-    </section>
 
-    <section id="faq44">
-      <title>(FAQ 44) I can't install/upgrade the RPM — I keep getting the
-      message "error: failed dependencies:iproute is needed..."</title>
+      <section id="faq37a">
+        <title>(FAQ 37a) I just installed Shorewall on Debian and I can't find
+        the sample configurations.</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Read the <ulink
-      url="Install.htm">Installation Instructions</ulink>!</para>
-    </section>
-
-    <section id="faq50">
-      <title>(FAQ 50) When I install/upgrade I get multiple instance of the
-      message "warning: user teastep does not exist - using root"</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> You may safely ignore
-      this warning message. It was caused by a minor packaging error that has
-      since been corrected. It makes no difference to Shorewall's
-      operation.</para>
+        <para><emphasis role="bold">Answer</emphasis>: The samples are
+        included in the shorewall-doc package.</para>
+      </section>
     </section>
   </section>
 
@@ -107,9 +97,7 @@
       address 192.168.1.5. I've looked everywhere and can't find how to do
       it.</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> The first example in the
-      <ulink url="Documentation.htm#Rules">rules file documentation</ulink>
-      shows how to do port forwarding under Shorewall. The format of a
+      <para><emphasis role="bold">Answer:</emphasis> The format of a
       port-forwarding rule to a local system is as follows:</para>
 
       <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
@@ -861,9 +849,9 @@ to debug/develop the newnat interface.</programlisting></para>
 
       <para>This kernel change, while necessary, means that Shorewall zones
       may no longer be defined in terms of bridge ports. See <ulink
-      url="NewBridge.html">the new bridging documentation</ulink> for
-      information about configuring a bridge/firewall under kernel 2.6.20 and
-      later.</para>
+      url="bridge-Shorewall-perl.html">the new bridging documentation</ulink>
+      for information about configuring a bridge/firewall under kernel 2.6.20
+      and later.</para>
     </section>
   </section>
 
@@ -1618,98 +1606,8 @@ Creating input Chains...
     <section id="faq34">
       <title>(FAQ 34) How can I speed up Shorewall start (restart)?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:Using a light-weight shell
-      such as <command>ash</command> or <command>dash</command> can
-      dramatically decrease the time required to <emphasis
-      role="bold">start</emphasis> or <emphasis role="bold">restart</emphasis>
-      Shorewall. See the SHOREWALL_SHELL variable in <filename> <ulink
-      url="Documentation.htm#Conf">shorewall.conf</ulink> </filename>.</para>
-
-      <para>Use a fast terminal emulator -- in particular the KDE konsole
-      scrolls much faster than the Gnome terminal. Also use the '-q' option if
-      you are restarting remotely or from a slow terminal (or redirect the
-      output to a file as in <command>shorewall restart &gt;
-      /dev/null</command>).</para>
-
-      <para>Upgrade your hardware. Many people find that even a modest
-      increase in CPU and memory speed (e.g. from P3 with SDRAM to P4 with
-      DDR) helps dramatically. EM64T-capable CPUs (from either AMD or Intel)
-      exhibit quite acceptable restart speeds, even with a fairly complex
-      ruleset.</para>
-
-      <para>Shorewall also supports a fast start capability. To use this
-      capability:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>With Shorewall in the <ulink
-          url="starting_and_stopping_shorewall.htm">started state</ulink>, run
-          <command>shorewall save</command>. This creates the script
-          <filename>/var/lib/shorewall/restore</filename>.</para>
-        </listitem>
-
-        <listitem>
-          <para>Use the <emphasis role="bold">-f </emphasis>option to the
-          start command (e.g., <command>shorewall -f start</command>). This
-          causes Shorewall to look for the
-          <filename>/var/lib/shorewall/restore</filename> script and if that
-          script exists, it is run. Running
-          <filename>/var/lib/shorewall/restore</filename> takes much less time
-          than a full <command>shorewall start</command>.</para>
-        </listitem>
-
-        <listitem>
-          <para>The <filename>/etc/init.d/shorewall</filename> script that is
-          run at boot time uses the <emphasis role="bold">-f</emphasis>
-          option.</para>
-        </listitem>
-
-        <listitem>
-          <para>The <filename>/var/lib/shorewall/restore</filename> script can
-          be run any time to restore the firewall. The script may be run
-          directly or it may be run indirectly using the <command>shorewall
-          restore</command> command.</para>
-        </listitem>
-      </orderedlist>
-
-      <para>If you change your Shorewall configuration, you must execute a
-      <emphasis role="bold">shorewall start</emphasis> (without <emphasis
-      role="bold">-f</emphasis>) or <command>shorewall restart</command> prior
-      to doing another <command>shorewall save</command>. The
-      <command>shorewall save</command> command saves the currently running
-      configuration and not the one reflected in your updated configuration
-      files.</para>
-
-      <para>Likewise, if you change your Shorewall configuration then once you
-      are satisfied that it is working properly, you must do another
-      <command>shorewall save</command>. Otherwise at the next reboot, you
-      will revert to the old configuration stored in
-      <filename>/var/lib/shorewall/restore</filename>.</para>
-
-      <para>The time that new connections are blocked during shorewall restart
-      can be dramatically reduced by upgrading to Shorewall 3.2 or later. In
-      3.2 and later releases, <command>shorewall [re]start</command> proceeds
-      in two phases:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>The current configuration is compiled to produce a shell
-          program tailored for your configuration.</para>
-        </listitem>
-
-        <listitem>
-          <para>If compilation is error-free, the compiled program is run to
-          [re]start your firewall.</para>
-        </listitem>
-      </orderedlist>
-
-      <para>Finally, if you are adventuresome, you can try <ulink
-      url="Shorewall-perl.html">Shorewall-perl</ulink>, the new Shorewall
-      compiler currently under development. It is very fast.</para>
-
-      <para>For additional information about Shorewall Scalability and
-      Performance, see <ulink url="ScalabilityAndPerformance.html">this
-      article</ulink>.</para>
+      <para><emphasis role="bold">Answer</emphasis>: Switch to using <ulink
+      url="Shorewall-perl.html">Shorewall-perl</ulink>.</para>
     </section>
 
     <section id="faq43">
@@ -1905,6 +1803,16 @@ iptables: Invalid argument
       type:</para>
 
       <programlisting><command>/sbin/shorewall[-lite] version</command>      </programlisting>
+
+      <section>
+        <title>(FAQ 25a) How do I tell whoch version of Shorewall-perl and
+        Shorewall-shell that I have intalled?</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: At the shell prompt,
+        type:</para>
+
+        <programlisting><command>/sbin/shorewall version -a</command>    </programlisting>
+      </section>
     </section>
 
     <section id="faq31">
@@ -1969,30 +1877,6 @@ iptables: Invalid argument
           </listitem>
         </varlistentry>
       </variablelist>
-    </section>
-
-    <section id="faq36">
-      <title>(FAQ 36) Does Shorewall Work with the 2.6 Linux Kernel?</title>
-
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall works with the
-      2.6 Kernels with a couple of caveats:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Netfilter/iptables doesn't fully support IPSEC in the 2.6
-          Kernels prior to 2.6.16 -- kernel and iptables patches are available
-          and the details may be found at the <ulink
-          url="IPSEC-2.6.html">Shorewall IPSEC-2.6 page</ulink>.</para>
-        </listitem>
-
-        <listitem>
-          <para>The 2.6 Kernels do not provide support for the logunclean and
-          dropunclean options in
-          <filename>/etc/shorewall/interfaces</filename>. Note that support
-          for those options was also removed from Shorewall in version
-          2.0.0.</para>
-        </listitem>
-      </itemizedlist>
     </section>
 
     <section id="faq64">
@@ -2333,8 +2217,8 @@ iptables: Invalid argument
       <title>(FAQ 28) How do I use Shorewall as a Bridging Firewall?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Shorewall Bridging
-      Firewall support is available — <ulink url="bridge.html">check here for
-      details</ulink>.</para>
+      Firewall support is available — <ulink
+      url="bridge-Shorewall-perl.html">check here for details</ulink>.</para>
     </section>
 
     <section id="faq39">

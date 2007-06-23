@@ -48,153 +48,63 @@
   </caution>
 
   <section>
-    <title>Operational Components</title>
+    <title>/sbin/shorewall and /sbin/shorewall-lite</title>
 
-    <para>There are a number of files that comprise the operational components
-    of Shorewall.</para>
+    <para><filename>/sbin/shorewall</filename> is the program that you use to
+    interact with Shorewall. Normally the root user's PATH includes
+    <filename>/sbin</filename> and the program can be run from a shell prompt
+    by simply typing <command>shorewall</command> followed by a
+    command.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><filename>/sbin/shorewall</filename> — The program that you use
-        to interact with Shorewall. Normally the root user's PATH includes
-        <filename>/sbin</filename> and the program can be run from a shell
-        prompt by simply typing <command>shorewall</command> followed by a
-        command.</para>
+    <warning>
+      <para>In some releases of KDE, the default configuration of the
+      <emphasis role="bold">konsole</emphasis> program is brain dead with
+      respect to the "Root Console". It executes the command "su" where it
+      should execute "su -"; the latter will cause a login shell to be created
+      which will in turn set PATH properly. You can correct this problem as
+      follows:</para>
 
-        <warning>
-          <para>In some releases of KDE, the default configuration of the
-          <emphasis role="bold">konsole</emphasis> program is brain dead with
-          respect to the "Root Console". It executes the command "su" where it
-          should execute "su -"; the latter will cause a login shell to be
-          created which will in turn set PATH properly. You can correct this
-          problem as follows:</para>
+      <orderedlist>
+        <listitem>
+          <para>Click on "Settings" on the toolbar and select "Configure
+          Konsole"</para>
+        </listitem>
 
-          <orderedlist>
-            <listitem>
-              <para>Click on "Settings" on the toolbar and select "Configure
-              Konsole"</para>
-            </listitem>
+        <listitem>
+          <para>Select the "Session" tab.</para>
+        </listitem>
 
-            <listitem>
-              <para>Select the "Session" tab.</para>
-            </listitem>
+        <listitem>
+          <para>Click on "Root Console"</para>
+        </listitem>
 
-            <listitem>
-              <para>Click on "Root Console"</para>
-            </listitem>
+        <listitem>
+          <para>Change the Execute command from "su" to "su -"</para>
+        </listitem>
 
-            <listitem>
-              <para>Change the Execute command from "su" to "su -"</para>
-            </listitem>
+        <listitem>
+          <para>Click on "Save Session"</para>
+        </listitem>
 
-            <listitem>
-              <para>Click on "Save Session"</para>
-            </listitem>
+        <listitem>
+          <para>Click on "Ok"</para>
+        </listitem>
+      </orderedlist>
+    </warning>
 
-            <listitem>
-              <para>Click on "Ok"</para>
-            </listitem>
-          </orderedlist>
-        </warning>
+    <para>To see a list of supported commands, use the <command>help</command>
+    command:</para>
 
-        <para>To see a list of supported commands, use the
-        <command>help</command> command:</para>
+    <programlisting><command>shorewall help</command></programlisting>
 
-        <programlisting><command>shorewall help</command></programlisting>
+    <para>To get further information about a particular command, use the
+    <command>man</command> command:</para>
 
-        <para>To get further information about a particular command, follow
-        <command>help</command> by the command:</para>
+    <programlisting><command>man shorewall</command>
+</programlisting>
 
-        <programlisting><command>shorewall help start</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall</filename> — The default directory
-        where Shorewall looks for configuration files. See the sections
-        entitled <link linkend="AddDirectories">Additional Configuration
-        Directories</link> and <link linkend="AltConfig">Alternate
-        Configuration Directories</link> for information about how you can
-        direct Shorewall to look in other directories.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/init.d/shorewall</filename>
-        (<filename>/etc/rc.d/rc.firewall</filename> on Slackware) — The script
-        run by <command>init</command> (the program responsible for startup
-        and shutdown of your system) to start Shorewall at boot time and to
-        stop Shorewall at shutdown.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/usr/share/shorewall/compiler</filename> — In
-        Shorewall 3.1 and later, the program that processes your Shorewall
-        configuration files and creates a script to start, stop, restart,
-        restore and clear the firewall.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/usr/share/shorewall/firewall</filename> — In
-        Shorewall 3.0 and earlier, the program responsible for configuring
-        Netfilter based on your configuration files. In 3.2 and later
-        versions, this program implements the add, delete, stop, clear and
-        refresh commands.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/usr/share/shorewall/functions</filename> — A library
-        of Bourne Shell functions used by<filename>
-        /sbin/shorewall</filename>,
-        <filename>/usr/share/shorewall/compiler</filename> and
-        <filename>/usr/share/shorewall/firewall</filename>.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>There are similar components that comprise <ulink
-    url="CompiledPrograms.html#Lite">Shorewall Lite</ulink>:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para><filename>/sbin/shorewall-lite</filename> — This is the program
-        that you use to interact with Shorewall Lite.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall-lite</filename> — Directory where the
-        configuration file for Shorewall Lite resides.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/var/lib/shorewall-lite/firewall</filename> — The
-        firewall program. It is generated and placed on the Shorewall LIte
-        system through use of the <command>shorewall load</command> and
-        <command>shorewall reload </command>commands on a system with the full
-        Shorewall product installed.</para>
-
-        <note>
-          <para>The 'firewall' script is in <filename
-          class="directory">/var/lib/shorewall-lite</filename> in packages
-          from shorewall.net. The package maintainers for the various
-          distributions are free to choose the directory where the script will
-          be stored under their distribution by changing the value of LITEDIR
-          in /usr/share/shorewall[-lite]/configpath. See the output of
-          <command>shorewall[-lite] show config</command> for the value of
-          LITEDIR on your distribution.</para>
-
-          <para>Example:</para>
-
-          <programlisting>gateway:~ # <command>shorewall-lite show config</command>
-Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
-LITEDIR is /var/lib/shorewall-lite
-gateway:~ #</programlisting>
-        </note>
-      </listitem>
-
-      <listitem>
-        <para><filename>/usr/share/shorewall-lite/functions</filename> — A
-        library of Bourne Shell functions used by<filename>
-        /usr/share/shorewall-lite/shorewall</filename>.</para>
-      </listitem>
-    </itemizedlist>
+    <para>The program <emphasis role="bold">/sbin/shorewall-lite</emphasis>
+    performs a similar role with Shorewall-lite.</para>
   </section>
 
   <section>
@@ -501,13 +411,13 @@ gateway:~ #</programlisting>
   </section>
 
   <section>
-    <title>Command Reference</title>
+    <title>Commands</title>
 
-    <para>The general form of a command in Shorewall 3.0 is:</para>
+    <para>The general form of a command in Shorewall 4.0 is:</para>
 
     <blockquote>
       <para><command>shorewall [ &lt;options&gt; ] &lt;command&gt; [
-      &lt;argument&gt; ... ]</command></para>
+      &lt;command options&gt; ] [ &lt;argument&gt; ... ]</command></para>
 
       <para>Available options are:</para>
 
@@ -543,11 +453,7 @@ gateway:~ #</programlisting>
           <term>-q</term>
 
           <listitem>
-            <para>In Shorewall versions prior to 3.2.0, causes some of the
-            output to be suppressed.</para>
-
-            <para>In 3.2.0 and later, reduces the verbosity level (see
-            VERBOSITY setting in <ulink
+            <para>Reduces the verbosity level (see VERBOSITY setting in <ulink
             url="Documentation.htm#Config">shorewall.conf</ulink>). May be
             repeated (e.g., "-qq") with each instance reducing the verbosity
             level by one.</para>
@@ -558,14 +464,10 @@ gateway:~ #</programlisting>
           <term>-v</term>
 
           <listitem>
-            <para>In Shorewall versions prior to 3.2.0, causes Ethernet MAC
-            addresses to be included in log message displays.</para>
-
-            <para>In 3.2.0 and later, increases the verbosity level (see
-            VERBOSITY setting in <ulink
-            url="Documentation.htm#Config">shorewall.conf</ulink>). May be
-            repeated (e.g., "-qq") with each instance increasing the verbosity
-            level by one.</para>
+            <para>Increases the verbosity level (see VERBOSITY setting in
+            <ulink url="Documentation.htm#Config">shorewall.conf</ulink>). May
+            be repeated (e.g., "-qq") with each instance increasing the
+            verbosity level by one.</para>
           </listitem>
         </varlistentry>
 
@@ -577,23 +479,7 @@ gateway:~ #</programlisting>
             byte counts.</para>
           </listitem>
         </varlistentry>
-      </variablelist>
-    </blockquote>
 
-    <para>The general form of a command in Shorewall 3.1 and later is:</para>
-
-    <blockquote>
-      <para><command>shorewall [ &lt;options&gt; ] &lt;command&gt; [
-      &lt;command options&gt; ] [ &lt;argument&gt; ... ]</command></para>
-
-      <para>For compatibility, Shorewall 3.1 and later accept all of the 3.0
-      command options. In addition, 3.1 defines some new options and also
-      defines command-specific options that are entered after the command on
-      the run-line.</para>
-
-      <para>New options are:</para>
-
-      <variablelist>
         <varlistentry>
           <term>-t</term>
 
@@ -616,823 +502,12 @@ gateway:~ #</programlisting>
       &lt;command options&gt; ] [ &lt;argument&gt; ... ]</command></para>
 
       <para>where the options are the same as with Shorewall.</para>
+
+      <para>The complete documentation for each command may be found in the
+      <ulink url="manpages/shorewall.html">shorewall</ulink> and <ulink
+      url="manpages/shorewall-lite.html">shorewall-lite</ulink> man
+      pages.</para>
     </blockquote>
-
-    <para>Following in alphabetical order are the supported commands. Except
-    as noted, <filename>/sbin/shorewall-lite</filename> supports the same
-    commands as <filename>/sbin/shorewall</filename>.</para>
-
-    <variablelist>
-      <varlistentry>
-        <term>add (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall add &lt;interface&gt;[:&lt;host-list&gt;] …
-          &lt;zone&gt;</command></para>
-
-          <para>A &lt;host-list&gt; is a comma-separated list whose entries
-          are:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>A host or network address</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of a bridge port</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of a bridge port followed by a colon (":") and a
-              host or network address.</para>
-            </listitem>
-          </itemizedlist>
-
-          <para>Adds an interface (and list of hosts if included) to a dynamic
-          zone usually used with VPN's.</para>
-
-          <para>Example: <command>shorewall add ipsec0:192.0.2.24
-          vpn1</command></para>
-
-          <para>adds the address 192.0.2.24 from interface ipsec0 to the zone
-          vpn1.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>allow</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] allow &lt;address&gt;
-          ...</command></para>
-
-          <para>Re-enables receipt of packets from hosts previously
-          blacklisted by a drop or reject command.</para>
-
-          <para>Shorewall allow, drop, rejct and save implement dynamic
-          blacklisting.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>check (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall check [ &lt;configuration-directory&gt;
-          ]</command></para>
-
-          <para>Performs a cursory validation of the zones, interfaces, hosts,
-          rules, policy, masq, blacklist, proxyarp, nat and provider files.
-          Use this if you are unsure of any edits you have made to the
-          shorewall configuration. See <link linkend="AltConfig">above</link>
-          for a recommended way to make changes.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>clear</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] clear</command></para>
-
-          <para>Clear will remove all rules and chains installed by Shorewall.
-          The firewall is then wide open and unprotected. Existing connections
-          are untouched. Clear is often used to see if the firewall is causing
-          connection problems.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>compile (Shorewall 3.1 and later - Not supported by Shorewall
-        Lite)</term>
-
-        <listitem>
-          <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ]
-          &lt;path name&gt;</command></para>
-
-          <para>Compiles the current configuration into the executable file
-          &lt;path name&gt;. If &lt;path name&gt; names a file in
-          /var/lib/shorewall then the file may be executed using the "restore"
-          command.</para>
-
-          <para>When -e is specified, the compilation is being performed on a
-          system other than where the compiled script will run under Shorewall
-          Lite. This option disables certain configuration options that
-          require the script to be compiled where it is to be run and allows
-          the script to be run on a system where Shorewall Lite is installed.
-          The file /etc/shorewall/capabilities must be present when -e is
-          used; that file specifies the iptables/kernel capabilities on the
-          target system.</para>
-
-          <para>The compiled script is a complete program that supports the
-          following commands:</para>
-
-          <blockquote>
-            <simplelist>
-              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
-              start</command></member>
-
-              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
-              stop</command></member>
-
-              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
-              clear</command></member>
-
-              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
-              restart</command></member>
-
-              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
-              status</command></member>
-
-              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
-              version</command></member>
-            </simplelist>
-          </blockquote>
-
-          <para>The options have their same meaning is when they are passed to
-          <filename>/sbin/shorewall</filename> itself.</para>
-
-          <para>For additional information about the
-          <command>compile</command> command, see <ulink
-          url="CompiledPrograms.html">this article</ulink>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>delete (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall delete
-          &lt;interface&gt;[:&lt;host-list&gt;] …
-          &lt;zone&gt;</command></para>
-
-          <para>A &lt;host-list&gt; is a comma-separated list whose entries
-          are:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>A host or network address</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of a bridge port</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of a bridge port followed by a colon (":") and a
-              host or network address.</para>
-            </listitem>
-          </itemizedlist>
-
-          <para>Deletes the specified interface (and host list if included)
-          from the specified zone.</para>
-
-          <para>Example:</para>
-
-          <para><command>shorewall delete ipsec0:192.0.2.24
-          vpn1</command></para>
-
-          <para>deletes the address 192.0.2.24 from interface ipsec0 from zone
-          vpn1</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>drop</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] drop &lt;address&gt;
-          ...</command></para>
-
-          <para>Causes packets from the specified
-          &lt;<emphasis>address</emphasis>&gt; to be ignored</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>dump</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] dump</command></para>
-
-          <para>Produce a verbose report about the firewall.</para>
-
-          <para>When -x is given, that option is also passed to iptables to
-          display actual packet and byte counts.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>export (Shorewall 3.2.3 and later - Not supported by Shorewall
-        Lite)</term>
-
-        <listitem>
-          <para><command>export [ &lt;directory1&gt; ]
-          [&lt;user&gt;@]&lt;system&gt;:[&lt;directory2&gt;]</command></para>
-
-          <para>If &lt;directory1&gt; is omitted, the current working
-          directory is assumed.</para>
-
-          <para>Allows a non-root user to compile a shorewall script and stage
-          it on a system (provided that the user has access to the system via
-          ssh). The command is equivalent to:</para>
-
-          <simplelist>
-            <member><command>/sbin/shorewall compile -e &lt;directory1&gt;
-            &lt;directory1&gt;/firewall &amp;&amp;\</command></member>
-
-            <member><command>scp &lt;directory1&gt;/firewall
-            &lt;directory1&gt;/firewall.conf
-            [&lt;user&gt;@]&lt;system&gt;:[&lt;directory2&gt;]</command></member>
-          </simplelist>
-
-          <para>In other words, the configuration in the specified (or
-          defaulted) directory is compiled to a file called
-          <filename>firewall</filename> in that directory. If compilation
-          succeeds, then <filename>firewall and firewall.conf</filename> are
-          copied to &lt;system&gt; using scp.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>forget</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] forget [ &lt;filename&gt;
-          ]</command></para>
-
-          <para>Deletes<filename>
-          /var/lib/shorewall/&lt;filename&gt;</filename>. If no
-          &lt;<emphasis>filename</emphasis>&gt; is given then the file
-          specified by RESTOREFILE in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
-          is removed.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>help</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] help [&lt;command&gt; | host |
-          address ]</command></para>
-
-          <para>Display helpful information about the shorewall
-          commands.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>hits</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] hits</command></para>
-
-          <para>Produces several reports about the Shorewall packet log
-          messages in the current log file specified by the LOGFILE option in
-          <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>ipcalc</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] ipcalc { &lt;address&gt;
-          &lt;mask&gt; | &lt;address&gt;/&lt;vlsm&gt; }</command></para>
-
-          <para>Ipcalc displays the network address, broadcast address,
-          network in CIDR notation and netmask corresponding to the
-          input[s].</para>
-
-          <para>Example:</para>
-
-          <para><command>shorewall[-lite] ipcalc
-          192.168.1.0/24</command></para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>iprange</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] iprange
-          &lt;address1&gt;-&lt;address2&gt;</command></para>
-
-          <para>Iprange decomposes the specified range of IP addresses into
-          the equivalent list of network/host addresses.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry id="Load">
-        <term>load (Added in Shorewall 3.2.0 RC4 -- not supported by Shorewall
-        Lite)</term>
-
-        <listitem>
-          <para><command>load [ -s ] [ -c ] [ -r &lt;root user name&gt; ] [
-          &lt;directory&gt; ] &lt;system&gt;</command></para>
-
-          <para>If &lt;directory&gt; is omitted, the current working directory
-          is assumed.</para>
-
-          <para>Allows a non-root user to compile a shorewall script and
-          install it on a system (provided that the user has root access to
-          the system via ssh). The command is equivalent to:</para>
-
-          <simplelist>
-            <member><command>/sbin/shorewall compile -e &lt;directory&gt;
-            &lt;directory&gt;/firewall &amp;&amp;\</command></member>
-
-            <member><command>scp &lt;directory&gt;/firewall
-            &lt;directory&gt;/firewall.conf
-            root@&lt;system&gt;:/var/lib/shorewall-lite/
-            &amp;&amp;\</command></member>
-
-            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
-            start'</command></member>
-          </simplelist>
-
-          <para>In other words, the configuration in the specified (or
-          defaulted) directory is compiled to a file called
-          <filename>firewall</filename> in that directory. If compilation
-          succeeds, then <filename>firewall</filename> is copied to
-          &lt;system&gt; using scp. If the copy succeeds, Shorewall Lite on
-          &lt;system&gt; is started via ssh.</para>
-
-          <note>
-            <para>The 'firewall' script is in <filename
-            class="directory">/var/lib/shorewall-lite</filename> in packages
-            from shorewall.net. The package maintainers for the various
-            distributions are free to choose the directory where the script
-            will be stored under their distribution by changing the value of
-            LITEDIR in /usr/share/shorewall[-lite]/configpath. See the output
-            of <command>shorewall[-lite] show config</command> for the value
-            of LITEDIR on your distribution.</para>
-
-            <para>Example:</para>
-
-            <programlisting>gateway:~ # <command>shorewall-lite show config</command>
-Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
-LITEDIR is /var/lib/shorewall-lite
-gateway:~ #</programlisting>
-          </note>
-
-          <para>Example: <command>shorewall load gateway</command></para>
-
-          <para>If the -s option (added in Shorewall 3.2.2) is given and the
-          remote <command>/sbin/shorewall-lite start</command> command
-          succeeds then the configuration on the remote system is saved using
-          the command</para>
-
-          <simplelist>
-            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
-            save'</command></member>
-          </simplelist>
-
-          <para>The -c option was added in Shorewall 3.2.6. It causes the
-          capabilities of the remote system to be collected and stored in a
-          <filename>capabilities</filename> file in the specified (or
-          defaulted) &lt;directory&gt; before the configuration is
-          compiled.</para>
-
-          <para>The -r option was added in Shoreawll 3.2.7/3.3.6 and named the
-          'root' user on the remote &lt;system&gt;. This option must be used
-          if the root user on &lt;system&gt; is named other than
-          "root".</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>logdrop</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] logdrop &lt;address&gt;
-          ...</command></para>
-
-          <para>Causes packets from the specified
-          &lt;<emphasis>address</emphasis>&gt; to be ignored and logged</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>logwatch</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] logwatch [ -m ] [&lt;refresh
-          interval&gt;]</command></para>
-
-          <para>Monitors the log file specified by theLOGFILE option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
-          and produces an audible alarm when new Shorewall messages are
-          logged.</para>
-
-          <para>The '-m' option is available in Shorewall version 3.2.0 Beta5
-          and later and causes the MAC address of each packet source to be
-          displayed if that information is available.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>logreject</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] logreject &lt;address&gt;
-          ...</command></para>
-
-          <para>Causes packets from the specified
-          &lt;<emphasis>address</emphasis>&gt; to be rejected and
-          logged</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>refresh (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall refresh</command></para>
-
-          <para>The rules involving the broadcast addresses of firewall
-          interfaces, the black list and ECN control rules are recreated to
-          reflect any changes made to your configuration files. Shorewall
-          versions prior to 3.2.0 Beta 5 also recreate the traffic shaping
-          rules as part of processing the <command>refresh</command> command.
-          Existing connections are untouched. If -q is specified, less detail
-          is displayed making it easier to spot warnings.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>reject</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] reject &lt;address&gt;
-          ...</command></para>
-
-          <para>Causes packets from the specified
-          &lt;<emphasis>address</emphasis>&gt;s to be rejected</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry id="Reload">
-        <term>reload (Added in Shorewall 3.2.0 RC4 -- not supported by
-        Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>reload [ -s ] [ -c ] [ -r &lt;root user name&gt; ] [
-          &lt;directory&gt; ] &lt;system&gt;</command></para>
-
-          <para>If &lt;directory&gt; is omitted, the current working directory
-          is assumed.</para>
-
-          <para>Allows a non-root user to compile a shorewall script and
-          install it on a system (provided that the user has root access to
-          the system via ssh). The command is equivalent to:</para>
-
-          <simplelist>
-            <member><command>/sbin/shorewall compile -e &lt;directory&gt;
-            &lt;directory&gt;/firewall &amp;&amp;\</command></member>
-
-            <member><command>scp &lt;directory&gt;/firewall
-            &lt;directory&gt;/firewall
-            root@&lt;system&gt;:/var/lib/shorewall-lite/
-            &amp;&amp;\</command></member>
-
-            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
-            restart'</command></member>
-          </simplelist>
-
-          <para>In other words, the configuration in the specified (or
-          defaulted) directory is compiled to a file called
-          <filename>firewall</filename> in that directory. If compilation
-          succeeds, then <filename>firewall</filename> is copied to
-          &lt;system&gt; using scp. If the copy succeeds, Shorewall Lite on
-          &lt;system&gt; is restarted via ssh.</para>
-
-          <note>
-            <para>The 'firewall' script is in <filename
-            class="directory">/var/lib/shorewall-lite</filename> in packages
-            from shorewall.net. The package maintainers for the various
-            distributions are free to choose the directory where the script
-            will be stored under their distribution by changing the value of
-            LITEDIR in /usr/share/shorewall[-lite]/configpath. See the output
-            of <command>shorewall[-lite] show config</command> for the value
-            of LITEDIR on your distribution.</para>
-
-            <para>Example:</para>
-
-            <programlisting>gateway:~ # <command>shorewall-lite show config</command>
-Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
-LITEDIR is /var/lib/shorewall-lite
-gateway:~ #</programlisting>
-          </note>
-
-          <para>Example: <command>shorewall reload gateway</command></para>
-
-          <para>If the -s option (added in Shorewall 3.2.2) is given and the
-          remote <command>/sbin/shorewall-lite restart</command> command
-          succeeds then the configuration on the remote system is saved using
-          the command</para>
-
-          <simplelist>
-            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
-            save'</command></member>
-          </simplelist>
-
-          <para>The -c option was added in Shorewall 3.2.6. It causes the
-          capabilities of the remote system to be collected and stored in a
-          <filename>capabilities</filename> file in the specified (or
-          defaulted) &lt;directory&gt; before the configuration is
-          compiled.</para>
-
-          <para>The -r option was added in Shoreawll 3.2.7/3.3.6 and named the
-          'root' user on the remote &lt;system&gt;. This option must be used
-          if the root user on &lt;system&gt; is named other than
-          "root".</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>reset</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] reset</command></para>
-
-          <para>All the packet and byte counters in the firewall are
-          reset.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>restart</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] restart
-          &lt;configuration-directory&gt;</command></para>
-
-          <para>Restart is similar to <command>shorewall stop</command>
-          followed by <command>shorewall start</command>. Existing connections
-          are maintained. If -q is specified, less detail is displayed making
-          it easier to spot warnings</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>restore</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] restore [ &lt;filename&gt;
-          ]</command></para>
-
-          <para>Restore Shorewall to a state saved using the
-          <command>shorewall save</command> command Existing connections are
-          maintained. The &lt;<emphasis>filename</emphasis>&gt; names a
-          restore file in <filename
-          class="directory">/var/lib/shorewall</filename> created using
-          <command>shorewall save</command>; if no
-          &lt;<emphasis>filename</emphasis>&gt; is given then Shorewall will
-          be restored from the file specified by the RESTOREFILE option in
-          <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>safe-restart (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall safe-restart [ &lt;directory name&gt;
-          ]</command></para>
-
-          <para>The current configuration is saved in
-          <filename>/var/lib/shorewall/safe-restart</filename> (see the
-          <command>save</command> command below) that a restart is done. You
-          will then be prompted asking if you want to accept the new
-          configuration or not. If you answer "n" or if you fail to answer
-          within 60 seconds (such as when your new configuration has disabled
-          communication with your terminal), the configuration is restored
-          from the saved configuration.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>safe-start (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall safe-start [ &lt;directory name&gt;
-          ]</command></para>
-
-          <para>Shorewall is started normally. You will then be prompted
-          asking if everything went all right. If you answer "n" or if you
-          fail to answer within 60 seconds (such as when your new
-          configuration has disabled communication with your terminal), a
-          <command>shorewall clear</command> is performed for you.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>save</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] save [ &lt;filename&gt;
-          ]</command></para>
-
-          <para>The dynamic data is stored in /var/lib/shorewall/save. The
-          state of the firewall is stored in
-          <filename>/var/lib/shorewall/&lt;filename&gt;</filename> for use by
-          the <command>shorewall[-lite] restore</command> and
-          <command>shorewall[-lite] -f start</command> commands. If
-          &lt;<emphasis>filename</emphasis>&gt; is not given then the state is
-          saved in the file specified by the RESTOREFILE option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>show</term>
-
-        <listitem>
-          <para><command>shorewall show actions (Not supported by Shorewall
-          Lite)</command> — produces a list of actions available on the
-          system.</para>
-
-          <para><command>shorewall[-lite] show [ &lt;chain&gt; [ &lt;chain&gt;
-          ...] |classifiers|connections|log|nat|tc|tos]</command></para>
-
-          <para><command>shorewall[-lite] show &lt;chain&gt; [ &lt;chain&gt;
-          ... ] </command> - produce a verbose report about the Netfilter
-          chain(s). (<command>iptables -L chain -n -v</command>)</para>
-
-          <para><command>shorewall[-lite] show mangle</command> - produce a
-          verbose report about the mangle table. (<command>iptables -t mangle
-          -L -n -v</command>)</para>
-
-          <para><command>shorewall[-lite] show nat</command> - produce a
-          verbose report about the nat table. (<command>iptables -t nat -L -n
-          -v</command>)</para>
-
-          <para><command>shorewall[-lite] show [- m ] log</command> - display
-          the last 20 packet log entries. The '-m' option is available in
-          Shorewall version 3.2.0 Beta5 and later and causes the MAC address
-          of each packet source to be displayed if that information is
-          available.</para>
-
-          <para><command>shorewall[-lite] show capabilities</command> -
-          Displays your kernel/iptables capabilities</para>
-
-          <para><command>shorewall[-lite] show connections</command> -
-          displays the IP connections currently being tracked by the
-          firewall.</para>
-
-          <para><command>shorewall[-lite] show classifiers</command> -
-          displays information about the traffic control/shaping
-          classifiers.</para>
-
-          <para><command>shorewall[-lite] show config</command> - displays the
-          default CONFIG_PATH and LITEDIR for your distribution.</para>
-
-          <para><command>shorewall [ -x ] show macros (Not supported by
-          Shorewall Lite)</command> — produces a list of macros available on
-          the system.</para>
-
-          <para><command>shorewall[-lite] show tc</command> - displays
-          information about the traffic control/shaping configuration.</para>
-
-          <para><command>shorewall[-lite] show zones</command> — Displays the
-          composition of each zone.</para>
-
-          <para>When -x is given, that option is also passed to iptables to
-          display actual packet and byte counts.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>start</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] [ -f ] start [
-          &lt;configuration-directory&gt; ]</command></para>
-
-          <para>Start shorewall. Existing connections through shorewall
-          managed interfaces are untouched. New connections will be allowed
-          only if they are allowed by the firewall rules or policies. If -f is
-          specified, the saved configuration specified by the RESTOREFILE
-          option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
-          will be restored if that saved configuration exists. When <emphasis
-          role="bold">-f</emphasis> is given, a
-          <replaceable>&lt;configuration-directory&gt;</replaceable> may not
-          be specified.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>stop</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] stop</command></para>
-
-          <para>Stops the firewall. All existing connections, except those
-          listed in <filename><ulink
-          url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>
-          or permitted by the ADMINISABSENTMINDED option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>,
-          are taken down. The only new traffic permitted through the firewall
-          is from systems listed in
-          <filename>/etc/shorewall/routestopped</filename> or by
-          ADMINISABSENTMINDED.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>status</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] status</command></para>
-
-          <para>Produce a short report about the firewall's status and state
-          relative to <link linkend="State">the diagram below</link>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>try (Not supported by Shorewall Lite)</term>
-
-        <listitem>
-          <para><command>shorewall try &lt;configuration-directory&gt; [
-          &lt;timeout&gt; ]</command></para>
-
-          <para>Restart shorewall using the specified configuration. If an
-          error occurs during the restart, then another shorewall restart is
-          performed using the default configuration. If a timeout is specified
-          then the restart is always performed after the timeout occurs and
-          uses the default configuration.</para>
-
-          <para>When restarting using the default configuration, if the
-          default restore script (as specified by the RESTOREFILE setting in
-          <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
-          exists. then that script is used.</para>
-
-          <para>The <command>try</command> command is deprecated in Shorewall
-          3.0 and 3.2. A better approach to testing new configurations
-          is:</para>
-
-          <blockquote>
-            <para><command>shorewall save</command></para>
-
-            <para><command>shorewall restart
-            &lt;configuration-directory&gt;</command> [ <command>&amp;&amp;
-            sleep &lt;timeout&gt; &amp;&amp; shorewall restore</command>
-            ]</para>
-
-            <para><emphasis>fix problems</emphasis></para>
-
-            <para><command>shorewall restart
-            &lt;configuration-directory&gt;</command> [ <command>&amp;&amp;
-            sleep &lt;timeout&gt; &amp;&amp; shorewall restore</command>
-            ]</para>
-
-            <para><emphasis>fix problems</emphasis></para>
-
-            <para>…</para>
-          </blockquote>
-
-          <para>Beginning with Shorewall version 3.3.6, the
-          <command>try</command> command has new and improved semantics as
-          follows:</para>
-
-          <blockquote>
-            <para>If Shorewall is started then the firewall state is saved to
-            a temporary saved configuration
-            (<filename>/var/lib/shorewall/.try</filename>). Next, if Shorewall
-            is currently started then a <command>restart</command> command is
-            issued; otherwise, a <command>start</command> command is
-            performed. if an error occurs during the compliation phase of the
-            <command>restart</command> or <command>start</command>, the
-            command terminates without changing the Shorewall state. If an
-            error occurs during the <command>restart</command> phase, then a
-            shorewall restore is performed using the saved configuration. If
-            an error occurs during the <command>start</command> phase, then
-            Shorewall is cleared. If the start/restart succeeds and a
-            &lt;<emphasis>timeout</emphasis>&gt; is specified then a
-            <command>clear</command> or <command>restore</command> is
-            performed after &lt;<emphasis>timeout</emphasis>&gt;
-            seconds.</para>
-          </blockquote>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>version</term>
-
-        <listitem>
-          <para><command>shorewall[-lite] version</command></para>
-
-          <para>Show the current shorewall version</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
   </section>
 
   <section id="State">
@@ -1548,23 +623,19 @@ gateway:~ #</programlisting>
     <command>/var/lib/shorewall[-lite]/restore</command> program sets the
     state to "Started".</para>
 
-    <section>
-      <title>Notes for Shorewall 3.2.0 and Later</title>
+    <para>With any command that involves compilation, there is no state
+    transition while the compiler is running. If compilation fails, the state
+    remains unchanged.</para>
 
-      <para>With any command that involves compilation, there is no state
-      transition while the compiler is running. If compilation fails, the
-      state remains unchanged.</para>
+    <para>Also, <command>shorewall start</command> and <command>shorewall
+    restart</command> involve compilation followed by execution of the
+    compiled script. So it is the compiled script that performs the state
+    transition in these commands rather than
+    <command>/usr/share/shorewall/firewall</command>.</para>
 
-      <para>Also, <command>shorewall start</command> and <command>shorewall
-      restart</command> involve compilation followed by execution of the
-      compiled script. So it is the compiled script that performs the state
-      transition in these commands rather than
-      <command>/usr/share/shorewall/firewall</command>.</para>
-
-      <para>The compiled script is placed in <filename
-      class="directory">/var/lib/shorewall</filename> and is named either
-      <filename>.start</filename> or <filename>.restart</filename> depending
-      on the command.</para>
-    </section>
+    <para>The compiled script is placed in <filename
+    class="directory">/var/lib/shorewall</filename> and is named either
+    <filename>.start</filename> or <filename>.restart</filename> depending on
+    the command.</para>
   </section>
 </article>

@@ -378,7 +378,9 @@ fi
 #
 run_install $OWNERSHIP -m 0644 params ${PREFIX}/usr/share/shorewall/configfiles/params
 
-if [ ! -f ${PREFIX}/etc/shorewall/params ]; then
+if [ -f ${PREFIX}/etc/shorewall/params ]; then
+    chmod 0644 ${PREFIX}/etc/shorewall/params
+else
     run_install $OWNERSHIP -m 0644 params ${PREFIX}/etc/shorewall/params
     echo "Parameter file installed as ${PREFIX}/etc/shorewall/params"
 fi

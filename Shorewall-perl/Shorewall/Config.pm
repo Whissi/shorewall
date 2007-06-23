@@ -325,7 +325,7 @@ sub warning_message
     my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
 
     if ( $debug ) {
-	print STDERR Carp::longmess( "WARNING: @_$lineinfo" );
+	print STDERR Carp::longmess( "   WARNING: @_$lineinfo" );
     } else {
 	print STDERR "   WARNING: @_$lineinfo\n";
     }
@@ -336,9 +336,8 @@ sub warning_message
 #
 sub fatal_error	{
     my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
-    Carp::confess "ERROR: @_$lineinfo" if $debug;
+    Carp::confess "   ERROR: @_$lineinfo" if $debug;
     die "   ERROR: @_$lineinfo\n";
- 
 }
 
 #

@@ -343,6 +343,7 @@ compiler() {
 	    [ -n "$EXPORT" ] && options="$options --export ";
 	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory $SHOREWALL_DIR ";
 	    [ -n "$TIMESTAMP" ] && options="$options --timestamp" ;
+	    [ -n "$debugging" ] && options="$options --debug" ;
 	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
 	    #
 	    # Run the appropriate params file

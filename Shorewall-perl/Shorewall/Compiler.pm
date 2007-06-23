@@ -43,7 +43,7 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( compiler EXPORT TIMESTAMP );
+our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
 our $VERSION = 1.00;
 
@@ -52,7 +52,8 @@ our $export;
 our $reused = 0;
 
 use constant { EXPORT => 0x01 ,
-	       TIMESTAMP => 0x02 };
+	       TIMESTAMP => 0x02 ,
+	       DEBUG => 0x04 };
 
 #
 # Reinitilize the package-globals in the other modules
@@ -690,6 +691,7 @@ sub compiler( $$$$ ) {
     set_verbose( $verbosity ) unless $verbosity eq '';
     $export = 1               if $options & EXPORT;
     set_timestamp( 1 )        if $options & TIMESTAMP;
+    set_debug( 1 )            if $options & DEBUG;
     #
     # Get shorewall.conf and capabilities.
     #

@@ -37,6 +37,7 @@ our @EXPORT = qw(
 		 warning_message
 		 fatal_error
 		 set_shorewall_dir
+		 set_debug
 		 find_file
 		 split_line
 		 split_line1
@@ -106,6 +107,8 @@ our $currentfilename;         # File NAME
 our $currentlinenumber;       # Line number
 
 our $shorewall_dir;           #Shorewall Directory
+
+our $debug;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -306,6 +309,8 @@ sub initialize() {
     $currentlinenumber = 0;   # Line number
 
     $shorewall_dir = '';      #Shorewall Directory
+
+    $debug = 0;
 }
 
 INIT {
@@ -319,7 +324,11 @@ sub warning_message
 {
     my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
 
-    print STDERR "   WARNING: @_$lineinfo\n";
+    if ( $debug ) {
+	print STDERR Carp::longmess( "WARNING: @_$lineinfo" );
+    } else {
+	print STDERR "   WARNING: @_$lineinfo\n";
+    }
 }
 
 #
@@ -327,7 +336,7 @@ sub warning_message
 #
 sub fatal_error	{
     my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
-
+    Carp::confess "ERROR: @_$lineinfo" if $debug;
     die "   ERROR: @_$lineinfo\n";
  
 }
@@ -337,6 +346,14 @@ sub fatal_error	{
 #
 sub set_shorewall_dir( $ ) {
     $shorewall_dir = shift;
+}
+
+#
+# Set $debug
+#
+sub set_debug( $ ) {
+    use Carp;
+    $debug = shift;
 }
 
 #

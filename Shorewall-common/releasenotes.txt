@@ -658,13 +658,19 @@ Migration Considerations:
 	If given, each progress message issued by the compiler and by
 	the compiled program will be timestamped.
 
+    --debugging
+
+	If given, when a warning or error message is issued, it is 
+	supplimented with a stack trace. Requires the Carp Perl
+	module.
+
     Example (compiles the configuration in the current directory 
              generating a script named 'firewall' and using VERBOSITY
              2).
 
        /usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall
 
-    Note: For compatibility with Shorewall 3.4.2 and later 3.4
+    Note: For compatibility with the Shorewall 3.4.2 and 3.4.3
     releases, options not passed on the run-line get their values from
     environmental variables:
 

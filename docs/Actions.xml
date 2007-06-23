@@ -401,6 +401,32 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
           2.6.14).</member>
         </simplelist>
       </listitem>
+
+      <listitem>
+        <para>MARK (Added in Shorewall 3.4.4)</para>
+
+        <para><simplelist>
+            <member>[!]&lt;<emphasis>value</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;][:C]</member>
+          </simplelist></para>
+
+        <para>Defines a test on the existing packet or connection mark. The
+        rule will match only if the test returns true.</para>
+
+        <para>If you don’t want to define a test but need to specify anything
+        in the following columns, place a "-" in this field.<simplelist>
+            <member> ! — Inverts the test (not equal)</member>
+
+            <member>&lt;<emphasis>value</emphasis>&gt; — Value of the packet
+            or connection mark.</member>
+
+            <member>&lt;<emphasis>mask</emphasis>&gt; —A mask to be applied to
+            the mark before testing.</member>
+
+            <member>:C — Designates a connection mark. If omitted, the packet
+            mark’s value is tested. This option is only supported by
+            Shorewall-perl</member>
+          </simplelist></para>
+      </listitem>
     </itemizedlist>
 
     <para>Omitted column entries should be entered using a dash ("-").</para>

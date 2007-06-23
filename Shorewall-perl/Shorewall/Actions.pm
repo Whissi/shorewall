@@ -72,7 +72,7 @@ our %actions;
 #
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
-my %logactionchains;
+our %logactionchains;
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -143,11 +143,7 @@ sub new_action( $ ) {
 
     my $action = $_[0];
 
-    my %h;
-
-    $h{actchain}   = '';
-    $h{requires} = {};
-    $actions{$action} = \%h;
+    $actions{$action} = { actchain => '', requires => {} };
 }
 
 #

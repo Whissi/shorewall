@@ -134,14 +134,11 @@ sub add_group_to_zone($$$$$)
 
     $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 ) || ( @exclusions );
 
-    my %h;
-
-    $h{options} = $options;
-    $h{hosts}   = \@newnetworks;
-    $h{ipsec}   = $type eq 'ipsec' ? 'ipsec' : 'none';
-
     push @{$zoneref->{exclusions}}, @exclusions;
-    push @{$arrayref}, \%h;
+    
+    push @{$arrayref}, { options => $options,
+			 hosts   => \@newnetworks,
+			 ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' };
 }
 
 #

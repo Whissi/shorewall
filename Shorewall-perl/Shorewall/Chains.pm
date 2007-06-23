@@ -198,6 +198,10 @@ our $exclseq;
 our $iprangematch;
 our $chainseq;
 
+our %interfaceaddr;
+our %interfaceaddrs;
+our %interfacenets;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -277,6 +281,12 @@ sub initialize() {
     # Sequence for naming temporary chains
     #
     $chainseq = undef;
+    #
+    # Keep track of which interfaces have active 'address', 'addresses' and 'networks' variables
+    #
+    %interfaceaddr  = ();
+    %interfaceaddrs = ();
+    %interfacenets  = ();
 }
 
 INIT {
@@ -531,17 +541,14 @@ sub first_chains( $ ) #$1 = interface
 sub new_chain($$)
 {
     my ($table, $chain) = @_;
-    my %ch;
 
-    $ch{name} = $chain;
-    $ch{log}  = 1 if $globals{LOGRULENUMBERS};
-    $ch{rules} = [];
-    $ch{table} = $table;
-    $ch{loglevel} = '';
-    $ch{loopcount} = 0;
-    $ch{cmdcount}  = 0;
-    $chain_table{$table}{$chain} = \%ch;
-    \%ch;
+    $chain_table{$table}{$chain} = { name      => $chain,
+				     rules     => [],
+				     table     => $table,
+				     loglevel  => '',
+				     log       => 1,
+				     loopcount => 0,
+				     cmdcount  => 0 };
 }
 
 #
@@ -1327,13 +1334,6 @@ sub mysplit( $ ) {
 
     @result;
 }
-
-#
-# Keep track of which interfaces have active 'address', 'addresses' and 'networks' variables
-#
-my %interfaceaddr;
-my %interfaceaddrs;
-my %interfacenets;
 
 #
 # Returns the name of the shell variable holding the first address of the passed interface

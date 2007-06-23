@@ -247,22 +247,18 @@ sub determine_zones()
 	    fatal_error "Invalid zone type ($type)" ;
 	}
 
-	my %zone_hash;
-
-	$options      = '' if $options     eq '-';
-	$in_options   = '' if $in_options  eq '-';
-	$out_options  = '' if $out_options eq '-';
-
-	$zone_hash{in_out}   = parse_zone_option_list( $options || '', $type );
-	$zone_hash{in}       = parse_zone_option_list( $in_options || '', $type );
-	$zone_hash{out}      = parse_zone_option_list( $out_options || '', $type );
-	$zone_hash{complex}  = ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0);
+	for ( $options, $in_options, $out_options ) {
+	    $_ = '' if $_ eq '-';
+	}
 
 	$zones{$zone} = { type       => $type,
 			  parents    => \@parents, 
 			  exclusions => [], 
 			  bridge     => '',
-			  options    => \%zone_hash,
+			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
+					  in      => parse_zone_option_list( $in_options || '', $type ) ,
+					  out     => parse_zone_option_list( $out_options || '', $type ) ,
+					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
 			  interfaces => {} ,
 			  children   => [] ,
 			  hosts      => {}

@@ -124,6 +124,37 @@ our %classids;
 our @deferred_rules;
 
 #
+# Perl version of Arn Bernin's 'tc4shorewall'.
+#
+# TCDevices Table
+#
+# %tcdevices { <interface> -> {in_bandwidth => <value> ,
+#                              out_bandwidth => <value>
+#                              number => <ordinal>
+#                              default => <default class mark value> }
+#
+our @tcdevices;
+our %tcdevices;
+
+#
+# TCClasses Table
+#
+# %tcclasses { device    => <device> ,
+#              mark      => <mark> ,
+#              rate      => <rate> ,
+#              ceiling   => <ceiling> ,
+#              priority  => <priority> ,
+#              options   => { tos  => [ <value1> , <value2> , ... ];
+#                             tcp_ack => 1 ,
+#                             ...
+#
+
+our @tcclasses;
+our %tcclasses;
+
+our $prefix = '1';
+
+#
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
 #                       initialize() function does globals initialization for this
@@ -135,6 +166,10 @@ our @deferred_rules;
 sub initialize() {
     %classids = ();
     @deferred_rules = ();
+    @tcdevices = ();
+    %tcdevices = ();
+    @tcclasses = ();
+    %tcclasses = ();
 }
 
 sub process_tc_rule( $$$$$$$$$$ ) {
@@ -255,37 +290,6 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     progress_message "   TC Rule \"$line\" $done";
 
 }
-
-#
-# Perl version of Arn Bernin's 'tc4shorewall'.
-#
-# TCDevices Table
-#
-# %tcdevices { <interface> -> {in_bandwidth => <value> ,
-#                              out_bandwidth => <value>
-#                              number => <ordinal>
-#                              default => <default class mark value> }
-#
-my @tcdevices;
-my %tcdevices;
-
-#
-# TCClasses Table
-#
-# %tcclasses { device    => <device> ,
-#              mark      => <mark> ,
-#              rate      => <rate> ,
-#              ceiling   => <ceiling> ,
-#              priority  => <priority> ,
-#              options   => { tos  => [ <value1> , <value2> , ... ];
-#                             tcp_ack => 1 ,
-#                             ...
-#
-
-my @tcclasses;
-my %tcclasses;
-
-my $prefix = '1';
 
 sub rate_to_kbit( $ ) {
     my $rate = $_[0];

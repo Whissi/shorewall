@@ -202,6 +202,17 @@ our %interfaceaddr;
 our %interfaceaddrs;
 our %interfacenets;
 
+our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
+
+#
+# State of the generator.
+#
+use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptables-restore input
+	       CAT_STATE  => 1 ,   # Generating iptables-restore input
+	       CMD_STATE  => 2 };  # Generating shell commands.
+
+our $state;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -287,6 +298,10 @@ sub initialize() {
     %interfaceaddr  = ();
     %interfaceaddrs = ();
     %interfacenets  = ();
+    #
+    # State of the generator.
+    #
+    $state = NULL_STATE;
 }
 
 INIT {
@@ -1799,16 +1814,6 @@ sub insertnatjump( $$$$ ) {
 #
 # What follows is the code that generates the input to iptables-restore
 #
-my @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
-
-#
-# State of the generator.
-#
-use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptables-restore input
-	       CAT_STATE  => 1 ,   # Generating iptables-restore input
-	       CMD_STATE  => 2 };  # Generating shell commands.
-
-my $state = NULL_STATE;
 
 #
 # Emits the passed 'rule'

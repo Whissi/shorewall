@@ -61,7 +61,9 @@ our @rule_chains;
 # Set to one if we find a SECTION
 #
 our $sectioned;
-
+our $macro_nest_level;
+our $current_param;
+our @param_stack;
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -74,6 +76,9 @@ our $sectioned;
 sub initialize() {
     @rule_chains = ();
     $sectioned = 0;
+    $macro_nest_level = 0;
+    $current_param = '';
+    @param_stack;
 }
 
 INIT {
@@ -886,10 +891,6 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
     progress_message "..End Macro $macrofile"
 }
-
-my $macro_nest_level = 0;
-my $current_param = '';
-my @param_stack;
 
 #
 # Once a rule has been completely resolved by macro expansion and wildcard (source and/or dest zone == 'all'), it is processed by this function.

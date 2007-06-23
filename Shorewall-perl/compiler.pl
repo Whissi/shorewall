@@ -31,7 +31,7 @@
 #         --verbosity=<number>        # Set VERBOSITY
 #         --directory=<directory>     # Directory where configuration resides (default is /etc/shorewall)
 #         --timestamp                 # Timestamp all progress messages
-#         --debugging                 # Print stack trace on warnings and fatal error.
+#         --debug                     # Print stack trace on warnings and fatal error.
 #
 # Default values for compiler options are given in environmental variables as follows:
 #
@@ -41,7 +41,7 @@
 #	   --export		  EXPORT
 #	   --directory		  SHOREWALL_DIR
 #	   --timestamp		  TIMESTAMP
-#          --debugging            <none>
+#          --debug                <none>
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
@@ -72,7 +72,7 @@ my $result = GetOptions('export'      => \$export,
 			'v=i'         => \$verbose,
 			'timestamp'   => \$timestamp,
 			't'           => \$timestamp,
-		        'debugging'   => \$debug
+		        'debug'       => \$debug
 		       );
 
 usage unless $result && @ARGV < 2;

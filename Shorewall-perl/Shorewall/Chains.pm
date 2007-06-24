@@ -212,6 +212,7 @@ use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptab
 	       CMD_STATE  => 2 };  # Generating shell commands.
 
 our $state;
+our $emitted_comment;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -302,6 +303,10 @@ sub initialize() {
     # State of the generator.
     #
     $state = NULL_STATE;
+    #
+    #  When true, we've emitted a comment about global variable initialization
+    #
+    $emitted_comment = 0;
 }
 
 INIT {
@@ -1843,8 +1848,6 @@ sub emitr( $ ) {
 	emit_unindented $rule;
     }
 }
-
-my $emitted_comment = 0;
 
 sub emit_comment() {
     unless ( $emitted_comment ) {

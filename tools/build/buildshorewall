@@ -516,6 +516,26 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -f shorewall-docs-xml-$VERSION/images/publish
     rm -f shorewall-docs-xml-$VERSION/images/Thumbs.db
 
+    cd shorewall-docs-xml-$VERSION
+
+    progress_message "Exporting $MANPAGETAG from SVN..."
+
+    do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+
+    do_or_die mv manpages manpages.save
+
+    progress_message "Exporting $LITEMANPAGETAG from SVN..."
+	
+    do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
+    
+    do_or_die mv manpages/* manpages.save/
+
+    do_or_die rm -rf manpages
+
+    do_or_die mv manpages.save manpages
+
+    cd $DIR
+
     if [ -n "$BUILDXML" ]; then
 	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION tarballs"
         do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
@@ -606,39 +626,19 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC -param toc.section.depth 3 $STYLESHEET $file
 	done
 
-	progress_message "Exporting $MANPAGETAG from SVN..."
-
-	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
-
-	cd manpages
-	for f in *.xml; do
+	for f in shorewall-docs-xml-$VERSION/manpages/*.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating HTML from $f..."
 		do_or_die xsltproc --output ${f%.xml}.html --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $f
 
 	    fi
 	done
-	rm *.xml
-	cd ..
 
-	do_or_die mv manpages manpages.save
+	progress_message "Copying manpages to $DIR/$HTMLDIR/images ..."
 
-	progress_message "Exporting $LITEMANPAGETAG from SVN..."
-	
-	do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
-	cd manpages
-	for f in *.xml; do
-	    if [ $f != shorewall-template.xml ]; then
-		progress_message "Generating HTML from $f..."
-		do_or_die xsltproc --output ${f%.xml}.html --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $f
-	    fi
-	done
-	rm *.xml
-	cd ..
-
-	do_or_die mv manpages/*.html manpages.save
-	do_or_die rm -rf manpages
-	do_or_die mv manpages.save manpages
+	do_or_die mkdir $HTMLDIR/manpages
+	do_or_die cp -a shorewall-docs-xml-$VERSION/manpages/*.html $HTMLDIR/manpages/
+	do_or_die rm -f shorewall-docs-xml-$VERSION/manpages/*.html
 
 	progress_message "Copying images to $DIR/$HTMLDIR/images ..."
 

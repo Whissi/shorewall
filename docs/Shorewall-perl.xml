@@ -137,21 +137,104 @@
           </listitem>
 
           <listitem>
-            <para>Because the compiler is now written in Perl, your
-            compile-time extension scripts from earlier versions will no
-            longer work. Compile-time extension scripts are executed using the
-            Perl 'eval `cat &lt;file&gt;`' mechanism. Be sure that each script
+            <para>With the shell-based compiler, extension scripts were copied
+            into the compiled script and executed at run-time. In many cases,
+            this approach doesn't work with Shorewall Perl because (almost)
+            the entire ruleset is built by the compiler. As a result,
+            Shorewall-perl runs many extension scripts at compile-time rather
+            than at run-time. Because the compiler is written in Perl, your
+            extension scripts from earlier versions will no longer
+            work.</para>
+
+            <para>The following table summarizes when the various extension
+            scripts are run:<informaltable frame="all">
+                <tgroup cols="3">
+                  <tbody>
+                    <row>
+                      <entry><emphasis
+                      role="bold">Compile-time</emphasis></entry>
+
+                      <entry><emphasis role="bold">Run-time</emphasis></entry>
+
+                      <entry><emphasis
+                      role="bold">Eliminated</emphasis></entry>
+                    </row>
+
+                    <row>
+                      <entry>initdone</entry>
+
+                      <entry>clear</entry>
+
+                      <entry>continue</entry>
+                    </row>
+
+                    <row>
+                      <entry>maclog</entry>
+
+                      <entry>initdone</entry>
+
+                      <entry>refresh</entry>
+                    </row>
+
+                    <row>
+                      <entry>Per-chain (including those associated with
+                      actions)</entry>
+
+                      <entry>start</entry>
+
+                      <entry></entry>
+                    </row>
+
+                    <row>
+                      <entry></entry>
+
+                      <entry>started</entry>
+
+                      <entry></entry>
+                    </row>
+
+                    <row>
+                      <entry></entry>
+
+                      <entry>stop</entry>
+
+                      <entry></entry>
+                    </row>
+
+                    <row>
+                      <entry></entry>
+
+                      <entry>stopped</entry>
+
+                      <entry></entry>
+                    </row>
+
+                    <row>
+                      <entry></entry>
+
+                      <entry>tcclear</entry>
+
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable></para>
+
+            <para>Compile-time extension scripts are executed using the Perl
+            'eval `cat &lt;file&gt;`' mechanism. Be sure that each script
             returns a 'true' value; otherwise, the compiler will assume that
             the script failed and will abort the compilation.</para>
 
-            <para>When a script is invoked, the $chainref scalar variable will
-            hold a reference to a chain table entry.</para>
+            <para>When a script is invoked, the <emphasis
+            role="bold">$chainref</emphasis> scalar variable will hold a
+            reference to a chain table entry.</para>
 
             <simplelist>
-              <member>$chainref-&gt;{name} contains the name of the
-              chain</member>
+              <member><emphasis role="bold">$chainref-&gt;{name}</emphasis>
+              contains the name of the chain</member>
 
-              <member>$chainref-&gt;{table} holds the table name</member>
+              <member><emphasis role="bold">$chainref-&gt;{table}</emphasis>
+              holds the table name</member>
             </simplelist>
 
             <para>To add a rule to the chain:</para>
@@ -199,21 +282,42 @@
 
               <listitem>
                 <para>There is only a single "pass as-is to iptables" argument
-                (so you must quote that part).</para>
+                (so you must quote that part</para>
               </listitem>
             </itemizedlist>
 
             <para>Example:</para>
 
-            <programlisting>    log_rule_limit(
-                   'info' , 
-                   $chainref , 
-                   $chainref-&gt;{name},
-                   'DROP' , 
-                   '',        #Limit
-                   '' ,       #Log tag
-                   'add',     #Command
-                   '-p tcp'); #Added 'as-is' to the generated rule</programlisting>
+            <programlisting>    log_rule_limit
+              'info' , 
+              $chainref , 
+              $chainref-&gt;{name},
+              'DROP' , 
+              '',    #Limit
+              '' ,   #Log tag
+              'add'
+              '-p tcp ';         </programlisting>
+
+            <para>Here is an example of an actual initdone script used with
+            Shorewall 3.4:<programlisting>run_iptables -t mangle -I PREROUTING -p esp -j MARK --set-mark 0x50
+run_iptables -t filter -I INPUT -p udp --dport 1701 -m mark --mark 0x50 -j ACCEPT
+run_iptables -t filter -I OUTPUT -p udp --sport 1701 -j ACCEPT
+</programlisting></para>
+
+            <para>Here is the corresponding script used with
+            Shorewall-perl:<programlisting>use Shorewall::Chains;
+
+insert_rule $mangle_table-&gt;{PREROUTING}, 1, "-p esp -j MARK --set-mark 0x50";
+insert_rule $filter_table-&gt;{INPUT},      1, "-p udp --dport 1701 -m mark --mark 0x50 -j ACCEPT";
+insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
+
+1;</programlisting></para>
+
+            <para>The initdone script is unique because the $chainref variable
+            is not set before the script is called. The above script
+            illustrates how the $mangle_table, $filter_table, and $nat_table
+            references can be used to add or insert rules in arbitrary
+            chains.</para>
           </listitem>
 
           <listitem>

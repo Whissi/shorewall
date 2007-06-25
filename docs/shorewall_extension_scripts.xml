@@ -337,12 +337,84 @@
 
     <listitem>
       <para><emphasis role="bold">Shorewall-perl</emphasis>. Because the
-      compiler is now written in Perl, your compile-time extension scripts
-      from earlier versions will no longer work. Compile-time extension
-      scripts are executed using the Perl 'eval `cat &lt;file&gt;`' mechanism.
-      Be sure that each script returns a 'true' value; otherwise, the compiler
-      will assume that the script failed and will abort the
-      compilation.</para>
+      compiler is written in Perl, some of your extension scripts from earlier
+      versions will no longer work because Shorewall-perl runs those extension
+      scripts at compile-time rather than at run-time.</para>
+
+      <para>The following table summarizes when the various extension scripts
+      are run:<informaltable frame="all">
+          <tgroup cols="3">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">Compile-time</emphasis></entry>
+
+                <entry><emphasis role="bold">Run-time</emphasis></entry>
+
+                <entry><emphasis role="bold">Eliminated</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>initdone</entry>
+
+                <entry>clear</entry>
+
+                <entry>continue</entry>
+              </row>
+
+              <row>
+                <entry>maclog</entry>
+
+                <entry>initdone</entry>
+
+                <entry>refresh</entry>
+              </row>
+
+              <row>
+                <entry>Per-chain (including those associated with
+                actions)</entry>
+
+                <entry>start</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>started</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>stop</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>stopped</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>tcclear</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable></para>
+
+      <para>Compile-time extension scripts are executed using the Perl 'eval
+      `cat &lt;file&gt;`' mechanism. Be sure that each script returns a 'true'
+      value; otherwise, the compiler will assume that the script failed and
+      will abort the compilation.</para>
 
       <para>All scripts will need to begin with the following
       line:<programlisting>use Shorewall::Chains;</programlisting> For more

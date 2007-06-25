@@ -273,15 +273,22 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 # Save currently running configuration
 #
 save_config() {
+
+    local result=1
+    
+    iptables_save=${IPTABLES}-save
+
+    [ -x $iptables_save ] || echo "$iptables-save does not exist or is not executable" >&2
+
     if shorewall_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
 	if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
-	    echo "   ERROR: $RESTOREPATH exists and is not a saved $PRODUCT configuration"
+	    echo "   ERROR: $RESTOREPATH exists and is not a saved $PRODUCT configuration" >&2
 	else
 	    case $RESTOREFILE in
 		capabilities|chains|default_route|firewall|firewall.conf|nat|proxyarp|restarted|rt_tables|save|state|undo_routing|zones)
-		    echo "   ERROR: Reserved file name: $RESTOREFILE"
+		    echo "   ERROR: Reserved file name: $RESTOREFILE" >&2
 		    ;;
 		*)
 		    validate_restorefile RESTOREFILE
@@ -323,29 +330,32 @@ save_config() {
 					mv -f $f $RESTOREPATH
 					chmod +x $RESTOREPATH
 					echo "   Current Ipset Contents Saved to $RESTOREPATH"
+					result=0
 					;;
 				    [Nn][Oo])
 					;;
 				    *)
-					echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved"
+					echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved" >&2
 					;;
 				esac
 			    else
 			        rm -f ${VARDIR}/restore-$$
-				echo "   ERROR: Currently-running Configuration Not Saved"
+				echo "   ERROR: Currently-running Configuration Not Saved" >&2
 			    fi
 			else
-			    echo "   ERROR: ${VARDIR}/.restore does not exist"
+			    echo "   ERROR: ${VARDIR}/.restore does not exist" >&2
 			fi
 		    else
-		        echo "Error Saving the Dynamic Rules"
+		        echo "Error Saving the Dynamic Rules" >&2
 		    fi
 		    ;;
 	    esac
 	fi
     else
-	echo "Shorewall isn't started"
+	echo "Shorewall isn't started" >&2
     fi
+
+    return 0
 
 }
 

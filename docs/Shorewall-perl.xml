@@ -409,10 +409,9 @@ fi</programlisting>
             the Shorewall-perl compiler rather than by the shell, only the
             basic forms of Shell expansion ($variable and ${variable}) are
             supported. The more exotic forms such as ${variable:=default} are
-            not supported. Both variables defined in
-            <filename>/etc/shorewall/params</filename> and environmental
-            variables (exported by the shell) can be used in configuration
-            files.</para>
+            not supported. Both variables defined in /etc/shorewall/params and
+            environmental variables (exported by the shell) can be used in
+            configuration files.</para>
           </listitem>
 
           <listitem>
@@ -423,8 +422,8 @@ fi</programlisting>
 
           <listitem>
             <para>DELAYBLACKLISTLOAD=Yes is not supported. The entire ruleset
-            (with the exception of the dynamic blacklist) is atomically loaded
-            with one execution of <command>iptables-restore</command>.</para>
+            is atomically loaded with one execution of
+            <command>iptables-restore</command>.</para>
           </listitem>
 
           <listitem>
@@ -446,7 +445,7 @@ fi</programlisting>
 
           <listitem>
             <para>Shorewall-perl has a single rule generator that is used for
-            all rule-oriented files. So it is important that the syntax be
+            all rule-oriented files. So it is important that the syntax is
             consistent between files.</para>
 
             <para>With shorewall-shell, there is a special syntax in the
@@ -466,6 +465,12 @@ eth0             eth1:!192.168.4.9       ...</programlisting></para>
             owner --owner-cmd' which that action depended on.</para>
           </listitem>
         </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>Shorewall-perl is dependent on Perl (see the next section) which
+        has a large disk footprint. This makes Shorewall-perl less desirable
+        in an embedded environment.</para>
       </listitem>
     </itemizedlist>
   </section>

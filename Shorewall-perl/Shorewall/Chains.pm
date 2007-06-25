@@ -1956,7 +1956,7 @@ sub create_netfilter_load() {
 	   '',
 	   'progress_message2 "Running iptables-restore..."',
 	   '',
-	   'iptables-restore < ${VARDIR}/.iptables-restore-input'
+	   '$IPTABLES_RESTORE < ${VARDIR}/.iptables-restore-input'
 	 );
 
     emitj( 'if [ $? != 0 ]; then',

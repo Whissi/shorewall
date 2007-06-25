@@ -172,6 +172,9 @@ sub generate_script_1() {
 	       );
     }
 
+    emitj( 'IPTABLES_RESTORE=${IPTABLES}-restore',
+	   '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
+
     append_file 'params' if $config{EXPORTPARAMS};
 
     emitj ( '',

@@ -614,10 +614,25 @@ Shorewall has detected the following iptables/netfilter capabilities:
   </section>
 
   <section id="Ports">
-    <title>Port Numbers/Service Names</title>
+    <title>Protocol Number/Names and Port Numbers/Service Names</title>
 
-    <para>Unless otherwise specified, when giving a port number you can use
-    either an integer or a service name from /etc/services.</para>
+    <para>Unless otherwise specified, when giving a protocol number you can
+    use either an integer or a protocol name from
+    <filename>/etc/protocols</filename>. Similarly, when giving a port number
+    you can use either an integer or a service name from
+    <filename>/etc/services</filename>.<note>
+        <para>Shorewall-perl translates protocol names to protocol numbers and
+        service names to port numbers itself. The mapping that it uses is
+        contained in the Perl module
+        <filename>/usr/share/shorewall-perl/Shorewall/Ports.pm</filename>.
+        That module is built when Shorewall is installed or upgraded using the
+        current <filename>/etc/protocols</filename> and
+        <filename>/etc/services</filename> files as input (if the build
+        program fails, a fallback version of the module is installed).</para>
+
+        <para>To generate a new Ports.pm module:<programlisting>cp /usr/share/shorewall-perl/Shorewall/Ports.pm /usr/share/shorewall-perl/Shorewall/Ports.pm.backup
+/usr/share/shorewall/buildports.pm &gt; /usr/share/shorewall-perl/Shorewall/Ports.pm</programlisting></para>
+      </note></para>
   </section>
 
   <section id="Ranges">
@@ -661,6 +676,17 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
         15.</para>
       </listitem>
     </orderedlist>
+
+    <note>
+      <para>Shorewall-perl requires <emphasis role="bold">multiport</emphasis>
+      match in order to accept port lists in Shorewall configuration files. It
+      further requires Extended <emphasis role="bold">multiport</emphasis>
+      match in order to accept port ranges in port lists. Shorewall-perl will
+      never break a list longer than 15 ports (with each range counting as two
+      ports) into smaller lists. So you must be sure that your port lists can
+      be handled directly by the Netfilter/iptables capabilities
+      available.</para>
+    </note>
   </section>
 
   <section id="Variables">

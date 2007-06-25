@@ -91,13 +91,27 @@
         page</ulink>.</para>
 
         <para>If you try to install the wrong package, it probably won't
-        work.</para>
+        work.<note>
+            <para>If you are installing Shorewall 4.0.0 or later then you need
+            to install at least two packages.<itemizedlist>
+                <listitem>
+                  <para>Shorewall</para>
+                </listitem>
+
+                <listitem>
+                  <para>Either Shorewall-shell (the classic shell-based
+                  configuration compiler) and/or Shorewall-perl (the newer and
+                  faster compiler written in Perl).</para>
+                </listitem>
+              </itemizedlist>If you are installing Shorewall for the first
+            time, we strongly suggest that you install Shorewall-perl.</para>
+          </note></para>
       </listitem>
 
       <listitem>
         <para>Install the RPM</para>
 
-        <programlisting><command>rpm -ivh &lt;shorewall rpm&gt;</command></programlisting>
+        <programlisting><command>rpm -ivh &lt;shorewall rpm&gt; &lt;compiler rpm&gt; ...</command></programlisting>
 
         <caution>
           <para>Some users are in the habit of using the <command>rpm
@@ -115,7 +129,7 @@
           though a 2.4 kernel is installed. If this happens, simply use the
           --nodeps option to rpm.</para>
 
-          <programlisting><filename><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></filename></programlisting>
+          <programlisting><filename><command>rpm -ivh --nodeps &lt;rpms&gt;</command></filename></programlisting>
         </note>
 
         <note>
@@ -129,7 +143,7 @@
           package (see 1., above) but may be worked around by using the
           --nodeps option of rpm.</para>
 
-          <programlisting><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
+          <programlisting><command>rpm -ivh --nodeps &lt;rpms&gt;</command></programlisting>
         </note>
       </listitem>
 
@@ -164,6 +178,43 @@
 
   <section id="Install_Tarball">
     <title>Install using tarball</title>
+
+    <note>
+      <para>If you are installing Shorewall 4.0.0 or later, then you need to
+      install one of the configuration compilers <emphasis
+      role="bold">before</emphasis> you install Shorewall itself. You can
+      choose to install one or both compilers:<itemizedlist>
+          <listitem>
+            <para>Shorewall-shell - the classic configuration compiler written
+            in Bourne Shell.</para>
+          </listitem>
+
+          <listitem>
+            <para>Shorewall-perl - a newer and faster compiler written in
+            Perl.</para>
+          </listitem>
+        </itemizedlist>If you are installing Shorewall for the first time, we
+      strongly suggest that you install Shorewall-perl.</para>
+
+      <para>To install Shorewall-perl:<orderedlist>
+          <listitem>
+            <para>unpack the tarball (tar -zxf
+            shorewall-perl-x.y.z.tgz).</para>
+          </listitem>
+
+          <listitem>
+            <para>cd to the shorewall-perl directory (the version is encoded
+            in the directory name as in
+            <quote>shorewall-perl-4.0.0</quote>).</para>
+          </listitem>
+
+          <listitem>
+            <para>Type:</para>
+
+            <programlisting><command>./install.sh</command></programlisting>
+          </listitem>
+        </orderedlist>Installing Shorewall-shell is similar.</para>
+    </note>
 
     <para>To install Shorewall using the tarball and install script:</para>
 
@@ -312,7 +363,7 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
       <listitem>
         <para>Upgrade the RPM</para>
 
-        <programlisting><command>rpm -Uvh &lt;shorewall rpm file&gt;</command></programlisting>
+        <programlisting><command>rpm -Uvh &lt;shorewall rpm file&gt; &lt;compiler rpm file&gt; ...</command></programlisting>
 
         <note>
           <para>Some <trademark>SUSE</trademark> users have encountered a
@@ -320,7 +371,7 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
           though a 2.4 kernel is installed. If this happens, simply use the
           --nodeps option to rpm.</para>
 
-          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt; &lt;compiler rpm&gt; ...</command></programlisting>
         </note>
 
         <note>
@@ -333,7 +384,7 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
           <para>This may be worked around by using the --nodeps option of
           rpm.</para>
 
-          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt; &lt;compiler-rpm&gt; ...</command></programlisting>
         </note>
       </listitem>
 
@@ -530,7 +581,7 @@ tar -xzvf /mnt/package2.lrp
     </blockquote>
 
     <para>For information on other LEAF/Bering upgrade tools, check out <ulink
-			url="http://leaf.cvs.sourceforge.net/*checkout*/leaf/devel/alexrh/lck/README.html">this
+    url="http://leaf.cvs.sourceforge.net/*checkout*/leaf/devel/alexrh/lck/README.html">this
     article by Alex Rhomberg</ulink>.</para>
   </section>
 

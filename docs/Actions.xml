@@ -414,7 +414,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
 
         <para>If you don’t want to define a test but need to specify anything
         in the following columns, place a "-" in this field.<simplelist>
-            <member> ! — Inverts the test (not equal)</member>
+            <member>! — Inverts the test (not equal)</member>
 
             <member>&lt;<emphasis>value</emphasis>&gt; — Value of the packet
             or connection mark.</member>
@@ -554,8 +554,27 @@ acton:info:test  $FW              net</programlisting>
       </listitem>
     </itemizedlist>
 
-    <para>For an example of how to use these variables, see <ulink
-    url="PortKnocking.html">this article</ulink>.</para>
+    <para>Shorewall-perl sets lexical variables as follows:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>$chainref is a reference to the chain-table entry for the chain
+        where your rules are to be placed.</para>
+      </listitem>
+
+      <listitem>
+        <para>$level is the log level. If false, no logging was
+        specified.</para>
+      </listitem>
+
+      <listitem>
+        <para>$tag is the log tag.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>For an example of how to use these variables in both Shorewall-shell
+    and Shorewall-perl, see <ulink url="PortKnocking.html">this
+    article</ulink>.</para>
   </section>
 
   <section id="Extension">
@@ -583,7 +602,9 @@ acton:info:test  $FW              net</programlisting>
         </blockquote>When using Shorewall-Perl:<blockquote>
           <para>/etc/shorewall/DropBcasts<programlisting>use Shorewall::Chains;
 
-add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );</programlisting></para>
+add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );
+
+1;</programlisting></para>
         </blockquote></para>
     </example>
 

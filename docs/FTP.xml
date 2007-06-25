@@ -293,6 +293,15 @@ xt_tcpudp               3328  0
   <section>
     <title>FTP on Non-standard Ports</title>
 
+    <note>
+      <para>If you are running <emphasis role="bold">kernel 2.6.20 or
+      later</emphasis>, replace <emphasis
+      role="bold">ip_conntrack_ftp</emphasis> with <emphasis
+      role="bold">nf_conntrack_ftp</emphasis> in the following instructions.
+      Similarly, replace <emphasis role="bold">ip_nat_ftp</emphasis> with
+      <emphasis role="bold">nf_nat_ftp</emphasis>.</para>
+    </note>
+
     <para>The above discussion about commands and responses makes it clear
     that the FTP connection-tracking and NAT helpers must scan the traffic on
     the control connection looking for PASV and PORT commands as well as PASV

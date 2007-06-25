@@ -28,8 +28,13 @@
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
-use Shorewall::Common;
-use Shorewall::Config;
+use Shorewall::Config qw( open_file 
+			  read_a_line1 
+			  split_line 
+			  fatal_error 
+			  %globals 
+			  ensure_config_path 
+			  set_shorewall_dir );
 
 our $offset = "\t\t  ";
 

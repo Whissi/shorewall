@@ -47,7 +47,6 @@ our @EXPORT = qw(
 		 push_open
 		 pop_open
 		 read_a_line
-		 read_a_line1
 		 validate_level
 		 qt
 		 ensure_config_path
@@ -65,7 +64,7 @@ our @EXPORT = qw(
 		 %globals
 		 %capabilities );
 
-our @EXPORT_OK = qw( $shorewall_dir initialize );
+our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 );
 our $VERSION = 1.00;
 
 #

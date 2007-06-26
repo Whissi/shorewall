@@ -79,6 +79,14 @@ Migration Considerations:
     the tarball in the expected way; untar the package, and run the
     install.sh script.
 
+2)  The ROUTE_FILTER and LOG_MARTIANS options in shorewall.conf work
+    slightly differently in Shorewall 4.0.0. In prior releases, leaving
+    these options empty was equivalent to setting them to 'No' which
+    caused the corresponding flag in /proc to be reset for all
+    interfaces. Beginning in Shorewall 4.0.0, leaving these options
+    empty causes Shorewall to leave the flags in /proc as they are. You
+    must set the option to 'No' in order to obtain the old behavior. 
+
 ----------------------------------------------------------------------------
                          N E W  F E A T U R E S
 ----------------------------------------------------------------------------

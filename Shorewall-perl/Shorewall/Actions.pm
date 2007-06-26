@@ -324,7 +324,7 @@ sub process_action1 ( $$ ) {
     my $targettype = $targets{$target};
 
     if ( defined $targettype ) {
-	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $target eq 'LOG' );
+	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & LOGRULE );
 	
 	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 	

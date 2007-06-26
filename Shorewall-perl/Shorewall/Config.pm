@@ -64,7 +64,7 @@ our @EXPORT = qw(
 		 %globals
 		 %capabilities );
 
-our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 );
+our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
 our $VERSION = 1.00;
 
 #
@@ -344,6 +344,13 @@ sub fatal_error	{
 #
 sub set_shorewall_dir( $ ) {
     $shorewall_dir = shift;
+}
+
+#
+# Set $globals{CONFIG_PATH}
+#
+sub set_config_path( $ ) {
+    $config{CONFIG_PATH} = shift;
 }
 
 #

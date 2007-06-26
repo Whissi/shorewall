@@ -34,7 +34,8 @@ use Shorewall::Config qw( open_file
 			  fatal_error 
 			  %globals 
 			  ensure_config_path 
-			  set_shorewall_dir );
+			  set_shorewall_dir
+			  set_config_path );
 
 our $offset = "\t\t  ";
 
@@ -64,6 +65,8 @@ sub print_service( $$ ) {
 	$service_hash{$service} = $number;
     }
 }
+
+set_config_path( '/etc/shorewall:/usr/share/shorewall' );
 
 set_shorewall_dir($ARGV[0] || '/etc');
 

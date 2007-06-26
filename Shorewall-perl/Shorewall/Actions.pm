@@ -195,6 +195,10 @@ sub createlogactionchain( $$ ) {
 	if ( -f $file ) {
 	    progress_message "Processing $file...";
 
+	    ( $level, my $tag ) = split /:/, $level;
+
+	    $tag = $tag || '';
+
 	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
 		fatal_error "Couldn't do $file: $!"    unless defined $return;
@@ -218,7 +222,9 @@ sub createsimpleactionchain( $ ) {
 
 	if ( -f $file ) {
 	    progress_message "Processing $file...";
-	    
+
+	    my ( $level, $tag ) = ( '', '' );
+
 	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
 		fatal_error "Couldn't do $file: $!"    unless defined $return;

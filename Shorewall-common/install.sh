@@ -286,19 +286,19 @@ if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi
 
-delete_file /usr/share/shorewall/compiler
-delete_file /usr/share/shorewall/lib.accounting
-delete_file /usr/share/shorewall/lib.actions
-delete_file /usr/share/shorewall/lib.dynamiczones
-delete_file /usr/share/shorewall/lib.maclist
-delete_file /usr/share/shorewall/lib.nat
-delete_file /usr/share/shorewall/lib.providers
-delete_file /usr/share/shorewall/lib.proxyarp
-delete_file /usr/share/shorewall/lib.tc
-delete_file /usr/share/shorewall/lib.tcrules
-delete_file /usr/share/shorewall/lib.tunnels
-delete_file /usr/share/shorewall/prog.header
-delete_file /usr/share/shorewall/prog.footer
+delete_file ${PREFIX}/usr/share/shorewall/compiler
+delete_file ${PREFIX}/usr/share/shorewall/lib.accounting
+delete_file ${PREFIX}/usr/share/shorewall/lib.actions
+delete_file ${PREFIX}/usr/share/shorewall/lib.dynamiczones
+delete_file ${PREFIX}/usr/share/shorewall/lib.maclist
+delete_file ${PREFIX}/usr/share/shorewall/lib.nat
+delete_file ${PREFIX}/usr/share/shorewall/lib.providers
+delete_file ${PREFIX}/usr/share/shorewall/lib.proxyarp
+delete_file ${PREFIX}/usr/share/shorewall/lib.tc
+delete_file ${PREFIX}/usr/share/shorewall/lib.tcrules
+delete_file ${PREFIX}/usr/share/shorewall/lib.tunnels
+delete_file ${PREFIX}/usr/share/shorewall/prog.header
+delete_file ${PREFIX}/usr/share/shorewall/prog.footer
 
 #
 # Install wait4ifup

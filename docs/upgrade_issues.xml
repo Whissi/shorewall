@@ -70,6 +70,65 @@
   </section>
 
   <section>
+    <title>Versions &gt;= 4.0.0-Beta1</title>
+
+    <orderedlist>
+      <listitem>
+        <para> This is the first Shorewall release that fully integrates the
+        new Shorewall-perl compiler. You are now offered a choice as to which
+        compiler(s) you install. In Shorewall 4.0.0, there are the following
+        packages:<itemizedlist>
+            <listitem>
+              <para>Shorewall ( common files )</para>
+            </listitem>
+
+            <listitem>
+              <para>Shorewall-shell ( the shell-based compiler )</para>
+            </listitem>
+
+            <listitem>
+              <para>Shorewall-perl (the Perl-based compiler )</para>
+            </listitem>
+
+            <listitem>
+              <para>Shorewall-lite</para>
+            </listitem>
+          </itemizedlist>You must install Shorewall and at least one of the
+        compiler packages (you may install them both).</para>
+
+        <para>You cannot simply upgrade your existing Shorewall package. You
+        must upgrade Shorewall <emphasis role="bold">and</emphasis> install
+        one or both of the compilers.</para>
+
+        <para>If you attempt to upgrade using the RPM, you get this
+        result:<programlisting>gateway:~ # rpm -Uvh shorewall-4.0.0.noarch.rpm 
+error: Failed dependencies:
+shorewall_compiler is needed by shorewall-4.0.0-1.noarch
+gateway:~ #</programlisting> You must either:<programlisting>rpm -U shorewall-4.0.0.noarch.rpm shorewall-shell-4.0.0.noarch.rpm</programlisting>or<programlisting>rpm -U shorewall-4.0.0.noarch.rpm shorewall-perl-4.0.0.noarch.rpm</programlisting>or<programlisting>rpm -i shorewall-shell-4.0.0.noarch.rpm
+rpm -U shorewall-4.0.0.noarch.rpm</programlisting>or<programlisting>rpm -i shorewall-perl-4.0.0.noarch.rpm
+rpm -U shorewall-4.0.0.noarch.rpm</programlisting>If you are upgrading using
+        the tarball, you must install either shorewall-shell or shorewall-perl
+        before you upgrade Shorewall. Otherwise, the install.sh script fails
+        with:<simplelist>
+            <member>ERROR: No Shorewall compiler is installed</member>
+          </simplelist>The shorewall-shell and shorewall-perl packages are
+        installed from the tarball in the expected way; untar the package, and
+        run the install.sh script.</para>
+      </listitem>
+
+      <listitem>
+        <para>The ROUTE_FILTER and LOG_MARTIANS options in shorewall.conf work
+        slightly differently in Shorewall 4.0.0. In prior releases, leaving
+        these options empty was equivalent to setting them to 'No' which
+        caused the corresponding flag in /proc to be reset for all interfaces.
+        Beginning in Shorewall 4.0.0, leaving these options empty causes
+        Shorewall to leave the flags in /proc as they are. You must set the
+        option to 'No' in order to obtain the old behavior. </para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
     <title>Versions &gt;= 3.4.0-Beta1</title>
 
     <orderedlist>
@@ -266,7 +325,7 @@ all             all             REJECT:MyReject info</programlisting>
       </listitem>
 
       <listitem>
-        <para>This issue only applies if you run Shorewall Lite. </para>
+        <para>This issue only applies if you run Shorewall Lite.</para>
 
         <para>The <filename>/etc/shorewall-lite/shorewall.conf</filename> file
         has been renamed

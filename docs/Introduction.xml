@@ -35,7 +35,7 @@
   <section>
     <title>Introduction</title>
 
-    <para>The information in this document applies only to 3.x releases of
+    <para>The information in this document applies only to 4.x releases of
     Shorewall.</para>
 
     <section>
@@ -288,10 +288,10 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     <itemizedlist>
       <listitem>
         <para>The <ulink url="shorewall_quickstart_guide.htm">QuickStart
-        guildes</ulink> provide links to download pre-populated files for use
-        in common setups and the <ulink
-        url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> shows
-        you examples for use with other more complex setups.</para>
+        guildes</ulink> point to pre-populated files for use in common setups
+        and the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
+        Guide</ulink> shows you examples for use with other more complex
+        setups.</para>
       </listitem>
 
       <listitem>
@@ -303,6 +303,48 @@ ACCEPT     net           $FW       tcp        22</programlisting>
         away with them entirely) as you see fit.</para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section>
+    <title>Shorewall Packages</title>
+
+    <para>Shorewall 4.0 consists of four packages.</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Shorewall</emphasis>. This package must be
+        installed on at least one system in your network. That system must
+        also have Shorewall-shell and/or Shorewall-perl installed.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-shell</emphasis>. This package
+        includes the legacy Shorewall configuration compiler written in Bourne
+        Shell. This compiler is very portable but suffers from performance
+        problems and has become hard to maintain.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-perl</emphasis>. An alternative
+        to Shorewall-shell written in the Perl language. This compiler is
+        highly portable to those Unix-like platforms that support Perl
+        (including Cygwin) and is the compiler of choice for new Shorewall
+        installations.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-lite</emphasis>. Shorewall
+        allows for central administration of multiple firewalls through use of
+        Shorewall lite. The full Shorewall product (along with Shorewall-shell
+        and/or Shorewall-perl) are installed on a central administrative
+        system where compiled Shorewall scripts are generated. These scripts
+        are copied to the firewall systems where they run under the control of
+        Shorewall-lite.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>It is suggested that new users install Shorewall and
+    Shorewall-perl</para>
   </section>
 
   <section>

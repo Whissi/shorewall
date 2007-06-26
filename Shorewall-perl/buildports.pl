@@ -121,10 +121,14 @@ EOF
 open_file 'protocols' or fatal_error "Cannot open protocols: $!";
 
 while ( read_a_line1 ) {
-    my ( $proto1, $number, $proto2, $proto3 ) = split_line( 2, 4, '/etc/protocols entry');
+    my ( $proto1, $number, @aliases ) = split_line( 2, 10, '/etc/protocols entry');
 
     print_it( $proto1, $number );
-    print_it( $proto2, $number ) unless $proto2 eq '-' || $proto3 ne '-';
+    
+    for my $alias ( @aliases ) {
+	last if $alias eq '-';
+	print_it( $alias, $number );
+    }
 }
 
 print "\t\t );\n\n";

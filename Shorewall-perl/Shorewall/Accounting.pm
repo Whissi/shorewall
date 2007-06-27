@@ -172,15 +172,21 @@ sub setup_accounting() {
 
     while ( read_a_line ) {
 
-	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line 1, 9, 'Accounting File';
+	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line1 1, 9, 'Accounting File';
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
 
-	process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark;
+	if ( $action eq 'COMMENT' ) {
+	    process_comment;
+	} else {
+	    process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark;
+	}
     }
+
+    $comment = '';
 
     if ( @bridges ) {
 	if ( $filter_table->{accounting} ) {

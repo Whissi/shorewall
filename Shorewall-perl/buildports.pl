@@ -140,7 +140,7 @@ while ( read_a_line1 ) {
 
     my ( $number, $proto ) = split '/', $proto_number;
 
-    next unless $proto eq 'tcp' || $proto eq 'udp';
+    next unless $proto && ($proto eq 'tcp' || $proto eq 'udp');
 
     print_service( $name1 , $number );
 

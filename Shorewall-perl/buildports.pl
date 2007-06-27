@@ -70,8 +70,6 @@ set_config_path( '/etc/shorewall:/usr/share/shorewall' );
 
 set_shorewall_dir($ARGV[0] || '/etc');
 
-ensure_config_path;
-
 our $date = localtime;
 
 print <<"EOF";

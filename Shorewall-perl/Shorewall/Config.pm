@@ -340,13 +340,6 @@ sub fatal_error	{
 }
 
 #
-# Set $shorewall_dir
-#
-sub set_shorewall_dir( $ ) {
-    $shorewall_dir = shift;
-}
-
-#
 # Set $globals{CONFIG_PATH}
 #
 sub set_config_path( $ ) {
@@ -949,6 +942,14 @@ sub ensure_config_path() {
 	$shorewall_dir .= '/' unless $shorewall_dir =~ m|/$|;
 	unshift @config_path, $shorewall_dir if $shorewall_dir ne $config_path[0];
     }
+}
+
+#
+# Set $shorewall_dir
+#
+sub set_shorewall_dir( $ ) {
+    $shorewall_dir = shift;
+    ensure_config_path;
 }
 
 #

@@ -204,11 +204,19 @@ iface br0 inet static
         netmask 255.255.255.0
         network 192.168.1.0
         broadcast 192.168.1.255
+
         pre-up /sbin/ip link set eth0 up
         pre-up /sbin/ip link set eth1 up
         pre-up /usr/sbin/brctl addbr br0
         pre-up /usr/sbin/brctl addif br0 eth0
-        pre-up /usr/sbin/brctl addif br0 eth1</programlisting>
+        pre-up /usr/sbin/brctl addif br0 eth1
+        
+        pre-down /usr/sbin/brctl delif br0 eth0
+        pre-down /sbin/ip link set eth0 down
+        pre-down /usr/sbin/brctl delif br0 eth1
+        pre-down /sbin/ip link set eth1 down
+        
+        post-down /usr/sbin/brctl delbr br0</programlisting>
     </blockquote>
 
     <para>While it is not a requirement to give the bridge an IP address,

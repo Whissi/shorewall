@@ -483,8 +483,10 @@ iface br0 inet static
         pre-up /usr/sbin/brctl addbr br0
         pre-up /usr/sbin/brctl addif br0 eth3
         pre-up /usr/sbin/brctl addif br0 tap0
-        post-down /usr/sbin/brctl delif br0 eth3
-        post-down /usr/sbin/brctl delif br0 tap0
+        pre-down /usr/sbin/brctl delif br0 eth1
+        pre-down /sbin/ip link set eth1 down
+        pre-down /usr/sbin/brctl delif br0 tap0
+        pre-down /sbin/ip link set tap0 down
         post-down /usr/sbin/brctl delbr br0
         post-down /usr/sbin/openvpn --rmtun --dev tap0</programlisting>
 

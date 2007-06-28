@@ -57,7 +57,7 @@
   the RPM, the tunnel script may be found in the Shorewall documentation
   directory (usually /usr/share/doc/shorewall-&lt;version&gt;/).</para>
 
-  <section>
+  <section id="Bridged">
     <title>Bridging two Masqueraded Networks</title>
 
     <para>Suppose that we have the following situation:</para>
@@ -80,7 +80,7 @@
     <quote>tunnel_type</quote> parameter to the type of tunnel that you want
     to create.</para>
 
-    <example>
+    <example id="Tunnel">
       <title>/etc/shorewall/tunnel</title>
 
       <programlisting>tunnel_type=gre</programlisting>
@@ -117,7 +117,7 @@ ipip          net           134.28.54.2</programlisting>
 
     <para>In the tunnel script on system A:</para>
 
-    <example>
+    <example id="TunnelA">
       <title>tunnel script on system A</title>
 
       <programlisting>tunnel=tosysb
@@ -143,7 +143,7 @@ ipip         net            206.191.148.9</programlisting>
 
     <para>And in the tunnel script on system B:</para>
 
-    <example>
+    <example id="TunnelB">
       <title>tunnel script on system B</title>
 
       <programlisting>tunnel=tosysa

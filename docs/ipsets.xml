@@ -34,7 +34,7 @@
     </legalnotice>
   </articleinfo>
 
-  <section>
+  <section id="Ipsets">
     <title>What are Ipsets?</title>
 
     <para>Ipsets are an extention to Netfilter/iptables that are currently
@@ -67,7 +67,7 @@
     ipsets.</para>
   </section>
 
-  <section>
+  <section id="Support">
     <title>Shorewall Support for Ipsets</title>
 
     <para>Support for ipsets was introduced in Shorewall version 2.3.0. In
@@ -119,8 +119,8 @@ ACCEPT       +sshok      $FW      tcp      22</programlisting></para>
     "shorewall save" will save the contents of your ipsets. The file where the
     sets are saved is formed by taking the name where the Shorewall
     configuration is stored and appending "-ipsets". So if you enter the
-    command "shorewall save standard" then  Shorewall will save the file as 
-	/var/lib/shorewall/standard-ipsets</para>
+    command "shorewall save standard" then Shorewall will save the file as
+    /var/lib/shorewall/standard-ipsets</para>
 
     <para>Regardless of the setting of SAVE_IPSETS, the <command>shorewall -f
     start</command> and <command>shorewall restore</command> commands will
@@ -187,7 +187,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</command></programlisting>
     <para>Now only port 25 will be blocked from 206.124.146.177.</para>
   </section>
 
-  <section>
+  <section id="Dynamic">
     <title>Defining Dynamic Zones using Ipsets</title>
 
     <para>The use of ipsets provides a much better way to define dynamic zones

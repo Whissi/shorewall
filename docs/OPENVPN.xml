@@ -85,14 +85,14 @@
     </listitem>
   </orderedlist>
 
-  <section>
+  <section id="Prelim">
     <title>Preliminary Reading</title>
 
     <para>I recommend reading the <ulink url="VPNBasics.html">VPN
     Basics</ulink> article if you plan to implement any type of VPN.</para>
   </section>
 
-  <section>
+  <section id="Routed">
     <title>Bridging two Masqueraded Networks</title>
 
     <para>Suppose that we have the following situation:</para>
@@ -243,7 +243,7 @@ vpn            loc           ACCEPT</programlisting>
     the two masqueraded subnetworks can now talk to each other.</para>
   </section>
 
-  <section>
+  <section id="RoadWarrior">
     <title>Roadwarrior</title>
 
     <para>OpenVPN 2.0 provides excellent support for roadwarriors. Consider
@@ -466,7 +466,7 @@ verb 3</programlisting>
       have the IP address 192.168.1.8 regardless.</para>
     </note>
 
-    <section>
+    <section id="bridge">
       <title>Configuring the Bridge</title>
 
       <para>The firewall ran Debian Sarge so the bridge was defined in
@@ -495,20 +495,19 @@ iface br0 inet static
       zone.</para>
     </section>
 
-    <section>
+    <section id="openvpn">
       <title>Configuring OpenVPN</title>
 
       <para>We used X.509 certificates for authentication.</para>
 
-      <section>
+      <section id="server">
         <title>Firewall (Server) configuration.</title>
 
         <para>/etc/openvpn/server-bridge.conf defined a bridge and reserved IP
         addresses 192.168.1.64-192.168.1.71 for VPN clients. Note that the
         bridge server only used local IP address 192.168.3.254. We ran two
         instances of OpenVPN; this one and a second tunnel-mode instance for
-        remote access (see <ulink url="myfiles.htm">this
-        article</ulink>).</para>
+        remote access.</para>
 
         <para></para>
 
@@ -553,7 +552,7 @@ verb 3</programlisting>
         <programlisting>ifconfig-push 192.168.1.8 255.255.255.0</programlisting>
       </section>
 
-      <section>
+      <section id="tipper">
         <title>Tipper Configuration</title>
 
         <para>/etc/openvpn/wireless.conf:</para>
@@ -587,7 +586,7 @@ mute-replay-warnings
 verb 3</programlisting>
       </section>
 
-      <section>
+      <section id="XP">
         <title>Eastepnc6000 (Windows XP) Configuration</title>
 
         <para>C:\Program Files\Openvpn\config\homewireless.ovpn:</para>
@@ -619,7 +618,7 @@ persist-key
 verb 3</programlisting>
       </section>
 
-      <section>
+      <section id="Linux">
         <title>Eastepnc6000 (SUSE 10.0) Configuration</title>
 
         <para>The configuration was the same as shown above only with
@@ -628,7 +627,7 @@ verb 3</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="Shorewall">
       <title>Configuring Shorewall</title>
 
       <para>In this configuration, we didn't need any firewalling between the
@@ -639,10 +638,10 @@ verb 3</programlisting>
       to configure Shorewall as shown in the <ulink
       url="bridge.html">Bridge/Firewall documentation</ulink>.</para>
 
-      <section>
+      <section id="FW">
         <title>Firewall</title>
 
-        <section>
+        <section id="interfaces">
           <title>/etc/shorewall/interfaces</title>
 
           <para>Note that the bridge (br0) is defined as the interface to the
@@ -657,7 +656,7 @@ Wifi    eth0            192.168.3.255           dhcp,maclist
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
         </section>
 
-        <section>
+        <section id="tunnels">
           <title>/etc/shorewall/tunnels</title>
 
           <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
@@ -667,7 +666,7 @@ openvpnserver:1194      Wifi    192.168.3.0/24
         </section>
       </section>
 
-      <section>
+      <section id="Tipper">
         <title>Tipper</title>
 
         <para>Wireless networks pose a threat to all systems that are
@@ -675,7 +674,7 @@ openvpnserver:1194      Wifi    192.168.3.0/24
         Eastepnc6000 ran <trademark>Sygate</trademark> Security Agent and
         Tipper ran a Shorewall-based Netfilter firewall.</para>
 
-        <section>
+        <section id="zones">
           <title>/etc/shorewall/zones</title>
 
           <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
@@ -686,7 +685,7 @@ net     ipv4
 </programlisting>
         </section>
 
-        <section>
+        <section id="interfaces1">
           <title>/etc/shorewall/interfaces</title>
 
           <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
@@ -696,7 +695,7 @@ net      eth0           detect          routefilter,dhcp,tcpflags
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
         </section>
 
-        <section>
+        <section id="policy">
           <title>/etc/shorewall/policy</title>
 
           <para>Since we didn't expect any traffic between the <emphasis

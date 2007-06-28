@@ -59,14 +59,14 @@
     Shorewall.</para>
   </warning>
 
-  <section>
+  <section id="Prelim">
     <title>Preliminary Reading</title>
 
     <para>I recommend reading the <ulink url="VPNBasics.html">VPN
     Basics</ulink> article if you plan to implement any type of VPN.</para>
   </section>
 
-  <section>
+  <section id="Swans">
     <title>Configuring FreeS/Wan and Derivatives Such as OpenS/Wan</title>
 
     <para>There is an excellent guide to configuring IPSEC tunnels at <ulink
@@ -102,7 +102,7 @@ conn packetdefault
     </important>
   </section>
 
-  <section>
+  <section id="GwFw">
     <title>IPSec Gateway on the Firewall System</title>
 
     <para>Suppose that we have the following sutuation:</para>
@@ -224,7 +224,7 @@ vpn           loc         ACCEPT</programlisting>
     url="http://www.xs4all.nl/%7Efreeswan/">FreeS/WAN</ulink>.</para>
   </section>
 
-  <section>
+  <section id="Hub">
     <title>VPN Hub using Kernel 2.4</title>
 
     <para>Shorewall can be used in a VPN Hub environment where multiple remote
@@ -355,7 +355,7 @@ vpn2         vpn1       ACCEPT</programlisting>
     </note>
   </section>
 
-  <section>
+  <section id="RoadWarrior">
     <title>Mobile System (Road Warrior) Using Kernel 2.4</title>
 
     <para>Suppose that you have a laptop system (B) that you take with you
@@ -364,7 +364,7 @@ vpn2         vpn1       ACCEPT</programlisting>
 
     <graphic fileref="images/Mobile.png" />
 
-    <example>
+    <example id="roadWarrior">
       <title>Road Warrior VPN</title>
 
       <para>You need to define a zone for the laptop or include it in your
@@ -396,7 +396,7 @@ ipsec       net        0.0.0.0/0</programlisting>
     </example>
   </section>
 
-  <section>
+  <section id="Dynamic">
     <title>Dynamic RoadWarrior Zones</title>
 
     <para>Beginning with Shorewall release 1.3.10, you can define multiple VPN
@@ -433,22 +433,5 @@ ipsec       net        0.0.0.0/0       vpn1,vpn2,vpn3</programlisting>
     <para>and the <quote>down</quote> part will:</para>
 
     <programlisting>/sbin/shorewall delete ipsec0:134.28.54.2 vpn2</programlisting>
-
-    <section>
-      <title>Limitations of Dynamic Zones</title>
-
-      <para>If you include a dynamic zone in the exclude list of a DNAT rule,
-      the dynamically-added hosts are not excluded from the rule.</para>
-
-      <programlisting>#ACTION      SOURCE        DEST            PROTO     DEST PORT(S)
-DNAT         z!dyn         loc:192.168.1.3 tcp       80</programlisting>
-
-      <example>
-        <title>dyn=dynamic zone</title>
-
-        <para>Dynamic changes to the zone <emphasis role="bold">dyn</emphasis>
-        will have no effect on the above rule.</para>
-      </example>
-    </section>
   </section>
 </article>

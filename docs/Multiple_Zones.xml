@@ -41,7 +41,7 @@
     release.</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>While most configurations can be handled with each of the firewall's
@@ -103,7 +103,7 @@
     be used in exactly the same way.</para>
   </section>
 
-  <section>
+  <section id="Router">
     <title>Router in the Local Zone</title>
 
     <para>Here is an example of a router in the local zone.</para>
@@ -116,7 +116,7 @@
 
     <graphic fileref="images/MultiZone1.png" />
 
-    <section>
+    <section id="Standard">
       <title>Can You Use the Standard Configuration?</title>
 
       <para>In many cases, the <ulink url="two-interface.htm">standard
@@ -141,7 +141,7 @@
       restart Shorewall.</para>
     </section>
 
-    <section>
+    <section id="Enough">
       <title>Will One Zone be Enough?</title>
 
       <para>If the firewalling requirements for the two local networks is the
@@ -170,13 +170,13 @@
       </orderedlist>
     </section>
 
-    <section>
+    <section id="Separate">
       <title>I Need Separate Zones</title>
 
       <para>If you need to make 192.168.2.0/24 into its own zone, you can do
       it one of two ways; Nested Zones or Parallel Zones.</para>
 
-      <section>
+      <section id="Nested">
         <title>Nested Zones</title>
 
         <para>You can define one zone (called it <quote>loc</quote>) as being
@@ -225,7 +225,7 @@ loc                 loc1                 NONE
 loc1                loc                  NONE</programlisting>
       </section>
 
-      <section>
+      <section id="Parallel">
         <title>Parallel Zones</title>
 
         <para>You define both zones in the /etc/shorewall/hosts file to create
@@ -265,7 +265,7 @@ loc2                loc1                 NONE</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="Special">
     <title>Some Hosts have Special Firewalling Requirements</title>
 
     <para>There are cases where a subset of the addresses associated with an

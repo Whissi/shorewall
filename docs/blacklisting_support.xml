@@ -34,7 +34,7 @@
     </legalnotice>
   </articleinfo>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>Shorewall supports two different forms of blacklisting; static and
@@ -73,7 +73,7 @@
     </important>
   </section>
 
-  <section>
+  <section id="Static">
     <title>Static Blacklisting</title>
 
     <para>Shorewall static blacklisting support has the following
@@ -153,7 +153,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
     <para>This will blacklist SMTP traffic from host 206.124.146.177.</para>
   </section>
 
-  <section>
+  <section id="Dynamic">
     <title>Dynamic Blacklisting</title>
 
     <para>Dynamic blacklisting doesn't use any configuration parameters but is
@@ -216,7 +216,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
     <quote>blacklist</quote> option in
     <filename>/etc/shorewall/interfaces</filename>.</para>
 
-    <example>
+    <example id="Ignore">
       <title>Ignore packets from a pair of systems</title>
 
       <programlisting>    <command>shorewall[-lite] drop 192.0.2.124 192.0.2.125</command></programlisting>
@@ -224,7 +224,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
       <para>Drops packets from hosts 192.0.2.124 and 192.0.2.125</para>
     </example>
 
-    <example>
+    <example id="Allow">
       <title>Re-enable packets from a system</title>
 
       <programlisting>    <command>shorewall[-lite] allow 192.0.2.125</command></programlisting>

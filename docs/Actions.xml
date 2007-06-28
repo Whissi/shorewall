@@ -40,7 +40,7 @@
     documentation for that release.</para>
   </caution>
 
-  <section>
+  <section id="Intro">
     <title>What are Shorewall Actions?</title>
 
     <para>Shorewall actions allow a symbolic name to be associated with a
@@ -112,7 +112,7 @@ ACCEPT   -              -               tcp     135,139,445
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Enabling">
     <title>Enabling the Use of Actions</title>
 
     <para>In Shorewall version 3.4 and later, to make use of any of the three
@@ -188,7 +188,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
     </warning>
   </section>
 
-  <section>
+  <section id="Defining">
     <title>Defining your own Actions</title>
 
     <para>Before defining a new action, you should evaluate whether your goal
@@ -445,7 +445,7 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
 LogAndAccept loc         $FW         tcp      22</programlisting>
   </section>
 
-  <section>
+  <section id="Logging">
     <title>Actions and Logging</title>
 
     <para>Specifying a log level in a rule that specifies a user-defined or
@@ -589,7 +589,7 @@ acton:info:test  $FW              net</programlisting>
         one like this.</para>
       </note></para>
 
-    <example>
+    <example id="Example">
       <title>An action to drop all broadcast packets</title>
 
       <para>/etc/shorewall/actions<programlisting>DropBcasts</programlisting></para>

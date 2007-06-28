@@ -241,7 +241,7 @@
     place comments at the end of any line, again by delimiting the comment
     from the rest of the line with a pound sign.</para>
 
-    <example>
+    <example id="comment">
       <title>Comments in a Configuration File</title>
 
       <programlisting># This is a comment
@@ -335,7 +335,7 @@ gateway:~ #
     backslash (<quote>\</quote>) followed immediately by a new line character
     (Enter key).</para>
 
-    <example>
+    <example id="continuation">
       <title>Line Continuation</title>
 
       <programlisting>ACCEPT  net     $FW      tcp \↵
@@ -372,7 +372,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
       <filename>params</filename> file.</para>
     </caution>
 
-    <example>
+    <example id="include">
       <title>Use of INCLUDE</title>
 
       <programlisting>     shorewall/params.mgmt:
@@ -478,7 +478,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     Shorewall to insure backward compatibility with existing configuration
     files.</para>
 
-    <example>
+    <example id="validdns">
       <title>Valid DNS Names</title>
 
       <itemizedlist>
@@ -492,7 +492,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
       </itemizedlist>
     </example>
 
-    <example>
+    <example id="invaliddns">
       <title>Invalid DNS Names</title>
 
       <itemizedlist>
@@ -650,7 +650,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     omit the high port number, a value of 65535 is assumed.</para>
   </section>
 
-  <section>
+  <section id="Portlists">
     <title>Port Lists</title>
 
     <para>In most cases where a port or port range may appear, a
@@ -795,7 +795,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     <para>In GNU/Linux, MAC addresses are usually written as a series of 6 hex
     numbers separated by colons.</para>
 
-    <example>
+    <example id="mac">
       <title>MAC Address of an Ethernet Controller</title>
 
       <programlisting> &nbsp;&nbsp;&nbsp;&nbsp; [root@gateway root]# <command>ifconfig eth0</command>
@@ -859,7 +859,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Save">
     <title>Saved Configurations</title>
 
     <para>Shorewall allows you to <firstterm>save</firstterm> the

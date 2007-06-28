@@ -35,7 +35,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -53,7 +54,7 @@
   url="http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/configuring-ipv6to4-tunnels.html">Setup
   of 6to4 tunnels</ulink>.</para>
 
-  <section>
+  <section id="Tunnel6to4">
     <title>Connecting two IPv6 Networks</title>
 
     <para>Suppose that we have the following situation:</para>
@@ -62,17 +63,20 @@
 
     <para>We want systems in the 2002:100:333::/64 subnetwork to be able to
     communicate with the systems in the 2002:488:999::/64 network. This is
-    accomplished through use of the <filename><filename>/etc/shorewall/tunnels</filename></filename>
-    file and the <quote>ip</quote> utility for network interface and routing
+    accomplished through use of the
+    <filename><filename>/etc/shorewall/tunnels</filename></filename> file and
+    the <quote>ip</quote> utility for network interface and routing
     configuration.</para>
 
-    <para>Unlike GRE and IPIP tunneling, the <filename>/etc/shorewall/policy</filename>,
-    <filename>/etc/shorewall/interfaces</filename> and <filename>/etc/shorewall/zones</filename>
-    files are not used. There is no need to declare a zone to represent the
-    remote IPv6 network. This remote network is not visible on IPv4 interfaces
-    and to iptables. All that is visible on the IPv4 level is an IPv4 stream
-    which contains IPv6 traffic. Separate IPv6 interfaces and ip6tables rules
-    need to be defined to handle this traffic.</para>
+    <para>Unlike GRE and IPIP tunneling, the
+    <filename>/etc/shorewall/policy</filename>,
+    <filename>/etc/shorewall/interfaces</filename> and
+    <filename>/etc/shorewall/zones</filename> files are not used. There is no
+    need to declare a zone to represent the remote IPv6 network. This remote
+    network is not visible on IPv4 interfaces and to iptables. All that is
+    visible on the IPv4 level is an IPv4 stream which contains IPv6 traffic.
+    Separate IPv6 interfaces and ip6tables rules need to be defined to handle
+    this traffic.</para>
 
     <para>In <filename>/etc/shorewall/tunnels </filename>on system A, we need
     the following:</para>
@@ -86,10 +90,10 @@
 
     <para>Use the following commands to setup system A:</para>
 
-    <programlisting>&#62;<command>ip tunnel add tun6to4 mode sit ttl 254 remote 134.28.54.2</command>
-&#62;<command>ip link set dev tun6to4 up</command>
-&#62;<command>ip addr add 3ffe:8280:0:2001::1/64 dev tun6to4</command>
-&#62;<command>ip route add 2002:488:999::/64 via 3ffe:8280:0:2001::2</command></programlisting>
+    <programlisting>&gt;<command>ip tunnel add tun6to4 mode sit ttl 254 remote 134.28.54.2</command>
+&gt;<command>ip link set dev tun6to4 up</command>
+&gt;<command>ip addr add 3ffe:8280:0:2001::1/64 dev tun6to4</command>
+&gt;<command>ip route add 2002:488:999::/64 via 3ffe:8280:0:2001::2</command></programlisting>
 
     <para>Similarly, in <filename>/etc/shorewall/tunnels</filename> on system
     B we have:</para>
@@ -99,10 +103,10 @@
 
     <para>And use the following commands to setup system B:</para>
 
-    <programlisting>&#62;<command>ip tunnel add tun6to4 mode sit ttl 254 remote 206.191.148.9</command>
-&#62;<command>ip link set dev tun6to4 up</command>
-&#62;<command>ip addr add 3ffe:8280:0:2001::2/64 dev tun6to4</command>
-&#62;<command>ip route add 2002:100:333::/64 via 3ffe:8280:0:2001::1</command></programlisting>
+    <programlisting>&gt;<command>ip tunnel add tun6to4 mode sit ttl 254 remote 206.191.148.9</command>
+&gt;<command>ip link set dev tun6to4 up</command>
+&gt;<command>ip addr add 3ffe:8280:0:2001::2/64 dev tun6to4</command>
+&gt;<command>ip route add 2002:100:333::/64 via 3ffe:8280:0:2001::1</command></programlisting>
 
     <para>On both systems, restart Shorewall and issue the configuration
     commands as listed above. The systems in both IPv6 subnetworks can now

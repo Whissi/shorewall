@@ -382,7 +382,7 @@ show_routing() {
 # Show Command Executor
 #
 show_command() {
-    local finished=0 local table=filter
+    local finished=0 local table=filter table_given=
 
     show_macro() {
 	foo=`grep 'This macro' $macro | sed 's/This macro //'`
@@ -427,6 +427,7 @@ show_command() {
 			    case $2 in
 				mangle|nat|filter|raw)
 				    table=$2
+				    table_given=Yes
 				    ;;
 				*)
 				    fatal_error "Invalid table name ($s)"
@@ -542,6 +543,19 @@ show_command() {
 	    echo "Default CONFIG_PATH is $CONFIG_PATH"
 	    echo "LITEDIR is $LITEDIR"
 	    ;;
+	chain)
+	    shift
+	    echo "$PRODUCT $version $([ $# -gt 1 ] && echo "Chains " || [ $# -gt 0 ] && echo "Chain " || echo $table Table)$* at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    if [ $# -gt 0 ]; then
+		for chain in $*; do
+		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
+		done
+	    else
+		$IPTABLES -t $table -L $IPT_OPTIONS
+	    fi
+	    ;;
 	*)
 	    if [ "$PRODUCT" = Shorewall ]; then
 		case $1 in
@@ -585,14 +599,24 @@ show_command() {
 		esac
 	    fi
 
-	    echo "$PRODUCT $version $([ $# -gt 1 ] && echo "Chains " || [ $# -gt 0 ] && echo "Chain " || echo $table Table)$* at $HOSTNAME - $(date)"
-	    echo
-	    show_reset
 	    if [ $# -gt 0 ]; then
+		[ -n "$table_given" ] || for chain in $*; do
+		    if ! qt $IPTABLES -t $table -L $chain $IPT_OPTIONS; then
+			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2
+			exit 1
+		    fi
+		done
+		
+		echo "$PRODUCT $version $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $HOSTNAME - $(date)"
+		echo
+		show_reset
 		for chain in $*; do
 		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
 		done
 	    else
+		echo "$PRODUCT $version $table Table at $HOSTNAME - $(date)"
+		echo
+		show_reset
 		$IPTABLES -t $table -L $IPT_OPTIONS
 	    fi
 	    ;;

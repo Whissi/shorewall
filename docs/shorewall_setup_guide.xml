@@ -126,12 +126,12 @@
     instructions.</para>
 
     <para>Shorewall views the network where it is running as being composed of
-    a set of zones. A zone is one or more hosts, which can be defined
-    as individual hosts or networks in
-    <filename class="directory">/etc/shorewall/hosts</filename>, or as
-    an entire interface in <filename
-    class="directory">/etc/shorewall/interfaces</filename>. In this
-    guide, we will use the following zones:</para>
+    a set of zones. A zone is one or more hosts, which can be defined as
+    individual hosts or networks in <filename
+    class="directory">/etc/shorewall/hosts</filename>, or as an entire
+    interface in <filename
+    class="directory">/etc/shorewall/interfaces</filename>. In this guide, we
+    will use the following zones:</para>
 
     <variablelist>
       <varlistentry>
@@ -432,7 +432,7 @@ dmz      eth2           detect</programlisting>
     than one interface, simply include one entry for each interface and repeat
     the zone name as many times as necessary.</para>
 
-    <example>
+    <example id="multi">
       <title>Multiple Interfaces to a Zone</title>
 
       <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
@@ -555,7 +555,7 @@ loc      eth2           detect</programlisting>
       subnet sizes, the size and its base-2 logarithm are given in the
       following table:</para>
 
-      <table>
+      <table id="Logs">
         <title>Base-2 Logarithms</title>
 
         <tgroup cols="3">
@@ -689,7 +689,7 @@ loc      eth2           detect</programlisting>
       size n. From the above table, we can derive the following one which is a
       little easier to use.</para>
 
-      <table>
+      <table id="vlsm">
         <title>VLSM</title>
 
         <tgroup cols="3">
@@ -849,7 +849,7 @@ loc      eth2           detect</programlisting>
       <quote><emphasis role="bold">a.b.c.d/v</emphasis></quote> using
       <emphasis>CIDR Notation</emphasis>. Example:</para>
 
-      <table>
+      <table id="Subnet">
         <title>Subnet</title>
 
         <tgroup cols="2">
@@ -891,7 +891,7 @@ loc      eth2           detect</programlisting>
       <para>There are two degenerate subnets that need mentioning; namely, the
       subnet with one member and the subnet with 2 ** 32 members.</para>
 
-      <table>
+      <table id="degenerate">
         <title>/32 and /0</title>
 
         <tgroup cols="4">
@@ -945,7 +945,7 @@ loc      eth2           detect</programlisting>
       address <emphasis role="bold">a.b.c.d</emphasis> and with the netmask
       that corresponds to VLSM /<emphasis role="bold">v</emphasis>.</para>
 
-      <example>
+      <example id="Example0">
         <title>192.0.2.65/29</title>
 
         <para>The interface is configured with IP address 192.0.2.65 and
@@ -955,7 +955,7 @@ loc      eth2           detect</programlisting>
       <para>/sbin/shorewall supports an ipcalc command that automatically
       calculates information about a [sub]network.</para>
 
-      <example>
+      <example id="Example1">
         <title>Using the <command>ipcalc </command>command</title>
 
         <programlisting>shorewall ipcalc 10.10.10.0/25
@@ -966,7 +966,7 @@ loc      eth2           detect</programlisting>
 </programlisting>
       </example>
 
-      <example>
+      <example id="Example2">
         <title>Using the <command>ipcalc</command> command</title>
 
         <programlisting>shorewall ipcalc 10.10.10.0 255.255.255.128
@@ -1075,8 +1075,8 @@ Destination     Gateway         Genmask         Flgs MSS Win irtt Iface
       requests -- they are totally independent.</para>
     </section>
 
-    <section>
-      <title id="ARP">Address Resolution Protocol (ARP)</title>
+    <section id="ARP">
+      <title>Address Resolution Protocol (ARP)</title>
 
       <para>When sending packets over Ethernet, IP addresses aren't used.
       Rather Ethernet addressing is based on <emphasis>Media Access
@@ -1580,8 +1580,8 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
         rather than with the firewall's eth0.</para>
       </section>
 
-      <section>
-        <title id="NAT">One-to-one NAT</title>
+      <section id="NAT">
+        <title>One-to-one NAT</title>
 
         <para>With one-to-one NAT, you assign local systems RFC 1918 addresses
         then establish a one-to-one mapping between those addresses and public
@@ -2336,7 +2336,7 @@ foobar.net.      86400   IN A    192.0.2.177
                  86400   IN MX 1 &lt;backup MX&gt;.</programlisting>
   </section>
 
-  <section>
+  <section id="Other">
     <title>Some Things to Keep in Mind</title>
 
     <itemizedlist>

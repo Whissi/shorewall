@@ -48,7 +48,7 @@
     running kernel 2.6.20 or later.</para>
   </caution>
 
-  <section>
+  <section id="Environment">
     <title>Xen Network Environment</title>
 
     <para><ulink
@@ -104,7 +104,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Dom0">
     <title>Configuring Shorewall in Dom0</title>
 
     <para>As I state in the answer to <ulink url="FAQ.htm#faq2">Shorewall FAQ
@@ -147,7 +147,7 @@
     only have to worry about protecting the local LAN from the systems running
     in the DomU's.</para>
 
-    <section>
+    <section id="shorewall.conf">
       <title>/etc/shorewall/shorewall.conf</title>
 
       <para>Because Xen uses normal Linux bridging, you must enable bridge
@@ -158,7 +158,7 @@
       </blockquote>
     </section>
 
-    <section>
+    <section id="zonesfile">
       <title>/etc/shorewall/zones</title>
 
       <para>One thing strange about configuring Shorewall in this environment
@@ -181,7 +181,7 @@ net     ipv4                            #The local LAN and beyond
       </blockquote>
     </section>
 
-    <section>
+    <section id="interfaces">
       <title>/etc/shorewall/interfaces</title>
 
       <para>We must deal with two network interfaces. We must deal with the
@@ -196,7 +196,7 @@ net     eth0            detect          dhcp
       </blockquote>
     </section>
 
-    <section>
+    <section id="hosts">
       <title>/etc/shorewall/hosts</title>
 
       <para>Here we define the zones <emphasis role="bold">ursa</emphasis> and
@@ -218,7 +218,7 @@ net     xenbr0:peth0
       class="devicefile">peth0</filename> port on the bridge.</para>
     </section>
 
-    <section>
+    <section id="policy">
       <title>/etc/shorewall/policy</title>
 
       <para>The policies shown here effectively isolate Domains 1...N.</para>
@@ -237,7 +237,7 @@ all             all             REJECT          info
       </blockquote>
     </section>
 
-    <section>
+    <section id="rules">
       <title>/etc/shorewall/rules</title>
 
       <para>These rules determine the traffic allowed into and out of the

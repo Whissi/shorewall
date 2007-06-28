@@ -85,7 +85,7 @@
     </itemizedlist>
   </warning>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>Starting with Version 2.5.5, Shorewall has builtin support for
@@ -104,7 +104,7 @@
     as covered by the next sections.</para>
   </section>
 
-  <section>
+  <section id="LinuxTC">
     <title>Linux traffic shaping and control</title>
 
     <para>This section gives a brief introduction of how controlling traffic
@@ -213,7 +213,7 @@
     connection mark value to the current packet's mark (RESTORE).</para>
   </section>
 
-  <section>
+  <section id="Kernel">
     <title>Linux Kernel Configuration</title>
 
     <para>You will need at least kernel 2.4.18 for this to work, please take a
@@ -234,7 +234,7 @@
     <graphic align="center" fileref="images/traffic_shaping2.6.png" />
   </section>
 
-  <section>
+  <section id="Shorewall">
     <title>Enable TC support in Shorewall</title>
 
     <para>You need this support whether you use the builtin support or whether
@@ -267,7 +267,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Builtin">
     <title>Using builtin traffic shaping/control</title>
 
     <para>Shorewall's builtin traffic shaping feature provides a thin layer on
@@ -327,7 +327,7 @@
     url="http://www.speedcheck.arcor.de/cgi-bin/speedcheck.cgi">arcor speed
     check</ulink>). Be sure to choose a test located near you.</para>
 
-    <section>
+    <section id="tcdevices">
       <title>/etc/shorewall/tcdevices</title>
 
       <para>This file allows you to define the incoming and outgoing bandwidth
@@ -384,7 +384,7 @@
         </listitem>
       </itemizedlist>
 
-      <example>
+      <example id="Example0">
         <title></title>
 
         <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
@@ -396,7 +396,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </example>
     </section>
 
-    <section>
+    <section id="tcclasses">
       <title>/etc/shorewall/tcclasses</title>
 
       <para>This file allows you to define the actual classes that are used to
@@ -499,7 +499,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="tcrules">
       <title>/etc/shorewall/tcrules</title>
 
       <para>The fwmark classifier provides a convenient way to classify
@@ -772,7 +772,7 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
       </itemizedlist>
 
-      <example>
+      <example id="Example1">
         <title></title>
 
         <para>All packets arriving on eth1 should be marked with 1. All
@@ -786,7 +786,7 @@ ppp0           6000kbit         500kbit</programlisting>
 3       $FW       0.0.0.0/0     all</programlisting>
       </example>
 
-      <example>
+      <example id="Example2">
         <title></title>
 
         <para>All GRE (protocol 47) packets not originating on the firewall
@@ -796,7 +796,7 @@ ppp0           6000kbit         500kbit</programlisting>
 12      0.0.0.0/0 155.182.235.151 47</programlisting>
       </example>
 
-      <example>
+      <example id="Example3">
         <title></title>
 
         <para>All SSH request packets originating in 192.168.1.0/24 and
@@ -806,7 +806,7 @@ ppp0           6000kbit         500kbit</programlisting>
 22      192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
       </example>
 
-      <example>
+      <example id="Example4">
         <title></title>
 
         <para>All SSH packets packets going out of the first device in in
@@ -819,7 +819,7 @@ ppp0           6000kbit         500kbit</programlisting>
 1:110   0.0.0.0/0      0.0.0.0/0       tcp        -               22</programlisting>
       </example>
 
-      <example>
+      <example id="Example5">
         <title></title>
 
         <para>Mark all ICMP echo traffic with packet mark 1. Mark all peer to
@@ -852,7 +852,7 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
       </example>
     </section>
 
-    <section>
+    <section id="ppp">
       <title>ppp devices</title>
 
       <para>If you use ppp/pppoe/pppoa) to connect to your internet provider
@@ -871,10 +871,10 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
 /sbin/shorewall refresh</programlisting>
     </section>
 
-    <section>
+    <section id="Real">
       <title>Real life examples</title>
 
-      <section>
+      <section id="Wondershaper">
         <title>Configuration to replace Wondershaper</title>
 
         <para>You are able to fully replace the wondershaper script by using
@@ -890,14 +890,14 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
         that this is just an 1:1 replacement doing exactly what wondershaper
         should do. You are free to change it...</para>
 
-        <section>
+        <section id="realtcd">
           <title>tcdevices file</title>
 
           <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
 ppp0            5000kbit        500kbit</programlisting>
         </section>
 
-        <section>
+        <section id="realtcc">
           <title>tcclasses file</title>
 
           <programlisting>#INTERFACE      MARK    RATE            CEIL        PRIORITY    OPTIONS
@@ -906,7 +906,7 @@ ppp0            2       9*full/10       9*full/10       2       default
 ppp0            3       8*full/10       8*full/10       2</programlisting>
         </section>
 
-        <section>
+        <section id="realtcr">
           <title>tcrules file</title>
 
           <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
@@ -923,7 +923,7 @@ ppp0            3       8*full/10       8*full/10       2</programlisting>
           the example configuration files).</para>
         </section>
 
-        <section>
+        <section id="lowpro">
           <title>Setting hosts to low priority</title>
 
           <para>lets assume the following settings from your old wondershaper
@@ -957,7 +957,7 @@ NOPRIOPORTDST="6662 6663"  </programlisting>
         </section>
       </section>
 
-      <section>
+      <section id="simiple">
         <title>A simple setup</title>
 
         <para>This is a simple setup for people sharing an internet connection
@@ -965,7 +965,7 @@ NOPRIOPORTDST="6662 6663"  </programlisting>
         between 2 hosts which have the ip addresses 192.168.2.23 and
         192.168.2.42</para>
 
-        <section>
+        <section id="simpletcd">
           <title>tcdevices file</title>
 
           <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
@@ -974,7 +974,7 @@ ppp0            6000kbit        700kbit</programlisting>
           <para>We have 6mbit down and 700kbit upstream.</para>
         </section>
 
-        <section>
+        <section id="simpletcc">
           <title>tcclasses file</title>
 
           <programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY    OPTIONS
@@ -990,7 +990,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
           same priority. The last class is for the remaining traffic.</para>
         </section>
 
-        <section>
+        <section id="simpletcr">
           <title>tcrules file</title>
 
           <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)      CLIENT   USER
@@ -1007,7 +1007,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
     </section>
   </section>
 
-  <section>
+  <section id="Xen">
     <title>A Warning to Xen Users</title>
 
     <para>If you are running traffic shaping in your dom0 and traffic shaping
@@ -1041,7 +1041,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
     instructions.</para>
   </section>
 
-  <section>
+  <section id="External">
     <title id="tcstart">Using your own tc script</title>
 
     <section id="owntcstart">
@@ -1077,7 +1077,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
       </orderedlist>
     </section>
 
-    <section>
+    <section id="Start">
       <title>Traffic control outside Shorewall</title>
 
       <para>To start traffic shaping when you bring up your network
@@ -1099,7 +1099,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
     </section>
   </section>
 
-  <section>
+  <section id="Testing">
     <title>Testing Tools</title>
 
     <para>At least one Shorewall user has found this tool helpful: <ulink

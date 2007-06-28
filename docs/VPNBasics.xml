@@ -38,7 +38,7 @@
     </legalnotice>
   </articleinfo>
 
-  <section>
+  <section id="Taxonomy">
     <title>Gateway-to-gateway traffic vs. Host-to-host traffic.</title>
 
     <para>The purpose of a <firstterm>Virtual Private Network</firstterm>
@@ -91,7 +91,7 @@
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Netfilter">
     <title>Relationship to Netfilter</title>
 
     <para>When Netfilter is configured on a VPN gateway, each VPN packet goes
@@ -118,7 +118,7 @@
     <graphic align="center" fileref="images/VPNBasics.png" />
   </section>
 
-  <section>
+  <section id="Shorewall">
     <title>What does this mean with Shorewall?</title>
 
     <para>When Shorewall is installed on a VPN gateway system, it categorizes
@@ -185,7 +185,7 @@
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Zones">
     <title>Defining Remote Zones</title>
 
     <para>Most VPN types are implemented using a virtual network device such
@@ -209,7 +209,7 @@ loc             eth1               detect
 <emphasis role="bold">rem             ppp0               192.168.10.0/24</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="Traffic">
     <title>Allowing Traffic</title>
 
     <para>Normally, you will just allow all traffic between your remote
@@ -224,7 +224,7 @@ loc           rem                 ACCEPT</programlisting>
     the remote clients to/from the firewall.</para>
   </section>
 
-  <section>
+  <section id="Policies">
     <title>Different Firewall Policies for Different Remote Systems</title>
 
     <para>The /etc/shorewall/hosts file comes into play when:</para>
@@ -274,7 +274,7 @@ rem2            tun+:10.0.1.0/24</emphasis></programlisting>
     <ulink url="IPSEC-2.6.html">kernel 2.6 native IPSEC</ulink>.</para>
   </section>
 
-  <section>
+  <section id="tunnels">
     <title>Eliminating the /etc/shorewall/tunnels file</title>
 
     <para>The <filename>/etc/shorewall/tunnels</filename> file provides no
@@ -285,7 +285,7 @@ rem2            tun+:10.0.1.0/24</emphasis></programlisting>
     <filename>/etc/shorewall/tunnels</filename> can be replaced by rules for
     some common tunnel types.</para>
 
-    <section>
+    <section id="IPSEC">
       <title>IPSEC</title>
 
       <para>/<filename>etc/shorewall/tunnels</filename>:</para>
@@ -316,7 +316,7 @@ ACCEPT   Z2:1.2.3.4     $FW             udp     500</programlisting>
       are omitted.</para>
     </section>
 
-    <section>
+    <section id="PPTP">
       <title>PPTP</title>
 
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
@@ -341,7 +341,7 @@ ACCEPT   Z1:1.2.3.4     $FW             47</programlisting>
       port 1723 rule.</para>
     </section>
 
-    <section>
+    <section id="OpenVPN">
       <title>OpenVPN</title>
 
       <para><filename>/etc/shorewall/tunnels</filename>:</para>

@@ -47,7 +47,7 @@
     system.</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Introduction">
     <title>Introduction</title>
 
     <para>Setting up Shorewall on a standalone Linux system is very easy if
@@ -74,7 +74,7 @@
       </listitem>
     </itemizedlist>
 
-    <section>
+    <section id="System">
       <title>System Requirements</title>
 
       <para>Shorewall requires that you have the
@@ -90,7 +90,7 @@
 [root@gateway root]#</programlisting>
     </section>
 
-    <section>
+    <section id="Before">
       <title>Before you start</title>
 
       <para>I recommend that you read through the guide first to familiarize
@@ -121,7 +121,7 @@
       </caution>
     </section>
 
-    <section>
+    <section id="Conventions">
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
@@ -130,7 +130,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="PPTP">
     <title>PPTP/ADSL</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -143,7 +143,7 @@
     found in Europe, notably in Austria.</para>
   </section>
 
-  <section>
+  <section id="Concepts">
     <title>Shorewall Concepts</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -311,7 +311,7 @@ all            all                REJECT   info</programlisting>
     and make any changes that you wish.</para>
   </section>
 
-  <section>
+  <section id="External">
     <title>External Interface</title>
 
     <para>The firewall has a single network interface. Where Internet
@@ -377,7 +377,7 @@ root@lists:~# </programlisting>
     </tip>
   </section>
 
-  <section>
+  <section id="Addresses">
     <title>IP Addresses</title>
 
     <para>Before going further, we should say a few words about
@@ -455,7 +455,7 @@ root@lists:~# </programlisting>
       role="bold">SECTION NEW.</emphasis></para>
     </important>
 
-    <example>
+    <example id="Example1">
       <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
@@ -472,7 +472,7 @@ IMAP/ACCEPT net       $FW</programlisting>
     <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
 ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
-    <example>
+    <example id="Example2">
       <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
@@ -499,7 +499,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
     other connections as desired.</para>
   </section>
 
-  <section>
+  <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -549,7 +549,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
     </warning>
   </section>
 
-  <section>
+  <section id="Problems">
     <title>If it Doesn't Work</title>
 
     <itemizedlist>
@@ -574,7 +574,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Other">
     <title>Additional Recommended Reading</title>
 
     <para>I highly recommend that you review the <ulink
@@ -582,91 +582,4 @@ SSH/ACCEPT  net       $FW           </programlisting>
     page</ulink> -- it contains helpful tips about Shorewall features than
     make administering your firewall easier.</para>
   </section>
-
-  <appendix>
-    <title>Revision History</title>
-
-    <para><revhistory>
-        <revision>
-          <revnumber>2.0</revnumber>
-
-          <date>2005-09-12</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>More 3.0 Updates</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.9</revnumber>
-
-          <date>2005-09-02</date>
-
-          <authorinitials>CR</authorinitials>
-
-          <revremark>Update for Shorewall 3.0</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.8</revnumber>
-
-          <date>2005-07-12</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Change reference to rfc1918 to bogons.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.7</revnumber>
-
-          <date>2004-02-16</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Move /etc/shorewall/rfc1918 to
-          /usr/share/shorewall.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.6</revnumber>
-
-          <date>2004-02-05</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Update for Shorewall 2.0</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.5</revnumber>
-
-          <date>2004-01-05</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Standards Changes</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.4</revnumber>
-
-          <date>2003-12-30</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add tip about /etc/shorewall/rfc1918 updates.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.3</revnumber>
-
-          <date>2003-11-15</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Initial Docbook Conversion</revremark>
-        </revision>
-      </revhistory></para>
-  </appendix>
 </article>

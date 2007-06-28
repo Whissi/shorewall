@@ -44,7 +44,7 @@
     system.</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>Setting up a Linux system as a firewall for a small network is a
@@ -74,7 +74,8 @@
       </listitem>
     </itemizedlist>
 
-    <para>Here is a schematic of a typical installation: <figure label="1">
+    <para>Here is a schematic of a typical installation: <figure id="Figure1"
+        label="1">
         <title>Common two interface firewall configuration</title>
 
         <mediaobject>
@@ -105,7 +106,7 @@
           </itemizedlist></para>
       </caution></para>
 
-    <section>
+    <section id="System">
       <title>System Requirements</title>
 
       <para>Shorewall requires that you have the
@@ -122,7 +123,7 @@
       through it again making your configuration changes.</para>
     </section>
 
-    <section>
+    <section id="Conventions">
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
@@ -134,7 +135,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="PPTP">
     <title>PPTP/ADSL</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -147,7 +148,7 @@
     found in Europe, notably in Austria.</para>
   </section>
 
-  <section>
+  <section id="Concepts">
     <title>Shorewall Concepts</title>
 
     <para></para>
@@ -331,7 +332,7 @@ $FW        net         ACCEPT</programlisting> The above policy will:
     and make any changes that you wish.</para>
   </section>
 
-  <section>
+  <section id="Interfaces">
     <title>Network Interfaces</title>
 
     <mediaobject>
@@ -433,7 +434,7 @@ root@lists:~# </programlisting>
       </tip></para>
   </section>
 
-  <section>
+  <section id="Addresses">
     <title>IP Addresses</title>
 
     <para>Before going further, we should say a few words about Internet
@@ -573,7 +574,7 @@ root@lists:~# </programlisting>
       </warning></para>
   </section>
 
-  <section>
+  <section id="SNAT">
     <title>IP Masquerading (SNAT)</title>
 
     <para>The addresses reserved by RFC 1918 are sometimes referred to as
@@ -677,14 +678,14 @@ DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<e
     supplying the protocol and port(s) as shown in the following
     examples.</para>
 
-    <para><example label="1">
+    <para><example id="Example1" label="1">
         <title>Web Server</title>
 
         <para>You run a Web Server on computer 2 and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
         <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
 Web/DNAT  net       loc:10.10.10.2</programlisting></para>
-      </example> <example label="2">
+      </example> <example id="Example2" label="2">
         <title>FTP Server</title>
 
         <para>You run an <acronym>FTP</acronym> Server on computer 1 so you
@@ -737,7 +738,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
     </important>
   </section>
 
-  <section>
+  <section id="DNS">
     <title>Domain Name Server (DNS)</title>
 
     <para>Normally, when you connect to your ISP, as part of getting an IP
@@ -821,7 +822,8 @@ SSH/ACCEPT   loc       $FW  </programlisting>That rule allows you to run an
     systems, the general format using a macro is: <programlisting>#ACTION         SOURCE    DEST               PROTO      DEST PORT(S)
 &lt;macro&gt;/ACCEPT  $FW       <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
     general format when not using defined actions is:<programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
-ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example>
+ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example
+        id="Example3">
         <title>Web Server on Firewall</title>
 
         <para>You want to run a Web Server on your firewall system:
@@ -852,7 +854,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     file to add or delete other connections as required.</para>
   </section>
 
-  <section>
+  <section id="Other">
     <title>Some Things to Keep in Mind</title>
 
     <itemizedlist>
@@ -908,7 +910,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -954,7 +956,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
       </warning></para>
   </section>
 
-  <section>
+  <section id="Trouble">
     <title>If it Doesn't Work</title>
 
     <itemizedlist>
@@ -979,7 +981,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Reading">
     <title>Additional Recommended Reading</title>
 
     <para>I highly recommend that you review the <ulink
@@ -988,7 +990,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     make administering your firewall easier.</para>
   </section>
 
-  <section>
+  <section id="Wireless">
     <title>Adding a Wireless Segment to your Two-Interface Firewall</title>
 
     <para>Once you have the two-interface setup working, the next logical step

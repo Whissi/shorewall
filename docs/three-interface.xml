@@ -47,7 +47,7 @@
     system.</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>Setting up a Linux system as a firewall for a small network with DMZ
@@ -91,7 +91,7 @@
 
     <para>Here is a schematic of a typical installation.</para>
 
-    <figure>
+    <figure id="Figure1">
       <title>schematic of a typical installation</title>
 
       <mediaobject>
@@ -101,7 +101,7 @@
       </mediaobject>
     </figure>
 
-    <section>
+    <section id="Reqs">
       <title>Requirements</title>
 
       <para>Shorewall requires that you have the
@@ -117,7 +117,7 @@
 [root@gateway root]#</programlisting>
     </section>
 
-    <section>
+    <section id="Before">
       <title>Before you start</title>
 
       <para>I recommend that you first read through the guide to familiarize
@@ -149,7 +149,7 @@
       </caution>
     </section>
 
-    <section>
+    <section id="Conventions">
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
@@ -161,7 +161,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="PPTP">
     <title>PPTP/ADSL</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -173,7 +173,7 @@
     notably in Austria.</para>
   </section>
 
-  <section>
+  <section id="Concepts">
     <title>Shorewall Concepts</title>
 
     <para>The configuration files for Shorewall are contained in the directory
@@ -356,10 +356,10 @@ $FW        net         ACCEPT</programlisting>
     file and make any changes that you wish.</para>
   </section>
 
-  <section>
+  <section id="Interfaces">
     <title>Network Interfaces</title>
 
-    <figure>
+    <figure id="Figure2">
       <title>DMZ</title>
 
       <mediaobject>
@@ -471,7 +471,7 @@ root@lists:~# </programlisting>
     </tip>
   </section>
 
-  <section>
+  <section id="Addresses">
     <title>IP Addresses</title>
 
     <para>Before going further, we should say a few words about Internet
@@ -532,7 +532,7 @@ root@lists:~# </programlisting>
     <varname>24</varname> refers to the number of consecutive <quote>1</quote>
     bits from the left of the subnet mask.</para>
 
-    <table>
+    <table id="Table1">
       <title>Example sub-network</title>
 
       <tgroup cols="2">
@@ -599,7 +599,7 @@ root@lists:~# </programlisting>
     <para>The remainder of this quide will assume that you have configured
     your network as shown here:</para>
 
-    <figure>
+    <figure id="Figure3">
       <title>DMZ</title>
 
       <mediaobject>
@@ -627,7 +627,7 @@ root@lists:~# </programlisting>
     </figure>
   </section>
 
-  <section>
+  <section id="SNAT">
     <title>IP Masquerading (SNAT)</title>
 
     <para>The addresses reserved by RFC 1918 are sometimes referred to as
@@ -731,7 +731,7 @@ DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<e
       role="bold">SECTON NEW.</emphasis></para>
     </important>
 
-    <example>
+    <example id="Example1">
       <title>You run a Web Server on DMZ Computer 2 and you want to forward
       incoming TCP port 80 to that system</title>
 
@@ -812,7 +812,7 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
     </important>
   </section>
 
-  <section>
+  <section id="DNS">
     <title>Domain Name Server (DNS)</title>
 
     <para>Normally, when you connect to your ISP, as part of getting an IP
@@ -908,7 +908,7 @@ SSH/ACCEPT  loc       dmz        </programlisting>Those rules allow you to run
     is:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
 ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&gt; &lt;port&gt; </emphasis></programlisting></para>
 
-    <example>
+    <example id="Example2">
       <title>You want to run a publicly-available DNS server on your firewall
       system</title>
 
@@ -956,7 +956,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     remove other connections as required.</para>
   </section>
 
-  <section>
+  <section id="Other">
     <title>Some Things to Keep in Mind</title>
 
     <itemizedlist>
@@ -1012,7 +1012,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -1059,7 +1059,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
       </warning></para>
   </section>
 
-  <section>
+  <section id="Trouble">
     <title>If it Doesn't Work</title>
 
     <itemizedlist>
@@ -1084,7 +1084,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Reading">
     <title>Additional Recommended Reading</title>
 
     <para>I highly recommend that you review the <ulink

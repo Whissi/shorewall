@@ -36,7 +36,7 @@
     </legalnotice>
   </articleinfo>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>This article will try to help you understand how packets pass
@@ -55,7 +55,7 @@
     appear.</para>
   </section>
 
-  <section>
+  <section id="Incoming">
     <title>Packets Entering the Firewall from Outside</title>
 
     <para>Certain processing occurs on packets entering the firewall from the
@@ -168,8 +168,8 @@
         This happens in the <emphasis>filter</emphasis> table's <emphasis
         role="bold">norfc1918</emphasis> chain.</para>
       </listitem>
-      
-		<listitem>
+
+      <listitem>
         <para>If the interface on which the packet entered the firewall has
         the <emphasis>tcpflags</emphasis> option specified in
         <filename>/etc/shorewall/interfaces</filename> and the packet's
@@ -180,7 +180,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="All">
     <title>All Packets</title>
 
     <para>Regardless of whether the packet originated on the firewall or came
@@ -248,7 +248,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Local">
     <title>Packets Originating on the Firewall</title>
 
     <para>Packets that originate on the firewall itself undergo additional
@@ -271,7 +271,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Egress">
     <title>Packets Leaving the Firewall</title>
 
     <para>Packets being sent to another host undergo additional

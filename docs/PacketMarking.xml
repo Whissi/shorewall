@@ -40,7 +40,7 @@
     earlier releases.</para>
   </caution>
 
-  <section>
+  <section id="Marks">
     <title>Packet and Connection Marks</title>
 
     <para>Perhaps no aspect of Shorewall causes more confusion than packet
@@ -83,7 +83,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     </important>
   </section>
 
-  <section>
+  <section id="Programs">
     <title>Packet Marking "Programs"</title>
 
     <para>Packet marking occurs in Netfilter's <emphasis>mangle</emphasis>
@@ -132,7 +132,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
         POSTROUTING program. These rules are executed for each packet leaving
         the firewall. Entries specifying the ":T" suffix in the MARK column
         are also part of the POSTROUTING program (Shorewall version 3.4.0 and
-        later). </para>
+        later).</para>
       </listitem>
 
       <listitem>
@@ -210,7 +210,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Values">
     <title>Mark and Mask Values</title>
 
     <para>The mark value is held in a 32-bit field. Because packet marking is
@@ -258,7 +258,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Shorewall">
     <title>Shorewall-defined Chains in the Mangle Table</title>
 
     <para>Shorewall creates a set of chains in the mangle table to hold rules
@@ -307,7 +307,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     (PREROUTING, FORWARD, etc.).</para>
   </section>
 
-  <section>
+  <section id="Examples">
     <title>An Example</title>
 
     <para>Here's the example (slightly expanded) from the comments at the top
@@ -381,7 +381,7 @@ SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #R
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Show">
     <title>Examining the Marking Programs on a Running System</title>
 
     <para>You can see the tcrules in action using the <command>shorewall show

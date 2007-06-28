@@ -49,7 +49,7 @@
     3.0.0 then please see the documentation for that release</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Notes">
     <title>Important Notes</title>
 
     <note>
@@ -84,7 +84,7 @@ FTP/DNAT       net       dmz:192.168.1.4  </programlisting>
     </note>
   </section>
 
-  <section>
+  <section id="Auth">
     <title>Auth (identd)</title>
 
     <caution>
@@ -97,7 +97,7 @@ FTP/DNAT       net       dmz:192.168.1.4  </programlisting>
 Auth/ACCEPT     <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="BT">
     <title>BitTorrent</title>
 
     <caution>
@@ -114,7 +114,7 @@ Auth/ACCEPT     <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
 BitTorrent/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="DNS">
     <title>DNS</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -180,7 +180,7 @@ Edonkey/DNAT  net      loc:192.168.1.4
 DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
   </section>
 
-  <section>
+  <section id="FTP">
     <title>FTP</title>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -190,7 +190,7 @@ FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
     information.</para>
   </section>
 
-  <section>
+  <section id="Gnutella">
     <title>Gnutella</title>
 
     <para><orderedlist>
@@ -216,14 +216,14 @@ FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
 Gnutella/DNAT        net      loc:192.168.1.4</programlisting></para>
   </section>
 
-  <section>
+  <section id="ICQ">
     <title>ICQ/AIM</title>
 
     <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DEST PORT(S)
 ICQ/ACCEPT  <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
   </section>
 
-  <section>
+  <section id="IMAP">
     <title>IMAP</title>
 
     <caution>
@@ -241,7 +241,7 @@ IMAP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
 IMAPS/ACCEPT    &lt;source&gt;  &lt;destination&gt; # IMAP over SSL.</programlisting>
   </section>
 
-  <section>
+  <section id="IPSEC">
     <title>IPSEC</title>
 
     <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
@@ -256,7 +256,7 @@ ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</e
     url="VPN.htm">here</ulink>.</para>
   </section>
 
-  <section>
+  <section id="LDAP">
     <title>LDAP</title>
 
     <caution>
@@ -268,8 +268,8 @@ LDAP/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destina
 LDAPS/ACCEPT     <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis></emphasis>   # LDAP over SSL</programlisting>
   </section>
 
-  <section>
-    <title><trademark>MySQL</trademark></title>
+  <section id="MySQL">
+    <title><trademark>My\SQL</trademark></title>
 
     <caution>
       <para>This information is valid only for Shorewall 3.2 or later.</para>
@@ -288,31 +288,32 @@ LDAPS/ACCEPT     <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &
 MySQL/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>    </emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="NFS">
     <title>NFS</title>
 
     <programlisting>#ACTION    SOURCE                         DESTINATION      PROTO      DEST PORT(S)
 ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis>    &lt;z2&gt;</emphasis>:a.b.c.d     tcp        111
 ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis>    &lt;z2&gt;</emphasis>:a.b.c.d     udp</programlisting>
 
-    <para>For more NFS information, see <ulink url="http://lists.shorewall.net/~kb/">http://lists.shorewall.net/~kb/</ulink>.</para>
+    <para>For more NFS information, see <ulink
+    url="http://lists.shorewall.net/~kb/">http://lists.shorewall.net/~kb/</ulink>.</para>
   </section>
 
-  <section>
+  <section id="NTP">
     <title>NTP (Network Time Protocol)</title>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
 NTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="PCA">
     <title><trademark>PCAnywhere</trademark></title>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
 PCA/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="POP3">
     <title>POP3</title>
 
     <caution>
@@ -329,7 +330,7 @@ POP3/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
 POP3S/ACCEPT    &lt;source&gt;  &lt;destination&gt;  #Unsecure Pop3</programlisting>
   </section>
 
-  <section>
+  <section id="PPTP">
     <title>PPTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -340,21 +341,21 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     url="VPN.htm">here</ulink>.</para>
   </section>
 
-  <section>
+  <section id="Rdate">
     <title>rdate</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
 Rdate/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="rsync">
     <title>rsync</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
 Rsync/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="Siproxd">
     <title>Siproxd</title>
 
     <caution>
@@ -368,14 +369,14 @@ ACCEPT            net           fw           udp        5060
 ACCEPT     <emphasis>       net           fw           udp        7070:7089</emphasis><emphasis></emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="SSH">
     <title>SSH/SFTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 SSH/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
   </section>
 
-  <section>
+  <section id="SMB">
     <title>SMB/NMB (Samba/<trademark>Windows</trademark> Browsing/File
     Sharing)</title>
 
@@ -386,7 +387,7 @@ SMB/ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt
     <para>Also, see <ulink url="samba.htm">this page</ulink>.</para>
   </section>
 
-  <section>
+  <section id="SMTP">
     <title>SMTP</title>
 
     <caution>
@@ -398,14 +399,14 @@ SMTP/ACCEPT<emphasis>      &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
 SMTPS/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #SMTP over SSL (TLS)</programlisting>
   </section>
 
-  <section>
+  <section id="SNMP">
     <title>SNMP</title>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
 SNMP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="SVN">
     <title>SVN</title>
 
     <caution>
@@ -421,7 +422,7 @@ SNMP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
 SVN/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="Telnet">
     <title>Telnet</title>
 
     <caution>
@@ -433,7 +434,7 @@ SVN/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
 Telnet/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="TFTP">
     <title>TFTP</title>
 
     <para>You must have TFTP connection tracking support in your kernel. If
@@ -450,7 +451,7 @@ Telnet/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        69</programlisting>
   </section>
 
-  <section>
+  <section id="Traceroute">
     <title>Traceroute</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -469,7 +470,7 @@ ACCEPT     fw        loc              icmp
 ACCEPT     fw        ...</programlisting>
   </section>
 
-  <section>
+  <section id="NNTP">
     <title>Usenet (NNTP)</title>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -479,7 +480,7 @@ NNTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisti
     <para>TCP Port 119</para>
   </section>
 
-  <section>
+  <section id="VNC">
     <title>VNC</title>
 
     <caution>
@@ -502,19 +503,16 @@ VNC/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
 VNCL/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
-  <section>
+  <section id="Vonage">
     <title><trademark>Vonage</trademark></title>
 
     <para>The standard Shorewall loc-&gt;net ACCEPT policy is all that is
     required for <trademark>Vonage</trademark> IP phone service to work,
     provided that you have loaded the tftp helper modules (add the following
     entries to /etc/shorewall/modules if they are not there already):</para>
-
-    <programlisting>    loadmodule ip_conntrack_tftp
-    loadmodule ip_nat_tftp</programlisting>
   </section>
 
-  <section>
+  <section id="Web">
     <title>Web Access</title>
 
     <caution>
@@ -526,7 +524,7 @@ HTTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
 HTTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt; #Secure   HTTP</programlisting>
   </section>
 
-  <section>
+  <section id="Webmin">
     <title>Webmin</title>
 
     <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -534,14 +532,14 @@ Webmin/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination
     use TCP port 10000.</para>
   </section>
 
-  <section>
+  <section id="Whois">
     <title>Whois</title>
 
     <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
 Whois/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting></para>
   </section>
 
-  <section>
+  <section id="X">
     <title>X/XDMCP</title>
 
     <para>Assume that the Choser and/or X Server are running at
@@ -553,7 +551,7 @@ ACCEPT     &lt;<emphasis>chooser</emphasis>&gt; &lt;<emphasis>apps</emphasis>&gt
 ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>&gt;        tcp        6000:6009   #X Displays 0-9</programlisting>
   </section>
 
-  <section>
+  <section id="Other">
     <title>Other Source of Port Information</title>
 
     <para>Didn't find what you are looking for -- have you looked in your own
@@ -562,202 +560,4 @@ ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>
     <para>Still looking? Try <ulink
     url="http://www.networkice.com/advice/Exploits/Ports">http://www.networkice.com/advice/Exploits/Ports</ulink></para>
   </section>
-
-  <appendix>
-    <title>Revision History</title>
-
-    <para><revhistory>
-        <revision>
-          <revnumber>1.18</revnumber>
-
-          <date>2006-07-18</date>
-
-          <authorinitials>CR</authorinitials>
-
-          <revremark>Updated for Shorewall 3.2</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.18</revnumber>
-
-          <date>2005-11-23</date>
-
-          <authorinitials>CR</authorinitials>
-
-          <revremark>Add Webmin info</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.17</revnumber>
-
-          <date>2005-09-20</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>More 3.0 Updates</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.16</revnumber>
-
-          <date>2005-09-02</date>
-
-          <authorinitials>CR</authorinitials>
-
-          <revremark>Updated for Shorewall v3.0</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.15</revnumber>
-
-          <date>2005-05-02</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Added Emule</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.14</revnumber>
-
-          <date>2004-10-01</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add rsync.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.13</revnumber>
-
-          <date>2004-09-21</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add note about ICMP type 11 to Traceroute.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.12</revnumber>
-
-          <date>2004-09-09</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add note about <trademark>Vonage</trademark>.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.11</revnumber>
-
-          <date>2004-05-28</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Corrected directory for actions.std and enhanced the DNS
-          section.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.10</revnumber>
-
-          <date>2004-05-09</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Added TFTP.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.9</revnumber>
-
-          <date>2004-04-24</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Revised ICQ/AIM.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.8</revnumber>
-
-          <date>2004-04-23</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Added SNMP.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.7</revnumber>
-
-          <date>2004-02-18</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Make NFS work for everyone.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.6</revnumber>
-
-          <date>2004-02-14</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add PCAnywhere.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.5</revnumber>
-
-          <date>2004-02-05</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Added information about VNC viewers in listen
-          mode.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.4</revnumber>
-
-          <date>2004-01-26</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Correct ICQ.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.3</revnumber>
-
-          <date>2004-01-04</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Alphabetize</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.2</revnumber>
-
-          <date>2004-01-03</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Add rules file entries.</revremark>
-        </revision>
-
-        <revision>
-          <revnumber>1.1</revnumber>
-
-          <date>2002-07-30</date>
-
-          <authorinitials>TE</authorinitials>
-
-          <revremark>Initial version converted to Docbook XML</revremark>
-        </revision>
-      </revhistory></para>
-  </appendix>
 </article>

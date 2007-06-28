@@ -43,10 +43,10 @@
     release.</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Install">
     <title>Installing Shorewall</title>
 
-    <section>
+    <section id="Howto">
       <title>Where do I find Step by Step Installation and Configuration
       Instructions?</title>
 
@@ -347,7 +347,7 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       you use a REDIRECT rule.</para>
     </section>
 
-    <section>
+    <section id="faq38">
       <title>(FAQ 38) Where can I find more information about DNAT?</title>
 
       <para><emphasis role="bold">Answer</emphasis>:Ian Allen has written a
@@ -364,8 +364,8 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
     </section>
   </section>
 
-  <section>
-    <title>DNS and Port Forwarding/NAT</title>
+  <section id="DNS-DNAT">
+    <title id="DNS">DNS and Port Forwarding/NAT</title>
 
     <section id="faq2">
       <title>(FAQ 2) I port forward www requests to www.mydomain.com (IP
@@ -492,7 +492,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
           </listitem>
         </orderedlist>
 
-        <example>
+        <example id="Example1">
           <title>Example:</title>
 
           <literallayout>Zone: dmz, Interface: eth2, Subnet: 192.168.2.0/24, Address: 192.168.2.254</literallayout>
@@ -577,7 +577,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
     </section>
   </section>
 
-  <section>
+  <section id="Blacklisting">
     <title>Blacklisting</title>
 
     <section id="faq63">
@@ -594,7 +594,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
     </section>
   </section>
 
-  <section>
+  <section id="MSN">
     <title>Netmeeting/MSN</title>
 
     <section id="faq3">
@@ -628,7 +628,7 @@ to debug/develop the newnat interface.</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="Openports">
     <title>Open Ports</title>
 
     <section id="faq51">
@@ -736,7 +736,7 @@ to debug/develop the newnat interface.</programlisting></para>
         nice integration of Shorewall and PortSentry.</para>
       </section>
 
-      <section>
+      <section id="faq4d">
         <title>(FAQ 4d) How do I use Shorewall with Snort-Inline?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> <ulink
@@ -746,7 +746,7 @@ to debug/develop the newnat interface.</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="Connections">
     <title>Connection Problems</title>
 
     <section id="faq5">
@@ -834,8 +834,8 @@ to debug/develop the newnat interface.</programlisting></para>
       documentation</ulink>.</para>
     </section>
 
-    <section>
-      <title>(FAQ 63) I just upgraded my kernel to 2.6.20 and my
+    <section id="faq64">
+      <title>(FAQ 64) I just upgraded my kernel to 2.6.20 and my
       bridge/firewall stopped working. What is wrong?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> In kernel 2.6.20, the
@@ -855,7 +855,7 @@ to debug/develop the newnat interface.</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="Logging">
     <title>Logging</title>
 
     <section id="faq6">
@@ -974,8 +974,8 @@ DROP      net       fw      udp      10619</programlisting>
           </listitem>
         </itemizedlist>
 
-        <para><example>
-            <title>Example</title>
+        <para><example id="Example5">
+            <title id="Example2">Example</title>
 
             <para><programlisting>MAC=00:04:4c:dc:e2:28:00:b0:8e:cf:3c:4c:08:00</programlisting>
             <itemizedlist>
@@ -1272,7 +1272,7 @@ DROP      net       fw      udp      10619</programlisting>
         </varlistentry>
       </variablelist>
 
-      <example>
+      <example id="Example3">
         <title>Here is an example:</title>
 
         <programlisting>Jun 27 15:37:56 gateway kernel:
@@ -1460,7 +1460,7 @@ modprobe: Can't locate module iptable_raw</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="Routing">
     <title>Routing</title>
 
     <section id="faq32">
@@ -1501,7 +1501,7 @@ modprobe: Can't locate module iptable_raw</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="Start-Stop">
     <title>Starting and Stopping</title>
 
     <section id="faq7">
@@ -1709,7 +1709,7 @@ iptables: Invalid argument
     </section>
   </section>
 
-  <section>
+  <section id="MultiISP">
     <title>Multiple ISPs</title>
 
     <section id="faq57">
@@ -1748,7 +1748,7 @@ iptables: Invalid argument
     </section>
   </section>
 
-  <section>
+  <section id="About">
     <title>About Shorewall</title>
 
     <section id="faq10">
@@ -1804,7 +1804,7 @@ iptables: Invalid argument
 
       <programlisting><command>/sbin/shorewall[-lite] version</command>      </programlisting>
 
-      <section>
+      <section id="faq25a">
         <title>(FAQ 25a) How do I tell which version of Shorewall-perl and
         Shorewall-shell that I have intalled?</title>
 
@@ -1879,8 +1879,8 @@ iptables: Invalid argument
       </variablelist>
     </section>
 
-    <section id="faq64">
-      <title>(FAQ 64) How do I accomplish failover with Shorewall?</title>
+    <section id="faq65">
+      <title>(FAQ 65) How do I accomplish failover with Shorewall?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: <ulink
       url="http://linuxman.wikispaces.com/Clustering+Shorewall">This article
@@ -1888,7 +1888,7 @@ iptables: Invalid argument
     </section>
   </section>
 
-  <section>
+  <section id="RFC1918">
     <title>RFC 1918</title>
 
     <section id="faq14">
@@ -1999,7 +1999,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     </section>
   </section>
 
-  <section>
+  <section id="ALIASES">
     <title>Alias IP Addresses/Virtual Interfaces</title>
 
     <section id="faq18">
@@ -2012,7 +2012,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     </section>
   </section>
 
-  <section>
+  <section id="Lite">
     <title>Shorewall Lite</title>
 
     <section id="faq53">
@@ -2133,7 +2133,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     </section>
   </section>
 
-  <section>
+  <section id="Misc">
     <title>Miscellaneous</title>
 
     <section id="faq20">
@@ -2156,7 +2156,7 @@ eth0               eth1                        # eth1 = interface to local netwo
 
       <programlisting>net:&lt;ip1&gt;,&lt;ip2&gt;,...</programlisting>
 
-      <example>
+      <example id="Example4">
         <title>Example:</title>
 
         <programlisting>ACCEPT net:192.0.2.16/28,192.0.2.44 fw tcp 22</programlisting>

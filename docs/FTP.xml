@@ -47,7 +47,7 @@
     release.</emphasis></para>
   </caution>
 
-  <section>
+  <section id="Protocol">
     <title>FTP Protocol</title>
 
     <para>FTP transfers involve two TCP connections. The first <emphasis
@@ -167,7 +167,7 @@ ftp&gt;</programlisting>
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Conntrack">
     <title>Linux FTP connection-tracking</title>
 
     <para>Given the normal loc-&gt;net policy of ACCEPT, passive mode access
@@ -205,7 +205,7 @@ ftp&gt;</programlisting>
       to be loaded automatically by Shorewall.</para>
     </important>
 
-    <example>
+    <example id="Example1">
       <title>Example (Kernel 3.2.20)</title>
 
       <programlisting>[root@lists etc]# lsmod
@@ -290,7 +290,7 @@ xt_tcpudp               3328  0
     /etc/shorewall/shorewall.conf to point to that directory.</para>
   </section>
 
-  <section>
+  <section id="Ports">
     <title>FTP on Non-standard Ports</title>
 
     <note>
@@ -313,7 +313,7 @@ xt_tcpudp               3328  0
         order to use FTP on a non-standard port.</para>
       </caution></para>
 
-    <example>
+    <example id="Example2">
       <title>if you run an FTP server that listens on port 49 or you need to
       access a server on the internet that listens on that port then you would
       have:</title>
@@ -391,7 +391,7 @@ DNAT                                                                    ACTION =
     the preferred way to generate the rules described above. Here are a couple
     of examples.</para>
 
-    <para><example>
+    <para><example id="Example3">
         <title>Server running behind a Masquerading Gateway</title>
 
         <para>Suppose that you run an FTP server on 192.168.1.5 in your local
@@ -400,7 +400,7 @@ DNAT                                                                    ACTION =
         <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
 #                                                            PORT(S)     DESTINATION
 FTP/DNAT      net       loc:192.168.1.5</programlisting>
-      </example><example>
+      </example><example id="Example4">
         <title>Allow your DMZ FTP access to the Internet</title>
 
         <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL

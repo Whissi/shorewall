@@ -209,8 +209,30 @@ Migration Considerations:
 
        /etc/shorewall/hosts
 
-	lan	eth1:192.168.2.0/24	...	
+	lan	eth1:192.168.2.0/24	...
 
+       The structure of the accounting rules changes slightly when
+       there are bridges defined in the Shorewall
+       configuration. Because of the restrictions imposed by Netfilter
+       in kernel 2.6.21 and later, output accounting rules must be
+       segregated from forwarding and input rules.
+
+       To accomplish this separation, Shorewall-perl creates two
+       accounting chains:
+
+       - accounting - for input and forwarded traffic.
+       - accountout - for output traffic.
+
+       If the CHAIN column contains '-', then:
+
+       - If the SOURCE column in a rule includes the name of the
+         firewall zone (e.g., $FW), then the default chain to insert
+         the rule into is accountout only.
+
+       - Otherwise, if the DEST in the rule is any or all or 0.0.0.0/0,
+	 then the rule is added to both accounting and accountout.
+
+       - Otherwise, the rule is added to accounting only.	
 
     d) The BROADCAST column in the interfaces file is essentially unused;
        if you enter anything in this column but '-' or 'detect', you will

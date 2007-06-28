@@ -41,142 +41,148 @@
     release</emphasis>.</para>
   </caution>
 
-  <para>Shorewall accounting rules are described in the file
-  /etc/shorewall/accounting. By default, the accounting rules are placed in a
-  chain called <quote>accounting</quote> and can thus be displayed using
-  <quote>shorewall[-lite] show accounting</quote>. All traffic passing into,
-  out of, or through the firewall traverses the accounting chain including
-  traffic that will later be rejected by interface options such as
-  <quote>tcpflags</quote> and <quote>maclist</quote>. If your kernel doesn't
-  support the connection tracking match extension (Kernel 2.4.21) then some
-  traffic rejected under <quote>norfc1918</quote> will not traverse the
-  accounting chain.</para>
+  <section id="Basics">
+    <title>Accounting Basics</title>
 
-  <para>The columns in the accounting file are as follows:</para>
+    <para>Shorewall accounting rules are described in the file
+    /etc/shorewall/accounting. By default, the accounting rules are placed in
+    a chain called <quote>accounting</quote> and can thus be displayed using
+    <quote>shorewall[-lite] show accounting</quote>. All traffic passing into,
+    out of, or through the firewall traverses the accounting chain including
+    traffic that will later be rejected by interface options such as
+    <quote>tcpflags</quote> and <quote>maclist</quote>. If your kernel doesn't
+    support the connection tracking match extension (Kernel 2.4.21) then some
+    traffic rejected under <quote>norfc1918</quote> will not traverse the
+    accounting chain.</para>
 
-  <itemizedlist>
-    <listitem>
-      <para><emphasis role="bold">ACTION </emphasis>- What to do when a match
-      is found. Possible values are:</para>
+    <para>The columns in the accounting file are as follows:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>COUNT- Simply count the match and continue trying to match the
-          packet with the following accounting rules</para>
-        </listitem>
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">ACTION </emphasis>- What to do when a
+        match is found. Possible values are:</para>
 
-        <listitem>
-          <para>DONE- Count the match and don't attempt to match any following
-          accounting rules.</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para>COUNT- Simply count the match and continue trying to match
+            the packet with the following accounting rules</para>
+          </listitem>
 
-        <listitem>
-          <para><emphasis>&lt;chain&gt;</emphasis> - The name of a chain to
-          jump to. Shorewall will create the chain automatically. If the name
-          of the chain is followed by <quote>:COUNT</quote> then a COUNT rule
-          matching this rule will automatically be added to &lt;chain&gt;.
-          Chain names must start with a letter, must be composed of letters
-          and digits, and may contain underscores (<quote>_</quote>) and
-          periods (<quote>.</quote>). Beginning with Shorewall version 1.4.8,
-          chain names may also contain embedded dashes (<quote>-</quote>) and
-          are not required to start with a letter.</para>
-        </listitem>
-      </itemizedlist>
-    </listitem>
+          <listitem>
+            <para>DONE- Count the match and don't attempt to match any
+            following accounting rules.</para>
+          </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">CHAIN</emphasis> - The name of the chain
-      where the accounting rule is to be added. If empty or <quote>-</quote>
-      then the <quote>accounting</quote> chain is assumed.</para>
-    </listitem>
+          <listitem>
+            <para><emphasis>&lt;chain&gt;</emphasis> - The name of a chain to
+            jump to. Shorewall will create the chain automatically. If the
+            name of the chain is followed by <quote>:COUNT</quote> then a
+            COUNT rule matching this rule will automatically be added to
+            &lt;chain&gt;. Chain names must start with a letter, must be
+            composed of letters and digits, and may contain underscores
+            (<quote>_</quote>) and periods (<quote>.</quote>). Beginning with
+            Shorewall version 1.4.8, chain names may also contain embedded
+            dashes (<quote>-</quote>) and are not required to start with a
+            letter.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">SOURCE</emphasis> - Packet Source. The name
-      of an interface, an address (host or net), or an interface name followed
-      by <quote>:</quote> and a host or net address.</para>
-    </listitem>
+      <listitem>
+        <para><emphasis role="bold">CHAIN</emphasis> - The name of the chain
+        where the accounting rule is to be added. If empty or <quote>-</quote>
+        then the <quote>accounting</quote> chain is assumed (see <link
+        linkend="Bridge">below</link> for exceptions).</para>
+      </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">DESTINATION</emphasis> - Packet Destination
-      Format the same as the SOURCE column.</para>
-    </listitem>
+      <listitem>
+        <para><emphasis role="bold">SOURCE</emphasis> - Packet Source. The
+        name of an interface, an address (host or net), or an interface name
+        followed by <quote>:</quote> and a host or net address.</para>
+      </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">PROTOCOL</emphasis> - A protocol name (from
-      <filename>/etc/protocols</filename>), a protocol number or "ipp2p". For
-      "ipp2p", your kernel and iptables must have ipp2p match support from
-      <ulink url="http://www.netfilter.org">Netfilter
-      Patch_o_matic_ng</ulink>.</para>
-    </listitem>
+      <listitem>
+        <para><emphasis role="bold">DESTINATION</emphasis> - Packet
+        Destination Format the same as the SOURCE column.</para>
+      </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">DEST PORT</emphasis> - Destination Port
-      number. Service name from <filename>/etc/services</filename> or port
-      number. May only be specified if the protocol is TCP or UDP (6 or 17).
-      If the PROTOCOL is "ipp2p", then this column is interpreted as an ipp2p
-      option without the leading "--" (default "ipp2p"). For a list of value
-      ipp2p options, as root type <command>iptables -m ipp2p
-      --help</command>.</para>
-    </listitem>
+      <listitem>
+        <para><emphasis role="bold">PROTOCOL</emphasis> - A protocol name
+        (from <filename>/etc/protocols</filename>), a protocol number or
+        "ipp2p". For "ipp2p", your kernel and iptables must have ipp2p match
+        support from <ulink url="http://www.netfilter.org">Netfilter
+        Patch_o_matic_ng</ulink>.</para>
+      </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">SOURCE PORT</emphasis>- Source Port number.
-      Service name from /etc/services or port number. May only be specified if
-      the protocol is TCP or UDP (6 or 17).</para>
-    </listitem>
+      <listitem>
+        <para><emphasis role="bold">DEST PORT</emphasis> - Destination Port
+        number. Service name from <filename>/etc/services</filename> or port
+        number. May only be specified if the protocol is TCP or UDP (6 or 17).
+        If the PROTOCOL is "ipp2p", then this column is interpreted as an
+        ipp2p option without the leading "--" (default "ipp2p"). For a list of
+        value ipp2p options, as root type <command>iptables -m ipp2p
+        --help</command>.</para>
+      </listitem>
 
-    <listitem>
-      <para><emphasis role="bold">USER/GROUP</emphasis> - This column may only
-      be non-empty if the CHAIN is OUTPUT. The column may contain:</para>
+      <listitem>
+        <para><emphasis role="bold">SOURCE PORT</emphasis>- Source Port
+        number. Service name from /etc/services or port number. May only be
+        specified if the protocol is TCP or UDP (6 or 17).</para>
+      </listitem>
 
-      <programlisting> [!][&lt;user name or number&gt;][:&lt;group name or number&gt;][+&lt;program name&gt;]</programlisting>
+      <listitem>
+        <para><emphasis role="bold">USER/GROUP</emphasis> - This column may
+        only be non-empty if the CHAIN is OUTPUT. The column may
+        contain:</para>
 
-      <para>When this column is non-empty, the rule applies only if the
-      program generating the output is running under the effective
-      &lt;user&gt; and/or &lt;group&gt; specified (or is NOT running under
-      that id if "!" is given).</para>
+        <programlisting> [!][&lt;user name or number&gt;][:&lt;group name or number&gt;][+&lt;program name&gt;]</programlisting>
 
-      <para>Examples:</para>
+        <para>When this column is non-empty, the rule applies only if the
+        program generating the output is running under the effective
+        &lt;user&gt; and/or &lt;group&gt; specified (or is NOT running under
+        that id if "!" is given).</para>
 
-      <simplelist>
-        <member>joe #program must be run by joe</member>
+        <para>Examples:</para>
 
-        <member>:kids #program must be run by a member of the 'kids'
-        group.</member>
+        <simplelist>
+          <member>joe #program must be run by joe</member>
 
-        <member>!:kids #program must not be run by a member of the 'kids'
-        group</member>
+          <member>:kids #program must be run by a member of the 'kids'
+          group.</member>
 
-        <member>+upnpd #program named upnpd (This feature was removed from
-        Netfilter in kernel version 2.6.14).</member>
-      </simplelist>
-    </listitem>
-  </itemizedlist>
+          <member>!:kids #program must not be run by a member of the 'kids'
+          group</member>
 
-  <para>In all columns except ACTION and CHAIN, the values
-  <quote>-</quote>,<quote>any</quote> and <quote>all</quote> are treated as
-  wild-cards.</para>
+          <member>+upnpd #program named upnpd (This feature was removed from
+          Netfilter in kernel version 2.6.14).</member>
+        </simplelist>
+      </listitem>
+    </itemizedlist>
 
-  <para>The accounting rules are evaluated in the Netfilter
-  <quote>filter</quote> table. This is the same environment where the
-  <quote>rules</quote> file rules are evaluated and in this environment, DNAT
-  has already occurred in inbound packets and SNAT has not yet occurred on
-  outbound ones.</para>
+    <para>In all columns except ACTION and CHAIN, the values
+    <quote>-</quote>,<quote>any</quote> and <quote>all</quote> are treated as
+    wild-cards.</para>
 
-  <para>Accounting rules are not stateful -- each rule only handles traffic in
-  one direction. For example, if eth0 is your internet interface, and you have
-  a web server in your DMZ connected to eth1, then to count HTTP traffic in
-  both directions requires two rules:</para>
+    <para>The accounting rules are evaluated in the Netfilter
+    <quote>filter</quote> table. This is the same environment where the
+    <quote>rules</quote> file rules are evaluated and in this environment,
+    DNAT has already occurred in inbound packets and SNAT has not yet occurred
+    on outbound ones.</para>
 
-  <programlisting>        #ACTION CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
+    <para>Accounting rules are not stateful -- each rule only handles traffic
+    in one direction. For example, if eth0 is your internet interface, and you
+    have a web server in your DMZ connected to eth1, then to count HTTP
+    traffic in both directions requires two rules:</para>
+
+    <programlisting>        #ACTION CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
         #                                                       PORT            PORT
         DONE    -       eth0    eth1            tcp             80
         DONE    -       eth1    eth0            tcp             -               80</programlisting>
 
-  <para>Associating a counter with a chain allows for nice reporting. For
-  example:</para>
+    <para>Associating a counter with a chain allows for nice reporting. For
+    example:</para>
 
-  <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
+    <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
         #                                                               PORT            PORT
         web:COUNT       -       eth0    eth1            tcp             80
         web:COUNT       -       eth1    eth0            tcp             -               80
@@ -184,11 +190,11 @@
         web:COUNT       -       eth1    eth0            tcp             -               443
         DONE            web</programlisting>
 
-  <para>Now <quote>shorewall show web</quote> (or "shorewall-lite show web"
-  for Shorewall Lite users) will give you a breakdown of your web
-  traffic:</para>
+    <para>Now <quote>shorewall show web</quote> (or "shorewall-lite show web"
+    for Shorewall Lite users) will give you a breakdown of your web
+    traffic:</para>
 
-  <programlisting>     [root@gateway shorewall]# shorewall show web
+    <programlisting>     [root@gateway shorewall]# shorewall show web
      Shorewall-1.4.6-20030821 Chain web at gateway.shorewall.net - Wed Aug 20 09:48:56 PDT 2003
      
      Counters reset Wed Aug 20 09:48:00 PDT 2003
@@ -202,9 +208,9 @@
        29  3297 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
        [root@gateway shorewall]#</programlisting>
 
-  <para>Here is a slightly different example:</para>
+    <para>Here is a slightly different example:</para>
 
-  <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
+    <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
         #                                                               PORT            PORT
         web             -       eth0    eth1            tcp             80
         web             -       eth1    eth0            tcp             -               80
@@ -213,11 +219,11 @@
         COUNT           web     eth0    eth1
         COUNT           web     eth1    eth0</programlisting>
 
-  <para>Now <quote>shorewall show web</quote> (or "shorewall-lite show web"
-  for Shorewall Lite users) simply gives you a breakdown by input and
-  output:</para>
+    <para>Now <quote>shorewall show web</quote> (or "shorewall-lite show web"
+    for Shorewall Lite users) simply gives you a breakdown by input and
+    output:</para>
 
-  <programlisting>     [root@gateway shorewall]# shorewall show accounting web
+    <programlisting>     [root@gateway shorewall]# shorewall show accounting web
      Shorewall-1.4.6-20030821 Chains accounting web at gateway.shorewall.net - Wed Aug 20 10:27:21 PDT 2003
 
      Counters reset Wed Aug 20 10:24:33 PDT 2003
@@ -225,7 +231,9 @@
      Chain accounting (3 references)
          pkts bytes target     prot opt in     out     source               destination
          8767  727K web        tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:80
-            0     0 web        tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:443
+            0     0 web        tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:443</programlisting>
+
+    <programlisting>
         11506   13M web        tcp  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:80
             0     0 web        tcp  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:443
 
@@ -235,16 +243,16 @@
         11506   13M            all  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0
      [root@gateway shorewall]#</programlisting>
 
-  <para>Here's how the same example would be constructed on an HTTP server
-  with only one interface (eth0).</para>
+    <para>Here's how the same example would be constructed on an HTTP server
+    with only one interface (eth0).</para>
 
-  <caution>
-    <para>READ THE ABOVE CAREFULLY -- IT SAYS <emphasis
-    role="bold">SERVER</emphasis>. If you want to account for web browsing,
-    you have to reverse the rules below.</para>
-  </caution>
+    <caution>
+      <para>READ THE ABOVE CAREFULLY -- IT SAYS <emphasis
+      role="bold">SERVER</emphasis>. If you want to account for web browsing,
+      you have to reverse the rules below.</para>
+    </caution>
 
-  <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
+    <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
         #                                                               PORT            PORT
         web             -       eth0    -               tcp             80
         web             -       -       eth0            tcp             -               80
@@ -253,12 +261,12 @@
         COUNT           web     eth0
         COUNT           web     -       eth0</programlisting>
 
-  <para>Note that with only one interface, only the SOURCE (for input rules)
-  or the DESTINATION (for output rules) is specified in each rule.</para>
+    <para>Note that with only one interface, only the SOURCE (for input rules)
+    or the DESTINATION (for output rules) is specified in each rule.</para>
 
-  <para>Here's the output:</para>
+    <para>Here's the output:</para>
 
-  <programlisting>     [root@mail shorewall]# shorewall show accounting web Shorewall-1.4.7
+    <programlisting>     [root@mail shorewall]# shorewall show accounting web Shorewall-1.4.7
      Chains accounting web at mail.shorewall.net - Sun Oct 12 10:27:21 PDT 2003
 
      Counters reset Sat Oct 11 08:12:57 PDT 2003
@@ -276,7 +284,54 @@
      11506   13M            all  --  *      eth0    0.0.0.0/0            0.0.0.0/0
      [root@mail shorewall]#</programlisting>
 
-  <para>For an example of integrating Shorewall Accounting with MRTG, see
-  <ulink
-  url="http://www.nightbrawler.com/code/shorewall-stats/">http://www.nightbrawler.com/code/shorewall-stats/</ulink>.</para>
+    <para>For an example of integrating Shorewall Accounting with MRTG, see
+    <ulink
+    url="http://www.nightbrawler.com/code/shorewall-stats/">http://www.nightbrawler.com/code/shorewall-stats/</ulink>.</para>
+  </section>
+
+  <section id="Bridge">
+    <title>Accounting with Bridges</title>
+
+    <para>The structure of the accounting rules changes slightly when there
+    are <ulink url="bridge-Shorewall-perl.html">bridges</ulink> defined in the
+    Shorewall configuration. Because of the restrictions imposed by Netfilter
+    in kernel 2.6.21 and later, output accounting rules must be segregated
+    from forwarding and input rules. To accomplish this separation,
+    Shorewall-perl creates two accounting chains:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">accounting</emphasis> - for input and
+        forwarded traffic.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">accountout</emphasis> - for output
+        traffic.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If the CHAIN column contains '-', then:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>If the SOURCE column in a rule includes the name of the firewall
+        zone (e.g., $FW), then the default chain to insert the rule into is
+        <emphasis role="bold">accountout</emphasis> only.</para>
+      </listitem>
+
+      <listitem>
+        <para>Otherwise, if the DEST in the rule is <emphasis
+        role="bold">any</emphasis> or <emphasis role="bold">all</emphasis> or
+        0.0.0.0/0, then the rule is added to both <emphasis
+        role="bold">accounting</emphasis> and <emphasis
+        role="bold">accountout</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Otherwise, the rule is added to <emphasis
+        role="bold">accounting</emphasis> only.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
 </article>

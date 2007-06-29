@@ -68,9 +68,9 @@ esac
 echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
 if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
-    cat shorewall-${1}/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
+    cat shorewall-common-${1}/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
 else
-    cat shorewall-${1}/releasenotes.txt > releasenotes.txt
+    cat shorewall-common-${1}/releasenotes.txt > releasenotes.txt
 fi
 
 ssh ${DEST%%:*} mkdir -p ${DEST#*:}

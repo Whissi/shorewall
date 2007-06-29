@@ -1500,6 +1500,7 @@ sub generate_matrix() {
 	my $source_hosts_ref = $zoneref->{hosts};
 	my $chain1           = rules_target $firewall_zone , $zone;
 	my $chain2           = rules_target $zone, $firewall_zone;
+	my $chain3           = rules_target $zone, $zone;
 	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $exclusions       = $zoneref->{exclusions};
@@ -1565,8 +1566,12 @@ sub generate_matrix() {
 
 	if ( $chain1 ) {
 	    for my $interface ( keys %needbroadcast ) {
-		add_rule $filter_table->{output_chain $interface} , "-m addrtype --dst-type BROADCAST -j $chain1";
-		add_rule $filter_table->{output_chain $interface} , "-d 224.0.0.0/4 -j $chain1";
+		add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
+		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";
+		if ( $chain3 eq "${zone}2${zone}" || $chain3 eq 'ACCEPT' ) {
+		    my $match = match_dest_dev $interface;
+		    add_rule $filter_table->{forward_chain $interface} , "$match -m addrtype --dst-type BROADCAST -j $chain3"
+		}
 	    }
 	}
 

@@ -4138,6 +4138,7 @@ activate_rules()
 
 	chain1=$(rules_chain $FW $zone)
 	chain2=$(rules_chain $zone $FW)
+	chain3=$(rules_chain $zone $zone)
 
 	eval complex=\$${zone}_is_complex
 	eval type=\$${zone}_type
@@ -4211,6 +4212,9 @@ activate_rules()
 	    for interface in $need_broadcast ; do
 		run_iptables -A $(out_chain $interface) -d 255.255.255.255 -j $chain1
 		run_iptables -A $(out_chain $interface) -d 224.0.0.0/4     -j $chain1
+		if [ $chain3 = ACCEPT -o $chain3 = "${zone}2${zone}" ]; then
+		    run_iptables -A $(forward_chain $interface) $(match_dest_dev $interface) -d 255.255.255.255 -j $chain3;
+		fi
 	    done
 	fi
 	#

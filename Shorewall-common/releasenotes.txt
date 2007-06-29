@@ -63,7 +63,8 @@ Migration Considerations:
 1)  You cannot simply upgrade your existing Shorewall package. You must
     also install one or both of the compilers.
 
-    If you attempt to upgrade using the RPM, you get this result:
+    If you attempt to upgrade using the shorewall-common RPM, you get
+    this result:
 
     gateway:~ # rpm -Uvh shorewall-common-4.0.0.noarch.rpm 
     error: Failed dependencies:
@@ -77,14 +78,13 @@ Migration Considerations:
 
     or
 
-	rpm -U shorewall-perl-4.0.0.noarch.rpm \
-	    shorewall-common-4.0.0.noarch.rpm
-	
-    or
-
 	rpm -U shorewall-shell-4.0.0.noarch.rpm \
 	    shorewall-perl-4.0.0.noarch.rpm \
 	    shorewall-common-4.0.0.noarch.rpm
+
+    If you don't want shorewall-shell, use the second command then
+
+        rpm -e shorewall-shell
  
     If you are upgrading using the tarball, you must install 
     shorewall-shell and/or shorewall-perl before you upgrade

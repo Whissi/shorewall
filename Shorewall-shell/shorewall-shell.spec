@@ -18,7 +18,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: iptables iproute
 Provides: shorewall_compiler
 Provides: shorewall = %{version}-%{release}
-Obsoletes: shorewall < 4.0.0
+Obsoletes: shorewall < 4.0.0-0Beta7
 
 %description
 

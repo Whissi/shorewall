@@ -1,4 +1,4 @@
-%define name shorewall
+%define name shorewall-common
 %define version 4.0.0
 %define release 0Beta7
 %define prefix /usr
@@ -23,8 +23,9 @@ The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 (iptables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
-To be fully functional, this package requires installation of either
-shorewall-shell or shorewall-perl 
+This package contains those Shorewall components required by both of the 
+available compiler packages. To be fully functional, this package requires
+installation of either shorewall-shell or shorewall-perl 
 
 %prep
 

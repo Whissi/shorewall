@@ -15,7 +15,7 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: perl
+Requires: perl shorewall >= 3.4.2
 Provides: shorewall_compiler
 
 %description

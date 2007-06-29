@@ -276,9 +276,9 @@ case $VERSION in
 	#
 	SHOREWALLDIR=shorewall-${VERSION%-*}
 	SHOREWALLLITEDIR=shorewall-lite-${VERSION%-*}
-	TARBALL=shorewall-${VERSION%-*}.tgz
+	TARBALL=shorewall-common-${VERSION%-*}.tgz
 	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
-	RPMNAME=shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	RPMNAME=shorewall-common-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	PERLRPMNAME=shorewall-perl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	PERLTARBALL=shorewall-perl-${VERSION%-*}.tgz
@@ -293,9 +293,9 @@ case $VERSION in
 	#
 	SHOREWALLDIR=shorewall-$VERSION
 	SHOREWALLLITEDIR=shorewall-lite-$VERSION
-	TARBALL=shorewall-$VERSION.tgz
+	TARBALL=shorewall-common-$VERSION.tgz
 	LITETARBALL=shorewall-lite-$VERSION.tgz
-	RPMNAME=shorewall-${VERSION}-1.noarch.rpm
+	RPMNAME=shorewall-common-${VERSION}-1.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION}-1.noarch.rpm
 	PERLRPMNAME=shorewall-perl-${VERSION}-1.noarch.rpm
 	PERLDIR=shorewall-perl-$VERSION
@@ -416,10 +416,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	progress_message "Creating $DIR/$TARBALL..."
 	
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
-        do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-common-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
 	if [ -n "$SIGN" ]; then
 	    for shoresuffix in tgz tar.bz2; do
-		shoreball=shorewall-${VERSION%-*}.${shoresuffix}
+		shoreball=shorewall-common-${VERSION%-*}.${shoresuffix}
 		report "GPG signing $DIR/$shoreball"
 		rm -f ${shoreball}.asc
 		do_or_die "$GPG $shoreball"
@@ -470,9 +470,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	test -n "$SIGN" && SIGN="--sign"
 	rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
-	do_or_die "cp shorewall-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
-	do_or_die "cp $SHOREWALLDIR/shorewall.spec $RPMDIR/SPECS/"
-	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall.spec >> $LOGFILE 2>&1"
+	do_or_die "cp shorewall-common-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+	do_or_die "cp $SHOREWALLDIR/shorewall-common.spec $RPMDIR/SPECS/"
+	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-common.spec >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
 
 	progress_message "Building $LITERPMNAME..."
@@ -678,12 +678,12 @@ fi
 
 	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
 
-        do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
-        do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -zcvf shorewall-common-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-common-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
 
 	if [ -n "$SIGN" ]; then
 	    for shoresuffix in tgz tar.bz2; do
-		betaball=shorewall-$VERSION.${shoresuffix}
+		betaball=shorewall-common-$VERSION.${shoresuffix}
 		report "GPG signing $DIR/$betaball tarball"
 		rm -f ${betaball}.asc
 		do_or_die "$GPG $betaball"

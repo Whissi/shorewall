@@ -8,12 +8,12 @@ Shorewall 4.0.0 Beta 7
 2) You are now offered a choice as to which compiler(s) you install. In
    4.0.0, there are the following packages:
 
-   - Shorewall ( common files )
+   - Shorewall-common ( common files )
    - Shorewall-shell ( the shell-based compiler )
    - Shorewall-perl (the Perl-based compiler )
 
-You must install Shorewall and at least one of the compiler packages
-(you may install them both).
+You must install Shorewall-common and at least one of the compiler
+packages (you may install them both).
 
 3) The facilities for supporting bridge/firewalls under earlier
    releases are deprecated and their documentation is omitted from the
@@ -53,24 +53,24 @@ Migration Considerations:
 
     If you attempt to upgrade using the RPM, you get this result:
 
-    gateway:~ # rpm -Uvh shorewall-4.0.0.noarch.rpm 
+    gateway:~ # rpm -Uvh shorewall-common-4.0.0.noarch.rpm 
     error: Failed dependencies:
-        shorewall_compiler is needed by shorewall-4.0.0-1.noarch
+        shorewall_compiler is needed by shorewall-common-4.0.0-1.noarch
     gateway:~ #
 
     You must either:
 
-	rpm -U shorewall-4.0.0.noarch.rpm \
+	rpm -U shorewall-common-4.0.0.noarch.rpm \
 	    shorewall-shell-4.0.0.noarch.rpm
 
     or
 
-	rpm -U shorewall-4.0.0.noarch.rpm \
+	rpm -U shorewall-common-4.0.0.noarch.rpm \
 	    shorewall-perl-4.0.0.noarch.rpm
 	
     or
 
-	rpm -U shorewall-4.0.0.noarch.rpm \
+	rpm -U shorewall-common-4.0.0.noarch.rpm \
 	    shorewall-perl-4.0.0.noarch.rpm \
 	    shorewall-shell-4.0.0.noarch.rpm
  

@@ -674,12 +674,12 @@ fi
 
 	rm -rf shorewall-$VERSION
 
-	do_or_die mv $SHOREWALLDIR shorewall-$VERSION
+	do_or_die mv $SHOREWALLDIR shorewall-common-$VERSION
 
 	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
 
-        do_or_die "tar -zcvf shorewall-common-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
-        do_or_die "tar -jcvf shorewall-common-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -zcvf shorewall-common-${VERSION}.tgz shorewall-common-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-common-$VERSION.tar.bz2 shorewall-common-$VERSION >> $LOGFILE 2>&1"
 
 	if [ -n "$SIGN" ]; then
 	    for shoresuffix in tgz tar.bz2; do

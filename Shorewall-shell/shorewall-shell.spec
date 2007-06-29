@@ -15,7 +15,7 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: iptables iproute
+Requires: iptables iproute shorewall_common
 Provides: shorewall_compiler
 Provides: shorewall = %{version}-%{release}
 Obsoletes: shorewall < 4.0.0-0Beta7

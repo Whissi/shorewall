@@ -23,7 +23,7 @@
 # This module exports the %protocols and %services hashes built from 
 # /etc/protocols and /etc/services respectively.
 #
-# Module generated using buildports.pl 4.0.0-Beta6 - Thu Jun 21 10:52:52 2007
+# Module generated using buildports.pl 4.0.0-Beta7 - Fri Jun 29 14:10:45 2007
 #
 package Shorewall::Ports;
 
@@ -97,6 +97,8 @@ our %protocols = (
 		  'ipv6-opts'		=> 60,
 		  'IPv6-Opts'		=> 60,
 		  rspf			=> 73,
+		  RSPF			=> 73,
+		  CPHB			=> 73,
 		  vmtp			=> 81,
 		  VMTP			=> 81,
 		  eigrp			=> 88,

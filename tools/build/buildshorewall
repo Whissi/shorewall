@@ -670,13 +670,13 @@ fi
 	# The original tarball created above didn't include the -Beta or -RC portion of the
 	# name in either the tarball name or the directory name. Create it here
 	#
-	progress_message "Creating $DIR/shorewall-$VERSION..."
+	progress_message "Creating $DIR/shorewall-common-$VERSION..."
 
 	rm -rf shorewall-common-$VERSION
 
 	do_or_die mv $SHOREWALLDIR shorewall-common-$VERSION
 
-	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
+	progress_message "Creating $DIR/shorewall-common-${VERSION}.tgz ..."
 
         do_or_die "tar -zcvf shorewall-common-${VERSION}.tgz shorewall-common-$VERSION >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-common-$VERSION.tar.bz2 shorewall-common-$VERSION >> $LOGFILE 2>&1"

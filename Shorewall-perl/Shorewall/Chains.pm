@@ -325,6 +325,7 @@ INIT {
 sub process_comment() {
     if ( $capabilities{COMMENTS} ) {
 	( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+	$comment =~ s/\s*$//;
     } else {
 	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
     }

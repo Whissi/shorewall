@@ -384,7 +384,7 @@ sub split_line( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $line =~ /["'`\\]/;
 
-    my @line = split( /\s+/, $line, $maxcolumns + 1 );
+    my @line = split( ' ', $line );
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
@@ -402,7 +402,7 @@ sub split_line1( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
 
-    my @line = split( /\s+/, $line, $maxcolumns + 1);
+    my @line = split( ' ', $line );
 
     return @line if $line[0] eq 'COMMENT';
 
@@ -431,7 +431,7 @@ sub split_line2( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
 
-    my @line = split( /\s+/, $line, $maxcolumns + 1 );
+    my @line = split( ' ', $line );
 
     my $first   = $line[0];
     my $columns = $no_pad{$first};
@@ -554,9 +554,6 @@ sub read_a_line {
 		next;
 	    }
 
-	    $line =~ s/^\s+//;       # Remove Leading white space
-	    $line =~ s/\s+$//;       # Remove Trailing white space
-
 	    #
 	    # Expand Shell Variables using %ENV 
 	    #
@@ -565,7 +562,7 @@ sub read_a_line {
 
 	    if ( $line =~ /^INCLUDE\s/ ) {
 
-		my @line = split /\s+/, $line, 3;
+		my @line = split ' ', $line, 3;
 
 		fatal_error "Invalid INCLUDE command: $line"    if @line != 2;
 		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;
@@ -600,10 +597,7 @@ sub read_a_line1 {
 	    next if $line =~ /^\s*#/;
 	    chomp $line;
 	    next if $line =~ /^\s*$/;
-	    $line =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
-	    $line =~ s/^\s+//;       # Remove Leading white space
-	    $line =~ s/\s+$//;       # Remove Trailing white space
-
+	    $line =~ s/#.*$//;       # Remove Trailing Comments
 	    return 1;
 	}
 

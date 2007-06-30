@@ -1655,11 +1655,14 @@ sub generate_matrix() {
 		#
 		no warnings;
 		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
-		while ( my ($interface, $sourceref) = ( each %needbroadcast ) ) {
+		use warnings;
 
-		    if ( get_interface_option( $interface, 'bridge' ) ) {
-			for my $source ( keys %$sourceref ) {
-			    add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-m addrtype --dst-type BROADCAST -j $chain3" if  $chain3;
+		if  ( $chain3 ) {
+		    while ( my ($interface, $sourceref) = ( each %needbroadcast ) ) {
+			if ( get_interface_option( $interface, 'bridge' ) ) {
+			    for my $source ( keys %$sourceref ) {
+				add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-m addrtype --dst-type BROADCAST -j $chain3";
+			    }
 			}
 		    }
 		}

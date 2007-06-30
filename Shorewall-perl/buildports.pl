@@ -65,10 +65,14 @@ sub print_service( $$ ) {
 	$service_hash{$service} = $number;
     }
 }
+#
+#            E x e c u t i o n   B e g i n s   H e r e
+#
+set_config_path( '/etc' );
 
-set_config_path( '/etc/shorewall:/usr/share/shorewall' );
+our $dir = $ARGV[0] || '/etc';
 
-set_shorewall_dir($ARGV[0] || '/etc');
+$dir =~ s|/+$|| unless $dir eq '/';
 
 our $date = localtime;
 
@@ -116,7 +120,7 @@ our $VERSION = '1.00';
 our %protocols = (
 EOF
 
-open_file 'protocols' or fatal_error "Cannot open protocols: $!";
+open_file "$dir/protocols" or fatal_error "Cannot open $dir/protocols: $!";
 
 while ( read_a_line1 ) {
     my ( $proto1, $number, @aliases ) = split_line( 2, 10, '/etc/protocols entry');
@@ -133,7 +137,7 @@ print "\t\t );\n\n";
 
 print "our %services  = (\n";
 
-open_file 'services' or fatal_error "Cannot open services: $!";
+open_file "$dir/services" or fatal_error "Cannot open $dir/services: $!";
 
 while ( read_a_line1 ) {
     my ( $name1, $proto_number, @names ) = split_line( 2, 10, '/etc/services entry');

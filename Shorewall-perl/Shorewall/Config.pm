@@ -361,7 +361,7 @@ sub find_file($)
 {
     my $filename=$_[0];
 
-    return $filename if substr( $filename, 0, 1 ) eq '/';
+    return $filename if $filename =~ '/';
 
     my $directory;
 

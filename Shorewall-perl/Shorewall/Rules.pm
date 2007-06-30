@@ -1558,23 +1558,24 @@ sub generate_matrix() {
 			add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
 			    if $complex && $hostref->{ipsec} ne 'ipsec';
 
-			$needbroadcast{$interface} = 1 if get_interface_option $interface, 'detectnets';
+			$needbroadcast{$interface} = $source if get_interface_option $interface, 'detectnets';
 		    }
 		}
 	    }
 	}
 
-	if ( $chain1 ) {
-	    for my $interface ( keys %needbroadcast ) {
+	for my $interface ( keys %needbroadcast ) {
+	    if ( $chain1 ) {
 		add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
 		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";
-		if ( $chain3 eq "${zone}2${zone}" || $chain3 eq 'ACCEPT' ) {
-		    my $match = match_dest_dev $interface;
-		    add_rule $filter_table->{forward_chain $interface} , "$match -m addrtype --dst-type BROADCAST -j $chain3"
-		}
+	    }
+	    
+	    if ( $chain3 ) {
+		my $match = match_dest_dev $interface;
+		my $source = $needbroadcast{$interface};
+		add_rule $filter_table->{forward_chain $interface} , "${match}${source}-m addrtype --dst-type BROADCAST -j $chain3"
 	    }
 	}
-
 	#
 	#                           F O R W A R D I N G
 	#

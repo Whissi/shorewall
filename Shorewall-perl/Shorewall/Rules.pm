@@ -1558,22 +1558,17 @@ sub generate_matrix() {
 			add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
 			    if $complex && $hostref->{ipsec} ne 'ipsec';
 
-			$needbroadcast{$interface} = $source if get_interface_option $interface, 'detectnets';
+			$needbroadcast{$interface}{$source} = 1 if get_interface_option $interface, 'detectnets';
 		    }
 		}
 	    }
 	}
 
-	for my $interface ( keys %needbroadcast ) {
-	    if ( $chain1 ) {
+	
+	if ( $chain1 ) {
+	    for my $interface ( keys %needbroadcast ) {
 		add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
 		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";
-	    }
-	    
-	    if ( $chain3 ) {
-		my $match = match_dest_dev $interface;
-		my $source = $needbroadcast{$interface};
-		add_rule $filter_table->{forward_chain $interface} , "${match}${source}-m addrtype --dst-type BROADCAST -j $chain3"
 	    }
 	}
 	#
@@ -1660,6 +1655,14 @@ sub generate_matrix() {
 		#
 		no warnings;
 		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+		while ( my ($interface, $sourceref) = ( each %needbroadcast ) ) {
+
+		    if ( get_interface_option( $interface, 'bridge' ) ) {
+			for my $source ( keys %$sourceref ) {
+			    add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-m addrtype --dst-type BROADCAST -j $chain3" if  $chain3;
+			}
+		    }
+		}
 	    }
 
 	    if ( $zone1ref->{type} eq 'bport4' ) {

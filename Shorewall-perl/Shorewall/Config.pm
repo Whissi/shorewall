@@ -549,20 +549,16 @@ sub read_a_line {
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
-	    if ( $line =~ /^\s*$/ ) {
-		$line = '';
-		next;
-	    }
-
+	    $line = '', next if $line =~ /^\s*$/;
 	    #
 	    # Expand Shell Variables using %ENV 
 	    #
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
 	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
 
-	    if ( $line =~ /^INCLUDE\s/ ) {
+	    if ( $line =~ /^\s*INCLUDE\s/ ) {
 
-		my @line = split ' ', $line, 3;
+		my @line = split ' ', $line;
 
 		fatal_error "Invalid INCLUDE command: $line"    if @line != 2;
 		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;

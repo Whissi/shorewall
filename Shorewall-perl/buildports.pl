@@ -28,7 +28,9 @@
 #
 use strict;
 use lib '/usr/share/shorewall-perl';
-use Shorewall::Config qw( open_file 
+use Shorewall::Config qw( open_file
+			  push_open
+			  pop_open
 			  read_a_line1 
 			  split_line 
 			  fatal_error 
@@ -73,6 +75,12 @@ set_config_path( '/etc' );
 our $dir = $ARGV[0] || '/etc';
 
 $dir =~ s|/+$|| unless $dir eq '/';
+#
+# Open the files before we do anything else
+#
+open_file "$dir/services" or fatal_error "$dir/services is empty";
+
+push_open "$dir/protocols" or fatal_error "$dir/protocols is empty";
 
 our $date = localtime;
 
@@ -120,8 +128,6 @@ our $VERSION = '1.00';
 our %protocols = (
 EOF
 
-open_file "$dir/protocols" or fatal_error "Cannot open $dir/protocols: $!";
-
 while ( read_a_line1 ) {
     my ( $proto1, $number, @aliases ) = split_line( 2, 10, '/etc/protocols entry');
 
@@ -133,11 +139,11 @@ while ( read_a_line1 ) {
     }
 }
 
+pop_open;
+
 print "\t\t );\n\n";
 
 print "our %services  = (\n";
-
-open_file "$dir/services" or fatal_error "Cannot open $dir/services: $!";
 
 while ( read_a_line1 ) {
     my ( $name1, $proto_number, @names ) = split_line( 2, 10, '/etc/services entry');

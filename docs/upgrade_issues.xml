@@ -70,54 +70,60 @@
   </section>
 
   <section id="V4.0.0">
-    <title>Versions &gt;= 4.0.0-Beta1</title>
+    <title>Versions &gt;= 4.0.0-Beta7</title>
 
     <orderedlist>
       <listitem>
-        <para>This is the first Shorewall release that fully integrates the
-        new Shorewall-perl compiler. You are now offered a choice as to which
-        compiler(s) you install. In Shorewall 4.0.0, there are the following
-        packages:<itemizedlist>
-            <listitem>
-              <para>Shorewall-common ( common files )</para>
-            </listitem>
+        <para>Beginning with Shorewall 4.0.0, there is no single 'shorewall'
+        package. Rather there are two compiler packages (shorewall-shell and
+        shorewall-perl) and a set of base files (shorewall-common) required by
+        either compiler package.</para>
 
-            <listitem>
-              <para>Shorewall-shell ( the shell-based compiler )</para>
-            </listitem>
+        <para>Although the names of the packages are changing, you can upgrade
+        without having to uninstall/reinstall.</para>
 
-            <listitem>
-              <para>Shorewall-perl (the Perl-based compiler )</para>
-            </listitem>
+        <para>To repeat: <emphasis role="bold">You do not need to uninstall
+        any existing package.</emphasis></para>
 
-            <listitem>
-              <para>Shorewall-lite</para>
-            </listitem>
-          </itemizedlist>You must install Shorewall-common and at least one of
-        the compiler packages (you may install them both).</para>
-
-        <para>You cannot simply upgrade your existing Shorewall package. You
-        must upgrade Shorewall-common <emphasis role="bold">and</emphasis>
-        install one or both of the compilers.</para>
-
-        <para>If you attempt to upgrade using the common RPM, you get this
-        result:<programlisting>gateway:~ # rpm -Uvh shorewall-common-4.0.0.noarch.rpm 
+        <para>If you attempt to upgrade using the shorewall-common RPM, you
+        get this result:<programlisting>gateway:~ # <command>rpm -Uvh shorewall-common-4.0.0.noarch.rpm </command>
 error: Failed dependencies:
 shorewall_compiler is needed by shorewall-common-4.0.0-1.noarch
-gateway:~ #</programlisting> You must either:<programlisting>rpm -U shorewall-shell-4.0.0.noarch.rpm shorewall-common-4.0.0.noarch.rpm</programlisting>or<programlisting>rpm -U shorewall-shell-4.0.0.noarch.rpm shorewall-perl-4.0.0.noarch.rpm shorewall-common-4.0.0.noarch.rpm</programlisting>If
-        you are upgrading using the tarball, you must install either
-        shorewall-shell or shorewall-perl before you upgrade Shorewall using
-        the Shorewall-common tarball. Otherwise, the install.sh script fails
-        with:<simplelist>
+gateway:~ #</programlisting>You must either:<programlisting><command>rpm -Uvh shorewall-shell-4.0.0.noarch.rpm shorewall-common-4.0.0.noarch.rpm</command></programlisting>or<programlisting><command>rpm -Uvh shorewall-shell-4.0.0.noarch.rpm shorewall-perl-4.0.0.noarch.rpm shorewall-common-4.0.0.noarch.rpm</command></programlisting>If
+        you don't want shorewall-shell, use the second command
+        then<programlisting><command>rpm -e shorewall-shell</command></programlisting>If
+        you are upgrading using the tarball, you must install shorewall-shell
+        and/or shorewall-perl before you upgrade using shorewall-common.
+        Otherwise, the install.sh script fails with:<simplelist>
             <member>ERROR: No Shorewall compiler is installed</member>
           </simplelist>The shorewall-shell and shorewall-perl packages are
         installed from the tarball in the expected way; untar the package, and
         run the install.sh script.</para>
 
-        <para>The RPMs are set up so that if you upgrade an existing Shorewall
-        installation as part of a distribution upgrade and you have not
-        already installed shorewall-perl, then you will end up with
-        Shorewall-common and Shorewall-shell installed.</para>
+        <para>Example 1: You have 'shorewall' installed and you want to
+        continue to use the shorewall-shell compiler.<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2
+tar -jxf shorewall-shell-4.0.0.tar.bz2
+
+cd shorewall-shell-4.0.0
+./install.sh
+cd ../shorewall-common-4.0.0
+./install.sh
+shorewall check
+shorewall restart</command></programlisting>Example 2: You have shorewall
+        3.4.4 and shorewall-perl 4.0.0-Beta7 installed and you want to upgrade
+        to 4.0. You do not need the shell-based compiler.<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2
+tar -jxf shorewall-perl-4.0.0.tar.bz2
+
+cd shorewall-perl-4.0.0
+./install.sh
+cd ../shorewall-common-4.0.0
+./install.sh
+shorewall check
+shorewall restart</command></programlisting> The RPMs are set up so that if
+        you upgrade an existing Shorewall installation as part of a
+        distribution upgrade and you have not already installed
+        shorewall-perl, then you will end up with Shorewall-common and
+        Shorewall-shell installed.</para>
       </listitem>
 
       <listitem>

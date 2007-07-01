@@ -123,6 +123,12 @@ sub add_group_to_zone($$$$$)
 	    }
 	}
 
+	if ( $host =~ /^\+/ ) {
+	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+[a-zA-Z]\w*$/;
+	} else {
+	    validate_host $host;
+	}
+
 	push @$new, $switched ? "$interface:$host" : $host;
     }
 

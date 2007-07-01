@@ -34,6 +34,7 @@ our @EXPORT = qw( ALLIPv4
 
 		  validate_address
 		  validate_net
+		  validate_host
 		  validate_range
 		  ip_range_explicit
 
@@ -147,6 +148,16 @@ sub ip_range_explicit( $ ) {
     }
 
     @result;
+}
+
+sub validate_host( $ ) {
+    my $host = $_[0];
+    
+    if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
+	validate_range $1, $2;
+    } else {
+	validate_net( $host );
+    }
 }
 
 1;

@@ -128,7 +128,7 @@ our @EXPORT = qw( STANDARD
 		  %targets
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.0.0';
+our $VERSION = 4.00;
 
 #
 # Chain Table

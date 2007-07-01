@@ -51,7 +51,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.0.0';
+our $VERSION = 4.00;
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file

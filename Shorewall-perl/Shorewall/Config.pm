@@ -65,7 +65,7 @@ our @EXPORT = qw(
 		 %capabilities );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
-our $VERSION = '4.0.0';
+our $VERSION = 4.00;
 
 #
 # Misc Globals

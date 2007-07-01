@@ -41,7 +41,7 @@ our @EXPORT = qw( ALLIPv4
 		  @rfc1918_networks
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.0.0';
+our $VERSION = 4.00;
 
 #
 # Some IPv4 useful stuff

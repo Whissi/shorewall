@@ -47,7 +47,7 @@ our @EXPORT = qw( add_group_to_zone
 		  @interfaces
 		  @bridges );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.0.0';
+our $VERSION = 4.00;
 
 
 #

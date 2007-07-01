@@ -95,13 +95,13 @@
             <para>If you are installing Shorewall 4.0.0 or later then you need
             to install at least two packages.<itemizedlist>
                 <listitem>
-                  <para>Shorewall</para>
-                </listitem>
-
-                <listitem>
                   <para>Either Shorewall-shell (the classic shell-based
                   configuration compiler) and/or Shorewall-perl (the newer and
                   faster compiler written in Perl).</para>
+                </listitem>
+
+                <listitem>
+                  <para>Shorewall-common</para>
                 </listitem>
               </itemizedlist>If you are installing Shorewall for the first
             time, we strongly suggest that you install Shorewall-perl.</para>
@@ -109,9 +109,9 @@
       </listitem>
 
       <listitem>
-        <para>Install the RPM</para>
+        <para>Install the RPMs</para>
 
-        <programlisting><command>rpm -ivh &lt;shorewall rpm&gt; &lt;compiler rpm&gt; ...</command></programlisting>
+        <programlisting><command>rpm -ivh &lt;compiler rpm&gt; ... &lt;shorewall-common rpm&gt;</command></programlisting>
 
         <caution>
           <para>Some users are in the habit of using the <command>rpm
@@ -145,6 +145,8 @@
 
           <programlisting><command>rpm -ivh --nodeps &lt;rpms&gt;</command></programlisting>
         </note>
+
+        <para>Example:<programlisting><command>rpm -ivh shorewall-perl-4.0.0-1.noarch.rpm shorewall-common-4.0.0-1.noarch.rpm</command></programlisting></para>
       </listitem>
 
       <listitem>
@@ -180,52 +182,45 @@
     <title>Install using tarball</title>
 
     <note>
-      <para>If you are installing Shorewall 4.0.0 or later, then you need to
-      install one of the configuration compilers <emphasis
-      role="bold">before</emphasis> you install Shorewall itself. You can
-      choose to install one or both compilers:<itemizedlist>
+      <para>If you are installing Shorewall 4.0.0 or later then you need to
+      install at least two packages.<itemizedlist>
           <listitem>
-            <para>Shorewall-shell - the classic configuration compiler written
-            in Bourne Shell.</para>
+            <para>Either Shorewall-shell (the classic shell-based
+            configuration compiler) and/or Shorewall-perl (the newer and
+            faster compiler written in Perl).</para>
           </listitem>
 
           <listitem>
-            <para>Shorewall-perl - a newer and faster compiler written in
-            Perl.</para>
+            <para>Shorewall-common</para>
           </listitem>
         </itemizedlist>If you are installing Shorewall for the first time, we
       strongly suggest that you install Shorewall-perl.</para>
-
-      <para>To install Shorewall-perl:<orderedlist>
-          <listitem>
-            <para>unpack the tarball (tar -zxf
-            shorewall-perl-x.y.z.tgz).</para>
-          </listitem>
-
-          <listitem>
-            <para>cd to the shorewall-perl directory (the version is encoded
-            in the directory name as in
-            <quote>shorewall-perl-4.0.0</quote>).</para>
-          </listitem>
-
-          <listitem>
-            <para>Type:</para>
-
-            <programlisting><command>./install.sh</command></programlisting>
-          </listitem>
-        </orderedlist>Installing Shorewall-shell is similar.</para>
     </note>
 
-    <para>To install Shorewall using the tarball and install script:</para>
+    <para>To install Shorewall-perl and Shorewall-common using the tarball and
+    install scripts:</para>
 
     <orderedlist>
       <listitem>
-        <para>unpack the tarball (tar -zxf shorewall-x.y.z.tgz).</para>
+        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2</command>
+<command>tar -jxf shorewall-perl-4.0.0.tar.bz2
+</command></programlisting></para>
       </listitem>
 
       <listitem>
-        <para>cd to the shorewall directory (the version is encoded in the
-        directory name as in <quote>shorewall-3.2.1</quote>).</para>
+        <para>cd to the shorewall-perl directory (the version is encoded in
+        the directory name as in <quote>shorewall-perl-4.0.0</quote>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Type:</para>
+
+        <programlisting><command>./install.sh</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>cd to the shorewall-common directory (the version is encoded in
+        the directory name as in <quote>shorewall-perl-4.0.0</quote>)</para>
       </listitem>
 
       <listitem>
@@ -260,25 +255,13 @@
     </orderedlist>
   </section>
 
-  <section id="LRP">
-    <title>Install the .lrp</title>
-
-    <para>To install my version of Shorewall on a fresh Bering disk, simply
-    replace the <quote>shorwall.lrp</quote> file on the image with the file
-    that you downloaded. For example, if you download
-    <filename>shorewall-lrp-2.2.0.tgz</filename> then you will rename the file
-    to <filename>shorwall.lrp</filename> and replace the file by that name on
-    the Bering disk with the new file. Then proceed to configure Shorewall as
-    described in the Bering (or Bering uClibc) documentation.</para>
-  </section>
-
   <section id="Debian">
     <title>Install the .deb</title>
 
     <important>
-      <para>Once you have installed the .deb package and before you attempt to
-      configure Shorewall, please heed the advice of Lorenzo Martignoni, the
-      Shorewall Debian Maintainer:</para>
+      <para>Once you have installed the .deb packages and before you attempt
+      to configure Shorewall, please heed the advice of Lorenzo Martignoni,
+      the Shorewall Debian Maintainer:</para>
 
       <para><quote>For more information about Shorewall usage on Debian system
       please look at /usr/share/doc/shorewall/README.Debian provided by [the]
@@ -369,7 +352,7 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
       <listitem>
         <para>Upgrade the RPM</para>
 
-        <programlisting><command>rpm -Uvh &lt;shorewall-common rpm file&gt; &lt;compiler rpm file&gt; ...</command></programlisting>
+        <programlisting><command>rpm -Uvh &lt;compiler rpm file&gt; ... &lt;shorewall-common rpm file&gt; </command></programlisting>
 
         <note>
           <para>Some <trademark>SUSE</trademark> users have encountered a
@@ -424,14 +407,30 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
 
     <orderedlist>
       <listitem>
-        <para>unpack the tarball.</para>
-
-        <programlisting><command>tar -zxf shorewall-x.y.z.tgz</command></programlisting>
+        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2</command>
+<command>tar -jxf shorewall-perl-4.0.0.tar.bz2
+tar -jxf shorewall-shell-4.0.0.tar.bz2</command> (if you use this compiler)</programlisting></para>
       </listitem>
 
       <listitem>
-        <para>cd to the shorewall directory (the version is encoded in the
-        directory name as in <quote>shorewall-3.2.1</quote>).</para>
+        <para>cd to the shorewall-perl directory (the version is encoded in
+        the directory name as in <quote>shorewall-perl-4.0.0</quote>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Type:</para>
+
+        <programlisting><command>./install.sh</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Perform the above two steps for the shorewall-shell directory if
+        you use that compiler.</para>
+      </listitem>
+
+      <listitem>
+        <para>cd to the shorewall-common directory (the version is encoded in
+        the directory name as in <quote>shorewall-perl-4.0.0</quote>)</para>
       </listitem>
 
       <listitem>

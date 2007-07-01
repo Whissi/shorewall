@@ -56,39 +56,57 @@ download from the Download Sites listed in the table below.</p>
 <p><font color="#ff0000"><b>NOTICE: There are two current Shorewall Release
 Series:</b></font></p>
 <ul>
-  <li><p style="margin-bottom: 0in;">The STABLE release series is 3.4. Choose
+  <li><p style="margin-bottom: 0in;">The STABLE release series is 4.0. Choose
     this release if you value stability and good documentation.</p>
   </li>
-  <li><p>The DEVELOPMENT release series is 3.9 (found in the 'development'
+  <li><p>The DEVELOPMENT release series is 4.1 (found in the 'development'
     directory). Choose this release if you are <strong>very
     experienced</strong> <strong>user</strong> and you are willing to help
-    and report bugs. <strong>THIS VERSION IS EXPERIMENTAL AND IS NOT
-    SUPPORTED.</strong> </p>
+    test the code and report bugs. <strong>THIS VERSION IS EXPERIMENTAL AND
+    IS NOT SUPPORTED.</strong> </p>
   </li>
 </ul>
 
 <p>For additional information, see this article about the <a
 href="ReleaseModel.html">Shorewall Release Model</a>. </p>
 
-<p>Beginning with Shorewall version 3.2.0 RC1, there are two related
-products:<br>
-</p>
+<p>Beginning with Shorewall version 4.0.0 RC1, there are four related
+packages:</p>
 <ul>
-  <li>Shorewall -- the full Shorewall package. You must have this installed
-    on at least one system within your network.<br>
-  </li>
+  <li>Shorewall-shell -- the legacy Shorewall configuration compiler written
+    in Bourne Shell.</li>
+  <li>Shorewall-perl -- an implementation of the Shorewall configuration
+    compiler written in the Perl programming language. This compiler is much
+    faster than Shorewall-shell and produces a firewall script that runs
+    faster. It is the preferred compiler for new Shorewall installations.</li>
+  <li>Shorewall-common -- A base package required by both Shorewall-shell and
+    Shorewall-perl.</li>
   <li>Shorewall Lite -- a light-weight Shorewall version that will run
-    compiled firewall scripts generated on a system with the full package
-    installed.</li>
+    compiled firewall scripts generated on a system with one of the compiler
+    packages installed.</li>
 </ul>
-<span style="font-weight: bold;">You probably don't want to install both
-Shorewall and Shorewall Lite on the same system. See the <a
+To summarize: 
+<ul>
+  <li>On at least one system in your network, you must install one or both of
+    the compilers (Shorewall-shell and/or Shorewall-perl) and the
+    Shorewall-common package.</li>
+  <li>If you only have a single firewall, then that system should be your
+    firewall system.</li>
+  <li>If you have more than one firewall, you may wish to install one or both
+    of the compilers on a single <em>administrative</em> system and install
+    Shorewall-lite on the firewalls. Doing so will allow for centralized
+    administration and configuration of the firewalls.</li>
+</ul>
+
+<p><br>
+<span style="font-weight: bold;">You probably don't want to install both a
+Shorewall compiler and Shorewall Lite on the same system. See the <a
 href="CompiledPrograms.html#Lite">Shorewall Lite Documentation</a> for
 details.</span><br>
+</p>
 
-
-<p>Once you've printed the appropriate QuickStart Guide, download <u>one</u>
-of the modules:</p>
+<p>Once you've printed the appropriate QuickStart Guide, download the
+appropriate modules:</p>
 <ul>
   <li><p style="margin-bottom: 0in;">Simon Matter provides RPMs tailored for
     <b>Redhat</b> and <b>Fedora</b>. You can <a
@@ -405,7 +423,8 @@ href="https://lists.shorewall.net/shorewall.gpg.key">https://lists.shorewall.net
   <br>
   You should download and use the latest SVN version only <b>at your own
   risk</b> -- please do not attempt to install Shorewall from the SVN
-  components; you will end up with an incomplete and non-working installation.
+  components; you will end up with an incomplete and non-working
+  installation. 
 
   <p>If you are looking for bug fixes for the current release, see <a
   href="#Updates">above.</a><br>

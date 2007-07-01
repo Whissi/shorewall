@@ -49,7 +49,7 @@ our @EXPORT = qw( merge_levels
 		  %actions
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 1.00;
+our $VERSION = '4.0.0';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.

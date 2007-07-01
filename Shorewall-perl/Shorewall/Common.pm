@@ -61,7 +61,7 @@ our @EXPORT = qw(
 		 $verbose
 		 );
 our @EXPORT_OK = qw( $timestamp initialize );
-our $VERSION = 1.00;
+our $VERSION = '4.0.0';
 
 our $line;
 our ($command, $doing, $done );

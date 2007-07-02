@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Clear Proxy Arp
 #
@@ -16,12 +17,6 @@ delete_proxyarp() {
     rm -f ${VARDIR}/proxyarp
 }
 
-#
-# Set policy of chain $1 to $2
-#
-setpolicy() {
-    $IPTABLES -P $1 $2
-}
 #
 # Remove all Shorewall-added rules
 #

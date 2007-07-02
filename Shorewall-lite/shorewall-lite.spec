@@ -1,13 +1,11 @@
 %define name shorewall-lite
 %define version 4.0.0
 %define release 0RC1
-%define prefix /usr
 
 Summary: Shoreline Firewall Lite is an iptables-based firewall for Linux systems.
 Name: %{name}
 Version: %{version}
 Release: %{release}
-Prefix: %{prefix}
 License: GPL
 Packager: Tom Eastep <teastep@shorewall.net>
 Group: Networking/Utilities
@@ -29,6 +27,7 @@ administrators to centralize the configuration of Shorewall-based firewalls.
 %prep
 
 %setup
+Prefix: %{prefix}
 
 %build
 
@@ -81,24 +80,26 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall-lite
 %attr(0700,root,root) %dir /var/lib/shorewall-lite
 
-%attr(0555,root,root) /sbin/shorewall-lite
+%attr(0755,root,root) /sbin/shorewall-lite
 
 %attr(0644,root,root) /usr/share/shorewall-lite/version
 %attr(0644,root,root) /usr/share/shorewall-lite/configpath
 %attr(0777,root,root) /usr/share/shorewall-lite/functions
-%attr(0444,root,root) /usr/share/shorewall-lite/lib.base
-%attr(0444,root,root) /usr/share/shorewall-lite/lib.cli
-%attr(0444,root,root) /usr/share/shorewall-lite/modules
+%attr(0644,root,root) /usr/share/shorewall-lite/lib.base
+%attr(0644,root,root) /usr/share/shorewall-lite/lib.cli
+%attr(0644,root,root) /usr/share/shorewall-lite/modules
 %attr(0544,root,root) /usr/share/shorewall-lite/shorecap
-%attr(0555,root,root) /usr/share/shorewall-lite/wait4ifup
+%attr(0755,root,root) /usr/share/shorewall-lite/wait4ifup
 
-%attr(0444,root,root) %{_mandir}/man5/shorewall-lite.conf.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-lite.conf.5.gz
 
-%attr(0444,root,root) %{_mandir}/man8/shorewall-lite.8.gz
+%attr(0644,root,root) %{_mandir}/man8/shorewall-lite.8.gz
 
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Mon Jul 02 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.0-0RC1
 * Sun Jun 24 2007 Tom Eastep tom@shorewall.net
 - Updated to 4.0.0-0Beta7
 * Wed Jun 20 2007 Tom Eastep tom@shorewall.net

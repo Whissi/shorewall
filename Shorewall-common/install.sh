@@ -231,7 +231,7 @@ else
     first_install="Yes"
 fi
 
-install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0555 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
 
 echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 
@@ -304,7 +304,7 @@ delete_file ${PREFIX}/usr/share/shorewall/prog.footer
 # Install wait4ifup
 #
 
-install_file wait4ifup ${PREFIX}/usr/share/shorewall/wait4ifup 0555
+install_file wait4ifup ${PREFIX}/usr/share/shorewall/wait4ifup 0755
 
 echo
 echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall/wait4ifup"
@@ -687,13 +687,13 @@ rm -f *.gz
 
 for f in *.5; do
     gzip $f
-    run_install -D  -m 0444 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
+    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
     echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
 done
 
 for f in *.8; do
     gzip $f
-    run_install -D  -m 0444 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
+    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
     echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
 done
 
@@ -704,7 +704,7 @@ echo "Man Pages Installed"
 #
 # Install the firewall script
 #
-install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0555
+install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0755
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -n "$DEBIAN" ]; then

@@ -169,7 +169,7 @@ chmod 755 ${PREFIX}/usr/share/shorewall-perl/Shorewall
 # Install the Compiler
 #
 
-install_file compiler.pl ${PREFIX}/usr/share/shorewall-perl/compiler.pl 0555
+install_file compiler.pl ${PREFIX}/usr/share/shorewall-perl/compiler.pl 0755
 
 echo
 echo "Compiler installed in ${PREFIX}/usr/share/shorewall-perl/compiler.pl"
@@ -179,7 +179,7 @@ echo "Compiler installed in ${PREFIX}/usr/share/shorewall-perl/compiler.pl"
 #
 for f in Shorewall/*.pm ; do
     install_file $f ${PREFIX}/usr/share/shorewall-perl/$f 0644
-    echo "Library ${f%.*} file installed as ${PREFIX}/usr/share/shorewall-perl/$f"
+    echo "Module ${f%.*} installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
 
 #
@@ -193,7 +193,7 @@ done
 #
 # Install buildports.pl and create Shorewall::Ports
 #
-install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0555
+install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0755
 
 if [ -n "$INSTALL_PORTS_PM" ]; then
     if ./buildports.pl > ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm; then

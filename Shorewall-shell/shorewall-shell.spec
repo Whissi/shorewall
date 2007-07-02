@@ -1,13 +1,11 @@
 %define name shorewall-shell
 %define version 4.0.0
 %define release 0RC1
-%define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
 Name: %{name}
 Version: %{version}
 Release: %{release}
-Prefix: %{prefix}
 License: GPL
 Packager: Tom Eastep <teastep@shorewall.net>
 Group: Networking/Utilities
@@ -15,8 +13,8 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: iptables iproute shorewall_common
-Provides: shorewall_compiler
+Requires: iptables iproute shorewall-common >= 4.0.0
+Provides: shorewall_compiler = %{version}-%{release}
 Provides: shorewall = %{version}-%{release}
 Obsoletes: shorewall < 4.0.0-0Beta7
 
@@ -49,16 +47,16 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(0644,root,root,0755)
 %attr(0755,root,root) %dir /usr/share/shorewall-shell
 
-%attr(0555,root,root) /usr/share/shorewall-shell/compiler
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.accounting
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.actions
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.maclist
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.nat
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.providers
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.proxyarp
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.tc
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.tcrules
-%attr(0444,root,root) /usr/share/shorewall-shell/lib.tunnels
+%attr(0755,root,root) /usr/share/shorewall-shell/compiler
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.accounting
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.actions
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.maclist
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.nat
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.providers
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.proxyarp
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.tc
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.tcrules
+%attr(0644,root,root) /usr/share/shorewall-shell/lib.tunnels
 %attr(0644,root,root) /usr/share/shorewall-shell/prog.footer
 %attr(0644,root,root) /usr/share/shorewall-shell/prog.header
 %attr(0644,root,root) /usr/share/shorewall-shell/version

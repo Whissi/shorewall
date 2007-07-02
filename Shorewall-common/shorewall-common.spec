@@ -23,9 +23,11 @@ The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 (iptables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
-This package contains those Shorewall components required by both of the 
-available compiler packages. To be fully functional, this package requires
-installation of either shorewall-shell or shorewall-perl 
+Shorewall offers two alternative firewall compilers, shorewall-perl and
+shorewall-shell. The shorewall-perl compilers is suggested for new installed
+systems and shorewall-shell is provided for backwards compability and smooth
+system upgrades because shorewall perl is not fully compatible with all legacy
+configurations.
 
 %prep
 
@@ -106,19 +108,19 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) /etc/shorewall/Makefile
 
-%attr(0555,root,root) /sbin/shorewall
+%attr(0755,root,root) /sbin/shorewall
 
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/actions.std
 %attr(0644,root,root) /usr/share/shorewall/action.Drop
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
-%attr(0555,root,root) /usr/share/shorewall/firewall
+%attr(0755,root,root) /usr/share/shorewall/firewall
 %attr(0777,root,root) /usr/share/shorewall/functions
-%attr(0444,root,root) /usr/share/shorewall/lib.base
-%attr(0444,root,root) /usr/share/shorewall/lib.cli
-%attr(0444,root,root) /usr/share/shorewall/lib.config
-%attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
+%attr(0644,root,root) /usr/share/shorewall/lib.base
+%attr(0644,root,root) /usr/share/shorewall/lib.cli
+%attr(0644,root,root) /usr/share/shorewall/lib.config
+%attr(0644,root,root) /usr/share/shorewall/lib.dynamiczones
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall/macro.Amanda
 %attr(0644,root,root) /usr/share/shorewall/macro.Auth
@@ -184,7 +186,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/modules
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
-%attr(0555,root,root) /usr/share/shorewall/wait4ifup
+%attr(0755,root,root) /usr/share/shorewall/wait4ifup
 
 %attr(0644,root,root) /usr/share/shorewall/configfiles/shorewall.conf
 %attr(0644,root,root) /usr/share/shorewall/configfiles/zones
@@ -220,35 +222,35 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcdevices
 %attr(0644,root,root) /usr/share/shorewall/configfiles/Makefile
 
-%attr(0444,root,root) %{_mandir}/man5/shorewall-accounting.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-actions.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-blacklist.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall.conf.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-ecn.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-exclusion.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-hosts.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-interfaces.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-masq.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-nat.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-nesting.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-netmap.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-params.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-policy.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-providers.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-proxyarp.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-rfc1918.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-route_rules.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-routestopped.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-rules.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-tcclasses.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-tcdevices.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-tcrules.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-tos.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-tunnels.5.gz
-%attr(0444,root,root) %{_mandir}/man5/shorewall-zones.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-accounting.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-actions.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-blacklist.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall.conf.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-ecn.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-exclusion.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-hosts.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-interfaces.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-masq.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-nat.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-nesting.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-netmap.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-params.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-policy.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-providers.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-proxyarp.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-rfc1918.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-route_rules.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-routestopped.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-rules.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-tcclasses.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-tcdevices.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-tcrules.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-tos.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-tunnels.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-zones.5.gz
 
-%attr(0444,root,root) %{_mandir}/man8/shorewall.8.gz
+%attr(0644,root,root) %{_mandir}/man8/shorewall.8.gz
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 

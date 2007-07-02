@@ -308,7 +308,7 @@ echo "Common functions linked through ${PREFIX}/usr/share/shorewall-lite/functio
 # Install Shorecap
 #
 
-install_file shorecap ${PREFIX}/usr/share/shorewall-lite/shorecap 0555
+install_file shorecap ${PREFIX}/usr/share/shorewall-lite/shorecap 0755
 
 echo
 echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall-lite/shorecap"
@@ -317,7 +317,7 @@ echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall-lite/sh
 # Install wait4ifup
 #
 
-install_file wait4ifup ${PREFIX}/usr/share/shorewall-lite/wait4ifup 0555
+install_file wait4ifup ${PREFIX}/usr/share/shorewall-lite/wait4ifup 0755
 
 echo
 echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall-lite/wait4ifup"
@@ -338,13 +338,13 @@ rm -f *.gz
 
 for f in *.5; do
     gzip $f
-    run_install -D -m 444 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
+    run_install -D -m 644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
     echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
 done
 
 for f in *.8; do
     gzip $f
-    run_install -D -m 444 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
+    run_install -D -m 644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
     echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
 done
 

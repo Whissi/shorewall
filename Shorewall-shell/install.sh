@@ -224,7 +224,7 @@ chmod 755 ${PREFIX}/usr/share/shorewall-shell
 # Install the Compiler
 #
 
-install_file compiler ${PREFIX}/usr/share/shorewall-shell/compiler 0555
+install_file compiler ${PREFIX}/usr/share/shorewall-shell/compiler 0755
 
 echo
 echo "Compiler installed in ${PREFIX}/usr/share/shorewall-shell/compiler"

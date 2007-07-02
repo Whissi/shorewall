@@ -942,6 +942,7 @@ sub ensure_config_path() {
 sub validate_shorewall_common() {
     my $f = "$globals{SHAREDIR}/version";
     fatal_error "$f does not exist" unless -f $f;
+    fatal_error "$f is empty" unless -s _;
     open V, '<', $f or fatal_error "Cannot open $f: $!";
     my $version = <V>;
     close V;

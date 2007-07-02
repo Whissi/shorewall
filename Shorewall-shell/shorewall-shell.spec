@@ -24,6 +24,10 @@ The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 (iptables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
+Shorewall-shell is a part of Shorewall that alows running shorewall with
+legacy configurations. Shorewall-perl is preferred compiler, please use it
+for new installations.
+
 %prep
 
 %setup

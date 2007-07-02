@@ -27,7 +27,6 @@ administrators to centralize the configuration of Shorewall-based firewalls.
 %prep
 
 %setup
-Prefix: %{prefix}
 
 %build
 

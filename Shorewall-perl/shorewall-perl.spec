@@ -47,7 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 %post
 
 if /usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm; then
-    chmod 0744 /usr/share/shorewall-perl/Shorewall/Ports.pm
+    chmod 0644 /usr/share/shorewall-perl/Shorewall/Ports.pm
 else
     echo "The buildports.pl tool failed -- installing the fallback Protocol/Ports Module"
     cp -a /usr/share/shorewall-perl/Shorewall/FallbackPorts.pm /usr/share/shorewall-perl/Shorewall/Ports.pm
@@ -67,26 +67,26 @@ fi
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.functions
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.footer
 %attr(0644,root,root) /usr/share/shorewall-perl/version
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Accounting.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Actions.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Chains.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Common.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Compiler.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Config.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/FallbackPorts.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Hosts.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Interfaces.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/IPAddrs.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Macros.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Nat.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Policy.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Proc.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Providers.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Proxyarp.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Rules.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Tc.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Tunnels.pm
-%attr(0744,root,root) /usr/share/shorewall-perl/Shorewall/Zones.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Accounting.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Actions.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Chains.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Common.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Compiler.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Config.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/FallbackPorts.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Hosts.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Interfaces.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/IPAddrs.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Macros.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Nat.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Policy.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Proc.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Providers.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Proxyarp.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Rules.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Tc.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Tunnels.pm
+%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Zones.pm
 
 %doc COPYING releasenotes.txt
 

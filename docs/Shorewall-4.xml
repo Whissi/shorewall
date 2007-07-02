@@ -243,14 +243,13 @@
       </simplelist>The -C option overrides the setting in
     shorewall.conf.</para>
 
-    <para>Example:<programlisting><command>shorewall restart -C perl</command></programlisting>Regardless
-    of the setting of SHOREWALL_COMPILER, there is one change in Shorewall
-    operation that is triggered simply by installing shorewall-perl. Your
-    params file will be processed during compilation with the shell's '-a'
-    option which causes any variables that you set or create in that file to
-    be automatically exported. Since the params file is processed before
-    shorewall.conf, using -a insures that the settings of your params
-    variables are available to the new compiler should its use be specified in
-    shorewall.conf.</para>
+    <para>Example:<programlisting><command>shorewall restart -C perl</command></programlisting></para>
+
+    <para>When the Shorewall-perl compiler has been selected, the
+    <filename>params</filename> file is processed using the
+    <option>-a</option> option which causes all variables set within the file
+    to be exported automatically by the shell. The Shorewall-perl compiler
+    uses the current environmental variables to perform variable expansion
+    within the other Shorewall configuration files.</para>
   </section>
 </article>

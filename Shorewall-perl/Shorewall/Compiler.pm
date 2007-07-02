@@ -104,13 +104,6 @@ sub generate_script_1() {
 		);
     }
 
-    copy "$globals{SHAREDIRPL}lib.base";
-
-    emitj ( '################################################################################',
-	    '# End of /usr/share/shorewall-perl/lib.base',
-	    '################################################################################'
-	  );
-    
     emit "TEMPFILE=\n";
 
     for my $exit qw/init start tcclear started stop stopped clear/ {

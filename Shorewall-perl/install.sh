@@ -182,6 +182,9 @@ for f in Shorewall/*.pm ; do
     echo "Module ${f%.*} installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
 
+install_file lib.base ${PREFIX}/usr/share/shorewall-perl/lib.base 0644
+echo "Shell library lib.base installed as ${PREFIX}/usr/share/shorewall-perl/lib.base";
+
 #
 # Install the program skeleton files
 #

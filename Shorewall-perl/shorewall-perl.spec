@@ -63,6 +63,7 @@ fi
 
 %attr(755,root,root) /usr/share/shorewall-perl/buildports.pl
 %attr(755,root,root) /usr/share/shorewall-perl/compiler.pl
+%attr(0644,root,root) /usr/share/shorewall-perl/lib.base
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.header
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.functions
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.footer

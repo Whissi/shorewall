@@ -96,22 +96,21 @@ sub generate_script_1() {
 		'VARDIR=/var/lib/shorewall-lite',
 		'PRODUCT="Shorewall Lite"'
 		);
-
-	copy "$globals{SHAREDIR}/lib.base";
-
-	emitj ( '################################################################################',
-		'# End of /usr/share/shorewall/lib.base',
-		'################################################################################'
-		);
     } else {
 	emitj ( 'SHAREDIR=/usr/share/shorewall',
 		'CONFDIR=/etc/shorewall',
 		'VARDIR=/var/lib/shorewall',
 		'PRODUCT=\'Shorewall\'',
-		'. /usr/share/shorewall/lib.base'
 		);
     }
 
+    copy "$globals{SHAREDIRPL}/lib.base";
+
+    emitj ( '################################################################################',
+	    '# End of /usr/share/shorewall-perl/lib.base',
+	    '################################################################################'
+	  );
+    
     emit "TEMPFILE=\n";
 
     for my $exit qw/init start tcclear started stop stopped clear/ {

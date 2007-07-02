@@ -129,8 +129,6 @@ sub initialize() {
 		    TC_SCRIPT => '',
 		    VERSION =>  '4.0.0-RC1',
 		    CAPVERSION => 30405 ,
-		    MIN_COMMON_VERSION => 40000 ,
-		    MIN_COMMON_VERSION_PRINTABLE => '4.0.0',
 		  );
     #
     # From shorewall.conf file
@@ -177,7 +175,9 @@ sub initialize() {
 		DROP_DEFAULT => undef,
 		REJECT_DEFAULT => undef,
 		ACCEPT_DEFAULT => undef,
-		QUEUE_DEFAULT => undef,
+		QUEUE_DEFAULT => undef,		    MIN_COMMON_VERSION => 40000 ,
+		    MIN_COMMON_VERSION_PRINTABLE => '4.0.0',
+
 		#
 		# RSH/RCP Commands
 		#
@@ -217,7 +217,9 @@ sub initialize() {
 		USE_ACTIONS=> undef,
 		OPTIMIZE => undef,
 		EXPORTPARAMS => undef,
-		SHOREWALL_COMPILER => undef,
+		SHOREWALL_COMPILER => undef,		    MIN_COMMON_VERSION => 40000 ,
+		    MIN_COMMON_VERSION_PRINTABLE => '4.0.0',
+
 		#
 		# Packet Disposition
 		#

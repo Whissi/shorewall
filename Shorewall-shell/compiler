@@ -35,8 +35,11 @@
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
 
-COMMON_VERSION=40000
-COMMON_VERSION_PRINTABLE=4.0.0
+BASE_VERSION=40000
+BASE_VERSION_PRINTABLE=4.0.0
+CONFIG_VERSION=40000
+CONFIG_VERSION_PRINTABLE=4.0.0
+
 
 #
 # Fatal error -- stops the compiler after issuing the error message
@@ -5741,7 +5744,8 @@ done
 
 VERSION=$(cat $SHELLSHAREDIR/version)
 
-[ $SHOREWALL_LIBVERSION -ne $COMMON_VERSION ] || fatal_error "Shorewall-shell $VERSION requires Shorewall-common $MIN_COMMON_VERSION_PRINTABLE"
+[ "$SHOREWALL_LIBVERSION"    -eq $BASE_VERSION ]   || fatal_error "Shorewall-shell $VERSION requires Shorewall-common lib.base version $BASE_VERSION_PRINTABLE"
+[ "$SHOREWALL_CONFIGVERSION" -eq $CONFIG_VERSION ] || fatal_error "Shorewall-shell $VERSION requires Shorewall-common lib.config version $CONFIG_VERSION_PRINTABLE"
 
 PROGRAM=compiler
 

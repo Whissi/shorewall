@@ -122,30 +122,18 @@ sub generate_script_1() {
     }
 
     emitj ( 'initialize()',
-	    '{'
+	    '{',
+	    '    #',
+	    '    # These variables are required by the library functions called in this script',
+	    '    #'
 	    );
 
     push_indent;
 
     if ( $export ) {
-	emitj ( '#',
-		'# These variables are required by the library functions called in this script',
-		'#',
-		'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' );
+	emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' );
     } else {
-	emitj ( 'if [ ! -f ${SHAREDIR}/version ]; then',
-		'    fatal_error "This script requires Shorewall which do not appear to be installed on this system (did you forget \"-e\" when you compiled?)"',
-		'fi',
-		'',
-		'local version=$(cat ${SHAREDIR}/version)',
-		'',
-		'if [ ${SHOREWALL_LIBVERSION:-0} -lt 30403 ]; then',
-		'    fatal_error "This script requires Shorewall version 3.4.3 or later; current version is $version"',
-		'fi',
-		'#',
-		'# These variables are required by the library functions called in this script',
-		'#',
-		qq(CONFIG_PATH="$config{CONFIG_PATH}") );
+	emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") );
     }
 
     propagateconfig;

@@ -275,33 +275,43 @@ stop_firewall() {
 
     deletechain shorewall
 
-    determine_capabilities
-
     run_stop_exit;
 
-    if [ -n "$MANGLE_ENABLED" ]; then
-	run_iptables -t mangle -F
-	run_iptables -t mangle -X
-	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    qt $IPTABLES -t mangle -P $chain ACCEPT
-	done
-    fi
+EOF
 
-    if [ -n "$RAW_TABLE" ]; then
-	run_iptables -t raw -F
-	run_iptables -t raw -X
-	for chain in PREROUTING OUTPUT; do
-	    qt $IPTABLES -t raw -P $chain ACCEPT
-	done
-    fi
+    if ( $capabilities{MANGLE_ENABLED} ) {
+	emit <<'EOF';
+    run_iptables -t mangle -F
+    run_iptables -t mangle -X
+    for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	qt $IPTABLES -t mangle -P $chain ACCEPT
+    done
 
-    if [ -n "$NAT_ENABLED" ]; then
+EOF
+    }
+
+    if ( $capabilities{RAW_TABLE} ) {
+	emit <<'EOF';
+    run_iptables -t raw -F
+    run_iptables -t raw -X
+    for chain in PREROUTING OUTPUT; do
+	qt $IPTABLES -t raw -P $chain ACCEPT
+    done
+    
+EOF
+    }
+
+    if ( $capabilities{NAT_ENABLED} ) {
+	emit <<'EOF';
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
 	    qt $IPTABLES -t nat -P $chain ACCEPT
 	done
-    fi
 
+EOF
+    }
+
+    emit <<'EOF';
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub

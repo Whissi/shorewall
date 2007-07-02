@@ -104,7 +104,7 @@ sub generate_script_1() {
 		);
     }
 
-    copy "$globals{SHAREDIRPL}/lib.base";
+    copy "$globals{SHAREDIRPL}lib.base";
 
     emitj ( '################################################################################',
 	    '# End of /usr/share/shorewall-perl/lib.base',

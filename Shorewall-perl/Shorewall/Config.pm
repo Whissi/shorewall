@@ -1091,7 +1091,7 @@ sub get_configuration( $ ) {
 
     warning_message 'DELAYBLACKLISTLOAD=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{DELAYBLACKLISTLOAD};
 
-    default_yes_no 'LOGTAGONLY'                 , '';
+    default_yes_no 'LOGTAGONLY'                 , ''; $globals{LOGTAGONLY} = $config{LOGTAGONLY};
     default_yes_no 'RFC1918_STRICT'             , '';
     default_yes_no 'SAVE_IPSETS'                , '';
 

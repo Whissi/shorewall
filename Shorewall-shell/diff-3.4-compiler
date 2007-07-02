@@ -1,6 +1,16 @@
 --- /home/teastep/shorewall/branches/3.4/Shorewall/compiler	2007-06-30 08:39:22.000000000 -0700
-+++ compiler	2007-07-02 10:12:28.000000000 -0700
-@@ -673,11 +673,11 @@
++++ compiler	2007-07-02 10:15:12.000000000 -0700
+@@ -35,6 +35,9 @@
+ #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
+ #	    VERBOSE                             Standard Shorewall verbosity control.
+ 
++MIN_COMMON_VERSION=40000
++MIN_COMMON_VERSION_PRINTABLE=4.0.0
++
+ #
+ # Fatal error -- stops the compiler after issuing the error message
+ #
+@@ -673,11 +676,11 @@
      progress_message2 "Compiling IP Forwarding..."
  
      case "$IP_FORWARDING" in
@@ -14,7 +24,7 @@
  	    save_progress_message "IP Forwarding Disabled!"
  	    save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
  	    ;;
-@@ -3767,7 +3767,7 @@
+@@ -3767,7 +3770,7 @@
  
  	save_progress_message "Setting up Route Filtering..."
  
@@ -23,7 +33,7 @@
  	    indent >&3 << __EOF__
  
  for f in /proc/sys/net/ipv4/conf/*; do
-@@ -3791,8 +3791,10 @@
+@@ -3791,8 +3794,10 @@
  
  	save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
  
@@ -35,7 +45,7 @@
  	fi
  
  	save_command "[ -n \"\$NOROUTES\" ] || ip route flush cache"
-@@ -3808,7 +3810,7 @@
+@@ -3808,7 +3813,7 @@
  
  	save_progress_message "Setting up Martian Logging..."
  
@@ -44,7 +54,7 @@
  	    indent >&3 << __EOF__
  
  for f in /proc/sys/net/ipv4/conf/*; do
-@@ -3831,9 +3833,12 @@
+@@ -3831,9 +3836,12 @@
  __EOF__
  	    done
  	
@@ -58,7 +68,7 @@
  	fi
  
      fi
-@@ -4889,7 +4894,7 @@
+@@ -4889,7 +4897,7 @@
  		;;
  	esac
  
@@ -67,13 +77,13 @@
      }
  
      progress_message2 "Initializing..."
-@@ -5731,6 +5736,10 @@
+@@ -5731,6 +5739,10 @@
      fi
  done
  
 +VERSION=$(cat $SHELLSHAREDIR/version)
 +
-+[ $SHOREWALL_LIBVERSION -ge $MIN_COMMON_VERSION ] || fatal_error "Shorewall-shell $VERSION requires Shorewall-common >= 4.0.0" 
++[ $SHOREWALL_LIBVERSION -ge $MIN_COMMON_VERSION ] || fatal_error "Shorewall-shell $VERSION requires Shorewall-common >= $MIN_COMMON_VERSION_PRINTABLE" 
 +
  PROGRAM=compiler
  

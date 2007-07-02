@@ -129,6 +129,8 @@ sub initialize() {
 		    TC_SCRIPT => '',
 		    VERSION =>  '4.0.0-RC1',
 		    CAPVERSION => 30405 ,
+		    MIN_COMMON_VERSION => 40000 ,
+		    MIN_COMMON_VERSION_PRINTABLE => '4.0.0',
 		  );
     #
     # From shorewall.conf file
@@ -935,6 +937,21 @@ sub ensure_config_path() {
 }
 
 #
+# Ensure that the version of Shorewall-common currently installed is acceptable
+#
+sub validate_shorewall_common() {
+    my $f = "$globals{SHAREDIR}/version";
+    fatal_error "$f does not exist" unless -f $f;
+    open V, '<', $f or fatal_error "Cannot open $f: $!";
+    my $version = <V>;
+    close V;
+    chomp $version;
+    fatal_error "Invalid $f contents" unless $version =~ /(\d+)\.(\d+)\.(\d+)/;
+    $version = ( $1 * 10000 ) + ( $2 * 100 ) + $3;
+    fatal_error "Shorewall-perl $globals{VERSION} requires shorewall-common >= $globals{MIN_COMMON_VERSION_PRINTABLE}" unless $version >= $globals{MIN_COMMON_VERSION};
+}   
+   
+#
 # Set $shorewall_dir
 #
 sub set_shorewall_dir( $ ) {
@@ -1028,6 +1045,8 @@ sub get_capabilities( $ ) {
 sub get_configuration( $ ) {
 
     my $export = $_[0];
+
+    validate_shorewall_common;
 
     ensure_config_path;
 

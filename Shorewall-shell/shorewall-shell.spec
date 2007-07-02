@@ -13,7 +13,9 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: iptables iproute shorewall-common = 4.0.0-0RC1
+Requires: iptables
+Requires: iproute
+Requires: shorewall-common >= 4.0.0-0RC1
 Provides: shorewall_compiler = %{version}-%{release}
 Provides: shorewall = %{version}-%{release}
 Obsoletes: shorewall < 4.0.0-0Beta7
@@ -25,8 +27,8 @@ The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
 Shorewall-shell is a part of Shorewall that alows running shorewall with
-legacy configurations. Shorewall-perl is preferred compiler, please use it
-for new installations.
+legacy configurations. Shorewall-perl is the preferred compiler, please use
+it for new installations.
 
 %prep
 

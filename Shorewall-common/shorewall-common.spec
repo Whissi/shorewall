@@ -26,8 +26,8 @@ a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 Shorewall offers two alternative firewall compilers, shorewall-perl and
 shorewall-shell. The shorewall-perl compilers is suggested for new installed
 systems and shorewall-shell is provided for backwards compability and smooth
-system upgrades because shorewall perl is not fully compatible with all legacy
-configurations.
+legacy system upgrades because shorewall perl is not fully compatible with
+all legacy configurations.
 
 %prep
 

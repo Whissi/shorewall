@@ -1,5 +1,5 @@
 --- ../Shorewall-common/lib.base	2007-07-02 15:50:32.000000000 -0700
-+++ prog.header	2007-07-02 16:17:48.000000000 -0700
++++ prog.header	2007-07-02 16:27:59.000000000 -0700
 @@ -1,48 +1,29 @@
  #!/bin/sh
  #
@@ -68,36 +68,10 @@
  #
  # Message to stderr
  #
-@@ -85,46 +66,6 @@
+@@ -111,20 +92,6 @@
  }
  
  #
--# Split a colon-separated list into a space-separated list
--#
--split() {
--    local ifs=$IFS
--    IFS=:
--    echo $*
--    IFS=$ifs
--}
--
--#
--# Search a list looking for a match -- returns zero if a match found
--# 1 otherwise
--#
--list_search() # $1 = element to search for , $2-$n = list
--{
--    local e=$1
--
--    while [ $# -gt 1 ]; do
--	shift
--	[ "x$e" = "x$1" ] && return 0
--    done
--
--    return 1
--}
--
--#
 -# Undo the effect of 'separate_list()'
 -#
 -combine_list()
@@ -115,27 +89,7 @@
  # Suppress all output for a command
  #
  qt()
-@@ -148,19 +89,6 @@
- }
- 
- #
--# Source a user exit file if it exists
--#
--run_user_exit() # $1 = file name
--{
--    local user_exit=$(find_file $1)
--
--    if [ -f $user_exit ]; then
--	progress_message "Processing $user_exit ..."
--	. $user_exit
--    fi
--}
--
--#
- # Set a standard chain's policy
- #
- setpolicy() # $1 = name of chain, $2 = policy
-@@ -310,83 +238,6 @@
+@@ -310,83 +277,6 @@
  }
  
  #
@@ -219,7 +173,7 @@
  #  Note: The following set of IP address manipulation functions have anomalous
  #        behavior when the shell only supports 32-bit signed arithmatic and
  #        the IP address is 128.0.0.0 or 128.0.0.1.
-@@ -607,40 +458,6 @@
+@@ -607,40 +497,6 @@
      fi
  }
  
@@ -260,7 +214,7 @@
  #
  # Query NetFilter about the existence of a filter chain
  #
-@@ -879,93 +696,6 @@
+@@ -879,21 +735,6 @@
  }
  
  #
@@ -279,30 +233,13 @@
 -}
 -
 -#
--# Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
--#
--find_file()
--{
--    local saveifs= directory
--
--    case $1 in
--	/*)
--	    echo $1
--	    ;;
--	*)
--	    for directory in $(split $CONFIG_PATH); do
--		if [ -f $directory/$1 ]; then
--		    echo $directory/$1
--		    return
--		fi
--	    done
--
--	    echo ${CONFDIR}/$1
--	    ;;
--    esac
--}
--
--#
+ # Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
+ #
+ find_file()
+@@ -918,54 +759,6 @@
+ }
+ 
+ #
 -# Get fully-qualified name of file
 -#
 -resolve_file() # $1 = file name
@@ -354,7 +291,7 @@
  # Set the Shorewall state
  #
  set_state () # $1 = state
-@@ -1127,46 +857,6 @@
+@@ -1127,46 +920,6 @@
  
  }
  
@@ -401,7 +338,7 @@
  #
  # Delete IP address
  #
-@@ -1286,82 +976,6 @@
+@@ -1286,82 +1039,6 @@
      cut -b -${1}
  }
  
@@ -484,7 +421,7 @@
  delete_tc1()
  {
      clear_one_tc() {
-@@ -1496,65 +1110,3 @@
+@@ -1496,65 +1173,3 @@
  
      echo echo 
  }

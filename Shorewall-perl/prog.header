@@ -66,6 +66,32 @@ progress_message3() # $* = Message
 }
 
 #
+# Split a colon-separated list into a space-separated list
+#
+split() {
+    local ifs=$IFS
+    IFS=:
+    echo $*
+    IFS=$ifs
+}
+
+#
+# Search a list looking for a match -- returns zero if a match found
+# 1 otherwise
+#
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+#
 # Suppress all output for a command
 #
 qt()
@@ -86,6 +112,19 @@ shorewall_is_started() {
 my_pathname() {
     cd $(dirname $0)
     echo $PWD/$(basename $0)
+}
+
+#
+# Source a user exit file if it exists
+#
+run_user_exit() # $1 = file name
+{
+    local user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	progress_message "Processing $user_exit ..."
+	. $user_exit
+    fi
 }
 
 #
@@ -693,6 +732,30 @@ mywhich() {
     done
 
     return 2
+}
+
+#
+# Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
+#
+find_file()
+{
+    local saveifs= directory
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	*)
+	    for directory in $(split $CONFIG_PATH); do
+		if [ -f $directory/$1 ]; then
+		    echo $directory/$1
+		    return
+		fi
+	    done
+
+	    echo ${CONFDIR}/$1
+	    ;;
+    esac
 }
 
 #

@@ -1,5 +1,5 @@
---- /home/teastep/shorewall/branches/3.4/Shorewall/compiler	2007-06-18 10:11:02.000000000 -0700
-+++ compiler	2007-06-22 13:51:59.000000000 -0700
+--- /home/teastep/shorewall/branches/3.4/Shorewall/compiler	2007-06-30 08:39:22.000000000 -0700
++++ compiler	2007-07-02 10:12:28.000000000 -0700
 @@ -673,11 +673,11 @@
      progress_message2 "Compiling IP Forwarding..."
  
@@ -58,7 +58,7 @@
  	fi
  
      fi
-@@ -4874,7 +4879,7 @@
+@@ -4889,7 +4894,7 @@
  		;;
  	esac
  
@@ -67,3 +67,14 @@
      }
  
      progress_message2 "Initializing..."
+@@ -5731,6 +5736,10 @@
+     fi
+ done
+ 
++VERSION=$(cat $SHELLSHAREDIR/version)
++
++[ $SHOREWALL_LIBVERSION -ge $MIN_COMMON_VERSION ] || fatal_error "Shorewall-shell $VERSION requires Shorewall-common >= 4.0.0" 
++
+ PROGRAM=compiler
+ 
+ COMMAND="$1"

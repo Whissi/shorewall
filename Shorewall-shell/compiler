@@ -4201,7 +4201,11 @@ activate_rules()
 		*.*.*.*|+*)
 		    if [ "$networks" != 0.0.0.0/0 ]; then
 			if ! list_search $interface $need_broadcast ; then
-			    interface_has_option $interface detectnets && need_broadcast="$need_broadcast $interface"
+			    if interface_has_option $interface detectnets; then
+				need_broadcast="$need_broadcast $interface"
+				iface=$(chain_base $interface)
+				eval need_bcast_$iface=\"$(match_source_hosts $networks)\"
+			    fi
 			fi
 		    fi
 		    ;;
@@ -4212,9 +4216,6 @@ activate_rules()
 	    for interface in $need_broadcast ; do
 		run_iptables -A $(out_chain $interface) -d 255.255.255.255 -j $chain1
 		run_iptables -A $(out_chain $interface) -d 224.0.0.0/4     -j $chain1
-		if [ $chain3 = ACCEPT -o $chain3 = "${zone}2${zone}" ]; then
-		    run_iptables -A $(forward_chain $interface) $(match_dest_dev $interface) -d 255.255.255.255 -j $chain3;
-		fi
 	    done
 	fi
 	#
@@ -4351,6 +4352,16 @@ activate_rules()
 		if [  $num_ifaces -lt 2 -a -z "$routeback" -a -z "$exclusions" ] ; then
 		    continue
 		fi
+		
+		if [ -n "$chain3" ]; then
+		    for interface in $need_broadcast ; do
+			if interface_has_option $interface routeback; then
+			    iface=$(chain_base $interface)
+			    eval source=\"\$need_bcast_$iface\"
+			    run_iptables -A $(forward_chain $interface) $source $(match_dest_dev $interface) -d 255.255.255.255 -j $chain3;
+			fi
+		    done
+		fi
 	    else
 		routeback=
 		num_ifaces=0
@@ -4418,14 +4429,14 @@ activate_rules()
 		    interface=${host%%:*}
 		    networks=${host#*:}
 
-		    chain3=$(forward_chain $interface)
+		    chain4=$(forward_chain $interface)
 
 		    for host1 in $dest_hosts; do
 			interface1=${host1%%:*}
 			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables2 -A $chain3 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain
+			    run_iptables2 -A $chain4 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain
 			fi
 		    done
 		done
@@ -5724,6 +5735,10 @@ for library in lib.base lib.config; do
 	fatal_error "Installation Error: $FUNCTIONS does not exist!"
     fi
 done
+
+VERSION=$(cat $SHELLSHAREDIR/version)
+
+[ $SHOREWALL_LIBVERSION -ge $MIN_COMMON_VERSION ] || fatal_error "Shorewall-shell $VERSION requires Shorewall-common >= 4.0.0" 
 
 PROGRAM=compiler
 

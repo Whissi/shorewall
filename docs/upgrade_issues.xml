@@ -90,8 +90,9 @@
 error: Failed dependencies:
 shorewall_compiler is needed by shorewall-common-4.0.0-1.noarch
 gateway:~ #</programlisting>You must either:<programlisting><command>rpm -Uvh shorewall-shell-4.0.0.noarch.rpm shorewall-common-4.0.0.noarch.rpm</command></programlisting>or<programlisting><command>rpm -Uvh shorewall-shell-4.0.0.noarch.rpm shorewall-perl-4.0.0.noarch.rpm shorewall-common-4.0.0.noarch.rpm</command></programlisting>If
-        you don't want shorewall-shell, use the second command
-        then<programlisting><command>rpm -e shorewall-shell</command></programlisting>If
+        you don't want shorewall-shell, you must use the second command
+        (installing both shorewall-shell and shorewall-perl) then remove
+        shorewall-shell using this command:<programlisting><command>rpm -e shorewall-shell</command></programlisting>If
         you are upgrading using the tarball, you must install shorewall-shell
         and/or shorewall-perl before you upgrade using shorewall-common.
         Otherwise, the install.sh script fails with:<simplelist>
@@ -104,9 +105,10 @@ gateway:~ #</programlisting>You must either:<programlisting><command>rpm -Uvh sh
         continue to use the shorewall-shell compiler.<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2
 tar -jxf shorewall-shell-4.0.0.tar.bz2
 
-cd shorewall-shell-4.0.0
+pushd shorewall-shell-4.0.0
 ./install.sh
-cd ../shorewall-common-4.0.0
+popd
+pushd shorewall-common-4.0.0
 ./install.sh
 shorewall check
 shorewall restart</command></programlisting>Example 2: You have shorewall
@@ -114,9 +116,10 @@ shorewall restart</command></programlisting>Example 2: You have shorewall
         to 4.0. You do not need the shell-based compiler.<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2
 tar -jxf shorewall-perl-4.0.0.tar.bz2
 
-cd shorewall-perl-4.0.0
+pushd shorewall-perl-4.0.0
 ./install.sh
-cd ../shorewall-common-4.0.0
+popd
+pushd /shorewall-common-4.0.0
 ./install.sh
 shorewall check
 shorewall restart</command></programlisting> The RPMs are set up so that if
@@ -138,7 +141,7 @@ shorewall restart</command></programlisting> The RPMs are set up so that if
 
       <listitem>
         <para>The <option>:noah</option> option is now the default for ipsec
-        tunnels. Tunnels that use AH (protocol 51) must specify the
+        tunnels. Tunnels that use AH (protocol 51) must specify
         <option>ipsec:ah</option> in the TYPE column.</para>
       </listitem>
     </orderedlist>

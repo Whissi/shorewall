@@ -1951,13 +1951,13 @@ sub create_netfilter_load() {
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';
     #
-    # Now generate the actual iptabes-restore command
+    # Now generate the actual iptables-restore command
     #
     emitj( 'exec 3>&-',
 	   '',
 	   'progress_message2 "Running iptables-restore..."',
 	   '',
-	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE'
+	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
 	 );
 
     emitj( 'if [ $? != 0 ]; then',

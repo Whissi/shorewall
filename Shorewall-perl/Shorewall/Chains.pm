@@ -116,6 +116,7 @@ our @EXPORT = qw( STANDARD
 		  get_interface_addresses
 		  set_global_variables
 		  create_netfilter_load
+		  create_blacklist_reload
 
 		  @policy_chains
 		  %chain_table
@@ -299,10 +300,6 @@ sub initialize() {
     %interfaceaddr  = ();
     %interfaceaddrs = ();
     %interfacenets  = ();
-    #
-    # State of the generator.
-    #
-    $state = NULL_STATE;
     #
     #  When true, we've emitted a comment about global variable initialization
     #
@@ -1886,6 +1883,8 @@ sub set_global_variables() {
 #
 sub create_netfilter_load() {
 
+    $state = NULL_STATE;
+  
     emitj( 'setup_netfilter()',
 	   '{'
 	   );
@@ -1938,8 +1937,7 @@ sub create_netfilter_load() {
 	for my $chainref ( @chains ) {
 	    my $name = $chainref->{name};
 	    for my $rule ( @{$chainref->{rules}} ) {
-		$rule = "-A $name $rule" unless substr( $rule, 0, 1) eq '~';
-		emitr $rule;
+		emitr( substr( $rule, 0, 1 ) eq '~' ? $rule : "-A $name $rule" );
 	    }
 	}
 	#
@@ -1958,6 +1956,63 @@ sub create_netfilter_load() {
 	   'progress_message2 "Running iptables-restore..."',
 	   '',
 	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
+	 );
+
+    emitj( 'if [ $? != 0 ]; then',
+	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
+	   "fi\n"
+	   );
+
+    pop_indent;
+
+    emit "}\n";
+}
+
+#
+# Generate the netfilter input
+#
+sub create_blacklist_reload() {
+
+    $state = NULL_STATE;
+  
+    emitj( 'blacklist_reload()',
+	   '{'
+	   );
+
+    push_indent;
+
+    save_progress_message "Preparing iptables-restore input...";
+
+    emit '';
+    #
+    # We always write the input into a file then pass the file to iptables-restore. That way, if things go wrong,
+    # the user (and Shorewall support) has something to look at to determine the error
+    #
+    emit 'exec 3>${VARDIR}/.iptables-restore-input';
+
+    emitr '*filter';
+    emitr ':blacklst - [0:0]';
+
+    my $chainref = $filter_table->{blacklst};
+
+    for my $rule ( @{$chainref->{rules}} ) {
+	emitr( substr( $rule, 0, 1 ) eq '~' ? $rule : "-A blacklst $rule" );
+    }
+    #
+    # Commit the changes to the table
+    #
+    emitr 'COMMIT';
+
+    emit_unindented '__EOF__' unless $state == CMD_STATE;
+    emit '';
+    #
+    # Now generate the actual iptables-restore command
+    #
+    emitj( 'exec 3>&-',
+	   '',
+	   'progress_message2 "Running iptables-restore..."',
+	   '',
+	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux'
 	 );
 
     emitj( 'if [ $? != 0 ]; then',

@@ -604,6 +604,7 @@ sub generate_script_3() {
 
     progress_message2 "Creating iptables-restore input...";
     create_netfilter_load;
+    create_blacklist_reload;
 
     emit "#\n# Start/Restart the Firewall\n#";
     emit 'define_firewall() {';
@@ -628,7 +629,10 @@ if [ $COMMAND = restore ]; then
     set_state "Started"
 else
     if [ $COMMAND = refresh ]; then
+        blacklist_reload
         run_refresh_exit
+        $IPTABLES -N shorewall
+        set_state "Started"
     else
         setup_netfilter
         restore_dynamic_rules
@@ -636,8 +640,9 @@ else
         $IPTABLES -N shorewall
         set_state "Started"
         run_started_exit
-        cp -f $(my_pathname) ${VARDIR}/.restore
     fi
+        
+    cp -f $(my_pathname) ${VARDIR}/.restore
 fi
 
 date > ${VARDIR}/restarted

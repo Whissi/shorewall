@@ -810,13 +810,17 @@
         <term><emphasis role="bold">refresh</emphasis></term>
 
         <listitem>
-          <para>The rules involving the the black list, ECN control rules, and
-          traffic shaping are recreated to reflect any changes made to your
-          configuration files. Existing connections are untouched. Under
-          Shorewall-perl, <command>refresh</command> preforms the same action
-          as <command>restart</command> (<command>refresh</command> requires
-          that Shorewall is already running and does not accept a directory
-          name as an argument).</para>
+          <para>Shorewall-shell: The rules involving the the black list, ECN
+          control rules, and traffic shaping are recreated to reflect any
+          changes made to your configuration files. Existing connections are
+          untouched.</para>
+
+          <para>Shorewall-perl: All steps performed by
+          <command>restart</command> are performed by
+          <command>refresh</command> with the exception that
+          <command>refresh</command> only recreates the static blacklist while
+          <command>restart</command> recreates the entire Netfilter
+          ruleset.</para>
         </listitem>
       </varlistentry>
 

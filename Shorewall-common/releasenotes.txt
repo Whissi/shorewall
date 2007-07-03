@@ -340,6 +340,7 @@ Migration Considerations:
        following exceptions:
 
        - The refresh command is rejected if Shorewall is not running.
+       - The refresh command only rebuilds the 'blacklst' chain.
        - A directory name may not be specified in the refresh command.
 
     g) Some run-time scripts have been converted to compile time
@@ -357,14 +358,9 @@ Migration Considerations:
 
            my $chainref = $chain_table{'filter'}{'INPUT'};
 
-       Some run-time scripts are simply eliminated because they no
-       longer make any sense under Shorewall-perl:
-
-	continue  - This script was designed to allow you to add
-	            special rules during [re]start.
-	            Shorewall-perl doesn't need such rules.
-	refresh   - The 'refresh' command is the same as 'restart'
-	refreshed
+       The continue script is eliminated. That script was designed to
+       allow you to add special rules during [re]start. Shorewall-perl
+       doesn't need such rules.
 
     h) The /etc/shorewall/tos file now has zone-independent SOURCE and
        DEST columns as do all other files except the rules and policy

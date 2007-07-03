@@ -1993,9 +1993,7 @@ sub create_blacklist_reload() {
     emitr '*filter';
     emitr ':blacklst - [0:0]';
 
-    my $chainref = $filter_table->{blacklst};
-
-    for my $rule ( @{$chainref->{rules}} ) {
+    for my $rule ( @{$filter_table->{blacklst}{rules}} ) {
 	emitr( substr( $rule, 0, 1 ) eq '~' ? $rule : "-A blacklst $rule" );
     }
     #

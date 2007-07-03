@@ -98,7 +98,10 @@ sub generate_script_1() {
 	emit "}\n";
     }
 
-    emitj ( 'initialize()',
+    emitj ( '#',
+	    '# This function initializes the global variables used by the program',
+	    '#',
+	    'initialize()',
 	    '{',
 	    '    #',
 	    '    # These variables are required by the library functions called in this script',

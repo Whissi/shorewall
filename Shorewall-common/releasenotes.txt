@@ -37,6 +37,8 @@ Problems corrected in 4.0.0 Beta 7.
 3)  "shorewall start" and "shorewall restart" no longer fail on SELinux
     due to iptables-restore not being allowed to read from /var.
 
+4)  ipsec zones are now allowed in the GATEWAY ZONE(S) column.
+
 Other changes in Shorewall 4.0.0 RC 1.
 
 1)  The shorewall-perl RPM may no longer be installed under Shorewall
@@ -47,6 +49,14 @@ Other changes in Shorewall 4.0.0 RC 1.
 
 3)  ":noah" is now the default for all IPSEC tunnels. Tunnels that use
     AH (protocol 51) must specify "ipsec:ah" in the TYPE column.
+
+4)  The 'refresh' command has been restored. It now behaves like
+    'restart' except:
+
+    - 'refresh' fails if Shorewall is not started.
+    - A directory name cannot be passed to 'refresh'.
+    - 'refresh' only rebuilds the static blacklist while 'restore'
+      rebuilds the entire Netfilter ruleset.
 
 Migration Considerations:
 

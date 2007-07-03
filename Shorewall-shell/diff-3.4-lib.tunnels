@@ -1,0 +1,34 @@
+--- /home/teastep/shorewall/branches/3.4/Shorewall/lib.tunnels	2007-03-22 15:27:26.000000000 -0700
++++ lib.tunnels	2007-07-03 07:57:16.000000000 -0700
+@@ -37,19 +37,28 @@
+ 
+     setup_one_ipsec() # $1 = Tunnel Kind $2 = gateway zones
+     {
+-    	local kind=$1 noah=
++    	local kind=$1 noah=noah
+ 
+ 	case $kind in
+ 	    *:*)
+ 	    	noah=${kind#*:}
+-		[ $noah = noah -o $noah = NOAH ] || fatal_error "Invalid IPSEC modifier $noah in tunnel \"$tunnel\""
++		case $noah in
++		    ah|AH)
++			noah=
++			;;
++		    noah|NOAH)
++			;;
++		    *)
++			fatal_error "Invalid IPSEC modifier $noah in tunnel \"$tunnel\""
++			;;
++		esac
+ 		kind=${kind%:*}
+ 		;;
+ 	esac
+ 
+ 	[ $kind = IPSEC ] && kind=ipsec
+ 
+-	[ $kind = ipsec ] || noah=noah
++	[ $kind = ipsec ] || [ "$noah" = noah ] || fatal_error ":ah not allowed on ipsecnat tunnels"
+ 
+ 	options="-m state --state NEW -j ACCEPT"
+ 	addrule2 $inchain	  -p 50	 $source -j ACCEPT

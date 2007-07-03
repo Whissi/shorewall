@@ -46,11 +46,18 @@ sub setup_tunnels() {
 
 	( $kind, my ( $qualifier , $remainder ) ) = split( /:/, $kind, 3 );
 
+	my $noah = 1;
+
 	fatal_error "Invalid IPSEC modified ($qualifier:$remainder)" if defined $remainder;
 
-	fatal_error "Invalid IPSEC modifier ($qualifier)" if $qualifier && ( $qualifier ne 'noah' );
-
-	my $noah = $qualifier || ($kind ne 'ipsec' );
+	if ( defined $qualifier ) {
+	    if ( $qualifier eq 'ah' ) {
+		fatal_error ":ah not allowed with ipsecnat tunnels" if $kind eq 'ipsecnat';
+		$noah = 0;
+	    } else {
+		fatal_error "Invalid IPSEC modifier ($qualifier)" if $qualifier ne 'noah';
+	    }
+	}
 
 	my $options = '-m state --state NEW -j ACCEPT';
 

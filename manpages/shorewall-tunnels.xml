@@ -34,7 +34,7 @@
       <varlistentry>
         <term><emphasis role="bold">TYPE</emphasis> — {<emphasis
         role="bold">ipsec</emphasis>[<emphasis
-        role="bold">:noah</emphasis>]|<emphasis
+        role="bold">:{noah</emphasis>|ah}]|<emphasis
         role="bold">ipsecnat</emphasis>|<emphasis
         role="bold">ipip</emphasis>|<emphasis
         role="bold">gre</emphasis>|<emphasis
@@ -65,11 +65,12 @@
         <emphasis role="bold">generic</emphasis>       - Other tunnel type</programlisting>
 
           <para>If the type is <emphasis role="bold">ipsec</emphasis>, it may
-          be followed by <emphasis role="bold">:noah</emphasis> to indicate
-          that the Authentication Headers protocol (51) is not used by the
-          tunnel. NAT traversal is only supported with ESP (protocol 50) so
-          <emphasis role="bold">ipsecnat</emphasis> tunnels don't require a
-          <emphasis role="bold">noah</emphasis> option (<emphasis
+          be followed by <emphasis role="bold">:ah</emphasis> to indicate that
+          the Authentication Headers protocol (51) is used by the tunnel (the
+          default is <option>:noah</option> which means that protocol 51 is
+          not used). NAT traversal is only supported with ESP (protocol 50) so
+          <emphasis role="bold">ipsecnat</emphasis> tunnels don't allow the
+          <emphasis role="bold">ah</emphasis> option (<emphasis
           role="bold">ipsecnat:noah</emphasis> may be specified but is
           redundant).</para>
 

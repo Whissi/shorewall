@@ -135,7 +135,63 @@
     </table>
 
     <para>The above may or may not work — your milage may vary. NAT Traversal
-    is definitely a better solution.</para>
+    is definitely a better solution. To use NAT traversal:<table id="Table2">
+        <title>/etc/shorewall/rules with NAT Traversal</title>
+
+        <tgroup cols="7">
+          <thead>
+            <row>
+              <entry align="center">ACTION</entry>
+
+              <entry align="center">SOURCE</entry>
+
+              <entry align="center">DESTINATION</entry>
+
+              <entry align="center">PROTOCOL</entry>
+
+              <entry align="center">PORT</entry>
+
+              <entry align="center">CLIENT PORT</entry>
+
+              <entry align="center">ORIGINAL DEST</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>DNAT</entry>
+
+              <entry>net:192.0.2.224</entry>
+
+              <entry>loc:192.168.1.12</entry>
+
+              <entry>udp</entry>
+
+              <entry>4500</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>DNAT</entry>
+
+              <entry>net:192.0.2.224</entry>
+
+              <entry>loc:192.168.1.12</entry>
+
+              <entry>udp</entry>
+
+              <entry>500</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
 
     <para>If you want to be able to give access to all of your local systems
     to the remote network, you should consider running a VPN client on your

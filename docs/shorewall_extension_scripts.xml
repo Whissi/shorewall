@@ -101,8 +101,11 @@
 
     <listitem>
       <para>refresh -- invoked while the firewall is being refreshed but
-      before the blacklst chains have been rebuilt (Note: Shorewall-perl does
-      not rebuild the blacklist during <command>refresh</command>).</para>
+      before the blacklst chains have been rebuilt.</para>
+    </listitem>
+
+    <listitem>
+      <para>refreshed -- invoked after the firewall has been refreshed.</para>
     </listitem>
 
     <listitem>
@@ -407,6 +410,18 @@
 
                 <entry>tcclear</entry>
               </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>refresh</entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>refreshed</entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable></para>
@@ -465,20 +480,11 @@
           <member>maclog</member>
         </simplelist>Note that in the 'initdone' script, there is no default
       chain ($chainref). You can objtain a reference to a standard chain
-      by:<programlisting>my $chainref = $chain_table{&lt;table&gt;}{&lt;chain name&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting>Some
-      run-time scripts are simply eliminated because they no longer make any
-      sense under Shorewall-perl:<itemizedlist>
-          <listitem>
-            <para>continue - This script was designed to allow you to add
-            special temporary rules during [re]start. Shorewall-perl doesn't
-            need such rules.</para>
-          </listitem>
-
-          <listitem>
-            <para>refresh - The <command>refresh</command> command is the same
-            as <command>restart</command></para>
-          </listitem>
-        </itemizedlist></para>
+      by:<programlisting>my $chainref = $chain_table{&lt;table&gt;}{&lt;chain name&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting>The
+      continue script has been eliminated because it no longer make any sense
+      under Shorewall-perl. This script was designed to allow you to add
+      special temporary rules during [re]start. Shorewall-perl doesn't need
+      such rules.</para>
     </listitem>
   </itemizedlist>
 </article>

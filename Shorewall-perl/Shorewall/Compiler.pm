@@ -90,7 +90,7 @@ sub generate_script_1() {
 
     copy $globals{SHAREDIRPL} . 'prog.header';
 
-    for my $exit qw/init start tcclear started stop stopped clear refresh/ {
+    for my $exit qw/init start tcclear started stop stopped clear refresh refreshed/ {
 	emit "run_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
@@ -533,7 +533,7 @@ sub generate_script_2 () {
 		"fi\n" );
     }
 
-    emitj ( 'run_init_exit',
+    emitj ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 	    '',
 	    'qt $IPTABLES -L shorewall -n && qt $IPTABLES -F shorewall && qt $IPTABLES -X shorewall',
 	    '',
@@ -630,7 +630,7 @@ if [ $COMMAND = restore ]; then
 else
     if [ $COMMAND = refresh ]; then
         blacklist_reload
-        run_refresh_exit
+        run_refreshed_exit
         $IPTABLES -N shorewall
         set_state "Started"
     else

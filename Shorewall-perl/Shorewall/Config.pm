@@ -551,10 +551,9 @@ sub read_a_line {
 	    #
 	    $line = '', next if $line =~ /^\s*$/;
 	    #
-	    # Expand Shell Variables using %ENV 
+	    # Expand Shell Variables using %ENV
 	    #
-	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
-	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/;
+	    $line = join( '', $1 , ( $ENV{$2} || '' ) , $3 ) while $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/ || $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/;
 
 	    if ( $line =~ /^\s*INCLUDE\s/ ) {
 

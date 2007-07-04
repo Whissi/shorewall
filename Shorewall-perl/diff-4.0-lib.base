@@ -1,20 +1,16 @@
 --- ../Shorewall-common/lib.base	2007-07-02 15:50:32.000000000 -0700
-+++ prog.header	2007-07-04 07:43:16.000000000 -0700
-@@ -1,48 +1,28 @@
++++ prog.header	2007-07-04 09:32:31.000000000 -0700
+@@ -1,48 +1,27 @@
 -#!/bin/sh
-+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
- #
+-#
 -# Shorewall 4.0 -- /usr/share/shorewall/lib.base
-+#     (c) 2006,2007 - Tom Eastep (teastep@shorewall.net)
+-#
+ #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
  #
--#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
- #
--#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007 - Tom Eastep (teastep@shorewall.net)
-+#	Options are:
+ #     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007 - Tom Eastep (teastep@shorewall.net)
  #
 -#	Complete documentation is available at http://shorewall.net
-+#	    -n				  Don't alter Routing
-+#	    -v and -q			  Standard Shorewall Verbosity control
++#	Options are:
  #
 -#	This program is free software; you can redistribute it and/or modify
 -#	it under the terms of Version 2 of the GNU General Public License
@@ -51,6 +47,9 @@
 -SHELLSHAREDIR=/usr/share/shorewall-shell
 -PERLSHAREDIR=/usr/share/shorewall-perl
 -
++#	    -n				  Don't alter Routing
++#	    -v and -q			  Standard Shorewall Verbosity control
++#
 +#	Commands are:
 +#
 +#	   start			  Starts the firewall
@@ -69,7 +68,7 @@
  #
  # Message to stderr
  #
-@@ -111,20 +91,6 @@
+@@ -111,20 +90,6 @@
  }
  
  #
@@ -90,7 +89,7 @@
  # Suppress all output for a command
  #
  qt()
-@@ -310,83 +276,6 @@
+@@ -310,83 +275,6 @@
  }
  
  #
@@ -174,7 +173,7 @@
  #  Note: The following set of IP address manipulation functions have anomalous
  #        behavior when the shell only supports 32-bit signed arithmatic and
  #        the IP address is 128.0.0.0 or 128.0.0.1.
-@@ -395,32 +284,6 @@
+@@ -395,32 +283,6 @@
  LEFTSHIFT='<<'
  
  #
@@ -207,7 +206,7 @@
  # Convert an IP address in dot quad format to an integer
  #
  decodeaddr() {
-@@ -456,88 +319,6 @@
+@@ -456,88 +318,6 @@
  }
  
  #
@@ -296,7 +295,7 @@
  # Netmask from CIDR
  #
  ip_netmask() {
-@@ -588,60 +369,6 @@
+@@ -588,60 +368,6 @@
  }
  
  #
@@ -357,7 +356,7 @@
  # Query NetFilter about the existence of a filter chain
  #
  chain_exists() # $1 = chain name
-@@ -879,21 +606,6 @@
+@@ -879,21 +605,6 @@
  }
  
  #
@@ -379,7 +378,7 @@
  # Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
  #
  find_file()
-@@ -918,54 +630,6 @@
+@@ -918,54 +629,6 @@
  }
  
  #
@@ -434,7 +433,7 @@
  # Set the Shorewall state
  #
  set_state () # $1 = state
-@@ -974,200 +638,6 @@
+@@ -974,200 +637,6 @@
  }
  
  #
@@ -635,7 +634,7 @@
  # Delete IP address
  #
  del_ip_addr() # $1 = address, $2 = interface
-@@ -1286,82 +756,6 @@
+@@ -1286,82 +755,6 @@
      cut -b -${1}
  }
  
@@ -718,7 +717,7 @@
  delete_tc1()
  {
      clear_one_tc() {
-@@ -1496,65 +890,6 @@
+@@ -1496,65 +889,6 @@
  
      echo echo 
  }

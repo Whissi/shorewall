@@ -284,32 +284,6 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 LEFTSHIFT='<<'
 
 #
-# Validate an IP address
-#
-valid_address() {
-    local x y
-    local ifs=$IFS
-
-    IFS=.
-
-    for x in $1; do
-	case $x in
-	    [0-9]|[0-9][0-9]|[1-2][0-9][0-9])
-		[ $x -lt 256 ] || { IFS=$ifs; return 2; }
-                ;;
-	    *)
-	        IFS=$ifs
-		return 2
-		;;
-	esac
-    done
-    
-    IFS=$ifs
-
-    return 0
-}
-
-#
 # Convert an IP address in dot quad format to an integer
 #
 decodeaddr() {
@@ -342,88 +316,6 @@ encodeaddr() {
     done
 
     echo $y
-}
-
-#
-# Enumerate the members of an IP range -- When using a shell supporting only
-# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
-#
-# Comes in two flavors:
-#
-# ip_range() - produces a mimimal list of network/host addresses that spans
-#              the range.
-#
-# ip_range_explicit() - explicitly enumerates the range.
-#
-ip_range() {
-    local first last l x y z vlsm
-
-    case $1 in
-	!*)
-	    #
-	    # Let iptables complain if it's a range
-	    #
-	    echo $1
-	    return
-	    ;;
-	[0-9]*.*.*.*-*.*.*.*)
-            ;;
-	*)
-	    echo $1
-	    return
-	    ;;
-    esac
-
-    first=$(decodeaddr ${1%-*})
-    last=$(decodeaddr ${1#*-})
-
-    if [ $first -gt $last ]; then
-	fatal_error "Invalid IP address range: $1"
-    fi
-
-    l=$(( $last + 1 ))
-
-    while [ $first -le $last ]; do
-	vlsm=
-	x=31
-	y=2
-	z=1
-
-	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
-	    vlsm=/$x
-	    x=$(( $x - 1 ))
-	    z=$y
-	    y=$(( $y * 2 ))
-	done
-
-	echo $(encodeaddr $first)$vlsm
-	first=$(($first + $z))
-    done
-}
-
-ip_range_explicit() {
-    local first last
-
-    case $1 in
-    [0-9]*.*.*.*-*.*.*.*)
-	;;
-    *)
-	echo $1
-	return
-	;;
-    esac
-
-    first=$(decodeaddr ${1%-*})
-    last=$(decodeaddr ${1#*-})
-
-    if [ $first -gt $last ]; then
-	fatal_error "Invalid IP address range: $1"
-    fi
-
-    while [ $first -le $last ]; do
-	echo $(encodeaddr $first)
-	first=$(($first + 1))
-    done
 }
 
 #
@@ -474,26 +366,6 @@ in_network() # $1 = IP address, $2 = CIDR network
     local netmask=$(ip_netmask $2)
 
     test $(( $(decodeaddr $1) & $netmask)) -eq $(( $(decodeaddr ${2%/*}) & $netmask ))
-}
-
-#
-# Netmask to VLSM
-#
-ip_vlsm() {
-    local mask=$(decodeaddr $1)
-    local vlsm=0
-    local x=$(( 128 << 24 )) # 0x80000000
-
-    while [ $(( $x & $mask )) -ne 0 ]; do
-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
-	vlsm=$(($vlsm + 1))
-    done
-
-    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
-	echo "Invalid net mask: $1" >&2
-    else
-	echo $vlsm
-    fi
 }
 
 #

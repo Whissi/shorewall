@@ -1,5 +1,5 @@
 --- ../Shorewall-common/lib.base	2007-07-02 15:50:32.000000000 -0700
-+++ prog.header	2007-07-03 10:27:47.000000000 -0700
++++ prog.header	2007-07-04 07:43:16.000000000 -0700
 @@ -1,48 +1,28 @@
 -#!/bin/sh
 +#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
@@ -174,10 +174,151 @@
  #  Note: The following set of IP address manipulation functions have anomalous
  #        behavior when the shell only supports 32-bit signed arithmatic and
  #        the IP address is 128.0.0.0 or 128.0.0.1.
-@@ -607,40 +496,6 @@
-     fi
+@@ -395,32 +284,6 @@
+ LEFTSHIFT='<<'
+ 
+ #
+-# Validate an IP address
+-#
+-valid_address() {
+-    local x y
+-    local ifs=$IFS
+-
+-    IFS=.
+-
+-    for x in $1; do
+-	case $x in
+-	    [0-9]|[0-9][0-9]|[1-2][0-9][0-9])
+-		[ $x -lt 256 ] || { IFS=$ifs; return 2; }
+-                ;;
+-	    *)
+-	        IFS=$ifs
+-		return 2
+-		;;
+-	esac
+-    done
+-    
+-    IFS=$ifs
+-
+-    return 0
+-}
+-
+-#
+ # Convert an IP address in dot quad format to an integer
+ #
+ decodeaddr() {
+@@ -456,88 +319,6 @@
  }
  
+ #
+-# Enumerate the members of an IP range -- When using a shell supporting only
+-# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
+-#
+-# Comes in two flavors:
+-#
+-# ip_range() - produces a mimimal list of network/host addresses that spans
+-#              the range.
+-#
+-# ip_range_explicit() - explicitly enumerates the range.
+-#
+-ip_range() {
+-    local first last l x y z vlsm
+-
+-    case $1 in
+-	!*)
+-	    #
+-	    # Let iptables complain if it's a range
+-	    #
+-	    echo $1
+-	    return
+-	    ;;
+-	[0-9]*.*.*.*-*.*.*.*)
+-            ;;
+-	*)
+-	    echo $1
+-	    return
+-	    ;;
+-    esac
+-
+-    first=$(decodeaddr ${1%-*})
+-    last=$(decodeaddr ${1#*-})
+-
+-    if [ $first -gt $last ]; then
+-	fatal_error "Invalid IP address range: $1"
+-    fi
+-
+-    l=$(( $last + 1 ))
+-
+-    while [ $first -le $last ]; do
+-	vlsm=
+-	x=31
+-	y=2
+-	z=1
+-
+-	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
+-	    vlsm=/$x
+-	    x=$(( $x - 1 ))
+-	    z=$y
+-	    y=$(( $y * 2 ))
+-	done
+-
+-	echo $(encodeaddr $first)$vlsm
+-	first=$(($first + $z))
+-    done
+-}
+-
+-ip_range_explicit() {
+-    local first last
+-
+-    case $1 in
+-    [0-9]*.*.*.*-*.*.*.*)
+-	;;
+-    *)
+-	echo $1
+-	return
+-	;;
+-    esac
+-
+-    first=$(decodeaddr ${1%-*})
+-    last=$(decodeaddr ${1#*-})
+-
+-    if [ $first -gt $last ]; then
+-	fatal_error "Invalid IP address range: $1"
+-    fi
+-
+-    while [ $first -le $last ]; do
+-	echo $(encodeaddr $first)
+-	first=$(($first + 1))
+-    done
+-}
+-
+-#
+ # Netmask from CIDR
+ #
+ ip_netmask() {
+@@ -588,60 +369,6 @@
+ }
+ 
+ #
+-# Netmask to VLSM
+-#
+-ip_vlsm() {
+-    local mask=$(decodeaddr $1)
+-    local vlsm=0
+-    local x=$(( 128 << 24 )) # 0x80000000
+-
+-    while [ $(( $x & $mask )) -ne 0 ]; do
+-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
+-	vlsm=$(($vlsm + 1))
+-    done
+-
+-    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
+-	echo "Invalid net mask: $1" >&2
+-    else
+-	echo $vlsm
+-    fi
+-}
+-
 -
 -#
 -# Chain name base for an interface -- replace all periods with underscores in the passed name.
@@ -212,10 +353,11 @@
 -    done
 -}
 -
- #
+-#
  # Query NetFilter about the existence of a filter chain
  #
-@@ -879,21 +734,6 @@
+ chain_exists() # $1 = chain name
+@@ -879,21 +606,6 @@
  }
  
  #
@@ -237,7 +379,7 @@
  # Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
  #
  find_file()
-@@ -918,54 +758,6 @@
+@@ -918,54 +630,6 @@
  }
  
  #
@@ -292,7 +434,7 @@
  # Set the Shorewall state
  #
  set_state () # $1 = state
-@@ -974,200 +766,6 @@
+@@ -974,200 +638,6 @@
  }
  
  #
@@ -493,7 +635,7 @@
  # Delete IP address
  #
  del_ip_addr() # $1 = address, $2 = interface
-@@ -1286,82 +884,6 @@
+@@ -1286,82 +756,6 @@
      cut -b -${1}
  }
  
@@ -576,7 +718,7 @@
  delete_tc1()
  {
      clear_one_tc() {
-@@ -1496,65 +1018,6 @@
+@@ -1496,65 +890,6 @@
  
      echo echo 
  }

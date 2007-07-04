@@ -855,7 +855,7 @@ to debug/develop the newnat interface.</programlisting></para>
       <para><emphasis role="bold">Answer</emphasis>: Add the
       <firstterm>routeback</firstterm> option to <filename
       class="devicefile">br0</filename> in <ulink
-      url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+      url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>.</para>
 
       <para>For more information on this type of configuration, see the <ulink
       url="SimpleBridge.html">Shorewall Simple Bridge
@@ -895,8 +895,8 @@ to debug/develop the newnat interface.</programlisting></para>
       messages. It always uses the LOG_KERN (kern) facility (see <quote>man
       openlog</quote>) and you get to choose the log level (again, see
       <quote>man syslog</quote>) in your <ulink
-      url="Documentation.htm#Policy">policies</ulink> and <ulink
-      url="Documentation.htm#Rules">rules</ulink>. The destination for
+      url="manpages/shorewall-policy.html">policies</ulink> and <ulink
+      url="manpages/shorewall-rules.html">rules</ulink>. The destination for
       messages logged by syslog is controlled by
       <filename>/etc/syslog.conf</filename> (see <quote>man
       syslog.conf</quote>). When you have changed /etc/syslog.conf, be sure to
@@ -1159,10 +1159,10 @@ DROP      net       fw      udp      10619</programlisting>
 
           <listitem>
             <para>You have a <ulink
-            url="Documentation.htm#Policy">policy</ulink> that specifies a log
+            url="manpages/shorewall-policy.html">policy</ulink> that specifies a log
             level and this packet is being logged under that policy. If you
             intend to ACCEPT this traffic then you need a <ulink
-            url="Documentation.htm#Rules">rule</ulink> to that effect.</para>
+            url="manpages/shorewall-rules.html">rule</ulink> to that effect.</para>
 
             <para>Beginning with Shorewall 3.3.3, packets logged out of these
             chains may have a source and/or destination that is not in any
@@ -1177,11 +1177,11 @@ DROP      net       fw      udp      10619</programlisting>
 
           <listitem>
             <para>Either you have a <ulink
-            url="Documentation.htm#Policy">policy</ulink> for <emphasis
+            url="manpages/shorewall-policy.html">policy</ulink> for <emphasis
             role="bold">&lt;zone1&gt;</emphasis> to <emphasis
             role="bold">&lt;zone2&gt;</emphasis> that specifies a log level
             and this packet is being logged under that policy or this packet
-            matches a <ulink url="Documentation.htm#Rules">rule</ulink> that
+            matches a <ulink url="manpages/shorewall-rules.html">rule</ulink> that
             includes a log level.</para>
           </listitem>
         </varlistentry>
@@ -1207,7 +1207,7 @@ DROP      net       fw      udp      10619</programlisting>
           <listitem>
             <para>The packet is being logged under the <emphasis
             role="bold">maclist</emphasis> <ulink
-            url="Documentation.htm#Interfaces">interface
+            url="manpages/shorewall-interfaces.html">interface
             option</ulink>.</para>
           </listitem>
         </varlistentry>
@@ -1218,7 +1218,7 @@ DROP      net       fw      udp      10619</programlisting>
           <listitem>
             <para>The packet is being logged under the <emphasis
             role="bold">logunclean</emphasis> <ulink
-            url="Documentation.htm#Interfaces">interface
+            url="manpages/shorewall-interfaces.html">interface
             option</ulink>.</para>
           </listitem>
         </varlistentry>
@@ -1229,7 +1229,7 @@ DROP      net       fw      udp      10619</programlisting>
           <listitem>
             <para>The packet is being logged under the <emphasis
             role="bold">dropunclean</emphasis> <ulink
-            url="Documentation.htm#Interfaces">interface option</ulink> as
+            url="manpages/shorewall-interfaces.html">interface option</ulink> as
             specified in the <emphasis role="bold">LOGUNCLEAN</emphasis>
             setting in <ulink url="Documentation.htm#Conf">
             <filename>/etc/shorewall/shorewall.conf</filename>
@@ -1260,7 +1260,7 @@ DROP      net       fw      udp      10619</programlisting>
             interfaces are the same, then you probably need the <emphasis
             role="bold">routeback</emphasis> option on that interface in
             <filename> <ulink
-            url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>
+            url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>
             </filename> or you need the <emphasis
             role="bold">routeback</emphasis> option in the relevant entry in
             <filename> <ulink
@@ -1294,7 +1294,7 @@ DROP      net       fw      udp      10619</programlisting>
           <listitem>
             <para>The packet is being logged because it failed the checks
             implemented by the <emphasis role="bold">tcpflags</emphasis>
-            <ulink url="Documentation.htm#Interfaces">interface
+            <ulink url="manpages/shorewall-interfaces.html">interface
             option</ulink>.</para>
           </listitem>
         </varlistentry>
@@ -1607,7 +1607,7 @@ Creating input Chains...
       connected through eth0 and the local zone is defined as all hosts
       connected through <filename class="devicefile">eth1</filename>. If you
       are running Shorewall 1.4.10 or later, you can consider setting the
-      <ulink url="Documentation.htm#Interfaces"> <emphasis
+      <ulink url="manpages/shorewall-interfaces.html"> <emphasis
       role="bold">detectnets</emphasis> interface option</ulink> on your local
       interface (<filename class="devicefile">eth1</filename> in the above
       example). That will cause Shorewall to restrict the local zone to only
@@ -1878,7 +1878,7 @@ iptables: Invalid argument
             url="blacklisting_support.htm">blacklisting</ulink> facility.
             Shorewall versions 2.0.0 and later filter these packets under the
             <firstterm>nosmurfs</firstterm> interface option in <ulink
-            url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+            url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -1888,7 +1888,7 @@ iptables: Invalid argument
 
           <listitem>
             <para><emphasis role="bold">Answer</emphasis>: Yes, if the <ulink
-            url="Documentation.htm#Interfaces">routefilter interface
+            url="manpages/shorewall-interfaces.html">routefilter interface
             option</ulink> is selected.</para>
           </listitem>
         </varlistentry>

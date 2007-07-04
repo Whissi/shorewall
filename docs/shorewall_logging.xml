@@ -52,7 +52,7 @@
       <listitem>
         <para>The packet is part of an established connecection. While the
         packet can be logged using LOG rules in the ESTABLISHED section of
-        <ulink url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>,
+        <ulink url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink>,
         that is not recommended because of the large amount of information
         that may be logged.</para>
       </listitem>
@@ -62,14 +62,14 @@
         established connection (such as a <ulink url="FTP.html">data
         connection associated with an FTP control connection</ulink>). These
         packets may be logged using LOG rules in the RELATED section of <ulink
-        url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>.</para>
+        url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink>.</para>
       </listitem>
 
       <listitem>
         <para>The packet is rejected because of an option in <ulink
         url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink> or
         <ulink
-        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.
+        url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>.
         These packets can be logged by setting the appropriate logging-related
         option in <ulink
         url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
@@ -77,7 +77,7 @@
 
       <listitem>
         <para>The packet matches a rule in <ulink
-        url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>. By
+        url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink>. By
         including a syslog level (see below) in the ACTION column of a rule
         (e.g., <quote>ACCEPT<emphasis role="bold">:info</emphasis> net $FW tcp
         22</quote>), the connection attempt will be logged at that
@@ -87,7 +87,7 @@
       <listitem>
         <para>The packet doesn't match a rule so it is handled by a policy
         defined in <ulink
-        url="Documentation.htm#Policy">/etc/shorewall/policy</ulink>. These
+        url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink>. These
         may be logged by specifying a syslog level in the LOG LEVEL column of
         the policy's entry (e.g., <quote>loc net ACCEPT <emphasis
         role="bold">info</emphasis></quote>).</para>

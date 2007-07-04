@@ -169,7 +169,7 @@
     </variablelist>
 
     <para>Zones are defined in the file <filename><ulink
-    url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink></filename>.</para>
+    url="manpages/shorewall-zones.html"><filename>/etc/shorewall/zones</filename></ulink></filename>.</para>
 
     <important>
       <para>The <filename>/etc/shorewall/zones</filename> file included in the
@@ -363,7 +363,7 @@ all              all                 REJECT     info</programlisting>
     class="devicefile">ppp0</filename> or <filename
     class="devicefile">ippp0</filename> then you will want to set CLAMPMSS=yes
     in <filename><ulink
-    url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
+    url="manpages/shorewall.conf.htmlig">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
 
     <para>Your <emphasis>Local Interface</emphasis> will be an Ethernet
     adapter (<filename class="devicefile">eth0</filename>,
@@ -444,7 +444,7 @@ loc      eth2           detect</programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
     <para>You may define more complicated zones using the<filename> <ulink
-    url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink></filename> file
+    url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink></filename> file
     but in most cases, that isn't necessary. See <ulink
     url="Shorewall_and_Aliased_Interfaces.html">Shorewall_and_Aliased_Interfaces.html</ulink>
     and <ulink url="Multiple_Zones.html">Multiple_Zones.html</ulink> for
@@ -1377,7 +1377,7 @@ Destination    Gateway     Genmask         Flags MSS Window irtt Iface
           <member><inlinegraphic fileref="images/BD21298_.gif" /></member>
 
           <member>SNAT is configured in Shorewall using the <filename><ulink
-          url="Documentation.htm#Masq">/etc/shorewall/masq</ulink></filename>
+          url="manpages/shorewall-masq.html">/etc/shorewall/masq</ulink></filename>
           file.</member>
         </simplelist>
 
@@ -1803,7 +1803,7 @@ ACCEPT   net             $FW                tcp    ssh     #SSH to the
 
       <para>If you haven't already, it would be a good idea to browse through
       <ulink
-      url="Documentation.htm#Config"><filename>/etc/shorewall/shorewall.conf</filename></ulink>
+      url="manpages/shorewall.conf.htmlig"><filename>/etc/shorewall/shorewall.conf</filename></ulink>
       just to see if there is anything there that might be of interest. You
       might also want to look at the other configuration files that you
       haven't touched yet just to get a feel for the other things that
@@ -2402,7 +2402,7 @@ foobar.net.      86400   IN A    192.0.2.177
     command and stopped using <quote>shorewall stop</quote>. When the firewall
     is stopped, routing is enabled on those hosts that have an entry in
     <filename><ulink
-    url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>.
+    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>.
     A running firewall may be restarted using the <quote>shorewall
     restart</quote> command. If you want to totally remove any trace of
     Shorewall from your Netfilter configuration, use <quote>shorewall
@@ -2411,7 +2411,7 @@ foobar.net.      86400   IN A    192.0.2.177
     <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
     <para>Edit the <filename><ulink
-    url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>
+    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>
     file and configure those systems that you want to be able to access the
     firewall when it is stopped.</para>
 
@@ -2419,7 +2419,7 @@ foobar.net.      86400   IN A    192.0.2.177
       <para>If you are connected to your firewall from the internet, do not
       issue a <quote>shorewall stop</quote> command unless you have added an
       entry for the IP address that you are connected from to <filename><ulink
-      url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>.
+      url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>.
       Also, I don't recommend using <quote>shorewall restart</quote>; it is
       better to create an <ulink
       url="starting_and_stopping_shorewall.htm"><emphasis>an alternate

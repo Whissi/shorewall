@@ -841,7 +841,7 @@ to debug/develop the newnat interface.</programlisting></para>
 
       <para><emphasis role="bold">Answer</emphasis>: Most likely, you need to
       set CLAMPMSS=Yes in <ulink
-      url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+      url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>.</para>
     </section>
 
     <section id="faq35">
@@ -904,7 +904,7 @@ to debug/develop the newnat interface.</programlisting></para>
       restart</quote>).</para>
 
       <para>By default, older versions of Shorewall rate-limited log messages
-      through <ulink url="Documentation.htm#Conf">settings</ulink> in
+      through <ulink url="manpages/shorewall.conf.html">settings</ulink> in
       <filename>/etc/shorewall/shorewall.conf</filename> -- If you want to log
       all messages, set:</para>
 
@@ -1120,7 +1120,7 @@ DROP      net       fw      udp      10619</programlisting>
             <para>The destination address is listed in
             <filename>/usr/share/shorewall/rfc1918</filename> with a <emphasis
             role="bold">logdrop</emphasis> target -- see <filename> <ulink
-            url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink>
+            url="manpages/shorewall-rfc1918.html">/usr/share/shorewall/rfc1918</ulink>
             </filename>.</para>
           </listitem>
         </varlistentry>
@@ -1132,7 +1132,7 @@ DROP      net       fw      udp      10619</programlisting>
             <para>The source or destination address is listed in
             <filename>/usr/share/shorewall/rfc1918</filename> with a <emphasis
             role="bold">logdrop</emphasis> target -- see <filename> <ulink
-            url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink>
+            url="manpages/shorewall-rfc1918.html">/usr/share/shorewall/rfc1918</ulink>
             </filename>.</para>
 
             <note>
@@ -1231,7 +1231,7 @@ DROP      net       fw      udp      10619</programlisting>
             role="bold">dropunclean</emphasis> <ulink
             url="manpages/shorewall-interfaces.html">interface option</ulink> as
             specified in the <emphasis role="bold">LOGUNCLEAN</emphasis>
-            setting in <ulink url="Documentation.htm#Conf">
+            setting in <ulink url="manpages/shorewall.conf.html">
             <filename>/etc/shorewall/shorewall.conf</filename>
             </ulink>.</para>
           </listitem>
@@ -1243,7 +1243,7 @@ DROP      net       fw      udp      10619</programlisting>
           <listitem>
             <para>The packet is being logged because the source IP is
             blacklisted in the <filename> <ulink
-            url="Documentation.htm#Blacklist">/etc/shorewall/blacklist</ulink>
+            url="manpages/shorewall-blacklist.html">/etc/shorewall/blacklist</ulink>
             </filename> file.</para>
           </listitem>
         </varlistentry>
@@ -1264,10 +1264,10 @@ DROP      net       fw      udp      10619</programlisting>
             </filename> or you need the <emphasis
             role="bold">routeback</emphasis> option in the relevant entry in
             <filename> <ulink
-            url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink>.</filename></para>
+            url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink>.</filename></para>
 
             <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
-            <ulink url="Documentation.htm#Conf">shorewall.conf</ulink>, such
+            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>, such
             packets may also be logged out of a &lt;zone&gt;2all chain or the
             all2all chain.</para>
           </listitem>
@@ -1282,7 +1282,7 @@ DROP      net       fw      udp      10619</programlisting>
             and look at the printed zone definitions).</para>
 
             <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
-            <ulink url="Documentation.htm#Conf">shorewall.conf</ulink>, such
+            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>, such
             packets may also be logged out of the fw2all chain or the all2all
             chain.</para>
           </listitem>
@@ -1733,7 +1733,7 @@ iptables: Invalid argument
       <para><emphasis role="bold">Answer:</emphasis> This usually happens when
       the firewall uses LDAP Authentication. The solution is to list your LDAP
       server(s) as <emphasis role="bold">critical</emphasis> in <ulink
-      url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>.</para>
+      url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>.</para>
     </section>
   </section>
 
@@ -1930,7 +1930,7 @@ iptables: Invalid argument
       modem in/out but still block all other rfc1918 addresses?</para>
 
       <para><emphasis role="bold">Answer:</emphasis> Add the following to
-      <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>
+      <ulink url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink>
       (Note: If you are running Shorewall 2.0.0 or later, you may need to
       first copy <filename>/usr/share/shorewall/rfc1918</filename> to
       <filename>/etc/shorewall/rfc1918</filename>):</para>

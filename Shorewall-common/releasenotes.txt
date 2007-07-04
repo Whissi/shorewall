@@ -25,10 +25,10 @@ Shorewall 4.0.0 RC 1
 Problems corrected in 4.0.0 Beta 7.
 
 1)  If 'routeback' and 'detectnets' were specified on an interface,
-    limited broadcasts (to 255.255.255.255) were dropped when forwarded
-    through the interface. This could cause broadcast-based
-    applications to fail when running through a bridge with
-    'detectnets'.
+    limited broadcasts (to 255.255.255.255) and multicasts were dropped
+    when forwarded through the interface. This could cause broadcast
+    and multicast based applications to fail when running through a
+    bridge with 'detectnets'.
 
 2)  Entries in the hosts file are now more carefully
     validated. Previously, very obvious errors would result in run-time

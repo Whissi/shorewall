@@ -1662,6 +1662,7 @@ sub generate_matrix() {
 			if ( get_interface_option( $interface, 'bridge' ) ) {
 			    for my $source ( keys %$sourceref ) {
 				add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-d 255.255.255.255 -j $chain3";
+				add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-d 224.0.0.0/4 -j $chain3";
 			    }
 			}
 		    }

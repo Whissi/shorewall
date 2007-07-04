@@ -4365,6 +4365,7 @@ activate_rules()
 			    iface=$(chain_base $interface)
 			    eval source=\"\$need_bcast_$iface\"
 			    run_iptables -A $(forward_chain $interface) $source $(match_dest_dev $interface) -d 255.255.255.255 -j $chain3;
+			    run_iptables -A $(forward_chain $interface) $source $(match_dest_dev $interface) -d 224.0.0.0/4 -j $chain3;
 			fi
 		    done
 		fi

@@ -62,7 +62,9 @@
         </listitem>
 
         <listitem>
-          <para>All extension scripts used are copied into the program. The
+          <para>All extension scripts used are copied into the program (with
+          the exception of <ulink url="shorewall_extension_scripts.htm">those
+          executed a compile-time by Shorewall-perl</ulink>). The
           ramifications of this are:</para>
 
           <itemizedlist>
@@ -142,8 +144,8 @@
     command:</para>
 
     <blockquote>
-      <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ]
-      &lt;path name&gt;</command></para>
+      <para><command>shorewall compile [ -e ] [ C {perl|shell} ] [
+      &lt;directory name&gt; ] &lt;path name&gt;</command></para>
     </blockquote>
 
     <para>where</para>
@@ -165,6 +167,16 @@
             supports. It rather reads those capabilities from
             <filename>/etc/shorewall/capabilities</filename>. See below for
             details.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-C {perl|shell}</term>
+
+          <listitem>
+            <para>Specifies the compiler to use. Overrides the
+            SHOREWALL_COMPILER setting in <ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -803,7 +815,7 @@ MANGLE_FORWARD                  # Mangle table has FORWARD chain</programlisting
     </blockquote>
 
     <para>The IPTABLES and MODULESDIR options have their <ulink
-    url="Documentation.htm#Conf">usual Shorewall default
+    url="manpages/shorewall.conf.html">usual Shorewall default
     values</ulink>.</para>
 
     <para>The <filename>capabilities</filename> file may then be copied to a

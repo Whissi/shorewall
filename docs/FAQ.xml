@@ -1159,10 +1159,11 @@ DROP      net       fw      udp      10619</programlisting>
 
           <listitem>
             <para>You have a <ulink
-            url="manpages/shorewall-policy.html">policy</ulink> that specifies a log
-            level and this packet is being logged under that policy. If you
-            intend to ACCEPT this traffic then you need a <ulink
-            url="manpages/shorewall-rules.html">rule</ulink> to that effect.</para>
+            url="manpages/shorewall-policy.html">policy</ulink> that specifies
+            a log level and this packet is being logged under that policy. If
+            you intend to ACCEPT this traffic then you need a <ulink
+            url="manpages/shorewall-rules.html">rule</ulink> to that
+            effect.</para>
 
             <para>Beginning with Shorewall 3.3.3, packets logged out of these
             chains may have a source and/or destination that is not in any
@@ -1181,8 +1182,8 @@ DROP      net       fw      udp      10619</programlisting>
             role="bold">&lt;zone1&gt;</emphasis> to <emphasis
             role="bold">&lt;zone2&gt;</emphasis> that specifies a log level
             and this packet is being logged under that policy or this packet
-            matches a <ulink url="manpages/shorewall-rules.html">rule</ulink> that
-            includes a log level.</para>
+            matches a <ulink url="manpages/shorewall-rules.html">rule</ulink>
+            that includes a log level.</para>
           </listitem>
         </varlistentry>
 
@@ -1209,31 +1210,6 @@ DROP      net       fw      udp      10619</programlisting>
             role="bold">maclist</emphasis> <ulink
             url="manpages/shorewall-interfaces.html">interface
             option</ulink>.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>logpkt</term>
-
-          <listitem>
-            <para>The packet is being logged under the <emphasis
-            role="bold">logunclean</emphasis> <ulink
-            url="manpages/shorewall-interfaces.html">interface
-            option</ulink>.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>badpkt</term>
-
-          <listitem>
-            <para>The packet is being logged under the <emphasis
-            role="bold">dropunclean</emphasis> <ulink
-            url="manpages/shorewall-interfaces.html">interface option</ulink> as
-            specified in the <emphasis role="bold">LOGUNCLEAN</emphasis>
-            setting in <ulink url="manpages/shorewall.conf.html">
-            <filename>/etc/shorewall/shorewall.conf</filename>
-            </ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -1267,9 +1243,9 @@ DROP      net       fw      udp      10619</programlisting>
             url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink>.</filename></para>
 
             <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
-            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>, such
-            packets may also be logged out of a &lt;zone&gt;2all chain or the
-            all2all chain.</para>
+            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>,
+            such packets may also be logged out of a &lt;zone&gt;2all chain or
+            the all2all chain.</para>
           </listitem>
         </varlistentry>
 
@@ -1282,9 +1258,9 @@ DROP      net       fw      udp      10619</programlisting>
             and look at the printed zone definitions).</para>
 
             <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
-            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>, such
-            packets may also be logged out of the fw2all chain or the all2all
-            chain.</para>
+            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>,
+            such packets may also be logged out of the fw2all chain or the
+            all2all chain.</para>
           </listitem>
         </varlistentry>
 
@@ -1930,7 +1906,8 @@ iptables: Invalid argument
       modem in/out but still block all other rfc1918 addresses?</para>
 
       <para><emphasis role="bold">Answer:</emphasis> Add the following to
-      <ulink url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink>
+      <ulink
+      url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink>
       (Note: If you are running Shorewall 2.0.0 or later, you may need to
       first copy <filename>/usr/share/shorewall/rfc1918</filename> to
       <filename>/etc/shorewall/rfc1918</filename>):</para>
@@ -2021,8 +1998,8 @@ ACCEPT     loc         modem     tcp       80</programlisting>
 eth0               eth1                        # eth1 = interface to local network</programlisting>
 
         <para>For an example of this when the ADSL/Cable modem is bridged, see
-        <ulink url="XenMyWay.html">my configuration</ulink>. In that case, I
-        masquerade using the IP address of my local interface!</para>
+        <ulink url="XenMyWay-Routed.html">my configuration</ulink>. In that
+        case, I masquerade using the IP address of my local interface!</para>
       </section>
     </section>
   </section>

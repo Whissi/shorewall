@@ -30,14 +30,16 @@ Problems corrected in 4.0.0 Beta 7.
     and multicast based applications to fail when running through a
     bridge with 'detectnets'.
 
-2)  Entries in the hosts file are now more carefully
-    validated. Previously, very obvious errors would result in run-time
-    errors.
+2)  Entries in the hosts file are now more carefully validated by
+    Shorewall-perl. Previously, very obvious typing errors would result
+    in run-time errors.
 
-3)  "shorewall start" and "shorewall restart" no longer fail on SELinux
-    due to iptables-restore not being allowed to read from /var.
+3)  "shorewall start" and "shorewall restart" with Shorewall-perl no
+    longer fail on SELinux due to iptables-restore not being allowed to
+    read from /var.
 
-4)  ipsec zones are now allowed in the GATEWAY ZONE(S) column.
+4)  ipsec zones are now allowed in the GATEWAY ZONE(S) column when
+    using Shorewall-perl.
 
 Other changes in Shorewall 4.0.0 RC 1.
 
@@ -55,7 +57,7 @@ Other changes in Shorewall 4.0.0 RC 1.
 
     - 'refresh' fails if Shorewall is not started.
     - A directory name cannot be passed to 'refresh'.
-    - 'refresh' only rebuilds the static blacklist while 'restore'
+    - 'refresh' only rebuilds the static blacklist whereas 'restore'
       rebuilds the entire Netfilter ruleset.
 
 Migration Considerations:
@@ -63,7 +65,7 @@ Migration Considerations:
 1)  Beginning with Shorewall 4.0.0, there is no single 'shorewall'
     package. Rather there are two compiler packages (shorewall-shell
     and shorewall-perl) and a set of base files (shorewall-common)
-    required by either compiler package.
+    which are required by either compiler package.
 
     Although the names of the packages are changing, you can upgrade
     without having to uninstall/reinstall.
@@ -89,7 +91,8 @@ Migration Considerations:
 	    shorewall-perl-4.0.0.noarch.rpm \
 	    shorewall-common-4.0.0.noarch.rpm
 
-    If you don't want shorewall-shell, use the second command then
+    If you don't want to use shorewall-perl exclusively then use the
+    second command above then
 
         rpm -e shorewall-shell
  
@@ -166,14 +169,13 @@ Migration Considerations:
                       T H E   B A D   N E W S:
     ------------------------------------------------------------------------
     There are a number of incompatibilities between the Perl-based compiler
-    and the Bourne-shell one. Some of these will probably go away by first
-    official release but most will not.
+    and the Bourne-shell one.
 
     a) The Perl-based compiler requires the following capabilities in your
        kernel and iptables.
 
-       - addrtype match (may be relaxed later)
-       - multiport match (will not be relaxed)
+       - addrtype match
+       - multiport match
 
        These capabilities are in current distributions.
 
@@ -202,7 +204,8 @@ Migration Considerations:
 
        b)  A new 'bridge' option is defined for entries in	
 	   /etc/shorewall/interfaces. Bridges should have this option
-	   specified.
+	   specified, even if you don't want to filter traffic going
+	   through the bridge.
 
        c)  Bridge ports must now be defined in
 	   /etc/shorewall/interfaces. The INTERFACE column contains
@@ -221,7 +224,8 @@ Migration Considerations:
 
        c)  You may not have policies or rules where the DEST is a BP
 	   zone but the source is not a BP zone. If you need such
-	   rules, you must use the BP zone's parent zone as the DEST.
+	   rules, you must use the BP zone's parent zone as the DEST
+	   zone.
 
        Example (Bridge br0 with ports eth1 and tap0):
 
@@ -272,8 +276,8 @@ Migration Considerations:
        If the CHAIN column contains '-', then:
 
        - If the SOURCE column in a rule includes the name of the
-         firewall zone (e.g., $FW), then the default chain to insert
-         the rule into is accountout only.
+         firewall zone (e.g., $FW), then the rule is add only
+         to the accountout chain.
 
        - Otherwise, if the DEST in the rule is any or all or 0.0.0.0/0,
 	 then the rule is added to both accounting and accountout.
@@ -282,15 +286,23 @@ Migration Considerations:
 
     d) The BROADCAST column in the interfaces file is essentially unused;
        if you enter anything in this column but '-' or 'detect', you will
-       receive a warning. This will be relaxed if and when the addrtype
-       match requirement is relaxed.
+       receive a warning.
 
-    e) Because the compiler is now written in Perl, your compile-time
-       extension scripts from earlier versions will no longer work.
-       Compile-time extension scripts are executed using the Perl
-       'eval `cat <file>`' mechanism. Be sure that each script returns a
-       'true' value; otherwise, the compiler will assume that the script
-       failed and will abort the compilation.
+    e) Because the compiler is written in Perl, some of your extension
+       scripts from earlier versions will no longer work because
+       Shorewall-perl runs those extension scripts at compile-time rather
+       than at run-time. 
+
+       Compile-time scripts are:
+
+           initdone
+	   maclog
+	   All per-chain scripts including those associated with actions.
+
+       Compile-time extension scripts are executed using the Perl 'eval
+       `cat <file>`' mechanism. Be sure that each script returns a
+       'true' value; otherwise, the compiler will assume that the
+       script failed and will abort the compilation.
 
        All scripts will need to begin with the following line:
 
@@ -345,6 +357,10 @@ Migration Considerations:
 			      'add',   #Command
 			      '-p tcp' #Pass as-is
                              );
+
+       See http://www.shorewall.net/4.0/shorewall_extension_scripts.htm
+       for further information about extension scripts under
+       Shorewall-perl.
 
     f) The 'refresh' command now works like 'restart' with the
        following exceptions:

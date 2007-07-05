@@ -473,14 +473,9 @@
                '' ,     #Log tag
                'add',   #Command
                '-p tcp' #Pass as-is
-               );</programlisting>Some run-time scripts have been converted to
-      compile time scripts:<simplelist>
-          <member>initdone</member>
-
-          <member>maclog</member>
-        </simplelist>Note that in the 'initdone' script, there is no default
-      chain ($chainref). You can obtain a reference to a standard chain
-      by:<programlisting>my $chainref = $chain_table{&lt;table&gt;}{&lt;chain name&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting></para>
+               );</programlisting>Note that in the 'initdone' script, there is
+      no default chain ($chainref). You can obtain a reference to a standard
+      chain by:<programlisting>my $chainref = $chain_table{&lt;table&gt;}{&lt;chain name&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting></para>
 
       <para>You can also use the hash references $filter_table, $mangle_table
       and $nat_table to access chain references in the three main
@@ -491,9 +486,10 @@
       <programlisting>my $chainref = $filter_table-&gt;{INPUT}; #Same as above with a few less keystrokes; runs faster too</programlisting>
 
       <para>The continue script has been eliminated because it no longer make
-      any sense under Shorewall-perl. This script was designed to allow you to
+      any sense under Shorewall-perl. That script was designed to allow you to
       add special temporary rules during [re]start. Shorewall-perl doesn't
-      need such rules.</para>
+      need such rules since the ruleset is instantianted atomically by
+      table.</para>
     </listitem>
   </itemizedlist>
 </article>

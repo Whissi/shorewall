@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Extension Scripts and Default Actions</title>
+    <title>Extension Scripts</title>
 
     <authorgroup>
       <author>
@@ -34,182 +34,185 @@
     </legalnotice>
   </articleinfo>
 
-  <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
-    later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
-    release.</emphasis></para>
-  </caution>
+  <section id="Scripts">
+    <title>Extension Scripts</title>
 
-  <para>Extension scripts are user-provided scripts that are invoked at
-  various points during firewall start, restart, stop and clear. The scripts
-  are placed in /etc/shorewall and are processed using the Bourne shell
-  <quote>source</quote> mechanism.</para>
+    <para>Extension scripts are user-provided scripts that are invoked at
+    various points during firewall start, restart, stop and clear. The scripts
+    are placed in /etc/shorewall and are processed using the Bourne shell
+    <quote>source</quote> mechanism.</para>
 
-  <caution>
-    <orderedlist>
+    <caution>
+      <orderedlist>
+        <listitem>
+          <para>Be sure that you actually need to use an extension script to
+          do what you want. Shorewall has a wide range of features that cover
+          most requirements.</para>
+        </listitem>
+
+        <listitem>
+          <para>DO NOT SIMPLY COPY RULES THAT YOU FIND ON THE NET INTO AN
+          EXTENSION SCRIPT AND EXPECT THEM TO WORK AND TO NOT BREAK SHOREWALL.
+          TO USE SHOREWALL EXTENSION SCRIPTS YOU MUST KNOW WHAT YOU ARE DOING
+          WITH RESPECT TO iptables/Netfilter AND SHOREWALL.</para>
+        </listitem>
+      </orderedlist>
+    </caution>
+
+    <para>The following scripts can be supplied:</para>
+
+    <itemizedlist>
       <listitem>
-        <para>Be sure that you actually need to use an extension script to do
-        what you want. Shorewall has a wide range of features that cover most
-        requirements.</para>
+        <para>init -- invoked early in <quote>shorewall start</quote> and
+        <quote>shorewall restart</quote></para>
       </listitem>
 
       <listitem>
-        <para>DO NOT SIMPLY COPY RULES THAT YOU FIND ON THE NET INTO AN
-        EXTENSION SCRIPT AND EXPECT THEM TO WORK AND TO NOT BREAK SHOREWALL.
-        TO USE SHOREWALL EXTENSION SCRIPTS YOU MUST KNOW WHAT YOU ARE DOING
-        WITH RESPECT TO iptables/Netfilter AND SHOREWALL.</para>
+        <para>initdone -- invoked after Shorewall has flushed all existing
+        rules but before any rules have been added to the builtin
+        chains.</para>
       </listitem>
-    </orderedlist>
-  </caution>
 
-  <para>The following scripts can be supplied:</para>
+      <listitem>
+        <para>start -- invoked after the firewall has been started or
+        restarted.</para>
+      </listitem>
 
-  <itemizedlist>
-    <listitem>
-      <para>init -- invoked early in <quote>shorewall start</quote> and
-      <quote>shorewall restart</quote></para>
-    </listitem>
+      <listitem>
+        <para>started -- invoked after the firewall has been marked as
+        'running'.</para>
+      </listitem>
 
-    <listitem>
-      <para>initdone -- invoked after Shorewall has flushed all existing rules
-      but before any rules have been added to the builtin chains.</para>
-    </listitem>
+      <listitem>
+        <para>stop -- invoked as a first step when the firewall is being
+        stopped.</para>
+      </listitem>
 
-    <listitem>
-      <para>start -- invoked after the firewall has been started or
-      restarted.</para>
-    </listitem>
+      <listitem>
+        <para>stopped -- invoked after the firewall has been stopped.</para>
+      </listitem>
 
-    <listitem>
-      <para>started -- invoked after the firewall has been marked as
-      'running'.</para>
-    </listitem>
+      <listitem>
+        <para>clear -- invoked after the firewall has been cleared.</para>
+      </listitem>
 
-    <listitem>
-      <para>stop -- invoked as a first step when the firewall is being
-      stopped.</para>
-    </listitem>
+      <listitem>
+        <para>refresh -- invoked while the firewall is being refreshed but
+        before the blacklst chains have been rebuilt.</para>
+      </listitem>
 
-    <listitem>
-      <para>stopped -- invoked after the firewall has been stopped.</para>
-    </listitem>
+      <listitem>
+        <para>refreshed -- invoked after the firewall has been
+        refreshed.</para>
+      </listitem>
 
-    <listitem>
-      <para>clear -- invoked after the firewall has been cleared.</para>
-    </listitem>
+      <listitem>
+        <para>continue -- invoked to allow you to insert special rules to
+        allow traffic while Shorewall is [re]starting. Any rules added in this
+        script should be deleted in your <emphasis>start</emphasis> script.
+        This script is invoked earlier in the [re]start process than is the
+        <emphasis>initdone</emphasis> script described above (Not used by
+        Shorewall Perl).</para>
+      </listitem>
 
-    <listitem>
-      <para>refresh -- invoked while the firewall is being refreshed but
-      before the blacklst chains have been rebuilt.</para>
-    </listitem>
+      <listitem>
+        <para>maclog -- (Added in Shorewall version 3.2.5) invoked while mac
+        filtering rules are being created. It is invoked once for each
+        interface having 'maclist' specified and it is invoked just before the
+        logging rule is added to the current chain (the name of that chain
+        will be in $CHAIN).</para>
+      </listitem>
+    </itemizedlist>
 
-    <listitem>
-      <para>refreshed -- invoked after the firewall has been refreshed.</para>
-    </listitem>
+    <para><emphasis role="bold">If your version of Shorewall doesn't have the
+    file that you want to use from the above list, you can simply create the
+    file yourself.</emphasis> You can also supply a script with the same name
+    as any of the filter chains in the firewall and the script will be invoked
+    after the /etc/shorewall/rules file has been processed but before the
+    /etc/shorewall/policy file has been processed.</para>
 
-    <listitem>
-      <para>continue -- invoked to allow you to insert special rules to allow
-      traffic while Shorewall is [re]starting. Any rules added in this script
-      should be deleted in your <emphasis>start</emphasis> script. This script
-      is invoked earlier in the [re]start process than is the
-      <emphasis>initdone</emphasis> script described above (Not used by
-      Shorewall Perl).</para>
-    </listitem>
+    <para>There are a couple of special considerations for commands in
+    extension scripts:</para>
 
-    <listitem>
-      <para>maclog -- (Added in Shorewall version 3.2.5) invoked while mac
-      filtering rules are being created. It is invoked once for each interface
-      having 'maclist' specified and it is invoked just before the logging
-      rule is added to the current chain (the name of that chain will be in
-      $CHAIN).</para>
-    </listitem>
-  </itemizedlist>
+    <itemizedlist>
+      <listitem>
+        <para>When you want to run <command>iptables</command>, use the
+        command <command>run_iptables</command> instead.
+        <command>run_iptables</command> will run the iptables utility passing
+        the arguments to <command>run_iptables</command> and if the command
+        fails, the firewall will be stopped (or restored from the last
+        <command>save</command> command, if any).</para>
+      </listitem>
 
-  <para><emphasis role="bold">If your version of Shorewall doesn't have the
-  file that you want to use from the above list, you can simply create the
-  file yourself.</emphasis> You can also supply a script with the same name as
-  any of the filter chains in the firewall and the script will be invoked
-  after the /etc/shorewall/rules file has been processed but before the
-  /etc/shorewall/policy file has been processed.</para>
+      <listitem>
+        <para>If you wish to generate a log message, use <emphasis
+        role="bold">log_rule_limit</emphasis>. Parameters are:</para>
 
-  <para>There are a couple of special considerations for commands in extension
-  scripts:</para>
+        <itemizedlist>
+          <listitem>
+            <para>Log Level</para>
+          </listitem>
 
-  <itemizedlist>
-    <listitem>
-      <para>When you want to run <command>iptables</command>, use the command
-      <command>run_iptables</command> instead. <command>run_iptables</command>
-      will run the iptables utility passing the arguments to
-      <command>run_iptables</command> and if the command fails, the firewall
-      will be stopped (or restored from the last <command>save</command>
-      command, if any).</para>
-    </listitem>
+          <listitem>
+            <para>Chain to insert the rule into</para>
+          </listitem>
 
-    <listitem>
-      <para>If you wish to generate a log message, use <emphasis
-      role="bold">log_rule_limit</emphasis>. Parameters are:</para>
+          <listitem>
+            <para>Chain name to display in the message (this can be different
+            from the preceding argument — see the <ulink
+            url="PortKnocking.html">Port Knocking article</ulink> for an
+            example of how to use this).</para>
+          </listitem>
 
-      <itemizedlist>
-        <listitem>
-          <para>Log Level</para>
-        </listitem>
+          <listitem>
+            <para>Disposition to report in the message (ACCEPT, DROP,
+            etc)</para>
+          </listitem>
 
-        <listitem>
-          <para>Chain to insert the rule into</para>
-        </listitem>
+          <listitem>
+            <para>Rate Limit (if passed as "" then $LOGLIMIT is assumed — see
+            the LOGLIMIT option in <ulink
+            url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)</para>
+          </listitem>
 
-        <listitem>
-          <para>Chain name to display in the message (this can be different
-          from the preceding argument — see the <ulink
-          url="PortKnocking.html">Port Knocking article</ulink> for an example
-          of how to use this).</para>
-        </listitem>
+          <listitem>
+            <para>Log Tag ("" if none)</para>
+          </listitem>
 
-        <listitem>
-          <para>Disposition to report in the message (ACCEPT, DROP,
-          etc)</para>
-        </listitem>
+          <listitem>
+            <para>Command (-A or -I for append or insert).</para>
+          </listitem>
 
-        <listitem>
-          <para>Rate Limit (if passed as "" then $LOGLIMIT is assumed — see
-          the LOGLIMIT option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)</para>
-        </listitem>
+          <listitem>
+            <para>The remaining arguments are passed "as is" to
+            iptables</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
 
-        <listitem>
-          <para>Log Tag ("" if none)</para>
-        </listitem>
+      <listitem>
+        <para>Many of the extension scripts get executed for both the
+        shorewall start and shorewall restart commands. You can determine
+        which command is being executed using the contents of $COMMAND.</para>
 
-        <listitem>
-          <para>Command (-A or -I for append or insert).</para>
-        </listitem>
-
-        <listitem>
-          <para>The remaining arguments are passed "as is" to iptables</para>
-        </listitem>
-      </itemizedlist>
-    </listitem>
-
-    <listitem>
-      <para>Many of the extension scripts get executed for both the shorewall
-      start and shorewall restart commands. You can determine which command is
-      being executed using the contents of $COMMAND.</para>
-
-      <programlisting>if [ $COMMAND = start ]; then
+        <programlisting>if [ $COMMAND = start ]; then
    ...</programlisting>
-    </listitem>
+      </listitem>
+    </itemizedlist>
 
-    <listitem>
-      <para><emphasis role="bold">Shorewall versions 3.0.x and earlier
-      only.</emphasis> If you run commands other than
-      <command>iptables</command> that must be re-run in order to restore the
-      firewall to its current state then you must save the commands to the
-      <firstterm>restore file</firstterm>. The restore file is a temporary
-      file in <filename class="directory">/var/lib/shorewall</filename> that
-      will be renamed <filename>/var/lib/shorewall/restore-base</filename> at
-      the successful completion of the Shorewall command. The
-      <command>shorewall save</command> command combines
+    <para></para>
+
+    <section id="v3.0">
+      <title>Shorewall versions 3.0.x and earlier</title>
+
+      <para>If you run commands other than <command>iptables</command> that
+      must be re-run in order to restore the firewall to its current state
+      then you must save the commands to the <firstterm>restore
+      file</firstterm>. The restore file is a temporary file in <filename
+      class="directory">/var/lib/shorewall</filename> that will be renamed
+      <filename>/var/lib/shorewall/restore-base</filename> at the successful
+      completion of the Shorewall command. The <command>shorewall
+      save</command> command combines
       <filename>/var/lib/shorewall/restore-base</filename> with the output of
       <command>iptables-save</command> to produce the
       <filename>/var/lib/shorewall/restore</filename> script.</para>
@@ -247,21 +250,21 @@
           file</para>
         </listitem>
       </orderedlist>
-    </listitem>
+    </section>
 
-    <listitem>
-      <para><emphasis role="bold">Shorewall version 3.2.0 - 3.2.8
-      only.</emphasis> When compiling your firewall configuration, Shorewall
-      copies most extension scripts directly into the "compiled" program where
-      they are executed in-line during processing of the start, restart and
-      restore commands. When copying a script, Shorewall indents the script to
-      match the surrounding code; if you have 'awk' installed on the system
-      where the configuration is being compiled, Shorewall can correctly
-      handle line continuation in your script ("\" as the last character on a
-      line). If you do not have awk, you may not use line continuation in your
-      scripts. Also beware that quoted strings continued from one line to
-      another will have extra whitespace inserted as a result of
-      indentation.</para>
+    <section id="v3.2">
+      <title>Shorewall version 3.2.0 - 3.2.8</title>
+
+      <para>When compiling your firewall configuration, Shorewall copies most
+      extension scripts directly into the "compiled" program where they are
+      executed in-line during processing of the start, restart and restore
+      commands. When copying a script, Shorewall indents the script to match
+      the surrounding code; if you have 'awk' installed on the system where
+      the configuration is being compiled, Shorewall can correctly handle line
+      continuation in your script ("\" as the last character on a line). If
+      you do not have awk, you may not use line continuation in your scripts.
+      Also beware that quoted strings continued from one line to another will
+      have extra whitespace inserted as a result of indentation.</para>
 
       <note>
         <para>The <filename>/etc/shorewall/params</filename> script is
@@ -285,21 +288,22 @@
         processed by the compiler rather than copied into the compiled
         script.</para>
       </note>
-    </listitem>
+    </section>
 
-    <listitem>
-      <para><emphasis role="bold">Shorewall version 3.2.9 (3.4.0 RC2) and
-      later (Shorewall-shell).</emphasis> When compiling your firewall
-      configuration, Shorewall copies most extension scripts directly into the
-      "compiled" program where they are executed in-line during processing of
-      the start, restart and restore commands. When copying a script,
-      Shorewall indents the script to match the surrounding code; if you have
-      'awk' installed on the system where the configuration is being compiled,
-      Shorewall can correctly handle line continuation in your script ("\" as
-      the last character on a line). If you do not have awk, you may not use
-      line continuation in your scripts. Also beware that quoted strings
-      continued from one line to another will have extra whitespace inserted
-      as a result of indentation.</para>
+    <section id="v3.2.9">
+      <title>Shorewall version 3.2.9 (3.4.0 RC2) and later
+      (Shorewall-shell)</title>
+
+      <para>When compiling your firewall configuration, Shorewall copies most
+      extension scripts directly into the "compiled" program where they are
+      executed in-line during processing of the start, restart and restore
+      commands. When copying a script, Shorewall indents the script to match
+      the surrounding code; if you have 'awk' installed on the system where
+      the configuration is being compiled, Shorewall can correctly handle line
+      continuation in your script ("\" as the last character on a line). If
+      you do not have awk, you may not use line continuation in your scripts.
+      Also beware that quoted strings continued from one line to another will
+      have extra whitespace inserted as a result of indentation.</para>
 
       <note>
         <para>The <filename>/etc/shorewall/params</filename> script is
@@ -336,13 +340,15 @@
         processed by the compiler rather than copied into the compiled
         script.</para>
       </note>
-    </listitem>
+    </section>
 
-    <listitem>
-      <para><emphasis role="bold">Shorewall-perl</emphasis>. Because the
-      compiler is written in Perl, some of your extension scripts from earlier
-      versions will no longer work because Shorewall-perl runs those extension
-      scripts at compile-time rather than at run-time.</para>
+    <section id="Perl">
+      <title>Shorewall-perl (Version 4.0.0 and later)</title>
+
+      <para>Because the compiler is written in Perl, some of your extension
+      scripts from earlier versions will no longer work because Shorewall-perl
+      runs those extension scripts at compile-time rather than at
+      run-time.</para>
 
       <para>The following table summarizes when the various extension scripts
       are run:<informaltable frame="all">
@@ -443,7 +449,9 @@
           <member>$chainref-&gt;{name} contains the name of the chain</member>
 
           <member>$chainref-&gt;{table} holds the table name</member>
-        </simplelist>To add a rule to the chain:<programlisting>add_rule( $chainref, &lt;the rule&gt; );</programlisting>Where<simplelist>
+        </simplelist></para>
+
+      <para>To add a rule to the chain:<programlisting>add_rule( $chainref, &lt;the rule&gt; );</programlisting>Where<simplelist>
           <member>&lt;the rule&gt; is a scalar argument holding the rule text.
           Do not include "-A &lt;chain name&gt;"</member>
         </simplelist>Example:<programlisting>add_rule( $chainref, '-j ACCEPT' );</programlisting>To
@@ -490,6 +498,6 @@
       add special temporary rules during [re]start. Shorewall-perl doesn't
       need such rules since the ruleset is instantianted atomically by
       table.</para>
-    </listitem>
-  </itemizedlist>
+    </section>
+  </section>
 </article>

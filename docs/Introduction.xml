@@ -305,6 +305,17 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     </itemizedlist>
   </section>
 
+  <section id="Compile">
+    <title>Compile then Execute</title>
+
+    <para>Shorewall versions beginning with 3.2.0 use a "compile" then
+    "execute" approach. The Shorewall configuration compiler reads the
+    configuration files and generates a shell script. Errors in the
+    compilation step cause the script to be discarded and the command to be
+    aborted. If the compilation step doesn't find any errors then the shell
+    script is executed.</para>
+  </section>
+
   <section id="Packages">
     <title>Shorewall Packages</title>
 

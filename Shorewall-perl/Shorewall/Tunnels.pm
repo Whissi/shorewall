@@ -81,7 +81,8 @@ sub setup_tunnels() {
 	unless ( $gatewayzones eq '-' ) {
 	    for my $zone ( split /,/, $gatewayzones ) {
 		fatal_error "Unknown zone ($zone)" unless $zones{$zone};
-		fatal_error "Invalid zone ($zone)" if $zones{$zone}{type} eq 'firewall';
+		my $type = $zones{$zone}{type};
+		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type eq 'firewall' || $type eq 'bport4';
 		$inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
 		$outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
 		
@@ -227,7 +228,9 @@ sub setup_tunnels() {
 
 	fatal_error "Unknown zone ($zone)" unless $zones{$zone};
 
-	fatal_error "Invalid zone ($zone)" unless $zones{$zone}{type} eq 'ipv4';
+	my $zonetype = $zones{$zone}{type};
+
+	fatal_error "Invalid zone ($zone) for tunnel ZONE" if $zonetype eq 'firewall' || $zonetype eq 'bport4';
 
 	my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
 	my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;

@@ -1,4 +1,4 @@
-Shorewall 4.0.0 RC 1
+Shorewall 4.0.0 RC 2
 ----------------------------------------------------------------------------
                    R E L E A S E  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -12,9 +12,12 @@ Shorewall 4.0.0 RC 1
    - Shorewall-shell ( the shell-based compiler )
    - Shorewall-perl (the Perl-based compiler )
 
-   You must install Shorewall-common and at least one of the compiler
-   packages (you may install them both). See the Migration
-   Considerations below for further information.
+   You must install at least one of the compiler packages (you may
+   install them both) along with Shorewall-common.
+
+   YOU DO NOT NEED TO UNINSTALL ANY OF YOUR CURRENT PACKAGES.
+
+   See the Migration Considerations below for further information.
 
 3) The facilities for supporting bridge/firewalls under earlier
    releases are deprecated and their documentation is omitted from the
@@ -22,49 +25,14 @@ Shorewall 4.0.0 RC 1
    Shorewall-perl compiler. This support utilizes the reduced-function
    physdev match support available in Linux kernel 2.6.20 and later.
 
-Problems corrected in 4.0.0 RC 1.
+Problems corrected in 4.0.0 RC 2.
 
-1)  If 'routeback' and 'detectnets' were specified on an interface,
-    limited broadcasts (to 255.255.255.255) and multicasts were dropped
-    when forwarded through the interface. This could cause broadcast
-    and multicast based applications to fail when running through a
-    bridge with 'detectnets'.
+1)  Shorewall-perl now correctly permits zones of type 'ipsec' in the
+    ZONE column of /etc/shorewall/tunnels.
 
-2)  Entries in the hosts file are now more carefully validated by
-    Shorewall-perl. Previously, very obvious typing errors would result
-    in run-time errors.
+Other changes in Shorewall 4.0.0 RC 2.
 
-3)  "shorewall start" and "shorewall restart" with Shorewall-perl no
-    longer fail on SELinux due to iptables-restore not being allowed to
-    read from /var.
-
-4)  ipsec zones are now allowed in the GATEWAY ZONE(S) column when
-    using Shorewall-perl.
-
-5)  A fatal error is now raised if the Shorewall-perl compiler is
-    unable to secure the output file for execute access.
-
-6)  Shell variables that have a value of zero are now handled
-    correctly.
-
-Other changes in Shorewall 4.0.0 RC 1.
-
-1)  The shorewall-perl RPM may no longer be installed under Shorewall
-    3.4. It requires shorewall-common.
-
-2)  The Shorewall-perl compiler's CPU utilization has been reduced
-    further.
-
-3)  ":noah" is now the default for all IPSEC tunnels. Tunnels that use
-    AH (protocol 51) must specify "ipsec:ah" in the TYPE column.
-
-4)  The 'refresh' command has been restored. It now behaves like
-    'restart' except:
-
-    - 'refresh' fails if Shorewall is not started.
-    - A directory name cannot be passed to 'refresh'.
-    - 'refresh' only rebuilds the static blacklist whereas 'restore'
-      rebuilds the entire Netfilter ruleset.
+None.
 
 Migration Considerations:
 

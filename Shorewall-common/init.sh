@@ -60,7 +60,7 @@ usage() {
 ################################################################################
 # Get startup options (override default)
 ################################################################################
-OPTIONS="-f"
+OPTIONS=
 if [ -f /etc/sysconfig/shorewall ]; then
     . /etc/sysconfig/shorewall
 elif [ -f /etc/default/shorewall ] ; then

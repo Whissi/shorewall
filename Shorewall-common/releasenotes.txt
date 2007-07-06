@@ -113,17 +113,17 @@ Migration Considerations:
     caused the corresponding flag in /proc to be reset for all
     interfaces. Beginning in Shorewall 4.0.0, leaving these options
     empty causes Shorewall to leave the flags in /proc as they are. You
-    must set the option to 'No' in order to obtain the old behavior. 
+    must set the option to 'No' in order to obtain the old behavior.
 
 ----------------------------------------------------------------------------
                          N E W  F E A T U R E S
 ----------------------------------------------------------------------------
 1)  Shorewall-perl
 
-    This companion product to Shorewall 3.4.2 and later includes a complete
-    rewrite of the compiler in Perl.
+    This Shorewall package includes a complete rewrite of the compiler
+    in Perl.
 
-    I decided to make Shorewall-perl a separate product for several reasons:
+    I decided to make Shorewall-perl a separate package for several reasons:
 
     a) Embedded applications are unlikely to adopt Shorewall-perl; even
        Mini-Perl has a substantial disk and RAM footprint.
@@ -137,7 +137,10 @@ Migration Considerations:
     b) The compiler is very fast.
     c) The compiler generates a firewall script that uses iptables-restore;
        so the script is very fast.
-    d) Use of the perl compiler is optional! The old slow clunky
+    d) The new compiler does a much better job of validating the
+       configuration and catches many errors that resulted in run-time
+       failures with the old compiler.
+    e) Use of the Shorewall-perl is optional! The old slow clunky
        Bourne-shell compiler is still available.
     ------------------------------------------------------------------------
                       T H E   B A D   N E W S:

@@ -364,7 +364,7 @@ sub validate_interfaces_file( $ )
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
     
-	progress_message "   Interface \"$line\" Validated";
+	progress_message "   Interface \"$currentline\" Validated";
 
     }
 

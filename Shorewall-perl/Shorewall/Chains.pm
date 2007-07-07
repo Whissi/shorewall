@@ -317,11 +317,11 @@ INIT {
 #
 
 #
-# Process a COMMENT line (in $line) 
+# Process a COMMENT line (in $currentline) 
 #
 sub process_comment() {
     if ( $capabilities{COMMENTS} ) {
-	( $comment = $line ) =~ s/^\s*COMMENT\s*//;
+	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
 	$comment =~ s/\s*$//;
     } else {
 	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
@@ -378,7 +378,7 @@ sub add_file( $$ ) {
 		      qq(progress_message "Processing $file..."),
 		      '' );
 
-	while ( $line = <EF> ) {
+	while ( my $line = <EF> ) {
 	    chomp $line;
 	    add_command $chainref, $line;
 	}

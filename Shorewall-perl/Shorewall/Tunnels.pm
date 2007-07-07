@@ -261,7 +261,7 @@ sub setup_tunnels() {
 
 	$tunnelref->{function}->( $inchainref, $outchainref, @{$tunnelref->{params}} );
 
-	progress_message "   Tunnel \"$line\" $done";
+	progress_message "   Tunnel \"$currentline\" $done";
     }
 
     my $first_entry = 1;

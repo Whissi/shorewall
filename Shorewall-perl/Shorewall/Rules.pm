@@ -347,7 +347,7 @@ sub setup_blacklist() {
 			    $disposition ,
 			    '' );
 
-		progress_message "         \"$line\" added to blacklist";
+		progress_message "         \"$currentline\" added to blacklist";
 	    }
 	}
 
@@ -773,7 +773,7 @@ sub setup_mac_lists( $ ) {
 		    add_rule $chainref , "$mac-j $targetref->{target}";
 		}
 
-		progress_message "      Maclist entry \"$line\" $done";
+		progress_message "      Maclist entry \"$currentline\" $done";
 	    }
 	}
 
@@ -884,7 +884,7 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
 	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser, $mark, $wildcard;
 
-	progress_message "   Rule \"$line\" $done";
+	progress_message "   Rule \"$currentline\" $done";
     }
 
     pop_open;
@@ -1209,7 +1209,7 @@ sub process_rule ( $$$$$$$$$$ ) {
     my $intrazone = 0;
     my $includesrcfw = 1;
     my $includedstfw = 1;
-    my $thisline = $line;
+    my $thisline = $currentline;
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
@@ -1332,7 +1332,7 @@ sub process_rules() {
 	    $section = $source;
 	} else {
 	    if ( "\L$source" =~ /^none(:.*)?$/ || "\L$dest" =~ /^none(:.*)?$/ ) {
-		progress_message "Rule \"$line\" ignored."
+		progress_message "Rule \"$currentline\" ignored."
 	    } else {
 		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
 	    }

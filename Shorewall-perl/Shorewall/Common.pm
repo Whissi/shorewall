@@ -54,7 +54,6 @@ our @EXPORT = qw(
 		 create_temp_aux_config
 		 finalize_aux_config
 
-		 $line
 		 $command
 		 $doing
 		 $done
@@ -63,7 +62,6 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( $timestamp initialize );
 our $VERSION = 4.00;
 
-our $line;
 our ($command, $doing, $done );
 our $verbose;
 our $timestamp;
@@ -83,8 +81,6 @@ our $tempfile;            # Temporary File Name
 #
 
 sub initialize() {
-    $line = '';          # Current config file line
-
     ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
     $verbose = 0;              # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)

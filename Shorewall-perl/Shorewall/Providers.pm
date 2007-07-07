@@ -351,7 +351,7 @@ sub setup_providers() {
 	       "run_ip rule add $source $dest $priority table $provider",
 	       "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing"
 	       );
-	progress_message "   Routing rule \"$line\" $done";
+	progress_message "   Routing rule \"$currentline\" $done";
     }
     #
     #   Setup_Providers() Starts Here....
@@ -397,7 +397,7 @@ sub setup_providers() {
 
 	$providers++;
 
-	progress_message "   Provider \"$line\" $done";
+	progress_message "   Provider \"$currentline\" $done";
 
     }
 

@@ -275,7 +275,7 @@ sub setup_one_masq($$$$$$$)
 	}
     }
 
-    progress_message "   Masq record \"$line\" $done";
+    progress_message "   Masq record \"$currentline\" $done";
 
 }
 
@@ -387,7 +387,7 @@ sub do_one_nat( $$$$$ )
 	}
     }
 
-    progress_message "   NAT entry \"$line\" $done";
+    progress_message "   NAT entry \"$currentline\" $done";
 }
 
 #

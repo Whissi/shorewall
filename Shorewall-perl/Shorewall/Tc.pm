@@ -287,7 +287,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	fatal_error "Class Id $original_mark is not associated with device $result" if $classid && $device ne $result;
     }
 
-    progress_message "   TC Rule \"$line\" $done";
+    progress_message "   TC Rule \"$currentline\" $done";
 
 }
 

@@ -153,8 +153,8 @@ sub setup_proxy_arp() {
 }
 
 sub dump_proxy_arp() {
-    for $line ( @proxyarp ) {
-	emit_unindented $line;
+    for ( @proxyarp ) {
+	emit_unindented $_;
     }
 }
 

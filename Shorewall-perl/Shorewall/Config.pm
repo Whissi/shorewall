@@ -60,6 +60,7 @@ our @EXPORT = qw(
 		 run_user_exit2
 		 generate_aux_config
 
+		 $currentline
 		 %config
 		 %globals
 		 %capabilities );
@@ -101,6 +102,7 @@ our @includestack;
 #
 our @openstack;
 
+our $currentline;             # Current config file line image
 our $currentfile;             # File handle reference
 our $currentfilename;         # File NAME
 our $currentlinenumber;       # Line number
@@ -303,6 +305,7 @@ sub initialize() {
     #
     @openstack = ();
 
+    $currentline = '';        # Line image
     $currentfile = undef;     # File handle reference
     $currentfilename = '';    # File NAME
     $currentlinenumber = 0;   # Line number
@@ -321,12 +324,12 @@ INIT {
 #
 sub warning_message
 {
-    my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
+    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
 
     if ( $debug ) {
-	print STDERR Carp::longmess( "   WARNING: @_$lineinfo" );
+	print STDERR Carp::longmess( "   WARNING: @_$currentlineinfo" );
     } else {
-	print STDERR "   WARNING: @_$lineinfo\n";
+	print STDERR "   WARNING: @_$currentlineinfo\n";
     }
 }
 
@@ -334,9 +337,9 @@ sub warning_message
 # Issue fatal error message and die
 #
 sub fatal_error	{
-    my $lineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
-    Carp::confess "   ERROR: @_$lineinfo" if $debug;
-    die "   ERROR: @_$lineinfo\n";
+    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
+    Carp::confess "   ERROR: @_$currentlineinfo" if $debug;
+    die "   ERROR: @_$currentlineinfo\n";
 }
 
 #
@@ -382,9 +385,9 @@ sub find_file($)
 sub split_line( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
-    fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $line =~ /["'`\\]/;
+    fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $currentline =~ /["'`\\]/;
 
-    my @line = split( ' ', $line );
+    my @line = split( ' ', $currentline );
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
@@ -400,13 +403,13 @@ sub split_line( $$$ ) {
 sub split_line1( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
-    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
+    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $currentline =~ /["`\\]/;
 
-    my @line = split( ' ', $line );
+    my @line = split( ' ', $currentline );
 
     return @line if $line[0] eq 'COMMENT';
 
-    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $line =~ /'/;
+    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
@@ -429,9 +432,9 @@ my %no_pad = ( COMMENT => 0,
 sub split_line2( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
-    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $line =~ /["`\\]/;
+    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $currentline =~ /["`\\]/;
 
-    my @line = split( ' ', $line );
+    my @line = split( ' ', $currentline );
 
     my $first   = $line[0];
     my $columns = $no_pad{$first};
@@ -441,7 +444,7 @@ sub split_line2( $$$ ) {
 	return @line 
     }
 
-    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $line =~ /'/;
+    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
@@ -530,7 +533,7 @@ sub pop_open() {
 sub read_a_line {
     while ( $currentfile ) {
 
-	$line = '';
+	$currentline = '';
 
 	while ( <$currentfile> ) {
 
@@ -540,28 +543,28 @@ sub read_a_line {
 	    #
 	    # Continuation
 	    #
-	    chop $line, next if substr( ( $line .= $_ ), -1, 1 ) eq '\\';
+	    chop $currentline, next if substr( ( $currentline .= $_ ), -1, 1 ) eq '\\';
 
-	    $line =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
+	    $currentline =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
-	    $line = '', next if $line =~ /^\s*$/;
+	    $currentline = '', next if $currentline =~ /^\s*$/;
 	    #
 	    # Expand Shell Variables using %ENV
 	    #
-	    while ( $line =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/ || $line =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/ ) {
+	    while ( $currentline =~ /^(.*?)\$([a-zA-Z]\w*)(.*)$/ || $currentline =~ /^(.*?)\${([a-zA-Z]\w*)}(.*)$/ ) {
 		my $val = $ENV{$2};
 		$val = '' unless defined $val;
-		$line = join( '', $1 , $val , $3 );
+		$currentline = join( '', $1 , $val , $3 );
 	    }
 
-	    if ( $line =~ /^\s*INCLUDE\s/ ) {
+	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
 
-		my @line = split ' ', $line;
+		my @line = split ' ', $currentline;
 
-		fatal_error "Invalid INCLUDE command: $line"    if @line != 2;
-		fatal_error "INCLUDEs nested too deeply: $line" if @includestack >= 4;
+		fatal_error "Invalid INCLUDE command: $currentline"    if @line != 2;
+		fatal_error "INCLUDEs nested too deeply: $currentline" if @includestack >= 4;
 
 		my $filename = find_file $line[1];
 
@@ -573,7 +576,7 @@ sub read_a_line {
 		    do_open_file $filename;
 		}
 
-		$line = '';
+		$currentline = '';
 	    } else {
 		return 1;
 	    }
@@ -588,12 +591,12 @@ sub read_a_line {
 #
 sub read_a_line1 {
     while ( $currentfile ) {
-	while ( $line = <$currentfile> ) {
+	while ( $currentline = <$currentfile> ) {
 	    $currentlinenumber++;
-	    next if $line =~ /^\s*#/;
-	    chomp $line;
-	    next if $line =~ /^\s*$/;
-	    $line =~ s/#.*$//;       # Remove Trailing Comments
+	    next if $currentline =~ /^\s*#/;
+	    chomp $currentline;
+	    next if $currentline =~ /^\s*$/;
+	    $currentline =~ s/#.*$//;       # Remove Trailing Comments
 	    return 1;
 	}
 
@@ -758,8 +761,8 @@ sub load_kernel_modules( ) {
 
 	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
 
-	while ( $line = <LSMOD> ) {
-	    my $module = ( split( /\s+/, $line, 2 ) )[0];
+	while ( $currentline = <LSMOD> ) {
+	    my $module = ( split( /\s+/, $currentline, 2 ) )[0];
 	    $loadedmodules{$module} = 1 unless $module eq 'Module'
 	}
 
@@ -770,7 +773,7 @@ sub load_kernel_modules( ) {
 	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
 
 	while ( read_a_line ) {
-	    fatal_error "Invalid modules file entry" unless ( $line =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
+	    fatal_error "Invalid modules file entry" unless ( $currentline =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {
 		for my $directory ( @moduledirectories ) {
@@ -911,7 +914,7 @@ sub ensure_config_path() {
 	$ENV{CONFDIR} = $globals{CONFDIR};
 
 	while ( read_a_line ) {
-	    if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+	    if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		my ($var, $val) = ($1, $2);
 		$config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val ) if exists $config{$var};
 	    } else {
@@ -953,7 +956,7 @@ sub process_shorewall_conf() {
 	    open_file $file;
 
 	    while ( read_a_line ) {
-		if ( $line =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
 			warning_message "Unknown configuration option ($var) ignored";
@@ -1000,7 +1003,7 @@ sub get_capabilities( $ ) {
     # Otherwise, the first call to read_a_line() below will return false
     #
     while ( read_a_line1 ) {
-	if ( $line =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
+	if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 	    my ($var, $val) = ($1, $2);
 	    unless ( exists $capabilities{$var} ) {
 		warning_message "Unknown capability ($var) ignored";

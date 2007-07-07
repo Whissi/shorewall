@@ -132,7 +132,7 @@ sub validate_hosts_file()
 
 	add_group_to_zone( $zone, $type , $interface, [ split( ',', $hosts ) ] , $optionsref);
 
-	progress_message "   Host \"$line\" validated";
+	progress_message "   Host \"$currentline\" validated";
     }
 
     $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;

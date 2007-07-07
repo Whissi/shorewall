@@ -532,18 +532,15 @@ sub read_a_line {
 
 	$line = '';
 
-	while ( my $nextline = <$currentfile> ) {
+	while ( <$currentfile> ) {
 
 	    $currentlinenumber++;
 
-	    chomp $nextline;
+	    chomp;
 	    #
 	    # Continuation
 	    #
-	    if ( substr( ( $line .= $nextline ), -1, 1 ) eq '\\' ) {
-		$line = substr( $line, 0, -1 );
-		next;
-	    }
+	    chop $line, next if substr( ( $line .= $_ ), -1, 1 ) eq '\\';
 
 	    $line =~ s/#.*$//;       # Remove Trailing Comments -- result might be a blank line
 	    #

@@ -467,9 +467,12 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
 SHAREDIR=/usr/share/shorewall-lite
-VARDIR=/var/lib/shorewall-lite
 CONFDIR=/etc/shorewall-lite
 export PRODUCT="Shorewall Lite"
+
+[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir ]
+
+[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]
 
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
@@ -500,12 +503,12 @@ else
     exit 2
 fi
 
-[ -n "${LITEDIR}" -a -f ${LITEDIR}/firewall.conf ] && . ${LITEDIR}/firewall.conf
-
 ensure_config_path
 export CONFIG_PATH
 
-[ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
+LITEDIR=${VARDIR}
+
+[ -f ${LITEDIR}/firewall.conf ] && . ${LITEDIR}/firewall.conf
 
 get_config
 

@@ -1479,9 +1479,12 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
 SHAREDIR=/usr/share/shorewall
-VARDIR=/var/lib/shorewall
 CONFDIR=/etc/shorewall
 export PRODUCT="Shorewall"
+
+[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
+
+[ -n "${VARDIR:=/var/lib/shorewall}" ]
 
 FIREWALL=$SHAREDIR/firewall
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"

@@ -1102,7 +1102,7 @@ reload_command() # $* = original arguments less the command.
 {
     local verbose=$(make_verbose) file= capabilities= finished=0 saveit= result directory system getcaps= root=root compiler=
 
-    [ -n "$LITEDIR" ] || fatal_error "ERROR: LITEDIR not defined in ${SHAREDIR}/configpath"
+    LITEDIR=/var/lib/shorewall-lite
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1

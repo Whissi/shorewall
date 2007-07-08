@@ -33,16 +33,6 @@
 #         --timestamp                 # Timestamp all progress messages
 #         --debug                     # Print stack trace on warnings and fatal error.
 #
-# Default values for compiler options are given in environmental variables as follows:
-#
-#	   Option                 Variable
-#
-#	   --verbosity		  VERBOSE
-#	   --export		  EXPORT
-#	   --directory		  SHOREWALL_DIR
-#	   --timestamp		  TIMESTAMP
-#          --debug                <none>
-#
 use strict;
 use lib '/usr/share/shorewall-perl';
 use Shorewall::Compiler;
@@ -56,10 +46,10 @@ sub usage() {
 #
 #                                     E x e c u t i o n   B e g i n s   H e r e
 #
-my $export        = $ENV{EXPORT}        || 0;
-my $shorewall_dir = $ENV{SHOREWALL_DIR} || '';
-my $verbose       = $ENV{VERBOSE}       || 0;
-my $timestamp     = $ENV{TIMESTAMP}     || '';
+my $export        = 0;
+my $shorewall_dir = '';
+my $verbose       = 0;
+my $timestamp     = '';
 my $debug         = 0;
 
 Getopt::Long::Configure ('bundling');

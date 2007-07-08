@@ -113,21 +113,23 @@ sub generate_script_1() {
     if ( $export ) {
 	emitj ( 'SHAREDIR=/usr/share/shorewall-lite',
 		'CONFDIR=/etc/shorewall-lite',
-		'VARDIR=/var/lib/shorewall-lite',
 		'PRODUCT="Shorewall Lite"'
 		);
     } else {
 	emitj ( 'SHAREDIR=/usr/share/shorewall',
 		'CONFDIR=/etc/shorewall',
-		'VARDIR=/var/lib/shorewall',
 		'PRODUCT=\'Shorewall\'',
 		);
     }
 
+    emit( '[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir' );
+
     if ( $export ) {
-	emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' );
+	emitj ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
+		'[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
     } else {
-	emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") );
+	emitj ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
+		'[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
     }
 
     emit 'TEMPFILE=';
@@ -162,7 +164,6 @@ sub generate_script_1() {
 
     emitj ( '',
 	    "STOPPING=",
-	    'COMMENT=',        # Maintain compability with lib.base
 	    '',
 	    '#',
 	    '# The library requires that ${VARDIR} exist',

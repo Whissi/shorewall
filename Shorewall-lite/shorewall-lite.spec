@@ -91,6 +91,7 @@ fi
 %attr(0755,root,root) /usr/share/shorewall-lite/wait4ifup
 
 %attr(0644,root,root) %{_mandir}/man5/shorewall-lite.conf.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-lite-vardir.5.gz
 
 %attr(0644,root,root) %{_mandir}/man8/shorewall-lite.8.gz
 

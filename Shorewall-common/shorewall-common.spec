@@ -248,6 +248,7 @@ fi
 %attr(0644,root,root) %{_mandir}/man5/shorewall-tcrules.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-tos.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-tunnels.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-vardir.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-zones.5.gz
 
 %attr(0644,root,root) %{_mandir}/man8/shorewall.8.gz

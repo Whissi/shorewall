@@ -244,8 +244,8 @@
     <para>That command creates the default restore script,
     <filename>/var/lib/shorewall/restore</filename>. The default may be
     changed using the RESTOREFILE option in <ulink
-    url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>. A
-    different file name may also be specified in the <command>save</command>
+    url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>.
+    A different file name may also be specified in the <command>save</command>
     command:</para>
 
     <programlisting><command>shorewall save &lt;filename&gt;</command></programlisting>
@@ -264,15 +264,26 @@
       </listitem>
 
       <listitem>
-        <para>Bootup is faster. The -f option of the start command (e.g.,
+        <para>Bootup is faster (although with Shorewall-perl, the difference
+        is minimal). The -f option of the start command (e.g.,
         <command>shorewall -f start</command>) causes Shorewall to look for
-        the default restore script and if it exists, the script is run. This
-        is much faster than starting Shorewall using the normal mechanism of
-        reading the configuration files and running
-        <command>iptables</command> dozens or even hundreds of times.
-        <filename>By default, /etc/init.d/shorewall</filename>
+        the default restore script and if it exists, the script is run. When
+        using Shorewall-shell, this is much faster than starting Shorewall
+        using the normal mechanism of reading the configuration files and
+        running <command>iptables</command> dozens or even hundreds of
+        times.</para>
+
+        <para><filename>Under Shorewall versions &lt; 4.0.0,
+        /etc/init.d/shorewall</filename>
         (<filename>/etc/rc.d/rc.firewall</filename>) uses the -f option when
-        it is processing a request to start Shorewall.</para>
+        it is processing a request to start Shorewall. Beginning with
+        Shorewall 4.0.0, the default is to not use -f. If you wish to change
+        the default, you must set the OPTIONS shell variable in either
+        <filename>/etc/default/shorewall</filename> or
+        <filename>/etc/sysconfig/shorewall</filename> (if your distribution
+        provides neither of these files, you must create one or the other).
+        For example, to continue to use -f under Shorewall 4.0.0 and later,
+        you would have:<programlisting>OPTIONS="-f"</programlisting></para>
       </listitem>
 
       <listitem>
@@ -464,9 +475,9 @@
 
           <listitem>
             <para>Reduces the verbosity level (see VERBOSITY setting in <ulink
-            url="manpages/shorewall.conf.htmlig">shorewall.conf</ulink>). May be
-            repeated (e.g., "-qq") with each instance reducing the verbosity
-            level by one.</para>
+            url="manpages/shorewall.conf.htmlig">shorewall.conf</ulink>). May
+            be repeated (e.g., "-qq") with each instance reducing the
+            verbosity level by one.</para>
           </listitem>
         </varlistentry>
 
@@ -475,7 +486,8 @@
 
           <listitem>
             <para>Increases the verbosity level (see VERBOSITY setting in
-            <ulink url="manpages/shorewall.conf.htmlig">shorewall.conf</ulink>). May
+            <ulink
+            url="manpages/shorewall.conf.htmlig">shorewall.conf</ulink>). May
             be repeated (e.g., "-qq") with each instance increasing the
             verbosity level by one.</para>
           </listitem>

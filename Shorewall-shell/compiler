@@ -40,7 +40,6 @@ BASE_VERSION_PRINTABLE=4.0.0
 CONFIG_VERSION=40000
 CONFIG_VERSION_PRINTABLE=4.0.0
 
-
 #
 # Fatal error -- stops the compiler after issuing the error message
 #
@@ -4949,7 +4948,10 @@ __EOF__
 	cat >&3 << __EOF__
 SHAREDIR=/usr/share/shorewall-lite
 CONFDIR=/etc/shorewall-lite
-VARDIR=/var/lib/shorewall-lite
+
+[ -f \${CONFDIR}/vardir ] && . \${CONFDIR}/vardir
+
+[ -n "\${VARDIR:=/var/lib/shorewall-lite}" ]
 
 __EOF__
 
@@ -4966,7 +4968,10 @@ __EOF__
 	cat >&3 << __EOF__
 SHAREDIR=/usr/share/shorewall
 CONFDIR=/etc/shorewall
-VARDIR=/var/lib/shorewall
+
+[ -f \${CONFDIR}/vardir ] && . \${CONFDIR}/vardir
+
+[ -n "\${VARDIR:=/var/lib/shorewall}" ]
 
 . \${SHAREDIR}/lib.base
 __EOF__

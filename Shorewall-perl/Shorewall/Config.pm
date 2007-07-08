@@ -31,6 +31,7 @@ use strict;
 use warnings;
 use Shorewall::Common;
 use File::Basename;
+use autouse 'Carp' => qw(longmess confess);
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
@@ -327,7 +328,7 @@ sub warning_message
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
 
     if ( $debug ) {
-	print STDERR Carp::longmess( "   WARNING: @_$currentlineinfo" );
+	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
     } else {
 	print STDERR "   WARNING: @_$currentlineinfo\n";
     }
@@ -338,7 +339,7 @@ sub warning_message
 #
 sub fatal_error	{
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
-    Carp::confess "   ERROR: @_$currentlineinfo" if $debug;
+    confess "   ERROR: @_$currentlineinfo" if $debug;
     die "   ERROR: @_$currentlineinfo\n";
 }
 
@@ -353,7 +354,6 @@ sub set_config_path( $ ) {
 # Set $debug
 #
 sub set_debug( $ ) {
-    use Carp;
     $debug = shift;
 }
 

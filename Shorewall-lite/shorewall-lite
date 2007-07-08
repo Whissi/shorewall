@@ -474,6 +474,8 @@ export PRODUCT="Shorewall Lite"
 
 [ -n "${VARDIR:=/var/lib/shorewall-lite}" ]
 
+[ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
+
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
 HELP=$SHAREDIR/help

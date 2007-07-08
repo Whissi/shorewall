@@ -30,6 +30,33 @@ Problems corrected in 4.0.0 RC 2.
 1)  Shorewall-perl now correctly permits zones of type 'ipsec' in the
     ZONE column of /etc/shorewall/tunnels.
 
+2)  The shorewall-common install.sh may now be run multiple times from
+    the same directory. Previously, the manpages were gzipped in-place
+    which made it impossible to rerun the script.
+
+3)  The implementation of LITEDIR has always been
+    unsatisfactory. Furthermore, there have been other cases where
+    people have asked to be able to designate the state directory
+    (default /var/lib/shorewall[-lite]).
+
+    To meet these objectives:
+
+    a)  The LITEDIR variable has been eliminated in
+        /usr/share/shorewall[-lite]/configpath.
+
+    b)  A new file /etc/shorewall[-lite]/vardir has been added. This
+        file is not created by default but may be added as needed. It
+        is expected to contain a single variable assignment:
+
+	   VARDIR=<directory>
+
+	Example:
+
+	   VARDIR=/root/shorewall
+    
+    To change VARDIR, copy the old directory to the new one before you
+    restart Shorewall[-lite].
+
 Other changes in Shorewall 4.0.0 RC 2.
 
 1)  The -f option is no longer the default when Shorewall is started at

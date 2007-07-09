@@ -83,7 +83,7 @@ fi
 
 %attr(0644,root,root) /usr/share/shorewall-lite/version
 %attr(0644,root,root) /usr/share/shorewall-lite/configpath
-%attr(    ,root,root) /usr/share/shorewall-lite/functions
+%attr(root,root) /usr/share/shorewall-lite/functions
 %attr(0644,root,root) /usr/share/shorewall-lite/lib.base
 %attr(0644,root,root) /usr/share/shorewall-lite/lib.cli
 %attr(0644,root,root) /usr/share/shorewall-lite/modules

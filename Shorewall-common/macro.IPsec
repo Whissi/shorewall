@@ -1,0 +1,15 @@
+#
+# Shorewall version 4 - IPsec Macro
+#
+# /usr/share/shorewall/macro.IPsec
+#
+#	This macro handles IPsec traffic
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
+PARAM	-	-	udp	500	500	# IKE
+PARAM	-	-	50			# ESP
+PARAM	DEST	SOURCE	udp	500	500	# IKE
+PARAM	DEST	SOURCE	50			# ESP
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

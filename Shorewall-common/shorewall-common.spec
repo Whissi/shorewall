@@ -116,7 +116,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(0755,root,root) /usr/share/shorewall/firewall
-%attr(0,   root,root) /usr/share/shorewall/functions
+%attr(-   ,root,root) /usr/share/shorewall/functions
 %attr(0644,root,root) /usr/share/shorewall/lib.base
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
 %attr(0644,root,root) /usr/share/shorewall/lib.config

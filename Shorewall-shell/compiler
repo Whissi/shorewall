@@ -1897,6 +1897,11 @@ __EOF__
 				done
 			    fi
 			else
+			    if [ "$addr" = detect ]; then
+				save_command 'done'
+				save_command ''
+			    fi
+
 			    if [ -n "$loglevel" -a -z "$natrule" ]; then
 				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
 				    $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
@@ -1915,6 +1920,11 @@ __EOF__
 		    done
 		done
 	    else
+		if [ "$addr" = detect ]; then
+		    save_command 'done'
+		    save_command ''
+		fi
+
 		if [ -n "$loglevel" -a -z "$natrule" ]; then
 		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
 			$state $(fix_bang $proto $sports $multiport $cli $dports)

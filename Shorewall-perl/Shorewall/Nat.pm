@@ -137,6 +137,8 @@ sub setup_one_masq($$$$$$$)
 	} else {
 	    $rule .= do_ipsec_options $ipsec;
 	}
+    } elsif ( $capabilities{POLICY_MATCH} ) {
+	$rule .= '-m policy --pol none --dir out ';
     }
 
     #

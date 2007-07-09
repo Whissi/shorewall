@@ -1471,7 +1471,7 @@ sub generate_matrix() {
 
 	if ( $capabilities{POLICY_MATCH} ) {
 	    my $type       = $zoneref->{type};
-	    my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
+	    my $source_ref = ( $zoneref->{hosts}{ipsec4} ) || {};
 
 	    if ( $config{DYNAMIC_ZONES} ) {
 		no warnings;

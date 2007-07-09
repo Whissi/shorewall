@@ -144,7 +144,7 @@ sub add_group_to_zone($$$$$)
     
     push @{$arrayref}, { options => $options,
 			 hosts   => \@newnetworks,
-			 ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' };
+			 ipsec   => $type eq 'ipsec4' ? 'ipsec' : 'none' };
 }
 
 #

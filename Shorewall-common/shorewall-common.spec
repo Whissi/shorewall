@@ -116,7 +116,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(0755,root,root) /usr/share/shorewall/firewall
-%attr(0777,root,root) /usr/share/shorewall/functions
+%attr(    ,root,root) /usr/share/shorewall/functions
 %attr(0644,root,root) /usr/share/shorewall/lib.base
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
 %attr(0644,root,root) /usr/share/shorewall/lib.config
@@ -135,14 +135,20 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Finger
 %attr(0644,root,root) /usr/share/shorewall/macro.FTP
 %attr(0644,root,root) /usr/share/shorewall/macro.Gnutella
+%attr(0644,root,root) /usr/share/shorewall/macro.GRE
 %attr(0644,root,root) /usr/share/shorewall/macro.HTTP
 %attr(0644,root,root) /usr/share/shorewall/macro.HTTPS
 %attr(0644,root,root) /usr/share/shorewall/macro.ICQ
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAP
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAPS
+%attr(0644,root,root) /usr/share/shorewall/macro.IPIP
 %attr(0644,root,root) /usr/share/shorewall/macro.IPP
 %attr(0644,root,root) /usr/share/shorewall/macro.IPPserver
+%attr(0644,root,root) /usr/share/shorewall/macro.IPsec
+%attr(0644,root,root) /usr/share/shorewall/macro.IPsecah
+%attr(0644,root,root) /usr/share/shorewall/macro.IPsecnat
 %attr(0644,root,root) /usr/share/shorewall/macro.Jetdirect
+%attr(0644,root,root) /usr/share/shorewall/macro.L2TP
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAP
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAPS
 %attr(0644,root,root) /usr/share/shorewall/macro.MySQL

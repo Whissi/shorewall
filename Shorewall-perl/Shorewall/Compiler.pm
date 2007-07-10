@@ -81,6 +81,8 @@ sub reinitialize() {
 #    Generate the various user-exit jacket functions.
 #    Generate the 'initialize()' function.
 #
+#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
+#          than those related to writing to the object file.
 
 sub generate_script_1() {
 
@@ -489,6 +491,9 @@ EOF
 #    distribution's tools have configured IP without any Shorewall
 #    modifications.
 #
+#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
+#          than those related to writing to the object file.
+#
 sub generate_script_2 () {
 
     copy $globals{SHAREDIRPL} . 'prog.functions';
@@ -583,6 +588,9 @@ sub generate_script_2 () {
 #
 #    Generate the 'setup_netfilter()' function that runs iptables-restore.
 #    Generate the 'define_firewall()' function.
+#
+#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
+#          than those related to writing to the object file.
 #
 sub generate_script_3() {
 
@@ -715,7 +723,7 @@ sub compiler( $$$$ ) {
 
     initialize_chain_table;
 
-    if ( $command eq 'compile' ) {
+    unless ( $command eq 'check' ) {
 	create_temp_object( $objectfile );
 	generate_script_1;
     }
@@ -735,12 +743,10 @@ sub compiler( $$$$ ) {
     #
     # Report zone contents
     #
-    progress_message2 "Determining Hosts in Zones...";
     zone_report;
     #
     # Do action pre-processing.
     #
-    progress_message2 "Preprocessing Action Files...";
     process_actions1;
     #
     # Process the Policy File.
@@ -793,7 +799,6 @@ sub compiler( $$$$ ) {
     #
     # MACLIST Filtration
     #
-    progress_message2 "$doing MAC Filtration -- Phase 1...";
     setup_mac_lists 1;
     #
     # Process the rules file.
@@ -811,12 +816,10 @@ sub compiler( $$$$ ) {
     #
     # MACLIST Filtration again
     #
-    progress_message2 "$doing MAC Filtration -- Phase 2...";
     setup_mac_lists 2;
     #
     # Apply Policies
     #
-    progress_message2 'Applying Policies...';
     apply_policy_rules;
     #
     # TCRules and Traffic Shaping
@@ -834,8 +837,10 @@ sub compiler( $$$$ ) {
     # Accounting.
     #
     setup_accounting;
-
-    progress_message2 'Generating Rule Matrix...';
+    #
+    # We generate the matrix even though we don't write out the rules. That way, we insure that
+    # a compile of the script won't blow up during that step.
+    #
     generate_matrix;
 
     if ( $command eq 'check' ) {

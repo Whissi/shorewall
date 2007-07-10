@@ -354,6 +354,8 @@ sub process_action1 ( $$ ) {
    
 sub process_actions1() {
 
+    progress_message2 "Preprocessing Action Files...";
+
     for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
 	new_action $act;
     }

@@ -694,6 +694,8 @@ sub setup_mac_lists( $ ) {
     my $disposition = $config{MACLIST_DISPOSITION};
     my $ttl         = $config{MACLIST_TTL};
     
+    progress_message2 "$doing MAC Filtration -- Phase $phase...";
+
     for my $hostref ( @$maclist_hosts ) {
 	$maclist_interfaces{ $hostref->[0] } = 1;
     }
@@ -1415,6 +1417,7 @@ sub generate_matrix() {
     # Set a breakpoint in this function if you want to step through generate_matrix(). 
     #
     sub start_matrix() {
+	progress_message2 'Generating Rule Matrix...';
     }
 
     #

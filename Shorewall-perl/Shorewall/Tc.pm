@@ -328,6 +328,8 @@ sub validate_tc_device( $$$ ) {
     $tcdevices{$device}{out_bandwidth} = $outband;
 
     push @tcdevices, $device;
+
+    progress_message "   Tcdevice \"$currentline\" $done.";
 }
 
 sub convert_rate( $$ ) {
@@ -395,6 +397,7 @@ sub validate_tc_class( $$$$$$ ) {
     }
 
     push @tcclasses, "$device:$markval";
+    progress_message "   Tcclass \"$currentline\" $done.";
 }
 
 sub setup_traffic_shaping() {

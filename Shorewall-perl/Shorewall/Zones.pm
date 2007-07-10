@@ -304,6 +304,8 @@ sub haveipseczones() {
 #
 sub zone_report()
 {
+    progress_message2 "Determining Hosts in Zones...";
+
     for my $zone ( @zones )
     {
 	my $zoneref   = $zones{$zone};

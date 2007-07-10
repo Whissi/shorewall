@@ -301,6 +301,8 @@ sub default_policy( $$$ ) {
 }
 
 sub apply_policy_rules() {
+    progress_message2 'Applying Policies...';
+
     for my $chainref ( @policy_chains ) {
 	my $policy = $chainref->{policy};
 	my $loglevel = $chainref->{loglevel};

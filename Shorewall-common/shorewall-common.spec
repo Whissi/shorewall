@@ -238,6 +238,7 @@ fi
 %attr(0644,root,root) %{_mandir}/man5/shorewall-interfaces.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-maclist.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-masq.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall-modules.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-nat.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-nesting.5.gz
 %attr(0644,root,root) %{_mandir}/man5/shorewall-netmap.5.gz

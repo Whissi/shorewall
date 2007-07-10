@@ -753,7 +753,7 @@ sub compiler( $$$$ ) {
     #
     # Start Second Part of script
     #
-    generate_script_2;
+    generate_script_2 unless $command eq 'check';
     #
     # Do all of the zone-independent stuff
     #
@@ -837,7 +837,6 @@ sub compiler( $$$$ ) {
 
     progress_message2 'Generating Rule Matrix...';
     generate_matrix;
-    generate_script_3;
 
     if ( $command eq 'check' ) {
 	progress_message3 "Shorewall configuration verified";
@@ -845,6 +844,7 @@ sub compiler( $$$$ ) {
 	#
 	# Finish the script.
 	#
+	generate_script_3;
 	finalize_object ( $export );
 	#
 	# And generate the auxilary config file

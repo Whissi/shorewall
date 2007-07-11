@@ -15,6 +15,13 @@ case $1 in
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	;;
+    4.0.*)
+	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	rpm=shorewall-common-${1}-1.noarch.rpm
+	literpm=shorewall-lite-${1}-1.noarch.rpm
+	perlrpm=shorewall-perl-${1}-1.noarch.rpm
+	shellrpm=shorewall-shell-${1}-1.noarch.rpm
+	;;
     3.9.*)
 	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm

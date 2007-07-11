@@ -47,12 +47,67 @@
     running kernel 2.6.20 or later.</para>
   </caution>
 
+  <section>
+    <title>Xen Network Environment</title>
+
+    <para><ulink
+    url="http://www.cl.cam.ac.uk/Research/SRG/netos/xen/">Xen</ulink> is a
+    <firstterm>paravirtualization</firstterm> tool that allows you to run
+    multiple virtual machines on one physical machine. It is available on a
+    wide number of platforms and is included in recent
+    <trademark>SUSE</trademark> distributions.</para>
+
+    <para>Xen refers to the virtual machines as
+    <firstterm>Domains</firstterm>. Domains are numbered with the first domain
+    being domain 0, the second domain 1, and so on. Domain 0
+    (<firstterm>Dom0</firstterm>) is special because that is the domain
+    created when to machine is booted. Additional domains (called
+    <firstterm>DomU</firstterm>'s) are created using the <command>xm
+    create</command> command from within Domain 0. Additional domains can also
+    be created automatically at boot time by using the
+    <command>xendomains</command> service.</para>
+
+    <para>Xen virtualizes a network interface named <filename
+    class="devicefile">eth0</filename><footnote>
+        <para>This assumes the default Xen configuration created by
+        <command>xend </command>and assumes that the host system has a single
+        ethernet interface named <filename
+        class="devicefile">eth0</filename>.</para>
+      </footnote>in each domain. In Dom0, Xen also creates a bridge (<filename
+    class="devicefile">xenbr0</filename>) and a number of virtual interfaces
+    as shown in the following diagram.</para>
+
+    <graphic align="center" fileref="images/Xen1.png" />
+
+    <para>I use the term <firstterm>Extended Dom0</firstterm> to distinguish
+    the bridge and virtual interfaces from Dom0 itself. That distinction is
+    important when we try to apply Shorewall in this environment.</para>
+
+    <para>The bridge has a number of ports:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>peth0 — This is the port that connects to the physical network
+        interface in your system.</para>
+      </listitem>
+
+      <listitem>
+        <para>vif0.0 — This is the bridge port that is used by traffic to/from
+        Domain 0.</para>
+      </listitem>
+
+      <listitem>
+        <para>vifX.0 — This is the bridge port that is used by traffic to/from
+        Domain X.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
   <section id="Before">
     <title>Before Xen</title>
 
-    <para>Prior to adopting <ulink url="Xen.html">Xen</ulink>, I had a home
-    office crowded with 5 systems, three monitors a scanner and a printer. The
-    systems were:</para>
+    <para>Prior to adopting Xen, I had a home office crowded with 5 systems,
+    three monitors a scanner and a printer. The systems were:</para>
 
     <orderedlist>
       <listitem>
@@ -109,10 +164,6 @@
     <para>Most of the Linux systems run <trademark>SuSE </trademark>10.1; my
     personal Linux desktop system and our Linux Laptop run
     <trademark>Ubuntu</trademark> "Dapper Drake".</para>
-
-    <para>If you are unfamiliar with Xen networking, I recommend that you read
-    the first section of the companion <ulink url="Xen.html">Xen and
-    Shorewall</ulink> article.</para>
 
     <para><emphasis role="bold">The configuration described below uses a
     bridged Xen Networking configuration; if you want to see how to accomplish
@@ -176,12 +227,11 @@
       <para>As the developer of Shorewall, I have enough experience to be very
       comfortable with Linux networking and Shorewall/iptables. I arrived at
       this configuration after a fair amount of trial and error
-      experimentation (see <ulink url="Xen.html">Xen and Shorewall</ulink>).
-      If you are a Linux networking novice, I recommend that you do not
-      attempt a configuration like this one for your first Shorewall
-      installation. You are very likely to frustrate both yourself and the
-      Shorewall support team. Rather I suggest that you start with something
-      simple like a <ulink url="standalone.htm">standalone
+      experimentation. If you are a Linux networking novice, I recommend that
+      you do not attempt a configuration like this one for your first
+      Shorewall installation. You are very likely to frustrate both yourself
+      and the Shorewall support team. Rather I suggest that you start with
+      something simple like a <ulink url="standalone.htm">standalone
       installation</ulink> in a domU; once you are comfortable with that then
       you will be ready to try something more substantial.</para>
 

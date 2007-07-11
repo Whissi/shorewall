@@ -81,6 +81,9 @@ fi
 %doc COPYING INSTALL 
 
 %changelog
+* Wed Jul 11 2007 Tom Eastep tom@shorewall.net
+- Modify shorewall.conf on uninstall
+- Updated to 4.0.0-1
 * Sun Jul 08 2007 Tom Eastep tom@shorewall.net
 - Updated to 4.0.0-0RC2
 * Fri Jun 29 2007 Tom EAstep tom@shorewall.net

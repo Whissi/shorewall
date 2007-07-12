@@ -37,8 +37,7 @@
   <section id="What">
     <title>Shorewall-perl - What is it?</title>
 
-    <para>Shorewall-perl is a companion product to Shorewall. It requires
-    Shorewall 3.4.2 or later (Shorewall 3.4.4 or later recommended).</para>
+    <para>Shorewall-perl is a companion product to Shorewall.</para>
 
     <para>Shorewall-perl contains a re-implementation of the Shorewall
     compiler written in Perl. The advantages of using Shorewall-perl over
@@ -524,98 +523,53 @@ eth0             eth1:!192.168.4.9       ...</programlisting></para>
   <section id="Install">
     <title>Shorewall-perl - Installation</title>
 
-    <caution>
-      <para>Shorewall-perl is still part of the <ulink
-      url="ReleaseModel.html">current development release</ulink>. Use it at
-      your own risk.</para>
-    </caution>
-
     <para>Either</para>
 
-    <programlisting><command>tar -jxf shorewall-perl-4.0.0-Betax.tar.bz2</command>
-<command>cd shorewall-perl-4.0.0-Betax</command>
+    <programlisting><command>tar -jxf shorewall-perl-4.0.x.tar.bz2</command>
+<command>cd shorewall-perl-4.0.x</command>
 <command>./install.sh</command></programlisting>
 
     <para>or</para>
 
-    <programlisting><command>rpm -ivh shorewall-perl-4.0.0-0Betax.noarch.rpm</command></programlisting>
-
-    <para>Note that you can also install the current Shorewall 4.0.0 Beta
-    version of Shorewall. If you do that and still want access to the legacy
-    shell-based compiler, you must also install the Shorewall-shell
-    package.</para>
+    <programlisting><command>rpm -ivh shorewall-perl-4.0.x.noarch.rpm</command></programlisting>
   </section>
 
   <section id="Using">
     <title>Using Shorewall-perl</title>
 
-    <section id="V3.4.3">
-      <title>Using Shorewall-perl under Shorewall 3.4.2 and Shorewall
-      3.4.3</title>
+    <para>If you only install one compiler, then that compiler will be
+    used.</para>
 
-      <para>By default, the Shorewall-shell compiler will be used.</para>
+    <para>If you install both compilers, then the compiler actually used
+    depends on the SHOREWALL_COMPILER setting in
+    <filename>shorewall.conf</filename>. The value of this option can be
+    either 'perl' or 'shell'.</para>
 
-      <para>To use the Shorewall-perl compiler, add this to
-      <filename>shorewall.conf</filename>:</para>
+    <para>If you add 'SHOREWALL_COMPILER=perl' to
+    <filename>/etc/shorewall/shorewall.conf</filename> then by default, the
+    new compiler will be used on the system. If you add it to
+    <filename>shorewall.conf</filename> in a separate directory (such as a
+    Shorewall-lite export directory) then the new compiler will only be used
+    when you compile from that directory.</para>
 
-      <para>SHOREWALL_COMPILER=perl</para>
+    <para>If you only install one compiler, it is suggested that you do not
+    set SHOREWALL_COMPILER.</para>
 
-      <para>If you add this setting to
-      <filename>/etc/shorewall/shorewall.conf</filename> then by default, the
-      new compiler will be used on the system.</para>
+    <para>You may also select the compiler to use on the command line using
+    the 'C option:<simplelist>
+        <member>'-C shell' means use the shell compiler</member>
 
-      <para>Regardless of the setting of SHOREWALL_COMPILER, there is one
-      change in Shorewall operation that is triggered simply by installing
-      Shorewall-perl. Your params file will be processed with the shell's '-a'
-      option which causes any variables that you set or create in that file to
-      be automatically exported. Since the params file is processed before
-      <filename>shorewall.conf</filename>, using -a insures that the settings
-      of your params variables are available to the new compiler should it's
-      use be specified in <filename>shorewall.conf</filename>.</para>
-    </section>
+        <member>'-C perl' means use the perl compiler</member>
+      </simplelist>The -C option overrides the setting in
+    shorewall.conf.</para>
 
-    <section id="V4.0.0">
-      <title>Using Shorewall-perl under Shorewall 3.4.4/4.0.0 Beta and
-      later.</title>
+    <para>Example:<programlisting><command>shorewall restart -C perl</command></programlisting></para>
 
-      <para>If you only install one compiler, then that compiler will be
-      used.</para>
-
-      <para>If you install both compilers, then the compiler actually used
-      depends on the SHOREWALL_COMPILER setting in
-      <filename>shorewall.conf</filename>.</para>
-
-      <para>The value of this new option can be either 'perl' or
-      'shell'.</para>
-
-      <para>If you add 'SHOREWALL_COMPILER=perl' to
-      <filename>/etc/shorewall/shorewall.conf</filename> then by default, the
-      new compiler will be used on the system. If you add it to
-      <filename>shorewall.conf</filename> in a separate directory (such as a
-      Shorewall-lite export directory) then the new compiler will only be used
-      when you compile from that directory (4.0.0 Beta6 and later
-      only).</para>
-
-      <para>If you only install one compiler, it is suggested that you do not
-      set SHOREWALL_COMPILER.</para>
-
-      <para>If you install Shorewall-perl under Shorewall 3.4.4 or later, you
-      can select the compiler to use on the command line using the 'C
-      option:<simplelist>
-          <member>'-C shell' means use the shell compiler</member>
-
-          <member>'-C perl' means use the perl compiler</member>
-        </simplelist>The -C option overrides the setting in
-      shorewall.conf.</para>
-
-      <para>Example:<programlisting><command>shorewall restart -C perl</command></programlisting></para>
-
-      <para>When the Shorewall-perl compiler has been selected, the
-      <filename>params</filename> file is processed using the
-      <option>-a</option> option which causes all variables set within the
-      file to be exported automatically by the shell. The Shorewall-perl
-      compiler uses the current environmental variables to perform variable
-      expansion within the other Shorewall configuration files.</para>
-    </section>
+    <para>When the Shorewall-perl compiler has been selected, the
+    <filename>params</filename> file is processed twice, the second time using
+    the <option>-a</option> option which causes all variables set within the
+    file to be exported automatically by the shell. The Shorewall-perl
+    compiler uses the current environmental variables to perform variable
+    expansion within the other Shorewall configuration files.</para>
   </section>
 </article>

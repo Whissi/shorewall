@@ -420,10 +420,6 @@ sub setup_providers() {
 
 	emit_unindented join( "\n",
 			      '#',
-   #
-    #   Setup_Providers() Starts Here....
-    #
-
 			      '# reserved values',
 			      '#',
 			      "255\tlocal",

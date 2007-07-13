@@ -243,10 +243,6 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     $providers{$table}         = {};
-   #
-    #   Setup_Providers() Starts Here....
-    #
-
     $providers{$table}{number} = $number;
     $providers{$table}{mark}   = $val;
     
@@ -302,11 +298,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	       "    ${iface}_up="
 	     );
     } else {
-	emit "    fatal_error \"ERROR: Interface $interface is not configured --
-   #
-    #   Setup_Providers() Starts Here....
-    #
- Provider $table ($number) Cannot be Added\"";
+	emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
     }
     
     emit "fi\n";

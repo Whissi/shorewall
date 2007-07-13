@@ -203,7 +203,11 @@ sub timestamp() {
 sub progress_message {
     if ( $verbose > 1 ) {
 	timestamp if $timestamp;
-	my $line = join( ' ', @_ );
+	#
+	# We use this function to display messages containing raw config file images which may contains tabs (including multiple tabs in succession).
+	# The following makes such messages look more readable and uniform
+	#
+	my $line = "@_";
 	$line =~ s/\s+/ /g;
 	print "$line\n";
     }

@@ -5,63 +5,70 @@ literpm=
 perlrpm=
 shellrpm=
 
+DEST=
+USER="webmin@mail.shorewall.net:"
+SHOREWALL=shorewall
+COMMAND=scp
+
 case $1 in
     4.*Beta*|4.*RC*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     4.0.*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	;;
     3.9.*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	;;
     3.*[13579].*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	;;
     *.*[13579].*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	;;
     3.*Beta*|*RC*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     *.*Beta*|*RC*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     3.[2468].*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	;;
     *.[2468].*)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	;;
     *)
-	DEST="webadmin@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1}-1.noarch.rpm
 	;;
 esac
@@ -72,12 +79,11 @@ esac
 
 echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
-if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
-    cat shorewall-common-${1}/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
+if [ "$HOSTNAME" = lists ]; then
+	mkdir -p $DEST
+	COMMAND=cp
 else
-    cat shorewall-common-${1}/releasenotes.txt > releasenotes.txt
+	ssh $USER mkdir -p $DEST
 fi
 
-ssh ${DEST%%:*} mkdir -p ${DEST#*:}
-
-scp -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $perlrpm $shellrpm $DEST
+$COMMAND -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $perlrpm $shellrpm $DEST

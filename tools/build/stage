@@ -6,7 +6,7 @@ perldir=
 shelldir=
 
 DEST=
-USER="webmin@mail.shorewall.net:"
+USER="webmin@mail.shorewall.net"
 SHOREWALL=shorewall
 COMMAND=scp
 
@@ -44,7 +44,8 @@ case $1 in
 	rpm=shorewall-${1}-1.noarch.rpm
 	;;
     3.*Beta*|*RC*)
-	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	DEST="/srv/ftp/pub/shorewall/development	$DEST=${USER}${DEST}
+/staging/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	;;
@@ -90,7 +91,7 @@ if [ "$HOSTNAME" = lists ]; then
 	COMMAND=cp
 else
 	ssh $USER mkdir -p $DEST
-	$DEST=${USER}${DEST}
+	$DEST=${USER}:${DEST}
 fi
 
 $COMMAND -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $perlrpm $shellrpm $DEST

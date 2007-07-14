@@ -6,7 +6,7 @@ perlrpm=
 shellrpm=
 
 DEST=
-USER="webmin@mail.shorewall.net:"
+USER="webmin@mail.shorewall.net"
 SHOREWALL=shorewall
 COMMAND=scp
 
@@ -84,6 +84,7 @@ if [ "$HOSTNAME" = lists ]; then
 	COMMAND=cp
 else
 	ssh $USER mkdir -p $DEST
+	$DEST=${USER}:${DEST}
 fi
 
 $COMMAND -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $perlrpm $shellrpm $DEST

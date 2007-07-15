@@ -362,12 +362,12 @@ CONFIG_IP_NF_ARP_MANGLE=m
     support (Ubuntu inexplicably includes conntrack match support but not
     CONNTRACK target support). The two graphics show mostly the same
     information but the configuration menu is slignly larger than my display
-    so I captured it in two images.<graphic
-    fileref="images/kernel-2.6.20-1.png" /><graphic
+    so I captured it in two images.<graphic align="center"
+    fileref="images/kernel-2.6.20-1.png" /><graphic align="center"
     fileref="images/kernel-2.6.20-2.png" />The next graphic shows the IP
     Netfilter Configuration -- these are the standard Ubuntu settions.<graphic
-    fileref="images/kernel-2.6.20-3.png" />Here is the corresponding CONFIG
-    file exerpt.<programlisting>CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+    align="center" fileref="images/kernel-2.6.20-3.png" />Here is the
+    corresponding CONFIG file exerpt.<programlisting>CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
 CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
 CONFIG_NETFILTER_XT_TARGET_DSCP=m
 CONFIG_NETFILTER_XT_TARGET_MARK=m
@@ -463,5 +463,18 @@ CONFIG_IP_NF_ARP_MANGLE=m
 </programlisting></para>
 
     <para></para>
+  </section>
+
+  <section>
+    <title>Minimal Configuration using Kernel 2.6.20 and later</title>
+
+    <para>Massimo Burcheri has contributed this minimal configuration which is
+    suitable for securing a laptop or desktop. It is strictly a "no-frills"
+    configuration and represents the minimum that will work with Shorewall
+    when using only the very basic Shorewall features described in the <ulink
+    url="standalone.htm">one-interface quickstart guide</ulink>.<graphic
+    align="center" fileref="images/2.6.21_conf_01.png" /><graphic
+    fileref="images/2.6.21_conf_02.png" /><graphic
+    fileref="images/2.6.21_conf_03.png" /></para>
   </section>
 </article>

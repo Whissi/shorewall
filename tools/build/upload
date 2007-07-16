@@ -87,4 +87,10 @@ else
 	DEST=${USER}:${DEST}
 fi
 
+if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
+    cat $SHOREWALL-${1} shorewall-lite-${1} > releasenotes.txt
+else
+    cp $SHOREWALL-${1}/releasenotes.txt .
+fi
+
 $COMMAND -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $perlrpm $shellrpm $DEST

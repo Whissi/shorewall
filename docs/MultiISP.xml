@@ -755,6 +755,49 @@ eth1             eth2              130.252.99.27</programlisting>
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
     </section>
 
+    <section id="morethan2">
+      <title>More than 2 Providers</title>
+
+      <para>When there are more than two providers, you need to extend the
+      two-provider case in the expected way:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>For each external address, you need an entry in
+          <filename>/etc/shorewall/masq</filename> to handle the case where a
+          connection using that address as the SOURCE is sent out of the
+          interfaces other than the one that the address is configured
+          on.</para>
+        </listitem>
+
+        <listitem>
+          <para>For each external interface, you need to add an entry to
+          <filename>/etc/shorewall/masq</filename> for each internal network
+          that needs to be masqueraded (or use SNAT) through that
+          interface.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>If we extend the above example to add eth3 with IP address
+      16.105.78.4 with gateway 16.105.78.254, then:</para>
+
+      <para><filename>/etc/shorewall/providers</filename>:<programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
+ISP1    1       1       main            eth0            206.124.146.254 track,balance    eth2
+ISP2    2       2       main            eth1            130.252.99.254  track,balance    eth2
+ISP3    3       3       main            eth3            16.105.78.254   track,balance    eth2</programlisting></para>
+
+      <para><filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             130.252.99.27     206.124.146.176
+eth3             130.252.99.27     16.105.78.4
+eth1             206.124.146.176   130.252.99.27
+eth3             206.124.146.176   16.105.78.4
+eth0             16.106.78.4       206.124.146.176
+eth1             16.106.78.4       130.252.99.27
+eth0             eth2              206.124.146.176
+eth1             eth2              130.252.99.27
+eth3             eth2              16.105.78.4</programlisting></para>
+    </section>
+
     <section id="Local">
       <title>Applications running on the Firewall</title>
 

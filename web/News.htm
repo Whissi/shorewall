@@ -24,9 +24,83 @@ href="GnuCopyright.htm" target="_self">GNU Free Documentation
 License</a></span>”.<br>
 </p>
 
-<p>June 22, 2007<br>
+<p>July 15, 2007<br>
 </p>
 <hr style="width: 100%; height: 2px;">
+
+<p><strong>2007-07-15 Shorewall 3.4.5</strong></p>
+<pre>
+Problems Corrected in 3.4.5.
+
+1)  DYNAMIC_ZONES=Yes can now coexist with Shorewall-perl's 'bport'
+    zones. Those zones themselves may not be dynamically modified but
+    the presence of bport zones no longer causes the 'shorewall add'
+    command to fail.
+
+2)  Shorewall's internal traffic shaper once again works when the 'sed'
+    utility is provided by the Busybox package.
+
+3)  Version 3.4.4 erroneously accepted the values On, Off, on, off, ON
+    and OFF for the IP_FORWARDING option. These values were treated
+    like 'Keep'. The listed values are now once again flagged as an
+    error.
+
+4)  If 'routeback' and 'detectnets' were specified on an interface,
+    limited broadcasts (to 255.255.255.255) and multicasts were dropped
+    when forwarded through the interface. This could cause
+    broadcast-based and multicast applications to fail when running
+    through a bridge with 'detectnets'.
+
+5)  The 'hits' command works once again.
+
+6)  IPSECFILE=ipsec (either explicitly or defaulted) works
+    now. Previously, processing of the ipsec file was bypassed; often
+    with a confusing "missing file" message.
+
+7)  If DETECT_DNAT_IPADDRS=Yes in shorewall.conf but you did't have conntrack
+    match support, then the generated script was missing 'done's.
+
+Other changes in 3.4.5.
+
+1)  When a Shorewall release includes detection of an additional
+    capability, existing capabilities files become out of
+    date. Previously, this condition was not detected.
+
+    Beginning with this release, each generated capabilities file
+    contains a CAPVERSION specification which defines the capabilities
+    version of the file. If the CAPVERSION in a capabilities file is
+    less than the current CAPVERSION, then Shorewall will issue the
+    following message:
+
+    WARNING: &lt;file&gt; is out of date -- it does not contain all of
+    the capabilities defined by Shorewall version &lt;version&gt;
+
+    where
+
+	&lt;file&gt;    is the name of the capabilities file.
+	&lt;version&gt; is the current Shorewall version.
+
+    Existing capabilities files contain no CAPVERSION. When such a file
+    is read, Shorewall will issue this message:
+
+    WARNING: &lt;file&gt; may be not contain all of the capabilities defined
+    by Shorewall version &lt;version&gt;
+
+2)  When a directory is specified in a command such as 'start' or
+    'compile', Shorewall now reads the shorewall.conf file (if any) in
+    that directory before deciding which compiler to use. So if
+    SHOREWALL_COMPILER is not specified in
+    /etc/shorewall/shorewall.conf and the -C option was not specified
+    on the run-line, then if Shorewall-perl is installed, the additional
+    shorewall.conf file is read to see if it specifies a
+    SHOREWALL_COMPILER.
+
+3)  The 'save' command now uses iptables-save from the same directory
+    containing iptables. Previously, iptables-save was located via the
+    PATH setting.
+
+
+</pre>
 
 <p><strong>2007-06-17 Shorewall 3.4.4</strong></p>
 <pre>Problems corrected in 3.4.4:

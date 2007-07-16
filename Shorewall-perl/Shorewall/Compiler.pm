@@ -24,18 +24,14 @@
 
 package Shorewall::Compiler;
 require Exporter;
-use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Chains;
 use Shorewall::Zones;
-use Shorewall::Interfaces;
-use Shorewall::Hosts;
 use Shorewall::Policy;
 use Shorewall::Nat;
 use Shorewall::Providers;
 use Shorewall::Tc;
 use Shorewall::Tunnels;
-use Shorewall::Macros;
 use Shorewall::Actions;
 use Shorewall::Accounting;
 use Shorewall::Rules;
@@ -59,15 +55,12 @@ use constant { EXPORT => 0x01 ,
 # Reinitilize the package-globals in the other modules
 #
 sub reinitialize() {
-    Shorewall::Common::initialize;
     Shorewall::Config::initialize;
     Shorewall::Chains::initialize;
     Shorewall::Zones::initialize;
-    Shorewall::Interfaces::initialize;
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize;
     Shorewall::Tc::initialize;
-    Shorewall::Macros::initialize;
     Shorewall::Actions::initialize;
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize;

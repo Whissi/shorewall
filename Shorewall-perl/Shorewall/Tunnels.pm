@@ -24,7 +24,6 @@
 #
 package Shorewall::Tunnels;
 require Exporter;
-use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Chains;

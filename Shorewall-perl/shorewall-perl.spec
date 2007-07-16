@@ -70,12 +70,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Accounting.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Actions.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Chains.pm
-%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Common.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Compiler.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Config.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/FallbackPorts.pm
-%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Hosts.pm
-%attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Interfaces.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/IPAddrs.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Macros.pm
 %attr(0644,root,root) /usr/share/shorewall-perl/Shorewall/Nat.pm

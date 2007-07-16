@@ -21,15 +21,13 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 #   This module contains the code for dealing with actions (built-in,
-#   standard and user-defined).
+#   standard and user-defined) and Macros.
 #
 package Shorewall::Actions;
 require Exporter;
-use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Zones;
 use Shorewall::Chains;
-use Shorewall::Macros;
 
 use strict;
 
@@ -44,9 +42,17 @@ our @EXPORT = qw( merge_levels
 		  process_actions2
 		  process_actions3
 
+		  find_macro
+		  split_action
+		  substitute_param
+		  merge_macro_source_dest
+		  merge_macro_column
+
 		  %usedactions
 		  %default_actions
 		  %actions
+
+		  %macros
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = 4.00;
@@ -73,6 +79,9 @@ our %actions;
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
 our %logactionchains;
+
+our %macros;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -108,6 +117,84 @@ sub merge_levels ($$) {
     my $subparts = @subparts;
 
     my $target   = $subparts[0];
+#
+# Try to find a macro file -- RETURNS false if the file doesn't exist or MACRO if it does.
+# If the file exists, the macro is entered into the 'targets' table and the fully-qualified
+# name of the file is stored in the 'macro' table.
+#
+sub find_macro( $ )
+{
+    my $macro = $_[0];
+    my $macrofile = find_file "macro.$macro";
+
+    if ( -f $macrofile ) {
+	$macros{$macro} = $macrofile;
+	$targets{$macro} = MACRO;
+    } else {
+	0;
+    }
+}
+
+#
+# Return ( action, level[:tag] ) from passed full action
+#
+sub split_action ( $ ) {
+    my $action = $_[0];
+    my @a = split( /:/ , $action, 4 );
+    fatal_error "Invalid ACTION ($action)" if ( $action =~ /::/ ) || ( @a > 3 );
+    ( shift @a, join ":", @a );
+}
+
+#
+# This function substitutes the second argument for the first part of the first argument up to the first colon (":")
+#
+# Example:
+#
+#         substitute_param DNAT PARAM:info:FTP
+#
+#         produces "DNAT:info:FTP"
+#
+sub substitute_param( $$ ) {
+    my ( $param, $action ) = @_;
+
+    if ( $action =~ /:/ ) {
+	my $logpart = (split_action $action)[1];
+	$logpart =~ s!/$!!;
+	return "$param:$logpart";
+    }
+
+    $param;
+}
+
+#
+# Combine fields from a macro body with one from the macro invocation
+#
+sub merge_macro_source_dest( $$ ) {
+    my ( $body, $invocation ) = @_;
+
+    if ( $invocation ) {
+	if ( $body ) {
+	    return $body if $invocation eq '-';
+	    return "$body:$invocation" if $invocation =~ /.*?\.*?\.|^\+|^~|^!~/;
+	    return "$invocation:$body";
+	}
+
+	return $invocation;
+    }
+
+    $body || '';
+}
+
+sub merge_macro_column( $$ ) {
+    my ( $body, $invocation ) = @_;
+
+    if ( defined $invocation && $invocation ne '' && $invocation ne '-' ) {
+	$invocation;
+    } else {
+	$body;
+    }
+}
+
 
     push @subparts, '' while @subparts < 3;   #Avoid undefined values
 

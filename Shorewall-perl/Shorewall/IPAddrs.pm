@@ -24,7 +24,6 @@
 #   
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Common;
 use Shorewall::Config;
 
 use strict;

@@ -27,11 +27,9 @@
 package Shorewall::Chains;
 require Exporter;
 
-use Shorewall::Common;
 use Shorewall::Config;
 use Shorewall::Ports;
 use Shorewall::Zones;
-use Shorewall::Interfaces;
 use Shorewall::IPAddrs;
 
 use strict;

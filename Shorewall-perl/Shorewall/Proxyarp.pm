@@ -23,9 +23,8 @@
 #
 package Shorewall::Proxyarp;
 require Exporter;
-use Shorewall::Common;
 use Shorewall::Config;
-use Shorewall::Interfaces;
+use Shorewall::Zones;
 
 use strict;
 

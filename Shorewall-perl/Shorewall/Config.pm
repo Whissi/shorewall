@@ -23,8 +23,8 @@
 #   This module is responsible for lower level configuration file handling.
 #   It also exports functions for generating warning and error messages.
 #   The get_configuration function parses the shorewall.conf, capabilities and 
-#   modules files during compiler startup. The module also provides very basic 
-#   services such as creation of temporary 'object' files, writing
+#   modules files during compiler startup. The module also provides the basic 
+#   output file services such as creation of temporary 'object' files, writing
 #   into those files (emitters) and finalizing those files (renaming 
 #   them to their final name and setting their mode appropriately).
 #
@@ -96,15 +96,38 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
 our $VERSION = 4.00;
 
+#
+# describe the current command, it's present progressive, and it's completion.
+#
 our ($command, $doing, $done );
+#
+# VERBOSITY
+#
 our $verbose;
+#
+# Timestamp each progress message, if true.
+#
 our $timestamp;
+#
+# Object file handle
+#
 our $object;
+#
+# True, if last line emitted is blank
+#
 our $lastlineblank;
+#
+# Number of columns to indent the output
+#
 our $indent;
-our ( $dir, $file );      # Object's Directory and File
-our $tempfile;            # Temporary File Name
-
+#
+# Object's Directory and File
+#
+our ( $dir, $file );
+#
+# Temporary output file's name
+#
+our $tempfile;
 #
 # Misc Globals
 #
@@ -144,9 +167,9 @@ our $currentfile;             # File handle reference
 our $currentfilename;         # File NAME
 our $currentlinenumber;       # Line number
 
-our $shorewall_dir;           #Shorewall Directory
+our $shorewall_dir;           # Shorewall Directory
 
-our $debug;
+our $debug;                   # If true, use Carp to report errors with stack trace.
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -441,7 +464,6 @@ sub emitj {
 #
 # Write passed message to the object with newline but no indentation.
 #
-
 sub emit_unindented( $ ) {
     print $object "$_[0]\n" if $object;
 }

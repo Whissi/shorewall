@@ -851,7 +851,7 @@ sub pop_open() {
 #   - Handle INCLUDE <filename>
 #
 
-sub read_a_line {
+sub read_a_line() {
     while ( $currentfile ) {
 
 	$currentline = '';
@@ -910,7 +910,7 @@ sub read_a_line {
 #
 # Simple version of the above. Doesn't do line concatenation, shell variable expansion or INCLUDE processing
 #
-sub read_a_line1 {
+sub read_a_line1() {
     while ( $currentfile ) {
 	while ( $currentline = <$currentfile> ) {
 	    $currentlinenumber++;

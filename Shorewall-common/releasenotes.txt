@@ -584,7 +584,6 @@ Migration Considerations:
      t) Shorewall-perl validates all IP addresses and addresses ranges
         in rules. DNS names are resolved and an error is issued for any
 	name that cannot be resolved.
-
      u) Shorewall-perl checks configuration files for the presense of
 	characters that can cause problems if they are allowed into the
 	generated firewall script:
@@ -609,6 +608,44 @@ Migration Considerations:
 	invocation are automatically propagated to lower level macros.
 
 	 Macro invocations may be nested to a maximum level of 5.
+    ------------------------------------------------------------------------
+                      P R E R E Q U I S I T E S
+    ------------------------------------------------------------------------
+    - Perl (I use Perl 5.8.8 but other versions should work fine)
+    - Perl Cwd Module
+    - Perl File::Basename Module
+    - Perl File::Temp Module
+    - Perl Getopt::Long Module
+    ------------------------------------------------------------------------
+               U S I N G   T H E   N E W   C O M P I L E R
+    ------------------------------------------------------------------------
+    If you only install one compiler, then that compiler will be used.
+
+    If you install both compilers, then the compiler actually used depends
+    on the SHOREWALL_COMPILER setting in shorewall.conf.
+
+    The value of this new option can be either 'perl' or 'shell'.
+
+    If you add 'SHOREWALL_COMPILER=perl' to /etc/shorewall/shorewall.conf
+    then by default, the new compiler will be used on the system. If you
+    add it to shorewall.conf in a separate directory (such as a
+    Shorewall-lite export directory) then the new compiler will only be
+    used when you compile from that directory.
+
+    If you only install one compiler, it is suggested that you do not set
+    SHOREWALL_COMPILER.
+
+    You can also select the compiler to use on the command line using the
+    'C option:
+
+       '-C shell' means use the shell compiler
+       '-C perl' means use the perl compiler
+
+    The -C option overrides the setting in shorewall.conf. 
+
+    Example:
+
+	shorewall restart -C perl
 
 2)  Thanks to Paul Gear, an IPPServer macro has been added. Be sure to
     read the comments in the macro file before trying to use this
@@ -855,49 +892,3 @@ Migration Considerations:
     To use this feature with Shorewall-lite, all packages involved
     (compiler, shorewall-common and shorewall-lite) must be version
     4.0.0-RC2 or later.
-----------------------------------------------------------------------------
-                      P R E R E Q U I S I T E S
-----------------------------------------------------------------------------
-- Perl (I use Perl 5.8.8 but other versions should work fine)
-- Perl Cwd Module
-- Perl File::Basename Module
-- Perl File::Temp Module
-- Perl Getopt::Long Module
-----------------------------------------------------------------------------
-               U S I N G   T H E   N E W   C O M P I L E R
-----------------------------------------------------------------------------
-If you only install one compiler, then that compiler will be used.
-
-If you install both compilers, then the compiler actually used depends
-on the SHOREWALL_COMPILER setting in shorewall.conf.
-
-The value of this new option can be either 'perl' or 'shell'.
-
-If you add 'SHOREWALL_COMPILER=perl' to /etc/shorewall/shorewall.conf
-then by default, the new compiler will be used on the system. If you
-add it to shorewall.conf in a separate directory (such as a
-Shorewall-lite export directory) then the new compiler will only be
-used when you compile from that directory.
-
-If you only install one compiler, it is suggested that you do not set
-SHOREWALL_COMPILER.
-
-You can also select the compiler to use on the command line using the
-'C option:
-
-       '-C shell' means use the shell compiler
-       '-C perl' means use the perl compiler
-
-The -C option overrides the setting in shorewall.conf. 
-
-Example:
-
-	shorewall restart -C perl
-
-When the Shorewall-perl compiler is used, your params file will be
-processed during compilation with the shell's '-a' option  which causes
-any variables that you set or create in that file to be automatically
-exported. Since the params file is processed before shorewall.conf,
-using -a insures that the settings of your params variables are
-available to the new compiler should its use be specified in
-shorewall.conf.

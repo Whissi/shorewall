@@ -65,7 +65,7 @@ our @EXPORT = qw( STANDARD
 		  input_chain
 		  output_chain
 		  masq_chain
-		  syn_chain
+		  syn_flood_chain
 		  mac_chain
 		  macrecent_target
 		  dynamic_fwd
@@ -142,6 +142,7 @@ our $VERSION = 4.00;
 #                                               policy       => <policy>
 #                                               loglevel     => <level>
 #                                               synparams    => <burst/limit>
+#                                               synchain     => <name of synparam chain>
 #                                               default      => <default action>
 #                                               policy_chain => <ref to policy chain -- self-reference if this is a policy chain>
 #                                               loopcount    => <number of open loops in runtime commands>
@@ -160,7 +161,7 @@ our $VERSION = 4.00;
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
-#       'loglevel', 'synparams' and 'default' only apply to policy chains.
+#       'loglevel', 'synparams', 'synchain' and 'default' only apply to policy chains.
 #
 our @policy_chains;
 our %chain_table;
@@ -474,10 +475,10 @@ sub masq_chain($)
 }
 
 #
-# Syn_chain
+# Syn_flood_chain -- differs from the other _chain functions in that the argument is a chain table reference
 #
-sub syn_chain ( $ ) {
-    '@' . $_[0];
+sub syn_flood_chain ( $ ) {
+    '@' . $_[0]->{synchain};
 }
 #
 # MAC Verification Chain for an interface
@@ -687,7 +688,7 @@ sub finish_chain_section ($$) {
     if ($sections{RELATED} ) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', "\@$chain";
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
 		if ( $section eq 'DONE' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE)$/ ) {
 			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
@@ -699,7 +700,7 @@ sub finish_chain_section ($$) {
 	} else {
 	    my $policychainref = $filter_table->{$chainref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', syn_chain $policychainref->{name};
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
 		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 	    }
 	}

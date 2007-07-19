@@ -288,6 +288,7 @@ sub initialize() {
 		OPTIMIZE => undef,
 		EXPORTPARAMS => undef,
 		SHOREWALL_COMPILER => undef,
+		EXPAND_POLICIES => undef,
 		#
 		# Packet Disposition
 		#
@@ -1435,6 +1436,7 @@ sub get_configuration( $ ) {
     warning_message 'USE_ACTIONS=No is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{USE_ACTIONS};
 
     default_yes_no 'EXPORTPARAMS'               , '';
+    default_yes_no 'EXPAND_POLICIES'            , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};

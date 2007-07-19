@@ -275,20 +275,6 @@ sub setup_rfc1918_filteration( $ ) {
     }
 }
 
-sub setup_syn_flood_chains() {
-    for my $chainref ( @policy_chains ) {
-	my $limit = $chainref->{synparams};
-	if ( $limit ) {
-	    my $level = $chainref->{loglevel}; 
-	    my $synchainref = new_chain 'filter' , syn_chain $chainref->{name};
-	    add_rule $synchainref , "${limit}-j RETURN";
-	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''
-		if $level ne '';
-	    add_rule $synchainref, '-j DROP';
-	}
-    }
-}
-
 sub setup_blacklist() {
 
     my $hosts = find_hosts_by_option 'blacklist';

@@ -32,7 +32,7 @@ use Shorewall::Actions;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain );
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
 our $VERSION = 4.00;
 
@@ -61,9 +61,30 @@ sub set_policy_chain($$$)
     my ($chain1, $chainref, $policy) = @_;
 
     my $chainref1 = $filter_table->{$chain1};
+
     $chainref1 = new_chain 'filter', $chain1 unless $chainref1;
+
     unless ( $chainref1->{policychain} ) {
-	$chainref1->{policychain} = $chainref->{name};
+	if ( $config{EXPAND_POLICIES} ) {
+	    #
+	    # We convert the canonical chain into a policy chain, using the settings of the
+	    # passed policy chain.
+	    #
+	    $chainref1->{policychain} = $chain1;
+	    $chainref1->{loglevel}    = $chainref->{loglevel} if defined $chainref->{loglevel};
+
+	    if ( defined $chainref->{synparams} ) {
+		$chainref1->{synparams}   = $chainref->{synparams};
+		$chainref1->{synchain}    = $chainref->{synchain};
+	    }
+
+	    $chainref1->{default}     = $chainref->{default} if defined $chainref->{default};
+	    $chainref1->{is_policy}   = 1;
+	    push @policy_chains, $chainref1;
+	} else {
+	    $chainref1->{policychain} = $chainref->{name};
+	}
+
 	$chainref1->{policy} = $policy;
     }
 }
@@ -209,16 +230,21 @@ sub validate_policy()
 		$chainref->{is_policy} = 1;
 		$chainref->{policy} = $policy;
 		$chainref->{policychain} = $chain;
-		push @policy_chains, ( $chainref );
+		push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	    }
 	} else {
 	    $chainref = new_policy_chain $chain, $policy, 0;
-	    push @policy_chains, ( $chainref );
+	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	}
 
-	$chainref->{loglevel}  = validate_level( $loglevel )       if defined $loglevel && $loglevel ne '';
-	$chainref->{synparams} = do_ratelimit $synparams, 'ACCEPT' if $synparams ne '';
-	$chainref->{default}   = $default                          if $default;
+	$chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
+	 
+	if ( $synparams ne '' ) {
+	    $chainref->{synparams} = do_ratelimit $synparams, 'ACCEPT';
+	    $chainref->{synchain}  = $chain 
+	}
+	
+	$chainref->{default}   = $default if $default;
 
 	if ( $clientwild ) {
 	    if ( $serverwild ) {
@@ -357,6 +383,23 @@ sub complete_standard_chain ( $$$ ) {
     ( $policy, $loglevel, $default ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
 
     policy_rules $stdchainref , $policy , $loglevel, $default;
+}
+
+#
+# Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
+#
+sub setup_syn_flood_chains() {
+    for my $chainref ( @policy_chains ) {
+	my $limit = $chainref->{synparams};
+	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
+	    my $level = $chainref->{loglevel}; 
+	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
+	    add_rule $synchainref , "${limit}-j RETURN";
+	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''
+		if $level ne '';
+	    add_rule $synchainref, '-j DROP';
+	}
+    }
 }
 
 1;

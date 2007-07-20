@@ -1,1 +1,1 @@
-This is the Shorewall Development 4.0 branch of CVS.
+This is the Shorewall-lite Stable 4.0 branch of SVN.

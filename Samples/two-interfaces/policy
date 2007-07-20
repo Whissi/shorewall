@@ -22,10 +22,18 @@
 #	zones defined in this sample.  This is solely for the purpose of
 #	providing more specific messages in the logs.  This is not
 #	necessary for correct operation of the firewall, but greatly
-#	assists in diagnosing problems.
+#	assists in diagnosing problems. The policies below are logically
+#	equivalent to:
+#
+#	loc	net		ACCEPT
+#	net	all		DROP		info
+#	all	all		REJECT		info
+#
+#	The Shorewall-perl compiler will generate the individual policies
+#	below from the above general policies if you set 
+#	EXPAND_POLICIES=Yes in shorewall.conf. 
 #
 
-#
 # Policies for traffic originating from the local LAN (loc)
 #
 # If you want to force clients to access the Internet via a proxy server

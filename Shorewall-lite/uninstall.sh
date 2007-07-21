@@ -43,7 +43,7 @@ qt()
 restore_file() # $1 = file to restore
 {
     if [ -f ${1}-shorewall.bkout ]; then
-	if (mv -f ${1}-shorewall.bkout $1); then
+	if (mv -f ${1}-shorewall-lite.bkout $1); then
 	    echo
 	    echo "$1 restored"
         else
@@ -63,25 +63,25 @@ remove_file() # $1 = file to restore
 if [ -f /usr/share/shorewall-lite/version ]; then
     INSTALLED_VERSION="$(cat /usr/share/shorewall-lite/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
+	echo "WARNING: Shorewall Lite Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Version $VERSION is not installed"
+    echo "WARNING: Shorewall Lite Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling shorewall $VERSION"
+echo "Uninstalling Shorewall Lite $VERSION"
 
-if qt iptables -L shorewall -n; then
-   /sbin/shorewall clear
+if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall ]; then
+   /sbin/shorewall-lite clear
 fi
 
 if [ -L /usr/share/shorewall-lite/init ]; then
     FIREWALL=$(ls -l /usr/share/shorewall-lite/init | sed 's/^.*> //')
 else
-    FIREWALL=/etc/init.d/shorewall
+    FIREWALL=/etc/init.d/shorewall-lite
 fi
 
 if [ -n "$FIREWALL" ]; then
@@ -97,8 +97,8 @@ if [ -n "$FIREWALL" ]; then
     rm -f ${FIREWALL}-*.bkout
 fi
 
-rm -f /sbin/shorewall
-rm -f /sbin/shorewall-*.bkout
+rm -f /sbin/shorewall-lite
+rm -f /sbin/shorewall-lite-*.bkout
 
 rm -rf /etc/shorewall-lite
 rm -rf /etc/shorewall-lite-*.bkout

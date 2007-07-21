@@ -74,7 +74,7 @@ fi
 
 echo "Uninstalling shorewall $VERSION"
 
-if qt iptables -L shorewall -n; then
+if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
    /sbin/shorewall clear
 fi
 

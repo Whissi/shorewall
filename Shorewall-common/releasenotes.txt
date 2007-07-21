@@ -27,7 +27,21 @@ Shorewall 4.0.1
 
 Problems corrected in 4.0.1.
 
-None.
+1)  The Shorewall Lite installer was producing an empty shorewall-lite
+    manpage. Since the installer runs as part of creating the RPM, the
+    RPM also suffered from this problem. The 4.0.0 Shorewall-lite 
+    packages were re-uploaded with this problem corrected.
+
+2)  The Shorewall Lite uninstaller incorrectly removed /sbin/shorewall
+    rather than /sbin/shorewall-lite.
+
+3)  Both the Shorewall and Shorewall Lite uninstallers did a "shorewall
+    clear" if Shorewall [Lite] was running. Now, the Shorewall Lite
+    uninstaller correctly does "shorewall-lite clear" and both
+    uninstallers only perform the 'clear' operation if the other
+    product is not installed. This prevents the removal of one of the
+    two products from clearing the firewall configuration established
+    by the other one.
 
 Other changes in Shorewall 4.0.1.
 

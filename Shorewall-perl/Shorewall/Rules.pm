@@ -1299,9 +1299,11 @@ sub process_rules() {
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;
 	} elsif ( $target eq 'SECTION' ) {
+	    #
+	    # read_a_line has already verified that there are exactly two tokens on the line
+	    #
 	    fatal_error "Invalid SECTION $source" unless defined $sections{$source};
 	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
-	    fatal_error "Invalid Section $source $dest" if $dest;
 	    $sectioned = 1;
 	    $sections{$source} = 1;
 
@@ -1549,7 +1551,6 @@ sub generate_matrix() {
 	    }
 	}
 
-	
 	if ( $chain1 ) {
 	    for my $interface ( keys %needbroadcast ) {
 		add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";

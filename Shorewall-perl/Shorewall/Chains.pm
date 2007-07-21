@@ -168,8 +168,14 @@ our %chain_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
+#
+# It is a layer violation to keep information about the rules file sections in this module but in Shorewall, the rules file
+# and the filter table are very closely tied. By keeping the information here, we avoid making several other modules dependent
+# in Shorewall::Rules.
+#
 our %sections;
 our $section;
+
 our $comment;
 
 use constant { STANDARD => 1,              #defined by Netfilter
@@ -653,24 +659,24 @@ sub new_standard_chain($) {
 #
 sub initialize_chain_table()
 {
-    for my $chain qw/OUTPUT PREROUTING/ {
+    for my $chain qw(OUTPUT PREROUTING) {
 	new_builtin_chain 'raw', $chain, 'ACCEPT';
     }
 
-    for my $chain qw/INPUT OUTPUT FORWARD/ {
+    for my $chain qw(INPUT OUTPUT FORWARD) {
 	new_builtin_chain 'filter', $chain, 'DROP';
     }
 
-    for my $chain qw/PREROUTING POSTROUTING OUTPUT/ {
+    for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
 	new_builtin_chain 'nat', $chain, 'ACCEPT';
     }
 
-    for my $chain qw/PREROUTING INPUT FORWARD OUTPUT POSTROUTING/ {
+    for my $chain qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING) {
 	new_builtin_chain 'mangle', $chain, 'ACCEPT';
     }
 
     if ( $capabilities{MANGLE_FORWARD} ) {
-	for my $chain qw/ FORWARD POSTROUTING / {
+	for my $chain qw( FORWARD POSTROUTING ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
     }
@@ -1968,7 +1974,7 @@ sub create_netfilter_load() {
 }
 
 #
-# Generate the netfilter input
+# Generate the netfilter input for refreshing the blacklist
 #
 sub create_blacklist_reload() {
 

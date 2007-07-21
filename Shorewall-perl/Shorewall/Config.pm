@@ -877,12 +877,8 @@ sub read_a_line() {
 	    #
 	    # Expand Shell Variables using %ENV
 	    #
-	    while ( $currentline =~ m( ^(.*?)        # Part preceding '$'
-                                       \$({)?        # '$' and optional '{'
-                                       ([a-zA-Z]\w*) # Shell Variable Name
-                                       (?(2)})       # Match opening '{'
-                                       (.*)$)x       # Rest of Line
-                                     ) {
+	    #                            $ 1     $2   $3              -     $4
+	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$)x ) {
 		my $val = $ENV{$3};
 		$val = '' unless defined $val;
 		$currentline = join( '', $1 , $val , $4 );

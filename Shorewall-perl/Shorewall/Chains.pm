@@ -1142,18 +1142,18 @@ sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
     my $options = $option;
 
-    fatal_error "Your kernel and/or iptables does not include ipset match ($setname)" unless $capabilities{IPSET_MATCH};
-
-    if ( $setname =~ /(.*)\[([1-6])\]$/ ) {
+    if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
 	$setname  = $1;
 	my $count = $2;
 	$options .= ",$option" while --$count > 0;
-    } elsif ( $setname =~ /(.+)\[(.*)\]$/ ) {
+    } elsif ( $setname =~ /^(.*)\[(.*)\]$/ ) {
 	$setname = $1;
 	$options = $2;
     }
 
     $setname =~ s/^\+//;
+
+    fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
 
     "--set $setname $options "
 }
@@ -1178,7 +1178,6 @@ sub match_source_net( $ ) {
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
-	validate_net $net;
 	validate_net $net;
 	"-s ! $net ";
     } else {

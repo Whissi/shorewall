@@ -33,7 +33,7 @@
 #
 
 interface_is_up() {
-    [ -n "$(ip link ls dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ] 
+    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ] 
 }
 
 case $# in

@@ -877,7 +877,7 @@ sub read_a_line() {
 	    #
 	    # Expand Shell Variables using %ENV
 	    #
-	    #                            $ 1     $2   $3              -     $4
+	    #                            $1      $2      $3           -     $4
 	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$)x ) {
 		my $val = $ENV{$3};
 		$val = '' unless defined $val;

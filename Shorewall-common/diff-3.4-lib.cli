@@ -1,0 +1,65 @@
+--- /home/teastep/shorewall/branches/3.4/Shorewall/lib.cli	2007-06-28 17:05:43.000000000 -0700
++++ lib.cli	2007-07-22 06:29:50.000000000 -0700
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ #
+-# Shorewall 3.4 -- /usr/share/shorewall/lib.cli.
++# Shorewall 4.0 -- /usr/share/shorewall/lib.cli.
+ #
+ #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+ #
+@@ -363,18 +363,18 @@
+ # Show routing configuration
+ #
+ show_routing() {
+-    if [ -n "$(ip rule ls)" ]; then
++    if [ -n "$(ip rule list)" ]; then
+ 	heading "Routing Rules"
+-	ip rule ls
+-	ip rule ls | while read rule; do
++	ip rule list
++	ip rule list | while read rule; do
+ 	    echo ${rule##* }
+ 	done | sort -u | while read table; do
+ 	    heading "Table $table:"
+-	    ip route ls table $table
++	    ip route list table $table
+ 	done
+     else
+ 	heading "Routing Table"
+-	ip route ls
++	ip route list
+     fi
+ }
+ 
+@@ -530,7 +530,7 @@
+ 	    [ $# -gt 1 ] && usage 1
+ 	    echo "$PRODUCT $version IP at $HOSTNAME - $(date)"
+ 	    echo
+-	    ip addr ls
++	    ip addr list
+ 	    ;;
+ 	routing)
+ 	    [ $# -gt 1 ] && usage 1
+@@ -541,7 +541,7 @@
+ 	config)
+ 	    . ${SHAREDIR}/configpath
+ 	    echo "Default CONFIG_PATH is $CONFIG_PATH"
+-	    echo "LITEDIR is $LITEDIR"
++	    [ -n "$LITEDIR" ] && echo "LITEDIR is $LITEDIR"
+ 	    ;;
+ 	chain)
+ 	    shift
+@@ -697,10 +697,10 @@
+     [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || cat /proc/net/nf_conntrack
+ 
+     heading "IP Configuration"
+-    ip addr ls
++    ip addr list
+ 
+     heading "IP Stats"
+-    ip -stat link ls
++    ip -stat link list
+ 
+     if qt mywhich brctl; then
+ 	heading "Bridges"

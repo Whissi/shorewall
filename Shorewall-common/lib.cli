@@ -363,18 +363,18 @@ save_config() {
 # Show routing configuration
 #
 show_routing() {
-    if [ -n "$(ip rule ls)" ]; then
+    if [ -n "$(ip rule list)" ]; then
 	heading "Routing Rules"
-	ip rule ls
-	ip rule ls | while read rule; do
+	ip rule list
+	ip rule list | while read rule; do
 	    echo ${rule##* }
 	done | sort -u | while read table; do
 	    heading "Table $table:"
-	    ip route ls table $table
+	    ip route list table $table
 	done
     else
 	heading "Routing Table"
-	ip route ls
+	ip route list
     fi
 }
 
@@ -530,7 +530,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version IP at $HOSTNAME - $(date)"
 	    echo
-	    ip addr ls
+	    ip addr list
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
@@ -697,10 +697,10 @@ dump_command() {
     [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || cat /proc/net/nf_conntrack
 
     heading "IP Configuration"
-    ip addr ls
+    ip addr list
 
     heading "IP Stats"
-    ip -stat link ls
+    ip -stat link list
 
     if qt mywhich brctl; then
 	heading "Bridges"

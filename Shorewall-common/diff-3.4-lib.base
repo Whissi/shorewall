@@ -1,7 +1,33 @@
---- /home/teastep/shorewall/branches/3.4/Shorewall/lib.base	2007-06-17 14:36:04.000000000 -0700
-+++ lib.base	2007-06-18 13:22:05.000000000 -0700
-@@ -28,13 +28,13 @@
- # and /usr/share/shorewall-lite/shorecap.
+--- /home/teastep/shorewall/branches/3.4/Shorewall/lib.base	2007-06-17 14:30:30.000000000 -0700
++++ lib.base	2007-07-22 06:29:50.000000000 -0700
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ #
+-# Shorewall 3.4 -- /usr/share/shorewall/lib.base
++# Shorewall 4.0 -- /usr/share/shorewall/lib.base
+ #
+ #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+ #
+@@ -21,20 +21,26 @@
+ #	along with this program; if not, write to the Free Software
+ #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+ #
+-# This library contains the code common to all Shorewall components. It is copied into
+-# the compiled script with the -e compiler flag is specified and is loaded by
+-# /sbin/shorewall, /usr/share/shorewall/compiler and /usr/share/shorewall/firewall. It
+-# is also released as part of Shorewall Lite where it is used by /sbin/shorewall-lite
+-# and /usr/share/shorewall-lite/shorecap.
++# This library contains the code common to all Shorewall components.
++#
++# - It is copied into the compiled script with the -e compiler flag is specified to
++#   shorewall-shell.
++# - It is loaded by /sbin/shorewall.
++# - It is loaded by /usr/share/shorewall/firewall.
++# - It is loaded by /usr/share/shorewall-shell/compiler.
++# - It is released as part of Shorewall Lite where it is used by /sbin/shorewall-lite
++#   and /usr/share/shorewall-lite/shorecap.
++# - It is released as part of Shorewall Perl where it is copied into the compiled script
++#   by the compiler.
  #
  
 -SHOREWALL_LIBVERSION=30404
@@ -16,7 +42,7 @@
  PERLSHAREDIR=/usr/share/shorewall-perl
  
  #
-@@ -360,6 +360,8 @@
+@@ -360,6 +366,8 @@
      eval loaded=\$LIB_${1}_LOADED
  
      if [ -z "$loaded" ]; then
@@ -25,3 +51,97 @@
  	if [ -f $lib ]; then
  	    progress_message "Loading library $lib..."
  	    . $lib
+@@ -380,7 +388,7 @@
+ 
+ #
+ #  Note: The following set of IP address manipulation functions have anomalous
+-#        behavior when the shell only supports 32-bit signed arithmatic and
++#        behavior when the shell only supports 32-bit signed arithmetic and
+ #        the IP address is 128.0.0.0 or 128.0.0.1.
+ #
+ 
+@@ -692,7 +700,7 @@
+ #
+ 
+ find_rt_interface() {
+-    ip route ls | while read addr rest; do
++    ip route list | while read addr rest; do
+ 	case $addr in
+ 	    */*)
+ 		in_network ${1%/*} $addr && echo $(find_device $rest)
+@@ -713,14 +721,14 @@
+ 
+ find_nexthop() # $1 = interface
+ {
+-    echo $(find_gateway `ip route ls | grep "[[:space:]]nexthop.* $1"`)
++    echo $(find_gateway `ip route list | grep "[[:space:]]nexthop.* $1"`)
+ }
+ 
+ #
+ # Find the default route's interface
+ #
+ find_default_interface() {
+-    ip route ls | while read first rest; do
++    ip route list | while read first rest; do
+ 	[ "$first" = default ] && echo $(find_device $rest) && return
+     done
+ }
+@@ -746,7 +754,7 @@
+ find_interface_by_mac() {
+     local mac=$1 first second rest dev
+ 
+-    ip link ls | while read first second rest; do
++    ip link list | while read first second rest; do
+ 	case $first in
+ 	    *:)
+                 dev=$second
+@@ -764,7 +772,7 @@
+ # Determine if Interface is up
+ #
+ interface_is_up() {
+-    [ -n "$(ip link ls dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
++    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
+ }
+ 
+ #
+@@ -1232,11 +1240,11 @@
+     #
+     # First assume that this is some sort of point-to-point interface
+     #
+-    gateway=$( find_peer $(ip addr ls $interface ) )
++    gateway=$( find_peer $(ip addr list $interface ) )
+     #
+     # Maybe there's a default route through this gateway already
+     #
+-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route ls dev $interface))
++    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route list dev $interface))
+     #
+     # Last hope -- is there a load-balancing route through the interface?
+     #
+@@ -1251,7 +1259,7 @@
+ # Disable IPV6
+ #
+ disable_ipv6() {
+-    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
++    local foo="$(ip -f inet6 addr list 2> /dev/null)"
+ 
+     if [ -n "$foo" ]; then
+ 	if qt mywhich ip6tables; then
+@@ -1381,7 +1389,7 @@
+ #
+ get_device_mtu() # $1 = device
+ {
+-    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
++    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+ 
+     if [ -n "$output" ]; then
+ 	echo $(find_mtu $output)
+@@ -1396,7 +1404,7 @@
+ #
+ get_device_mtu1() # $1 = device
+ {
+-    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
++    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+     local mtu
+ 
+     if [ -n "$output" ]; then

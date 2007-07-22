@@ -375,7 +375,7 @@ sub setup_providers() {
 		    '#',
 		    '# Capture the default route(s) if we don\'t have it (them) already.',
 		    '#',
-		    '[ -f ${VARDIR}/default_route ] || ip route ls | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+		    '[ -f ${VARDIR}/default_route ] || ip route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
 		    '#',
 		    '# Initialize the file that holds \'undo\' commands',
 		    '#',

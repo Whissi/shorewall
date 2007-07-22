@@ -700,7 +700,7 @@ find_peer() {
 #
 
 find_rt_interface() {
-    ip route ls | while read addr rest; do
+    ip route list | while read addr rest; do
 	case $addr in
 	    */*)
 		in_network ${1%/*} $addr && echo $(find_device $rest)
@@ -721,14 +721,14 @@ find_rt_interface() {
 
 find_nexthop() # $1 = interface
 {
-    echo $(find_gateway `ip route ls | grep "[[:space:]]nexthop.* $1"`)
+    echo $(find_gateway `ip route list | grep "[[:space:]]nexthop.* $1"`)
 }
 
 #
 # Find the default route's interface
 #
 find_default_interface() {
-    ip route ls | while read first rest; do
+    ip route list | while read first rest; do
 	[ "$first" = default ] && echo $(find_device $rest) && return
     done
 }
@@ -754,7 +754,7 @@ find_interface_by_address() {
 find_interface_by_mac() {
     local mac=$1 first second rest dev
 
-    ip link ls | while read first second rest; do
+    ip link list | while read first second rest; do
 	case $first in
 	    *:)
                 dev=$second
@@ -772,7 +772,7 @@ find_interface_by_mac() {
 # Determine if Interface is up
 #
 interface_is_up() {
-    [ -n "$(ip link ls dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
+    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
 }
 
 #
@@ -1240,11 +1240,11 @@ detect_gateway() # $1 = interface
     #
     # First assume that this is some sort of point-to-point interface
     #
-    gateway=$( find_peer $(ip addr ls $interface ) )
+    gateway=$( find_peer $(ip addr list $interface ) )
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route ls dev $interface))
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route list dev $interface))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #
@@ -1259,7 +1259,7 @@ detect_gateway() # $1 = interface
 # Disable IPV6
 #
 disable_ipv6() {
-    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
+    local foo="$(ip -f inet6 addr list 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt mywhich ip6tables; then
@@ -1389,7 +1389,7 @@ delete_tc1()
 #
 get_device_mtu() # $1 = device
 {
-    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
 
     if [ -n "$output" ]; then
 	echo $(find_mtu $output)
@@ -1404,7 +1404,7 @@ get_device_mtu() # $1 = device
 #
 get_device_mtu1() # $1 = device
 {
-    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
     local mtu
 
     if [ -n "$output" ]; then

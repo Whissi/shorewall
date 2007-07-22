@@ -151,7 +151,7 @@ restore_dynamic_rules() {
 #
 get_device_mtu1() # $1 = device
 {
-    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
     local mtu
 
     if [ -n "$output" ]; then

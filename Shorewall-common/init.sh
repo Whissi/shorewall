@@ -43,6 +43,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 ### BEGIN INIT INFO
 # Provides:	  shorewall
 # Required-Start: $network
+# Should-Start: VMware
 # Required-Stop:
 # Default-Start:  2 3 5
 # Default-Stop:	  0 1 6

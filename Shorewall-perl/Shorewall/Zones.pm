@@ -880,7 +880,7 @@ sub validate_hosts_file()
 	    for my $option ( @options )
 	    {
 		if ( $option eq 'ipsec' ) {
-		    $type = 'ipsec';
+		    $type = 'ipsec4';
 		    $zoneref->{options}{complex} = 1;
 		    $ipsec = 1;
 		} elsif ( $validoptions{$option}) {

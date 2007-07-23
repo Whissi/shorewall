@@ -1836,7 +1836,7 @@ sub assure_cat_state() {
 sub emitr( $ ) {
     my $rule = $_[0];
 
-    if ( substr( $rule, 0, 2 ) ne '-A' ) {
+    if ( ! $rule || substr( $rule, 0, 2 ) ne '-A' ) {
 	#
 	# A command rather than a rule
 	#

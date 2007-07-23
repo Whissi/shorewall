@@ -1830,13 +1830,6 @@ sub assure_cat_state() {
     }
 }
 
-sub assure_cmd_state() {
-    unless ( $state == CMD_STATE ) {
-	emit_unindented "__EOF__\n" if $state == CAT_STATE;
-	$state = CMD_STATE;
-    }
-}
-
 #
 # Emits the passed rule (input to iptables-restore) or command
 #
@@ -1847,10 +1840,19 @@ sub emitr( $ ) {
 	#
 	# A command rather than a rule
 	#
-	assure_cmd_state;
+	unless ( $state == CMD_STATE ) {
+	    emit_unindented "__EOF__\n" if $state == CAT_STATE;
+	    $state = CMD_STATE;
+	}
+
 	emit $rule;
     } else {
-	assure_cat_state;
+	unless ( $state == CAT_STATE ) {
+	    emit '';
+	    emit 'cat >&3 << __EOF__';
+	    $state = CAT_STATE;
+	}
+
 	emit_unindented $rule;
     }
 }
@@ -1915,8 +1917,9 @@ sub create_netfilter_load() {
     push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED};
     push @table_list, 'filter';
 
+    assure_cat_state;
+    
     for my $table ( @table_list ) {
-	assure_cat_state;
 	emit_unindented "*$table";
 
 	my @chains;

@@ -76,7 +76,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4';
+#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
 #                        options =>    { complex => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >

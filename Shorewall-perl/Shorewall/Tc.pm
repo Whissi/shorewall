@@ -453,7 +453,7 @@ sub setup_traffic_shaping() {
 
 	push_indent;
 
-	emitj( "${dev}_exists=Yes",
+	emit ( "${dev}_exists=Yes",
 	       "qt tc qdisc del dev $device root",
 	       "qt tc qdisc del dev $device ingress",
 	       "run_tc qdisc add dev $device root handle $devnum: htb default $defmark",
@@ -465,7 +465,7 @@ sub setup_traffic_shaping() {
 	my $inband = rate_to_kbit $devref->{in_bandwidth};
 
 	if ( $inband ) {
-	    emitj( "run_tc qdisc add dev $device handle ffff: ingress",
+	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
 	}
@@ -509,7 +509,7 @@ sub setup_traffic_shaping() {
 	    $lastdevice = $device;
 	}
 
-	emitj( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
+	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
 	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
 	       "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10"
 	       );

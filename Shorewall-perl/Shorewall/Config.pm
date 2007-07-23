@@ -42,7 +42,6 @@ our @EXPORT = qw(
 		 create_temp_object
 		 finalize_object
 		 emit
-		 emitj
 		 emit_unindented
 		 save_progress_message
 		 save_progress_message_short
@@ -414,34 +413,11 @@ sub fatal_error	{
 }
 
 #
-# Write the argument to the object file (if any) with the current indentation.
+# Write the arguments to the object file (if any) with the current indentation.
 #
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
-sub emit ( $ ) {
-    if ( $object ) {
-	#
-	# 'compile' as opposed to 'check'
-	#
-	my $line = $_[0]; # This copy is necessary because the actual arguments are almost always read-only.
-
-	unless ( $line =~ /^\s*$/ ) {
-	    $line =~ s/^\n// if $lastlineblank;
-	    $line =~ s/^/$indent/gm if $indent;
-	    $line =~ s/        /\t/gm;
-	    print $object "$line\n";
-	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
-	} else {
-	    print $object "\n" unless $lastlineblank;
-	    $lastlineblank = 1;
-	}
-    }
-}
-
-#
-# Version of emit() that accepts an indefinite number of scalar arguments; each argument will be emitted as a separate line
-#
-sub emitj {
+sub emit {
     if ( $object ) {
 	#
 	# 'compile' as opposed to 'check'

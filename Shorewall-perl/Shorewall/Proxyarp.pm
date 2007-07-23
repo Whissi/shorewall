@@ -80,7 +80,7 @@ sub setup_one_proxy_arp( $$$$$ ) {
 	$haveroute = 1 if $persistent;
     }
 
-    emitj( "if ! arp -i $external -Ds $address $external pub; then",
+    emit ( "if ! arp -i $external -Ds $address $external pub; then",
 	   "    fatal_error \"Command 'arp -i $external -Ds $address $external pub' failed\"" ,
 	   'fi' ,
 	   '',
@@ -126,25 +126,25 @@ sub setup_proxy_arp() {
 
 	for my $interface ( keys %reset ) {
 	    unless ( $set{interface} ) {
-		emitj ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
+		emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
 			"    echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
 		emit    "fi\n";
 	    }
 	}
 
 	for my $interface ( keys %set ) {
-	    emitj ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
+	    emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
 		    "    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
-	    emitj ( 'else' ,
+	    emit  ( 'else' ,
 		    "    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $interface\"" ) unless interface_is_optional( $interface );
 	    emit    "fi\n";
 	}
 
 	for my $interface ( @$interfaces ) {
 	    my $value = get_interface_option $interface, 'proxyarp';
-	    emitj( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
+	    emit ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
 		   "    echo $value > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
-	    emitj( 'else' ,
+	    emit ( 'else' ,
 		   "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface ); 
 	    emit   "fi\n";
 	}

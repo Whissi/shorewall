@@ -105,7 +105,7 @@ sub setup_route_marking() {
 sub copy_table( $$ ) {
     my ( $duplicate, $number ) = @_;
     
-    emitj( "ip route show table $duplicate | while read net route; do",
+    emit ( "ip route show table $duplicate | while read net route; do",
 	   '    case $net in',
 	   '        default|nexthop)',
 	   '            ;;',
@@ -120,7 +120,7 @@ sub copy_table( $$ ) {
 sub copy_and_edit_table( $$$ ) {
     my ( $duplicate, $number, $copy ) = @_;
     
-    emitj ( "ip route show table $duplicate | while read net route; do",
+    emit  ( "ip route show table $duplicate | while read net route; do",
 	    '    case $net in',
 	    '        default|nexthop)',
 	    '            ;;',
@@ -197,7 +197,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $gateway eq 'detect' ) {
 	my $variable = get_interface_address $interface;
-	emitj ( "gateway=\$(detect_gateway $interface)\n",
+	emit  ( "gateway=\$(detect_gateway $interface)\n",
 		'if [ -n "$gateway" ]; then',
 		"    run_ip route replace $variable dev $interface table $number",
 		"    run_ip route add default via \$gateway dev $interface table $number",
@@ -235,7 +235,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
 	my $pref = 10000 + $val;
 
-	emitj( "qt ip rule del fwmark $mark",
+	emit ( "qt ip rule del fwmark $mark",
 	       "run_ip rule add fwmark $mark pref $pref table $number",
 	       "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
 	     );
@@ -273,7 +273,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	
 	emit "\nrulenum=0\n";
 	
-	emitj ( "find_interface_addresses $interface | while read address; do",
+	emit  ( "find_interface_addresses $interface | while read address; do",
 		'    qt ip rule del from $address',
 		"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
 		"    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
@@ -281,7 +281,7 @@ sub add_a_provider( $$$$$$$$ ) {
 		'done'
 	      );
     } else {
-	emitj( "\nfind_interface_addresses $interface | while read address; do",
+	emit ( "\nfind_interface_addresses $interface | while read address; do",
 	       '    qt ip rule del from $address',
 	       'done'
 	     );
@@ -293,7 +293,7 @@ sub add_a_provider( $$$$$$$$ ) {
     emit 'else';
     
     if ( $optional ) {
-	emitj( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
+	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
 	       "    ${iface}_up="
 	     );
     } else {
@@ -343,7 +343,7 @@ sub add_an_rtrule( $$$$ ) {
     
     $priority = "priority $priority";
     
-    emitj( "qt ip rule del $source $dest $priority",
+    emit ( "qt ip rule del $source $dest $priority",
 	   "run_ip rule add $source $dest $priority table $provider",
 	   "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing"
 	 );
@@ -364,7 +364,7 @@ sub setup_providers() {
 
 	    push_indent;
 
-	    emitj ( '#',
+	    emit  ( '#',
 		    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
 		    '#',
 		    'undo_routing',
@@ -400,7 +400,7 @@ sub setup_providers() {
 
     if ( $providers ) {
 	if ( $balance ) {
-	    emitj ( 'if [ -n "$DEFAULT_ROUTE" ]; then',
+	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then',
 		    '    run_ip route replace default scope global $DEFAULT_ROUTE',
 		    "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
@@ -409,7 +409,7 @@ sub setup_providers() {
 		    'fi',
 		    '' );
 	} else {
-	    emitj( '#',
+	    emit ( '#',
 		   '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
 		   '#',
 		   'restore_default_route' );

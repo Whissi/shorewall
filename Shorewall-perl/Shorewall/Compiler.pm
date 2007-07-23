@@ -93,78 +93,78 @@ sub generate_script_1() {
 	emit "}\n";
     }
 
-    emitj ( '#',
-	    '# This function initializes the global variables used by the program',
-	    '#',
-	    'initialize()',
-	    '{',
-	    '    #',
-	    '    # These variables are required by the library functions called in this script',
-	    '    #'
-	    );
+    emit ( '#',
+	   '# This function initializes the global variables used by the program',
+	   '#',
+	   'initialize()',
+	   '{',
+	   '    #',
+	   '    # These variables are required by the library functions called in this script',
+	   '    #'
+	   );
 
     push_indent;
 
     if ( $export ) {
-	emitj ( 'SHAREDIR=/usr/share/shorewall-lite',
-		'CONFDIR=/etc/shorewall-lite',
-		'PRODUCT="Shorewall Lite"'
-		);
+	emit ( 'SHAREDIR=/usr/share/shorewall-lite',
+	       'CONFDIR=/etc/shorewall-lite',
+	       'PRODUCT="Shorewall Lite"'
+	       );
     } else {
-	emitj ( 'SHAREDIR=/usr/share/shorewall',
-		'CONFDIR=/etc/shorewall',
-		'PRODUCT=\'Shorewall\'',
-		);
+	emit ( 'SHAREDIR=/usr/share/shorewall',
+	       'CONFDIR=/etc/shorewall',
+	       'PRODUCT=\'Shorewall\'',
+	       );
     }
 
     emit( '[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir' );
 
     if ( $export ) {
-	emitj ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
-		'[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
+	emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
+	       '[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
     } else {
-	emitj ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
-		'[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
+	emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
+	       '[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
     }
 
     emit 'TEMPFILE=';
 
     propagateconfig;
 
-    emitj ( '[ -n "${COMMAND:=restart}" ]',
-	    '[ -n "${VERBOSE:=0}" ]',
-	    qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]),
-	    '[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"',
-	    qq(VERSION="$globals{VERSION}") ,
-	    qq(PATH="$config{PATH}") ,
-	    'TERMINATOR=fatal_error'
-	    );
+    emit ( '[ -n "${COMMAND:=restart}" ]',
+	   '[ -n "${VERBOSE:=0}" ]',
+	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]),
+	   '[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"',
+	   qq(VERSION="$globals{VERSION}") ,
+	   qq(PATH="$config{PATH}") ,
+	   'TERMINATOR=fatal_error'
+	   );
 
     if ( $config{IPTABLES} ) {
-	emitj( qq(IPTABLES="$config{IPTABLES}"),
-	       '',
-	       '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
-	       );
+	emit( qq(IPTABLES="$config{IPTABLES}"),
+	      '',
+	      '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
+	      );
     } else {
-	emitj( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
-	       '',
-	       '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
-	       );
+	emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
+	      '',
+	      '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
+	      );
     }
 
-    emitj( 'IPTABLES_RESTORE=${IPTABLES}-restore',
-	   '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
+    emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
+	  '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
 
     append_file 'params' if $config{EXPORTPARAMS};
 
-    emitj ( '',
-	    "STOPPING=",
-	    '',
-	    '#',
-	    '# The library requires that ${VARDIR} exist',
-	    '#',
-	    '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
-	    );
+    emit ( '',
+	   "STOPPING=",
+	   '',
+	   '#',
+	   '# The library requires that ${VARDIR} exist',
+	   '#',
+	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
+	   );
 
     pop_indent;
 
@@ -329,15 +329,15 @@ EOF
 
     emit 'delete_tc1' if $config{CLEAR_TC};
 
-    emitj( 'undo_routing',
-	   'restore_default_route'
-	   );
+    emit( 'undo_routing',
+	  'restore_default_route'
+	  );
 
     my $criticalhosts = process_criticalhosts;
 
     if ( @$criticalhosts ) {
 	if ( $config{ADMINISABSENTMINDED} ) {
-	    emitj ( 'for chain in INPUT OUTPUT; do',
+	    emit ( 'for chain in INPUT OUTPUT; do',
 		    '    setpolicy $chain ACCEPT',
 		    'done',
 		    '',
@@ -352,71 +352,71 @@ EOF
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emitj( "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
-		       "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
-		       );
+		emit( "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
+		      "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		      );
 	    }
 
-	    emitj( '',
-		   'for chain in INPUT OUTPUT; do',
-		   '    setpolicy $chain DROP',
-		   "done\n"
-		   );
+	    emit( '',
+		  'for chain in INPUT OUTPUT; do',
+		  '    setpolicy $chain DROP',
+		  "done\n"
+		  );
 	  } else {
-	    emitj( '',
-		   'for chain in INPUT OUTPUT; do',
-		   '    setpolicy \$chain ACCEPT',
-		   'done',
-		   '',
-		   'setpolicy FORWARD DROP',
-		   '',
-		   "deleteallchains\n"
-		   );
+	    emit( '',
+		  'for chain in INPUT OUTPUT; do',
+		  '    setpolicy \$chain ACCEPT',
+		  'done',
+		  '',
+		  'setpolicy FORWARD DROP',
+		  '',
+		  "deleteallchains\n"
+		  );
 
 	    for my $hosts ( @$criticalhosts ) {
                 my ( $interface, $host ) = ( split /:/, $hosts );
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emitj( "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
+		emit(  "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
 		       "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
 		       );
 	    }
 
-	    emitj ( "\nsetpolicy INPUT DROP",
-		    '',
-		    'for chain in INPUT FORWARD; do',
-		    '    setcontinue $chain',
-		    "done\n"
-		    );
+	    emit( "\nsetpolicy INPUT DROP",
+		  '',
+		  'for chain in INPUT FORWARD; do',
+		  '    setcontinue $chain',
+		  "done\n"
+		  );
 	}
     } elsif ( $config{ADMINISABSENTMINDED} ) {
-	emitj( 'for chain in INPUT FORWARD; do',
-	       '    setpolicy $chain DROP',
-	       'done',
-	       '',
-	       'setpolicy OUTPUT ACCEPT',
-	       '',
-	       'deleteallchains',
-	       '',
-	       'for chain in INPUT FORWARD; do',
-	       '    setcontinue $chain',
-	       "done\n",
-	       );
+	emit( 'for chain in INPUT FORWARD; do',
+	      '    setpolicy $chain DROP',
+	      'done',
+	      '',
+	      'setpolicy OUTPUT ACCEPT',
+	      '',
+	      'deleteallchains',
+	      '',
+	      'for chain in INPUT FORWARD; do',
+	      '    setcontinue $chain',
+	      "done\n",
+	      );
     } else {
-	emitj( 'for chain in INPUT OUTPUT FORWARD; do',
-	       '    setpolicy $chain DROP',
-	       'done',
-	       '',
-	       "deleteallchains\n"
-	       );
+	emit( 'for chain in INPUT OUTPUT FORWARD; do',
+	      '    setpolicy $chain DROP',
+	      'done',
+	      '',
+	      "deleteallchains\n"
+	      );
     }
 
     process_routestopped;
 
-    emitj( '$IPTABLES -A INPUT  -i lo -j ACCEPT',
-	   '$IPTABLES -A OUTPUT -o lo -j ACCEPT'
-	   );
+    emit( '$IPTABLES -A INPUT  -i lo -j ACCEPT',
+	  '$IPTABLES -A OUTPUT -o lo -j ACCEPT'
+	  );
 
     emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
@@ -434,12 +434,12 @@ EOF
     emit '';
 
     if ( $config{IP_FORWARDING} eq 'on' ) {
-	emitj( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
-	       'progress_message2 IP Forwarding Enabled' );
+	emit( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
+	      'progress_message2 IP Forwarding Enabled' );
     } elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	emitj( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
-	       'progress_message2 IP Forwarding Disabled!'
-	       );
+	emit( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
+	      'progress_message2 IP Forwarding Disabled!'
+	      );
     }
 
     emit 'run_stopped_exit';
@@ -491,7 +491,7 @@ sub generate_script_2 () {
 
     copy $globals{SHAREDIRPL} . 'prog.functions';
 
-    emitj( '',
+    emit(  '',
 	   '#',
 	   '# Clear Routing and Traffic Shaping',
 	   '#',
@@ -524,7 +524,7 @@ sub generate_script_2 () {
     emit '';
 
     for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-	emitj ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
+	emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
 		'if [ -n "$addr" ]; then',
 		'    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
 		'    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
@@ -535,7 +535,7 @@ sub generate_script_2 () {
 		"fi\n" );
     }
 
-    emitj ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+    emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 	    '',
 	    'qt $IPTABLES -L shorewall -n && qt $IPTABLES -F shorewall && qt $IPTABLES -X shorewall',
 	    '',
@@ -544,7 +544,7 @@ sub generate_script_2 () {
 	    );
  
     if ( $capabilities{NAT_ENABLED} ) {
-	emitj( 'if [ -f ${VARDIR}/nat ]; then',
+	emit(  'if [ -f ${VARDIR}/nat ]; then',
 	       '    while read external interface; do',
 	       '        del_ip_addr $external $interface',
 	       '    done < ${VARDIR}/nat',
@@ -560,7 +560,7 @@ sub generate_script_2 () {
 
     emit "}\n";
 
-    emitj( '#',
+    emit(  '#',
 	   '# Setup Routing and Traffic Shaping',
 	   '#',
 	   'setup_routing_and_traffic_shaping() {'

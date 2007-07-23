@@ -60,10 +60,10 @@ sub setup_arp_filtering() {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
 	    my $value = get_interface_option $interface, 'arp_filter';
 
-	    emitj( '',
+	    emit ( '',
 		   "if [ -f $file ]; then",
 		   "    echo $value > $file");
-	    emitj( 'else',
+	    emit ( 'else',
 		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
 	    emit   "fi\n";
 	}
@@ -74,9 +74,9 @@ sub setup_arp_filtering() {
 
 	    fatal_error "Internal Error in setup_arp_filtering()" unless defined $value;
 
-	    emitj( "if [ -f $file ]; then",
+	    emit ( "if [ -f $file ]; then",
 		   "    echo $value > $file");
-	    emitj( 'else',
+	    emit ( 'else',
 		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
 	    emit   "fi\n";
 	}
@@ -100,18 +100,18 @@ sub setup_route_filtering() {
 	if ( $config{ROUTE_FILTER} ) {
 	    my $val = $config{ROUTE_FILTER} eq 'on' ? 1 : 0;
 
-	    emitj ( 'for file in /proc/sys/net/ipv4/conf/*; do',
-		    "    [ -f \$file/rp_filter ] && echo $val > \$file/rp_filter",
-		    'done' );
+	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',
+		   "    [ -f \$file/rp_filter ] && echo $val > \$file/rp_filter",
+		   'done' );
 	}
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
 	    my $value = get_interface_option $interface, 'routefilter';
 
-	    emitj( "if [ -f $file ]; then" ,
+	    emit ( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );
-	    emitj( 'else' ,
+	    emit ( 'else' ,
 		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless interface_is_optional( $interface);
 	    emit   "fi\n";
 	}
@@ -144,19 +144,19 @@ sub setup_martian_logging() {
 	if ( $config{LOG_MARTIANS} ) {
 	    my $val = $config{LOG_MARTIANS} eq 'on' ? 1 : 0;
 
-	    emitj ( 'for file in /proc/sys/net/ipv4/conf/*; do',
-		    "    [ -f \$file/log_martians ] && echo $val > \$file/log_martians",
-		    'done' );
+	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',
+		   "    [ -f \$file/log_martians ] && echo $val > \$file/log_martians",
+		   'done' );
 	}
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
 	    my $value = get_interface_option $interface, 'logmartians';
 
-	    emitj( "if [ -f $file ]; then" ,
+	    emit ( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );
 
-	    emitj( 'else' ,
+	    emit ( 'else' ,
 		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface); 
 	    emit   "fi\n";
 	}
@@ -189,9 +189,9 @@ sub setup_source_routing() {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/accept_source_route";
 	    my $value = get_interface_option $interface, 'sourceroute';
 
-	    emitj( "if [ -f $file ]; then" ,
+	    emit ( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );
-	    emitj( 'else' ,
+	    emit ( 'else' ,
 		   "    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"" ) unless interface_is_optional( $interface);
 	    emit   "fi\n";
 	}

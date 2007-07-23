@@ -1853,7 +1853,7 @@ sub emitr( $ ) {
 
 sub emit_comment() {
     unless ( $emitted_comment ) {
-	emitj ( '#',
+	emit ( '#',
 		'# Establish the values of shell variables used in the following function calls',
 		'#' );
 	$emitted_comment = 1;
@@ -1889,7 +1889,7 @@ sub create_netfilter_load() {
 
     $state = NULL_STATE;
   
-    emitj( 'setup_netfilter()',
+    emit(  'setup_netfilter()',
 	   '{'
 	   );
 
@@ -1955,14 +1955,14 @@ sub create_netfilter_load() {
     #
     # Now generate the actual iptables-restore command
     #
-    emitj( 'exec 3>&-',
+    emit(  'exec 3>&-',
 	   '',
 	   'progress_message2 "Running iptables-restore..."',
 	   '',
 	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
 	 );
 
-    emitj( 'if [ $? != 0 ]; then',
+    emit(  'if [ $? != 0 ]; then',
 	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
 	   "fi\n"
 	   );
@@ -1979,7 +1979,7 @@ sub create_blacklist_reload() {
 
     $state = NULL_STATE;
   
-    emitj( 'blacklist_reload()',
+    emit(  'blacklist_reload()',
 	   '{'
 	   );
 
@@ -2010,14 +2010,12 @@ sub create_blacklist_reload() {
     #
     # Now generate the actual iptables-restore command
     #
-    emitj( 'exec 3>&-',
+    emit(  'exec 3>&-',
 	   '',
 	   'progress_message2 "Running iptables-restore..."',
 	   '',
-	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux'
-	 );
-
-    emitj( 'if [ $? != 0 ]; then',
+	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
+	   'if [ $? != 0 ]; then',
 	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
 	   "fi\n"
 	   );

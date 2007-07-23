@@ -1822,6 +1822,21 @@ sub insertnatjump( $$$$ ) {
 # What follows is the code that generates the input to iptables-restore
 #
 
+sub assure_cat_state() {
+    unless ( $state == CAT_STATE ) {
+	emit '';
+	emit 'cat >&3 << __EOF__';
+	$state = CAT_STATE;
+    }
+}
+
+sub assure_cmd_state() {
+    unless ( $state == CMD_STATE ) {
+	emit_unindented "__EOF__\n" if $state == CAT_STATE;
+	$state = CMD_STATE;
+    }
+}
+
 #
 # Emits the passed rule (input to iptables-restore) or command
 #
@@ -1832,34 +1847,12 @@ sub emitr( $ ) {
 	#
 	# A command rather than a rule
 	#
-	unless ( $state == CMD_STATE ) {
-	    emit_unindented "__EOF__\n" if $state == CAT_STATE;
-	    $state = CMD_STATE;
-	}
-
+	assure_cmd_state;
 	emit $rule;
     } else {
-	unless ( $state == CAT_STATE ) {
-	    emit( '',
-		  'cat >&3 << __EOF__' );
-	    $state = CAT_STATE;
-	}
-
+	assure_cat_state;
 	emit_unindented $rule;
     }
-}
-
-#
-# Emit the passed input to iptables-restore
-#
-sub emiti( $ ) {
-    unless ( $state == CAT_STATE ) {
-	emit '';
-	emit 'cat >&3 << __EOF__';
-	$state = CAT_STATE;
-    }
-
-    emit_unindented $_[0];
 }
 
 sub emit_comment() {
@@ -1923,7 +1916,8 @@ sub create_netfilter_load() {
     push @table_list, 'filter';
 
     for my $table ( @table_list ) {
-	emiti "*$table";
+	assure_cat_state;
+	emit_unindented "*$table";
 
 	my @chains;
 	#
@@ -1932,7 +1926,7 @@ sub create_netfilter_load() {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		emiti ":$chain $chainref->{policy} [0:0]";
+		emit_unindented ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
 	}
@@ -1942,7 +1936,7 @@ sub create_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		emiti ":$chainref->{name} - [0:0]";
+		emit_unindented ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }
 	}
@@ -1958,10 +1952,11 @@ sub create_netfilter_load() {
 	#
 	# Commit the changes to the table
 	#
-	emiti 'COMMIT';
+	assure_cat_state;
+	emit_unindented 'COMMIT';
     }
 
-    emit_unindented '__EOF__' unless $state == CMD_STATE;
+    emit_unindented '__EOF__';
     emit '';
     #
     # Now generate the actual iptables-restore command
@@ -2003,8 +1998,10 @@ sub create_blacklist_reload() {
     #
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    emiti '*filter';
-    emiti ':blacklst - [0:0]';
+    assure_cat_state;
+
+    emit_unindented '*filter';
+    emit_unindented ':blacklst - [0:0]';
 
     for my $rule ( @{$filter_table->{blacklst}{rules}} ) {
 	emitr $rule;
@@ -2012,7 +2009,9 @@ sub create_blacklist_reload() {
     #
     # Commit the changes to the table
     #
-    emiti 'COMMIT';
+    assure_cat_state;
+    
+    emit_unindented 'COMMIT';
 
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';

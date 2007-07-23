@@ -347,7 +347,7 @@ sub add_command($$)
 {
     my ($chainref, $command) = @_;
 
-    push @{$chainref->{rules}}, join ('', '~', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
+    push @{$chainref->{rules}}, join ('', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
 
     $chainref->{referenced} = 1;
 }
@@ -356,7 +356,7 @@ sub add_commands {
     my $chainref = shift @_;
    
     for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '~', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
+	push @{$chainref->{rules}}, join ('', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
     }
 
     $chainref->{referenced} = 1;
@@ -410,7 +410,7 @@ sub add_rule($$)
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
 	$rule .= " -m comment --comment \"$comment\"" if $comment;
-	push @{$chainref->{rules}}, $rule;
+	push @{$chainref->{rules}}, join( ' ', '-A' , $chainref->{name}, $rule );
 	$chainref->{referenced} = 1;
     }
 }
@@ -428,7 +428,7 @@ sub insert_rule($$$)
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
-    splice @{$chainref->{rules}}, $number - 1, 0,  $rule;
+    splice( @{$chainref->{rules}}, $number - 1, 0,  join( ' ', '-A', $chainref->{name}, $rule ) );
 
     $iprangematch = 0;
 
@@ -1823,32 +1823,43 @@ sub insertnatjump( $$$$ ) {
 #
 
 #
-# Emits the passed 'rule'
+# Emits the passed rule (input to iptables-restore) or command
 #
 sub emitr( $ ) {
     my $rule = $_[0];
 
-    if ( substr( $rule, 0, 1 ) eq '~' ) {
+    if ( substr( $rule, 0, 2 ) ne '-A' ) {
 	#
-	# A command
+	# A command rather than a rule
 	#
 	unless ( $state == CMD_STATE ) {
 	    emit_unindented "__EOF__\n" if $state == CAT_STATE;
 	    $state = CMD_STATE;
 	}
 
-	$rule = substr( $rule, 1 );
-
 	emit $rule;
     } else {
 	unless ( $state == CAT_STATE ) {
-	    emit '';
-	    emit 'cat >&3 << __EOF__';
+	    emit( '',
+		  'cat >&3 << __EOF__' );
 	    $state = CAT_STATE;
 	}
 
 	emit_unindented $rule;
     }
+}
+
+#
+# Emit the passed input to iptables-restore
+#
+sub emiti( $ ) {
+    unless ( $state == CAT_STATE ) {
+	emit '';
+	emit 'cat >&3 << __EOF__';
+	$state = CAT_STATE;
+    }
+
+    emit_unindented $_[0];
 }
 
 sub emit_comment() {
@@ -1889,7 +1900,7 @@ sub create_netfilter_load() {
 
     $state = NULL_STATE;
   
-    emit(  'setup_netfilter()',
+    emit ( 'setup_netfilter()',
 	   '{'
 	   );
 
@@ -1912,7 +1923,7 @@ sub create_netfilter_load() {
     push @table_list, 'filter';
 
     for my $table ( @table_list ) {
-	emitr "*$table";
+	emiti "*$table";
 
 	my @chains;
 	#
@@ -1921,7 +1932,7 @@ sub create_netfilter_load() {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		emitr ":$chain $chainref->{policy} [0:0]";
+		emiti ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
 	}
@@ -1931,7 +1942,7 @@ sub create_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		emitr ":$chainref->{name} - [0:0]";
+		emiti ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }
 	}
@@ -1941,13 +1952,13 @@ sub create_netfilter_load() {
 	for my $chainref ( @chains ) {
 	    my $name = $chainref->{name};
 	    for my $rule ( @{$chainref->{rules}} ) {
-		emitr( substr( $rule, 0, 1 ) eq '~' ? $rule : "-A $name $rule" );
+		emitr $rule;
 	    }
 	}
 	#
 	# Commit the changes to the table
 	#
-	emitr 'COMMIT';
+	emiti 'COMMIT';
     }
 
     emit_unindented '__EOF__' unless $state == CMD_STATE;
@@ -1959,10 +1970,8 @@ sub create_netfilter_load() {
 	   '',
 	   'progress_message2 "Running iptables-restore..."',
 	   '',
-	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
-	 );
-
-    emit(  'if [ $? != 0 ]; then',
+	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux',
+	   'if [ $? != 0 ]; then',
 	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
 	   "fi\n"
 	   );
@@ -1994,16 +2003,16 @@ sub create_blacklist_reload() {
     #
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    emitr '*filter';
-    emitr ':blacklst - [0:0]';
+    emiti '*filter';
+    emiti ':blacklst - [0:0]';
 
     for my $rule ( @{$filter_table->{blacklst}{rules}} ) {
-	emitr( substr( $rule, 0, 1 ) eq '~' ? $rule : "-A blacklst $rule" );
+	emitr $rule;
     }
     #
     # Commit the changes to the table
     #
-    emitr 'COMMIT';
+    emiti 'COMMIT';
 
     emit_unindented '__EOF__' unless $state == CMD_STATE;
     emit '';

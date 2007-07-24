@@ -55,6 +55,8 @@
         role="bold">CP</emphasis>|<emphasis role="bold">CT</emphasis>}]</term>
 
         <listitem>
+          <para>May assume one of the following values.</para>
+
           <orderedlist numeration="arabic">
             <listitem>
               <para>A mark <emphasis>value</emphasis> which is an integer in
@@ -75,11 +77,11 @@
               also specify a value in the range 0x0100-0xFF00 with the
               low-order byte being zero. Such values may only be used in the
               PREROUTING chain(value followed by <emphasis
-              role="bold">:F</emphasis> or you have set
-              MARK_IN_FORWARD_CHAIN=Yes in <ulink
+              role="bold">:P</emphasis> or you have set
+              MARK_IN_FORWARD_CHAIN=No in <ulink
               url="shorewall.conf.html">shorewall.conf</ulink>(5) and have not
-              followed the value with :P) or the OUTPUT chain (SOURCE is
-              <emphasis role="bold">$FW</emphasis>).</para>
+              followed the value with <option>:F</option>) or the OUTPUT chain
+              (SOURCE is <emphasis role="bold">$FW</emphasis>).</para>
 
               <para>May optionally be followed by <emphasis
               role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
@@ -153,7 +155,7 @@
             </listitem>
 
             <listitem>
-              <para>A classification (classid) of the form
+              <para>A classification Id (classid) of the form
               <emphasis>major</emphasis>:<emphasis>minor</emphasis> where
               <emphasis>major</emphasis> and <emphasis>minor</emphasis> are
               integers. Corresponds to the 'class' specification in these
@@ -169,7 +171,7 @@
               <para>Classification occurs in the POSTROUTING chain except when
               the <emphasis role="bold">SOURCE</emphasis> is <emphasis
               role="bold">$FW</emphasis>[:<emphasis>address</emphasis>] in
-              which case marking occurs in the OUTPUT chain.</para>
+              which case classification occurs in the OUTPUT chain.</para>
 
               <para>When using Shorewall's built-in traffic tool, the
               <emphasis>major</emphasis> class is the device number (the first

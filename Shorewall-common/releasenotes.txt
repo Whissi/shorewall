@@ -48,6 +48,13 @@ Problems corrected in 4.0.1.
     'ipsec4' and the 'ipsec' option removed from the hosts file entry,
     the configuration worked properly.
 
+5)  If a CLASSID was specified in a tcrule and TC_ENABLED=No, then
+    Shorewall-perl produced the following:
+
+    Compiling...
+    Use of uninitialized value in string ne at /usr/share/shorewall-perl/Shorewall/Tc.pm line 285, <$currentfile> line 18.
+       ERROR: Class Id 1:110 is not associated with device eth0 : /etc/shorewall/tcrules (line 18)
+
 Other changes in Shorewall 4.0.1.
 
 1)  A new EXPAND_POLICIES option is added to shorewall.conf. The

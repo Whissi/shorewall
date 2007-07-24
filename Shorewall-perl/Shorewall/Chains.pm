@@ -171,7 +171,7 @@ our $filter_table;
 #
 # It is a layer violation to keep information about the rules file sections in this module but in Shorewall, the rules file
 # and the filter table are very closely tied. By keeping the information here, we avoid making several other modules dependent
-# in Shorewall::Rules.
+# on Shorewall::Rules.
 #
 our %sections;
 our $section;

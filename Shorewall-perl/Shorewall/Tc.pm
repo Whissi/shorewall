@@ -282,7 +282,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	#
 	# expand_rule() returns destination device if any
 	#
-	fatal_error "Class Id $original_mark is not associated with device $result" if $classid && $device ne $result;
+	fatal_error "Class Id $original_mark is not associated with device $result" if $config{TC_ENABLED} eq 'internal' && $classid && $device ne $result;
     }
 
     progress_message "   TC Rule \"$currentline\" $done";

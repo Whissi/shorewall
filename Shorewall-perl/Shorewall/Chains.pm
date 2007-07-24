@@ -1818,48 +1818,9 @@ sub insertnatjump( $$$$ ) {
     }
 }
 
-#
-# What follows is the code that generates the input to iptables-restore
-#
-
-sub assure_cat_state() {
-    unless ( $state == CAT_STATE ) {
-	emit '';
-	emit 'cat >&3 << __EOF__';
-	$state = CAT_STATE;
-    }
-}
-
-#
-# Emits the passed rule (input to iptables-restore) or command
-#
-sub emitr( $ ) {
-    my $rule = $_[0];
-
-    if ( ! $rule || substr( $rule, 0, 2 ) ne '-A' ) {
-	#
-	# A command rather than a rule
-	#
-	unless ( $state == CMD_STATE ) {
-	    emit_unindented "__EOF__\n" if $state == CAT_STATE;
-	    $state = CMD_STATE;
-	}
-
-	emit $rule;
-    } else {
-	unless ( $state == CAT_STATE ) {
-	    emit '';
-	    emit 'cat >&3 << __EOF__';
-	    $state = CAT_STATE;
-	}
-
-	emit_unindented $rule;
-    }
-}
-
 sub emit_comment() {
     unless ( $emitted_comment ) {
-	emit ( '#',
+	emit  ( '#',
 		'# Establish the values of shell variables used in the following function calls',
 		'#' );
 	$emitted_comment = 1;
@@ -1889,9 +1850,62 @@ sub set_global_variables() {
 }
 
 #
+# What follows is the code that generates the input to iptables-restore
+#
+# We always write the iptables-restore input into a file then pass the
+# file to iptables-restore. That way, if things go wrong, the user (and Shorewall support)
+# has (have) something to look at to determine the error
+#
+# We may have to generate part of the input at run-time. The rules array in each chain 
+# table entry may contain rules (begin with '-A') or shell source. We alternate between
+# writing the rules ('-A') into the temporary file to be bassed to iptables-restore
+# (CAT_STATE) and and writing shell source into the generated script.
+#
+# The following two functions are responsible for the state transitions.
+#
+sub enter_cat_state() {
+    emit '';
+    emit 'cat >&3 << __EOF__';
+    $state = CAT_STATE;
+}
+
+sub enter_cmd_state() {
+    emit_unindented "__EOF__\n" if $state == CAT_STATE;
+    $state = CMD_STATE;
+}
+
+#
+# Emits the passed rule (input to iptables-restore) or command
+#
+sub emitr( $ ) {
+    my $rule = $_[0];
+
+    if ( $rule && substr( $rule, 0, 2 ) eq '-A' ) {
+	#
+	# A rule
+	#
+	enter_cat_state unless $state == CAT_STATE;
+	emit_unindented $rule;
+    } else {
+	#
+	# A command
+	#
+	enter_cmd_state unless $state == CMD_STATE;
+	emit $rule;
+    }
+}
+
+#
 # Generate the netfilter input
 #
 sub create_netfilter_load() {
+
+    my @table_list;
+
+    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
+    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
+    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED};
+    push @table_list, 'filter';
 
     $state = NULL_STATE;
   
@@ -1904,20 +1918,10 @@ sub create_netfilter_load() {
     save_progress_message "Preparing iptables-restore input...";
 
     emit '';
-    #
-    # We always write the input into a file then pass the file to iptables-restore. That way, if things go wrong,
-    # the user (and Shorewall support) has something to look at to determine the error
-    #
+
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    my @table_list;
-
-    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED};
-    push @table_list, 'filter';
-
-    assure_cat_state;
+    enter_cat_state;
     
     for my $table ( @table_list ) {
 	emit_unindented "*$table";
@@ -1955,12 +1959,11 @@ sub create_netfilter_load() {
 	#
 	# Commit the changes to the table
 	#
-	assure_cat_state;
+	enter_cat_state unless $state == CAT_STATE;
 	emit_unindented 'COMMIT';
     }
 
-    emit_unindented '__EOF__';
-    emit '';
+    enter_cmd_state;
     #
     # Now generate the actual iptables-restore command
     #
@@ -1995,13 +1998,10 @@ sub create_blacklist_reload() {
     save_progress_message "Preparing iptables-restore input...";
 
     emit '';
-    #
-    # We always write the input into a file then pass the file to iptables-restore. That way, if things go wrong,
-    # the user (and Shorewall support) has something to look at to determine the error
-    #
+
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    assure_cat_state;
+    enter_cat_state;
 
     emit_unindented '*filter';
     emit_unindented ':blacklst - [0:0]';
@@ -2012,12 +2012,11 @@ sub create_blacklist_reload() {
     #
     # Commit the changes to the table
     #
-    assure_cat_state;
+    enter_cat_state unless $state == CAT_STATE;
     
     emit_unindented 'COMMIT';
 
-    emit_unindented '__EOF__' unless $state == CMD_STATE;
-    emit '';
+    enter_cmd_state;
     #
     # Now generate the actual iptables-restore command
     #

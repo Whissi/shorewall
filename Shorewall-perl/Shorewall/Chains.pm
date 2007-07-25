@@ -112,6 +112,7 @@ our @EXPORT = qw( STANDARD
 		  insertnatjump
 		  get_interface_address
 		  get_interface_addresses
+		  get_interface_bcasts
 		  set_global_variables
 		  create_netfilter_load
 		  create_blacklist_reload
@@ -207,6 +208,7 @@ our $chainseq;
 our %interfaceaddr;
 our %interfaceaddrs;
 our %interfacenets;
+our %interfacebcasts;
 
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
@@ -302,9 +304,10 @@ sub initialize() {
     #
     # Keep track of which interfaces have active 'address', 'addresses' and 'networks' variables
     #
-    %interfaceaddr  = ();
-    %interfaceaddrs = ();
-    %interfacenets  = ();
+    %interfaceaddr    = ();
+    %interfaceaddrs   = ();
+    %interfacenets    = ();
+    %interfacebcasts  = ();
     #
     #  When true, we've emitted a comment about global variable initialization
     #
@@ -1379,6 +1382,26 @@ sub get_interface_address ( $ ) {
 }
 
 #
+# Returns the name of the shell variable holding the broadcast addresses of the passed interface
+#
+sub interface_bcasts( $ ) {
+    chain_base( $_[0] ) . '_bcasts';
+}
+
+#
+# Record that the ruleset requires the broadcast addresses on the passed interface
+#
+sub get_interface_bcasts ( $ ) {
+    my ( $interface ) = $_[0];
+
+    my $variable = interface_bcasts( $interface );
+
+    $interfacebcasts{$interface} = qq($variable="\$(get_interface_bcasts $interface) 255.255.255.255");
+
+    "\$$variable";
+}
+
+#
 # Returns the name of the shell variable holding the addresses of the passed interface
 #
 sub interface_addresses( $ ) {
@@ -1847,6 +1870,14 @@ sub set_global_variables() {
 	emit $_;
     }
 
+    unless ( $capabilities{ADDRTYPE} ) {
+	emit_comment;
+	emit 'ALL_BCASTS="255.255.255.255 $(get_all_bcasts)"';
+
+	for ( values %interfacebcasts ) {
+	    emit $_;
+	}
+    }
 }
 
 #

@@ -857,11 +857,9 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 
 get_interface_bcasts() # $1 = interface
 {
-    local addresses=
-
     ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u 
 }
-	
+
 #
 # Internal version of 'which'
 #

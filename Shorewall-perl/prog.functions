@@ -162,3 +162,12 @@ get_device_mtu1() # $1 = device
     fi
 
 }
+
+#
+# Get a list of all configured broadcast addresses on the system
+#
+get_all_bcasts()
+{
+    ip -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u 
+}
+	

@@ -656,25 +656,48 @@ sub process_actions3 () {
     sub dropBcast( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	if ( $level ) {
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4';
-	}
+	if ( $capabilities{ADDRTYPE} ) {
+	    if ( $level ) {
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4';
+	    }
 
-	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
+	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
+	} else {
+	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    push_cmd_mode $chainref;
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address' if $level;
+	    add_rule $chainref, '-d $address -j DROP';
+	    pop_cmd_mode $chainref;
+	    add_command $chainref, 'done';
+
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4' if $level;
+	}   
+
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
     }
 
     sub allowBcast( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	if ( $level ) {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4';
-	}
+	if ( $capabilities{ADDRTYPE} ) {
+	    if ( $level ) {
+		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
+		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4';
+	    }
 
-	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
-	add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
+	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
+	} else {
+	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    push_cmd_mode $chainref;
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address' if $level;
+	    add_rule $chainref, '-d $address -j ACCEPT';
+	    pop_cmd_mode $chainref;
+	    add_command $chainref, 'done';
+
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4' if $level;
+	}
+	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
     }
 
     sub dropNotSyn ( $$$ ) {

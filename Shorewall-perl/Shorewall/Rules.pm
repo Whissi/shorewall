@@ -527,13 +527,31 @@ sub add_common_rules() {
     $list = find_hosts_by_option 'nosmurfs';
 
     $chainref = new_standard_chain 'smurfs';
+    
+    if ( $capabilities{ADDRTYPE} ) {
+	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
+    } else {
+	add_command $chainref, 'for address in $ALL_BCASTS; do';
+	push_cmd_mode $chainref;
+	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-d $address ' );
+	add_rule $chainref, '-d $address -j DROP';
+	pop_cmd_mode $chainref;
+	add_command $chainref, 'done';
+    }
 
-    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
-
-    add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     
-    add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+    if ( $capabilities{ADDRTYPE} ) {
+	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+    } else {
+	add_command $rejectref, 'for address in $ALL_BCASTS; do';
+	push_cmd_mode $rejectref;
+	add_rule $rejectref, '-d $address -j DROP';
+	pop_cmd_mode $rejectref;
+	add_command $rejectref, 'done';
+    }
+
     add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
 
     if ( @$list ) {
@@ -782,11 +800,24 @@ sub setup_mac_lists( $ ) {
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		my $variable = get_interface_addresses $interfaces{$interface}{bridge};
-		add_commands( $chainref, 
-			      "for address in $variable; do",
-			      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
-			      "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
-			      'done' );
+		
+		if ( $capabilities{ADDRTYPE} ) {
+		    add_commands( $chainref, 
+				  "for address in $variable; do",
+				  "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
+				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
+				  'done' );
+		} else {
+		    my $variable1 = get_interface_bcasts $interfaces{$interface}{bridge};
+
+		    add_commands( $chainref, 
+				  "for address in $variable; do",
+				  "    for address1 in $variable1; do",
+				  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
+				  "    done",
+				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
+				  'done' );
+		}
 	    }
 
 	    run_user_exit2( 'maclog', $chainref );
@@ -1549,7 +1580,19 @@ sub generate_matrix() {
 
 	if ( $chain1 ) {
 	    for my $interface ( keys %needbroadcast ) {
-		add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
+		if ( $capabilities{ADDRTYPE} ) {
+		    add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
+		} else {
+		    my $variable = get_interface_bcasts $interface;
+		    my $chain    = output_chain $interface;
+		    my $chainref = $filter_table->{$chain};
+		    
+		    add_commands( $chainref, 
+				  "for address in $variable; do",
+				  "   echo \"-A $chain -d \$address -j $chain1\" >&3",
+				  'done' );
+		}
+		    
 		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";
 	    }
 	}

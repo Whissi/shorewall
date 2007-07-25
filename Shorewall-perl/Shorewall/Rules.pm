@@ -196,12 +196,8 @@ sub setup_ecn()
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
 
-		if ( $capabilities{MANGLE_FORWARD} ) {
-		    add_rule $mangle_table->{POSTROUTING}, "-p tcp -o $interface -j $chainref->{name}";
-		} else {
-		    add_rule $mangle_table->{PREROUTING}, "-p tcp -o $interface -j $chainref->{name}";
-		    add_rule $mangle_table->{OUTPUT},     "-p tcp -o $interface -j $chainref->{name}";
-		}
+		add_rule $mangle_table->{PREROUTING}, "-p tcp -o $interface -j $chainref->{name}";
+		add_rule $mangle_table->{OUTPUT},     "-p tcp -o $interface -j $chainref->{name}";
 	    }
 
 	    for my $host ( @hosts ) {

@@ -869,13 +869,8 @@ setup_ecn() # $1 = file name
 		    flushmangle $chain
 		else
 		    createmanglechain $chain
-		    
-		    if [ -n "$MANGLE_FORWARD" ]; then
-			run_iptables -t mangle -A PREROUTING -p tcp -o $interface -j $chain
-		    else
-			run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
-			run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
-		    fi
+		    run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
+		    run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
 		fi
 	    done
 

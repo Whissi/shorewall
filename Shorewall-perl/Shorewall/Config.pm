@@ -1031,7 +1031,7 @@ sub report_capabilities() {
 sub mywhich( $ ) {
     my $prog = $_[0];
 
-    for my $dir ( split /:/, $ENV{PATH} ) {
+    for my $dir ( split /:/, $config{PATH} ) {
 	return "$dir/$prog" if -x "$dir/$prog";
     }
 

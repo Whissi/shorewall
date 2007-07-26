@@ -483,6 +483,14 @@ eth0             eth1:!192.168.4.9       ...</programlisting></para>
             In kernel 2.6.14, the Netfilter team have removed support for '-m
             owner --owner-cmd' which that action depended on.</para>
           </listitem>
+
+          <listitem>
+            <para>The PKTTYPE option is ignored by Shorewall-perl.
+            Shorewall-perl 4.0.0 requires Address type match. Shorewall-perl
+            versions 4.0.1 and later will use Address type match if it is
+            available; otherwise, they will behave as if PKTTYPE=No had been
+            specified.</para>
+          </listitem>
         </orderedlist>
       </listitem>
 
@@ -496,8 +504,6 @@ eth0             eth1:!192.168.4.9       ...</programlisting></para>
 
   <section id="Prerequisites">
     <title>Shorewall-perl - Prerequisites</title>
-
-    <para>In addition to Shorewall-3.4.2 or later, you need:</para>
 
     <itemizedlist>
       <listitem>

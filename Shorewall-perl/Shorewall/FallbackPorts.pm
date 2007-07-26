@@ -20,7 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-# This module exports the %protocols and %services hashes built from 
+# This module exports the %protocols and %services hashes built from
 # /etc/protocols and /etc/services respectively.
 #
 # Module generated using buildports.pl 4.0.0-Beta7 - Fri Jun 29 14:10:45 2007

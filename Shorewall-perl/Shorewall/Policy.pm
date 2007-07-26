@@ -208,10 +208,10 @@ sub validate_policy()
 
 	unless ( $clientwild || $serverwild ) {
 	    if ( $zones{$server}{type} eq 'bport4' ) {
-		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge" 
+		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
 		    unless $zones{$client}{bridge} eq $zones{$server}{bridge} || single_interface( $client ) eq $zones{$server}{bridge};
 	    }
-	}   
+	}
 
 	my $chain = "${client}2${server}";
 	my $chainref;
@@ -238,12 +238,12 @@ sub validate_policy()
 	}
 
 	$chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
-	 
+
 	if ( $synparams ne '' ) {
 	    $chainref->{synparams} = do_ratelimit $synparams, 'ACCEPT';
-	    $chainref->{synchain}  = $chain 
+	    $chainref->{synchain}  = $chain
 	}
-	
+
 	$chainref->{default}   = $default if $default;
 
 	if ( $clientwild ) {
@@ -277,7 +277,7 @@ sub validate_policy()
 #
 sub policy_rules( $$$$ ) {
     my ( $chainref , $target, $loglevel, $default ) = @_;
-   
+
     unless ( $target eq 'NONE' ) {
 	add_rule $chainref, "-j $default" if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
@@ -392,7 +392,7 @@ sub setup_syn_flood_chains() {
     for my $chainref ( @policy_chains ) {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
-	    my $level = $chainref->{loglevel}; 
+	    my $level = $chainref->{loglevel};
 	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''

@@ -22,10 +22,10 @@
 #
 #   This module is responsible for lower level configuration file handling.
 #   It also exports functions for generating warning and error messages.
-#   The get_configuration function parses the shorewall.conf, capabilities and 
-#   modules files during compiler startup. The module also provides the basic 
+#   The get_configuration function parses the shorewall.conf, capabilities and
+#   modules files during compiler startup. The module also provides the basic
 #   output file services such as creation of temporary 'object' files, writing
-#   into those files (emitters) and finalizing those files (renaming 
+#   into those files (emitters) and finalizing those files (renaming
 #   them to their final name and setting their mode appropriately).
 #
 package Shorewall::Config;
@@ -176,7 +176,7 @@ our $debug;                   # If true, use Carp to report errors with stack tr
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 sub initialize() {
     ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
@@ -461,21 +461,21 @@ sub save_progress_message_short( $ ) {
 
 #
 # Set $timestamp
-# 
+#
 sub set_timestamp( $ ) {
     $timestamp = shift;
 }
 
 #
 # Set $verbose
-# 
+#
 sub set_verbose( $ ) {
     $verbose = shift;
 }
 
 #
 # Print the current TOD to STDOUT.
-# 
+#
 sub timestamp() {
     my ($sec, $min, $hr) = ( localtime ) [0,1,2];
     printf '%02d:%02d:%02d ', $hr, $min, $sec;
@@ -739,7 +739,7 @@ sub split_line2( $$$ ) {
 
     if ( defined $columns ) {
 	fatal_error "Invalid $first entry" if $columns && @line != $columns;
-	return @line 
+	return @line
     }
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
@@ -843,7 +843,7 @@ sub read_a_line() {
 	    #
 	    # Remove Trailing Comments -- result might be a blank line
 	    #
-	    $currentline =~ s/#.*$//;       
+	    $currentline =~ s/#.*$//;
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
@@ -935,14 +935,14 @@ sub default_yes_no ( $$ ) {
 
 my %validlevels = ( debug   => 7,
 		    info    => 6,
-		    notice  => 5, 
-		    warning => 4, 
-		    warn    => 4, 
+		    notice  => 5,
+		    warning => 4,
+		    warn    => 4,
 		    err     => 3,
 		    error   => 3,
-		    crit    => 2, 
-		    alert   => 1, 
-		    emerg   => 0, 
+		    crit    => 2,
+		    alert   => 1,
+		    emerg   => 0,
 		    panic   => 0,
 		    none    => '',
 		    ULOG    => 'ULOG' );
@@ -1002,7 +1002,7 @@ sub check_trivalue( $$ ) {
 	$config{var} = $default
     }
 }
-    
+
 #
 # Produce a report of the detected capabilities
 #
@@ -1180,7 +1180,7 @@ sub determine_capabilities() {
 
     $capabilities{USEPKTTYPE}   = qt( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
     $capabilities{ADDRTYPE}     = qt( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
-    $capabilities{TCPMSS_MATCH} = qt( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" ); 
+    $capabilities{TCPMSS_MATCH} = qt( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
 
     qt( "$iptables -F $sillyname" );
     qt( "$iptables -X $sillyname" );
@@ -1279,7 +1279,7 @@ sub process_shorewall_conf() {
 
 sub get_capabilities( $ ) {
     my $export = $_[0];
-    
+
     if ( ! $export && $> == 0 ) { # $> == $EUID
 	unless ( $config{IPTABLES} ) {
 	    fatal_error "Can't find iptables executable" unless $config{IPTABLES} = mywhich 'iptables';
@@ -1358,7 +1358,7 @@ sub get_configuration( $ ) {
     check_trivalue ( 'IP_FORWARDING', 'on' );
     check_trivalue ( 'ROUTE_FILTER',  '' );
     check_trivalue ( 'LOG_MARTIANS',  '' );
- 
+
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
@@ -1632,7 +1632,7 @@ sub run_user_exit2( $$ ) {
 	}
 
 	pop_open;
-	
+
     }
 }
 

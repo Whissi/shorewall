@@ -88,7 +88,7 @@ our %macros;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -276,7 +276,7 @@ sub createlogactionchain( $$ ) {
     mark_referenced $chainref; # Just in case the action body is empty.
 
     unless ( $targets{$action} & STANDARD ) {
-	
+
 	my $file = find_file $chain;
 
 	if ( -f $file ) {
@@ -298,13 +298,13 @@ sub createlogactionchain( $$ ) {
 sub createsimpleactionchain( $ ) {
     my $action  = shift;
     my $chainref = new_chain 'filter', $action;
-    
+
     $logactionchains{"$action:none"} = $chainref;
-	
+
     mark_referenced $chainref; # Just in case the action body is empty.
 
     unless ( $targets{$action} & STANDARD ) {
-	
+
 	my $file = find_file $action;
 
 	if ( -f $file ) {
@@ -395,15 +395,15 @@ sub process_macro1 ( $$ ) {
 	fatal_error "Invalid target ($mtarget)"
 	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $mtarget eq 'LOG' );
     }
-    
+
     progress_message "   ..End Macro $macrofile";
-    
+
     pop_open;
 }
 
 sub process_action1 ( $$ ) {
     my ( $action, $wholetarget ) = @_;
-    
+
     my ( $target, $level ) = split_action $wholetarget;
 
     $level = 'none' unless $level;
@@ -412,9 +412,9 @@ sub process_action1 ( $$ ) {
 
     if ( defined $targettype ) {
 	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & LOGRULE );
-	
+
 	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
-	
+
 	fatal_error "An action may not invoke itself" if $target eq $action;
 
 	add_requiredby $wholetarget, $action if $targettype & ACTION;
@@ -438,7 +438,7 @@ sub process_action1 ( $$ ) {
 	}
     }
 }
-   
+
 sub process_actions1() {
 
     progress_message2 "Preprocessing Action Files...";
@@ -548,7 +548,7 @@ sub process_macro3( $$$$$$$$$$$ ) {
     my $standard = ( $fn =~ /^($globals{SHAREDIR})/ );
 
     while ( read_a_line ) {
-	
+
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
 
 	if ( $mtarget =~ /^PARAM:?/ ) {
@@ -581,7 +581,7 @@ sub process_macro3( $$$$$$$$$$$ ) {
 	} else {
 	    $mdest = '';
 	}
-	
+
 	$mdest   = '' if $mdest eq '-';
 
 	$mproto  = merge_macro_column $mproto,  $proto;
@@ -589,12 +589,12 @@ sub process_macro3( $$$$$$$$$$$ ) {
 	$msports = merge_macro_column $msports, $sports;
 	$mrate   = merge_macro_column $mrate,   $rate;
 	$muser   = merge_macro_column $muser,   $user;
-	
+
 	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser;
     }
 
     pop_open;
-    
+
     progress_message '..End Macro'
 }
 
@@ -672,7 +672,7 @@ sub process_actions3 () {
 	    add_command $chainref, 'done';
 
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4' if $level ne '';
-	}   
+	}
 
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
     }

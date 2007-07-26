@@ -70,7 +70,7 @@
  #
 @@ -111,20 +90,6 @@
  }
- 
+
  #
 -# Undo the effect of 'separate_list()'
 -#
@@ -91,7 +91,7 @@
  qt()
 @@ -310,83 +275,6 @@
  }
- 
+
  #
 -# Call this function to assert mutual exclusion with Shorewall. If you invoke the
 -# /sbin/shorewall program while holding mutual exclusion, you should pass "nolock" as
@@ -150,7 +150,7 @@
 -
 -    if [ -z "$loaded" ]; then
 -	[ -f $lib ] || lib=${SHELLSHAREDIR}/lib.$1
--	
+-
 -	if [ -f $lib ]; then
 -	    progress_message "Loading library $lib..."
 -	    . $lib
@@ -175,7 +175,7 @@
  #        the IP address is 128.0.0.0 or 128.0.0.1.
 @@ -395,32 +283,6 @@
  LEFTSHIFT='<<'
- 
+
  #
 -# Validate an IP address
 -#
@@ -196,7 +196,7 @@
 -		;;
 -	esac
 -    done
--    
+-
 -    IFS=$ifs
 -
 -    return 0
@@ -208,7 +208,7 @@
  decodeaddr() {
 @@ -456,88 +318,6 @@
  }
- 
+
  #
 -# Enumerate the members of an IP range -- When using a shell supporting only
 -# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
@@ -297,7 +297,7 @@
  ip_netmask() {
 @@ -588,60 +368,6 @@
  }
- 
+
  #
 -# Netmask to VLSM
 -#
@@ -331,7 +331,7 @@
 -	case $c in
 -	    @*)
 -               c=at_${c#@}
--	       ;;               
+-	       ;;
 -	    *.*)
 -		c="${c%.*}_${c##*.}"
 -		;;
@@ -358,7 +358,7 @@
  chain_exists() # $1 = chain name
 @@ -879,21 +605,6 @@
  }
- 
+
  #
 -# Set default config path
 -#
@@ -380,7 +380,7 @@
  find_file()
 @@ -918,54 +629,6 @@
  }
- 
+
  #
 -# Get fully-qualified name of file
 -#
@@ -435,7 +435,7 @@
  set_state () # $1 = state
 @@ -974,200 +637,6 @@
  }
- 
+
  #
 -# Determine which optional facilities are supported by iptables/netfilter
 -#
@@ -626,7 +626,7 @@
 -    report_capability1 MANGLE_FORWARD
 -    report_capability1 COMMENTS
 -    report_capability1 ADDRTYPE
--    
+-
 -    echo CAPVERSION=$SHOREWALL_CAPVERSION
 -}
 -
@@ -637,7 +637,7 @@
 @@ -1286,82 +755,6 @@
      cut -b -${1}
  }
- 
+
 -#
 -# Add a logging rule.
 -#
@@ -718,8 +718,8 @@
  {
      clear_one_tc() {
 @@ -1496,65 +889,6 @@
- 
-     echo echo 
+
+     echo echo
  }
 -
 -# Determine which version of mktemp is present (if any) and set MKTEMP accortingly:

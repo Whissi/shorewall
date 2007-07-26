@@ -43,7 +43,7 @@ our $VERSION = 4.00;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -59,7 +59,7 @@ INIT {
 # Accounting
 #
 sub process_accounting_rule( $$$$$$$$$ ) {
-    
+
     our $jumpchainref;
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = @_;
@@ -163,7 +163,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 }
 
 sub setup_accounting() {
-    
+
     my $first_entry = 1;
 
     my $fn = open_file 'accounting';

@@ -66,7 +66,7 @@ our @param_stack;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -111,12 +111,12 @@ sub process_tos() {
 
 	    fatal_error "TOS field required" unless $tos ne '-';
 
-	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) { 
+	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) {
 		$tos = $tosval;
 	    } elsif ( numeric_value( $tos ) > 0x1e ) {
 		fatal_error "Invalid TOS value ($tos)";
 	    }
-		
+
 	    my $chainref;
 
 	    my $restriction = NO_RESTRICT;
@@ -521,13 +521,13 @@ sub add_common_rules() {
     }
 
     run_user_exit1 'initdone';
-    
+
     setup_blacklist;
 
     $list = find_hosts_by_option 'nosmurfs';
 
     $chainref = new_standard_chain 'smurfs';
-    
+
     if ( $capabilities{ADDRTYPE} ) {
 	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
@@ -541,7 +541,7 @@ sub add_common_rules() {
     }
 
     add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-    
+
     if ( $capabilities{ADDRTYPE} ) {
 	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
     } else {
@@ -652,7 +652,7 @@ sub add_common_rules() {
 	    add_rule $filter_table->{input_chain $interface},  "-j $chain";
 	    add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
 	    add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
-	}	
+	}
     }
 
     $list = find_interfaces_by_option 'upnp';
@@ -689,7 +689,7 @@ sub setup_mac_lists( $ ) {
     my $level       = $config{MACLIST_LOG_LEVEL};
     my $disposition = $config{MACLIST_DISPOSITION};
     my $ttl         = $config{MACLIST_TTL};
-    
+
     progress_message2 "$doing MAC Filtration -- Phase $phase...";
 
     for my $hostref ( @$maclist_hosts ) {
@@ -761,7 +761,7 @@ sub setup_mac_lists( $ ) {
 		if ( $addresses ) {
 		    for my $address ( split ',', $addresses ) {
 			my $source = match_source_net $address;
-			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}" 
+			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 			    if defined $level && $level ne '';
 			add_rule $chainref , "${mac}${source}-j $targetref->{target}";
 		    }
@@ -800,9 +800,9 @@ sub setup_mac_lists( $ ) {
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		my $variable = get_interface_addresses $interfaces{$interface}{bridge};
-		
+
 		if ( $capabilities{ADDRTYPE} ) {
-		    add_commands( $chainref, 
+		    add_commands( $chainref,
 				  "for address in $variable; do",
 				  "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
 				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
@@ -810,7 +810,7 @@ sub setup_mac_lists( $ ) {
 		} else {
 		    my $variable1 = get_interface_bcasts $interfaces{$interface}{bridge};
 
-		    add_commands( $chainref, 
+		    add_commands( $chainref,
 				  "for address in $variable; do",
 				  "    for address1 in $variable1; do",
 				  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
@@ -915,12 +915,12 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;
 
     $param = '' unless defined $param;
-    
+
     #
     # Determine the validity of the action
     #
     my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
-    
+
     fatal_error "Unknown action ($action)" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
@@ -933,7 +933,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    push @param_stack, $current_param;
 	    $current_param = $param;
 	}
-	
+
 	process_macro( $macros{$basictarget},
 		       $target ,
 		       $current_param,
@@ -949,7 +949,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		       $wildcard );
 
 	$macro_nest_level--;
-	
+
 	$current_param = pop @param_stack if $param ne '';
 
 	return;
@@ -988,7 +988,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     my $sourcezone;
     my $destzone;
-    
+
     if ( $source =~ /^(.+?):(.*)/ ) {
 	$sourcezone = $1;
 	$source = $2;
@@ -1004,7 +1004,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$destzone = $dest;
 	$dest = ALLIPv4;
     }
-    
+
     fatal_error "Missing source zone" if $sourcezone eq '-';
     fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
     fatal_error "Missing destination zone" if $destzone eq '-';
@@ -1069,7 +1069,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & NONAT;
-	$rule .= "-m state --state $section " 
+	$rule .= "-m state --state $section "
     }
 
     #
@@ -1211,7 +1211,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 }
 
 #
-# Process a Record in the rules file 
+# Process a Record in the rules file
 #
 #     Deals with the ugliness of wildcard zones ('all' in SOURCE and/or DEST column).
 #
@@ -1264,7 +1264,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 	} else {
 	    fatal_error "Invalid DEST ($dest)" unless $dest eq 'all';
 	}
-	    
+
     }
 
     my $action = isolate_basic_target $target;
@@ -1425,7 +1425,7 @@ sub generate_matrix() {
     }
 
     #
-    # Set a breakpoint in this function if you want to step through generate_matrix(). 
+    # Set a breakpoint in this function if you want to step through generate_matrix().
     #
     sub start_matrix() {
 	progress_message2 'Generating Rule Matrix...';
@@ -1497,7 +1497,7 @@ sub generate_matrix() {
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
-			add_rule( 
+			add_rule(
 				 $filter_table->{forward_chain $interface} ,
 				 join( '', match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" )
 				);
@@ -1586,13 +1586,13 @@ sub generate_matrix() {
 		    my $variable = get_interface_bcasts $interface;
 		    my $chain    = output_chain $interface;
 		    my $chainref = $filter_table->{$chain};
-		    
-		    add_commands( $chainref, 
+
+		    add_commands( $chainref,
 				  "for address in $variable; do",
 				  "   echo \"-A $chain -d \$address -j $chain1\" >&3",
 				  'done' );
 		}
-		    
+
 		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";
 	    }
 	}
@@ -1847,7 +1847,7 @@ sub setup_mss( $ ) {
 	$match  = "-m tcpmss --mss $clampmss: " if $capabilities{TCPMSS_MATCH};
 	$option = "--set-mss $clampmss";
     }
-    
+
     add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option";
 }
 

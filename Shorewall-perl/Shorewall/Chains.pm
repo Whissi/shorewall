@@ -20,7 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#  This is the low-level iptables module. It provides the basic services 
+#  This is the low-level iptables module. It provides the basic services
 #  of chain and rule creation. It is used by the higher level modules such
 #  as Rules to create iptables-restore input.
 #
@@ -228,7 +228,7 @@ our $emitted_comment;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -325,7 +325,7 @@ INIT {
 #
 
 #
-# Process a COMMENT line (in $currentline) 
+# Process a COMMENT line (in $currentline)
 #
 sub process_comment() {
     if ( $capabilities{COMMENTS} ) {
@@ -357,7 +357,7 @@ sub add_command($$)
 
 sub add_commands {
     my $chainref = shift @_;
-   
+
     for my $command ( @_ ) {
 	push @{$chainref->{rules}}, join ('', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
     }
@@ -382,7 +382,7 @@ sub add_file( $$ ) {
     if ( -f $file ) {
 	open EF , '<', $file or fatal_error "Unable to open $file: $!";
 
-	add_commands( $chainref, 
+	add_commands( $chainref,
 		      qq(progress_message "Processing $file..."),
 		      '' );
 
@@ -395,7 +395,7 @@ sub add_file( $$ ) {
 
 	close EF;
     }
-}    
+}
 
 #
 # Add a rule to a chain. Arguments are:
@@ -778,7 +778,7 @@ sub setup_zone_mss() {
 	set_mss( $zone, $zoneref->{options}{in}{mss},     '_in'  ) if $zoneref->{options}{in}{mss};
 	set_mss( $zone, $zoneref->{options}{out}{mss},    '_out' ) if $zoneref->{options}{out}{mss};
     }
-}	
+}
 
 sub newexclusionchain() {
     my $seq = $exclseq++;
@@ -810,13 +810,13 @@ sub validate_portpair( $ ) {
 
     for my $port ( @ports ) {
 	my $value = $services{$port};
-	
+
 	unless ( defined $value ) {
 	    $value = $port if $port =~ /^(\d+)$/ && $port <= 65535;
 	}
-	    
+
 	fatal_error "Invalid/Unknown port/service ($port)" unless defined $value;
-	
+
 	$port = $value;
     }
 
@@ -938,7 +938,7 @@ sub do_proto( $$$ )
 	    }
 
 	    if ( $sports ne '' ) {
-		if ( $multiport ) {	
+		if ( $multiport ) {
 		    fatal_error "Too many entries in port list ($sports)" if port_count( $sports ) > 15;
 		    $sports = validate_port_list $sports;
 		    $output .= "-m multiport --sports $sports ";
@@ -1108,7 +1108,7 @@ sub match_source_dev( $ ) {
     } else {
 	"-i $interface ";
     }
-}    
+}
 
 #
 # Match Dest device
@@ -1121,7 +1121,7 @@ sub match_dest_dev( $ ) {
     } else {
 	"-o $interface ";
     }
-}    
+}
 
 #
 # Avoid generating a second '-m iprange' in a single rule.
@@ -1303,7 +1303,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
 	#
-	# The rule will be converted to an "echo" shell command. We must insure that the 
+	# The rule will be converted to an "echo" shell command. We must insure that the
 	# quotes are preserved in the iptables-input file.
 	#
 	if ( $level eq 'ULOG' ) {
@@ -1423,7 +1423,7 @@ sub get_interface_addresses ( $ ) {
 [ -n "\$$variable" ] || fatal_error "Unable to determine the IP address(es) of $interface"
 );
     }
-    
+
     "\$$variable";
 }
 
@@ -1461,15 +1461,15 @@ sub get_interface_nets ( $ ) {
 #
 sub expand_rule( $$$$$$$$$$ )
 {
-    my ($chainref ,    # Chain 
+    my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
-	$rule,         # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST 
-	$source,       # SOURCE 
-	$dest,         # DEST 
-	$origdest,     # ORIGINAL DEST 
-	$target,       # Target ('-j' part of the rule) 
-	$loglevel ,    # Log level (and tag) 
-	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...) 
+	$rule,         # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST
+	$source,       # SOURCE
+	$dest,         # DEST
+	$origdest,     # ORIGINAL DEST
+	$target,       # Target ('-j' part of the rule)
+	$loglevel ,    # Log level (and tag)
+	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...)
 	$exceptionrule # Caller's matches used in exclusion case
        ) = @_;
 
@@ -1666,7 +1666,7 @@ sub expand_rule( $$$$$$$$$$ )
     #
     if ( $inets ) {
 	fatal_error "Invalid SOURCE" if $inets =~ /^([^!]+)?,!([^!]+)$/ || $inets =~ /.*!.*!/;
-	
+
 	if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $inets = $1;
 	    $iexcl = $2;
@@ -1680,7 +1680,7 @@ sub expand_rule( $$$$$$$$$$ )
 		$rule .= match_source_net "!$iexcl";
 		$iexcl = '';
 	    }
-	
+
 	}
     } else {
 	$iexcl = '';
@@ -1691,7 +1691,7 @@ sub expand_rule( $$$$$$$$$$ )
     #
     if ( $dnets ) {
 	fatal_error "Invalid DEST" if  $dnets =~ /^([^!]+)?,!([^!]+)$/ || $dnets =~ /.*!.*!/;
-	
+
 	if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
 	    $dnets = $1;
 	    $dexcl = $2;
@@ -1887,7 +1887,7 @@ sub set_global_variables() {
 # file to iptables-restore. That way, if things go wrong, the user (and Shorewall support)
 # has (have) something to look at to determine the error
 #
-# We may have to generate part of the input at run-time. The rules array in each chain 
+# We may have to generate part of the input at run-time. The rules array in each chain
 # table entry may contain rules (begin with '-A') or shell source. We alternate between
 # writing the rules ('-A') into the temporary file to be bassed to iptables-restore
 # (CAT_STATE) and and writing shell source into the generated script.
@@ -1939,7 +1939,7 @@ sub create_netfilter_load() {
     push @table_list, 'filter';
 
     $state = NULL_STATE;
-  
+
     emit ( 'setup_netfilter()',
 	   '{'
 	   );
@@ -1953,7 +1953,7 @@ sub create_netfilter_load() {
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
     enter_cat_state;
-    
+
     for my $table ( @table_list ) {
 	emit_unindented "*$table";
 
@@ -2019,7 +2019,7 @@ sub create_netfilter_load() {
 sub create_blacklist_reload() {
 
     $state = NULL_STATE;
-  
+
     emit(  'blacklist_reload()',
 	   '{'
 	   );
@@ -2044,7 +2044,7 @@ sub create_blacklist_reload() {
     # Commit the changes to the table
     #
     enter_cat_state unless $state == CAT_STATE;
-    
+
     emit_unindented 'COMMIT';
 
     enter_cmd_state;

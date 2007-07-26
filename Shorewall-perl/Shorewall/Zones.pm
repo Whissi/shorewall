@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.0 -- /usr/share/shorewall-perl/Shorewall/Zones.pm      
+# Shorewall-perl 4.0 -- /usr/share/shorewall-perl/Shorewall/Zones.pm
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -20,7 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#   This module contains the code which deals with /etc/shorewall/zones, 
+#   This module contains the code which deals with /etc/shorewall/zones,
 #   /etc/shorewall/interfaces and /etc/shorewall/hosts.
 #
 package Shorewall::Zones;
@@ -54,7 +54,7 @@ our @EXPORT = qw( NOTHING
 		  @zones
 		  %zones
 		  $firewall_zone
-		  %interfaces 
+		  %interfaces
 		  @interfaces
 		  @bridges );
 
@@ -134,7 +134,7 @@ our @bridges;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -285,8 +285,8 @@ sub determine_zones()
 	}
 
 	$zones{$zone} = { type       => $type,
-			  parents    => \@parents, 
-			  exclusions => [], 
+			  parents    => \@parents,
+			  exclusions => [],
 			  bridge     => '',
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
@@ -300,7 +300,7 @@ sub determine_zones()
     }
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
-    
+
     my $pushed = 1;
     my %ordered;
 
@@ -435,7 +435,7 @@ sub single_interface( $ ) {
 	    '';
 	}
     }
-} 
+}
 
 sub add_group_to_zone($$$$$)
 {
@@ -491,7 +491,7 @@ sub add_group_to_zone($$$$$)
     $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 ) || ( @exclusions );
 
     push @{$zoneref->{exclusions}}, @exclusions;
-    
+
     push @{$arrayref}, { options => $options,
 			 hosts   => \@newnetworks,
 			 ipsec   => $type eq 'ipsec4' ? 'ipsec' : 'none' };
@@ -533,9 +533,9 @@ sub validate_interfaces_file( $ )
 
     use constant { SIMPLE_IF_OPTION   => 1,
 		   BINARY_IF_OPTION   => 2,
-		   ENUM_IF_OPTION     => 3, 
+		   ENUM_IF_OPTION     => 3,
 	           MASK_IF_OPTION     => 3,
-	           
+
 	           IF_OPTION_ZONEONLY => 4 };
 
     my %validoptions = (arp_filter  => BINARY_IF_OPTION,
@@ -569,7 +569,7 @@ sub validate_interfaces_file( $ )
 	    progress_message2 "$doing $fn...";
 	    $first_entry = 0;
 	}
-	
+
 	my ($zone, $interface, $networks, $options ) = split_line 2, 4, 'interfaces file';
 	my $zoneref;
 	my $bridge = '';
@@ -588,7 +588,7 @@ sub validate_interfaces_file( $ )
 
 	( $interface, my ($port, $extra) ) = split /:/ , $interface, 3;
 
-	fatal_error "Invalid INTERFACE" if defined $extra || ! $interface;	
+	fatal_error "Invalid INTERFACE" if defined $extra || ! $interface;
 
 	fatal_error "Invalid Interface Name ($interface)" if $interface eq '+';
 
@@ -620,13 +620,13 @@ sub validate_interfaces_file( $ )
 	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
 	    $interfaces{$interface}{bridge} = $interface;
 	}
-    
+
 	my $wildcard = 0;
 
 	if ( $interface =~ /\+$/ ) {
 	    $wildcard = 1;
 	    $interfaces{$interface}{root} = substr( $interface, 0, -1 );
-	} else {	    
+	} else {
 	    $interfaces{$interface}{root} = $interface;
 	}
 
@@ -642,7 +642,7 @@ sub validate_interfaces_file( $ )
 	my $optionsref = {};
 
 	my %options;
-	
+
 	if ( $options ) {
 
 	    for my $option (split ',', $options ) {
@@ -653,7 +653,7 @@ sub validate_interfaces_file( $ )
 		fatal_error "Invalid Interface option ($option)" unless my $type = $validoptions{$option};
 
 		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
-		
+
 		$type &= MASK_IF_OPTION;
 
 		if ( $type == SIMPLE_IF_OPTION ) {
@@ -672,7 +672,7 @@ sub validate_interfaces_file( $ )
 				$options{arp_ignore} = $value;
 			    } else {
 				fatal_error "Invalid value ($value) for arp_ignore";
-			    } 
+			    }
 			} else {
 			    $options{arp_ignore} = 1;
 			}
@@ -692,7 +692,7 @@ sub validate_interfaces_file( $ )
 	} elsif ( $port ) {
 	    $options{port} = 1;
 	}
-	
+
 	$interfaces{$interface}{options} = $optionsref = \%options;
 
 	push @ifaces, $interface;
@@ -713,7 +713,7 @@ sub validate_interfaces_file( $ )
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
-    
+
 	progress_message "   Interface \"$currentline\" Validated";
 
     }
@@ -723,7 +723,7 @@ sub validate_interfaces_file( $ )
     #
     for my $interface ( @ifaces ) {
 	my $interfaceref = $interfaces{$interface};
-	
+
 	if ( $interfaceref->{options}{bridge} ) {
 	    my @ports = grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces;
 
@@ -735,7 +735,7 @@ sub validate_interfaces_file( $ )
 	}
 
 	push @interfaces, $interface unless $interfaceref->{options}{port};
-    }	
+    }
 }
 
 #
@@ -902,7 +902,7 @@ sub validate_hosts_file()
 	#
 	# Now add a comma before '!'. Do it globally - add_group_to_zone() correctly checks for multiple exclusions
 	#
-	$hosts =~ s/!/,!/g;  
+	$hosts =~ s/!/,!/g;
 	#
 	# Take care of case where the hosts list begins with '!'
 	#

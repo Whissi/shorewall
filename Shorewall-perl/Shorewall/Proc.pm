@@ -157,7 +157,7 @@ sub setup_martian_logging() {
 		   "    echo $value > $file" );
 
 	    emit ( 'else' ,
-		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface); 
+		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface);
 	    emit   "fi\n";
 	}
 

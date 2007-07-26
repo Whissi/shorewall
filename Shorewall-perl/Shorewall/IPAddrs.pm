@@ -20,8 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#   This module provides interfaces for dealing with IPv4 addresses. 
-#   
+#   This module provides interfaces for dealing with IPv4 addresses.
+#
 package Shorewall::IPAddrs;
 require Exporter;
 use Shorewall::Config;
@@ -121,7 +121,7 @@ sub validate_range( $$ ) {
     my $last  = decodeaddr $high;
 
     fatal_error "Invalid IP Range ($low-$high)" unless $first <= $last;
-}   
+}
 
 sub ip_range_explicit( $ ) {
     my $range = $_[0];
@@ -151,7 +151,7 @@ sub ip_range_explicit( $ ) {
 
 sub validate_host( $ ) {
     my $host = $_[0];
-    
+
     if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
 	validate_range $1, $2;
     } else {

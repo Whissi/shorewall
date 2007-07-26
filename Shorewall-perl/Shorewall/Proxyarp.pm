@@ -45,7 +45,7 @@ our @proxyarp;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -145,7 +145,7 @@ sub setup_proxy_arp() {
 	    emit ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
 		   "    echo $value > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
 	    emit ( 'else' ,
-		   "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface ); 
+		   "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface );
 	    emit   "fi\n";
 	}
     }

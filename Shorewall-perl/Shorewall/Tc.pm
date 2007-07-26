@@ -158,7 +158,7 @@ our $prefix = '1';
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -231,7 +231,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    for my $tccmd ( @tccmd ) {
 		if ( $tccmd->{match}($cmd) ) {
 		    fatal_error "$mark not valid with :C[FPT]" if $connmark;
-		    
+
 		    $target      = "$tccmd->{target} ";
 		    my $marktype = $tccmd->{mark};
 
@@ -243,9 +243,9 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($original_mark)" if $marktype == NOMARK;
-			
+
 			$mark = $rest if $tccmd->{mask};
-			
+
 			if ( $marktype == SMALLMARK ) {
 			    verify_small_mark $mark;
 			} else {
@@ -254,7 +254,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 		    } elsif ( $tccmd->{mask} ) {
 			$mark = $tccmd->{mask};
 		    }
-		    
+
 		    last MARK;
 		}
 	    }
@@ -339,7 +339,7 @@ sub convert_rate( $$ ) {
     } else {
 	$rate = rate_to_kbit $rate
     }
-	
+
     "${rate}kbit";
 }
 
@@ -588,7 +588,7 @@ sub setup_tc() {
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
 	setup_traffic_shaping;
     }
-    
+
     if ( my $fn = open_file 'tcrules' ) {
 
 	while ( read_a_line ) {

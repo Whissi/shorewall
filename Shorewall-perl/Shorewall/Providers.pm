@@ -59,7 +59,7 @@ our @providers;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -104,7 +104,7 @@ sub setup_route_marking() {
 
 sub copy_table( $$ ) {
     my ( $duplicate, $number ) = @_;
-    
+
     emit ( "ip route show table $duplicate | while read net route; do",
 	   '    case $net in',
 	   '        default|nexthop)',
@@ -119,7 +119,7 @@ sub copy_table( $$ ) {
 
 sub copy_and_edit_table( $$$ ) {
     my ( $duplicate, $number, $copy ) = @_;
-    
+
     emit  ( "ip route show table $duplicate | while read net route; do",
 	    '    case $net in',
 	    '        default|nexthop)',
@@ -137,18 +137,18 @@ sub copy_and_edit_table( $$$ ) {
 
 sub balance_default_route( $$$ ) {
     my ( $weight, $gateway, $interface ) = @_;
-    
+
     $balance = 1;
-    
+
     emit '';
-    
+
     if ( $first_default_route ) {
 	if ( $gateway ) {
 	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight\"";
 	} else {
 	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight\"";
 	}
-	
+
 	$first_default_route = 0;
     } else {
 	if ( $gateway ) {
@@ -164,21 +164,21 @@ sub add_a_provider( $$$$$$$$ ) {
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
-    
+
     for my $providerref ( values %providers  ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
     }
-    
+
     emit "#\n# Add Provider $table ($number)\n#";
-    
+
     emit "if interface_is_usable $interface; then";
     push_indent;
     my $iface = chain_base $interface;
-    
+
     emit "${iface}_up=Yes";
     emit "qt ip route flush table $number";
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
-    
+
     if ( $duplicate ne '-' ) {
 	if ( $copy eq '-' ) {
 	    copy_table ( $duplicate, $number );
@@ -218,17 +218,17 @@ sub add_a_provider( $$$$$$$$ ) {
     my $val = 0;
 
     if ( $mark ne '-' ) {
-	
+
 	$val = numeric_value $mark;
-	
+
 	verify_mark $mark;
-	
+
 	if ( $val < 256) {
 	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
 	} else {
 	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
 	}
-	
+
 	for my $providerref ( values %providers  ) {
 	    fatal_error "Duplicate mark value ($mark)" if $providerref->{mark} == $val;
 	}
@@ -244,9 +244,9 @@ sub add_a_provider( $$$$$$$$ ) {
     $providers{$table}         = {};
     $providers{$table}{number} = $number;
     $providers{$table}{mark}   = $val;
-    
+
     my ( $loose, $optional ) = (0,0);
-    
+
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, $options ) {
 	    if ( $option eq 'track' ) {
@@ -270,9 +270,9 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $loose ) {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
-	
+
 	emit "\nrulenum=0\n";
-	
+
 	emit  ( "find_interface_addresses $interface | while read address; do",
 		'    qt ip rule del from $address',
 		"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
@@ -286,12 +286,12 @@ sub add_a_provider( $$$$$$$$ ) {
 	       'done'
 	     );
     }
-    
+
     emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
-    
+
     pop_indent;
     emit 'else';
-    
+
     if ( $optional ) {
 	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
 	       "    ${iface}_up="
@@ -299,19 +299,19 @@ sub add_a_provider( $$$$$$$$ ) {
     } else {
 	emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
     }
-    
+
     emit "fi\n";
 }
 
 sub add_an_rtrule( $$$$ ) {
     my ( $source, $dest, $provider, $priority ) = @_;
-    
+
     unless ( $providers{$provider} ) {
 	my $found = 0;
-	
+
 	if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
 	    my $provider_number = numeric_value $provider;
-	    
+
 	    for my $provider ( keys %providers ) {
 		if ( $providers{$provider}{number} == $provider_number ) {
 		    $found = 1;
@@ -319,14 +319,14 @@ sub add_an_rtrule( $$$$ ) {
 		}
 	    }
 	}
-	
+
 	fatal_error "Unknown provider ($provider)" unless $found;
     }
-    
+
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
-    
+
     $dest = $dest eq '-' ? '' : "to $dest";
-    
+
     if ( $source eq '-' ) {
 	$source = '';
     } elsif ( $source =~ /:/ ) {
@@ -338,21 +338,21 @@ sub add_an_rtrule( $$$$ ) {
     } else {
 	$source = "iif $source";
     }
-    
+
     fatal_error "Invalid priority ($priority)" unless $priority && $priority =~ /^\d{1,5}$/;
-    
+
     $priority = "priority $priority";
-    
+
     emit ( "qt ip rule del $source $dest $priority",
 	   "run_ip rule add $source $dest $priority table $provider",
 	   "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing"
 	 );
     progress_message "   Routing rule \"$currentline\" $done";
 }
- 
+
 sub setup_providers() {
     my $providers = 0;
-    
+
     my $fn = open_file 'providers';
 
     while ( read_a_line ) {

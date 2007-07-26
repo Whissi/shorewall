@@ -47,7 +47,7 @@ our %addresses_to_add;
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function. 
+#                       the second and subsequent calls to that function.
 #
 
 sub initialize() {
@@ -237,7 +237,7 @@ sub setup_one_masq($$$$$$$)
     #
     # And Generate the Rule(s)
     #
-    expand_rule( $chainref , 
+    expand_rule( $chainref ,
 		 POSTROUTE_RESTRICT ,
 		 $rule ,
 		 $networks ,

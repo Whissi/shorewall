@@ -84,17 +84,17 @@ sub setup_tunnels() {
 		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type eq 'firewall' || $type eq 'bport4';
 		$inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
 		$outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
-		
+
 		unless ( $capabilities{POLICY_MATCH} ) {
 		    add_rule $inchainref,  "-p 50 $source -j ACCEPT";
 		    add_rule $outchainref, "-p 50 $dest -j ACCEPT";
-		    
+
 		    unless ( $noah ) {
 			add_rule $inchainref,  "-p 51 $source -j ACCEPT";
 			add_rule $outchainref, "-p 51 $dest -j ACCEPT";
 		    }
 		}
-		
+
 		if ( $kind eq 'ipsec' ) {
 		    add_rule $inchainref,  "-p udp $source --dport 500 $options";
 		    add_rule $outchainref, "-p udp $dest --dport 500 $options";

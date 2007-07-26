@@ -31,18 +31,18 @@ use lib '/usr/share/shorewall-perl';
 use Shorewall::Config qw( open_file
 			  push_open
 			  pop_open
-			  read_a_line1 
-			  split_line 
-			  fatal_error 
-			  %globals 
-			  ensure_config_path 
+			  read_a_line1
+			  split_line
+			  fatal_error
+			  %globals
+			  ensure_config_path
 			  set_shorewall_dir
 			  set_config_path );
 
 our $offset = "\t\t  ";
 
 our %service_hash;
-  
+
 sub print_it( $$ ) {
     my ( $name, $number ) = @_;
     my $tabs;
@@ -61,7 +61,7 @@ sub print_it( $$ ) {
 
 sub print_service( $$ ) {
     my ( $service, $number ) = @_;
-    
+
     unless ( exists $service_hash{$service} ) {
 	print_it( $service, $number );
 	$service_hash{$service} = $number;
@@ -107,7 +107,7 @@ print <<"EOF";
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-# This module exports the %protocols and %services hashes built from 
+# This module exports the %protocols and %services hashes built from
 # /etc/protocols and /etc/services respectively.
 #
 # Module generated using buildports.pl $globals{VERSION} - $date
@@ -132,7 +132,7 @@ while ( read_a_line1 ) {
     my ( $proto1, $number, @aliases ) = split_line( 2, 10, '/etc/protocols entry');
 
     print_it( $proto1, $number );
-    
+
     for my $alias ( @aliases ) {
 	last if $alias eq '-';
 	print_it( $alias, $number );

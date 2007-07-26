@@ -296,7 +296,7 @@ EOF
     for chain in PREROUTING OUTPUT; do
 	qt $IPTABLES -t raw -P $chain ACCEPT
     done
-    
+
 EOF
     }
 
@@ -471,7 +471,7 @@ EOF
 # Second Phase of Script Generation
 #
 #    copies the 'prog.functions' file into the script, generates
-#    clear_routing_and_traffic_shaping() and the first part of 
+#    clear_routing_and_traffic_shaping() and the first part of
 #    'setup_routing_and_traffic_shaping()'
 #
 #    The bulk of that function is produced by the various config file
@@ -542,7 +542,7 @@ sub generate_script_2 () {
 	    'delete_proxyarp',
 	    ''
 	    );
- 
+
     if ( $capabilities{NAT_ENABLED} ) {
 	emit(  'if [ -f ${VARDIR}/nat ]; then',
 	       '    while read external interface; do',
@@ -646,7 +646,7 @@ else
         set_state "Started"
         run_started_exit
     fi
-        
+
     cp -f $(my_pathname) ${VARDIR}/.restore
 fi
 

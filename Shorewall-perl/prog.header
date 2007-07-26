@@ -267,7 +267,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 	fi
     elif [ $savemoduleinfo = Yes ]; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
-	> ${VARDIR}/.modulesdir	
+	> ${VARDIR}/.modulesdir
 	> ${VARDIR}/.modules
     fi
 
@@ -585,9 +585,9 @@ get_interface_bcasts() # $1 = interface
 {
     local addresses=
 
-    ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u 
+    ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 }
-	
+
 #
 # Internal version of 'which'
 #
@@ -887,7 +887,7 @@ find_echo() {
     result=$(which echo)
     [ -n "$result" ] && { echo "$result -e"; return; }
 
-    echo echo 
+    echo echo
 }
 ################################################################################
 # End of functions imported from /usr/share/shorewall/lib.base

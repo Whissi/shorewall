@@ -534,8 +534,8 @@ sub add_common_rules() {
     } else {
 	add_command $chainref, 'for address in $ALL_BCASTS; do';
 	push_cmd_mode $chainref;
-	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-d $address ' );
-	add_rule $chainref, '-d $address -j DROP';
+	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
+	add_rule $chainref, '-s $address -j DROP';
 	pop_cmd_mode $chainref;
 	add_command $chainref, 'done';
     }

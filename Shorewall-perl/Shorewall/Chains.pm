@@ -1856,23 +1856,23 @@ sub emit_comment() {
 sub set_global_variables() {
 
     for ( values %interfaceaddr ) {
-	emit_comment;
+	emit_comment unless $emitted_comment;
 	emit $_;
     }
 
     for ( values %interfaceaddrs ) {
-	emit_comment;
+	emit_comment unless $emitted_comment;
 	emit $_;
     }
 
     for ( values %interfacenets ) {
-	emit_comment;
+	emit_comment unless $emitted_comment;
 	emit $_;
     }
 
     unless ( $capabilities{ADDRTYPE} ) {
-	emit_comment;
-	emit 'ALL_BCASTS="255.255.255.255 $(get_all_bcasts)"';
+	emit_comment unless $emitted_comment;
+	emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
 
 	for ( values %interfacebcasts ) {
 	    emit $_;

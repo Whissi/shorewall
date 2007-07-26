@@ -65,6 +65,14 @@ if [ $1 = 0 ]; then
 
 fi
 
+%triggerpostun  -- shorewall < 4.0.0
+
+if [ -x /sbin/insserv ]; then
+    /sbin/insserv /etc/rc.d/shorewall
+elif [ -x /sbin/chkconfig ]; then
+    /sbin/chkconfig --add shorewall;
+fi
+
 %files
 %defattr(0644,root,root,0755)
 %attr(0544,root,root) /etc/init.d/shorewall

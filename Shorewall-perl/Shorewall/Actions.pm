@@ -657,7 +657,7 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	if ( $capabilities{ADDRTYPE} ) {
-	    if ( defined $level && level ne '' ) {
+	    if ( level ne '' ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4';
 	    }
@@ -666,12 +666,12 @@ sub process_actions3 () {
 	} else {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
 	    push_cmd_mode $chainref;
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address' if defined level && $level ne '';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address' if $level ne '';
 	    add_rule $chainref, '-d $address -j DROP';
 	    pop_cmd_mode $chainref;
 	    add_command $chainref, 'done';
 
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4' if defined level && $level ne '';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4' if $level ne '';
 	}   
 
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
@@ -681,7 +681,7 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	if ( $capabilities{ADDRTYPE} ) {
-	    if ( defined $level && level ne '' ) {
+	    if ( level ne '' ) {
 		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
 		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4';
 	    }
@@ -690,12 +690,12 @@ sub process_actions3 () {
 	} else {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
 	    push_cmd_mode $chainref;
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address' if defined level && $level ne '';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address' if $level ne '';
 	    add_rule $chainref, '-d $address -j ACCEPT';
 	    pop_cmd_mode $chainref;
 	    add_command $chainref, 'done';
 
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4' if defined level && $level ne '';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4' if $level ne '';
 	}
 	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
     }
@@ -703,28 +703,28 @@ sub process_actions3 () {
     sub dropNotSyn ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if defined level && $level ne '';
+	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
 	add_rule $chainref , '-p tcp ! --syn -j DROP';
     }
 
     sub rejNotSyn ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if defined level && $level ne '';
+	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
 	add_rule $chainref , '-p tcp ! --syn -j REJECT --reject-with tcp-reset';
     }
 
     sub dropInvalid ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if defined level && $level ne '';
+	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level ne '';
 	add_rule $chainref , '-m state --state INVALID -j DROP';
     }
 
     sub allowInvalid ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if defined level && $level ne '';
+	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level ne '';
 	add_rule $chainref , '-m state --state INVALID -j ACCEPT';
     }
 
@@ -762,7 +762,7 @@ sub process_actions3 () {
 
 	add_rule $chainref, "-m recent --name $set --set";
 
-	if ( defined level && $level ne '' ) {
+	if ( $level ne '' ) {
 	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
 	    add_rule $xchainref, '-j DROP';

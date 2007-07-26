@@ -835,8 +835,6 @@ sub read_a_line() {
 
 	while ( <$currentfile> ) {
 
-	    $currentlinenumber++;
-
 	    chomp;
 	    #
 	    # Continuation
@@ -850,11 +848,13 @@ sub read_a_line() {
 	    # Ignore ( concatenated ) Blank Lines
 	    #
 	    $currentline = '', next if $currentline =~ /^\s*$/;
+
+	    $currentlinenumber = $.;
 	    #
 	    # Expand Shell Variables using %ENV
 	    #
 	    #                            $1      $2      $3           -     $4
-	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$)x ) {
+	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 		my $val = $ENV{$3};
 		$val = '' unless defined $val;
 		$currentline = join( '', $1 , $val , $4 );

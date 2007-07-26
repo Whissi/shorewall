@@ -657,7 +657,7 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	if ( $capabilities{ADDRTYPE} ) {
-	    if ( level ne '' ) {
+	    if ( $level ne '' ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4';
 	    }
@@ -681,7 +681,7 @@ sub process_actions3 () {
 	my ($chainref, $level, $tag) = @_;
 
 	if ( $capabilities{ADDRTYPE} ) {
-	    if ( level ne '' ) {
+	    if ( $level ne '' ) {
 		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
 		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4';
 	    }
@@ -734,7 +734,7 @@ sub process_actions3 () {
     sub allowinUPnP ( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	if ( defined level && $level ne '' ) {
+	if ( $level ne '' ) {
 	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
 	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
 	}

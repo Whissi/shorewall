@@ -893,11 +893,11 @@ sub read_a_line() {
 sub read_a_line1() {
     while ( $currentfile ) {
 	while ( $currentline = <$currentfile> ) {
-	    $currentlinenumber++;
 	    next if $currentline =~ /^\s*#/;
 	    chomp $currentline;
 	    next if $currentline =~ /^\s*$/;
 	    $currentline =~ s/#.*$//;       # Remove Trailing Comments
+	    $currentlinenumber = $.;
 	    return 1;
 	}
 

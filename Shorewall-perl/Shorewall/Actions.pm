@@ -658,20 +658,20 @@ sub process_actions3 () {
 
 	if ( $capabilities{ADDRTYPE} ) {
 	    if ( $level ne '' ) {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4';
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	    }
 
 	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
 	} else {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
 	    push_cmd_mode $chainref;
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address' if $level ne '';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
 	    add_rule $chainref, '-d $address -j DROP';
 	    pop_cmd_mode $chainref;
 	    add_command $chainref, 'done';
 
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4' if $level ne '';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	}
 
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
@@ -682,20 +682,20 @@ sub process_actions3 () {
 
 	if ( $capabilities{ADDRTYPE} ) {
 	    if ( $level ne '' ) {
-		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST';
-		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4';
+		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
+		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	    }
 
 	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
 	} else {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
 	    push_cmd_mode $chainref;
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address' if $level ne '';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
 	    add_rule $chainref, '-d $address -j ACCEPT';
 	    pop_cmd_mode $chainref;
 	    add_command $chainref, 'done';
 
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4' if $level ne '';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	}
 	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
     }
@@ -791,6 +791,8 @@ sub process_actions3 () {
 
 	$level = '' unless defined $level;
 	$tag   = '' unless defined $tag;
+
+	$level =~ s/!$//;
 
 	if ( $targets{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;

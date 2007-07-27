@@ -491,6 +491,17 @@ eth0             eth1:!192.168.4.9       ...</programlisting></para>
             available; otherwise, they will behave as if PKTTYPE=No had been
             specified.</para>
           </listitem>
+
+          <listitem>
+            <para> Shorewall-perl detects dead policy file entries that result
+            when an entry is masked by an earlier more general entry.</para>
+
+            <para>Example:</para>
+
+            <programlisting>#SOURCE DEST     POLICY    LOG LEVEL
+all     all      REJECT    info
+loc     net      ACCEPT</programlisting>
+          </listitem>
         </orderedlist>
       </listitem>
 

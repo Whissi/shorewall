@@ -73,6 +73,12 @@ Problems corrected in 4.0.1.
     4.0.0. Previously, Shorewall was not started automatically after an
     upgrade using the RPM.
 
+9)  Shorewall-perl now detects dead policy file entries that result
+    when an entry is masked by an earlier entry. Example:
+
+	 all	 all	  REJECT    info
+	 loc	 net	  ACCEPT
+
 Other changes in Shorewall 4.0.1.
 
 1)  A new EXPAND_POLICIES option is added to shorewall.conf. The
@@ -670,6 +676,14 @@ Migration Considerations:
      w) The PKTTYPE option is ignored by Shorewall-perl. Shorewall-perl 
         will use Address type match if it is available; otherwise, it 
 	will behave as if PKTTYPE=No had been specified.
+
+     x) Shorewall-perl detects dead policy file entries that result
+        when an entry is masked by an earlier more general
+        entry. Example:
+
+	 all	 all	  REJECT    info
+	 loc	 net	  ACCEPT
+
     ------------------------------------------------------------------------
                       P R E R E Q U I S I T E S
     ------------------------------------------------------------------------

@@ -226,6 +226,8 @@ sub validate_policy()
 		} else {
 		    fatal_error "Duplicate policy: $client $server $policy";
 		}
+	    } elsif ( $chainref->{policy} ) {
+		fatal_error "Duplicate policy: $client $server $policy";
 	    } else {
 		$chainref->{is_policy} = 1;
 		$chainref->{policy} = $policy;

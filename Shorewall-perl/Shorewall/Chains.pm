@@ -1318,6 +1318,8 @@ sub log_rule_limit( $$$$$$$$ ) {
 	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
 	}
     }
+    
+    $predicates .= ' ' if $predicates && substr( $predicates, -1, 1 ) ne ' ';
 
     if ( $command eq 'add' ) {
 	add_rule ( $chainref, $predicates . $prefix );

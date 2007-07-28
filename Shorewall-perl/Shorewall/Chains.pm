@@ -407,12 +407,12 @@ sub add_rule($$)
 
     $iprangematch = 0;
 
+    $rule .= qq( -m comment --comment "$comment") if $comment;
+
     if ( $chainref->{cmdmode} ) {
 	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
-	$rule .= " -m comment --comment \\\"$comment\\\"" if $comment;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
-	$rule .= " -m comment --comment \"$comment\"" if $comment;
 	push @{$chainref->{rules}}, join( ' ', '-A' , $chainref->{name}, $rule );
 	$chainref->{referenced} = 1;
     }

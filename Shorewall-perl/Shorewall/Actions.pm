@@ -792,8 +792,6 @@ sub process_actions3 () {
 	$level = '' unless defined $level;
 	$tag   = '' unless defined $tag;
 
-	$level =~ s/!$//;
-
 	if ( $targets{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;
 	    $builtinops{$action}->($chainref, $level, $tag);

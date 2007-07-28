@@ -35,7 +35,6 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( merge_levels
 		  isolate_basic_target
 		  add_requiredby
-		  createlogactionchain
 		  createactionchain
 		  find_logactionchain
 		  process_actions1
@@ -260,6 +259,10 @@ sub createlogactionchain( $$ ) {
     my $chain = $action;
     my $actionref = $actions{$action};
     my $chainref;
+    
+    my ($lev, $tag) = split ':', $level;
+
+    validate_level $lev;
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
@@ -268,8 +271,6 @@ sub createlogactionchain( $$ ) {
     }
 
     $actionref = new_action $action unless $actionref;
-
-    $level = 'none' unless $level;
 
     $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
 

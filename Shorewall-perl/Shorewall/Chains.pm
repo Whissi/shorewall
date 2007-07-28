@@ -1274,7 +1274,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     my $prefix;
 
-    $level = validate_level $level;
+    $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
 
     return 1 if $level eq '';
     

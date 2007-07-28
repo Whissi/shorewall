@@ -1956,6 +1956,7 @@ sub create_netfilter_load() {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
+		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdmode};
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
@@ -1966,6 +1967,7 @@ sub create_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
+		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdmode};
 		emit_unindented ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }

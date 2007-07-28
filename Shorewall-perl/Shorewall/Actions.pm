@@ -117,6 +117,27 @@ sub merge_levels ($$) {
     my $subparts = @subparts;
 
     my $target   = $subparts[0];
+
+    push @subparts, '' while @subparts < 3;   #Avoid undefined values
+
+    my $level = $supparts[1];
+    my $tag   = $supparts[2];
+
+    if ( @supparts == 3 ) {
+	return "$target:none!:$tag"   if $level eq 'none!';
+	return "$target:$level:$tag"  if $level =~ /!$/;
+	return $subordinate           if $subparts >= 2;
+	return "$target:$level:$tag";
+    }
+
+    if ( @supparts == 2 ) {
+	return "$target:none!"        if $level eq 'none!';
+	return "$target:$level"       if ($level =~ /!$/) || ($subparts < 2);
+    }
+
+    $subordinate;
+}
+
 #
 # Try to find a macro file -- RETURNS false if the file doesn't exist or MACRO if it does.
 # If the file exists, the macro is entered into the 'targets' table and the fully-qualified
@@ -193,27 +214,6 @@ sub merge_macro_column( $$ ) {
     } else {
 	$body;
     }
-}
-
-
-    push @subparts, '' while @subparts < 3;   #Avoid undefined values
-
-    my $level = $supparts[1];
-    my $tag   = $supparts[2];
-
-    if ( @supparts == 3 ) {
-	return "$target:none!:$tag"   if $level eq 'none!';
-	return "$target:$level:$tag"  if $level =~ /!$/;
-	return $subordinate           if $subparts >= 2;
-	return "$target:$level:$tag";
-    }
-
-    if ( @supparts == 2 ) {
-	return "$target:none!"        if $level eq 'none!';
-	return "$target:$level"       if ($level =~ /!$/) || ($subparts < 2);
-    }
-
-    $subordinate;
 }
 
 #

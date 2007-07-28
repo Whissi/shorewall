@@ -948,7 +948,7 @@ my %validlevels = ( debug   => 7,
 		    ULOG    => 'ULOG' );
 
 #
-# Validate a log level -- Drop the trailing '!' that some fools think is important.
+# Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"
 #
 sub validate_level( $ ) {
     my $level = $_[0];

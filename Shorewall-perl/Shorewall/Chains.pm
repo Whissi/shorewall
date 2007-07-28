@@ -1274,6 +1274,10 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     my $prefix;
 
+    $level = validate_level $level;
+
+    return 1 if $level eq '';
+    
     unless ( $predicates =~ /-m limit / ) {
 	$limit = $globals{LOGLIMIT} unless $limit && $limit ne '-';
 	$predicates .= $limit if $limit;

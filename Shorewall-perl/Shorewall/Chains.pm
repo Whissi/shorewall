@@ -146,7 +146,7 @@ our $VERSION = 4.01;
 #                                               synchain     => <name of synparam chain>
 #                                               default      => <default action>
 #                                               policy_chain => <ref to policy chain -- self-reference if this is a policy chain>
-#                                               cmdcount     => <number of open loops or blocks in runtime commands>
+#                                               cmdmode      => <number of open loops or blocks in runtime commands>
 #                                               rules        => [ <rule1>
 #                                                                 <rule2>
 #                                                                 ...
@@ -335,21 +335,21 @@ sub process_comment() {
     }
 }
 #
-# Functions to manipulate cmdcount
+# Functions to manipulate cmdmode
 #
 sub push_cmd_mode( $ ) {
-    $_[0]->{cmdcount}++;
+    $_[0]->{cmdmode}++;
 }
 
 sub pop_cmd_mode( $ ) {
-    fatal_error "Internal error in pop_cmd_mode()" if --$_[0]->{cmdcount} < 0;
+    fatal_error "Internal error in pop_cmd_mode()" if --$_[0]->{cmdmode} < 0;
 }
 
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
 
-    push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdcount} , $command );
+    push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdmode} , $command );
 
     $chainref->{referenced} = 1;
 }
@@ -358,7 +358,7 @@ sub add_commands {
     my $chainref = shift @_;
 
     for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdcount} , $command );
+	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdmode} , $command );
     }
 
     $chainref->{referenced} = 1;
@@ -407,7 +407,7 @@ sub add_rule($$)
 
     $iprangematch = 0;
 
-    if ( $chainref->{cmdcount} ) {
+    if ( $chainref->{cmdmode} ) {
 	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
 	$rule .= " -m comment --comment \\\"$comment\\\"" if $comment;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
@@ -427,7 +427,7 @@ sub insert_rule($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    fatal_error 'Internal Error in insert_rule()' if $chainref->{cmdcount};
+    fatal_error 'Internal Error in insert_rule()' if $chainref->{cmdmode};
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
@@ -573,7 +573,7 @@ sub new_chain($$)
 				     table     => $table,
 				     loglevel  => '',
 				     log       => 1,
-				     cmdcount  => 0 };
+				     cmdmode   => 0 };
 }
 
 #
@@ -1468,8 +1468,7 @@ sub expand_rule( $$$$$$$$$$ )
 
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
-
-    fatal_error "Internal error in expand_rule()" if $chainref->{cmdcount} > 0;
+    my $initialcmdmode = $chainref->{cmdmode};
 
     #
     # Handle Log Level
@@ -1526,10 +1525,8 @@ sub expand_rule( $$$$$$$$$$ )
 	    add_command( $chainref , join( '', 'for source in ', $networks, '; do' ) );
 
 	    $rule .= '-s $source ';
-	    #
-	    # While $cmdcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()'
-	    #
-	    $chainref->{cmdcount}++;
+	    
+	    push_cmd_mode $chainref;
 	} else {
 	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone" if $restriction & OUTPUT_RESTRICT;
 	    $rule .= match_source_dev( $iiface );
@@ -1558,7 +1555,7 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command( $chainref , "for address in $list; do" );
 
 		$rule .= '-d $address ';
-		$chainref->{cmdcount}++;
+		push_cmd_mode $chainref;
 	    } else {
 		$rule .= join ( '', '-d ', get_interface_address( $interfaces[0] ), ' ' );
 	    }
@@ -1589,7 +1586,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest ';
-	    $chainref->{cmdcount}++;
+	    push_cmd_mode $chainref;
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
@@ -1798,8 +1795,8 @@ sub expand_rule( $$$$$$$$$$ )
 	}
     }
 
-    while ( $chainref->{cmdcount} > 0 ) {
-	$chainref->{cmdcount}--;
+    while ( $chainref->{cmdmode} > $initialcmdmode ) {
+	pop_cmd_mode $chainref;
 	add_command $chainref, 'done';
     }
 

@@ -146,8 +146,7 @@ our $VERSION = 4.01;
 #                                               synchain     => <name of synparam chain>
 #                                               default      => <default action>
 #                                               policy_chain => <ref to policy chain -- self-reference if this is a policy chain>
-#                                               loopcount    => <number of open loops in runtime commands>
-#                                               cmdcount     => <number of client open loops or blocks in runtime commands>
+#                                               cmdcount     => <number of open loops or blocks in runtime commands>
 #                                               rules        => [ <rule1>
 #                                                                 <rule2>
 #                                                                 ...
@@ -350,7 +349,7 @@ sub add_command($$)
 {
     my ($chainref, $command) = @_;
 
-    push @{$chainref->{rules}}, join ('', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
+    push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdcount} , $command );
 
     $chainref->{referenced} = 1;
 }
@@ -359,7 +358,7 @@ sub add_commands {
     my $chainref = shift @_;
 
     for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '    ' x ( $chainref->{loopcount} + $chainref->{cmdcount} ), $command );
+	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdcount} , $command );
     }
 
     $chainref->{referenced} = 1;
@@ -408,7 +407,8 @@ sub add_rule($$)
 
     $iprangematch = 0;
 
-    if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
+    if ( $chainref->{cmdcount} ) {
+	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
 	$rule .= " -m comment --comment \\\"$comment\\\"" if $comment;
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
@@ -427,7 +427,7 @@ sub insert_rule($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    fatal_error 'Internal Error in insert_rule()' if $chainref->{loopcount} || $chainref->{cmdcount};
+    fatal_error 'Internal Error in insert_rule()' if $chainref->{cmdcount};
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
@@ -573,7 +573,6 @@ sub new_chain($$)
 				     table     => $table,
 				     loglevel  => '',
 				     log       => 1,
-				     loopcount => 0,
 				     cmdcount  => 0 };
 }
 
@@ -1305,22 +1304,10 @@ sub log_rule_limit( $$$$$$$$ ) {
 	warning_message "Log Prefix shortened to \"$prefix\"";
     }
 
-    if ( $chainref->{loopcount} || $chainref->{cmdcount} ) {
-	#
-	# The rule will be converted to an "echo" shell command. We must insure that the
-	# quotes are preserved in the iptables-input file.
-	#
-	if ( $level eq 'ULOG' ) {
-	    $prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \\\"$prefix\\\" ";
-	} else {
-	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \\\"$prefix\\\" ";
-	}
+    if ( $level eq 'ULOG' ) {
+	$prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \"$prefix\" ";
     } else {
-	if ( $level eq 'ULOG' ) {
-	    $prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \"$prefix\" ";
-	} else {
-	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
-	}
+	$prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
     }
     
     $predicates .= ' ' if $predicates && substr( $predicates, -1, 1 ) ne ' ';
@@ -1482,6 +1469,8 @@ sub expand_rule( $$$$$$$$$$ )
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
 
+    fatal_error "Internal error in expand_rule()" if $chainref->{cmdcount} > 0;
+
     #
     # Handle Log Level
     #
@@ -1538,9 +1527,9 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    $rule .= '-s $source ';
 	    #
-	    # While $loopcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()'
+	    # While $cmdcount > 0, calls to 'add_rule()' will be converted to calls to 'add_command()'
 	    #
-	    $chainref->{loopcount}++;
+	    $chainref->{cmdcount}++;
 	} else {
 	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone" if $restriction & OUTPUT_RESTRICT;
 	    $rule .= match_source_dev( $iiface );
@@ -1569,7 +1558,7 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command( $chainref , "for address in $list; do" );
 
 		$rule .= '-d $address ';
-		$chainref->{loopcount}++;
+		$chainref->{cmdcount}++;
 	    } else {
 		$rule .= join ( '', '-d ', get_interface_address( $interfaces[0] ), ' ' );
 	    }
@@ -1600,7 +1589,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest ';
-	    $chainref->{loopcount}++;
+	    $chainref->{cmdcount}++;
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
@@ -1634,7 +1623,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 		add_command( $chainref , "for address in $list; do" );
 		$rule .= '-m conntrack --ctorigdst $address ';
-		$chainref->{loopcount}++;
+		$chainref->{cmdount}++;
 	    } else {
 		get_interface_address $interfaces[0];
 		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
@@ -1809,8 +1798,8 @@ sub expand_rule( $$$$$$$$$$ )
 	}
     }
 
-    while ( $chainref->{loopcount} > 0 ) {
-	$chainref->{loopcount}--;
+    while ( $chainref->{cmdcount} > 0 ) {
+	$chainref->{cmdcount}--;
 	add_command $chainref, 'done';
     }
 

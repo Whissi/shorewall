@@ -140,6 +140,7 @@ our $VERSION = 4.01;
 #                                               is_policy    => 0|1
 #                                               is_optionsl  => 0|1
 #                                               referenced   => 0|1
+#                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               loglevel     => <level>
 #                                               synparams    => <burst/limit>
@@ -365,9 +366,7 @@ sub add_commands {
 }
 
 sub mark_referenced( $ ) {
-    my $chainref = shift @_;
-
-    $chainref->{referenced} = 1;
+    $_[0]->{referenced} = 1;
 }
 
 #

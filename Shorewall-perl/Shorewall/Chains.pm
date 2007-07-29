@@ -420,7 +420,7 @@ sub add_rule($$)
 #
 # Insert a rule into a chain. Arguments are:
 #
-#    Table , Chain , Rule Number, Rule
+#    Chain reference , Rule Number, Rule
 #
 sub insert_rule($$$)
 {
@@ -455,7 +455,7 @@ sub chain_base($) {
 #
 sub forward_chain($)
 {
-    chain_base( $_[0] ) . '_fwd';
+    $_[0] . '_fwd';
 }
 
 #
@@ -463,7 +463,7 @@ sub forward_chain($)
 #
 sub input_chain($)
 {
-    chain_base( $_[0] ) . '_in';
+    $_[0] . '_in';
 }
 
 #
@@ -471,7 +471,7 @@ sub input_chain($)
 #
 sub output_chain($)
 {
-    chain_base( $_[0] ) . '_out';
+     $_[0] . '_out';
 }
 
 #
@@ -479,7 +479,7 @@ sub output_chain($)
 #
 sub masq_chain($)
 {
-    chain_base( $_[0] ) . '_masq';
+     $_[0] . '_masq';
 }
 
 #
@@ -493,12 +493,12 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    chain_base( $_[0] ) . '_mac';
+    $_[0] . '_mac';
 }
 
 sub macrecent_target($)
 {
-     $config{MACLIST_TTL} ? chain_base( $_[0] ) . '_rec' : 'RETURN';
+     $config{MACLIST_TTL} ? $_[0] . '_rec' : 'RETURN';
 }
 
 #
@@ -506,22 +506,22 @@ sub macrecent_target($)
 #
 sub dynamic_fwd( $ )
 {
-    chain_base( $_[0] ) . '_dynf';
+    $_[0] . '_dynf';
 }
 
 sub dynamic_in( $ )
 {
-    chain_base( $_[0] ) . '_dyni';
+    $_[0] . '_dyni';
 }
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    chain_base( $_[0] ) . '_dyno';
+    $_[0] . '_dyno';
 }
 
 sub dynamic_chains( $ ) #$1 = interface
 {
-    my $c = chain_base( $_[0] );
+    my $c = $_[0];
 
     [ $c . '_dyni' , $c . '_dynf' , $c . '_dyno' ];
 }
@@ -531,7 +531,7 @@ sub dynamic_chains( $ ) #$1 = interface
 #
 sub dnat_chain( $ )
 {
-    chain_base( $_[0] ) . '_dnat';
+    $_[0] . '_dnat';
 }
 
 #
@@ -539,7 +539,7 @@ sub dnat_chain( $ )
 #
 sub snat_chain( $ )
 {
-    chain_base( $_[0] ) . '_snat';
+    $_[0] . '_snat';
 }
 
 #
@@ -547,7 +547,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    chain_base( $_[0] ) . '_ecn';
+    $_[0] . '_ecn';
 }
 
 #
@@ -555,7 +555,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = chain_base $_[0];
+    my $c = $_[0];
 
     [ $c . '_fwd', $c . '_in' ];
 }

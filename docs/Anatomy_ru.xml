@@ -1,0 +1,389 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Анатомия Shorewall 4.0</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2007</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <copyright>
+      <year>2007</year>
+
+      <holder>Russian Translation: Grigory Mokhin</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Этот документ разрешается копировать, распространять и/или изменять при выполнении условий лицензии GNU Free Documentation License версии 1.2 или более поздней, опубликованной Free Software Foundation; без неизменяемых разделов, без текста на верхней обложке, без текста на нижней обложке.  Копия лицензии приведена по ссылке <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section id="Products">
+    <title>Продукты</title>
+
+    <para>В состав Shorewall 4.0 входят следующие четыре пакета. </para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Shorewall-common</emphasis>. Этот пакет необходимо установить хотя бы в одной системе в вашей сети.  В этой системе также должны быть установлены Shorewall-shell и/или Shorewall-perl. </para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-shell</emphasis>. Этот пакет содержит прежний компилятор конфигурации Shorewall, написанный на Bourne Shell. Этот компилятор работает в большинстве систем, но он медленный, и его сопровождение стало затруднительным.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-perl</emphasis>. Этот компилятор заменяет Shorewall-shell и написан на языке Perl.  Он работает на всех платформах Unix, поддерживающих Perl (включая Cygwin), и рекомендуется для всех систем, где Shorewall устанавливается заново. </para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-lite</emphasis>. В Shorewall предусмотрена возможность централизованного управления несколькими системами файрволов. Для этого применяется пакет Shorewall lite.  Полностью продукт Shorewall, включая Shorewall-shell и/или Shorewall-perl, устанавливается в центральной административной системе, где генерируются сценарии Shorewall.  Эти сценарии копируются в системы файрволов, где они выполняются под управлением Shorewall-lite. </para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="Shorewall">
+    <title>Shorewall-common</title>
+
+    <para>Пакет Shorewall-common включает много файлов, которые устанавливаются в каталоги /<filename class="directory">sbin</filename>, <filename class="directory">/usr/share/shorewall</filename>, <filename class="directory">/etc/shorewall</filename>, <filename>/etc/init.d</filename> и <filename class="directory">/var/lilb/shorewall/</filename>. Они описаны далее. </para>
+
+    <section id="sbin">
+      <title>/sbin</title>
+
+      <para>Программа <filename>/sbin/shorewall</filename> взаимодействует с Shorewall. См. <ulink url="manpages/shorewall.html">shorewall</ulink>(8).</para>
+    </section>
+
+    <section id="share-shorewall">
+      <title>/usr/share/shorewall</title>
+
+      <para>Здесь устанавливаются основные файлы Shorewall. </para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>action.template</filename> - файл шаблонов для создания <ulink url="Actions.html">действий</ulink>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>action.*</filename> - стандартные действия Shorewall. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>actions.std</filename> - в этом файле перечислены стандартные действия. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="directory">configfiles</filename> - в этом каталоге содержатся файлы конфигурации, при копировании которых создается <ulink url="CompiledPrograms.html#Lite">каталог экспорта Shorewall-lite.</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><filename><filename>configpath</filename></filename> - здесь содержится информация о путях, которая зависит от дистрибутива. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>firewall</filename> - эта программа обрабатывает команды <command>add</command> и <command>delete</command> (см. <ulink url="manpages/shorewall.html">shorewall</ulink>(8)). Кроме того, она обрабатывает команды <command>stop</command> и <command>clear</command>, если в системе нет текущего скомпилированного сценария файрвола. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="symlink">functions</filename> - ссылка на <filename>lib.base</filename>, предусмотренная для совместимости с прежними версиями Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="symlink">init</filename> - ссылка на сценарий инициализации (обычно это - <filename>/etc/init.d/shorewall</filename>).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>lib.*</filename> - библиотеки функций оболочки, используемые другими программами. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>macro.*</filename> - стандартные <ulink url="Macros.html">макросы</ulink> Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>modules</filename> - файл, управляющий загрузкой модулей Netfilter ядра.  Его можно переопределить в файле <filename>/etc/shorewall/modules</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>version</filename> - файл, в котором указана текущая установленная версия Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>wait4ifup</filename> - программа, которую могут использовать <ulink url="shorewall_extension_scripts.htm">сценарии расширения</ulink> для ожидания готовности сетевого интерфейса. </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="shorewall">
+      <title>/etc/shorewall</title>
+
+      <para>В этом каталоге содержатся файлы конфигурации, настраиваемые пользователем. </para>
+    </section>
+
+    <section id="init">
+      <title>/etc/init.d или /etc/rc.d (зависит от дистрибутива)</title>
+
+      <para>Здесь устанавливается сценарий инициализации.  В зависимости от дистрибутива, он называется <filename>shorewall</filename> или <filename>rc.firewall</filename>.</para>
+    </section>
+
+    <section id="var">
+      <title>/var/lib/shorewall</title>
+
+      <para>Shorewall не устанавливает никаких файлов в этот каталог. Он используется для хранения данных во время выполнения.  Этот каталог можно перенести командой <ulink url="manpages/shorewall-vardir.html">shorewall-vardir</ulink>(5).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>chains</filename> - если в <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5) задан DYNAMIC_ZONES=Yes, то в этом файле содержится информация для команд <command>add</command> и <command>delete</command> (см. <ulink url="manpages/shorewall.html">shorewall</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.iptables-restore-input </filename>- этот файл передается программе iptables-restore для инициализации файрвола в ходе выполнения последней команды <command>start</command> или <command>restart</command> (см. <ulink url="manpages/shorewall.html">shorewall</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modules</filename> - содержимое файла модулей, использованного последними командами <command>start</command> или <command>restart</command> (см. <ulink url="manpages/shorewall.html">shorewall</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modulesdir</filename> - параметр MODULESDIR (<ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)) в ходе выполнения последней команды <command>start</command> или <command>restart.</command></para>
+        </listitem>
+
+        <listitem>
+          <para><filename>nat</filename> - в этом файле (с неудачным именем) записаны IP-адреса, добавленные при включенных опциях ADD_SNAT_ALIASES=Yes и ADD_IP_ALIASES=Yes в <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>proxyarp</filename> - записи arp, добавленные элементами <ulink url="manpages/shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.refresh</filename> - программа, которая выполнила последнюю успешную команду <command>refresh</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restart</filename> - программа, которая выполнила последнюю успешную команду <command>restart</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>restore</filename> - программа по умолчанию, выполняющая команды <command>restore</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restore</filename> - программа, которая выполнила последнюю успешную команду <command>refresh, restart</command> или <command>start</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>save</filename> - файл, созданный командой <command>save</command> и используемый для восстановления динамического чёрного списка в ходе выполнения команд <command>start/restart</command>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.start</filename> - программа, которая выполнила последнюю успешную команду <command>start</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>state</filename> - здесь записано текущее состояние файрвола. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>zones</filename> - здесь записано текущее состояние зон.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section id="Shorewall-shell">
+    <title>Shorewall-shell</title>
+
+    <para>Все файлы продукта Shorewall-shell устанавливаются в каталоге /usr/share/<filename class="directory">shorewall-shell</filename>.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><filename>compiler</filename> - компилятор конфигурации (программа shell). </para>
+      </listitem>
+
+      <listitem>
+        <para><filename>lib.*</filename> - библиотеки функций оболочки, используемые компилятором.  Для уменьшения объема в встроенных системах могут быть установлены не все библиотеки. </para>
+      </listitem>
+
+      <listitem>
+        <para><filename>prog.*</filename> - фрагменты кода на shell, используемые компилятором. </para>
+      </listitem>
+
+      <listitem>
+        <para><filename>version</filename> - файл, в котором указана текущая установленная версия Shorewall-shell.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="Shorewall-perl">
+    <title>Shorewall-perl</title>
+
+    <para>Все файлы продукта Shorewall-perl устанавливаются в каталоге /usr/share/<filename class="directory">shorewall-perl</filename>.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><filename>buildports.pl</filename> - программа на Perl, которая компонует модуль Shorewall/Ports.pm во время установки. </para>
+      </listitem>
+
+      <listitem>
+        <para><filename>compiler</filename> - компилятор конфигурации (программа shell). </para>
+      </listitem>
+
+      <listitem>
+        <para><filename>prog.*</filename> - фрагменты кода на shell, используемые компилятором. </para>
+      </listitem>
+
+      <listitem>
+        <para><filename class="directory">Shorewall</filename> - каталог, содержащий модули Shorewall Perl, используемые компилятором. </para>
+      </listitem>
+
+      <listitem>
+        <para><filename>version</filename> - файл, в котором указана текущая установленная версия Shorewall-shell.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="Shorewall-lite">
+    <title>Shorewall-lite</title>
+
+    <para>Файлы Shorewall-lite устанавливаются в каталогах /<filename class="directory">sbin</filename>, <filename class="directory">/usr/share/shorewall-lite</filename>, /etc/<filename class="directory">shorewall-lite</filename>, <filename>/etc/init.d</filename> и <filename class="directory">/var/lilb/shorewall/</filename>. Они описаны далее. </para>
+
+    <section id="sbin-lite">
+      <title>/sbin</title>
+
+      <para>Программа <filename>/sbin/shorewall-lite</filename> взаимодействует с Shorewall lite. См. <ulink url="manpages/shorewall-lite.html">shorewall-lite</ulink>(8).</para>
+    </section>
+
+    <section id="init-lite">
+      <title>/etc/init.d или /etc/rc.d (зависит от дистрибутива)</title>
+
+      <para>Здесь устанавливается сценарий инициализации.  В зависимости от дистрибутива, он называется <filename>shorewall-lite</filename> или <filename>rc.firewall</filename>.</para>
+    </section>
+
+    <section id="shorewall-lite">
+      <title>/etc/shorewall-lite</title>
+
+      <para>В этом каталоге содержатся файлы конфигурации, настраиваемые пользователем. </para>
+    </section>
+
+    <section id="share-lite">
+      <title>/usr/share/shorewall-lite</title>
+
+      <para>Здесь устанавливаются основные файлы Shorewall-lite. </para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename><filename>configpath</filename></filename> - здесь содержится информация о путях, которая зависит от дистрибутива. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="symlink">functions</filename> - ссылка на <filename>lib.base</filename>, предусмотренная для совместимости с прежними версиями Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>lib.*</filename> - библиотеки функций оболочки, используемые другими программами.  Это копии соответствующих библиотек продукта Shorewall. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>modules</filename> - файл, управляющий загрузкой модулей Netfilter ядра.  Его можно переопределить в файле <filename>/etc/shorewall-lite/modules</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>shorecap</filename> - программа, которая создает файл capabilities.  См. <ulink url="CompiledPrograms.html#Lite">документацию Shorewall-lite</ulink>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>version</filename> - файл, в котором указана текущая установленная версия Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>wait4ifup</filename> - программа, которую могут использовать <ulink url="shorewall_extension_scripts.htm">сценарии расширения</ulink> для ожидания готовности сетевого интерфейса. </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="var-lite">
+      <title>/var/lib/shorewall-lite</title>
+
+      <para>Shorewall-lite не устанавливает никаких файлов в этот каталог. Он используется для хранения данных во время выполнения.  Этот каталог можно перенести командой <ulink url="manpages/shorewall-lite-vardir.html">shorewall-lite-vardir</ulink>(5).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>firewall</filename> - скомпилированный сценарий, который устанавливается командой load или reload, выполняемой в административной системе (см. <ulink url="manpages/shorewall.html">shorewall</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>firewall.conf</filename> - дайджест файла shorewall.conf, использованного для компиляции сценария файрвола в административной системе. </para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>.iptables-restore-input </filename>- этот файл передается программе iptables-restore для инициализации файрвола в ходе выполнения последней команды <command>start</command> или <command>restart</command> (см. <ulink url="manpages/shorewall-lite.html">shorewall-lite</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modules</filename> - содержимое файла модулей, использованного последними командами <command>start</command> или <command>restart</command> (см. <ulink url="manpages/shorewall-lite.html">shorewall-lite</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modulesdir</filename> - параметр MODULESDIR (<ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)) в ходе выполнения последней команды <command>start</command> или <command>restart.</command></para>
+        </listitem>
+
+        <listitem>
+          <para><filename>nat</filename> - в этом файле (с неудачным именем) записаны IP-адреса, добавленные при включенных опциях ADD_SNAT_ALIASES=Yes и ADD_IP_ALIASES=Yes в <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>proxyarp</filename> - записи arp, добавленные элементами <ulink url="manpages/shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.refresh</filename> - программа, которая выполнила последнюю успешную команду <command>refresh</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restart</filename> - программа, которая выполнила последнюю успешную команду <command>restart</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>restore</filename> - программа по умолчанию, выполняющая команды <command>restore</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restore</filename> - программа, которая выполнила последнюю успешную команду <command>refresh, restart</command> или <command>start</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>save</filename> - файл, созданный командой <command>save</command> и используемый для восстановления динамического чёрного списка в ходе выполнения команд <command>start/restart</command>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.start</filename> - программа, которая выполнила последнюю успешную команду <command>start</command>. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>state</filename> - здесь записано текущее состояние файрвола. </para>
+        </listitem>
+
+        <listitem>
+          <para><filename>zones</filename> - здесь записано текущее состояние зон.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+</article>

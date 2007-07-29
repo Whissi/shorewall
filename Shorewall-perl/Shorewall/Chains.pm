@@ -1620,7 +1620,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 		add_command( $chainref , "for address in $list; do" );
 		$rule .= '-m conntrack --ctorigdst $address ';
-		$chainref->{cmdount}++;
+		push_cmd_mode $chainref;
 	    } else {
 		get_interface_address $interfaces[0];
 		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );

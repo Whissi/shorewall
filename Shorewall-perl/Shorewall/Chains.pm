@@ -451,6 +451,14 @@ sub chain_base($) {
 }
 
 #
+# Forward Chain for an interface
+#
+sub forward_chain($)
+{
+    chain_base( $_[0] ) . '_fwd';
+}
+
+#
 # Input Chain for an interface
 #
 sub input_chain($)
@@ -475,11 +483,12 @@ sub masq_chain($)
 }
 
 #
-# Syn_chain
+# Syn_flood_chain -- differs from the other _chain functions in that the argument is a chain table reference 	 # Syn_chain
 #
-sub syn_chain ( $ ) {
-    '@' . $_[0];
+sub syn_flood_chain ( $ ) {
+    '@' . $_[0]->{synchain};
 }
+
 #
 # MAC Verification Chain for an interface
 #

@@ -114,6 +114,13 @@ Other changes in Shorewall 4.0.1.
 	 all	 all	  REJECT    info
 	 loc	 net	  ACCEPT
 
+4)  Recent kernels are apparently hard to configure and we have been
+    seeing a lot of problem reports where the root cause is the lack of
+    state match support in the kernel. This problem is difficult to
+    diagnose when using Shorewall-perl so the generated shell program
+    now checks specifically for this problem and terminates with an
+    error if the capability doesn't exist.
+
 Migration Considerations:
 
 1)  Beginning with Shorewall 4.0.0, there is no single 'shorewall'

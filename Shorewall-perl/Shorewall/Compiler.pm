@@ -166,6 +166,18 @@ sub generate_script_1() {
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
 	   );
 
+    emit ( '',
+	   '#',
+	   '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+	   '#',
+	   '$IPTABLES -N foox1234',
+	   '$IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	   'result=$?',
+	   '$IPTABLES -F foox1234',
+	   '$IPTABLES -X foox1234',
+	   '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
+	   '' );
+
     pop_indent;
 
     emit "}\n"; # End of initialize()

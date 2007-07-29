@@ -451,19 +451,11 @@ sub chain_base($) {
 }
 
 #
-# Forward Chain for an interface
-#
-sub forward_chain($)
-{
-    $_[0] . '_fwd';
-}
-
-#
 # Input Chain for an interface
 #
 sub input_chain($)
 {
-    $_[0] . '_in';
+    chain_base( $_[0] ) . '_in';
 }
 
 #
@@ -471,7 +463,7 @@ sub input_chain($)
 #
 sub output_chain($)
 {
-     $_[0] . '_out';
+    chain_base( $_[0] ) . '_out';
 }
 
 #
@@ -479,26 +471,26 @@ sub output_chain($)
 #
 sub masq_chain($)
 {
-     $_[0] . '_masq';
+    chain_base( $_[0] ) . '_masq';
 }
 
 #
-# Syn_flood_chain -- differs from the other _chain functions in that the argument is a chain table reference
+# Syn_chain
 #
-sub syn_flood_chain ( $ ) {
-    '@' . $_[0]->{synchain};
+sub syn_chain ( $ ) {
+    '@' . $_[0];
 }
 #
 # MAC Verification Chain for an interface
 #
 sub mac_chain( $ )
 {
-    $_[0] . '_mac';
+    chain_base( $_[0] ) . '_mac';
 }
 
 sub macrecent_target($)
 {
-     $config{MACLIST_TTL} ? $_[0] . '_rec' : 'RETURN';
+     $config{MACLIST_TTL} ? chain_base( $_[0] ) . '_rec' : 'RETURN';
 }
 
 #
@@ -506,22 +498,22 @@ sub macrecent_target($)
 #
 sub dynamic_fwd( $ )
 {
-    $_[0] . '_dynf';
+    chain_base( $_[0] ) . '_dynf';
 }
 
 sub dynamic_in( $ )
 {
-    $_[0] . '_dyni';
+    chain_base( $_[0] ) . '_dyni';
 }
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    $_[0] . '_dyno';
+    chain_base( $_[0] ) . '_dyno';
 }
 
 sub dynamic_chains( $ ) #$1 = interface
 {
-    my $c = $_[0];
+    my $c = chain_base( $_[0] );
 
     [ $c . '_dyni' , $c . '_dynf' , $c . '_dyno' ];
 }
@@ -531,7 +523,7 @@ sub dynamic_chains( $ ) #$1 = interface
 #
 sub dnat_chain( $ )
 {
-    $_[0] . '_dnat';
+    chain_base( $_[0] ) . '_dnat';
 }
 
 #
@@ -539,7 +531,7 @@ sub dnat_chain( $ )
 #
 sub snat_chain( $ )
 {
-    $_[0] . '_snat';
+    chain_base( $_[0] ) . '_snat';
 }
 
 #
@@ -547,7 +539,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    $_[0] . '_ecn';
+    chain_base( $_[0] ) . '_ecn';
 }
 
 #
@@ -555,7 +547,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = $_[0];
+    my $c = chain_base $_[0];
 
     [ $c . '_fwd', $c . '_in' ];
 }

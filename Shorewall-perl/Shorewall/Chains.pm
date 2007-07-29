@@ -483,7 +483,7 @@ sub masq_chain($)
 }
 
 #
-# Syn_flood_chain -- differs from the other _chain functions in that the argument is a chain table reference 	 # Syn_chain
+# Syn_flood_chain -- differs from the other _chain functions in that the argument is a chain table reference
 #
 sub syn_flood_chain ( $ ) {
     '@' . $_[0]->{synchain};

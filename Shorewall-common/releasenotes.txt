@@ -81,6 +81,11 @@ Problems corrected in 4.0.1.
 10) Shorewall-perl was incorrectly rejecting 'min' as a valid unit of
     time in rate-limiting specifications.
 
+11) Certain errors occurring during
+    start/restart/safe-start/safe-restart/try processing could cause
+    the lockfile to be left behind. This resulted in a 60-second delay
+    the next time one of these commands was run.
+
 Other changes in Shorewall 4.0.1.
 
 1)  A new EXPAND_POLICIES option is added to shorewall.conf. The

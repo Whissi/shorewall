@@ -375,19 +375,18 @@ start_command() {
     do_it() {
 	local rc=0
 
-	[ -n "$nolock" ] || mutex_on
-
 	progress_message3 "Compiling..."
 
 	if compiler run $debugging $nolock compile ${VARDIR}/.start; then
+	    [ -n "$nolock" ] || mutex_on
 	    ${VARDIR}/.start $debugging start
 	    rc=$?
+	    [ -n "$nolock" ] || mutex_off
 	else
 	    rc=$?
 	    logger -p kern.err "ERROR:Shorewall start failed"
 	fi
 
-	[ -n "$nolock" ] || mutex_off
 	exit $rc
     }
 
@@ -727,19 +726,18 @@ restart_command() {
 
     export NOROUTES
 
-    [ -n "$nolock" ] || mutex_on
-
     progress_message3 "Compiling..."
 
     if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
+	[ -n "$nolock" ] || mutex_on
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
 	rc=$?
+	[ -n "$nolock" ] || mutex_off
     else
 	rc=$?
 	logger -p kern.err "ERROR:Shorewall restart failed"
     fi
 
-    [ -n "$nolock" ] || mutex_off
 
     return $rc
 }
@@ -795,17 +793,16 @@ refresh_command() {
 
     export NOROUTES
 
-    [ -n "$nolock" ] || mutex_on
-
     progress_message3 "Compiling..."
 
     if compiler run $debugging $nolock compile ${VARDIR}/.refresh; then
+	[ -n "$nolock" ] || mutex_on
 	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
+	rc=$?
+	[ -n "$nolock" ] || mutex_off
+    else
+	rc=$?
     fi
-
-    rc=$?
-
-    [ -n "$nolock" ] || mutex_off
 
     return $rc
 }
@@ -882,8 +879,6 @@ safe_commands() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    [ -n "$nolock" ] || mutex_on
-
     if shorewall_is_started; then
 	running=Yes
     else
@@ -893,7 +888,6 @@ safe_commands() {
     if [ "$COMMAND" = "safe-start" -a  -n "$running" ]; then
 	# the command is safe-start but the firewall is already running
 	error_message "Shorewall is already started"
-	[ -n "$nolock" ] || mutex_off
 	exit 0
     fi
 
@@ -909,7 +903,6 @@ safe_commands() {
 
     if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
-	[ -n "$nolock" ] || mutex_off
 	exit $status
     fi
 
@@ -925,6 +918,8 @@ safe_commands() {
 	    progress_message3 "Restarting..."
 	    ;;
     esac
+
+    [ -n "$nolock" ] || mutex_on
 
     if ${VARDIR}/.$command $command; then
 
@@ -1030,8 +1025,6 @@ try_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    [ -n "$nolock" ] || mutex_on
-
     if shorewall_is_started; then
 	running=Yes
     else
@@ -1050,7 +1043,6 @@ try_command() {
 
     if ! compiler run $debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?
-	[ -n "$nolock" ] || mutex_off
 	exit $status
     fi
 
@@ -1066,6 +1058,8 @@ try_command() {
 	    progress_message3 "Restarting..."
 	    ;;
     esac
+
+    [ -n "$nolock" ] || mutex_on
 
     if ${VARDIR}/.$command $command && [ -n "$timeout" ]; then
 	sleep $timeout

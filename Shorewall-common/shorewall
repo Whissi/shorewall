@@ -1547,7 +1547,9 @@ case "$COMMAND" in
 	get_config
 	export NOROUTES
 	[ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	mutex_on
+	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	mutex_off
 	;;
     compile)
 	get_config Yes
@@ -1572,7 +1574,9 @@ case "$COMMAND" in
     add|delete)
 	[ $# -lt 3 ] && usage 1
 	get_config
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
+	mutex_on
+	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
+	mutex_off
 	;;
     show|list)
 	get_config Yes No Yes

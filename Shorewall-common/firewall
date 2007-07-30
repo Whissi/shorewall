@@ -34,19 +34,6 @@
 #          firewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
 #          firewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
 #
-# Mutual exclusion -- These functions are jackets for the mutual exclusion
-#		      routines in $FUNCTIONS. They invoke
-#		      the corresponding function in that file if the user did
-#		      not specify "nolock" on the runline.
-#
-my_mutex_on() {
-    [ -n "$NOLOCK" ] || { mutex_on; HAVE_MUTEX=Yes; }
-}
-
-my_mutex_off() {
-    [ -n "$HAVE_MUTEX" ] && { mutex_off; HAVE_MUTEX=; }
-}
-
 #
 # Fatal error -- stops the firewall after issuing the error message
 #
@@ -64,7 +51,6 @@ fatal_error() # $* = Error Message
 startup_error() # $* = Error Message
 {
     echo "   ERROR: $@" >&2
-    my_mutex_off
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
     kill $$
@@ -253,7 +239,6 @@ stop_firewall() {
 		    set_state "Unknown"
 		fi
 
-		my_mutex_off
 		kill $$
 		exit 2
 	    fi
@@ -399,7 +384,6 @@ stop_firewall() {
 	# else. Remove the lock file and Kill the shell in case we're in a
 	# subshell
 	#
-	my_mutex_off
 	kill $$
 	;;
     esac
@@ -512,7 +496,6 @@ check_disabled_startup() {
         echo "   ${CONFDIR}/shorewall.conf"
 
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-	my_mutex_off
 	exit 2
     fi
 }
@@ -537,8 +520,6 @@ NOLOCK=
 
 [ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
 
-trap "my_mutex_off; exit 2" 1 2 3 4 5 6 9
-
 SHAREDIR=/usr/share/shorewall
 VARDIR=/var/lib/shorewall
 CONFDIR=/etc/shorewall
@@ -562,7 +543,6 @@ case "$COMMAND" in
     stop)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	my_mutex_on
 	#
 	# Don't want to do a 'stop' when startup is disabled
 	#
@@ -571,17 +551,14 @@ case "$COMMAND" in
 	stop_firewall
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
-	my_mutex_off
 	;;
 
     reset)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	my_mutex_on
 	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-	    my_mutex_off
 	    exit 2;
 	fi
 	$IPTABLES -Z
@@ -589,50 +566,41 @@ case "$COMMAND" in
 	$IPTABLES -t mangle -Z
 	report "Shorewall Counters Reset"
 	date > ${VARDIR}/restarted
-	my_mutex_off
 	;;
 
     clear)
 	[ $# -ne 1 ] && usage
 	do_initialize
-	my_mutex_on
 	progress_message3 "Clearing Shorewall..."
 	clear_firewall
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
-	my_mutex_off
 	;;
 
      add)
 	[ $# -lt 3 ] && usage
 	do_initialize
 	lib_load dynamiczones "The add command"
-	my_mutex_on
 	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-	    my_mutex_off
 	    exit 2;
 	fi
 	shift
 	add_to_zone $@
-	my_mutex_off
 	;;
 
     delete)
 	[ $# -lt 3 ] && usage
 	lib_load dynamiczones "The delete command"
 	do_initialize
-	my_mutex_on
 	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-	    my_mutex_off
 	    exit 2;
 	fi
 	shift
 	delete_from_zone $@
-	my_mutex_off
 	;;
 
    call)

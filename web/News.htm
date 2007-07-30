@@ -24,10 +24,10 @@ href="GnuCopyright.htm" target="_self">GNU Free Documentation
 License</a></span>”.<br>
 </p>
 
-<p>July 20, 2007</p>
+<p>July 30, 2007</p>
 <hr style="width: 100%; height: 2px;">
 
-<p><strong>2007-07-27 Shorewall 4.0.1</strong></p>
+<p><strong>2007-07-30 Shorewall 4.0.1</strong></p>
 <pre>Problems corrected in 4.0.1.
 
 1)  The Shorewall Lite installer was producing an empty shorewall-lite
@@ -81,6 +81,14 @@ License</a></span>”.<br>
     actions and when a log level followed by '!' was used with any
     builtin actions.
 
+10) Shorewall-perl was incorrectly rejecting 'min' as a valid unit of
+    time in rate-limiting specifications.
+
+11) Certain errors occurring during
+    start/restart/safe-start/safe-restart/try processing could cause
+    the lockfile to be left behind. This resulted in a 60-second delay
+    the next time one of these commands was run.
+
 Other changes in Shorewall 4.0.1.
 
 1)  A new EXPAND_POLICIES option is added to shorewall.conf. The
@@ -89,7 +97,7 @@ Other changes in Shorewall 4.0.1.
 
     Normally, when the SOURCE or DEST columns in shorewall-policy(5)
     contains 'all', a single policy chain is created and the policy is
-    inforced in that chain. For example, if the policy entry is
+    enforced in that chain. For example, if the policy entry is
 
              #SOURCE DEST POLICY LOG
              #                   LEVEL
@@ -113,7 +121,13 @@ Other changes in Shorewall 4.0.1.
 
          all     all      REJECT    info
          loc     net      ACCEPT
-</pre>
+
+4)  Recent kernels are apparently hard to configure and we have been
+    seeing a lot of problem reports where the root cause is the lack of
+    state match support in the kernel. This problem is difficult to
+    diagnose when using Shorewall-perl so the generated shell program
+    now checks specifically for this problem and terminates with an
+    error if the capability doesn't exist.</pre>
 <hr style="width: 100%; height: 2px;">
 
 <p><strong>2007-07-20 Shorewall 4.0.0</strong></p>

@@ -314,10 +314,10 @@ EOF
 
     if ( $capabilities{NAT_ENABLED} ) {
 	emit <<'EOF';
-	delete_nat
-	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    qt $IPTABLES -t nat -P $chain ACCEPT
-	done
+    delete_nat
+    for chain in PREROUTING POSTROUTING OUTPUT; do
+        qt $IPTABLES -t nat -P $chain ACCEPT
+    done
 
 EOF
     }

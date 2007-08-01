@@ -829,6 +829,12 @@ sub validate_portpair( $ ) {
 
 sub validate_port_list( $ ) {
     my $result = '';
+    my $list   = $_[0];
+    my @list   = split/,/, $list;
+
+    if ( @list > 1 && $list =~ /:/ ) {
+	require_capability( 'XMULTIPORT' , 'Port ranges in a port list', '' );
+    }
 
     for my $port ( split/,/, $_[0] ) {
 	my $value = validate_portpair( $port );

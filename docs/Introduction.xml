@@ -61,6 +61,13 @@
           to the combination of iptables+Netfilter (with Netfilter not in
           ipchains compatibility mode).</para>
         </listitem>
+
+        <listitem>
+          <para>iptables-restore - a program included with iptables that
+          allows for atomic installation of a set of Netfilter rules. This is
+          a much more efficient way to install a ruleset than running the
+          iptables utility once for each rule in the ruleset.</para>
+        </listitem>
       </itemizedlist>
     </section>
 
@@ -71,12 +78,12 @@
       <quote>Shorewall</quote>, is high-level tool for configuring Netfilter.
       You describe your firewall/gateway requirements using entries in a set
       of configuration files. Shorewall reads those configuration files and
-      with the help of the iptables utility, Shorewall configures Netfilter to
-      match your requirements. Shorewall can be used on a dedicated firewall
-      system, a multi-function gateway/router/server or on a standalone
-      GNU/Linux system. Shorewall does not use Netfilter's ipchains
-      compatibility mode and can thus take advantage of Netfilter's connection
-      state tracking capabilities.</para>
+      with the help of the iptables and iptables-restore utilities, Shorewall
+      configures Netfilter to match your requirements. Shorewall can be used
+      on a dedicated firewall system, a multi-function gateway/router/server
+      or on a standalone GNU/Linux system. Shorewall does not use Netfilter's
+      ipchains compatibility mode and can thus take advantage of Netfilter's
+      connection state tracking capabilities.</para>
 
       <para>Shorewall is not a daemon. Once Shorewall has configured
       Netfilter, its job is complete and there is no <quote>Shorewall
@@ -340,7 +347,8 @@ ACCEPT     net           $FW       tcp        22</programlisting>
         to Shorewall-shell written in the Perl language. This compiler is
         highly portable to those Unix-like platforms that support Perl
         (including Cygwin) and is the compiler of choice for new Shorewall
-        installations.</para>
+        installations. Scripts created using Shorewall-perl use
+        iptables-restore to install the generated Netfilter ruleset.</para>
       </listitem>
 
       <listitem>
@@ -353,9 +361,6 @@ ACCEPT     net           $FW       tcp        22</programlisting>
         Shorewall-lite.</para>
       </listitem>
     </orderedlist>
-
-    <para>It is suggested that new users install Shorewall and
-    Shorewall-perl</para>
   </section>
 
   <section id="License">

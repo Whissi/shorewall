@@ -20,6 +20,8 @@
     <copyright>
       <year>2006</year>
 
+      <year>2007</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -34,113 +36,147 @@
     </legalnotice>
   </articleinfo>
 
-  <section id="GettingStarted">
-    <title>Getting Started</title>
+  <para>Please read this short article first.</para>
 
-    <para>If you are new to Shorewall, please read these two articles
-    first.</para>
+  <itemizedlist>
+    <listitem>
+      <para><ulink url="Introduction.html">Introduction to
+      Shorewall</ulink></para>
+    </listitem>
+  </itemizedlist>
 
-    <itemizedlist>
-      <listitem>
-        <para><ulink url="Introduction.html">Introduction to
-        Shorewall</ulink></para>
-      </listitem>
+  <para>Next, read the QuickStart Guide that is appropriate for your
+  configuration:</para>
 
-      <listitem>
-        <para><ulink url="shorewall_quickstart_guide.htm">QuickStart Guides
-        (HOWTOs)</ulink></para>
-      </listitem>
-    </itemizedlist>
+  <para><emphasis role="bold">If you have only one public IP
+  address:</emphasis></para>
 
-    <para>The following articles are also recommended reading for
-    newcomers.</para>
+  <itemizedlist>
+    <listitem>
+      <para><ulink url="standalone.htm">Standalone</ulink> Linux System with a
+      single network interface (<ulink url="standalone_fr.html">Version
+      Française</ulink>) <ulink url="standalone_ru.html">(Russian
+      Version)</ulink> <ulink url="standalone_es.html">Version en
+      Español</ulink></para>
+    </listitem>
 
-    <itemizedlist>
-      <listitem>
-        <para><ulink url="configuration_file_basics.htm">Configuration File
-        Basics</ulink><blockquote>
-            <para><informaltable frame="none">
-                <tgroup cols="2">
-                  <tbody valign="middle">
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Manpages">Man
-                      Pages</ulink></entry>
+    <listitem>
+      <para><ulink url="two-interface.htm">Two-interface</ulink> Linux System
+      acting as a firewall/router for a small local network (<ulink
+      url="two-interface_fr.html">Version Française</ulink>) (<ulink
+      url="two-interface_ru.html">Russian Version</ulink>)</para>
+    </listitem>
 
-                      <entry><ulink
-                      url="configuration_file_basics.htm#MAC">Using MAC
-                      Addresses in Shorewall</ulink></entry>
-                    </row>
+    <listitem>
+      <para><ulink url="three-interface.htm">Three-interface</ulink> Linux
+      System acting as a firewall/router for a small local network and a DMZ..
+      (<ulink url="three-interface_fr.html">Version Française</ulink>) (<ulink
+      url="three-interface_ru.html">Russian Version</ulink>)</para>
+    </listitem>
+  </itemizedlist>
 
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Comments">Comments in
-                      configuration files</ulink></entry>
+  <para><emphasis role="bold">If you have more than one public IP
+  address:</emphasis></para>
 
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Variables">Using
-                      Shell Variables</ulink></entry>
-                    </row>
+  <itemizedlist>
+    <listitem>
+      <para>The <ulink url="shorewall_setup_guide.htm">Shorewall Setup
+      Guide</ulink> (<ulink url="shorewall_setup_guide_fr.htm">Version
+      Française</ulink>) outlines the steps necessary to set up a firewall
+      where there are multiple public IP addresses involved or if you want to
+      learn more about Shorewall than is explained in the single-address
+      guides above.</para>
+    </listitem>
+  </itemizedlist>
 
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#COMMENT">Attach
-                      Comment to Netfilter Rules</ulink></entry>
+  <para>The following articles are also recommended reading for
+  newcomers.</para>
 
-                      <entry><ulink
-                      url="configuration_file_basics.htm#dnsnames">Using DNS
-                      Names</ulink></entry>
-                    </row>
+  <itemizedlist>
+    <listitem>
+      <para><ulink url="configuration_file_basics.htm">Configuration File
+      Basics</ulink><blockquote>
+          <para><informaltable frame="none">
+              <tgroup cols="2">
+                <tbody valign="middle">
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Manpages">Man
+                    Pages</ulink></entry>
 
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Continuation">Line
-                      Continuation</ulink></entry>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#MAC">Using MAC
+                    Addresses in Shorewall</ulink></entry>
+                  </row>
 
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Compliment">Complementing
-                      an IP address or Subnet</ulink></entry>
-                    </row>
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Comments">Comments in
+                    configuration files</ulink></entry>
 
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#INCLUDE">INCLUDE
-                      Directive</ulink></entry>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Variables">Using Shell
+                    Variables</ulink></entry>
+                  </row>
 
-                      <entry><ulink
-                      url="configuration_file_basics.htm#IPRanges">IP Address
-                      Ranges</ulink></entry>
-                    </row>
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#COMMENT">Attach Comment
+                    to Netfilter Rules</ulink></entry>
 
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Ports">Port
-                      Numbers/Service Names</ulink></entry>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#dnsnames">Using DNS
+                    Names</ulink></entry>
+                  </row>
 
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Levels">Shorewall
-                      Configurations (making a test
-                      configuration)</ulink></entry>
-                    </row>
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Continuation">Line
+                    Continuation</ulink></entry>
 
-                    <row>
-                      <entry><ulink
-                      url="configuration_file_basics.htm#Ranges">Port
-                      Ranges</ulink></entry>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Compliment">Complementing
+                    an IP address or Subnet</ulink></entry>
+                  </row>
 
-                      <entry></entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </informaltable></para>
-          </blockquote></para>
-      </listitem>
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#INCLUDE">INCLUDE
+                    Directive</ulink></entry>
 
-      <listitem>
-        <para>PPPPPPPS ( or, Paul's Principles for Practical Provision of
-        Packet Processing with Shorewall ) <ulink
-        url="http://linuxman.wikispaces.com/PPPPPPS">http://linuxman.wikispaces.com/PPPPPPS</ulink></para>
-      </listitem>
-    </itemizedlist>
-  </section>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#IPRanges">IP Address
+                    Ranges</ulink></entry>
+                  </row>
+
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Ports">Port
+                    Numbers/Service Names</ulink></entry>
+
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Levels">Shorewall
+                    Configurations (making a test
+                    configuration)</ulink></entry>
+                  </row>
+
+                  <row>
+                    <entry><ulink
+                    url="configuration_file_basics.htm#Ranges">Port
+                    Ranges</ulink></entry>
+
+                    <entry></entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable></para>
+        </blockquote></para>
+    </listitem>
+
+    <listitem>
+      <para>PPPPPPPS ( or, Paul's Principles for Practical Provision of Packet
+      Processing with Shorewall ) <ulink
+      url="http://linuxman.wikispaces.com/PPPPPPS">http://linuxman.wikispaces.com/PPPPPPS</ulink></para>
+    </listitem>
+  </itemizedlist>
 </article>

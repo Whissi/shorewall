@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001 - 2005</year>
+      <year>2001 - 2007</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -52,9 +52,10 @@
       <listitem>
         <para>The packet is part of an established connecection. While the
         packet can be logged using LOG rules in the ESTABLISHED section of
-        <ulink url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink>,
-        that is not recommended because of the large amount of information
-        that may be logged.</para>
+        <ulink
+        url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink>, that
+        is not recommended because of the large amount of information that may
+        be logged.</para>
       </listitem>
 
       <listitem>
@@ -67,8 +68,8 @@
 
       <listitem>
         <para>The packet is rejected because of an option in <ulink
-        url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink> or
-        <ulink
+        url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>
+        or <ulink
         url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>.
         These packets can be logged by setting the appropriate logging-related
         option in <ulink
@@ -87,9 +88,9 @@
       <listitem>
         <para>The packet doesn't match a rule so it is handled by a policy
         defined in <ulink
-        url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink>. These
-        may be logged by specifying a syslog level in the LOG LEVEL column of
-        the policy's entry (e.g., <quote>loc net ACCEPT <emphasis
+        url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink>.
+        These may be logged by specifying a syslog level in the LOG LEVEL
+        column of the policy's entry (e.g., <quote>loc net ACCEPT <emphasis
         role="bold">info</emphasis></quote>).</para>
       </listitem>
     </orderedlist>
@@ -154,11 +155,11 @@
       If you are unsure of the level to choose, 6 (info) is a safe bet. You
       may specify levels by name or by number.</para>
 
-      <para>Syslogd writes log messages to files (typically in /var/log/*)
-      based on their facility and level. The mapping of these facility/level
-      pairs to log files is done in /etc/syslog.conf (5). If you make changes
-      to this file, you must restart syslogd before the changes can take
-      effect.</para>
+      <para>Syslogd writes log messages to files (typically in <filename
+      class="directory">/var/log/</filename>*) based on their facility and
+      level. The mapping of these facility/level pairs to log files is done in
+      /etc/syslog.conf (5). If you make changes to this file, you must restart
+      syslogd before the changes can take effect.</para>
 
       <para>Syslog may also write to your system console. See <ulink
       url="FAQ.htm#faq16">Shorewall FAQ 16</ulink> for ways to avoid having
@@ -197,9 +198,9 @@
       <note>
         <para>The ULOG logging mechanism is <emphasis
         role="underline">completely separate</emphasis> from syslog. Once you
-        switch to ULOG, the settings in /etc/syslog.conf have absolutely no
-        effect on your Shorewall logging (except for Shorewall status messages
-        which still go to syslog).</para>
+        switch to ULOG, the settings in <filename>/etc/syslog.conf</filename>
+        have absolutely no effect on your Shorewall logging (except for
+        Shorewall status messages which still go to syslog).</para>
       </note>
 
       <para>You will need to change all instances of log levels (usually
@@ -224,11 +225,13 @@ shorewall.conf:TCP_FLAGS_LOG_LEVEL=$LOG
 shorewall.conf:RFC1918_LOG_LEVEL=$LOG
 gateway:/etc/shorewall#                                               </programlisting>
 
-      <para>Finally edit /etc/shorewall/shorewall.conf and set
-      LOGFILE=&lt;<emphasis>file that you wish to log to</emphasis>&gt;. This
-      tells the /sbin/shorewall program where to look for the log when
-      processing its <quote>show log</quote>, <quote>logwatch</quote> and
-      <quote>monitor</quote> commands.</para>
+      <para>Finally edit <filename>/etc/shorewall/shorewall.conf</filename>
+      and set LOGFILE=&lt;<emphasis>file that you wish to log
+      to</emphasis>&gt;. This tells the <filename>/sbin/shorewall</filename>
+      program where to look for the log when processing its
+      <quote><command>show log</command></quote>,
+      <quote><command>logwatch</command></quote> and
+      <quote><command>dump</command></quote> commands.</para>
     </section>
   </section>
 
@@ -237,7 +240,10 @@ gateway:/etc/shorewall#                                               </programl
 
     <para><ulink
     url="http://marc.theaimsgroup.com/?l=gentoo-security&amp;amp;m=106040714910563&amp;amp;w=2">Here</ulink>
-    is a post describing configuring syslog-ng to work with Shorewall.</para>
+    is a post describing configuring syslog-ng to work with Shorewall. Recent
+    <trademark>SuSE</trademark> releases come preconfigured with syslog-ng
+    with Netfilter messages (including Shorewall's) are written to
+    <filename>/var/log/firewall</filename>.</para>
   </section>
 
   <section id="Contents">

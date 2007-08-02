@@ -559,8 +559,8 @@ root@lists:~# </programlisting>
     (<ulink
     url="http://www.phptr.com/browse/product.asp?product_id={58D4F6D4-54C5-48BA-8EDD-86EBD7A42AF6}">link</ulink>).</para>
 
-    <para>The remainder of this quide will assume that you have configured
-    your network as shown here: <mediaobject>
+    <para id="Diagram">The remainder of this quide will assume that you have
+    configured your network as shown here: <mediaobject>
         <imageobject>
           <imagedata fileref="images/basics1.png" format="PNG" />
         </imageobject>
@@ -656,8 +656,9 @@ root@lists:~# </programlisting>
     rather necessary for those clients to address their connection requests to
     the firewall who rewrites the destination address to the address of your
     server and forwards the packet to that server. When your server responds,
-    the firewall automatically performs <acronym>SNAT</acronym> to rewrite the
-    source address in the response.</para>
+    the firewall automatically performs <acronym><link
+    linkend="SNAT">SNAT</link></acronym> to rewrite the source address in the
+    response.</para>
 
     <para>The above process is called <emphasis>Port Forwarding</emphasis> or
     <emphasis>Destination Network Address Translation</emphasis>
@@ -672,35 +673,45 @@ root@lists:~# </programlisting>
 DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting><important>
         <para>Be sure to add your rules after the line that reads <emphasis
         role="bold">SECTON NEW.</emphasis></para>
+      </important><important>
+        <para>The server must have a static IP address. If you assign IP
+        addresses to your local system using DHCP, you need to configure your
+        DHCP server to always assign the same IP address to systems that are
+        the target of a DNAT rule.</para>
       </important>Shorewall has <ulink url="Macros.html">macros</ulink> for
-    many popular applications. Look at /usr/share/shorewall/macro.* to see
-    what is available in your release. Macros simplify creating DNAT rules by
-    supplying the protocol and port(s) as shown in the following
-    examples.</para>
+    many popular applications. Look at the output of <command>shorewall show
+    macros</command> to see what is available in your release. Macros simplify
+    creating DNAT rules by supplying the protocol and port(s) as shown in the
+    following examples.</para>
 
     <para><example id="Example1" label="1">
         <title>Web Server</title>
 
-        <para>You run a Web Server on computer 2 and you want to forward
+        <para>You run a Web Server on computer 2 in <link
+        linkend="Diagram">the above diagram</link> and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
         <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
 Web/DNAT  net       loc:10.10.10.2</programlisting></para>
       </example> <example id="Example2" label="2">
         <title>FTP Server</title>
 
-        <para>You run an <acronym>FTP</acronym> Server on computer 1 so you
-        want to forward incoming <acronym>TCP</acronym> port 21 to that
-        system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
+        <para>You run an <acronym>FTP</acronym> Server on <link
+        linkend="Diagram">computer 1</link> so you want to forward incoming
+        <acronym>TCP</acronym> port 21 to that system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
 FTP/DNAT   net       loc:10.10.10.1</programlisting> For
         <acronym>FTP</acronym>, you will also need to have
         <acronym>FTP</acronym> connection tracking and <acronym>NAT</acronym>
         support in your kernel. For vendor-supplied kernels, this means that
         the <filename class="libraryfile">ip_conntrack_ftp</filename> and
-        <filename class="libraryfile">ip_nat_ftp</filename> modules must be
-        loaded. Shorewall will automatically load these modules if they are
-        available and located in the standard place under <filename
+        <filename class="libraryfile">ip_nat_ftp</filename> modules
+        (<filename>nf_conntrack_ftp</filename> and
+        <filename>nf_nat_ftp</filename> in later 2.6 kernels) must be loaded.
+        Shorewall will automatically load these modules if they are available
+        and located in the standard place under <filename
         class="directory">/lib/modules/&lt;kernel
-        version&gt;/kernel/net/ipv4/netfilter</filename>.</para>
+        version&gt;/kernel/net/ipv4/netfilter</filename>. See the <ulink
+        url="FTP.html">Shorewall FTP documentation</ulink> for more
+        information.</para>
       </example> A couple of important points to keep in mind: <itemizedlist>
         <listitem>
           <para>You must test the above rule from a client outside of your
@@ -736,10 +747,16 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
       <para>For DNAT troubleshooting tips, <ulink url="FAQ.htm#faq1a">see FAQs
       1a and 1b</ulink>.</para>
     </important>
+
+    <para>For information about DNAT when there are multiple external IP
+    addresses, see the <ulink
+    url="Shorewall_and_Aliased_Interfaces.html">Shorewall Aliased Interface
+    documentation</ulink> and the <ulink
+    url="shorewall_setup_guide.htm#dnat">Shorewall Setup Guide</ulink>.</para>
   </section>
 
   <section id="DNS">
-    <title>Domain Name Server (DNS)</title>
+    <title>DDomain Name Server (DNS)</title>
 
     <para>Normally, when you connect to your ISP, as part of getting an IP
     address your firewall's <emphasis>Domain Name Service</emphasis>

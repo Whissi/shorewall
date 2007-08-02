@@ -231,10 +231,11 @@
 
         <caution>
           <para>If you want to be able to allow non-root users to manage
-          remote filewall systems, then the file
+          remote filewall systems, then the files
+          <filename>/etc/shorewall/params</filename> and
           <filename>/etc/shorewall/shorewall.conf</filename> must be readable
           by all users on the administrative system. Not all packages secure
-          the file that way and you may have to change the file permissions
+          the files that way and you may have to change the file permissions
           yourself. /sbin/shorewall uses the SHOREWALL_SHELL setting from
           <filename>/etc/shorewall/shorewall.conf</filename> to determine the
           shell to use when compiling programs and it uses the VERBOSITY
@@ -330,7 +331,7 @@
 <command>/sbin/shorewall load firewall</command></programlisting>
 
               <para>The <ulink
-              url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+              url="manpages/shorewall.html"><command>load</command></ulink>
               command compiles a firewall script from the configuration files
               in the current working directory (using <command>shorewall
               compile -e</command>), copies that file to the remote system via
@@ -374,7 +375,7 @@
 <command>/sbin/shorewall reload firewall</command></programlisting>
 
         <para>The <ulink
-        url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
+        url="manpages/shorewall.html"><command>reload</command></ulink>
         command compiles a firewall script from the configuration files in the
         current working directory (using <command>shorewall compile
         -e</command>), copies that file to the remote system via scp and
@@ -771,31 +772,37 @@ clean:
     file:</para>
 
     <blockquote>
-      <programlisting>NAT_ENABLED=Yes                 # NAT
-MANGLE_ENABLED=Yes              # Packet Mangling
-MULTIPORT=Yes                   # Multi-port Match
-XMULTIPORT=Yes                  # Extended Multi-port Match
-CONNTRACK_MATCH=Yes             # Connection Tracking Match
-USEPKTTYPE=                     # Packet Type Match
-POLICY_MATCH=Yes                # Policy Match
-PHYSDEV_MATCH=Yes               # Physdev Match
-LENGTH_MATCH=Yes                # Packet Length Match
-IPRANGE_MATCH=Yes               # IP range Match
-RECENT_MATCH=Yes                # Recent Match
-OWNER_MATCH=Yes                 # Owner match
-IPSET_MATCH=                    # Ipset Match
-CONNMARK=Yes                    # CONNMARK Target
-XCONNMARK=Yes                   # Extended CONNMARK Target
-CONNMARK_MATCH=Yes              # Connmark Match
-XCONNMARK_MATCH=Yes             # Extended Connmark Match
-RAW_TABLE=Yes                   # Raw Table
-IPP2P_MATCH=                    # IPP2P Match
-CLASSIFY_TARGET=Yes             # CLASSIFY Target
-ENHANCED_REJECT=Yes             # Extended REJECT
-KLUDGEFREE=                     # iptables accepts multiple "-m iprange" or "-m physdev" in a single command
-MARK=Yes                        # MARK Target Support
-XMARK=YES                       # Extended MARK Target Support
-MANGLE_FORWARD                  # Mangle table has FORWARD chain</programlisting>
+      <programlisting>#
+# Shorewall  detected the following iptables/netfilter capabilities - Fri Jul 27 14:22:31 PDT 2007
+#
+NAT_ENABLED=Yes
+MANGLE_ENABLED=Yes
+MULTIPORT=Yes
+XMULTIPORT=Yes
+CONNTRACK_MATCH=Yes
+USEPKTTYPE=Yes
+POLICY_MATCH=Yes
+PHYSDEV_MATCH=Yes
+LENGTH_MATCH=Yes
+IPRANGE_MATCH=Yes
+RECENT_MATCH=Yes
+OWNER_MATCH=Yes
+IPSET_MATCH=
+CONNMARK=Yes
+XCONNMARK=Yes
+CONNMARK_MATCH=Yes
+XCONNMARK_MATCH=Yes
+RAW_TABLE=Yes
+IPP2P_MATCH=
+CLASSIFY_TARGET=Yes
+ENHANCED_REJECT=Yes
+KLUDGEFREE=Yes
+MARK=Yes
+XMARK=Yes
+MANGLE_FORWARD=Yes
+COMMENTS=Yes
+ADDRTYPE=Yes
+CAPVERSION=30405</programlisting>
     </blockquote>
 
     <para>As you can see, the file contains a simple list of shell variable

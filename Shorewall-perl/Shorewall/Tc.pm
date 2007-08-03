@@ -449,7 +449,7 @@ sub setup_traffic_shaping() {
 
 	$defmark = "${prefix}${defmark}" if $defmark;
 
-	emit "if interface_is_usable $device; then";
+	emit "if interface_is_up $device; then";
 
 	push_indent;
 
@@ -478,7 +478,7 @@ sub setup_traffic_shaping() {
 	emit 'else';
 	push_indent;
 
-	emit qq(error_message "WARNING: Device $device not up and configured -- traffic-shaping configuration skipped");
+	emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
 	emit "${dev}_exists=";
 	pop_indent;
 	emit "fi\n";

@@ -220,8 +220,6 @@ use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptab
 	       CMD_STATE  => 2 };  # Generating shell commands.
 
 our $state;
-our $emitted_comment;
-our $emitted_test;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -309,14 +307,6 @@ sub initialize() {
     %interfaceaddrs   = ();
     %interfacenets    = ();
     %interfacebcasts  = ();
-    #
-    #  When true, we've emitted a comment about global variable initialization
-    #
-    $emitted_comment = 0;
-    #
-    #  When true, we've emitted a test of $COMMAND != restore
-    #
-    $emitted_test = 0;
 }
 
 INIT {
@@ -1848,22 +1838,18 @@ sub insertnatjump( $$$$ ) {
     }
 }
 
-sub emit_comment() {
-    unless ( $emitted_comment ) {
-	emit  ( '#',
-		'# Establish the values of shell variables used in the following function calls',
-		'#' );
-	$emitted_comment = 1;
-    }
+sub emit_comment( $ ) {
+    emit  ( '#',
+	    '# Establish the values of shell variables used in the following function calls',
+	    '#' );
+    ${$_[0]} = 1;
 }
 
-sub emit_test() {
-    unless ( $emitted_test ) {
-	emit ( 'if [ "$COMMAND" != restore ]; then' ,
-		   '' );
-	push_indent;
-	$emitted_test = 1;
-    }
+sub emit_test( $ ) {
+    emit ( 'if [ "$COMMAND" != restore ]; then' ,
+	   '' );
+    push_indent;
+    ${$_[0]} = 1;
 }
     
 #
@@ -1871,26 +1857,28 @@ sub emit_test() {
 #
 sub set_global_variables() {
 
+    my ( $emitted_comment, $emitted_test ) = (0, 0);
+
     for ( values %interfaceaddr ) {
-	emit_comment unless $emitted_comment;
+	emit_comment( \$emitted_comment ) unless $emitted_comment;
 	emit $_;
     }
 
     for ( values %interfaceaddrs ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
+	emit_comment( \$emitted_comment ) unless $emitted_comment;
+	emit_test( \$emitted_test )       unless $emitted_test;
 	emit $_;
     }
 
     for ( values %interfacenets ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
+	emit_comment( \$emitted_comment ) unless $emitted_comment;
+	emit_test( \$emitted_test )       unless $emitted_test;
 	emit $_;
     }
 
     unless ( $capabilities{ADDRTYPE} ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
+	emit_comment( \$emitted_comment ) unless $emitted_comment;
+	emit_test( \$emitted_test )       unless $emitted_test;
 	emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
 
 	for ( values %interfacebcasts ) {

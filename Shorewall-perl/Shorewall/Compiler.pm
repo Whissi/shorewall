@@ -86,14 +86,15 @@ sub generate_script_1() {
     copy $globals{SHAREDIRPL} . 'prog.header';
 
     for my $exit qw/init start tcclear started stop stopped clear refresh refreshed/ {
-	emit "run_${exit}_exit() {";
+	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
 	pop_indent;
-	emit "}\n";
+	emit '}';
     }
 
-    emit ( '#',
+    emit ( '',
+	   '#',
 	   '# This function initializes the global variables used by the program',
 	   '#',
 	   'initialize()',

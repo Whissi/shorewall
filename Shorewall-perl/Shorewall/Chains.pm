@@ -221,6 +221,7 @@ use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptab
 
 our $state;
 our $emitted_comment;
+our $emitted_test;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -312,6 +313,10 @@ sub initialize() {
     #  When true, we've emitted a comment about global variable initialization
     #
     $emitted_comment = 0;
+    #
+    #  When true, we've emitted a test of $COMMAND != restore
+    #
+    $emitted_test = 0;
 }
 
 INIT {
@@ -455,7 +460,7 @@ sub chain_base($) {
 #
 sub forward_chain($)
 {
-    chain_base( $_[0] ) . '_fwd';
+    $_[0] . '_fwd';
 }
 
 #
@@ -463,7 +468,7 @@ sub forward_chain($)
 #
 sub input_chain($)
 {
-    chain_base( $_[0] ) . '_in';
+    $_[0] . '_in';
 }
 
 #
@@ -471,7 +476,7 @@ sub input_chain($)
 #
 sub output_chain($)
 {
-    chain_base( $_[0] ) . '_out';
+     $_[0] . '_out';
 }
 
 #
@@ -479,7 +484,7 @@ sub output_chain($)
 #
 sub masq_chain($)
 {
-    chain_base( $_[0] ) . '_masq';
+     $_[0] . '_masq';
 }
 
 #
@@ -494,12 +499,12 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    chain_base( $_[0] ) . '_mac';
+    $_[0] . '_mac';
 }
 
 sub macrecent_target($)
 {
-     $config{MACLIST_TTL} ? chain_base( $_[0] ) . '_rec' : 'RETURN';
+     $config{MACLIST_TTL} ? $_[0] . '_rec' : 'RETURN';
 }
 
 #
@@ -507,22 +512,22 @@ sub macrecent_target($)
 #
 sub dynamic_fwd( $ )
 {
-    chain_base( $_[0] ) . '_dynf';
+    $_[0] . '_dynf';
 }
 
 sub dynamic_in( $ )
 {
-    chain_base( $_[0] ) . '_dyni';
+    $_[0] . '_dyni';
 }
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    chain_base( $_[0] ) . '_dyno';
+    $_[0] . '_dyno';
 }
 
 sub dynamic_chains( $ ) #$1 = interface
 {
-    my $c = chain_base( $_[0] );
+    my $c = $_[0];
 
     [ $c . '_dyni' , $c . '_dynf' , $c . '_dyno' ];
 }
@@ -532,7 +537,7 @@ sub dynamic_chains( $ ) #$1 = interface
 #
 sub dnat_chain( $ )
 {
-    chain_base( $_[0] ) . '_dnat';
+    $_[0] . '_dnat';
 }
 
 #
@@ -540,7 +545,7 @@ sub dnat_chain( $ )
 #
 sub snat_chain( $ )
 {
-    chain_base( $_[0] ) . '_snat';
+    $_[0] . '_snat';
 }
 
 #
@@ -548,7 +553,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    chain_base( $_[0] ) . '_ecn';
+    $_[0] . '_ecn';
 }
 
 #
@@ -556,7 +561,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = chain_base $_[0];
+    my $c = $_[0];
 
     [ $c . '_fwd', $c . '_in' ];
 }
@@ -1363,7 +1368,8 @@ sub mysplit( $ ) {
 # Returns the name of the shell variable holding the first address of the passed interface
 #
 sub interface_address( $ ) {
-    chain_base( $_[0] ) . '_address';
+    my $variable = chain_base( $_[0] ) . '_address';
+    "\U$variable";
 }
 
 #
@@ -1384,7 +1390,8 @@ sub get_interface_address ( $ ) {
 # Returns the name of the shell variable holding the broadcast addresses of the passed interface
 #
 sub interface_bcasts( $ ) {
-    chain_base( $_[0] ) . '_bcasts';
+    my $variable = chain_base( $_[0] ) . '_bcasts';
+    "\U$variable";
 }
 
 #
@@ -1404,7 +1411,8 @@ sub get_interface_bcasts ( $ ) {
 # Returns the name of the shell variable holding the addresses of the passed interface
 #
 sub interface_addresses( $ ) {
-    chain_base( $_[0] ) . '_addresses';
+    my $variable = chain_base( $_[0] ) . '_addresses';
+    "\U$variable";
 }
 
 #
@@ -1430,7 +1438,8 @@ sub get_interface_addresses ( $ ) {
 # Returns the name of the shell variable holding the networks routed out of the passed interface
 #
 sub interface_nets( $ ) {
-    chain_base( $_[0] ) . '_networks';
+    my $variable = chain_base( $_[0] ) . '_networks';
+    "\U$variable";
 }
 
 #
@@ -1848,6 +1857,15 @@ sub emit_comment() {
     }
 }
 
+sub emit_test() {
+    unless ( $emitted_test ) {
+	emit ( 'if [ "$COMMAND" != restore ]; then' ,
+		   '' );
+	push_indent;
+	$emitted_test = 1;
+    }
+}
+    
 #
 # Generate setting of global variables
 #
@@ -1860,22 +1878,28 @@ sub set_global_variables() {
 
     for ( values %interfaceaddrs ) {
 	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
 	emit $_;
     }
 
     for ( values %interfacenets ) {
 	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
 	emit $_;
     }
 
     unless ( $capabilities{ADDRTYPE} ) {
 	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
 	emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
 
 	for ( values %interfacebcasts ) {
 	    emit $_;
 	}
     }
+
+    pop_indent,	emit "fi\n" if $emitted_test;
+
 }
 
 #

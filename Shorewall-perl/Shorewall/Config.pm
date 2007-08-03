@@ -57,7 +57,6 @@ our @EXPORT = qw(
 		 finalize_aux_config
 
 		 warning_message
-		 error_message
 		 fatal_error
 		 set_shorewall_dir
 		 set_debug
@@ -401,20 +400,6 @@ sub warning_message
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
     } else {
 	print STDERR "   WARNING: @_$currentlineinfo\n";
-    }
-}
-
-#
-# Issue a Error Message
-#
-sub warning_message
-{
-    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
-
-    if ( $debug ) {
-	print STDERR longmess( "   ERROR: @_$currentlineinfo" );
-    } else {
-	print STDERR "   ERROR: @_$currentlineinfo\n";
     }
 }
 

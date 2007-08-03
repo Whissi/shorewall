@@ -175,7 +175,6 @@ sub add_a_provider( $$$$$$$$ ) {
     push_indent;
     my $iface = chain_base $interface;
 
-    emit "${iface}_up=Yes";
     emit "qt ip route flush table $number";
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
@@ -293,11 +292,9 @@ sub add_a_provider( $$$$$$$$ ) {
     emit 'else';
 
     if ( $optional ) {
-	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
-	       "    ${iface}_up="
-	     );
+	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"" );
     } else {
-	emit "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"";
+	emit( "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"" );
     }
 
     emit "fi\n";

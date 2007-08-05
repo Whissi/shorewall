@@ -1194,8 +1194,11 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">shell</emphasis>}</term>
 
         <listitem>
-          <para>Specifies the compiler to use to generate a firewall script.
-          The value of this option can be either perl or shell.</para>
+          <para>Specifies the compiler to use to generate firewall scripts
+          when both compilers are installed. The value of this option can be
+          either <option>perl</option> or <option>shell</option>. If both
+          compilers are installed and SHOREWALL_SHELL is not set, then
+          SHOREWALL_SHELL=shell is assumed.</para>
 
           <para>If you add 'SHOREWALL_COMPILER=perl' to
           <filename>/etc/shorewall/shorewall.conf</filename> then by default,
@@ -1208,8 +1211,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>If you only install one compiler, it is suggested that you do
           not set SHOREWALL_COMPILER.</para>
 
-          <para>This setting may be overriden using the -C command option (see
-          <ulink url="shorewall.html">shorewall</ulink>(8)).</para>
+          <para>This setting may be overriden in those commands that invoke
+          the compiler by using the -C command option (see <ulink
+          url="shorewall.html">shorewall</ulink>(8)).</para>
         </listitem>
       </varlistentry>
 

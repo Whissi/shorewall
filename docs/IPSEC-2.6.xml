@@ -77,8 +77,9 @@
     the responsible Netfilter developer who has confirmed the problem. The
     problem was presumably corrected in Kernel 2.6.20 as a result of the
     removal of defered FORWARD/OUTPUT processing of traffic destined for a
-    bridge. See the <ulink url="NewBridge.html">"<emphasis>Bridging without
-    using physdev match support</emphasis>"</ulink> article.</para>
+    bridge. See the <ulink
+    url="bridge-Shorewall-perl.html">"<emphasis>Shorewall-perl and Bridged
+    Firewalls</emphasis>"</ulink> article.</para>
   </warning>
 
   <section id="Overview">
@@ -661,49 +662,51 @@ RACOON=/usr/sbin/racoon</programlisting>
   </section>
 
   <section id="RW-L2TP">
-    <title>Mobile System (Road Warrior) with Layer 2 Tunneling Protocol (L2TP)</title>
+    <title>Mobile System (Road Warrior) with Layer 2 Tunneling Protocol
+    (L2TP)</title>
 
-    <para>This section is based on the previous section.  Please make sure that
-    you read it thoroughly and understand it.  The setup described in this
+    <para>This section is based on the previous section. Please make sure that
+    you read it thoroughly and understand it. The setup described in this
     section is more complex because you are including an additional layer of
-    tunneling.  Again, make sure that you have read the previous section and
-    it is highly recommended to have the IPSEC-only configuration working
+    tunneling. Again, make sure that you have read the previous section and it
+    is highly recommended to have the IPSEC-only configuration working
     first.</para>
-  
-    <para>Additionally, this section assumes that you are running IPSEC, xl2tpd
-    and pppd on the same system that is running shorewall.  However,
+
+    <para>Additionally, this section assumes that you are running IPSEC,
+    xl2tpd and pppd on the same system that is running shorewall. However,
     configuration of these additional services is beyond the scope of this
     document.</para>
 
     <para>Getting layer 2 tunneling to work is an endeavour unto itself.
-    However, if you succeed it can be very convenient.  Reasons why you might
-    want configure layer 2 tunneling protocol (L2TP): </para>
+    However, if you succeed it can be very convenient. Reasons why you might
+    want configure layer 2 tunneling protocol (L2TP):</para>
 
     <orderedlist>
       <listitem>
-        <para>You want to give your road warrior an address that is in the same
-        segment as the other hosts on your network.</para>
+        <para>You want to give your road warrior an address that is in the
+        same segment as the other hosts on your network.</para>
       </listitem>
-  
+
       <listitem>
-        <para>Your road warriors are using a legacy operating system (such as MS
-        Windows or Mac OS X) and you do not want them to have to install third
-        party software in order to connect to the VPN (both MS Windows and Mac OS
-        X include VPN clients which natively support L2TP over IPSEC, but not
-        plain IPSEC).</para>
+        <para>Your road warriors are using a legacy operating system (such as
+        MS Windows or Mac OS X) and you do not want them to have to install
+        third party software in order to connect to the VPN (both MS Windows
+        and Mac OS X include VPN clients which natively support L2TP over
+        IPSEC, but not plain IPSEC).</para>
       </listitem>
-  
+
       <listitem>
         <para>You like a challenge.</para>
       </listitem>
     </orderedlist>
-  
+
     <para>Since the target for a VPN including L2TP will (almost) never be a
     road warrior running Linux, I will not include the client side of the
     configuration.</para>
 
     <para>The first thing that needs to be done is to create a new zone called
     <quote>l2tp</quote> to represent the tunneled layer 2 traffic.</para>
+
     <blockquote>
       <para><filename>/etc/shorewall/zones</filename> — System A</para>
 
@@ -716,11 +719,11 @@ loc            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
-    <para>Since the L2TP will require the use of pppd, you will end up with one
-    or more ppp interfaces (each representing an individual road warrior
-    connection) for which you will need to account.  This can be done by
-    modifying the inerfaces file.  (Modify with additional options as needed.)
-    </para>
+    <para>Since the L2TP will require the use of pppd, you will end up with
+    one or more ppp interfaces (each representing an individual road warrior
+    connection) for which you will need to account. This can be done by
+    modifying the inerfaces file. (Modify with additional options as
+    needed.)</para>
 
     <blockquote>
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
@@ -735,34 +738,34 @@ l2tp    ppp+            -
     <para>The next thing that must be done is to adjust the policy so that the
     traffic can go where it needs to go.</para>
 
-    <para>First, you need to decide if you want for hosts in your local zone to
-    be able to connect to your road warriors.  You may or may not want to allow
-    this.  For example, one reason you might want to allow this is so that your
-    support personnel can use ssh, VNC or remote desktop to fix a problem on
-    the road warrior's laptop.</para>
+    <para>First, you need to decide if you want for hosts in your local zone
+    to be able to connect to your road warriors. You may or may not want to
+    allow this. For example, one reason you might want to allow this is so
+    that your support personnel can use ssh, VNC or remote desktop to fix a
+    problem on the road warrior's laptop.</para>
 
     <para>Second, you need to decide if you want the road warrior to have
-    access to hosts on the local network.  You generally want to allow this.
+    access to hosts on the local network. You generally want to allow this.
     For example, if you have DNS servers on your local network that you want
-    the road warrior to use.  Or perhaps the road warrior needs to mount NFS
+    the road warrior to use. Or perhaps the road warrior needs to mount NFS
     shares or needs to access intranet sites which are not visible from the
     public Internet.</para>
 
     <para>Finally, you need to decide if you want the road warriors to be able
-    to access the public Internet.  You probably want to do this, unless you
+    to access the public Internet. You probably want to do this, unless you
     are trying to create a situation where when the road warrior connects to
     the VPN, it is no longer possible to send traffic from the road warrior's
-    machine to the public Internet.  Please note that this not really a strong
-    security measure.  The road warrior could trivially modify the routing
+    machine to the public Internet. Please note that this not really a strong
+    security measure. The road warrior could trivially modify the routing
     table on the remote machine to have only traffic destined for systems on
-    the VPN local network go through the secure channel.  The rest of the
-    traffic would simply travel over an Ethernet or wireless interface directly
-    to the public Internet.  In fact, this latter situation is dangerous, as a
-    simple mistake could easily create a situation where the road warrior's
-    machine is acting as a router between your local network and the public
-    Internet, which you certainly do not want to happen.  In short, it is best
-    to allow the road warrior to connect to the public Internet by
-    default.</para>
+    the VPN local network go through the secure channel. The rest of the
+    traffic would simply travel over an Ethernet or wireless interface
+    directly to the public Internet. In fact, this latter situation is
+    dangerous, as a simple mistake could easily create a situation where the
+    road warrior's machine is acting as a router between your local network
+    and the public Internet, which you certainly do not want to happen. In
+    short, it is best to allow the road warrior to connect to the public
+    Internet by default.</para>
 
     <blockquote>
       <para><filename>/etc/shorewall/policy</filename>:</para>
@@ -779,12 +782,12 @@ all             all             REJECT          info
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
-    <para>The final step is to modify your rules file.  There are two important
-    components.  First, you must allow the l2tp traffic to reach the xl2tpd
-    process running on the firewall machine.  Second, you must add rules to
+    <para>The final step is to modify your rules file. There are two important
+    components. First, you must allow the l2tp traffic to reach the xl2tpd
+    process running on the firewall machine. Second, you must add rules to
     open up ports on the firewall to the road warrior for services which are
-    running on the firewall.  For example, if you are running a webserver on
-    the firewall that must be accessible to road warriors.  The reason for the
+    running on the firewall. For example, if you are running a webserver on
+    the firewall that must be accessible to road warriors. The reason for the
     second step is that the policy does not by default allow unrestricted
     access to the firewall itself.</para>
 

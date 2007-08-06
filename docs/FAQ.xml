@@ -1029,6 +1029,15 @@ DROP      net       fw      udp      10619</programlisting>
 
       <para><emphasis role="bold">Answer:</emphasis></para>
 
+      <para>Just to be clear, it is not Shorewall that is writing all over
+      your console. Shorewall issues a single log message during each
+      <command>start</command>, <command>restart</command>,
+      <command>stop</command>, etc. It is rather the klogd daemon that is
+      writing messages to your console. Shorewall itself has no control over
+      where a particular class of messages are written. See the <ulink
+      url="shorewall_logging.html">Shorewall logging
+      documentation</ulink>.</para>
+
       <itemizedlist>
         <listitem>
           <para>Find where klogd is being started (it will be from one of the
@@ -1036,7 +1045,7 @@ DROP      net       fw      udp      10619</programlisting>
           the appropriate configuration file so that klogd is started with
           <quote>-c <emphasis>&lt;n&gt;</emphasis> </quote> where
           <emphasis>&lt;n&gt;</emphasis> is a log level of 5 or less;
-          or</para>
+          and/or</para>
         </listitem>
 
         <listitem>
@@ -1045,6 +1054,14 @@ DROP      net       fw      udp      10619</programlisting>
           to your startup scripts or place it in /etc/shorewall/start.</para>
         </listitem>
       </itemizedlist>
+
+      <warning>
+        <para>The hints below are just that; they have been known to work with
+        at least one release in the past but are not guaranteed to continue to
+        work with all releases of a particular distribution. As described
+        above, you may have to hunt around in your distribution's init scripts
+        in order to find the correct solution.</para>
+      </warning>
 
       <tip>
         <para>Under RedHat and Mandriva, the max <ulink

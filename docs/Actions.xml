@@ -188,6 +188,152 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
     </warning>
   </section>
 
+  <section id="Limit">
+    <title>Limiting Per-IP Connection Rate</title>
+
+    <important>
+      <para>Debian users. This feature is broken in the Debian version 3.0.7
+      of Shorewall (and possibly in other versions). The file
+      <filename>/usr/share/shorewall/Limit</filename> was inadvertently dropped
+      from the .deb. That file may be obtained from <ulink
+      url="http://shorewall.svn.sourceforge.net/viewvc/*checkout*/shorewall/tags/3.0.7/Shorewall/Limit?revision=3888">Shorewall
+      SVN</ulink> and installed manually.</para>
+    </important>
+
+    <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' <ulink
+    url="Actions.html">action</ulink>. Limit is invoked with a comma-separated
+    list in place of a logging tag. The list has three elements:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The name of a 'recent' set; you select the set name which must
+        conform to the rules for a valid chain name. Different rules that
+        specify the same set name will use the same set of counters.</para>
+      </listitem>
+
+      <listitem>
+        <para>The number of connections permitted in a specified time
+        period.</para>
+      </listitem>
+
+      <listitem>
+        <para>The time period, expressed in seconds.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Connections that exceed the specified rate are dropped.</para>
+
+    <para>For example,to use a recent set name of <emphasis
+    role="bold">SSHA</emphasis>, and to limiting SSH to 3 per minute, use this
+    entry in <filename>/etc/shorewall/rules</filename>:</para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>If you want dropped connections to be logged at the info level, use
+    this rule instead:</para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit:info:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>To summarize, you pass four pieces of information to the Limit
+    action:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The log level. If you don't want to log, specify "none".</para>
+      </listitem>
+
+      <listitem>
+        <para>The name of the recent set that you want to use ("SSHA" in this
+        example).</para>
+      </listitem>
+
+      <listitem>
+        <para>The maximum number of connections to accept (3 in this
+        example).</para>
+      </listitem>
+
+      <listitem>
+        <para>The number of seconds over which you are willing to accept that
+        many connections (60 in this example).</para>
+      </listitem>
+    </itemizedlist>
+
+    <section id="LimitImp">
+      <title>How Limit is Implemented</title>
+
+      <para>For those who are curious, the Limit action is implemented in
+      Shorewall 3.0 and Shorewall 3.2 as follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The file
+          <filename>/usr/share/shorewall/action</filename>.Limit is
+          empty.</para>
+        </listitem>
+
+        <listitem>
+          <para>The file <filename>/usr/share/shorewall/Limit</filename> is as
+          follows:</para>
+
+          <programlisting>set -- $(separate_list $TAG)
+
+[ $# -eq 3 ] || fatal_error "Rule must include &lt;set name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag"
+
+run_iptables -A $CHAIN -m recent --name $1 --set
+
+if [ -n "$LEVEL" ]; then
+    run_iptables -N $CHAIN%
+    log_rule_limit $LEVEL $CHAIN% $1 DROP "" "" -A
+    run_iptables -A $CHAIN% -j DROP
+    run_iptables -A $CHAIN -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $CHAIN%
+else
+    run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j DROP
+fi
+
+run_iptables -A $CHAIN -j ACCEPT</programlisting>
+        </listitem>
+      </itemizedlist>
+
+      <para>In Shorewall 3.3, Limit is made into a built-in action; basically
+      that means that the above code now lives inside of Shorewall rather than
+      in a separate file.</para>
+
+      <para>For completeness, here's the above
+      <filename>/usr/share/shorewall/Limit</filename> for use with
+      Shorewall-perl:</para>
+
+      <programlisting>my @tag = split /,/, $tag;
+
+fatal_error 'Limit rules must include &lt;set name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
+    unless @tag == 3;
+
+my $set = $tag[0];
+
+for ( @tag[1,2] ) {
+    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
+}
+
+my $count = $tag[1] + 1;
+
+add_rule $chainref, "-m recent --name $set --set";
+
+if ( $level ) {
+    my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
+    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
+    add_rule $xchainref, '-j DROP';
+    add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref-&gt;{name}";
+} else {
+    add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
+}
+
+add_rule $chainref, '-j ACCEPT';
+
+1; </programlisting>
+    </section>
+  </section>
+
   <section id="Defining">
     <title>Defining your own Actions</title>
 

@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article>
-  <!--$Id: blacklisting_support.xml 5252 2007-01-18 15:30:55Z bvukich $-->
+  <!--$Id: blacklisting_support.xml 6774 2007-07-04 00:10:35Z teastep $-->
 
   <articleinfo>
-    <title>Чёрные списки в Shorewall </title>
+    <title>Чёрные списки в Shorewall</title>
 
     <authorgroup>
-      <author>
-        <firstname>Tom</firstname>
+      <author><firstname>Tom</firstname>
 
-        <surname>Eastep</surname>
-      </author>
+        <surname>Eastep</surname></author>
     </authorgroup>
 
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
@@ -24,98 +21,71 @@
     </copyright>
 
     <copyright>
+
       <year>2007</year>
 
       <holder>Russian Translation: Grigory Mokhin</holder>
     </copyright>
 
     <legalnotice>
-      <para>Этот документ разрешается копировать, распространять и/или изменять при выполнении условий лицензии GNU Free Documentation License версии
-1.2 или более поздней, опубликованной Free Software Foundation; без неизменяемых разделов, без текста на верхней обложке, без текста на нижней обложке. Копия лицензии приведена по ссылке
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
-      License</ulink></quote>.</para>
+      <para>Этот документ разрешается копировать, распространять и/или изменять при выполнении условий лицензии GNU Free Documentation License версии 1.2 или более поздней, опубликованной Free Software Foundation; без неизменяемых разделов, без текста на верхней обложке, без текста на нижней обложке. Копия лицензии приведена по ссылке <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
-  <section>
+  <section id="Intro">
     <title>Введение</title>
 
-    <para>В Shorewall предусмотрены два вида чёрных списков, статические и динамические.
-Опция BLACKLISTNEWONLY в файле /etc/shorewall/shorewall.conf задаёт параметры фильтрации согласно этим спискам:
-</para>
+    <para>В Shorewall предусмотрены два вида чёрных списков, статические и динамические. Опция BLACKLISTNEWONLY в файле /etc/shorewall/shorewall.conf задаёт параметры фильтрации согласно этим спискам:</para>
 
     <orderedlist>
       <listitem>
-        <para>BLACKLISTNEWONLY=No -- проверка осуществляется для всех входящих пакетов.
-Новые записи в чёрном списке позволяют заблокировать уже существующие соединения.
-</para>
+        <para>BLACKLISTNEWONLY=No --&nbsp; проверка осуществляется для всех входящих пакетов. Новые записи в чёрном списке позволяют прервать уже существующие соединения.</para>
       </listitem>
 
       <listitem>
-        <para>BLACKLISTNEWONLY=Yes -- проверка осуществляется только для новых запросов на установление соединения.
-Записи в чёрном списке не влияют на уже существующие соединения. На соответствие чёрному списку проверяется только адрес источника.
-</para>
+        <para>BLACKLISTNEWONLY=Yes -- проверка осуществляется только для новых запросов на установление соединения. Записи в чёрном списке не влияют на уже существующие соединения. На соответствие чёрному списку проверяется только адрес источника.</para>
       </listitem>
     </orderedlist>
 
     <important>
-      <para><emphasis role="bold">На соответствие чёрному списку проверяется только адрес источника </emphasis>. Чёрные списки закрывают доступ только хостам, перечисленным в списке, но не закрывают доступ к самим этим хостам.
-</para>
+      <para><emphasis role="bold">На соответствие чёрному списку проверяется только адрес источника </emphasis>. Чёрные списки закрывают доступ только хостам, перечисленным в списке, но не закрывают доступ к самим этим хостам.</para>
     </important>
 
     <important>
-      <para><emphasis role="bold">Динамические чёрные списки в Shorewall непригодны для случаев, когда список содержит тысячи адресов.
-Статические списки могут работать с большим числом адресов, но только при использовании наборов IP (ipset)</emphasis>. Без ipset большие чёрные списки будут загружаться слишком долго и заметно снизят производительность файрвола.
-</para>
+      <para><emphasis role="bold">Динамические чёрные списки в Shorewall непригодны для случаев, когда список содержит тысячи адресов. Статические списки могут работать с большим числом адресов, но только при использовании наборов IP (ipset)</emphasis>. Без ipset большие чёрные списки будут загружаться слишком долго и заметно снизят производительность файрвола.</para>
     </important>
   </section>
 
-  <section>
-    <title>Статические чёрные списки </title>
+  <section id="Static">
+    <title>Статические чёрные списки</title>
 
-    <para>Далее описаны параметры конфигурации статических чёрных списков в Shorewall:
-</para>
+    <para>Далее описаны параметры конфигурации статических чёрных списков в Shorewall:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Пакеты с хостов из чёрного списка будут отбрасываться без уведомления (drop) или с уведомлением (reject), согласно параметру BLACKLIST_DISPOSITION из файла <ulink
-        url="manpages/shorewall.conf.htmlig"><filename>/etc/shorewall/shorewall.conf</filename>.</ulink></para>
+        <para>Пакеты с хостов из чёрного списка будут отбрасываться без уведомления (drop) или с уведомлением (reject), согласно параметру BLACKLIST_DISPOSITION из файла <ulink url="manpages/shorewall.conf.html"><filename>/etc/shorewall/shorewall.conf</filename>.</ulink></para>
       </listitem>
 
       <listitem>
-        <para>Пакеты с хостов из чёрного списка будут заноситься в протокол с заданным уровнем syslog согласно параметру BLACKLIST_LOGLEVEL из файла <ulink
-        url="manpages/shorewall.conf.htmlig"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
+        <para>Пакеты с хостов из чёрного списка будут заноситься в протокол с заданным уровнем syslog согласно параметру BLACKLIST_LOGLEVEL из файла <ulink url="manpages/shorewall.conf.html"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>IP-адреса или подсети, которые требуется занести в чёрный список, указываются в файле <ulink
-        url="manpages/shorewall-blacklist.html"><filename>/etc/shorewall/blacklist</filename></ulink>.
-        В этом файле можно также указать имена протоколов, номеров портов или имён служб.
-</para>
+        <para>IP-адреса или подсети, которые требуется занести в чёрный список, указываются в файле <ulink url="manpages/shorewall-blacklist.html"><filename>/etc/shorewall/blacklist</filename></ulink>. В этом файле можно также указать имена протоколов, номера портов или имена служб.</para>
       </listitem>
 
       <listitem>
-        <para>Интерфейсы, для которых входящие пакеты проверяются на соответствие чёрному списку, задаются с помощью опции
-<quote>blacklist</quote>
-        в файле <ulink
-        url="manpages/shorewall-interfaces.html"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
+        <para>Интерфейсы, для которых входящие пакеты проверяются на соответствие чёрному списку, задаются с помощью опции <quote>blacklist</quote> в файле <ulink url="manpages/shorewall-interfaces.html"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Чёрный список из файла
-<filename>/etc/shorewall/blacklist</filename> можно обновить командой <quote><ulink
-        url="starting_and_stopping_shorewall.htm"><command>shorewall
-        refresh</command></ulink></quote> .</para>
+        <para>Чёрный список из файла <filename>/etc/shorewall/blacklist</filename> можно обновить командой <quote><ulink url="starting_and_stopping_shorewall.htm"><command>shorewall refresh</command></ulink></quote>.</para>
       </listitem>
     </itemizedlist>
 
-    <para>При наличии большого статического чёрного списка можно включить опцию DELAYBLACKLISTLOAD в файле shorewall.conf (начиная с Shorewall версии
-    2.2.0). Если DELAYBLACKLISTLOAD=Yes, то Shorewall будет загружать правила чёрного списка после установления соединений.
-Хотя при этом соединения с хостов из чёрного списка могут осуществляться в течение времени создания списка, эта опция позволяет существенно снизить время запрета соединений в ходе команд "shorewall [re]start".</para>
+    <para>При наличии большого статического чёрного списка можно включить опцию DELAYBLACKLISTLOAD в файле shorewall.conf (начиная с Shorewall версии 2.2.0). Если DELAYBLACKLISTLOAD=Yes, то Shorewall будет загружать правила чёрного списка после установления соединений. Хотя при этом соединения с хостов из чёрного списка могут осуществляться в течение времени создания списка, эта опция позволяет существенно снизить время запрета соединений в ходе выполнения команд &quot;shorewall [re]start&quot;.</para>
 
-    <para>Начиная с Shorewall версии 2.4.0 поддерживаются наборы IP, или <ulink
-    url="ipsets.html">ipsets</ulink> для определения статического чёрного списка. Пример:
-</para>
+    <para>Для определения статического чёрного списка в Shorewall начиная с версии 2.4.0 поддерживаются наборы IP, или <ulink url="ipsets.html">ipsets</ulink>.  Пример:</para>
 
     <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
 +Blacklistports[dst]
@@ -123,81 +93,67 @@
 +Blacklist[src,dst]
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-    <para>В этом примере задан ipset набора портов (portmap)
-    <emphasis>Blacklistports</emphasis> для запрета трафика на целевые порты, указанные в этом ipset. Есть также
-<emphasis>Blacklistnets</emphasis> (типа <emphasis>nethash</emphasis>) и
-<emphasis>Blacklist</emphasis> (типа <emphasis>iphash</emphasis>), закрывающие доступ с подсетей и отдельных адресов.
-Обратите внимание, что указаны
-    [src,dst], чтобы можно было связать отдельные записи наборов с другими portmap ipset и включить чёрные  списки сочетаний ( <emphasis>адрес источника</emphasis>, <emphasis>целевой порт</emphasis>).
-Пример: </para>
+    <para>В этом примере задан ipset набора портов (portmap) <emphasis>Blacklistports</emphasis> для запрета трафика на целевые порты, указанные в этом ipset.  Есть также списки сетей - <emphasis>Blacklistnets</emphasis> (типа <emphasis>nethash</emphasis>) и адресов - <emphasis>Blacklist</emphasis> (типа <emphasis>iphash</emphasis>), закрывающие доступ из подсетей и с отдельных адресов. Обратите внимание, что указаны [src,dst], чтобы можно было связать отдельные записи наборов с другими portmap ipset и включить чёрные  списки сочетаний ( <emphasis>адрес источника</emphasis>, <emphasis>целевой порт</emphasis>). Пример:</para>
 
     <programlisting>ipset -N SMTP portmap --from 1 --to 31
 ipset -A SMTP 25
 ipset -A Blacklist 206.124.146.177
 ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
 
-    <para>Блокируется трафик SMTP с хоста 206.124.146.177.</para>
+    <para>При этом блокируется трафик SMTP с хоста 206.124.146.177.</para>
   </section>
 
-  <section>
-    <title>Динамические чёрные списки </title>
+  <section id="Dynamic">
+    <title>Динамические чёрные списки</title>
 
-    <para>Динамические списки не имеют никаких параметров конфигурации, но настраиваются следующими командами  /sbin/shorewall[-lite]: </para>
-
-    <itemizedlist>
-      <listitem>
-        <para>drop <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут отбрасываться файрволом без уведомления.
-</para>
-      </listitem>
-
-      <listitem>
-        <para>reject <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут отбрасываться файрволом с уведомлением.</para>
-      </listitem>
-
-      <listitem>
-        <para>allow <emphasis>&lt;список IP-адресов&gt;</emphasis> - разрешить пакеты с хостов, ранее занесённых в чёрный список командами
-<emphasis>drop</emphasis> или <emphasis>reject</emphasis>
-.</para>
-      </listitem>
-
-      <listitem>
-        <para>save - сохранить конфигурацию динамического чёрного списка, чтобы она восстановилась автоматически при следующем перезапуске файрвола.
-</para>
-      </listitem>
-
-      <listitem>
-        <para>show dynamic - показать конфигурацию динамического чёрного списка.
-</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Начиная с Shorewall версии 3.2.0 Beta2 доступны следующие дополнительные команды:
-</para>
+    <para>Динамические списки не имеют никаких параметров конфигурации, но настраиваются следующими командами  /sbin/shorewall[-lite]:</para>
 
     <itemizedlist>
       <listitem>
-        <para>logdrop <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут заноситься в протокол и отбрасываться файрволом без уведомления. Уровень протокола задаётся опцией BLACKLIST_LOGLEVEL в ходе последнего [пере]запуска (по умолчанию - 'info', если опция BLACKLIST_LOGLEVEL не задана). </para>
+        <para>drop <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут отбрасываться файрволом без уведомления. </para>
       </listitem>
 
       <listitem>
-        <para>logreject <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут заноситься в протокол и отбрасываться файрволом с уведомлением. Уровень протокола задаётся опцией BLACKLIST_LOGLEVEL в ходе последнего [пере]запуска (по умолчанию - 'info', если опция BLACKLIST_LOGLEVEL не задана).</para>
+        <para>reject <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут отбрасываться файрволом с уведомлением. </para>
+      </listitem>
+
+      <listitem>
+        <para>allow <emphasis>&lt;список IP-адресов&gt;</emphasis> - разрешить пакеты с хостов, ранее занесённых в чёрный список командами <emphasis>drop</emphasis> или <emphasis>reject</emphasis>. </para>
+      </listitem>
+
+      <listitem>
+        <para>save - сохранить конфигурацию динамического чёрного списка; она будет восстановлена автоматически при следующем перезапуске файрвола.</para>
+      </listitem>
+
+      <listitem>
+        <para>show dynamic - показать конфигурацию динамического чёрного списка.</para>
       </listitem>
     </itemizedlist>
 
-    <para>Динамические чёрные списки не зависят от опции
-<quote>blacklist</quote> в файле
-    <filename>/etc/shorewall/interfaces</filename>.</para>
+    <para>Начиная с Shorewall версии 3.2.0 Beta2 доступны следующие дополнительные команды:</para>
 
-    <example>
-      <title>Игноpиpовать пакеты с двух IP-адресов </title>
+    <itemizedlist>
+      <listitem>
+        <para>logdrop <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут заноситься в протокол и отбрасываться файрволом без уведомления.  Уровень протокола задаётся опцией BLACKLIST_LOGLEVEL в ходе последнего [пере]запуска (по умолчанию - &apos;info&apos;, если опция BLACKLIST_LOGLEVEL не задана).</para>
+      </listitem>
+
+      <listitem>
+        <para>logreject <emphasis>&lt;список IP-адресов&gt;</emphasis> - пакеты с указанных IP-адресов будут заноситься в протокол и отбрасываться файрволом с уведомлением.  Уровень протокола задаётся опцией BLACKLIST_LOGLEVEL в ходе последнего [пере]запуска (по умолчанию - &apos;info&apos;, если опция BLACKLIST_LOGLEVEL не задана).</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Динамические чёрные списки не зависят от опции <quote>blacklist</quote> в файле <filename>/etc/shorewall/interfaces</filename>.</para>
+
+    <example id="Ignore">
+      <title>Игноpиpовать пакеты с двух IP-адресов</title>
 
       <programlisting>    <command>shorewall[-lite] drop 192.0.2.124 192.0.2.125</command></programlisting>
 
-      <para>Блокирует доступ с хостов 192.0.2.124 и 192.0.2.125</para>
+      <para>При этом блокируется доступ с хостов 192.0.2.124 и 192.0.2.125</para>
     </example>
 
-    <example>
-      <title>Разрешить пакеты с IP-адреса </title>
+    <example id="Allow">
+      <title>Разрешить пакеты с IP-адреса</title>
 
       <programlisting>    <command>shorewall[-lite] allow 192.0.2.125</command></programlisting>
 

@@ -25,12 +25,10 @@
     </copyright>
 
     <copyright>
-
       <year>2007</year>
 
       <holder>Russian Translation: Grigory Mokhin</holder>
     </copyright>
-
 
     <legalnotice>
       <para>Этот документ разрешается копировать, распространять и/или изменять при выполнении условий лицензии GNU Free Documentation License версии 1.2 или более поздней, опубликованной Free Software Foundation; без неизменяемых разделов, без текста на верхней обложке, без текста на нижней обложке. Копия лицензии приведена по ссылке <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
@@ -372,7 +370,7 @@ ip route add</command> 192.168.1.1 dev eth3  scope link
 <command>ip route add </command>206.124.146.177 dev eth1  scope link
 <command>ip route add </command>206.124.146.177 dev eth1  scope link
 <command>ip route add </command>206.124.146.177 dev eth1  scope link
-<command>ip route flush table main</programlisting>
+<command>ip route flush cache</command></programlisting>
 
             <para>Сохраните этот файл как <filename>/etc/shorewall/stopped</filename>.</para>
 
@@ -492,7 +490,7 @@ eth1             eth2              130.252.99.27</programlisting>
 
       <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)
-2:P             <локальная сеть> 0.0.0.0/0       tcp     25</programlisting>
+2:P             &lt;локальная сеть&gt; 0.0.0.0/0       tcp     25</programlisting>
     </section>
 
     <section id="morethan2">
@@ -564,13 +562,13 @@ eth3             eth2              16.105.78.4</programlisting></para>
         <para>Правила маршрутизации управляются ядром Linux. Их можно просмотреть командой <command>ip rule ls</command> . При маршрутизации пакета правила обрабатываются в указанном порядке, пока не будет найден маршрут пакета.</para>
 
         <programlisting>gateway:~ # <command>ip rule ls</command>
-0:      from all lookup local                <=== Локальные IP-адреса (система файрвола)
-10001:  from all fwmark 0x1 lookup Blarg     <=== Это и следующее правило генерируются 
+0:      from all lookup local                &lt;=== Локальные IP-адреса (система файрвола)
+10001:  from all fwmark 0x1 lookup Blarg     &lt;=== Это и следующее правило генерируются 
 10002:  from all fwmark 0x2 lookup Comcast        записями 'MARK' из /etc/shorewall/providers.
-20000:  from 206.124.146.176 lookup Blarg    <=== Это и следующее правило не генерируются, если
+20000:  from 206.124.146.176 lookup Blarg    &lt;=== Это и следующее правило не генерируются, если
 20256:  from 24.12.22.33 lookup Comcast         указана опция 'loose'; они основаны на выводе 'ip addr ls'
-32766:  from all lookup main                 <=== Это таблица маршрутизации, показанная в выводе 'iproute -n'
-32767:  from all lookup default              <=== Эта таблица обычно пуста
+32766:  from all lookup main                 &lt;=== Это таблица маршрутизации, показанная в выводе 'iproute -n'
+32767:  from all lookup default              &lt;=== Эта таблица обычно пуста
 gateway:~ #</programlisting>
 
         <para>В этом примере настроены два провайдера:  Blarg и Comcast, с метками MARK 1 и 2 соответственно.</para>

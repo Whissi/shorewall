@@ -95,9 +95,21 @@ while [ $# -gt 0 ]; do
 
 	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''" || GENTOC=
 
+	    case $1 in
+		*_ru.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language ru"
+		    ;;
+		*_fr.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language ru"
+		    ;;
+		*)
+		    LANGUAGE=
+		    ;;
+	    esac
+
 	    echo "Converting $1 from XML to HTML ($b) ..."
 
-	    if xmllint --valid --noout $1 && xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC --param toc.section.depth 3 $STYLESHEET $1 ; then
+	    if xmllint --valid --noout $1 && xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC $LANGUAGE --param toc.section.depth 3 $STYLESHEET $1 ; then
 		filestocopy="$filestocopy $f"
 	    fi
 	    ;;

@@ -580,6 +580,19 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	    list_search $b.htm $HTMFILES && b=$b.htm || b=$b.html
 	    f="shorewall-docs-html-$VERSION/$b"
 	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''" || GENTOC=
+
+	    case $file in
+		*_ru.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language ru"
+		    ;;
+		*_fr.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language ru"
+		    ;;
+		*)
+		    LANGUAGE=
+		    ;;
+	    esac
+
 	    report "Converting $DIR/$file from XML to HTML ($DIR/$f) ..."
 
 	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC -param toc.section.depth 3 $STYLESHEET $file

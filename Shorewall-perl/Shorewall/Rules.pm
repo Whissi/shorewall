@@ -1617,11 +1617,7 @@ sub generate_matrix() {
 		next unless $chain;
 
 		if ( $zone eq $zone1 ) {
-		    #
-		    # One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
-		    #
-		    no warnings;
-		    next if ( %{ $zoneref->{interfaces} } < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 		}
 
 		if ( $zone1ref->{type} eq 'bport4' ) {
@@ -1675,12 +1671,7 @@ sub generate_matrix() {
 	    my $num_ifaces = 0;
 
 	    if ( $zone eq $zone1 ) {
-		#
-		# One thing that the Llama fails to mention is that evaluating a hash in a numeric context produces a warning.
-		#
-		no warnings;
-		next ZONE1 if ( $num_ifaces = %{$zoneref->{interfaces}} ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
-		use warnings;
+		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 
 		if  ( $chain3 ) {
 		    while ( my ($interface, $sourceref) = ( each %needbroadcast ) ) {

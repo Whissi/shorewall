@@ -200,9 +200,9 @@ sub validate_policy()
 	fatal_error "Invalid policy $policy" unless exists $validpolicies{$policy};
 
 	if ( $policy eq 'NONE' ) {
-	    fatal_error "$client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
+	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
-	    fatal_error "$client, $server, $policy, $loglevel, $synparams: NONE policy not allowed to/from firewall zone"
+	    fatal_error "NONE policy not allowed to/from firewall zone"
 		if ( $zones{$client}{type} eq 'firewall' ) || ( $zones{$server}{type} eq 'firewall' );
 	}
 

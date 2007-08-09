@@ -1671,11 +1671,11 @@ add_a_rule() {
 
 	if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 	    for adr in $(separate_list $addr); do
-		run_iptables -A $logchain $state $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $chain
+		run_iptables -A $logchain $state $(fix_bang $proto $multiport $sports $dports) $user -m conntrack --ctorigdst $adr -j $chain
 	    done
 	    addr=
 	else
-	    run_iptables -A $logchain $state $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain
+	    run_iptables -A $logchain $state $(fix_bang $cli $proto $multiport $sports $dports) $user -j $chain
 	fi
 
 	cli=
@@ -1884,7 +1884,7 @@ __EOF__
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-					    $user $mrk $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
+					    $user $mrk $(fix_bang $proto $multiport $sports $cli $(dest_ip_range $srv) $dports) $state
 				    fi
 
 				    run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
@@ -1899,7 +1899,7 @@ __EOF__
 
 			    if [ -n "$loglevel" -a -z "$natrule" ]; then
 				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
-				    $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
+				    $state $(fix_bang $proto $multiport $sports $cli $(dest_ip_range $srv) $dports)
 			    fi
 
 			    if [ -n "$nonat" ]; then
@@ -1922,7 +1922,7 @@ __EOF__
 
 		if [ -n "$loglevel" -a -z "$natrule" ]; then
 		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
-			$state $(fix_bang $proto $sports $multiport $cli $dports)
+			$state $(fix_bang $proto $multiport $sports $cli $dports)
 		fi
 
 		[ -n "$nonat" ] && \

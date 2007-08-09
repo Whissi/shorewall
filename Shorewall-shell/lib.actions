@@ -80,7 +80,7 @@ add_an_action()
     {
 	build_exclusion_chain chain1 filter "$excludesource" "$excludedest"
 
-	run_iptables -A $chain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain1
+	run_iptables -A $chain $(fix_bang $cli $proto $multiport $sports $dports) $user -j $chain1
 
 	cli=
 	proto=
@@ -219,7 +219,7 @@ add_an_action()
 	    for srv in $(firewall_ip_range $serv1); do
 		if [ -n "$loglevel" ]; then
 		    log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
-			$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dest_interface $dports)
+			$(fix_bang $proto $multiport $sports $cli $(dest_ip_range $srv) $dest_interface $dports)
 		fi
 
 		run_iptables2 -A $chain1 $proto $multiport $cli $sports \
@@ -229,7 +229,7 @@ add_an_action()
     else
 	if [ -n "$loglevel" ]; then
 	    log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
-		$(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
+		$(fix_bang $proto $multiport $sports $cli $dest_interface $dports)
 	fi
 
 	run_iptables2 -A $chain1 $proto $multiport $cli $dest_interface $sports \

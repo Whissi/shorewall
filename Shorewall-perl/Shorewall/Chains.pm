@@ -213,13 +213,13 @@ our %interfacebcasts;
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
 #
-# State of the generator.
+# Mode of the generator.
 #
-use constant { NULL_STATE => 0 ,   # Generating neither shell commands nor iptables-restore input
-	       CAT_STATE  => 1 ,   # Generating iptables-restore input
-	       CMD_STATE  => 2 };  # Generating shell commands.
+use constant { NULL_MODE => 0 ,   # Generating neither shell commands nor iptables-restore input
+	       CAT_MODE  => 1 ,   # Generating iptables-restore input
+	       CMD_MODE  => 2 };  # Generating shell commands.
 
-our $state;
+our $mode;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -1838,18 +1838,18 @@ sub insertnatjump( $$$$ ) {
     }
 }
 
-sub emit_comment( $ ) {
+sub emit_comment() {
     emit  ( '#',
 	    '# Establish the values of shell variables used in the following function calls',
 	    '#' );
-    ${$_[0]} = 1;
+    our $emitted_comment = 1;
 }
 
-sub emit_test( $ ) {
+sub emit_test() {
     emit ( 'if [ "$COMMAND" != restore ]; then' ,
 	   '' );
     push_indent;
-    ${$_[0]} = 1;
+    our $emitted_test = 1;
 }
     
 #
@@ -1857,28 +1857,28 @@ sub emit_test( $ ) {
 #
 sub set_global_variables() {
 
-    my ( $emitted_comment, $emitted_test ) = (0, 0);
+    our ( $emitted_comment, $emitted_test ) = (0, 0);
 
     for ( values %interfaceaddr ) {
-	emit_comment( \$emitted_comment ) unless $emitted_comment;
+	emit_comment unless $emitted_comment;
 	emit $_;
     }
 
     for ( values %interfaceaddrs ) {
-	emit_comment( \$emitted_comment ) unless $emitted_comment;
-	emit_test( \$emitted_test )       unless $emitted_test;
+	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
 	emit $_;
     }
 
     for ( values %interfacenets ) {
-	emit_comment( \$emitted_comment ) unless $emitted_comment;
-	emit_test( \$emitted_test )       unless $emitted_test;
+	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
 	emit $_;
     }
 
     unless ( $capabilities{ADDRTYPE} ) {
-	emit_comment( \$emitted_comment ) unless $emitted_comment;
-	emit_test( \$emitted_test )       unless $emitted_test;
+	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
 	emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
 
 	for ( values %interfacebcasts ) {
@@ -1900,19 +1900,19 @@ sub set_global_variables() {
 # We may have to generate part of the input at run-time. The rules array in each chain
 # table entry may contain rules (begin with '-A') or shell source. We alternate between
 # writing the rules ('-A') into the temporary file to be bassed to iptables-restore
-# (CAT_STATE) and and writing shell source into the generated script.
+# (CAT_MODE) and and writing shell source into the generated script (CMD_MODE).
 #
-# The following two functions are responsible for the state transitions.
+# The following two functions are responsible for the mode transitions.
 #
-sub enter_cat_state() {
+sub enter_cat_mode() {
     emit '';
     emit 'cat >&3 << __EOF__';
-    $state = CAT_STATE;
+    $mode = CAT_MODE;
 }
 
-sub enter_cmd_state() {
-    emit_unindented "__EOF__\n" if $state == CAT_STATE;
-    $state = CMD_STATE;
+sub enter_cmd_mode() {
+    emit_unindented "__EOF__\n" if $mode == CAT_MODE;
+    $mode = CMD_MODE;
 }
 
 #
@@ -1925,13 +1925,13 @@ sub emitr( $ ) {
 	#
 	# A rule
 	#
-	enter_cat_state unless $state == CAT_STATE;
+	enter_cat_mode unless $mode == CAT_MODE;
 	emit_unindented $rule;
     } else {
 	#
 	# A command
 	#
-	enter_cmd_state unless $state == CMD_STATE;
+	enter_cmd_mode unless $mode == CMD_MODE;
 	emit $rule;
     }
 }
@@ -1948,7 +1948,7 @@ sub create_netfilter_load() {
     push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED};
     push @table_list, 'filter';
 
-    $state = NULL_STATE;
+    $mode = NULL_MODE;
 
     emit ( 'setup_netfilter()',
 	   '{'
@@ -1962,7 +1962,7 @@ sub create_netfilter_load() {
 
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    enter_cat_state;
+    enter_cat_mode;
 
     for my $table ( @table_list ) {
 	emit_unindented "*$table";
@@ -1991,22 +1991,19 @@ sub create_netfilter_load() {
 	    }
 	}
 	#
-	# then emit the rules
+	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    my $name = $chainref->{name};
-	    for my $rule ( @{$chainref->{rules}} ) {
-		emitr $rule;
-	    }
+	    emitr $_ for ( @{$chainref->{rules}} );
 	}
 	#
 	# Commit the changes to the table
 	#
-	enter_cat_state unless $state == CAT_STATE;
+	enter_cat_mode unless $mode == CAT_MODE;
 	emit_unindented 'COMMIT';
     }
 
-    enter_cmd_state;
+    enter_cmd_mode;
     #
     # Now generate the actual iptables-restore command
     #
@@ -2030,7 +2027,7 @@ sub create_netfilter_load() {
 #
 sub create_blacklist_reload() {
 
-    $state = NULL_STATE;
+    $mode = NULL_MODE;
 
     emit(  'blacklist_reload()',
 	   '{'
@@ -2044,22 +2041,22 @@ sub create_blacklist_reload() {
 
     emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    enter_cat_state;
+    enter_cat_mode;
 
     emit_unindented '*filter';
     emit_unindented ':blacklst - [0:0]';
-
-    for my $rule ( @{$filter_table->{blacklst}{rules}} ) {
-	emitr $rule;
-    }
+    #
+    # Emit the Blacklist rules
+    #
+    emitr $_ for ( @{$filter_table->{blacklst}{rules}} );
     #
     # Commit the changes to the table
     #
-    enter_cat_state unless $state == CAT_STATE;
+    enter_cat_mode unless $mode == CAT_MODE;
 
     emit_unindented 'COMMIT';
 
-    enter_cmd_state;
+    enter_cmd_mode;
     #
     # Now generate the actual iptables-restore command
     #

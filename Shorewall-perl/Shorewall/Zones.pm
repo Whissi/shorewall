@@ -425,16 +425,12 @@ sub dump_zone_contents()
 sub single_interface( $ ) {
     my $zone = $_[0];
     my $zoneref = $zones{$zone};
+  
     fatal_error "Internal Error in single_zone()" unless $zoneref;
 
-    {
-	no warnings;
-	if ( %{$zoneref->{interfaces}} == 1 ) {
-	    ( keys %{$zoneref->{interfaces}} )[0];
-	} else {
-	    '';
-	}
-    }
+    my @keys = keys( %{$zoneref->{interfaces}} );
+
+    @keys == 1 ? $keys[0] : '';
 }
 
 sub add_group_to_zone($$$$$)

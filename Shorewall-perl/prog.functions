@@ -1,4 +1,3 @@
-#!/bin/sh
 #
 # Clear Proxy Arp
 #
@@ -146,28 +145,9 @@ restore_dynamic_rules() {
 }
 
 #
-# The following functions also appear in lib.base. They are duplicated here so that
-# restore scripts from prior versions continue to work.
-#
-get_device_mtu1() # $1 = device
-{
-    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
-    local mtu
-
-    if [ -n "$output" ]; then
-	mtu=$(find_mtu $output)
-	if [ -n "$mtu" ]; then
-	    [ $mtu = 1500 ] || echo mtu $(($mtu + 100))
-	fi
-    fi
-
-}
-
-#
 # Get a list of all configured broadcast addresses on the system
 #
 get_all_bcasts()
 {
     ip -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 }
-

@@ -587,11 +587,11 @@ sub create_temp_object( $ ) {
 
     die if $@;
 
-    fatal_error "Directory $dir does not exist"  unless -d $dir;
-    fatal_error "Directory $dir is not writable" unless -w _;
     fatal_error "$dir is a Symbolic Link"        if -l $dir;
-    fatal_error "$objectfile is a Directory"     if -d $objectfile;
-    fatal_error "$dir is a Symbolic Link"        if -l $objectfile;
+    fatal_error "Directory $dir does not exist"  unless -d _;
+    fatal_error "Directory $dir is not writable" unless -w _;
+    fatal_error "$objectfile is a Symbolic Link" if -l $objectfile;
+    fatal_error "$objectfile is a Directory"     if -d _;
     fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
 
     eval {
@@ -864,12 +864,13 @@ sub read_a_line() {
 
 		my @line = split ' ', $currentline;
 
-		fatal_error "Invalid INCLUDE command: $currentline"    if @line != 2;
-		fatal_error "INCLUDEs nested too deeply: $currentline" if @includestack >= 4;
+		fatal_error "Invalid INCLUDE command"    if @line != 2;
+		fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
 
 		my $filename = find_file $line[1];
 
-		fatal_error "INCLUDE file $filename not found" unless ( -f $filename );
+		fatal_error "INCLUDE file $filename not found" unless -f $filename;
+		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
 		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];

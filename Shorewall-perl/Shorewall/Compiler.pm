@@ -604,6 +604,11 @@ sub generate_script_3() {
     dump_proxy_arp;
     emit_unindented '__EOF__';
 
+    emit( '',
+	  'if [ "$COMMAND" != refresh ]; then' );
+
+    push_indent;
+
     emit 'cat > ${VARDIR}/chains << __EOF__';
     dump_rule_chains;
     emit_unindented '__EOF__';
@@ -611,6 +616,10 @@ sub generate_script_3() {
     emit 'cat > ${VARDIR}/zones << __EOF__';
     dump_zone_contents;
     emit_unindented '__EOF__';
+
+    pop_indent;
+
+    emit "fi\n";
 
     emit '> ${VARDIR}/nat';
 

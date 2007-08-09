@@ -294,7 +294,7 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $optional ) {
 	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"" );
     } else {
-	emit( "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"" );
+	emit( "    fatal_error \"Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"" );
     }
 
     emit "fi\n";

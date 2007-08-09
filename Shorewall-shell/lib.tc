@@ -175,7 +175,7 @@ setup_traffic_shaping()
 
 	dev=$(chain_base $device)
 
-	save_command "if interface_is_usable $device; then"
+	save_command "if interface_is_up $device; then"
 	indent="$INDENT"
 	INDENT="$INDENT    "
 	save_command ${dev}_exists=Yes
@@ -201,7 +201,7 @@ setup_traffic_shaping()
 	INDENT="$indent"
 	save_command else
 	INDENT="$INDENT    "
-	save_command error_message "\"WARNING: Device $device not up and configured -- traffic-shaping configuration skipped\""
+	save_command error_message "\"WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped\""
 	save_command "${dev}_exists="
 	INDENT="$indent"
 	save_command "fi"

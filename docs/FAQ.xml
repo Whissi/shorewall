@@ -157,7 +157,7 @@ DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP addr
       <emphasis>&lt;low-port&gt;:&lt;high-port&gt;</emphasis>.</para>
 
       <section id="faq1a">
-        <title>(FAQ 1a) Ok -- I followed those instructions but it doesn't
+        <title>(FAQ 1a) Okay -- I followed those instructions but it doesn't
         work</title>
 
         <para><emphasis role="bold">Answer:</emphasis> That is usually the
@@ -177,7 +177,8 @@ DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP addr
           </listitem>
 
           <listitem>
-            <para>Your ISP is blocking that particular port inbound.</para>
+            <para>Your ISP is blocking that particular port inbound or, for
+            TCP, your ISP is dropping the outbound SYN,ACK response.</para>
           </listitem>
 
           <listitem>
@@ -201,9 +202,10 @@ DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP addr
 
         <itemizedlist>
           <listitem>
-            <para>As root, type <quote> <command>iptables -t nat -Z</command>
-            </quote>. This clears the NetFilter counters in the nat
-            table.</para>
+            <para>As root, type <quote> <command>shorewall reset</command>
+            </quote> ("<command>shorewall-lite reset</command>", if you are
+            running Shorewall Lite). This clears all NetFilter
+            counters.</para>
           </listitem>
 
           <listitem>
@@ -212,8 +214,9 @@ DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP addr
           </listitem>
 
           <listitem>
-            <para>As root type <quote> <command>shorewall[-lite] show
-            nat</command> </quote></para>
+            <para>As root type <quote> <command>shorewall show nat</command>
+            </quote> ("<command>shorewall-lite show nat</command>", if you are
+            running Shorewall Lite).</para>
           </listitem>
 
           <listitem>
@@ -263,20 +266,21 @@ DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP addr
             the connection is being dropped or rejected. If it is, then you
             may have a zone definition problem such that the server is in a
             different zone than what is specified in the DEST column. At a
-            root promt, type "<command>shorewall[-lite] show zones</command>"
-            then be sure that in the DEST column you have specified the
-            <emphasis role="bold">first</emphasis> zone in the list that
-            matches OUT=&lt;dev&gt; and DEST= &lt;ip&gt;from the REJECT/DROP
-            log message.</para>
+            root promt, type "<command>shorewall show zones</command>"
+            ("<command>shorewall-lite show zones</command>") then be sure that
+            in the DEST column you have specified the <emphasis
+            role="bold">first</emphasis> zone in the list that matches
+            OUT=&lt;dev&gt; and DEST= &lt;ip&gt;from the REJECT/DROP log
+            message.</para>
           </listitem>
 
           <listitem>
             <para>If everything seems to be correct according to these tests
             but the connection doesn't work, it may be that your ISP is
             blocking SYN,ACK responses. This technique allows your ISP to
-            detect when you are running a server (in violation of your service
-            agreement) and to stop connections to that server from being
-            established.</para>
+            detect when you are running a server (usually in violation of your
+            service agreement) and to stop connections to that server from
+            being established.</para>
           </listitem>
         </itemizedlist>
       </section>
@@ -325,7 +329,7 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
 
         <para>In <filename>/etc/shorewall/params</filename>:</para>
 
-        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command>       </programlisting>
+        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command>  </programlisting>
 
         <para>For users of Shorewall 2.1.0 and later:</para>
 
@@ -425,15 +429,17 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
         </listitem>
       </itemizedlist>
 
+      <para>But if you are the type of person who prefers quick and dirty
+      hacks to "doing it right", then proceed as described below.<warning>
+          <para>All traffic redirected through use of this hack will look to
+          the server as if it originated on the firewall rather than on the
+          original client! So the server's access logs will be useless for
+          determining which local hosts are accessing the server.</para>
+        </warning></para>
+
       <para>Assuming that your external interface is eth0 and your internal
       interface is eth1 and that eth1 has IP address 192.168.1.254 with subnet
-      192.168.1.0/24, then:<warning>
-          <para>All traffic redirected through use of this hack will look to
-          the server as if it came from the firewall (192.168.1.254) rather
-          than from the original client! So the server's access logs will be
-          useless for determining which local hosts are accessing the
-          server.</para>
-        </warning></para>
+      192.168.1.0/24, then:</para>
 
       <itemizedlist>
         <listitem>
@@ -447,7 +453,7 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
           <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S)
-eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</programlisting>
+<emphasis role="bold">eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</emphasis></programlisting>
         </listitem>
 
         <listitem>
@@ -455,7 +461,7 @@ eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</programlist
 
           <programlisting>#ACTION    SOURCE       DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
 #                                                               PORT      DEST.
-DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</programlisting>
+<emphasis role="bold">DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</emphasis></programlisting>
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address then include this in
@@ -469,7 +475,8 @@ DNAT       loc          loc:192.168.1.5    tcp      www         -         130.15
 
           <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
 #                                                                PORT      DEST.
-DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0_IP</programlisting>
+DNAT       loc           loc:192.168.1.5    tcp      www         -         <emphasis
+              role="bold">$ETH0_IP</emphasis></programlisting>
 
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
@@ -536,7 +543,7 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
           <para>In /etc/shorewall/masq:</para>
 
           <programlisting>#INTERFACE    SUBNETS     ADDRESS
-eth2          eth2        192.168.2.254</programlisting>
+<emphasis role="bold">eth2          eth2        192.168.2.254</emphasis></programlisting>
 
           <para>Like the silly hack in FAQ 2 above, this will make all
           dmz-&gt;dmz traffic appear to originate on the firewall.</para>
@@ -568,7 +575,7 @@ eth2          eth2        192.168.2.254</programlisting>
 
         <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
 #                                                                PORT        DEST                 
-DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</programlisting>
+<emphasis role="bold">DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</emphasis></programlisting>
 
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
@@ -583,7 +590,8 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
 
         <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
 #                                                                PORT      DEST.
-DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
+DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emphasis
+            role="bold">$ETH0_IP</emphasis></programlisting>
 
         <warning>
           <para>With dynamic IP addresses, you probably don't want to use

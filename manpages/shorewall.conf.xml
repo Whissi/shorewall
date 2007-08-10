@@ -631,6 +631,25 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">KEEP_RT_TABLES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>When set to <option>Yes</option>, this option prevents
+          Shorewall from altering the /etc/iproute2/rt_tables database. If you
+          set this option to <option>Yes</option> while Shorewall
+          (Shorewall-lite) is running, you should remove the file
+          <filename>/var/lib/shorewall/rt_tables</filename>
+          (<filename>/var/lib/shorewall-lite/rt_tables</filename>) before your
+          next <command>stop</command>, <command>refresh</command>,
+          <command>restore</command> on <command>restart</command>
+          command.</para>
+
+          <para>The default is KEEP_RT_TABLES=No.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">LOG_MARTIANS=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|Keep]</term>

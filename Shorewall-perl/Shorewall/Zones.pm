@@ -76,7 +76,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
+#     %zones{<zone1> => {type = >      <zone type> 
 #                        options =>    { complex => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
@@ -110,6 +110,16 @@ our %reservedName = ( all => 1,
 		      SOURCE => 1,
 		      DEST => 1 );
 
+se constant (  ZT_IPV4     => 1,
+	       ZT_IPSEC    => 2,
+	       ZT_BPORT    => 4,
+	       ZT_IPV6     => 8,
+	       ZT_FIREWALL => 16,
+	       ZT_IPSEC4   => ZT_IPV4 | ZT_IPSEC
+	       ZT_IPSEC6   => ZT_IPV6 | ZT_IPSEC
+	       ZT_BPORT4   => ZT_IPV4 | ZT_BPORT
+	       ZT_BPORT6   => ZT_IPV6 | ZT_BPORT
+	     );		   
 #
 #     Interface Table.
 #
@@ -209,7 +219,7 @@ sub parse_zone_option_list($$)
 	    if ( $key{$e} ) {
 		$h{$e} = $val;
 	    } else {
-		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype eq 'ipsec4';
+		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype & ZT_IPSEC;
 		$options .= $invert;
 		$options .= "--$e ";
 		$options .= "$val "if defined $val;
@@ -251,7 +261,7 @@ sub determine_zones()
 	    for my $p ( @parents ) {
 		fatal_error "Invalid Parent List ($2)" unless $p;
 		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
-		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} eq 'firewall';
+		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} & ZT_FIREWALL;
 		push @{$zones{$p}{children}}, $zone;
 	    }
 	}
@@ -263,20 +273,20 @@ sub determine_zones()
 	$type = "ipv4" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $type = 'ipv4';
+	    $type = ZT_IPV4;
 	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $type = 'ipsec4';
+	    $type = ZT_IPSEC4;
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $type = 'bport4';
+	    $type = ZT_BPORT4;
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
 	    $firewall_zone = $zone;
 	    $ENV{FW} = $zone;
-	    $type = "firewall";
+	    $type = ZT_FIREWALL;
 	} elsif ( $type eq '-' ) {
-	    $type = 'ipv4';
+	    $type = ZT_IPV4;
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -292,7 +302,7 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
+					  complex => ($type & ZT_IPSEC || $options || $in_options || $out_options ? 1 : 0) } ,
 			  interfaces => {} ,
 			  children   => [] ,
 			  hosts      => {}
@@ -327,11 +337,21 @@ sub determine_zones()
 #
 sub haveipseczones() {
     for my $zoneref ( values %zones ) {
-	return 1 if $zoneref->{type} eq 'ipsec4';
+	return 1 if $zoneref->{type} & ZT_IPSEC;
     }
 
     0;
 }
+
+my @typenames =   ( Untyped,   #0
+		    firewall,  #1 
+		    ipv4,      #2
+		    Invalid,   #3 
+		    Invalid,   #4 
+		    Invalid,   #5
+		    ipsec4,    #6
+		    Invalid,   #7
+		    Invalid,   #8 
 
 #
 # Report about zones.

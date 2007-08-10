@@ -288,7 +288,7 @@ sub initialize() {
 		EXPORTPARAMS => undef,
 		SHOREWALL_COMPILER => undef,
 		EXPAND_POLICIES => undef,
-		ACCOUNTING_EXPERT => undef,
+		KEEP_RT_TABLES => undef,
 		#
 		# Packet Disposition
 		#

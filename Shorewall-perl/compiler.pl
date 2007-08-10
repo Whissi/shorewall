@@ -34,7 +34,8 @@
 #         --debug                     # Print stack trace on warnings and fatal error.
 #
 use strict;
-use lib '/usr/share/shorewall-perl';
+use FindBin;
+use lib "$FindBin::Bin";
 use Shorewall::Compiler;
 use Getopt::Long;
 

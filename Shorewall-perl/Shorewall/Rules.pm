@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = 4.01;
+our $VERSION = 4.02;
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
@@ -808,13 +808,27 @@ sub setup_mac_lists( $ ) {
 				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
 				  'done' );
 		} else {
-		    my $variable1 = get_interface_bcasts $interfaces{$interface}{bridge};
-
+		    my $bridge    = $interfaces{$interface}{bridge};
+		    my $bridgeref = $interfaces{$bridge};
+		    
 		    add_commands( $chainref,
-				  "for address in $variable; do",
-				  "    for address1 in $variable1; do",
-				  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
-				  "    done",
+				  "for address in $variable; do" );
+
+		    if ( $bridgeref->{broadcasts} ) {
+			for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
+			    add_commands( $chainref ,
+					  "    echo \"-A $chainref->{name} -s \$address -d $address -j RETURN\" >&3" );
+			}
+		    } else {
+			my $variable1 = get_interface_bcasts $bridge;
+		    
+			add_commands( $chainref, 
+				      "    for address1 in $variable1; do" ,
+				      "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
+				      "    done" );
+		    }
+
+		    add_commands( $chainref, 
 				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
 				  'done' );
 		}
@@ -1583,14 +1597,22 @@ sub generate_matrix() {
 		if ( $capabilities{ADDRTYPE} ) {
 		    add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
 		} else {
-		    my $variable = get_interface_bcasts $interface;
-		    my $chain    = output_chain $interface;
-		    my $chainref = $filter_table->{$chain};
+		    my $interfaceref = $interfaces{$interface};
+		    my $chain        = output_chain $interface;
+		    my $chainref     = $filter_table->{$chain};
 
-		    add_commands( $chainref,
-				  "for address in $variable; do",
-				  "   echo \"-A $chain -d \$address -j $chain1\" >&3",
-				  'done' );
+		    if ( $interfaceref->{broadcasts} ) {
+			for my $address ( @{$interfaceref->{broadcasts}} , '255.255.255.255' ) {
+			    add_rule( $chainref, "-d $address -j $chain1" );
+			}
+		    } else {
+			my $variable = get_interface_bcasts $interface;
+
+			add_commands( $chainref,
+				      "for address in $variable; do",
+				      "   echo \"-A $chain -d \$address -j $chain1\" >&3",
+				      'done' );
+		    }
 		}
 
 		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";

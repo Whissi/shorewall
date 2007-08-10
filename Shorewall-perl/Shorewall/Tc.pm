@@ -39,7 +39,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = 4.01;
+our $VERSION = 4.02;
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,

@@ -93,7 +93,7 @@ our @EXPORT = qw(
 		 %capabilities );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
-our $VERSION = 4.01;
+our $VERSION = 4.02;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -198,7 +198,7 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.1',
+		    VERSION =>  '4.0.2',
 		    CAPVERSION => 30405 ,
 		  );
     #
@@ -288,6 +288,7 @@ sub initialize() {
 		EXPORTPARAMS => undef,
 		SHOREWALL_COMPILER => undef,
 		EXPAND_POLICIES => undef,
+		ACCOUNTING_EXPERT => undef,
 		#
 		# Packet Disposition
 		#
@@ -1417,6 +1418,7 @@ sub get_configuration( $ ) {
 
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'EXPAND_POLICIES'            , '';
+    default_yes_no 'ACCOUNTING_EXPERT'          , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};

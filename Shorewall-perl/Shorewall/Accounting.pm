@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.00;
+our $VERSION = 4.01;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -64,6 +64,11 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = @_;
 
+    sub check_for_builtin( $ ) {
+	my $chainref = shift;
+	fatal_error "A builtin Chain ($jumpchainref->{name}) may not appear in the accounting file" if $chainref->{builtin};
+    }
+
     sub accounting_error() {
 	warning_message "Invalid Accounting rule";
     }
@@ -71,6 +76,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
 	$jumpchainref = ensure_chain( 'filter', $jumpchain );
+	check_for_builtin( $jumpchainref );
 	mark_referenced $jumpchainref;
 	"-j $jumpchain";
     }
@@ -129,12 +135,14 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	    }
 	}
     } else {
-	$chain = 'accounting';
+	$chain = 'accounting' unless $chain and $chain ne '-';
 	$dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
     }
 
     my $chainref = ensure_filter_chain $chain , 0;
 
+    check_for_builtin( $chainref );
+    
     expand_rule
 	$chainref ,
 	$restriction ,

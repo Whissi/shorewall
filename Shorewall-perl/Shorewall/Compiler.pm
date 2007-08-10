@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.01;
+our $VERSION = 4.02;
 
 our $export;
 

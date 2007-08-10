@@ -59,7 +59,7 @@ our @EXPORT = qw( NOTHING
 		  @bridges );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.00;
+our $VERSION = 4.01;
 
 #
 # IPSEC Option types
@@ -121,6 +121,7 @@ our %reservedName = ( all => 1,
 #                                                    }
 #                                     zone        => <zone name>
 #                                     bridge      => <bridge>
+#                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                   }
 #                 }
 #
@@ -627,12 +628,17 @@ sub validate_interfaces_file( $ )
 	}
 
 	unless ( $networks eq '' || $networks eq 'detect' ) {
+	    my @broadcasts = split /,/, $networks;
 
-	    for my $address ( split /,/, $networks ) {
+	    for my $address ( @broadcasts ) {
 		fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
 	    }
 
-	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation';
+	    if ( $capabilities{ADDRTYPE} ) {
+		warning_message 'Shorewall no longer uses broadcast addresses in rule generation when Address Type Match is available';
+	    } else {
+		$interfaces{$interface}{broadcasts} = \@broadcasts;
+	    }
 	}
 
 	my $optionsref = {};

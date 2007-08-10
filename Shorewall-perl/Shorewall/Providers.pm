@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces);
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.01;
+our $VERSION = 4.02;
 
 use constant { LOCAL_NUMBER   => 255,
 	       MAIN_NUMBER    => 254,
@@ -412,7 +412,10 @@ sub setup_providers() {
 		   'restore_default_route' );
 	}
 
-	emit 'cat > /etc/iproute2/rt_tables <<EOF';
+	emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
+	      '    cat > /etc/iproute2/rt_tables <<EOF' );
+
+	push_indent;
 
 	emit_unindented join( "\n",
 			      '#',
@@ -432,6 +435,10 @@ sub setup_providers() {
 	for my $table ( @providers ) {
 	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	}
+
+	pop_indent;
+
+	emit "fi\n";
 
 	my $fn = open_file 'route_rules';
 

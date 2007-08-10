@@ -372,8 +372,10 @@ __EOF__
 	    save_command restore_default_route
 	fi
 
+	save_command "if [ -w /etc/iproute2/rt_tables ]; then"
+	
 	cat >&3 << __EOF__
-${INDENT}cat > /etc/iproute2/rt_tables <<EOF
+${INDENT}    cat > /etc/iproute2/rt_tables <<EOF
 #
 # reserved values
 #
@@ -386,14 +388,17 @@ ${INDENT}cat > /etc/iproute2/rt_tables <<EOF
 #
 EOF
 
-${INDENT}echocommand=\$(find_echo)
+${INDENT}    echocommand=\$(find_echo)
 __EOF__
         for table in $PROVIDERS; do
 	    eval number=\$${table}_number
 	    indent >&3 << __EOF__
-\$echocommand "$number\t$table" >>  /etc/iproute2/rt_tables
+    \$echocommand "$number\t$table" >>  /etc/iproute2/rt_tables
 __EOF__
 	done
+
+	save_command "fi"
+	save_command
 
 	if [ -s $TMP_DIR/route_rules ]; then
 	    progress_message2 "$DOING $(find_file route_rules)..."

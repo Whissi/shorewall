@@ -127,19 +127,20 @@
         <para>isusable -- (Added in Shorewall-perl version 4.0.3) invoked when
         Shorewall is trying to determine the usability of the network
         interface associated with an optional entry in
-        /etc/shorewall/providers. $1 is the name of the interface which will
-        have been determined to be up and configured before the script is
-        invoked. The return value from the script indicates whether or not the
-        interface is usable (0 = usable, other = unusable).</para>
+        <filename>/etc/shorewall/providers</filename>. $1 is the name of the
+        interface which will have been determined to be up and configured
+        before the script is invoked. The return value from the script
+        indicates whether or not the interface is usable (0 = usable, other =
+        unusable).</para>
 
         <para>Example:<programlisting># Ping a gateway through the passed interface
 case $1 in
     eth0)
-        ping -c 4 -I eth0 206.124.146.254 &gt; /dev/null 2&gt;&amp;1
+        ping -c 4 -t 1 -I eth0 206.124.146.254 &gt; /dev/null 2&gt;&amp;1
         return
         ;;
     eth1)
-        ping -c 4 -I eth1 192.168.12.254 &gt; /dev/null 2&gt;&amp;1
+        ping -c 4 -t 1 -I eth1 192.168.12.254 &gt; /dev/null 2&gt;&amp;1
         return
         ;;
     *)

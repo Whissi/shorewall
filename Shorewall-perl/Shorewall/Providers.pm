@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces);
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 use constant { LOCAL_NUMBER   => 255,
 	       MAIN_NUMBER    => 254,
@@ -68,10 +68,10 @@ sub initialize() {
     $balance             = 0;
     $first_default_route = 1;
 
-    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 } ,
-		    main    => { number => MAIN_NUMBER    , mark => 0 } ,
-		    default => { number => DEFAULT_NUMBER , mark => 0 } ,
-		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 } );
+    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
+		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 } ,
+		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 } ,
+		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 } );
     @providers = ();
 }
 
@@ -169,6 +169,8 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
     }
 
+    my $provider = chain_base $table;
+    
     emit "#\n# Add Provider $table ($number)\n#";
 
     emit "if interface_is_usable $interface; then";
@@ -267,6 +269,8 @@ sub add_a_provider( $$$$$$$$ ) {
 	}
     }
 
+    $providers{$table}{optional} = $optional;
+
     if ( $loose ) {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
 
@@ -288,11 +292,14 @@ sub add_a_provider( $$$$$$$$ ) {
 
     emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
 
+    emit ( "${provider}_is_up=Yes" ) if $optional;
+
     pop_indent;
     emit 'else';
 
     if ( $optional ) {
-	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"" );
+	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
+	       "    ${provider}_is_up=" );
     } else {
 	emit( "    fatal_error \"Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"" );
     }
@@ -340,10 +347,17 @@ sub add_an_rtrule( $$$$ ) {
 
     $priority = "priority $priority";
 
-    emit ( "qt ip rule del $source $dest $priority",
-	   "run_ip rule add $source $dest $priority table $provider",
-	   "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing"
-	 );
+    emit ( "qt ip rule del $source $dest $priority" );
+
+    my ( $base, $optional, $number ) = ( chain_base( $provider ), $providers{$provider}{optional} , $providers{$provider}{number} );
+
+    emit ( '', "if [ -n \$${base}_is_up ]; then" ), push_indent if $optional;
+
+    emit ( "run_ip rule add $source $dest $priority table $number",
+	   "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
+
+    pop_indent, emit ( "fi\n" ) if $optional;
+
     progress_message "   Routing rule \"$currentline\" $done";
 }
 
@@ -364,12 +378,18 @@ sub setup_providers() {
 	    emit  ( '#',
 		    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
 		    '#',
-		    'undo_routing',
-		    '#',
-		    '# Save current routing table database so that it can be restored later',
-		    '#',
-		    'cp /etc/iproute2/rt_tables ${VARDIR}/',
-		    '#',
+		    'undo_routing' );
+
+	    unless ( $config{KEEP_RT_TABLES} ) {
+		emit  (
+		       '#',
+		       '# Save current routing table database so that it can be restored later',
+		       '#',
+		       'cp /etc/iproute2/rt_tables ${VARDIR}/' );
+
+	    }
+
+	    emit  ( '#',
 		    '# Capture the default route(s) if we don\'t have it (them) already.',
 		    '#',
 		    '[ -f ${VARDIR}/default_route ] || ip route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
@@ -412,33 +432,35 @@ sub setup_providers() {
 		   'restore_default_route' );
 	}
 
-	emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
-	      '    cat > /etc/iproute2/rt_tables <<EOF' );
+	unless ( $config{KEEP_RT_TABLES} ) {
+	    emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
+		  '    cat > /etc/iproute2/rt_tables <<EOF' );
 
-	push_indent;
+	    push_indent;
 
-	emit_unindented join( "\n",
-			      '#',
-			      '# reserved values',
-			      '#',
-			      "255\tlocal",
-			      "254\tmain",
-			      "253\tdefault",
-			      "0\tunspec",
-			      '#',
-			      '# local',
-			      '#',
-			      "EOF\n" );
+	    emit_unindented join( "\n",
+				  '#',
+				  '# reserved values',
+				  '#',
+				  "255\tlocal",
+				  "254\tmain",
+				  "253\tdefault",
+				  "0\tunspec",
+				  '#',
+				  '# local',
+				  '#',
+				  "EOF\n" );
+	    
+	    emit "echocommand=\$(find_echo)\n";
+	    
+	    for my $table ( @providers ) {
+		emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
+	    }
 
-	emit "echocommand=\$(find_echo)\n";
+	    pop_indent;
 
-	for my $table ( @providers ) {
-	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
+	    emit "fi\n";
 	}
-
-	pop_indent;
-
-	emit "fi\n";
 
 	my $fn = open_file 'route_rules';
 

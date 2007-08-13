@@ -1873,10 +1873,11 @@ add_a_rule() {
 	    if [ -n "$serv" ]; then
 		for serv1 in $(separate_list $serv); do
 		    for srv in $(firewall_ip_range $serv1); do
+			srv=$(dest_ip_range $srv)
 			if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 			    if [ "$addr" = detect ]; then
 				indent >&3 << __EOF__
-    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user $mrk -j $target
+    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $srv $dports -m conntrack --ctorigdst \$adr $user $mrk -j $target
 done
 
 __EOF__
@@ -1884,11 +1885,13 @@ __EOF__
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-					    $user $mrk $(fix_bang $proto $multiport $sports $cli $(dest_ip_range $srv) $dports) $state
+					    $user $mrk $(fix_bang $proto $multiport $sports $cli $srv $dports) $state
 				    fi
 
-				    run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
-					$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user $mrk -j $target
+				    if [ "$logtarget" != LOG ]; then
+					run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
+					    $srv $dports -m conntrack --ctorigdst $adr $user $mrk -j $target
+				    fi
 				done
 			    fi
 			else
@@ -1899,17 +1902,17 @@ __EOF__
 
 			    if [ -n "$loglevel" -a -z "$natrule" ]; then
 				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
-				    $state $(fix_bang $proto $multiport $sports $cli $(dest_ip_range $srv) $dports)
+				    $state $(fix_bang $proto $multiport $sports $cli $srv $dports)
 			    fi
 
 			    if [ -n "$nonat" ]; then
 				addnatrule $(dnat_chain $source) $proto $multiport \
-				    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $user $mrk -j RETURN
+				    $cli $sports $srv $dports $ratelimit $user $mrk -j RETURN
 			    fi
 
-			    if [ "$logtarget" != NONAT ]; then
+			    if [ "$logtarget" != NONAT -a "$logtarget" != LOG ]; then
 				run_iptables2 -A $chain $state $proto $multiport $cli $sports \
-				    $(dest_ip_range $srv) $dports $ratelimit $user $mrk -j $target
+				    $srv $dports $ratelimit $user $mrk -j $target
 			    fi
 			fi
 		    done
@@ -1929,9 +1932,9 @@ __EOF__
 		    addnatrule $(dnat_chain $source) $proto $multiport \
 		    $cli $sports $dports $ratelimit $user $mrk -j RETURN
 
-		    [ "$logtarget" != NONAT ] && \
-			run_iptables2 -A $chain $state $proto $multiport $cli $sports \
-			$dports $ratelimit $user $mrk -j $target
+		[ "$logtarget" != NONAT  -a "$logtarget" != LOG ] && \
+		    run_iptables2 -A $chain $state $proto $multiport $cli $sports \
+		    $dports $ratelimit $user $mrk -j $target
 	    fi
 	elif [ -n "$serv" -a "$addr" = detect ]; then
 	    save_command 'done'
@@ -1983,6 +1986,15 @@ __EOF__
 	    fi
 	fi
     fi
+
+    if [ "$logtarget" = LOG -a -z "$KLUDGEFREE" ]; then
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
+	[ -n "$PHYSDEV_MATCH" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    fi
+
 }
 
 #

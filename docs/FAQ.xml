@@ -1791,6 +1791,32 @@ iptables: Invalid argument
     </section>
   </section>
 
+  <section>
+    <title>Traffic Shaping</title>
+
+    <section>
+      <title>(FAQ 67) I just configured Shorewall's builtin traffic shaping
+      and now Shorewall fails to Start.</title>
+
+      <para>The error I receive is as follows:<programlisting>RTNETLINK answers: No such file or directory
+We have an error talking to the kernel
+    ERROR: Command "tc filter add dev eth2 parent ffff: protocol ip prio 
+                    50 u32 match ip src 0.0.0.0/0 police rate 500kbit burst 10k drop flowid 
+                    :1" Failed</programlisting><emphasis
+      role="bold">Answer</emphasis>: This message indicates that your kernel
+      doesn't have 'traffic policing' support. If your kernel is modularized,
+      you may be able to resolve the problem by loading the <emphasis
+      role="bold">act_police</emphasis> kernel module. Other kernel modules
+      that you will need include:<simplelist>
+          <member>sch_htb</member>
+
+          <member>sch_ingress</member>
+
+          <member>sch_sfq</member>
+        </simplelist></para>
+    </section>
+  </section>
+
   <section id="About">
     <title>About Shorewall</title>
 

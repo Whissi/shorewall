@@ -1791,10 +1791,10 @@ iptables: Invalid argument
     </section>
   </section>
 
-  <section>
+  <section id="TC">
     <title>Traffic Shaping</title>
 
-    <section>
+    <section id="faq67">
       <title>(FAQ 67) I just configured Shorewall's builtin traffic shaping
       and now Shorewall fails to Start.</title>
 
@@ -1808,6 +1808,8 @@ We have an error talking to the kernel
       you may be able to resolve the problem by loading the <emphasis
       role="bold">act_police</emphasis> kernel module. Other kernel modules
       that you will need include:<simplelist>
+          <member>act_u32</member>
+
           <member>sch_htb</member>
 
           <member>sch_ingress</member>

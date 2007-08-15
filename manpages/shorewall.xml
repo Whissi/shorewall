@@ -60,7 +60,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>clear</option></arg>
+      <arg
+      choice="plain"><option>clear</option><arg><option>-f</option></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -280,6 +281,15 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg
+      choice="plain"><option>reset</option><arg><option>-f</option></arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>restart</option></arg>
 
       <arg><option>-C</option> <option>{shell|perl}</option></arg>
@@ -431,7 +441,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>stop</option></arg>
+      <arg
+      choice="plain"><option>stop</option><arg><option>-f</option></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -571,6 +582,12 @@
           The firewall is then wide open and unprotected. Existing connections
           are untouched. Clear is often used to see if the firewall is causing
           connection problems.</para>
+
+          <para>If the <option>-f</option> is given, the command will be
+          processed by the compiled script that executed the last successful
+          <emphasis role="bold">start</emphasis>, <emphasis
+          role="bold">restart</emphasis> or <emphasis
+          role="bold">refresh</emphasis> command if that script exists.</para>
         </listitem>
       </varlistentry>
 
@@ -880,6 +897,12 @@
         <listitem>
           <para>All the packet and byte counters in the firewall are
           reset.</para>
+
+          <para>If the <option>-f</option> is given, the command will be
+          processed by the compiled script that executed the last successful
+          <emphasis role="bold">start</emphasis>, <emphasis
+          role="bold">restart</emphasis> or <emphasis
+          role="bold">refresh</emphasis> command if that script exists.</para>
         </listitem>
       </varlistentry>
 
@@ -1162,6 +1185,12 @@
           listed in <ulink
           url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
           or by ADMINISABSENTMINDED.</para>
+
+          <para>If the <option>-f</option> is given, the command will be
+          processed by the compiled script that executed the last successful
+          <emphasis role="bold">start</emphasis>, <emphasis
+          role="bold">restart</emphasis> or <emphasis
+          role="bold">refresh</emphasis> command if that script exists.</para>
         </listitem>
       </varlistentry>
 

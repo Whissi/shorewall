@@ -819,7 +819,7 @@ undo_routing() {
 	# Restore rt_tables database
 	#
 	if [ -f ${VARDIR}/rt_tables ]; then
-	    [ -w /etc/iproute2/rt_table ] && cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
+	    [ -w /etc/iproute2/rt_table -a -z "$KEEP_RT_TABLES" ] && cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
 	    rm -f ${VARDIR}/rt_tables
 	fi
 	#

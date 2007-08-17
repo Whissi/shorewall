@@ -578,20 +578,22 @@ root@lists:~# </programlisting>
     <title>IP Masquerading (SNAT)</title>
 
     <para>The addresses reserved by RFC 1918 are sometimes referred to as
-    non-routable because the Internet backbone routers don't forward packets
-    which have an RFC-1918 destination address. When one of your local systems
-    (let's assume computer 1) sends a connection request to an internet host,
-    the firewall must perform <emphasis>Network Address Translation</emphasis>
-    (<acronym>NAT</acronym>). The firewall rewrites the source address in the
-    packet to be the address of the firewall's external interface; in other
-    words, the firewall makes it look as if the firewall itself is initiating
-    the connection. This is necessary so that the destination host will be
-    able to route return packets back to the firewall (remember that packets
-    whose destination address is reserved by RFC 1918 can't be routed across
-    the internet so the remote host can't address its response to computer 1).
-    When the firewall receives a return packet, it rewrites the destination
-    address back to <systemitem class="ipaddress">10.10.10.1</systemitem> and
-    forwards the packet on to computer 1.</para>
+    <firstterm>non-routable</firstterm> because the Internet backbone routers
+    don't forward packets which have an RFC-1918 destination address. When one
+    of your local systems (let's assume computer 1 in the <link
+    linkend="Diagram">above diagram</link>) sends a connection request to an
+    internet host, the firewall must perform <emphasis>Network Address
+    Translation</emphasis> (<acronym>NAT</acronym>). The firewall rewrites the
+    source address in the packet to be the address of the firewall's external
+    interface; in other words, the firewall makes it appear to the destination
+    internet host as if the firewall itself is initiating the connection. This
+    is necessary so that the destination host will be able to route return
+    packets back to the firewall (remember that packets whose destination
+    address is reserved by RFC 1918 can't be routed across the internet so the
+    remote host can't address its response to computer 1). When the firewall
+    receives a return packet, it rewrites the destination address back to
+    <systemitem class="ipaddress">10.10.10.1</systemitem> and forwards the
+    packet on to computer 1.</para>
 
     <para>On Linux systems, the above process is often referred to as
     <emphasis>IP Masquerading</emphasis> but you will also see the term
@@ -611,8 +613,8 @@ root@lists:~# </programlisting>
         </listitem>
       </itemizedlist> In Shorewall, both <emphasis>Masquerading</emphasis> and
     <emphasis><acronym>SNAT</acronym></emphasis> are configured with entries
-    in the <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename>
+    in the <ulink url="manpages/shorewall-masq.html"><filename
+    class="directory">/etc/shorewall/</filename><filename>masq</filename></ulink>
     file. You will normally use Masquerading if your external
     <acronym>IP</acronym> is dynamic and <acronym>SNAT</acronym> if the
     <acronym>IP</acronym> is static.</para>
@@ -621,7 +623,8 @@ root@lists:~# </programlisting>
 
     <para>If your external firewall interface is <filename
     class="devicefile">eth0</filename>, you do not need to modify the file
-    provided with the sample. Otherwise, edit <filename
+    provided with <link linkend="Concepts">the sample</link>. Otherwise, edit
+    <filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename> and
     change the first column to the name of your external interface and the
     second column to the name of your internal interface.</para>
@@ -632,8 +635,9 @@ root@lists:~# </programlisting>
     in the third column in the <filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename>
     entry if you like although your firewall will work fine if you leave that
-    column empty. Entering your static <acronym>IP</acronym> in column 3 makes
-    processing outgoing packets a little more efficient.</para>
+    column empty (Masquerade). Entering your static <acronym>IP</acronym> in
+    column 3 (SNAT) makes the processing of outgoing packets a little more
+    efficient.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 

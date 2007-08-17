@@ -460,6 +460,10 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
 #                                       OPTIONS                 OPTIONS
 sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
 
+        <para>You should also set FASTACCEPT=No in shorewall.conf to ensure
+        that both the SYN and SYN,ACK packets have their MSS field
+        adjusted.</para>
+
         <para>Note that CLAMPMSS=Yes in <filename>shorewall.conf</filename>
         isn't effective with the 2.6 native IPSEC implementation because there
         is no separate ipsec device with a lower mtu as there was under the

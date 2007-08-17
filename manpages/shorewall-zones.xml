@@ -167,7 +167,11 @@ c:a,b     ipv4</programlisting>
               role="bold">mss=</emphasis><emphasis>number</emphasis></term>
 
               <listitem>
-                <para>sets the MSS field in TCP packets</para>
+                <para>sets the MSS field in TCP packets. If you supply this
+                option, you should also set FASTACCEPT=No in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(8) to insure
+                that both the SYN and SYN,ACK packets have their MSS field
+                adjusted.</para>
               </listitem>
             </varlistentry>
 

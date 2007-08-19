@@ -27,6 +27,68 @@ License</a></span>”.<br>
 <p>August 10, 2007</p>
 <hr style="width: 100%; height: 2px;">
 
+<p><strong>2007-08-19 Shorewall 3.4.6</strong></p>
+<pre>Problems Corrected in 3.4.6.
+
+1)  If the "Mangle FORWARD Chain" capability was supported, entries in
+    the /etc/shorewall/ecn file would cause invalid iptables
+    commands to be generated.
+
+2)  Certain errors occurring during
+    start/restart/safe-start/safe-restart/try processing could cause
+    the lockfile to be left behind. This resulted in a 60-second delay
+    the next time one of these commands was run.
+
+3)  It was not previously possible to define traffic shaping on a
+    bridge port; the generated script complained that the
+    interface was not up and configured.
+
+4)  Previously, using a port list in the DEST PORT(S) column of the
+    rules file or in an action file caused an invalid iptables command
+    to be generated.
+
+5)  Using the LOG target in the rules file could result in two LOG
+    rules being generated. Additionally, using an IP address range in a
+    rule that performed logging could result in an invalid iptables
+    command.
+
+6)  Shorewall now loads the act_police kernel module needed by traffic
+    shaping.
+
+7)  Previously, "shorewall show -f capabilities" and "shorecap" omitted
+    the "TCPMSS Match" capability. This made it appear to a compiler
+    using a capabilities file that the TCPMSS Match capability was not
+    available.
+
+8)  Previously, Shorewall would truncate long log prefixes to 29
+    characters. This resulted in there being no space between the log
+    prefix and the IN= part of the message.
+
+    Example: fw2net:LOG:HTTPSoutIN= OUT=eth0
+
+    Beginning with this release, Shorewall will truncate the prefix to
+    28 bytes and add a trailing space.
+
+    Example: fw2net:LOG:HTTPSou IN= OUT=eth0
+
+9)  Previously, if:
+
+    - FASTACCEPT=No
+    - The policy from Z1 to Z2 was CONTINUE
+    - Z1 and Z2 were orphans (neither had parent zones)
+    - There were no Z1-&gt;Z2 rules
+
+    then connections from Z2-&gt;Z1 would fail even if there were
+    rules/policies allowing them. This has been
+    corrected. 
+    
+Other changes in 3.4.6.
+
+1)  Processing of the message log in the 'show log', 'logwatch' and
+    'dump' commands has been speeded up thanks to a suggestion by
+    Andrew Suffield.</pre>
+<hr>
+
 <p><strong>2007-08-10 Shorewall 4.0.2</strong></p>
 <pre>Problems corrected in 4.0.2
 

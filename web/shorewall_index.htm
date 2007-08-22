@@ -39,6 +39,15 @@ href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches
 
 <p>Shorewall-shell version 4.0.0-4.0.2: <a
 href="http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff">http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff</a></p>
+
+<p>Note that the patches may succeed with an offset when they are applied to
+a release other than the one for which they were specifically prepared. For
+example, when the patch for 3.2.0-3.4.3 is applied to release 3.4.3, the
+following is the result:</p>
+<pre>teastep@wookie:~/shorewall/tags/3.4.3/Shorewall$ patch &lt; ~/shorewall/tags/3.2.10/Shorewall.updated/patch-3.2.10-2.diff 
+patching file compiler
+Hunk #1 succeeded at 958 (offset -1669 lines).
+teastep@wookie:~/shorewall/tags/3.4.3/Shorewall$ cat ~/shorewall/tags/3.2.10/Shorewall.updated/patch-3.2.10-2.diff </pre>
 <hr>
 
 <h2>Table of Contents</h2>

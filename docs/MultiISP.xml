@@ -237,23 +237,6 @@
                 low-order 8 bits being zero).</para>
               </listitem>
             </itemizedlist>
-
-            <warning>
-              <para>A bug in Shorewall versions 3.2.0-3.2.10, 3.4.0-3.4.6 and
-              4.0.0-4.0.2 prevents proper handling of PREROUTING marks when
-              HIGH_ROUTE_MARKS=No. Patches are available to correct this
-              problem:</para>
-
-              <para>Shorewall version 3.2.0-3.4.3: <ulink
-              url="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/patches/Shorewall/patch-3.2.10-2.diff">http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/patches/Shorewall/patch-3.2.10-2.diff
-              </ulink></para>
-
-              <para>Shorewall version 3.4.4-3.4.6: <ulink
-              url="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches/Shorewall/patch-3.4.6-1.diff">http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches/Shorewall/patch-3.4.6-1.diff</ulink></para>
-
-              <para>Shorewall-shell version 4.0.0-4.0.2: <ulink
-              url="http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff">http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff</ulink></para>
-            </warning>
           </listitem>
         </varlistentry>
 
@@ -323,12 +306,22 @@
                   It does not require the ROUTE target extension.</para>
 
                   <warning>
-                    <para>iptables 1.3.1 is broken with respect to CONNMARK
-                    and iptables-save/iptables-restore. This means that if you
-                    configure multiple ISPs, <command>shorewall
-                    restore</command> may fail. If it does, you may patch your
-                    iptables using the patch at <ulink
-                    url="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</ulink>.</para>
+                    <para>A <emphasis role="bold">bug</emphasis> in Shorewall
+                    versions 3.2.0-3.2.10, 3.4.0-3.4.6 and 4.0.0-4.0.2
+                    prevents proper handling of PREROUTING marks when
+                    HIGH_ROUTE_MARKS=No and the <emphasis
+                    role="bold">track</emphasis> option is specified. Patches
+                    are available to correct this problem:</para>
+
+                    <para>Shorewall version 3.2.0-3.4.3: <ulink
+                    url="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/patches/Shorewall/patch-3.2.10-2.diff">http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/patches/Shorewall/patch-3.2.10-2.diff
+                    </ulink></para>
+
+                    <para>Shorewall version 3.4.4-3.4.6: <ulink
+                    url="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches/Shorewall/patch-3.4.6-1.diff">http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches/Shorewall/patch-3.4.6-1.diff</ulink></para>
+
+                    <para>Shorewall-shell version 4.0.0-4.0.2: <ulink
+                    url="http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff">http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff</ulink></para>
                   </warning>
 
                   <important>

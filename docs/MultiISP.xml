@@ -841,6 +841,12 @@ eth3             eth2              16.105.78.4</programlisting></para>
           connections on.</para>
         </listitem>
       </itemizedlist>
+
+      <para>Note that some traffic originating on the firewall doesn't have a
+      SOURCE IP address before routing. At least one Shorewall user reports
+      that an entry in <filename>/etc/shorewall/route_rules</filename> with
+      'lo' in the SOURCE column seems to be the most reliable way to direct
+      such traffic to a particular ISP.</para>
     </section>
 
     <section id="route_rules">

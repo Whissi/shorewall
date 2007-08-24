@@ -85,6 +85,7 @@
         role="bold">REJECT</emphasis>|<emphasis
         role="bold">CONTINUE</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>|<emphasis
+        role="bold">NFQUEUE</emphasis>[/<emphasis>queuenumber</emphasis>]|<emphasis
         role="bold">NONE</emphasis>}[<emphasis
         role="bold">:</emphasis>{<emphasis>default-action-or-macro</emphasis>|<emphasis
         role="bold">None</emphasis>}]</term>
@@ -155,6 +156,17 @@
               <listitem>
                 <para>Queue the request for a user-space application such as
                 Snort-inline.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>NFQUEUE</term>
+
+              <listitem>
+                <para>Queue the request for a user-space application using the
+                nfnetlink_queue mechanism. If a
+                <replaceable>queuenumber</replaceable> is not given, queue
+                zero (0) is assumed.</para>
               </listitem>
             </varlistentry>
 

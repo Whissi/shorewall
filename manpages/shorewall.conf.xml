@@ -107,19 +107,29 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">none</emphasis>} (Shorewall-perl 4.0.3 and later)</term>
+
+        <listitem>
           <para>In earlier Shorewall versions, a "default action" for DROP and
           REJECT policies was specified in the file
           /usr/share/shorewall/actions.std.</para>
 
           <para>To allow for default rules to be applied when USE_ACTIONS=No,
-          the DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT and QUEUE_DEFAULT
-          options have been added.</para>
+          the DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT, QUEUE_DEFAULT and
+          NFQUEUE_DEFAULT options have been added.</para>
 
           <para>DROP_DEFAULT describes the rules to be applied before a
           connection request is dropped by a DROP policy; REJECT_DEFAULT
           describes the rules to be applied if a connection request is
-          rejected by a REJECT policy. The other two are similar for ACCEPT
-          and QUEUE policies.</para>
+          rejected by a REJECT policy. The other three are similar for ACCEPT,
+          QUEUE and NFQUEUE policies.</para>
 
           <para>The value applied to these may be:</para>
 
@@ -144,6 +154,8 @@
             <member>ACCEPT_DEFAULT="none"</member>
 
             <member>QUEUE_DEFAULT="none"</member>
+
+            <member>NFQUEUE_DEFAULT="None"</member>
           </simplelist>
 
           <para>If USE_ACTIONS=Yes, then these values refer to action.Drop and

@@ -123,7 +123,8 @@
         role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
         role="bold">LOG</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
+        role="bold">NFQUEUE</emphasis>[/<emphasis>queuenumber</emphasis>]<emphasis
+        role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
         role="bold">/</emphasis><emphasis>target</emphasis>]}<emphasis
         role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
         role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
@@ -337,6 +338,29 @@
               <listitem>
                 <para>like QUEUE but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>NFQUEUE</term>
+
+              <listitem>
+                <para>Only supported by Shorewall-perl &gt;= 4.0.3.</para>
+
+                <para>Queues the packet to a user-space application using the
+                nfnetlink_queue mechanism. If a
+                <replaceable>queuenumber</replaceable> is not specified, queue
+                zero (0) is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>NFQUEUE!</term>
+
+              <listitem>
+                <para>like NFQUEUE but exempts the rule from being suppressed
+                by OPTIMIZE=1 in <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>

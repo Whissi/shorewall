@@ -46,9 +46,9 @@
     <para>Shorewall actions allow a symbolic name to be associated with a
     series of one or more iptables rules. The symbolic name may appear in the
     ACTION column of an <filename><ulink
-    url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink></filename> file
-    entry, in which case the traffic matching that rules file entry will be
-    passed to the series of iptables rules named by the action.</para>
+    url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink></filename>
+    file entry, in which case the traffic matching that rules file entry will
+    be passed to the series of iptables rules named by the action.</para>
 
     <para>Actions can be thought of as templates. When an action is invoked in
     an <filename>/etc/shorewall/rules</filename> entry, it may be qualified by
@@ -194,8 +194,8 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
     <important>
       <para>Debian users. This feature is broken in the Debian version 3.0.7
       of Shorewall (and possibly in other versions). The file
-      <filename>/usr/share/shorewall/Limit</filename> was inadvertently dropped
-      from the .deb. That file may be obtained from <ulink
+      <filename>/usr/share/shorewall/Limit</filename> was inadvertently
+      dropped from the .deb. That file may be obtained from <ulink
       url="http://shorewall.svn.sourceforge.net/viewvc/*checkout*/shorewall/tags/3.0.7/Shorewall/Limit?revision=3888">Shorewall
       SVN</ulink> and installed manually.</para>
     </important>
@@ -744,10 +744,12 @@ acton:info:test  $FW              net</programlisting>
       using Shorewall-shell:</para>
 
       <para><blockquote>
-          <para>/etc/shorewall/DropBcasts<programlisting>run_iptables -A DropBcasts -m pkttype --pkttype broadcast -j DROP</programlisting></para>
+          <para>/etc/shorewall/DropBcasts<programlisting>[ -n "$LEVEL" ] &amp;&amp; log_rule_limit $LEVEL $CHAIN DropBcasts DROP   "" "$TAG" -A
+run_iptables -A DropBcasts -m pkttype --pkttype broadcast -j DROP</programlisting></para>
         </blockquote>When using Shorewall-Perl:<blockquote>
           <para>/etc/shorewall/DropBcasts<programlisting>use Shorewall::Chains;
 
+log_rule_limit( $level, $chainref, 'DropBcasts', 'DROP', '', $tag, 'add', '' ) if $level ne ''; 
 add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );
 
 1;</programlisting></para>

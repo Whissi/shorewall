@@ -147,12 +147,10 @@ packet_log() # $1 = number of messages
 {
     local options
 
-    [ -n "$realtail" ] && options="-n$1"
-
     if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
-	$LOGREAD | grep 'IN=.* OUT=' | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/ | tail $options
+	$LOGREAD | grep 'IN=.* OUT=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
     else
-	$LOGREAD | grep 'IN=.* OUT=' | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/ | tail $options
+	$LOGREAD | grep 'IN=.* OUT=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
     fi
 }
 
@@ -173,15 +171,8 @@ show_tc() {
 	fi
     }
 
-    ip link list | \
-    while read inx interface details; do
-	case $inx in
-	[0-9]*)
-	    show_one_tc ${interface%:}
-	    ;;
-	*)
-	    ;;
-	esac
+    ip -o link list | while read inx interface details; do
+	show_one_tc ${interface%:}
     done
 
 }
@@ -202,15 +193,8 @@ show_classifiers() {
 	fi
     }
 
-    ip link list | \
-    while read inx interface details; do
-	case $inx in
-	[0-9]*)
-	    show_one_classifier ${interface%:}
-	    ;;
-	*)
-	    ;;
-	esac
+    ip -o link list | while read inx interface details; do
+	show_one_classifier ${interface%:}
     done
 
 }

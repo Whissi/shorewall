@@ -35,7 +35,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=30405
+SHOREWALL_CAPVERSION=40003
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -1004,6 +1004,8 @@ determine_capabilities() {
     COMMENTS=
     ADDRTYPE=
     TCPMSS_MATCH=
+    HASHLIMIT_MATCH=
+    NFQUEUE_TARGET=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -1072,6 +1074,9 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
     qt $IPTABLES -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
     qt $IPTABLES -A fooX1234 -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+    
 
     qt $IPTABLES -F fooX1234
     qt $IPTABLES -X fooX1234
@@ -1119,6 +1124,8 @@ report_capabilities() {
 	report_capability "Comments" $COMMENTS
 	report_capability "Address Type Match" $ADDRTYPE
 	report_capability "TCPMSS Match" $TCPMSS_MATCH
+	report_capability "Hashlimit Match" $HASHLIMIT_MATCH
+	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1161,6 +1168,9 @@ report_capabilities1() {
     report_capability1 MANGLE_FORWARD
     report_capability1 COMMENTS
     report_capability1 ADDRTYPE
+    report_capability1 TCPMSS_MATCH
+    report_capability1 HASHLIMIT_MATCH
+    report_capability1 NFQUEUE_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }
@@ -1331,7 +1341,7 @@ do_log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispos
     fi
 
     if [ ${#prefix} -gt 29 ]; then
-	prefix=`echo "$prefix" | truncate 29`
+	prefix="`echo "$prefix" | truncate 28` "
 	error_message "WARNING: Log Prefix shortened to \"$prefix\""
     fi
 

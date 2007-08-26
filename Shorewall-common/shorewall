@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Control Program - V3.4
+#     Shorewall Packet Filtering Firewall Control Program - V4.0
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -156,9 +156,9 @@ get_config() {
 	    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
 	    if [ -n "$(syslog_circular_buffer)" ]; then
-		LOGREAD="logread"
+		LOGREAD="logread | tac"
 	    elif [ -f $LOGFILE ]; then
-		LOGREAD="cat $LOGFILE"
+		LOGREAD="tac $LOGFILE"
 	    else
 		echo "LOGFILE ($LOGFILE) does not exist!" >&2
 		exit 2
@@ -1282,7 +1282,7 @@ usage() # $1 = exit status
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ -e ] [ -C {shell|perl} ] [ <directory> ]"
-    echo "   clear"
+    echo "   clear [ -f ]"
     echo "   compile [ -e ] [ -C {shell|perl} ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
@@ -1307,7 +1307,7 @@ usage() # $1 = exit status
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones} ]"
     echo "   start [ -f ] [ -n ] [ -C {shell|perl} ] [ <directory> ]"
-    echo "   stop"
+    echo "   stop [ -f ]"
     echo "   status"
     echo "   try [ -C {shell|perl} ] <directory> [ <timeout> ]"
     echo "   version [ -a ]"
@@ -1542,13 +1542,25 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|reset|clear)
+    stop|clear)
+	if [ "x$2" = x-f ]; then
+	    [ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
+	    shift;
+	fi
+
 	[ $# -ne 1 ] && usage 1
 	get_config
 	export NOROUTES
-	[ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	mutex_off
+	;;
+    reset)
+	[ $# -ne 1 ] && usage 1
+	get_config
+	export NOROUTES
+	mutex_on
+	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset
 	mutex_off
 	;;
     compile)

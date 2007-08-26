@@ -958,7 +958,7 @@ setup_tc1() {
     # packets that are not part of a marked connection to the 'tcpre/tcout' chains.
     #
     if [ -n "$ROUTEMARK_INTERFACES" -a -z "$TC_EXPERT" ]; then
-	[ -n "$HIGH_ROUTE_MARKS" ] && mark_part="-m mark --mark 0/0xFF00" || mark_part="-m mark --mark 0/0xFF00"
+	[ -n "$HIGH_ROUTE_MARKS" ] && mark_part="-m mark --mark 0/0xFF00" || mark_part="-m mark --mark 0/0xFF"
 	#
 	# But let marks in tcpre override those assigned by 'track'
 	#
@@ -3245,6 +3245,8 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 
     run_user_exit $1
 
+    [ -n "$FASTACCEPT" ] || run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
     eval policychain=\$${2}2${3}_policychain
 
     if [ -n "$policychain" ]; then
@@ -4917,7 +4919,7 @@ compile_firewall() # $1 = File Name
 		;;
 	esac
 
-	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
+	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option
     }
 
     progress_message2 "Initializing..."

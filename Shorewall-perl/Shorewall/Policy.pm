@@ -34,21 +34,32 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 #
-# Create a new policy chain and return a reference to it.
+# Convert a chain into a policy chain.
 #
-sub new_policy_chain($$$)
+sub convert_to_policy_chain($$$$$)
 {
-    my ($chain, $policy, $optional) = @_;
-
-    my $chainref = new_chain 'filter', $chain;
+    my ($chainref, $source, $dest, $policy, $optional ) = @_;
 
     $chainref->{is_policy}   = 1;
     $chainref->{policy}      = $policy;
     $chainref->{is_optional} = $optional;
-    $chainref->{policychain} = $chain;
+    $chainref->{policychain} = $chainref->{name};
+    $chainref->{policypair}  = [ $source, $dest ];
+}
+
+#
+# Create a new policy chain and return a reference to it.
+#
+sub new_policy_chain($$$$)
+{
+    my ($source, $dest, $policy, $optional) = @_;
+
+    my $chainref = new_chain( 'filter', "${source}2${dest}" );
+
+    convert_to_policy_chain( $chainref, $source, $dest, $policy, $optional );
 
     $chainref;
 }
@@ -56,9 +67,9 @@ sub new_policy_chain($$$)
 #
 # Set the passed chain's policychain and policy to the passed values.
 #
-sub set_policy_chain($$$)
+sub set_policy_chain($$$$$)
 {
-    my ($chain1, $chainref, $policy) = @_;
+    my ($source, $dest, $chain1, $chainref, $policy ) = @_;
 
     my $chainref1 = $filter_table->{$chain1};
 
@@ -86,6 +97,7 @@ sub set_policy_chain($$$)
 	}
 
 	$chainref1->{policy} = $policy;
+	$chainref1->{policypair} = [ $source, $dest ];
     }
 }
 
@@ -97,8 +109,13 @@ sub validate_policy()
     sub print_policy($$$$)
     {
 	my ( $source, $dest, $policy , $chain ) = @_;
-	progress_message "   Policy for $source to $dest is $policy using chain $chain"
-	    unless ( $source eq $dest ) || ( $source eq 'all' ) || ( $dest eq 'all' );
+	unless ( ( $source eq 'all' ) || ( $dest eq 'all' ) ) {
+	    if ( $policy eq 'CONTINUE' ) {
+		my ( $sourceref, $destref ) = @zones{$source,$dest};
+		warning_message "CONTINUE policy between two un-nested zones ($source, $dest)" if ! ( @{$sourceref->{parents}} || @{$destref->{parents}} );
+	    }
+	    progress_message "   Policy for $source to $dest is $policy using chain $chain" unless $source eq $dest;
+	}
     }
 
     my %validpolicies = (
@@ -107,19 +124,21 @@ sub validate_policy()
 			  DROP   => undef,
 			  CONTINUE => undef,
 			  QUEUE => undef,
+			  NFQUEUE => undef,
 			  NONE => undef
 			  );
 
-    my %map = ( DROP_DEFAULT   => 'DROP' ,
-		REJECT_DEFAULT => 'REJECT' ,
-		ACCEPT_DEFAULT => 'ACCEPT' ,
-		QUEUE_DEFAULT  => 'QUEUE' );
+    my %map = ( DROP_DEFAULT    => 'DROP' ,
+		REJECT_DEFAULT  => 'REJECT' ,
+		ACCEPT_DEFAULT  => 'ACCEPT' ,
+		QUEUE_DEFAULT   => 'QUEUE' ,
+	        NFQUEUE_DEFAULT => 'NFQUEUE' );
 
     my $zone;
 
     use constant { OPTIONAL => 1 };
 
-    for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT/ {
+    for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
 	my $action = $config{$option};
 	next if $action eq 'none';
 	my $actiontype = $targets{$action};
@@ -139,13 +158,13 @@ sub validate_policy()
     }
 
     for $zone ( @zones ) {
-	push @policy_chains, ( new_policy_chain "${zone}2${zone}", 'ACCEPT', OPTIONAL );
+	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{$zones{$zone}{parents}} ) ) {
 	    for my $zone1 ( @zones ) {
 		next if $zone eq $zone1;
-		push @policy_chains, ( new_policy_chain "${zone}2${zone1}", 'CONTINUE', OPTIONAL );
-		push @policy_chains, ( new_policy_chain "${zone1}2${zone}", 'CONTINUE', OPTIONAL );
+		push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
+		push @policy_chains, ( new_policy_chain $zone1, $zone, 'CONTINUE', OPTIONAL );
 	    }
 	}
     }
@@ -178,6 +197,8 @@ sub validate_policy()
 
 	fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
 
+	( $policy , my $queue ) = split( '/' , $policy );
+
 	if ( $default ) {
 	    if ( "\L$default" eq 'none' ) {
 		$default = 'none';
@@ -199,7 +220,13 @@ sub validate_policy()
 
 	fatal_error "Invalid policy $policy" unless exists $validpolicies{$policy};
 
-	if ( $policy eq 'NONE' ) {
+	if ( defined $queue ) {
+	    fatal_error "Invalid policy ($policy/$queue)" unless $policy eq 'NFQUEUE';
+	    require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
+	    $queue = numeric_value( $queue );
+	    fatal_error "Invalid NFQUEUE queue number ($queue)" if $queue > 65535;
+	    $policy = "$policy/$queue";
+	} elsif ( $policy eq 'NONE' ) {
 	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
 	    fatal_error "NONE policy not allowed to/from firewall zone"
@@ -224,18 +251,16 @@ sub validate_policy()
 		    $chainref->{is_optional} = 0;
 		    $chainref->{policy} = $policy;
 		} else {
-		    fatal_error "Duplicate policy: $client $server $policy";
+		    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 		}
 	    } elsif ( $chainref->{policy} ) {
-		fatal_error "Duplicate policy: $client $server $policy";
+		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 	    } else {
-		$chainref->{is_policy} = 1;
-		$chainref->{policy} = $policy;
-		$chainref->{policychain} = $chain;
+		convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
 		push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	    }
 	} else {
-	    $chainref = new_policy_chain $chain, $policy, 0;
+	    $chainref = new_policy_chain $client, $server, $policy, 0;
 	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	}
 
@@ -252,19 +277,19 @@ sub validate_policy()
 	    if ( $serverwild ) {
 		for my $zone ( @zones , 'all' ) {
 		    for my $zone1 ( @zones , 'all' ) {
-			set_policy_chain "${zone}2${zone1}", $chainref, $policy;
+			set_policy_chain $client, $server, "${zone}2${zone1}", $chainref, $policy;
 			print_policy $zone, $zone1, $policy, $chain;
 		    }
 		}
 	    } else {
 		for my $zone ( @zones ) {
-		    set_policy_chain "${zone}2${server}", $chainref, $policy;
+		    set_policy_chain $client, $server, "${zone}2${server}", $chainref, $policy;
 		    print_policy $zone, $server, $policy, $chain;
 		}
 	    }
 	} elsif ( $serverwild ) {
 	    for my $zone ( @zones , 'all' ) {
-		set_policy_chain "${client}2${zone}", $chainref, $policy;
+		set_policy_chain $client, $server, "${client}2${zone}", $chainref, $policy;
 		print_policy $client, $zone, $policy, $chain;
 	    }
 
@@ -284,7 +309,14 @@ sub policy_rules( $$$$ ) {
 	add_rule $chainref, "-j $default" if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
-	add_rule $chainref , ( '-j ' . ( $target eq 'REJECT' ? 'reject' : $target ) ) unless $target eq 'CONTINUE';
+	if ( $target eq 'REJECT' ) {
+	    $target = 'reject';
+	} elsif ( $target =~ /^NFQUEUE/ ) {
+	    my $queue = ( split( '/', $target) )[1] || 0;
+	    $target = "NFQUEUE --queue-num $queue";
+	}
+
+	add_rule( $chainref , "-j $target" ) unless $target eq 'CONTINUE';
     }
 }
 
@@ -305,7 +337,7 @@ sub default_policy( $$$ ) {
     if ( $chainref eq $policyref ) {
 	policy_rules $chainref , $policy, $loglevel , $default;
     } else {
-	if ( $policy eq 'ACCEPT' || $policy eq 'QUEUE' ) {
+	if ( $policy eq 'ACCEPT' || $policy eq 'QUEUE' || $policy =~ /^NFQUEUE/ ) {
 	    if ( $synparams ) {
 		report_syn_flood_protection;
 		policy_rules $chainref , $policy , $loglevel , $default;
@@ -373,6 +405,8 @@ sub apply_policy_rules() {
 #
 sub complete_standard_chain ( $$$ ) {
     my ( $stdchainref, $zone, $zone2 ) = @_;
+
+    add_rule $stdchainref, '-m state --state ESTABLISHED,RELATED -j ACCEPT' unless $config{FASTACCEPT};
 
     run_user_exit $stdchainref;
 

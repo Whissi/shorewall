@@ -44,6 +44,7 @@ our @EXPORT = qw( STANDARD
 		  ACTION
 		  MACRO
 		  LOGRULE
+		  NFQ
 		  NO_RESTRICT
 		  PREROUTE_RESTRICT
 		  INPUT_RESTRICT
@@ -52,14 +53,15 @@ our @EXPORT = qw( STANDARD
 		  ALL_RESTRICT
 
 		  process_comment
-		  push_cmd_mode
-		  pop_cmd_mode
+		  incr_cmd_level
+		  decr_cmd_level
 		  add_command
 		  add_commands
 		  mark_referenced
 		  add_file
 		  add_rule
 		  insert_rule
+		  insert_rule_nice
 		  chain_base
 		  forward_chain
 		  input_chain
@@ -89,7 +91,6 @@ our @EXPORT = qw( STANDARD
 		  clearrule
 		  do_proto
 		  mac_match
-		  numeric_value
 		  verify_mark
 		  verify_small_mark
 		  validate_mark
@@ -128,7 +129,7 @@ our @EXPORT = qw( STANDARD
 		  %targets
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 #
 # Chain Table
@@ -138,16 +139,17 @@ our $VERSION = 4.02;
 #    %chain_table { <table> => { <chain1>  => { name         => <chain name>
 #                                               table        => <table name>
 #                                               is_policy    => 0|1
-#                                               is_optionsl  => 0|1
+#                                               is_optional  => 0|1
 #                                               referenced   => 0|1
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
+#                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
+#                                               policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
 #                                               loglevel     => <level>
 #                                               synparams    => <burst/limit>
 #                                               synchain     => <name of synparam chain>
 #                                               default      => <default action>
-#                                               policy_chain => <ref to policy chain -- self-reference if this is a policy chain>
-#                                               cmdmode      => <number of open loops or blocks in runtime commands>
+#                                               cmdlevel     => <number of open loops or blocks in runtime commands>
 #                                               rules        => [ <rule1>
 #                                                                 <rule2>
 #                                                                 ...
@@ -188,6 +190,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       ACTION   => 64,             #An action (may be built-in)
 	       MACRO    => 128,            #A Macro
 	       LOGRULE  => 256,            #'LOG'
+	       NFQ      => 512,            #'NFQUEUE'
 	   };
 
 our %targets;
@@ -276,6 +279,8 @@ sub initialize() {
 		'CONTINUE!'    => STANDARD,
 		'QUEUE'        => STANDARD,
 		'QUEUE!'       => STANDARD,
+                'NFQUEUE'      => STANDARD + NFQ,
+                'NFQUEUE!'     => STANDARD + NFQ,
 		'SAME'         => NATRULE,
 		'SAME-'        => NATRULE  + NATONLY,
 		'dropBcast'    => BUILTIN  + ACTION,
@@ -331,21 +336,21 @@ sub process_comment() {
     }
 }
 #
-# Functions to manipulate cmdmode
+# Functions to manipulate cmdlevel
 #
-sub push_cmd_mode( $ ) {
-    $_[0]->{cmdmode}++;
+sub incr_cmd_level( $ ) {
+    $_[0]->{cmdlevel}++;
 }
 
-sub pop_cmd_mode( $ ) {
-    fatal_error "Internal error in pop_cmd_mode()" if --$_[0]->{cmdmode} < 0;
+sub decr_cmd_level( $ ) {
+    fatal_error "Internal error in decr_cmd_level()" if --$_[0]->{cmdlevel} < 0;
 }
 
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
 
-    push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdmode} , $command );
+    push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdlevel} , $command );
 
     $chainref->{referenced} = 1;
 }
@@ -354,7 +359,7 @@ sub add_commands {
     my $chainref = shift @_;
 
     for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdmode} , $command );
+	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdlevel} , $command );
     }
 
     $chainref->{referenced} = 1;
@@ -403,7 +408,7 @@ sub add_rule($$)
 
     $rule .= qq( -m comment --comment "$comment") if $comment;
 
-    if ( $chainref->{cmdmode} ) {
+    if ( $chainref->{cmdlevel} ) {
 	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
 	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
@@ -421,7 +426,7 @@ sub insert_rule($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    fatal_error 'Internal Error in insert_rule()' if $chainref->{cmdmode};
+    fatal_error 'Internal Error in insert_rule()' if $chainref->{cmdlevel};
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
@@ -445,12 +450,16 @@ sub chain_base($) {
     $chain;
 }
 
+sub chain_base_cond($) {
+    $config{DYNAMIC_ZONES} ? chain_base($_[0]) : $_[0];
+}
+
 #
 # Forward Chain for an interface
 #
 sub forward_chain($)
 {
-    $_[0] . '_fwd';
+    chain_base_cond($_[0]) . '_fwd';
 }
 
 #
@@ -458,7 +467,7 @@ sub forward_chain($)
 #
 sub input_chain($)
 {
-    $_[0] . '_in';
+    chain_base_cond($_[0]) . '_in';
 }
 
 #
@@ -466,7 +475,7 @@ sub input_chain($)
 #
 sub output_chain($)
 {
-     $_[0] . '_out';
+     chain_base_cond($_[0]) . '_out';
 }
 
 #
@@ -474,7 +483,7 @@ sub output_chain($)
 #
 sub masq_chain($)
 {
-     $_[0] . '_masq';
+     chain_base_cond($_[0]) . '_masq';
 }
 
 #
@@ -489,12 +498,12 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    $_[0] . '_mac';
+    chain_base_cond($_[0]) . '_mac';
 }
 
 sub macrecent_target($)
 {
-     $config{MACLIST_TTL} ? $_[0] . '_rec' : 'RETURN';
+     $config{MACLIST_TTL} ? chain_base_cond($_[0]) . '_rec' : 'RETURN';
 }
 
 #
@@ -502,22 +511,22 @@ sub macrecent_target($)
 #
 sub dynamic_fwd( $ )
 {
-    $_[0] . '_dynf';
+    chain_base_cond($_[0]) . '_dynf';
 }
 
 sub dynamic_in( $ )
 {
-    $_[0] . '_dyni';
+    chain_base_cond($_[0]) . '_dyni';
 }
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    $_[0] . '_dyno';
+    chain_base_cond($_[0]) . '_dyno';
 }
 
 sub dynamic_chains( $ ) #$1 = interface
 {
-    my $c = $_[0];
+    my $c = chain_base_cond($_[0]);
 
     [ $c . '_dyni' , $c . '_dynf' , $c . '_dyno' ];
 }
@@ -527,7 +536,7 @@ sub dynamic_chains( $ ) #$1 = interface
 #
 sub dnat_chain( $ )
 {
-    $_[0] . '_dnat';
+    chain_base_cond($_[0]) . '_dnat';
 }
 
 #
@@ -535,7 +544,7 @@ sub dnat_chain( $ )
 #
 sub snat_chain( $ )
 {
-    $_[0] . '_snat';
+    chain_base_cond($_[0]) . '_snat';
 }
 
 #
@@ -543,7 +552,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    $_[0] . '_ecn';
+    chain_base_cond($_[0]) . '_ecn';
 }
 
 #
@@ -551,7 +560,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = $_[0];
+    my $c = chain_base_cond($_[0]);
 
     [ $c . '_fwd', $c . '_in' ];
 }
@@ -563,12 +572,14 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
 
+    warning_message "Internal error in new_chain()" if $chain_table{$table}{$chain};
+
     $chain_table{$table}{$chain} = { name      => $chain,
 				     rules     => [],
 				     table     => $table,
 				     loglevel  => '',
 				     log       => 1,
-				     cmdmode   => 0 };
+				     cmdlevel  => 0 };
 }
 
 #
@@ -668,7 +679,7 @@ sub initialize_chain_table()
 	new_builtin_chain 'nat', $chain, 'ACCEPT';
     }
 
-    for my $chain qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING) {
+    for my $chain qw(PREROUTING INPUT OUTPUT ) {
 	new_builtin_chain 'mangle', $chain, 'ACCEPT';
     }
 
@@ -693,7 +704,7 @@ sub finish_chain_section ($$) {
 	    if ( $chainref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
 		if ( $section eq 'DONE' ) {
-		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE)$/ ) {
+		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 		    }
 		} else {
@@ -762,7 +773,7 @@ sub set_mss( $$$ ) {
 }
 
 #
-# Interate over non-firewall zones adding TCPMSS rules as appropriate
+# Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate. 
 #
 sub setup_zone_mss() {
     for my $zone ( @zones ) {
@@ -982,15 +993,6 @@ sub mac_match( $ ) {
     $mac =~ tr/-/:/;
 
     "--match mac --mac-source ${invert}$mac ";
-}
-
-#
-# Convert value to decimal number
-#
-sub numeric_value ( $ ) {
-    my $mark = $_[0];
-    fatal_error "Invalid Numeric Value ($mark)" unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
-    $mark =~ /^0x/ ? hex $mark : $mark =~ /^0/ ? oct $mark : $mark;
 }
 
 #
@@ -1224,8 +1226,10 @@ sub match_orig_dest ( $ ) {
 
     if ( $net =~ /^!/ ) {
 	$net =~ s/!//;
+	validate_net $net;
 	"-m conntrack --ctorigdst ! $net ";
     } else {
+	validate_net $net;
 	$net eq ALLIPv4 ? '' : "-m conntrack --ctorigdst $net ";
     }
 }
@@ -1301,7 +1305,7 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 
     if ( length $prefix > 29 ) {
-	$prefix = substr $prefix, 0, 29;
+	$prefix = substr( $prefix, 0, 28 ) . ' ';
 	warning_message "Log Prefix shortened to \"$prefix\"";
     }
 
@@ -1473,7 +1477,7 @@ sub expand_rule( $$$$$$$$$$ )
 
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
-    my $initialcmdmode = $chainref->{cmdmode};
+    my $initialcmdlevel = $chainref->{cmdlevel};
 
     #
     # Handle Log Level
@@ -1531,7 +1535,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    $rule .= '-s $source ';
 	    
-	    push_cmd_mode $chainref;
+	    incr_cmd_level $chainref;
 	} else {
 	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone" if $restriction & OUTPUT_RESTRICT;
 	    $rule .= match_source_dev( $iiface );
@@ -1560,7 +1564,7 @@ sub expand_rule( $$$$$$$$$$ )
 		add_command( $chainref , "for address in $list; do" );
 
 		$rule .= '-d $address ';
-		push_cmd_mode $chainref;
+		incr_cmd_level $chainref;
 	    } else {
 		$rule .= join ( '', '-d ', get_interface_address( $interfaces[0] ), ' ' );
 	    }
@@ -1591,7 +1595,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
 	    $rule .= '-d $dest ';
-	    push_cmd_mode $chainref;
+	    incr_cmd_level $chainref;
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
@@ -1625,7 +1629,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 		add_command( $chainref , "for address in $list; do" );
 		$rule .= '-m conntrack --ctorigdst $address ';
-		push_cmd_mode $chainref;
+		incr_cmd_level $chainref;
 	    } else {
 		get_interface_address $interfaces[0];
 		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
@@ -1649,7 +1653,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    unless ( $onets ) {
 		my @oexcl = mysplit $oexcl;
 		if ( @oexcl == 1 ) {
-		    $rule .= "-m conntrack --ctorigdst ! $oexcl ";
+		    $rule .= match_orig_dest( "!$oexcl" );
 		    $oexcl = '';
 		}
 	    }
@@ -1727,18 +1731,12 @@ sub expand_rule( $$$$$$$$$$ )
 	    for my $inet ( mysplit $inets ) {
 		for my $dnet ( mysplit $dnets ) {
 		    #
-		    # We defer evaluating the source net match to accomodate system without $capabilities{KLUDGEFREE}
+		    # We evaluate the source net match in the inner loop to accomodate systems without $capabilities{KLUDGEFREE}
 		    #
 		    add_rule $chainref, join( '', $rule, match_source_net( $inet), match_dest_net( $dnet ), $onet, "-j $echain" );
 		}
 	    }
 	}
-
-	#
-	# The final rule in the exclusion chain will not qualify the source or destination
-	#
-	$inets = ALLIPv4;
-	$dnets = ALLIPv4;
 
 	#
 	# Create the Exclusion Chain
@@ -1748,17 +1746,9 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Generate RETURNs for each exclusion
 	#
-	for my $net ( mysplit $iexcl ) {
-	    add_rule $echainref, ( match_source_net $net ) . '-j RETURN';
-	}
-
-	for my $net ( mysplit $dexcl ) {
-	    add_rule $echainref, ( match_dest_net $net ) . '-j RETURN';
-	}
-
-	for my $net ( mysplit $oexcl ) {
-	    add_rule $echainref, ( match_orig_dest $net ) . '-j RETURN';
-	}
+	add_rule $echainref, ( match_source_net $_ ) . '-j RETURN' for ( mysplit $iexcl );
+	add_rule $echainref, ( match_dest_net $_ ) .   '-j RETURN' for ( mysplit $dexcl );
+	add_rule $echainref, ( match_orig_dest $_ ) .  '-j RETURN' for ( mysplit $oexcl );
 	#
 	# Log rule
 	#
@@ -1800,8 +1790,8 @@ sub expand_rule( $$$$$$$$$$ )
 	}
     }
 
-    while ( $chainref->{cmdmode} > $initialcmdmode ) {
-	pop_cmd_mode $chainref;
+    while ( $chainref->{cmdlevel} > $initialcmdlevel ) {
+	decr_cmd_level $chainref;
 	add_command $chainref, 'done';
     }
 
@@ -1974,7 +1964,7 @@ sub create_netfilter_load() {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdmode};
+		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
@@ -1985,7 +1975,7 @@ sub create_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdmode};
+		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }

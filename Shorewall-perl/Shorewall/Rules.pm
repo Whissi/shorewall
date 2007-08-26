@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
@@ -109,8 +109,8 @@ sub process_tos() {
 
 	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file entry';
 
-	    fatal_error "TOS field required" unless $tos ne '-';
-
+	    fatal_error "A value must be supplied in the TOS column" if $tos eq '-';
+	    
 	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) {
 		$tos = $tosval;
 	    } elsif ( numeric_value( $tos ) > 0x1e ) {
@@ -501,6 +501,13 @@ sub add_common_rules() {
     my $list;
     my $chain;
 
+    if ( $config{FASTACCEPT} ) {
+	for $chain qw( INPUT FORWARD OUTPUT ) {
+	    $chainref = $filter_table->{$chain};
+	    add_rule( $chainref , "-m state --state ESTABLISHED,RELATED -j ACCEPT" );
+	}
+    }
+
     my $rejectref = new_standard_chain 'reject';
 
     $level = $config{BLACKLIST_LOGLEVEL};
@@ -533,10 +540,10 @@ sub add_common_rules() {
 	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     } else {
 	add_command $chainref, 'for address in $ALL_BCASTS; do';
-	push_cmd_mode $chainref;
+	incr_cmd_level $chainref;
 	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
 	add_rule $chainref, '-s $address -j DROP';
-	pop_cmd_mode $chainref;
+	decr_cmd_level $chainref;
 	add_command $chainref, 'done';
     }
 
@@ -546,9 +553,9 @@ sub add_common_rules() {
 	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
     } else {
 	add_command $rejectref, 'for address in $ALL_BCASTS; do';
-	push_cmd_mode $rejectref;
+	incr_cmd_level $rejectref;
 	add_rule $rejectref, '-d $address -j DROP';
-	pop_cmd_mode $rejectref;
+	decr_cmd_level $rejectref;
 	add_command $rejectref, 'done';
     }
 
@@ -967,6 +974,14 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$current_param = pop @param_stack if $param ne '';
 
 	return;
+
+    } elsif ( $actiontype & NFQ ) {
+	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' ); 
+	$param = $param eq '' ? 0 : numeric_value( $param );
+	fatal_error "Invalid value ($param) for NFQUEUE queue number" if $param > 65535;
+	$action = "NFQUEUE/$param";
+    } else {
+	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
     #
     # We can now dispense with the postfix characters
@@ -1110,7 +1125,6 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	my $servport = $serverport ne '' ? $serverport : $ports;
 
 	fatal_error "A server must be specified in the DEST column in $action rules" unless ( $actiontype & REDIRECT ) || $server ne ALLIPv4;
-	fatal_error "Invalid server ($server)" if $server =~ /:/;
 	#
 	# Generate the target
 	#
@@ -1118,6 +1132,17 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 
 	if ( $actiontype  & REDIRECT ) {
 	    $target = '-j REDIRECT --to-port ' . ( $serverport ne '' ? $serverport : $ports );
+	    if ( $origdest eq '' || $origdest eq '-' ) {
+		$origdest = ALLIPv4;
+	    } elsif ( $origdest eq 'detect' ) {
+		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne $firewall_zone ) {
+		    my $interfacesref = $zones{$sourcezone}{interfaces};
+		    my @interfaces = keys %$interfacesref;
+		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
+		} else {
+		    $origdest = ALLIPv4;
+		}
+	    }
 	} else {
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
@@ -1135,7 +1160,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    }
 
 	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-		if ( $config{DETECT_DNAT_IPADDRS} ) {
+		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne $firewall_zone ) {
 		    my $interfacesref = $zones{$sourcezone}{interfaces};
 		    my @interfaces = keys %$interfacesref;
 		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
@@ -1144,6 +1169,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		}
 	    }
 	}
+
 	#
 	# And generate the nat table rule(s)
 	#
@@ -1217,7 +1243,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     "-j $action " ,
+		     $actiontype & NFQ ? "-j NFQUEUE --queue-num $param " : "-j $action " ,
 		     $loglevel ,
 		     $action ,
 		     '' );
@@ -1849,25 +1875,58 @@ sub generate_matrix() {
     }
 }
 
-sub setup_mss( $ ) {
-    my $clampmss = $_[0];
+sub setup_mss( ) {
+    my $clampmss = $config{CLAMPMSS};
     my $option;
     my $match = '';
+    my $chainref = $filter_table->{FORWARD};
 
-    if ( "\L$clampmss" eq 'yes' ) {
-	$option = '--clamp-mss-to-pmtu';
-    } else {
-	$match  = "-m tcpmss --mss $clampmss: " if $capabilities{TCPMSS_MATCH};
-	$option = "--set-mss $clampmss";
+    if ( $clampmss ) {
+	if ( "\L$clampmss" eq 'yes' ) {
+	    $option = '--clamp-mss-to-pmtu';
+	} else {
+	    $match  = "-m tcpmss --mss $clampmss: " if $capabilities{TCPMSS_MATCH};
+	    $option = "--set-mss $clampmss";
+	}
+
+	$match .= '-m policy --pol none --dir out ' if $capabilities{POLICY_MATCH};
     }
 
-    add_rule $filter_table->{FORWARD} , "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option";
+    my $interfaces = find_interfaces_by_option( 'mss' );
+
+    if ( @$interfaces ) {
+	#
+	# Since we will need multiple rules, we create a separate chain
+	#
+	$chainref = new_chain 'filter', 'settcpmss';
+	#
+	# Send all forwarded SYN packets to the 'settcpmss' chain
+	#
+	add_rule $filter_table->{FORWARD} ,  "-p tcp --tcp-flags SYN,RST SYN -j settcpmss";
+
+	my $in_match  = '';
+	my $out_match = '';
+
+	if ( $capabilities{POLICY_MATCH} ) {
+	    $in_match  = '-m policy --pol none --dir in ';
+	    $out_match = '-m policy --pol none --dir out ';
+	} 
+
+	for ( @$interfaces ) {
+	    my $mss      = $interfaces{$_}{options}{mss};
+	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : ''; 
+	    add_rule $chainref, "-o $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
+	    add_rule $chainref, "-o $_ -j RETURN" if $clampmss;
+	    add_rule $chainref, "-i $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${in_match}-j TCPMSS --set-mss $mss";
+	    add_rule $chainref, "-i $_ -j RETURN" if $clampmss;
+	}
+    }
+
+    add_rule $chainref , "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option" if $clampmss;
 }
 
 sub dump_rule_chains() {
-    for my $arrayref ( @rule_chains ) {
-	emit_unindented "@$arrayref";
-    }
+    emit_unindented "@$_" for ( @rule_chains );
 }
 
 1;

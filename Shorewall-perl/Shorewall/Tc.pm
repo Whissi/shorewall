@@ -39,7 +39,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -184,7 +184,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     my $tcsref;
     my $connmark = 0;
     my $classid  = 0;
-    my $device;
+    my $device   = '';
 
     if ( $source ) {
 	if ( $source eq $firewall_zone ) {
@@ -268,21 +268,22 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	}
     }
 
-    if ( my $result = expand_rule(
-				  ensure_chain( 'mangle' , $chain ) ,
-				  NO_RESTRICT ,
-				  do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
-				  $source ,
-				  $dest ,
+    if ( ( my $result = expand_rule(
+				    ensure_chain( 'mangle' , $chain ) ,
+				    NO_RESTRICT ,
+				    do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
+				    $source ,
+				    $dest ,
+				    '' ,
+				    "-j $target $mark" ,
 				  '' ,
-				  "-j $target $mark" ,
-				  '' ,
-				  '' ,
-				  '' ) ) {
+				    '' ,
+				    '' ) ) 
+	  && $device ) {
 	#
 	# expand_rule() returns destination device if any
 	#
-	fatal_error "Class Id $original_mark is not associated with device $result" if $config{TC_ENABLED} eq 'internal' && $classid && $device ne $result;
+	fatal_error "Class Id $original_mark is not associated with device $result" if $device ne $result;
     }
 
     progress_message "   TC Rule \"$currentline\" $done";

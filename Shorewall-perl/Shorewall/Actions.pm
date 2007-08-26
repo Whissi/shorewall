@@ -54,7 +54,7 @@ our @EXPORT = qw( merge_levels
 		  %macros
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.01;
+our $VERSION = 4.03;
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -389,12 +389,14 @@ sub process_macro1 ( $$ ) {
 
 	$mtarget =~ s/:.*$//;
 
+	$mtarget = (split '/' , $mtarget)[0];
+
 	my $targettype = $targets{$mtarget};
 
 	$targettype = 0 unless defined $targettype;
 
 	fatal_error "Invalid target ($mtarget)"
-	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $mtarget eq 'LOG' );
+	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $targettype & ( LOGRULE | NFQ ) );
     }
 
     progress_message "   ..End Macro $macrofile";
@@ -412,7 +414,7 @@ sub process_action1 ( $$ ) {
     my $targettype = $targets{$target};
 
     if ( defined $targettype ) {
-	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & LOGRULE );
+	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & ( LOGRULE |  NFQ ) );
 
 	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 
@@ -423,6 +425,8 @@ sub process_action1 ( $$ ) {
 	fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
     } else {
 	( $target, my $param ) = split '/', $target;
+
+	return if $target eq 'NFQUEUE';
 
 	if ( defined $param ) {
 	    my $paramtype = $targets{$param} || 0;
@@ -462,8 +466,8 @@ sub process_actions1() {
 	    next unless $action;
 
 	    if ( $targets{$action} ) {
-		next if $targets{$action} & ACTION;
-		fatal_error "Invalid Action Name ($action)";
+		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ACTION;
+		next;
 	    }
 
 	    $targets{$action} = ACTION;
@@ -632,7 +636,7 @@ sub process_action3( $$$$$ ) {
 	    if ( $action2type & ACTION ) {
 		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
 	    } else {
-		die "Internal Error" unless $action2type == MACRO || $action2type & LOGRULE;
+		fatal_error "Internal Error" unless $action2type == MACRO || $action2type & ( LOGRULE | NFQ );
 	    }
 	}
 
@@ -666,10 +670,10 @@ sub process_actions3 () {
 	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
 	} else {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
-	    push_cmd_mode $chainref;
+	    incr_cmd_level $chainref;
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
 	    add_rule $chainref, '-d $address -j DROP';
-	    pop_cmd_mode $chainref;
+	    decr_cmd_level $chainref;
 	    add_command $chainref, 'done';
 
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
@@ -690,10 +694,10 @@ sub process_actions3 () {
 	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
 	} else {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
-	    push_cmd_mode $chainref;
+	    incr_cmd_level $chainref;
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
 	    add_rule $chainref, '-d $address -j ACCEPT';
-	    pop_cmd_mode $chainref;
+	    decr_cmd_level $chainref;
 	    add_command $chainref, 'done';
 
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';

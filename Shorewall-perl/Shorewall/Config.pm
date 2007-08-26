@@ -93,7 +93,7 @@ our @EXPORT = qw(
 		 %capabilities );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -198,8 +198,8 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.2',
-		    CAPVERSION => 30405 ,
+		    VERSION =>  '4.0.3',
+		    CAPVERSION => 40003 ,
 		  );
     #
     # From shorewall.conf file
@@ -247,6 +247,7 @@ sub initialize() {
 		REJECT_DEFAULT => undef,
 		ACCEPT_DEFAULT => undef,
 		QUEUE_DEFAULT => undef,
+		NFQUEUE_DEFAULT => undef,
 		#
 		# RSH/RCP Commands
 		#
@@ -328,6 +329,9 @@ sub initialize() {
 	       MANGLE_FORWARD => undef,
 	       COMMENTS => undef,
 	       ADDRTYPE => undef,
+	       TCPMSS_MATCH => undef,
+	       HASHLIMIT_MATCH => undef,
+	       NFQUEUE_TARGET => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -360,7 +364,9 @@ sub initialize() {
 		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
 		 COMMENTS        => 'Comments',
 		 ADDRTYPE        => 'Address Type Match',
-		 TCPMSS_MATCH    => 'TCP MSS',
+		 TCPMSS_MATCH    => 'TCPMSS Match',
+		 HASHLIMIT_MATCH => 'Hashlimit Match',
+		 NFQUEUE_TARGET  => 'NFQUEUE Target',
 		 CAPVERSION      => 'Capability Version',
 	       );
     #
@@ -1180,9 +1186,11 @@ sub determine_capabilities() {
 	}
     }
 
-    $capabilities{USEPKTTYPE}   = qt( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
-    $capabilities{ADDRTYPE}     = qt( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
-    $capabilities{TCPMSS_MATCH} = qt( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
+    $capabilities{USEPKTTYPE}      = qt( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
+    $capabilities{ADDRTYPE}        = qt( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
+    $capabilities{TCPMSS_MATCH}    = qt( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
+    $capabilities{HASHLIMIT_MATCH} = qt( "$iptables -A $sillyname -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT" );
+    $capabilities{NFQUEUE_TARGET}  = qt( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
 
     qt( "$iptables -F $sillyname" );
     qt( "$iptables -X $sillyname" );
@@ -1418,7 +1426,7 @@ sub get_configuration( $ ) {
 
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'EXPAND_POLICIES'            , '';
-    default_yes_no 'ACCOUNTING_EXPERT'          , '';
+    default_yes_no 'KEEP_RT_TABLES'             , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
@@ -1480,16 +1488,17 @@ sub get_configuration( $ ) {
     }
 
     default 'RESTOREFILE'           , 'restore';
+    default 'IPSECFILE'             , 'zones';
     default 'DROP_DEFAULT'          , 'Drop';
     default 'REJECT_DEFAULT'        , 'Reject';
     default 'QUEUE_DEFAULT'         , 'none';
+    default 'NFQUEUE_DEFAULT'       , 'none';
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
-    default 'IPSECFILE'             , 'zones';
 
     fatal_error 'IPSECFILE=ipsec is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
 
-    for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT ACCEPT_DEFAULT/ {
+    for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
 

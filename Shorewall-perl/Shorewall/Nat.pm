@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
-our $VERSION = 4.00;
+our $VERSION = 4.03;
 
 our @addresses_to_add;
 our %addresses_to_add;
@@ -212,7 +212,7 @@ sub setup_one_masq($$$$$$$)
 		add_commands( $chainref,
 			      '',
 			      "if [ \"$variable\" != 0.0.0.0 ]; then" );
-		push_cmd_mode( $chainref );
+		incr_cmd_level( $chainref );
 		$detectaddress = 1;
 	    }
 	} else {
@@ -249,7 +249,7 @@ sub setup_one_masq($$$$$$$)
 		 $exceptionrule );
 
     if ( $detectaddress ) {
-	pop_cmd_mode( $chainref );
+	decr_cmd_level( $chainref );
 	add_command( $chainref , 'fi' );
     }
 

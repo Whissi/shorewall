@@ -316,8 +316,9 @@ sub add_an_rtrule( $$$$ ) {
 	if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
 	    my $provider_number = numeric_value $provider;
 
-	    for my $provider ( keys %providers ) {
-		if ( $providers{$provider}{number} == $provider_number ) {
+	    for ( keys %providers ) {
+		if ( $providers{$_}{number} == $provider_number ) {
+		    $provider = $_;
 		    $found = 1;
 		    last;
 		}

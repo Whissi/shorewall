@@ -37,6 +37,7 @@ our @EXPORT = qw( NOTHING
 		  IPSECPROTO
 		  IPSECMODE
 
+		  numeric_value
 		  determine_zones
 		  zone_report
 		  dump_zone_contents
@@ -59,7 +60,7 @@ our @EXPORT = qw( NOTHING
 		  @bridges );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.01;
+our $VERSION = 4.03;
 
 #
 # IPSEC Option types
@@ -76,7 +77,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type = >      <zone type> 
+#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
 #                        options =>    { complex => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
@@ -110,16 +111,6 @@ our %reservedName = ( all => 1,
 		      SOURCE => 1,
 		      DEST => 1 );
 
-se constant (  ZT_IPV4     => 1,
-	       ZT_IPSEC    => 2,
-	       ZT_BPORT    => 4,
-	       ZT_IPV6     => 8,
-	       ZT_FIREWALL => 16,
-	       ZT_IPSEC4   => ZT_IPV4 | ZT_IPSEC
-	       ZT_IPSEC6   => ZT_IPV6 | ZT_IPSEC
-	       ZT_BPORT4   => ZT_IPV4 | ZT_BPORT
-	       ZT_BPORT6   => ZT_IPV6 | ZT_BPORT
-	     );		   
 #
 #     Interface Table.
 #
@@ -160,6 +151,15 @@ sub initialize() {
 
 INIT {
     initialize;
+}
+
+#
+# Convert value to decimal number
+#
+sub numeric_value ( $ ) {
+    my $mark = $_[0];
+    fatal_error "Invalid Numeric Value ($mark)" unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
+    $mark =~ /^0/ ? oct $mark : $mark;
 }
 
 #
@@ -219,7 +219,7 @@ sub parse_zone_option_list($$)
 	    if ( $key{$e} ) {
 		$h{$e} = $val;
 	    } else {
-		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype & ZT_IPSEC;
+		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype eq 'ipsec4';
 		$options .= $invert;
 		$options .= "--$e ";
 		$options .= "$val "if defined $val;
@@ -261,7 +261,7 @@ sub determine_zones()
 	    for my $p ( @parents ) {
 		fatal_error "Invalid Parent List ($2)" unless $p;
 		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
-		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} & ZT_FIREWALL;
+		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} eq 'firewall';
 		push @{$zones{$p}{children}}, $zone;
 	    }
 	}
@@ -273,20 +273,20 @@ sub determine_zones()
 	$type = "ipv4" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $type = ZT_IPV4;
+	    $type = 'ipv4';
 	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $type = ZT_IPSEC4;
+	    $type = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $type = ZT_BPORT4;
+	    $type = 'bport4';
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
 	    $firewall_zone = $zone;
 	    $ENV{FW} = $zone;
-	    $type = ZT_FIREWALL;
+	    $type = "firewall";
 	} elsif ( $type eq '-' ) {
-	    $type = ZT_IPV4;
+	    $type = 'ipv4';
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -302,7 +302,7 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type & ZT_IPSEC || $options || $in_options || $out_options ? 1 : 0) } ,
+					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
 			  interfaces => {} ,
 			  children   => [] ,
 			  hosts      => {}
@@ -337,21 +337,11 @@ sub determine_zones()
 #
 sub haveipseczones() {
     for my $zoneref ( values %zones ) {
-	return 1 if $zoneref->{type} & ZT_IPSEC;
+	return 1 if $zoneref->{type} eq 'ipsec4';
     }
 
     0;
 }
-
-my @typenames =   ( Untyped,   #0
-		    firewall,  #1 
-		    ipv4,      #2
-		    Invalid,   #3 
-		    Invalid,   #4 
-		    Invalid,   #5
-		    ipsec4,    #6
-		    Invalid,   #7
-		    Invalid,   #8 
 
 #
 # Report about zones.
@@ -551,9 +541,10 @@ sub validate_interfaces_file( $ )
     use constant { SIMPLE_IF_OPTION   => 1,
 		   BINARY_IF_OPTION   => 2,
 		   ENUM_IF_OPTION     => 3,
-	           MASK_IF_OPTION     => 3,
+		   NUMERIC_IF_OPTION  => 4,
+	           MASK_IF_OPTION     => 7,
 
-	           IF_OPTION_ZONEONLY => 4 };
+	           IF_OPTION_ZONEONLY => 8 };
 
     my %validoptions = (arp_filter  => BINARY_IF_OPTION,
 			arp_ignore  => ENUM_IF_OPTION,
@@ -572,6 +563,7 @@ sub validate_interfaces_file( $ )
 			sourceroute => BINARY_IF_OPTION,
 			tcpflags    => SIMPLE_IF_OPTION,
 			upnp        => SIMPLE_IF_OPTION,
+			mss         => NUMERIC_IF_OPTION,
 			);
 
     my $fn = open_file 'interfaces';
@@ -701,6 +693,9 @@ sub validate_interfaces_file( $ )
 		    } else {
 			fatal_error "Internal Error in validate_interfaces_file";
 		    }
+		} elsif ( $type == NUMERIC_IF_OPTION ) {
+		    fatal_error "The $option option requires a value" unless defined $value;
+		    $options{$option} = numeric_value $value;
 		}
 	    }
 

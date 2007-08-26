@@ -41,7 +41,7 @@ our @EXPORT = qw( ALLIPv4
 		  @rfc1918_networks
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.00;
+our $VERSION = 4.03;
 
 #
 # Some IPv4 useful stuff
@@ -74,6 +74,8 @@ sub validate_address( $ ) {
 
 sub validate_net( $ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
+
+    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
 
     if ( defined $vlsm ) {
         fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;

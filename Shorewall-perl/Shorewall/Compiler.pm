@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.02;
+our $VERSION = 4.03;
 
 our $export;
 
@@ -85,7 +85,7 @@ sub generate_script_1() {
 
     copy $globals{SHAREDIRPL} . 'prog.header';
 
-    for my $exit qw/init start tcclear started stop stopped clear refresh refreshed/ {
+    for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed/ {
 	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
@@ -581,8 +581,6 @@ sub generate_script_2 () {
 
     push_indent;
 
-    setup_mss( $config{CLAMPMSS} ) if $config{CLAMPMSS};
-
 }
 
 #
@@ -774,6 +772,10 @@ sub compiler( $$$$ ) {
     # Start Second Part of script
     #
     generate_script_2 unless $command eq 'check';
+    #
+    # Set up MSS rules
+    #
+    setup_mss;
     #
     # Do all of the zone-independent stuff
     #

@@ -198,29 +198,16 @@ sub setup_accounting() {
 	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD/ ) {
 		insert_rule $filter_table->{$chain}, 1, '-j accounting';
-		insert_rule $filter_table->{$chain}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
-	    }
-	} elsif ( $config{FASTACCEPT} ) {
-	    for my $chain ( qw/INPUT FORWARD/ ) {
-		insert_rule $filter_table->{$chain}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
 	    }
 	}
 
 	if ( $filter_table->{accountout} ) {
 	    insert_rule $filter_table->{OUTPUT}, 1, '-j accountout';
-	    insert_rule $filter_table->{OUTPUT}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
-	} elsif ( $config{FASTACCEPT} ) {
-	    insert_rule $filter_table->{OUTPUT}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
 	}
     } else {
 	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
 		insert_rule $filter_table->{$chain}, 1, '-j accounting';
-		insert_rule $filter_table->{$chain}, 2, '-m state --state ESTABLISHED,RELATED -j ACCEPT' if $config{FASTACCEPT};
-	    }
-	} elsif ( $config{FASTACCEPT} ) {
-	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		insert_rule $filter_table->{$chain}, 1, '-m state --state ESTABLISHED,RELATED -j ACCEPT';
 	    }
 	}
     }

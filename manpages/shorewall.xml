@@ -243,7 +243,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>refresh</option></arg>
+      <arg choice="plain"><option>refresh</option><arg
+      rep="repeat"><replaceable>chain</replaceable></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -835,9 +836,11 @@
           <para>Shorewall-perl: All steps performed by
           <command>restart</command> are performed by
           <command>refresh</command> with the exception that
-          <command>refresh</command> only recreates the static blacklist while
-          <command>restart</command> recreates the entire Netfilter
-          ruleset.</para>
+          <command>refresh</command> only recreates the chains specified in
+          the command while <command>restart</command> recreates the entire
+          Netfilter ruleset. If no <replaceable>chain</replaceable> is given,
+          the static blacklisting chain <emphasis
+          role="bold">blacklst</emphasis> is assumed.</para>
         </listitem>
       </varlistentry>
 

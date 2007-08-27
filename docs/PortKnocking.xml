@@ -111,11 +111,11 @@ if ( $level ) {
                     '',
                     $tag,
                     'add',
-                    '-p tcp --dport 22   -m recent --rcheck --name SSH );
+                    '-p tcp --dport 22   -m recent --rcheck --name SSH' );
 
     log_rule_limit( $level,
                     $chainref,
-                    'SSHKnock'
+                    'SSHKnock',
                     'DROP'
                     '',
                     $tag,

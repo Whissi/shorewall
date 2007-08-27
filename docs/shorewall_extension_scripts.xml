@@ -148,14 +148,16 @@ case $1 in
         return 0
         ;;
 esac</programlisting><caution>
+            <para>We recommend that this script only be used with
+            ADMINISABSENTMINDED=Yes.</para>
+
             <para>The firewall state when this script is invoked is
             indeterminent. So if you have ADMINISABSENTMINDED=No in <ulink
             url="manpages/shorewall.conf.html">shorewall.conf</ulink>(8) and
             output on an interface is not allowed by <ulink
             url="manpages/shorewall.conf.html">routestopped</ulink>(8) then
-            the script must blow it's own holes in the firewall before
-            probing. We recommend that this script only be used with
-            ADMINISABSENTMINDED=Yes.</para>
+            the isuasable script must blow it's own holes in the firewall
+            before probing. </para>
           </caution></para>
       </listitem>
     </itemizedlist>
@@ -469,9 +471,9 @@ esac</programlisting><caution>
         </informaltable></para>
 
       <para>Compile-time extension scripts are executed using the Perl 'eval
-      `cat &lt;file&gt;`' mechanism. Be sure that each script returns a 'true'
-      value; otherwise, the compiler will assume that the script failed and
-      will abort the compilation.</para>
+      `cat &lt;<emphasis>file</emphasis>&gt;`' mechanism. Be sure that each
+      script returns a 'true' value; otherwise, the compiler will assume that
+      the script failed and will abort the compilation.</para>
 
       <para>All scripts will need to begin with the following
       line:<programlisting>use Shorewall::Chains;</programlisting>For more
@@ -480,20 +482,24 @@ esac</programlisting><caution>
       class="directory">/usr/share/shorewall-perl/Shorewall/</filename> to see
       what's available.</para>
 
-      <para>When a script is invoked, the $chainref scalar variable will hold
-      a reference to a chain table entry.<simplelist>
-          <member>$chainref-&gt;{name} contains the name of the chain</member>
+      <para>When a script is invoked, the <emphasis
+      role="bold">$chainref</emphasis> scalar variable will hold a reference
+      to a chain table entry.<simplelist>
+          <member><emphasis role="bold">$chainref-&gt;{name}</emphasis>
+          contains the name of the chain</member>
 
-          <member>$chainref-&gt;{table} holds the table name</member>
+          <member><emphasis role="bold">$chainref-&gt;{table}</emphasis> holds
+          the table name</member>
         </simplelist></para>
 
-      <para>To add a rule to the chain:<programlisting>add_rule( $chainref, &lt;the rule&gt; );</programlisting>Where<simplelist>
-          <member>&lt;the rule&gt; is a scalar argument holding the rule text.
-          Do not include "-A &lt;chain name&gt;"</member>
+      <para>To add a rule to the chain:<programlisting>add_rule( $chainref, &lt;<emphasis>the rule</emphasis>&gt; );</programlisting>Where<simplelist>
+          <member>&lt;<emphasis>the rule</emphasis>&gt; is a scalar argument
+          holding the rule text. Do not include "-A &lt;<emphasis>chain
+          name</emphasis>&gt;"</member>
         </simplelist>Example:<programlisting>add_rule( $chainref, '-j ACCEPT' );</programlisting>To
-      insert a rule into the chain:<programlisting> insert_rule( $chainref, &lt;rulenum&gt;, &lt;the rule&gt; );</programlisting>The
-      log_rule_limit function works like it does in the shell compiler with
-      three exceptions:<itemizedlist>
+      insert a rule into the chain:<programlisting> insert_rule( $chainref, &lt;<emphasis>rulenum</emphasis>&gt;, &lt;<emphasis>the rule</emphasis>&gt; );</programlisting>The
+      <emphasis role="bold">log_rule_limit()</emphasis> function works like it
+      does in the shell compiler with three exceptions:<itemizedlist>
           <listitem>
             <para>You pass the chain reference rather than the name of the
             chain.</para>
@@ -518,21 +524,23 @@ esac</programlisting><caution>
                'add',   #Command
                '-p tcp' #Pass as-is
                );</programlisting>Note that in the 'initdone' script, there is
-      no default chain ($chainref). You can obtain a reference to a standard
-      chain by:<programlisting>my $chainref = $chain_table{&lt;table&gt;}{&lt;chain name&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting></para>
+      no default chain (<emphasis role="bold">$chainref</emphasis>). You can
+      obtain a reference to a standard chain by:<programlisting>my $chainref = $chain_table{&lt;<emphasis>table</emphasis>&gt;}{&lt;<emphasis>chain name</emphasis>&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting></para>
 
-      <para>You can also use the hash references $filter_table, $mangle_table
-      and $nat_table to access chain references in the three main
-      tables.</para>
+      <para>You can also use the hash references <emphasis
+      role="bold">$filter_table</emphasis>, <emphasis
+      role="bold">$mangle_table</emphasis> and <emphasis
+      role="bold">$nat_table</emphasis> to access chain references in the
+      three main tables.</para>
 
       <para>Example:</para>
 
       <programlisting>my $chainref = $filter_table-&gt;{INPUT}; #Same as above with a few less keystrokes; runs faster too</programlisting>
 
-      <para>The continue script has been eliminated because it no longer make
-      any sense under Shorewall-perl. That script was designed to allow you to
-      add special temporary rules during [re]start. Shorewall-perl doesn't
-      need such rules since the ruleset is instantianted atomically by
+      <para>The 'continue' script has been eliminated because it no longer
+      make any sense under Shorewall-perl. That script was designed to allow
+      you to add special temporary rules during [re]start. Shorewall-perl
+      doesn't need such rules since the ruleset is instantianted atomically by
       table.</para>
     </section>
   </section>

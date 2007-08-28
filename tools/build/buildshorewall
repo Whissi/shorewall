@@ -141,9 +141,13 @@ list_search() # $1 = element to search for , $2-$n = list
     return 1
 }
 
+#
+# It's easy to mis-type the GPG passphrase; this function allows us additional chances to get it right
+#
 do_rpmbuild() {
     while ! rpmbuild $@ >> $LOGFILE 2>&1; do
-	echo -n "rpmbuild $@ failed -- Retry? Y/n "
+	echo    "rpmbuild $@ failed" >&2
+	echo -n "Retry? Y/n " >&2
 	read response
 	case $response in
 	    Y*|y*)

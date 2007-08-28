@@ -841,6 +841,14 @@
           Netfilter ruleset. If no <replaceable>chain</replaceable> is given,
           the static blacklisting chain <emphasis
           role="bold">blacklst</emphasis> is assumed.</para>
+
+          <para> The listed chains are assumed to be in the filter table. You
+          can refresh chains in other tables by prefixing the chain name with
+          the table name followed by ":" (e.g., nat:net_dnat). Chain names
+          which follow are assumed to be in that table until the end of the
+          list or until an entry in the list names another table. </para>
+
+          <para>Example:<programlisting><command>shorewall refresh net2fw nat:net_dnat</command> #Refresh the 'net2loc' chain in the filter table and the 'net_dnat' chain in the nat table</programlisting></para>
         </listitem>
       </varlistentry>
 

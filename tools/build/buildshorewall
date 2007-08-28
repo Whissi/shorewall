@@ -141,6 +141,22 @@ list_search() # $1 = element to search for , $2-$n = list
     return 1
 }
 
+do_rpmbuild() {
+    while ! rpmbuild $@ >> $LOGFILE 2>&1; do
+	echo -n "rpmbuild $@ failed -- Retry? Y/n "
+	read response
+	case $response in
+	    Y*|y*)
+		;;
+	    *)
+		[ -n "$response" ] && return 1
+		;;
+	esac
+    done
+
+    return 0
+}
+
 usage()
 {
     echo "usage: $(basename $0) [ -trhxl] <version> [ <old-version> ]"
@@ -472,7 +488,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
 	do_or_die "cp shorewall-common-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
 	do_or_die "cp $SHOREWALLDIR/shorewall-common.spec $RPMDIR/SPECS/"
-	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-common.spec >> $LOGFILE 2>&1"
+	do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-common.spec"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
 
 	progress_message "Building $LITERPMNAME..."
@@ -480,7 +496,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
 	do_or_die "cp shorewall-lite-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
 	do_or_die "cp $SHOREWALLLITEDIR/shorewall-lite.spec $RPMDIR/SPECS/"
-	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec >> $LOGFILE 2>&1"
+	do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
 
 	progress_message "Building $PERLRPMNAME..."
@@ -488,7 +504,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	rm -rf $RPMDIR/BUILD/shorewall-perl-${VERSION%-*}*
 	do_or_die "cp shorewall-perl-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
 	do_or_die "cp $PERLDIR/shorewall-perl.spec $RPMDIR/SPECS/"
-	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-perl.spec >> $LOGFILE 2>&1"
+	do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-perl.spec"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME  .
 
 	progress_message "Building $SHELLRPMNAME..."
@@ -496,7 +512,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	rm -rf $RPMDIR/BUILD/shorewall-shell-${VERSION%-*}*
 	do_or_die "cp shorewall-shell-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
 	do_or_die "cp $SHELLDIR/shorewall-shell.spec $RPMDIR/SPECS/"
-	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-shell.spec >> $LOGFILE 2>&1"
+	do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-shell.spec"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$SHELLRPMNAME  .
     fi
 fi
@@ -789,7 +805,7 @@ done
 if [ -n "$OLDVERSION" ]; then
     progress_message "Creating patch-$VERSION ..."
 
-    diff -Naur shorewall-common-$OLDVERSION shorewall-common-$VERSION > patch-$VERSION || true
+    diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION > patch-$VERSION || true
     diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
     diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
     diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true

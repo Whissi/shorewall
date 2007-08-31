@@ -1750,6 +1750,18 @@ iptables: Invalid argument
       server(s) as <emphasis role="bold">critical</emphasis> in <ulink
       url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>.</para>
     </section>
+
+    <section id="faq68">
+      <title>(FAQ 68) I have a VM under a OpenVZ system. I can't get rid of
+      the following message:</title>
+
+      <para>ERROR: Command "/sbin/iptables -A FORWARD -m state --state
+      ESTABLISHED,RELATED -j ACCEPT"</para>
+
+      <para><emphasis role="bold">Answer</emphasis>: At a root shell prompt,
+      type the iptables command shown in the error message. If the command
+      fails, you OpenVZ Netfilter/iptables configuration is incorrect. </para>
+    </section>
   </section>
 
   <section id="MultiISP">
@@ -2129,7 +2141,7 @@ eth0               eth1                        # eth1 = interface to local netwo
 
       <para><emphasis role="bold">Answer</emphasis>: Beginning with version
       3.2.3, there are no compatibility constraints between Shorewall and
-      Shorewall-lite. </para>
+      Shorewall-lite.</para>
     </section>
   </section>
 

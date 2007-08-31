@@ -429,6 +429,14 @@
         <para><command>shorewall save</command></para>
       </listitem>
     </itemizedlist>
+
+    <important>
+      <para>Shorewall requires that the file
+      <filename>/etc/shorewall/shorewall.conf</filename> to always exist.
+      Certain global settings are always obtained from that file. If you
+      create alternative configuration directories, do not remove
+      /etc/shorewall/shorewall.conf.</para>
+    </important>
   </section>
 
   <section id="Commands">
@@ -448,7 +456,8 @@
 
           <listitem>
             <para>Specifies an <link linkend="AltConfig">alternate
-            configuration directory</link>.</para>
+            configuration directory</link>. Use of this option is
+            deprecated.</para>
           </listitem>
         </varlistentry>
 

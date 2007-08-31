@@ -842,7 +842,13 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     directory rather than the corresponding files in /etc/shorewall. The
     alternate directory need not contain a complete configuration; those files
     not in the alternate directory will be read from <filename
-    class="directory">/etc/shorewall</filename>.</para>
+    class="directory">/etc/shorewall</filename>.<important>
+        <para>Shorewall requires that the file
+        <filename>/etc/shorewall/shorewall.conf</filename> to always exist.
+        Certain global settings are always obtained from that file. If you
+        create alternative configuration directories, do not remove
+        /etc/shorewall/shorewall.conf.</para>
+      </important></para>
 
     <para>This facility permits you to easily create a test or temporary
     configuration by</para>

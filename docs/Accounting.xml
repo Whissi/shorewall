@@ -35,9 +35,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.0 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.0.0 then please see the documentation for that
     release</emphasis>.</para>
   </caution>
 
@@ -165,6 +165,28 @@
           <member>+upnpd #program named upnpd (This feature was removed from
           Netfilter in kernel version 2.6.14).</member>
         </simplelist>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">MARK</emphasis> - Only count packets with
+        particular mark values.<programlisting>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</programlisting>Defines
+        a test on the existing packet or connection mark. The rule will match
+        only if the test returns true.</para>
+
+        <para>If you don’t want to define a test but need to specify anything
+        in the following columns, place a "-" in this field.<simplelist>
+            <member> ! — Inverts the test (not equal)</member>
+
+            <member>&lt;value&gt; — Value of the packet or connection
+            mark.</member>
+
+            <member>&lt;mask&gt; — A mask to be applied to the mark before
+            testing.</member>
+
+            <member>:C — Designates a connection mark. If omitted, the packet
+            mark’s value is tested. This option is only supported by
+            Shorewall-perl.</member>
+          </simplelist></para>
       </listitem>
     </itemizedlist>
 

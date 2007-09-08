@@ -2,7 +2,7 @@
 #
 #     The Shoreline Firewall4 (Shorewall-perl) Packet Filtering Firewall Compiler - V4.0
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
 #     (c) 2007 - Tom Eastep (teastep@shorewall.net)
 #
@@ -19,7 +19,7 @@
 #
 #	You should have received a copy of the GNU General Public License
 #	along with this program; if not, write to the Free Software
-#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
 package Shorewall::Compiler;

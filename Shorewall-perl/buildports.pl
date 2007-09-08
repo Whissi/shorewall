@@ -2,7 +2,7 @@
 #
 # Tool for building Shorewall::Ports.
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of Version 2 of the GNU General Public License
@@ -15,7 +15,7 @@
 #
 #	You should have received a copy of the GNU General Public License
 #	along with this program; if not, write to the Free Software
-#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #  Usage:
 #
@@ -88,7 +88,7 @@ print <<"EOF";
 #
 # Shorewall-perl 4.0 -- /usr/share/shorewall-perl/Shorewall/Ports.pm
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
 #     (c) 2007 - Tom Eastep (teastep\@shorewall.net)
 #
@@ -105,7 +105,7 @@ print <<"EOF";
 #
 #       You should have received a copy of the GNU General Public License
 #       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # This module exports the %protocols and %services hashes built from
 # /etc/protocols and /etc/services respectively.

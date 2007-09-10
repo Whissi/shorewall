@@ -129,7 +129,7 @@ our %reservedName = ( all => 1,
 # Zone Types
 #
 use constant {  ZT_IPV4     => 1,
-		ZT_IPV6     => 2
+		ZT_IPV6     => 2,
 		ZT_FIREWALL => 3,  #ZT_IPV4 + ZT_IPV6
 		ZT_IPSEC    => 4,
 		ZT_IPSEC4   => 5,  #ZT_IPV4 + ZT_IPSEC

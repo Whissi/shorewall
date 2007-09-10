@@ -266,7 +266,7 @@ sub createlogactionchain( $$ ) {
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
-    while ( $chain_table{'%' . $chain . $actionref->{actchain}} ) {
+    while ( $chain_table->{'%' . $chain . $actionref->{actchain}} ) {
 	$chain = substr $chain, 0, 27 if $actionref->{actchain} == 10 and length $chain == 28;
     }
 

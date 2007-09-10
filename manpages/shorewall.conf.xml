@@ -295,7 +295,10 @@
 
         <listitem>
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
-          role="bold">yes</emphasis>, enables Shorewall Bridging support.<note>
+          role="bold">yes</emphasis>, enables Shorewall Bridging
+          support.</para>
+
+          <para><note>
               <para>BRIDGING=Yes may not work properly with Linux kernel
               2.6.20 or later and is not supported by Shorewall-perl.</para>
             </note></para>
@@ -316,10 +319,8 @@
           role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
           the feature is not enabled.</para>
 
-          <note>
-            <para>This option requires CONFIG_IP_NF_TARGET_TCPMSS in your
-            kernel.</para>
-          </note>
+          <para><emphasis role="bold">Important</emphasis>: This option
+          requires CONFIG_IP_NF_TARGET_TCPMSS in your kernel.</para>
 
           <para>You may also set CLAMPMSS to a numeric
           <emphasis>value</emphasis> (e.g., CLAMPMSS=1400). This will set the
@@ -370,15 +371,19 @@
             </listitem>
           </itemizedlist>
 
-          <para>If CONFIG_PATH is not given or if it is set to the empty value
-          then the contents of /usr/share/shorewall/configpath are used. As
-          released from shorewall.net, that file sets the CONFIG_PATH to
-          /etc/shorewall:/usr/share/shorewall but your particular distribution
-          may set it differently. See the output of shorewall show config for
-          the default on your system.</para>
+          <blockquote>
+            <para></para>
 
-          <para>Note that the setting in /usr/share/shorewall/configpath is
-          always used to locate shorewall.conf.</para>
+            <para>If CONFIG_PATH is not given or if it is set to the empty
+            value then the contents of /usr/share/shorewall/configpath are
+            used. As released from shorewall.net, that file sets the
+            CONFIG_PATH to /etc/shorewall:/usr/share/shorewall but your
+            particular distribution may set it differently. See the output of
+            shorewall show config for the default on your system.</para>
+
+            <para>Note that the setting in /usr/share/shorewall/configpath is
+            always used to locate shorewall.conf.</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 
@@ -489,6 +494,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
           or RELATED sections of <ulink
           url="shorewall-rules.html">shorewall-rules</ulink>(5).</para>
+
+          <para></para>
 
           <note>
             <para>FASTACCEPT=Yes is incompatible with
@@ -608,8 +615,12 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </varlistentry>
           </variablelist>
 
-          <para>If this variable is not set or is given an empty value
-          (IP_FORWARD="") then IP_FORWARD=On is assumed.</para>
+          <para></para>
+
+          <blockquote>
+            <para>If this variable is not set or is given an empty value
+            (IP_FORWARD="") then IP_FORWARD=On is assumed.</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 
@@ -711,23 +722,29 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </itemizedlist>
 
-          <para>For example, using the default LOGFORMAT, the log prefix for
-          logging from the nat table's PREROUTING chain is:</para>
+          <para></para>
 
-          <programlisting>    Shorewall:nat:PREROUTING
+          <blockquote>
+            <para>For example, using the default LOGFORMAT, the log prefix for
+            logging from the nat table's PREROUTING chain is:</para>
+
+            <programlisting>    Shorewall:nat:PREROUTING
  </programlisting>
 
-          <important>
-            <para>There is no rate limiting on these logging rules so use
-            LOGALLNEW at your own risk; it may cause high CPU and disk
-            utilization and you may not be able to control your firewall after
-            you enable this option.</para>
-          </important>
+            <important>
+              <para>There is no rate limiting on these logging rules so use
+              LOGALLNEW at your own risk; it may cause high CPU and disk
+              utilization and you may not be able to control your firewall
+              after you enable this option.</para>
+            </important>
 
-          <caution>
-            <para>Do not use this option if the resulting log messages will be
-            sent to another system.</para>
-          </caution>
+            <para></para>
+
+            <caution>
+              <para>Do not use this option if the resulting log messages will
+              be sent to another system.</para>
+            </caution>
+          </blockquote>
         </listitem>
       </varlistentry>
 
@@ -910,6 +927,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           MAPOLDACTIONS=Yes. If this option is not set or is set to the empty
           value (MAPOLDACTIONS="") then MAPOLDACTIONS=Yes is assumed.</para>
 
+          <para></para>
+
           <note>
             <para>MAPOLDACTIONS=Yes is not supported by Shorewall-perl. With
             Shorewall-perl, if MAPOLDACTIONS is not set or is set to the ampty
@@ -1040,10 +1059,14 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </orderedlist>
 
-          <para>If you are experiencing either of these problems, setting
-          PKTTYPE=No will prevent Shorewall from trying to use the packet type
-          match extension and to use IP address matching to determine which
-          packets are broadcasts or multicasts.</para>
+          <para></para>
+
+          <blockquote>
+            <para>If you are experiencing either of these problems, setting
+            PKTTYPE=No will prevent Shorewall from trying to use the packet
+            type match extension and to use IP address matching to determine
+            which packets are broadcasts or multicasts.</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 
@@ -1176,6 +1199,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>If not specified or specified as empty (e.g.,
           RFC1918_STRICT="") then RFC1918_STRICT=No is assumed.</para>
+
+          <para></para>
 
           <warning>
             <para>RFC1918_STRICT=Yes requires that your kernel and iptables

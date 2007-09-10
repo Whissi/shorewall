@@ -137,6 +137,8 @@ loc     eth2            -</programlisting>
                 will be the value specified (if any) or 1 if no value is
                 given.</para>
 
+                <para></para>
+
                 <note>
                   <para>This option does not work with a wild-card
                   <replaceable>interface</replaceable> name (e.g., eth0.+) in
@@ -168,11 +170,15 @@ loc     eth2            -</programlisting>
 
                 <para>8 - do not reply for all local addresses</para>
 
+                <para></para>
+
                 <note>
                   <para>This option does not work with a wild-card
                   <replaceable>interface</replaceable> name (e.g., eth0.+) in
                   the INTERFACE column.</para>
                 </note>
+
+                <para></para>
 
                 <warning>
                   <para>Do not specify <emphasis
@@ -209,6 +215,8 @@ loc     eth2            -</programlisting>
                 <para>Automatically tailors the zone named in the ZONE column
                 to include only those hosts routed through the
                 interface.</para>
+
+                <para></para>
 
                 <warning>
                   <para>Do not set the <emphasis
@@ -280,6 +288,8 @@ loc     eth2            -</programlisting>
                 <programlisting>        teastep@lists:~$ <command>cat /proc/sys/net/ipv4/conf/eth0/rp_filter </command>
         1
         teastep@lists:~$ </programlisting>
+
+                <para></para>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -368,20 +378,26 @@ loc     eth2            -</programlisting>
                   </listitem>
                 </itemizedlist>
 
-                <para>I specify <option>optional</option> on interfaces to Xen
-                virtual machines that may or may not be running when Shorewall
-                is [re]started.</para>
+                <para></para>
 
-                <caution>
-                  <para>Use <option>optional</option> at your own risk. If you
-                  [re]start Shorewall when an 'optional' interface is not
-                  available and then do a <command>shorewall save</command>,
-                  subsequent <command>shorewall restore</command> and
-                  <command>shorewall -f start</command> operations will
-                  instantiate a ruleset that does not support that interface,
-                  even if it is available at the time of the
-                  restore/start.</para>
-                </caution>
+                <blockquote>
+                  <para>I specify <option>optional</option> on interfaces to
+                  Xen virtual machines that may or may not be running when
+                  Shorewall is [re]started.</para>
+
+                  <para></para>
+
+                  <caution>
+                    <para>Use <option>optional</option> at your own risk. If
+                    you [re]start Shorewall when an 'optional' interface is
+                    not available and then do a <command>shorewall
+                    save</command>, subsequent <command>shorewall
+                    restore</command> and <command>shorewall -f
+                    start</command> operations will instantiate a ruleset that
+                    does not support that interface, even if it is available
+                    at the time of the restore/start.</para>
+                  </caution>
+                </blockquote>
               </listitem>
             </varlistentry>
 
@@ -397,12 +413,14 @@ loc     eth2            -</programlisting>
                 This option is intended solely for use with Proxy ARP
                 sub-networking as described at: <ulink
                 url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html.
-                </ulink><note>
-                    <para>This option does not work with a wild-card
-                    <replaceable>interface</replaceable> name (e.g., eth0.+)
-                    in the INTERFACE column.</para>
-                  </note>The option value (0 or 1) may only be specified if
-                you are using Shorewall-perl. With Shorewall-perl, only those
+                </ulink></para>
+
+                <para><emphasis role="bold">Note</emphasis>: This option does
+                not work with a wild-card <replaceable>interface</replaceable>
+                name (e.g., eth0.+) in the INTERFACE column.</para>
+
+                <para>The option value (0 or 1) may only be specified if you
+                are using Shorewall-perl. With Shorewall-perl, only those
                 interfaces with the <option>proxyarp</option> option will have
                 their setting changes; the value assigned to the setting will
                 be the value specified (if any) or 1 if no value is
@@ -438,6 +456,8 @@ loc     eth2            -</programlisting>
                 will be the value specified (if any) or 1 if no value is
                 given.</para>
 
+                <para></para>
+
                 <note>
                   <para>This option does not work with a wild-card
                   <replaceable>interface</replaceable> name (e.g., eth0.+) in
@@ -471,6 +491,8 @@ loc     eth2            -</programlisting>
                 have their setting changes; the value assigned to the setting
                 will be the value specified (if any) or 1 if no value is
                 given.</para>
+
+                <para></para>
 
                 <note>
                   <para>This option does not work with a wild-card

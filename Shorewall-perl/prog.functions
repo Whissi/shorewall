@@ -6,11 +6,9 @@ delete_proxyarp() {
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
 	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	    interface=/proc/sys/net/ipv4/conf/$interface
+	    [ -f $interface/proxyarp ] && echo 0 > $interface/proxy_arp
 	done < ${VARDIR}/proxyarp
-
-	for f in /proc/sys/net/ipv4/conf/*; do
-	    [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-	done
     fi
 
     rm -f ${VARDIR}/proxyarp

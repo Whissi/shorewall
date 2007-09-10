@@ -41,9 +41,19 @@ our @EXPORT = qw( NOTHING
 		  determine_zones
 		  zone_report
 		  dump_zone_contents
+		  find_zone
+		  firewall_zone
+		  defined_zone
+		  zone_type
+		  all_zones
+		  complex_zones
+		  non_firewall_zones
 		  single_interface
 		  validate_interfaces_file
+		  all_interfaces
+		  find_interface
 		  known_interface
+		  have_bridges
 		  port_to_bridge
 		  source_port_to_bridge
 		  interface_is_optional
@@ -51,16 +61,10 @@ our @EXPORT = qw( NOTHING
 		  get_interface_option
 		  validate_hosts_file
 		  find_hosts_by_option
-
-		  @zones
-		  %zones
-		  $firewall_zone
-		  %interfaces
-		  @interfaces
-		  @bridges );
+		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.03;
+our $VERSION = '4.03';
 
 #
 # IPSEC Option types
@@ -312,24 +316,24 @@ sub determine_zones()
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
 
-    my $pushed = 1;
     my %ordered;
 
-    while ( $pushed )
+  PUSHED:
     {
-	$pushed = 0;
       ZONE:
 	for my $zone ( @z ) {
 	    unless ( $ordered{$zone} ) {
-		for my $child ( @{$zones{$zone}{children}} ) {
-		    next ZONE unless $ordered{$child};
+		for ( @{$zones{$zone}{children}} ) {
+		    next ZONE unless $ordered{$_};
 		}
 		$ordered{$zone} = 1;
 		push @zones, $zone;
-		$pushed = 1;
+		redo PUSHED;
 	    }
 	}
     }
+
+    fatal_error "Internal error in determine_zones()" unless scalar @zones == scalar @z;
 }
 
 #
@@ -502,6 +506,44 @@ sub add_group_to_zone($$$$$)
     push @{$arrayref}, { options => $options,
 			 hosts   => \@newnetworks,
 			 ipsec   => $type eq 'ipsec4' ? 'ipsec' : 'none' };
+}
+
+#
+# Verify that the passed zone name represents a declared zone. Return a
+# reference to its zone table entry.
+#
+sub find_zone( $ ) {
+    my $zone = $_[0];
+
+    my $zoneref = $zones{$zone};
+
+    fatal_error "Unknown zone" unless $zoneref;
+
+    $zoneref;
+}
+
+sub zone_type( $ ) {
+    find_zone( $_[0] )->{type};
+}
+
+sub defined_zone( $ ) {
+    $zones{$_[0]};
+}
+
+sub all_zones() {
+    @zones;
+}
+
+sub non_firewall_zones() {
+   grep ( $zones{$_}{type} ne 'firewall'  ,  @zones );
+}
+
+sub complex_zones() {
+    grep( $zones{$_}{options}{complex} , @zones );
+}
+
+sub firewall_zone() {
+    $firewall_zone;
 }
 
 #
@@ -724,7 +766,7 @@ sub validate_interfaces_file( $ )
 	    fatal_error "No routes found through 'detectnets' interface $interface" unless @networks || $options{optional};
 	    delete $options{maclist} unless @networks;
 	} else {
-	    @networks = @allipv4;
+	    @networks = allipv4;
 	}
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
@@ -780,6 +822,32 @@ sub known_interface($)
     }
 
     0;
+}
+
+#
+# Return the interfaces list
+#
+sub all_interfaces() {
+    @interfaces;
+}
+
+#
+# Return a reference to the interfaces table entry for an interface
+#
+sub find_interface( $ ) {
+    my $interface    = $_[0];
+    my $interfaceref = $interfaces{ $interface };
+    
+    fatal_error "Unknown Interface ($interface)" unless $interfaceref;
+
+    $interfaceref;
+}
+
+#
+# Returns true if there are bridges defined in the config
+#
+sub have_bridges() {
+    @bridges > 0;
 }
 
 #

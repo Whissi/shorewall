@@ -54,7 +54,7 @@ our @EXPORT = qw( merge_levels
 		  %macros
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.03;
+our $VERSION = '4.03';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -651,7 +651,7 @@ sub process_action3( $$$$$ ) {
 	}
     }
 
-    $comment = '';
+    clear_comment;
 }
 
 sub process_actions3 () {

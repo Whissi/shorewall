@@ -32,6 +32,7 @@
 #         --directory=<directory>     # Directory where configuration resides (default is /etc/shorewall)
 #         --timestamp                 # Timestamp all progress messages
 #         --debug                     # Print stack trace on warnings and fatal error.
+#         --refresh=<chainlist>       # Make the 'refresh' command refresh a comma-separated list of chains rather than 'blacklst'.
 #
 use strict;
 use FindBin;
@@ -40,7 +41,7 @@ use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage() {
-    print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ -- debuging ] [ <filename> ]\n";
+    print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ -- debuging ] [ --refresh=<chainlist> ] [ <filename> ]\n";
     exit 1;
 }
 
@@ -52,6 +53,7 @@ my $shorewall_dir = '';
 my $verbose       = 0;
 my $timestamp     = '';
 my $debug         = 0;
+my $chains        = '';
 
 Getopt::Long::Configure ('bundling');
 
@@ -63,7 +65,9 @@ my $result = GetOptions('export'      => \$export,
 			'v=i'         => \$verbose,
 			'timestamp'   => \$timestamp,
 			't'           => \$timestamp,
-		        'debug'       => \$debug
+		        'debug'       => \$debug,
+			'r=s'         => \$chains,
+			'refresh=s'   => \$chains
 		       );
 
 usage unless $result && @ARGV < 2;
@@ -74,4 +78,4 @@ $options |= EXPORT    if $export;
 $options |= TIMESTAMP if $timestamp;
 $options |= DEBUG     if $debug;
 
-compiler $ARGV[0], $shorewall_dir, $verbose, $options;
+compiler $ARGV[0], $shorewall_dir, $verbose, $options, $chains;

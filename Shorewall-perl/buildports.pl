@@ -123,8 +123,11 @@ use warnings;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( %protocols %services );
 our @EXPORT_OK = qw();
-our $VERSION = '1.00';
+EOF
 
+print "our \$VERSION = '$globals{VERSION}';\n";
+
+print <<'EOF';
 our %protocols = (
 EOF
 

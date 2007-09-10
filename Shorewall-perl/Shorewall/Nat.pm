@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
-our $VERSION = 4.03;
+our $VERSION = '4.03';
 
 our @addresses_to_add;
 our %addresses_to_add;
@@ -169,7 +169,7 @@ sub setup_one_masq($$$$$$$)
     #
     ( my $interface = $fullinterface ) =~ s/:.*//;
 
-    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+    fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
 
     my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
     #
@@ -305,7 +305,7 @@ sub setup_masq()
 	}
     }
 
-    $comment = '';
+    clear_comment;
 
 }
 
@@ -417,7 +417,7 @@ sub setup_nat() {
 
     }
 
-    $comment = '';
+    clear_comment;
 }
 
 #

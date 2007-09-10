@@ -34,10 +34,13 @@ use strict;
 use warnings;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
-use Cwd 'abs_path';
+use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
 
 our @ISA = qw(Exporter);
+#
+# Imported variables should be treated as read-only by importers
+#
 our @EXPORT = qw(
 		 create_temp_object
 		 finalize_object
@@ -47,6 +50,7 @@ our @EXPORT = qw(
 		 save_progress_message_short
 		 set_timestamp
 		 set_verbose
+		 set_command
 		 progress_message
 		 progress_message2
 		 progress_message3
@@ -55,7 +59,6 @@ our @EXPORT = qw(
 		 copy
 		 create_temp_aux_config
 		 finalize_aux_config
-
 		 warning_message
 		 fatal_error
 		 set_shorewall_dir
@@ -85,15 +88,13 @@ our @EXPORT = qw(
 		 $command
 		 $doing
 		 $done
-		 $verbose
-
 		 $currentline
 		 %config
 		 %globals
 		 %capabilities );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
-our $VERSION = 4.03;
+our $VERSION = '4.04';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -147,7 +148,38 @@ our %capabilities;
 #
 # Capabilities
 #
-our %capdesc;
+our %capdesc = ( NAT_ENABLED     => 'NAT',
+		 MANGLE_ENABLED  => 'Packet Mangling',
+		 MULTIPORT       => 'Multi-port Match' ,
+		 XMULTIPORT      => 'Extended Multi-port Match',
+		 CONNTRACK_MATCH => 'Connection Tracking Match',
+		 USEPKTTYPE      => 'Packet Type Match',
+		 POLICY_MATCH    => 'Policy Match',
+		 PHYSDEV_MATCH   => 'Physdev Match',
+		 LENGTH_MATCH    => 'Packet length Match',
+		 IPRANGE_MATCH   => 'IP Range Match',
+		 RECENT_MATCH    => 'Recent Match',
+		 OWNER_MATCH     => 'Owner Match',
+		 IPSET_MATCH     => 'Ipset Match',
+		 CONNMARK        => 'CONNMARK Target',
+		 XCONNMARK       => 'Extended CONNMARK Target',
+		 CONNMARK_MATCH  => 'Connmark Match',
+		 XCONNMARK_MATCH => 'Extended Connmark Match',
+		 RAW_TABLE       => 'Raw Table',
+		 IPP2P_MATCH     => 'IPP2P Match',
+		 CLASSIFY_TARGET => 'CLASSIFY Target',
+		 ENHANCED_REJECT => 'Extended Reject',
+		 KLUDGEFREE      => 'Repeat match',
+		 MARK            => 'MARK Target',
+		 XMARK           => 'Extended Mark Target',
+		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
+		 COMMENTS        => 'Comments',
+		 ADDRTYPE        => 'Address Type Match',
+		 TCPMSS_MATCH    => 'TCPMSS Match',
+		 HASHLIMIT_MATCH => 'Hashlimit Match',
+		 NFQUEUE_TARGET  => 'NFQUEUE Target',
+		 CAPVERSION      => 'Capability Version',
+	       );
 #
 # Directories to search for configuration files
 #
@@ -198,7 +230,7 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.3',
+		    VERSION =>  '4.0.4',
 		    CAPVERSION => 40003 ,
 		  );
     #
@@ -335,41 +367,6 @@ sub initialize() {
 	       CAPVERSION => undef,
 	       );
     #
-    # Capabilities
-    #
-    %capdesc = ( NAT_ENABLED     => 'NAT',
-		 MANGLE_ENABLED  => 'Packet Mangling',
-		 MULTIPORT       => 'Multi-port Match' ,
-		 XMULTIPORT      => 'Extended Multi-port Match',
-		 CONNTRACK_MATCH => 'Connection Tracking Match',
-		 USEPKTTYPE      => 'Packet Type Match',
-		 POLICY_MATCH    => 'Policy Match',
-		 PHYSDEV_MATCH   => 'Physdev Match',
-		 LENGTH_MATCH    => 'Packet length Match',
-		 IPRANGE_MATCH   => 'IP Range Match',
-		 RECENT_MATCH    => 'Recent Match',
-		 OWNER_MATCH     => 'Owner Match',
-		 IPSET_MATCH     => 'Ipset Match',
-		 CONNMARK        => 'CONNMARK Target',
-		 XCONNMARK       => 'Extended CONNMARK Target',
-		 CONNMARK_MATCH  => 'Connmark Match',
-		 XCONNMARK_MATCH => 'Extended Connmark Match',
-		 RAW_TABLE       => 'Raw Table',
-		 IPP2P_MATCH     => 'IPP2P Match',
-		 CLASSIFY_TARGET => 'CLASSIFY Target',
-		 ENHANCED_REJECT => 'Extended Reject',
-		 KLUDGEFREE      => 'Repeat match',
-		 MARK            => 'MARK Target',
-		 XMARK           => 'Extended Mark Target',
-		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
-		 COMMENTS        => 'Comments',
-		 ADDRTYPE        => 'Address Type Match',
-		 TCPMSS_MATCH    => 'TCPMSS Match',
-		 HASHLIMIT_MATCH => 'Hashlimit Match',
-		 NFQUEUE_TARGET  => 'NFQUEUE Target',
-		 CAPVERSION      => 'Capability Version',
-	       );
-    #
     # Directories to search for configuration files
     #
     @config_path = ();
@@ -401,7 +398,8 @@ INIT {
 #
 sub warning_message
 {
-    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
+    my $linenumber = $currentlinenumber || 1;
+    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
 
     if ( $debug ) {
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
@@ -414,7 +412,8 @@ sub warning_message
 # Issue fatal error message and die
 #
 sub fatal_error	{
-    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $currentlinenumber)" : '';
+    my $linenumber = $currentlinenumber || 1;
+    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
     confess "   ERROR: @_$currentlineinfo" if $debug;
     die "   ERROR: @_$currentlineinfo\n";
 }
@@ -481,11 +480,17 @@ sub set_verbose( $ ) {
 }
 
 #
+# Set $command, $doing and $done
+#
+sub set_command( $$$ ) {
+    ($command, $doing, $done) = @_;
+}
+
+#
 # Print the current TOD to STDOUT.
 #
 sub timestamp() {
-    my ($sec, $min, $hr) = ( localtime ) [0,1,2];
-    printf '%02d:%02d:%02d ', $hr, $min, $sec;
+    printf '%02d:%02d:%02d ', ( localtime ) [2,1,0];
 }
 
 #
@@ -649,7 +654,7 @@ sub finalize_aux_config() {
 }
 
 #
-# Set $globals{CONFIG_PATH}
+# Set $config{CONFIG_PATH}
 #
 sub set_config_path( $ ) {
     $config{CONFIG_PATH} = shift;
@@ -839,8 +844,11 @@ sub read_a_line() {
     while ( $currentfile ) {
 
 	$currentline = '';
+	$currentlinenumber = 0;
 
 	while ( <$currentfile> ) {
+
+	    $currentlinenumber = $. unless $currentlinenumber;
 
 	    chomp;
 	    #
@@ -856,7 +864,6 @@ sub read_a_line() {
 	    #
 	    $currentline = '', next if $currentline =~ /^\s*$/;
 
-	    $currentlinenumber = $.;
 	    #
 	    # Expand Shell Variables using %ENV
 	    #
@@ -883,6 +890,8 @@ sub read_a_line() {
 		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 		    $currentfile = undef;
 		    do_open_file $filename;
+		} else {
+		    $currentlinenumber = 0;
 		}
 
 		$currentline = '';
@@ -1026,17 +1035,19 @@ sub report_capabilities() {
 	}
     }
 
-    print "Shorewall has detected the following capabilities:\n";
+    if ( $verbose > 1 ) {
+	print "Shorewall has detected the following capabilities:\n";
 
-    for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {
-	report_capability $cap;
+	for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {
+	    report_capability $cap;
+	}
     }
 }
 
 #
 # Search the current PATH for the passed executable
 #
-sub mywhich( $ ) {
+sub which( $ ) {
     my $prog = $_[0];
 
     for my $dir ( split /:/, $config{PATH} ) {
@@ -1050,7 +1061,7 @@ sub mywhich( $ ) {
 # Load the kernel modules defined in the 'modules' file.
 #
 sub load_kernel_modules( ) {
-    my $moduleloader = mywhich 'modprobe' ? 'modprobe' : 'insmod';
+    my $moduleloader = which( 'modprobe' ) || ( which 'insmod' );
 
     my $modulesdir = $config{MODULESDIR};
 
@@ -1063,7 +1074,7 @@ sub load_kernel_modules( ) {
 
     my @moduledirectories = split /:/, $modulesdir;
 
-    if ( @moduledirectories && open_file 'modules' ) {
+    if ( $moduleloader && open_file 'modules' ) {
 	my %loadedmodules;
 
 	progress_message "Loading Modules...";
@@ -1114,9 +1125,9 @@ sub qt( $ ) {
 #
 # Determine which optional facilities are supported by iptables/netfilter
 #
-sub determine_capabilities() {
+sub determine_capabilities( $ ) {
 
-    my $iptables  = $config{IPTABLES};
+    my $iptables  = $_[0];
     my $pid       = $$;
     my $sillyname = "fooX$pid";
 
@@ -1173,7 +1184,7 @@ sub determine_capabilities() {
 
     $capabilities{RAW_TABLE} = qt( "$iptables -t raw -L -n" );
 
-    if ( mywhich 'ipset' ) {
+    if ( which 'ipset' ) {
 	qt( "ipset -X $sillyname" );
 
 	if ( qt( "ipset -N $sillyname iphash" ) ) {
@@ -1243,8 +1254,10 @@ sub ensure_config_path() {
     }
 
     if ( $shorewall_dir ) {
+	$shorewall_dir = getcwd if $shorewall_dir =~ m|(\./*)+|;
 	$shorewall_dir .= '/' unless $shorewall_dir =~ m|/$|;
 	unshift @config_path, $shorewall_dir if $shorewall_dir ne $config_path[0];
+	$config{CONFIG_PATH} = join ':', @config_path;
     }
 }
 
@@ -1287,32 +1300,10 @@ sub process_shorewall_conf() {
     }
 }
 
-sub get_capabilities( $ ) {
-    my $export = $_[0];
-
-    if ( ! $export && $> == 0 ) { # $> == $EUID
-	unless ( $config{IPTABLES} ) {
-	    fatal_error "Can't find iptables executable" unless $config{IPTABLES} = mywhich 'iptables';
-	} else {
-	    fatal_error "\$IPTABLES=$config{IPTABLES} does not exist or is not executable" unless -x $config{IPTABLES};
-	}
-
-	load_kernel_modules;
-
-	unless ( open_file 'capabilities' ) {
-	    determine_capabilities;
-	}
-    } else {
-	unless ( open_file 'capabilities' ) {
-	    fatal_error "The -e flag requires a capabilities file" if $export;
-	    fatal_error "Compiling under non-root uid requires a capabilities file";
-	}
-    }
-
-    #
-    # If we successfully called open_file above, then this loop will read the capabilities file.
-    # Otherwise, the first call to read_a_line() below will return false
-    #
+#
+# Process the records in the capabilities file
+#
+sub read_capabilities() {
     while ( read_a_line1 ) {
 	if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 	    my ($var, $val) = ($1, $2);
@@ -1331,6 +1322,42 @@ sub get_capabilities( $ ) {
 	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by Shorewall version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
     } else {
 	warning_message "Your capabilities file may not contain all of the capabilities defined by Shorewall version $globals{VERSION}";
+    }
+}
+
+#
+# Get the system's capabilities, either by probing or by reading a capabilities file
+#
+sub get_capabilities( $ ) {
+    my $export = $_[0];
+
+    if ( ! $export && $> == 0 ) { # $> == $EUID
+	my $iptables = $config{IPTABLES};
+
+	if ( $iptables ) {
+	    fatal_error "IPTABLES=$iptables does not exist or is not executable" unless -x $iptables;
+	} else {
+	    fatal_error "Can't find iptables executable" unless $iptables = which 'iptables';
+	}
+
+	my $iptables_restore=$iptables . '-restore';
+
+	fatal_error "$iptables_restore does not exist or is not executable" unless -x $iptables_restore;
+
+	load_kernel_modules;
+
+	if ( open_file 'capabilities' ) {
+	    read_capabilities;
+	} else {
+	    determine_capabilities $iptables;
+	}
+    } else {
+	unless ( open_file 'capabilities' ) {
+	    fatal_error "The -e compiler option requires a capabilities file" if $export;
+	    fatal_error "Compiling under non-root uid requires a capabilities file";
+	}
+
+	read_capabilities;
     }
 }
 

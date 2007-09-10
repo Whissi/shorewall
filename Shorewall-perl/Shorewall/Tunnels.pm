@@ -33,12 +33,14 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tunnels );
 our @EXPORT_OK = ( );
-our $VERSION = 4.00;
+our $VERSION = '4.03';
 
 #
 # Here starts the tunnel stuff -- we really should get rid of this crap...
 #
 sub setup_tunnels() {
+
+    our $fw = firewall_zone;
 
     sub setup_one_ipsec {
 	my ($inchainref, $outchainref, $kind, $source, $dest, $gatewayzones) = @_;
@@ -79,11 +81,10 @@ sub setup_tunnels() {
 
 	unless ( $gatewayzones eq '-' ) {
 	    for my $zone ( split /,/, $gatewayzones ) {
-		fatal_error "Unknown zone ($zone)" unless $zones{$zone};
-		my $type = $zones{$zone}{type};
+		my $type = zone_type( $zone );
 		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type eq 'firewall' || $type eq 'bport4';
-		$inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
-		$outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+		$inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
+		$outchainref = ensure_filter_chain "${fw}2${zone}", 1;
 
 		unless ( $capabilities{POLICY_MATCH} ) {
 		    add_rule $inchainref,  "-p 50 $source -j ACCEPT";
@@ -225,14 +226,12 @@ sub setup_tunnels() {
     sub setup_one_tunnel($$$$) {
 	my ( $kind , $zone, $gateway, $gatewayzones ) = @_;
 
-	fatal_error "Unknown zone ($zone)" unless $zones{$zone};
-
-	my $zonetype = $zones{$zone}{type};
+	my $zonetype = zone_type( $zone );
 
 	fatal_error "Invalid zone ($zone) for tunnel ZONE" if $zonetype eq 'firewall' || $zonetype eq 'bport4';
 
-	my $inchainref  = ensure_filter_chain "${zone}2${firewall_zone}", 1;
-	my $outchainref = ensure_filter_chain "${firewall_zone}2${zone}", 1;
+	my $inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
+	my $outchainref = ensure_filter_chain "${fw}2${zone}", 1;
 
 	my $source = match_source_net $gateway;
 	my $dest   = match_dest_net   $gateway;
@@ -286,7 +285,7 @@ sub setup_tunnels() {
 	}
     }
 
-    $comment = '';
+    clear_comment;
 }
 
 1;

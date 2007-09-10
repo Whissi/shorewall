@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = 4.03;
+our $VERSION = '4.03';
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
@@ -125,7 +125,7 @@ sub process_tos() {
 
 	    fatal_error "Invalid SOURCE" if defined $remainder;
 
-	    if ( $srczone eq $firewall_zone ) {
+	    if ( $srczone eq firewall_zone ) {
 		$chainref    = $outtosref;
 		$src         = $source || '-';
 		$restriction = OUTPUT_RESTRICT;
@@ -519,7 +519,7 @@ sub add_common_rules() {
 
     my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
 
-    for $interface ( @interfaces ) {
+    for $interface ( all_interfaces ) {
 	for $chain ( @{first_chains $interface} ) {
 	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
 	}
@@ -593,7 +593,7 @@ sub add_common_rules() {
 		add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
 	    }
 
-	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if $interfaces{$interface}{options}{bridge};
+	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if get_interface_option( $interface, 'bridge' );
 	}
     }
 
@@ -649,7 +649,7 @@ sub add_common_rules() {
     }
 
     if ( $config{DYNAMIC_ZONES} ) {
-	for $interface ( @interfaces) {
+	for $interface ( all_interfaces ) {
 	    for $chain ( @{dynamic_chains $interface} ) {
 		new_standard_chain $chain;
 	    }
@@ -713,7 +713,7 @@ sub setup_mac_lists( $ ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 
 	    add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
-		if ( $table eq 'mangle' ) && $interfaces{$interface}{options}{dhcp};
+		if ( $table eq 'mangle' ) && get_interface_option( $interface, 'dhcp' );
 
 	    if ( $ttl ) {
 		my $chain1ref = new_chain $table, macrecent_target $interface;
@@ -782,7 +782,7 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
 
-	$comment = '';
+	clear_comment;
 	#
 	# Generate jumps from the input and forward chains
 	#
@@ -806,7 +806,7 @@ sub setup_mac_lists( $ ) {
 	    my $chain    = $chainref->{name};
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
-		my $variable = get_interface_addresses $interfaces{$interface}{bridge};
+		my $variable = get_interface_addresses source_port_to_bridge( $interface );
 
 		if ( $capabilities{ADDRTYPE} ) {
 		    add_commands( $chainref,
@@ -815,8 +815,8 @@ sub setup_mac_lists( $ ) {
 				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
 				  'done' );
 		} else {
-		    my $bridge    = $interfaces{$interface}{bridge};
-		    my $bridgeref = $interfaces{$bridge};
+		    my $bridge    = source_port_to_bridge( $interface );
+		    my $bridgeref = find_interface( $bridge );
 		    
 		    add_commands( $chainref,
 				  "for address in $variable; do" );
@@ -1001,9 +1001,9 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     if ( $actiontype & REDIRECT ) {
 	if ( $dest eq '-' ) {
-	    $dest = "$firewall_zone";
+	    $dest = "firewall_zone";
 	} else {
-	    $dest = join( '', $firewall_zone, '::', $dest );
+	    $dest = join( '', firewall_zone, '::', $dest );
 	}
     } elsif ( $action eq 'REJECT' ) {
 	$action = 'reject';
@@ -1017,6 +1017,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     my $sourcezone;
     my $destzone;
+    my $sourceref;
+    my $destref;
 
     if ( $source =~ /^(.+?):(.*)/ ) {
 	$sourcezone = $1;
@@ -1035,22 +1037,22 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     }
 
     fatal_error "Missing source zone" if $sourcezone eq '-';
-    fatal_error "Unknown source zone ($sourcezone)" unless $zones{$sourcezone};
+    fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
     fatal_error "Missing destination zone" if $destzone eq '-';
-    fatal_error "Unknown destination zone ($destzone)" unless $zones{$destzone};
+    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
 
     my $restriction = NO_RESTRICT;
 
-    if ( $sourcezone eq $firewall_zone ) {
-	$restriction = $destzone eq $firewall_zone ? ALL_RESTRICT : OUTPUT_RESTRICT;
+    if ( $sourcezone eq firewall_zone ) {
+	$restriction = $destzone eq firewall_zone ? ALL_RESTRICT : OUTPUT_RESTRICT;
     } else {
-	$restriction = INPUT_RESTRICT if $destzone eq $firewall_zone;
+	$restriction = INPUT_RESTRICT if $destzone eq firewall_zone;
     }
     #
     # Check for illegal bridge port rule
     #
-    if ( $zones{$destzone}->{type} eq 'bport4' ) {
-	unless ( $zones{$sourcezone}{bridge} eq $zones{$destzone}{bridge} || single_interface( $sourcezone ) eq $zones{$destzone}{bridge} ) {
+    if ( $destref->{type} eq 'bport4' ) {
+	unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
 	    return 1 if $wildcard;
 	    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
 	}
@@ -1135,8 +1137,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIPv4;
 	    } elsif ( $origdest eq 'detect' ) {
-		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne $firewall_zone ) {
-		    my $interfacesref = $zones{$sourcezone}{interfaces};
+		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
 		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
 		} else {
@@ -1146,7 +1148,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	} else {
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
-		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq $firewall_zone;
+		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq firewall_zone;
 		$target = '-j SAME ';
 		for my $serv ( split /,/, $server ) {
 		    $target .= "--to $serv ";
@@ -1160,8 +1162,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    }
 
 	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne $firewall_zone ) {
-		    my $interfacesref = $zones{$sourcezone}{interfaces};
+		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
 		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
 		} else {
@@ -1173,7 +1175,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	expand_rule ( ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
+	expand_rule ( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
 		      PREROUTE_RESTRICT ,
 		      $rule ,
 		      $source ,
@@ -1205,12 +1207,12 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$origdest = '' unless $origdest and $origdest ne '-';
 
 	if ( $origdest eq 'detect' ) {
-	    my $interfacesref = $zones{$sourcezone}{interfaces};
+	    my $interfacesref = $sourceref->{interfaces};
 	    my $interfaces = "@$interfacesref";
 	    $origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
 	}
 
-	expand_rule( ensure_chain ('nat' , $zones{$sourcezone}{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	expand_rule( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
 		     $source ,
@@ -1312,11 +1314,11 @@ sub process_rule ( $$$$$$$$$$ ) {
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
     if ( $source eq 'all' ) {
-	for my $zone ( @zones ) {
-	    if ( $includesrcfw || ( $zones{$zone}{type} ne 'firewall' ) ) {
+	for my $zone ( all_zones ) {
+	    if ( $includesrcfw || ( zone_type( $zone ) ne 'firewall' ) ) {
 		if ( $dest eq 'all' ) {
-		    for my $zone1 ( @zones ) {
-			if ( $includedstfw || ( $zones{$zone1}{type} ne 'firewall' ) ) {
+		    for my $zone1 ( all_zones ) {
+			if ( $includedstfw || ( zone_type( $zone1 ) ne 'firewall' ) ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
 				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 			    }
@@ -1324,7 +1326,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    }
 		} else {
 		    my $destzone = (split( /:/, $dest, 2 ) )[0];
-		    $destzone = $firewall_zone unless $zones{$destzone}; # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
+		    $destzone = firewall_zone unless defined_zone( $destzone ); # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
 			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 		    }
@@ -1332,9 +1334,9 @@ sub process_rule ( $$$$$$$$$$ ) {
 	    }
 	}
     } elsif ( $dest eq 'all' ) {
-	for my $zone ( @zones ) {
+	for my $zone ( all_zones ) {
 	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
-	    if ( ( $includedstfw || ( $zones{$zone}{type} ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
+	    if ( ( $includedstfw || ( zone_type( $zone ) ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
 		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
 	    }
 	}
@@ -1392,7 +1394,7 @@ sub process_rules() {
 	}
     }
 
-    $comment = '';
+    clear_comment;
     $section = 'DONE';
 }
 
@@ -1481,6 +1483,7 @@ sub generate_matrix() {
     my $exclusion_seq    = 1;
     my %chain_exclusions;
     my %policy_exclusions;
+    my @interfaces = ( all_interfaces );
 
     for my $interface ( @interfaces ) {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
@@ -1503,9 +1506,9 @@ sub generate_matrix() {
     #
     # Special processing for complex zones
     #
-    for my $zone ( grep $zones{$_}{options}{complex} , @zones ) {
+    for my $zone ( complex_zones ) {
 	my $frwd_ref   = new_standard_chain "${zone}_frwd";
-	my $zoneref    = $zones{$zone};
+	my $zoneref    = find_zone( $zone );
 	my $exclusions = $zoneref->{exclusions};
 
 	if ( @$exclusions ) {
@@ -1549,11 +1552,11 @@ sub generate_matrix() {
     #
     # Main source-zone matrix-generation loop
     #
-    for my $zone ( grep ( $zones{$_}{type} ne 'firewall'  ,  @zones ) ) {
-	my $zoneref          = $zones{$zone};
+    for my $zone ( non_firewall_zones ) {
+	my $zoneref          = find_zone( $zone );
 	my $source_hosts_ref = $zoneref->{hosts};
-	my $chain1           = rules_target $firewall_zone , $zone;
-	my $chain2           = rules_target $zone, $firewall_zone;
+	my $chain1           = rules_target firewall_zone , $zone;
+	my $chain2           = rules_target $zone, firewall_zone;
 	my $chain3           = rules_target $zone, $zone;
 	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
@@ -1571,8 +1574,8 @@ sub generate_matrix() {
 	}
 
 	if ( $config{DYNAMIC_ZONES} ) {
-	    push @rule_chains , [ $firewall_zone , $zone , $chain1 ] if $chain1;
-	    push @rule_chains , [ $zone , $firewall_zone , $chain2 ];
+	    push @rule_chains , [ firewall_zone , $zone , $chain1 ] if $chain1;
+	    push @rule_chains , [ $zone , firewall_zone , $chain2 ];
 	}
 
 	#
@@ -1623,7 +1626,7 @@ sub generate_matrix() {
 		if ( $capabilities{ADDRTYPE} ) {
 		    add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
 		} else {
-		    my $interfaceref = $interfaces{$interface};
+		    my $interfaceref = find_interface( $interface );
 		    my $chain        = output_chain $interface;
 		    my $chainref     = $filter_table->{$chain};
 
@@ -1654,8 +1657,8 @@ sub generate_matrix() {
 	    my @temp_zones;
 
 	  ZONE1:
-	    for my $zone1 ( grep $zones{$_}{type} ne 'firewall' , @zones )  {
-		my $zone1ref = $zones{$zone1};
+	    for my $zone1 ( non_firewall_zones )  {
+		my $zone1ref = find_zone( $zone1 );
 		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
 
 		next if $policy  eq 'NONE';
@@ -1695,7 +1698,7 @@ sub generate_matrix() {
 		$last_chain = '';
 	    }
 	} else {
-	    @dest_zones =  grep $zones{$_}{type} ne 'firewall' , @zones ;
+	    @dest_zones =  non_firewall_zones ;
 	}
 	#
 	# Here it is -- THE BIG UGLY!!!!!!!!!!!!
@@ -1705,7 +1708,7 @@ sub generate_matrix() {
 	#
       ZONE1:
 	for my $zone1 ( @dest_zones ) {
-	    my $zone1ref = $zones{$zone1};
+	    my $zone1ref = find_zone( $zone1 );
 	    my $policy   = $filter_table->{"${zone}2${zone1}"}->{policy};
 
 	    next if $policy  eq 'NONE';
@@ -1841,11 +1844,12 @@ sub generate_matrix() {
     for my $interface ( @interfaces ) {
 	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . forward_chain $interface;
 	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . input_chain $interface;
-	add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless $interfaces{$interface}{options}{port};
+	add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless get_interface_option( $interface, 'port' );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
     }
 
-    my $chainref = $filter_table->{"${firewall_zone}2${firewall_zone}"};
+    my $fw = firewall_zone;
+    my $chainref = $filter_table->{"${fw}2${fw}"};
 
     add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
     add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
@@ -1854,8 +1858,8 @@ sub generate_matrix() {
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
 
-    complete_standard_chain $filter_table->{INPUT}   , 'all' , $firewall_zone;
-    complete_standard_chain $filter_table->{OUTPUT}  , $firewall_zone , 'all';
+    complete_standard_chain $filter_table->{INPUT}   , 'all' , firewall_zone;
+    complete_standard_chain $filter_table->{OUTPUT}  , firewall_zone , 'all';
     complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all';
 
     if ( $config{LOGALLNEW} ) {
@@ -1913,7 +1917,7 @@ sub setup_mss( ) {
 	} 
 
 	for ( @$interfaces ) {
-	    my $mss      = $interfaces{$_}{options}{mss};
+	    my $mss      = get_interface_option( $_, 'mss' );
 	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : ''; 
 	    add_rule $chainref, "-o $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
 	    add_rule $chainref, "-o $_ -j RETURN" if $clampmss;

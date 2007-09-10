@@ -1,1 +1,1 @@
-This is the Shorewall-common Development 4.1 branch of SVN.
+This is the Shorewall-common Stable 4.0 branch of SVN.

@@ -34,7 +34,28 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = 4.03;
+our $VERSION = '4.03';
+
+# @policy_chains is a list of references to policy chains in the filter table
+
+our @policy_chains;
+
+#
+# Initialize globals -- we take this novel approach to globals initialization to allow
+#                       the compiler to run multiple times in the same process. The
+#                       initialize() function does globals initialization for this
+#                       module and is called from an INIT block below. The function is
+#                       also called by Shorewall::Compiler::compiler at the beginning of
+#                       the second and subsequent calls to that function.
+#
+
+sub initialize() {
+    @policy_chains = ();
+}
+
+INIT {
+    initialize;
+}
 
 #
 # Convert a chain into a policy chain.
@@ -104,20 +125,36 @@ sub set_policy_chain($$$$$)
 #
 # Process the policy file
 #
+use constant { OPTIONAL => 1 };
+
+sub add_or_modify_policy_chain( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+    my $chain    = "${zone}2${zone1}";
+    my $chainref = $filter_table->{$chain};
+    
+    if ( $chainref ) {
+	unless( $chainref->{is_policy} ) {
+	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', OPTIONAL );
+	    push @policy_chains, $chainref;
+	}
+    } else {
+	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
+    }
+}    
+
+sub print_policy($$$$) {
+    my ( $source, $dest, $policy , $chain ) = @_;
+    unless ( ( $source eq 'all' ) || ( $dest eq 'all' ) ) {
+	if ( $policy eq 'CONTINUE' ) {
+	    my ( $sourceref, $destref ) = ( find_zone($source) ,find_zone( $dest ) );
+	    warning_message "CONTINUE policy between two un-nested zones ($source, $dest)" if ! ( @{$sourceref->{parents}} || @{$destref->{parents}} );
+	}
+	progress_message "   Policy for $source to $dest is $policy using chain $chain" unless $source eq $dest;
+    }
+}
+
 sub validate_policy()
 {
-    sub print_policy($$$$)
-    {
-	my ( $source, $dest, $policy , $chain ) = @_;
-	unless ( ( $source eq 'all' ) || ( $dest eq 'all' ) ) {
-	    if ( $policy eq 'CONTINUE' ) {
-		my ( $sourceref, $destref ) = @zones{$source,$dest};
-		warning_message "CONTINUE policy between two un-nested zones ($source, $dest)" if ! ( @{$sourceref->{parents}} || @{$destref->{parents}} );
-	    }
-	    progress_message "   Policy for $source to $dest is $policy using chain $chain" unless $source eq $dest;
-	}
-    }
-
     my %validpolicies = (
 			  ACCEPT => undef,
 			  REJECT => undef,
@@ -135,8 +172,6 @@ sub validate_policy()
 	        NFQUEUE_DEFAULT => 'NFQUEUE' );
 
     my $zone;
-
-    use constant { OPTIONAL => 1 };
 
     for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
 	my $action = $config{$option};
@@ -157,14 +192,15 @@ sub validate_policy()
 	$default_actions{$map{$option}} = $action;
     }
 
-    for $zone ( @zones ) {
+    for $zone ( all_zones ) {
 	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
 
-	if ( $config{IMPLICIT_CONTINUE} && ( @{$zones{$zone}{parents}} ) ) {
-	    for my $zone1 ( @zones ) {
-		next if $zone eq $zone1;
-		push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
-		push @policy_chains, ( new_policy_chain $zone1, $zone, 'CONTINUE', OPTIONAL );
+	if ( $config{IMPLICIT_CONTINUE} && ( @{find_zone( $zone )->{parents}} ) ) {
+	    for my $zone1 ( all_zones ) {
+		unless( $zone eq $zone1 ) {
+		    add_or_modify_policy_chain( $zone, $zone1 );
+		    add_or_modify_policy_chain( $zone1, $zone );
+		}
 	    }
 	}
     }
@@ -187,11 +223,11 @@ sub validate_policy()
 
 	my $clientwild = ( "\L$client" eq 'all' );
 
-	fatal_error "Undefined zone $client" unless $clientwild || $zones{$client};
+	fatal_error "Undefined zone $client" unless $clientwild || defined_zone( $client );
 
 	my $serverwild = ( "\L$server" eq 'all' );
 
-	fatal_error "Undefined zone $server" unless $serverwild || $zones{$server};
+	fatal_error "Undefined zone $server" unless $serverwild || defined_zone( $server );
 
 	( $policy , my ( $default, $remainder ) ) = split( /:/, $policy, 3 );
 
@@ -230,13 +266,13 @@ sub validate_policy()
 	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
 	    fatal_error "NONE policy not allowed to/from firewall zone"
-		if ( $zones{$client}{type} eq 'firewall' ) || ( $zones{$server}{type} eq 'firewall' );
+		if ( zone_type( $client ) eq 'firewall' ) || ( zone_type( $server ) eq 'firewall' );
 	}
 
 	unless ( $clientwild || $serverwild ) {
-	    if ( $zones{$server}{type} eq 'bport4' ) {
+	    if ( zone_type( $server ) eq 'bport4' ) {
 		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
-		    unless $zones{$client}{bridge} eq $zones{$server}{bridge} || single_interface( $client ) eq $zones{$server}{bridge};
+		    unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
 	    }
 	}
 
@@ -275,20 +311,20 @@ sub validate_policy()
 
 	if ( $clientwild ) {
 	    if ( $serverwild ) {
-		for my $zone ( @zones , 'all' ) {
-		    for my $zone1 ( @zones , 'all' ) {
+		for my $zone ( all_zones , 'all' ) {
+		    for my $zone1 ( all_zones , 'all' ) {
 			set_policy_chain $client, $server, "${zone}2${zone1}", $chainref, $policy;
 			print_policy $zone, $zone1, $policy, $chain;
 		    }
 		}
 	    } else {
-		for my $zone ( @zones ) {
+		for my $zone ( all_zones ) {
 		    set_policy_chain $client, $server, "${zone}2${server}", $chainref, $policy;
 		    print_policy $zone, $server, $policy, $chain;
 		}
 	    }
 	} elsif ( $serverwild ) {
-	    for my $zone ( @zones , 'all' ) {
+	    for my $zone ( all_zones , 'all' ) {
 		set_policy_chain $client, $server, "${client}2${zone}", $chainref, $policy;
 		print_policy $client, $zone, $policy, $chain;
 	    }
@@ -382,8 +418,8 @@ sub apply_policy_rules() {
 	}
     }
 
-    for my $zone ( @zones ) {
-	for my $zone1 ( @zones ) {
+    for my $zone ( all_zones ) {
+	for my $zone1 ( all_zones ) {
 	    my $chainref = $filter_table->{"${zone}2${zone1}"};
 
 	    if ( $chainref->{referenced} ) {

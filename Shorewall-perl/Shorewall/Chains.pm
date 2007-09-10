@@ -53,6 +53,7 @@ our @EXPORT = qw( STANDARD
 		  ALL_RESTRICT
 
 		  process_comment
+		  clear_comment
 		  incr_cmd_level
 		  decr_cmd_level
 		  add_command
@@ -61,7 +62,6 @@ our @EXPORT = qw( STANDARD
 		  add_file
 		  add_rule
 		  insert_rule
-		  insert_rule_nice
 		  chain_base
 		  forward_chain
 		  input_chain
@@ -116,25 +116,21 @@ our @EXPORT = qw( STANDARD
 		  get_interface_bcasts
 		  set_global_variables
 		  create_netfilter_load
-		  create_blacklist_reload
+		  create_chainlist_reload
 
-		  @policy_chains
 		  %chain_table
 		  $nat_table
 		  $mangle_table
 		  $filter_table
 		  $section
 		  %sections
-		  $comment
 		  %targets
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.03;
+our $VERSION = '4.04';
 
 #
 # Chain Table
-#
-#    @policy_chains is a list of references to policy chains in the filter table
 #
 #    %chain_table { <table> => { <chain1>  => { name         => <chain name>
 #                                               table        => <table name>
@@ -166,7 +162,6 @@ our $VERSION = 4.03;
 #
 #       'loglevel', 'synparams', 'synchain' and 'default' only apply to policy chains.
 #
-our @policy_chains;
 our %chain_table;
 our $nat_table;
 our $mangle_table;
@@ -234,7 +229,6 @@ our $mode;
 #
 
 sub initialize() {
-    @policy_chains = ();
     %chain_table = ( raw    => {} ,
 		     mangle => {},
 		     nat    => {},
@@ -335,6 +329,14 @@ sub process_comment() {
 	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
     }
 }
+
+#
+# Clear the $comment variable
+#
+sub clear_comment() {
+    $comment = '';
+}
+
 #
 # Functions to manipulate cmdlevel
 #
@@ -731,8 +733,8 @@ sub finish_section ( $ ) {
 	$sections{$section} = 1;
     }
 
-    for my $zone ( @zones ) {
-	for my $zone1 ( @zones ) {
+    for my $zone ( all_zones ) {
+	for my $zone1 ( all_zones ) {
 	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
 	    if ( $chainref->{referenced} ) {
 		finish_chain_section $chainref, $sections;
@@ -760,7 +762,7 @@ sub set_mss1( $$ ) {
 sub set_mss( $$$ ) {
     my ( $zone, $mss, $direction) = @_;
 
-    for my $z ( @zones ) {
+    for my $z ( all_zones ) {
 	if ( $direction eq '_in' ) {
 	    set_mss1 "${zone}2${z}" , $mss;
 	} elsif ( $direction eq '_out' ) {
@@ -776,8 +778,8 @@ sub set_mss( $$$ ) {
 # Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate. 
 #
 sub setup_zone_mss() {
-    for my $zone ( @zones ) {
-	my $zoneref = $zones{$zone};
+    for my $zone ( all_zones ) {
+	my $zoneref = find_zone( $zone );
 
 	set_mss( $zone, $zoneref->{options}{in_out}{mss}, ''     ) if $zoneref->{options}{in_out}{mss};
 	set_mss( $zone, $zoneref->{options}{in}{mss},     '_in'  ) if $zoneref->{options}{in}{mss};
@@ -1104,7 +1106,7 @@ sub do_tos( $ ) {
 #
 sub match_source_dev( $ ) {
     my $interface = shift;
-    my $interfaceref =  $interfaces{$interface};
+    my $interfaceref =  find_interface( $interface );
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
     } else {
@@ -1117,7 +1119,7 @@ sub match_source_dev( $ ) {
 #
 sub match_dest_dev( $ ) {
     my $interface = shift;
-    my $interfaceref =  $interfaces{$interface};
+    my $interfaceref =  find_interface( $interface );
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	"-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
     } else {
@@ -1240,7 +1242,7 @@ sub match_orig_dest ( $ ) {
 sub match_ipsec_in( $$ ) {
     my ( $zone , $hostref ) = @_;
     my $match = '-m policy --dir in --pol ';
-    my $zoneref    = $zones{$zone};
+    my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
     if ( $zoneref->{type} eq 'ipsec4' ) {
@@ -1258,7 +1260,7 @@ sub match_ipsec_in( $$ ) {
 sub match_ipsec_out( $$ ) {
     my ( $zone , $hostref ) = @_;
     my $match = '-m policy --dir out --pol ';
-    my $zoneref    = $zones{$zone};
+    my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
     if ( $zoneref->{type} eq 'ipsec4' ) {
@@ -1537,7 +1539,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    
 	    incr_cmd_level $chainref;
 	} else {
-	    fatal_error "Source Interface ($iiface) not allowed when the source zone is $firewall_zone" if $restriction & OUTPUT_RESTRICT;
+	    fatal_error "Source Interface ($iiface) not allowed when the source zone is the firewall zone" if $restriction & OUTPUT_RESTRICT;
 	    $rule .= match_source_dev( $iiface );
 	}
     }
@@ -1598,7 +1600,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    incr_cmd_level $chainref;
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
-	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is $firewall_zone" if $restriction & INPUT_RESTRICT;
+	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
 
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );
@@ -2013,52 +2015,109 @@ sub create_netfilter_load() {
 }
 
 #
-# Generate the netfilter input for refreshing the blacklist
+# Generate the netfilter input for refreshing a list of chains
 #
-sub create_blacklist_reload() {
+sub create_chainlist_reload($) {
+
+    my $chains = $_[0];
+
+    my @chains = split ',', $chains;
+
+    unless ( @chains ) {
+	@chains = qw( blacklst ) if $filter_table->{blacklst};
+    }
 
     $mode = NULL_MODE;
 
-    emit(  'blacklist_reload()',
+    emit(  'chainlist_reload()',
 	   '{'
 	   );
 
     push_indent;
 
-    save_progress_message "Preparing iptables-restore input...";
+    if ( @chains ) {
+	if ( @chains == 1 ) {
+	    progress_message2 "Compiling iptables-restore input for chain @chains...";
+	    save_progress_message "Preparing iptables-restore input for chain @chains...";
+	} else {
+	    progress_message2 "Compiling iptables-restore input for chain $chains...";
+	    save_progress_message "Preparing iptables-restore input for chains $chains...";
+	}
 
-    emit '';
+	emit '';
 
-    emit 'exec 3>${VARDIR}/.iptables-restore-input';
+	emit 'exec 3>${VARDIR}/.iptables-restore-input';
 
-    enter_cat_mode;
+	enter_cat_mode;
+	
+	my $table = 'filter';
+	
+	my %chains;
+    
+	for my $chain ( @chains ) {
+	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
+	    
+	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter)$/;
+	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
+	    
+	    $chains{$table} = [] unless $chains{$table};
+	    
+	    push @{$chains{$table}}, $chain; 
+	}
 
-    emit_unindented '*filter';
-    emit_unindented ':blacklst - [0:0]';
-    #
-    # Emit the Blacklist rules
-    #
-    emitr $_ for ( @{$filter_table->{blacklst}{rules}} );
-    #
-    # Commit the changes to the table
-    #
-    enter_cat_mode unless $mode == CAT_MODE;
+	for $table qw(nat mangle filter) {
+	    next unless $chains{$table};
 
-    emit_unindented 'COMMIT';
+	    emit_unindented "*$table";
 
-    enter_cmd_mode;
-    #
-    # Now generate the actual iptables-restore command
-    #
-    emit(  'exec 3>&-',
-	   '',
-	   'progress_message2 "Running iptables-restore..."',
-	   '',
-	   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
-	   'if [ $? != 0 ]; then',
-	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
-	   "fi\n"
-	   );
+	    my $tableref=$chain_table{$table};
+
+	    @chains = sort @{$chains{$table}};
+
+	    for my $chain ( @chains ) {
+		my $chainref = $tableref->{$chain};
+		emit_unindented ":$chainref->{name} $chainref->{policy} [0:0]" if $chainref->{builtin};
+	    }
+	    
+	    for my $chain ( @chains ) {
+		my $chainref = $tableref->{$chain};
+		emit_unindented ":$chainref->{name} - [0:0]" unless $chainref->{builtin};
+	    }
+	
+	    for my $chain ( @chains ) {
+		my $chainref = $tableref->{$chain};
+		my @rules = @{$chainref->{rules}};
+		
+		@rules = () unless @rules;
+		#
+		# Emit the chain rules
+		#
+		emitr $_ for ( @rules );
+	    }
+	    #
+	    # Commit the changes to the table
+	    #
+	    enter_cat_mode unless $mode == CAT_MODE;
+	    
+	    emit_unindented 'COMMIT';
+	}
+
+	enter_cmd_mode;
+	#
+	# Now generate the actual iptables-restore command
+	#
+	emit(  'exec 3>&-',
+	       '',
+	       'progress_message2 "Running iptables-restore..."',
+	       '',
+	       'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
+	       'if [ $? != 0 ]; then',
+	       '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
+	       "fi\n"
+	    );
+    } else {
+	emit('true');
+    }
 
     pop_indent;
 

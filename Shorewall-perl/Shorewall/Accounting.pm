@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.01;
+our $VERSION = '4.03';
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -70,7 +70,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     }
 
     sub accounting_error() {
-	warning_message "Invalid Accounting rule";
+	fatal_error "Invalid Accounting rule";
     }
 
     sub jump_to_chain( $ ) {
@@ -112,8 +112,10 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     $source = ALLIPv4 if $source eq 'any' || $source eq 'all';
 
-    if ( @bridges ) {
-	if ( $source =~ /^$firewall_zone:?(.*)$/ ) {
+    if ( have_bridges ) {
+	my $fw = firewall_zone;
+
+	if ( $source =~ /^$fw:?(.*)$/ ) {
 	    $source = $1 ? $1 : ALLIPv4;
 	    $restriction = OUTPUT_RESTRICT;
 	    $chain = 'accountout' unless $chain and $chain ne '-';
@@ -192,9 +194,9 @@ sub setup_accounting() {
 	}
     }
 
-    $comment = '';
+    clear_comment;
 
-    if ( @bridges ) {
+    if ( have_bridges ) {
 	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD/ ) {
 		insert_rule $filter_table->{$chain}, 1, '-j accounting';

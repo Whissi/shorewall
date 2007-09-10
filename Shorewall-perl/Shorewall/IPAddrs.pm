@@ -36,12 +36,11 @@ our @EXPORT = qw( ALLIPv4
 		  validate_host
 		  validate_range
 		  ip_range_explicit
-
-		  @allipv4
-		  @rfc1918_networks
+		  allipv4
+		  rfc1918_neworks
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.03;
+our $VERSION = '4.03';
 
 #
 # Some IPv4 useful stuff
@@ -161,4 +160,12 @@ sub validate_host( $ ) {
     }
 }
 
+sub allipv4() {
+    @allipv4;
+}
+
+sub rfc1918_networks() {
+    @rfc1918_networks
+}
+ 
 1;

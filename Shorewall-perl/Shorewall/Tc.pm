@@ -39,7 +39,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = 4.03;
+our $VERSION = '4.04';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -150,7 +150,7 @@ our %tcdevices;
 our @tcclasses;
 our %tcclasses;
 
-our $prefix = '1';
+our $prefix;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -168,6 +168,11 @@ sub initialize() {
     %tcdevices = ();
     @tcclasses = ();
     %tcclasses = ();
+    $prefix = '1';
+}
+
+INIT {
+    initialize;
 }
 
 sub process_tc_rule( $$$$$$$$$$ ) {
@@ -185,13 +190,14 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     my $connmark = 0;
     my $classid  = 0;
     my $device   = '';
+    my $fw       = firewall_zone;
 
     if ( $source ) {
-	if ( $source eq $firewall_zone ) {
+	if ( $source eq $fw ) {
 	    $chain = 'tcout';
 	    $source = '';
 	} else {
-	    $chain = 'tcout' if $source =~ s/^($firewall_zone)://;
+	    $chain = 'tcout' if $source =~ s/^($fw)://;
 	}
     }
 
@@ -200,7 +206,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
 	if ( $tcsref ) {
 	    if ( $chain eq 'tcout' ) {
-		fatal_error "Invalid chain designator for source $firewall_zone" unless $tcsref->{fw};
+		fatal_error "Invalid chain designator for source $fw" unless $tcsref->{fw};
 	    }
 
 	    $chain    = $tcsref->{chain}  if $tcsref->{chain};
@@ -609,8 +615,8 @@ sub setup_tc() {
 	    }
 
 	}
-
-	$comment = '';
+	
+	clear_comment;
     }
 
     for ( @deferred_rules ) {

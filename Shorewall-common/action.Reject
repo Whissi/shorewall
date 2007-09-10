@@ -16,7 +16,7 @@
 ###############################################################################
 #TARGET		SOURCE	DEST	PROTO
 #
-# Don't log 'auth' REJECT
+# Don't log 'auth' -- REJECT
 #
 Auth/REJECT
 #
@@ -29,13 +29,13 @@ dropBcast
 #
 AllowICMPs	-	-	icmp
 #
-# Drop packets that in the INVALID state -- these are usually ICMP packets
+# Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
 # rejected).
 #
 dropInvalid
 #
-# Reject Microsoft noise so that it doesn't clutter up the lot.
+# Reject Microsoft noise so that it doesn't clutter up the log.
 #
 SMB/REJECT
 DropUPnP

@@ -637,6 +637,21 @@ set_state () # $1 = state
 }
 
 #
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $@ = contents of variable which may be the name of another variable
+{
+    eval echo \"$@\"
+}
+
+#
+# Function for including one file into another
+#
+INCLUDE() {
+    . $(find_file $(expand $@))
+}
+
+#
 # Delete IP address
 #
 del_ip_addr() # $1 = address, $2 = interface

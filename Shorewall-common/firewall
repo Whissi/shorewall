@@ -422,49 +422,14 @@ clear_firewall() {
 delete_proxy_arp() {
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
-	    case $COMMAND in
-		stop|clear)
-		    qt arp -i $external -d $address pub
-		    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
-		    ;;
-		*)
-		    if [ -n "$STOPPING" ]; then
-			qt arp -i $external -d $address pub
-			qt arp -i $external -d $address pub
-			[ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
-		    else
-			qt arp -i $external -d $address pub
-			if [ -z "$haveroute" ];then
-			    [ -n "$NOROUTE" ] || qt ip route del $address dev $interface
-			fi
-		    fi
-		    ;;
-	    esac
+	    qt arp -i $external -d $address pub
+	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	    interface=/proc/sys/net/ipv4/conf/$interface
+	    [ -f $interface/proxyarp ] && echo 0 > $interface/proxy_arp
 	done < ${VARDIR}/proxyarp
-
-	rm -f ${VARDIR}/proxyarp
     fi
 
-    [ -d ${VARDIR} ] && touch ${VARDIR}/proxyarp
-
-    case $COMMAND in
-	stop|clear)
-	    for f in /proc/sys/net/ipv4/conf/*; do
-		[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-	    done
-	    ;;
-	*)
-	    if [ -n "$STOPPING" ]; then
-		for f in /proc/sys/net/ipv4/conf/*; do
-		    [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-		done
-	    else
-		for f in /proc/sys/net/ipv4/conf/*; do
-		    [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-		done
-	    fi
-	    ;;
-    esac
+    rm -f ${VARDIR}/proxyarp
 }
 
 #

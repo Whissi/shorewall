@@ -1,3 +1,105 @@
+Changes in 4.0.4
+
+1)  Fix 'refresh' with light-weight shells.
+
+2)  Various fixes for proxyarp.
+
+3)  Fix 'refresh' run-time error.
+
+4)  Cleaner behavior if module-init-tools not installed.
+
+5)  Fix [re-]initialization problems in Shorewall::Tc.
+
+6)  Make compile-time check for iptables-restore.
+
+Changes in 4.0.3
+
+1)  Streamline the checking for builtin chains in the accounting file.
+
+2)  Don't try to write/restore /etc/iproute2/rt_tables if it isn't
+    writable. 
+
+3)  Allow Shorewall-perl compiler and libraries to be installed
+    anywhere.
+
+4)  Add KEEP_RT_TABLES option.
+
+5)  Other provider changes.
+
+6)  Fix LOG target in Shorewall-shell.
+
+7)  Faster log processing.
+
+8)  Tweak handling of CLASSID in process_tc_rule().
+
+9)  Restore 3.4 'stop/clear/reset' behavior and make new behavior
+    optional.
+
+10) Add act_police to modules file.
+
+11) Add 'mss' interface option.
+
+12) Add TCPMSS_MATCH to show capabilities -f.
+
+13) Insure a space between log prefix and IN=.
+
+14) Provide ESTABLISHED,RELATED rules for inappropriate CONTINUE policy
+
+15) Add hashlimit match detection.
+
+16) Fix 'add' and 'delete' when interface name contains special char.
+
+17) Fix PREROUTING track fiasco.
+
+18) Add NFQUEUE support.
+
+19) Allow refresh of chains other than 'blacklst'.
+
+20) Allow INCLUDE in run-time extension scripts.
+
+21) Fix zone sort.
+
+Changes in 4.0.2
+
+1)  Another ECN fix in Shorewall-perl.
+
+2)  Make 'state match' detection in Shorewall-perl quiet.
+
+3)  Detect port range in list without XMULTIPORT.
+
+4)  Move lockfile handling from 'firewall' to 'shorewall' and lib.cli.
+
+5)  Don't detect routed networks and interfaces addresses during
+    'restore'.
+
+6)  Upcase some global variables in the generated script.
+
+7)  Remove some 'chain_base' mapping.
+
+8)  Eliminate a couple of global variables in the Chains module.
+
+9)  Cosmetic change to generated script.
+
+10) Allow tc configuration on bridge ports.
+
+11) Fix add/delete problem when Shorewall-shell is not installed.
+
+12) Don't overwrite ${VARDIR}/chains and ${VARDIR}/zones during
+    'refresh'.
+
+13) Correct some error messages.
+
+14) Correct calculations involving number of keys in a hash.
+
+15) Load xt_multiport.
+
+16) Apply Günter Niedermeier's patch for multiport.
+
+17) Honor the BROADCAST column when address type match is not
+    available.
+
+18) Fix accounting.
+ 
 Changes in 4.0.1
 
 1)  Add EXPAND_POLICIES.

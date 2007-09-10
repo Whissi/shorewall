@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.03;
+our $VERSION = '4.04';
 
 our $export;
 
@@ -58,6 +58,7 @@ sub reinitialize() {
     Shorewall::Config::initialize;
     Shorewall::Chains::initialize;
     Shorewall::Zones::initialize;
+    Shorewall::Policy::initialize;
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize;
     Shorewall::Tc::initialize;
@@ -138,17 +139,16 @@ sub generate_script_1() {
 	   '[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"',
 	   qq(VERSION="$globals{VERSION}") ,
 	   qq(PATH="$config{PATH}") ,
-	   'TERMINATOR=fatal_error'
+	   'TERMINATOR=fatal_error' ,
+	   ''
 	   );
 
     if ( $config{IPTABLES} ) {
 	emit( qq(IPTABLES="$config{IPTABLES}"),
-	      '',
 	      '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
 	      );
     } else {
-	emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables 2> /dev/null)',
-	      '',
+	emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables) # /sbin/shorewall exports IPTABLES',
 	      '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
 	      );
     }
@@ -328,11 +328,9 @@ EOF
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
 	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+            interface=/proc/sys/net/ipv4/conf/$interface
+	    [ -f $interface/proxyarp ] && echo 0 > $interface/proxy_arp
 	done < ${VARDIR}/proxyarp
-
-        for f in /proc/sys/net/ipv4/conf/*; do
-            [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-        done
     fi
 
     rm -f ${VARDIR}/proxyarp
@@ -596,7 +594,7 @@ sub generate_script_2 () {
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
 #          than those related to writing to the object file.
 #
-sub generate_script_3() {
+sub generate_script_3($) {
 
     emit 'cat > ${VARDIR}/proxyarp << __EOF__';
     dump_proxy_arp;
@@ -629,7 +627,7 @@ sub generate_script_3() {
 
     progress_message2 "Creating iptables-restore input...";
     create_netfilter_load;
-    create_blacklist_reload;
+    create_chainlist_reload( $_[0] );
 
     emit "#\n# Start/Restart the Firewall\n#";
     emit 'define_firewall() {';
@@ -647,14 +645,14 @@ setup_routing_and_traffic_shaping
 if [ $COMMAND = restore ]; then
     iptables_save_file=${VARDIR}/$(basename $0)-iptables
     if [ -f $iptables_save_file ]; then
-        iptables-restore < $iptables_save_file
+        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux
     else
         fatal_error "$iptables_save_file does not exist"
     fi
     set_state "Started"
 else
     if [ $COMMAND = refresh ]; then
-        blacklist_reload
+        chainlist_reload
         run_refreshed_exit
         $IPTABLES -N shorewall
         set_state "Started"
@@ -701,9 +699,9 @@ EOF
 #    If the first argument is non-null, it names the script file to generate.
 #    Otherwise, this is a 'check' command and no script is produced.
 #
-sub compiler( $$$$ ) {
+sub compiler( $$$$$ ) {
 
-    my ( $objectfile, $directory, $verbosity, $options ) = @_;
+    my ( $objectfile, $directory, $verbosity, $options , $chains ) = @_;
 
     $export = 0;
 
@@ -723,7 +721,7 @@ sub compiler( $$$$ ) {
     #
     get_configuration( $export );
 
-    report_capabilities if $verbose > 1;
+    report_capabilities;
 
     require_capability( 'MULTIPORT'       , "Shorewall-perl $globals{VERSION}" , 's' );
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
@@ -731,7 +729,7 @@ sub compiler( $$$$ ) {
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
     require_capability( 'CONNTRACK_MATCH' , 'RFC1918_STRICT=Yes' , 's'   )  if $config{RFC1918_STRICT};
 
-    ( $command, $doing, $done ) = qw/ check Checking Checked / unless $objectfile;
+    set_command( 'check', 'Checking', 'Checked' ) unless $objectfile;
 
     initialize_chain_table;
 
@@ -865,7 +863,7 @@ sub compiler( $$$$ ) {
 	#
 	# Finish the script.
 	#
-	generate_script_3;
+	generate_script_3( $chains );
 	finalize_object ( $export );
 	#
 	# And generate the auxilary config file

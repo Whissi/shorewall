@@ -266,11 +266,11 @@ sub validate_policy()
 	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
 	    fatal_error "NONE policy not allowed to/from firewall zone"
-		if ( zone_type( $client ) eq 'firewall' ) || ( zone_type( $server ) eq 'firewall' );
+		if ( zone_type( $client ) == ZT_FIREWALL ) || ( zone_type( $server ) == ZT_FIREWALL );
 	}
 
 	unless ( $clientwild || $serverwild ) {
-	    if ( zone_type( $server ) eq 'bport4' ) {
+	    if ( zone_type( $server ) & ZT_BPORT ) {
 		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
 		    unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
 	    }

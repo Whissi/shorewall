@@ -1245,7 +1245,7 @@ sub match_ipsec_in( $$ ) {
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} eq 'ipsec4' ) {
+    if ( $zoneref->{type} & ZT_IPSEC ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
@@ -1263,7 +1263,7 @@ sub match_ipsec_out( $$ ) {
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} eq 'ipsec4' ) {
+    if ( $zoneref->{type} & ZT_IPSEC ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"

@@ -129,23 +129,24 @@ our %reservedName = ( all => 1,
 # Zone Types
 #
 use constant {  ZT_IPV4     => 1,
-		ZT_IPSEC    => 2,
-		ZT_BPORT    => 4,
-		ZT_IPV6     => 8,
-		ZT_FIREWALL => 16,
-		ZT_IPSEC4   => 3,
-		ZT_IPSEC6   => 10,
-		ZT_BPORT4   => 5,
-		ZT_BPORT6   => 13,
+		ZT_IPV6     => 2
+		ZT_FIREWALL => 3,  #ZT_IPV4 + ZT_IPV6
+		ZT_IPSEC    => 4,
+		ZT_IPSEC4   => 5,  #ZT_IPV4 + ZT_IPSEC
+		ZT_IPSEC6   => 6,  #ZT_IPV6 + ZT_IPSEC
+		ZT_BPORT    => 8,
+		ZT_BPORT4   => 9,  #ZT_IPV4 + ZT_BPORT
+		ZT_BPORT6   => 10, #ZT_IPV6 + ZT_BPORT
 	     };
 
 our %zonetypes = ( 1   => 'ipv4' ,
-		   3   => 'ipsec4' ,
-		   5   => 'bport4' ,
-		   8   => 'ipv6' ,
-		   10  => 'ipsec6' ,
-		   13  => 'bport6' ,
-		   16  => 'firewall' );
+		   2   => 'ipv6' ,
+		   3   => 'firewall' ,
+		   5   => 'ipsec4' ,
+		   6   => 'ipsec6' ,
+		   9   => 'bport4' ,
+		   10  => 'bport6' ,
+		 );
 #
 #     Interface Table.
 #
@@ -1001,7 +1002,7 @@ sub validate_hosts_file()
 	    for my $option ( @options )
 	    {
 		if ( $option eq 'ipsec' ) {
-		    $type = ZT_IPSEC4;
+		    $type |= ZT_IPSEC;
 		    $zoneref->{options}{complex} = 1;
 		    $ipsec = 1;
 		} elsif ( $validoptions{$option}) {

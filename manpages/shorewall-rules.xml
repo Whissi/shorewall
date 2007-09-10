@@ -618,7 +618,7 @@
           intra-zone traffic is affected.</para>
 
           <para>If the DEST <replaceable>zone</replaceable> is a bport zone,
-          then either:<itemizedlist>
+          then either:<orderedlist numeration="loweralpha">
               <listitem>
                 <para>the SOURCE must be <option>all[+][-]</option>, or</para>
               </listitem>
@@ -632,73 +632,77 @@
                 <para>the SOURCE <replaceable>zone</replaceable> must be an
                 ipv4 zone that is associated with only the same bridge.</para>
               </listitem>
-            </itemizedlist>Except when <emphasis
-          role="bold">all</emphasis>[<emphasis role="bold">+]|[-</emphasis>]
-          is specified, the server may be further restricted to a particular
-          network, host or interface by appending ":" and the network, host or
-          interface. See <emphasis role="bold">SOURCE</emphasis> above.</para>
-
-          <para>You may exclude certain hosts from the set already defined
-          through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
-
-          <para>Restrictions:</para>
-
-          <para>1. MAC addresses are not allowed (this is a Netfilter
-          restriction).</para>
-
-          <para>2. In <emphasis role="bold">DNAT</emphasis> rules, only IP
-          addresses are allowed; no FQDNs or subnet addresses are
-          permitted.</para>
-
-          <para>3. You may not specify both an interface and an
-          address.</para>
-
-          <para>Like in the <emphasis role="bold">SOURCE</emphasis> column,
-          you may specify a range of IP addresses using the syntax
-          <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.
-          When the <emphasis role="bold">ACTION</emphasis> is <emphasis
-          role="bold">DNAT</emphasis> or <emphasis
-          role="bold">DNAT-</emphasis>, the connections will be assigned to
-          addresses in the range in a round-robin fashion.</para>
-
-          <para>If you kernel and iptables have ipset match support then you
-          may give the name of an ipset prefaced by "+". The ipset name may be
-          optionally followed by a number from 1 to 6 enclosed in square
-          brackets ([]) to indicate the number of levels of destination
-          bindings to be matched. Only one of the <emphasis
-          role="bold">SOURCE</emphasis> and <emphasis
-          role="bold">DEST</emphasis> columns may specify an ipset
-          name.</para>
-
-          <para>The <replaceable>port</replaceable> that the server is
-          listening on may be included and separated from the server's IP
-          address by ":". If omitted, the firewall will not modifiy the
-          destination port. A destination port may only be included if the
-          <emphasis role="bold">ACTION</emphasis> is <emphasis
-          role="bold">DNAT</emphasis> or <emphasis
-          role="bold">REDIRECT</emphasis>. Example:</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>Example:</term>
-
-              <listitem>
-                <para><emphasis role="bold">loc:192.168.1.3:3128</emphasis>
-                specifies a local server at IP address 192.168.1.3 and
-                listening on port 3128. The port number MUST be specified as
-                an integer and not as a name from services(5).</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
+            </orderedlist></para>
 
           <blockquote>
-            <para>if the <emphasis role="bold">ACTION</emphasis> is <emphasis
-            role="bold">REDIRECT</emphasis> or <emphasis
-            role="bold">REDIRECT-</emphasis>, this column needs only to
-            contain the port number on the firewall that the request should be
-            redirected to. That is equivalent to specifying
-            <option>$FW</option>::<replaceable>port</replaceable>.</para>
+            <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
+            role="bold">+]|[-</emphasis>] is specified, the server may be
+            further restricted to a particular network, host or interface by
+            appending ":" and the network, host or interface. See <emphasis
+            role="bold">SOURCE</emphasis> above.</para>
+
+            <para>You may exclude certain hosts from the set already defined
+            through use of an <emphasis>exclusion</emphasis> (see <ulink
+            url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+
+            <para>Restrictions:</para>
+
+            <para>1. MAC addresses are not allowed (this is a Netfilter
+            restriction).</para>
+
+            <para>2. In <emphasis role="bold">DNAT</emphasis> rules, only IP
+            addresses are allowed; no FQDNs or subnet addresses are
+            permitted.</para>
+
+            <para>3. You may not specify both an interface and an
+            address.</para>
+
+            <para>Like in the <emphasis role="bold">SOURCE</emphasis> column,
+            you may specify a range of IP addresses using the syntax
+            <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.
+            When the <emphasis role="bold">ACTION</emphasis> is <emphasis
+            role="bold">DNAT</emphasis> or <emphasis
+            role="bold">DNAT-</emphasis>, the connections will be assigned to
+            addresses in the range in a round-robin fashion.</para>
+
+            <para>If you kernel and iptables have ipset match support then you
+            may give the name of an ipset prefaced by "+". The ipset name may
+            be optionally followed by a number from 1 to 6 enclosed in square
+            brackets ([]) to indicate the number of levels of destination
+            bindings to be matched. Only one of the <emphasis
+            role="bold">SOURCE</emphasis> and <emphasis
+            role="bold">DEST</emphasis> columns may specify an ipset
+            name.</para>
+
+            <para>The <replaceable>port</replaceable> that the server is
+            listening on may be included and separated from the server's IP
+            address by ":". If omitted, the firewall will not modifiy the
+            destination port. A destination port may only be included if the
+            <emphasis role="bold">ACTION</emphasis> is <emphasis
+            role="bold">DNAT</emphasis> or <emphasis
+            role="bold">REDIRECT</emphasis>. Example:</para>
+
+            <variablelist>
+              <varlistentry>
+                <term>Example:</term>
+
+                <listitem>
+                  <para><emphasis role="bold">loc:192.168.1.3:3128</emphasis>
+                  specifies a local server at IP address 192.168.1.3 and
+                  listening on port 3128. The port number MUST be specified as
+                  an integer and not as a name from services(5).</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+
+            <blockquote>
+              <para>if the <emphasis role="bold">ACTION</emphasis> is
+              <emphasis role="bold">REDIRECT</emphasis> or <emphasis
+              role="bold">REDIRECT-</emphasis>, this column needs only to
+              contain the port number on the firewall that the request should
+              be redirected to. That is equivalent to specifying
+              <option>$FW</option>::<replaceable>port</replaceable>.</para>
+            </blockquote>
           </blockquote>
         </listitem>
       </varlistentry>

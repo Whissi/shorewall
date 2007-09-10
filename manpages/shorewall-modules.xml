@@ -43,7 +43,12 @@
 
     <para>The /usr/share/shorewall/modules file contains a large number of
     modules. Users are encouraged to copy the file to /etc/shorewall/modules
-    and modify the copy to load only the modules required.</para>
+    and modify the copy to load only the modules required.<note>
+        <para>If you build monolithic kernels and have not installed
+        module-init-tools, then create an empty /etc/shorewall/modules file;
+        that will prevent Shorewall from trying to load modules at all.
+        </para>
+      </note></para>
   </refsect1>
 
   <refsect1>

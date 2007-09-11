@@ -1087,7 +1087,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     # Mark the chain as referenced and add appropriate rules from earlier sections.
     #
-    $chainref = ensure_filter_chain $chain, 1;
+    $chainref = ensure_filter_chain IPv4, $chain, 1;
     #
     # For compatibility with older Shorewall versions
     #
@@ -1515,7 +1515,7 @@ sub generate_matrix() {
 	    my $in_ref  = new_standard_chain "${zone}_input";
 	    my $out_ref = new_standard_chain "${zone}_output";
 
-	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
+	    add_rule ensure_filter_chain( IPv4, "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 
 	    for my $host ( @$exclusions ) {
 		my ( $interface, $net ) = split /:/, $host;
@@ -1757,7 +1757,7 @@ sub generate_matrix() {
 		    unless ( $chain1 ) {
 			$chain1 = newexclusionchain;
 			$policy_exclusions{"${chain}_${zone1}"} = $chain1;
-			my $chain1ref = ensure_filter_chain $chain1, 0;
+			my $chain1ref = ensure_filter_chain IPv4, $chain1, 0;
 			add_exclusions $chain1ref, $exclusions1;
 			add_rule $chain1ref, "-j $chain";
 		    }

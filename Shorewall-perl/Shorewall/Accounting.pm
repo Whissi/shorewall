@@ -124,7 +124,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	    $chain = 'accounting' unless $chain and $chain ne '-';
 	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIPv4 ) {
 		expand_rule(
-			    ensure_filter_chain( 'accountout' , 0 ) ,
+			    ensure_filter_chain( IPv4, 'accountout' , 0 ) ,
 			    OUTPUT_RESTRICT ,
 			    $rule ,
 			    $source ,
@@ -141,7 +141,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	$dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
     }
 
-    my $chainref = ensure_filter_chain $chain , 0;
+    my $chainref = ensure_filter_chain IPv4, $chain , 0;
 
     check_for_builtin( $chainref );
     

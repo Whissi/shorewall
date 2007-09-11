@@ -407,7 +407,7 @@ sub apply_policy_rules() {
 
 	if ( $policy ne 'NONE' ) {
 	    if ( ! $chainref->{referenced} && ( ! $optional && $policy ne 'CONTINUE' ) ) {
-		ensure_filter_chain $name, 1;
+		ensure_filter_chain IPv4, $name, 1;
 	    }
 
 	    if ( $name =~ /^all2|2all$/ ) {

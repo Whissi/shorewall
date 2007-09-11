@@ -612,13 +612,13 @@ sub finish_chain_section( $$ );
 #
 # Create a filter chain if necessary. Optionally populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
 #
-sub ensure_filter_chain( $$ )
+sub ensure_filter_chain( $$$ )
 {
-    my ($chain, $populate) = @_;
+    my ($ipv, $chain, $populate) = @_;
 
     my $chainref = $filter_table->{4}{$chain};
 
-    $chainref = new_chain 'filter', IPv4, $chain unless $chainref;
+    $chainref = new_chain 'filter', $ipv, $chain unless $chainref;
 
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
@@ -697,13 +697,14 @@ sub initialize_chain_table()
 sub finish_chain_section ($$) {
     my ($chainref, $state ) = @_;
     my $chain = $chainref->{name};
+    my $ipv   = $chainref->{ipv};
 
     add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
 
     if ($sections{RELATED} ) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', IPv4, syn_flood_chain $chainref;
+		my $synchainref = ensure_chain 'filter', $ipv, syn_flood_chain $chainref;
 		if ( $section eq 'DONE' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
@@ -713,9 +714,9 @@ sub finish_chain_section ($$) {
 		}
 	    }
 	} else {
-	    my $policychainref = $filter_table->{4}{$chainref->{policychain}};
+	    my $policychainref = $filter_table->{$ipv}{$chainref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', IPv4, syn_flood_chain $policychainref;
+		my $synchainref = ensure_chain 'filter', $ipv, syn_flood_chain $policychainref;
 		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 	    }
 	}

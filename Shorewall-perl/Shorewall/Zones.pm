@@ -129,7 +129,7 @@ our %reservedName = ( all => 1,
 # Zone Types
 #
 use constant {  ZT_IPV4     => 1,
-		ZT_IPV6     => 2,
+		ZT_IPV6     => 2
 		ZT_FIREWALL => 3,  #ZT_IPV4 + ZT_IPV6
 		ZT_IPSEC    => 4,
 		ZT_IPSEC4   => 5,  #ZT_IPV4 + ZT_IPSEC
@@ -156,10 +156,7 @@ our %zonetypes = ( 1   => 'ipv4' ,
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
-#                                     zone        => { { <zonetype1> => <zone name> ,
-#                                                      { <zonetype2> => <zone name> ,
-#                                                      ...
-#                                                    }
+#                                     zone        => <zone name>
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                   }
@@ -496,7 +493,7 @@ sub add_group_to_zone($$$$$)
     my $arrayref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    my $ifacezone = $interfaces{$interface}{$zonetype}{zone};
+    my $ifacezone = $interfaces{$interface}{zone};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -809,12 +806,9 @@ sub validate_interfaces_file( $ )
 	    @networks = allipv4;
 	}
 
-	my $zonetype = $zoneref->{type};
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
 
-	add_group_to_zone( $zone, $zonetype, $interface, \@networks, $optionsref ) if $zone && @networks;
-
-    	$interfaces{$interface}{$zonetype}{zone} = $zone; #Must follow the call to add_group_to_zone()
-	$interfaces{$interface}{zone} = 1;
+    	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$currentline\" Validated";
 

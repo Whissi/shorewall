@@ -118,8 +118,7 @@ our @EXPORT = qw( STANDARD
 		  create_netfilter_load
 		  create_chainlist_reload
 
-		  $chain_table
-		  $ipv
+		  %chain_table
 		  $nat_table
 		  $mangle_table
 		  $filter_table
@@ -133,28 +132,27 @@ our $VERSION = '4.04';
 #
 # Chain Table
 #
-#    %chains { <4|6> => { <table> => { <chain1>  => { name         => <chain name>
-#                                                     table        => <table name>
-#                                                     is_policy    => 0|1
-#                                                     is_optional  => 0|1
-#                                                     referenced   => 0|1
-#                                                     log          => <logging rule number for use when LOGRULENUMBERS>
-#                                                     policy       => <policy>
-#                                                     policychain  => <name of policy chain> -- self-reference if this is a policy chain
-#                                                     policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
-#                                                     loglevel     => <level>
-#                                                     synparams    => <burst/limit>
-#                                                     synchain     => <name of synparam chain>
-#                                                     default      => <default action>
-#                                                     cmdlevel     => <number of open loops or blocks in runtime commands>
-#                                                     rules        => [ <rule1>
-#                                                                       <rule2>
-#                                                                       ...
-#                                                                     ]
-#                                                   } ,
-#                                      <chain2> => ...
-#                                    }
-#                         }
+#    %chain_table { <table> => { <chain1>  => { name         => <chain name>
+#                                               table        => <table name>
+#                                               is_policy    => 0|1
+#                                               is_optional  => 0|1
+#                                               referenced   => 0|1
+#                                               log          => <logging rule number for use when LOGRULENUMBERS>
+#                                               policy       => <policy>
+#                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
+#                                               policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
+#                                               loglevel     => <level>
+#                                               synparams    => <burst/limit>
+#                                               synchain     => <name of synparam chain>
+#                                               default      => <default action>
+#                                               cmdlevel     => <number of open loops or blocks in runtime commands>
+#                                               rules        => [ <rule1>
+#                                                                 <rule2>
+#                                                                 ...
+#                                                               ]
+#                                             } ,
+#                                <chain2> => ...
+#                              }
 #                 }
 #
 #       'is_optional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
@@ -164,10 +162,7 @@ our $VERSION = '4.04';
 #
 #       'loglevel', 'synparams', 'synchain' and 'default' only apply to policy chains.
 #
-
-our %chains;
-our $ipv;
-our $chain_table;
+our %chain_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
@@ -234,13 +229,14 @@ our $mode;
 #
 
 sub initialize() {
-    %chains = ( 4 => { raw    => {} ,
-		       mangle => {} ,
-		       nat    => {} ,
-		       filter => {} } ,
-	        6 => { raw    => {} ,
-		       mangle => {} ,
-		       filter => {} } );
+    %chain_table = ( raw    => {} ,
+		     mangle => {},
+		     nat    => {},
+		     filter => {} );
+
+    $nat_table    = $chain_table{nat};
+    $mangle_table = $chain_table{mangle};
+    $filter_table = $chain_table{filter};
 
     #
     # These get set to 1 as sections are encountered.
@@ -312,31 +308,8 @@ sub initialize() {
     %interfacebcasts  = ();
 }
 
-sub switch_to_ipv4() {
-    $ipv          = 4;
-    
-    $chain_table  = $chains{4};
-
-    $nat_table    = $chain_table->{nat};
-    $mangle_table = $chain_table->{mangle};
-    $filter_table = $chain_table->{filter};
-
-}
-
-sub switch_to_ipv6() {
-    $ipv          = 6;
-    
-    $chain_table  = $chains{6};
-
-    $nat_table    = undef;
-    $mangle_table = $chain_table->{mangle};
-    $filter_table = $chain_table->{filter};
-
-}
-
 INIT {
     initialize;
-    switch_to_ipv4;
 }
 
 #
@@ -601,15 +574,14 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
 
-    warning_message "Internal error in new_chain()" if $chain_table->{$table}{$chain};
+    warning_message "Internal error in new_chain()" if $chain_table{$table}{$chain};
 
-    $chain_table->{$table}{$chain} = { name      => $chain,
-				       rules     => [],
-				       table     => $table,
-                                       ipv       => $ipv,
-				       loglevel  => '',
-				       log       => 1,
-				       cmdlevel  => 0 };
+    $chain_table{$table}{$chain} = { name      => $chain,
+				     rules     => [],
+				     table     => $table,
+				     loglevel  => '',
+				     log       => 1,
+				     cmdlevel  => 0 };
 }
 
 #
@@ -629,7 +601,7 @@ sub ensure_chain($$)
 {
     my ($table, $chain) = @_;
 
-    my $ref =  $chain_table->{$table}{$chain};
+    my $ref =  $chain_table{$table}{$chain};
 
     return $ref if $ref;
 
@@ -763,7 +735,7 @@ sub finish_section ( $ ) {
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    my $chainref = $chain_table->{'filter'}{"${zone}2${zone1}"};
+	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
 	    if ( $chainref->{referenced} ) {
 		finish_chain_section $chainref, $sections;
 	    }
@@ -1992,7 +1964,7 @@ sub create_netfilter_load() {
 	# iptables-restore seems to be quite picky about the order of the builtin chains
 	#
 	for my $chain ( @builtins ) {
-	    my $chainref = $chain_table->{$table}{$chain};
+	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
@@ -2002,8 +1974,8 @@ sub create_netfilter_load() {
 	#
 	# First create the chains in the current table
 	#
-	for my $chain ( grep $chain_table->{$table}{$_}->{referenced} , ( sort keys %{$chain_table->{$table}} ) ) {
-	    my $chainref =  $chain_table->{$table}{$chain};
+	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
+	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chainref->{name} - [0:0]";
@@ -2086,7 +2058,7 @@ sub create_chainlist_reload($) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 	    
 	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter)$/;
-	    fatal_error "No $table chain found with name $chain" unless  $chain_table->{$table}{$chain};
+	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
 	    
 	    $chains{$table} = [] unless $chains{$table};
 	    
@@ -2098,7 +2070,7 @@ sub create_chainlist_reload($) {
 
 	    emit_unindented "*$table";
 
-	    my $tableref=$chain_table->{$table};
+	    my $tableref=$chain_table{$table};
 
 	    @chains = sort @{$chains{$table}};
 

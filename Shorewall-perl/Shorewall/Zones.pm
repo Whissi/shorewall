@@ -55,7 +55,11 @@ our @EXPORT = qw( NOTHING
 		  firewall_zone
 		  defined_zone
 		  zone_type
+		  zone_ipv
 		  all_zones
+		  all_ipv4_zones
+		  all_ipv6_zones
+		  all_ipvN_zones
 		  complex_zones
 		  non_firewall_zones
 		  single_interface
@@ -567,8 +571,25 @@ sub defined_zone( $ ) {
     $zones{$_[0]};
 }
 
+sub zone_ipv( $ ) {
+    find_zone( $_[0] )->{type} & ZT_FIREWALL;
+}
+
 sub all_zones() {
     @zones;
+}
+
+sub all_ipv4_zones() {
+    grep ( $zones{$_}{type} & ZT_IPV4  ,  @zones );
+}
+
+sub all_ipv6_zones() {
+    grep ( $zones{$_}{type} & ZT_IPV4  ,  @zones );
+}
+
+sub all_ipvN_zones($) {
+    my $ipv = $_[0];
+    grep ( ( $zones{$_}{type} & ZT_FIREWALL ) == $ipv , @zones );
 }
 
 sub non_firewall_zones() {

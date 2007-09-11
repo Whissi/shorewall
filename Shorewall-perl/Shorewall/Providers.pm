@@ -89,13 +89,13 @@ sub setup_route_marking() {
     require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' , 's' );
     require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
 
-    add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
-    add_rule $mangle_table->{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    add_rule $mangle_table->{4}{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    add_rule $mangle_table->{4}{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
 
     my $chainref = new_chain 'mangle', 'routemark';
 
     while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
-	add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
+	add_rule $mangle_table->{4}{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
 	add_rule $chainref, " -i $interface -j MARK $mark_op $mark";
     }
 

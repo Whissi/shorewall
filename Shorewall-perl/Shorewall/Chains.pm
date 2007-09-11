@@ -735,9 +735,11 @@ sub finish_section ( $ ) {
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    my $chainref = $chain_table{'filter'}{4}{"${zone}2${zone1}"};
-	    if ( $chainref->{referenced} ) {
-		finish_chain_section $chainref, $sections;
+	    for my $ipv ( IPv4, IPv6 ) {
+		my $chainref = $chain_table{'filter'}{$ipv}{"${zone}2${zone1}"};
+		if ( $chainref->{referenced} ) {
+		    finish_chain_section $chainref, $sections;
+		}
 	    }
 	}
     }
@@ -746,9 +748,9 @@ sub finish_section ( $ ) {
 #
 # Helper for set_mss
 #
-sub set_mss1( $$ ) {
-    my ( $chain, $mss ) =  @_;
-    my $chainref = ensure_chain 'filter', IPv4, $chain;
+sub set_mss1( $$$ ) {
+    my ( $ipv, $chain, $mss ) =  @_;
+    my $chainref = ensure_chain 'filter', $ipv, $chain;
 
     if ( $chainref->{policy} ne 'NONE' ) {
 	my $match = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
@@ -762,14 +764,14 @@ sub set_mss1( $$ ) {
 sub set_mss( $$$ ) {
     my ( $zone, $mss, $direction) = @_;
 
-    for my $z ( all_zones ) {
+    for my $z ( all_ipv4_zones ) {
 	if ( $direction eq '_in' ) {
-	    set_mss1 "${zone}2${z}" , $mss;
+	    set_mss1 IPv4, "${zone}2${z}" , $mss;
 	} elsif ( $direction eq '_out' ) {
-	    set_mss1 "${z}2${zone}", $mss;
+	    set_mss1 IPv4, "${z}2${zone}", $mss;
 	} else {
-	    set_mss1 "${z}2${zone}", $mss;
-	    set_mss1 "${zone}2${z}", $mss;
+	    set_mss1 IPv4, "${z}2${zone}", $mss;
+	    set_mss1 IPv4, "${zone}2${z}", $mss;
 	}
     }
 }
@@ -778,7 +780,7 @@ sub set_mss( $$$ ) {
 # Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate. 
 #
 sub setup_zone_mss() {
-    for my $zone ( all_zones ) {
+    for my $zone ( all_ipv4_zones ) {
 	my $zoneref = find_zone( $zone );
 
 	set_mss( $zone, $zoneref->{options}{in_out}{mss}, ''     ) if $zoneref->{options}{in_out}{mss};

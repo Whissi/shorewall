@@ -132,9 +132,9 @@ our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.04';
 
 #
-# IP Versions
+# IP Versions. Rather than using 4 and 6, we use 1 and 2 to match the zone IPVs.
 #
-use constant { IPv4 => 4, IPv6 => 6 };
+use constant { IPv4 => ZT_IPV4, IPv6 => ZT_IPV6 };
 
 #
 # Chain Table
@@ -237,10 +237,10 @@ our $mode;
 #
 
 sub initialize() {
-    %chain_table = ( raw    => { 4 => {} , 6=> {} },
-		     mangle => { 4 => {} , 6=> {} },
-		     nat    => { 4 => {} },
-		     filter => { 4 => {} , 6=> {} } );
+    %chain_table = ( raw    => { 1 => {} , 2=> {} },
+		     mangle => { 1 => {} , 2=> {} },
+		     nat    => { 1 => {} },
+		     filter => { 1 => {} , 2=> {} } );
 
     $nat_table    = $chain_table{nat};
     $mangle_table = $chain_table{mangle};
@@ -582,9 +582,9 @@ sub new_chain($$$)
 {
     my ($table, $ipv, $chain) = @_;
 
-    warning_message "Internal error in new_chain()" if $chain_table{$table}{4}{$chain};
+    warning_message "Internal error in new_chain()" if $chain_table{$table}{1}{$chain};
 
-    $chain_table{$table}{4}{$chain} = { name      => $chain,
+    $chain_table{$table}{1}{$chain} = { name      => $chain,
 					rules     => [],
 					table     => $table,
 					ipv       => $ipv,
@@ -1808,10 +1808,10 @@ sub expand_rule( $$$$$$$$$$ )
 sub addnatjump( $$$ ) {
     my ( $source , $dest, $predicates ) = @_;
 
-    my $destref   = $nat_table->{4}{$dest} || {};
+    my $destref   = $nat_table->{1}{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	add_rule $nat_table->{4}{$source} , $predicates . "-j $dest";
+	add_rule $nat_table->{1}{$source} , $predicates . "-j $dest";
     } else {
 	clearrule;
     }
@@ -1823,10 +1823,10 @@ sub addnatjump( $$$ ) {
 sub insertnatjump( $$$$ ) {
     my ( $source, $dest, $countref, $predicates ) = @_;
 
-    my $destref   = $nat_table->{4}{$dest} || {};
+    my $destref   = $nat_table->{1}{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	insert_rule $nat_table->{4}{$source} , ($$countref)++, $predicates . "-j $dest";
+	insert_rule $nat_table->{1}{$source} , ($$countref)++, $predicates . "-j $dest";
     } else {
 	clearrule;
     }
@@ -1966,7 +1966,7 @@ sub create_netfilter_load() {
 	# iptables-restore seems to be quite picky about the order of the builtin chains
 	#
 	for my $chain ( @builtins ) {
-	    my $chainref = $chain_table{$table}{4}{$chain};
+	    my $chainref = $chain_table{$table}{1}{$chain};
 	    if ( $chainref ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
@@ -1976,8 +1976,8 @@ sub create_netfilter_load() {
 	#
 	# First create the chains in the current table
 	#
-	for my $chain ( grep $chain_table{$table}{4}{$_}->{referenced} , ( sort keys %{$chain_table{$table}{4}} ) ) {
-	    my $chainref =  $chain_table{$table}{4}{$chain};
+	for my $chain ( grep $chain_table{$table}{1}{$_}->{referenced} , ( sort keys %{$chain_table{$table}{1}} ) ) {
+	    my $chainref =  $chain_table{$table}{1}{$chain};
 	    unless ( $chainref->{builtin} ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chainref->{name} - [0:0]";
@@ -2026,7 +2026,7 @@ sub create_chainlist_reload($) {
     my @chains = split ',', $chains;
 
     unless ( @chains ) {
-	@chains = qw( blacklst ) if $filter_table->{4}{blacklst};
+	@chains = qw( blacklst ) if $filter_table->{1}{blacklst};
     }
 
     $mode = NULL_MODE;
@@ -2060,7 +2060,7 @@ sub create_chainlist_reload($) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 	    
 	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter)$/;
-	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{4}{$chain};
+	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{1}{$chain};
 	    
 	    $chains{$table} = [] unless $chains{$table};
 	    
@@ -2072,7 +2072,7 @@ sub create_chainlist_reload($) {
 
 	    emit_unindented "*$table";
 
-	    my $tableref=$chain_table{$table}{4};
+	    my $tableref=$chain_table{$table}{1};
 
 	    @chains = sort @{$chains{$table}};
 

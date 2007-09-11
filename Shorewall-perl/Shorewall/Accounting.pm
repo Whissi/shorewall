@@ -197,19 +197,19 @@ sub setup_accounting() {
     clear_comment;
 
     if ( have_bridges ) {
-	if ( $filter_table->{4}->{accounting} ) {
+	if ( $filter_table->{1}->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD/ ) {
-		insert_rule $filter_table->{4}{$chain}, 1, '-j accounting';
+		insert_rule $filter_table->{1}{$chain}, 1, '-j accounting';
 	    }
 	}
 
-	if ( $filter_table->{4}->{accountout} ) {
-	    insert_rule $filter_table->{4}{OUTPUT}, 1, '-j accountout';
+	if ( $filter_table->{1}->{accountout} ) {
+	    insert_rule $filter_table->{1}{OUTPUT}, 1, '-j accountout';
 	}
     } else {
-	if ( $filter_table->{4}->{accounting} ) {
+	if ( $filter_table->{1}->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		insert_rule $filter_table->{4}{$chain}, 1, '-j accounting';
+		insert_rule $filter_table->{1}{$chain}, 1, '-j accounting';
 	    }
 	}
     }

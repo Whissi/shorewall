@@ -570,21 +570,21 @@ sub setup_tc() {
 	    $mark_part = $config{HIGH_ROUTE_MARKS} ? '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
 
 	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{4}{PREROUTING} , "-i $interface -j tcpre";
+		add_rule $mangle_table->{1}{PREROUTING} , "-i $interface -j tcpre";
 	    }
 	}
 
-	add_rule $mangle_table->{4}{PREROUTING} , "$mark_part -j tcpre";
-	add_rule $mangle_table->{4}{OUTPUT} ,     "$mark_part -j tcout";
+	add_rule $mangle_table->{1}{PREROUTING} , "$mark_part -j tcpre";
+	add_rule $mangle_table->{1}{OUTPUT} ,     "$mark_part -j tcout";
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
-	    add_rule $mangle_table->{4}{FORWARD} ,     '-j tcfor';
-	    add_rule $mangle_table->{4}{POSTROUTING} , '-j tcpost';
+	    add_rule $mangle_table->{1}{FORWARD} ,     '-j tcfor';
+	    add_rule $mangle_table->{1}{POSTROUTING} , '-j tcpost';
 	}
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD POSTROUTING) {
-		insert_rule $mangle_table->{4}{$chain}, 1, '-j MARK --and-mark 0xFF';
+		insert_rule $mangle_table->{1}{$chain}, 1, '-j MARK --and-mark 0xFF';
 	    }
 	}
     }

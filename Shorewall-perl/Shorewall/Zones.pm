@@ -156,7 +156,10 @@ our %zonetypes = ( 1   => 'ipv4' ,
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
-#                                     zone        => <zone name>
+#                                     zone        => { { <zonetype1> => <zone name> ,
+#                                                      { <zonetype2> => <zone name> ,
+#                                                      ...
+#                                                    }
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                   }
@@ -493,7 +496,7 @@ sub add_group_to_zone($$$$$)
     my $arrayref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    my $ifacezone = $interfaces{$interface}{zone};
+    my $ifacezone = $interfaces{$interface}{$zonetype}{zone};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -806,9 +809,12 @@ sub validate_interfaces_file( $ )
 	    @networks = allipv4;
 	}
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
+	my $zonetype = $zoneref->{type};
 
-    	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
+	add_group_to_zone( $zone, $zonetype, $interface, \@networks, $optionsref ) if $zone && @networks;
+
+    	$interfaces{$interface}{$zonetype}{zone} = $zone; #Must follow the call to add_group_to_zone()
+	$interfaces{$interface}{zone} = 1;
 
 	progress_message "   Interface \"$currentline\" Validated";
 

@@ -92,7 +92,7 @@ sub setup_route_marking() {
     add_rule $mangle_table->{4}{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     add_rule $mangle_table->{4}{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
 
-    my $chainref = new_chain 'mangle', 'routemark';
+    my $chainref = new_chain 'mangle', IPv4, 'routemark';
 
     while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
 	add_rule $mangle_table->{4}{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";

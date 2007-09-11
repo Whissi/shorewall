@@ -654,7 +654,7 @@ sub add_common_rules() {
 		new_standard_chain $chain;
 	    }
 
-	    mark_referenced( new_chain 'nat' , $chain = dynamic_in($interface) );
+	    mark_referenced( new_chain 'nat' , IPv4, $chain = dynamic_in($interface) );
 
 	    add_rule $filter_table->{4}{input_chain $interface},  "-j $chain";
 	    add_rule $filter_table->{4}{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
@@ -667,7 +667,7 @@ sub add_common_rules() {
     if ( @$list ) {
 	progress_message2 '$doing UPnP';
 
-	mark_referenced( new_chain( 'nat', 'UPnP' ) );
+	mark_referenced( new_chain( 'nat', IPv4, 'UPnP' ) );
 
 	for $interface ( @$list ) {
 	    add_rule $nat_table->{4}{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
@@ -710,13 +710,13 @@ sub setup_mac_lists( $ ) {
     if ( $phase == 1 ) {
 
 	for my $interface ( @maclist_interfaces ) {
-	    my $chainref = new_chain $table , mac_chain $interface;
+	    my $chainref = new_chain $table , IPv4, mac_chain $interface;
 
 	    add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
 		if ( $table eq 'mangle' ) && get_interface_option( $interface, 'dhcp' );
 
 	    if ( $ttl ) {
-		my $chain1ref = new_chain $table, macrecent_target $interface;
+		my $chain1ref = new_chain $table, IPv4, macrecent_target $interface;
 
 		my $chain = $chainref->{name};
 
@@ -1902,7 +1902,7 @@ sub setup_mss( ) {
 	#
 	# Since we will need multiple rules, we create a separate chain
 	#
-	$chainref = new_chain 'filter', 'settcpmss';
+	$chainref = new_chain 'filter', IPv4, 'settcpmss';
 	#
 	# Send all forwarded SYN packets to the 'settcpmss' chain
 	#

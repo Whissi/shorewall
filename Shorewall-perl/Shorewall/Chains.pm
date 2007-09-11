@@ -51,6 +51,8 @@ our @EXPORT = qw( STANDARD
 		  OUTPUT_RESTRICT
 		  POSTROUTE_RESTRICT
 		  ALL_RESTRICT
+		  IPv4
+		  IPv6
 
 		  process_comment
 		  clear_comment
@@ -128,6 +130,11 @@ our @EXPORT = qw( STANDARD
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.04';
+
+#
+# IP Versions
+#
+use constant { IPv4 => 4, IPv6 => 6 };
 
 #
 # Chain Table
@@ -571,16 +578,16 @@ sub first_chains( $ ) #$1 = interface
 #
 # Create a new chain and return a reference to it.
 #
-sub new_chain($$)
+sub new_chain($$$)
 {
-    my ($table, $chain) = @_;
+    my ($table, $ipv, $chain) = @_;
 
     warning_message "Internal error in new_chain()" if $chain_table{$table}{4}{$chain};
 
     $chain_table{$table}{4}{$chain} = { name      => $chain,
 					rules     => [],
 					table     => $table,
-					ipv       => 4,
+					ipv       => $ipv,
 					loglevel  => '',
 					log       => 1,
 					cmdlevel  => 0 };
@@ -592,7 +599,7 @@ sub new_chain($$)
 sub new_anon_chain( $ ) {
     my $chainref = $_[0];
     my $seq      = $chainseq++;
-    new_chain( $chainref->{table}, 'chain' . "$seq" );
+    new_chain( $chainref->{table}, IPv4, 'chain' . "$seq" );
 }
 
 #
@@ -607,7 +614,7 @@ sub ensure_chain($$)
 
     return $ref if $ref;
 
-    new_chain $table, $chain;
+    new_chain $table, IPv4, $chain;
 }
 
 sub finish_chain_section( $$ );
@@ -621,7 +628,7 @@ sub ensure_filter_chain( $$ )
 
     my $chainref = $filter_table->{4}{$chain};
 
-    $chainref = new_chain 'filter' , $chain unless $chainref;
+    $chainref = new_chain 'filter', IPv4, $chain unless $chainref;
 
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
@@ -653,14 +660,14 @@ sub new_builtin_chain($$$)
 {
     my ( $table, $chain, $policy ) = @_;
 
-    my $chainref = new_chain $table, $chain;
+    my $chainref = new_chain $table, IPv4, $chain;
     $chainref->{referenced} = 1;
     $chainref->{policy}     = $policy;
     $chainref->{builtin}    = 1;
 }
 
 sub new_standard_chain($) {
-    my $chainref = new_chain 'filter' ,$_[0];
+    my $chainref = new_chain 'filter', IPv4, ,$_[0];
     $chainref->{referenced} = 1;
     $chainref;
 }
@@ -1745,7 +1752,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Create the Exclusion Chain
 	#
-	my $echainref = new_chain $chainref->{table}, $echain;
+	my $echainref = new_chain $chainref->{table}, IPv4, $echain;
 
 	#
 	# Generate RETURNs for each exclusion

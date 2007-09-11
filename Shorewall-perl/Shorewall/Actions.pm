@@ -272,7 +272,7 @@ sub createlogactionchain( $$ ) {
 
     $actionref = new_action $action unless $actionref;
 
-    $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
+    $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', IPv4, '%' . $chain . $actionref->{actchain}++;
 
     mark_referenced $chainref; # Just in case the action body is empty.
 
@@ -298,7 +298,7 @@ sub createlogactionchain( $$ ) {
 
 sub createsimpleactionchain( $ ) {
     my $action  = shift;
-    my $chainref = new_chain 'filter', $action;
+    my $chainref = new_chain 'filter', IPv4, $action;
 
     $logactionchains{"$action:none"} = $chainref;
 
@@ -768,7 +768,7 @@ sub process_actions3 () {
 	add_rule $chainref, "-m recent --name $set --set";
 
 	if ( $level ne '' ) {
-	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
+	    my $xchainref = new_chain 'filter' , IPv4, "$chainref->{name}%";
 	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
 	    add_rule $xchainref, '-j DROP';
 	    add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref->{name}";

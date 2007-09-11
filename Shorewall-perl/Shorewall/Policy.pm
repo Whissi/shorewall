@@ -78,7 +78,7 @@ sub new_policy_chain($$$$)
 {
     my ($source, $dest, $policy, $optional) = @_;
 
-    my $chainref = new_chain( 'filter', "${source}2${dest}" );
+    my $chainref = new_chain( 'filter', IPv4, "${source}2${dest}" );
 
     convert_to_policy_chain( $chainref, $source, $dest, $policy, $optional );
 
@@ -94,7 +94,7 @@ sub set_policy_chain($$$$$)
 
     my $chainref1 = $filter_table->{4}{$chain1};
 
-    $chainref1 = new_chain 'filter', $chain1 unless $chainref1;
+    $chainref1 = new_chain 'filter', IPv4, $chain1 unless $chainref1;
 
     unless ( $chainref1->{policychain} ) {
 	if ( $config{EXPAND_POLICIES} ) {
@@ -465,7 +465,7 @@ sub setup_syn_flood_chains() {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{4}{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};
-	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
+	    my $synchainref = new_chain 'filter' , IPv4, syn_flood_chain $chainref;
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''
 		if $level ne '';

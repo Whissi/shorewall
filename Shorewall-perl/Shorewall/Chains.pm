@@ -616,7 +616,7 @@ sub ensure_filter_chain( $$$ )
 {
     my ($ipv, $chain, $populate) = @_;
 
-    my $chainref = $filter_table->{4}{$chain};
+    my $chainref = $filter_table->{$ipv}{$chain};
 
     $chainref = new_chain 'filter', $ipv, $chain unless $chainref;
 
@@ -633,10 +633,10 @@ sub ensure_filter_chain( $$$ )
     $chainref;
 }
 
-sub ensure_mangle_chain($) {
-    my $chain = $_[0];
+sub ensure_mangle_chain($$) {
+    my ($ipv, $chain ) = @_;
 
-    my $chainref = ensure_chain 'mangle', IPv4, $chain;
+    my $chainref = ensure_chain 'mangle', $ipv, $chain;
 
     $chainref->{referenced} = 1;
 
@@ -646,18 +646,18 @@ sub ensure_mangle_chain($) {
 #
 # Add a builtin chain
 #
-sub new_builtin_chain($$$)
+sub new_builtin_chain($$$$)
 {
-    my ( $table, $chain, $policy ) = @_;
+    my ( $table, $ipv, $chain, $policy ) = @_;
 
-    my $chainref = new_chain $table, IPv4, $chain;
+    my $chainref = new_chain $table, $ipv, $chain;
     $chainref->{referenced} = 1;
     $chainref->{policy}     = $policy;
     $chainref->{builtin}    = 1;
 }
 
-sub new_standard_chain($) {
-    my $chainref = new_chain 'filter', IPv4, ,$_[0];
+sub new_standard_chain($$) {
+    my $chainref = new_chain 'filter', $_[0] ,$_[1];
     $chainref->{referenced} = 1;
     $chainref;
 }
@@ -669,24 +669,24 @@ sub new_standard_chain($) {
 sub initialize_chain_table()
 {
     for my $chain qw(OUTPUT PREROUTING) {
-	new_builtin_chain 'raw', $chain, 'ACCEPT';
+	new_builtin_chain 'raw', IPv4, $chain, 'ACCEPT';
     }
 
     for my $chain qw(INPUT OUTPUT FORWARD) {
-	new_builtin_chain 'filter', $chain, 'DROP';
+	new_builtin_chain 'filter', IPv4, $chain, 'DROP';
     }
 
     for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
-	new_builtin_chain 'nat', $chain, 'ACCEPT';
+	new_builtin_chain 'nat', IPv4, $chain, 'ACCEPT';
     }
 
     for my $chain qw(PREROUTING INPUT OUTPUT ) {
-	new_builtin_chain 'mangle', $chain, 'ACCEPT';
+	new_builtin_chain 'mangle', IPv4, $chain, 'ACCEPT';
     }
 
     if ( $capabilities{MANGLE_FORWARD} ) {
 	for my $chain qw( FORWARD POSTROUTING ) {
-	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
+	    new_builtin_chain 'mangle', IPv4, $chain, 'ACCEPT';
 	}
     }
 }

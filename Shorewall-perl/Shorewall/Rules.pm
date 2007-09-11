@@ -217,15 +217,15 @@ sub add_rule_pair( $$$$ ) {
 sub setup_rfc1918_filteration( $ ) {
 
     my $listref      = $_[0];
-    my $norfc1918ref = new_standard_chain 'norfc1918';
-    my $rfc1918ref   = new_standard_chain 'rfc1918';
+    my $norfc1918ref = new_standard_chain IPv4, 'norfc1918';
+    my $rfc1918ref   = new_standard_chain IPv4, 'rfc1918';
     my $chainref     = $norfc1918ref;
 
     log_rule $config{RFC1918_LOG_LEVEL} , $rfc1918ref , 'DROP' , '';
 
     add_rule $rfc1918ref , '-j DROP';
 
-    $chainref = new_standard_chain 'rfc1918d' if $config{RFC1918_STRICT};
+    $chainref = new_standard_chain IPv4, 'rfc1918d' if $config{RFC1918_STRICT};
 
     my $fn = open_file 'rfc1918';
 
@@ -279,10 +279,10 @@ sub setup_blacklist() {
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
 
     if ( @$hosts ) {
-	$chainref = new_standard_chain 'blacklst';
+	$chainref = new_standard_chain IPv4, 'blacklst';
 
 	if ( defined $level && $level ne '' ) {
-	    my $logchainref = new_standard_chain 'blacklog';
+	    my $logchainref = new_standard_chain IPv4, 'blacklog';
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
@@ -508,23 +508,23 @@ sub add_common_rules() {
 	}
     }
 
-    my $rejectref = new_standard_chain 'reject';
+    my $rejectref = new_standard_chain IPv4, 'reject';
 
     $level = $config{BLACKLIST_LOGLEVEL};
 
-    add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
-    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
+    add_rule_pair new_standard_chain( IPv4, 'logdrop' ),   ' ' , 'DROP'   , $level ;
+    add_rule_pair new_standard_chain( IPv4, 'logreject' ), ' ' , 'reject' , $level ;
 
-    new_standard_chain 'dynamic';
+    new_standard_chain IPv4, 'dynamic';
 
     my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
 
     for $interface ( all_interfaces ) {
 	for $chain ( @{first_chains $interface} ) {
-	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
+	    add_rule new_standard_chain( IPv4, $chain ) , "$state -j dynamic";
 	}
 
-	new_standard_chain output_chain( $interface );
+	new_standard_chain IPv4, output_chain( $interface );
     }
 
     run_user_exit1 'initdone';
@@ -533,7 +533,7 @@ sub add_common_rules() {
 
     $list = find_hosts_by_option 'nosmurfs';
 
-    $chainref = new_standard_chain 'smurfs';
+    $chainref = new_standard_chain IPv4, 'smurfs';
 
     if ( $capabilities{ADDRTYPE} ) {
 	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
@@ -608,10 +608,10 @@ sub add_common_rules() {
 
 	progress_message2 "$doing TCP Flags filtering...";
 
-	$chainref = new_standard_chain 'tcpflags';
+	$chainref = new_standard_chain IPv4, 'tcpflags';
 
 	if ( $config{TCP_FLAGS_LOG_LEVEL} ne ''  ) {
-	    my $logflagsref = new_standard_chain 'logflags';
+	    my $logflagsref = new_standard_chain IPv4, 'logflags';
 
 	    my $savelogparms = $globals{LOGPARMS};
 
@@ -651,7 +651,7 @@ sub add_common_rules() {
     if ( $config{DYNAMIC_ZONES} ) {
 	for $interface ( all_interfaces ) {
 	    for $chain ( @{dynamic_chains $interface} ) {
-		new_standard_chain $chain;
+		new_standard_chain IPv4, $chain;
 	    }
 
 	    mark_referenced( new_chain 'nat' , IPv4, $chain = dynamic_in($interface) );
@@ -1436,7 +1436,7 @@ sub generate_matrix() {
     sub create_zone_dyn_chain( $$ ) {
 	my ( $zone , $chainref ) = @_;
 	my $name = "${zone}_dyn";
-	new_standard_chain $name;
+	new_standard_chain IPv4, $name;
 	add_rule $chainref, "-j $name";
     }
 
@@ -1507,13 +1507,13 @@ sub generate_matrix() {
     # Special processing for complex zones
     #
     for my $zone ( complex_zones ) {
-	my $frwd_ref   = new_standard_chain "${zone}_frwd";
+	my $frwd_ref   = new_standard_chain IPv4, "${zone}_frwd";
 	my $zoneref    = find_zone( $zone );
 	my $exclusions = $zoneref->{exclusions};
 
 	if ( @$exclusions ) {
-	    my $in_ref  = new_standard_chain "${zone}_input";
-	    my $out_ref = new_standard_chain "${zone}_output";
+	    my $in_ref  = new_standard_chain IPv4, "${zone}_input";
+	    my $out_ref = new_standard_chain IPv4, "${zone}_output";
 
 	    add_rule ensure_filter_chain( IPv4, "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 

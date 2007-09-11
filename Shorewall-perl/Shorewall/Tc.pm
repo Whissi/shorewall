@@ -556,12 +556,12 @@ sub setup_tc() {
     my $first_entry = 1;
 
     if ( $capabilities{MANGLE_ENABLED} ) {
-	ensure_mangle_chain 'tcpre';
-	ensure_mangle_chain 'tcout';
+	ensure_mangle_chain IPv4, 'tcpre';
+	ensure_mangle_chain IPv4, 'tcout';
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
-	    ensure_mangle_chain 'tcfor';
-	    ensure_mangle_chain 'tcpost';
+	    ensure_mangle_chain IPv4, 'tcfor';
+	    ensure_mangle_chain IPv4, 'tcpost';
 	}
 
 	my $mark_part = '';

@@ -594,27 +594,17 @@ sub new_chain($$$)
 }
 
 #
-# Create an anonymous chain
-#
-sub new_anon_chain( $ ) {
-    my $chainref = $_[0];
-    my $seq      = $chainseq++;
-    new_chain( $chainref->{table}, IPv4, 'chain' . "$seq" );
-}
-
-#
-#
 # Create a chain if it doesn't exist already
 #
-sub ensure_chain($$)
+sub ensure_chain($$$)
 {
-    my ($table, $chain) = @_;
+    my ($table, $ipv, $chain) = @_;
 
-    my $ref =  $chain_table{$table}{4}{$chain};
+    my $ref =  $chain_table{$table}{$ipv}{$chain};
 
     return $ref if $ref;
 
-    new_chain $table, IPv4, $chain;
+    new_chain $table, $ipv, $chain;
 }
 
 sub finish_chain_section( $$ );
@@ -646,7 +636,7 @@ sub ensure_filter_chain( $$ )
 sub ensure_mangle_chain($) {
     my $chain = $_[0];
 
-    my $chainref = ensure_chain 'mangle', $chain;
+    my $chainref = ensure_chain 'mangle', IPv4, $chain;
 
     $chainref->{referenced} = 1;
 
@@ -713,7 +703,7 @@ sub finish_chain_section ($$) {
     if ($sections{RELATED} ) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
+		my $synchainref = ensure_chain 'filter', IPv4, syn_flood_chain $chainref;
 		if ( $section eq 'DONE' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
@@ -725,7 +715,7 @@ sub finish_chain_section ($$) {
 	} else {
 	    my $policychainref = $filter_table->{4}{$chainref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
+		my $synchainref = ensure_chain 'filter', IPv4, syn_flood_chain $policychainref;
 		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 	    }
 	}
@@ -757,7 +747,7 @@ sub finish_section ( $ ) {
 #
 sub set_mss1( $$ ) {
     my ( $chain, $mss ) =  @_;
-    my $chainref = ensure_chain 'filter', $chain;
+    my $chainref = ensure_chain 'filter', IPv4, $chain;
 
     if ( $chainref->{policy} ne 'NONE' ) {
 	my $match = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';

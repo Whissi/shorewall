@@ -102,8 +102,8 @@ sub process_tos() {
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
-		$pretosref = ensure_chain 'mangle' , $chain;
-		$outtosref = ensure_chain 'mangle' , 'outtos';
+		$pretosref = ensure_chain 'mangle' , IPv4, $chain;
+		$outtosref = ensure_chain 'mangle' , IPv4, 'outtos';
 		$first_entry = 0;
 	    }
 
@@ -194,7 +194,7 @@ sub setup_ecn()
 	    progress_message "$doing ECN control on @interfaces...";
 
 	    for my $interface ( @interfaces ) {
-		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
+		my $chainref = ensure_chain 'mangle', IPv4, ecn_chain( $interface );
 
 		add_rule $mangle_table->{4}{POSTROUTING}, "-p tcp -o $interface -j $chainref->{name}";
 		add_rule $mangle_table->{4}{OUTPUT},     "-p tcp -o $interface -j $chainref->{name}";
@@ -1061,7 +1061,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     # Take care of chain
     #
     my $chain    = "${sourcezone}2${destzone}";
-    my $chainref = ensure_chain 'filter', $chain;
+    my $chainref = ensure_chain 'filter', IPv4, $chain;
     #
     # Validate Policy
     #
@@ -1175,7 +1175,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	expand_rule ( ensure_chain ('nat' , $sourceref->{type} == ZT_FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
+	expand_rule ( ensure_chain ('nat' , IPv4, $sourceref->{type} == ZT_FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
 		      PREROUTE_RESTRICT ,
 		      $rule ,
 		      $source ,
@@ -1212,7 +1212,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    $origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
 	}
 
-	expand_rule( ensure_chain ('nat' , $sourceref->{type} == ZT_FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	expand_rule( ensure_chain ('nat' , IPv4, $sourceref->{type} == ZT_FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone) ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
 		     $source ,
@@ -1239,7 +1239,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    $origdest = '';
 	}
 
-	expand_rule( ensure_chain ('filter', $chain ) ,
+	expand_rule( ensure_chain ('filter', IPv4, $chain ) ,
 		     $restriction ,
 		     $rule ,
 		     $source ,
@@ -1567,7 +1567,7 @@ sub generate_matrix() {
 
 	if ( $complex ) {
 	    $frwd_ref = $filter_table->{4}{"${zone}_frwd"};
-	    my $dnat_ref = ensure_chain 'nat' , dnat_chain( $zone );
+	    my $dnat_ref = ensure_chain 'nat' , IPv4, dnat_chain( $zone );
 	    if ( @$exclusions ) {
 		insert_exclusions $dnat_ref, $exclusions if $dnat_ref->{referenced};
 	    }

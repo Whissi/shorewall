@@ -275,7 +275,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     }
 
     if ( ( my $result = expand_rule(
-				    ensure_chain( 'mangle' , $chain ) ,
+				    ensure_chain( 'mangle' , IPv4, $chain ) ,
 				    NO_RESTRICT ,
 				    do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
 				    $source ,
@@ -618,9 +618,10 @@ sub setup_tc() {
 	
 	clear_comment;
     }
-
-    for ( @deferred_rules ) {
-	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
+    
+    if ( @deferred_rules ) {
+	my $chainref = ensure_chain( 'mangle' , IPv4, 'tcpost' );
+	add_rule $chainref, $_ for ( @deferred_rules );
     }
 }
 

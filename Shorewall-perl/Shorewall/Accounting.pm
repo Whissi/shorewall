@@ -75,7 +75,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
-	$jumpchainref = ensure_chain( 'filter', $jumpchain );
+	$jumpchainref = ensure_chain( 'filter', IPv4, $jumpchain );
 	check_for_builtin( $jumpchainref );
 	mark_referenced $jumpchainref;
 	"-j $jumpchain";

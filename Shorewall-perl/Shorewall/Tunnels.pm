@@ -82,9 +82,9 @@ sub setup_tunnels() {
 	unless ( $gatewayzones eq '-' ) {
 	    for my $zone ( split /,/, $gatewayzones ) {
 		my $type = zone_type( $zone );
-		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type == ZT_FIREWALL || $type & ZT_BPORT;
-		$inchainref  = ensure_filter_chain IPv4, "${zone}2${fw}", 1;
-		$outchainref = ensure_filter_chain IPv4, "${fw}2${zone}", 1;
+		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type eq 'firewall' || $type eq 'bport4';
+		$inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
+		$outchainref = ensure_filter_chain "${fw}2${zone}", 1;
 
 		unless ( $capabilities{POLICY_MATCH} ) {
 		    add_rule $inchainref,  "-p 50 $source -j ACCEPT";
@@ -228,10 +228,10 @@ sub setup_tunnels() {
 
 	my $zonetype = zone_type( $zone );
 
-	fatal_error "Invalid zone ($zone) for tunnel ZONE" if $zonetype == ZT_FIREWALL || $zonetype & ZT_BPORT;
+	fatal_error "Invalid zone ($zone) for tunnel ZONE" if $zonetype eq 'firewall' || $zonetype eq 'bport4';
 
-	my $inchainref  = ensure_filter_chain IPv4, "${zone}2${fw}", 1;
-	my $outchainref = ensure_filter_chain IPv4, "${fw}2${zone}", 1;
+	my $inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
+	my $outchainref = ensure_filter_chain "${fw}2${zone}", 1;
 
 	my $source = match_source_net $gateway;
 	my $dest   = match_dest_net   $gateway;

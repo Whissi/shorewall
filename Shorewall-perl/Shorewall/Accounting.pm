@@ -75,7 +75,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
-	$jumpchainref = ensure_chain( 'filter', IPv4, $jumpchain );
+	$jumpchainref = ensure_chain( 'filter', $jumpchain );
 	check_for_builtin( $jumpchainref );
 	mark_referenced $jumpchainref;
 	"-j $jumpchain";
@@ -124,7 +124,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	    $chain = 'accounting' unless $chain and $chain ne '-';
 	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIPv4 ) {
 		expand_rule(
-			    ensure_filter_chain( IPv4, 'accountout' , 0 ) ,
+			    ensure_filter_chain( 'accountout' , 0 ) ,
 			    OUTPUT_RESTRICT ,
 			    $rule ,
 			    $source ,
@@ -141,7 +141,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	$dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
     }
 
-    my $chainref = ensure_filter_chain IPv4, $chain , 0;
+    my $chainref = ensure_filter_chain $chain , 0;
 
     check_for_builtin( $chainref );
     
@@ -197,19 +197,19 @@ sub setup_accounting() {
     clear_comment;
 
     if ( have_bridges ) {
-	if ( $filter_table->{1}->{accounting} ) {
+	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD/ ) {
-		insert_rule $filter_table->{1}{$chain}, 1, '-j accounting';
+		insert_rule $filter_table->{$chain}, 1, '-j accounting';
 	    }
 	}
 
-	if ( $filter_table->{1}->{accountout} ) {
-	    insert_rule $filter_table->{1}{OUTPUT}, 1, '-j accountout';
+	if ( $filter_table->{accountout} ) {
+	    insert_rule $filter_table->{OUTPUT}, 1, '-j accountout';
 	}
     } else {
-	if ( $filter_table->{1}->{accounting} ) {
+	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		insert_rule $filter_table->{1}{$chain}, 1, '-j accounting';
+		insert_rule $filter_table->{$chain}, 1, '-j accounting';
 	    }
 	}
     }

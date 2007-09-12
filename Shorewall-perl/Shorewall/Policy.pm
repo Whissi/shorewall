@@ -78,7 +78,7 @@ sub new_policy_chain($$$$)
 {
     my ($source, $dest, $policy, $optional) = @_;
 
-    my $chainref = new_chain( 'filter', IPv4, "${source}2${dest}" );
+    my $chainref = new_chain( 'filter', "${source}2${dest}" );
 
     convert_to_policy_chain( $chainref, $source, $dest, $policy, $optional );
 
@@ -92,9 +92,9 @@ sub set_policy_chain($$$$$)
 {
     my ($source, $dest, $chain1, $chainref, $policy ) = @_;
 
-    my $chainref1 = $filter_table->{1}{$chain1};
+    my $chainref1 = $filter_table->{$chain1};
 
-    $chainref1 = new_chain 'filter', IPv4, $chain1 unless $chainref1;
+    $chainref1 = new_chain 'filter', $chain1 unless $chainref1;
 
     unless ( $chainref1->{policychain} ) {
 	if ( $config{EXPAND_POLICIES} ) {
@@ -130,7 +130,7 @@ use constant { OPTIONAL => 1 };
 sub add_or_modify_policy_chain( $$ ) {
     my ( $zone, $zone1 ) = @_;
     my $chain    = "${zone}2${zone1}";
-    my $chainref = $filter_table->{1}{$chain};
+    my $chainref = $filter_table->{$chain};
     
     if ( $chainref ) {
 	unless( $chainref->{is_policy} ) {
@@ -266,11 +266,11 @@ sub validate_policy()
 	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
 	    fatal_error "NONE policy not allowed to/from firewall zone"
-		if ( zone_type( $client ) == ZT_FIREWALL ) || ( zone_type( $server ) == ZT_FIREWALL );
+		if ( zone_type( $client ) eq 'firewall' ) || ( zone_type( $server ) eq 'firewall' );
 	}
 
 	unless ( $clientwild || $serverwild ) {
-	    if ( zone_type( $server ) & ZT_BPORT ) {
+	    if ( zone_type( $server ) eq 'bport4' ) {
 		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
 		    unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
 	    }
@@ -279,8 +279,8 @@ sub validate_policy()
 	my $chain = "${client}2${server}";
 	my $chainref;
 
-	if ( defined $filter_table->{1}{$chain} ) {
-	    $chainref = $filter_table->{1}{$chain};
+	if ( defined $filter_table->{$chain} ) {
+	    $chainref = $filter_table->{$chain};
 
 	    if ( $chainref->{is_policy} ) {
 		if ( $chainref->{is_optional} ) {
@@ -362,7 +362,7 @@ sub report_syn_flood_protection() {
 
 sub default_policy( $$$ ) {
     my $chainref   = $_[0];
-    my $policyref  = $filter_table->{1}{$chainref->{policychain}};
+    my $policyref  = $filter_table->{$chainref->{policychain}};
     my $synparams  = $policyref->{synparams};
     my $default    = $policyref->{default};
     my $policy     = $policyref->{policy};
@@ -407,7 +407,7 @@ sub apply_policy_rules() {
 
 	if ( $policy ne 'NONE' ) {
 	    if ( ! $chainref->{referenced} && ( ! $optional && $policy ne 'CONTINUE' ) ) {
-		ensure_filter_chain IPv4, $name, 1;
+		ensure_filter_chain $name, 1;
 	    }
 
 	    if ( $name =~ /^all2|2all$/ ) {
@@ -420,7 +420,7 @@ sub apply_policy_rules() {
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    my $chainref = $filter_table->{1}{"${zone}2${zone1}"};
+	    my $chainref = $filter_table->{"${zone}2${zone1}"};
 
 	    if ( $chainref->{referenced} ) {
 		run_user_exit $chainref;
@@ -446,11 +446,11 @@ sub complete_standard_chain ( $$$ ) {
 
     run_user_exit $stdchainref;
 
-    my $ruleschainref = $filter_table->{1}{"${zone}2${zone2}"};
+    my $ruleschainref = $filter_table->{"${zone}2${zone2}"};
     my ( $policy, $loglevel, $default ) = ( 'DROP', 6, $config{DROP_DEFAULT} );
     my $policychainref;
 
-    $policychainref = $filter_table->{1}{$ruleschainref->{policychain}} if $ruleschainref;
+    $policychainref = $filter_table->{$ruleschainref->{policychain}} if $ruleschainref;
 
     ( $policy, $loglevel, $default ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
 
@@ -463,9 +463,9 @@ sub complete_standard_chain ( $$$ ) {
 sub setup_syn_flood_chains() {
     for my $chainref ( @policy_chains ) {
 	my $limit = $chainref->{synparams};
-	if ( $limit && ! $filter_table->{1}{syn_flood_chain $chainref} ) {
+	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};
-	    my $synchainref = new_chain 'filter' , IPv4, syn_flood_chain $chainref;
+	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''
 		if $level ne '';

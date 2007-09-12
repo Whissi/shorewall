@@ -171,7 +171,7 @@ sub setup_one_masq($$$$$$$)
 
     fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
 
-    my $chainref = ensure_chain('nat', IPv4, $pre_nat ? snat_chain $interface : masq_chain $interface);
+    my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
     #
     # If there is no source or destination then allow all addresses
     #
@@ -341,7 +341,7 @@ sub do_one_nat( $$$$$ )
     fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
 
     sub add_nat_rule( $$ ) {
-	add_rule ensure_chain( 'nat', IPv4, $_[0] ) , $_[1];
+	add_rule ensure_chain( 'nat', $_[0] ) , $_[1];
     }
 
     my $add_ip_aliases = $config{ADD_IP_ALIASES};
@@ -442,9 +442,9 @@ sub setup_netmap() {
 	fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
 
 	if ( $type eq 'DNAT' ) {
-	    add_rule ensure_chain( 'nat' , IPv4, input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";
+	    add_rule ensure_chain( 'nat' , input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";
 	} elsif ( $type eq 'SNAT' ) {
-	    add_rule ensure_chain( 'nat' , IPv4, output_chain $interface ) , "-s $net1 -j NETMAP --to $net2";
+	    add_rule ensure_chain( 'nat' , output_chain $interface ) , "-s $net1 -j NETMAP --to $net2";
 	} else {
 	    fatal_error "Invalid type ($type)";
 	}

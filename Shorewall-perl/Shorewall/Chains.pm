@@ -51,8 +51,6 @@ our @EXPORT = qw( STANDARD
 		  OUTPUT_RESTRICT
 		  POSTROUTE_RESTRICT
 		  ALL_RESTRICT
-		  IPv4
-		  IPv6
 
 		  process_comment
 		  clear_comment
@@ -132,34 +130,28 @@ our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.04';
 
 #
-# IP Versions. Rather than using 4 and 6, we use 1 and 2 to match the zone IPVs.
-#
-use constant { IPv4 => ZT_IPV4, IPv6 => ZT_IPV6 };
-
-#
 # Chain Table
 #
-#    %chain_table { <table> => { <ipv> => { <chain1>  => { name         => <chain name>
-#                                                          table        => <table name>
-#                                                          is_policy    => 0|1
-#                                                          is_optional  => 0|1
-#                                                          referenced   => 0|1
-#                                                          log          => <logging rule number for use when LOGRULENUMBERS>
-#                                                          policy       => <policy>
-#                                                          policychain  => <name of policy chain> -- self-reference if this is a policy chain
-#                                                          policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
-#                                                          loglevel     => <level>
-#                                                          synparams    => <burst/limit>
-#                                                          synchain     => <name of synparam chain>
-#                                                          default      => <default action>
-#                                                          cmdlevel     => <number of open loops or blocks in runtime commands>
-#                                                          rules        => [ <rule1>
-#                                                                            <rule2>
-#                                                                            ...
-#                                                                          ]
-#                                                         } ,
-#                                           <chain2> => ...
-#                                         }
+#    %chain_table { <table> => { <chain1>  => { name         => <chain name>
+#                                               table        => <table name>
+#                                               is_policy    => 0|1
+#                                               is_optional  => 0|1
+#                                               referenced   => 0|1
+#                                               log          => <logging rule number for use when LOGRULENUMBERS>
+#                                               policy       => <policy>
+#                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
+#                                               policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
+#                                               loglevel     => <level>
+#                                               synparams    => <burst/limit>
+#                                               synchain     => <name of synparam chain>
+#                                               default      => <default action>
+#                                               cmdlevel     => <number of open loops or blocks in runtime commands>
+#                                               rules        => [ <rule1>
+#                                                                 <rule2>
+#                                                                 ...
+#                                                               ]
+#                                             } ,
+#                                <chain2> => ...
 #                              }
 #                 }
 #
@@ -237,10 +229,10 @@ our $mode;
 #
 
 sub initialize() {
-    %chain_table = ( raw    => { 1 => {} , 2=> {} },
-		     mangle => { 1 => {} , 2=> {} },
-		     nat    => { 1 => {} },
-		     filter => { 1 => {} , 2=> {} } );
+    %chain_table = ( raw    => {} ,
+		     mangle => {},
+		     nat    => {},
+		     filter => {} );
 
     $nat_table    = $chain_table{nat};
     $mangle_table = $chain_table{mangle};
@@ -578,33 +570,42 @@ sub first_chains( $ ) #$1 = interface
 #
 # Create a new chain and return a reference to it.
 #
-sub new_chain($$$)
+sub new_chain($$)
 {
-    my ($table, $ipv, $chain) = @_;
+    my ($table, $chain) = @_;
 
-    warning_message "Internal error in new_chain()" if $chain_table{$table}{1}{$chain};
+    warning_message "Internal error in new_chain()" if $chain_table{$table}{$chain};
 
-    $chain_table{$table}{1}{$chain} = { name      => $chain,
-					rules     => [],
-					table     => $table,
-					ipv       => $ipv,
-					loglevel  => '',
-					log       => 1,
-					cmdlevel  => 0 };
+    $chain_table{$table}{$chain} = { name      => $chain,
+				     rules     => [],
+				     table     => $table,
+				     loglevel  => '',
+				     log       => 1,
+				     cmdlevel  => 0 };
 }
 
 #
+# Create an anonymous chain
+#
+sub new_anon_chain( $ ) {
+    my $chainref = $_[0];
+    my $seq      = $chainseq++;
+    new_chain( $chainref->{table}, 'chain' . "$seq" );
+}
+
+#
+#
 # Create a chain if it doesn't exist already
 #
-sub ensure_chain($$$)
+sub ensure_chain($$)
 {
-    my ($table, $ipv, $chain) = @_;
+    my ($table, $chain) = @_;
 
-    my $ref =  $chain_table{$table}{$ipv}{$chain};
+    my $ref =  $chain_table{$table}{$chain};
 
     return $ref if $ref;
 
-    new_chain $table, $ipv, $chain;
+    new_chain $table, $chain;
 }
 
 sub finish_chain_section( $$ );
@@ -612,13 +613,13 @@ sub finish_chain_section( $$ );
 #
 # Create a filter chain if necessary. Optionally populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
 #
-sub ensure_filter_chain( $$$ )
+sub ensure_filter_chain( $$ )
 {
-    my ($ipv, $chain, $populate) = @_;
+    my ($chain, $populate) = @_;
 
-    my $chainref = $filter_table->{$ipv}{$chain};
+    my $chainref = $filter_table->{$chain};
 
-    $chainref = new_chain 'filter', $ipv, $chain unless $chainref;
+    $chainref = new_chain 'filter' , $chain unless $chainref;
 
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
@@ -633,10 +634,10 @@ sub ensure_filter_chain( $$$ )
     $chainref;
 }
 
-sub ensure_mangle_chain($$) {
-    my ($ipv, $chain ) = @_;
+sub ensure_mangle_chain($) {
+    my $chain = $_[0];
 
-    my $chainref = ensure_chain 'mangle', $ipv, $chain;
+    my $chainref = ensure_chain 'mangle', $chain;
 
     $chainref->{referenced} = 1;
 
@@ -646,18 +647,18 @@ sub ensure_mangle_chain($$) {
 #
 # Add a builtin chain
 #
-sub new_builtin_chain($$$$)
+sub new_builtin_chain($$$)
 {
-    my ( $table, $ipv, $chain, $policy ) = @_;
+    my ( $table, $chain, $policy ) = @_;
 
-    my $chainref = new_chain $table, $ipv, $chain;
+    my $chainref = new_chain $table, $chain;
     $chainref->{referenced} = 1;
     $chainref->{policy}     = $policy;
     $chainref->{builtin}    = 1;
 }
 
-sub new_standard_chain($$) {
-    my $chainref = new_chain 'filter', $_[0] ,$_[1];
+sub new_standard_chain($) {
+    my $chainref = new_chain 'filter' ,$_[0];
     $chainref->{referenced} = 1;
     $chainref;
 }
@@ -669,24 +670,24 @@ sub new_standard_chain($$) {
 sub initialize_chain_table()
 {
     for my $chain qw(OUTPUT PREROUTING) {
-	new_builtin_chain 'raw', IPv4, $chain, 'ACCEPT';
+	new_builtin_chain 'raw', $chain, 'ACCEPT';
     }
 
     for my $chain qw(INPUT OUTPUT FORWARD) {
-	new_builtin_chain 'filter', IPv4, $chain, 'DROP';
+	new_builtin_chain 'filter', $chain, 'DROP';
     }
 
     for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
-	new_builtin_chain 'nat', IPv4, $chain, 'ACCEPT';
+	new_builtin_chain 'nat', $chain, 'ACCEPT';
     }
 
     for my $chain qw(PREROUTING INPUT OUTPUT ) {
-	new_builtin_chain 'mangle', IPv4, $chain, 'ACCEPT';
+	new_builtin_chain 'mangle', $chain, 'ACCEPT';
     }
 
     if ( $capabilities{MANGLE_FORWARD} ) {
 	for my $chain qw( FORWARD POSTROUTING ) {
-	    new_builtin_chain 'mangle', IPv4, $chain, 'ACCEPT';
+	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
     }
 }
@@ -697,14 +698,13 @@ sub initialize_chain_table()
 sub finish_chain_section ($$) {
     my ($chainref, $state ) = @_;
     my $chain = $chainref->{name};
-    my $ipv   = $chainref->{ipv};
 
     add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
 
     if ($sections{RELATED} ) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', $ipv, syn_flood_chain $chainref;
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
 		if ( $section eq 'DONE' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
@@ -714,9 +714,9 @@ sub finish_chain_section ($$) {
 		}
 	    }
 	} else {
-	    my $policychainref = $filter_table->{$ipv}{$chainref->{policychain}};
+	    my $policychainref = $filter_table->{$chainref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', $ipv, syn_flood_chain $policychainref;
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
 		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
 	    }
 	}
@@ -735,11 +735,9 @@ sub finish_section ( $ ) {
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    for my $ipv ( IPv4, IPv6 ) {
-		my $chainref = $chain_table{'filter'}{$ipv}{"${zone}2${zone1}"};
-		if ( $chainref->{referenced} ) {
-		    finish_chain_section $chainref, $sections;
-		}
+	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
+	    if ( $chainref->{referenced} ) {
+		finish_chain_section $chainref, $sections;
 	    }
 	}
     }
@@ -748,9 +746,9 @@ sub finish_section ( $ ) {
 #
 # Helper for set_mss
 #
-sub set_mss1( $$$ ) {
-    my ( $ipv, $chain, $mss ) =  @_;
-    my $chainref = ensure_chain 'filter', $ipv, $chain;
+sub set_mss1( $$ ) {
+    my ( $chain, $mss ) =  @_;
+    my $chainref = ensure_chain 'filter', $chain;
 
     if ( $chainref->{policy} ne 'NONE' ) {
 	my $match = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
@@ -764,14 +762,14 @@ sub set_mss1( $$$ ) {
 sub set_mss( $$$ ) {
     my ( $zone, $mss, $direction) = @_;
 
-    for my $z ( all_ipv4_zones ) {
+    for my $z ( all_zones ) {
 	if ( $direction eq '_in' ) {
-	    set_mss1 IPv4, "${zone}2${z}" , $mss;
+	    set_mss1 "${zone}2${z}" , $mss;
 	} elsif ( $direction eq '_out' ) {
-	    set_mss1 IPv4, "${z}2${zone}", $mss;
+	    set_mss1 "${z}2${zone}", $mss;
 	} else {
-	    set_mss1 IPv4, "${z}2${zone}", $mss;
-	    set_mss1 IPv4, "${zone}2${z}", $mss;
+	    set_mss1 "${z}2${zone}", $mss;
+	    set_mss1 "${zone}2${z}", $mss;
 	}
     }
 }
@@ -780,7 +778,7 @@ sub set_mss( $$$ ) {
 # Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate. 
 #
 sub setup_zone_mss() {
-    for my $zone ( all_ipv4_zones ) {
+    for my $zone ( all_zones ) {
 	my $zoneref = find_zone( $zone );
 
 	set_mss( $zone, $zoneref->{options}{in_out}{mss}, ''     ) if $zoneref->{options}{in_out}{mss};
@@ -1247,7 +1245,7 @@ sub match_ipsec_in( $$ ) {
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} & ZT_IPSEC ) {
+    if ( $zoneref->{type} eq 'ipsec4' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
@@ -1265,7 +1263,7 @@ sub match_ipsec_out( $$ ) {
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} & ZT_IPSEC ) {
+    if ( $zoneref->{type} eq 'ipsec4' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
@@ -1745,7 +1743,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Create the Exclusion Chain
 	#
-	my $echainref = new_chain $chainref->{table}, IPv4, $echain;
+	my $echainref = new_chain $chainref->{table}, $echain;
 
 	#
 	# Generate RETURNs for each exclusion
@@ -1808,10 +1806,10 @@ sub expand_rule( $$$$$$$$$$ )
 sub addnatjump( $$$ ) {
     my ( $source , $dest, $predicates ) = @_;
 
-    my $destref   = $nat_table->{1}{$dest} || {};
+    my $destref   = $nat_table->{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	add_rule $nat_table->{1}{$source} , $predicates . "-j $dest";
+	add_rule $nat_table->{$source} , $predicates . "-j $dest";
     } else {
 	clearrule;
     }
@@ -1823,10 +1821,10 @@ sub addnatjump( $$$ ) {
 sub insertnatjump( $$$$ ) {
     my ( $source, $dest, $countref, $predicates ) = @_;
 
-    my $destref   = $nat_table->{1}{$dest} || {};
+    my $destref   = $nat_table->{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	insert_rule $nat_table->{1}{$source} , ($$countref)++, $predicates . "-j $dest";
+	insert_rule $nat_table->{$source} , ($$countref)++, $predicates . "-j $dest";
     } else {
 	clearrule;
     }
@@ -1966,7 +1964,7 @@ sub create_netfilter_load() {
 	# iptables-restore seems to be quite picky about the order of the builtin chains
 	#
 	for my $chain ( @builtins ) {
-	    my $chainref = $chain_table{$table}{1}{$chain};
+	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
@@ -1976,8 +1974,8 @@ sub create_netfilter_load() {
 	#
 	# First create the chains in the current table
 	#
-	for my $chain ( grep $chain_table{$table}{1}{$_}->{referenced} , ( sort keys %{$chain_table{$table}{1}} ) ) {
-	    my $chainref =  $chain_table{$table}{1}{$chain};
+	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
+	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chainref->{name} - [0:0]";
@@ -2026,7 +2024,7 @@ sub create_chainlist_reload($) {
     my @chains = split ',', $chains;
 
     unless ( @chains ) {
-	@chains = qw( blacklst ) if $filter_table->{1}{blacklst};
+	@chains = qw( blacklst ) if $filter_table->{blacklst};
     }
 
     $mode = NULL_MODE;
@@ -2060,7 +2058,7 @@ sub create_chainlist_reload($) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 	    
 	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter)$/;
-	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{1}{$chain};
+	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
 	    
 	    $chains{$table} = [] unless $chains{$table};
 	    
@@ -2072,7 +2070,7 @@ sub create_chainlist_reload($) {
 
 	    emit_unindented "*$table";
 
-	    my $tableref=$chain_table{$table}{1};
+	    my $tableref=$chain_table{$table};
 
 	    @chains = sort @{$chains{$table}};
 

@@ -275,7 +275,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     }
 
     if ( ( my $result = expand_rule(
-				    ensure_chain( 'mangle' , IPv4, $chain ) ,
+				    ensure_chain( 'mangle' , $chain ) ,
 				    NO_RESTRICT ,
 				    do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
 				    $source ,
@@ -556,12 +556,12 @@ sub setup_tc() {
     my $first_entry = 1;
 
     if ( $capabilities{MANGLE_ENABLED} ) {
-	ensure_mangle_chain IPv4, 'tcpre';
-	ensure_mangle_chain IPv4, 'tcout';
+	ensure_mangle_chain 'tcpre';
+	ensure_mangle_chain 'tcout';
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
-	    ensure_mangle_chain IPv4, 'tcfor';
-	    ensure_mangle_chain IPv4, 'tcpost';
+	    ensure_mangle_chain 'tcfor';
+	    ensure_mangle_chain 'tcpost';
 	}
 
 	my $mark_part = '';
@@ -570,21 +570,21 @@ sub setup_tc() {
 	    $mark_part = $config{HIGH_ROUTE_MARKS} ? '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
 
 	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{1}{PREROUTING} , "-i $interface -j tcpre";
+		add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
 	    }
 	}
 
-	add_rule $mangle_table->{1}{PREROUTING} , "$mark_part -j tcpre";
-	add_rule $mangle_table->{1}{OUTPUT} ,     "$mark_part -j tcout";
+	add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
+	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
-	    add_rule $mangle_table->{1}{FORWARD} ,     '-j tcfor';
-	    add_rule $mangle_table->{1}{POSTROUTING} , '-j tcpost';
+	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
+	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
 	}
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD POSTROUTING) {
-		insert_rule $mangle_table->{1}{$chain}, 1, '-j MARK --and-mark 0xFF';
+		insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark 0xFF';
 	    }
 	}
     }
@@ -618,10 +618,9 @@ sub setup_tc() {
 	
 	clear_comment;
     }
-    
-    if ( @deferred_rules ) {
-	my $chainref = ensure_chain( 'mangle' , IPv4, 'tcpost' );
-	add_rule $chainref, $_ for ( @deferred_rules );
+
+    for ( @deferred_rules ) {
+	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
     }
 }
 

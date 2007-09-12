@@ -37,16 +37,6 @@ our @EXPORT = qw( NOTHING
 		  IPSECPROTO
 		  IPSECMODE
 
-		  ZT_IPV4
-		  ZT_IPSEC
-		  ZT_BPORT
-		  ZT_IPV6
-		  ZT_IPSEC4
-		  ZT_IPSEC6
-		  ZT_BPORT4
-		  ZT_BPORT6
-		  ZT_FIREWALL
-
 		  numeric_value
 		  determine_zones
 		  zone_report
@@ -55,11 +45,7 @@ our @EXPORT = qw( NOTHING
 		  firewall_zone
 		  defined_zone
 		  zone_type
-		  zone_ipv
 		  all_zones
-		  all_ipv4_zones
-		  all_ipv6_zones
-		  all_ipvN_zones
 		  complex_zones
 		  non_firewall_zones
 		  single_interface
@@ -95,7 +81,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type = >      <zone type> (see above).
+#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
 #                        options =>    { complex => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
@@ -129,28 +115,6 @@ our %reservedName = ( all => 1,
 		      SOURCE => 1,
 		      DEST => 1 );
 
-#
-# Zone Types
-#
-use constant {  ZT_IPV4     => 1,
-		ZT_IPV6     => 2,
-		ZT_FIREWALL => 3,  #ZT_IPV4 + ZT_IPV6
-		ZT_IPSEC    => 4,
-		ZT_IPSEC4   => 5,  #ZT_IPV4 + ZT_IPSEC
-		ZT_IPSEC6   => 6,  #ZT_IPV6 + ZT_IPSEC
-		ZT_BPORT    => 8,
-		ZT_BPORT4   => 9,  #ZT_IPV4 + ZT_BPORT
-		ZT_BPORT6   => 10, #ZT_IPV6 + ZT_BPORT
-	     };
-
-our %zonetypes = ( 1   => 'ipv4' ,
-		   2   => 'ipv6' ,
-		   3   => 'firewall' ,
-		   5   => 'ipsec4' ,
-		   6   => 'ipsec6' ,
-		   9   => 'bport4' ,
-		   10  => 'bport6' ,
-		 );
 #
 #     Interface Table.
 #
@@ -259,7 +223,7 @@ sub parse_zone_option_list($$)
 	    if ( $key{$e} ) {
 		$h{$e} = $val;
 	    } else {
-		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless ( $zonetype & ZT_IPSEC );
+		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype eq 'ipsec4';
 		$options .= $invert;
 		$options .= "--$e ";
 		$options .= "$val "if defined $val;
@@ -301,7 +265,7 @@ sub determine_zones()
 	    for my $p ( @parents ) {
 		fatal_error "Invalid Parent List ($2)" unless $p;
 		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
-		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} == ZT_FIREWALL;
+		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} eq 'firewall';
 		push @{$zones{$p}{children}}, $zone;
 	    }
 	}
@@ -313,25 +277,20 @@ sub determine_zones()
 	$type = "ipv4" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $type = ZT_IPV4;
+	    $type = 'ipv4';
 	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $type = ZT_IPSEC4;
-	} elsif ( $type =~ /^ipsec6$/i ) {
-	    $type = ZT_IPSEC6;
+	    $type = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $type = ZT_BPORT4;
-	} elsif ( $type =~ /^bport6$/i ) {
-	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $type = ZT_BPORT6;
+	    $type = 'bport4';
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
 	    $firewall_zone = $zone;
 	    $ENV{FW} = $zone;
-	    $type = ZT_FIREWALL;
+	    $type = "firewall";
 	} elsif ( $type eq '-' ) {
-	    $type = ZT_IPV4;
+	    $type = 'ipv4';
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -347,7 +306,7 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ( ( $type & ZT_IPSEC ) || $options || $in_options || $out_options ? 1 : 0) } ,
+					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
 			  interfaces => {} ,
 			  children   => [] ,
 			  hosts      => {}
@@ -382,7 +341,7 @@ sub determine_zones()
 #
 sub haveipseczones() {
     for my $zoneref ( values %zones ) {
-	return 1 if ( $zoneref->{type} & ZT_IPSEC );
+	return 1 if $zoneref->{type} eq 'ipsec4';
     }
 
     0;
@@ -402,7 +361,7 @@ sub zone_report()
 	my $type      = $zoneref->{type};
 	my $optionref = $zoneref->{options};
 
-	progress_message "   $zone ($zonetypes{$type})";
+	progress_message "   $zone ($type)";
 
 	my $printed = 0;
 
@@ -426,8 +385,8 @@ sub zone_report()
 	}
 
 	unless ( $printed ) {
-	    fatal_error "No bridge has been associated with zone $zone" if ( $type & ZT_BPORT ) && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == ZT_FIREWALL;
+	    fatal_error "No bridge has been associated with zone $zone" if $type eq 'bport4' && ! $zoneref->{bridge};
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type eq 'firewall';
 	}
 
     }
@@ -442,9 +401,9 @@ sub dump_zone_contents()
 	my $type       = $zoneref->{type};
 	my $optionref  = $zoneref->{options};
 	my $exclusions = $zoneref->{exclusions};
-	my $entry      =  "$zone $zonetypes{$type}";
+	my $entry      =  "$zone $type";
 
-	$entry .= ":$zoneref->{bridge}" if $type & ZT_BPORT;
+	$entry .= ":$zoneref->{bridge}" if $type eq 'bport4';
 
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
@@ -519,7 +478,7 @@ sub add_group_to_zone($$$$$)
 	}
 
 	unless ( $switched ) {
-	    if ( $type == $zonetype ) {
+	    if ( $type eq $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $ifacezone eq $zone;
 		$ifacezone = $zone if $host eq ALLIPv4;
 	    }
@@ -546,7 +505,7 @@ sub add_group_to_zone($$$$$)
 
     push @{$arrayref}, { options => $options,
 			 hosts   => \@newnetworks,
-			 ipsec   => $type & ZT_IPSEC ? 'ipsec' : 'none' };
+			 ipsec   => $type eq 'ipsec4' ? 'ipsec' : 'none' };
 }
 
 #
@@ -571,29 +530,12 @@ sub defined_zone( $ ) {
     $zones{$_[0]};
 }
 
-sub zone_ipv( $ ) {
-    find_zone( $_[0] )->{type} & ZT_FIREWALL;
-}
-
 sub all_zones() {
     @zones;
 }
 
-sub all_ipv4_zones() {
-    grep ( $zones{$_}{type} & ZT_IPV4  ,  @zones );
-}
-
-sub all_ipv6_zones() {
-    grep ( $zones{$_}{type} & ZT_IPV4  ,  @zones );
-}
-
-sub all_ipvN_zones($) {
-    my $ipv = $_[0];
-    grep ( ( $zones{$_}{type} & ZT_FIREWALL ) == $ipv , @zones );
-}
-
 sub non_firewall_zones() {
-   grep ( $zones{$_}{type} != ZT_FIREWALL  ,  @zones );
+   grep ( $zones{$_}{type} ne 'firewall'  ,  @zones );
 }
 
 sub complex_zones() {
@@ -689,7 +631,7 @@ sub validate_interfaces_file( $ )
 	    $zoneref = $zones{$zone};
 
 	    fatal_error "Unknown zone ($zone)" unless $zoneref;
-	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == ZT_FIREWALL;
+	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} eq 'firewall';
 	}
 
 	$networks = '' if $networks eq '-';
@@ -706,7 +648,7 @@ sub validate_interfaces_file( $ )
 	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
 	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && ! ( $zoneref->{type} & ZT_BPORT );
+	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
 
 	    if ( $zone ) {
 		if ( $zoneref->{bridge} ) {
@@ -726,7 +668,7 @@ sub validate_interfaces_file( $ )
 	    $interface = $port;
 	} else {
 	    fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
-	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} & ZT_BPORT;
+	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
 	    $interfaces{$interface}{bridge} = $interface;
 	}
 
@@ -992,7 +934,7 @@ sub validate_hosts_file()
 	my $type    = $zoneref->{type};
 
 	fatal_error "Unknown ZONE ($zone)" unless $type;
-	fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type == ZT_FIREWALL;
+	fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type eq 'firewall';
 
 	my $interface;
 
@@ -1005,7 +947,7 @@ sub validate_hosts_file()
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
 
-	if ( $type & ZT_BPORT ) {
+	if ( $type eq 'bport4' ) {
 	    if ( $zoneref->{bridge} eq '' ) {
 		fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
 		$zoneref->{bridge} = $interfaces{$interface}{bridge};
@@ -1023,7 +965,7 @@ sub validate_hosts_file()
 	    for my $option ( @options )
 	    {
 		if ( $option eq 'ipsec' ) {
-		    $type |= ZT_IPSEC;
+		    $type = 'ipsec4';
 		    $zoneref->{options}{complex} = 1;
 		    $ipsec = 1;
 		} elsif ( $validoptions{$option}) {
@@ -1066,7 +1008,7 @@ sub find_hosts_by_option( $ ) {
     my $option = $_[0];
     my @hosts;
 
-    for my $zone ( grep $zones{$_}{type} != ZT_FIREWALL , @zones ) {
+    for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
 	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {

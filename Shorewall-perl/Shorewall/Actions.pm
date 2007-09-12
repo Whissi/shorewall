@@ -264,16 +264,20 @@ sub createlogactionchain( $$ ) {
 
     validate_level $lev;
 
-    $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
-
-    while ( $chain_table{filter}{1}{'%' . $chain . $actionref->{actchain}} ) {
-	$chain = substr $chain, 0, 27 if $actionref->{actchain} == 10 and length $chain == 28;
-    }
-
     $actionref = new_action $action unless $actionref;
 
-    $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', IPv4, '%' . $chain . $actionref->{actchain}++;
+    $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
+  CHECKDUP:
+    {
+	$actionref->{actchain}++ while $chain_table{filter}{'%' . $chain . $actionref->{actchain}};
+	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
+    }
+
+    $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
+
+    fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
+    
     mark_referenced $chainref; # Just in case the action body is empty.
 
     unless ( $targets{$action} & STANDARD ) {
@@ -298,7 +302,7 @@ sub createlogactionchain( $$ ) {
 
 sub createsimpleactionchain( $ ) {
     my $action  = shift;
-    my $chainref = new_chain 'filter', IPv4, $action;
+    my $chainref = new_chain 'filter', $action;
 
     $logactionchains{"$action:none"} = $chainref;
 
@@ -768,7 +772,7 @@ sub process_actions3 () {
 	add_rule $chainref, "-m recent --name $set --set";
 
 	if ( $level ne '' ) {
-	    my $xchainref = new_chain 'filter' , IPv4, "$chainref->{name}%";
+	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
 	    add_rule $xchainref, '-j DROP';
 	    add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref->{name}";

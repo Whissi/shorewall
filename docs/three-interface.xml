@@ -956,6 +956,57 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     remove other connections as required.</para>
   </section>
 
+  <section id="Logging">
+    <title>Logging</title>
+
+    <para>Shorewall does not maintain a log itself but rather relies on your
+    <ulink url="shorewall_logging.htm">system's logging configuration</ulink>.
+    The following <ulink url="manpages/shorewall.html">commands</ulink> rely
+    on knowing where Netfilter messages are logged:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><command>shorewall show log</command> (Displays the last 20
+        netfilter log messages)</para>
+      </listitem>
+
+      <listitem>
+        <para><command>shorewall logwatch</command> (Polls the log at a
+        settable interval</para>
+      </listitem>
+
+      <listitem>
+        <para><command>shorewall dump</command> (Produces an extensive report
+        for inclusion in Shorewall problem reports)</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>It is important that these commands work properly because when you
+    encounter connection problems when Shorewall is running, the first thing
+    that you should do is to look at the Netfilter log; with the help of
+    <ulink url="FAQ.htm#faq17">Shorewall FAQ 17</ulink>, you can usually
+    resolve the problem quickly.</para>
+
+    <para>Most commonly, Netfilter messages are logged to
+    <filename>/var/log/messages</filename>. Recent
+    <trademark>SuSE/OpenSuSE</trademark> releases come preconfigured with
+    syslog-ng and log netfilter messages to
+    <filename>/var/log/firewall</filename>.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>If you are running a distribution that logs netfilter messages to a
+    log other than <filename>/var/log/messages</filename>, then modify the
+    LOGFILE setting in <filename>/etc/shorewall/shorewall.conf</filename> to
+    specify the name of your log.</para>
+
+    <important>
+      <para>The LOGFILE setting does not control where the Netfilter log is
+      maintained -- it simply tells the /sbin/<filename>shorewall</filename>
+      utility where to find the log.</para>
+    </important>
+  </section>
+
   <section id="Other">
     <title>Some Things to Keep in Mind</title>
 

@@ -34,6 +34,12 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para>This article applies to Shorewall 4.0 and later. If you are running
+    a version of Shorewall earlier than Shorewall 4.0.0 then please see the
+    documentation for that release.</para>
+  </caution>
+
   <section id="Scripts">
     <title>Extension Scripts</title>
 
@@ -116,11 +122,10 @@
       </listitem>
 
       <listitem>
-        <para>maclog -- (Added in Shorewall version 3.2.5) invoked while mac
-        filtering rules are being created. It is invoked once for each
-        interface having 'maclist' specified and it is invoked just before the
-        logging rule is added to the current chain (the name of that chain
-        will be in $CHAIN).</para>
+        <para>maclog -- invoked while mac filtering rules are being created.
+        It is invoked once for each interface having 'maclist' specified and
+        it is invoked just before the logging rule is added to the current
+        chain (the name of that chain will be in $CHAIN).</para>
       </listitem>
 
       <listitem>
@@ -157,7 +162,7 @@ esac</programlisting><caution>
             output on an interface is not allowed by <ulink
             url="manpages/shorewall.conf.html">routestopped</ulink>(8) then
             the isuasable script must blow it's own holes in the firewall
-            before probing. </para>
+            before probing.</para>
           </caution></para>
       </listitem>
     </itemizedlist>
@@ -240,97 +245,8 @@ esac</programlisting><caution>
 
     <para></para>
 
-    <section id="v3.0">
-      <title>Shorewall versions 3.0.x and earlier</title>
-
-      <para>If you run commands other than <command>iptables</command> that
-      must be re-run in order to restore the firewall to its current state
-      then you must save the commands to the <firstterm>restore
-      file</firstterm>. The restore file is a temporary file in <filename
-      class="directory">/var/lib/shorewall</filename> that will be renamed
-      <filename>/var/lib/shorewall/restore-base</filename> at the successful
-      completion of the Shorewall command. The <command>shorewall
-      save</command> command combines
-      <filename>/var/lib/shorewall/restore-base</filename> with the output of
-      <command>iptables-save</command> to produce the
-      <filename>/var/lib/shorewall/restore</filename> script.</para>
-
-      <para>Here are three functions that are useful when running commands
-      other than <command>iptables</command>:</para>
-
-      <orderedlist>
-        <listitem>
-          <para><emphasis role="bold">save_command() </emphasis>-- saves the
-          passed command to the restore file.</para>
-
-          <para>Example: <programlisting>save_command echo Operation Complete</programlisting></para>
-
-          <para>That command would simply write "echo Operation Complete" to
-          the restore file.</para>
-        </listitem>
-
-        <listitem>
-          <para><emphasis role="bold">run_and_save_command()</emphasis> --
-          saves the passed command to the restore file then executes it. The
-          return value is the exit status of the command. Example:
-          <programlisting>run_and_save_command "echo 1 &gt; /proc/sys/net/ipv4/icmp_echo_ignore_all"</programlisting></para>
-
-          <para>Note that as in this example, when the command involves file
-          redirection then the entire command must be enclosed in quotes. This
-          applies to all of the functions described here.</para>
-        </listitem>
-
-        <listitem>
-          <para><emphasis role="bold">ensure_and_save_command()</emphasis> --
-          runs the passed command. If the command fails, the firewall is
-          restored to its prior saved state and the operation is terminated.
-          If the command succeeds, the command is written to the restore
-          file</para>
-        </listitem>
-      </orderedlist>
-    </section>
-
-    <section id="v3.2">
-      <title>Shorewall version 3.2.0 - 3.2.8</title>
-
-      <para>When compiling your firewall configuration, Shorewall copies most
-      extension scripts directly into the "compiled" program where they are
-      executed in-line during processing of the start, restart and restore
-      commands. When copying a script, Shorewall indents the script to match
-      the surrounding code; if you have 'awk' installed on the system where
-      the configuration is being compiled, Shorewall can correctly handle line
-      continuation in your script ("\" as the last character on a line). If
-      you do not have awk, you may not use line continuation in your scripts.
-      Also beware that quoted strings continued from one line to another will
-      have extra whitespace inserted as a result of indentation.</para>
-
-      <note>
-        <para>The <filename>/etc/shorewall/params</filename> script is
-        processed during compilation <emphasis role="bold">and</emphasis>
-        copied into the compiled script as just described. So shell variables
-        set during compilation may be used in Shorewall configuration files
-        while those set at run-time are available to your other extension
-        scripts. Note that if you assign dynamic values to variables, there is
-        no guarantee that the value calculated at compile time will be the
-        same as what is calculated at run time. This is particularly true if
-        you use the <command>shorewall compile</command> command to compile a
-        program then run that program at a later time.</para>
-      </note>
-
-      <note>
-        <para>Extension scripts associated with a particular chain or action
-        are not copied into the compiled script; they are rather processed
-        directly by the compiler using the Bourne shell "." command. For
-        example, if A is an action then if <filename
-        class="directory">/etc/shorewall/A</filename> exists then it will be
-        processed by the compiler rather than copied into the compiled
-        script.</para>
-      </note>
-    </section>
-
     <section id="v3.2.9">
-      <title>Shorewall version 3.2.9 (3.4.0 RC2) and later
-      (Shorewall-shell)</title>
+      <title>Shorewall-shell</title>
 
       <para>When compiling your firewall configuration, Shorewall copies most
       extension scripts directly into the "compiled" program where they are
@@ -381,7 +297,7 @@ esac</programlisting><caution>
     </section>
 
     <section id="Perl">
-      <title>Shorewall-perl (Version 4.0.0 and later)</title>
+      <title>Shorewall-perl</title>
 
       <para>Because the compiler is written in Perl, some of your extension
       scripts from earlier versions will no longer work because Shorewall-perl

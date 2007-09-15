@@ -97,7 +97,7 @@ ACCEPT   -              -               tcp     135,139,445
         <filename class="directory">/etc/shorewall</filename> (or somewhere
         else on your CONFIG_PATH) and modify the copy.</para>
 
-        <para>Standard Actions have been largely replaced by <ulink
+        <para>Standard Actions were largely replaced by <ulink
         url="Macros.html">macros</ulink> in Shorewall 3.0 and later major
         versions.</para>
       </listitem>
@@ -144,41 +144,21 @@ ACCEPT   -              -               tcp     135,139,445
         AUTH protocol of client authentication<footnote>
             <para>AUTH is actually pretty silly on today's internet but it's
             amazing how many servers still employ it.</para>
-          </footnote>.</para>
+          </footnote></para>
       </listitem>
     </orderedlist>
 
-    <para>If you are running Shorewall 3.2 or earlier, then:</para>
+    <para>Shorewall supports default actions for the ACCEPT, REJECT, DROP and
+    QUEUE policies. These default actions are specified in the
+    /etc/shorewall/shorewall.conf file using the ACCEPT_DEFAULT,
+    REJECT_DEFAULT, DROP_DEFAULT and QUEUE_DEFAULT options respectively.
+    Policies whose default is set to a value of "none" have no default
+    action.</para>
 
-    <blockquote>
-      <para>Shorewall provides default actions for the REJECT and DROP
-      policies. The default action for REJECT is named
-      <firstterm>Reject</firstterm> and the default action for DROP is named
-      <firstterm>Drop</firstterm>. These associations are made through two
-      entries in /usr/share/shorewall/actions.std:</para>
-
-      <programlisting>Drop:DROP       #Default Action for DROP policy
-Reject:REJECT   #Default Action for REJECT policy</programlisting>
-
-      <para>These may be overridden by entries in your /etc/shorewall/actions
-      file.</para>
-    </blockquote>
-
-    <para>If you are running Shorewall 3.4 or later, then:</para>
-
-    <blockquote>
-      <para>Shorewall supports default actions for the ACCEPT, REJECT, DROP
-      and QUEUE policies. These default actions are specified in the
-      /etc/shorewall/shorewall.conf file using the ACCEPT_DEFAULT,
-      REJECT_DEFAULT, DROP_DEFAULT and QUEUE_DEFAULT options respectively.
-      Policies whose default is set to a value of "none" have no default
-      action.</para>
-
-      <para>In addition, the default specified in
-      /etc/shorewall/shorewall.conf may be overridden by specifying a
-      different default in the POLICY column of <ulink
-      url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink>.</para>
-    </blockquote>
+    <para>In addition, the default specified in /etc/shorewall/shorewall.conf
+    may be overridden by specifying a different default in the POLICY column
+    of <ulink
+    url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink>.</para>
 
     <warning>
       <para>Entries in the DROP and REJECT default actions <emphasis
@@ -190,15 +170,6 @@ Reject:REJECT   #Default Action for REJECT policy</programlisting>
 
   <section id="Limit">
     <title>Limiting Per-IP Connection Rate</title>
-
-    <important>
-      <para>Debian users. This feature is broken in the Debian version 3.0.7
-      of Shorewall (and possibly in other versions). The file
-      <filename>/usr/share/shorewall/Limit</filename> was inadvertently
-      dropped from the .deb. That file may be obtained from <ulink
-      url="http://shorewall.svn.sourceforge.net/viewvc/*checkout*/shorewall/tags/3.0.7/Shorewall/Limit?revision=3888">Shorewall
-      SVN</ulink> and installed manually.</para>
-    </important>
 
     <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' <ulink
     url="Actions.html">action</ulink>. Limit is invoked with a comma-separated
@@ -654,11 +625,10 @@ bar:debug</programlisting>
       </listitem>
     </orderedlist>
 
-    <para>The change in Shorewall 2.1.2 has an effect on extension scripts
-    used with user-defined actions. If you define an action 'acton' and you
-    have an <filename>/etc/shorewall/acton</filename> script then when that
-    script is invoked, the following three variables will be set for use by
-    the script:</para>
+    <para>If you define an action 'acton' and you have an
+    <filename>/etc/shorewall/acton</filename> script then when that script is
+    invoked, the following three variables will be set for use by the
+    script:</para>
 
     <itemizedlist>
       <listitem>
@@ -704,17 +674,18 @@ acton:info:test  $FW              net</programlisting>
 
     <itemizedlist>
       <listitem>
-        <para>$chainref is a reference to the chain-table entry for the chain
-        where your rules are to be placed.</para>
+        <para><emphasis role="bold">$chainref</emphasis> is a reference to the
+        chain-table entry for the chain where your rules are to be
+        placed.</para>
       </listitem>
 
       <listitem>
-        <para>$level is the log level. If false, no logging was
-        specified.</para>
+        <para><emphasis role="bold">$level</emphasis> is the log level. If
+        false, no logging was specified.</para>
       </listitem>
 
       <listitem>
-        <para>$tag is the log tag.</para>
+        <para><emphasis role="bold">$tag</emphasis> is the log tag.</para>
       </listitem>
     </itemizedlist>
 

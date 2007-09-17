@@ -41,9 +41,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.0 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.0.0 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -188,7 +188,7 @@ ftp&gt;</programlisting>
     that the modules <quote>ip_conntrack_ftp</quote> and
     <quote>ip_nat_ftp</quote> need to be loaded. Shorewall automatically loads
     these <quote>helper</quote> modules from
-    /lib/modules/&lt;<emphasis>kernel-version</emphasis>&gt;/kernel/net/ipv4/netfilter/
+    /lib/modules/&lt;<emphasis>kernel-version</emphasis>&gt;/kernel/net/netfilter/
     and you can determine if they are loaded using the <quote>lsmod</quote>
     command. The &lt;<emphasis>kernel-version</emphasis>&gt; may be obtained
     by typing</para>
@@ -196,13 +196,11 @@ ftp&gt;</programlisting>
     <programlisting><command>uname -r</command></programlisting>
 
     <important>
-      <para>Note: If you are running kernel 3.6.20 or later, then the module
-      names are <emphasis role="bold">nf_nat_ftp</emphasis> and <emphasis
-      role="bold">nf_conntrack_ftp</emphasis> and they are normally loaded
+      <para>Note: If you are running kernel 3.6.19 or earlier, then the module
+      names are <emphasis role="bold">ip_nat_ftp</emphasis> and <emphasis
+      role="bold">ip_conntrack_ftp</emphasis> and they are normally loaded
       from
-      /lib/modules/&lt;<emphasis>kernel-version</emphasis>&gt;/kernel/net/netfilter/.
-      Shorewall version 3.2.10 or later is required if you wish these modules
-      to be loaded automatically by Shorewall.</para>
+      /lib/modules/&lt;<emphasis>kernel-version</emphasis>&gt;/kernel/net/ipv4/netfilter/.</para>
     </important>
 
     <example id="Example1">
@@ -294,12 +292,12 @@ xt_tcpudp               3328  0
     <title>FTP on Non-standard Ports</title>
 
     <note>
-      <para>If you are running <emphasis role="bold">kernel 2.6.20 or
-      later</emphasis>, replace <emphasis
-      role="bold">ip_conntrack_ftp</emphasis> with <emphasis
-      role="bold">nf_conntrack_ftp</emphasis> in the following instructions.
-      Similarly, replace <emphasis role="bold">ip_nat_ftp</emphasis> with
-      <emphasis role="bold">nf_nat_ftp</emphasis>.</para>
+      <para>If you are running <emphasis role="bold">kernel 2.6.19 or
+      earlier</emphasis>, replace <emphasis
+      role="bold">nf_conntrack_ftp</emphasis> with <emphasis
+      role="bold">ip_conntrack_ftp</emphasis> in the following instructions.
+      Similarly, replace <emphasis role="bold">nf_nat_ftp</emphasis> with
+      <emphasis role="bold">ip_nat_ftp</emphasis>.</para>
     </note>
 
     <para>The above discussion about commands and responses makes it clear
@@ -318,8 +316,8 @@ xt_tcpudp               3328  0
       access a server on the internet that listens on that port then you would
       have:</title>
 
-      <programlisting>loadmodule ip_conntrack_ftp ports=21,49
-loadmodule ip_nat_ftp ports=21,49           # NOTE: This is not necessary with kernel 2.6.11 and later!</programlisting>
+      <programlisting>loadmodule nf_conntrack_ftp ports=21,49
+loadmodule nf_nat_ftp                   # NOTE: With kernels prior to 2.6.11, you must specify the ports on this line also</programlisting>
 
       <para><note>
           <para>you MUST include port 21 in the ports list or you may have
@@ -330,8 +328,8 @@ loadmodule ip_nat_ftp ports=21,49           # NOTE: This is not necessary with k
       before Shorewall starts, then you should include the port list in
       /etc/modules.conf:</para>
 
-      <programlisting>options ip_conntrack_ftp ports=21,49
-options ip_nat_ftp ports=21,49           # NOTE: This is not necessary with kernel 2.6.11 and later!</programlisting>
+      <programlisting>options nf_conntrack_ftp ports=21,49
+options nf_nat_ftp</programlisting>
 
       <para><important>
           <para>Once you have made these changes to /etc/shorewall/modules
@@ -341,7 +339,7 @@ options ip_nat_ftp ports=21,49           # NOTE: This is not necessary with kern
             <listitem>
               <para>Unload the modules and restart shorewall:</para>
 
-              <programlisting><command>rmmod ip_nat_ftp; rmmod ip_conntrack_ftp; shorewall restart</command></programlisting>
+              <programlisting><command>rmmod nf_nat_ftp; rmmod nf_conntrack_ftp; shorewall restart</command></programlisting>
             </listitem>
 
             <listitem>

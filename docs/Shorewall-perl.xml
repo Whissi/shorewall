@@ -127,9 +127,9 @@
 
         <listitem>
           <para>The BROADCAST column in the interfaces file is essentially
-          unused; if you enter anything in this column but '-' or 'detect',
-          you will receive a warning. This will be relaxed if and when the
-          addrtype match requirement is relaxed.</para>
+          unused if your kernel/iptables has Address Type Match support. If
+          that support is present and you enter anything in this column but
+          '-' or 'detect', you will receive a warning.</para>
         </listitem>
 
         <listitem>
@@ -158,7 +158,7 @@
           into the compiled script and executed at run-time. In many cases,
           this approach doesn't work with Shorewall Perl because (almost) the
           entire ruleset is built by the compiler. As a result, Shorewall-perl
-          runs many extension scripts at compile-time rather than at run-time.
+          runs some extension scripts at compile-time rather than at run-time.
           Because the compiler is written in Perl, your extension scripts from
           earlier versions will no longer work.</para>
 
@@ -167,8 +167,8 @@
               <tgroup cols="3">
                 <tbody>
                   <row>
-                    <entry><emphasis
-                    role="bold">Compile-time</emphasis></entry>
+                    <entry><emphasis role="bold">Compile-time (Must be written
+                    in Perl)</emphasis></entry>
 
                     <entry><emphasis role="bold">Run-time</emphasis></entry>
 
@@ -282,7 +282,7 @@
           </simplelist>
 
           <para>The log_rule_limit function works like it does in the shell
-          compiler with two exceptions:</para>
+          compiler with three exceptions:</para>
 
           <itemizedlist>
             <listitem>

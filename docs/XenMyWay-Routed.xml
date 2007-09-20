@@ -35,8 +35,8 @@
   </articleinfo>
 
   <caution>
-    <para>This article applies to Shorewall 3.0 and later. If you are running
-    a version of Shorewall earlier than Shorewall 3.0.0 then please see the
+    <para>This article applies to Shorewall 4.0 and later. If you are running
+    a version of Shorewall earlier than Shorewall 4.0.0 then please see the
     documentation for that release.</para>
   </caution>
 
@@ -99,7 +99,7 @@
     </orderedlist>
 
     <para>The Linux systems run either <trademark>OpenSuSE </trademark>10.2 or
-    <trademark>Ubuntu</trademark> "Edgy Eft".</para>
+    <trademark>Ubuntu</trademark> "Feisty Fawn".</para>
 
     <para>Here is a high-level diagram of our network.</para>
 
@@ -383,8 +383,9 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
 
         <programlisting>STARTUP_ENABLED=Yes
 VERBOSITY=0
+SHOREWALL_COMPILER=perl
 LOGFILE=/var/log/firewall
-LOGFORMAT="FW:%s:%s:"
+LOGFORMAT="Shorewall:%s:%s:"
 LOGTAGONLY=No
 LOGRATE=
 LOGBURST=
@@ -392,21 +393,26 @@ LOGALLNEW=
 BLACKLIST_LOGLEVEL=
 MACLIST_LOG_LEVEL=$LOG
 TCP_FLAGS_LOG_LEVEL=$LOG
-RFC1918_LOG_LEVEL=$LOG
+RFC1918_LOG_LEVEL=
 SMURF_LOG_LEVEL=$LOG
 LOG_MARTIANS=No
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+IPTABLES=
 SHOREWALL_SHELL=/bin/ash
-SUBSYSLOCK=/var/lock/subsys/shorewall-lite
+SUBSYSLOCK=/var/lock/subsys/shorewall
 MODULESDIR=
-CONFIG_PATH=/usr/share/shorewall-lite:/usr/share/shorewall/configfiles:/usr/share/shorewall
-RESTOREFILE=restore
+CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+RESTOREFILE=
 IPSECFILE=zones
-IP_FORWARDING=On
+LOCKFILE=
+DROP_DEFAULT="Drop"
+REJECT_DEFAULT="Reject"
+ACCEPT_DEFAULT="none"
+QUEUE_DEFAULT="none"
+IP_FORWARDING=Yes
 ADD_IP_ALIASES=No
 ADD_SNAT_ALIASES=No
 RETAIN_ALIASES=No
-TC_ENABLED=Internal
+TC_ENABLED=internal
 TC_EXPERT=No
 CLEAR_TC=Yes
 MARK_IN_FORWARD_CHAIN=Yes
@@ -416,20 +422,27 @@ DETECT_DNAT_IPADDRS=Yes
 MUTEX_TIMEOUT=60
 ADMINISABSENTMINDED=Yes
 BLACKLISTNEWONLY=Yes
-DELAYBLACKLISTLOAD=Yes
+DELAYBLACKLISTLOAD=No
 MODULE_SUFFIX=
 DISABLE_IPV6=Yes
 BRIDGING=No
 DYNAMIC_ZONES=No
 PKTTYPE=No
 RFC1918_STRICT=Yes
+MACLIST_TABLE=mangle
 MACLIST_TTL=60
 SAVE_IPSETS=No
 MAPOLDACTIONS=No
 FASTACCEPT=Yes
+IMPLICIT_CONTINUE=Yes
 HIGH_ROUTE_MARKS=Yes
+USE_ACTIONS=Yes
+OPTIMIZE=1
+EXPORTPARAMS=No
+EXPAND_POLICIES=Yes
+KEEP_RT_TABLES=No
+DELETE_THEN_ADD=No
 BLACKLIST_DISPOSITION=DROP
-MACLIST_TABLE=mangle
 MACLIST_DISPOSITION=DROP
 TCP_FLAGS_DISPOSITION=DROP</programlisting>
 
@@ -499,11 +512,12 @@ OMAK=&lt;IP address at our second home&gt;
         the BROADCAST addresses if you are using Shorewall-perl):</para>
 
         <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
-net     $EXT_IF         206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs
-dmz     $DMZ_IF         206.124.146.255         logmartians
-loc     $INT_IF         192.168.1.255           dhcp,routeback,logmartians
-loc     $TEST_IF        -
-wifi    $WIFI_IF        192.168.3.255           dhcp,maclist
+net     ${EXT_IF}       detect                  dhcp,logmartians=1,blacklist
+dmz     $DMZ_IF         detect                  logmartians=1
+loc     $INT_IF         detect                  dhcp,logmartians=1,routeback,bridge
+loc     $TEST_IF        detect                  optional
+loc     $TEST1_IF       detect                  optional
+wifi    $WIFI_IF        detect                  dhcp,maclist,mss=1400
 vpn     tun+            -
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
@@ -511,8 +525,9 @@ vpn     tun+            -
 
         <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL             LOCAL
 #                                                       INTERFACES
-206.124.146.178         $EXT_IF         192.168.1.3     No              No     #Wookie
-206.124.146.180         $EXT_IF         192.168.1.6     No              No     #Work LapTop
+COMMENT One-to-one NAT
+206.124.146.178         $EXT_IF:0       192.168.1.3     No              No
+206.124.146.180         $EXT_IF:2       192.168.1.6     No              No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
         <para><filename>/etc/shorewall/masq (Note the cute trick here and in
@@ -523,8 +538,21 @@ vpn     tun+            -
         <filename>/etc/shorewall/nat</filename> above.</para>
 
         <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S) IPSEC
+COMMENT Handle DSL 'Modem'
+
 +$EXT_IF:192.168.1.1    0.0.0.0/0       192.168.1.254
-$EXT_IF                 192.168.0.0/22  206.124.146.179
+
+COMMENT Masquerade VPN clients and Wifi
+
+$EXT_IF                 192.168.2.0/24
+$EXT_IF                 192.168.3.0/24
+
+$EXT_IF:192.168.98.1    192.168.99.1    192.168.1.99
+$EXT_IF:192.168.99.1    192.168.98.1    192.168.1.98
+
+COMMENT Masquerade Local Network
+
+$EXT_IF                 $INT_IF 206.124.146.179
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
         <para><filename>/etc/shorewall/proxyarp</filename>:</para>
@@ -854,8 +882,8 @@ $EXT_IF         30      2*full/10       6*full/10       3
 #       Commands are:
 #
 #          bridge start                   Starts the bridge
-#          bridge restart                         Restarts the bridge
-#          bridge reload                          Restarts the bridge
+#          bridge restart                 Restarts the bridge
+#          bridge reload                  Restarts the bridge
 #          bridge stop                    Stops the bridge
 #          bridge status                  Displays bridge status
 #

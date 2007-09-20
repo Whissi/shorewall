@@ -682,7 +682,7 @@
             destination port. A destination port may only be included if the
             <emphasis role="bold">ACTION</emphasis> is <emphasis
             role="bold">DNAT</emphasis> or <emphasis
-            role="bold">REDIRECT</emphasis>. Example:</para>
+            role="bold">REDIRECT</emphasis>.</para>
 
             <variablelist>
               <varlistentry>
@@ -691,20 +691,20 @@
                 <listitem>
                   <para><emphasis role="bold">loc:192.168.1.3:3128</emphasis>
                   specifies a local server at IP address 192.168.1.3 and
-                  listening on port 3128. The port number MUST be specified as
-                  an integer and not as a name from services(5).</para>
+                  listening on port 3128. </para>
                 </listitem>
               </varlistentry>
             </variablelist>
 
-            <blockquote>
-              <para>if the <emphasis role="bold">ACTION</emphasis> is
-              <emphasis role="bold">REDIRECT</emphasis> or <emphasis
-              role="bold">REDIRECT-</emphasis>, this column needs only to
-              contain the port number on the firewall that the request should
-              be redirected to. That is equivalent to specifying
-              <option>$FW</option>::<replaceable>port</replaceable>.</para>
-            </blockquote>
+            <para>The port number MUST be specified as an integer and not as a
+            name from services(5).</para>
+
+            <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
+            role="bold">REDIRECT</emphasis> or <emphasis
+            role="bold">REDIRECT-</emphasis>, this column needs only to
+            contain the port number on the firewall that the request should be
+            redirected to. That is equivalent to specifying
+            <option>$FW</option>::<replaceable>port</replaceable>.</para>
           </blockquote>
         </listitem>
       </varlistentry>

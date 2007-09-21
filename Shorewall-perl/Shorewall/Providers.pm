@@ -165,6 +165,8 @@ sub add_a_provider( $$$$$$$$ ) {
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
+    $number = numeric_value $number;
+
     for my $providerref ( values %providers  ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
     }
@@ -207,7 +209,7 @@ sub add_a_provider( $$$$$$$$ ) {
 		"fi\n" );
 	$gateway = '$gateway';
     } elsif ( $gateway && $gateway ne '-' ) {
-	validate_address $gateway;
+	validate_address $gateway, 0;
 	my $variable = get_interface_address $interface;
 	emit "run_ip route replace $gateway src $variable dev $interface table $number";
 	emit "run_ip route add default via $gateway dev $interface table $number";
@@ -234,17 +236,14 @@ sub add_a_provider( $$$$$$$$ ) {
 	    fatal_error "Duplicate mark value ($mark)" if $providerref->{mark} == $val;
 	}
 
-	my $pref = 10000 + $val;
+	my $pref = 10000 + $number - 1;
 
-	emit ( "qt ip rule del fwmark $mark",
-	       "run_ip rule add fwmark $mark pref $pref table $number",
+	emit ( "qt ip rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
+
+	emit ( "run_ip rule add fwmark $mark pref $pref table $number",
 	       "echo \"qt ip rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
 	     );
     }
-
-    $providers{$table}         = {};
-    $providers{$table}{number} = $number;
-    $providers{$table}{mark}   = $val;
 
     my ( $loose, $optional ) = (0,0);
 
@@ -269,28 +268,30 @@ sub add_a_provider( $$$$$$$$ ) {
 	}
     }
 
-    $providers{$table}{optional} = $optional;
+    $providers{$table} = { number => $number , mark => $val , optional => $optional };
 
     if ( $loose ) {
+	if ( $config{DELETE_THEN_ADD} ) {
+	    emit ( "\nfind_interface_addresses $interface | while read address; do",
+		   '    qt ip rule del from $address',
+		   'done'
+		 );
+	}
+    } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
 
 	emit "\nrulenum=0\n";
 
-	emit  ( "find_interface_addresses $interface | while read address; do",
-		'    qt ip rule del from $address',
-		"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
+	emit  ( "find_interface_addresses $interface | while read address; do" );
+	emit  (	'    qt ip rule del from $address' ) if $config{DELETE_THEN_ADD};
+	emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
 		"    echo \"qt ip rule del from \$address\" >> \${VARDIR}/undo_routing",
 		'    rulenum=$(($rulenum + 1))',
 		'done'
 	      );
-    } else {
-	emit ( "\nfind_interface_addresses $interface | while read address; do",
-	       '    qt ip rule del from $address',
-	       'done'
-	     );
     }
 
-    emit "\nprogress_message \"   Provider $table ($number) Added\"\n";
+    emit qq(\nprogress_message "   Provider $table ($number) Added"\n);
 
     emit ( "${provider}_is_up=Yes" ) if $optional;
 
@@ -330,17 +331,25 @@ sub add_an_rtrule( $$$$ ) {
 
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
-    $dest = $dest eq '-' ? '' : "to $dest";
+
+    if ( $dest eq '-' ) {
+	$dest = 'to ' . ALLIPv4; 
+    } else {
+	validate_net( $dest, 0 );
+	$dest = "to $dest";
+    }
 
     if ( $source eq '-' ) {
-	$source = '';
+	$source = 'from ' . ALLIPv4;
     } elsif ( $source =~ /:/ ) {
 	( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
 	fatal_error "Invalid SOURCE" if defined $remainder;
+	validate_net ( $source, 0 );
 	$source = "iif $interface from $source";
     } elsif ( $source =~ /\..*\..*/ ) {
 	$source = "from $source";
     } else {
+	validate_net ( $source, 0 );
 	$source = "iif $source";
     }
 
@@ -348,7 +357,7 @@ sub add_an_rtrule( $$$$ ) {
 
     $priority = "priority $priority";
 
-    emit ( "qt ip rule del $source $dest $priority" );
+    emit ( "qt ip rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
 
     my ( $base, $optional, $number ) = ( chain_base( $provider ), $providers{$provider}{optional} , $providers{$provider}{number} );
 

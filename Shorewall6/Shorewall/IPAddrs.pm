@@ -20,7 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module provides interfaces for dealing with IPv4 addresses.
+#   This module provides interfaces for dealing with IPv6 addresses.
 #
 package Shorewall::IPAddrs;
 require Exporter;

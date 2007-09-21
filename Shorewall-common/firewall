@@ -424,8 +424,8 @@ delete_proxy_arp() {
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
 	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
-	    interface=/proc/sys/net/ipv4/conf/$interface
-	    [ -f $interface/proxyarp ] && echo 0 > $interface/proxy_arp
+	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
+	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
     fi
 

@@ -64,7 +64,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.03';
+our $VERSION = '4.04';
 
 #
 # IPSEC Option types
@@ -132,7 +132,7 @@ our %reservedName = ( all => 1,
 #
 our @interfaces;
 our %interfaces;
-our @bridges;
+our @bport_zones;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -150,7 +150,7 @@ sub initialize() {
 
     @interfaces = ();
     %interfaces = ();
-    @bridges    = ();
+    @bport_zones = ();
 }
 
 INIT {
@@ -283,6 +283,7 @@ sub determine_zones()
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
 	    $type = 'bport4';
+	    push @bport_zones, $zone;
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
@@ -746,7 +747,6 @@ sub validate_interfaces_file( $ )
 	    if ( $options{bridge} ) {
 		require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 		fatal_error "Bridges may not have wildcard names" if $wildcard;
-		push @bridges, $interface;
 	    }
 	} elsif ( $port ) {
 	    $options{port} = 1;
@@ -759,6 +759,7 @@ sub validate_interfaces_file( $ )
 	my @networks;
 
 	if ( $options{detectnets} ) {
+	    warning_message "Support for the 'detectnets' option will be removed from Shorewall-perl in version 4.0.5; better to use 'routefilter' and 'logmartians'"; 
 	    fatal_error "The 'detectnets' option is not allowed on a multi-zone interface" unless $zone;
 	    fatal_error "The 'detectnets' option may not be used with a wild-card interface name" if $wildcard;
 	    fatal_error "The 'detectnets' option may not be used with the '-e' compiler option" if $export;
@@ -844,10 +845,10 @@ sub find_interface( $ ) {
 }
 
 #
-# Returns true if there are bridges defined in the config
+# Returns true if there are bridge port zones defined in the config
 #
 sub have_bridges() {
-    @bridges > 0;
+    @bport_zones > 0;
 }
 
 #

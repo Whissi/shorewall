@@ -40,7 +40,7 @@ our @EXPORT = qw( ALLIPv4
 		  rfc1918_neworks
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.03';
+our $VERSION = '4.04';
 
 #
 # Some IPv4 useful stuff
@@ -63,16 +63,18 @@ sub valid_address( $ ) {
     1;
 }
 
-sub validate_address( $ ) {
-    my $addr = $_[0];
+sub validate_address( $$ ) {
+    my ( $addr, $allow_name ) =  @_;
 
     unless ( valid_address $addr ) {
+	fatal_error "Invalid IP Address ($addr)" unless $allow_name;
 	fatal_error "Unknown Host ($addr)" unless defined gethostbyname $addr;
     }
 }
 
-sub validate_net( $ ) {
+sub validate_net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
+    my $allow_name = $_[1];
 
     fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
 
@@ -82,7 +84,7 @@ sub validate_net( $ ) {
 	fatal_error "Invalid IP address ($net)"       unless valid_address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	validate_address $net;
+	validate_address $net, $_[1];
     }
 }
 
@@ -115,8 +117,8 @@ sub encodeaddr( $ ) {
 sub validate_range( $$ ) {
     my ( $low, $high ) = @_;
 
-    fatal_error "Invalid IP address ($low)" unless valid_address $low;
-    fatal_error "Invalid IP address ($high)" unless valid_address $high;
+    validate_address $low, 0;
+    validate_address $high, 0;
 
     my $first = decodeaddr $low;
     my $last  = decodeaddr $high;
@@ -130,12 +132,12 @@ sub ip_range_explicit( $ ) {
 
     my ( $low, $high ) = split /-/, $range;
 
-    fatal_error "Invalid IP address ($low)" unless valid_address $low;
+    validate_address $low, 0;
 
     push @result, $low;
 
     if ( defined $high ) {
-	fatal_error "Invalid IP address ($high)" unless valid_address $high;
+	validate_address $high, 0;
 
 	my $first = decodeaddr $low;
 	my $last  = decodeaddr $high;
@@ -156,7 +158,7 @@ sub validate_host( $ ) {
     if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
 	validate_range $1, $2;
     } else {
-	validate_net( $host );
+	validate_net( $host, 0 );
     }
 }
 

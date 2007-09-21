@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.03';
+our $VERSION = '4.04';
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
@@ -373,7 +373,7 @@ sub process_criticalhosts() {
 	my @hosts;
 
 	for my $host ( split /,/, $hosts ) {
-	    validate_net $host;
+	    validate_net $host, 1;
 	    push @hosts, "$interface:$host";
 	}
 
@@ -419,7 +419,7 @@ sub process_routestopped() {
 	my @hosts;
 
 	for my $host ( split /,/, $hosts ) {
-	    validate_net $host;
+	    validate_net $host, 1;
 	    push @hosts, "$interface:$host";
 	}
 
@@ -1399,10 +1399,10 @@ sub process_rules() {
 }
 
 #
-# To quote an old comment, "generate_matrix makes a sows ear out of a silk purse".
+# To quote an old comment, "generate_matrix makes a sow's ear out of a silk purse".
 #
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
-# A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this functions and the rules that it generates.
+# A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this function and the rules that it generates.
 #
 # The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
 #

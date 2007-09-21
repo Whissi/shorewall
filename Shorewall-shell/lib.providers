@@ -178,8 +178,8 @@ __EOF__
 
 	    eval ${table}_mark=$mark
 
+	    [ -n "$DELETE_THEN_ADD" ] && qt ip rule del fwmark $mark
 	    indent >&3 << __EOF__
-qt ip rule del fwmark $mark
 run_ip rule add fwmark $mark pref $((10000 + $mark)) table $number
 echo "qt ip rule del fwmark $mark" >> \${VARDIR}/undo_routing
 __EOF__
@@ -225,13 +225,17 @@ __EOF__
 rulenum=0
 
 find_interface_addresses $interface | while read address; do
-    qt ip rule del from \$address
+__EOF__
+
+	    [ -n "$DELETE_THEN_ADD" ] && save_command "    qt ip rule del from \$address"
+
+	    indent >&3 << __EOF__
     run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number
     echo "qt ip rule del from \$address" >> \${VARDIR}/undo_routing
     rulenum=\$((\$rulenum + 1))
 done
 __EOF__
-	else
+	elif [ -n "$DELETE_THEN_ADD" ]; then
 	    indent >&3 << __EOF__
 
 find_interface_addresses $interface | while read address; do
@@ -269,7 +273,7 @@ __EOF__
 
 	for p in $PROVIDERS main; do
 	    [ "$p" = "$1" ] && return 0
-	    eval n=\$${p}_number}
+	    eval n=\$${p}_number
 	    [ "$n" = "$1" ] && return 0
 	done
 
@@ -285,17 +289,23 @@ __EOF__
 
 	[ -n "${source}${dest}" ] || fatal_error "You must specify either the source or destination in an rt rule: \"$rule\""
 
-	[ -n "$source" ] && case $source in
-	    *:*)
-		source="iif ${source%:*} from ${source#*:}"
-		;;
-	    *.*.*)
-		source="from $source"
-		;;
-	    *)
-		source="iif $source"
-		;;
-	esac
+	[ -n "${dest:=to 0.0.0.0/0}" ]
+
+	if [ -n "$source" ]; then
+	    case $source in
+		*:*)
+		    source="iif ${source%:*} from ${source#*:}"
+		    ;;
+		*.*.*)
+		    source="from $source"
+		    ;;
+		*)
+		    source="iif $source"
+		    ;;
+	    esac
+	else
+	    source='from 0.0.0.0/0'
+	fi
 
 	case "$priority" in
 	    [0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9][0-9])
@@ -307,7 +317,7 @@ __EOF__
 
 	priority="priority $priority"
 
-	save_command "qt ip rule del $source $dest $priority"
+	[ -n "$DELETE_THEN_ADD" ] && save_command "qt ip rule del $source $dest $priority"
 	save_command "run_ip rule add $source $dest $priority table $provider"
 	indent >&3 << __EOF__
 echo "qt ip rule del $source $dest $priority" >> \${VARDIR}/undo_routing

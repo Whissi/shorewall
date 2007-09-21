@@ -59,7 +59,6 @@ our @EXPORT = qw( STANDARD
 		  add_command
 		  add_commands
 		  mark_referenced
-		  add_file
 		  add_rule
 		  insert_rule
 		  chain_base
@@ -372,32 +371,6 @@ sub mark_referenced( $ ) {
 }
 
 #
-# Copy a file into a chain's rules as a set of run-time commands
-#
-
-sub add_file( $$ ) {
-    my $chainref = $_[0];
-    my $file     = find_file $_[1];
-
-    if ( -f $file ) {
-	open EF , '<', $file or fatal_error "Unable to open $file: $!";
-
-	add_commands( $chainref,
-		      qq(progress_message "Processing $file..."),
-		      '' );
-
-	while ( my $line = <EF> ) {
-	    chomp $line;
-	    add_command $chainref, $line;
-	}
-
-	add_command $chainref, '';
-
-	close EF;
-    }
-}
-
-#
 # Add a rule to a chain. Arguments are:
 #
 #    Chain reference , Rule
@@ -584,16 +557,6 @@ sub new_chain($$)
 				     cmdlevel  => 0 };
 }
 
-#
-# Create an anonymous chain
-#
-sub new_anon_chain( $ ) {
-    my $chainref = $_[0];
-    my $seq      = $chainseq++;
-    new_chain( $chainref->{table}, 'chain' . "$seq" );
-}
-
-#
 #
 # Create a chain if it doesn't exist already
 #
@@ -1166,7 +1129,7 @@ sub get_set_flags( $$ ) {
 }
 
 #
-# Match a Source. Currently only handles IP addresses and ranges
+# Match a Source. Handles IP addresses and ranges and MAC addresses
 #
 sub match_source_net( $ ) {
     my $net = $_[0];
@@ -1185,10 +1148,10 @@ sub match_source_net( $ ) {
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
-	validate_net $net;
+	validate_net $net, 1;
 	"-s ! $net ";
     } else {
-	validate_net $net;
+	validate_net $net, 1;
 	$net eq ALLIPv4 ? '' : "-s $net ";
     }
 }
@@ -1209,10 +1172,10 @@ sub match_dest_net( $ ) {
 	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
-	validate_net $net;
+	validate_net $net, 1;
 	"-d ! $net ";
     } else {
-	validate_net $net;
+	validate_net $net, 1;
 	$net eq ALLIPv4 ? '' : "-d $net ";
     }
 }
@@ -1228,10 +1191,10 @@ sub match_orig_dest ( $ ) {
 
     if ( $net =~ /^!/ ) {
 	$net =~ s/!//;
-	validate_net $net;
+	validate_net $net, 1;
 	"-m conntrack --ctorigdst ! $net ";
     } else {
-	validate_net $net;
+	validate_net $net, 1;
 	$net eq ALLIPv4 ? '' : "-m conntrack --ctorigdst $net ";
     }
 }

@@ -322,6 +322,7 @@ sub initialize() {
 		SHOREWALL_COMPILER => undef,
 		EXPAND_POLICIES => undef,
 		KEEP_RT_TABLES => undef,
+		DELETE_THEN_ADD => undef,
 		#
 		# Packet Disposition
 		#
@@ -1137,10 +1138,21 @@ sub determine_capabilities( $ ) {
     qt( "$iptables -N $sillyname" );
 
     $capabilities{CONNTRACK_MATCH} = qt( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
-    $capabilities{MULTIPORT}       = qt( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" );
+    
+    if ( qt( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" ) ) {
+	$capabilities{MULTIPORT}  = 1;
+	$capabilities{KLUDGEFREE} = qt( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
+    }
+
     $capabilities{XMULTIPORT}      = qt( "$iptables -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
     $capabilities{POLICY_MATCH}    = qt( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
-    $capabilities{PHYSDEV_MATCH}   = qt( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" );
+
+    if ( qt( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" ) ) {
+	$capabilities{PHYSDEV_MATCH} = 1;
+	unless ( $capabilities{KLUDGEFREE} ) {
+	    $capabilities{KLUDGEFREE} = qt( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
+	}
+    }
 
     if ( qt( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
 	$capabilities{IPRANGE_MATCH} = 1;
@@ -1254,7 +1266,7 @@ sub ensure_config_path() {
     }
 
     if ( $shorewall_dir ) {
-	$shorewall_dir = getcwd if $shorewall_dir =~ m|(\./*)+|;
+	$shorewall_dir = getcwd if $shorewall_dir =~ m|^(\./*)+$|;
 	$shorewall_dir .= '/' unless $shorewall_dir =~ m|/$|;
 	unshift @config_path, $shorewall_dir if $shorewall_dir ne $config_path[0];
 	$config{CONFIG_PATH} = join ':', @config_path;
@@ -1454,8 +1466,9 @@ sub get_configuration( $ ) {
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'EXPAND_POLICIES'            , '';
     default_yes_no 'KEEP_RT_TABLES'             , '';
+    default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
-
+    
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
     default 'BLACKLIST_DISPOSITION'             , 'DROP';
@@ -1509,7 +1522,9 @@ sub get_configuration( $ ) {
 	my $file = find_file 'tcstart';
 	fatal_error "Unable to find tcstart file" unless -f $file;
 	$globals{TC_SCRIPT} = $file;
-    } elsif ( $val ne 'internal' ) {
+    } elsif ( $val eq 'internal' ) {
+	$config{TC_ENABLED} = 'Internal';
+    } else {
 	fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
 	$config{TC_ENABLED} = '';
     }

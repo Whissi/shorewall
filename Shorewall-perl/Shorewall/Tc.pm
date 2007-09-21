@@ -274,17 +274,16 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	}
     }
 
-    if ( ( my $result = expand_rule(
-				    ensure_chain( 'mangle' , $chain ) ,
-				    NO_RESTRICT ,
-				    do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
-				    $source ,
-				    $dest ,
-				    '' ,
-				    "-j $target $mark" ,
-				  '' ,
-				    '' ,
-				    '' ) ) 
+    if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
+				     NO_RESTRICT ,
+				     do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
+				     $source ,
+				     $dest ,
+				     '' ,
+				     "-j $target $mark" ,
+				     '' ,
+				     '' ,
+				     '' ) )
 	  && $device ) {
 	#
 	# expand_rule() returns destination device if any
@@ -316,7 +315,7 @@ sub calculate_r2q( $ ) {
 sub calculate_quantum( $$ ) {
     my ( $rate, $r2q ) = @_;
     $rate = rate_to_kbit $rate;
-    eval "int( ( $rate * 125 ) / $r2q )";
+    int( ( $rate * 125 ) / $r2q );
 }
 
 sub validate_tc_device( $$$ ) {
@@ -325,12 +324,9 @@ sub validate_tc_device( $$$ ) {
     fatal_error "Duplicate device ($device)"    if $tcdevices{$device};
     fatal_error "Invalid device name ($device)" if $device =~ /[:+]/;
 
-    rate_to_kbit $inband;
-    rate_to_kbit $outband;
-
     $tcdevices{$device} = {};
-    $tcdevices{$device}{in_bandwidth}  = $inband;
-    $tcdevices{$device}{out_bandwidth} = $outband;
+    $tcdevices{$device}{in_bandwidth}  = rate_to_kbit( $inband ) . 'kbit';
+    $tcdevices{$device}{out_bandwidth} = rate_to_kbit( $outband ) . 'kbit';
 
     push @tcdevices, $device;
 
@@ -366,7 +362,7 @@ sub validate_tc_class( $$$$$$ ) {
     $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
 
-    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) < 0xff;
+    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) <= 0xff;
 
     my $markval = numeric_value( $mark );
     fatal_error "Duplicate Mark ($mark)" if $tcref->{$markval};

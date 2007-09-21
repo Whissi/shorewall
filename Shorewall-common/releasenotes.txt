@@ -1,4 +1,8 @@
 Shorewall 4.0 Patch release 4
+
+WARNING: Suppport for the 'detectnets' option will be removed from
+Shorewall-perl in Shorewall 4.0 Patch release 5. See 'Other changes' below.
+
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 0  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -63,9 +67,103 @@ Problems Corrected in Shorewall 4.0.4
     iptables executable specified by IPTABLES in shorewall.conf or
     located by the PATH in the event that IPTABLES is not specified.
 
+7)  When using Shorewall-perl, if an action was invoked with more than
+    10 different combinations of log-levels/tags, some of those
+    invocations with have incorrect logging.
+
+8)  Previously, when 'shorewall restore' was executed, the
+    iptables-restore utility was always located using the PATH setting
+    rather than the IPTABLES setting.
+
+    With Shorewall-perl, the IPTABLES setting is now used to locate
+    this utility during 'restore' as it is during the processing of
+    other commands.
+
+9)  Although the shorewall.conf manpage indicates that the value
+    'internal' is allowed for TC_ENABLED, that value was previously
+    rejected ('Internal' was accepted).
+
+10) The meaning of the 'loose' provider option was accidentally reversed
+    in Shorewall-perl. Rather than causing certain routing rules to be
+    omitted when specified, it actually caused them to be added (these
+    rules were omitted when the option was NOT specified).
+
+11) If the 'bridge' option was specified on an interface but there were
+    no bport zones, then traffic originating on the firewall was not
+    passed through the accounting chain.
+
+12) In commands such as:
+
+       shorewall compile <directory>
+       shorewall restart <directory>
+       shorewall check <directory>
+
+    if the name of the <directory> contained a period ("."), then
+    Shorewall-perl would incorrectly substitute the current working
+    directory for the name.
+
+13) Previously, if the following sequence of routing rules was
+    specified, then the first rule would always be omitted.
+
+    #SOURCE    DEST      PROVIDER     PRIORITY
+    $SRC_A     $DESTIP1  ISP1         1000
+    $SRC_A     $DESTIP2  SOMEISP      1000
+    $SRC_A     -         ISP2         1000
+
+    The reason for this omission was that Shorewall uses a
+    delete-before-add approach and attempting to delete the third rule
+    resulted in the deletion of the first one instead. 
+
+    This problem occurred with both compilers.
+
+14) When using Shorewall-shell, provider numbers were not recognized in
+    the PROVIDER column of /etc/shorewall/route_rules.
+
+15) An off-by-one problem in Shorewall-perl caused the value 255 to be
+    rejected in the MARK column of /etc/shorewall/tcclasses.
+
 Other Changes in Shorewall 4.0.4
 
-None.
+1)  The detection of 'Repeat Match' has been improved. 'Repeat Match'
+    is not a match at all but rather is a feature of recent versions of
+    iptables that allows a particular match to be used multiple times
+    within a single rule.
+
+    Example:
+
+      -A foo -m physdev --physdev-in eth0 -m physdev --physdev-out ...
+
+    When using Shorewall-shell, the availability of 'Repeat Match' can
+    speed up compilation very slightly.
+
+2)  Apparently recent Fedora releases are broken. The
+    following sequence of commands demonstrates the problem:
+
+    ip rule add from 1.1.1.1 to 10.0.0.0/8 priority 1000 table 5
+    ip rule add from 1.1.1.1 to 0.0.0.0/0 priority 1000 table main
+    ip rule del from 1.1.1.1 to 0.0.0.0/0 priority 1000
+
+    The third command should fail but doesn't; instead, it incorrectly
+    removes the rule added by the first command.
+
+    To work around this issue, you can set DELETE_THEN_ADD=No in
+    shorewall.conf which prevents Shorewall from deleting ip rules
+    before attempting to add a similar rule.
+
+3)  When using Shorewall-perl, the following message is now issued if
+    the 'detectnets' option is specified in /etc/shorewall/interfaces:
+
+    WARNING: Support for the 'detectnets' option will be removed from
+    Shorewall-perl in version 4.0.5; better to use 'routefilter' and 'logmartians
+
+    The 'detect' options has always been rather silly. On input, it
+    duplicates the function of 'routefilter'. On output, it is a no-op
+    since traffic that doesn't match a route out of an interface won't
+    be sent through that interface (duh!).
+
+    Beginning with Shorewall 4.0.5, the warning message will read:
+
+    WARNING: Support for the 'detectnets' option has been removed
 
 Migration Considerations:
 

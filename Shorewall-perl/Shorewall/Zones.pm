@@ -548,32 +548,6 @@ sub firewall_zone() {
 }
 
 #
-# Return a list of networks routed out of the passed interface
-#
-sub get_routed_networks ( $$ ) {
-    my ( $interface , $error_message ) = @_;
-    my @networks;
-
-    if ( open IP , '-|' , "/sbin/ip route show dev $interface 2> /dev/null" ) {
-	while ( my $route = <IP> ) {
-	    $route =~ s/^\s+//;
-	    my $network = ( split /\s+/, $route )[0];
-	    if ( $network eq 'default' ) {
-		fatal_error $error_message if $error_message;
-		warning_message "default route ignored on interface $interface";
-	    } else {
-		my ( $address, $vlsm ) = split '/', $network;
-		$vlsm = 32 unless defined $vlsm;
-		push @networks, "$address/$vlsm";
-	    }
-	}
-	close IP
-    }
-
-    @networks;
-}
-
-#
 # Parse the interfaces file.
 #
 
@@ -585,6 +559,7 @@ sub validate_interfaces_file( $ )
 		   BINARY_IF_OPTION   => 2,
 		   ENUM_IF_OPTION     => 3,
 		   NUMERIC_IF_OPTION  => 4,
+		   OBSOLETE_IF_OPTION => 5,
 	           MASK_IF_OPTION     => 7,
 
 	           IF_OPTION_ZONEONLY => 8 };
@@ -593,7 +568,7 @@ sub validate_interfaces_file( $ )
 			arp_ignore  => ENUM_IF_OPTION,
 			blacklist   => SIMPLE_IF_OPTION,
 			bridge      => SIMPLE_IF_OPTION,
-			detectnets  => SIMPLE_IF_OPTION,
+			detectnets  => OBSOLETE_IF_OPTION,
 			dhcp        => SIMPLE_IF_OPTION,
 			maclist     => SIMPLE_IF_OPTION,
 			logmartians => BINARY_IF_OPTION,
@@ -739,6 +714,8 @@ sub validate_interfaces_file( $ )
 		} elsif ( $type == NUMERIC_IF_OPTION ) {
 		    fatal_error "The $option option requires a value" unless defined $value;
 		    $options{$option} = numeric_value $value;
+		} else {
+		    warning_message "Support for the $option interface option has been removed from Shorewall-perl";
 		}
 	    }
 
@@ -756,19 +733,7 @@ sub validate_interfaces_file( $ )
 
 	push @ifaces, $interface;
 
-	my @networks;
-
-	if ( $options{detectnets} ) {
-	    warning_message "Support for the 'detectnets' option will be removed from Shorewall-perl in version 4.0.5; better to use 'routefilter' and 'logmartians'"; 
-	    fatal_error "The 'detectnets' option is not allowed on a multi-zone interface" unless $zone;
-	    fatal_error "The 'detectnets' option may not be used with a wild-card interface name" if $wildcard;
-	    fatal_error "The 'detectnets' option may not be used with the '-e' compiler option" if $export;
-	    @networks = get_routed_networks( $interface, 'detectnets not allowed on interface with default route' );
-	    fatal_error "No routes found through 'detectnets' interface $interface" unless @networks || $options{optional};
-	    delete $options{maclist} unless @networks;
-	} else {
-	    @networks = allipv4;
-	}
+	my @networks = allipv4;
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
 

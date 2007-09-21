@@ -752,7 +752,6 @@ sub setup_mac_lists( $ ) {
 		fatal_error "Invalid DISPOSITION ($disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
 
 		unless ( $maclist_interfaces{$interface} ) {
-		    next if get_interface_option( $interface, 'optional' ) && get_interface_option( $interface, 'detectnets' );
 		    fatal_error "No hosts on $interface have the maclist option specified";
 		}
 
@@ -1563,7 +1562,6 @@ sub generate_matrix() {
 	my $exclusions       = $zoneref->{exclusions};
 	my $frwd_ref         = 0;
 	my $chain            = 0;
-	my %needbroadcast;
 
 	if ( $complex ) {
 	    $frwd_ref = $filter_table->{"${zone}_frwd"};
@@ -1614,39 +1612,11 @@ sub generate_matrix() {
 
 			add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
 			    if $complex && $hostref->{ipsec} ne 'ipsec';
-
-			$needbroadcast{$interface}{$source} = 1 if get_interface_option $interface, 'detectnets';
 		    }
 		}
 	    }
 	}
 
-	if ( $chain1 ) {
-	    for my $interface ( keys %needbroadcast ) {
-		if ( $capabilities{ADDRTYPE} ) {
-		    add_rule $filter_table->{output_chain $interface}  , "-m addrtype --dst-type BROADCAST -j $chain1";
-		} else {
-		    my $interfaceref = find_interface( $interface );
-		    my $chain        = output_chain $interface;
-		    my $chainref     = $filter_table->{$chain};
-
-		    if ( $interfaceref->{broadcasts} ) {
-			for my $address ( @{$interfaceref->{broadcasts}} , '255.255.255.255' ) {
-			    add_rule( $chainref, "-d $address -j $chain1" );
-			}
-		    } else {
-			my $variable = get_interface_bcasts $interface;
-
-			add_commands( $chainref,
-				      "for address in $variable; do",
-				      "   echo \"-A $chain -d \$address -j $chain1\" >&3",
-				      'done' );
-		    }
-		}
-
-		add_rule $filter_table->{output_chain $interface}  , "-d 224.0.0.0/4 -j $chain1";
-	    }
-	}
 	#
 	#                           F O R W A R D I N G
 	#
@@ -1723,17 +1693,6 @@ sub generate_matrix() {
 
 	    if ( $zone eq $zone1 ) {
 		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
-
-		if  ( $chain3 ) {
-		    while ( my ($interface, $sourceref) = ( each %needbroadcast ) ) {
-			if ( get_interface_option( $interface, 'bridge' ) ) {
-			    for my $source ( keys %$sourceref ) {
-				add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-d 255.255.255.255 -j $chain3";
-				add_rule $filter_table->{forward_chain $interface} , "-o $interface ${source}-d 224.0.0.0/4 -j $chain3";
-			    }
-			}
-		    }
-		}
 	    }
 
 	    if ( $zone1ref->{type} eq 'bport4' ) {

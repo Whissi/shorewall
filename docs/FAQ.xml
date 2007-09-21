@@ -1627,13 +1627,13 @@ Creating input Chains...
       <para><emphasis role="bold">Answer:</emphasis> The above output is
       perfectly normal. The Net zone is defined as all hosts that are
       connected through eth0 and the local zone is defined as all hosts
-      connected through <filename class="devicefile">eth1</filename>. If you
-      are running Shorewall 1.4.10 or later, you can consider setting the
-      <ulink url="manpages/shorewall-interfaces.html"> <emphasis
-      role="bold">detectnets</emphasis> interface option</ulink> on your local
-      interface (<filename class="devicefile">eth1</filename> in the above
-      example). That will cause Shorewall to restrict the local zone to only
-      those networks routed through that interface.</para>
+      connected through <filename class="devicefile">eth1</filename>. You can
+      set the <emphasis role="bold">routefilter</emphasis> option on an
+      internal interface if you wish to guard against
+      '<firstterm>Martians</firstterm>' (a Martian is a packet with a source
+      IP address that is not routed out of the interface on which the packet
+      was received). If you do that, it is a good idea to also set the
+      <emphasis role="bold">logmartians</emphasis> option.</para>
     </section>
 
     <section id="faq22">

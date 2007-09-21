@@ -118,12 +118,6 @@ sub setup_route_filtering() {
 
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
-	if ( $config{ROUTE_FILTER} eq 'on' ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
-	} elsif (  $config{ROUTE_FILTER} eq 'off' ) {
-	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
-	}
-
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";
     }
 }
@@ -159,14 +153,6 @@ sub setup_martian_logging() {
 	    emit ( 'else' ,
 		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface);
 	    emit   "fi\n";
-	}
-
-	if ( $config{LOG_MARTIANS} eq 'on' ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
-	} elsif ( $config{LOG_MARTIANS} eq 'off' ) {
-	    emit 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians';
-	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/log_martians';
 	}
     }
 }

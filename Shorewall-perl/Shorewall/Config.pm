@@ -863,7 +863,7 @@ sub read_a_line() {
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
-	    $currentline = '', next if $currentline =~ /^\s*$/;
+	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
 
 	    #
 	    # Expand Shell Variables using %ENV

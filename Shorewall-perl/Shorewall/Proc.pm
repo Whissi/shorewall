@@ -96,7 +96,6 @@ sub setup_route_filtering() {
 
 	save_progress_message "Setting up Route Filtering...";
 
-
 	if ( $config{ROUTE_FILTER} ) {
 	    my $val = $config{ROUTE_FILTER} eq 'on' ? 1 : 0;
 
@@ -115,7 +114,9 @@ sub setup_route_filtering() {
 		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless interface_is_optional( $interface);
 	    emit   "fi\n";
 	}
-
+	#
+	# According to Documentation/networking/ip-sysctl.txt, this must be turned on to do any filtering
+	#
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";

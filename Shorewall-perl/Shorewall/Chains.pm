@@ -966,9 +966,13 @@ sub mac_match( $ ) {
 sub verify_mark( $ ) {
     my $mark  = $_[0];
     my $limit = $config{HIGH_ROUTE_MARKS} ? 0xFFFF : 0xFF;
+    my $value = numeric_value( $mark );
 
     fatal_error "Invalid Mark or Mask value ($mark)"
-	unless numeric_value( $mark ) <= $limit;
+	unless $value <= $limit;
+
+    fatal_error "Invalid High Mark or Mask value ($mark)"
+	if ( $value > 0xFF && $value & 0xFF );
 }
 
 sub verify_small_mark( $ ) {

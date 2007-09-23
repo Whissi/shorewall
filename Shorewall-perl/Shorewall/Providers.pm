@@ -347,9 +347,9 @@ sub add_an_rtrule( $$$$ ) {
 	validate_net ( $source, 0 );
 	$source = "iif $interface from $source";
     } elsif ( $source =~ /\..*\..*/ ) {
+	validate_net ( $source, 0 );
 	$source = "from $source";
     } else {
-	validate_net ( $source, 0 );
 	$source = "iif $source";
     }
 

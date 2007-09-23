@@ -290,7 +290,7 @@ progress_message "Distribution directory is $DIR"
 cd $DIR
 
 case $VERSION in
-    *Beta*|*RC*)
+    *Beta*|*RC*|*Pre*)
 	#
 	# Beta or Release Candidate
 	#
@@ -698,7 +698,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 fi
 
 [ -n "$BUILDTARBALL" ] && case $VERSION in
-    *Beta*|*RC*)
+    *Beta*|*RC*|*Pre*)
 	#
 	# The original tarball created above didn't include the -Beta or -RC portion of the
 	# name in either the tarball name or the directory name. Create it here

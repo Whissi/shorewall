@@ -891,8 +891,6 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 	    $msource = '';
 	}
 
-	$msource = '' if $msource eq '-';
-
 	if ( $mdest ) {
 	    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
 		$mdest = $dest || '';
@@ -904,8 +902,6 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 	} else {
 	    $mdest = '';
 	}
-
-	$mdest   = '' if $mdest   eq '-';
 
 	$mproto  = merge_macro_column $mproto,  $proto;
 	$mports  = merge_macro_column $mports,  $ports;
@@ -1000,7 +996,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     if ( $actiontype & REDIRECT ) {
 	if ( $dest eq '-' ) {
-	    $dest = "firewall_zone";
+	    $dest = firewall_zone;
 	} else {
 	    $dest = join( '', firewall_zone, '::', $dest );
 	}

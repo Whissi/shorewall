@@ -287,8 +287,7 @@ stop_firewall() {
 
     deletechain shorewall
 
-    run_stop_exit;
-
+    run_stop_exit
 EOF
 
     if ( $capabilities{MANGLE_ENABLED} ) {
@@ -298,7 +297,6 @@ EOF
     for chain in PREROUTING INPUT FORWARD POSTROUTING; do
 	qt $IPTABLES -t mangle -P $chain ACCEPT
     done
-
 EOF
     }
 
@@ -309,7 +307,6 @@ EOF
     for chain in PREROUTING OUTPUT; do
 	qt $IPTABLES -t raw -P $chain ACCEPT
     done
-
 EOF
     }
 
@@ -319,7 +316,6 @@ EOF
     for chain in PREROUTING POSTROUTING OUTPUT; do
         qt $IPTABLES -t nat -P $chain ACCEPT
     done
-
 EOF
     }
 

@@ -338,10 +338,11 @@ sub validate_policy()
 #
 # Policy Rule application
 #
-sub policy_rules( $$$$ ) {
-    my ( $chainref , $target, $loglevel, $default ) = @_;
+sub policy_rules( $$$$$ ) {
+    my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
 
     unless ( $target eq 'NONE' ) {
+	add_rule $chainref, "-d 224.0.0.0/24 -j RETURN" if $dropmulticast && $target ne 'CONTINUE';
 	add_rule $chainref, "-j $default" if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
@@ -371,19 +372,19 @@ sub default_policy( $$$ ) {
     fatal_error "No default policy for $_[1] to zone $_[2]" unless $policyref;
 
     if ( $chainref eq $policyref ) {
-	policy_rules $chainref , $policy, $loglevel , $default;
+	policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
     } else {
 	if ( $policy eq 'ACCEPT' || $policy eq 'QUEUE' || $policy =~ /^NFQUEUE/ ) {
 	    if ( $synparams ) {
 		report_syn_flood_protection;
-		policy_rules $chainref , $policy , $loglevel , $default;
+		policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
 	    } else {
 		add_rule $chainref,  "-j $policyref->{name}";
 		$chainref = $policyref;
 	    }
 	} elsif ( $policy eq 'CONTINUE' ) {
 	    report_syn_flood_protection if $synparams;
-	    policy_rules $chainref , $policy , $loglevel , $default;
+	    policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
 	} else {
 	    report_syn_flood_protection if $synparams;
 	    add_rule $chainref , "-j $policyref->{name}";
@@ -412,7 +413,7 @@ sub apply_policy_rules() {
 
 	    if ( $name =~ /^all2|2all$/ ) {
 		run_user_exit $chainref;
-		policy_rules $chainref , $policy, $loglevel , $default;
+		policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
 	    }
 
 	}
@@ -454,7 +455,7 @@ sub complete_standard_chain ( $$$ ) {
 
     ( $policy, $loglevel, $default ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
 
-    policy_rules $stdchainref , $policy , $loglevel, $default;
+    policy_rules $stdchainref , $policy , $loglevel, $default, 0;
 }
 
 #

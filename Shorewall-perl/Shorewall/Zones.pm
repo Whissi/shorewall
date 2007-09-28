@@ -880,6 +880,8 @@ sub validate_hosts_file()
 			routeback => 1,
 			routefilter => 1,
 			tcpflags => 1,
+			broadcast => 1,
+			destonly => 1,
 			);
 
     my $ipsec = 0;

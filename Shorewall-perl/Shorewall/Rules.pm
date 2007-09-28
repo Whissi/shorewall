@@ -998,7 +998,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	if ( $dest eq '-' ) {
 	    $dest = firewall_zone;
 	} else {
-	    $dest = join( '', firewall_zone, '::', $dest );
+	    $dest = join( '', firewall_zone, '::', $dest ) unless $dest =~ /(.+?)::/;
 	}
     } elsif ( $action eq 'REJECT' ) {
 	$action = 'reject';
@@ -1585,13 +1585,23 @@ sub generate_matrix() {
 			my $dest   = match_dest_net $net;
 
 			if ( $chain1 ) {
+			    my $nextchain;
+			    my $outputref = $filter_table->{output_chain $interface};
+
 			    if ( @$exclusions ) {
-				add_rule $filter_table->{output_chain $interface} , join( '', $dest, $ipsec_out_match, "-j ${zone}_output" );
+				add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j ${zone}_output" );
 				add_rule $filter_table->{"${zone}_output"} , "-j $chain1";
+				$nextchain = "${zone}_output";
 			    } else {
-				add_rule $filter_table->{output_chain $interface} , join( '', $dest, $ipsec_out_match, "-j $chain1" );
+				add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j $chain1" );
+				$nextchain = $chain1;
 			    }
+
+			    add_rule( $outputref , join('', match_source_net $net, '-d 255.255.255.255 ' . $ipsec_out_match, "-j $nextchain" ) )
+				if $hostref->{options}{broadcast};
 			}
+
+			next if$hostref->{options}{destonly}; 
 
 			my $source = match_source_net $net;
 
@@ -1744,6 +1754,7 @@ sub generate_matrix() {
 			my $arrayref = $typeref->{$interface};
 			my $chain3ref = $filter_table->{forward_chain $interface};
 			for my $hostref ( @$arrayref ) {
+			    next if $hostref->{options}{destonly};
 			    for my $net ( @{$hostref->{hosts}} ) {
 				for my $type1ref ( values %$dest_hosts_ref ) {
 				    for my $interface1 ( keys %$type1ref ) {

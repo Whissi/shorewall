@@ -323,6 +323,7 @@ sub initialize() {
 		EXPAND_POLICIES => undef,
 		KEEP_RT_TABLES => undef,
 		DELETE_THEN_ADD => undef,
+		MULTICAST => undef,
 		#
 		# Packet Disposition
 		#
@@ -1467,6 +1468,7 @@ sub get_configuration( $ ) {
     default_yes_no 'EXPAND_POLICIES'            , '';
     default_yes_no 'KEEP_RT_TABLES'             , '';
     default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
+    default_yes_no 'MULTICAST      '            , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};

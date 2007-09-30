@@ -691,13 +691,19 @@
                 <listitem>
                   <para><emphasis role="bold">loc:192.168.1.3:3128</emphasis>
                   specifies a local server at IP address 192.168.1.3 and
-                  listening on port 3128. </para>
+                  listening on port 3128.</para>
                 </listitem>
               </varlistentry>
             </variablelist>
 
-            <para>The port number MUST be specified as an integer and not as a
-            name from services(5).</para>
+            <para>If you are using Shorewall-shell or Shorewall-perl before
+            version 4.0.5, then the port number MUST be specified as an
+            integer and not as a name from services(5). Shorewall-perl 4.0.5
+            and later permit the <emphasis>port</emphasis> to be specified as
+            a service name. Additionally, Shorewall-perl 4.0.5 and later
+            permit specifying a port range in the form
+            <emphasis>lowport-highport</emphasis> to cause connections to be
+            assigned to ports in the range in round-robin fashion.</para>
 
             <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
             role="bold">REDIRECT</emphasis> or <emphasis

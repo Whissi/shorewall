@@ -24,9 +24,34 @@ href="GnuCopyright.htm" target="_self">GNU Free Documentation
 License</a></span>”.<br>
 </p>
 
-<p>September 27, 2007</p>
+<p>October 02, 2007</p>
 <hr style="width: 100%; height: 2px;">
 
+<p><strong>2007-10-02 Shorewall 3.4.7</strong></p>
+<pre>Problems Corrected in Shorewall 3.4.7
+
+1)  A bug prevented proper handling of PREROUTING marks when
+    HIGH_ROUTE_MARKS=No and the track option was specified in
+    /etc/shorewall/providers.
+
+2) Previously, if the following sequence of routing rules was
+   specified, then the first rule would always be omitted.
+
+   #SOURCE    DEST      PROVIDER     PRIORITY
+   $SRC_A     $DESTIP1  ISP1         1000
+   $SRC_A     $DESTIP2  SOMEISP      1000
+   $SRC_A     -         ISP2         1000
+
+   The reason for this omission was that Shorewall uses a
+   delete-before-add approach and attempting to delete the third rule
+   resulted in the deletion of the first one instead. 
+
+   This problem occurred with both compilers.
+
+3) When using Shorewall-shell, provider numbers were not recognized in
+   the PROVIDER column of /etc/shorewall/route_rules.
+</pre>
+<hr>
 <p><strong>2007-09-28 Shorewall 4.0.4</strong></p>
 <pre>Problems Corrected in Shorewall 4.0.4
 

@@ -499,6 +499,14 @@ ppp0           6000kbit         500kbit</programlisting>
     <section id="tcrules">
       <title>/etc/shorewall/tcrules</title>
 
+      <important>
+        <para>Unlike rules in the <ulink
+        url="manpages/shorewall-rules.html">shorewall-rules</ulink>(5) file,
+        evaluation of rules in this file will continue after a match. So the
+        final mark for each packet will be the one assigned by the LAST tcrule
+        that matches.</para>
+      </important>
+
       <para>The fwmark classifier provides a convenient way to classify
       packets for traffic shaping. The <quote>/etc/shorewall/tcrules</quote>
       file is used for specifying these marks in a tabular fashion. For an

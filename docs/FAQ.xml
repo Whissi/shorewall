@@ -1771,6 +1771,43 @@ iptables: Invalid argument
       that command can run without error, no stateful iptables firewall will
       be able to run in your VM.</para>
     </section>
+
+    <section id="faq73">
+      <title>(FAQ 73) When I stop Shorewall, the firewall is wide open. Isn't
+      that a security risk?</title>
+
+      <para>It is important to understand that the scripts in <filename
+      class="directory">/etc/init.d</filename> are generally provided by your
+      distribution and not by the Shorewall developers. These scripts must
+      meet the requirements of the distribution's packaging system which may
+      conflict with the requirements of a tight firewall. So when you say
+      "…when I stop Shorewall…" it is necessary to distinguish between the
+      commands <command>/sbin/shorewall stop</command> and
+      <command>/etc/init.d/shorewall stop</command>.</para>
+
+      <para><command>/sbin/shorewall stop</command> places the firewall in a
+      <firstterm>safe state</firstterm>, the details of which depend on your
+      <filename>/etc/shorewall/routestopped</filename> file (<ulink
+      url="manpages/shorewall-routestopped.html">shorewall-routestopped</ulink>(8))
+      and on the setting of ADMINISABSENTMINDED in
+      <filename>/etc/shorewall/shorewall.conf</filename> (<ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink>(8)).</para>
+
+      <para><command>/etc/init.d/shorewall stop</command> may or may not do
+      the same thing. In the case of <trademark>Debian</trademark> systems for
+      example, that command actually executes <command>/sbin/shorewall
+      clear</command> which opens the firewall completely. In other words, in
+      the init scripts <command>stop</command> undoes the effect of
+      <command>start</command>.</para>
+
+      <para>One way to avoid these differences is to install Shorewall from
+      the tarballs available from shorewall.net. This places Shorewall outside
+      of the control of the packaging system and provides consistent behavior
+      between the init scripts and <filename>/sbin/shorewall</filename> (and
+      <filename>/sbin/shorewall-lite</filename>). For more information on the
+      tradeoffs involved when deciding whether to use the Debian package, see
+      <ulink url="???">this article</ulink>.</para>
+    </section>
   </section>
 
   <section id="MultiISP">

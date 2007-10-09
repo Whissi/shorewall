@@ -628,7 +628,9 @@ Shorewall has detected the following iptables/netfilter capabilities:
     you can use either an integer or a service name from
     <filename>/etc/services</filename>.<note>
         <para>Shorewall-perl translates protocol names to protocol numbers and
-        service names to port numbers itself. The mapping that it uses is
+        service names to port numbers itself.</para>
+
+        <para>In Shorewall versions 4.0.0 - 4.0.4, the mapping that it uses is
         contained in the Perl module
         <filename>/usr/share/shorewall-perl/Shorewall/Ports.pm</filename>.
         That module is built when Shorewall is installed or upgraded using the
@@ -638,6 +640,11 @@ Shorewall has detected the following iptables/netfilter capabilities:
 
         <para>To generate a new Ports.pm module:<programlisting>cp /usr/share/shorewall-perl/Shorewall/Ports.pm /usr/share/shorewall-perl/Shorewall/Ports.pm.backup
 /usr/share/shorewall/buildports.pm &gt; /usr/share/shorewall-perl/Shorewall/Ports.pm</programlisting></para>
+
+        <para>Beginning with Shorewall version 4.0.5, the
+        <filename>/usr/share/shorewall-perl/Shorewall/Ports.pm</filename> has
+        been eliminated and the Shorewall-perl compiler uses Perl's interfaces
+        to getprotobyname(3posix) and getservbyname(3posix).</para>
       </note></para>
   </section>
 

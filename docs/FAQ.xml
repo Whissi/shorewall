@@ -1809,6 +1809,28 @@ iptables: Invalid argument
       <ulink url="http://wiki.shorewall.net/wiki/ShorewallOnDebian">this
       article</ulink>.</para>
     </section>
+
+    <section id="faq74">
+      <title>(FAQ 74) When I "shorewall start" or "shorewall check" in my SuSE
+      10.0 system, I get FATAL ERROR messages and/or the system
+      crashes"</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: These failures result
+      from trying to load a particular combination of kernel modules. To work
+      around the problem:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Copy /usr/share/shorewall/modules to
+          /etc/shorewall/modules</para>
+        </listitem>
+
+        <listitem>
+          <para>Edit /etc/shorewall/modules and remove all entries except for
+          those for the helper modules that you need.</para>
+        </listitem>
+      </orderedlist>
+    </section>
   </section>
 
   <section id="MultiISP">

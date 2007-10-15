@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>VPN</title>
+    <title>VPN Passthrough</title>
 
     <authorgroup>
       <author>
@@ -53,17 +53,17 @@
     system has IP address 192.168.1.12 and that the remote gateway has IP
     address 192.0.2.224.</para>
 
-    <para>If PPTP is being used, there are no firewall requirements beyond the
-    default loc-&gt;net ACCEPT policy. There is one restriction however: Only
-    one local system at a time can be connected to a single remote gateway
-    unless you patch your kernel from the <quote>Patch-o-matic</quote> patches
-    available at <ulink
-    url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
+    <para>If PPTP is being used and you need to have two or more local systems
+    connected to the same remote server at the same time, then you should be
+    sure that the PPTP helpers modules are loaded (ip_conntrack_pptp and
+    ip_nat_pptp or nf_conntrack_pptp and nf_nat_pptp). Using the default
+    modules file, Shorewall (Lite) will attempt to load these modules when
+    Shorewall (Lite) is started.</para>
 
     <para>If IPSEC is being used, you should configure IPSEC to use
     <firstterm>NAT Traversal</firstterm> -- Under NAT traversal the IPSEC
-    packets (protocol 50 or 51) are encapsulated in UDP packets with
-    destination port 4500. Additionally, <firstterm>keep-alive
+    packets (protocol 50 or 51) are encapsulated in UDP packets (normally with
+    destination port 4500). Additionally, <firstterm>keep-alive
     messages</firstterm> are sent frequently so that NATing gateways between
     the end-points will retain their connection-tracking entries. This is the
     way that I connect to the HP Intranet and it works flawlessly without
@@ -72,9 +72,10 @@
     of Windows XP -- simply select "L2TP IPSec VPN" from the "Type of VPN"
     pulldown.</para>
 
-    <para>Alternatively, if IPSEC is being used then you can try the
-    following: only one system may connect to the remote gateway and there are
-    firewall configuration requirements as follows:</para>
+    <para>Alternatively, if you have an IPSEC gateway behind your firewall
+    then you can try the following: only one system may connect to the remote
+    gateway and there are firewall configuration requirements as
+    follows:</para>
 
     <table id="Table1">
       <title>/etc/shorewall/rules</title>
@@ -196,7 +197,7 @@
     <para>If you want to be able to give access to all of your local systems
     to the remote network, you should consider running a VPN client on your
     firewall. As starting points, see <ulink
-    url="manpages/shorewall-tunnels.html">The /etc/shorewall/tunnels manpage</ulink>
-    or <ulink url="PPTP.htm">http://www.shorewall.net/PPTP.htm</ulink>.</para>
+    url="manpages/shorewall-tunnels.html">The /etc/shorewall/tunnels
+    manpage</ulink>.</para>
   </section>
 </article>

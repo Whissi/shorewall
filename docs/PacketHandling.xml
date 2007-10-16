@@ -109,9 +109,9 @@
       </listitem>
 
       <listitem>
-        <para>If Netfilter doesn't know what to do with the packet (connection
-        state INVALID) and the protocol is not ICMP then the packet is
-        silently dropped.</para>
+        <para>If FASTACCEPT=Yes in <filename>shorewall.conf</filename> and the
+        packet is part of or related to an existing connection, it is
+        accepted.</para>
       </listitem>
 
       <listitem>
@@ -292,6 +292,12 @@
         are part of an already established connection, the destination
         rewriting takes place without any involvement of a Netfilter
         rule.</para>
+      </listitem>
+
+      <listitem>
+        <para>If FASTACCEPT=Yes in <filename>shorewall.conf</filename> and the
+        packet is part of or related to an existing connection, it is
+        accepted.</para>
       </listitem>
 
       <listitem>

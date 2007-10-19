@@ -64,7 +64,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.04';
+our $VERSION = 4.0.5;
 
 #
 # IPSEC Option types
@@ -968,6 +968,7 @@ sub validate_hosts_file()
 
     $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
 }
+
 #
 # Returns a reference to a array of host entries. Each entry is a
 # reference to an array containing ( interface , polciy match type {ipsec|none} , network );

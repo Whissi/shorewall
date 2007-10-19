@@ -81,13 +81,7 @@ startup_error() # $* = Error Message
 #
 run_iptables()
 {
-    if [ -n "$COMMENT" ]; then
-        $IPTABLES $@ -m comment --comment "$COMMENT"
-    else
-        $IPTABLES $@
-    fi
-
-    if [ $? -ne 0 ]; then
+    if ! $IPTABLES $@; then
         error_message "ERROR: Command \"$IPTABLES $@\" Failed"
 	stop_firewall
         exit 2
@@ -148,4 +142,88 @@ restore_dynamic_rules() {
 get_all_bcasts()
 {
     ip -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+}
+
+#
+# Run the .iptables_restore_input as a set of discrete iptables commands
+#
+debug_restore_input() {
+    local first second rest table chain
+    #
+    # Clear the ruleset 
+    #
+    qt $IPTABLES -t mangle -F
+    qt $IPTABLES -t mangle -X
+
+    for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	qt $IPTABLES -t mangle -P $chain ACCEPT
+    done
+
+    qt $IPTABLES -t raw    -F
+    qt $IPTABLES -t raw    -X
+
+    for chain in PREROUTING OUTPUT; do
+	qt $IPTABLES -t raw -P $chain ACCEPT
+    done
+    
+    run_iptables -t nat -F
+    run_iptables -t nat -X
+
+    for chain in PREROUTING POSTROUTING OUTPUT; do
+	qt $IPTABLES -t nat -P $chain ACCEPT
+    done
+    
+    qt $IPTABLES -t filter -F
+    qt $IPTABLES -t filter -X
+
+    for chain in INPUT FORWARD OUTPUT; do
+	qt $IPTABLES -t filter -P $chain -P ACCEPT
+    done
+
+    while read first second rest; do
+	case $first in
+	    -*)
+		#
+		# We can't call run_iptables() here because the rules may contain quoted strings
+		#
+		eval $IPTABLES -t $table $first $second $rest
+
+		if [ $? -ne 0 ]; then
+		    error_message "ERROR: Command \"$IPTABLES $first $second $rest\" Failed"
+		    stop_firewall
+		    exit 2
+		fi
+		;;
+	    :*)
+		chain=${first#:}
+
+		if [ "x$second" = x- ]; then
+		    $IPTABLES -t $table -N $chain
+		else
+		    $IPTABLES -t $table -P $chain $second
+		fi
+
+		if [ $? -ne 0 ]; then
+		    error_message "ERROR: Command \"$IPTABLES $first $second $rest\" Failed"
+		    stop_firewall
+		    exit 2
+		fi
+		;;
+	    #
+	    # This grotesque hack with the table names works around a bug/feature with ash
+	    #
+	    '*'raw)
+		table=raw
+		;;
+	    '*'mangle)
+		table=mangle
+		;;
+	    '*'nat)
+		table=nat
+		;;
+	    '*'filter)
+		table=filter
+		;;
+	esac
+    done
 }

@@ -30,6 +30,9 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( ALLIPv4
+		  TCP
+		  UDP
+		  ICMP
 
 		  validate_address
 		  validate_net
@@ -40,14 +43,14 @@ our @EXPORT = qw( ALLIPv4
 		  rfc1918_neworks
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.04';
+our $VERSION = 4.0.5;
 
 #
 # Some IPv4 useful stuff
 #
 our @allipv4 = ( '0.0.0.0/0' );
 
-use constant { ALLIPv4 => '0.0.0.0/0' };
+use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
@@ -141,8 +144,9 @@ sub ip_range_explicit( $ ) {
 
 	my $first = decodeaddr $low;
 	my $last  = decodeaddr $high;
+	my $diff  = $last - $first;
 
-	fatal_error "Invalid IP Range ($range)" unless $first <= $last;
+	fatal_error "Invalid IP Range ($range)" unless $diff >= 0 && $diff <= 256;
 
 	while ( ++$first <= $last ) {
 	    push @result, encodeaddr( $first );

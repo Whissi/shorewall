@@ -94,7 +94,7 @@ our @EXPORT = qw(
 		 %capabilities );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
-our $VERSION = '4.04';
+our $VERSION = 4.0.5;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -230,7 +230,7 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.4',
+		    VERSION =>  '4.0.5',
 		    CAPVERSION => 40003 ,
 		  );
     #
@@ -552,8 +552,14 @@ sub copy( $ ) {
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
-	    s/^/$indent/ if $indent;
-	    print $object $_;
+	    if ( /^\s*$/ ) {
+		print $object "\n" unless $lastlineblank;
+		$lastlineblank = 1;
+	    } else {
+		s/^/$indent/ if $indent;
+		print $object $_;
+		$lastlineblank = 0;
+	    }
 	}
 
 	close IF;
@@ -1468,7 +1474,7 @@ sub get_configuration( $ ) {
     default_yes_no 'EXPAND_POLICIES'            , '';
     default_yes_no 'KEEP_RT_TABLES'             , '';
     default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
-    default_yes_no 'MULTICAST      '            , '';
+    default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};

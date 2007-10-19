@@ -306,6 +306,7 @@ save_config() {
 					echo "__EOF__" >> $f
 					echo  >> $f
 					echo "ipset -U :all: :all:" >> $f
+					echo "ipset -U :all: :default:" >> $f
 					echo "ipset -F" >> $f
 					echo "ipset -X" >> $f
 					echo "ipset -R << __EOF__" >> $f

@@ -33,7 +33,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tunnels );
 our @EXPORT_OK = ( );
-our $VERSION = '4.03';
+our $VERSION = 4.0.3;
 
 #
 # Here starts the tunnel stuff -- we really should get rid of this crap...

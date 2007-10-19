@@ -42,7 +42,7 @@ our @EXPORT = qw(
 		 setup_forwarding
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.01';
+our $VERSION = 4.0.1;
 
 #
 # ARP Filtering
@@ -96,6 +96,7 @@ sub setup_route_filtering() {
 
 	save_progress_message "Setting up Route Filtering...";
 
+
 	if ( $config{ROUTE_FILTER} ) {
 	    my $val = $config{ROUTE_FILTER} eq 'on' ? 1 : 0;
 
@@ -114,10 +115,14 @@ sub setup_route_filtering() {
 		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless interface_is_optional( $interface);
 	    emit   "fi\n";
 	}
-	#
-	# According to Documentation/networking/ip-sysctl.txt, this must be turned on to do any filtering
-	#
+
 	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
+
+	if ( $config{ROUTE_FILTER} eq 'on' ) {
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
+	} elsif (  $config{ROUTE_FILTER} eq 'off' ) {
+	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
+	}
 
 	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";
     }
@@ -154,6 +159,14 @@ sub setup_martian_logging() {
 	    emit ( 'else' ,
 		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface);
 	    emit   "fi\n";
+	}
+
+	if ( $config{LOG_MARTIANS} eq 'on' ) {
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
+	} elsif ( $config{LOG_MARTIANS} eq 'off' ) {
+	    emit 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians';
+	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/log_martians';
 	}
     }
 }

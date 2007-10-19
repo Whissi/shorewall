@@ -39,7 +39,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.04';
+our $VERSION = 4.0.5;
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -367,12 +367,13 @@ sub validate_tc_class( $$$$$$ ) {
     my $markval = numeric_value( $mark );
     fatal_error "Duplicate Mark ($mark)" if $tcref->{$markval};
 
-    $tcref->{$markval} = {};
-    $tcref             = $tcref->{$markval};
-    $tcref->{tos}      = [];
-    $tcref->{rate}     = convert_rate $full, $rate;
-    $tcref->{ceiling}  = convert_rate $full, $ceil;
-    $tcref->{priority} = $prio eq '-' ? 1 : $prio;
+    $tcref->{$markval} = { tos      => [] ,
+			   rate     => convert_rate( $full, $rate ) ,
+			   ceiling  => convert_rate( $full, $ceil ) ,
+			   priority => $prio eq '-' ? 1 : $prio 
+			 };
+
+    $tcref = $tcref->{$markval};
 
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, "\L$options" ) {

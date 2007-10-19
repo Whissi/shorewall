@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = '4.03';
+our $VERSION = 4.0.5;
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -333,6 +333,12 @@ sub validate_policy()
 	    print_policy $client, $server, $policy, $chain;
 	}
     }
+
+    for $zone ( all_zones ) {
+	for my $zone1 ( all_zones ) {
+	    fatal_error "No policy defined from zone $zone to zone $zone1" unless $filter_table->{"${zone}2${zone1}"}{policy};
+	}
+    }
 }
 
 #
@@ -369,7 +375,7 @@ sub default_policy( $$$ ) {
     my $policy     = $policyref->{policy};
     my $loglevel   = $policyref->{loglevel};
 
-    fatal_error "No default policy for $_[1] to zone $_[2]" unless $policyref;
+    fatal_error "Internal error in default_policy()" unless $policyref;
 
     if ( $chainref eq $policyref ) {
 	policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};

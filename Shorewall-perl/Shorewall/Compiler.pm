@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.04';
+our $VERSION = 4.0.4;
 
 our $export;
 
@@ -485,11 +485,12 @@ EOF
 #    parsing routines that are called directly out of 'compiler()'.
 #
 #    We create two separate functions rather than one so that the
-#    define_firewall() shell can set global IP configuration variables
+#    define_firewall() shell function can set global IP configuration variables
 #    after the old config has been cleared and before we start instantiating
 #    the new config. That way, the variables reflect the way that the
 #    distribution's tools have configured IP without any Shorewall
-#    modifications.
+#    modifications and the firewall configuration is the same after
+#    'restart' as it is after 'start'.
 #
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
 #          than those related to writing to the object file.

@@ -477,9 +477,9 @@ usage() {
 # E X E C U T I O N    B E G I N S   H E R E
 #
 #
-# Start trace if first arg is "debug"
+# Start trace if first arg is "debug" or "trace"
 #
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+[ $# -gt 1 ] && [ "x$1" = xdebug -o "$x$1" = xtrace ] && { set -x ; shift ; }
 
 NOLOCK=
 

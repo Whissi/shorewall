@@ -1,5 +1,5 @@
 %define name shorewall-perl
-%define version 4.0.4
+%define version 4.0.5
 %define release 1
 
 Summary: Shoreline Firewall Perl-based compiler.
@@ -37,7 +37,7 @@ execution than the legacy shorewall-shell compiler.
 export PREFIX=$RPM_BUILD_ROOT ; \
 export OWNER=`id -n -u` ; \
 export GROUP=`id -n -g` ;\
-./install.sh -n -P
+./install.sh -n
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -45,13 +45,6 @@ rm -rf $RPM_BUILD_ROOT
 %pre
 
 %post
-
-if /usr/share/shorewall-perl/buildports.pl > /usr/share/shorewall-perl/Shorewall/Ports.pm; then
-    chmod 0644 /usr/share/shorewall-perl/Shorewall/Ports.pm
-else
-    echo "The buildports.pl tool failed -- installing the fallback Protocol/Ports Module"
-    cp -a /usr/share/shorewall-perl/Shorewall/FallbackPorts.pm /usr/share/shorewall-perl/Shorewall/Ports.pm
-fi
 
 %preun
 
@@ -61,7 +54,6 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall-perl
 %attr(0755,root,root) %dir /usr/share/shorewall-perl/Shorewall
 
-%attr(755,root,root) /usr/share/shorewall-perl/buildports.pl
 %attr(755,root,root) /usr/share/shorewall-perl/compiler.pl
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.header
 %attr(0644,root,root) /usr/share/shorewall-perl/prog.functions
@@ -72,6 +64,8 @@ fi
 %doc COPYING releasenotes.txt
 
 %changelog
+* Tue Oct 03 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.5-1
 * Wed Sep 05 2007 Tom Eastep tom@shorewall.net
 - Updated to 4.0.4-1
 * Mon Aug 13 2007 Tom Eastep tom@shorewall.net

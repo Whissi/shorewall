@@ -118,6 +118,11 @@
 #
 # Set the configuration variables from shorewall.conf
 #
+#     $1 = Yes: read the params file
+#     $2 = Yes: check for STARTUP_ENABLED
+#     $3 = Yes: Check for LOGFILE
+#     
+#
 get_config() {
 
     ensure_config_path
@@ -286,23 +291,16 @@ compiler() {
         # Both compilers installed. Read the appropriate shorewall.conf to learn the setting of SHOREWALL_COMPILER
         #
 	if [ -n "$SHOREWALL_DIR" ]; then
+	    shell=$SHOREWALL_SHELL
+	    
 	    [ -x $pc ] && set -a
 	    run_user_exit params
 	    set +a
 	    haveparams=Yes
 
-	    config=$(find_file shorewall.conf)
-
-	    if [ -f $config ]; then
-		if [ -r $config ]; then
-		    progress_message "Processing $config..."
-		    . $config
-		else
-		    startup_error "Cannot read $config (Hint: Are you root?)"
-		fi
-	    else
-		startup_error "$config does not exist!"
-	    fi
+	    get_config No No No
+	    
+	    SHOREWALL_SHELL=$shell
 	fi
         #
         # And initiate the appropriate compiler
@@ -326,7 +324,7 @@ compiler() {
 
             # Perl compiler only takes the output file as a argument
 	    
-	    [ "$1" = debug ]  && shift;
+	    [ "$1" = debug -o "$1" = trace ]  && shift;
 	    [ "$1" = nolock ] && shift;
 	    shift 
 
@@ -334,7 +332,7 @@ compiler() {
 	    [ -n "$EXPORT" ] && options="$options --export "
 	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory $SHOREWALL_DIR "
 	    [ -n "$TIMESTAMP" ] && options="$options --timestamp "
-	    [ -n "$debugging" ] && options="$options --debug "
+	    [ "$debugging" = trace ] && options="$options --debug "
 	    [ -n "$REFRESHCHAINS" ] && options="$options --refresh $REFRESHCHAINS"
 	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
 	    #
@@ -1318,7 +1316,7 @@ usage() # $1 = exit status
 debugging=
 
 if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
-    debugging=debug
+    debugging=$1
     shift
 fi
 

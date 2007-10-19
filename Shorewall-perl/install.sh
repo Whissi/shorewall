@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.0.4
+VERSION=4.0.5
 
 usage() # $1 = exit status
 {
@@ -31,7 +31,6 @@ usage() # $1 = exit status
     echo "       $ME -v"
     echo "       $ME -h"
     echo "       $ME -n"
-    echo "       $ME -n -P"
     exit $1
 }
 
@@ -111,7 +110,6 @@ if [ -z "$GROUP" ] ; then
 fi
 
 NOBACKUP=
-INSTALL_PORTS_PM=Yes
 
 while [ $# -gt 0 ] ; do
     case "$1" in
@@ -124,9 +122,6 @@ while [ $# -gt 0 ] ; do
 	    ;;
 	-n)
 	    NOBACKUP=Yes
-	    ;;
-	-P)
-	    INSTALL_PORTS_PM=
 	    ;;
 	*)
 	    usage 1
@@ -189,20 +184,6 @@ for f in prog.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall-perl/$f 0644
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall-perl/$f"
 done
-
-#
-# Install buildports.pl and create Shorewall::Ports
-#
-install_file buildports.pl ${PREFIX}/usr/share/shorewall-perl/buildports.pl 0755
-
-if [ -n "$INSTALL_PORTS_PM" ]; then
-    if ./buildports.pl > ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm; then
-	chmod 0644 ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm
-    else
-	echo "The buildports.pl tool failed -- installing the fallback Protocol/Ports Module"
-	cp -a ${PREFIX}/usr/share/shorewall-perl/Shorewall/FallbackPorts.pm ${PREFIX}/usr/share/shorewall-perl/Shorewall/Ports.pm
-    fi
-fi
 
 echo $VERSION > ${PREFIX}/usr/share/shorewall-perl/version
 #

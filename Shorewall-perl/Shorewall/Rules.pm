@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.04';
+our $VERSION = 4.0.5;
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
@@ -265,7 +265,7 @@ sub setup_rfc1918_filteration( $ ) {
 	my $interface = $hostref->[0];
 	my $ipsec     = $hostref->[1];
 	my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in "  : '';
-	for my $chain ( @{first_chains $interface}) {
+	for my $chain ( first_chains $interface ) {
 	    add_rule $filter_table->{$chain} , join( '', '-m state --state NEW ', match_source_net( $hostref->[2]) , "${policy}-j norfc1918" );
 	}
     }
@@ -338,7 +338,7 @@ sub setup_blacklist() {
 	    my $network   = $hostref->[2];
 	    my $source    = match_source_net $network;
 
-	    for my $chain ( @{first_chains $interface}) {
+	    for my $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
 	    }
 
@@ -502,10 +502,7 @@ sub add_common_rules() {
     my $chain;
 
     if ( $config{FASTACCEPT} ) {
-	for $chain qw( INPUT FORWARD OUTPUT ) {
-	    $chainref = $filter_table->{$chain};
-	    add_rule( $chainref , "-m state --state ESTABLISHED,RELATED -j ACCEPT" );
-	}
+	add_rule( $filter_table->{$_} , "-m state --state ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
     }
 
     my $rejectref = new_standard_chain 'reject';
@@ -520,7 +517,7 @@ sub add_common_rules() {
     my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
 
     for $interface ( all_interfaces ) {
-	for $chain ( @{first_chains $interface} ) {
+	for $chain ( first_chains $interface ) {
 	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
 	}
 
@@ -567,7 +564,7 @@ sub add_common_rules() {
 	    $interface = $hostref->[0];
 	    my $ipsec  = $hostref->[1];
 	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	    for $chain ( @{first_chains $interface}) {
+	    for $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j smurfs" );
 	    }
 	}
@@ -639,18 +636,16 @@ sub add_common_rules() {
 	add_rule $chainref , "-p tcp --syn --sport 0 -j $disposition";
 
 	for my $hostref  ( @$list ) {
-	    $interface = $hostref->[0];
-	    my $ipsec  = $hostref->[1];
-	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	    for $chain ( @{first_chains $interface}) {
-		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2]), "${policy}-j tcpflags" );
+	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
+	    for $chain ( first_chains $hostref->[0] ) {
+		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2] ), "${policy}-j tcpflags" );
 	    }
 	}
     }
 
     if ( $config{DYNAMIC_ZONES} ) {
 	for $interface ( all_interfaces ) {
-	    for $chain ( @{dynamic_chains $interface} ) {
+	    for $chain ( dynamic_chains $interface ) {
 		new_standard_chain $chain;
 	    }
 
@@ -792,7 +787,7 @@ sub setup_mac_lists( $ ) {
 	    my $source = match_source_net $hostref->[2];
 	    my $target = mac_chain $interface;
 	    if ( $table eq 'filter' ) {
-		for my $chain ( @{first_chains $interface}) {
+		for my $chain ( first_chains $interface ) {
 		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
 	    } else {
@@ -866,7 +861,7 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
 	$mtarget = merge_levels $target, $mtarget;
 
-	if ( $mtarget =~ /^PARAM:?/ ) {
+	if ( $mtarget =~ /^PARAM(:.*)?$/ ) {
 	    fatal_error 'PARAM requires a parameter to be supplied in macro invocation' unless $param ne '';
 	    $mtarget = substitute_param $param,  $mtarget;
 	}
@@ -920,7 +915,8 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 }
 
 #
-# Once a rule has been completely resolved by macro expansion and wildcard (source and/or dest zone == 'all'), it is processed by this function.
+# Once a rule has been expanded via wildcards (source and/or dest zone == 'all'), it is processed by this function. If
+# the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
 sub process_rule1 ( $$$$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $wildcard ) = @_;
@@ -998,7 +994,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	if ( $dest eq '-' ) {
 	    $dest = firewall_zone;
 	} else {
-	    $dest = join( '', firewall_zone, '::', $dest ) unless $dest =~ /(.+?)::/;
+	    $dest = join( '', firewall_zone, '::', $dest ) unless $dest =~ /:/;
 	}
     } elsif ( $action eq 'REJECT' ) {
 	$action = 'reject';
@@ -1031,9 +1027,9 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$dest = ALLIPv4;
     }
 
-    fatal_error "Missing source zone" if $sourcezone eq '-';
+    fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
     fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
-    fatal_error "Missing destination zone" if $destzone eq '-';
+    fatal_error "Missing destination zone" if $destzone eq '-' || $destzone =~ /^:/;
     fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
 
     my $restriction = NO_RESTRICT;
@@ -1043,6 +1039,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     } else {
 	$restriction = INPUT_RESTRICT if $destzone eq firewall_zone;
     }
+
     #
     # Check for illegal bridge port rule
     #
@@ -1052,22 +1049,19 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
 	}
     }
+
     #
     # Take care of chain
     #
     my $chain    = "${sourcezone}2${destzone}";
     my $chainref = ensure_chain 'filter', $chain;
-    #
-    # Validate Policy
-    #
     my $policy   = $chainref->{policy};
-
-    fatal_error "No policy defined from zone $sourcezone to zone $destzone" unless $policy;
 
     if ( $policy eq 'NONE' ) {
 	return 1 if $wildcard;
 	fatal_error "Rules may not override a NONE policy";
     }
+
     #
     # Handle Optimization
     #
@@ -1079,6 +1073,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    return 1 if $basictarget eq $policy;
 	}
     }
+
     #
     # Mark the chain as referenced and add appropriate rules from earlier sections.
     #
@@ -1108,9 +1103,9 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	#
 	# Isolate server port
 	#
-	if ( $dest =~ /^(.*)(:(\d+))$/ ) {
+	if ( $dest =~ /^(.*)(:(.+))$/ ) {
 	    $server = $1;
-	    $serverport = $3;
+	    $serverport = validate_portrange $proto, $3;
 	} else {
 	    $server = $dest;
 	    $serverport = '';
@@ -1120,15 +1115,14 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	# After DNAT, dest port will be the server port. Capture it here because $serverport gets modified below.
 	#
 	my $servport = $serverport ne '' ? $serverport : $ports;
-
-	fatal_error "A server must be specified in the DEST column in $action rules" unless ( $actiontype & REDIRECT ) || $server ne ALLIPv4;
 	#
 	# Generate the target
 	#
 	my $target = '';
 
 	if ( $actiontype  & REDIRECT ) {
-	    $target = '-j REDIRECT --to-port ' . ( $serverport ne '' ? $serverport : $ports );
+	    fatal_error "A server IP address may not be specified in a REDIRECT rule" if $server;
+	    $target = '-j REDIRECT --to-port ' . $servport;
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIPv4;
 	    } elsif ( $origdest eq 'detect' ) {
@@ -1141,6 +1135,10 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		}
 	    }
 	} else {
+	    fatal_error "A server must be specified in the DEST column in $action rules" if $server eq '';
+
+	    validate_address $server, 0;
+
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
 		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq firewall_zone;
@@ -1188,6 +1186,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	#   - the target will be ACCEPT.
 	#
 	unless ( $actiontype & NATONLY ) {
+	    $servport =~ tr/-/:/ if $servport ne '-';
 	    $rule = join( '', do_proto( $proto, $servport, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , 0xFF ) );
 	    $loglevel = '';
 	    $dest     = $server;
@@ -1601,7 +1600,7 @@ sub generate_matrix() {
 				if $hostref->{options}{broadcast};
 			}
 
-			next if$hostref->{options}{destonly}; 
+			next if $hostref->{options}{destonly}; 
 
 			my $source = match_source_net $net;
 

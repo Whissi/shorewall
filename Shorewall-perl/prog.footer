@@ -11,9 +11,14 @@ usage() {
 #
 # Start trace if first arg is "debug" or "trace"
 #
-if [ $# -gt 1 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
-    set -x
-    shift
+if [ $# -gt 1 ]; then 
+    if [ "x$1" = "xtrace" ]; then
+	set -x
+	shift
+    elif [ "x$1" = "xdebug" ]; then
+	DEBUG=Yes
+	shift
+    fi
 fi
 
 initialize

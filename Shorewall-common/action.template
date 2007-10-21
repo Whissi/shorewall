@@ -19,7 +19,7 @@
 # Columns are:
 #
 #
-#	TARGET		ACCEPT, DROP, REJECT, LOG, QUEUE, CONTINUEa <macro>
+#	TARGET		ACCEPT, DROP, REJECT, LOG, QUEUE, CONTINUE, a <macro>
 #			or a previously-defined <action>
 #
 #				ACCEPT	 -- allow the connection request
@@ -29,8 +29,8 @@
 #				LOG	 -- Simply log the packet and continue.
 #				QUEUE	 -- Queue the packet to a user-space
 #					    application such as p2pwall.
-#				CONTINUE -- Discontinue processing this action
-#					    and return to the point where the
+#				CONTINUE -- Stop processing this action and
+#					    return to the point where the
 #					    action was invoked.
 #				<action> -- An <action> defined in
 #					    /etc/shorewall/actions.
@@ -114,12 +114,12 @@
 #			SOURCE and DEST columns.
 #
 #	PROTO		Protocol - Must be "tcp", "tcp:syn", "udp", "icmp",
-#			"ipp2p", "ipp2p:udp", "ipp2p:all" a number, or "all".
+#			"ipp2p", "ipp2p:udp", "ipp2p:all", a number, or "all".
 #                       "ipp2p*" requires ipp2p match support in your kernel
 #                       and iptables.
 #
 #			"tcp:syn" implies "tcp" plus the SYN flag must be
-#			set and the RST,ACK and FIN flags must be reset.
+#			set and the RST, ACK and FIN flags must be reset.
 #
 #	DEST PORT(S)	Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port

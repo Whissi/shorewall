@@ -1,15 +1,28 @@
 #!/bin/sh
+### BEGIN INIT INFO
+# Provides:          shorewall
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     S
+# Default-Stop:      0 6
+# Short-Description: Configure the firewall at boot time
+# Description:       Configure the firewall according to the rules specified in
+#                    /etc/shorewall
+### END INIT INFO
+
+
 
 SRWL=/sbin/shorewall
+SRWL_OPTS="-tvv"
 WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
 # Note, set INITLOG to /dev/null if you do not want to
 # keep logs of the firewall (not recommended)
 INITLOG=/var/log/shorewall-init.log
-OPTIONS="-f"
 
 test -x $SRWL || exit 0
+test -x $WAIT_FOR_IFUP || exit 0
 test -n $INITLOG || {
-	echo "INITLOG cannot be empty, please configure $0" ;
+	echo "INITLOG cannot be empty, please configure $0" ; 
 	exit 1;
 }
 
@@ -21,34 +34,26 @@ fi
 
 echo_notdone () {
 
-  if [ "$INITLOG" = "/dev/null" ] ; then
-	  "not done."
-  else
-	  "not done (check $INITLOG)."
+  if [ "$INITLOG" = "/dev/null" ] ; then 
+	  echo "not done."
+  else 
+	  echo "not done (check $INITLOG)."
   fi
 
 }
 
 not_configured () {
 	echo "#### WARNING ####"
-	echo "the firewall won't be started/stopped unless it is configured"
+	echo "The firewall won't be started/stopped unless it is configured"
 	if [ "$1" != "stop" ]
 	then
 		echo ""
-		echo "please configure it and then edit /etc/default/shorewall"
-		echo "and set the \"startup\" variable to 1 in order to allow "
-		echo "shorewall to start"
+		echo "Please read about Debian specific customization in"
+		echo "/usr/share/doc/shorewall-common/README.Debian.gz."
 	fi
 	echo "#################"
 	exit 0
 }
-
-# parse the shorewall params file in order to use params in
-# /etc/default/shorewall
-if [ -f "/etc/shorewall/params" ]
-then
-	. /etc/shorewall/params
-fi
 
 # check if shorewall is configured or not
 if [ -f "/etc/default/shorewall" ]
@@ -62,21 +67,14 @@ else
 	not_configured
 fi
 
-# wait an unconfigured interface
+# wait an unconfigured interface 
 wait_for_pppd () {
 	if [ "$wait_interface" != "" ]
 	then
-	    if [ -f $WAIT_FOR_IFUP ]
-	    then
 		for i in $wait_interface
 		do
 			$WAIT_FOR_IFUP $i 90
 		done
-	    else
-		echo "$WAIT_FOR_IFUP: File not found" >> $INITLOG
-		echo_notdone
-		exit 2
-	    fi
 	fi
 }
 
@@ -84,28 +82,28 @@ wait_for_pppd () {
 shorewall_start () {
   echo -n "Starting \"Shorewall firewall\": "
   wait_for_pppd
-  $SRWL $OPTIONS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # stop the firewall
 shorewall_stop () {
   echo -n "Stopping \"Shorewall firewall\": "
-  $SRWL stop >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS clear >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # restart the firewall
 shorewall_restart () {
   echo -n "Restarting \"Shorewall firewall\": "
-  $SRWL restart >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS restart >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # refresh the firewall
 shorewall_refresh () {
   echo -n "Refreshing \"Shorewall firewall\": "
-  $SRWL refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 

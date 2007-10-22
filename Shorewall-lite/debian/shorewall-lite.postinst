@@ -1,0 +1,25 @@
+#!/bin/sh -e
+
+case "$1" in
+    configure)
+        # if we are upgrading from version < 3.4 then we have to rename the
+        # configuration file
+        if [ "$2" ] && dpkg --compare-versions "$2" lt "3.4"
+        then
+            if [ -f /etc/shorewall-lite/shorewall.conf ]
+            then
+                rm /etc/shorewall-lite/shorewall.conf
+            fi
+        fi
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+        
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 0
+        ;;
+esac
+
+#DEBHELPER#

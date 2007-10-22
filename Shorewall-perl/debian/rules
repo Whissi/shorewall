@@ -1,0 +1,68 @@
+#!/usr/bin/make -f
+#
+# Shorewall firewall (http://www.shorewall.net)
+# debianized version
+
+# Include dpatch stuff.
+include /usr/share/dpatch/dpatch.make
+
+# shorewall version
+export V=`cat install.sh | grep "^VERSION=" | head -n 1 | cut -f 2 -d "="`
+VMAJOR:=$(shell echo $(V) |cut -f 1 -d .)
+VMINOR:=$(shell echo $(V) |cut -f 2 -d .)
+VPATCH:=$(shell echo $(V) |cut -f 3 -d .)
+NEXTPATCH:=$(shell expr $(VPATCH) + 1)
+
+SRWL=$(CURDIR)/debian/shorewall-perl
+
+build: patch build-stamp
+build-stamp:
+	dh_testdir
+# 	there's nothing to compile ;-)
+	touch build-stamp
+
+clean: clean-patched unpatch
+
+clean-patched:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	rm -f debian/shorewall-perl.substvars
+# 	clean the build directory
+	rm -rf $(SRWL)
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	echo 'shorewall:next=$(VMAJOR).$(VMINOR).$(NEXTPATCH)~' \
+		> debian/shorewall-perl.substvars
+	dh_install
+# 	set version number
+	echo $V > $(SRWL)/usr/share/shorewall-perl/version
+#  global configuration has to be fully readable
+	chmod 644 $(SRWL)/usr/share/shorewall-perl/prog.* \
+		$(SRWL)/usr/share/shorewall-perl/Shorewall/*
+#  must be executable
+	chmod 755 $(SRWL)/usr/share/shorewall-perl/compiler.pl
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs releasenotes.txt
+	dh_installchangelogs changelog.txt
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb -v
+
+binary-arch: build install
+
+binary: binary-indep binary-arch
+
+.PHONY: build clean binary-indep binary-arch binary install patch unpatch \
+clean-patched

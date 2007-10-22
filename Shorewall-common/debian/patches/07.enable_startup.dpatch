@@ -1,0 +1,21 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 07.enable_startup.dpatch by Lorenzo Martignoni <martignlo@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: The value of the variable STARTUP_ENABLED is set to Yes by default
+## DP: because on Debian startup is enabled/disabled using 
+## DP: /etc/default/shorewall
+
+@DPATCH@
+diff -urNad shorewall-3.4.2~/lib.config shorewall-3.4.2/lib.config
+--- shorewall-3.4.2~/lib.config	2007-04-01 17:47:18.000000000 -0500
++++ shorewall-3.4.2/lib.config	2007-04-29 16:36:30.000000000 -0500
+@@ -1661,7 +1661,7 @@
+     #
+     # Clear all configuration variables (shorewall.conf)
+     #
+-    STARTUP_ENABLED=
++    STARTUP_ENABLED=Yes
+     #
+     #VERBOSE is inherited -- VERBOSITY is only used in the CIs
+     #    

@@ -1,0 +1,364 @@
+# Shorewall translation to spanish
+# Copyright (C) 2005 Software in the Public Interest
+# This file is distributed under the same license as the shorewall package.
+#
+# Changes:
+# - Initial translation
+#       Carlos Galisteo de Cabo <cgalisteo@k-rolus.net>, 2005
+# - Reviews
+#       Rubén Porras Campo <nahoo@inicia.es>, 2005
+#       Javier Fernández-Sanguino <jfs@debian.org>, 2006
+#  
+#
+#  Traductores, si no conoce el formato PO, merece la pena leer la
+#  documentación de gettext, especialmente las secciones dedicadas a este
+#  formato, por ejemplo ejecutando:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+# Equipo de traducción al español, por favor lean antes de traducir
+# los siguientes documentos:
+#
+# - El proyecto de traducción de Debian al español
+#   http://www.debian.org/intl/spanish/coordinacion
+#   especialmente las notas de traducción en
+#   http://www.debian.org/intl/spanish/notas
+#
+# - La guía de traducción de po's de debconf:
+#   /usr/share/doc/po-debconf/README-trans
+#   o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: shorewall 3.2.6-1\n"
+"Report-Msgid-Bugs-To: roberto@connexer.com\n"
+"POT-Creation-Date: 2007-10-21 11:11-0400\n"
+"PO-Revision-Date: 2006-12-09 01:50+0100\n"
+"Last-Translator: Javier Fernández-Sanguino <jfs@debian.org>\n"
+"Language-Team: Debian l10n spanish <debian-l10n-spanish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: note
+#. Description
+#: ../shorewall-common.templates:1001
+msgid "Shorewall won't be restarted automatically"
+msgstr "No se reiniciará automáticamente Shorewall"
+
+#. Type: note
+#. Description
+#: ../shorewall-common.templates:1001
+msgid ""
+"This will prevent network blackout due to changes in configuration files."
+msgstr ""
+"Ésto evitará cortes de red causados por cambios en los archivos de "
+"configuración."
+
+#. Type: note
+#. Description
+#: ../shorewall-common.templates:1001
+msgid "Check your configuration and then restart Shorewall issuing:"
+msgstr "Revise su configuración y reinicie Shorewall usando:"
+
+#. Type: note
+#. Description
+#: ../shorewall-common.templates:1001
+msgid "        invoke-rc.d shorewall restart"
+msgstr "        invoke-rc.d shorewall restart"
+
+#. Type: note
+#. Description
+#: ../shorewall-common.templates:1001
+msgid "or"
+msgstr "o"
+
+#. Type: note
+#. Description
+#: ../shorewall-common.templates:1001
+msgid "        /etc/init.d/shorewall restart"
+msgstr "        /etc/init.d/shorewall restart"
+
+#. Type: boolean
+#. Description
+#: ../shorewall-common.templates:2001
+#, fuzzy
+msgid "Do you want to restart Shorewall right now? "
+msgstr "¿Ha revisado su configuración y desea reiniciar Shorewall?"
+
+#. Type: boolean
+#. Description
+#: ../shorewall-common.templates:2001
+msgid ""
+"This is a major release of Shorewall that introduces some changes in the "
+"configuration files. You have to check carefully your configuration before "
+"restarting your firewall to avoid failures and network blackout. The changes "
+"are listed in /usr/share/doc/shorewall/releasenotes.txt.gz."
+msgstr ""
+"Ésta es una versión nueva de Shorewall que introduce algunos cambios el los "
+"archivos de configuración. Debe revisar atentamente su configuración antes "
+"de reiniciar su cortafuegos para evitar fallos y cortes de red. Encontrará "
+"los cambios en /usr/share/doc/shorewall/releasenotes.txt.gz"
+
+#~ msgid ""
+#~ "Did you check your configuration and do you want to restart Shorewall "
+#~ "right now?"
+#~ msgstr "¿Ha revisado su configuración y quiere reiniciar Shorewall ahora?"
+
+#~ msgid ""
+#~ "This is a major release of Shorewall that introduces some changes in the "
+#~ "configuration files. The major changes are listed below."
+#~ msgstr ""
+#~ "Esta es una versión nueva de Shorewall, que introduce algunos cambios en "
+#~ "los archivos de configuración. A continuación se listarán los cambios más "
+#~ "relevantes."
+
+#~ msgid ""
+#~ "You _must_ review your firewall configuration in order to get Shorewall "
+#~ "to work properly."
+#~ msgstr ""
+#~ "DEBE revisar la configuración de su cortafuegos para que Shorewall "
+#~ "funcione correctamente."
+
+#~ msgid ""
+#~ "* The MERGE_HOSTS variable in shorewall.conf is no longer\n"
+#~ "  supported. Shorewall 1.4 behavior is the same as 1.3 with\n"
+#~ "  MERGE_HOSTS=Yes."
+#~ msgstr ""
+#~ "* Ya no se usa la variable «MERGE_HOSTS» de shorewall.conf. El "
+#~ "comportamiento \n"
+#~ "  de la versión 1.4 de Shorewall es el mismo que en la versión 1.3 con \n"
+#~ "  «MERGE_HOSTS=Yes»."
+
+#~ msgid ""
+#~ "* Interface names of the form <device>:<integer> in\n"
+#~ "  /etc/shorewall/interfaces now generate an error."
+#~ msgstr ""
+#~ "* Los nombres de interfaz con formato <dispositivo>:<número entero>\n"
+#~ "  en /etc/shorewall/interfaces ahora genera un error."
+
+#~ msgid ""
+#~ "* OLD_PING_HANDLING=Yes will generate an error at startup as will\n"
+#~ "  specification of the 'noping' or 'filterping' interface options."
+#~ msgstr ""
+#~ "* «OLD_PING_HANDLING=Yes» generará un error en el inicio así como\n"
+#~ "  la inclusión de las opciones de interfaz «noping» o «filterping»."
+
+#~ msgid ""
+#~ "* In addition to behaving like OLD_PING_HANDLING=No, Shorewall 1.4 no\n"
+#~ "  longer unconditionally accepts outbound ICMP packets. So if you want\n"
+#~ "  to 'ping' from the firewall, you will need the appropriate rule or\n"
+#~ "  policy."
+#~ msgstr ""
+#~ "* Además de comportarse como «OLD_PING_HANDLING=No», Shorewall 1.4\n"
+#~ "  no acepta, incondicionalmente, paquetes ICMP salientes. Así que si\n"
+#~ "  quiere poder hacer «ping» desde el cortafuegos, necesitará añadir la\n"
+#~ "  regla o directriz adecuada."
+
+#~ msgid ""
+#~ "* The 'routestopped' option in the /etc/shorewall/interfaces and\n"
+#~ "  /etc/shorewall/hosts files is no longer supported and will generate\n"
+#~ "  an error at startup if specified."
+#~ msgstr ""
+#~ "* La opción «routestopped» de los archivos /etc/shorewall/interfaces\n"
+#~ "  y /etc/shorewall/hosts no será válida a partir de ahora y si se "
+#~ "especifica\n"
+#~ "  generará un error en el inicio."
+
+#~ msgid ""
+#~ "* The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no longer\n"
+#~ "  accepted.\n"
+#~ msgstr ""
+#~ "* Ya no se acepta la sintaxis para las reglas DNAT y REDIRECT de "
+#~ "Shorewall 1.2.\n"
+
+#~ msgid ""
+#~ "* The ALLOWRELATED variable in shorewall.conf is no longer\n"
+#~ "  supported. Shorewall 1.4 behavior is the same as 1.3 with\n"
+#~ "  ALLOWRELATED=Yes."
+#~ msgstr ""
+#~ "* Ya no se usa la variable «ALLOWRELATED» de shorewall.conf.\n"
+#~ "  El comportamiento de Shorewall 1.4 es el mismo que el de 1.3 \n"
+#~ "  con «ALLOWRELATED=Yes»."
+
+#~ msgid "* The 'multi' interface option is no longer supported."
+#~ msgstr "* Ya no se usa la opción de interfaz «multi»."
+
+#~ msgid ""
+#~ "* The SHARED_DIR variable has been removed from shorewall.conf. This\n"
+#~ "  variable was for use by package maintainers and was not documented\n"
+#~ "  for general use."
+#~ msgstr ""
+#~ "* Se ha eliminado la variable «SHARED_DIR» de shorewall.conf. Esta "
+#~ "variable \n"
+#~ "  estaba pensada para que la usaran los responsables de los paquetes y\n"
+#~ "  no estaba documentada para uso general."
+
+#~ msgid ""
+#~ "This is a major release of Shorewall that introduces some changes in the "
+#~ "configuration files. You have to check carefully your configuration "
+#~ "before restarting your firewall to avoid failures and network blackout. "
+#~ "The changes are listed below (or in /usr/share/doc/shorewall/upgrade_14-"
+#~ "20.txt.gz):"
+#~ msgstr ""
+#~ "Esta es una versión nueva de Shorewall, que introduce algunos cambios en "
+#~ "los archivos de configuración. Debe revisar atentamente su configuración "
+#~ "antes de reiniciar el cortafuegos para evitar fallos y cortes de red. Los "
+#~ "cambios se listan a continuación (o en /usr/share/doc/shorewall/"
+#~ "upgrade_14-20.txt.gz):"
+
+#~ msgid ""
+#~ "* The 'dropunclean' and 'logunclean' interface options are no longer\n"
+#~ "  supported. If either option is specified in /etc/shorewall/interfaces, "
+#~ "an\n"
+#~ "  threatening message will be generated."
+#~ msgstr ""
+#~ "* Las opciones de interfaz «dropunclean» y «logunclean» no se seguirán\n"
+#~ "  usando. Si se incluye alguna de ellas en /etc/shorewall/interfaces, \n"
+#~ "  se generará un mensaje de advertencia."
+
+#~ msgid ""
+#~ "* The NAT_BEFORE_RULES option has been removed from shorewall.conf. The\n"
+#~ "  behavior of Shorewall is as if NAT_BEFORE_RULES=No had been specified. "
+#~ "In\n"
+#~ "  other words, DNAT rules now always take precidence over one-to-one NAT\n"
+#~ "  specifications."
+#~ msgstr ""
+#~ "* La opción «NAT_BEFORE_RULES» se ha eliminado de shorewall.conf.\n"
+#~ "  Shorewall se comportará como si se hubiera especificado "
+#~ "«NAT_BEFORE_RULES=No».\n"
+#~ "  En otras palabras, ahora las reglas DNAT siempre tendrán preferencia "
+#~ "sobre\n"
+#~ "  las reglas NAT «uno a uno»."
+
+#~ msgid ""
+#~ "* The default value for the ALL INTERFACES column in /etc/shorewall/nat "
+#~ "has\n"
+#~ "  changed. In Shorewall 1.*, if the column was left empty, a value of "
+#~ "\"Yes\"\n"
+#~ "  was assumed. This has been changed so that a value of \"No\" is now "
+#~ "assumed."
+#~ msgstr ""
+#~ "* Ha cambiado el valor por omisión para la columna «ALL INTERFACES» en\n"
+#~ "  /etc/shorewall/nat. En Shorewall 1.*, si la columna se dejaba vacía, "
+#~ "se \n"
+#~ "  asumía que el valor era «YES». Ésto ha cambiado, de forma que ahora "
+#~ "se \n"
+#~ "  asume que el valor es «NO»."
+
+#~ msgid "* The following files don't exist in Shorewall 2.0:"
+#~ msgstr "* Los siguientes archivos no existen en Shorewall 2.0:"
+
+#~ msgid ""
+#~ "    /etc/shorewall/common.def\n"
+#~ "    /etc/shorewall/common\n"
+#~ "    /etc/shorewall/icmpdef\n"
+#~ "    /etc/shorewall/action.template (Moved to /usr/share/shorewall)\n"
+#~ "    /etc/shorewall/rfc1918 (Moved to /usr/share/shorewall)."
+#~ msgstr ""
+#~ "    /etc/shorewall/common.def\n"
+#~ "    /etc/shorewall/common\n"
+#~ "    /etc/shorewall/icmpdef\n"
+#~ "    /etc/shorewall/action.template (Movido a /usr/share/shorewall)\n"
+#~ "    /etc/shorewall/rfc1918 (Movido a /usr/share/shorewall)."
+
+#~ msgid ""
+#~ "* The /etc/shorewall/action file now allows an action to be designated as "
+#~ "the\n"
+#~ "  \"common\" action for a particular policy type by following the action "
+#~ "name\n"
+#~ "  with \":\" and the policy (DROP, REJECT or ACCEPT)."
+#~ msgstr ""
+#~ "* El archivo /etc/shorewall/action ahora permite designar una acción "
+#~ "como\n"
+#~ "  «common» para un tipo determinado de directriz acompañando el nombre de "
+#~ "la \n"
+#~ "  acción con «:» y la directriz (DROP, REJECT o ACCEPT)."
+
+#~ msgid ""
+#~ "* The /etc/shorewall directory no longer contains a 'users' file or a\n"
+#~ "  'usersets' file. Similar functionality is now available using user-"
+#~ "defined\n"
+#~ "  actions."
+#~ msgstr ""
+#~ "* El directorio /etc/shorewall ya no contiene un archivo «users» ni\n"
+#~ "  un archivo «usersets». Están disponibles funcionalidades similares "
+#~ "usando acciones\n"
+#~ "  definidas por el usuario."
+
+#~ msgid ""
+#~ "* It is no longer possible to specify rate limiting in the ACTION column "
+#~ "of\n"
+#~ "  /etc/shorewall/rules -- you must use the RATE LIMIT column."
+#~ msgstr ""
+#~ "* Ya no se pueden especificar valores límite en la columna «ACTION» de \n"
+#~ "  /etc/shorewall/rules -- Debe usarse la columna «RATE LIMIT»."
+
+#~ msgid ""
+#~ "* Depending on which method you use to upgrade, if you have your own "
+#~ "version\n"
+#~ "  of /etc/shorewall/rfc1918, you may have to take special action to "
+#~ "restore it\n"
+#~ "  after the upgrade. Look for /etc/shorewall/rfc1918*, locate the proper "
+#~ "file\n"
+#~ "  and rename it back to /etc/shorewall/rfc1918. The contents of that file "
+#~ "will\n"
+#~ "  supersede the contents of /usr/share/shorewall/rfc1918."
+#~ msgstr ""
+#~ "* Dependiendo del método que use para las actualizaciones, si tiene su\n"
+#~ "  propia versión de /etc/shorewall/rfc1918, puede que tenga que "
+#~ "realizar \n"
+#~ "  alguna tarea adicional para restaurarlo tras la actualización. Busque\n"
+#~ "  /etc/shorewall/rfc1918*, localice el archivo adecuado y cámbiele  el "
+#~ "nombre \n"
+#~ "  a /etc/shorewall/rfc1918. El contenido de este archivo tomará "
+#~ "preferencia sobre\n"
+#~ "  los contenidos de /usr/share/shorewall/rfc1918."
+
+#~ msgid "Possible out-of-date rfc1918 configuration file"
+#~ msgstr ""
+#~ "El archivo de configuración rfc1918 posiblemente esté desactualizado."
+
+#~ msgid ""
+#~ "The file rfc1918 has been found in your shorewall configuration "
+#~ "directory. It probably comes from an upgrade from a previous version. "
+#~ "Note that the file has now been replaced by rfc1918 and bogons, the "
+#~ "former is only used to list private network addresses and the latter is "
+#~ "used to list unassigned addresses and must be kept up-to-date; previously "
+#~ "rfc1918 was used for both kind of addresses. It is strongly recommended "
+#~ "to remove the file from the configuration directory and let shorewall to "
+#~ "use its default one (located at /usr/share/shorewall/)."
+#~ msgstr ""
+#~ "Se ha encontrado el archivo «rfc1918» en el directorio de configuración."
+#~ "Probablemente esté ahí porque ha actualizado Shorewall desde una versión "
+#~ "anterior. Debe saber que éste archivo se ha reemplazado por «rfc1918» y "
+#~ "«bogons», el primero sólo se usa para tener un listado de direcciones de "
+#~ "redes privadas, el último se usa para tener un listado de direcciones de "
+#~ "red no asignadas y debe mantenerse actualizado. Antes rfc1918 se usaba "
+#~ "para ambos tipos de direcciones. Es muy recomendable borrar el archivo "
+#~ "del directorio de configuración y dejar a Shorewall que use el suyo "
+#~ "propio (ubicado en /usr/share/shorewall/)."
+
+#~ msgid ""
+#~ "Shorewall could write tons of log messages all over the console making it "
+#~ "unusable"
+#~ msgstr ""
+#~ "Shorewall podría escribir cientos de mensajes en la consola haciéndola "
+#~ "inusable"
+
+#~ msgid ""
+#~ "Shorewall logs packets using level \"info\". With the default klogd "
+#~ "configuration this kind of logs are also written on the console and, when "
+#~ "the frequency of logging is high the console becomes unusable. It is "
+#~ "highly recommended to configure klogd in order to prevent that messages "
+#~ "of level \"info\" are logged on the console. To do that you can set KLOGD="
+#~ "\"-c 5\" in /etc/init.d/klogd."
+#~ msgstr ""
+#~ "Shorewall registra los paquetes utilizando el nivel de información "
+#~ "«info». La configuración por omisión de klogd hace que estos registros se "
+#~ "impriman también por consola y cuando la frecuencia de registro es muy "
+#~ "elevada la consola se hace inusable. Se recomienda encarecidamente que "
+#~ "configure klogd para que los mensajes del nivel «info» se presenten en la "
+#~ "consola. Para hacer ésto debe configurar «KLOGD=\"-c 5\" en «/etc/init.d/"
+#~ "klogd»."

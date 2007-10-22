@@ -1,0 +1,26 @@
+Source: shorewall-lite
+Section: net
+Priority: optional
+Maintainer: Roberto C. Sanchez <roberto@connexer.com>
+Homepage: http://www.shorewall.net
+Build-Depends: debhelper (>= 5), dpatch
+Standards-Version: 3.7.2.2
+
+Package: shorewall-lite
+Architecture: all
+Depends: iptables (>= 1.2.7a), iproute
+Suggests: shorewall-doc, kernel-image-2.4 | kernel-image-2.6 | linux-image-2.6, make
+Conflicts: ipmasq, knetfilter, firewall-easy, filtergen, uif, webmin-firewall, ipmenu, gnome-lokkit, guarddog, guidedog, ferm, shorewall, shorewall-common
+Recommends: wget
+Description: Shorewall (lite version), a high-level tool for configuring Netfilter
+ Shorewall allows you to describe your firewall/gateway requirements using
+ entries in a set of configuration files. It reads those configuration files
+ and, with the help of the iptables utility, configures Netfilter to match your
+ requirements.
+ .
+ Shorewall supports a wide range of router/firewall/gateway applications,
+ traffic shaping and almost every type of VPN.
+ .
+ The shorewall-lite package is designed to allow you to maintain all Shorewall
+ configuration information on a single system within your network.
+

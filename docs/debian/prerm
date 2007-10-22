@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+case "$1" in
+	# do not stop the firewall during an upgrade
+	remove|upgrade)
+        if which install-docs >/dev/null 2>&1; then
+	    install-docs -r shorewall-doc
+	fi
+	;;
+	deconfigure|failed-upgrade)
+	;;
+	*)
+	echo "prerem called with unknown argument \`$1\'" >&2
+	exit 1
+	;;
+esac
+
+#DEBHELPER#

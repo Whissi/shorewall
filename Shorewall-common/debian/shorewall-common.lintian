@@ -1,0 +1,11 @@
+shorewall-common: hyphen-used-as-minus-sign
+# db-input is postponed in postinst because the user needs to be able to access
+# some files that are installed on the system in order to answer the question
+shorewall-common: postinst-uses-db-input
+# we want to protect sensible files
+shorewall-common: non-standard-dir-perm var/lib/shorewall/ 0750 != 0755
+shorewall-common: script-not-executable ./usr/share/shorewall/firewall
+shorewall-common: script-not-executable ./usr/share/shorewall/lib.base
+shorewall-common: script-not-executable ./usr/share/shorewall/lib.cli
+shorewall-common: script-not-executable ./usr/share/shorewall/lib.config
+shorewall-common: script-not-executable ./usr/share/shorewall/lib.dynamiczones

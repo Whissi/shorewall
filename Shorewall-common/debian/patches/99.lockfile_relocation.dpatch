@@ -1,0 +1,30 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 99.lockfile_relocation.dpatch by Lorenzo Martignoni <martignlo@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Move lockfile to /var/lock/shorewall
+
+@DPATCH@
+diff -urNad shorewall-3.4.4~/lib.base shorewall-3.4.4/lib.base
+--- shorewall-3.4.4~/lib.base	2007-06-19 11:53:40.000000000 -0500
++++ shorewall-3.4.4/lib.base	2007-06-19 11:55:11.000000000 -0500
+@@ -314,7 +314,8 @@
+ mutex_on()
+ {
+     local try=0
+-    local lockf=${LOCKFILE:=${VARDIR}/lock}
++    # local lockf=${LOCKFILE:=${VARDIR}/lock}
++	 local lockf=/var/lock/shorewall
+ 
+     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
+ 
+@@ -345,7 +346,8 @@
+ #
+ mutex_off()
+ {
+-    rm -f ${LOCKFILE:=${VARDIR}/lock}
++    # rm -f ${LOCKFILE:=${VARDIR}/lock}
++	 rm -f /var/lock/shorewall
+ }
+ 
+ #

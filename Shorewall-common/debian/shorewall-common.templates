@@ -1,0 +1,21 @@
+Template: shorewall-common/dont_restart
+Type: note
+_Description: Shorewall won't be restarted automatically
+ This will prevent network blackout due to changes in configuration files.
+ .
+ Check your configuration and then restart Shorewall issuing:
+ .
+         invoke-rc.d shorewall restart
+ .
+ or
+ .
+         /etc/init.d/shorewall restart
+
+Template: shorewall-common/major_release
+Type: boolean
+_Description: Do you want to restart Shorewall right now? 
+ This is a major release of Shorewall that introduces some changes in the
+ configuration files. You have to check carefully your configuration before
+ restarting your firewall to avoid failures and network blackout. The changes
+ are listed in /usr/share/doc/shorewall/releasenotes.txt.gz.
+

@@ -24,8 +24,201 @@ href="GnuCopyright.htm" target="_self">GNU Free Documentation
 License</a></span>”.<br>
 </p>
 
-<p>October 02, 2007</p>
+<p>October 22, 2007</p>
 <hr style="width: 100%; height: 2px;">
+
+<p><strong>2007-10-22 Shorewall 4.0.5</strong></p>
+<pre>Problems corrected in Shorewall 4.0.5.
+
+1)  Previously, Shorewall-perl misprocessed $FW::&lt;port&gt; in the DEST
+    column of a REDIRECT rule, generating an error. '$FW::&lt;port&gt;' now
+    produces the same effect as '&lt;port&gt;'.
+
+2)  If the PROTOCOL (PROTO) column contained 'TCP' or 'UDP' and SOURCE
+    PORT(S) or DEST PORT(S) were given, then Shorewall-perl rejected
+    the entry with the error:
+
+    ERROR: SOURCE/DEST PORT(S) not allowed with PROTO TCP : /etc/shorewall/rules 
+
+    The rule was accepted if 'tcp' or 'udp' was used instead.
+
+3)  Shorewall-shell now removes any default bindings of ipsets before
+    attempting to reload them. Previously, default bindings were not
+    removed with the result that the ipsets could not be destroyed.
+
+Other changes in Shorewall 4.0.5.
+
+1)  Two new options have been added to /etc/shorewall/hosts
+    (Shorewall-perl only).
+
+    broadcast: Permits limited broadcast (destination 255.255.255.255)
+               to the zone.
+
+    destonly: Normally used with the Multi-cast range. Specifies that
+              traffic will be sent to the specified net(s) but that 
+              no traffic will be received from the net(s).
+
+    Example:
+
+    wifi        eth1:192.168.3.0/24             broadcast
+    wifi        eth1:224.0.0.0/4                destonly
+
+    In that example, limited broadcasts from the firewall with a source
+    IP in the 192.168.3.0/24 range will be acccepted as will multicasts
+    (with any source address).
+
+2)  A MULTICAST option has been added to shorewall.conf. This option
+    will normally be set to 'No' (the default). It should be set to 
+    'Yes' under the following circumstances:
+
+    a) You have an interface that has parallel zones defined via
+       /etc/shorewall/hosts.
+    b) You want to forward multicast packets to two or more of those
+       parallel zones.
+
+    In such cases, you will configure a 'destonly' network on each 
+    zone receiving multicasts.
+
+    The MULTICAST option is only recognized by Shorewall-perl and is
+    ignored by Shorewall-shell.
+
+3)  As announced in the Shorewall 4.0.4 release notes, Shorewall-perl
+    no longer supports the 'detectnets' option. Specifying that option
+    now results in the following message:
+
+    WARNING: Support for the 'detectnets' option has been removed
+
+    It is suggested that 'detectnets' be replaced by
+    'routefilter,logmartians'. That will produce the same filtering
+    effect as 'detectnets' while eliminating 1-2 rules per connection.
+
+    One user has asked how to retain the output of 'shorewall show
+    zones' if the 'detectnets' option is removed. While I don't advise
+    doing so, you can reproduce the current 'shorewall show' behavior
+    as follows.
+
+    Suppose that you have a zone named 'wifi' that produces the
+    following output with 'detectnets':
+
+    wifi (ipv4)
+      eth1:192.168.3.0/24
+ 
+    You can reproduce this behavior as follows:
+
+    /etc/shorewall/interfaces:
+
+    -   eth1    detect  ...
+
+    /etc/shorewall/hosts:
+
+    wifi        eth1:192.168.3.0/24     broadcast
+
+    If you send multicast to the 'wifi' zone, you also need this entry
+    in your hosts file:
+
+    wifi        eth1:224.0.0.0/4                destonly
+
+4)  (Shorewall-perl only) The server port in a DNAT or REDIRECT rule
+    may now be specified as a service name from
+    /etc/services. Additionally:
+
+    a) A port-range may be specified as the service port expressed in
+       the format &lt;low port&gt;-&lt;high port&gt;. Connections are assigned to
+       server ports in round-robin fashion.
+
+    b) The compiler only permits a server port to be specified if the
+       protocol is tcp or udp.
+
+    c) The compiler ensures that the server IP address is valid (note
+       that it is still not permitted to specify the server address as a
+       DNS name).
+
+5)  (Shorewall-perl only) Users are complaining that when they migrate
+    to Shorewall-perl, they have to restrict their port lists to 15
+    ports. In this release, we relax that restriction on destination
+    port lists. Since the SOURCE PORT(s) column in the configuration
+    files is rarely used, we have no plans to relax the restriction in
+    that column.
+
+6)  There have been several cases where iptables-restore has failed
+    while executing a COMMIT command in the .iptables_restore_input
+    file. This gives neither the user nor Shorewall support much to go
+    on when analyzing the problem. As a new debugging aid, the meaning
+    of 'trace' and 'debug' have been changed.
+
+    Traditionally, /sbin/shorewall and /sbin/shorewall-lite have
+    allowed either 'trace' or 'debug' as the first run-line
+    parameter. Prior to 4.0.5, the two words produced the same effect.
+
+    Beginning with Shorewall 4.0.5, the two words have different
+    effects when Shorewall-perl is used.
+
+    trace - Like the previous behavior.
+
+            In the Shorewall-perl compiler, generate a stack trace
+            on WARNING and ERROR messages.
+
+            In the generated script, sets the shell's -x option to
+            trace execution of the script.
+
+    debug - Ignored by the Shorewall-perl compiler.
+
+            In the generated script, causes the commands in
+            .iptables_restore_input to be executed as discrete iptables
+            commands. The failing command can thus be identified and a
+            diagnosis of the cause can be made.
+
+    Users of Shorewall-lite will see the following change when using a
+    script that was compiled with Shorewall-perl 4.0.5 or later.
+
+    trace - In the generated script, sets the shell's -x option to
+            trace execution of the script.
+
+    debug - In the generated script, causes the commands in
+            .iptables_restore_input to be executed as discrete iptables
+            commands. The failing command can thus be identified and a
+            diagnosis of the cause can be made.
+
+    In all other cases, 'debug' and 'trace' remain synonymous. In
+    particular, users of Shorewall-shell will see no change in
+    behavior.
+
+    WARNING: The 'debug' feature in Shorewall-perl is strictly for
+    problem analysis. When 'debug' is used:
+
+    a) The firewall is made 'wide open' before the rules are applied.
+    b) The routestopped file is not consulted and the rules are applied
+       in the canonical iptables-restore order (ASCIIbetical by chain).
+       So if you need critical hosts to be always available during
+       start/restart, you may not be able to use 'debug'.
+
+7)  /usr/share/shorewall-perl/buildports.pl,
+    /usr/share/shorewall-perl/FallbackPorts.pm and 
+    /usr/share/shorewall-perl/Shorewall/Ports.pm have been removed.
+
+    Shorewall now resolves protocol and port names as using Perl's
+    interface to the the standard C library APIs getprotobyname() and
+    getservbyname().
+
+    Note 1: 
+
+           The protocol names 'tcp', 'TCP', 'udp', 'UDP', 'all', 'ALL',
+           'icmp' and 'ICMP' are still resolved by Shorewall-perl
+           itself.
+
+    Note 2:
+
+           Those of you running Shorewall-perl under Cygwin may wish to
+           install "real" /etc/protocols and /etc/services files
+           in place of the symbolic links installed by Cygwin.
+
+8)  The contents of the Shorewall::*::$VERSION variables are now a
+    only of interest for Perl programs that are using the modules and
+    specifying a minimum version (e.g., "use Shorewall::Config
+    4.0.5;"). Each module continues to carry a separate version which
+    indicates the release of Shorewall-perl when the module was last
+    modified</pre>
+<hr>
 
 <p><strong>2007-10-02 Shorewall 3.4.7</strong></p>
 <pre>Problems Corrected in Shorewall 3.4.7
@@ -49,9 +242,9 @@ License</a></span>”.<br>
    This problem occurred with both compilers.
 
 3) When using Shorewall-shell, provider numbers were not recognized in
-   the PROVIDER column of /etc/shorewall/route_rules.
-</pre>
+   the PROVIDER column of /etc/shorewall/route_rules.</pre>
 <hr>
+
 <p><strong>2007-09-28 Shorewall 4.0.4</strong></p>
 <pre>Problems Corrected in Shorewall 4.0.4
 

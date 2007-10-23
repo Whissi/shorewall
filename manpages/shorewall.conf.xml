@@ -241,6 +241,16 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">BIGDPORTLISTS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Setting this option to 'Yes' allows you to include arbitrarily
+          long destination port lists in all configuration files.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">BLACKLIST_DISPOSITION=</emphasis>[<emphasis
         role="bold">DROP</emphasis>|<emphasis
@@ -995,6 +1005,34 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           3.2.4 and "/lib/modules/`uname
           -r`/kernel/net/ipv4/netfilter:/lib/modules/`uname
           -r`/kernel/net/ipv4/netfilter" in later versions.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MULTICAST=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>This option will normally be set to 'No' (the default). It
+          should be set to 'Yes' under the following circumstances:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>You have an interface that has parallel zones defined via
+              /etc/shorewall/hosts.</para>
+            </listitem>
+
+            <listitem>
+              <para>You want to forward multicast packets to two or more of
+              those parallel zones.</para>
+            </listitem>
+          </orderedlist>
+
+          <para>In such cases, you will configure a <option>destonly</option>
+          network on each zone receiving multicasts.</para>
+
+          <para>The MULTICAST option is only recognized by Shorewall-perl and
+          is ignored by Shorewall-shell.</para>
         </listitem>
       </varlistentry>
 

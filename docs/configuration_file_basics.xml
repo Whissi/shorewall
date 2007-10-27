@@ -425,6 +425,83 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     </example>
   </section>
 
+  <section id="Inline">
+    <title>Inline Shell and Perl (Added in Shorewall-perl 4.0.6)</title>
+
+    <para>Earlier versions of Shorewall offered <ulink
+    url="shorewall_extension_scripts.htm">extension scripts</ulink> to allow
+    users to extend Shorewall's functionality. Extension scripts were designed
+    to work under the limitations of the Bourne Shell. With Shorewall-perl,
+    <firstterm>inline scripts</firstterm> offer a richer and more flexible
+    extension capability.</para>
+
+    <para>While inline scripts scripts may be written in either Shell or Perl,
+    those written in Perl have a lot more power.</para>
+
+    <para>Inline scripts can be either single-line or multi-line. Single line
+    scripts take one of the following forms:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">PERL</emphasis> &lt;<emphasis>perl
+        script</emphasis>&gt;</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">SHELL</emphasis> &lt;<emphasis>shell
+        script</emphasis>&gt;</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Shell scripts run in a child shell process and their output is piped
+    back to the compiler which processes that output as if it were embedded at
+    the point of the script.</para>
+
+    <para>Example: The following entries in
+    <filename>/etc/shorewall/rules</filename> are equivalent:<programlisting>SHELL for z in net loc dmz; do echo "ACCEPT $z fw tcp 22"; done</programlisting><programlisting>ACCEPT net fw tcp 22
+ACCEPT loc fw tcp 22
+ACCEPT dmz fw tcp 22</programlisting></para>
+
+    <para>Perl scripts run in the context of of the compiler process. To
+    produce output that will be processed by the compiler as if it were
+    embedded in the file at the point of the script, pass that output to the
+    shorewall() function. The Perl equivalent of the above SHELL script would
+    be:<programlisting>PERL for ( qw/net loc dmz/ ) { shorewall "ACCEPT $_ fw tcp 22"; }</programlisting>Perl
+    scripts are implicitly prefixed by the following:</para>
+
+    <programlisting>package Shorewall::User;
+use Shorewall::Config qw/shorewall/;</programlisting>
+
+    <para>As part of the change that added inline scripts:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Compile-time extension scripts are also implicitly prefixed by
+        "package Shorewall::User;".</para>
+      </listitem>
+
+      <listitem>
+        <para>A <emphasis role="bold">compile</emphasis> extension script was
+        added for use by Shorewall-perl. That script is run early in the
+        compilation process and allows users to load additional modules and to
+        define data and functions for use in subsequent inline scripts and
+        extension scripts.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Multi-line scripts use one of the following forms:<programlisting><emphasis
+          role="bold">BEGIN SHELL</emphasis>
+&lt;shell script&gt;
+<emphasis role="bold">END</emphasis> [ <emphasis role="bold">SHELL</emphasis> ] [<emphasis
+          role="bold">;</emphasis>]</programlisting><programlisting><emphasis
+          role="bold">BEGIN PERL</emphasis> [;]
+&lt;<emphasis>perl script</emphasis>&gt;
+<emphasis role="bold">END</emphasis> [ <emphasis role="bold">PERL</emphasis> ] [<emphasis
+          role="bold">;</emphasis>]</programlisting></para>
+
+    <para></para>
+  </section>
+
   <section id="dnsnames">
     <title>Using DNS Names</title>
 

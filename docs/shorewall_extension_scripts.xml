@@ -69,6 +69,12 @@
 
     <itemizedlist>
       <listitem>
+        <para>compile -- (Added in Shorewall-perl version 4.0.6). Invoked by
+        the Shorewall-perl compiler early in the compilation process. Must be
+        written in Perl.</para>
+      </listitem>
+
+      <listitem>
         <para>init -- invoked early in <quote>shorewall start</quote> and
         <quote>shorewall restart</quote></para>
       </listitem>
@@ -317,7 +323,7 @@ esac</programlisting><caution>
               </row>
 
               <row>
-                <entry>initdone</entry>
+                <entry>compile</entry>
 
                 <entry>clear</entry>
 
@@ -325,7 +331,7 @@ esac</programlisting><caution>
               </row>
 
               <row>
-                <entry>maclog</entry>
+                <entry>initdone</entry>
 
                 <entry>isusable</entry>
 
@@ -333,8 +339,7 @@ esac</programlisting><caution>
               </row>
 
               <row>
-                <entry>Per-chain (including those associated with
-                actions)</entry>
+                <entry>maclog</entry>
 
                 <entry>start</entry>
 
@@ -342,7 +347,8 @@ esac</programlisting><caution>
               </row>
 
               <row>
-                <entry></entry>
+                <entry>Per-chain (including those associated with
+                actions)</entry>
 
                 <entry>started</entry>
 
@@ -391,7 +397,12 @@ esac</programlisting><caution>
       script returns a 'true' value; otherwise, the compiler will assume that
       the script failed and will abort the compilation.</para>
 
-      <para>All scripts will need to begin with the following
+      <para>Beginning with Shorewall version 4.0.6, each compile-time script
+      is implicitly prefaced with:</para>
+
+      <programlisting>package Shorewall::User;</programlisting>
+
+      <para>Most scripts will need to begin with the following
       line:<programlisting>use Shorewall::Chains;</programlisting>For more
       complex scripts, you may need to 'use' other Shorewall Perl modules --
       browse <filename

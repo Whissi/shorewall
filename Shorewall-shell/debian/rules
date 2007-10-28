@@ -7,11 +7,11 @@
 include /usr/share/dpatch/dpatch.make
 
 # shorewall version
-export V=`cat install.sh | grep "^VERSION=" | head -n 1 | cut -f 2 -d "="`
+export V=`grep "^VERSION=" install.sh | head -n 1 | cut -f 2 -d "="`
 VMAJOR:=$(shell echo $(V) |cut -f 1 -d .)
 VMINOR:=$(shell echo $(V) |cut -f 2 -d .)
 VPATCH:=$(shell echo $(V) |cut -f 3 -d .)
-NEXTPATCH:=$(shell expr $(VPATCH) + 1)
+NEXTPATCH:=$(shell expr $(VPATCH) + 1 2>/dev/null || expr `echo $(VPATCH) | cut -f 1 -d - ` + 1)
 
 SRWL=$(CURDIR)/debian/shorewall-shell
 

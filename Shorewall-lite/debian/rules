@@ -7,7 +7,7 @@
 include /usr/share/dpatch/dpatch.make
 
 # shorewall version
-export V=`cat install.sh | grep "^VERSION=" | head -n 1 | cut -f 2 -d "="`
+export V=`grep "^VERSION=" install.sh | head -n 1 | cut -f 2 -d "="`
 
 SRWL=$(CURDIR)/debian/shorewall-lite
 

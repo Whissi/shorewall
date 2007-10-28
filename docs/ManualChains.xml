@@ -34,13 +34,13 @@
     </legalnotice>
   </articleinfo>
 
-  <section>
+  <section id="Intro">
     <title>Introduction</title>
 
     <para>Manual chains were introduced in Shorewall-perl 4.0.6; for Perl
     programmers, manual chains provide an alternative to Actions with
     extension scripts. Manual chains are chains which you create and populate
-    yourself using the low-level functions in Shorewall::Chains. </para>
+    yourself using the low-level functions in Shorewall::Chains.</para>
 
     <para>Manual chains work in conjunction with the
     <firstterm>compile</firstterm> <ulink
@@ -72,9 +72,139 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Example">
     <title>Example</title>
 
-    <para></para>
+    <para>This example provides an alternative to the <ulink
+    url="PortKnocking.html">Port Knocking</ulink> example.</para>
+
+    <para>In this example, a Knock.pm module is created and placed in
+    /etc/shorewall:</para>
+
+    <programlisting>package Knock;
+
+use strict;
+use warnings;
+use base qw{Exporter};
+use Carp;
+use Shorewall::Chains;
+use Scalar::Util qw{reftype};
+use Shorewall::Config qw{shorewall};
+
+our @EXPORT = qw{Knock};
+
+my %recent_names;
+my %chains_created;
+
+sub scalar_or_array {
+  my $arg = shift;
+  my $name = shift;
+  return () unless defined $arg;
+  return ($arg) unless reftype($arg);
+  return @$arg if reftype($arg) eq 'ARRAY';
+  croak "Expecting argument '$name' to be scalar or array ref";
+}
+
+sub Knock {
+  my $src = shift;
+  my $dest = shift;
+  my $args = shift;
+
+  my $proto = $args-&gt;{proto} || 'tcp';
+  my $seconds = $args-&gt;{seconds} || 60;
+  my $original_dest = $args-&gt;{original_dest} || '-';
+  my @target = scalar_or_array($args-&gt;{target}, 'target');
+  my @knocker_ports = scalar_or_array($args-&gt;{knocker}, 'knocker');
+  my @trap_ports = scalar_or_array($args-&gt;{trap}, 'trap');
+
+  if (not defined $args-&gt;{name}) {
+    # If you don't supply a name, then this must be the single-call
+    # variant, so you have to specify all the arguments
+    unless (scalar @target) {
+      croak "No 'target' ports specified";
+    }
+
+    unless (scalar @knocker_ports) {
+      croak "No 'knock' ports specified";
+    }
+  }
+
+  # We'll need a unique name for the recent match list. Construct one
+  # from the port and a serial number, if the user didn't supply one.
+  my $name = $args-&gt;{name} || ($target[0] . '_' . ++$recent_names{$target[0]});
+  $name = 'Knock' . $name;
+
+  # We want one chain for all Knock rules that share a 'name' field
+  my $chainref = $chains_created{$name};
+  unless (defined $chainref) {
+    $chainref = $chains_created{$name} = new_manual_chain($name);
+  }
+  
+  # Logging
+  if ($args-&gt;{log_level}) {
+    foreach my $port (@target) {
+      log_rule_limit($args-&gt;{log_level},
+                     $chainref,
+                     'Knock',
+                     'ACCEPT',
+                     '',
+                     $args-&gt;{log_tag} || '',
+                     'add',
+                     "-p $proto --dport $port -m recent --rcheck --name $name"
+                    );
+
+      log_rule_limit($args-&gt;{log_level},
+                     $chainref,
+                     'Knock',
+                     'DROP',
+                     '',
+                     $args-&gt;{log_tag} || '',
+                     'add',
+                     "-p $proto --dport ! $port"
+                    );
+    }
+  }
+
+  # Add the recent match rules to the manual chain
+  foreach my $knock (@knocker_ports) {
+    add_rule($chainref, "-p $proto --dport $knock -m recent --name $name --set -j DROP");
+  }
+
+  foreach my $trap (@trap_ports) {
+    add_rule($chainref, "-p $proto --dport $trap -m recent --name $name --remove -j DROP");
+  }
+
+  foreach my $port (@target) {
+    add_rule($chainref, "-p $proto --dport $port -m recent --rcheck --seconds $seconds --name $name -j ACCEPT");
+  }
+
+  # And add a rule to the main chain(s) to jump into the manual chain at the appropriate points
+  my $all_dest_ports = join(',', @target, @knocker_ports, @trap_ports);
+  shorewall "$chainref-&gt;{name} $src $dest $proto $all_dest_ports - $original_dest";
+
+  return 1;
+}
+
+1;</programlisting>
+
+    <para>This simplifies /etc/shorewall/compile:<programlisting>use Knock;
+1;</programlisting></para>
+
+    <para>The rule from the Port Knocking article:</para>
+
+    <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
+SSHKnock         net               $FW            tcp         22,1599,1600,1601
+</programlisting>
+
+    <para>becomes:<programlisting>PERL Knock 'net', 'loc:192.168.1.5', {target =&gt; 22, knocker =&gt; 1600, trap =&gt; [1599, 1601]};</programlisting>Similarly<programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
+#                                                                            PORT(S)     DEST
+DNAT-            net               loc:192.168.1.5 tcp         22            -           206.124.146.178
+SSHKnock         net               $FW             tcp         1599,1600,1601
+SSHKnock         net               loc:192.168.1.5 tcp         22            -           206.124.146.178</programlisting>becomes:<programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
+#                                                                            PORT(S)     DEST
+DNAT-            net               loc:192.168.1.5 tcp         22            -           206.124.146.178
+
+PERL Knock 'net', '$FW', {name =&gt; 'SSH', knocker =&gt; 1600, trap =&gt; [1599, 1601]};
+PERL Knock 'net', 'loc:192.168.1.5', {name =&gt; 'SSH', target =&gt; 22, original_dest =&gt; '206.124.136.178'};</programlisting></para>
   </section>
 </article>

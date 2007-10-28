@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Manual Chains</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2007</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Manual chains were introduced in Shorewall-perl 4.0.6; for Perl
+    programmers, manual chains provide an alternative to Actions with
+    extension scripts. Manual chains are chains which you create and populate
+    yourself using the low-level functions in Shorewall::Chains. </para>
+
+    <para>Manual chains work in conjunction with the
+    <firstterm>compile</firstterm> <ulink
+    url="shorewall_extension_scripts.htm">extension script</ulink> and <ulink
+    url="configuration_file_basics.html%23Inline">Inline PERL scripts</ulink>.
+    The general idea is like this:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>In the compile extension script, you define functions that you
+        can call later using Inline PERL. These functions create a
+        <firstterm>manual chain</firstterm> using
+        Shorewall::Chains::new_manual_chain() and populate it with rules using
+        Shorewall::Chains::add_rule().</para>
+      </listitem>
+
+      <listitem>
+        <para>The functions also call Shorewall::Config::shorewall() to create
+        and pass a rule to Shorewall. The TARGET in that rule is the name of
+        the chain just created.</para>
+      </listitem>
+
+      <listitem>
+        <para>The functions defined in the compile script are called by Inline
+        PERL statements. The arguments to those calls define the contents of
+        the manual chains and the rule(s) passed back to Shorewall for normal
+        processing.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Example</title>
+
+    <para></para>
+  </section>
+</article>

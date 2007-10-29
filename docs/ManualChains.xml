@@ -45,13 +45,13 @@
     <para>Manual chains work in conjunction with the
     <firstterm>compile</firstterm> <ulink
     url="shorewall_extension_scripts.htm">extension script</ulink> and <ulink
-    url="configuration_file_basics.html%23Inline">Inline PERL scripts</ulink>.
-    The general idea is like this:</para>
+    url="configuration_file_basics.html#Embedded">Embedded PERL
+    scripts</ulink>. The general idea is like this:</para>
 
     <itemizedlist>
       <listitem>
         <para>In the compile extension script, you define functions that you
-        can call later using Inline PERL. These functions create a
+        can call later using Embedded PERL. These functions create a
         <firstterm>manual chain</firstterm> using
         Shorewall::Chains::new_manual_chain() and populate it with rules using
         Shorewall::Chains::add_rule().</para>
@@ -64,10 +64,10 @@
       </listitem>
 
       <listitem>
-        <para>The functions defined in the compile script are called by Inline
-        PERL statements. The arguments to those calls define the contents of
-        the manual chains and the rule(s) passed back to Shorewall for normal
-        processing.</para>
+        <para>The functions defined in the compile script are called by
+        embedded PERL statements. The arguments to those calls define the
+        contents of the manual chains and the rule(s) passed back to Shorewall
+        for normal processing.</para>
       </listitem>
     </itemizedlist>
   </section>

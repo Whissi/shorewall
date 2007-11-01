@@ -74,16 +74,17 @@
           </listitem>
 
           <listitem>
-            <para><emphasis>&lt;chain&gt;</emphasis> - The name of a chain to
-            jump to. Shorewall will create the chain automatically. If the
-            name of the chain is followed by <quote>:COUNT</quote> then a
-            COUNT rule matching this rule will automatically be added to
-            &lt;chain&gt;. Chain names must start with a letter, must be
-            composed of letters and digits, and may contain underscores
-            (<quote>_</quote>) and periods (<quote>.</quote>). Beginning with
-            Shorewall version 1.4.8, chain names may also contain embedded
-            dashes (<quote>-</quote>) and are not required to start with a
-            letter.</para>
+            <para><emphasis>&lt;chain&gt;</emphasis> - The name of a chain;
+            Shorewall will create the chain automatically if it doesn't
+            already exist. Causes a jump to this chain will be generated from
+            the chain specified by the CHAIN column. If the name of the chain
+            is followed by <quote>:COUNT</quote> then a COUNT rule matching
+            this entry will automatically be added to &lt;chain&gt;. Chain
+            names must start with a letter, must be composed of letters and
+            digits, and may contain underscores (<quote>_</quote>) and periods
+            (<quote>.</quote>). Beginning with Shorewall version 1.4.8, chain
+            names may also contain embedded dashes (<quote>-</quote>) and are
+            not required to start with a letter.</para>
           </listitem>
 
           <listitem>
@@ -175,7 +176,7 @@
 
         <para>If you don’t want to define a test but need to specify anything
         in the following columns, place a "-" in this field.<simplelist>
-            <member> ! — Inverts the test (not equal)</member>
+            <member>! — Inverts the test (not equal)</member>
 
             <member>&lt;value&gt; — Value of the packet or connection
             mark.</member>

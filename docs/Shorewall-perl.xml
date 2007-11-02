@@ -611,5 +611,274 @@ loc     net      ACCEPT</programlisting>
     directive<programlisting>use lib '/usr/share/shorewall-perl';</programlisting></para>
 
     <para>You can then load the modules via normal Perl use statements.</para>
+
+    <section id="compiler.pl">
+      <title>/usr/share/shorewall-perl/compiler.pl</title>
+
+      <para>While the compiler is normally run indirectly using
+      /sbin/shorewall, it can be run directly as well.<programlisting><command>compiler.pl</command> [ &lt;<emphasis>option</emphasis>&gt; ... ] [ &lt;<emphasis>filename</emphasis>&gt; ]</programlisting></para>
+
+      <para>If a &lt;<emphasis>filename</emphasis>&gt; is given, then the
+      configuration will be compiled output placed in the named file. If
+      &lt;<emphasis>filename</emphasis>&gt; is not given, then the
+      configuration will simply be syntax checked.</para>
+
+      <para>Options are:</para>
+
+      <para><simplelist>
+          <member><command>-v</command>&lt;<emphasis>verbosity</emphasis>&gt;</member>
+
+          <member><command>--verbosity=</command>&lt;<emphasis>verbosity</emphasis>&gt;</member>
+        </simplelist>The &lt;<emphasis>verbosity</emphasis>&gt; is a number
+      between 0 and 2 and corresponds to the VERBOSITY setting in
+      <filename>shorewall.conf</filename>. This setting controls the verbosity
+      of the compiler itself.<simplelist>
+          <member><emphasis role="bold">-e</emphasis></member>
+
+          <member><emphasis role="bold">--export</emphasis></member>
+        </simplelist>If given, the configuration will be compiled for export
+      to another system.<simplelist>
+          <member><emphasis role="bold">-d</emphasis>
+          &lt;<emphasis>directory</emphasis>&gt;</member>
+
+          <member><emphasis
+          role="bold">--directory=</emphasis>&lt;<emphasis>directory</emphasis>&gt;</member>
+        </simplelist>If this option is omitted, the configuration in
+      /etc/shorewall is compiled/checked. Otherwise, the configuration in the
+      named directory will be compiled/checked.<simplelist>
+          <member><emphasis role="bold">-t</emphasis></member>
+
+          <member><emphasis role="bold">--timestamp</emphasis></member>
+        </simplelist>If given, each progress message issued by the compiler
+      and by the compiled program will be timestamped.<simplelist>
+          <member><emphasis role="bold">--debug</emphasis></member>
+        </simplelist>If given, when a warning or error message is issued, it
+      is supplimented with a stack trace. Requires the Carp Perl
+      module.<simplelist>
+          <member><emphasis
+          role="bold">--refresh=</emphasis>&lt;<emphasis>chainlist</emphasis>&gt;</member>
+        </simplelist>If given, the compiled script's 'refresh' command will
+      refresh the chains in the comma-separated
+      &lt;<emphasis>chainlist</emphasis>&gt; rather than 'blacklst'.</para>
+
+      <para>Example (compiles the configuration in the current directory
+      generating a script named 'firewall' and using VERBOSITY
+      2).<programlisting><emphasis role="bold">/usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall</emphasis></programlisting></para>
+    </section>
+
+    <section id="Compiler">
+      <title>Shorewall::Compiler</title>
+
+      <para><programlisting> use lib '/usr/share/shorewall-perl';
+ use Shorewall::Compiler;
+        
+ compiler $filename, $directory, $verbose, $options $chains</programlisting>Arguments
+      to the compiler are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$filename</term>
+
+          <listitem>
+            <para>Name of the compiled script to be created. If the arguments
+            evaluates to false, the configuration is syntax checked.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$directory</term>
+
+          <listitem>
+            <para>The directory containing the configuration. If passed as '',
+            then <filename class="directory">/etc/shorewall/</filename> is
+            assumed.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$verbose</term>
+
+          <listitem>
+            <para>The verbosity level (0-2).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$options</term>
+
+          <listitem>
+            <para>A bitmap of options. Shorewall::Compiler exports three
+            constants to help building this argument:<simplelist>
+                <member>EXPORT = 0x01</member>
+
+                <member>TIMESTAMP = 0x02</member>
+
+                <member>DEBUG = 0x04</member>
+              </simplelist></para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$chains</term>
+
+          <listitem>
+            <para>A comma-separated list of chains that the generated script's
+            'refresh' command will reload. If passed as an empty string, then
+            'blacklist' is assumed.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The compiler raises an exception with 'die' if it encounters an
+      error; $@ contains the 'ERROR' messages describing the problem. The
+      compiler function can be called repeatedly with different inputs.</para>
+    </section>
+
+    <section>
+      <title>Shorewall::Chains</title>
+
+      <para><programlisting>use lib '/usr/share/shorewall-perl';
+use Shorewall::Chains;
+
+my $chainref1 = chain_new $table, $name1;
+add_rule $chainref1, $rule;
+insert_rule $chainref1, $ordinal, $rule;
+my $chainref2 = new_manual_chain $name3;
+my $chainref3 = ensure_manual_chain $name;
+log_rule_limit $level, $chainref3, $chain, $disposition, $limit, $tag, $command, $predicates;
+
+
+my $chainref4 = $chain_table{$table}{$name};
+my $chainref5 = $nat_table{$name};
+my $chainref6 = $mangle_table{$name};
+my $chainref7 = $filter_table{$name};</programlisting>Shorewall::Chains is
+      Shorewall-perl's interface to iptables/netfilter. It creates a
+      <firstterm>chain table</firstterm> (%chain_table) which is populated as
+      the various tables are processed. The table (actually a hash) is
+      two-dimensional with the first dimension being the Netfilter table name
+      (raw, mangle, nat and filter) and the second dimension being the chain
+      name. Each table is a hash reference -- the hash defines the attributes
+      of the chain. See the large comment at the beginning of the module
+      (<filename>/usr/share/shorewall-perl/Shorewall/Chains.pm</filename>).</para>
+
+      <para>The module export the chain table along with three hash references
+      into the table:<literal></literal></para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$nat_table</term>
+
+          <listitem>
+            <para>Reference to the 'nat' portion of the table
+            ($chain_table{nat}). This is a hash whose key is the chain
+            name.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$mangle_table</term>
+
+          <listitem>
+            <para>Reference to the 'mangle' portion of the table
+            ($chain_table{mangle}). This is a hash whose key is the chain
+            name.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$filter</term>
+
+          <listitem>
+            <para>Reference to the 'filter' portion of the table
+            ($chain_table{filter}). This is a hash whose key is the chain
+            name.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>You can create a new chain in any of the tables using <emphasis
+      role="bold">new_chain()</emphasis>. Arguments to the function
+      are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$table</term>
+
+          <listitem>
+            <para>'nat', 'mangle', or 'filter'.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$name</term>
+
+          <listitem>
+            <para>Name of the chain to create.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The function creates a hash at $chain_table{$table}{$name} and
+      populates the hash with default values. A reference to the hash is
+      returned.</para>
+
+      <para>Each chain table entry includes a list of rules to be added to the
+      chain. These rules are written to the iptables-input file when the
+      resulting script is executed. To append a rule to that list, call
+      <emphasis role="bold">add_rule()</emphasis>. Arguments are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$chainref</term>
+
+          <listitem>
+            <para>A reference to the chain table entry.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$rule</term>
+
+          <listitem>
+            <para>The rule to add. Do not include the leading '-A ' in this
+            argument -- it will be supplied by the function.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>To insert a rule into that list, call <emphasis
+      role="bold">insert_rule()</emphasis>. Arguments are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$chainref</term>
+
+          <listitem>
+            <para>A reference to the chain table entry.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$ordinal</term>
+
+          <listitem>
+            <para>The position of the inserted rule in the list. A value of 1
+            inserts the rule at the head of the list, a value of 2 places the
+            rule second in the list, and so on.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$rule</term>
+
+          <listitem>
+            <para>The rule to add. Do not include the leading '-I' in this
+            argument -- it will be supplied by the function.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para></para>
+    </section>
   </section>
 </article>

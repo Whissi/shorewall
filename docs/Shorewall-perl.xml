@@ -734,7 +734,7 @@ loc     net      ACCEPT</programlisting>
       compiler function can be called repeatedly with different inputs.</para>
     </section>
 
-    <section>
+    <section id="Chains">
       <title>Shorewall::Chains</title>
 
       <para><programlisting>use lib '/usr/share/shorewall-perl';
@@ -970,6 +970,49 @@ my $chainref7 = $filter_table{$name};</programlisting>Shorewall::Chains is
           </listitem>
         </varlistentry>
       </variablelist>
+    </section>
+
+    <section id="Config">
+      <title>Shorewall::Config</title>
+
+      <para><programlisting>use lib '/usr/share/shorewall-perl';
+use Shorewall::Config;
+
+warning message "This entry is bogus";
+fatal_error "You have made an error";
+
+progress_message  "This will only be seen if VERBOSITY &gt;= 2";
+progress_message2 "This will only be seen if VERBOSITY &gt;= 1";
+progress_message3 "This will be seen unless VERBOSITY &lt; 0";
+</programlisting><programlisting>use lib '/usr/share/shorewall-perl';
+use Shorewall::Chains qw/shorewall/;
+
+shorewall $config_file_entry;</programlisting>The Shorewall::Config module
+      provides basic services to Shorewall-perl. By default, it exports the
+      functions that produce progress messages and warning/error
+      messages.</para>
+
+      <para>To issue a warning message, call <emphasis
+      role="bold">warning_message()</emphasis>. The single argument describes
+      the warning.</para>
+
+      <para>To raise a fatal error, call <emphasis
+      role="bold">fatal_error()</emphasis>. Again, the single argument
+      described the error. </para>
+
+      <para>In both cases, the function will augment the warning/error with
+      the current configuration file and line number, if any. fatal_error()
+      raised an exception via either <emphasis
+      role="bold">confess()</emphasis> or <emphasis
+      role="bold">die()</emphasis>.</para>
+
+      <para>The three 'progress message' functions conditionally produce
+      output depending on the current verbosity setting.</para>
+
+      <para>The <emphasis role="bold">shorewall()</emphasis> function is used
+      by <ulink url="configuration_file_basics.html%23Embedded">embedded Perl
+      scripts</ulink> to generate entries to be included in the current
+      configuration file.</para>
     </section>
   </section>
 </article>

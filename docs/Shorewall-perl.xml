@@ -745,7 +745,7 @@ add_rule $chainref1, $rule;
 insert_rule $chainref1, $ordinal, $rule;
 my $chainref2 = new_manual_chain $name3;
 my $chainref3 = ensure_manual_chain $name;
-log_rule_limit $level, $chainref3, $chain, $disposition, $limit, $tag, $command, $predicates;
+log_rule_limit $level, $chainref3, $name, $disposition, $limit, $tag, $command, $predicates;
 
 
 my $chainref4 = $chain_table{$table}{$name};
@@ -823,8 +823,8 @@ my $chainref7 = $filter_table{$name};</programlisting>Shorewall::Chains is
       returned.</para>
 
       <para>Each chain table entry includes a list of rules to be added to the
-      chain. These rules are written to the iptables-input file when the
-      resulting script is executed. To append a rule to that list, call
+      chain. These rules are written to the iptables-restore input file when
+      the resulting script is executed. To append a rule to that list, call
       <emphasis role="bold">add_rule()</emphasis>. Arguments are:</para>
 
       <variablelist>
@@ -878,7 +878,98 @@ my $chainref7 = $filter_table{$name};</programlisting>Shorewall::Chains is
         </varlistentry>
       </variablelist>
 
-      <para></para>
+      <para>To create a <ulink url="ManualChains.html">manual chain</ulink>,
+      use the new_manual_chain() function. The function accepts a single
+      argument which is the name of the chain. The function returns a
+      reference to the resulting chain table entry.</para>
+
+      <para>A companion function, <emphasis
+      role="bold">ensure_manual_chain()</emphasis>, can be called when a
+      manual chain of the desired name may have alread been created. If a
+      manual chain table entry with the passed name already exists, a
+      reference to the chain table entry is returned. Otherwise, the function
+      calls <emphasis role="bold">new_manual_chain()</emphasis> and returns
+      the result.</para>
+
+      <para>To create a logging rule, call <emphasis
+      role="bold">log_rule_limit()</emphasis>. Arguments are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$level</term>
+
+          <listitem>
+            <para>The log level. May be specified as a name or as a
+            number.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$chainref</term>
+
+          <listitem>
+            <para>Chain table reference for the chain to which the rule is to
+            be added.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$name</term>
+
+          <listitem>
+            <para>The chain name to be reported in the log message (see
+            LOGFORMAT in <ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$disposition</term>
+
+          <listitem>
+            <para>The disposition to be reported in the log message (see
+            LOGFORMAT in <ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$limit</term>
+
+          <listitem>
+            <para>Rate limiting match. If an empty string is passed, the
+            LOGRATE/LOGBURST (<ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)) is
+            used.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$tag</term>
+
+          <listitem>
+            <para>Log tag.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$command</term>
+
+          <listitem>
+            <para>If 'add', append the log rule to the chain. If 'insert',
+            then insert the rule at the beginning of the chain.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$predicates</term>
+
+          <listitem>
+            <para>Any additional matches that are to be applied to the
+            rule.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
     </section>
   </section>
 </article>

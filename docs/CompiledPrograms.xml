@@ -231,18 +231,20 @@
 
         <caution>
           <para>If you want to be able to allow non-root users to manage
-          remote filewall systems, then the files
+          remote firewall systems, then the files
           <filename>/etc/shorewall/params</filename> and
           <filename>/etc/shorewall/shorewall.conf</filename> must be readable
           by all users on the administrative system. Not all packages secure
           the files that way and you may have to change the file permissions
-          yourself. /sbin/shorewall uses the SHOREWALL_SHELL setting from
-          <filename>/etc/shorewall/shorewall.conf</filename> to determine the
-          shell to use when compiling programs and it uses the VERBOSITY
-          setting for determining how much output the compiler generates. All
-          other settings are taken from the <filename>shorewall.conf
-          </filename>file in the remote systems <firstterm>export
-          directory</firstterm> (see below).</para>
+          yourself. /sbin/shorewall uses the SHOREWALL_COMPILER setting to
+          determine which compiler to lanuch. If the compiler is
+          shorewall-shell, then the SHOREWALL_SHELL setting from
+          <filename>/etc/shorewall/shorewall.conf</filename> determines the
+          shell to use. /sbin/shorewall also uses the VERBOSITY setting for
+          determining how much output the compiler generates. All other
+          settings are taken from the <filename>shorewall.conf </filename>file
+          in the remote systems <firstterm>export directory</firstterm> (see
+          below).</para>
         </caution>
       </listitem>
 

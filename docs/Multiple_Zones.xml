@@ -239,10 +239,6 @@ loc1                loc                  NONE</programlisting>
 loc1        ipv4
 loc2        ipv4</programlisting>
 
-        <note>
-          <para>Here it doesn't matter which zone is defined first.</para>
-        </note>
-
         <para><filename>/etc/shorewall/interfaces</filename></para>
 
         <programlisting>#ZONE               INTERFACE           BROADCAST
@@ -279,12 +275,8 @@ loc2                loc1                 NONE</programlisting>
     <para><filename>/etc/shorewall/zones</filename></para>
 
     <programlisting>#ZONE       TYPE      OPTIONS
-loc1        ipv4
-loc         ipv4</programlisting>
-
-    <note>
-      <para>the sub-zone (loc1) is defined first!</para>
-    </note>
+loc         ipv4
+loc1:loc    ipv4</programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename></para>
 
@@ -324,12 +316,8 @@ loc1                loc                  NONE</programlisting>
     <para><filename>/etc/shorewall/zones</filename></para>
 
     <programlisting>#ZONE       TYPE      OPTIONS
-loc1        ipv4
-net         ipv4</programlisting>
-
-    <note>
-      <para>the sub-zone (loc) is defined first!</para>
-    </note>
+net         ipv4
+loc:net     ipv4</programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename></para>
 
@@ -343,13 +331,14 @@ loc                 eth0:192.168.1.0/24                maclist</programlisting>
 
     <para><filename><filename>/etc/shorewall/masq</filename></filename></para>
 
-    <programlisting>#INTERFACE              SUBNET          ADDRESS
+    <programlisting>#INTERFACE              SOURCE          ADDRESS
 eth0:!192.168.1.0/24    192.168.1.0/24</programlisting>
 
-    <para>Note that the maclist option is specified in
-    <filename>/etc/shorewall/interfaces</filename>. This is to help protect
-    your router from unauthorized access by your friends and neighbors. Start
-    without maclist then add it and configure your <ulink
+    <para>Note that the <emphasis role="bold">maclist</emphasis> option is
+    specified in <filename>/etc/shorewall/interfaces</filename>. This is to
+    help protect your router from unauthorized access by your friends and
+    neighbors. Start without <emphasis role="bold">maclist</emphasis> then add
+    it and configure your <ulink
     url="MAC_Validation.html"><filename>/etc/shorewall/maclist</filename></ulink>
     file when everything else is working.</para>
   </section>

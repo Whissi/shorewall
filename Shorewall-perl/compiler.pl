@@ -41,7 +41,7 @@ use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage() {
-    print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ -- debuging ] [ --refresh=<chainlist> ] [ <filename> ]\n";
+    print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ -- debug ] [ --refresh=<chainlist> ] [ <filename> ]\n";
     exit 1;
 }
 

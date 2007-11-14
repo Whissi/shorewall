@@ -331,8 +331,8 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
 
         <para><command>ethtool -K eth0 tx off</command></para>
 
-        <para>Under <trademark>SuSE</trademark> 10.2, I placed the following
-        in
+        <para>Under <trademark>OpenSuSE</trademark> 10.2, I placed the
+        following in
         <filename><filename>/etc/sysconfig/network/ifcfg-eth-id-00:16:3e:b1:d7:90</filename></filename>
         (the config file for eth0):</para>
 
@@ -350,10 +350,10 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
       </caution>
 
       <caution>
-        <para>Update. Under SuSE 10.2, communication from a domU works okay
-        without running ethtool <emphasis role="bold">but traffic shaping in
-        dom0 doesn't work!</emphasis> So it's a good idea to run it just to be
-        safe.</para>
+        <para>Update. Under OpenSuSE 10.2, communication from a domU works
+        okay without running ethtool <emphasis role="bold">but traffic shaping
+        in dom0 doesn't work!</emphasis> So it's a good idea to run it just to
+        be safe.</para>
       </caution>
     </section>
 
@@ -377,8 +377,26 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
       by the DHCP server running in Dom0 and when they are attached
       wirelessly, the IP address is assigned by OpenVPN.</para>
 
+      <para>Readers who are paying attention will notice that eth4 has the
+      same public IP address (206.124.146.176) as eth0 (and eth3), yet the
+      <emphasis role="bold">test</emphasis> system connected to that interface
+      has an RFC 1918 address (192.168.1.7). That configuration is established
+      by Xen which clones the primary IP address of eth0 on all of the routed
+      virtual interfaces that it creates. <emphasis
+      role="bold">test</emphasis> is configured with it's default route via
+      192.168.1.254 which is the IP address of the firewall's br0. That works
+      because of the way that the Linux network stack treats local IPv4
+      addresses; by default, it will respond to ARP "who-has" broadcasts for
+      any local address and not just for the addresses on the interface that
+      received the broadcast (but of course the MAC address returned in the
+      "here-is" response is that of the interface that received the
+      broadcast). So when <emphasis role="bold">test</emphasis> broadcasts
+      "who-has 192.168.1.254", the firewall responds with "here-is
+      192.168.1.254 00:16:3e:83:ad:28" (00:16:3e:83:ad:28 is the MAC of
+      virtual interface eth4).</para>
+
       <para>The Shorewall configuration files are shown below. All routing and
-      secondary IP addresses are handled in the SuSE network
+      secondary IP addresses are handled in the OpenSuSE network
       configuration.</para>
 
       <blockquote>

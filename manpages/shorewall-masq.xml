@@ -125,8 +125,10 @@
         role="bold">-</emphasis>|[<emphasis
         role="bold">SAME:</emphasis>[<emphasis
         role="bold">nodst:</emphasis>]][<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
-        role="bold">-</emphasis><emphasis>highport</emphasis>]|<emphasis
-        role="bold">detect</emphasis>]</term>
+        role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
+        role="bold">:random</emphasis>]|<emphasis
+        role="bold">detect</emphasis>|<emphasis
+        role="bold">random</emphasis>]</term>
 
         <listitem>
           <para>If you specify an address here, SNAT will be used and this
@@ -138,7 +140,13 @@
           <para>You may also specify a range of up to 256 IP addresses if you
           want the SNAT address to be assigned from that range in a
           round-robin fashion by connection. The range is specified by
-          <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.</para>
+          <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.
+          Beginning with Shorewall 4.0.6, you may follow the port range
+          with<emphasis role="bold"> :random</emphasis> in which case
+          assignment of ports from the list will be random. <emphasis
+          role="bold">random</emphasis> may also be specified by itself in
+          this column in which case random local port assignments are made for
+          the outgoing connections.</para>
 
           <para>Example: 206.124.146.177-206.124.146.180</para>
 

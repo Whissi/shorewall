@@ -618,7 +618,8 @@
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:{</emphasis><emphasis>interface</emphasis>|<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}][<option>:</option><replaceable>port</replaceable>]</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}][<option>:</option><replaceable>port</replaceable>[:<emphasis
+        role="bold">random</emphasis>]]</term>
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
@@ -723,10 +724,13 @@
             a service name. Additionally, Shorewall-perl 4.0.5 and later
             permit specifying a port range in the form
             <emphasis>lowport-highport</emphasis> to cause connections to be
-            assigned to ports in the range in round-robin fashion. In that
-            case, <emphasis>lowport</emphasis> and
+            assigned to ports in the range in round-robin fashion. When a port
+            range is specified, <emphasis>lowport</emphasis> and
             <emphasis>highport</emphasis> must be given as integers; service
-            names are not permitted.</para>
+            names are not permitted. Beginning with Shorewall 4.0.6, the port
+            range may be optionally followed by <emphasis
+            role="bold">:random</emphasis> which causes assignment to ports in
+            the list will be random.</para>
 
             <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
             role="bold">REDIRECT</emphasis> or <emphasis

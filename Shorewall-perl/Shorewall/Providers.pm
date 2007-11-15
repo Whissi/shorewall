@@ -25,17 +25,17 @@
 #
 package Shorewall::Providers;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw(:DEFAULT :internal);
 
 use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces);
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.0.3;
+our $VERSION = 4.0.6;
 
 use constant { LOCAL_NUMBER   => 255,
 	       MAIN_NUMBER    => 254,
@@ -83,8 +83,7 @@ INIT {
 # Set up marking for 'tracked' interfaces. Unlike in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.
 #
 sub setup_route_marking() {
-    my $mask    = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
-    my $mark_op = $config{HIGH_ROUTE_MARKS} ? '--or-mark' : '--set-mark';
+    my $mask = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
 
     require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' , 's' );
     require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
@@ -96,7 +95,7 @@ sub setup_route_marking() {
 
     while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
 	add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
-	add_rule $chainref, " -i $interface -j MARK $mark_op $mark";
+	add_rule $chainref, " -i $interface -j MARK --set-mark $mark";
     }
 
     add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
@@ -476,16 +475,11 @@ sub setup_providers() {
 
 	if ( $fn ) {
 
-	    my $first_entry = 0;
-
+	    first_entry "$doing $fn...";
+	    
 	    emit '';
 
 	    while ( read_a_line ) {
-
-		if ( $first_entry ) {
-		    progress_message2 "$doing $fn...";
-		    $first_entry = 0;
-		}
 
 		my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
 

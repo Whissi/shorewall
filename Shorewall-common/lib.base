@@ -35,7 +35,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40003
+SHOREWALL_CAPVERSION=40006
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -212,7 +212,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulefile
     local suffix
 
-    if ! list_search $modulename $MODULES ; then
+    if ! list_search $modulename $MODULES $DONT_LOAD ; then
 	shift
 
 	for suffix in $MODULE_SUFFIX ; do
@@ -983,6 +983,7 @@ determine_capabilities() {
     XMULTIPORT=
     POLICY_MATCH=
     PHYSDEV_MATCH=
+    PHYSDEV_BRIDGE=
     IPRANGE_MATCH=
     RECENT_MATCH=
     OWNER_MATCH=
@@ -1020,6 +1021,7 @@ determine_capabilities() {
 
     if qt $IPTABLES -A fooX1234 -m physdev --physdev-out eth0 -j ACCEPT; then
 	PHYSDEV_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
 	if [ -z "${KLUDGEFREE}" ]; then
 	    qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
 	fi
@@ -1112,6 +1114,7 @@ report_capabilities() {
 	report_capability "Packet Type Match" $USEPKTTYPE
 	report_capability "Policy Match" $POLICY_MATCH
 	report_capability "Physdev Match" $PHYSDEV_MATCH
+	report_capability "Physdev-is-bridged Support" $PHYSDEV_BRIDGE
 	report_capability "Packet length Match" $LENGTH_MATCH
 	report_capability "IP range Match" $IPRANGE_MATCH
 	report_capability "Recent Match" $RECENT_MATCH
@@ -1157,6 +1160,7 @@ report_capabilities1() {
     report_capability1 USEPKTTYPE
     report_capability1 POLICY_MATCH
     report_capability1 PHYSDEV_MATCH
+    report_capability1 PHYSDEV_BRIDGE
     report_capability1 LENGTH_MATCH
     report_capability1 IPRANGE_MATCH
     report_capability1 RECENT_MATCH

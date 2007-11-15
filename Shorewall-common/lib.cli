@@ -541,6 +541,9 @@ show_command() {
 		$IPTABLES -t $table -L $IPT_OPTIONS
 	    fi
 	    ;;
+	vardir)
+	    echo $VARDIR;
+	    ;;
 	*)
 	    if [ "$PRODUCT" = Shorewall ]; then
 		case $1 in
@@ -916,28 +919,59 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 # 'hits' commmand executor
 #
 hits_command() {
+    local finished=0 today=
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			t*)
+			    today=$(date +'^%b %_d.*')
+			    option=${option#t}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ $# -eq 0 ] || usage 1
+
     clear_term
     echo "$PRODUCT $version Hits at $HOSTNAME - $(date)"
     echo
 
     timeout=30
 
-    if [ $( $LOGREAD | grep -c 'IN=.* OUT=' ) -gt 0 ] ; then
-	echo "   HITS IP		  DATE"
+    if $LOGREAD | grep -q "${today}IN=.* OUT=" ; then
+	echo "   HITS IP	        DATE"
 	echo "   ---- --------------- ------"
-	$LOGREAD | grep 'IN=.* OUT=' | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | \
-	    while read count address month day; do
+	$LOGREAD | grep "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | while read count address month day; do
 	    printf '%7d %-15s %3s %2d\n' $count $address $month $day
 	done
 
 	echo ""
 
-	echo "   HITS IP		  PORT"
+	echo "   HITS IP	        PORT"
 	echo "   ---- --------------- -----"
-	$LOGREAD | grep 'IN=.* OUT=' | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
+	$LOGREAD | grep  "${today}IN=.* OUT=" | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
 						t
-						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn | \
-						    while read count address port; do
+						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn | while read count address port; do
 	    printf '%7d %-15s %d\n' $count $address $port
 	done
 
@@ -945,8 +979,7 @@ hits_command() {
 
 	echo "   HITS DATE"
 	echo "   ---- ------"
-	$LOGREAD | grep 'IN=.* OUT=' | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn | \
-	    while read count month day; do
+	$LOGREAD | grep  "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn | while read count month day; do
 	    printf '%7d %3s %2d\n' $count $month $day
 	done
 
@@ -954,8 +987,7 @@ hits_command() {
 
 	echo "   HITS  PORT SERVICE(S)"
 	echo "   ---- ----- ----------"
-	$LOGREAD | grep 'IN=.* OUT=.*DPT' | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
-	    while read count port ; do
+	$LOGREAD | grep "${today}IN=.* OUT=.*DPT" | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | while read count port ; do
 	    # List all services defined for the given port
 	    srv=$(grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | cut -f 1 -d' ' | sort -u)
 	    srv=$(echo $srv | sed 's/ /,/g')

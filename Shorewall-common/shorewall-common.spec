@@ -1,5 +1,5 @@
 %define name shorewall-common
-%define version 4.0.5
+%define version 4.0.6
 %define release 1
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -153,6 +153,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.IPsec
 %attr(0644,root,root) /usr/share/shorewall/macro.IPsecah
 %attr(0644,root,root) /usr/share/shorewall/macro.IPsecnat
+%attr(0644,root,root) /usr/share/shorewall/macro.Jabberd
+%attr(0644,root,root) /usr/share/shorewall/macro.JabberPlain
+%attr(0644,root,root) /usr/share/shorewall/macro.JabberSecure
 %attr(0644,root,root) /usr/share/shorewall/macro.Jetdirect
 %attr(0644,root,root) /usr/share/shorewall/macro.L2TP
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAP
@@ -240,6 +243,14 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Thu Nov 15 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.6-1
+* Sat Nov 10 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.6-0RC3
+* Wed Nov 07 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.6-0RC2
+* Thu Oct 25 2007 Tom Eastep tom@shorewall.net
+- Updated to 4.0.6-0RC1
 * Tue Oct 03 2007 Tom Eastep tom@shorewall.net
 - Updated to 4.0.5-1
 * Wed Sep 05 2007 Tom Eastep tom@shorewall.net

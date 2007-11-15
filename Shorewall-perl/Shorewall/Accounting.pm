@@ -25,17 +25,17 @@
 #
 package Shorewall::Accounting;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw(:DEFAULT :internal);
 
 use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.0.3;
+our $VERSION = 4.0.6;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -174,18 +174,13 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
 sub setup_accounting() {
 
-    my $first_entry = 1;
-
     my $fn = open_file 'accounting';
+
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
 
 	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line1 1, 9, 'Accounting File';
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
 
 	if ( $action eq 'COMMENT' ) {
 	    process_comment;

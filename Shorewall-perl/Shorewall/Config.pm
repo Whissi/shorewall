@@ -36,65 +36,73 @@ use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
+use Scalar::Util 'reftype';
 
 our @ISA = qw(Exporter);
 #
 # Imported variables should be treated as read-only by importers
 #
 our @EXPORT = qw(
-		 create_temp_object
-		 finalize_object
-		 emit
-		 emit_unindented
-		 save_progress_message
-		 save_progress_message_short
-		 set_timestamp
-		 set_verbose
-		 set_command
+		 warning_message
+		 fatal_error
 		 progress_message
 		 progress_message2
 		 progress_message3
-		 push_indent
-		 pop_indent
-		 copy
-		 create_temp_aux_config
-		 finalize_aux_config
-		 warning_message
-		 fatal_error
-		 set_shorewall_dir
-		 set_debug
-		 find_file
-		 split_line
-		 split_line1
-		 split_line2
-		 open_file
-		 close_file
-		 push_open
-		 pop_open
-		 read_a_line
-		 validate_level
-		 qt
-		 ensure_config_path
-		 get_configuration
-		 require_capability
-		 report_capabilities
-		 propagateconfig
-		 append_file
-		 run_user_exit
-		 run_user_exit1
-		 run_user_exit2
-		 generate_aux_config
+                );
 
-		 $command
-		 $doing
-		 $done
-		 $currentline
-		 %config
-		 %globals
-		 %capabilities );
+our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shorewall);
 
-our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path );
-our $VERSION = 4.0.5;
+our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
+				       finalize_object
+				       emit
+				       emit_unindented
+				       save_progress_message
+				       save_progress_message_short
+				       set_timestamp
+				       set_verbose
+				       set_command
+				       push_indent
+				       pop_indent
+				       copy
+				       create_temp_aux_config
+				       finalize_aux_config
+				       set_shorewall_dir
+				       set_debug
+				       find_file
+				       split_line
+				       split_line1
+				       split_line2
+				       first_entry
+				       open_file
+				       close_file
+				       push_open
+				       pop_open
+				       read_a_line
+				       validate_level
+				       qt
+				       ensure_config_path
+				       get_configuration
+				       require_capability
+				       report_capabilities
+				       propagateconfig
+				       append_file
+				       run_user_exit
+				       run_user_exit1
+				       run_user_exit2
+				       generate_aux_config
+				       
+				       $command
+				       $doing
+				       $done
+				       $currentline
+				       %config
+				       %globals
+				       %capabilities
+				     ) ] );	       
+
+Exporter::export_ok_tags('internal');
+
+our $VERSION = 4.0.6;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -156,6 +164,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 USEPKTTYPE      => 'Packet Type Match',
 		 POLICY_MATCH    => 'Policy Match',
 		 PHYSDEV_MATCH   => 'Physdev Match',
+		 PHYSDEV_BRIDGE  => 'Physdev-is-bridged support',
 		 LENGTH_MATCH    => 'Packet length Match',
 		 IPRANGE_MATCH   => 'IP Range Match',
 		 RECENT_MATCH    => 'Recent Match',
@@ -197,6 +206,10 @@ our $currentline;             # Current config file line image
 our $currentfile;             # File handle reference
 our $currentfilename;         # File NAME
 our $currentlinenumber;       # Line number
+our $scriptfile;              # File Handle Reference to current temporary file being written by an in-line Perl script
+our $scriptfilename;          # Name of that file.
+our @tempfiles;               # Files that need unlinking at END
+our $first_entry;             # Message to output or function to call on first non-blank line of a file
 
 our $shorewall_dir;           # Shorewall Directory
 
@@ -230,8 +243,8 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.5',
-		    CAPVERSION => 40003 ,
+		    VERSION =>  '4.0.6',
+		    CAPVERSION => 40006 ,
 		  );
     #
     # From shorewall.conf file
@@ -324,6 +337,7 @@ sub initialize() {
 		KEEP_RT_TABLES => undef,
 		DELETE_THEN_ADD => undef,
 		MULTICAST => undef,
+		DONT_LOAD => '',
 		#
 		# Packet Disposition
 		#
@@ -344,6 +358,7 @@ sub initialize() {
 	       USEPKTTYPE => undef,
 	       POLICY_MATCH => undef,
 	       PHYSDEV_MATCH => undef,
+	       PHYSDEV_BRIDGE => undef,
 	       LENGTH_MATCH => undef,
 	       IPRANGE_MATCH => undef,
 	       RECENT_MATCH => undef,
@@ -385,6 +400,7 @@ sub initialize() {
     $currentfile = undef;     # File handle reference
     $currentfilename = '';    # File NAME
     $currentlinenumber = 0;   # Line number
+    $first_entry = 0;         # Message to output or function to call on first non-blank file entry
 
     $shorewall_dir = '';      #Shorewall Directory
 
@@ -403,11 +419,15 @@ sub warning_message
     my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
 
+    $| = 1;
+
     if ( $debug ) {
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
     } else {
 	print STDERR "   WARNING: @_$currentlineinfo\n";
     }
+
+    $| = 0;
 }
 
 #
@@ -416,8 +436,15 @@ sub warning_message
 sub fatal_error	{
     my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
+    $| = 1;
     confess "   ERROR: @_$currentlineinfo" if $debug;
     die "   ERROR: @_$currentlineinfo\n";
+}
+
+sub fatal_error1	{
+    $| = 1;
+    confess "   ERROR: @_" if $debug;
+    die "   ERROR: @_\n";
 }
 
 #
@@ -793,21 +820,33 @@ sub open_file( $ ) {
 }
 
 #
+# Pop the include stack
+#
+sub pop_include() {
+    my $arrayref = pop @includestack;
+
+    if ( $arrayref ) {
+	( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
+    } else {
+	$currentfile = undef;
+    }
+}    
+
+#
 # This function is normally called below in read_a_line() when EOF is reached. Clients of the
 # module may also call the function to close the file before EOF
 #
 
 sub close_file() {
     if ( $currentfile ) {
-	close $currentfile;
+	my $result = close $currentfile;
 
-	my $arrayref = pop @includestack;
+	pop_include;
+	
+	fatal_error "SHELL Script failed" unless $result;
 
-	if ( $arrayref ) {
-	    ( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
-	} else {
-	    $currentfile = undef;
-	}
+	$first_entry = 0;
+
     }
 }
 
@@ -828,13 +867,143 @@ sub push_open( $ ) {
 
 sub pop_open() {
     @includestack = @{pop @openstack};
+    pop_include;
+}
 
-    my $arrayref = pop @includestack;
+sub shorewall {
+    unless ( $scriptfile ) {
+	fatal_error "shorewall() may not be called in this context" unless $currentfile;
 
-    if ( $arrayref ) {
-	( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
-    } else {
+	$dir ||= '/tmp/';
+
+	eval {
+	    ( $scriptfile, $scriptfilename ) = tempfile ( 'scriptfileXXXX' , DIR => $dir );
+	};
+
+	fatal_error "Unable to create temporary file in directory $dir" if $@;
+    }
+
+    print $scriptfile "@_\n";
+}
+
+#
+# We don't announce that we are checking/compiling a file until we determine that the file contains 
+# at least one non-blank, non-commentary line.
+#
+# The argument to this function may be either a scalar or a function reference. When the first
+# non-blank/non-commentary line is reached: 
+#
+# - if a function reference was passed to first_entry(), that function is called
+# - otherwise, the argument to first_entry() is passed to progress_message2().
+#
+# We do this processing in read_a_line() rather than in the higher-level routines because
+# Embedded Shell/Perl scripts are processed out of read_a_line(). If we were to defer announcement
+# until we get back to the caller of read_a_line(), we could issue error messages about parsing and 
+# running scripts in the file before we'd even indicated that we are processing it.
+#
+sub first_entry( $ ) {
+    $first_entry = $_[0];
+    my $reftype = reftype $first_entry;
+    if ( $reftype ) {
+	fatal_error "Invalid argument to first_entry()" unless $reftype eq 'CODE';
+    }
+}   
+
+sub embedded_shell( $ ) {
+    my $multiline = shift;
+
+    fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
+    my ( $command, $linenumber ) = ( "/bin/sh -c '$currentline", $currentlinenumber );
+    
+    if ( $multiline ) {
+	#
+	# Multi-line script
+	#
+	fatal_error "Invalid BEGIN SHELL directive" unless $currentline =~ /^\s*$/;
+	$command .= "\n";
+
+	my $last = 0;
+		    
+	while ( <$currentfile> ) {
+	    $currentlinenumber++;
+	    last if $last = s/^\s*END(\s+SHELL)?\s*;?//;
+	    $command .= $_;
+	}
+	
+	fatal_error ( "Missing END SHELL" ) unless $last;
+	fatal_error ( "Invalid END SHELL directive" ) unless /^\s*$/;
+    }
+
+    $command .= q(');
+    
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+    $currentfile = undef;
+    open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
+    $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
+    $currentline = '';
+    $currentlinenumber = 0;
+}
+
+sub embedded_perl( $ ) {
+    my $multiline = shift;
+		
+    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config qw/shorewall/;\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );		
+
+    if ( $multiline ) {
+	#
+	# Multi-line script
+	#
+	fatal_error "Invalid BEGIN PERL directive" unless $currentline =~ /^\s*$/;
+	$command .= "\n";
+		    
+	my $last = 0;
+		    
+	while ( <$currentfile> ) {
+	    $currentlinenumber++;
+	    last if $last = s/^\s*END(\s+PERL)?\s*;?//;
+	    $command .= $_;
+	}
+	
+	fatal_error ( "Missing END PERL" ) unless $last;
+	fatal_error ( "Invalid END PERL directive" ) unless /^\s*$/;
+    }
+    
+    unless (my $return = eval $command ) {
+	if ( $@ ) {
+	    #
+	    # Perl found the script offensive or the script itself died
+	    #
+	    $@ =~ s/, <\$currentfile> line \d+//g;
+	    fatal_error1 "$@";
+	}
+	
+	unless ( defined $return ) {
+	    fatal_error "Perl Script failed: $!" if $!; 
+	    fatal_error "Perl Script failed";
+	} 
+
+	fatal_error "Perl Script Returned False";
+    }
+    
+    if ( $scriptfile ) {
+	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
+
+	close $scriptfile or fatal_error "Internal Error in embedded_perl()";
+	
+	$scriptfile = undef;
+	
+	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 	$currentfile = undef;
+	
+	open $currentfile, '<', $scriptfilename or fatal_error "Unable to open Perl Script $scriptfilename";
+
+	push @tempfiles, $scriptfilename unless unlink $scriptfilename; #unlink fails on Cygwin
+	
+	$scriptfilename = '';
+	
+	$currentfilename = "PERL\@$currentfilename:$linenumber";
+	$currentline = '';
+	$currentlinenumber = 0;
     }
 }
 
@@ -844,6 +1013,7 @@ sub pop_open() {
 #   - Ignore blank or comment-only lines.
 #   - Remove trailing comments.
 #   - Handle Line Continuation
+#   - Handle embedded SHELL and PERL scripts
 #   - Expand shell variables from $ENV.
 #   - Handle INCLUDE <filename>
 #
@@ -871,40 +1041,57 @@ sub read_a_line() {
 	    # Ignore ( concatenated ) Blank Lines
 	    #
 	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
-
 	    #
-	    # Expand Shell Variables using %ENV
+	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
-	    #                            $1      $2      $3           -     $4
-	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
-		my $val = $ENV{$3};
-		$val = '' unless defined $val;
-		$currentline = join( '', $1 , $val , $4 );
+	    if ( $first_entry ) {
+		reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
+		$first_entry = 0;
 	    }
-
-	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
-
-		my @line = split ' ', $currentline;
-
-		fatal_error "Invalid INCLUDE command"    if @line != 2;
-		fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
-
-		my $filename = find_file $line[1];
-
-		fatal_error "INCLUDE file $filename not found" unless -f $filename;
-		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
-
-		if ( -s _ ) {
-		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
-		    $currentfile = undef;
-		    do_open_file $filename;
-		} else {
-		    $currentlinenumber = 0;
-		}
-
-		$currentline = '';
+	    #
+	    # Must check for shell/perl before doing variable expansion
+	    #
+	    if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
+		embedded_shell( $1 );
+	    } elsif ( $currentline =~ s/^\s*(BEGIN\s+)?PERL\s*\;?// ) {
+		embedded_perl( $1 );
 	    } else {
-		return 1;
+		my $count = 0;
+		#
+		# Expand Shell Variables using %ENV
+		#
+		#                            $1      $2      $3           -     $4
+		while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
+		    my $val = $ENV{$3};
+		    $val = '' unless defined $val;
+		    $currentline = join( '', $1 , $val , $4 );
+		    fatal_error "Variable Expansion Loop" if ++$count > 100;
+		}
+		
+		if ( $currentline =~ /^\s*INCLUDE\s/ ) {
+		    
+		    my @line = split ' ', $currentline;
+		    
+		    fatal_error "Invalid INCLUDE command"    if @line != 2;
+		    fatal_error "INCLUDEs/Scripts nested too deeply" if @includestack >= 4;
+		    
+		    my $filename = find_file $line[1];
+		    
+		    fatal_error "INCLUDE file $filename not found" unless -f $filename;
+		    fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
+		    
+		    if ( -s _ ) {
+			push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+			$currentfile = undef;
+			do_open_file $filename;
+		    } else {
+			$currentlinenumber = 0;
+		    }
+		    
+		    $currentline = '';
+		} else {
+		    return 1;
+		}
 	    }
 	}
 
@@ -1085,6 +1272,10 @@ sub load_kernel_modules( ) {
     if ( $moduleloader && open_file 'modules' ) {
 	my %loadedmodules;
 
+	for ( split /,/, $config{DONT_LOAD} ) {
+	    $loadedmodules{$_} = 1;
+	}
+
 	progress_message "Loading Modules...";
 
 	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
@@ -1155,7 +1346,8 @@ sub determine_capabilities( $ ) {
     $capabilities{POLICY_MATCH}    = qt( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
 
     if ( qt( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" ) ) {
-	$capabilities{PHYSDEV_MATCH} = 1;
+	$capabilities{PHYSDEV_MATCH}  = 1;
+	$capabilities{PHYSDEV_BRIDGE} = qt( "$iptables -A $sillyname -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth1 -j ACCEPT" );
 	unless ( $capabilities{KLUDGEFREE} ) {
 	    $capabilities{KLUDGEFREE} = qt( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
 	}
@@ -1389,11 +1581,19 @@ sub get_configuration( $ ) {
 
     my $export = $_[0];
 
+    our ( $once, @originalinc );
+    
+    @originalinc = @INC unless $once++;
+
     ensure_config_path;
 
     process_shorewall_conf;
 
     ensure_config_path;
+
+    @INC = @originalinc;
+
+    unshift @INC, @config_path;
 
     default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
 
@@ -1641,10 +1841,17 @@ sub run_user_exit( $ ) {
     if ( -f $file ) {
 	progress_message "Processing $file...";
 
-	unless (my $return = eval `cat $file` ) {
+	my $command = qq(package Shorewall::User;\nno strict;\n# line 1 "$file"\n) . `cat $file`;
+
+	unless (my $return = eval $command ) {
 	    fatal_error "Couldn't parse $file: $@" if $@;
-	    fatal_error "Couldn't do $file: $!"    unless defined $return;
-	    fatal_error "Couldn't run $file";
+	    
+	    unless ( defined $return ) {
+		fatal_error "Couldn't do $file: $!" if $!;    
+		fatal_error "Couldn't do $file";
+	    }    
+	    
+	    fatal_error "$file returned a false value";
 	}
     }
 }
@@ -1662,14 +1869,21 @@ sub run_user_exit1( $ ) {
 	if ( read_a_line ) {
 	    close_file;
 
-	    unless (my $return = eval `cat $file` ) {
-		fatal_error "Couldn't parse $file: $@" if $@;
-		fatal_error "Couldn't do $file: $!"    unless defined $return;
-		fatal_error "Couldn't run $file";
-	    }
-	}
+	    my $command = qq(package Shorewall::User;\n# line 1 "$file"\n) . `cat $file`;
 
-	pop_open;
+	    unless (my $return = eval $command ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+
+		unless ( defined $return ) {
+		    fatal_error "Couldn't do $file: $!" if $!;
+		    fatal_error "Couldn't do $file";
+		}
+
+		fatal_error "$file returned a false value";
+	    }
+	} else {
+	    pop_open;
+	}
     }
 }
 
@@ -1688,8 +1902,13 @@ sub run_user_exit2( $$ ) {
 
 	    unless (my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
-		fatal_error "Couldn't do $file: $!"    unless defined $return;
-		fatal_error "Couldn't run $file";
+
+		unless ( defined $return ) {
+		    fatal_error "Couldn't do $file: $!" if $!;
+		    fatal_error "Couldn't do $file";
+		}
+
+		fatal_error "$file returned a false value";
 	    }
 	}
 
@@ -1733,10 +1952,17 @@ sub generate_aux_config() {
 }
 
 END {
-    if ( $object ) {
-	close $object;
-	unlink $tempfile;
-    }
+    #
+    # Close files first in case we're running under Cygwin
+    #
+    close  $object         if $object;
+    close  $scriptfile     if $scriptfile;
+    #
+    # Unlink temporary files
+    #
+    unlink $tempfile       if $tempfile;
+    unlink $scriptfilename if $scriptfilename;
+    unlink $_ for @tempfiles; 
 }
 
 1;

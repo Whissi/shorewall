@@ -62,6 +62,7 @@
 #	   shorewall show tc			   Display traffic control info
 #	   shorewall show classifiers		   Display classifiers
 #          shorewall show capabilities             Display iptables/kernel capabilities
+#          shorewall show vardir                   Display the VARDIR setting.
 #	   shorewall version			   Display the installed version id
 #	   shorewall check [ -e ] [ <directory> ]  Dry-run compilation.
 #	   shorewall try <directory> [ <timeout> ] Try a new configuration and if
@@ -1283,7 +1284,7 @@ usage() # $1 = exit status
     echo "   export [ -C {shell|perl} ] [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
-    echo "   hits"
+    echo "   hits [ -t ]"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
@@ -1298,7 +1299,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones} ]"
+    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"
     echo "   start [ -f ] [ -n ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
@@ -1633,8 +1634,8 @@ case "$COMMAND" in
     hits)
 	get_config Yes No Yes
 	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] || usage 1
-	hits_command
+	shift
+	hits_command $@
 	;;
     version)
 	shift

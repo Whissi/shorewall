@@ -49,6 +49,7 @@
 #     shorewall-lite show tc			   Display traffic control info
 #     shorewall-lite show classifiers		   Display classifiers
 #     shorewall-lite show capabilities             Display iptables/kernel capabilities
+#     shorewall-lite show vardir                   Display VARDIR setting
 #     shorewall-lite version			   Display the installed version id
 #     shorewall-lite logwatch [ refresh-interval ] Monitor the local log for Shorewall
 #						   messages.
@@ -356,7 +357,7 @@ usage() # $1 = exit status
     echo "   dump [ -x ]"
     echo "   forget [ <file name> ]"
     echo "   help"
-    echo "   hits"
+    echo "   hits [ -t ]"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
@@ -368,7 +369,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [ -f ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|ip|log|mangle|nat|routing|tc|zones} ]"
+    echo "   show [ -x ] [ -m ] [ -f ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|ip|log|mangle|nat|routing|tc|vardir|zones} ]"
     echo "   start [ -f ] [ -n ]"
     echo "   stop"
     echo "   status"
@@ -597,8 +598,8 @@ case "$COMMAND" in
 	;;
     hits)
 	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] || usage 1
-	hits_command
+	shift
+	hits_command $@
 	;;
     version)
 	echo $version Lite

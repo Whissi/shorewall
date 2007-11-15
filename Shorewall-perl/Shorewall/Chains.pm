@@ -27,116 +27,127 @@
 package Shorewall::Chains;
 require Exporter;
 
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::IPAddrs;
-
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( STANDARD
-		  NATRULE
-		  BUILTIN
-		  NONAT
-		  NATONLY
-		  REDIRECT
-		  ACTION
-		  MACRO
-		  LOGRULE
-		  NFQ
-		  NO_RESTRICT
-		  PREROUTE_RESTRICT
-		  INPUT_RESTRICT
-		  OUTPUT_RESTRICT
-		  POSTROUTE_RESTRICT
-		  ALL_RESTRICT
-
-		  process_comment
-		  clear_comment
-		  incr_cmd_level
-		  decr_cmd_level
-		  add_command
-		  add_commands
-		  mark_referenced
+our @EXPORT = qw( 
 		  add_rule
 		  insert_rule
-		  chain_base
-		  forward_chain
-		  input_chain
-		  output_chain
-		  masq_chain
-		  syn_flood_chain
-		  mac_chain
-		  macrecent_target
-		  dynamic_fwd
-		  dynamic_in
-		  dynamic_out
-		  dynamic_chains
-		  dnat_chain
-		  snat_chain
-		  ecn_chain
-		  first_chains
 		  new_chain
-		  ensure_chain
-		  ensure_filter_chain
-		  ensure_mangle_chain
-		  new_standard_chain
-		  new_builtin_chain
-		  initialize_chain_table
-		  finish_section
-		  setup_zone_mss
-		  newexclusionchain
-		  clearrule
-		  validate_portrange
-		  do_proto
-		  mac_match
-		  verify_mark
-		  verify_small_mark
-		  validate_mark
-		  do_test
-		  do_ratelimit
-		  do_user
-		  do_tos
-		  match_source_dev
-		  match_dest_dev
-		  iprange_match
-		  match_source_net
-		  match_dest_net
-		  match_orig_dest
-		  match_ipsec_in
-		  match_ipsec_out
+		  new_manual_chain
+		  ensure_manual_chain
 		  log_rule_limit
-		  log_rule
-		  expand_rule
-		  addnatjump
-		  insertnatjump
-		  get_interface_address
-		  get_interface_addresses
-		  get_interface_bcasts
-		  set_global_variables
-		  create_netfilter_load
-		  create_chainlist_reload
 
 		  %chain_table
 		  $nat_table
 		  $mangle_table
 		  $filter_table
-		  $section
-		  %sections
-		  %targets
 		  );
-our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.0.5;
+
+our %EXPORT_TAGS = ( 
+		    internal => [  qw( STANDARD
+				       NATRULE
+				       BUILTIN
+				       NONAT
+				       NATONLY
+				       REDIRECT
+				       ACTION
+				       MACRO
+				       LOGRULE
+				       NFQ
+				       CHAIN
+				       NO_RESTRICT
+				       PREROUTE_RESTRICT
+				       INPUT_RESTRICT
+				       OUTPUT_RESTRICT
+				       POSTROUTE_RESTRICT
+				       ALL_RESTRICT
+				       
+				       add_command
+				       add_commands
+				       process_comment
+				       clear_comment
+				       incr_cmd_level
+				       decr_cmd_level
+				       chain_base 
+				       forward_chain
+				       input_chain
+				       output_chain
+				       masq_chain
+				       syn_flood_chain
+				       mac_chain
+				       macrecent_target
+				       dynamic_fwd
+				       dynamic_in
+				       dynamic_out
+				       dynamic_chains
+				       dnat_chain
+				       snat_chain
+				       ecn_chain
+				       first_chains
+				       mark_referenced
+				       ensure_chain
+				       ensure_mangle_chain
+				       new_standard_chain
+				       new_builtin_chain
+				       ensure_filter_chain
+				       initialize_chain_table
+				       finish_section
+				       setup_zone_mss
+				       newexclusionchain
+				       clearrule
+				       validate_port
+				       proto_name
+				       do_proto
+				       mac_match
+				       verify_mark
+				       verify_small_mark
+				       validate_mark
+				       do_test
+				       do_ratelimit
+				       do_user
+				       do_tos
+				       match_source_dev
+				       match_dest_dev
+				       iprange_match
+				       match_source_net
+				       match_dest_net
+				       match_orig_dest
+				       match_ipsec_in
+				       match_ipsec_out
+				       log_rule
+				       expand_rule
+				       addnatjump
+				       insertnatjump
+				       get_interface_address
+				       get_interface_addresses
+				       get_interface_bcasts
+				       set_global_variables
+				       create_netfilter_load
+				       create_chainlist_reload
+				       $section
+				       %sections
+				       %targets
+				     ) ],
+		   );
+
+Exporter::export_ok_tags('internal');
+
+our $VERSION = 4.0.6;
 
 #
 # Chain Table
 #
 #    %chain_table { <table> => { <chain1>  => { name         => <chain name>
 #                                               table        => <table name>
-#                                               is_policy    => 0|1
-#                                               is_optional  => 0|1
-#                                               referenced   => 0|1 -- If 1, will be written to the iptables-restore-input.
-#                                               builtin      => 0|1 -- If 1, one of Netfilter's built-in chains.
+#                                               is_policy    => undef|1 -- if 1, this is a policy chain
+#                                               is_optional  => undef|1 -- See below.
+#                                               referenced   => undef|1 -- If 1, will be written to the iptables-restore-input.
+#                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
+#                                               manual       => undef|1 -- If 1, a manual chain.
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
@@ -156,7 +167,7 @@ our $VERSION = 4.0.5;
 #                 }
 #
 #       'is_optional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
-#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are optional.
+#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with is_optional == 1.
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
@@ -186,6 +197,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       MACRO    => 128,            #A Macro
 	       LOGRULE  => 256,            #'LOG'
 	       NFQ      => 512,            #'NFQUEUE'
+	       CHAIN    => 1024,           #Manual Chain
 	   };
 
 our %targets;
@@ -423,6 +435,7 @@ sub add_rule($$;$)
 		    if ( ++$count == 15 ) {
 			if ( $separator eq ':' ) {
 			    unshift @ports, $port, ':';
+			    chop $newports;
 			    last;
 			} else {
 			    $newports .= $port;
@@ -676,6 +689,22 @@ sub new_standard_chain($) {
     $chainref;
 }
 
+sub new_manual_chain($) {
+    my $chain = $_[0];
+    fatal_error "Duplicate Chain Name ($chain)" if $targets{$chain} || $filter_table->{$chain};
+    $targets{$chain} = CHAIN;
+    ( my $chainref = ensure_filter_chain( $chain, 0) )->{manual} = 1;
+    $chainref->{referenced} = 1;
+    $chainref;
+}
+
+sub ensure_manual_chain($) {
+    my $chain = $_[0];
+    my $chainref = $filter_table->{$chain} || new_manual_chain($chain);
+    fatal_error "$chain exists and is not a manual chain" unless $chainref->{manual};
+    $chainref;
+}
+
 #
 # Add all builtin chains to the chain table
 #
@@ -866,25 +895,6 @@ sub validate_portpair( $$ ) {
     }
 
     join ':', @ports;
-
-}
-
-sub validate_portrange( $$ ) {
-    my ($proto, $portpair) = @_;
-
-    if ( $portpair =~ tr/-/-/ > 1 || substr( $portpair,  0, 1 ) eq '-' || substr( $portpair, -1, 1 ) eq '-' ) {
-	fatal_error "Invalid port range ($portpair)";
-    }
-
-    my @ports = split /-/, $portpair, 2;
-
-    $_ = validate_port( proto_name( $proto ), $_) for ( @ports );
-
-    if ( @ports == 2 ) {
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
-    }
-
-    join '-', @ports;
 
 }
 
@@ -1208,7 +1218,11 @@ sub match_dest_dev( $ ) {
     my $interface = shift;
     my $interfaceref =  find_interface( $interface );
     if ( $interfaceref && $interfaceref->{options}{port} ) {
-	"-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
+	if ( $capabilities{PHYSDEV_BRIDGE} ) {
+	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";
+	} else {
+	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
+	}
     } else {
 	"-o $interface ";
     }

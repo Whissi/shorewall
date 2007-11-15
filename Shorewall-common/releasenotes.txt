@@ -1,4 +1,4 @@
-Shorewall 4.0 Patch release 5
+Shorewall 4.0 Patch release 6
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 0  H I G H L I G H T S
@@ -26,197 +26,217 @@ Shorewall 4.0 Patch release 5
    Shorewall-perl compiler. This support utilizes the reduced-function
    physdev match support available in Linux kernel 2.6.20 and later.
 
-Problems corrected in Shorewall 4.0.5.
+Problems corrected in Shorewall-perl 4.0.6.
 
-1)  Previously, Shorewall-perl misprocessed $FW::<port> in the DEST
-    column of a REDIRECT rule, generating an error. '$FW::<port>' now
-    produces the same effect as '<port>'.
+1)  In a DNAT or REDIRECT rule, if no serverport was given and the DEST
+    PORT(S) list contained a service name containing a hyphen ("-") then
+    an ERROR was generated.
 
-2)  If the PROTOCOL (PROTO) column contained 'TCP' or 'UDP' and SOURCE
-    PORT(S) or DEST PORT(S) were given, then Shorewall-perl rejected
-    the entry with the error:
+    Example -- Rules file:
 
-    ERROR: SOURCE/DEST PORT(S) not allowed with PROTO TCP : /etc/shorewall/rules 
+	DNAT	net	loc:$WINDOWS_IP tcp	https,pptp,ms-wbt-server,4125
 
-    The rule was accepted if 'tcp' or 'udp' was used instead.
+    Results in:
 
-3)  Shorewall-shell now removes any default bindings of ipsets before
-    attempting to reload them. Previously, default bindings were not
-    removed with the result that the ipsets could not be destroyed.
+	ERROR: Invalid port range (ms:wbt:server) : rules (line 49)
 
-Other changes in Shorewall 4.0.5.
+    Problem was introduced in Shorewall 4.0.5 and does not occur in
+    earlier releases.
 
-1)  Two new options have been added to /etc/shorewall/hosts
-    (Shorewall-perl only).
+2)  If a long destination port list needed to be broken at a port pair,
+    the generated rule contained an extra comma which resulted in an
+    iptables-restore failure.
 
-    broadcast: Permits limited broadcast (destination 255.255.255.255)
-               to the zone.
+3)  Several problems involving port ranges and port lists in REDIRECT
+    rules have been corrected.
 
-    destonly: Normally used with the Multi-cast range. Specifies that
-	      traffic will be sent to the specified net(s) but that 
-	      no traffic will be received from the net(s).
+4)  Shorewall-perl no longer requires an address in the GATEWAY column
+    of /etc/shorewall/tunnels. If the column is left empty (or contains
+    '-') then 0.0.0.0/0 is assumed.
+
+5)  Previously with Shorewall-perl, redirecting both STDOUT and STDERR
+    to the same file descriptor resulted in scrambled output between
+    the two. The error messages were often in the middle of the
+    regular output far ahead of the point where the error occurred.
+
+    This problem was possible in the Debian Shorewall init script
+    (/etc/init.d/shorewall) which redirects output to the
+    Debian-specific /var/log/shorewall-init.log file in this way:
+
+        $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && ...
+
+6)  With both compilers, when HIGH_ROUTE_MARKS=Yes, unpredictable
+    results could occur when marking in the PREROUTING or OUTPUT
+    chains. When a rule specified a mark value > 255, the compilers
+    were using the '--or-mark' operator rather than the '--set-mark'
+    operator. Consequently, when a packet matched more than one
+    rule, the resulting routing mark was the logical product of the
+    mark values in the matching rules rather than the mark value from
+    the last matching rule.
 
     Example:
 
-    wifi	eth1:192.168.3.0/24		broadcast
-    wifi	eth1:224.0.0.0/4		destonly
+	0x100	192.168.1.44	0.0.0.0/0
+	0x200	0.0.0.0/0	0.0.0.0/0	tcp	25
 
-    In that example, limited broadcasts from the firewall with a source
-    IP in the 192.168.3.0/24 range will be acccepted as will multicasts
-    (with any source address).
+    A TCP packet from 192.168.1.44 with destination port 25 would have
+    a  mark value of 0x300 rather than the expected value of 0x200.
 
-2)  A MULTICAST option has been added to shorewall.conf. This option
-    will normally be set to 'No' (the default). It should be set to 
-    'Yes' under the following circumstances:
+7)  Previously, a 'start -f' on Shorewall Lite would produce the
+    following distressing output before starting the firewall:
 
-    a) You have an interface that has parallel zones defined via
-       /etc/shorewall/hosts.
-    b) You want to forward multicast packets to two or more of those
-       parallel zones.
+    make: *** No rule to make target `/firewall', needed by
+    `/var/lib/shorewall-lite/restore'.  Stop.
 
-    In such cases, you will configure a 'destonly' network on each 
-    zone receiving multicasts.
+    Furthermore, the Makefile for both Shorewall and Shorewall Lite
+    failed to take into account the /etc/shorewall/vardir file.
 
-    The MULTICAST option is only recognized by Shorewall-perl and is
-    ignored by Shorewall-shell.
+    This has been corrected. As part of the fix, both /sbin/shorewall
+    and /sbin/shorewall-lite support a "show vardir" command that
+    displays the VARDIR setting.
 
-3)  As announced in the Shorewall 4.0.4 release notes, Shorewall-perl
-    no longer supports the 'detectnets' option. Specifying that option
-    now results in the following message:
+Other changes in Shorewall 4.0.6.
 
-    WARNING: Support for the 'detectnets' option has been removed
+1)  Shorewall-perl now uses the '--physdev-is-bridged' option when it
+    is available. This option will suppress messages like the following:
 
-    It is suggested that 'detectnets' be replaced by
-    'routefilter,logmartians'. That will produce the same filtering
-    effect as 'detectnets' while eliminating 1-2 rules per connection.
+    kernel: physdev match: using --physdev-out in the OUTPUT, FORWARD and
+    POSTROUTING chains for non-bridged traffic is not supported
+    anymore.
 
-    One user has asked how to retain the output of 'shorewall show
-    zones' if the 'detectnets' option is removed. While I don't advise
-    doing so, you can reproduce the current 'shorewall show' behavior
-    as follows.
+    This change only affects users who use bport/bport4 zones in a
+    briged configuration and requires that capabilities files be
+    regenerated using Shorewall-common or Shorewall-lite 4.0.6.
 
-    Suppose that you have a zone named 'wifi' that produces the
-    following output with 'detectnets':
+2)  Shorewall-perl now allows you to embed Shell or Perl scripts in
+    all configuration files except /etc/shorewall/params and
+    /etc/shorewall/shorewall.conf (As always, you can continue to
+    include arbitrary shell code in /etc/shorewall/params).
 
-    wifi (ipv4)
-      eth1:192.168.3.0/24
- 
-    You can reproduce this behavior as follows:
+    To embed a one-line script, use one of the following:
 
-    /etc/shorewall/interfaces:
+        SHELL <shell script>
+	PERL <perl script>
 
-    -	eth1	detect	...
+    For multi-line scripts, use:
 
-    /etc/shorewall/hosts:
+	BEGIN SHELL
+	<shell script>
+	END SHELL
 
-    wifi	eth1:192.168.3.0/24	broadcast
+	BEGIN PERL
+	<perl script>
+	END PERL
 
-    If you send multicast to the 'wifi' zone, you also need this entry
-    in your hosts file:
+    For SHELL scripts, the output from the script is processed as if it
+    were part of the file.
 
-    wifi	eth1:224.0.0.0/4		destonly
+    Example 1 (Shell): To generate SMTP/ACCEPT rules from zones a b c d
+    and e to the firewall:
 
-4)  (Shorewall-perl only) The server port in a DNAT or REDIRECT rule
-    may now be specified as a service name from
-    /etc/services. Additionally:
+	Either:
 
-    a) A port-range may be specified as the service port expressed in
-       the format <low port>-<high port>. Connections are assigned to
-       server ports in round-robin fashion.
+	    BEGIN SHELL 
+	    for z in a b c d e; do
+	        echo SMTP/ACCEPT $z fw tcp 25
+	    done
+	    END SHELL
 
-    b) The compiler only permits a server port to be specified if the
-       protocol is tcp or udp.
+        or
 
-    c) The compiler ensures that the server IP address is valid (note
-       that it is still not permitted to specify the server address as a
-       DNS name).
+	    SHELL for z in a b c d e; do echo SMTP/ACCEPT $z fw tcp 25; done
 
-5)  (Shorewall-perl only) Users are complaining that when they migrate
-    to Shorewall-perl, they have to restrict their port lists to 15
-    ports. In this release, we relax that restriction on destination
-    port lists. Since the SOURCE PORT(s) column in the configuration
-    files is rarely used, we have no plans to relax the restriction in
-    that column.
+    Either is equivalent to:
 
-6)  There have been several cases where iptables-restore has failed
-    while executing a COMMIT command in the .iptables_restore_input
-    file. This gives neither the user nor Shorewall support much to go
-    on when analyzing the problem. As a new debugging aid, the meaning
-    of 'trace' and 'debug' have been changed.
+	SMTP/ACCEPT a fw tcp 25
+	SMTP/ACCEPT b fw tcp 25
+	SMTP/ACCEPT c fw tcp 25
+	SMTP/ACCEPT d fw tcp 25
+	SMTP/ACCEPT e fw tcp 25
 
-    Traditionally, /sbin/shorewall and /sbin/shorewall-lite have
-    allowed either 'trace' or 'debug' as the first run-line
-    parameter. Prior to 4.0.5, the two words produced the same effect.
+    With a Perl script, if you want to output text to be processed as
+    if it were part of the file, then pass the text to the shorewall()
+    function.
 
-    Beginning with Shorewall 4.0.5, the two words have different
-    effects when Shorewall-perl is used.
+    Example 2 (Perl): To generate SMTP/ACCEPT rules from zones a b c d
+    and e to the firewall:
 
-    trace - Like the previous behavior.
+	  BEGIN PERL 
+	  for ( qw/a b c d e/ ) { 
+	      shorewall "SMTP/ACCEPT $_ fw tcp 25";
+	  }
+	  END PERL
 
-            In the Shorewall-perl compiler, generate a stack trace
-            on WARNING and ERROR messages.
+    PERL scripts have access to any context accumulated in earlier PERL
+    scripts. All such embedded Perl, as well as conventional Perl
+    extension scripts are placed in the Shorewall::User package. That
+    way, your global variables and functions won't conflict with any of
+    Shorewall's.
 
-	    In the generated script, sets the shell's -x option to
-	    trace execution of the script.
+    To allow you to load Perl modules and initialize any global state,
+    a new 'compile' compile-time extension script has been added. It is
+    called early in the compilation process.
 
-    debug - Ignored by the Shorewall-perl compiler.
+    For additional information, see
 
-            In the generated script, causes the commands in
-            .iptables_restore_input to be executed as discrete iptables
-            commands. The failing command can thus be identified and a
-            diagnosis of the cause can be made.
+    - http://www.shorewall.net/configuration_file_basics.html#Embedded
 
-    Users of Shorewall-lite will see the following change when using a
-    script that was compiled with Shorewall-perl 4.0.5 or later.
+3)  To complement Embedded Perl scripts, Shorewall 4.0.6 allows Perl
+    scripts to create filter chains using
+    Shorewall::Chains::new_manual_chain() and then use the chain as a
+    target in subsequent entries in /etc/shorewall/rules.
 
-    trace - In the generated script, sets the shell's -x option to
-            trace execution of the script.
+    See http://www.shorewall.net/ManualChains.html for information.
 
-    debug - In the generated script, causes the commands in
-            .iptables_restore_input to be executed as discrete iptables
-            commands. The failing command can thus be identified and a
-            diagnosis of the cause can be made.
+4)  The 'hits' command now accepts a -t option which limits the report
+    to those log records generated today.
 
-    In all other cases, 'debug' and 'trace' remain synonymous. In
-    particular, users of Shorewall-shell will see no change in
-    behavior.
+5)  A DONT_LOAD option has been added to shorewall.conf. If there are
+    kernel modules that you don't wish to have loaded, you can list
+    them in this entry as a comma-separated list.
 
-    WARNING: The 'debug' feature in Shorewall-perl is strictly for
-    problem analysis. When 'debug' is used:
+    Example:
 
-    a) The firewall is made 'wide open' before the rules are applied.
-    b) The routestopped file is not consulted and the rules are applied
-       in the canonical iptables-restore order (ASCIIbetical by chain).
-       So if you need critical hosts to be always available during
-       start/restart, you may not be able to use 'debug'.
+	DONT_LOAD=nf_conntrack_sip,nf_nat_sip
 
-7)  /usr/share/shorewall-perl/buildports.pl,
-    /usr/share/shorewall-perl/FallbackPorts.pm and 
-    /usr/share/shorewall-perl/Shorewall/Ports.pm have been removed.
+6)  Shorewall-perl now supports the --random option of the iptables
+    SNAT, MASQUERADE, DNAT and REDIRECT targets. Please note that
+    iptables support for this option is currently broken for the DNAT
+    and REDIRECT targets; I've sent a patch to the Netfilter team.
 
-    Shorewall now resolves protocol and port names as using Perl's
-    interface to the the standard C library APIs getprotobyname() and
-    getservbyname().
+    For MASQUERADE, simply place the word 'random' in the ADDRESS
+    column. This causes Netfilter to randomize the source port seen by
+    the remote host.
 
-    Note 1: 
+     Example:
 
-	   The protocol names 'tcp', 'TCP', 'udp', 'UDP', 'all', 'ALL',
-	   'icmp' and 'ICMP' are still resolved by Shorewall-perl
-	   itself.
+	#INTERFACE	SOURCE	ADDRESS
+	eth0		eth1	random    
 
-    Note 2:
+    For SNAT, follow the port list by ":random".
 
-	   Those of you running Shorewall-perl under Cygwin may wish to
-	   install "real" /etc/protocols and /etc/services files
-	   in place of the symbolic links installed by Cygwin.
+    Example:
 
-8)  The contents of the Shorewall::*::$VERSION variables are now a
-    V-string (e.g., 4.0.5) rather than an integer (e.g., 4.05). This is
-    only of interest for Perl programs that are using the modules and
-    specifying a minimum version (e.g., "use Shorewall::Config
-    4.0.5;"). Each module continues to carry a separate version which
-    indicates the release of Shorewall-perl when the module was last
-    modified.
+	#INTERFACE	SOURCE	ADDRESS
+	eth0		eth1	206.124.146.179:10000-10999:random
+
+    For DNAT, follow the port list by ":random".
+
+    Example:
+
+	#ACTION	SOURCE	DEST				PROTO	DEST
+	#						PORT(S)
+	DNAT	net	loc:192.168.1.4:40-50:random	tcp	22
+
+    For REDIRECT, you must use the fully-qualified form of the DEST:
+
+   	#ACTION	  SOURCE	DEST			PROTO	DEST
+	#						PORT(S)
+	REDIRECT	net	$FW::40-50:random	tcp	22
+
+    Note that ':random' is only effective with SNAT, DNAT and REDIRECT
+    when a port range is specified in the ADDRESS/DEST column. It is
+    ignored by iptables/iptables-restore otherwise.
 
 Migration Considerations:
 
@@ -807,6 +827,7 @@ Migration Considerations:
     - Perl File::Temp Module
     - Perl Getopt::Long Module
     - Perl FindBin Module
+    - Perl Scaler::Util Module
     ------------------------------------------------------------------------
                U S I N G   T H E   N E W   C O M P I L E R
     ------------------------------------------------------------------------
@@ -978,17 +999,6 @@ Migration Considerations:
 
        /usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall
 
-    Note: For compatibility with the Shorewall 3.4.2 and 3.4.3
-    releases, options not passed on the run-line get their values from
-    environmental variables:
-
-	   Option                 Variable
-
-	   --verbosity		  VERBOSE
-	   --export		  EXPORT
-	   --directory		  SHOREWALL_DIR
-	   --timestamp		  TIMESTAMP
-
     The Perl Module is externalized as follows:
 
 	use lib '/usr/share/shorewall-perl';
@@ -1013,6 +1023,7 @@ Migration Considerations:
 
 			EXPORT    = 0x01
 			TIMESTAMP = 0x02
+			DEBUG     = 0x04
 
         $chains -     A comma-separated list of chains that the
                       generated script's 'refresh' command will
@@ -1071,194 +1082,342 @@ Migration Considerations:
     (compiler, shorewall-common and shorewall-lite) must be version
     4.0.0-RC2 or later.
 
-Problems corrected in 4.0.1.
+Problems corrected in Shorewall 4.0.5.
 
-1)  The Shorewall Lite installer was producing an empty shorewall-lite
-    manpage. Since the installer runs as part of creating the RPM, the
-    RPM also suffered from this problem. The 4.0.0 Shorewall-lite 
-    packages were re-uploaded with this problem corrected.
+1)  Previously, Shorewall-perl misprocessed $FW::<port> in the DEST
+    column of a REDIRECT rule, generating an error. '$FW::<port>' now
+    produces the same effect as '<port>'.
 
-2)  The Shorewall Lite uninstaller incorrectly removed /sbin/shorewall
-    rather than /sbin/shorewall-lite.
+2)  If the PROTOCOL (PROTO) column contained 'TCP' or 'UDP' and SOURCE
+    PORT(S) or DEST PORT(S) were given, then Shorewall-perl rejected
+    the entry with the error:
 
-3)  Both the Shorewall and Shorewall Lite uninstallers did a "shorewall
-    clear" if Shorewall [Lite] was running. Now, the Shorewall Lite
-    uninstaller correctly does "shorewall-lite clear" and both
-    uninstallers only perform the 'clear' operation if the other
-    product is not installed. This prevents the removal of one of the
-    two products from clearing the firewall configuration established
-    by the other one.
+    ERROR: SOURCE/DEST PORT(S) not allowed with PROTO TCP : /etc/shorewall/rules 
 
-4)  The 'ipsec' OPTION in /etc/shorewall/hosts was mis-handled by
-    Shorewall-perl. If the zone type was changed to 'ipsec' or
-    'ipsec4' and the 'ipsec' option removed from the hosts file entry,
-    the configuration worked properly.
+    The rule was accepted if 'tcp' or 'udp' was used instead.
 
-5)  If a CLASSID was specified in a tcrule and TC_ENABLED=No, then
-    Shorewall-perl produced the following:
+3)  Shorewall-shell now removes any default bindings of ipsets before
+    attempting to reload them. Previously, default bindings were not
+    removed with the result that the ipsets could not be destroyed.
 
-    Compiling...
-    Use of uninitialized value in string ne at /usr/share/shorewall-perl/Shorewall/Tc.pm line 285, <$currentfile> line 18.
-       ERROR: Class Id n:m is not associated with device eth0 : /etc/shorewall/tcrules (line 18)
+Other changes in Shorewall 4.0.5.
 
-6)  If IPTABLES was not specified in shorewall.conf, Shorewall-perl was
-    locating the binary using the PATH environmental variable rather
-    than the PATH setting in shorewall.conf.  If no PATH was available
-    when Shorewall-perl was run and IPTABLES was not set in
-    shorewall.conf, the following messages were issued:
+1)  Two new options have been added to /etc/shorewall/hosts
+    (Shorewall-perl only).
 
-    Use of uninitialized value in split at /usr/share/shorewall-perl/Shorewall/Config.pm line 1054.
-       ERROR: Can't find iptables executable
-       ERROR: Shorewall restart failed
+    broadcast: Permits limited broadcast (destination 255.255.255.255)
+               to the zone.
 
-7)  If the "Mangle FORWARD Chain" capability was supported, entries in
-    the /etc/shorewall/ecn file would cause invalid iptables commands
-    to be generated. This problem occurred with both compilers.
+    destonly: Normally used with the Multi-cast range. Specifies that
+	      traffic will be sent to the specified net(s) but that 
+	      no traffic will be received from the net(s).
 
-8)  Shorewall now starts at reboot after an upgrade from shorewall <
-    4.0.0. Previously, Shorewall was not started automatically at
-    reboot after an upgrade using the RPM.
+    Example:
 
-9)  Shorewall-perl was generating invalid iptables-restore input when a
-    log level was specified with the dropBcast and allowBcast builtin
-    actions and when a log level followed by '!' was used with any
-    builtin actions.
+    wifi	eth1:192.168.3.0/24		broadcast
+    wifi	eth1:224.0.0.0/4		destonly
 
-10) Shorewall-perl was incorrectly rejecting 'min' as a valid unit of
-    time in rate-limiting specifications.
+    In that example, limited broadcasts from the firewall with a source
+    IP in the 192.168.3.0/24 range will be acccepted as will multicasts
+    (with any source address).
 
-11) Certain errors occurring during
-    start/restart/safe-start/safe-restart/try processing could cause
-    the lockfile to be left behind. This resulted in a 60-second delay
-    the next time one of these commands was run.
+2)  A MULTICAST option has been added to shorewall.conf. This option
+    will normally be set to 'No' (the default). It should be set to 
+    'Yes' under the following circumstances:
 
-Other changes in Shorewall 4.0.1.
+    a) You have an interface that has parallel zones defined via
+       /etc/shorewall/hosts.
+    b) You want to forward multicast packets to two or more of those
+       parallel zones.
 
-1)  A new EXPAND_POLICIES option is added to shorewall.conf. The
-    option is recognized by Shorewall-perl and is ignored by
-    Shorewall-shell.
+    In such cases, you will configure a 'destonly' network on each 
+    zone receiving multicasts.
 
-    Normally, when the SOURCE or DEST columns in shorewall-policy(5)
-    contains 'all', a single policy chain is created and the policy is
-    enforced in that chain. For example, if the policy entry is
+    The MULTICAST option is only recognized by Shorewall-perl and is
+    ignored by Shorewall-shell.
 
-	     #SOURCE DEST POLICY LOG
-	     #                   LEVEL
-	     net     all  DROP   info
+3)  As announced in the Shorewall 4.0.4 release notes, Shorewall-perl
+    no longer supports the 'detectnets' option. Specifying that option
+    now results in the following message:
 
-    then the chain name is 'net2all' which is also the chain named in
-    Shorewall log messages generated as a result of the policy. If
-    EXPAND_POLICIES=Yes, then Shorewall-perl will create a separate
-    chain for each pair of zones covered by the policy. This makes the
-    resulting log messages easier to interpret since the chain in the
-    messages will have a name of the form 'a2b' where 'a' is the SOURCE
-    zone and 'b' is the DEST zone. See
-    http://linuxman.wikispaces.com/PPPPPPS for more information.
+    WARNING: Support for the 'detectnets' option has been removed
 
-2)  The Shorewall-perl dependency on the "Address Type Match"
-    capability has been relaxed. This allows Shorewall 4.0.1 to be used
-    on releases like RHEL4 that don't support that capability.
+    It is suggested that 'detectnets' be replaced by
+    'routefilter,logmartians'. That will produce the same filtering
+    effect as 'detectnets' while eliminating 1-2 rules per connection.
 
-3)  Shorewall-perl now detects dead policy file entries that result
-    when an entry is masked by an earlier entry. Example:
+    One user has asked how to retain the output of 'shorewall show
+    zones' if the 'detectnets' option is removed. While I don't advise
+    doing so, you can reproduce the current 'shorewall show' behavior
+    as follows.
 
-	 all	 all	  REJECT    info
-	 loc	 net	  ACCEPT
+    Suppose that you have a zone named 'wifi' that produces the
+    following output with 'detectnets':
 
-4)  Recent kernels are apparently hard to configure and we have been
-    seeing a lot of problem reports where the root cause is the lack of
-    state match support in the kernel. This problem is difficult to
-    diagnose when using Shorewall-perl so the generated shell program
-    now checks specifically for this problem and terminates with an
-    error if the capability doesn't exist.
+    wifi (ipv4)
+      eth1:192.168.3.0/24
+ 
+    You can reproduce this behavior as follows:
 
-Problems corrected in 4.0.2
+    /etc/shorewall/interfaces:
 
-1)  The Shorewall-perl compiler was still generating invalid
-    iptables-restore input from entries in /etc/shorewall/ecn.
+    -	eth1	detect	...
 
-2)  When using Shorewall-perl, unless an interface was specified as
-    'optional' in the interfaces file, the 'restore' command would
-    fail if the routes through the interface or the addresses on the
-    interface could not be detected.
+    /etc/shorewall/hosts:
 
-    Route detection occurs when the interface is named in the SOURCE
-    column of the masq file. Address detection occurs when
-    DETECT_DNAT_IPADDRS=Yes and the interface is the SOURCE for a DNAT
-    or REDIRECT rule or when 'maclist' is specified for the interface.
-   
-    Since the 'restore' command doesn't use the detected information,
-    detection is now skipped if the command is 'restore'.
+    wifi	eth1:192.168.3.0/24	broadcast
 
-3)  It was not previously possible to define traffic shaping on a
-    bridge port; the generated script complained that the
-    interface was not up and configured.
+    If you send multicast to the 'wifi' zone, you also need this entry
+    in your hosts file:
 
-4)  When Shorewall-shell was not installed, certain options in
-    /etc/shorewall/interfaces and /etc/shorewall/hosts would cause the
-    'add' and 'delete' commands to fail with a missing library error.
+    wifi	eth1:224.0.0.0/4		destonly
 
-	  OPTION               FILE
-	  maclist	       interfaces,hosts
-	  proxyarp	       interfaces
+4)  (Shorewall-perl only) The server port in a DNAT or REDIRECT rule
+    may now be specified as a service name from
+    /etc/services. Additionally:
 
-5)  The /var/lib/shorewall/zones file was being overwritten during
-    processing of the 'refresh' command by a script generated with
-    Shorewall-perl. The result was that hosts previously added to
-    dynamic zones could not be deleted after the 'refresh'.
+    a) A port-range may be specified as the service port expressed in
+       the format <low port>-<high port>. Connections are assigned to
+       server ports in round-robin fashion.
 
-6)  If the file named as the output file in a Shorewall-perl 'compile'
-    command was a symbolic link, the generated error message
-    erroneously stated that the file's parent directory was a symbolic
-    link.
+    b) The compiler only permits a server port to be specified if the
+       protocol is tcp or udp.
 
-    As part of this change, cosmetic changes were made to a number of
-    other error messages.
+    c) The compiler ensures that the server IP address is valid (note
+       that it is still not permitted to specify the server address as a
+       DNS name).
 
-7)  Some intra-zone rules were missing when a zone involved multiple
-    interfaces or when a zone included both IPSEC and non-IPSEC
-    networks.
+5)  (Shorewall-perl only) Users are complaining that when they migrate
+    to Shorewall-perl, they have to restrict their port lists to 15
+    ports. In this release, we relax that restriction on destination
+    port lists. Since the SOURCE PORT(s) column in the configuration
+    files is rarely used, we have no plans to relax the restriction in
+    that column.
 
-8)  Shorewall was not previously loading the xt_multiport kernel
-    module.
+6)  There have been several cases where iptables-restore has failed
+    while executing a COMMIT command in the .iptables_restore_input
+    file. This gives neither the user nor Shorewall support much to go
+    on when analyzing the problem. As a new debugging aid, the meaning
+    of 'trace' and 'debug' have been changed.
 
-9)  The Russian and French translations no longer have English headings
-    on notes, cautions, etc..
+    Traditionally, /sbin/shorewall and /sbin/shorewall-lite have
+    allowed either 'trace' or 'debug' as the first run-line
+    parameter. Prior to 4.0.5, the two words produced the same effect.
 
-10) Previously, using a port list in the DEST PORT(S) column of the
-    rules file or in an action file could cause an invalid iptables
-    command to be generated by Shorewall-shell.
+    Beginning with Shorewall 4.0.5, the two words have different
+    effects when Shorewall-perl is used.
 
-11) If there were no bridges in a configuration, Shorewall-perl would
-    ignore the CHAIN column in /etc/shorewall/accounting.
+    trace - Like the previous behavior.
 
-Other changes in 4.0.2
+            In the Shorewall-perl compiler, generate a stack trace
+            on WARNING and ERROR messages.
 
-1)  Shorewall-perl now detects when a port range is included in a list
-    of ports and iptables/kernel support for Extended Multi-port Match
-    is not available. This avoids an iptables-restore failure at
-    run-time.
+	    In the generated script, sets the shell's -x option to
+	    trace execution of the script.
 
-2)  Most chains created by Shorewall-shell have names that can be
-    embedded within shell variable names. This is a workaround for
-    limitations in the shell programming language which has no
-    equivalent to Perl hashes. Often chain names must have the name of
-    a network interface encoded in them. Given that interface names can
-    contain characters that are invalid in a shell variable name,
-    Shorewall-shell performs a name mapping which was carried forward to
-    Shorewall-perl:
+    debug - Ignored by the Shorewall-perl compiler.
 
-    - Trailing '+' is dropped.
-    - The characters ".", "-", "%' and "@" are translated to "_".
+            In the generated script, causes the commands in
+            .iptables_restore_input to be executed as discrete iptables
+            commands. The failing command can thus be identified and a
+            diagnosis of the cause can be made.
 
-    This mapping has been elminated in the 4.0.2 release of Shorewall-
-    perl. So where before you would see chain "eth0_0_in", you may now
-    see the same chain named "eth0.0_in". Similarly, a chain previously
-    named "ppp_fwd" may now be called "ppp+_fwd".
+    Users of Shorewall-lite will see the following change when using a
+    script that was compiled with Shorewall-perl 4.0.5 or later.
 
-3)  Shorewall-perl now uses the contents of the BROADCAST column in
-    /etc/shorewall/interfaces when the Address Type match capability is
-    not available.
+    trace - In the generated script, sets the shell's -x option to
+            trace execution of the script.
+
+    debug - In the generated script, causes the commands in
+            .iptables_restore_input to be executed as discrete iptables
+            commands. The failing command can thus be identified and a
+            diagnosis of the cause can be made.
+
+    In all other cases, 'debug' and 'trace' remain synonymous. In
+    particular, users of Shorewall-shell will see no change in
+    behavior.
+
+    WARNING: The 'debug' feature in Shorewall-perl is strictly for
+    problem analysis. When 'debug' is used:
+
+    a) The firewall is made 'wide open' before the rules are applied.
+    b) The routestopped file is not consulted and the rules are applied
+       in the canonical iptables-restore order (ASCIIbetical by chain).
+       So if you need critical hosts to be always available during
+       start/restart, you may not be able to use 'debug'.
+
+7)  /usr/share/shorewall-perl/buildports.pl,
+    /usr/share/shorewall-perl/FallbackPorts.pm and 
+    /usr/share/shorewall-perl/Shorewall/Ports.pm have been removed.
+
+    Shorewall now resolves protocol and port names as using Perl's
+    interface to the the standard C library APIs getprotobyname() and
+    getservbyname().
+
+    Note 1: 
+
+	   The protocol names 'tcp', 'TCP', 'udp', 'UDP', 'all', 'ALL',
+	   'icmp' and 'ICMP' are still resolved by Shorewall-perl
+	   itself.
+
+    Note 2:
+
+	   Those of you running Shorewall-perl under Cygwin may wish to
+	   install "real" /etc/protocols and /etc/services files
+	   in place of the symbolic links installed by Cygwin.
+
+8)  The contents of the Shorewall::*::$VERSION variables are now a
+    V-string (e.g., 4.0.5) rather than an integer (e.g., 4.05). This is
+    only of interest for Perl programs that are using the modules and
+    specifying a minimum version (e.g., "use Shorewall::Config
+    4.0.5;"). Each module continues to carry a separate version which
+    indicates the release of Shorewall-perl when the module was last
+    modified.
+
+Problems Corrected in Shorewall 4.0.4
+
+1)  If no interface had the 'blacklist' option, then when using
+    Shorewall-perl, the 'start' and 'restart' command failed:
+
+        ERROR: No filter chain found with name blacklst
+
+    New Shorewall-perl 4.0.3 packages were released that corrected this
+    problem; it is included here for completeness.
+
+2)  If no interface had the 'blacklist' option, then when using
+    Shorewall-perl, the generated script would issue this harmless
+    message during 'shorewall refresh':
+
+        chainlist_reload: Not found
+
+3)  If /bin/sh was a light-weight shell such as ash or dash, then
+    'shorewall refresh' failed.
+
+4)  During start/restart, the script generated by Shorewall-perl was
+    clearing the proxy_arp flag on all interfaces; that is not the
+    documented behavior.
+
+5)  If the module-init-tools package was not installed and
+    /etc/shorewall/modules did not exist or was non-empty, then
+    Shorewall-perl would fail with the message:
+
+       ERROR: Can't run lsmod : /etc/shorewall/modules (line 0)
+
+6)  Shorewall-perl now makes a compile-time check to insure that
+    iptables-restore exists and is executable. This check is made when
+    the compiler is being run by root and the -e option is not
+    given.
+
+    Note that iptables-restore must reside in the same directory as the
+    iptables executable specified by IPTABLES in shorewall.conf or
+    located by the PATH in the event that IPTABLES is not specified.
+
+7)  When using Shorewall-perl, if an action was invoked with more than
+    10 different combinations of log-levels/tags, some of those
+    invocations would have incorrect logging.
+
+8)  Previously, when 'shorewall restore' was executed, the
+    iptables-restore utility was always located using the PATH setting
+    rather than the IPTABLES setting.
+
+    With Shorewall-perl, the IPTABLES setting is now used to locate
+    this utility during 'restore' as it is during the processing of
+    other commands.
+
+9)  Although the shorewall.conf manpage indicates that the value
+    'internal' is allowed for TC_ENABLED, that value was previously
+    rejected ('Internal' was accepted).
+
+10) The meaning of the 'loose' provider option was accidentally reversed
+    in Shorewall-perl. Rather than causing certain routing rules to be
+    omitted when specified, it actually caused them to be added (these
+    rules were omitted when the option was NOT specified).
+
+11) If the 'bridge' option was specified on an interface but there were
+    no bport zones, then traffic originating on the firewall was not
+    passed through the accounting chain.
+
+12) In commands such as:
+
+       shorewall compile <directory>
+       shorewall restart <directory>
+       shorewall check <directory>
+
+    if the name of the <directory> contained a period ("."), then
+    Shorewall-perl would incorrectly substitute the current working
+    directory for the name.
+
+13) Previously, if the following sequence of routing rules was
+    specified, then the first rule would always be omitted.
+
+    #SOURCE    DEST      PROVIDER     PRIORITY
+    $SRC_A     $DESTIP1  ISP1         1000
+    $SRC_A     $DESTIP2  SOMEISP      1000
+    $SRC_A     -         ISP2         1000
+
+    The reason for this omission was that Shorewall uses a
+    delete-before-add approach and attempting to delete the third rule
+    resulted in the deletion of the first one instead. 
+
+    This problem occurred with both compilers.
+
+14) When using Shorewall-shell, provider numbers were not recognized in
+    the PROVIDER column of /etc/shorewall/route_rules.
+
+15) An off-by-one problem in Shorewall-perl caused the value 255 to be
+    rejected in the MARK column of /etc/shorewall/tcclasses.
+
+16) When HIGH_ROUTE_MARKS=Yes, marks with values > 255 must be a
+    multiple of 256. That restriction was being enforced by
+    Shorewall-shell but not by Shorewall-perl. Shorewall-perl now also
+    enforces this restriction.
+
+17) Using REDIRECT with a parameterized macro (e.g., DNS/REDIRECT)
+    failed with an "Unknown interface" error when using Shorewall-perl.
+
+Other Changes in Shorewall 4.0.4
+
+1)  The detection of 'Repeat Match' has been improved. 'Repeat Match'
+    is not a match at all but rather is a feature of recent versions of
+    iptables that allows a particular match to be used multiple times
+    within a single rule.
+
+    Example:
+
+      -A foo -m physdev --physdev-in eth0 -m physdev --physdev-out ...
+
+    When using Shorewall-shell, the availability of 'Repeat Match' can
+    speed up compilation very slightly.
+
+2)  Apparently recent Fedora releases are broken. The
+    following sequence of commands demonstrates the problem:
+
+    ip rule add from 1.1.1.1 to 10.0.0.0/8 priority 1000 table 5
+    ip rule add from 1.1.1.1 to 0.0.0.0/0 priority 1000 table main
+    ip rule del from 1.1.1.1 to 0.0.0.0/0 priority 1000
+
+    The third command should fail but doesn't; instead, it incorrectly
+    removes the rule added by the first command.
+
+    To work around this issue, you can set DELETE_THEN_ADD=No in
+    shorewall.conf which prevents Shorewall from deleting ip rules
+    before attempting to add a similar rule.
+
+3)  When using Shorewall-perl, the following message is now issued if
+    the 'detectnets' option is specified in /etc/shorewall/interfaces:
+
+    WARNING: Support for the 'detectnets' option will be removed from
+    Shorewall-perl in version 4.0.5; better to use 'routefilter' and
+    'logmartians
+
+    The 'detect' options has always been rather silly. On input, it
+    duplicates the function of 'routefilter'. On output, it is a no-op
+    since traffic that doesn't match a route out of an interface won't
+    be sent through that interface (duh!).
+
+    Beginning with Shorewall 4.0.5, the warning message will read:
+
+    WARNING: Support for the 'detectnets' option has been removed
 
 Problems Corrected in 4.0.3
 
@@ -1468,148 +1627,191 @@ Other Changes in 4.0.3
     This feature requires Shorewall-perl 4.0.3 as well as
     Shorewall-common 4.0.3.
 
-Problems Corrected in Shorewall 4.0.4
+Problems corrected in 4.0.2
 
-1)  If no interface had the 'blacklist' option, then when using
-    Shorewall-perl, the 'start' and 'restart' command failed:
+1)  The Shorewall-perl compiler was still generating invalid
+    iptables-restore input from entries in /etc/shorewall/ecn.
 
-        ERROR: No filter chain found with name blacklst
+2)  When using Shorewall-perl, unless an interface was specified as
+    'optional' in the interfaces file, the 'restore' command would
+    fail if the routes through the interface or the addresses on the
+    interface could not be detected.
 
-    New Shorewall-perl 4.0.3 packages were released that corrected this
-    problem; it is included here for completeness.
+    Route detection occurs when the interface is named in the SOURCE
+    column of the masq file. Address detection occurs when
+    DETECT_DNAT_IPADDRS=Yes and the interface is the SOURCE for a DNAT
+    or REDIRECT rule or when 'maclist' is specified for the interface.
+   
+    Since the 'restore' command doesn't use the detected information,
+    detection is now skipped if the command is 'restore'.
 
-2)  If no interface had the 'blacklist' option, then when using
-    Shorewall-perl, the generated script would issue this harmless
-    message during 'shorewall refresh':
+3)  It was not previously possible to define traffic shaping on a
+    bridge port; the generated script complained that the
+    interface was not up and configured.
 
-        chainlist_reload: Not found
+4)  When Shorewall-shell was not installed, certain options in
+    /etc/shorewall/interfaces and /etc/shorewall/hosts would cause the
+    'add' and 'delete' commands to fail with a missing library error.
 
-3)  If /bin/sh was a light-weight shell such as ash or dash, then
-    'shorewall refresh' failed.
+	  OPTION               FILE
+	  maclist	       interfaces,hosts
+	  proxyarp	       interfaces
 
-4)  During start/restart, the script generated by Shorewall-perl was
-    clearing the proxy_arp flag on all interfaces; that is not the
-    documented behavior.
+5)  The /var/lib/shorewall/zones file was being overwritten during
+    processing of the 'refresh' command by a script generated with
+    Shorewall-perl. The result was that hosts previously added to
+    dynamic zones could not be deleted after the 'refresh'.
 
-5)  If the module-init-tools package was not installed and
-    /etc/shorewall/modules did not exist or was non-empty, then
-    Shorewall-perl would fail with the message:
+6)  If the file named as the output file in a Shorewall-perl 'compile'
+    command was a symbolic link, the generated error message
+    erroneously stated that the file's parent directory was a symbolic
+    link.
 
-       ERROR: Can't run lsmod : /etc/shorewall/modules (line 0)
+    As part of this change, cosmetic changes were made to a number of
+    other error messages.
 
-6)  Shorewall-perl now makes a compile-time check to insure that
-    iptables-restore exists and is executable. This check is made when
-    the compiler is being run by root and the -e option is not
-    given.
+7)  Some intra-zone rules were missing when a zone involved multiple
+    interfaces or when a zone included both IPSEC and non-IPSEC
+    networks.
 
-    Note that iptables-restore must reside in the same directory as the
-    iptables executable specified by IPTABLES in shorewall.conf or
-    located by the PATH in the event that IPTABLES is not specified.
+8)  Shorewall was not previously loading the xt_multiport kernel
+    module.
 
-7)  When using Shorewall-perl, if an action was invoked with more than
-    10 different combinations of log-levels/tags, some of those
-    invocations would have incorrect logging.
+9)  The Russian and French translations no longer have English headings
+    on notes, cautions, etc..
 
-8)  Previously, when 'shorewall restore' was executed, the
-    iptables-restore utility was always located using the PATH setting
-    rather than the IPTABLES setting.
+10) Previously, using a port list in the DEST PORT(S) column of the
+    rules file or in an action file could cause an invalid iptables
+    command to be generated by Shorewall-shell.
 
-    With Shorewall-perl, the IPTABLES setting is now used to locate
-    this utility during 'restore' as it is during the processing of
-    other commands.
+11) If there were no bridges in a configuration, Shorewall-perl would
+    ignore the CHAIN column in /etc/shorewall/accounting.
 
-9)  Although the shorewall.conf manpage indicates that the value
-    'internal' is allowed for TC_ENABLED, that value was previously
-    rejected ('Internal' was accepted).
+Other changes in 4.0.2
 
-10) The meaning of the 'loose' provider option was accidentally reversed
-    in Shorewall-perl. Rather than causing certain routing rules to be
-    omitted when specified, it actually caused them to be added (these
-    rules were omitted when the option was NOT specified).
+1)  Shorewall-perl now detects when a port range is included in a list
+    of ports and iptables/kernel support for Extended Multi-port Match
+    is not available. This avoids an iptables-restore failure at
+    run-time.
 
-11) If the 'bridge' option was specified on an interface but there were
-    no bport zones, then traffic originating on the firewall was not
-    passed through the accounting chain.
+2)  Most chains created by Shorewall-shell have names that can be
+    embedded within shell variable names. This is a workaround for
+    limitations in the shell programming language which has no
+    equivalent to Perl hashes. Often chain names must have the name of
+    a network interface encoded in them. Given that interface names can
+    contain characters that are invalid in a shell variable name,
+    Shorewall-shell performs a name mapping which was carried forward to
+    Shorewall-perl:
 
-12) In commands such as:
+    - Trailing '+' is dropped.
+    - The characters ".", "-", "%' and "@" are translated to "_".
 
-       shorewall compile <directory>
-       shorewall restart <directory>
-       shorewall check <directory>
+    This mapping has been elminated in the 4.0.2 release of Shorewall-
+    perl. So where before you would see chain "eth0_0_in", you may now
+    see the same chain named "eth0.0_in". Similarly, a chain previously
+    named "ppp_fwd" may now be called "ppp+_fwd".
 
-    if the name of the <directory> contained a period ("."), then
-    Shorewall-perl would incorrectly substitute the current working
-    directory for the name.
+3)  Shorewall-perl now uses the contents of the BROADCAST column in
+    /etc/shorewall/interfaces when the Address Type match capability is
+    not available.
 
-13) Previously, if the following sequence of routing rules was
-    specified, then the first rule would always be omitted.
+Problems corrected in 4.0.1.
 
-    #SOURCE    DEST      PROVIDER     PRIORITY
-    $SRC_A     $DESTIP1  ISP1         1000
-    $SRC_A     $DESTIP2  SOMEISP      1000
-    $SRC_A     -         ISP2         1000
+1)  The Shorewall Lite installer was producing an empty shorewall-lite
+    manpage. Since the installer runs as part of creating the RPM, the
+    RPM also suffered from this problem. The 4.0.0 Shorewall-lite 
+    packages were re-uploaded with this problem corrected.
 
-    The reason for this omission was that Shorewall uses a
-    delete-before-add approach and attempting to delete the third rule
-    resulted in the deletion of the first one instead. 
+2)  The Shorewall Lite uninstaller incorrectly removed /sbin/shorewall
+    rather than /sbin/shorewall-lite.
 
-    This problem occurred with both compilers.
+3)  Both the Shorewall and Shorewall Lite uninstallers did a "shorewall
+    clear" if Shorewall [Lite] was running. Now, the Shorewall Lite
+    uninstaller correctly does "shorewall-lite clear" and both
+    uninstallers only perform the 'clear' operation if the other
+    product is not installed. This prevents the removal of one of the
+    two products from clearing the firewall configuration established
+    by the other one.
 
-14) When using Shorewall-shell, provider numbers were not recognized in
-    the PROVIDER column of /etc/shorewall/route_rules.
+4)  The 'ipsec' OPTION in /etc/shorewall/hosts was mis-handled by
+    Shorewall-perl. If the zone type was changed to 'ipsec' or
+    'ipsec4' and the 'ipsec' option removed from the hosts file entry,
+    the configuration worked properly.
 
-15) An off-by-one problem in Shorewall-perl caused the value 255 to be
-    rejected in the MARK column of /etc/shorewall/tcclasses.
+5)  If a CLASSID was specified in a tcrule and TC_ENABLED=No, then
+    Shorewall-perl produced the following:
 
-16) When HIGH_ROUTE_MARKS=Yes, marks with values > 255 must be a
-    multiple of 256. That restriction was being enforced by
-    Shorewall-shell but not by Shorewall-perl. Shorewall-perl now also
-    enforces this restriction.
+    Compiling...
+    Use of uninitialized value in string ne at /usr/share/shorewall-perl/Shorewall/Tc.pm line 285, <$currentfile> line 18.
+       ERROR: Class Id n:m is not associated with device eth0 : /etc/shorewall/tcrules (line 18)
 
-17) Using REDIRECT with a parameterized macro (e.g., DNS/REDIRECT)
-    failed with an "Unknown interface" error when using Shorewall-perl.
+6)  If IPTABLES was not specified in shorewall.conf, Shorewall-perl was
+    locating the binary using the PATH environmental variable rather
+    than the PATH setting in shorewall.conf.  If no PATH was available
+    when Shorewall-perl was run and IPTABLES was not set in
+    shorewall.conf, the following messages were issued:
 
-Other Changes in Shorewall 4.0.4
+    Use of uninitialized value in split at /usr/share/shorewall-perl/Shorewall/Config.pm line 1054.
+       ERROR: Can't find iptables executable
+       ERROR: Shorewall restart failed
 
-1)  The detection of 'Repeat Match' has been improved. 'Repeat Match'
-    is not a match at all but rather is a feature of recent versions of
-    iptables that allows a particular match to be used multiple times
-    within a single rule.
+7)  If the "Mangle FORWARD Chain" capability was supported, entries in
+    the /etc/shorewall/ecn file would cause invalid iptables commands
+    to be generated. This problem occurred with both compilers.
 
-    Example:
+8)  Shorewall now starts at reboot after an upgrade from shorewall <
+    4.0.0. Previously, Shorewall was not started automatically at
+    reboot after an upgrade using the RPM.
 
-      -A foo -m physdev --physdev-in eth0 -m physdev --physdev-out ...
+9)  Shorewall-perl was generating invalid iptables-restore input when a
+    log level was specified with the dropBcast and allowBcast builtin
+    actions and when a log level followed by '!' was used with any
+    builtin actions.
 
-    When using Shorewall-shell, the availability of 'Repeat Match' can
-    speed up compilation very slightly.
+10) Shorewall-perl was incorrectly rejecting 'min' as a valid unit of
+    time in rate-limiting specifications.
 
-2)  Apparently recent Fedora releases are broken. The
-    following sequence of commands demonstrates the problem:
+11) Certain errors occurring during
+    start/restart/safe-start/safe-restart/try processing could cause
+    the lockfile to be left behind. This resulted in a 60-second delay
+    the next time one of these commands was run.
 
-    ip rule add from 1.1.1.1 to 10.0.0.0/8 priority 1000 table 5
-    ip rule add from 1.1.1.1 to 0.0.0.0/0 priority 1000 table main
-    ip rule del from 1.1.1.1 to 0.0.0.0/0 priority 1000
+Other changes in Shorewall 4.0.1.
 
-    The third command should fail but doesn't; instead, it incorrectly
-    removes the rule added by the first command.
+1)  A new EXPAND_POLICIES option is added to shorewall.conf. The
+    option is recognized by Shorewall-perl and is ignored by
+    Shorewall-shell.
 
-    To work around this issue, you can set DELETE_THEN_ADD=No in
-    shorewall.conf which prevents Shorewall from deleting ip rules
-    before attempting to add a similar rule.
+    Normally, when the SOURCE or DEST columns in shorewall-policy(5)
+    contains 'all', a single policy chain is created and the policy is
+    enforced in that chain. For example, if the policy entry is
 
-3)  When using Shorewall-perl, the following message is now issued if
-    the 'detectnets' option is specified in /etc/shorewall/interfaces:
+	     #SOURCE DEST POLICY LOG
+	     #                   LEVEL
+	     net     all  DROP   info
 
-    WARNING: Support for the 'detectnets' option will be removed from
-    Shorewall-perl in version 4.0.5; better to use 'routefilter' and
-    'logmartians
+    then the chain name is 'net2all' which is also the chain named in
+    Shorewall log messages generated as a result of the policy. If
+    EXPAND_POLICIES=Yes, then Shorewall-perl will create a separate
+    chain for each pair of zones covered by the policy. This makes the
+    resulting log messages easier to interpret since the chain in the
+    messages will have a name of the form 'a2b' where 'a' is the SOURCE
+    zone and 'b' is the DEST zone. See
+    http://linuxman.wikispaces.com/PPPPPPS for more information.
 
-    The 'detect' options has always been rather silly. On input, it
-    duplicates the function of 'routefilter'. On output, it is a no-op
-    since traffic that doesn't match a route out of an interface won't
-    be sent through that interface (duh!).
+2)  The Shorewall-perl dependency on the "Address Type Match"
+    capability has been relaxed. This allows Shorewall 4.0.1 to be used
+    on releases like RHEL4 that don't support that capability.
 
-    Beginning with Shorewall 4.0.5, the warning message will read:
+3)  Shorewall-perl now detects dead policy file entries that result
+    when an entry is masked by an earlier entry. Example:
 
-    WARNING: Support for the 'detectnets' option has been removed
+	 all	 all	  REJECT    info
+	 loc	 net	  ACCEPT
 
+4)  Recent kernels are apparently hard to configure and we have been
+    seeing a lot of problem reports where the root cause is the lack of
+    state match support in the kernel. This problem is difficult to
+    diagnose when using Shorewall-perl so the generated shell program
+    now checks specifically for this problem and terminates with an
+    error if the capability doesn't exist.

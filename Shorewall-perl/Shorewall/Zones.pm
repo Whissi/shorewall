@@ -25,7 +25,7 @@
 #
 package Shorewall::Zones;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 
 use strict;
@@ -64,7 +64,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.0.5;
+our $VERSION = 4.0.6;
 
 #
 # IPSEC Option types
@@ -161,8 +161,8 @@ INIT {
 # Convert value to decimal number
 #
 sub numeric_value ( $ ) {
-    my $mark = $_[0];
-    fatal_error "Invalid Numeric Value ($mark)" unless "\L$mark" =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
+    my $mark = lc $_[0];
+    fatal_error "Invalid Numeric Value ($mark)" unless $mark =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
     $mark =~ /^0/ ? oct $mark : $mark;
 }
 
@@ -245,14 +245,9 @@ sub determine_zones()
 
     my $fn = open_file 'zones';
 
-    my $first_entry = 1;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
 
 	my @parents;
 
@@ -620,6 +615,7 @@ sub validate_interfaces_file( $ )
 	fatal_error "Invalid Interface Name ($interface)" if $interface eq '+';
 
 	if ( defined $port ) {
+	    fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
 	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
 	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};

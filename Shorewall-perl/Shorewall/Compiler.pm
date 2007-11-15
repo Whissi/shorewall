@@ -24,8 +24,8 @@
 
 package Shorewall::Compiler;
 require Exporter;
-use Shorewall::Config;
-use Shorewall::Chains;
+use Shorewall::Config qw(:DEFAULT :internal);
+use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Policy;
 use Shorewall::Nat;
@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.0.4;
+our $VERSION = 4.0.6;
 
 our $export;
 
@@ -133,6 +133,8 @@ sub generate_script_1() {
 
     propagateconfig;
 
+    my @dont_load = split /,/, $config{DONT_LOAD};
+
     emit ( '[ -n "${COMMAND:=restart}" ]',
 	   '[ -n "${VERBOSE:=0}" ]',
 	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]),
@@ -140,6 +142,7 @@ sub generate_script_1() {
 	   qq(VERSION="$globals{VERSION}") ,
 	   qq(PATH="$config{PATH}") ,
 	   'TERMINATOR=fatal_error' ,
+	   qq(DONT_LOAD="@dont_load") ,
 	   ''
 	   );
 
@@ -735,6 +738,10 @@ sub compiler( $$$$$ ) {
 	generate_script_1;
     }
 
+    #
+    # Allow user to load Perl modules
+    #
+    run_user_exit1 'compile';
     #
     # Process the zones file.
     #

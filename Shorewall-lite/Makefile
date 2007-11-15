@@ -1,12 +1,11 @@
 # Shorewall Lite Makefile to restart if firewall script is newer than last restart
-VARDIR=/var/lib/shorewall-lite
+VARDIR=$(shell /sbin/shorewall-lite show vardir)
 SHAREDIR=/usr/share/shorewall-lite
 RESTOREFILE?=.restore
-include $(SHAREDIR)/configpath
 
 all: $(VARDIR)/${RESTOREFILE}
 
-$(VARDIR)/${RESTOREFILE}: $(LITEDIR)/firewall
+$(VARDIR)/${RESTOREFILE}: $(VARDIR)/firewall
 	@/sbin/shorewall-lite -q save >/dev/null; \
 	if \
 	    /sbin/shorewall-lite -q restart >/dev/null 2>&1; \

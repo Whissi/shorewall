@@ -340,7 +340,6 @@ process_tc_rule()
 		if [ $((${mark%/*})) -gt 255 ]; then
 		    case $chain in
 			tcpre|tcout)
-			    target="MARK --or-mark"
 			    ;;
 			*)
 			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""

@@ -27,9 +27,8 @@
 #
 package Shorewall::Proc;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
-use Shorewall::Chains;
 
 use strict;
 
@@ -42,7 +41,7 @@ our @EXPORT = qw(
 		 setup_forwarding
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.0.1;
+our $VERSION = 4.0.6;
 
 #
 # ARP Filtering

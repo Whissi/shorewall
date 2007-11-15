@@ -24,10 +24,10 @@
 #
 package Shorewall::Rules;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Actions;
 use Shorewall::Policy;
 use Shorewall::Proc;
@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = 4.0.5;
+our $VERSION = 4.0.6;
 
 #
 # Keep track of chains for the /var/lib/shorewall[-lite]/chains file
@@ -95,19 +95,16 @@ sub process_tos() {
 
     if ( my $fn = open_file 'tos' ) {
 	my $first_entry = 1;
-
+	
 	my ( $pretosref, $outtosref );
+
+	first_entry( sub { progress_message2 "$doing $fn..."; $pretosref = ensure_chain 'mangle' , $chain; $outtosref = ensure_chain 'mangle' , 'outtos'; } );
 
 	while ( read_a_line ) {
 
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		$pretosref = ensure_chain 'mangle' , $chain;
-		$outtosref = ensure_chain 'mangle' , 'outtos';
-		$first_entry = 0;
-	    }
-
 	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file entry';
+
+	    $first_entry = 0;
 
 	    fatal_error "A value must be supplied in the TOS column" if $tos eq '-';
 	    
@@ -166,14 +163,9 @@ sub setup_ecn()
 
     if ( my $fn = open_file 'ecn' ) {
 
-	my $first_entry = 1;
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
-
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		$first_entry = 0;
-	    }
 
 	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file entry';
 
@@ -229,14 +221,9 @@ sub setup_rfc1918_filteration( $ ) {
 
     my $fn = open_file 'rfc1918';
 
-    my $first_entry = 1;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
 
 	my ( $networks, $target ) = split_line 2, 2, 'rfc1918 file';
 
@@ -297,6 +284,8 @@ sub setup_blacklist() {
 	if ( my $fn = open_file 'blacklist' ) {
 
 	    my $first_entry = 1;
+	    
+	    first_entry "$doing $fn...";
 
 	    while ( read_a_line ) {
 
@@ -307,7 +296,6 @@ sub setup_blacklist() {
 			last BLACKLIST;
 		    }
 
-		    progress_message2 "$doing $fn...";
 		    $first_entry = 0;
 		}
 
@@ -353,16 +341,11 @@ sub process_criticalhosts() {
 
     my $fn = open_file 'routestopped';
 
-    my $first_entry = 1;
+    first_entry "$doing $fn for critical hosts...";
 
     while ( read_a_line ) {
 
 	my $routeback = 0;
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn for critical hosts...";
-	    $first_entry = 0;
-	}
 
 	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
@@ -399,16 +382,11 @@ sub process_routestopped() {
 
     my $fn = open_file 'routestopped';
 
-    my $first_entry = 1;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
 
 	my $routeback = 0;
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
 
 	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
 
@@ -724,14 +702,9 @@ sub setup_mac_lists( $ ) {
 
 	my $fn = open_file 'maclist';
 
-	my $first_entry = 1;
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
-
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		$first_entry = 0;
-	    }
 
 	    my ( $disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
 
@@ -937,7 +910,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 
     if ( $actiontype == MACRO ) {
 	#
-	# Will call process_rule1() recursively for each rule in the macro body
+	# process_macro() will call process_rule1() recursively for each rule in the macro body
 	#
 	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
@@ -975,7 +948,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
     #
-    # We can now dispense with the postfix characters
+    # We can now dispense with the postfix character
     #
     $action =~ s/[\+\-!]$//;
     #
@@ -992,7 +965,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     if ( $actiontype & REDIRECT ) {
 	if ( $dest eq '-' ) {
-	    $dest = firewall_zone;
+	    $dest = join( '', firewall_zone, '::' , $ports =~ /[:,]/ ? '' : $ports );
 	} else {
 	    $dest = join( '', firewall_zone, '::', $dest ) unless $dest =~ /:/;
 	}
@@ -1051,6 +1024,11 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     }
 
     #
+    # For compatibility with older Shorewall versions
+    #
+    $origdest = ALLIPv4 if $origdest eq 'all';
+
+    #
     # Take care of chain
     #
     my $chain    = "${sourcezone}2${destzone}";
@@ -1079,17 +1057,13 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     $chainref = ensure_filter_chain $chain, 1;
     #
-    # For compatibility with older Shorewall versions
-    #
-    $origdest = ALLIPv4 if $origdest eq 'all';
-    #
     # Generate Fixed part of the rule
     #
     $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );
 
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
-	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & NONAT;
+	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "-m state --state $section "
     }
 
@@ -1098,23 +1072,42 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     if ( $actiontype & NATRULE ) {
 	my ( $server, $serverport );
-	fatal_error "$target rules not allowed in the $section SECTION"  if $section ne 'NEW';
+	my $randomize = $dest =~ s/:random$// ? '--random ' : '';
+
 	require_capability( 'NAT_ENABLED' , "$basictarget rules", '' );
 	#
-	# Isolate server port
+	# Isolate server port 
 	#
 	if ( $dest =~ /^(.*)(:(.+))$/ ) {
-	    $server = $1;
-	    $serverport = validate_portrange $proto, $3;
+	    #
+	    # Server IP and Port
+	    #
+	    $server = $1;      # May be empty
+	    $serverport = $3;  # Not Empty due to RE 
+	    if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
+		#
+		# Server Port Range
+		#
+		fatal_error "Invalid port range ($serverport)" unless $1 < $2;
+		my @ports = ( $1, $2 );
+		$_ = validate_port( proto_name( $proto ), $_) for ( @ports );
+		( $ports = $serverport ) =~ tr/-/:/;
+	    } else {
+		$serverport = $ports = validate_port( proto_name( $proto ), $serverport );
+	    }
+	} elsif ( $dest eq ':' ) {
+	    #
+	    # Rule with no server IP or port ( zone:: )
+	    #
+	    $server = $serverport = '';
 	} else {
+	    #
+	    # Simple server IP address (may be empty or "-")
+	    #
 	    $server = $dest;
 	    $serverport = '';
 	}
 
-	#
-	# After DNAT, dest port will be the server port. Capture it here because $serverport gets modified below.
-	#
-	my $servport = $serverport ne '' ? $serverport : $ports;
 	#
 	# Generate the target
 	#
@@ -1122,7 +1115,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 
 	if ( $actiontype  & REDIRECT ) {
 	    fatal_error "A server IP address may not be specified in a REDIRECT rule" if $server;
-	    $target = '-j REDIRECT --to-port ' . $servport;
+	    $target  = '-j REDIRECT ';
+	    $target .= "--to-port $serverport " if $serverport;
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIPv4;
 	    } elsif ( $origdest eq 'detect' ) {
@@ -1142,6 +1136,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
 		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq firewall_zone;
+		fatal_error "':random' is not supported by the SAME target" if $randomize;
+		warning_message 'Netfilter support for SAME is being dropped in early 2008';
 		$target = '-j SAME ';
 		for my $serv ( split /,/, $server ) {
 		    $target .= "--to $serv ";
@@ -1165,6 +1161,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    }
 	}
 
+	$target .= $randomize;
+
 	#
 	# And generate the nat table rule(s)
 	#
@@ -1180,14 +1178,13 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		      $serverport ? do_proto( $proto, '', '' ) : '' );
 	#
 	# After NAT:
-	#   - the destination port will be the server port
-	#   - the destination IP   will be the server IP
+	#   - the destination port will be the server port ($ports) -- we did that above
+	#   - the destination IP   will be the server IP   ($dest)
 	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
 	#   - the target will be ACCEPT.
 	#
 	unless ( $actiontype & NATONLY ) {
-	    $servport =~ tr/-/:/ if $servport ne '-';
-	    $rule = join( '', do_proto( $proto, $servport, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , 0xFF ) );
+	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , 0xFF ) );
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';
@@ -1348,14 +1345,9 @@ sub process_rules() {
 
     my $fn = open_file 'rules';
 
-    my $first_entry = 1;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
 
 	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line2 1, 10, 'rules file';
 
@@ -1398,7 +1390,7 @@ sub process_rules() {
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this function and the rules that it generates.
 #
-# The function traverses the full "source-zone X destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
+# The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
 #
 sub generate_matrix() {
     #
@@ -1468,7 +1460,7 @@ sub generate_matrix() {
     }
 
     #
-    # Generate_Matrix() Starts Here
+    #                               G e n e r a t e _ M a t r i x ( )   S t a r t s  H e r e
     #
     start_matrix;
 

@@ -29,9 +29,9 @@
 #
 package Shorewall::Tc;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Providers;
 
 use strict;
@@ -39,7 +39,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = 4.0.5;
+our $VERSION = 4.0.6;
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -269,8 +269,6 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
 	    fatal_error 'Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes'
 		if $cmd && $chain eq 'tcpre' && numeric_value( $cmd ) <= 0xFF && $config{HIGH_ROUTE_MARKS};
-
-	    $target =~ s/set-mark/or-mark/ if numeric_value( $cmd ) > 0xFF && ( $chain eq 'tcpre' || $chain eq 'tcout' );
 	}
     }
 
@@ -408,14 +406,9 @@ sub setup_traffic_shaping() {
     my $fn = open_file 'tcdevices';
 
     if ( $fn ) {
-	my $first_entry = 1;
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
-
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		$first_entry = 0;
-	    }
 
 	    my ( $device, $inband, $outband ) = split_line 3, 3, 'tcdevices';
 
@@ -427,14 +420,9 @@ sub setup_traffic_shaping() {
     $fn = open_file 'tcclasses';
 
     if ( $fn ) {
-	my $first_entry = 1;
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
-
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		$first_entry = 0;
-	    }
 
 	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 4, 6, 'tcclasses file';
 
@@ -550,8 +538,6 @@ sub setup_traffic_shaping() {
 #
 sub setup_tc() {
 
-    my $first_entry = 1;
-
     if ( $capabilities{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
@@ -595,13 +581,9 @@ sub setup_tc() {
 
     if ( my $fn = open_file 'tcrules' ) {
 
-	while ( read_a_line ) {
+	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );
 
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		require_capability( 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's' );
-		$first_entry = 0;
-	    }
+	while ( read_a_line ) {
 
 	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line1 2, 10, 'tcrules file';
 

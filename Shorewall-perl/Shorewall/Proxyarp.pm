@@ -23,7 +23,7 @@
 #
 package Shorewall::Proxyarp;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 
 use strict;
@@ -35,7 +35,7 @@ our @EXPORT = qw(
 		  );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.0.1;
+our $VERSION = 4.0.6;
 
 our @proxyarp;
 

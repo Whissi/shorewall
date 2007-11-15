@@ -24,9 +24,9 @@
 #
 package Shorewall::Policy;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw( :DEFAULT :internal) ;
 use Shorewall::Actions;
 
 use strict;
@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = 4.0.5;
+our $VERSION = 4.0.6;
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -207,14 +207,9 @@ sub validate_policy()
 
     my $fn = open_file 'policy';
 
-    my $first_entry = 1;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
 
 	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 3, 5, 'policy file';
 

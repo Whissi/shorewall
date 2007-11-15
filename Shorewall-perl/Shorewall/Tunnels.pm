@@ -24,16 +24,17 @@
 #
 package Shorewall::Tunnels;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::IPAddrs;
+use Shorewall::Chains qw(:DEFAULT :internal);
 
 use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tunnels );
 our @EXPORT_OK = ( );
-our $VERSION = 4.0.3;
+our $VERSION = 4.0.6;
 
 #
 # Here starts the tunnel stuff -- we really should get rid of this crap...
@@ -233,6 +234,8 @@ sub setup_tunnels() {
 	my $inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
 	my $outchainref = ensure_filter_chain "${fw}2${zone}", 1;
 
+	$gateway = ALLIPv4 if $gateway eq '-';
+
 	my $source = match_source_net $gateway;
 	my $dest   = match_dest_net   $gateway;
 
@@ -262,19 +265,14 @@ sub setup_tunnels() {
 	progress_message "   Tunnel \"$currentline\" $done";
     }
 
-    my $first_entry = 1;
-
     #
     # Setup_Tunnels() Starts Here
     #
     my $fn = open_file 'tunnels';
 
-    while ( read_a_line ) {
+    first_entry "$doing $fn...";
 
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
+    while ( read_a_line ) {
 
 	my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 2, 4, 'tunnels file';
 

@@ -434,9 +434,9 @@ __EOF__
 #
 setup_route_marking()
 {
-    local mask=0xFF mark_op="--set-mark" save_indent="$INDENT"
+    local mask=0xFF save_indent="$INDENT"
 
-    [ -n "$HIGH_ROUTE_MARKS" ] && mask=0xFF00 && mark_op="--or-mark"
+    [ -n "$HIGH_ROUTE_MARKS" ] && mask=0xFF00
 
     run_iptables -t mangle -A PREROUTING -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask
     run_iptables -t mangle -A OUTPUT     -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask
@@ -450,7 +450,7 @@ setup_route_marking()
 	save_command "if [ -n \"\$${iface}_up\" ]; then"
 	INDENT="$INDENT    "
 	run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/$mask -j routemark
-	run_iptables -t mangle -A routemark  -i $interface                        -j MARK $mark_op $mark_value
+	run_iptables -t mangle -A routemark  -i $interface                        -j MARK --set-mark $mark_value
 	INDENT="$save_indent"
 	save_command "fi"
     done

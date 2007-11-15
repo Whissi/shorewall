@@ -25,9 +25,9 @@
 #
 package Shorewall::Actions;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw(:DEFAULT :internal);
 
 use strict;
 
@@ -54,7 +54,7 @@ our @EXPORT = qw( merge_levels
 		  %macros
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.0.4;
+our $VERSION = 4.0.6;
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -400,7 +400,7 @@ sub process_macro1 ( $$ ) {
 	$targettype = 0 unless defined $targettype;
 
 	fatal_error "Invalid target ($mtarget)"
-	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $targettype & ( LOGRULE | NFQ ) );
+	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $targettype & ( LOGRULE | NFQ | CHAIN ) );
     }
 
     progress_message "   ..End Macro $macrofile";
@@ -418,7 +418,7 @@ sub process_action1 ( $$ ) {
     my $targettype = $targets{$target};
 
     if ( defined $targettype ) {
-	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & ( LOGRULE |  NFQ ) );
+	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & ( LOGRULE |  NFQ | CHAIN ) );
 
 	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 
@@ -640,7 +640,7 @@ sub process_action3( $$$$$ ) {
 	    if ( $action2type & ACTION ) {
 		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
 	    } else {
-		fatal_error "Internal Error" unless $action2type == MACRO || $action2type & ( LOGRULE | NFQ );
+		fatal_error "Internal Error" unless $action2type == MACRO || $action2type & ( LOGRULE | NFQ | CHAIN );
 	    }
 	}
 

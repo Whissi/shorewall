@@ -177,7 +177,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulefile
     local suffix
 
-    if ! list_search $modulename $MODULES ; then
+    if ! list_search $modulename $DONT_LOAD $MODULES; then
 	shift
 
 	for suffix in $MODULE_SUFFIX ; do

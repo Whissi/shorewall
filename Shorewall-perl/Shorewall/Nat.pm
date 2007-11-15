@@ -25,10 +25,10 @@
 #
 package Shorewall::Nat;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
-use Shorewall::Chains;
+use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 
 use strict;
@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
-our $VERSION = 4.0.3;
+our $VERSION = 4.0.6;
 
 our @addresses_to_add;
 our %addresses_to_add;
@@ -188,49 +188,60 @@ sub setup_one_masq($$$$$$$)
 
     my $detectaddress = 0;
     my $exceptionrule = '';
+    my $randomize     = '';
     #
     # Parse the ADDRESSES column
     #
     if ( $addresses ne '-' ) {
-	if ( $addresses =~ /^SAME:nodst:/ ) {
-	    $target = '-j SAME --nodst ';
-	    $addresses =~ s/.*://;
-	    for my $addr ( split /,/, $addresses ) {
-		$target .= "--to $addr ";
-	    }
-	} elsif ( $addresses =~ /^SAME:/ ) {
-	    $target = '-j SAME ';
-	    $addresses =~ s/.*://;
-	    for my $addr ( split /,/, $addresses ) {
-		$target .= "--to $addr ";
-	    }
-	} elsif ( $addresses eq 'detect' ) {
-	    my $variable = get_interface_address $interface;
-	    $target = "-j SNAT --to-source $variable";
-
-	    if ( interface_is_optional $interface ) {
-		add_commands( $chainref,
-			      '',
-			      "if [ \"$variable\" != 0.0.0.0 ]; then" );
-		incr_cmd_level( $chainref );
-		$detectaddress = 1;
-	    }
+	if ( $addresses eq 'random' ) {
+	    $randomize = '--random ';
 	} else {
-	    my $addrlist = '';
-	    for my $addr ( split /,/, $addresses ) {
-		if ( $addr =~ /^.*\..*\..*\./ ) {
-		    $target = '-j SNAT ';
-		    $addrlist .= "--to-source $addr ";
-		    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
-		} else {
-		    $addr =~ s/^://;
-		    $addrlist .= "--to-ports $addr ";
-		    $exceptionrule = do_proto( $proto, '', '' );
-		}
-	    }
+	    $addresses =~ s/:random$// and $randomize = '--random ';
 
-	    $target .= $addrlist;
+	    if ( $addresses =~ /^SAME:nodst:/ ) {
+		fatal_error "':random' is not supported by the SAME target" if $randomize;
+		$target = '-j SAME --nodst ';
+		$addresses =~ s/.*://;
+		for my $addr ( split /,/, $addresses ) {
+		    $target .= "--to $addr ";
+		}
+	    } elsif ( $addresses =~ /^SAME:/ ) {
+		fatal_error "':random' is not supported by the SAME target" if $randomize;
+		$target = '-j SAME ';
+		$addresses =~ s/.*://;
+		for my $addr ( split /,/, $addresses ) {
+		    $target .= "--to $addr ";
+		}
+	    } elsif ( $addresses eq 'detect' ) {
+		my $variable = get_interface_address $interface;
+		$target = "-j SNAT --to-source $variable";
+		
+		if ( interface_is_optional $interface ) {
+		    add_commands( $chainref,
+				  '',
+				  "if [ \"$variable\" != 0.0.0.0 ]; then" );
+		    incr_cmd_level( $chainref );
+		    $detectaddress = 1;
+		}
+	    } else {
+		my $addrlist = '';
+		for my $addr ( split /,/, $addresses ) {
+		    if ( $addr =~ /^.*\..*\..*\./ ) {
+			$target = '-j SNAT ';
+			$addrlist .= "--to-source $addr ";
+			$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
+		    } else {
+			$addr =~ s/^://;
+			$addrlist .= "--to-ports $addr ";
+			$exceptionrule = do_proto( $proto, '', '' );
+		    }
+		}
+		
+		$target .= $addrlist;
+	    }
 	}
+
+	$target .= $randomize;
     } else {
 	$add_snat_aliases = 0;
     }
@@ -284,17 +295,11 @@ sub setup_one_masq($$$$$$$)
 #
 sub setup_masq()
 {
-    my $first_entry = 1;
-
     my $fn = open_file 'masq';
 
+    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
+    
     while ( read_a_line ) {
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    require_capability( 'NAT_ENABLED' , 'a non-empty masq file' , 's' );
-	    $first_entry = 0;
-	}
 
 	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line1 2, 7, 'masq file';
 
@@ -395,17 +400,11 @@ sub do_one_nat( $$$$$ )
 #
 sub setup_nat() {
 
-    my $first_entry = 1;
-
     my $fn = open_file 'nat';
 
+    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty nat file' , 's'; } );
+    
     while ( read_a_line ) {
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    require_capability( 'NAT_ENABLED' , 'a non-empty nat file', 's' );
-	    $first_entry = 0;
-	}
 
 	my ( $external, $interface, $internal, $allints, $localnat ) = split_line1 3, 5, 'nat file';
 
@@ -425,17 +424,11 @@ sub setup_nat() {
 #
 sub setup_netmap() {
 
-    my $first_entry = 1;
-
     my $fn = open_file 'netmap';
 
-    while ( read_a_line ) {
+    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty netmap file' , 's'; } );
 
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    require_capability( 'NAT_ENABLED' , 'a non-empty netmap file' , 's' );
-	    $first_entry = 0;
-	}
+    while ( read_a_line ) {
 
 	my ( $type, $net1, $interface, $net2 ) = split_line 4, 4, 'netmap file';
 

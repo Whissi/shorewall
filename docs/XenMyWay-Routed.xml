@@ -309,6 +309,56 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
           </blockquote></para>
       </blockquote>
 
+      <para>Instructions for editing entries in the Xen 3.1 xend database may
+      be found at <ulink
+      url="http://www.novell.com/documentation/vmserver/config_options/index.html?page=/documentation/vmserver/config_options/data/b8uh3zr.html">http://www.novell.com/documentation/vmserver/config_options/index.html?page=/documentation/vmserver/config_options/data/b8uh3zr.html</ulink>,
+      The following are excerpts from the XML representations of the two user
+      domains (produced by "xm list -l …").</para>
+
+      <para>lists domain:<blockquote>
+          <para><programlisting>… 
+    (features )
+<emphasis role="bold">    (on_xend_start start)
+    (on_xend_stop shutdown)</emphasis>
+    (start_time 1194710550.49)
+ …
+    (console_mfn 397179)
+    (device
+        (vif
+<emphasis role="bold">            (mac 00:16:3e:b1:d7:90)
+            (script vif-route)
+            (ip 206.124.146.177)
+            (vifname eth3)</emphasis>
+            (type netfront)
+            (devid 0)
+            (uuid 55676385-7b69-09fd-4027-751b692ead75)
+        )
+    )
+    (device
+        (vbd
+ …</programlisting></para>
+        </blockquote></para>
+
+      <para>test domain:<blockquote>
+          <para><programlisting>… 
+   (console_mfn 418003)
+    (device
+        (vif
+            (uuid 64a1dd48-fa8b-7561-e90b-cd589cbeb7fa)
+<emphasis role="bold">            (script vif-route)
+            (ip 192.168.1.7)
+            (mac 00:16:3e:83:ad:28)
+            (vifname eth4)
+</emphasis>            (devid 0)
+            (type netfront)
+            (backend 0)
+        )
+    )
+    (device
+        (vbd
+…</programlisting></para>
+        </blockquote></para>
+
       <para>With the three Xen domains up and running, the system looks as
       shown in the following diagram.</para>
 
@@ -316,6 +366,24 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
 
       <para>The zones correspond to the Shorewall zones in the Dom0
       configuration.</para>
+
+      <para>Readers who are paying attention will notice that eth4 has the
+      same public IP address (206.124.146.176) as eth0 (and eth3), yet the
+      <emphasis role="bold">test</emphasis> system connected to that interface
+      has an RFC 1918 address (192.168.1.7). That configuration is established
+      by Xen which clones the primary IP address of eth0 on all of the routed
+      virtual interfaces that it creates. <emphasis
+      role="bold">test</emphasis> is configured with it's default route via
+      192.168.1.254 which is the IP address of the firewall's br0. That works
+      because of the way that the Linux network stack treats local IPv4
+      addresses; by default, it will respond to ARP "who-has" broadcasts for
+      any local address and not just for the addresses on the interface that
+      received the broadcast (but of course the MAC address returned in the
+      "here-is" response is that of the interface that received the
+      broadcast). So when <emphasis role="bold">test</emphasis> broadcasts
+      "who-has 192.168.1.254", the firewall responds with "here-is
+      192.168.1.254 00:16:3e:83:ad:28" (00:16:3e:83:ad:28 is the MAC of
+      virtual interface eth4).</para>
 
       <caution>
         <para>Under some circumstances, UDP and/or TCP communication from a
@@ -376,24 +444,6 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
       either case; when they are directly attached, the IP address is assigned
       by the DHCP server running in Dom0 and when they are attached
       wirelessly, the IP address is assigned by OpenVPN.</para>
-
-      <para>Readers who are paying attention will notice that eth4 has the
-      same public IP address (206.124.146.176) as eth0 (and eth3), yet the
-      <emphasis role="bold">test</emphasis> system connected to that interface
-      has an RFC 1918 address (192.168.1.7). That configuration is established
-      by Xen which clones the primary IP address of eth0 on all of the routed
-      virtual interfaces that it creates. <emphasis
-      role="bold">test</emphasis> is configured with it's default route via
-      192.168.1.254 which is the IP address of the firewall's br0. That works
-      because of the way that the Linux network stack treats local IPv4
-      addresses; by default, it will respond to ARP "who-has" broadcasts for
-      any local address and not just for the addresses on the interface that
-      received the broadcast (but of course the MAC address returned in the
-      "here-is" response is that of the interface that received the
-      broadcast). So when <emphasis role="bold">test</emphasis> broadcasts
-      "who-has 192.168.1.254", the firewall responds with "here-is
-      192.168.1.254 00:16:3e:83:ad:28" (00:16:3e:83:ad:28 is the MAC of
-      virtual interface eth4).</para>
 
       <para>The Shorewall configuration files are shown below. All routing and
       secondary IP addresses are handled in the OpenSuSE network

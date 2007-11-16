@@ -274,7 +274,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     NO_RESTRICT ,
-				     do_proto( $proto, $ports, $sports) . do_test( $testval, $mask ) . do_tos( $tos ) ,
+				     do_proto( $proto, $ports, $sports) . do_user( $user ) . do_test( $testval, $mask ) . do_tos( $tos ) ,
 				     $source ,
 				     $dest ,
 				     '' ,

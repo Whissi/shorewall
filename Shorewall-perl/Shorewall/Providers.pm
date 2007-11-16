@@ -54,7 +54,6 @@ our %providers;
 
 our @providers;
 
-our $maccount;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -70,7 +69,6 @@ sub initialize() {
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
     $balance             = 0;
-    $maccount            = 0;
     $first_default_route = 1;
 
     %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
@@ -111,7 +109,7 @@ sub setup_route_marking() {
 	if ( $providerref->{shared} ) {
 	    my $provider = $providerref->{provider};
 	    add_command( $chainref, qq(if [ -n "${provider}_is_up" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-	    add_rule $chainref, " -m mac --mac-source $providerref->{mac} -j MARK --set-mark $providerref->{mark}";
+	    add_rule $chainref, " -i $interface -m mac --mac-source $providerref->{mac} -j MARK --set-mark $providerref->{mark}";
 	    decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
 	} else {
 	    add_rule $chainref, " -i $interface -j MARK --set-mark $providerref->{mark}";
@@ -290,12 +288,8 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $shared ) {
 	fatal_error "The 'shared' option requires a gateway" unless $gateway;
 
-	my $variable = uc( "${interface}_MAC_" . ++$maccount );
+	$providers{$table}{mac}  = get_interface_mac( $gateway, $interface , $table );
 	
-	emit "$variable=\$(find_mac $gateway $interface)\n";
-
-	$providers{$table}{mac} = "\$$variable";
-
 	$realm = "realm $number";
     }
 

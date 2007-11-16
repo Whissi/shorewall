@@ -125,6 +125,7 @@ our %EXPORT_TAGS = (
 				       get_interface_address
 				       get_interface_addresses
 				       get_interface_bcasts
+				       get_interface_mac
 				       set_global_variables
 				       create_netfilter_load
 				       create_chainlist_reload
@@ -219,6 +220,7 @@ our %interfaceaddr;
 our %interfaceaddrs;
 our %interfacenets;
 our %interfacebcasts;
+our %interfacemacs;
 
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
@@ -318,6 +320,7 @@ sub initialize() {
     %interfaceaddrs   = ();
     %interfacenets    = ();
     %interfacebcasts  = ();
+    %interfacemacs    = ();
 }
 
 INIT {
@@ -1557,6 +1560,27 @@ sub get_interface_nets ( $ ) {
 
     "\$$variable";
 
+}
+
+#
+# Returns the name of the shell variable holding the MAC address of the gateway for the passed provider out of the passed interface
+#
+sub interface_mac( $$ ) {
+    my $variable = join( '_' , chain_base( $_[0] )  , $_[1] , 'mac' );
+    uc $variable;
+}
+
+#
+# Emit code to determine the MAC address of the passed gateway IP routed out of the passed interface for the passed provider number
+#
+sub get_interface_mac( $$$ ) {
+    my ( $ipaddr, $interface , $table ) = @_;
+
+    my $variable = interface_mac( $interface , $table );
+
+    emit qq($variable=\$(find_mac $ipaddr $interface));
+
+    "\$$variable";
 }
 
 #

@@ -35,7 +35,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40006
+SHOREWALL_CAPVERSION=40007
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -1007,6 +1007,7 @@ determine_capabilities() {
     TCPMSS_MATCH=
     HASHLIMIT_MATCH=
     NFQUEUE_TARGET=
+    REALM_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
@@ -1086,7 +1087,8 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
-    
+
+    qt $IPTABLES -A fooX1234 -m realm --realm 4 && REALM_MATCH=Yes
 
     qt $IPTABLES -F fooX1234
     qt $IPTABLES -X fooX1234
@@ -1137,6 +1139,7 @@ report_capabilities() {
 	report_capability "TCPMSS Match" $TCPMSS_MATCH
 	report_capability "Hashlimit Match" $HASHLIMIT_MATCH
 	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
+	report_capability "Realm Match" $REALM_MATCH
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1183,6 +1186,7 @@ report_capabilities1() {
     report_capability1 TCPMSS_MATCH
     report_capability1 HASHLIMIT_MATCH
     report_capability1 NFQUEUE_TARGET
+    report_capability1 REALM_MATCH
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

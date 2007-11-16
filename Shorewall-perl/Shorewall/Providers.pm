@@ -34,8 +34,8 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces);
-our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.0.6;
+our @EXPORT_OK = qw( initialize lookup_provider );
+our $VERSION = 4.0.7;
 
 use constant { LOCAL_NUMBER   => 255,
 	       MAIN_NUMBER    => 254,
@@ -154,8 +154,8 @@ sub copy_and_edit_table( $$$$ ) {
 	    "done\n" );
 }
 
-sub balance_default_route( $$$ ) {
-    my ( $weight, $gateway, $interface ) = @_;
+sub balance_default_route( $$$$ ) {
+    my ( $weight, $gateway, $interface, $realm ) = @_;
 
     $balance = 1;
 
@@ -163,17 +163,17 @@ sub balance_default_route( $$$ ) {
 
     if ( $first_default_route ) {
 	if ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight\"";
+	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
 	} else {
-	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight\"";
+	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
 	}
 
 	$first_default_route = 0;
     } else {
 	if ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight\"";
+	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight $realm\"";
 	} else {
-	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight\"";
+	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight $realm\"";
 	}
     }
 }
@@ -245,16 +245,16 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $optional, $track, $shared ) = (0,0,0,0);
+    my ( $loose, $optional, $track, $shared, $balance ) = (0,0,0,0,0);
 
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, $options ) {
 	    if ( $option eq 'track' ) {
 		$track = 1;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
-		balance_default_route $1 , $gateway, $interface;
+		$balance = $1;
 	    } elsif ( $option eq 'balance' ) {
-		balance_default_route 1 , $gateway, $interface;
+		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose = 1;
 	    } elsif ( $option eq 'optional' ) {
@@ -318,6 +318,8 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "run_ip route replace $gateway src $variable dev $interface table $number $realm";
     emit "run_ip route add default via $gateway dev $interface table $number $realm";
 
+    balance_default_route $balance , $gateway, $interface, $realm if $balance;
+    
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
 	    emit ( "\nfind_interface_addresses $interface | while read address; do",
@@ -545,6 +547,15 @@ sub setup_providers() {
 	emit "\nundo_routing";
 	emit 'restore_default_route';
     }
+}
+
+sub lookup_provider( $ ) {
+    my $provider    = $_[0];
+    my $providerref = $providers{ $provider };
+
+    fatal_error "Unknown provider ($provider)" unless $providerref;
+
+    $providerref->{number};
 }
 
 1;

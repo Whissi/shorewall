@@ -30,6 +30,7 @@ use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
+use Shorewall::Providers qw( lookup_provider );
 
 use strict;
 
@@ -168,6 +169,15 @@ sub setup_one_masq($$$$$$$)
     # Isolate and verify the interface part
     #
     ( my $interface = $fullinterface ) =~ s/:.*//;
+
+    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
+	$interface = $1;
+	my $realm  = $2;
+	$fullinterface =~ s/[(]\w*[)]//;
+	$realm = lookup_provider( $realm ) unless $realm =~ /^\d+$/;
+	    
+	$rule .= "-m realm --realm $realm ";
+    }
 
     fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
 

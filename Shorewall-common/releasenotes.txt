@@ -1,4 +1,4 @@
-Shorewall 4.0 Patch release 6
+Shorewall 4.0 Patch release 7
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 0  H I G H L I G H T S
@@ -26,217 +26,46 @@ Shorewall 4.0 Patch release 6
    Shorewall-perl compiler. This support utilizes the reduced-function
    physdev match support available in Linux kernel 2.6.20 and later.
 
-Problems corrected in Shorewall-perl 4.0.6.
+Problems corrected in Shorewall-perl 4.0.7.
 
-1)  In a DNAT or REDIRECT rule, if no serverport was given and the DEST
-    PORT(S) list contained a service name containing a hyphen ("-") then
-    an ERROR was generated.
-
-    Example -- Rules file:
-
-	DNAT	net	loc:$WINDOWS_IP tcp	https,pptp,ms-wbt-server,4125
-
-    Results in:
-
-	ERROR: Invalid port range (ms:wbt:server) : rules (line 49)
-
-    Problem was introduced in Shorewall 4.0.5 and does not occur in
-    earlier releases.
-
-2)  If a long destination port list needed to be broken at a port pair,
-    the generated rule contained an extra comma which resulted in an
-    iptables-restore failure.
-
-3)  Several problems involving port ranges and port lists in REDIRECT
-    rules have been corrected.
-
-4)  Shorewall-perl no longer requires an address in the GATEWAY column
-    of /etc/shorewall/tunnels. If the column is left empty (or contains
-    '-') then 0.0.0.0/0 is assumed.
-
-5)  Previously with Shorewall-perl, redirecting both STDOUT and STDERR
-    to the same file descriptor resulted in scrambled output between
-    the two. The error messages were often in the middle of the
-    regular output far ahead of the point where the error occurred.
-
-    This problem was possible in the Debian Shorewall init script
-    (/etc/init.d/shorewall) which redirects output to the
-    Debian-specific /var/log/shorewall-init.log file in this way:
-
-        $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && ...
-
-6)  With both compilers, when HIGH_ROUTE_MARKS=Yes, unpredictable
-    results could occur when marking in the PREROUTING or OUTPUT
-    chains. When a rule specified a mark value > 255, the compilers
-    were using the '--or-mark' operator rather than the '--set-mark'
-    operator. Consequently, when a packet matched more than one
-    rule, the resulting routing mark was the logical product of the
-    mark values in the matching rules rather than the mark value from
-    the last matching rule.
-
-    Example:
-
-	0x100	192.168.1.44	0.0.0.0/0
-	0x200	0.0.0.0/0	0.0.0.0/0	tcp	25
-
-    A TCP packet from 192.168.1.44 with destination port 25 would have
-    a  mark value of 0x300 rather than the expected value of 0x200.
-
-7)  Previously, a 'start -f' on Shorewall Lite would produce the
-    following distressing output before starting the firewall:
-
-    make: *** No rule to make target `/firewall', needed by
-    `/var/lib/shorewall-lite/restore'.  Stop.
-
-    Furthermore, the Makefile for both Shorewall and Shorewall Lite
-    failed to take into account the /etc/shorewall/vardir file.
-
-    This has been corrected. As part of the fix, both /sbin/shorewall
-    and /sbin/shorewall-lite support a "show vardir" command that
-    displays the VARDIR setting.
+None.
 
 Other changes in Shorewall 4.0.6.
 
-1)  Shorewall-perl now uses the '--physdev-is-bridged' option when it
-    is available. This option will suppress messages like the following:
+1)  Shorewall 4.0.7 includes experimental support for multiple
+    providers through the same network interface. 
 
-    kernel: physdev match: using --physdev-out in the OUTPUT, FORWARD and
-    POSTROUTING chains for non-bridged traffic is not supported
-    anymore.
+    There are two parts to this support:
 
-    This change only affects users who use bport/bport4 zones in a
-    briged configuration and requires that capabilities files be
-    regenerated using Shorewall-common or Shorewall-lite 4.0.6.
+    a) A 'shared' option has been added to /etc/shorewall/providers.
+       All providers sharing a common interface must have this option.
 
-2)  Shorewall-perl now allows you to embed Shell or Perl scripts in
-    all configuration files except /etc/shorewall/params and
-    /etc/shorewall/shorewall.conf (As always, you can continue to
-    include arbitrary shell code in /etc/shorewall/params).
+    b) The INTERFACE in the /etc/shorewall/masq may now be qualified by
+       a provider in parentheses. Either the provider name or number
+       may be specified.
 
-    To embed a one-line script, use one of the following:
+    This feature requires Realm Match support in your kernel and
+    iptables. If you use a capabilities file, you need to regenerate
+    the file with Shorewall 4.0.6 or Shorewall-lite 4.0.6.
 
-        SHELL <shell script>
-	PERL <perl script>
+    Example: Providers Blarg (1) and Avvanta (2) are both connected to
+    eth0. The firewall's IP address with Blarg is 206.124.146.176
+    (gateway 206.124.146.254) and the IP address from Avvanta is
+    130.252.144.8 (gateway 130.252.144.254).
 
-    For multi-line scripts, use:
+    /etc/shorewall/providers:
 
-	BEGIN SHELL
-	<shell script>
-	END SHELL
+    #PROVIDER	NUMBER	MARK	DUPLICATE	GATEWAY		OPTIONS
+    Blarg	1	1	main		206.124.146.254	shared,...
+    Avvanta	2	2	main		130.252.144.254	shared,...
 
-	BEGIN PERL
-	<perl script>
-	END PERL
+    /etc/shorewall/masq:
 
-    For SHELL scripts, the output from the script is processed as if it
-    were part of the file.
-
-    Example 1 (Shell): To generate SMTP/ACCEPT rules from zones a b c d
-    and e to the firewall:
-
-	Either:
-
-	    BEGIN SHELL 
-	    for z in a b c d e; do
-	        echo SMTP/ACCEPT $z fw tcp 25
-	    done
-	    END SHELL
-
-        or
-
-	    SHELL for z in a b c d e; do echo SMTP/ACCEPT $z fw tcp 25; done
-
-    Either is equivalent to:
-
-	SMTP/ACCEPT a fw tcp 25
-	SMTP/ACCEPT b fw tcp 25
-	SMTP/ACCEPT c fw tcp 25
-	SMTP/ACCEPT d fw tcp 25
-	SMTP/ACCEPT e fw tcp 25
-
-    With a Perl script, if you want to output text to be processed as
-    if it were part of the file, then pass the text to the shorewall()
-    function.
-
-    Example 2 (Perl): To generate SMTP/ACCEPT rules from zones a b c d
-    and e to the firewall:
-
-	  BEGIN PERL 
-	  for ( qw/a b c d e/ ) { 
-	      shorewall "SMTP/ACCEPT $_ fw tcp 25";
-	  }
-	  END PERL
-
-    PERL scripts have access to any context accumulated in earlier PERL
-    scripts. All such embedded Perl, as well as conventional Perl
-    extension scripts are placed in the Shorewall::User package. That
-    way, your global variables and functions won't conflict with any of
-    Shorewall's.
-
-    To allow you to load Perl modules and initialize any global state,
-    a new 'compile' compile-time extension script has been added. It is
-    called early in the compilation process.
-
-    For additional information, see
-
-    - http://www.shorewall.net/configuration_file_basics.html#Embedded
-
-3)  To complement Embedded Perl scripts, Shorewall 4.0.6 allows Perl
-    scripts to create filter chains using
-    Shorewall::Chains::new_manual_chain() and then use the chain as a
-    target in subsequent entries in /etc/shorewall/rules.
-
-    See http://www.shorewall.net/ManualChains.html for information.
-
-4)  The 'hits' command now accepts a -t option which limits the report
-    to those log records generated today.
-
-5)  A DONT_LOAD option has been added to shorewall.conf. If there are
-    kernel modules that you don't wish to have loaded, you can list
-    them in this entry as a comma-separated list.
-
-    Example:
-
-	DONT_LOAD=nf_conntrack_sip,nf_nat_sip
-
-6)  Shorewall-perl now supports the --random option of the iptables
-    SNAT, MASQUERADE, DNAT and REDIRECT targets. Please note that
-    iptables support for this option is currently broken for the DNAT
-    and REDIRECT targets; I've sent a patch to the Netfilter team.
-
-    For MASQUERADE, simply place the word 'random' in the ADDRESS
-    column. This causes Netfilter to randomize the source port seen by
-    the remote host.
-
-     Example:
-
-	#INTERFACE	SOURCE	ADDRESS
-	eth0		eth1	random    
-
-    For SNAT, follow the port list by ":random".
-
-    Example:
-
-	#INTERFACE	SOURCE	ADDRESS
-	eth0		eth1	206.124.146.179:10000-10999:random
-
-    For DNAT, follow the port list by ":random".
-
-    Example:
-
-	#ACTION	SOURCE	DEST				PROTO	DEST
-	#						PORT(S)
-	DNAT	net	loc:192.168.1.4:40-50:random	tcp	22
-
-    For REDIRECT, you must use the fully-qualified form of the DEST:
-
-   	#ACTION	  SOURCE	DEST			PROTO	DEST
-	#						PORT(S)
-	REDIRECT	net	$FW::40-50:random	tcp	22
-
-    Note that ':random' is only effective with SNAT, DNAT and REDIRECT
-    when a port range is specified in the ADDRESS/DEST column. It is
-    ignored by iptables/iptables-restore otherwise.
+    #INTERFACE		SOURCE		ADDRESS
+    eth0(Blarg)		130.252.144.254	206.124.146.176
+    eth0(Avvanta)	206.124.146.176	130.252.144.254
+    eth0(Blarg)		eth1		206.124.146.176
+    eth0(Avvanta)	eth1		130.252.144.254
 
 Migration Considerations:
 
@@ -1081,6 +910,218 @@ Migration Considerations:
     To use this feature with Shorewall-lite, all packages involved
     (compiler, shorewall-common and shorewall-lite) must be version
     4.0.0-RC2 or later.
+
+Problems corrected in Shorewall-perl 4.0.6.
+
+1)  In a DNAT or REDIRECT rule, if no serverport was given and the DEST
+    PORT(S) list contained a service name containing a hyphen ("-") then
+    an ERROR was generated.
+
+    Example -- Rules file:
+
+	DNAT	net	loc:$WINDOWS_IP tcp	https,pptp,ms-wbt-server,4125
+
+    Results in:
+
+	ERROR: Invalid port range (ms:wbt:server) : rules (line 49)
+
+    Problem was introduced in Shorewall 4.0.5 and does not occur in
+    earlier releases.
+
+2)  If a long destination port list needed to be broken at a port pair,
+    the generated rule contained an extra comma which resulted in an
+    iptables-restore failure.
+
+3)  Several problems involving port ranges and port lists in REDIRECT
+    rules have been corrected.
+
+4)  Shorewall-perl no longer requires an address in the GATEWAY column
+    of /etc/shorewall/tunnels. If the column is left empty (or contains
+    '-') then 0.0.0.0/0 is assumed.
+
+5)  Previously with Shorewall-perl, redirecting both STDOUT and STDERR
+    to the same file descriptor resulted in scrambled output between
+    the two. The error messages were often in the middle of the
+    regular output far ahead of the point where the error occurred.
+
+    This problem was possible in the Debian Shorewall init script
+    (/etc/init.d/shorewall) which redirects output to the
+    Debian-specific /var/log/shorewall-init.log file in this way:
+
+        $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && ...
+
+6)  With both compilers, when HIGH_ROUTE_MARKS=Yes, unpredictable
+    results could occur when marking in the PREROUTING or OUTPUT
+    chains. When a rule specified a mark value > 255, the compilers
+    were using the '--or-mark' operator rather than the '--set-mark'
+    operator. Consequently, when a packet matched more than one
+    rule, the resulting routing mark was the logical product of the
+    mark values in the matching rules rather than the mark value from
+    the last matching rule.
+
+    Example:
+
+	0x100	192.168.1.44	0.0.0.0/0
+	0x200	0.0.0.0/0	0.0.0.0/0	tcp	25
+
+    A TCP packet from 192.168.1.44 with destination port 25 would have
+    a  mark value of 0x300 rather than the expected value of 0x200.
+
+7)  Previously, a 'start -f' on Shorewall Lite would produce the
+    following distressing output before starting the firewall:
+
+    make: *** No rule to make target `/firewall', needed by
+    `/var/lib/shorewall-lite/restore'.  Stop.
+
+    Furthermore, the Makefile for both Shorewall and Shorewall Lite
+    failed to take into account the /etc/shorewall/vardir file.
+
+    This has been corrected. As part of the fix, both /sbin/shorewall
+    and /sbin/shorewall-lite support a "show vardir" command that
+    displays the VARDIR setting.
+
+Other changes in Shorewall 4.0.6.
+
+1)  Shorewall-perl now uses the '--physdev-is-bridged' option when it
+    is available. This option will suppress messages like the following:
+
+    kernel: physdev match: using --physdev-out in the OUTPUT, FORWARD and
+    POSTROUTING chains for non-bridged traffic is not supported
+    anymore.
+
+    This change only affects users who use bport/bport4 zones in a
+    briged configuration and requires that capabilities files be
+    regenerated using Shorewall-common or Shorewall-lite 4.0.6.
+
+2)  Shorewall-perl now allows you to embed Shell or Perl scripts in
+    all configuration files except /etc/shorewall/params and
+    /etc/shorewall/shorewall.conf (As always, you can continue to
+    include arbitrary shell code in /etc/shorewall/params).
+
+    To embed a one-line script, use one of the following:
+
+        SHELL <shell script>
+	PERL <perl script>
+
+    For multi-line scripts, use:
+
+	BEGIN SHELL
+	<shell script>
+	END SHELL
+
+	BEGIN PERL
+	<perl script>
+	END PERL
+
+    For SHELL scripts, the output from the script is processed as if it
+    were part of the file.
+
+    Example 1 (Shell): To generate SMTP/ACCEPT rules from zones a b c d
+    and e to the firewall:
+
+	Either:
+
+	    BEGIN SHELL 
+	    for z in a b c d e; do
+	        echo SMTP/ACCEPT $z fw tcp 25
+	    done
+	    END SHELL
+
+        or
+
+	    SHELL for z in a b c d e; do echo SMTP/ACCEPT $z fw tcp 25; done
+
+    Either is equivalent to:
+
+	SMTP/ACCEPT a fw tcp 25
+	SMTP/ACCEPT b fw tcp 25
+	SMTP/ACCEPT c fw tcp 25
+	SMTP/ACCEPT d fw tcp 25
+	SMTP/ACCEPT e fw tcp 25
+
+    With a Perl script, if you want to output text to be processed as
+    if it were part of the file, then pass the text to the shorewall()
+    function.
+
+    Example 2 (Perl): To generate SMTP/ACCEPT rules from zones a b c d
+    and e to the firewall:
+
+	  BEGIN PERL 
+	  for ( qw/a b c d e/ ) { 
+	      shorewall "SMTP/ACCEPT $_ fw tcp 25";
+	  }
+	  END PERL
+
+    PERL scripts have access to any context accumulated in earlier PERL
+    scripts. All such embedded Perl, as well as conventional Perl
+    extension scripts are placed in the Shorewall::User package. That
+    way, your global variables and functions won't conflict with any of
+    Shorewall's.
+
+    To allow you to load Perl modules and initialize any global state,
+    a new 'compile' compile-time extension script has been added. It is
+    called early in the compilation process.
+
+    For additional information, see
+
+    - http://www.shorewall.net/configuration_file_basics.html#Embedded
+
+3)  To complement Embedded Perl scripts, Shorewall 4.0.6 allows Perl
+    scripts to create filter chains using
+    Shorewall::Chains::new_manual_chain() and then use the chain as a
+    target in subsequent entries in /etc/shorewall/rules.
+
+    See http://www.shorewall.net/ManualChains.html for information.
+
+4)  The 'hits' command now accepts a -t option which limits the report
+    to those log records generated today.
+
+5)  A DONT_LOAD option has been added to shorewall.conf. If there are
+    kernel modules that you don't wish to have loaded, you can list
+    them in this entry as a comma-separated list.
+
+    Example:
+
+	DONT_LOAD=nf_conntrack_sip,nf_nat_sip
+
+6)  Shorewall-perl now supports the --random option of the iptables
+    SNAT, MASQUERADE, DNAT and REDIRECT targets. Please note that
+    iptables support for this option is currently broken for the DNAT
+    and REDIRECT targets; I've sent a patch to the Netfilter team.
+
+    For MASQUERADE, simply place the word 'random' in the ADDRESS
+    column. This causes Netfilter to randomize the source port seen by
+    the remote host.
+
+     Example:
+
+	#INTERFACE	SOURCE	ADDRESS
+	eth0		eth1	random    
+
+    For SNAT, follow the port list by ":random".
+
+    Example:
+
+	#INTERFACE	SOURCE	ADDRESS
+	eth0		eth1	206.124.146.179:10000-10999:random
+
+    For DNAT, follow the port list by ":random".
+
+    Example:
+
+	#ACTION	SOURCE	DEST				PROTO	DEST
+	#						PORT(S)
+	DNAT	net	loc:192.168.1.4:40-50:random	tcp	22
+
+    For REDIRECT, you must use the fully-qualified form of the DEST:
+
+   	#ACTION	  SOURCE	DEST			PROTO	DEST
+	#						PORT(S)
+	REDIRECT	net	$FW::40-50:random	tcp	22
+
+    Note that ':random' is only effective with SNAT, DNAT and REDIRECT
+    when a port range is specified in the ADDRESS/DEST column. It is
+    ignored by iptables/iptables-restore otherwise.
 
 Problems corrected in Shorewall 4.0.5.
 

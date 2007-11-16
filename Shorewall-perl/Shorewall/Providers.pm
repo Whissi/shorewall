@@ -43,6 +43,7 @@ use constant { LOCAL_NUMBER   => 255,
 	       UNSPEC_NUMBER  => 0
 	       };
 
+our @routemarked_providers;
 our %routemarked_interfaces;
 our @routemarked_interfaces;
 
@@ -52,6 +53,8 @@ our $first_default_route;
 our %providers;
 
 our @providers;
+
+our $maccount;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -63,9 +66,11 @@ our @providers;
 #
 
 sub initialize() {
+    @routemarked_providers = ();
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
     $balance             = 0;
+    $maccount            = 0;
     $first_default_route = 1;
 
     %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
@@ -93,31 +98,46 @@ sub setup_route_marking() {
 
     my $chainref = new_chain 'mangle', 'routemark';
 
-    while ( my ( $interface, $mark ) = ( each %routemarked_interfaces ) ) {
-	add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
-	add_rule $chainref, " -i $interface -j MARK --set-mark $mark";
+    my %marked_interfaces;
+
+    for my $providerref ( @routemarked_providers ) {
+	my $interface = $providerref->{interface};
+
+	unless ( $marked_interfaces{$interface} ) {
+	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
+	    $marked_interfaces{$interface} = 1;
+	}
+
+	if ( $providerref->{shared} ) {
+	    my $provider = $providerref->{provider};
+	    add_command( $chainref, qq(if [ -n "${provider}_is_up" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+	    add_rule $chainref, " -m mac --mac-source $providerref->{mac} -j MARK --set-mark $providerref->{mark}";
+	    decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
+	} else {
+	    add_rule $chainref, " -i $interface -j MARK --set-mark $providerref->{mark}";
+	}
     }
 
     add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
 }
 
-sub copy_table( $$ ) {
-    my ( $duplicate, $number ) = @_;
+sub copy_table( $$$ ) {
+    my ( $duplicate, $number, $realm ) = @_;
 
     emit ( "ip route show table $duplicate | while read net route; do",
 	   '    case $net in',
 	   '        default|nexthop)',
 	   '            ;;',
 	   '        *)',
-	   "            run_ip route add table $number \$net \$route",
+	   "            run_ip route add table $number \$net \$route $realm",
 	   '            ;;',
 	   '    esac',
 	   "done\n"
 	 );
 }
 
-sub copy_and_edit_table( $$$ ) {
-    my ( $duplicate, $number, $copy ) = @_;
+sub copy_and_edit_table( $$$$ ) {
+    my ( $duplicate, $number, $copy, $realm) = @_;
 
     emit  ( "ip route show table $duplicate | while read net route; do",
 	    '    case $net in',
@@ -126,7 +146,7 @@ sub copy_and_edit_table( $$$ ) {
 	    '        *)',
 	    '            case $(find_device $route) in',
 	    "                $copy)",
-	    "                    run_ip route add table $number \$net \$route",
+	    "                    run_ip route add table $number \$net \$route $realm",
 	    '                    ;;',
 	    '            esac',
 	    '            ;;',
@@ -181,37 +201,18 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "qt ip route flush table $number";
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
-    if ( $duplicate ne '-' ) {
-	if ( $copy eq '-' ) {
-	    copy_table ( $duplicate, $number );
-	} else {
-	    if ( $copy eq 'none' ) {
-		$copy = $interface;
-	    } else {
-		$copy =~ tr/,/|/;
-	    }
-
-	    copy_and_edit_table( $duplicate, $number ,$copy );
-	}
-    } else {
-	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
-    }
+    my $variable;
 
     if ( $gateway eq 'detect' ) {
-	my $variable = get_interface_address $interface;
+	$variable = get_interface_address $interface;
 	emit  ( "gateway=\$(detect_gateway $interface)\n",
-		'if [ -n "$gateway" ]; then',
-		"    run_ip route replace $variable dev $interface table $number",
-		"    run_ip route add default via \$gateway dev $interface table $number",
-		'else',
+		'if [ -z "$gateway" ]; then',
 		"    fatal_error \"Unable to detect the gateway through interface $interface\"",
 		"fi\n" );
 	$gateway = '$gateway';
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;
-	my $variable = get_interface_address $interface;
-	emit "run_ip route replace $gateway src $variable dev $interface table $number";
-	emit "run_ip route add default via $gateway dev $interface table $number";
+	$variable = get_interface_address $interface;
     } else {
 	$gateway = '';
 	emit "run_ip route add default dev $interface table $number";
@@ -244,15 +245,12 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $optional ) = (0,0);
+    my ( $loose, $optional, $track, $shared ) = (0,0,0,0);
 
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, $options ) {
 	    if ( $option eq 'track' ) {
-		fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface};
-		fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
-		$routemarked_interfaces{$interface} = $mark;
-		push @routemarked_interfaces, $interface;
+		$track = 1;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
 		balance_default_route $1 , $gateway, $interface;
 	    } elsif ( $option eq 'balance' ) {
@@ -261,13 +259,64 @@ sub add_a_provider( $$$$$$$$ ) {
 		$loose = 1;
 	    } elsif ( $option eq 'optional' ) {
 		$optional = 1;
+	    } elsif ( $option eq 'shared' ) {
+		require_capability 'REALM_MATCH', "The 'shared' option", "s";
+		$shared = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
 	}
     }
 
-    $providers{$table} = { number => $number , mark => $val , optional => $optional };
+    $providers{$table} = { provider => $table, number => $number , mark => $val , optional => $optional , interface => $interface , gateway => $gateway, shared => $shared };
+
+    if ( $track ) {
+	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
+	
+	if ( $routemarked_interfaces{$interface} ) {
+	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} > 1;
+	    fatal_error "Multiple providers through the same interface must have the 'share' option" unless $shared;
+	} else {
+	    $routemarked_interfaces{$interface} = $shared ? 1 : 2;
+	    push @routemarked_interfaces, $interface;
+	}
+
+	push @routemarked_providers, $providers{$table};
+
+    }
+
+    my $realm = '';
+
+    if ( $shared ) {
+	fatal_error "The 'shared' option requires a gateway" unless $gateway;
+
+	my $variable = uc( "${interface}_MAC_" . ++$maccount );
+	
+	emit "$variable=\$(find_mac $gateway $interface)\n";
+
+	$providers{$table}{mac} = "\$$variable";
+
+	$realm = "realm $number";
+    }
+
+    if ( $duplicate ne '-' ) {
+	if ( $copy eq '-' ) {
+	    copy_table ( $duplicate, $number, $realm );
+	} else {
+	    if ( $copy eq 'none' ) {
+		$copy = $interface;
+	    } else {
+		$copy =~ tr/,/|/;
+	    }
+
+	    copy_and_edit_table( $duplicate, $number ,$copy , $realm);
+	}
+    } else {
+	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
+    }
+
+    emit "run_ip route replace $gateway src $variable dev $interface table $number $realm";
+    emit "run_ip route add default via $gateway dev $interface table $number $realm";
 
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {

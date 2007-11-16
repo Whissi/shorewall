@@ -187,6 +187,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 TCPMSS_MATCH    => 'TCPMSS Match',
 		 HASHLIMIT_MATCH => 'Hashlimit Match',
 		 NFQUEUE_TARGET  => 'NFQUEUE Target',
+		 REALM_MATCH     => 'Realm Match',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -244,7 +245,7 @@ sub initialize() {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    VERSION =>  '4.0.6',
-		    CAPVERSION => 40006 ,
+		    CAPVERSION => 40007 ,
 		  );
     #
     # From shorewall.conf file
@@ -381,6 +382,7 @@ sub initialize() {
 	       TCPMSS_MATCH => undef,
 	       HASHLIMIT_MATCH => undef,
 	       NFQUEUE_TARGET => undef,
+	       REALM_MATCH => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1413,6 +1415,8 @@ sub determine_capabilities( $ ) {
     $capabilities{TCPMSS_MATCH}    = qt( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
     $capabilities{HASHLIMIT_MATCH} = qt( "$iptables -A $sillyname -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT" );
     $capabilities{NFQUEUE_TARGET}  = qt( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
+
+    $capabilities{REALM_MATCH} = qt( "$iptables -A $sillyname -m realm --realm 1" );
 
     qt( "$iptables -F $sillyname" );
     qt( "$iptables -X $sillyname" );

@@ -220,7 +220,6 @@ our %interfaceaddr;
 our %interfaceaddrs;
 our %interfacenets;
 our %interfacebcasts;
-our %interfacemacs;
 
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
@@ -320,7 +319,6 @@ sub initialize() {
     %interfaceaddrs   = ();
     %interfacenets    = ();
     %interfacebcasts  = ();
-    %interfacemacs    = ();
 }
 
 INIT {

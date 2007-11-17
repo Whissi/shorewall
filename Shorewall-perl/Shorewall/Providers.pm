@@ -122,8 +122,13 @@ sub setup_route_marking() {
 sub copy_table( $$$ ) {
     my ( $duplicate, $number, $realm ) = @_;
 
-    emit ( "ip route show table $duplicate | while read net route; do",
-	   '    case $net in',
+    if ( $realm ) {
+	emit  ( "ip route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+    } else {
+	emit  ( "ip route show table $duplicate | while read net route; do" )
+    }
+
+    emit ( '    case $net in',
 	   '        default|nexthop)',
 	   '            ;;',
 	   '        *)',
@@ -137,8 +142,13 @@ sub copy_table( $$$ ) {
 sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
 
-    emit  ( "ip route show table $duplicate | while read net route; do",
-	    '    case $net in',
+    if ( $realm ) {
+	emit  ( "ip route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+    } else {
+	emit  ( "ip route show table $duplicate | while read net route; do" )
+    }
+
+    emit (  '    case $net in',
 	    '        default|nexthop)',
 	    '            ;;',
 	    '        *)',
@@ -309,8 +319,10 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
     }
 
-    emit "run_ip route replace $gateway src $variable dev $interface table $number $realm";
-    emit "run_ip route add default via $gateway dev $interface table $number $realm";
+    if ( $gateway ) {
+	emit "run_ip route replace $gateway src $variable dev $interface table $number $realm";
+	emit "run_ip route add default via $gateway dev $interface table $number $realm";
+    }
 
     balance_default_route $balance , $gateway, $interface, $realm if $balance;
     

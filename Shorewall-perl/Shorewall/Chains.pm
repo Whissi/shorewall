@@ -125,6 +125,7 @@ our %EXPORT_TAGS = (
 				       get_interface_address
 				       get_interface_addresses
 				       get_interface_bcasts
+				       get_interface_gateway
 				       get_interface_mac
 				       set_global_variables
 				       create_netfilter_load
@@ -219,7 +220,9 @@ our $chainseq;
 our %interfaceaddr;
 our %interfaceaddrs;
 our %interfacenets;
+our %interfacemacs;
 our %interfacebcasts;
+our %interfacegateways;
 
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
@@ -315,10 +318,12 @@ sub initialize() {
     #
     # Keep track of which interfaces have active 'address', 'addresses' and 'networks' variables
     #
-    %interfaceaddr    = ();
-    %interfaceaddrs   = ();
-    %interfacenets    = ();
-    %interfacebcasts  = ();
+    %interfaceaddr      = ();
+    %interfaceaddrs     = ();
+    %interfacenets      = ();
+    %interfacemacs      = ();
+    %interfacebcasts    = ();
+    %interfacegateways  = ();
 }
 
 INIT {
@@ -1467,7 +1472,7 @@ sub mysplit( $ ) {
 #
 sub interface_address( $ ) {
     my $variable = chain_base( $_[0] ) . '_address';
-    "\U$variable";
+    uc $variable;
 }
 
 #
@@ -1479,7 +1484,7 @@ sub get_interface_address ( $ ) {
     my $variable = interface_address( $interface );
     my $function = interface_is_optional( $interface ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
 
-    $interfaceaddr{$interface} = "$variable=\$($function $interface)";
+    $interfaceaddr{$interface} = "$variable=\$($function $interface)\n";
 
     "\$$variable";
 }
@@ -1489,7 +1494,7 @@ sub get_interface_address ( $ ) {
 #
 sub interface_bcasts( $ ) {
     my $variable = chain_base( $_[0] ) . '_bcasts';
-    "\U$variable";
+    uc $variable;
 }
 
 #
@@ -1506,11 +1511,38 @@ sub get_interface_bcasts ( $ ) {
 }
 
 #
+# Returns the name of the shell variable holding the gateway through the passed interface
+#
+sub interface_gateway( $ ) {
+    my $variable = chain_base( $_[0] ) . '_gateway';
+    uc $variable;
+}
+
+#
+# Record that the ruleset requires the gateway address on the passed interface
+#
+sub get_interface_gateway ( $ ) {
+    my ( $interface ) = $_[0];
+
+    my $variable = interface_gateway( $interface );
+
+    if ( interface_is_optional $interface ) {
+	$interfacegateways{$interface} = qq($variable=\$(detect_gateway $interface)\n);
+    } else {
+	$interfacegateways{$interface} = qq($variable=\$(detect_gateway $interface)
+[ -n "\$$variable" ] || fatal_error "Unable to detect the gateway through interface $interface"
+);
+    }
+
+    "\$$variable";
+}
+
+#
 # Returns the name of the shell variable holding the addresses of the passed interface
 #
 sub interface_addresses( $ ) {
     my $variable = chain_base( $_[0] ) . '_addresses';
-    "\U$variable";
+    uc $variable;
 }
 
 #
@@ -1537,7 +1569,7 @@ sub get_interface_addresses ( $ ) {
 #
 sub interface_nets( $ ) {
     my $variable = chain_base( $_[0] ) . '_networks';
-    "\U$variable";
+    uc $variable;
 }
 
 #
@@ -1564,19 +1596,25 @@ sub get_interface_nets ( $ ) {
 # Returns the name of the shell variable holding the MAC address of the gateway for the passed provider out of the passed interface
 #
 sub interface_mac( $$ ) {
-    my $variable = join( '_' , chain_base( $_[0] )  , $_[1] , 'mac' );
+    my $variable = join( '_' , chain_base( $_[0] ) , chain_base( $_[1] ) , 'mac' );
     uc $variable;
 }
 
 #
-# Emit code to determine the MAC address of the passed gateway IP routed out of the passed interface for the passed provider number
+# Record the fact that the ruleset requires MAC address of the passed gateway IP routed out of the passed interface for the passed provider number
 #
 sub get_interface_mac( $$$ ) {
     my ( $ipaddr, $interface , $table ) = @_;
 
     my $variable = interface_mac( $interface , $table );
 
-    emit qq($variable=\$(find_mac $ipaddr $interface));
+    if ( interface_is_optional $interface ) {
+	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)\n);
+    } else {
+	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)
+[ -n "\$$variable" ] || fatal_error "Unable to determine the MAC address of $ipaddr through interface \\"$interface\\""
+);
+    }
 
     "\$$variable";
 }
@@ -1979,6 +2017,16 @@ sub set_global_variables() {
 	emit_comment unless $emitted_comment;
 	emit $_;
     }
+
+    for ( values %interfacegateways ) {
+	emit_comment unless $emitted_comment;
+	emit $_;
+    }    
+
+    for ( values %interfacemacs ) {
+	emit_comment unless $emitted_comment;
+	emit $_;
+    }    
 
     for ( values %interfaceaddrs ) {
 	emit_comment unless $emitted_comment;

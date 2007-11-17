@@ -198,6 +198,8 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
     }
 
+    fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
+
     my $provider = chain_base $table;
     
     emit "#\n# Add Provider $table ($number)\n#";
@@ -213,11 +215,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $gateway eq 'detect' ) {
 	$variable = get_interface_address $interface;
-	emit  ( "gateway=\$(detect_gateway $interface)\n",
-		'if [ -z "$gateway" ]; then',
-		"    fatal_error \"Unable to detect the gateway through interface $interface\"",
-		"fi\n" );
-	$gateway = '$gateway';
+	$gateway  = get_interface_gateway $interface;
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;
 	$variable = get_interface_address $interface;
@@ -253,7 +251,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $optional, $track, $shared, $balance ) = (0,0,0,0,0);
+    my ( $loose, $track, $shared, $balance , $optional ) = (0,0,0,0,interface_is_optional( $interface ));
 
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, $options ) {
@@ -266,6 +264,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	    } elsif ( $option eq 'loose' ) {
 		$loose = 1;
 	    } elsif ( $option eq 'optional' ) {
+		set_interface_option $interface, 'optional', 1;
 		$optional = 1;
 	    } elsif ( $option eq 'shared' ) {
 		require_capability 'REALM_MATCH', "The 'shared' option", "s";
@@ -276,7 +275,13 @@ sub add_a_provider( $$$$$$$$ ) {
 	}
     }
 
-    $providers{$table} = { provider => $table, number => $number , mark => $val , optional => $optional , interface => $interface , gateway => $gateway, shared => $shared };
+    $providers{$table} = { provider  => $table,
+			   number    => $number ,
+			   mark      => $val ,
+			   interface => $interface ,
+			   optional  => $optional ,
+			   gateway   => $gateway ,
+			   shared    => $shared };
 
     if ( $track ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
@@ -415,7 +420,7 @@ sub add_an_rtrule( $$$$ ) {
 
     emit ( "qt ip rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
 
-    my ( $base, $optional, $number ) = ( chain_base( $provider ), $providers{$provider}{optional} , $providers{$provider}{number} );
+    my ( $base, $optional, $number ) = ( chain_base( $provider ) ,  $providers{$provider}{optional} , $providers{$provider}{number} );
 
     emit ( '', "if [ -n \$${base}_is_up ]; then" ), push_indent if $optional;
 

@@ -918,11 +918,9 @@ find_mac() # $1 = IP address, $2 = interface
 	\<*\>)
 	    ;;
 	*)
-	    [ -n "$result" ] && echo $result && return
+	    [ -n "$result" ] && echo $result
 	    ;;
     esac
-
-    fatal_error "Cannot determine the MAC address of $1 through $2"
 }
 
 ################################################################################

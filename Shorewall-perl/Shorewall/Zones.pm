@@ -59,6 +59,7 @@ our @EXPORT = qw( NOTHING
 		  interface_is_optional
 		  find_interfaces_by_option
 		  get_interface_option
+		  set_interface_option
 		  validate_hosts_file
 		  find_hosts_by_option
 		 );
@@ -861,6 +862,15 @@ sub get_interface_option( $$ ) {
     my ( $interface, $option ) = @_;
 
     $interfaces{$interface}{options}{$option};
+}
+
+#
+# Set an option for an interface
+#
+sub set_interface_option( $$$ ) {
+    my ( $interface, $option, $value ) = @_;
+
+    $interfaces{$interface}{options}{$option} = $value;
 }
 
 #

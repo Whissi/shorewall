@@ -2261,7 +2261,7 @@ sub create_chainlist_reload($) {
 
 	    for my $chain ( @chains ) {
 		my $chainref = $tableref->{$chain};
-		emit_unindented ":$chainref->{name} - [0:0]" unless $chainref->{builtin};
+		emit_unindented ":$chainref->{name} - [0:0]";
 	    }
 	
 	    for my $chain ( @chains ) {

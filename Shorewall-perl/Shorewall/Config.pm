@@ -1162,9 +1162,15 @@ my %validlevels = ( debug   => 7,
 		    ULOG    => 'ULOG',
 		    NFLOG   => 'NFLOG');
 
+my @suffixes = qw(group range threshhold);
+
 #
 # Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"
 #
+sub level_error( $ ) {
+    fatal_error "Invalid log level ($_[0])";
+}
+
 sub validate_level( $ ) {
     my $level = $_[0];
 
@@ -1174,37 +1180,31 @@ sub validate_level( $ ) {
 	return $value if defined $value;
 	return $level if $level =~ /^[0-7]$/;
 
-	if ( $level =~ /^NFLOG[(](.*)[)]$/ ) {
-	    my @options = split /,/, $1;
+	if ( $level =~ /^(NFLOG|ULOG)[(](.*)[)]$/ ) {
+	    my $olevel  = $1;
+	    my @options = split /,/, $2;
+	    my $prefix  = lc $olevel;
+	    my $index   = 0;
+
+	    level_error( $level ) if @options > 3;
+
+	    for ( @options ) {
+		if ( defined $_ and $_ ne '' ) {
+		    level_error( $level ) unless /^\d+/;
+		    $olevel .= " --${prefix}-$suffixes[$index] $_";
+		}
+
+		$index++;
+	    }
 	    
-	    $level = 'NFLOG';
-	    $level .= " --nflog-group $options[0]"      if defined $options[0] && $options[0] ne '';
-	    $level .= " --nflog-range $options[1]"      if defined $options[1] && $options[1] ne '';
-	    $level .= " --nflog-threshhold $options[2]" if defined $options[2] && $options[2] ne '';
-	    
+	    return $olevel;
+	}
+
+	if ( $level =~ /^NFLOG --/ or $level =~ /^ULOG --/ ) {
 	    return $level;
 	}
 
-	if ( $level =~ /^NFLOG --/ ) {
-	    return $level;
-	}
-
-	if ( $level =~ /^ULOG[(](.*)[)]$/ ) {
-	    my @options = split /,/, $1;
-	    
-	    $level = 'ULOG';
-	    $level .= " --ulog-group $options[0]"      if defined $options[0] && $options[0] ne '';
-	    $level .= " --ulog-range $options[1]"      if defined $options[1] && $options[1] ne '';
-	    $level .= " --ulog-threshhold $options[2]" if defined $options[2] && $options[2] ne '';
-	    
-	    return $level;
-	}
-
-	if ( $level =~ /^ULOG --/ ) {
-	    return $level;
-	}
-
-	fatal_error "Invalid log level ($level)";
+	level_error( $level );
     }
 
     '';

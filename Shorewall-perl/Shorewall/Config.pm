@@ -1159,7 +1159,8 @@ my %validlevels = ( debug   => 7,
 		    emerg   => 0,
 		    panic   => 0,
 		    none    => '',
-		    ULOG    => 'ULOG' );
+		    ULOG    => 'ULOG',
+		    NFLOG   => 'NFLOG');
 
 #
 # Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"
@@ -1172,6 +1173,37 @@ sub validate_level( $ ) {
 	my $value = $validlevels{$level};
 	return $value if defined $value;
 	return $level if $level =~ /^[0-7]$/;
+
+	if ( $level =~ /^NFLOG[(](.*)[)]$/ ) {
+	    my @options = split /,/, $1;
+	    
+	    $level = 'NFLOG';
+	    $level .= " --nflog-group $options[0]"      if defined $options[0] && $options[0] ne '';
+	    $level .= " --nflog-range $options[1]"      if defined $options[1] && $options[1] ne '';
+	    $level .= " --nflog-threshhold $options[2]" if defined $options[2] && $options[2] ne '';
+	    
+	    return $level;
+	}
+
+	if ( $level =~ /^NFLOG --/ ) {
+	    return $level;
+	}
+
+	if ( $level =~ /^ULOG[(](.*)[)]$/ ) {
+	    my @options = split /,/, $1;
+	    
+	    $level = 'ULOG';
+	    $level .= " --ulog-group $options[0]"      if defined $options[0] && $options[0] ne '';
+	    $level .= " --ulog-range $options[1]"      if defined $options[1] && $options[1] ne '';
+	    $level .= " --ulog-threshhold $options[2]" if defined $options[2] && $options[2] ne '';
+	    
+	    return $level;
+	}
+
+	if ( $level =~ /^ULOG --/ ) {
+	    return $level;
+	}
+
 	fatal_error "Invalid log level ($level)";
     }
 

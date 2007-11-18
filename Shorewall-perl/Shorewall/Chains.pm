@@ -1420,8 +1420,10 @@ sub log_rule_limit( $$$$$$$$ ) {
 	warning_message "Log Prefix shortened to \"$prefix\"";
     }
 
-    if ( $level eq 'ULOG' ) {
-	$prefix = "-j ULOG $globals{LOGPARMS}--ulog-prefix \"$prefix\" ";
+    if ( $level =~ '^ULOG' ) {
+	$prefix = "-j $level --ulog-prefix \"$prefix\" ";
+    } elsif  ( $level =~ /^NFLOG/ ) {
+	$prefix = "-j $level --nflog-prefix \"$prefix\" ";
     } else {
 	$prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
     }

@@ -295,7 +295,6 @@ sub add_a_provider( $$$$$$$$ ) {
 	}
 
 	push @routemarked_providers, $providers{$table};
-
     }
 
     my $realm = '';
@@ -303,7 +302,7 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $shared ) {
 	fatal_error "The 'shared' option requires a gateway" unless $gateway;
 
-	$providers{$table}{mac}  = get_interface_mac( $gateway, $interface , $table );
+	$providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	
 	$realm = "realm $number";
     }
@@ -330,7 +329,7 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     balance_default_route $balance , $gateway, $interface, $realm if $balance;
-    
+
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
 	    emit ( "\nfind_interface_addresses $interface | while read address; do",
@@ -391,7 +390,6 @@ sub add_an_rtrule( $$$$ ) {
     }
 
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
-
 
     if ( $dest eq '-' ) {
 	$dest = 'to ' . ALLIPv4; 

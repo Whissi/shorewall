@@ -2199,6 +2199,8 @@ sub create_chainlist_reload($) {
 
     unless ( @chains ) {
 	@chains = qw( blacklst ) if $filter_table->{blacklst};
+	push @chains, 'mangle:' if $capabilities{MANGLE_ENABLED};
+	$chains = join( ',', @chains ) if @chains;
     }
 
     $mode = NULL_MODE;
@@ -2214,16 +2216,12 @@ sub create_chainlist_reload($) {
 	    progress_message2 "Compiling iptables-restore input for chain @chains...";
 	    save_progress_message "Preparing iptables-restore input for chain @chains...";
 	} else {
-	    progress_message2 "Compiling iptables-restore input for chain $chains...";
+	    progress_message2 "Compiling iptables-restore input for chains $chains...";
 	    save_progress_message "Preparing iptables-restore input for chains $chains...";
 	}
 
 	emit '';
 
-	emit 'exec 3>${VARDIR}/.iptables-restore-input';
-
-	enter_cat_mode;
-	
 	my $table = 'filter';
 	
 	my %chains;
@@ -2232,13 +2230,24 @@ sub create_chainlist_reload($) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 	    
 	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter)$/;
-	    fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
-	    
+
 	    $chains{$table} = [] unless $chains{$table};
-	    
-	    push @{$chains{$table}}, $chain; 
+
+	    if ( $chain ) {
+		fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
+		fatal_error "Built-in chains may not be refreshed" if $chain_table{table}{$chain}{builtin};
+		push @{$chains{$table}}, $chain;
+	    } else {
+		while ( my ( $chain, $chainref ) = each %{$chain_table{$table}} ) {
+		    push @{$chains{$table}}, $chain if $chainref->{referenced} && ! $chainref->{builtin};
+		}
+	    }
 	}
 
+	emit 'exec 3>${VARDIR}/.iptables-restore-input';
+
+	enter_cat_mode;
+	
 	for $table qw(nat mangle filter) {
 	    next unless $chains{$table};
 
@@ -2248,11 +2257,6 @@ sub create_chainlist_reload($) {
 
 	    @chains = sort @{$chains{$table}};
 
-	    for my $chain ( @chains ) {
-		my $chainref = $tableref->{$chain};
-		emit_unindented ":$chainref->{name} $chainref->{policy} [0:0]" if $chainref->{builtin};
-	    }
-	    
 	    for my $chain ( @chains ) {
 		my $chainref = $tableref->{$chain};
 		emit_unindented ":$chainref->{name} - [0:0]" unless $chainref->{builtin};
@@ -2277,6 +2281,19 @@ sub create_chainlist_reload($) {
 	}
 
 	enter_cmd_mode;
+
+	for $table qw(nat mangle filter) {
+	    next unless $chains{$table};
+
+	    my $tableref=$chain_table{$table};
+
+	    @chains = sort @{$chains{$table}};
+
+	    for my $chain ( @chains ) {
+		my $chainref = $tableref->{$chain};
+		emit "\$IPTABLES -t $table -F $chain" if $chainref->{builtin};
+	    }
+	}
 	#
 	# Now generate the actual iptables-restore command
 	#

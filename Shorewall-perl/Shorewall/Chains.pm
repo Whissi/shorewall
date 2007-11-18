@@ -2282,18 +2282,6 @@ sub create_chainlist_reload($) {
 
 	enter_cmd_mode;
 
-	for $table qw(nat mangle filter) {
-	    next unless $chains{$table};
-
-	    my $tableref=$chain_table{$table};
-
-	    @chains = sort @{$chains{$table}};
-
-	    for my $chain ( @chains ) {
-		my $chainref = $tableref->{$chain};
-		emit "\$IPTABLES -t $table -F $chain" if $chainref->{builtin};
-	    }
-	}
 	#
 	# Now generate the actual iptables-restore command
 	#

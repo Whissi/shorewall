@@ -565,7 +565,7 @@ sub process_action( $$$$$$$$$$ ) {
 }
 
 #
-# Expand Macro in action file4s.
+# Expand Macro in action files.
 #
 sub process_macro3( $$$$$$$$$$$ ) {
     my ( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
@@ -573,8 +573,6 @@ sub process_macro3( $$$$$$$$$$$ ) {
     progress_message "..Expanding Macro $fn...";
 
     push_open $fn;
-
-    my $standard = ( $fn =~ /^($globals{SHAREDIR})/ );
 
     while ( read_a_line ) {
 
@@ -633,7 +631,6 @@ sub process_macro3( $$$$$$$$$$$ ) {
 sub process_action3( $$$$$ ) {
     my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
     my $actionfile = find_file "action.$action";
-    my $standard = ( $actionfile =~ /^$globals{SHAREDIR}/ );
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
@@ -656,7 +653,7 @@ sub process_action3( $$$$$ ) {
 
 	( $action2 , my $param ) = get_target_param $action2;
 
-	my $action2type = $targets{$action2};
+	my $action2type = $targets{$action2} || 0; 
 
 	unless ( $action2type == STANDARD ) {
 	    if ( $action2type & ACTION ) {

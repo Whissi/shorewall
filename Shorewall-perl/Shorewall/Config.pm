@@ -244,8 +244,8 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.0.6',
-		    CAPVERSION => 40007 ,
+		    VERSION =>  '4.1.0',
+		    CAPVERSION => 40100 ,
 		  );
     #
     # From shorewall.conf file

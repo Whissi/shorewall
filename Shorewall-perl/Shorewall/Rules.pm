@@ -894,7 +894,7 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 sub process_rule1 ( $$$$$$$$$$$ ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
-    my ( $basictarget, $param ) = split '/', $action;
+    my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
     my $actionchainref;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;

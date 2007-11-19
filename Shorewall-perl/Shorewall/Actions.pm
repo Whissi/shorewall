@@ -34,6 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( merge_levels
 		  isolate_basic_target
+		  get_target_param
 		  add_requiredby
 		  createactionchain
 		  find_logactionchain
@@ -219,7 +220,22 @@ sub merge_macro_column( $$ ) {
 # Get Macro Name -- strips away trailing /* and :* from the first column in a rule, macro or action.
 #
 sub isolate_basic_target( $ ) {
-    ( split '[/:]', $_[0])[0];
+    my $target = ( split '[/:]', $_[0])[0]; 
+
+    $target =~ /^(\w+)[(].*[)]$/ ? $1 : $target;
+}
+
+#
+# Split the passed target into the basic target and parameter
+#
+sub get_target_param( $ ) {
+    my ( $target, $param ) = split '/', $_[0];
+
+    unless ( defined $param ) {
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(\w+)[(](.*)[)]$/;
+    }
+
+    ( $target, $param );
 }
 
 #
@@ -428,7 +444,7 @@ sub process_action1 ( $$ ) {
     } elsif ( $target eq 'COMMENT' ) {
 	fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
     } else {
-	( $target, my $param ) = split '/', $target;
+	( $target, my $param ) = get_target_param $target;
 
 	return if $target eq 'NFQUEUE';
 
@@ -532,13 +548,17 @@ sub process_action( $$$$$$$$$$ ) {
 
     my ( $action , $level ) = split_action $target;
 
+    ( $action, my $param ) = get_target_param $action;
+
+    $param = 1 unless defined $param;
+
     expand_rule ( $chainref ,
 		  NO_RESTRICT ,
 		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user ,
 		  $source ,
 		  $dest ,
 		  '', #Original Dest
-		  '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action),
+		  '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action eq 'NFQUEUE' ? "NFQUEUE --queue-num $param" : $action),
 		  $level ,
 		  $action ,
 		  '' );
@@ -634,7 +654,9 @@ sub process_action3( $$$$$ ) {
 
 	my ( $action2 , $level2 ) = split_action $target2;
 
-	my $action2type = $targets{isolate_basic_target $action2};
+	( $action2 , my $param ) = get_target_param $action2;
+
+	my $action2type = $targets{$action2};
 
 	unless ( $action2type == STANDARD ) {
 	    if ( $action2type & ACTION ) {
@@ -645,8 +667,6 @@ sub process_action3( $$$$$ ) {
 	}
 
 	if ( $action2type == MACRO ) {
-	    ( $action2, my $param ) = split '/', $action2;
-
 	    fatal_error "Null Macro" unless my $fn = $macros{$action2};
 
 	    process_macro3( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user );

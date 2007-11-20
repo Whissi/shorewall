@@ -228,7 +228,7 @@ sub validate_policy()
 
 	fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
 
-	( $policy , my $queue ) = split( '/' , $policy );
+	( $policy , my $queue ) = get_target_param $policy;
 
 	if ( $default ) {
 	    if ( "\L$default" eq 'none' ) {

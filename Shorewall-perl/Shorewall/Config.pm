@@ -1162,7 +1162,7 @@ my %validlevels = ( debug   => 7,
 		    ULOG    => 'ULOG',
 		    NFLOG   => 'NFLOG');
 
-my @suffixes = qw(group range threshhold);
+my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
 
 #
 # Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"
@@ -1184,7 +1184,7 @@ sub validate_level( $ ) {
 	    my $olevel  = $1;
 	    my @options = split /,/, $2;
 	    my $prefix  = lc $olevel;
-	    my $index   = 0;
+	    my $index   = $prefix eq 'ulog' ? 3 : 0;
 
 	    level_error( $level ) if @options > 3;
 

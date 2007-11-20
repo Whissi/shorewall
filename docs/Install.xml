@@ -146,7 +146,12 @@
           <programlisting><command>rpm -ivh --nodeps &lt;rpms&gt;</command></programlisting>
         </note>
 
-        <para>Example:<programlisting><command>rpm -ivh shorewall-perl-4.0.0-1.noarch.rpm shorewall-common-4.0.0-1.noarch.rpm</command></programlisting></para>
+        <para>Example:<programlisting><command>rpm -ivh shorewall-perl-4.0.0-1.noarch.rpm shorewall-common-4.0.0-1.noarch.rpm</command></programlisting><important>
+            <para>Simon Matter names his '<emphasis>common</emphasis>' rpm
+            '<emphasis>shorewall</emphasis>' rather than
+            '<emphasis>shorewall-common</emphasis>'. So if you are installing
+            his RPMs, the command would be:<programlisting><command>rpm -ivh shorewall-perl-4.0.0-1.noarch.rpm shorewall-4.0.0-1.noarch.rpm</command></programlisting></para>
+          </important></para>
       </listitem>
 
       <listitem>
@@ -340,7 +345,11 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
         TurboLinux. There is also an RPM package provided by Simon Matter that
         is tailored for RedHat/Fedora and another package from Jack Coates
         that is customized for Mandriva. If you try to upgrade using the wrong
-        package, it probably won't work.</para>
+        package, it probably won't work.<important>
+            <para>Simon Matter names his '<emphasis>common</emphasis>' rpm
+            '<emphasis>shorewall</emphasis>' rather than
+            '<emphasis>shorewall-common</emphasis>'.</para>
+          </important></para>
       </listitem>
 
       <listitem>
@@ -469,11 +478,11 @@ tar -jxf shorewall-shell-4.0.0.tar.bz2</command> (if you use this compiler)</pro
     mailing list:</para>
 
     <blockquote>
-      <para>It's *VERY* simple...just put in a new CD and reboot! &nbsp;:-)
+      <para>It's *VERY* simple...just put in a new CD and reboot!  :-)
       Actually, I'm only slightly kidding...that's exactly how I upgrade my
-      prodution firewalls. &nbsp;The partial backup feature I added to
-      Dachstein allows configuration data to be stored seperately from the
-      rest of the package.</para>
+      prodution firewalls.  The partial backup feature I added to Dachstein
+      allows configuration data to be stored seperately from the rest of the
+      package.</para>
 
       <para>Once the config data is seperated from the rest of the package,
       it's an easy matter to upgrade the pacakge while keeping your current
@@ -482,20 +491,20 @@ tar -jxf shorewall-shell-4.0.0.tar.bz2</command> (if you use this compiler)</pro
 
       <para>Users who aren't running with multiple package paths and using
       partial backups can still upgrade a package, it just takes a bit of
-      extra work. &nbsp;The general idea is to use a partial backup to save
-      your configuration, replace the package, and restore your old
-      configuration files. Step-by-step instructions for one way to do this
-      (assuming a conventional single-floppy LEAF system) would be:</para>
+      extra work.  The general idea is to use a partial backup to save your
+      configuration, replace the package, and restore your old configuration
+      files. Step-by-step instructions for one way to do this (assuming a
+      conventional single-floppy LEAF system) would be:</para>
 
       <itemizedlist>
         <listitem>
-          <para>Make a backup copy of your firewall disk ('NEW'). &nbsp;This
-          is the disk you will add the upgraded package(s) to.</para>
+          <para>Make a backup copy of your firewall disk ('NEW').  This is the
+          disk you will add the upgraded package(s) to.</para>
         </listitem>
 
         <listitem>
           <para>Format a floppy to use as a temporary location for your
-          configuration file(s) ('XFER'). &nbsp;This disk should have the same
+          configuration file(s) ('XFER').  This disk should have the same
           format as your firewall disk (and could simply be another backup
           copy of your current firewall).</para>
         </listitem>
@@ -515,7 +524,7 @@ tar -jxf shorewall-shell-4.0.0.tar.bz2</command> (if you use this compiler)</pro
         <listitem>
           <para>Use the lrcfg backup menu to make a partial backup of the
           package(s) you want to upgrade, being sure to backup the files to
-          the XFER disk. &nbsp;From the backup menu:</para>
+          the XFER disk.  From the backup menu:</para>
 
           <programlisting>t e &lt;enter&gt; p &lt;enter&gt;
 b &lt;package1&gt; &lt;enter&gt;
@@ -560,7 +569,7 @@ tar -xzvf /mnt/package2.lrp
         </listitem>
 
         <listitem>
-          <para>Reboot, verifying the firewall works as expected. &nbsp;Some
+          <para>Reboot, verifying the firewall works as expected.  Some
           configuration files may need to be 'tweaked' to work properly with
           the upgraded package binaries.</para>
         </listitem>
@@ -569,15 +578,15 @@ tar -xzvf /mnt/package2.lrp
       <important>
         <para>The new package file &lt;package&gt;.local can be used to
         fine-tune which files are included (and excluded) from the partial
-        backup (see the Dachstein-CD README for details). &nbsp;If this file
+        backup (see the Dachstein-CD README for details).  If this file
         doesn't exist, the backup scripts assume anything from the
         &lt;package&gt;.list file that resides in /etc or /var/lib/lrpkg is
         part of the configuration data and is used to create the partial
-        backup. &nbsp;If shorewall puts anything in /etc that isn't a user
-        modified configuration file, a proper shorwall.local file should be
-        created prior to making the partial backup [<emphasis
-        role="bold">Editor's note</emphasis>: Shorewall places only
-        user-modifiable files in /etc].</para>
+        backup.  If shorewall puts anything in /etc that isn't a user modified
+        configuration file, a proper shorwall.local file should be created
+        prior to making the partial backup [<emphasis role="bold">Editor's
+        note</emphasis>: Shorewall places only user-modifiable files in
+        /etc].</para>
       </important>
 
       <note>

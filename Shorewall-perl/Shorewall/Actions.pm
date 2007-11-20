@@ -548,9 +548,15 @@ sub process_action( $$$$$$$$$$ ) {
 
     my ( $action , $level ) = split_action $target;
 
-    ( $action, my $param ) = get_target_param $action;
-
-    $param = 1 unless defined $param;
+    if ( $action eq 'REJECT' ) {
+	$action = 'reject';
+    } elsif ( $action eq 'CONTINUE' ) {
+	$action = 'RETURN';
+    } elsif ( $action =~ /^NFQUEUE/ ) {
+	( $action, my $param ) = get_target_param $action;
+	$param = 1 unless defined $param;
+	$action = "NFQUEUE --queue-num $param";
+    }
 
     expand_rule ( $chainref ,
 		  NO_RESTRICT ,
@@ -558,7 +564,7 @@ sub process_action( $$$$$$$$$$ ) {
 		  $source ,
 		  $dest ,
 		  '', #Original Dest
-		  '-j ' . ($action eq 'REJECT' ? 'reject' : $action eq 'CONTINUE' ? 'RETURN' : $action eq 'NFQUEUE' ? "NFQUEUE --queue-num $param" : $action),
+		  "-j $action" ,
 		  $level ,
 		  $action ,
 		  '' );

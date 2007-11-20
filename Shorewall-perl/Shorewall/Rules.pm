@@ -943,7 +943,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' ); 
 	$param = $param eq '' ? 0 : numeric_value( $param );
 	fatal_error "Invalid value ($param) for NFQUEUE queue number" if $param > 65535;
-	$action = "NFQUEUE/$param";
+	$action = "NFQUEUE --queue-num $param";
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -1236,7 +1236,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     $actiontype & NFQ ? "-j NFQUEUE --queue-num $param " : "-j $action " ,
+		     "-j $action " ,
 		     $loglevel ,
 		     $action ,
 		     '' );

@@ -256,7 +256,7 @@ sub validate_policy()
 	    require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
 	    $queue = numeric_value( $queue );
 	    fatal_error "Invalid NFQUEUE queue number ($queue)" if $queue > 65535;
-	    $policy = "$policy/$queue";
+	    $policy = "NFQUEUE --queue-num $queue";
 	} elsif ( $policy eq 'NONE' ) {
 	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;
@@ -347,12 +347,7 @@ sub policy_rules( $$$$$ ) {
 	add_rule $chainref, "-j $default" if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
-	if ( $target eq 'REJECT' ) {
-	    $target = 'reject';
-	} elsif ( $target =~ /^NFQUEUE/ ) {
-	    my $queue = ( split( '/', $target) )[1] || 0;
-	    $target = "NFQUEUE --queue-num $queue";
-	}
+	$target = 'reject' if $target eq 'REJECT';
 
 	add_rule( $chainref , "-j $target" ) unless $target eq 'CONTINUE';
     }

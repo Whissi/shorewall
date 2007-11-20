@@ -1409,6 +1409,8 @@ sub log_rule_limit( $$$$$$$$ ) {
 	$tag = '' unless defined $tag;
     }
 
+    $disposition =~ s/\s+.*//;
+
     if ( $globals{LOGRULENUMBERS} ) {
 	$prefix = (sprintf $config{LOGFORMAT} , $chain , $chainref->{log}++, $disposition ) . $tag;
     } else {

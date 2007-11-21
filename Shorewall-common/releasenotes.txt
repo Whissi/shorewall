@@ -19,7 +19,8 @@ Problems corrected in Shorewall 4.1.1.
 
 Other changes in Shorewall 4.1.1.
 
-None.
+1)  You may now specify an interface address in the INTERFACE column of
+    /etc/shorewall/providers. See New Feature 1) below.
 
 New Features in Shorewall 4.1.
 
@@ -42,26 +43,39 @@ New Features in Shorewall 4.1.
       iptables. If you use a capabilities file, you need to regenerate
       the file with Shorewall 4.0.6 or Shorewall-lite 4.0.6.
 
+   e) You specify the address on the interface that corresponds to a
+      particular provider in the INTERFACE column by following the
+      interface name with a colon (":") and the address.
+
+   f) You must add route_rules entries for networks that are accessed
+      through a particular provider.
+
     Example:
 
     Providers Blarg (1) and Avvanta (2) are both connected to
-    eth0. The firewall's IP address with Blarg is 206.124.146.176
+    eth0. The firewall's IP address with Blarg is 206.124.146.176/24
     (gateway 206.124.146.254) and the IP address from Avvanta is
-    130.252.144.8 (gateway 130.252.144.254).
+    130.252.144.8/24 (gateway 130.252.144.254).
 
     /etc/shorewall/providers:
 
-       #PROVIDER   NUMBER  MARK    DUPLICATE       GATEWAY         OPTIONS
-       Blarg       1       1       main            206.124.146.254 shared,...
-       Avvanta     2       2       main            130.252.144.254 shared,...
+       #PROVIDER   NUMBER  MARK    DUPLICATE INTERFACE            GATEWAY         OPTIONS
+       Blarg       1       1       main      eth0:206.124.146.176 206.124.146.254 shared,...
+       Avvanta     2       2       main      eth0:130.252.144.8   130.252.144.254 shared,...
 
     /etc/shorewall/masq:
 
        #INTERFACE          SOURCE          ADDRESS
-       eth0(Blarg)         130.252.144.254 206.124.146.176
-       eth0(Avvanta)       206.124.146.176 130.252.144.254
+       eth0(Blarg)         130.252.144.8   206.124.146.176
+       eth0(Avvanta)       206.124.146.176 130.252.144.8
        eth0(Blarg)         eth1            206.124.146.176
-       eth0(Avvanta)       eth1            130.252.144.254
+       eth0(Avvanta)       eth1            130.252.144.8
+
+    /etc/shorewall/route_rules:
+
+	#SOURCE		DEST			PROVIDER	PRIORITY
+	-		206.124.146.0/24	Blarg		1000
+	-		130.252.144.0/24	Avvanta		1000
 
 2)  You may now include the name of a table (nat, mangle or filter) in
     a 'shorewall refresh' command by following the name with a colon

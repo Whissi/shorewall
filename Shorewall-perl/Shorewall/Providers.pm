@@ -198,6 +198,10 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
     }
 
+    ( $interface, my $address ) = split /:/, $interface;
+
+    validate_address $address, 0 if defined $address;
+
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
 
     my $provider = chain_base $table;
@@ -211,14 +215,12 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "qt ip route flush table $number";
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
-    my $variable;
-
     if ( $gateway eq 'detect' ) {
-	$variable = get_interface_address $interface;
+	$address = get_interface_address $interface unless $address;
 	$gateway  = get_interface_gateway $interface;
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;
-	$variable = get_interface_address $interface;
+	$address = get_interface_address $interface unless $address;
     } else {
 	$gateway = '';
 	emit "run_ip route add default dev $interface table $number";
@@ -324,7 +326,7 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     if ( $gateway ) {
-	emit "run_ip route replace $gateway src $variable dev $interface table $number $realm";
+	emit "run_ip route replace $gateway src $address dev $interface table $number $realm";
 	emit "run_ip route add default via $gateway dev $interface table $number $realm";
     }
 

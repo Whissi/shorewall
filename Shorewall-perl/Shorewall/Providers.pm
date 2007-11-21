@@ -200,7 +200,13 @@ sub add_a_provider( $$$$$$$$ ) {
 
     ( $interface, my $address ) = split /:/, $interface;
 
-    validate_address $address, 0 if defined $address;
+    my $shared = 0;
+
+    if ( defined $address ) {
+	validate_address $address, 0;
+	$shared = 1;
+	require_capability 'REALM_MATCH', "Multiple Providers through one interface", "s";
+    }
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
 
@@ -222,6 +228,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	validate_address $gateway, 0;
 	$address = get_interface_address $interface unless $address;
     } else {
+	fatal_error "Multiple Providers through one interface requires a gateway" if $shared;
 	$gateway = '';
 	emit "run_ip route add default dev $interface table $number";
     }
@@ -253,7 +260,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $track, $shared, $balance , $optional ) = (0,0,0,0,interface_is_optional( $interface ));
+    my ( $loose, $track, $balance , $optional ) = (0,0,0,interface_is_optional( $interface ));
 
     unless ( $options eq '-' ) {
 	for my $option ( split /,/, $options ) {
@@ -268,9 +275,6 @@ sub add_a_provider( $$$$$$$$ ) {
 	    } elsif ( $option eq 'optional' ) {
 		set_interface_option $interface, 'optional', 1;
 		$optional = 1;
-	    } elsif ( $option eq 'shared' ) {
-		require_capability 'REALM_MATCH', "The 'shared' option", "s";
-		$shared = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -302,10 +306,7 @@ sub add_a_provider( $$$$$$$$ ) {
     my $realm = '';
 
     if ( $shared ) {
-	fatal_error "The 'shared' option requires a gateway" unless $gateway;
-
 	$providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
-	
 	$realm = "realm $number";
     }
 
@@ -339,9 +340,13 @@ sub add_a_provider( $$$$$$$$ ) {
 		   'done'
 		 );
 	}
+    } elsif ( $shared ) {
+	emit "qt ip rule del from $address" if $config{DELETE_THEN_ADD};
+	emit "run_ip rule add from $address pref 20000 table $number";
+	emit "echo \"qt ip rule del from $address\" >> \${VARDIR}/undo_routing";
     } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
-
+	
 	emit "\nrulenum=0\n";
 
 	emit  ( "find_interface_addresses $interface | while read address; do" );

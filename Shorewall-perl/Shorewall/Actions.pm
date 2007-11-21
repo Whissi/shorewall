@@ -434,7 +434,7 @@ sub process_action1 ( $$ ) {
     my $targettype = $targets{$target};
 
     if ( defined $targettype ) {
-	return if ( $targettype == STANDARD ) || ( $targettype == MACRO ) || ( $targettype & ( LOGRULE |  NFQ | CHAIN ) );
+	return if ( $targettype == STANDARD ) || ( $targettype & ( MACRO | LOGRULE |  NFQ | CHAIN ) );
 
 	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 
@@ -665,7 +665,7 @@ sub process_action3( $$$$$ ) {
 	    if ( $action2type & ACTION ) {
 		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
 	    } else {
-		fatal_error "Internal Error" unless $action2type == MACRO || $action2type & ( LOGRULE | NFQ | CHAIN );
+		fatal_error "Internal Error" unless $action2type & ( MACRO | LOGRULE | NFQ | CHAIN );
 	    }
 	}
 

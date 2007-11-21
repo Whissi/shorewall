@@ -205,7 +205,7 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( defined $address ) {
 	validate_address $address, 0;
 	$shared = 1;
-	require_capability 'REALM_MATCH', "Multiple Providers through one interface", "s";
+	require_capability 'REALM_MATCH', "Configuring multiple providers through one interface", "s";
     }
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
@@ -216,19 +216,18 @@ sub add_a_provider( $$$$$$$$ ) {
 
     emit "if interface_is_usable $interface; then";
     push_indent;
-    my $iface = chain_base $interface;
 
     emit "qt ip route flush table $number";
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
     if ( $gateway eq 'detect' ) {
 	$address = get_interface_address $interface unless $address;
-	$gateway  = get_interface_gateway $interface;
+	$gateway = get_interface_gateway $interface;
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;
 	$address = get_interface_address $interface unless $address;
     } else {
-	fatal_error "Multiple Providers through one interface requires a gateway" if $shared;
+	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
 	$gateway = '';
 	emit "run_ip route add default dev $interface table $number";
     }
@@ -341,9 +340,9 @@ sub add_a_provider( $$$$$$$$ ) {
 		 );
 	}
     } elsif ( $shared ) {
-	emit "qt ip rule del from $address" if $config{DELETE_THEN_ADD};
-	emit "run_ip rule add from $address pref 20000 table $number";
-	emit "echo \"qt ip rule del from $address\" >> \${VARDIR}/undo_routing";
+	emit  "qt ip rule del from $address" if $config{DELETE_THEN_ADD};
+	emit( "run_ip rule add from $address pref 20000 table $number" ,
+	      "echo \"qt ip rule del from $address\" >> \${VARDIR}/undo_routing" );
     } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
 	

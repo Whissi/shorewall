@@ -1279,7 +1279,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 	    $source = 'all';
 	    $includesrcfw = 0;
 	} else {
-	    fatal_error "Invalid SOURCE ($source)" unless $source eq 'all';
+	    fatal_error "Invalid SOURCE ($source)";
 	}
     }
 
@@ -1295,7 +1295,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 	    $dest = 'all';
 	    $includedstfw = 0;
 	} else {
-	    fatal_error "Invalid DEST ($dest)" unless $dest eq 'all';
+	    fatal_error "Invalid DEST ($dest)";
 	}
 
     }

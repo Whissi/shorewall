@@ -382,8 +382,6 @@ compiler() {
 	    $command perl $debugflags $pc $options $@
 	    ;;
 	shell)
-	    LOG_VERBOSE=$LOG_VERBOSITY
-	    export STARTUP_LOG LOG_VERBOSE
 	    [ -x $sc ] || startup_error "SHOREWALL_COMPILER=shell requires the shorewall-shell package which is not installed"
 	    [ -n "$REFRESHCHAINS" ] && startup_error "Shorewall-shell does not support refresh of specific chains"
 	    $command $SHOREWALL_SHELL $sc $@
@@ -1315,7 +1313,7 @@ export_command() # $* = original arguments less the command.
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] [ -t ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v[-1|{0-2}] ] [ -t ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."

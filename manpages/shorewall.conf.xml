@@ -736,6 +736,30 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
       <varlistentry>
         <term><emphasis
+        role="bold">LOG_VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
+
+        <listitem>
+          <para>This option controls the amount of information logged to the
+          file specified in the STARTUP_LOG option.</para>
+
+          <para>Values are:</para>
+
+          <simplelist>
+            <member>-1 — Logging is disabled</member>
+
+            <member>0 — Silent. Only error messages are logged.</member>
+
+            <member>1 — Major progress messages logged.</member>
+
+            <member>2 — All progress messages logged</member>
+          </simplelist>
+
+          <para>If not specified, then -1 is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
         role="bold">LOGALLNEW=</emphasis>[<emphasis>log-level</emphasis>]</term>
 
         <listitem>
@@ -1374,6 +1398,19 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           role="bold">Yes</emphasis> or <emphasis role="bold">yes</emphasis>,
           Shorewall may be started. Used as a guard against Shorewall being
           accidentally started before it has been configured.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">STARTUP_LOG=</emphasis>[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>If specified, determines where Shorewall will log the details
+          of each <emphasis role="bold">start</emphasis>, <emphasis
+          role="bold">restart</emphasis> and <emphasis
+          role="bold">refresh</emphasis> command. Logging verbosity is
+          determined by the setting of LOG_VERBOSITY above.</para>
         </listitem>
       </varlistentry>
 

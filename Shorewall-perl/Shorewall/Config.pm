@@ -424,6 +424,8 @@ INIT {
     initialize;
 }
 
+my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+
 #
 # Issue a Warning Message
 #
@@ -431,8 +433,14 @@ sub warning_message
 {
     my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
+    my @localtime;
 
     $| = 1;
+
+    if ( $log ) {
+	@localtime = localtime;
+	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+    }
 
     if ( $debug ) {
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
@@ -455,6 +463,9 @@ sub fatal_error	{
     $| = 1;
 
     if ( $log ) {
+	my @localtime = localtime;
+	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+
 	if ( $debug ) {
 	    print $log longmess( "   ERROR: @_$currentlineinfo" );
 	} else {
@@ -473,6 +484,9 @@ sub fatal_error1	{
     $| = 1;
 
     if ( $log ) {
+	my @localtime = localtime;
+	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+
 	if ( $debug ) {
 	    print $log longmess( "   ERROR: @_\n" );
 	} else {
@@ -600,8 +614,6 @@ sub set_command( $$$ ) {
 sub timestamp() {
     printf '%02d:%02d:%02d ', ( localtime ) [2,1,0];
 }
-
-my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 
 #
 # Write a message if $verbose >= 2

@@ -49,6 +49,12 @@ clear_firewall() {
 fatal_error()
 {
     echo "   ERROR: $@" >&2
+
+    if [ $LOG_VERBOSE -gt 1 ]; then
+        timestamp="$(date +'%_b %d %T') "
+        echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
+    fi
+	
     stop_firewall
     [ -n "$TEMPFILE" ] && rm -f $TEMPFILE
     exit 2
@@ -71,6 +77,22 @@ startup_error() # $* = Error Message
 	    logger -p kern.err "ERROR:$PRODUCT restore failed"
 	    ;;
     esac
+
+    if [ $LOG_VERBOSE -gt 1 ]; then
+        timestamp="$(date +'%_b %d %T') "
+    
+	case $COMMAND in
+	    start)
+		echo "${timestamp}  ERROR:$PRODUCT start failed" >> $STARTUP_LOG
+		;;
+	    restart)
+		echo "${timestamp}  ERROR:$PRODUCT restart failed" >> $STARTUP_LOG
+		;;
+	    restore)
+		echo "${timestamp}  ERROR:$PRODUCT restore failed" >> $STARTUP_LOG
+		;;
+	esac
+    fi
 
     kill $$
     exit 2

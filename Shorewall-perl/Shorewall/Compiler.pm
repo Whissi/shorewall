@@ -143,6 +143,8 @@ sub generate_script_1() {
 	   qq(PATH="$config{PATH}") ,
 	   'TERMINATOR=fatal_error' ,
 	   qq(DONT_LOAD="@dont_load") ,
+	   qq(STARTUP_LOG="$config{STARTUP_LOG}") ,
+	   "LOG_VERBOSE=$config{LOG_VERBOSITY}" ,
 	   ''
 	   );
 
@@ -699,9 +701,9 @@ EOF
 #    If the first argument is non-null, it names the script file to generate.
 #    Otherwise, this is a 'check' command and no script is produced.
 #
-sub compiler( $$$$$ ) {
+sub compiler( $$$$$$$ ) {
 
-    my ( $objectfile, $directory, $verbosity, $options , $chains ) = @_;
+    my ( $objectfile, $directory, $verbosity, $options , $chains , $log , $log_verbosity ) = @_;
 
     $export = 0;
 
@@ -712,10 +714,11 @@ sub compiler( $$$$$ ) {
 	set_shorewall_dir( $directory );
     }
 
-    set_verbose( $verbosity ) unless $verbosity eq '';
-    $export = 1               if $options & EXPORT;
-    set_timestamp( 1 )        if $options & TIMESTAMP;
-    set_debug( 1 )            if $options & DEBUG;
+    set_verbose( $verbosity )     unless $verbosity eq '';
+    set_log($log, $log_verbosity) if $log;
+    $export = 1                   if $options & EXPORT;
+    set_timestamp( 1 )            if $options & TIMESTAMP;
+    set_debug( 1 )                if $options & DEBUG;
     #
     # Get shorewall.conf and capabilities.
     #
@@ -874,6 +877,8 @@ sub compiler( $$$$$ ) {
 	#
 	generate_aux_config if $export;
     }
+
+    close_log if $log;
 
     1;
 }

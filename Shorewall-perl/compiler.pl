@@ -41,7 +41,18 @@ use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage() {
-    print STDERR "usage: compiler.pl [ --export ] [ --directory=<directory> ] [ --verbose={0-2} ] [ --timestamp ] [ -- debug ] [ --refresh=<chainlist> ] [ <filename> ]\n";
+    print STDERR 'usage: compiler.pl [ <option> ... ] <filename> ]
+
+  options are:
+    [ --export ]
+    [ --directory=<directory> ]
+    [ --verbose={0-2} ]
+    [ --timestamp ]
+    [ -- debug ]
+    [ --refresh=<chainlist> ]
+    [ --log=<filename> ]
+    [ --log-verbose={0-2} ]
+';
     exit 1;
 }
 
@@ -54,20 +65,25 @@ my $verbose       = 0;
 my $timestamp     = '';
 my $debug         = 0;
 my $chains        = '';
+my $log           = '';
+my $log_verbose   = 0;
 
 Getopt::Long::Configure ('bundling');
 
-my $result = GetOptions('export'      => \$export,
-			'e'           => \$export,
-			'directory=s' => \$shorewall_dir,
-			'd=s'         => \$shorewall_dir,
-			'verbose=i'   => \$verbose,
-			'v=i'         => \$verbose,
-			'timestamp'   => \$timestamp,
-			't'           => \$timestamp,
-		        'debug'       => \$debug,
-			'r=s'         => \$chains,
-			'refresh=s'   => \$chains
+my $result = GetOptions('export'          => \$export,
+			'e'               => \$export,
+			'directory=s'     => \$shorewall_dir,
+			'd=s'             => \$shorewall_dir,
+			'verbose=i'       => \$verbose,
+			'v=i'             => \$verbose,
+			'timestamp'       => \$timestamp,
+			't'               => \$timestamp,
+		        'debug'           => \$debug,
+			'r=s'             => \$chains,
+			'refresh=s'       => \$chains,
+			'log=s'           => \$log,
+			'l=s'             => \$log,
+			'log_verbosity=i' => \$log_verbose,
 		       );
 
 usage unless $result && @ARGV < 2;
@@ -78,4 +94,4 @@ $options |= EXPORT    if $export;
 $options |= TIMESTAMP if $timestamp;
 $options |= DEBUG     if $debug;
 
-compiler $ARGV[0], $shorewall_dir, $verbose, $options, $chains;
+compiler $ARGV[0], $shorewall_dir, $verbose, $options, $chains, $log , $log_verbose;

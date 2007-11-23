@@ -54,12 +54,15 @@ our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shor
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
 				       finalize_object
+		                       numeric_value
 				       emit
 				       emit_unindented
 				       save_progress_message
 				       save_progress_message_short
 				       set_timestamp
 				       set_verbose
+				       set_log
+				       close_log
 				       set_command
 				       push_indent
 				       pop_indent
@@ -112,6 +115,10 @@ our ($command, $doing, $done );
 # VERBOSITY
 #
 our $verbose;
+#
+# Logging
+#
+our ( $log, $log_verbose );
 #
 # Timestamp each progress message, if true.
 #
@@ -228,6 +235,8 @@ sub initialize() {
     ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
     $verbose = 0;              # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
+    $log = undef;              # File reference for log file
+    $log_verbose = -1;         # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message
     $object = 0;               # Object (script) file Handle Reference
     $lastlineblank = 0;        # Avoid extra blank lines in the output
@@ -268,6 +277,8 @@ sub initialize() {
 		RFC1918_LOG_LEVEL => undef,
 		SMURF_LOG_LEVEL => undef,
 		LOG_MARTIANS => undef,
+		LOG_VERBOSITY => undef,
+		STARTUP_LOG => undef,
 		#
 		# Location of Files
 		#
@@ -425,8 +436,10 @@ sub warning_message
 
     if ( $debug ) {
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
+	print $log   longmess( "   WARNING: @_$currentlineinfo" ) if $log;
     } else {
 	print STDERR "   WARNING: @_$currentlineinfo\n";
+	print $log   "   WARNING: @_$currentlineinfo\n" if $log;
     }
 
     $| = 0;
@@ -438,15 +451,49 @@ sub warning_message
 sub fatal_error	{
     my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
+
     $| = 1;
+
+    if ( $log ) {
+	if ( $debug ) {
+	    print $log longmess( "   ERROR: @_$currentlineinfo" );
+	} else {
+	    print $log "   ERROR: @_$currentlineinfo\n";
+	}
+
+	close $log;
+	$log = undef;
+    }
+       
     confess "   ERROR: @_$currentlineinfo" if $debug;
     die "   ERROR: @_$currentlineinfo\n";
 }
 
 sub fatal_error1	{
     $| = 1;
+
+    if ( $log ) {
+	if ( $debug ) {
+	    print $log longmess( "   ERROR: @_\n" );
+	} else {
+	    print $log "   ERROR: @_\n";
+	}
+
+	close $log;
+	$log = undef;
+    }
+       
     confess "   ERROR: @_" if $debug;
     die "   ERROR: @_\n";
+}
+
+#
+# Convert value to decimal number
+#
+sub numeric_value ( $ ) {
+    my $mark = lc $_[0];
+    fatal_error "Invalid Numeric Value ($mark)" unless $mark =~ /^-?(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
+    $mark =~ /^0/ ? oct $mark : $mark;
 }
 
 #
@@ -511,6 +558,36 @@ sub set_verbose( $ ) {
 }
 
 #
+# Set $log and $log_verbose
+#
+sub set_log ( $$ ) {
+    my ( $l, $v ) = @_;
+
+    if ( defined $v ) {
+	my $value = numeric_value( $v );
+
+	if ( ( $value < -1 ) || ( $value > 2 ) ) {
+	    fatal_error "Invalid Log Verbosity ( $v )";
+	}
+
+	$log_verbose = $value;
+    }
+
+    if ( $l && $log_verbose >= 0 ) {	
+	unless ( open $log , '>>' , $l ) {
+	    $log = undef; 
+	    fatal_error "Unable to open $l for writing: $!";
+	}
+    } else {
+	$log_verbose = -1;
+    }
+}
+
+sub close_log() {
+    close $log, $log = undef if $log;
+}
+
+#
 # Set $command, $doing and $done
 #
 sub set_command( $$$ ) {
@@ -523,6 +600,8 @@ sub set_command( $$$ ) {
 sub timestamp() {
     printf '%02d:%02d:%02d ', ( localtime ) [2,1,0];
 }
+
+my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 
 #
 # Write a message if $verbose >= 2
@@ -538,6 +617,15 @@ sub progress_message {
 	$line =~ s/\s+/ /g;
 	print "$line\n";
     }
+
+    if ( $log_verbose > 1 ) {
+	my @localtime = localtime;
+
+	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	my $line = "@_";
+	$line =~ s/\s+/ /g;
+	print $log "$line\n";
+    }
 }
 
 #
@@ -548,6 +636,13 @@ sub progress_message2 {
 	timestamp if $timestamp;
 	print "@_\n";
     }
+
+    if ( $log_verbose > 0 ) {
+	my @localtime = localtime;
+
+	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	print $log "@_\n";
+    }
 }
 
 #
@@ -557,6 +652,13 @@ sub progress_message3 {
     if ( $verbose >= 0 ) {
 	timestamp if $timestamp;
 	print "@_\n";
+    }
+
+    if ( $log_verbose > 0 ) {
+	my @localtime = localtime;
+
+	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	print $log "@_\n";
     }
 }
 
@@ -1651,6 +1753,9 @@ sub get_configuration( $ ) {
     check_trivalue ( 'ROUTE_FILTER',  '' );
     check_trivalue ( 'LOG_MARTIANS',  '' );
 
+    default 'LOG_VERBOSITY' , -1;
+    default 'STARTUP_LOG'   , '';
+
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
@@ -1993,6 +2098,7 @@ END {
     #
     close  $object         if $object;
     close  $scriptfile     if $scriptfile;
+    close  $log            if $log;
     #
     # Unlink temporary files
     #

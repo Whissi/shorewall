@@ -41,6 +41,11 @@ progress_message() # $* = Message
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
+
+    if [ $LOG_VERBOSE -gt 1 ]; then
+        timestamp="$(date +'%_b %d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
 }
 
 progress_message2() # $* = Message
@@ -51,6 +56,11 @@ progress_message2() # $* = Message
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
+
+    if [ $LOG_VERBOSE -gt 0 ]; then
+        timestamp="$(date +'%_b %d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
 }
 
 progress_message3() # $* = Message
@@ -60,6 +70,11 @@ progress_message3() # $* = Message
     if [ $VERBOSE -ge 0 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSE -ge 0 ]; then
+        timestamp="$(date +'%_b %d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
     fi
 }
 

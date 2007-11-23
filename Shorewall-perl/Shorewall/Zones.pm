@@ -37,7 +37,6 @@ our @EXPORT = qw( NOTHING
 		  IPSECPROTO
 		  IPSECMODE
 
-		  numeric_value
 		  determine_zones
 		  zone_report
 		  dump_zone_contents
@@ -156,15 +155,6 @@ sub initialize() {
 
 INIT {
     initialize;
-}
-
-#
-# Convert value to decimal number
-#
-sub numeric_value ( $ ) {
-    my $mark = lc $_[0];
-    fatal_error "Invalid Numeric Value ($mark)" unless $mark =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
-    $mark =~ /^0/ ? oct $mark : $mark;
 }
 
 #

@@ -108,6 +108,7 @@ BUILDCOMMON=
 BUILDPERL=
 BUILDSHELL=
 BUILDLITE=
+PATCHRELEASE=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -335,6 +336,7 @@ case $VERSION in
 	#
 	# Patch Release
 	#
+	PATCHRELEASE=Yes
 	SHOREWALLDIR=shorewall-common-${VERSION%-*}
 	SHOREWALLLITEDIR=shorewall-lite-${VERSION%-*}
 	TARBALL=shorewall-common-${VERSION%-*}.tgz
@@ -907,7 +909,7 @@ if [ -n "$OLDVERSION" ]; then
     [ -n "$BUILDPERL" ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
     [ -n "$BUILDSHELL" ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
 
-    eval perl -i -p -e "'if ( /\+\+\+/ ) { s/shorewall-common-$VERSION/Shorewall-common/;s/shorewall-lite-$VERSION/Shorewall-lite/;s/shorewall-perl-$VERSION/Shorewall-perl/;s/shorewall-shell-$VERSION/Shorewall-shell/ }'" patch-$VERSION
+    [ -n "$PATCHRELEASE" ] && eval perl -i -p -e "'if ( /\+\+\+/ ) { s/shorewall-common-$VERSION/Shorewall-common/;s/shorewall-lite-$VERSION/Shorewall-lite/;s/shorewall-perl-$VERSION/Shorewall-perl/;s/shorewall-shell-$VERSION/Shorewall-shell/ }'" patch-$VERSION
     
 fi
 

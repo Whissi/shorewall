@@ -337,7 +337,7 @@ case $VERSION in
 	# Patch Release
 	#
 	PATCHRELEASE=Yes
-	SHOREWALLDIR=shorewall-common-${VERSION%-*}
+	[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${VERSION} || SHOREWALLDIR=shorewall-common-${VERSION%-*}
 	SHOREWALLLITEDIR=shorewall-lite-${VERSION%-*}
 	TARBALL=shorewall-common-${VERSION%-*}.tgz
 	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
@@ -388,13 +388,13 @@ fi
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
-    [ -n "$BUILDCOMMON" ] && rm -rf $SHOREWALLDIR
+    rm -rf $SHOREWALLDIR
+
     [ -n "$BUILDLITE" ]   && rm -rf $SHOREWALLLITEDIR
     [ -n "$BUILDPERL" ]   && rm -rf $PERLDIR
     [ -n "$BUILDSHELL" ]  && rm -rf $SHELLDIR
 
-
-    [ -n "$BUILDCOMMON" ] && progress_message "Exporting $SVNBRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+    progress_message "Exporting $SVNBRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
  
     [ -n "$BUILDLITE" ]   && progress_message "Exporting $LITESVNBRANCH from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     	
@@ -403,7 +403,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     [ -n "$BUILDSHELL" ]  && progress_message "Exporting $SHELLBRANCH from SVN..."   && do_or_die "svn export --non-interactive --force ${SVN}/$SHELLBRANCH  $SHELLDIR >> $LOGFILE 2>&1"
 
     
-    if [ -n "$BUILDCOMMON" ]; then
+    if [ -n "$BUILDLITE" ]; then
 	do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	do_or_die "cp $SHOREWALLDIR/lib.base $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	if [ -f $SHOREWALLDIR/lib.cli ]; then
@@ -412,10 +412,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	if [ -f $SHOREWALLDIR/wait4ifup ]; then
 	    do_or_die "cp $SHOREWALLDIR/wait4ifup $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	fi
-    elif [ -n "$OLDVERSION" ]; then
-	SHOREWALLDIR=shorewall-common-${OLDVERSION}
-    else
-	SHOREWALLDIR=shorewall-common-${VERSION}
     fi
 
     [ -n "$BUILDLITE" ]   && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALLLITEDIR >> $LOGFILE 2>&1"

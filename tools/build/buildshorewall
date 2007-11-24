@@ -894,6 +894,17 @@ for file in *; do
     esac
 done
 
+if [ -n "$PATCHRELEASE" ]; then
+    svn update ~/shorewall/tags/${VERSION%-*}
+    if [ -f ~/shorewall/tags/${VERSION%-*}/known_problems.txt ]; then
+	cp ~/shorewall/tags/${VERSION%-*}/known_problems.txt .
+    else
+	echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
+    fi
+else
+    echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
+fi
+
 if [ -n "$OLDVERSION" ]; then
     
     progress_message "Creating patch-$VERSION ..."

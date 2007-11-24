@@ -307,6 +307,23 @@ case $VERSION in
 	SHELLTARBALL=shorewall-shell-${VERSION%-*}.tgz
 	SHELLDIR=shorewall-shell-${VERSION%-*}
 	;;
+    *-*)
+	#
+	# Patch Release
+	#
+	SHOREWALLDIR=shorewall-common-${VERSION%-*}
+	SHOREWALLLITEDIR=shorewall-lite-${VERSION%-*}
+	TARBALL=shorewall-common-${VERSION%-*}.tgz
+	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
+	RPMNAME=shorewall-common-${VERSION}.noarch.rpm
+	LITERPMNAME=shorewall-lite-${VERSION}.noarch.rpm
+	PERLRPMNAME=shorewall-perl-${VERSION}.noarch.rpm
+	PERLTARBALL=shorewall-perl-${VERSION%-*}.tgz
+	PERLDIR=shorewall-perl-${VERSION%-*}
+	SHELLRPMNAME=shorewall-shell-${VERSION}.noarch.rpm
+	SHELLTARBALL=shorewall-shell-${VERSION%-*}.tgz
+	SHELLDIR=shorewall-shell-${VERSION%-*}
+	;;
     *)
 	#
 	# Normal Release
@@ -701,7 +718,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 fi
 
 [ -n "$BUILDTARBALL" ] && case $VERSION in
-    *Beta*|*RC*|*Pre*)
+    *-*)
 	#
 	# The original tarball created above didn't include the -Beta or -RC portion of the
 	# name in either the tarball name or the directory name. Create it here

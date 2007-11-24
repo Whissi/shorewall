@@ -2,6 +2,7 @@
 
 usage() {
     echo "Usage: stage [-pclsxh] <version>"
+}
 
 rpm=
 literpm=
@@ -81,9 +82,9 @@ while [ -z "$done" ]; do
 	    ;;
 	*)
 	    done=Yes
-	    ;;
+            ;;
     esac
-done
+ done
 
 
 case $1 in
@@ -96,7 +97,7 @@ case $1 in
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     4.0.*-*)
-	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-${1%-*}"
+	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-${1}"
 	SHOREWALL=shorewall-common
 	;;
     4.0.*)

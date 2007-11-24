@@ -1,5 +1,8 @@
 #/bin/sh
 
+usage() {
+    echo "Usage: upload [-pclsxh] <version>"
+
 rpm=
 literpm=
 perlrpm=
@@ -10,6 +13,79 @@ USER="webadmin@mail.shorewall.net"
 SHOREWALL=shorewall
 COMMAND=scp
 
+UPLOADCOMMON=
+UPLOADPERL=
+UPLOADSHELL=
+UPLOADLITE=
+UPLOADXML=
+UPLOADHTML=
+
+done=
+
+case $1 in
+    -*)
+	;;
+    *)
+	UPLOADCOMMON=Yes
+	UPLOADPERL=Yes
+	UPLOADSHELL=Yes
+	UPLOADLITE=Yes
+	UPLOADXML=Yes
+	UPLOADHTML=Yes
+	done=Yes
+	;;
+esac
+
+while [ -z "$done" ]; do
+    [ $# -eq 0 ] && break
+
+    option=$1
+    case $option in
+	-*)
+	    option=${option#-}
+
+	    [ -z "$option" ] && break
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    p*)
+			UPLOADPERL=Yes
+			option=${option#p}
+			;;
+		    c*)
+			UPLOADCOMMON=Yes
+			option=${option#c}
+			;;
+		    s*)
+			UPLOADSHELL=Yes
+			option=${option#s}
+			;;
+		    l*)
+			UPLOADLITE=Yes
+			option=${option#l}
+			;;
+		    x*)
+			UPLOADXML=Yes
+			option=${option#x}
+			;;
+		    h*)
+			UPLOADHTML=Yes
+			option=${option#h}
+			;;
+	    	    *)
+			usage
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    done=Yes
+	    ;;
+    esac
+done
+
+
 case $1 in
     4.*Beta*|4.*RC*)
 	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
@@ -18,6 +94,10 @@ case $1 in
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
+	;;
+    4.0.*-*)
+	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-${1%-*}"
+	SHOREWALL=shorewall-common
 	;;
     4.0.*)
 	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
@@ -78,7 +158,7 @@ esac
 
 [ -d errata ] || mkdir errata
 
-echo "There are no known problems in Shorewall version $1" > known_problems.txt
+[ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
 if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
     cat $SHOREWALL-${1}/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
@@ -94,4 +174,13 @@ else
 	DEST=${USER}:${DEST}
 fi
 
-$COMMAND -r errata known_problems.txt patch-$1 ${1}.* releasenotes.txt shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $literpm $perlrpm $shellrpm $DEST
+files="errata known_problems.txt releasenotes.txt patch-$1 ${1}.*"
+
+[ -n "$UPLOADPERL" ]   && files="$files shorewall-perl-${1}.* $perlrpm"
+[ -n "$UPLOADCOMMON" ] && files="$files shorewall-common-${1}.* $rpm"
+[ -n "$UPLOADSHELL" ]  && files="$files shorewall-shell-${1}.* $shellrpm"
+[ -n "$UPLOADLITE" ]   && files="$files shorewall-lite-${1}.* $literpm"
+[ -n "$UPLOADXML" ]    && files="$files shorewall-docs-xml-${1}.* $literpm"
+[ -n "$UPLOADHTML" ]   && files="$files shorewall-docs-html-${1}.* $literpm"
+
+$COMMAND -r $files $DEST

@@ -221,7 +221,7 @@ sub setup_rfc1918_filteration( $ ) {
 
     my $fn = open_file 'rfc1918';
 
-    first_entry "$doing $fn...";
+    first_entry "$doing $fn..." if $fn;
 
     while ( read_a_line ) {
 
@@ -341,7 +341,7 @@ sub process_criticalhosts() {
 
     my $fn = open_file 'routestopped';
 
-    first_entry "$doing $fn for critical hosts...";
+    first_entry "$doing $fn for critical hosts..." if $fn;
 
     while ( read_a_line ) {
 
@@ -382,7 +382,7 @@ sub process_routestopped() {
 
     my $fn = open_file 'routestopped';
 
-    first_entry "$doing $fn...";
+    first_entry "$doing $fn..." if $fn;
 
     while ( read_a_line ) {
 
@@ -702,7 +702,7 @@ sub setup_mac_lists( $ ) {
 
 	my $fn = open_file 'maclist';
 
-	first_entry "$doing $fn...";
+	first_entry "$doing $fn..." if $fn;
 
 	while ( read_a_line ) {
 
@@ -898,6 +898,10 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     my $rule = '';
     my $actionchainref;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;
+
+    unless ( defined $param ) {
+	( $basictarget, $param ) = ( $1, $2 ) if $action =~ /^(\w+)[(](.*)[)]$/;
+    }
 
     $param = '' unless defined $param;
 
@@ -1345,7 +1349,7 @@ sub process_rules() {
 
     my $fn = open_file 'rules';
 
-    first_entry "$doing $fn...";
+    first_entry "$doing $fn..." if $fn;
 
     while ( read_a_line ) {
 

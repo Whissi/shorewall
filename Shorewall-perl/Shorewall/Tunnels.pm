@@ -270,7 +270,7 @@ sub setup_tunnels() {
     #
     my $fn = open_file 'tunnels';
 
-    first_entry "$doing $fn...";
+    first_entry "$doing $fn..." if $fn;
 
     while ( read_a_line ) {
 

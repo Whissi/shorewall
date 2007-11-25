@@ -932,7 +932,7 @@ sub open_file( $ ) {
 
     fatal_error 'Internal Error in open_file()' if defined $currentfile;
 
-    do_open_file $fname if -f $fname && -s _;
+    -f $fname && -s _ ? do_open_file $fname : '';
 }
 
 #

@@ -23,13 +23,17 @@
 #
 # Usage:
 #
-#   makeshorewall [ -trhxl ] <version> [ <previous version> ]
+#   makeshorewall [ -trhxclpsS ] <version> [ <previous version> ]
 #
 #      -t      Build tarball
 #      -r      Build RPM
+#      -c      Build Common
+#      -l      Build Lite
+#      -p      Build Perl
+#      -s      Build Shell
 #      -h      Build HTML documentation
 #      -x      Build XML documentation
-#      -s      Sign with GPG
+#      -S      Sign with GPG
 #
 # If no options are given, all options are assumed.
 #
@@ -168,7 +172,7 @@ do_rpmbuild() {
 
 usage()
 {
-    echo "usage: $(basename $0) [ -trhxl] <version> [ <old-version> ]"
+    echo "usage: $(basename $0) [ -trhxlcpsS] <version> [ <old-version> ]"
     exit 2
 }
 ################################################################################
@@ -230,25 +234,25 @@ while [ -z "$done" ]; do
 			BUILDXML=Yes
 			option=${option#x}
 			;;
-		    C*)
+		    c*)
 			BUILDCOMMON=Yes
-			option=${option#C}
+			option=${option#c}
 			;;
-		    P*)
+		    p*)
 			BUILDPERL=Yes
-			option=${option#P}
-			;;
-		    S*)
-			BUILDSHELL=Yes
-			option=${option#S}
-			;;
-		    L*)
-			BUILDLITE=Yes
-			option=${option#L}
+			option=${option#p}
 			;;
 		    s*)
-			SIGN=Yes
+			BUILDSHELL=Yes
 			option=${option#s}
+			;;
+		    l*)
+			BUILDLITE=Yes
+			option=${option#l}
+			;;
+		    S*)
+			SIGN=Yes
+			option=${option#S}
 			;;
 	    	    *)
 			usage

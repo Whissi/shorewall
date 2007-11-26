@@ -179,32 +179,32 @@ debug_restore_input() {
     #
     # Clear the ruleset 
     #
-    qt $IPTABLES -t mangle -F
-    qt $IPTABLES -t mangle -X
+    qt1 $IPTABLES -t mangle -F
+    qt1 $IPTABLES -t mangle -X
 
     for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	qt $IPTABLES -t mangle -P $chain ACCEPT
+	qt1 $IPTABLES -t mangle -P $chain ACCEPT
     done
 
-    qt $IPTABLES -t raw    -F
-    qt $IPTABLES -t raw    -X
+    qt1 $IPTABLES -t raw    -F
+    qt1 $IPTABLES -t raw    -X
 
     for chain in PREROUTING OUTPUT; do
-	qt $IPTABLES -t raw -P $chain ACCEPT
+	qt1 $IPTABLES -t raw -P $chain ACCEPT
     done
     
     run_iptables -t nat -F
     run_iptables -t nat -X
 
     for chain in PREROUTING POSTROUTING OUTPUT; do
-	qt $IPTABLES -t nat -P $chain ACCEPT
+	qt1 $IPTABLES -t nat -P $chain ACCEPT
     done
     
-    qt $IPTABLES -t filter -F
-    qt $IPTABLES -t filter -X
+    qt1 $IPTABLES -t filter -F
+    qt1 $IPTABLES -t filter -X
 
     for chain in INPUT FORWARD OUTPUT; do
-	qt $IPTABLES -t filter -P $chain -P ACCEPT
+	qt1 $IPTABLES -t filter -P $chain -P ACCEPT
     done
 
     while read first second rest; do

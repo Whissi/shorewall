@@ -176,11 +176,11 @@ sub generate_script_1() {
 	   '#',
 	   '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
 	   '#',
-	   'qt $IPTABLES -N foox1234',
-	   'qt $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	   'qt1 $IPTABLES -N foox1234',
+	   'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
 	   'result=$?',
-	   'qt $IPTABLES -F foox1234',
-	   'qt $IPTABLES -X foox1234',
+	   'qt1 $IPTABLES -F foox1234',
+	   'qt1 $IPTABLES -X foox1234',
 	   '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
 	   '' );
 
@@ -300,7 +300,7 @@ EOF
     run_iptables -t mangle -F
     run_iptables -t mangle -X
     for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	qt $IPTABLES -t mangle -P $chain ACCEPT
+	qt1 $IPTABLES -t mangle -P $chain ACCEPT
     done
 EOF
     }
@@ -310,7 +310,7 @@ EOF
     run_iptables -t raw -F
     run_iptables -t raw -X
     for chain in PREROUTING OUTPUT; do
-	qt $IPTABLES -t raw -P $chain ACCEPT
+	qt1 $IPTABLES -t raw -P $chain ACCEPT
     done
 EOF
     }
@@ -319,7 +319,7 @@ EOF
 	emit <<'EOF';
     delete_nat
     for chain in PREROUTING POSTROUTING OUTPUT; do
-        qt $IPTABLES -t nat -P $chain ACCEPT
+        qt1 $IPTABLES -t nat -P $chain ACCEPT
     done
 EOF
     }

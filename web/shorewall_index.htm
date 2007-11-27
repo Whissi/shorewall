@@ -21,7 +21,7 @@ Sections, with no Front-Cover, and with no Back-Cover Texts. A copy of the
 license is included in the section entitled “<a href="GnuCopyright.htm"
 target="_self">GNU Free Documentation License</a>”.</p>
 
-<p>2007-11-23</p>
+<p>2007-11-26</p>
 <hr style="width: 100%; height: 2px;">
 
 <h2>Table of Contents</h2>
@@ -37,12 +37,14 @@ href="#Glossary">Glossary</a><br>
 <a href="#Info">Looking for Information?</a><br>
 <a href="#License">License</a></p>
 
-<p style="margin-left: 0.42in;"><br>
-<a href="#Notice"><strong>Important Notice to users of Shorewall Multi-ISP
-Feature</strong></a> -- <strong>UPDATED 7 November 2007</strong></p>
+<p style="margin-left: 0.42in;"><a href="#Notice"><strong>Important Notice to
+users of Shorewall Multi-ISP Feature</strong></a> -- <strong>UPDATED 7
+November 2007</strong></p>
 
-<p style="margin-left: 0.42in;"><br>
-<a href="#Leaf">Leaf</a><br>
+<p style="margin-left: 0.42in;"><a href="#Notice1"><strong>Important Notice
+to users of BRIDGING=Yes</strong></a> </p>
+
+<p style="margin-left: 0.42in;"><a href="#Leaf">Leaf</a><br>
 <a href="#OpenWRT">OpenWRT</a><br>
 <a href="#Donations">Donations</a></p>
 
@@ -91,7 +93,8 @@ knowledge, I would encourage you to check out the following alternatives:</p>
   <li><p style="margin-bottom: 0in;"><a
     href="http://www.m0n0.ch/wall">m0n0wall</a> (FreeBSD Based) </p>
   </li>
-  <li><p><a href="http://www.fs-security.com/">Firestarter</a></p>
+  <li><p><a href="http://www.fs-security.com/">Firestarter<br>
+    </a></p>
   </li>
 </ul>
 
@@ -107,7 +110,7 @@ Features page</a>.<br>
 <h3><a name="Releases"></a>Current Shorewall Releases</h3>
 
 <p style="margin-left: 40px;">The <span style="font-weight: bold;">current
-Stable Release</span> version is  4.0.6<br>
+Stable Release</span> version is 4.0.6<br>
 </p>
 <ul style="margin-left: 40px;">
   <li>Here are the <a
@@ -138,13 +141,13 @@ is 3.4.7<br>
     href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.7/errata/">updates</a>.</li>
 </ul>
 The <span style="font-weight: bold;">current Development Release</span> is
-4.1.0. 
+4.1.1. 
 <ul>
   <li>Here are the <a
-    href="http://www1.shorewall.net/pub/shorewall/development/4.1/shorewall-4.1.0/releasenotes.txt">release
+    href="http://www1.shorewall.net/pub/shorewall/development/4.1/shorewall-4.1.1/releasenotes.txt">release
     notes</a></li>
   <li>Here are the <a
-    href="http://www1.shorewall.net/pub/shorewall/development/4.1/shorewall-4.1.0/known_problems.txt">known
+    href="http://www1.shorewall.net/pub/shorewall/development/4.1/shorewall-4.1.1/known_problems.txt">known
     problems</a> and <a
     href="http://www1.shorewall.net/pub/shorewall/development/4.1/shorewall-4.1.0/errata/">updates</a>.</li>
 </ul>
@@ -235,8 +238,27 @@ href="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.7/errata/patches
 href="http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.5/errata/patches/Shorewall-shell/patch-shell-4.0.5-1.diff">http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.5/errata/patches/Shorewall-shell/patch-shell-4.0.5-1.diff</a>
 and <a
 href="http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.5/errata/patches/Shorewall-perl/patch-perl-4.0.5-4.diff">http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.5/errata/patches/Shorewall-perl/patch-perl-4.0.5-4.diff</a>.</p>
+<hr>
 
-<p></p>
+<h2><a name="Notice1">Important Notice to Users of BRIDGING=Yes</a></h2>
+
+<p>In Linux Kernel version 2.6.20, the Netfilter team changed Physdev Match
+so that it is no longer capable of supporting BRIDGING=Yes. The solutions
+available to users are to either:</p>
+<ol>
+  <li>Switch to using the technique described at <a
+    href="http://www.shorewall.net/3.0/NewBridge.html">http://www.shorewall.net/3.0/NewBridge.html</a>;
+    or<br>
+  </li>
+  <li>Upgrade to Shorewall 4.0, migrate to using Shorewall-perl, and follow
+    the instructions at <a
+    href="http://www1.shorewall.net/bridge-Shorewall-perl.html">http://www1.shorewall.net/bridge-Shorewall-perl.html.</a>
+  </li>
+</ol>
+
+<p>The first approach allows you to switch back and forth between kernels
+older and newer than 2.6.20. The second approach is a better long-term
+solution.</p>
 <hr>
 
 <h2><a name="Leaf"></a>Leaf</h2>

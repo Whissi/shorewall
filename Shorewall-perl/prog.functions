@@ -103,12 +103,15 @@ startup_error() # $* = Error Message
 #
 run_iptables()
 {
+    local status
+
     while [ 1 ]; do
 	$IPTABLES $@
-	[ $? -ne 4 ] && break
+	status=$?
+	[ $status -ne 4 ] && break
     done
 
-    if [ $? -ne 0 ]; then
+    if [ $status -ne 0 ]; then
         error_message "ERROR: Command \"$IPTABLES $@\" Failed"
 	stop_firewall
         exit 2
@@ -120,9 +123,12 @@ run_iptables()
 #
 do_iptables()
 {
+    local status
+
     while [ 1 ]; do
 	$IPTABLES $@
-	[ $? -ne 4 ] && break
+	status=$?
+	[ $status -ne 4 ] && return $status;
     done
 }
 

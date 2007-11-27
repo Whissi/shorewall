@@ -114,10 +114,15 @@ qt()
 
 qt1()
 {
+    local status
+
     while [ 1 ]; do
 	"$@" >/dev/null 2>&1
-	[ $? -ne 4 ] && break;
+	status=$?
+	[ $status -ne 4 ] && break
     done
+
+    return $status
 }
 
 #

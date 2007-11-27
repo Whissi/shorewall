@@ -339,7 +339,7 @@ case $VERSION in
 	#
 	# Beta or Release Candidate
 	#
-	SHOREWALLDIR=shorewall-common-${BASEVERSION}
+	[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
 	SHOREWALLLITEDIR=shorewall-lite-${BASEVERSION}
 	TARBALL=shorewall-common-${BASEVERSION}.tgz
 	LITETARBALL=shorewall-lite-${BASEVERSION}.tgz
@@ -374,7 +374,7 @@ case $VERSION in
 	#
 	# Normal Release
 	#
-	SHOREWALLDIR=shorewall-common-$VERSION
+	[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
 	SHOREWALLLITEDIR=shorewall-lite-$VERSION
 	TARBALL=shorewall-common-$VERSION.tgz
 	LITETARBALL=shorewall-lite-$VERSION.tgz
@@ -942,7 +942,8 @@ if [ -n "$OLDVERSION" ]; then
 	 [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
 	 [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
 	 [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
-	 [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true    
+	 [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
+     fi 
 fi
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

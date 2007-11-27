@@ -221,7 +221,7 @@ sub setup_rfc1918_filteration( $ ) {
 
     my $fn = open_file 'rfc1918';
 
-    first_entry "$doing $fn..." if $fn;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
 
@@ -341,7 +341,7 @@ sub process_criticalhosts() {
 
     my $fn = open_file 'routestopped';
 
-    first_entry "$doing $fn for critical hosts..." if $fn;
+    first_entry "$doing $fn for critical hosts...";
 
     while ( read_a_line ) {
 
@@ -382,7 +382,7 @@ sub process_routestopped() {
 
     my $fn = open_file 'routestopped';
 
-    first_entry "$doing $fn..." if $fn;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
 
@@ -702,7 +702,7 @@ sub setup_mac_lists( $ ) {
 
 	my $fn = open_file 'maclist';
 
-	first_entry "$doing $fn..." if $fn;
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
 
@@ -1349,7 +1349,7 @@ sub process_rules() {
 
     my $fn = open_file 'rules';
 
-    first_entry "$doing $fn..." if $fn;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
 

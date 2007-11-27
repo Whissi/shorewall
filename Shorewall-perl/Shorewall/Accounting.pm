@@ -176,7 +176,7 @@ sub setup_accounting() {
 
     my $fn = open_file 'accounting';
 
-    first_entry "$doing $fn..." if $fn;
+    first_entry "$doing $fn...";
 
     while ( read_a_line ) {
 

@@ -203,17 +203,17 @@ stop_firewall() {
     }
 
     deleteallchains() {
-	$IPTABLES -F
-	$IPTABLES -X
+	do_iptables -F
+	do_iptables -X
     }
 
     setcontinue() {
-	$IPTABLES -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	do_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
 
     delete_nat() {
-	$IPTABLES -t nat -F
-	$IPTABLES -t nat -X
+	do_iptables -t nat -F
+	do_iptables -t nat -X
 
 	if [ -f ${VARDIR}/nat ]; then
 	    while read external interface; do
@@ -261,8 +261,8 @@ stop_firewall() {
 		        # references to ipsets
 		        #
 		        for table in mangle nat filter; do
-			    $IPTABLES -t $table -F
-			    $IPTABLES -t $table -X
+			    do_iptables -t $table -F
+			    do_iptables -t $table -X
 		        done
 
 		        ${RESTOREPATH}-ipsets
@@ -364,8 +364,8 @@ EOF
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emit( "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
-		      "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		emit( "do_iptables -A INPUT  -i $interface $source -j ACCEPT",
+		      "do_iptables -A OUTPUT -o $interface $dest   -j ACCEPT"
 		      );
 	    }
 
@@ -390,8 +390,8 @@ EOF
                 my $source = match_source_net $host;
 		my $dest   = match_dest_net $host;
 
-		emit(  "\$IPTABLES -A INPUT  -i $interface $source -j ACCEPT",
-		       "\$IPTABLES -A OUTPUT -o $interface $dest   -j ACCEPT"
+		emit(  "do_iptables -A INPUT  -i $interface $source -j ACCEPT",
+		       "do_iptables -A OUTPUT -o $interface $dest   -j ACCEPT"
 		       );
 	    }
 
@@ -426,21 +426,21 @@ EOF
 
     process_routestopped;
 
-    emit( '$IPTABLES -A INPUT  -i lo -j ACCEPT',
-	  '$IPTABLES -A OUTPUT -o lo -j ACCEPT'
+    emit( 'do_iptables -A INPUT  -i lo -j ACCEPT',
+	  'do_iptables -A OUTPUT -o lo -j ACCEPT'
 	  );
 
-    emit '$IPTABLES -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
+    emit 'do_iptabes -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 
     for my $interface ( @$interfaces ) {
-	emit "\$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT";
-	emit "\$IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	emit "do_iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT";
+	emit "do_iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 	#
 	# This might be a bridge
 	#
-	emit "\$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT";
+	emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT";
     }
 
     emit '';
@@ -550,7 +550,7 @@ sub generate_script_2 () {
 
     emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 	    '',
-	    'qt $IPTABLES -L shorewall -n && qt $IPTABLES -F shorewall && qt $IPTABLES -X shorewall',
+	    'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
 	    '',
 	    'delete_proxyarp',
 	    ''
@@ -656,13 +656,13 @@ else
     if [ $COMMAND = refresh ]; then
         chainlist_reload
         run_refreshed_exit
-        $IPTABLES -N shorewall
+        do_iptables -N shorewall
         set_state "Started"
     else
         setup_netfilter
         restore_dynamic_rules
         run_start_exit
-        $IPTABLES -N shorewall
+        do_iptables -N shorewall
         set_state "Started"
         run_started_exit
     fi

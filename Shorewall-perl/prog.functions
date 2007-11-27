@@ -116,6 +116,17 @@ run_iptables()
 }
 
 #
+# Run iptables retrying exit status 4
+#
+do_iptables()
+{
+    while [ 1 ]; do
+	$IPTABLES $@
+	[ $? -ne 4 ] && break
+    done
+}
+
+#
 # Run iptables and if an error occurs, stop/restore the firewall
 #
 run_ip()

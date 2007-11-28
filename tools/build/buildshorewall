@@ -500,7 +500,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$BUILDTARBALL" ]; then
 	if [ -n "$BUILDCOMMON" ]; then	
 	    progress_message "Creating $DIR/$TARBALL..."
-	    rm -f *.diff
+	    rm -f $SHOREWALLDIR/*.diff
 	    do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
 	    do_or_die "tar -jcvf shorewall-common-${BASEVERSION}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
 	    if [ -n "$SIGN" ]; then
@@ -515,7 +515,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	if [ -n "$BUILDLITE" ]; then	
 	    progress_message "Creating $DIR/$LITETARBALL..."
-	    rm -f *.diff
+	    rm -f $SHOREWALLLITEDIR/*.diff
 	    do_or_die "tar -zcvf $LITETARBALL $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	    do_or_die "tar -jcvf shorewall-lite-${BASEVERSION}.tar.bz2 $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	    if [ -n "$SIGN" ]; then
@@ -530,7 +530,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     	
 	if [ -n "$BUILDPERL" ]; then	
 	    progress_message "Creating $DIR/$PERLTARBALL..."
-	    rm -f *.diff
+	    rm -f $PERLDIR/*.diff
 	    do_or_die "tar -zcvf $PERLTARBALL $PERLDIR >> $LOGFILE 2>&1"
 	    do_or_die "tar -jcvf shorewall-perl-${BASEVERSION}.tar.bz2 $PERLDIR >> $LOGFILE 2>&1"
 	    
@@ -546,7 +546,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	if [ -n "$BUILDSHELL" ]; then	
 	    progress_message "Creating $DIR/$SHELLTARBALL..."
-	    rm -f *.diff
+	    rm -f $SHELLDIR/*.diff
 	    do_or_die "tar -zcvf $SHELLTARBALL $SHELLDIR >> $LOGFILE 2>&1"
 	    do_or_die "tar -jcvf shorewall-shell-${BASEVERSION}.tar.bz2 $SHELLDIR >> $LOGFILE 2>&1"
 	

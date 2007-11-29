@@ -15,7 +15,7 @@
 #	- All entries in a macro undergo substitution when the macro is
 #	  invoked in the rules file.
 #
-#	- Macros may not invoke other macros.
+#	- Macros used in action bodies may not invoke other macros.
 #
 # The columns in the file are the same as those in the action.template file but
 # have different restrictions:
@@ -247,7 +247,7 @@
 #			Otherwise, a separate rule will be generated for each
 #			port.
 #
-#	CLIENT PORT(S)	(Optional) Port(s) used by the client. If omitted,
+#	SOURCE PORT(S)	(Optional) Port(s) used by the client. If omitted,
 #			any source port is acceptable. Specified as a comma-
 #			separated list of port names, port numbers or port
 #			ranges.
@@ -305,19 +305,19 @@
 # /etc/shorewall/macro.FwdFTP:
 #
 #	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
-#	#				PORT	PORT(S)	LIMIT	GROUP
+#	#				PORT(S)	PORT(S)	LIMIT	GROUP
 #	DNAT	-	-	tcp	21
 #
 # /etc/shorewall/rules:
 #
 #	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
-#	#				PORT	PORT(S)	DEST	 LIMIT	GROUP
+#	#				PORT(S)	PORT(S)	DEST	 LIMIT	GROUP
 #	FwdFTP	net	loc:192.168.1.5
 #
 # The result is equivalent to:
 #
 #	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
-#	#				PORT	PORT(S)	DEST	 LIMIT	GROUP
+#	#				PORT(S)	PORT(S)	DEST	 LIMIT	GROUP
 #	DNAT	net	loc:192.168.1.5	tcp	21
 #
 # The substitution rules are as follows:
@@ -348,7 +348,7 @@
 #
 #	Example:		###############################################
 #				#ACTION	 SOURCE	DEST		PROTO	DEST
-#				#					PORT
+#				#					PORT(S)
 #		macro.FTP File	PARAM	 net	loc		tcp	21
 #		rules File	FTP/DNAT -	192.168.1.5
 #		Result		DNAT	 net	loc:192.168.1.5	tcp	21
@@ -359,5 +359,5 @@
 #
 ###############################################################################
 #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/
-#						PORT	PORT(S)	LIMIT	GROUP
+#						PORT(S)	PORT(S)	LIMIT	GROUP
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

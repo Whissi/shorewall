@@ -383,50 +383,54 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
 
       <programlisting>     shorewall/params.mgmt:
  
-        MGMT_SERVERS=1.1.1.1,2.2.2.2,3.3.3.3
-         TIME_SERVERS=4.4.4.4
-         BACKUP_SERVERS=5.5.5.5
+&nbsp;&nbsp;      MGMT_SERVERS=1.1.1.1,2.2.2.2,3.3.3.3
+ &nbsp;&nbsp;      TIME_SERVERS=4.4.4.4
+ &nbsp;&nbsp;      BACKUP_SERVERS=5.5.5.5
  
-        ----- end params.mgmt -----
+&nbsp;&nbsp;      ----- end params.mgmt -----
  
-     shorewall/params:
+&nbsp;&nbsp;   shorewall/params:
  
-        # Shorewall 1.3 /etc/shorewall/params
-         [..]
-         #######################################
-  
-         INCLUDE params.mgmt    
-   
-       # params unique to this host here
-       #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
+&nbsp;&nbsp;      # Shorewall 1.3 /etc/shorewall/params
+ &nbsp;&nbsp;      [..]
+ &nbsp;&nbsp;      #######################################
+ &nbsp;
+ &nbsp;&nbsp;      INCLUDE params.mgmt&nbsp;&nbsp;&nbsp; 
+ &nbsp; 
+ &nbsp;&nbsp;    # params unique to this host here
+ &nbsp;&nbsp;    #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
  
-       ----- end params -----
+&nbsp;&nbsp;     ----- end params -----
  
-     shorewall/rules.mgmt:
+&nbsp;&nbsp;   shorewall/rules.mgmt:
  
-       ACCEPT net:$MGMT_SERVERS   $FW                  tcp    22
-       ACCEPT $FW                 net:$TIME_SERVERS    udp    123
-       ACCEPT $FW                 net:$BACKUP_SERVERS  tcp    22
+&nbsp;&nbsp;     ACCEPT net:$MGMT_SERVERS&nbsp;&nbsp;&nbsp;$FW&nbsp;&nbsp;&nbsp;               tcp&nbsp;&nbsp;&nbsp; 22
+ &nbsp;&nbsp;    ACCEPT $FW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;        net:$TIME_SERVERS&nbsp;&nbsp;&nbsp; udp&nbsp;&nbsp;&nbsp; 123
+ &nbsp;&nbsp;    ACCEPT $FW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;        net:$BACKUP_SERVERS&nbsp; tcp&nbsp;&nbsp;&nbsp; 22
  
-      ----- end rules.mgmt -----
+&nbsp;&nbsp;    ----- end rules.mgmt -----
  
-     shorewall/rules:
+&nbsp;&nbsp;   shorewall/rules:
  
-      # Shorewall version 1.3 - Rules File
-       [..]
-       #######################################
-  
-       INCLUDE rules.mgmt     
-   
-       # rules unique to this host here
-       #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+&nbsp;&nbsp;    # Shorewall version 1.3 - Rules File
+ &nbsp;&nbsp;    [..]
+ &nbsp;&nbsp;    #######################################
+ &nbsp;
+ &nbsp;&nbsp;    INCLUDE rules.mgmt&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp; 
+ &nbsp;&nbsp;    # rules unique to this host here
+ &nbsp;&nbsp;    #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
  
-     ----- end rules -----</programlisting>
+&nbsp;&nbsp;   ----- end rules -----</programlisting>
     </example>
   </section>
 
   <section id="Embedded">
-    <title>Embedded Shell and Perl (Added in Shorewall-perl 4.0.6)</title>
+    <title>Embedded Shell and Perl</title>
+
+    <para>This feature was added in Shorewall-perl 4.0.6. To use it, you must
+    be running 4.0.6 or later and must be using Shorewall-perl
+    (SHOREWALL_COMPILER=perl in shorewall.conf).</para>
 
     <para>Earlier versions of Shorewall offered <ulink
     url="shorewall_extension_scripts.htm">extension scripts</ulink> to allow
@@ -621,7 +625,7 @@ use Shorewall::Config qw/shorewall/;</programlisting>
     <itemizedlist>
       <listitem>
         <para>Must not have any embedded white space.<programlisting>     Valid:   routefilter,dhcp,norfc1918
-     Invalid: routefilter,     dhcp,     norfc1818</programlisting></para>
+     Invalid: routefilter,&nbsp;&nbsp;&nbsp;&nbsp; dhcp,&nbsp;&nbsp;&nbsp;&nbsp; norfc1818</programlisting></para>
       </listitem>
 
       <listitem>
@@ -794,17 +798,17 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     <para>Example:</para>
 
     <blockquote>
-      <programlisting>    /etc/shorewall/params
+      <programlisting>&nbsp;&nbsp;&nbsp; /etc/shorewall/params
  
         NET_IF=eth0
         NET_BCAST=130.252.100.255
         NET_OPTIONS=routefilter,norfc1918
  
-    /etc/shorewall/interfaces record:
+&nbsp;&nbsp;&nbsp; /etc/shorewall/interfaces record:
 
         net $NET_IF $NET_BCAST $NET_OPTIONS
  
-    The result will be the same as if the record had been written
+&nbsp;&nbsp;&nbsp; The result will be the same as if the record had been written
  
         net eth0 130.252.100.255 routefilter,norfc1918
  </programlisting>
@@ -890,15 +894,16 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     <example id="mac">
       <title>MAC Address of an Ethernet Controller</title>
 
-      <programlisting>      [root@gateway root]# <command>ifconfig eth0</command>
-      eth0 Link encap:Ethernet HWaddr <emphasis role="bold">02:00:08:E3:FA:55</emphasis>
-      inet addr:206.124.146.176 Bcast:206.124.146.255 Mask:255.255.255.0
-      UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
-      RX packets:2398102 errors:0 dropped:0 overruns:0 frame:0
-      TX packets:3044698 errors:0 dropped:0 overruns:0 carrier:0
-      collisions:30394 txqueuelen:100
-      RX bytes:419871805 (400.4 Mb) TX bytes:1659782221 (1582.8 Mb)
-      Interrupt:11 Base address:0x1800
+      <programlisting> &nbsp;&nbsp;&nbsp;&nbsp; [root@gateway root]# <command>ifconfig eth0</command>
+ &nbsp;&nbsp;&nbsp;&nbsp; eth0 Link encap:Ethernet HWaddr <emphasis
+          role="bold">02:00:08:E3:FA:55</emphasis>
+ &nbsp;&nbsp;&nbsp;&nbsp; inet addr:206.124.146.176 Bcast:206.124.146.255 Mask:255.255.255.0
+ &nbsp;&nbsp;&nbsp;&nbsp; UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
+ &nbsp;&nbsp;&nbsp;&nbsp; RX packets:2398102 errors:0 dropped:0 overruns:0 frame:0
+ &nbsp;&nbsp;&nbsp;&nbsp; TX packets:3044698 errors:0 dropped:0 overruns:0 carrier:0
+ &nbsp;&nbsp;&nbsp;&nbsp; collisions:30394 txqueuelen:100
+ &nbsp;&nbsp;&nbsp;&nbsp; RX bytes:419871805 (400.4 Mb) TX bytes:1659782221 (1582.8 Mb)
+ &nbsp;&nbsp;&nbsp;&nbsp; Interrupt:11 Base address:0x1800
 </programlisting>
     </example>
 

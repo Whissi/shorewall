@@ -20,6 +20,7 @@ UPLOADSHELL=
 UPLOADLITE=
 UPLOADXML=
 UPLOADHTML=
+PARTIAL=Yes
 
 done=
 
@@ -33,6 +34,7 @@ case $1 in
 	UPLOADLITE=Yes
 	UPLOADXML=Yes
 	UPLOADHTML=Yes
+	PARTIAL=
 	done=Yes
 	;;
 esac
@@ -161,10 +163,12 @@ esac
 
 [ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
+[ -n "$PARTIAL" ] && SHOREWALLDIR=shorewall-common || SHOREWALLDIR=$SHOREWALL-${1}
+
 if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
-    cat $SHOREWALL-${1}/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
+    cat $SHOREWALLDIR/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
 else
-    cat $SHOREWALL-${1}/releasenotes.txt > releasenotes.txt
+    cat $SHOREWALLDIR/releasenotes.txt > releasenotes.txt
 fi
 
 if [ "$HOSTNAME" = lists ]; then

@@ -361,13 +361,13 @@ compiler() {
 	    [ "$1" = nolock ] && shift;
 	    shift 
 
-	    options="--verbose=$VERBOSE "
-	    [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG "
-	    [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY ";
-	    [ -n "$EXPORT" ] && options="$options --export "
-	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR "
-	    [ -n "$TIMESTAMP" ] && options="$options --timestamp "
-	    [ "$debugging" = trace ] && options="$options --debug "
+	    options="--verbose=$VERBOSE"
+	    [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
+	    [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
+	    [ -n "$EXPORT" ] && options="$options --export"
+	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
+	    [ -n "$TIMESTAMP" ] && options="$options --timestamp"
+	    [ "$debugging" = trace ] && options="$options --debug"
 	    [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
 	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
 	    #

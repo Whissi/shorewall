@@ -93,7 +93,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
-				       
+
 				       $command
 				       $doing
 				       $done
@@ -1277,18 +1277,18 @@ sub default_yes_no ( $$ ) {
     }
 }
 
-my %validlevels = ( debug   => 7,
-		    info    => 6,
-		    notice  => 5,
-		    warning => 4,
-		    warn    => 4,
-		    err     => 3,
-		    error   => 3,
-		    crit    => 2,
-		    alert   => 1,
-		    emerg   => 0,
-		    panic   => 0,
-		    none    => '',
+my %validlevels = ( DEBUG   => 7,
+		    INFO    => 6,
+		    NOTICE  => 5,
+		    WARNING => 4,
+		    WARN    => 4,
+		    ERR     => 3,
+		    ERROR   => 3,
+		    CRIT    => 2,
+		    ALERT   => 1,
+		    EMERG   => 0,
+		    PANIC   => 0,
+		    NONE    => '',
 		    ULOG    => 'ULOG',
 		    NFLOG   => 'NFLOG');
 
@@ -1302,7 +1302,7 @@ sub level_error( $ ) {
 }
 
 sub validate_level( $ ) {
-    my $level = $_[0];
+    my $level = uc $_[0];
 
     if ( defined $level && $level ne '' ) {
 	$level =~ s/!$//;
@@ -1409,8 +1409,8 @@ sub report_capabilities() {
 sub which( $ ) {
     my $prog = $_[0];
 
-    for my $dir ( split /:/, $config{PATH} ) {
-	return "$dir/$prog" if -x "$dir/$prog";
+    for ( split /:/, $config{PATH} ) {
+	return "$_/$prog" if -x "$_/$prog";
     }
 
     '';
@@ -1436,17 +1436,15 @@ sub load_kernel_modules( ) {
     if ( $moduleloader && open_file 'modules' ) {
 	my %loadedmodules;
 
-	for ( split /,/, $config{DONT_LOAD} ) {
-	    $loadedmodules{$_} = 1;
-	}
+	$loadedmodules{$_}++ for split /,/, $config{DONT_LOAD};
 
 	progress_message "Loading Modules...";
 
 	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
 
-	while ( $currentline = <LSMOD> ) {
-	    my $module = ( split( /\s+/, $currentline, 2 ) )[0];
-	    $loadedmodules{$module} = 1 unless $module eq 'Module'
+	while ( <LSMOD> ) {
+	    my $module = ( split( /\s+/, $_, 2 ) )[0];
+	    $loadedmodules{$module}++ unless $module eq 'Module'
 	}
 
 	close LSMOD;

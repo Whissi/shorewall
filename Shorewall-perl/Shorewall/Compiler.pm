@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-#     The Shoreline Firewall4 (Shorewall-perl) Packet Filtering Firewall Compiler - V4.0
+#     The Shoreline Firewall4 (Shorewall-perl) Packet Filtering Firewall Compiler - V4.1
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.0.6;
+our $VERSION = 4.1.2;
 
 our $export;
 

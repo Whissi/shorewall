@@ -12,9 +12,37 @@ Shorewall 4.1 Patch Release 2.
 
 Problems corrected in Shorewall 4.1.2.
 
-1)  The iptables utility doesn't retry operations that fail due to
+1)  If any of the following files was missing, a harmless Perl warning
+    was issued:
+
+       accounting
+       maclist
+       masq
+       nat
+       netmap
+       rfc1918
+       routestopped
+       tunnels
+
+    This problem was experienced mostly by Debian users and users of
+    Debian derivatives such as Ubuntu.
+
+2)  The iptables utility doesn't retry operations that fail due to
     resource shortage. Beginning with this release, Shorewall reruns
     iptables when such a failure occurs.
+
+3)  Previously, Shorewall-perl did not accept log levels in upper case
+    (e.g., INFO). Log levels are treated in a case-insensitive manner
+    by Shorewall-perl.
+
+4)  The column headers in macro files were not aligned. This has been
+    corrected, along with some inaccuracies in the macro.template file.
+
+5)  The shorewall.conf files in the Samples did not contain some
+    recently-defined options. They are now up to date.
+
+6)  The names of the Jabber macros were shuffled. They are now named
+    correctly.
 
 Other changes in Shorewall 4.1.2.
 

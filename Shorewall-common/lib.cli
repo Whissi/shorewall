@@ -374,7 +374,11 @@ show_command() {
 	if [ -n "$foo" ]; then
 	    macro=${macro#*.}
 	    foo=${foo%.*}
-	    echo "   $macro  ${foo#\#}"
+	    if [ ${#macro} -gt 10 ]; then
+		echo "   $macro  ${foo#\#}"
+	    else
+		$ECHO_E "   $macro  \t${foo#\#}"
+	    fi
 	fi
     }
 

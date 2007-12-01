@@ -1577,9 +1577,11 @@ banner="Shorewall-$version Status at $HOSTNAME -"
 case $(echo -e) in
     -e*)
 	RING_BELL="echo \a"
+	ECHO_E="echo"
 	;;
     *)
 	RING_BELL="echo -e \a"
+	ECHO_E="echo -e"
 	;;
 esac
 

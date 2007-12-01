@@ -433,7 +433,7 @@ sub warning_message
 {
     my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
-    my @localtime;
+    our @localtime;
 
     $| = 1;
 
@@ -444,7 +444,7 @@ sub warning_message
 
     if ( $debug ) {
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
-	print $log   longmess( "   WARNING: @_$currentlineinfo" ) if $log;
+	print $log   longmess( "   WARNING: @_$currentlineinfo\n" ) if $log;
     } else {
 	print STDERR "   WARNING: @_$currentlineinfo\n";
 	print $log   "   WARNING: @_$currentlineinfo\n" if $log;
@@ -463,11 +463,11 @@ sub fatal_error	{
     $| = 1;
 
     if ( $log ) {
-	my @localtime = localtime;
+	our @localtime = localtime;
 	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
 	if ( $debug ) {
-	    print $log longmess( "   ERROR: @_$currentlineinfo" );
+	    print $log longmess( "   ERROR: @_$currentlineinfo\n" );
 	} else {
 	    print $log "   ERROR: @_$currentlineinfo\n";
 	}
@@ -484,7 +484,7 @@ sub fatal_error1	{
     $| = 1;
 
     if ( $log ) {
-	my @localtime = localtime;
+	our @localtime = localtime;
 	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
 	if ( $debug ) {
@@ -612,15 +612,18 @@ sub set_command( $$$ ) {
 # Print the current TOD to STDOUT.
 #
 sub timestamp() {
-    printf '%02d:%02d:%02d ', ( localtime ) [2,1,0];
+    our @localtime = localtime;
+    printf '%02d:%02d:%02d ', @localtime[2,1,0];
 }
 
 #
 # Write a message if $verbose >= 2
 #
 sub progress_message {
+    my $havelocaltime = 0;
+
     if ( $verbose > 1 ) {
-	timestamp if $timestamp;
+	timestamp, $havelocaltime = 1 if $timestamp;
 	#
 	# We use this function to display messages containing raw config file images which may contains tabs (including multiple tabs in succession).
 	# The following makes such messages look more readable and uniform
@@ -631,7 +634,9 @@ sub progress_message {
     }
 
     if ( $log_verbose > 1 ) {
-	my @localtime = localtime;
+	our @localtime;
+
+	@localtime = localtime unless $havelocaltime; 
 
 	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	my $line = "@_";
@@ -644,13 +649,17 @@ sub progress_message {
 # Write a message if $verbose >= 1
 #
 sub progress_message2 {
+    my $havelocaltime = 0;
+
     if ( $verbose > 0 ) {
-	timestamp if $timestamp;
+	timestamp, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
     if ( $log_verbose > 0 ) {
-	my @localtime = localtime;
+	our @localtime;
+
+	@localtime = localtime unless $havelocaltime; 
 
 	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	print $log "@_\n";
@@ -661,13 +670,17 @@ sub progress_message2 {
 # Write a message if $verbose >= 0
 #
 sub progress_message3 {
+    my $havelocaltime = 0;
+
     if ( $verbose >= 0 ) {
-	timestamp if $timestamp;
+	timestamp, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
-    if ( $log_verbose > 0 ) {
-	my @localtime = localtime;
+    if ( $log_verbose >= 0 ) {
+	our @localtime;
+
+	@localtime = localtime unless $havelocaltime;
 
 	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	print $log "@_\n";

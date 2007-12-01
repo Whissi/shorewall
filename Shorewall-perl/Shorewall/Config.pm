@@ -439,7 +439,7 @@ sub warning_message
 
     if ( $log ) {
 	@localtime = localtime;
-	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
     }
 
     if ( $debug ) {
@@ -464,7 +464,7 @@ sub fatal_error	{
 
     if ( $log ) {
 	our @localtime = localtime;
-	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
 	if ( $debug ) {
 	    print $log longmess( "   ERROR: @_$currentlineinfo\n" );
@@ -485,7 +485,7 @@ sub fatal_error1	{
 
     if ( $log ) {
 	our @localtime = localtime;
-	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
 	if ( $debug ) {
 	    print $log longmess( "   ERROR: @_\n" );
@@ -638,7 +638,7 @@ sub progress_message {
 
 	@localtime = localtime unless $havelocaltime; 
 
-	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	printf $log '%s %2d %2d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	my $line = "@_";
 	$line =~ s/\s+/ /g;
 	print $log "$line\n";
@@ -661,7 +661,7 @@ sub progress_message2 {
 
 	@localtime = localtime unless $havelocaltime; 
 
-	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	print $log "@_\n";
     }
 }
@@ -682,7 +682,7 @@ sub progress_message3 {
 
 	@localtime = localtime unless $havelocaltime;
 
-	printf $log '%s %02d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	print $log "@_\n";
     }
 }

@@ -176,7 +176,7 @@
       port-forwarding rule to a local system is as follows:</para>
 
       <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
-DNAT       net         loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;   &lt;<emphasis>port #</emphasis>&gt;</programlisting>
+DNAT       net         loc:<emphasis>local-IP-address</emphasis>[:<emphasis>local-port</emphasis>]      <emphasis>protocol</emphasis>     <emphasis>port-number</emphasis></programlisting>
 
       <para>So to forward UDP port 7777 to internal system 192.168.1.5, the
       rule is:</para>
@@ -185,23 +185,23 @@ DNAT       net         loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<e
 DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 
       <para>If you want to forward requests directed to a particular address (
-      <emphasis>&lt;external IP&gt;</emphasis> ) on your firewall to an
-      internal system:</para>
+      <emphasis>external-IP</emphasis> ) on your firewall to an internal
+      system:</para>
 
-      <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
-#                                                                            PORT    DEST.
-DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -       &lt;<emphasis>external IP</emphasis>&gt;</programlisting>
+      <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT     SOURCE  ORIGINAL
+#                                                                               PORT    DEST.
+DNAT    net    loc:<emphasis>local-IP-address</emphasis>&gt;[:<emphasis>local-port</emphasis>]     <emphasis>protocol</emphasis>    <emphasis>port-number</emphasis>   -       <emphasis>external-IP</emphasis></programlisting>
 
       <para>If you want to forward requests from a particular internet address
-      ( <emphasis>&lt;address&gt;</emphasis> ):</para>
+      ( <emphasis>address</emphasis> ):</para>
 
-      <programlisting>#ACTION SOURCE        DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
-#                                                                                   PORT    DEST.
-DNAT    net:<emphasis>&lt;address&gt;</emphasis> loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -</programlisting>
+      <programlisting>#ACTION SOURCE        DEST                                   PROTO       DEST PORT     SOURCE  ORIGINAL
+#                                                                                      PORT    DEST.
+DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</emphasis>[:<emphasis>local-port</emphasis>]  <emphasis>    protocol</emphasis>    <emphasis>port-number</emphasis>   -</programlisting>
 
       <para>Finally, if you need to forward a range of ports, in the DEST PORT
       column specify the range as
-      <emphasis>&lt;low-port&gt;:&lt;high-port&gt;</emphasis>.</para>
+      <emphasis>low-port:high-port</emphasis>.</para>
 
       <section id="faq1a">
         <title>(FAQ 1a) Okay -- I followed those instructions but it doesn't
@@ -628,8 +628,8 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
         following:</para>
 
         <para>In <filename>/etc/shorewall/params (or in your
-        <filename>&lt;export directory&gt;/init</filename> file if you are
-        using Shorewall Lite on the firewall system)</filename>:</para>
+        <filename>export-directory/init</filename> file if you are using
+        Shorewall Lite on the firewall system)</filename>:</para>
 
         <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
 
@@ -1240,7 +1240,8 @@ DROP      net       fw      udp      10619</programlisting>
         </varlistentry>
 
         <varlistentry id="all2all">
-          <term>all2&lt;zone&gt;, &lt;zone&gt;2all or all2all</term>
+          <term>all2<emphasis>zone</emphasis>, <emphasis>zone</emphasis>2all
+          or all2all</term>
 
           <listitem>
             <para>You have a <ulink
@@ -1259,36 +1260,36 @@ DROP      net       fw      udp      10619</programlisting>
         </varlistentry>
 
         <varlistentry>
-          <term>&lt;zone1&gt;2&lt;zone2&gt;</term>
+          <term><emphasis>zone</emphasis>12<emphasis>zone2</emphasis></term>
 
           <listitem>
             <para>Either you have a <ulink
-            url="manpages/shorewall-policy.html">policy</ulink> for <emphasis
-            role="bold">&lt;zone1&gt;</emphasis> to <emphasis
-            role="bold">&lt;zone2&gt;</emphasis> that specifies a log level
-            and this packet is being logged under that policy or this packet
-            matches a <ulink url="manpages/shorewall-rules.html">rule</ulink>
-            that includes a log level.</para>
+            url="manpages/shorewall-policy.html">policy</ulink> for
+            <emphasis>zone1</emphasis> to<emphasis> zone2</emphasis> that
+            specifies a log level and this packet is being logged under that
+            policy or this packet matches a <ulink
+            url="manpages/shorewall-rules.html">rule</ulink> that includes a
+            log level.</para>
           </listitem>
         </varlistentry>
 
         <varlistentry>
-          <term>@&lt;source&gt;2&lt;dest&gt;</term>
+          <term>@<emphasis>source</emphasis>2<emphasis>dest</emphasis></term>
 
           <listitem>
-            <para>You have a policy for traffic from &lt;<emphasis
-            role="bold">source</emphasis>&gt; to &lt;<emphasis
-            role="bold">dest</emphasis>&gt; that specifies TCP connection rate
-            limiting (value in the LIMIT:BURST column). The logged packet
-            exceeds that limit and was dropped. Note that these log messages
-            themselves are severely rate-limited so that a syn-flood won't
-            generate a secondary DOS because of excessive log message. These
-            log messages were added in Shorewall 2.2.0 Beta 7.</para>
+            <para>You have a policy for traffic from
+            <emphasis>source</emphasis> to <emphasis>dest</emphasis> that
+            specifies TCP connection rate limiting (value in the LIMIT:BURST
+            column). The logged packet exceeds that limit and was dropped.
+            Note that these log messages themselves are severely rate-limited
+            so that a syn-flood won't generate a secondary DOS because of
+            excessive log message. These log messages were added in Shorewall
+            2.2.0 Beta 7.</para>
           </listitem>
         </varlistentry>
 
         <varlistentry>
-          <term>&lt;interface&gt;_mac</term>
+          <term><emphasis>interface</emphasis>_mac</term>
 
           <listitem>
             <para>The packet is being logged under the <emphasis
@@ -1911,7 +1912,7 @@ iptables: Invalid argument
       <programlisting>#MARK         SOURCE           DEST
 1:P           0.0.0.0/0
 1             $FW
-&lt;other MARK rules&gt;</programlisting>
+<emphasis>other MARK rules</emphasis></programlisting>
 
       <para>Now any traffic that isn't marked by one of your other MARK rules
       will have mark = 1 and will be sent via ISP1. That will work whether

@@ -83,8 +83,12 @@
         <title>(FAQ 37a) I just installed Shorewall on Debian and I can't find
         the sample configurations.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: The samples are
-        included in the shorewall-doc package.</para>
+        <para><emphasis role="bold">Answer</emphasis>: With Shorewall 3.x, the
+        samples are included in the shorewall-doc package and are installed in
+        <filename
+        class="directory">/usr/share/doc/shorewall/examples/</filename>.
+        Beginning with Shorewall 4.0, the samples are in <filename
+        class="directory">/usr/share/doc/shorewall-common/examples</filename>/.</para>
       </section>
     </section>
 
@@ -126,6 +130,21 @@
         <para><emphasis role="bold">Answer</emphasis>: Please see the <ulink
         url="upgrade_issues.htm">upgrade issues.</ulink></para>
       </section>
+    </section>
+
+    <section id="faq76">
+      <title>(FAQ 76) I just upgraded my Debian (or Debian-derivative such as
+      Ubuntu) system and now masquerading doesn work? What happened?</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> This happens to people
+      who ignore <ulink url="Install.htm#Upgrade_Deb">our advice</ulink> and
+      allow the installer to replace their working
+      <filename>/etc/shorewall/shorewall.conf</filename> with one that has
+      default settings. Failure to forward traffic (such as during
+      masquerading net access from a local network) usually means that <ulink
+      url="???">/etc/shorewall/shorewall.conf</ulink> contains the Debian
+      default setting IP_FORWARDING=Keep; it should be
+      IP_FORWARDING=On.</para>
     </section>
   </section>
 

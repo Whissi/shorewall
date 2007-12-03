@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-15"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="standalone_fr" lang="fr">
@@ -7,7 +7,7 @@
   <articleinfo>
     <title>Firewall Monoposte (une interface)</title>
 
-    <subtitle>Version Française de <foreignphrase lang="en"><ulink
+    <subtitle>Version FranÃ§aise de <foreignphrase lang="en"><ulink
     url="http://www.shorewall.net/standalone.htm">Standalone
     Firewall</ulink></foreignphrase></subtitle>
 
@@ -23,7 +23,7 @@
 
         <surname>Vetsel</surname>
 
-        <contrib>Traduction française initiale</contrib>
+        <contrib>Traduction franÃ§aise initiale</contrib>
       </othercredit>
 
       <othercredit role="translator">
@@ -31,7 +31,7 @@
 
         <surname>Demassieux</surname>
 
-        <contrib>Adaptation française version 2.0</contrib>
+        <contrib>Adaptation franÃ§aise version 2.0</contrib>
       </othercredit>
 
       <othercredit role="translator">
@@ -39,14 +39,14 @@
 
         <surname>Marcenac</surname>
 
-        <contrib>Adaptation française version 3.0</contrib>
+        <contrib>Adaptation franÃ§aise version 3.0</contrib>
       </othercredit>
     </authorgroup>
 
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2002-2006</year>
+      <year>2002-2007</year>
 
       <holder>Thomas M. Eastep</holder>
 
@@ -58,17 +58,17 @@
     </copyright>
 
     <legalnotice>
-      <para>Permission est accordée de copier, distribuer et/ou modifier ce
+      <para>Permission est accordÃ©e de copier, distribuer et/ou modifier ce
       document selon les termes de la Licence de Documentation Libre GNU (GNU
-      Free Documentation License), version 1.2 ou toute version ultérieure
-      publiée par la Free Software Foundation ; sans section Invariables, sans
-      première de Couverture, et sans texte de quatrième de couverture. Une
-      copie de la présente Licence est incluse dans la section intitulée. Une
-      traduction française de la licence se trouve dans la section
+      Free Documentation License), version 1.2 ou toute version ultÃ©rieure
+      publiÃ©e par la Free Software Foundation ; sans section Invariables, sans
+      premiÃšre de Couverture, et sans texte de quatriÃšme de couverture. Une
+      copie de la prÃ©sente Licence est incluse dans la section intitulÃ©e. Une
+      traduction franÃ§aise de la licence se trouve dans la section
       <quote><ulink url="http://cesarx.free.fr/gfdlf.html">Licence de
       Documentation Libre GNU</ulink></quote>. Ce paragraphe est une
-      traduction française pour aider à votre compréhension. Seul le texte
-      original en anglais présenté ci-dessous fixe les conditions
+      traduction franÃ§aise pour aider Ã  votre comprÃ©hension. Seul le texte
+      original en anglais prÃ©sentÃ© ci-dessous fixe les conditions
       d'utilisation de cette documentation.</para>
 
       <para>Permission is granted to copy, distribute and/or modify this
@@ -83,50 +83,41 @@
 
   <note>
     <para><emphasis role="underline">Notes du traducteur :</emphasis> Le guide
-    initial a été traduit par <ulink
+    initial a Ã©tÃ© traduit par <ulink
     url="mailto:vetsel.patrice@wanadoo.fr">VETSEL Patrice</ulink> et la
-    révision pour la version 2 de Shorewall a été effectuée par <ulink
-    url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assuré la
-    révision pour l'adapter à la version 3 de Shorewall. Si vous trouvez des
-    erreurs ou des améliorations à y apporter vous pouvez <ulink
+    rÃ©vision pour la version 2 de Shorewall a Ã©tÃ© effectuÃ©e par <ulink
+    url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assurÃ© la
+    rÃ©vision pour l'adapter Ã  la version 3, puis 4 de Shorewall. Si vous
+    trouvez des erreurs ou des amÃ©liorations Ã  y apporter vous pouvez <ulink
     url="mailto:guy@posteurs.com">me contacter</ulink>.</para>
   </note>
 
   <caution>
-    <para><emphasis role="bold">Cet article s'applique à Shorewall 3.0 et à
-    ses versions ultérieures. Si vous utilisez une version plus ancienne de
-    Shorewall, référez-vous à la documentation s'appliquant à votre
+    <para><emphasis role="bold">Cet article s'applique Ã  Shorewall 4.0 et Ã 
+    ses versions ultÃ©rieures. Si vous utilisez une version plus ancienne de
+    Shorewall, rÃ©fÃ©rez-vous Ã  la documentation s'appliquant Ã  votre
     version.</emphasis></para>
   </caution>
 
-  <warning>
-    <para>Les fichiers de configuration pour l'exemple fournis avec Shorewall
-    3.0.0 et 3.0.1 ne fonctionnaient pas. La première erreur à se produire
-    était:</para>
+  <caution>
+    <para><emphasis role="bold">Ne tentez pas d'installer Shorewall sur un
+    systÃšme distant. Il est pratiquement certain que vous vous enfermerez Ã 
+    l'extÃ©rieur de ce systÃšme.</emphasis></para>
+  </caution>
 
-    <para><emphasis role="bold">ERROR: No Firewall Zone
-    Defined</emphasis></para>
-
-    <para>Vous trouverez les fichiers corrigés 'zones' et 'interfaces' à cette
-    adresse <ulink
-    url="http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.1/errata/one-interface/">http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.1/errata/one-interface/</ulink>.</para>
-
-    <para>Le problème a été résolu avec Shorewall 3.0.2.</para>
-  </warning>
-
-  <section>
+  <section id="Introduction">
     <title>Introduction</title>
 
-    <para>Configurer Shorewall sur un système isolé Linux est très simple si
+    <para>Configurer Shorewall sur un systÃšme isolÃ© Linux est trÃšs simple si
     vous comprenez les bases et suivez la documentation.</para>
 
-    <para>Ce guide ne prétend pas vous apprendre tous les rouages de
-    Shorewall. Il se concentre sur ce qui est nécessaire pour configurer
+    <para>Ce guide ne prÃ©tend pas vous apprendre tous les rouages de
+    Shorewall. Il se concentre sur ce qui est nÃ©cessaire pour configurer
     Shorewall dans son utilisation la plus courante :</para>
 
     <itemizedlist>
       <listitem>
-        <para>Un système Linux</para>
+        <para>Un systÃšme Linux</para>
       </listitem>
 
       <listitem>
@@ -134,22 +125,22 @@
       </listitem>
 
       <listitem>
-        <para>Une connexion passant par un modem câble,
+        <para>Une connexion passant par un modem cÃ¢ble,
         <acronym>ADSL</acronym>, <acronym>ISDN-RNIS</acronym>, Frame Relay,
-        <acronym>RTC</acronym>... ou bien une connexion à un réseau local
-        (<acronym>LAN</acronym>) et vous souhaitez simplement protéger votre
-        système Linux des autres systèmes sur ce réseau local.</para>
+        <acronym>RTC</acronym>... ou bien une connexion Ã  un rÃ©seau local
+        (<acronym>LAN</acronym>) et vous souhaitez simplement protÃ©ger votre
+        systÃšme Linux des autres systÃšmes sur ce rÃ©seau local.</para>
       </listitem>
     </itemizedlist>
 
-    <section>
-      <title>Pré-requis système</title>
+    <section id="System">
+      <title>PrÃ©-requis systÃšme</title>
 
       <para>Shorewall a besoin que le package
       <command><command>iproute</command></command>/<command><command>iproute2</command></command>
-      soit installé (avec la distribution <trademark>RedHat</trademark>, le
-      package s'appelle <command>iproute</command>). Vous pouvez vérifier que
-      le package est installé en contrôlant la présence du programme
+      soit installÃ© (avec la distribution <trademark>RedHat</trademark>, le
+      package s'appelle <command>iproute</command>). Vous pouvez vÃ©rifier que
+      le package est installÃ© en contrÃŽlant la prÃ©sence du programme
       <command><command>ip</command></command> sur votre firewall. En tant que
       <systemitem class="username">root</systemitem>, vous pouvez utiliser la
       commande <command><command>which</command></command> pour cela:</para>
@@ -159,21 +150,21 @@
 [root@gateway root]#</programlisting>
     </section>
 
-    <section>
+    <section id="Before">
       <title>Avant de commencer</title>
 
-      <para>Je vous recommande de commencer par une lecture complète du guide
+      <para>Je vous recommande de commencer par une lecture complÃšte du guide
       afin de vous familiariser avec les concepts mis en oeuvre, puis de
       recommencer la lecture et seulement alors d'appliquer vos modifications
       de configuration.</para>
 
       <caution>
-        <para>Si vous éditez vos fichiers de configuration sur un système
+        <para>Si vous Ã©ditez vos fichiers de configuration sur un systÃšme
         <trademark>Windows</trademark>, vous devez les enregistrer comme des
-        fichiers <trademark>Unix</trademark> si votre éditeur supporte cette
+        fichiers <trademark>Unix</trademark> si votre Ã©diteur supporte cette
         option, sinon vous devez les convertir avec
         <command>dos2unix</command> avant d'essayer de les utiliser. De la
-        même manière, si vous copiez un fichier de configuration depuis votre
+        mÃªme maniÃšre, si vous copiez un fichier de configuration depuis votre
         disque dur <trademark>Windows</trademark> vers une disquette, vous
         devez lancer <command>dos2unix</command> sur la copie avant de
         l'utiliser avec Shorewall.</para>
@@ -189,48 +180,48 @@
       </caution>
     </section>
 
-    <section>
+    <section id="Conventions">
       <title>Conventions</title>
 
-      <para>Les points ou les modifications qui s'imposent sont indiqués par
+      <para>Les points ou les modifications qui s'imposent sont indiquÃ©s par
       <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />.</para>
     </section>
   </section>
 
-  <section>
+  <section id="PPTP">
     <title>PPTP/ADSL</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Si vous êtes équipé d'un modem
+    <para>Si vous Ãªtes Ã©quipÃ© d'un modem
     <acronym><acronym>ADSL</acronym></acronym> et que vous utilisez
     <acronym><acronym>PPTP</acronym></acronym> pour communiquer avec un
-    serveur à travers ce modem, vous devez faire les changements <ulink
-    url="PPTP.htm#PPTP_ADSL">suivants</ulink> en plus de ceux décrits
+    serveur Ã  travers ce modem, vous devez faire les changements <ulink
+    url="PPTP.htm#PPTP_ADSL">suivants</ulink> en plus de ceux dÃ©crits
     ci-dessous. <acronym><acronym>ADSL</acronym></acronym> avec
-    <acronym><acronym>PPTP</acronym></acronym> est répandu en Europe,
+    <acronym><acronym>PPTP</acronym></acronym> est rÃ©pandu en Europe,
     notamment en Autriche.</para>
   </section>
 
-  <section>
+  <section id="Concepts">
     <title>Les Concepts de Shorewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Les fichiers de configuration pour Shorewall sont situés dans le
-    répertoire <filename class="directory">/etc/shorewall</filename> -- pour
-    de simples paramétrages, vous n'aurez à faire qu'avec quelques-uns d'entre
-    eux comme décrit dans ce guide. Après avoir <ulink
-    url="Install_fr.html">installé Shorewall</ulink>,vous pourrez trouver les
-    exemples de la manière suivante:</para>
+    <para>Les fichiers de configuration pour Shorewall sont situÃ©s dans le
+    rÃ©pertoire <filename class="directory">/etc/shorewall</filename> -- pour
+    de simples paramÃ©trages, vous n'aurez Ã  faire qu'avec quelques-uns d'entre
+    eux comme dÃ©crit dans ce guide. AprÃšs avoir <ulink
+    url="Install_fr.html">installÃ© Shorewall</ulink>,vous pourrez trouver les
+    exemples de la maniÃšre suivante:</para>
 
     <para><orderedlist>
         <listitem>
-          <para>Si vous avez installé shorewall en utilisant un
-          <acronym>RPM</acronym>, les exemples seront dans le sous-répertoire
+          <para>Si vous avez installÃ© shorewall en utilisant un
+          <acronym>RPM</acronym>, les exemples seront dans le sous-rÃ©pertoire
           <filename class="directory">Samples/one-interface/</filename> du
-          répertoire de la documentation de Shorewall. Si vous ne savez pas où
-          se trouve le répertoire de la documentation de Shorewall, vous
+          rÃ©pertoire de la documentation de Shorewall. Si vous ne savez pas oÃ¹
+          se trouve le rÃ©pertoire de la documentation de Shorewall, vous
           pouvez trouver les exemples en utilisant cette commande:</para>
 
           <programlisting>~# rpm -ql shorewall | fgrep one-interface
@@ -243,104 +234,115 @@
         </listitem>
 
         <listitem>
-          <para>Si vous avez installé depuis le tarball, les exemples sont
-          dans le répertoire <filename>Samples/one-interface</filename> du
+          <para>Si vous avez installÃ© depuis le tarball, les exemples sont
+          dans le rÃ©pertoire <filename>Samples/one-interface</filename> du
           tarball.</para>
         </listitem>
 
         <listitem>
-          <para>Si vous avez installé en utilisant un .deb, les exemples sont
-          dans
-          <filename>/usr/share/doc/shorewall/examples/one-interface</filename>.</para>
+          <para>Si vous avez installÃ© en utilisant un .deb de Shorewall 3.x,
+          les exemples sont dans
+          <filename>/usr/share/doc/shorewall/examples/one-interface</filename>.
+          Il vous faut installer le paquetage shorewall-doc.</para>
+        </listitem>
+
+        <listitem>
+          <para>Si vous avez installÃ© en utilisant un .deb de Shorewall 4.x,
+          les exemples sont dans <filename
+          class="directory">/usr/share/doc/shorewall-common/examples/one-interface</filename>.
+          Vous n'avez pas besoin d'installer le paquetage shorewall-doc pour
+          pouvoir accÃ©der aux exemples.</para>
         </listitem>
       </orderedlist><warning>
         <para><emphasis role="bold">Note aux utilisateurs de Debian et de
         Ubuntu</emphasis></para>
 
         <para>Si vous vous servez du .deb pour installer, vous vous rendrez
-        compte que votre répertoire <filename>/etc/shorewall</filename> est
+        compte que votre rÃ©pertoire <filename>/etc/shorewall</filename> est
         vide. Ceci est voulu. Les squelettes des fichiers de configuration se
-        trouvent sur votre système dans le répertoire <filename
+        trouvent sur votre systÃšme dans le rÃ©pertoire <filename
         class="directory">/usr/share/doc/shorewall/default-config</filename>.
         Copiez simplement les fichiers dont vous avez besoin depuis ce
-        répertoire dans <filename class="directory">/etc/shorewall</filename>,
+        rÃ©pertoire dans <filename class="directory">/etc/shorewall</filename>,
         puis modifiez ces copies.</para>
-
-        <para>Remarquez que vous devez copier
-        <filename>/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-        et
-        <filename>/usr/share/doc/shorewall/default-config/modules</filename>
-        dans <filename
-        class="directory"><filename>/etc/shorewall</filename></filename> même
-        si vous ne modifiez pas ces fichiers.</para>
       </warning></para>
 
-    <para>Au fur et à mesure de la présentation de chaque fichier, je vous
-    suggère de jeter un oeil à ceux qui sont physiquement présents sur votre
-    système -- chacun de ces fichiers contient des instructions de
-    configuration détaillées et des entrées par défaut.</para>
+    <para>Si vous installez la version 3.4.0 de Shorewall ou une version
+    ultÃ©rieure, au fur et Ã  mesure de la prÃ©sentation de chaque fichier, je
+    vous suggÃšre de jeter un oeil Ã  ceux qui sont physiquement prÃ©sents sur
+    votre systÃšme et que vous voyez la <ulink
+    url="configuration_file_basics.htm#Manpages">page de manuel (man
+    page)</ulink> pour ce fichier. Par exemple, tapez <command>man
+    shorewall-zones</command> Ã  l'invite du systÃšme pour voir la page de
+    manuel du fichier <filename>/etc/shorewall/zones</filename>.</para>
 
-    <para>Shorewall voit le réseau où il fonctionne, comme étant composé d'un
+    <para>Si vous installez une version antÃ©rieure Ã  shorewall 3.4.0, au fur
+    et Ã  mesure de la prÃ©sentation de chaque fichier, je vous suggÃšre de jeter
+    un oeil Ã  ceux qui sont physiquement prÃ©sents sur votre systÃšme -- chacun
+    de ces fichiers contient des instructions de configuration dÃ©taillÃ©es et
+    des entrÃ©es par dÃ©faut.</para>
+
+    <para>Shorewall voit le rÃ©seau oÃ¹ il fonctionne, comme Ã©tant composÃ© d'un
     ensemble de <emphasis>zones</emphasis>. Dans les fichiers de configuration
     fournis dans l'archive d'exemples pour une seule interface, deux zones
-    seulement sont définies :</para>
+    seulement sont dÃ©finies :</para>
 
     <para><programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
 #                                       OPTIONS                 OPTIONS
 fw      firewall
 net     ipv4</programlisting></para>
 
-    <para>Les zones de Shorewall sont définies dans <filename><ulink
-    url="Documentation.htm#Zones">/etc/shorewall/zones</ulink></filename>.</para>
+    <para>Les zones de Shorewall sont dÃ©finies dans <filename><ulink
+    url="manpages/shorewall-zones.html">/etc/shorewall/zones</ulink></filename>.</para>
 
-    <para>Remarquez que Shorewall reconnaît le système de firewall comme étant
+    <para>Remarquez que Shorewall reconnaÃ®t le systÃšme de firewall comme Ã©tant
     sa propre zone. Le nom de la zone firewall (<emphasis
-    role="bold">fw</emphasis> dans l'exemple plus haut) est stocké dans la
-    variable d'environnement <emphasis>$FW,</emphasis> qui peut être utilisée
+    role="bold">fw</emphasis> dans l'exemple plus haut) est stockÃ© dans la
+    variable d'environnement <emphasis>$FW,</emphasis> qui peut Ãªtre utilisÃ©e
     depuis l'ensemble des autres fichiers de configuration de Shorewall pour
-    faire référence au firewall lui-même.</para>
+    faire rÃ©fÃ©rence au firewall lui-mÃªme.</para>
 
-    <para>Les règles concernant le trafic à autoriser ou à interdire sont
-    exprimées en utilisant les termes de zones.</para>
+    <para>Les rÃšgles concernant le trafic Ã  autoriser ou Ã  interdire sont
+    exprimÃ©es en utilisant les termes de zones.</para>
 
     <itemizedlist>
       <listitem>
-        <para>Vous exprimez votre politique par défaut pour les connexions
+        <para>Vous exprimez votre politique par dÃ©faut pour les connexions
         d'une zone vers une autre zone dans le fichier <ulink
-        url="Documentation.htm#Policy"><filename
+        url="manpages/shorewall-policy.html"><filename
         class="directory">/etc/shorewall/policy</filename></ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Vous définissez les exceptions à ces politiques pas défaut dans
+        <para>Vous dÃ©finissez les exceptions Ã  ces politiques pas dÃ©faut dans
         le fichier <ulink
-        url="Documentation.htm#Rules"><filename>/etc/shorewall/rules</filename></ulink>.</para>
+        url="manpages/shorewall-rules.html"><filename>/etc/shorewall/rules</filename></ulink>.</para>
       </listitem>
     </itemizedlist>
 
-    <para>Pour chaque connexion demandant à entrer dans le firewall, la
-    requête est en premier lieu vérifiée par rapport au contenu du fichier
+    <para>Pour chaque connexion demandant Ã  entrer dans le firewall, la
+    requÃªte est en premier lieu vÃ©rifiÃ©e par rapport au contenu du fichier
     <filename class="directory">/etc/shorewall/rules</filename>. Si aucune
-    règle dans ce fichier ne correspond à la demande de connexion alors la
-    première politique dans le fichier
+    rÃšgle dans ce fichier ne correspond Ã  la demande de connexion alors la
+    premiÃšre politique dans le fichier
     <filename>/etc/shorewall/policy</filename> qui y correspond sera
-    appliquée. S'il y a une <ulink
-    url="shorewall_extension_scripts.htm">action commune</ulink> définie pour
+    appliquÃ©e. S'il y a une <ulink
+    url="shorewall_extension_scripts.htm">action commune</ulink> dÃ©finie pour
     cette politique dans <filename>/etc/shorewall/actions</filename> ou dans
     <filename>/usr/share/shorewall/actions.std</filename> cette action commune
-    sera exécutée avant que la politique ne soit appliquée. Le but de l'action
+    sera exÃ©cutÃ©e avant que la politique ne soit appliquÃ©e. Le but de l'action
     commune est double:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Elle ignore (DROP) ou rejete (REJECT) silencieusement le traffic
-        courant qui n'est pas dangeureux qui sans cela encombrerait votre
+        <para>Elle ignore (DROP) ou rejette (REJECT) silencieusement le trafic
+        courant qui n'est pas dangereux qui sans cela encombrerait votre
         fichier journal - les messages de broadcast, par exemple.</para>
       </listitem>
 
       <listitem>
-        <para>Elle garantit que le traffic nécessaire à un fonctionnement
-        normal est autorisé à traverser le firewall &mdash; ICMP
+        <para>Elle garantit que le trafic nÃ©cessaire Ã  un fonctionnement
+        normal est autorisÃ© Ã  traverser le firewall â ICMP
         <emphasis>fragmentation-needed</emphasis> par exemple</para>
       </listitem>
     </itemizedlist>
@@ -368,23 +370,23 @@ all            all                REJECT   info</programlisting>
       </listitem>
 
       <listitem>
-        <para>Rejeter (REJECT) toutes les autres requêtes de connexion.
-        Shorewall à toujours besoin de cette dernière politique.</para>
+        <para>Rejeter (REJECT) toutes les autres requÃªtes de connexion.
+        Shorewall Ã  toujours besoin de cette derniÃšre politique.</para>
       </listitem>
     </orderedlist>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" /> A ce point, éditez
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> A ce point, Ã©ditez
     votre <filename>/etc/shorewall/policy</filename> et faites y les
-    changements que vous désirez.</para>
+    changements que vous dÃ©sirez.</para>
   </section>
 
-  <section>
+  <section id="External">
     <title>Interface Externe</title>
 
-    <para>Le firewall possède une seule interface réseau. Lorsque la connexion
-    internet passe par un "modem" câble ou
+    <para>Le firewall possÃšde une seule interface rÃ©seau. Lorsque la connexion
+    internet passe par un "modem" cÃ¢ble ou
     <acronym><acronym>ADSL</acronym></acronym>, l'<emphasis>Interface
-    Externe</emphasis> sera l'adaptateur ethernet qui est connecté à ce
+    Externe</emphasis> sera l'adaptateur ethernet qui est connectÃ© Ã  ce
     <quote>Modem</quote> (par exemple <filename
     class="devicefile">eth0</filename>). Par contre, si vous vous connectez
     par <emphasis role="bold"><acronym>PPPoE</acronym></emphasis>
@@ -399,18 +401,41 @@ all            all                REJECT   info</programlisting>
     interface externe sera <filename
     class="devicefile">ippp0</filename>.</para>
 
+    <caution>
+      <para>Assurez-vous de savoir laquelle de vos interfaces est l'interface
+      externe. Certains utilisateurs qui avaient configurÃ© la mauvaise
+      interface ont passÃ© des heures avant de comprendre leur erreur. Si vous
+      n'Ãªtes pas sÃ»r, tapez la commande <command>ip route ls</command> en tant
+      que root. L'interface listÃ©e Ã  la fin (default) devrait Ãªtre votre
+      interface externe.</para>
+
+      <para>Exemple:</para>
+
+      <programlisting>root@lists:~# ip route ls
+192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1 
+10.13.10.0/24 dev tun1  scope link 
+192.168.2.0/24 via 192.168.2.2 dev tun0 
+206.124.146.0/24 dev eth0  proto kernel  scope link  src 206.124.146.176 
+10.10.10.0/24 dev tun1  scope link 
+default via 206.124.146.254 dev <emphasis role="bold">eth0</emphasis> 
+root@lists:~# </programlisting>
+
+      <para>Dans cette exemple, l'interface externe est <filename
+      class="devicefile">eth0</filename>.</para>
+    </caution>
+
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Les fichiers de configuration d'exemple pour le firewall monoposte
     (one-interface) supposent que votre interface externe est <filename
-    class="devicefile">eth0</filename>. Si votre configuration est différente,
+    class="devicefile">eth0</filename>. Si votre configuration est diffÃ©rente,
     vous devrez modifier le
-    fichier<filename>/etc/shorewall/interfaces</filename> en conséquence. Tant
-    que vous y êtes, vous pourriez parcourir la liste des options qui sont
-    spécifiées pour les interfaces. Quelques astuces:</para>
+    fichier<filename>/etc/shorewall/interfaces</filename> en consÃ©quence. Tant
+    que vous y Ãªtes, vous pourriez parcourir la liste des options qui sont
+    spÃ©cifiÃ©es pour les interfaces. Quelques astuces:</para>
 
     <tip>
-      <para>Si votre interface vers l'extérieur est <emphasis
+      <para>Si votre interface vers l'extÃ©rieur est <emphasis
       role="bold"><filename class="devicefile">ppp0</filename></emphasis>
       ou<emphasis role="bold"> <filename
       class="devicefile">ippp0</filename></emphasis>, vous pouvez remplacer le
@@ -419,7 +444,7 @@ all            all                REJECT   info</programlisting>
     </tip>
 
     <tip>
-      <para>Si votre interface vers l'extérieur est <emphasis
+      <para>Si votre interface vers l'extÃ©rieur est <emphasis
       role="bold"><filename class="devicefile">ppp0</filename></emphasis> or
       <emphasis role="bold"><filename
       class="devicefile">ippp0</filename></emphasis> ou si vous avez une
@@ -428,92 +453,167 @@ all            all                REJECT   info</programlisting>
     </tip>
   </section>
 
-  <section>
+  <section id="Addresses">
     <title>Adresses IP</title>
 
     <para>Avant d'aller plus loin, nous devons dire quelques mots au sujet des
-    adresses IP. Normalement, votre Fournisseur d' Accès Internet
+    adresses IP. Normalement, votre Fournisseur d' AccÃšs Internet
     (<acronym>FAI</acronym>) ne vous allouera qu'une seule adresse IP. Cette
-    adresse peut vous être allouée par <acronym>DHCP</acronym> (Dynamic Host
-    Configuration Protocol), lors de l'établissement de votre connexion (modem
-    standard) ou bien lorsque vous établissez un autre type de connexion
+    adresse peut vous Ãªtre allouÃ©e par <acronym>DHCP</acronym> (Dynamic Host
+    Configuration Protocol), lors de l'Ã©tablissement de votre connexion (modem
+    standard) ou bien lorsque vous Ã©tablissez un autre type de connexion
     <acronym>PPP</acronym> (<acronym>PPPoA</acronym>,
     <acronym>PPPoE</acronym>, etc.). Dans certains cas , votre fournisseur
     peut vous allouer une adresse statique IP. Dans ce cas vous devez
     configurer l'interface externe de votre firewall afin d'utiliser cette
-    adresse de manière permanente.</para>
+    adresse de maniÃšre permanente.</para>
 
-    <para>La RFC 1918 réserve des plages d'adresses IP pour utilisation dans
-    les réseau privés:</para>
+    <para>La RFC 1918 rÃ©serve des plages d'adresses IP pour utilisation dans
+    les rÃ©seau privÃ©s:</para>
 
     <programlisting>10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
 192.168.0.0 - 192.168.255.255</programlisting>
 
-    <para>Ces adresses sont parfois nommées <emphasis>non-routables</emphasis>
-    car les routeurs centraux d'internet ne transfèrent pas un paquet dont la
-    destination est une adresse réservée par la RFC 1918. Dans certain cas
-    cependant, les <acronym>FAI</acronym> (fournisseurs d'accès Internet)
+    <para>Ces adresses sont parfois nommÃ©es <emphasis>non-routables</emphasis>
+    car les routeurs centraux d'internet ne transfÃšrent pas un paquet dont la
+    destination est une adresse rÃ©servÃ©e par la RFC 1918. Dans certain cas
+    cependant, les <acronym>FAI</acronym> (fournisseurs d'accÃšs Internet)
     peuvent vous affecter une de ces adresses et utiliser la Traduction
-    d'Adresses Réseau (<acronym>NAT</acronym> <emphasis>Network Address
-    Translation</emphasis>) pour réécrire les en-têtes des paquets transmis en
-    provenance ou à destination d'internet.</para>
+    d'Adresses RÃ©seau (<acronym>NAT</acronym> <emphasis>Network Address
+    Translation</emphasis>) pour rÃ©Ã©crire les en-tÃªtes des paquets transmis en
+    provenance ou Ã  destination d'internet.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Avant de lancer Shorewall, <emphasis role="bold">il faut
-    impérativement regarder l'adresse IP de votre interface externe, et, si
-    elle est dans l'une des plages précédentes, vous devez enlever l'option
+    impÃ©rativement regarder l'adresse IP de votre interface externe, et, si
+    elle est dans l'une des plages prÃ©cÃ©dentes, vous devez enlever l'option
     "norfc1918" dans la ligne concernant l'interface externe dans le fichier
     <filename><filename
-    class="directory">/etc/shorewall/</filename><filename>interfaces</filename></filename></emphasis>.</para>
+    class="directory">/etc/shorewall/</filename><filename>interfaces</filename></filename></emphasis><tip>
+        <para>Pour dÃ©terminer l'adresse IP de votre interface externe, en tant
+        que root tapez <command>ip addr ls dev &lt;interface&gt;</command> Ã 
+        l'invite du systÃšme. &lt;<emphasis>interface</emphasis>&gt; Ã©tant
+        votre interface externe. La ligne qui commence par
+        <emphasis>inet</emphasis> vous donne votre adresse IP.</para>
+
+        <para>Exemple:</para>
+
+        <programlisting>root@lists:~# ip addr ls dev eth0
+2: eth0: &lt;BROADCAST,MULTICAST,UP,10000&gt; mtu 1500 qdisc htb qlen 1000
+    link/ether 00:02:e3:08:48:4c brd ff:ff:ff:ff:ff:ff
+    inet <emphasis role="bold">206.124.146.176</emphasis>/24 brd 206.124.146.255 scope global eth0
+    inet6 fe80::202:e3ff:fe08:484c/64 scope link 
+       valid_lft forever preferred_lft forever
+root@lists:~# </programlisting>
+
+        <para>Dans cet exemple, l'adresse IP de votre interface externe est
+        206.124.146.176</para>
+      </tip>.</para>
+  </section>
+
+  <section id="Logging">
+    <title>Journalisation (log)</title>
+
+    <para>Shorewall ne produit pas un fichier journal lui-mÃªme, mais il
+    s'appuie sur votre <ulink url="shorewall_logging.html">configuration de la
+    journalisation systÃšme</ulink>. Les <ulink
+    url="manpages/shorewall.html">commandes</ulink> suivantes nÃ©cessitent un
+    bonne configuration de la journalisation, car elles ont besoin de
+    connaitre le fichier dans lequel netfilter enregistre ses messages.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><command>shorewall show log</command> (Affiche les 20 derniers
+        messages enregistrÃ©s par netfilter)</para>
+      </listitem>
+
+      <listitem>
+        <para><command>shorewall logwatch</command> (Consulte le fichier
+        journal Ã  un intervalle rÃ©gulier paramÃ©trable)</para>
+      </listitem>
+
+      <listitem>
+        <para><command>shorewall dump</command> (Produit un Ã©tat trÃšs dÃ©taillÃ©
+        Ã  inclure Ã  vos rapports d'anomalie)</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Il est important que ces commandes fonctionnent correctement. En
+    effet, lorsque vous rencontrez des problÃšmes de connexion alors que
+    shorewall est actif, la premiÃšre chose que vous devriez faire est de
+    regarder le journal netfilter, et vous pourrez gÃ©nÃ©ralement rÃ©soudre
+    rapidement votre problÃšme en vous aidant de la <ulink
+    url="FAQ_fr.htm#faq17">FAQ 17 de Shorewall</ulink>.</para>
+
+    <para>La plupart du temps, les messages de Netfilter sont journalisÃ©s dans
+    le fichier <filename>/var/log/messages</filename>. Certaines version
+    rÃ©centes de <trademark>SuSE/OpenSuSE</trademark> sont prÃ© configurÃ©es pour
+    utiliser syslog-ng et journalisent les messages de netfilter dans le
+    fichier <filename>/var/log/firewall</filename>.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>Si votre distribution enregistre les message de netfilter dans un
+    autre fichier que <filename>/var/log/messages</filename>, il faut modifier
+    le paramÃštre LOGFILE dans le fichier <filename>
+    /etc/shorewall/shorewall.conf</filename> et y spÃ©cifier le nom de votre
+    fichier journal.</para>
+
+    <important>
+      <para>Le paramÃštre LOGFILE ne contrÃŽle pas le fichier dans lequel
+      netfilter va enregistrer ses messages -- Il indique simplement Ã 
+      /sbin/<filename>shorewall</filename>oÃ¹ trouver le fichier
+      journal.</para>
+    </important>
   </section>
 
   <section id="Open">
     <title>Permettre d'autres connexions</title>
 
     <para>Shorewall inclue une collection de <ulink url="???">macros</ulink>
-    qui peuvent être utilisées pour rapidement autoriser ou refuser des
+    qui peuvent Ãªtre utilisÃ©es pour rapidement autoriser ou refuser des
     services. Vous pouvez trouver une liste des macros comprises dans votre
     version de Shorewall en utilisant la commande <command>ls
     <filename>/usr/share/shorewall/macro.*</filename></command> ou bien la
     commande <command>shorewall show macros</command> si vous utilisez une
-    version 3.0.3 ou ultérieure de shorewall.</para>
+    version 3.0.3 ou ultÃ©rieure de shorewall.</para>
 
     <para>Si vous souhaitez autoriser des connexions depuis internet vers
-    votre firewall et que vous avez trouvé une macro appropriée dans
+    votre firewall et que vous avez trouvÃ© une macro appropriÃ©e dans
     <filename><filename>/etc/shorewall/macro.*</filename></filename>, le
-    format général d'une règle dans <filename>/etc/shorewall/rules</filename>
+    format gÃ©nÃ©ral d'une rÃšgle dans <filename>/etc/shorewall/rules</filename>
     est le suivant:</para>
 
     <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
 &lt;<emphasis>macro</emphasis>&gt;/ACCEPT  net       $FW</programlisting>
 
     <important>
-      <para>Assurez-vous d'ajouter vos règles après la ligne contenant
+      <para>Assurez-vous d'ajouter vos rÃšgles aprÃšs la ligne contenant
       <emphasis role="bold">SECTION NEW.</emphasis></para>
     </important>
 
-    <example>
+    <example id="Example1">
       <title>Un serveur Web et un serveur IMAP sur votre firewall, accessibles
-      depuis l'extérieur:</title>
+      depuis l'extÃ©rieur:</title>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
 Web/ACCEPT  net       $FW
 IMAP/ACCEPT net       $FW</programlisting>
     </example>
 
-    <para>Vous pouvez aussi choisir de coder vos règles directement, sans
-    utiliser de macro pré-définie. Ceci sera nécessaire quand aucune macro
-    pré-définie ne répond à vos besoins. Dans ce cas, le format général d'une
-    règle dans <filename>/etc/shorewall/rules</filename> est:</para>
+    <para>Vous pouvez aussi choisir de coder vos rÃšgles directement, sans
+    utiliser de macro prÃ©-dÃ©finie. Ceci sera nÃ©cessaire quand aucune macro
+    prÃ©-dÃ©finie ne rÃ©pond Ã  vos besoins. Dans ce cas, le format gÃ©nÃ©ral d'une
+    rÃšgle dans <filename>/etc/shorewall/rules</filename> est:</para>
 
     <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
 ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
-    <example>
+    <example id="Example2">
       <title>Un serveur Web et un serveur IMAP sur votre firewall, accessibles
-      depuis l'extérieur:</title>
+      depuis l'extÃ©rieur:</title>
 
       <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
 ACCEPT    net       $FW             tcp          80
@@ -521,12 +621,12 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
     </example>
 
     <para>Si vous ne savez pas quel port ou protocole utilise une application
-    donnée, allez voir <ulink url="ports.htm">ici</ulink>.</para>
+    donnÃ©e, allez voir <ulink url="ports.htm">ici</ulink>.</para>
 
     <important>
       <para>Je ne recommande pas d'activer <command>telnet</command>
       depuis/vers internet car il utilise du texte en clair (y compris pour le
-      login !). Si vous voulez un accès shell à votre firewall, utilisez
+      login !). Si vous voulez un accÃšs shell Ã  votre firewall, utilisez
       SSH:</para>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
@@ -535,57 +635,57 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Maintenant, éditez votre fichier de configuration <filename
+    <para>Maintenant, Ã©ditez votre fichier de configuration <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
     pour ajouter, modifier ou supprimer d'autres connexions suivant vos
     besoins.</para>
   </section>
 
-  <section>
-    <title>Démarrer et Arrêter Votre Firewall</title>
+  <section id="Starting">
+    <title>DÃ©marrer et ArrÃªter Votre Firewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>La <ulink url="Install_fr.html">procédure d'installation</ulink>
-    configure votre système pour lancer Shorewall dès le boot du système, mais
-    le lancement est désactivé, de façon à ce que votre système ne tente pas
-    de lancer Shorewall avant que la configuration ne soit terminée. Une fois
-    que vous en avez fini avec la configuration du firewall, vous devez éditer
+    <para>La <ulink url="Install_fr.html">procÃ©dure d'installation</ulink>
+    configure votre systÃšme pour lancer Shorewall dÃšs le boot du systÃšme, mais
+    le lancement est dÃ©sactivÃ©, de faÃ§on Ã  ce que votre systÃšme ne tente pas
+    de lancer Shorewall avant que la configuration ne soit terminÃ©e. Une fois
+    que vous en avez fini avec la configuration du firewall, vous devez Ã©diter
     /etc/shorewall/shorewall.conf et y mettre STARTUP_ENABLED=Yes.</para>
 
     <important>
       <para><emphasis role="bold">Les utilisateurs des paquets .deb doivent
-      éditer <filename>/etc/default/shorewall</filename> et mettre
+      Ã©diter <filename>/etc/default/shorewall</filename> et mettre
       <varname>startup=1</varname></emphasis>.</para>
     </important>
 
     <important>
       <para><emphasis role="bold">Vous devez activer le lancement de Shorewall
-      en éditant <filename>/etc/shorewall/shorewall.conf</filename> et en y
+      en Ã©ditant <filename>/etc/shorewall/shorewall.conf</filename> et en y
       mettant <command>STARTUP_ENABLED=Yes</command>.</emphasis></para>
     </important>
 
-    <para>Le firewall est activé en utilisant la commande
-    <quote><command>shorewall start</command></quote> et arrêté avec la
+    <para>Le firewall est activÃ© en utilisant la commande
+    <quote><command>shorewall start</command></quote> et arrÃªtÃ© avec la
     commande <quote><command>shorewall stop</command></quote>. Lorsque le
-    firewall est arrêté, le routage est autorisé sur les hôtes qui possèdent
-    une entrée dans <filename class="directory"><ulink
-    url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>.
-    Un firewall qui tourne peut être relancé en utilisant la commande
+    firewall est arrÃªtÃ©, le routage est autorisÃ© sur les hÃŽtes qui possÃšdent
+    une entrÃ©e dans <filename class="directory"><ulink
+    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>.
+    Un firewall qui tourne peut Ãªtre relancÃ© en utilisant la commande
     <quote><command>shorewall restart</command></quote>. Si vous voulez
     enlever toute trace de Shorewall sur votre configuration de Netfilter,
     utilisez <quote><emphasis role="bold">shorewall
     clear</emphasis></quote></para>
 
     <warning>
-      <para>Si vous êtes connecté à votre firewall depuis internet, n'essayez
-      pas d'exécuter une commande <quote><command>shorewall
-      stop</command></quote> tant que vous n'avez pas ajouté une entrée dans
-      <filename><filename
-      class="directory">/etc/shorewall/</filename><filename>routestopped</filename></filename>
-      pour l'adresse IP à partir de laquelle vous êtes connecté . De la même
-      manière, je vous déconseille d'utiliser <quote><command>shorewall
-      restart</command></quote>; il est plus intéressant de créer <ulink
+      <para>Si vous Ãªtes connectÃ© Ã  votre firewall depuis internet, n'essayez
+      pas d'exÃ©cuter une commande <quote><command>shorewall
+      stop</command></quote> tant que vous n'avez pas ajoutÃ© une entrÃ©e dans
+      <filename class="directory"><ulink
+      url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>
+      pour l'adresse IP Ã  partir de laquelle vous Ãªtes connectÃ© . De la mÃªme
+      maniÃšre, je vous dÃ©conseille d'utiliser <quote><command>shorewall
+      restart</command></quote>; il est plus intÃ©ressant de crÃ©er <ulink
       url="configuration_file_basics.htm#Configs">une configuration
       alternative</ulink> et de la tester en utilisant la commande
       <quote><ulink url="starting_and_stopping_shorewall.htm">shorewall
@@ -593,38 +693,38 @@ SSH/ACCEPT  net       $FW           </programlisting>
     </warning>
   </section>
 
-  <section>
+  <section id="Problems">
     <title>Si cela ne marche pas</title>
 
     <itemizedlist>
       <listitem>
-        <para>Vérifiez à nouveau chacun des points repérés par un flèche
+        <para>VÃ©rifiez Ã  nouveau chacun des points repÃ©rÃ©s par un flÃšche
         rouge.</para>
       </listitem>
 
       <listitem>
-        <para>Vérifiez vos <ulink
+        <para>VÃ©rifiez vos <ulink
         url="shorewall_logging.html">journaux</ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Vérifiez le <ulink url="troubleshoot.htm">Troubleshooting
+        <para>VÃ©rifiez le <ulink url="troubleshoot.htm">Troubleshooting
         Guide</ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Vérifiez la <ulink url="FAQ_fr.html">FAQ</ulink>.</para>
+        <para>VÃ©rifiez la <ulink url="FAQ_fr.html">FAQ</ulink>.</para>
       </listitem>
     </itemizedlist>
   </section>
 
-  <section>
-    <title>Autres Lectures Recommandées</title>
+  <section id="Other">
+    <title>Autres Lectures RecommandÃ©es</title>
 
     <para>Je vous recommande vivement de lire la <ulink
-    url="configuration_file_basics.htm">page des fonctionnalités générales des
+    url="configuration_file_basics.htm">page des fonctionnalitÃ©s gÃ©nÃ©rales des
     fichiers de configuration</ulink> -- elle contient des astuces sur des
-    possibilités de Shorewall qui peuvent rendre plus aisée l'administration
+    possibilitÃ©s de Shorewall qui peuvent rendre plus aisÃ©e l'administration
     de votre firewall Shorewall.</para>
   </section>
 </article>

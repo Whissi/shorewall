@@ -241,7 +241,7 @@
           script failed and will abort the compilation.</para>
 
           <para>When a script is invoked, the <emphasis
-          role="bold">$chainref</emphasis> scalar variable will hold a
+          role="bold">$chainref</emphasis> scalar variable will usually hold a
           reference to a chain table entry.</para>
 
           <simplelist>
@@ -255,16 +255,16 @@
           <para>To add a rule to the chain:</para>
 
           <simplelist>
-            <member>add_rule $chainref, &lt;<replaceable>the
-            rule</replaceable>&gt;</member>
+            <member>add_rule $chainref,
+            <replaceable>the-rule</replaceable></member>
           </simplelist>
 
           <para>Where</para>
 
           <simplelist>
-            <member>&lt;<replaceable>the rule</replaceable>&gt; is a scalar
-            argument holding the rule text. Do not include "-A
-            &lt;<replaceable>chain name</replaceable>&gt;"</member>
+            <member><replaceable>the rule</replaceable> is a scalar argument
+            holding the rule text. Do not include "-A
+            <replaceable>chain-name</replaceable>"</member>
           </simplelist>
 
           <para>Example:</para>
@@ -276,9 +276,8 @@
           <para>To insert a rule into the chain:</para>
 
           <simplelist>
-            <member>insert_rule $chainref,
-            &lt;<replaceable>rulenum</replaceable>&gt;, &lt;<replaceable>the
-            rule</replaceable>&gt;</member>
+            <member>insert_rule $chainref, <replaceable>rulenum</replaceable>,
+            <replaceable>the-rule</replaceable></member>
           </simplelist>
 
           <para>The log_rule_limit function works like it does in the shell
@@ -448,8 +447,8 @@ fi</programlisting>
 
         <listitem>
           <para>The pre Shorewall-3.0 format of the zones file is not
-          supported; neither is the <filename>/etc/shorewall/ipsec</filename>
-          file.</para>
+          supported (IPSECFILE=ipsec); neither is the
+          <filename>/etc/shorewall/ipsec</filename> file.</para>
         </listitem>
 
         <listitem>
@@ -984,8 +983,9 @@ fatal_error "You have made an error";
 progress_message  "This will only be seen if VERBOSITY &gt;= 2";
 progress_message2 "This will only be seen if VERBOSITY &gt;= 1";
 progress_message3 "This will be seen unless VERBOSITY &lt; 0";
-</programlisting><programlisting>use lib '/usr/share/shorewall-perl';
-use Shorewall::Chains qw/shorewall/;
+</programlisting>The <emphasis role="bold">shorewall()</emphasis> function may
+      be optionally included.<programlisting>use lib '/usr/share/shorewall-perl';
+use Shorewall::Config qw/shorewall/;
 
 shorewall $config_file_entry;</programlisting>The Shorewall::Config module
       provides basic services to Shorewall-perl. By default, it exports the
@@ -998,13 +998,14 @@ shorewall $config_file_entry;</programlisting>The Shorewall::Config module
 
       <para>To raise a fatal error, call <emphasis
       role="bold">fatal_error()</emphasis>. Again, the single argument
-      described the error. </para>
+      described the error.</para>
 
       <para>In both cases, the function will augment the warning/error with
-      the current configuration file and line number, if any. fatal_error()
-      raised an exception via either <emphasis
-      role="bold">confess()</emphasis> or <emphasis
-      role="bold">die()</emphasis>.</para>
+      the current configuration file and line number, if any. <emphasis
+      role="bold">fatal_error()</emphasis> raised an exception via either
+      <emphasis role="bold">confess()</emphasis> or <emphasis
+      role="bold">die()</emphasis>, depending on whether the debugging stack
+      trace is enabled or not..</para>
 
       <para>The three 'progress message' functions conditionally produce
       output depending on the current verbosity setting.</para>

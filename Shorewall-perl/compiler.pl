@@ -28,11 +28,13 @@
 #     Options:
 #
 #         --export                    # Compile for export
-#         --verbosity=<number>        # Set VERBOSITY
+#         --verbosity=<number>        # Set VERBOSITY range -1 to 2
 #         --directory=<directory>     # Directory where configuration resides (default is /etc/shorewall)
 #         --timestamp                 # Timestamp all progress messages
 #         --debug                     # Print stack trace on warnings and fatal error.
 #         --refresh=<chainlist>       # Make the 'refresh' command refresh a comma-separated list of chains rather than 'blacklst'.
+#         --log=<filename>            # Log file
+#         --log_verbosity=<number>    # Log Verbosity range -1 to 2
 #
 use strict;
 use FindBin;
@@ -46,12 +48,12 @@ sub usage() {
   options are:
     [ --export ]
     [ --directory=<directory> ]
-    [ --verbose={0-2} ]
+    [ --verbose={-1|0-2} ]
     [ --timestamp ]
-    [ -- debug ]
+    [ --debug ]
     [ --refresh=<chainlist> ]
     [ --log=<filename> ]
-    [ --log-verbose={0-2} ]
+    [ --log-verbose={-1|0-2} ]
 ';
     exit 1;
 }

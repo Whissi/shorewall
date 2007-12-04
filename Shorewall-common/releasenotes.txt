@@ -86,13 +86,28 @@ Other changes in Shorewall 4.1.2.
 
     Messages in the log are always timestamped.
 
+    This change implemented two new options to the Shorewall-perl
+    compiler (/usr/share/shorewall-perl/compiler.pl).
+
+    --log=<logfile>
+    --log_verbosity={-1|0-2}
+
+    The --log option is ignored when --log_verbosity is not supplied or
+    is supplied with value -1.
+
+2)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
+    mark values < 256 to be assigned in the OUTPUT chain. This has been
+    changed so that only high mark values may be assigned
+    there. Packet marking rules for traffic shaping of packets
+    originating on the firewall must be coded in the POSTROUTING table.
+
 Migration Issues.
 
-1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed mark
-    values < 256 to be assigned in the OUTPUT chain. This has been
+1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
+    mark values < 256 to be assigned in the OUTPUT chain. This has been
     changed so that only high mark values may be assigned
-    there. Traffic shaping rules for traffic originating on the
-    firewall must be coded in the POSTROUTING table.
+    there. Packet marking rules for traffic shaping of packets
+    originating on the firewall must be coded in the POSTROUTING table.
 
 New Features in Shorewall 4.1.
 
@@ -154,9 +169,9 @@ New Features in Shorewall 4.1.
 	206.124.146.177	-			Blarg		26000
 
 2)  You may now include the name of a table (nat, mangle or filter) in
-    a 'shorewall refresh' command by following the name with a colon
-    (e.g., mangle:). This causes all non-builtin chains in the table to
-    be reloaded.
+    a 'shorewall refresh' command by following the table name with a
+    colon (e.g., mangle:). This causes all non-builtin chains in the
+    table to be reloaded.
 
     Example:
 

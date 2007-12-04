@@ -320,8 +320,8 @@ process_tc_rule()
 	    target="MARK --or-mark"
 	    mark=${mark#|}
 	    validate_mark $mark
-	    if [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
-		fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
+	    if [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" ] && [ $chain = tcpre -o $chain = tcout ]; then
+		fatal_error "Marks < 256 may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
 	    fi
 	    ;;
 	\&*)
@@ -330,7 +330,7 @@ process_tc_rule()
 	    target="MARK --and-mark"
 	    mark=${mark#&}
 	    validate_mark $mark
-	    if [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+	    if [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" ] && [ $chain = tcpre -o $chain = tcout ]; then
 		fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
 	    fi
 	    ;;
@@ -345,7 +345,7 @@ process_tc_rule()
 			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""
 			    ;;
 		    esac
-		elif [ $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		elif [ $((${mark%/*})) -lt 256 -a $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" ] && [ $chain = tcpre -o $chain = tcout ]; then
 		    fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
 		fi
 	    fi

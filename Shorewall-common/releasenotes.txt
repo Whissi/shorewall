@@ -86,51 +86,59 @@ Other changes in Shorewall 4.1.2.
 
     Messages in the log are always timestamped.
 
+Migration Issues.
+
+1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed mark
+    values < 256 to be assigned in the OUTPUT chain. This has been
+    changed so that only high mark values may be assigned
+    there. Traffic shaping rules for traffic originating on the
+    firewall must be coded in the POSTROUTING table.
+
 New Features in Shorewall 4.1.
 
-1) Shorewall 4.1 contains experimental support for multiple Internet
-   providers through a single ethernet interface. Configuring two
-   providers through a single interface differs from two providers
-   through two interfaces in several ways.
+1)  Shorewall 4.1 contains experimental support for multiple Internet
+    providers through a single ethernet interface. Configuring two
+    providers through a single interface differs from two providers
+    through two interfaces in several ways.
 
-   a) Only ethernet (or ethernet-like) interfaces can be used. For
-      inbound traffic, the MAC addresses of the gateway routers is used
-      to determine which provider a packet was received through. Note
-      that only routed traffic can be categorized using this technique.
+    a) Only ethernet (or ethernet-like) interfaces can be used. For
+       inbound traffic, the MAC addresses of the gateway routers is used
+       to determine which provider a packet was received through. Note
+       that only routed traffic can be categorized using this technique.
 
-   b) You must specify the address on the interface that corresponds to
-      a particular provider in the INTERFACE column by following the
-      interface name with a colon (":") and the address.
+    b) You must specify the address on the interface that corresponds to
+       a particular provider in the INTERFACE column by following the
+       interface name with a colon (":") and the address.
+ 
+    c) Entries in /etc/shorewall/masq must be qualified by the provider
+       name (or number).
 
-   c) Entries in /etc/shorewall/masq must be qualified by the provider
-      name (or number).
+    d) This feature requires Realm Match support in your kernel and
+       iptables. If you use a capabilities file, you need to regenerate
+       the file with Shorewall 4.0.6 or Shorewall-lite 4.0.6.
+ 
+    e) You must add route_rules entries for networks that are accessed
+       through a particular provider.
 
-   d) This feature requires Realm Match support in your kernel and
-      iptables. If you use a capabilities file, you need to regenerate
-      the file with Shorewall 4.0.6 or Shorewall-lite 4.0.6.
+    f) If you have additional IP addresses through either provider,
+       you must add route_rules to direct traffic FROM each of those
+       addresses through the appropriate provider.
 
-   e) You must add route_rules entries for networks that are accessed
-      through a particular provider.
+     Example:
 
-   f) If you have additional IP addresses through either provider,
-      you must add route_rules to direct traffic FROM each of those
-      addresses through the appropriate provider.
+     Providers Blarg (1) and Avvanta (2) are both connected to
+     eth0. The firewall's IP address with Blarg is 206.124.146.176/24
+     (gateway 206.124.146.254) and the IP address from Avvanta is
+     130.252.144.8/24 (gateway 130.252.144.254). We have a second IP
+     address (206.124.146.177) from Blarg.
 
-    Example:
-
-    Providers Blarg (1) and Avvanta (2) are both connected to
-    eth0. The firewall's IP address with Blarg is 206.124.146.176/24
-    (gateway 206.124.146.254) and the IP address from Avvanta is
-    130.252.144.8/24 (gateway 130.252.144.254). We have a second IP
-    address (206.124.146.177) from Blarg.
-
-    /etc/shorewall/providers:
+     /etc/shorewall/providers:
 
        #PROVIDER   NUMBER  MARK    DUPLICATE INTERFACE            GATEWAY
        Blarg       1       1       main      eth0:206.124.146.176 206.124.146.254 ...
        Avvanta     2       2       main      eth0:130.252.144.8   130.252.144.254 ...
 
-    /etc/shorewall/masq:
+     /etc/shorewall/masq:
 
        #INTERFACE          SOURCE          ADDRESS
        eth0(Blarg)         130.252.144.8   206.124.146.176
@@ -138,7 +146,7 @@ New Features in Shorewall 4.1.
        eth0(Blarg)         eth1            206.124.146.176
        eth0(Avvanta)       eth1            130.252.144.8
 
-    /etc/shorewall/route_rules:
+     /etc/shorewall/route_rules:
 
 	#SOURCE		DEST			PROVIDER	PRIORITY
 	-		206.124.146.0/24	Blarg		1000
@@ -193,5 +201,5 @@ New Features in Shorewall 4.1.
     DNS/ACCEPT	     DNS(ACCEPT)
     NFQUEUE/3	     NFQUEUE(3)
     
-    The old syntax is still be accepted but will cease to be documented
+    The old syntax will still be accepted but will cease to be documented
     in some future Shorewall release.

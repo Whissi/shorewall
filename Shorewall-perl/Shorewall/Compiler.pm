@@ -698,8 +698,7 @@ EOF
 #
 #  The Compiler.
 #
-#    If the first argument is non-null, it names the script file to generate.
-#    Otherwise, this is a 'check' command and no script is produced.
+#     Arguments are named -- see %elbat below.
 #
 sub compiler {
 

@@ -39,13 +39,9 @@
   </articleinfo>
 
   <warning>
-    <para>Make sure you are<emphasis role="bold"> running a current,
-    vendor-supported distribution</emphasis>, before attempting to perform
-    this setup, older distributions do not meet the minimum requirements,and
-    you will need to recompile iptables, kernel and other software on your
-    system. If you don't follow this advice,<emphasis role="bold">we will
-    <emphasis role="bold">not</emphasis> be able to help
-    you</emphasis>.</para>
+    <para>This document describes the Multi-ISP facility in Shorewall 4.0 and
+    later. If you are running an earlier release, please see the documentation
+    for that release.</para>
   </warning>
 
   <warning>
@@ -565,94 +561,6 @@
       <filename>/etc/shorewall/tcrules</filename> and you must do that marking
       in the PREROUTING chain; or, you must provide the appropriate rules in
       <filename>/etc/shorewall/route_rules</filename>.</para>
-
-      <warning id="Undo">
-        <para>If you are running a Shorewall version prior to 3.4.0, entries
-        in <filename>/etc/shorewall/providers</filename> permanently alter
-        your firewall/gateway's routing; that is, the effect of these changes
-        is not reversed by <command>shorewall stop</command> or
-        <command>shorewall clear</command>. To restore routing to its original
-        state, you may have to restart your network. This can usually be done
-        by <command>/etc/init.d/network restart</command> or
-        <command>/etc/init.d/networking restart</command>. Check your
-        distribution's networking documentation.</para>
-
-        <para>Here are some additional things to consider:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>You can mitigate the effect of the Shorewall-generated
-            changes to your routing table by specifying a
-            <emphasis>metric</emphasis> for each default route that you
-            configure. Shorewall will generate a load-balancing default route
-            (assuming that <emphasis role="bold">balance</emphasis> has been
-            specified for some of the providers) that does not include a
-            metric and that will therefore not replace any existing route that
-            has a non-zero metric.</para>
-          </listitem>
-
-          <listitem>
-            <para>The <command>-n</command> option to <command>shorewall
-            restart</command> and <command>shorewall restore</command> can be
-            used to prevent the command from changing your routing.</para>
-          </listitem>
-
-          <listitem>
-            <para>The <filename>/etc/shorewall/stopped</filename> file can
-            also be used to restore routing when you stop Shorewall. With your
-            firewall in its normal (single-table) routing configuration, you
-            can capture the contents as follows:</para>
-
-            <programlisting>ip route ls &gt; routes</programlisting>
-
-            <para>Here's what the <filename>routes</filename> file looked like
-            after I did that on my firewall:</para>
-
-            <programlisting>192.168.1.1 dev eth3  scope link
-206.124.146.177 dev eth1  scope link
-192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1
-192.168.2.0/24 via 192.168.2.2 dev tun0
-192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.254
-206.124.146.0/24 dev eth3  proto kernel  scope link  src 206.124.146.176
-169.254.0.0/16 dev eth0  scope link
-127.0.0.0/8 dev lo  scope link
-default via 206.124.146.254 dev eth3</programlisting>
-
-            <para>Now edit the file as shown below:</para>
-
-            <programlisting><command>ip route flush table main
-ip route add</command> 192.168.1.1 dev eth3  scope link
-<command>ip route add </command>206.124.146.177 dev eth1  scope link
-<command>ip route add </command>192.168.2.2 dev tun0  proto kernel  scope link  src 192.168.2.1
-<command>ip route add </command>192.168.2.0/24 via 192.168.2.2 dev tun0
-<command>ip route add </command>192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.254
-<command>ip route add </command>206.124.146.0/24 dev eth3  proto kernel  scope link  src 206.124.146.176
-<command>ip route add </command>169.254.0.0/16 dev eth0  scope link
-<command>ip route add </command>127.0.0.0/8 dev lo  scope link
-<command>ip route add </command>default via 206.124.146.254 dev eth3
-<command>ip route flush cache</command></programlisting>
-
-            <para>Now paste the contents of that file into
-            <filename>/etc/shorewall/stopped</filename>.</para>
-
-            <para>You might also want to consider adding the following to the
-            file:</para>
-
-            <programlisting><command>ip rule ls</command> | while read priority rule; do
-    case ${priority%:} in
-        0|3276[67])
-            ;;
-        *)
-            ip rule del $rule
-            ;;
-    esac
-done</programlisting>
-
-            <para>That code will delete all but the default routing
-            rules.</para>
-          </listitem>
-        </itemizedlist>
-      </warning>
     </section>
 
     <section id="Provider_Doesnt">

@@ -48,7 +48,7 @@ Other changes in Shorewall 4.1.2.
 
 1)  Shorewall 4.1.2 contains enhanced operational logging capabilities
     through a set of related enhancements to Shorewall-common and
-    Shorewall-shell. The enhancements are not supported by
+    Shorewall-perl. The enhancements are not supported by
     Shorewall-shell nor are they supported by Shorewall-lite except
     when the script is compiled using Shorewall-perl.
 
@@ -131,21 +131,12 @@ Other changes in Shorewall 4.1.2.
     there. Packet marking rules for traffic shaping of packets
     originating on the firewall must be coded in the POSTROUTING table.
 
-3)  The behavior of the 'track' provider has been changed subtly when
-    TC_EXPERT=No.
+3)  Previously, Shorewall did not range-check the value of the
+    VERBOSITY option in shorewall.conf. Beginnins with Shorewall 4.1.2:
 
-    Previously, traffic entering from a tracked interface was subjected
-    to PREROUTING marking. This was to allow the PREROUTING rules to
-    clear the packet mark, thus causing the packet to be routed using
-    the 'main' table (table 254). 
-
-    Beginning with Shorewall 4.1.2, when a packet enters on a tracked
-    interface, the packet mark will be cleared unconditionally and the
-    packet will be routed based on the main table.
-
-    This change should be transparent to most users. Users who use
-    PREROUTING marks to route between two tracked interface are advised
-    to switch to TC_EXPORT=Yes.
+    a) A VERBOSITY setting outside the range -1 through 2 is rejected.
+    b) After the -v and -q options are applied, the resulting value is
+       adjusted to fall within the range -1 through 2.
 
 Migration Issues.
 
@@ -155,21 +146,12 @@ Migration Issues.
     there. Packet marking rules for traffic shaping of packets
     originating on the firewall must be coded in the POSTROUTING table.
 
-2)  The behavior of the 'track' provider has been changed subtly when
-    TC_EXPERT=No.
+2)  Previously, Shorewall did not range-check the value of the
+    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1:
 
-    Previously, traffic entering from a tracked interface was subjected
-    to PREROUTING marking. This was to allow the PREROUTING rules to
-    clear the packet mark, thus causing the packet to be routed using
-    the 'main' table (table 254). 
-
-    Beginning with Shorewall 4.1.2, when a packet enters on a tracked
-    interface, the packet mark will be cleared unconditionally and the
-    packet will be routed based on the main table.
-
-    This change should be transparent to most users. Users who use
-    PREROUTING marks to route between two tracked interface are advised
-    to switch to TC_EXPORT=Yes.
+    a) A VERBOSITY setting outside the range -1 through 2 is rejected.
+    b) After the -v and -q options are applied, the resulting value is
+       adjusted to fall within the range -1 through 2.
 
 New Features in Shorewall 4.1.
 

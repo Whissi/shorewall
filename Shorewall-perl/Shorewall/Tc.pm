@@ -552,10 +552,10 @@ sub setup_tc() {
 	my $mark_part = '';
 
 	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = $config{HIGH_ROUTE_MARKS} ? '-m connmark --mark 0/0xFF00' : '-m connmark --mark 0/0xFF';
+	    $mark_part = $config{HIGH_ROUTE_MARKS} ? '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
 
 	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{PREROUTING} , "-i $interface -j MARK --set-mark 0";
+		add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
 	    }
 	}
 

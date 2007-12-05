@@ -701,11 +701,43 @@ EOF
 #    If the first argument is non-null, it names the script file to generate.
 #    Otherwise, this is a 'check' command and no script is produced.
 #
-sub compiler( $$$$$$$ ) {
+sub compiler {
 
-    my ( $objectfile, $directory, $verbosity, $options , $chains , $log , $log_verbosity ) = @_;
+    my ( $objectfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) = 
+	( '',         '',         -1,          '',          0,      '',       '',   -1 );
 
     $export = 0;
+
+    sub edit_boolean( $ ) {
+	 my $val = numeric_value1( shift ); 
+	 defined $val && $val >=  0 && $val < 2;
+     }
+
+    sub edit_verbosity( $ ) {
+	 my $val = numeric_value1( shift );
+	 defined $val && $val >= -1 && $val < 3;
+     }
+
+    my %elbat = ( object        => { store => \$objectfile },
+		  directory     => { store => \$directory  },
+		  verbosity     => { store => \$verbosity ,    edit => \&edit_verbosity } ,
+		  timestamp     => { store => \$timestamp,     edit => \&edit_boolean   } ,
+		  debug         => { store => \$debug,         edit => \&edit_boolean   } ,
+		  export        => { store => \$export ,       edit => \&edit_boolean   } ,
+		  chains        => { store => \$chains },
+		  log           => { store => \$log },
+		  log_verbosity => { store => \$log_verbosity, edit => \&edit_verbosity } ,
+		);
+    
+    while ( defined ( my $name = shift ) ) {
+	fatal_error "Unknown parameter ($name)" unless my $ref = $elbat{$name};
+	fatal_error "Undefined value supplied for parameter $name" unless defined ( my $val = shift ) ;
+	if ( $ref->{edit} ) {
+	    fatal_error "Invalid value ( $val ) supplied for parameter $name" unless $ref->{edit}->($val);
+	}
+
+	${$ref->{store}} = $val;
+    }
 
     reinitialize if $reused++;
 
@@ -714,11 +746,10 @@ sub compiler( $$$$$$$ ) {
 	set_shorewall_dir( $directory );
     }
 
-    set_verbose( $verbosity )     unless $verbosity eq '';
+    set_verbose( $verbosity );
     set_log($log, $log_verbosity) if $log;
-    $export = 1                   if $options & EXPORT;
-    set_timestamp( 1 )            if $options & TIMESTAMP;
-    set_debug( 1 )                if $options & DEBUG;
+    set_timestamp( $timestamp );
+    set_debug( $debug );
     #
     # Get shorewall.conf and capabilities.
     #

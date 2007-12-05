@@ -42,7 +42,7 @@ use lib "$FindBin::Bin";
 use Shorewall::Compiler;
 use Getopt::Long;
 
-sub usage() {
+sub usage( $ ) {
     print STDERR 'usage: compiler.pl [ <option> ... ] <filename> ]
 
   options are:
@@ -55,7 +55,7 @@ sub usage() {
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
 ';
-    exit 1;
+    exit shift @_;
 }
 
 #
@@ -64,15 +64,18 @@ sub usage() {
 my $export        = 0;
 my $shorewall_dir = '';
 my $verbose       = 0;
-my $timestamp     = '';
+my $timestamp     = 0;
 my $debug         = 0;
 my $chains        = '';
 my $log           = '';
 my $log_verbose   = 0;
+my $help          = 0;
 
 Getopt::Long::Configure ('bundling');
 
-my $result = GetOptions('export'          => \$export,
+my $result = GetOptions('h'               => \$help,
+                        '--help'          => \$help,
+                        'export'          => \$export,
 			'e'               => \$export,
 			'directory=s'     => \$shorewall_dir,
 			'd=s'             => \$shorewall_dir,
@@ -88,12 +91,15 @@ my $result = GetOptions('export'          => \$export,
 			'log_verbosity=i' => \$log_verbose,
 		       );
 
-usage unless $result && @ARGV < 2;
+usage(1) unless $result && @ARGV < 2;
+usage(0) if $help;
 
-my $options = 0;
-
-$options |= EXPORT    if $export;
-$options |= TIMESTAMP if $timestamp;
-$options |= DEBUG     if $debug;
-
-compiler $ARGV[0], $shorewall_dir, $verbose, $options, $chains, $log , $log_verbose;
+compiler( object          => defined $ARGV[0] ? $ARGV[0] : '', 
+	  directory       => $shorewall_dir, 
+	  verbosity       => $verbose, 
+	  timestamp       => $timestamp,
+	  debug           => $debug, 
+	  export          => $export,
+	  chains          => $chains,
+	  log             => $log,
+	  log_verbosity   => $log_verbose );

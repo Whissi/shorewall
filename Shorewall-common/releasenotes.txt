@@ -89,11 +89,41 @@ Other changes in Shorewall 4.1.2.
     This change implemented two new options to the Shorewall-perl
     compiler (/usr/share/shorewall-perl/compiler.pl).
 
-    --log=<logfile>
-    --log_verbosity={-1|0-2}
+	     --log=<logfile>
+	     --log_verbosity={-1|0-2}
 
     The --log option is ignored when --log_verbosity is not supplied or
     is supplied with value -1.
+
+    To avoid a proliferation of parameters to
+    Shorewall::Compiler::compile(), that function has been changed to
+    use named parameters. Parameter names are:
+
+	 object          Object file. If omitted or '', the
+			 configuration is syntax checked. 
+	 directory       Directory. If omitted or '', configuration
+			 files are located using
+			 CONFIG_PATH. Otherwise, the directory named by
+			 this parameter is searched first.
+	 verbosity       Verbosity; range -1 to 2
+	 timestamp       0|1 -- timestamp messages.
+	 debug           0|1 -- include stack trace in warning/error
+			 messages. 
+	 export          0|1 -- compile for export.
+	 chains          List of chains to be reloaded by 'refresh'.
+	 log             File to log compiler messages to.
+	 log_verbosity   Log Verbosity; range -1 to 2.
+
+    Those parameters that are supplied must have defined values.
+
+    Example:
+
+    use lib '/usr/share/shorewall-perl/';
+    use Shorewall::Compiler;
+
+    compiler( object        => '/root/firewall', 
+              log           => '/root/compile.log',
+	      log_verbosity => 2 );
 
 2)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
     mark values < 256 to be assigned in the OUTPUT chain. This has been

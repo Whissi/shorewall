@@ -233,7 +233,7 @@ get_config() {
 			[ -n "$STARTUP_LOG" ] || $LOG_VERBOSITY=-1;
 			;;
 		    *)
-		        echo "  ERROR: INvalid LOG_VERBOSITY ($LOG_VERBOSITY)" >&2
+		        echo "  ERROR: Invalid LOG_VERBOSITY ($LOG_VERBOSITY)" >&2
 			exit 2;
 			;;
 		esac
@@ -256,9 +256,26 @@ get_config() {
 	fi
     fi
 
-    [ -n "${VERBOSITY:=2}" ]
+    case $VERBOSITY in
+	-1|0|1|2)
+	    ;;
+	*)
+	    if [ -n "$VERBOSITY" ]; then
+		echo "   ERROR: Invalid VERBOSITY setting ($VERBOSITY)" >&2
+		exit 2
+	    else
+		VERBOSITY=2
+	    fi
+	    ;;
+    esac
 
     [ -n "$USE_VERBOSITY" ] && VERBOSE=$USE_VERBOSITY || VERBOSE=$(($VERBOSE_OFFSET + $VERBOSITY))
+
+    if [ $VERBOSE -lt -1 ]; then
+	VERBOSE=-1
+    elif [ $VERBOSE -gt 2 ]; then
+	VERBOSE=2
+    fi
 
     export VERBOSE
 

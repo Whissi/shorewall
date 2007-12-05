@@ -281,6 +281,9 @@
             role="bold">"detect"</emphasis> is appropriate for use in cases
             where the interface named in the INTERFACE column is dynamically
             configured via DHCP etc.</para>
+
+            <para>The GATEWAY may be omitted (enter '-') for point-to-point
+            links.</para>
           </listitem>
         </varlistentry>
 
@@ -474,7 +477,38 @@
       <title>What an entry in the Providers File Does</title>
 
       <para>Adding another entry in the providers file simply creates an
-      alternate routing table for you. In addition:</para>
+      alternate routing table for you. The table will usually contain two
+      routes:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>A host route to the specified GATEWAY through the specified
+          INTERFACE.</para>
+        </listitem>
+
+        <listitem>
+          <para>A default route through the GATEWAY.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Note that the first route is omitted if "-" is specified as the
+      GATEWAY; in that case, the default route does not specify a gateway
+      (point-to-point link).</para>
+
+      <para>If the DUPLICATE column is non-empty, then routes from the table
+      named in that column are copied into the new table. By default, all
+      routes (except default routes) are copied. The set of routes copied can
+      be restricted using the COPY column which lists the interfaces whose
+      routes you want copied. You will generally want to include all local
+      interfaces in this list. You should exclude the loopback interface (lo)
+      and any interfaces that do not have an IPv4 configuration. You should
+      also omit interfaces like <emphasis role="bold">tun</emphasis>
+      interfaces that are created dynamically. Traffic to networks handled by
+      those intefaces should be routed through the main table using entries in
+      <filename>/etc/shorewall/route_rules</filename> (see Example 2 <link
+      linkend="Examples">below</link>).</para>
+
+      <para>In addition:</para>
 
       <orderedlist>
         <listitem>
@@ -968,9 +1002,13 @@ gateway:~ #</programlisting>
             </listitem>
           </varlistentry>
         </variablelist>
+      </section>
 
-        <para>Example 1: You want all traffic entering the firewall on eth1 to
-        be routed through Comcast.</para>
+      <section id="Examples">
+        <title>Examples</title>
+
+        <para><emphasis role="bold">Example 1:</emphasis> You want all traffic
+        entering the firewall on eth1 to be routed through Comcast.</para>
 
         <programlisting>#SOURCE            DEST      PROVIDER        PRIORITY
 eth1               -         Comcast         1000</programlisting>
@@ -991,12 +1029,12 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         test for <filename class="devicefile">eth1</filename> is inserted
         before the fwmark tests.</para>
 
-        <para>Example 2: You use OpenVPN (routed setup w/tunX) in combination
-        with multiple providers. In this case you have to set up a rule to
-        ensure that the OpenVPN traffic is routed back through the tunX
-        interface(s) rather than through any of the providers. 10.8.0.0/24 is
-        the subnet choosen in your OpenVPN configuration (server 10.8.0.0
-        255.255.255.0).</para>
+        <para><emphasis role="bold">Example 2:</emphasis> You use OpenVPN
+        (routed setup w/tunX) in combination with multiple providers. In this
+        case you have to set up a rule to ensure that the OpenVPN traffic is
+        routed back through the tunX interface(s) rather than through any of
+        the providers. 10.8.0.0/24 is the subnet choosen in your OpenVPN
+        configuration (server 10.8.0.0 255.255.255.0).</para>
 
         <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
 -                       10.8.0.0/24     main            1000</programlisting>

@@ -615,12 +615,12 @@ loc     net      ACCEPT</programlisting>
       <title>/usr/share/shorewall-perl/compiler.pl</title>
 
       <para>While the compiler is normally run indirectly using
-      /sbin/shorewall, it can be run directly as well.<programlisting><command>compiler.pl</command> [ &lt;<emphasis>option</emphasis>&gt; ... ] [ &lt;<emphasis>filename</emphasis>&gt; ]</programlisting></para>
+      /sbin/shorewall, it can be run directly as well.<programlisting><command>compiler.pl</command> [ <emphasis>option</emphasis> ... ] [ <emphasis>filename</emphasis> ]</programlisting></para>
 
-      <para>If a &lt;<emphasis>filename</emphasis>&gt; is given, then the
-      configuration will be compiled output placed in the named file. If
-      &lt;<emphasis>filename</emphasis>&gt; is not given, then the
-      configuration will simply be syntax checked.</para>
+      <para>If a <emphasis>filename</emphasis> is given, then the
+      configuration will be compiled and the output placed in the named file.
+      If <emphasis>filename</emphasis> is not given, then the configuration
+      will simply be syntax checked.</para>
 
       <para>Options are:</para>
 
@@ -631,7 +631,11 @@ loc     net      ACCEPT</programlisting>
         </simplelist>The &lt;<emphasis>verbosity</emphasis>&gt; is a number
       between 0 and 2 and corresponds to the VERBOSITY setting in
       <filename>shorewall.conf</filename>. This setting controls the verbosity
-      of the compiler itself.<simplelist>
+      of the compiler itself.<note>
+          <para>The VERBOSITY setting in the
+          <filename>shorewall.conf</filename> file read by the compiler will
+          determine the default verbosity for the compiled program.</para>
+        </note><simplelist>
           <member><emphasis role="bold">-e</emphasis></member>
 
           <member><emphasis role="bold">--export</emphasis></member>
@@ -662,7 +666,16 @@ loc     net      ACCEPT</programlisting>
 
       <para>Example (compiles the configuration in the current directory
       generating a script named 'firewall' and using VERBOSITY
-      2).<programlisting><emphasis role="bold">/usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall</emphasis></programlisting></para>
+      2).<programlisting><emphasis role="bold">/usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall</emphasis></programlisting><note>
+          <para>The Perl-based compiler does not process
+          <filename>/etc/shorewall/params</filename>. To include definitions
+          in that file, you would need to do something like the
+          following:<programlisting><command>. /usr/share/shorewall/lib.base  # In case /etc/shorewall/params does INCLUDE
+set -a                           # Export all variables set in /etc/shorewall/params
+. /etc/shorewall/params
+set +a
+/usr/share/shorewall-perl/compiler.pl ...</command></programlisting></para>
+        </note></para>
     </section>
 
     <section id="Compiler">
@@ -698,7 +711,13 @@ loc     net      ACCEPT</programlisting>
           <term>$verbose</term>
 
           <listitem>
-            <para>The verbosity level (0-2).</para>
+            <para>The verbosity level that the compiler will run with
+            (0-2).<note>
+                <para>The VERBOSITY setting in the
+                <filename>shorewall.conf</filename> file read by the compiler
+                will determine the default verbosity for the compiled
+                program.</para>
+              </note></para>
           </listitem>
         </varlistentry>
 

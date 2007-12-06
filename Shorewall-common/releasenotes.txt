@@ -116,6 +116,19 @@ Other changes in Shorewall 4.1.2.
 
     Those parameters that are supplied must have defined values.
 
+    Defaults are:
+
+	     object		'' ('check' command)
+	     directory		''
+	     verbosity		1
+	     timestamp		0
+	     debug		0
+	     export		0
+	     chains		''
+	     log		''
+	     log_verbosity	-1
+	     
+
     Example:
 
     use lib '/usr/share/shorewall-perl/';
@@ -132,7 +145,7 @@ Other changes in Shorewall 4.1.2.
     originating on the firewall must be coded in the POSTROUTING table.
 
 3)  Previously, Shorewall did not range-check the value of the
-    VERBOSITY option in shorewall.conf. Beginnins with Shorewall 4.1.2:
+    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1.2:
 
     a) A VERBOSITY setting outside the range -1 through 2 is rejected.
     b) After the -v and -q options are applied, the resulting value is

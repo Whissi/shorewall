@@ -324,20 +324,21 @@ sub validate_tc_device( $$$$ ) {
     fatal_error "Duplicate device ($device)"    if $tcdevices{$device};
     fatal_error "Invalid device name ($device)" if $device =~ /[:+]/;
 
-    $tcdevices{$device} = {};
-    $tcdevices{$device}{in_bandwidth}  = rate_to_kbit( $inband ) . 'kbit';
-    $tcdevices{$device}{out_bandwidth} = rate_to_kbit( $outband ) . 'kbit';
-    $tcdevices{$device}{classify} = 0;
+    my $classify = 0;
 
     if ( $options ne '-' ) {
 	for my $option ( split /,/, $options ) {
 	    if ( $option eq 'classify' ) {
-		$tcdevices{$device}{classify} = 1;
+		$classify = 1;
 	    } else {
 		fatal_error "Unknown device option ($option)";
 	    }
 	}
     }
+
+    $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit' ,
+			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
+			    classify      => $classify };
 
     push @tcdevices, $device;
 

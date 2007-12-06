@@ -151,6 +151,46 @@ Other changes in Shorewall 4.1.2.
     b) After the -v and -q options are applied, the resulting value is
        adjusted to fall within the range -1 through 2.
 
+4)  The tcdevices file has been extended to include an OPTIONS
+    column. Currently only a single option is defined.
+
+    classify   When specified, you must use explicit CLASSIFY tcrules
+	       to classify traffic by class. Shorewall will not create
+               any CLASSIFY rules to classify traffic by mark value.
+
+    The 'classify' option should be specified when you want to do all
+    classification using CLASSIFY tcrules. Because CLASSIFY is not a
+    terminating target, every packet passes through all CLASSIFY
+    rules. 'classify' can prevent packets from having to pass through
+    useless additional rules.
+
+    Example:
+
+    /etc/shorewall/tcdevices
+
+	#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
+	$EXT_IF		1300kbit	384kbit		classify
+
+    /etc/shorewall/tcclasses
+
+	#INTERFACE MARK	RATE	  CEIL	    PRIORITY OPTIONS
+	$EXT_IF	   10	5*full/10 full	    1	     tcp-ack,tos-minimize-delay
+	$EXT_IF	   20	2*full/10 6*full/10 2	     default
+	$EXT_IF	   30	2*full/10 6*full/10 3
+
+    /etc/shorewall/tcrules
+
+	#MARK	SOURCE		DEST	PROTO	PORT(S)	SOURCE
+	#                                               PORT(S)
+	1:110	192.168.0.0/22	$EXT_IF         
+	1:130	206.124.146.177 $EXT_IF	tcp     -       873
+
+    This example shows my own simple traffic shaping configuration. I
+    have three classes; one for traffic from our local network, one for
+    rsync from the master shorewall.net server, and one for all other
+    DMZ traffic. I use CLASSIFY rules to assign traffic to the first
+    and third class and let the rest default to the second class.
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero

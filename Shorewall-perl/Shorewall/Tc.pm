@@ -318,8 +318,8 @@ sub calculate_quantum( $$ ) {
     int( ( $rate * 125 ) / $r2q );
 }
 
-sub validate_tc_device( $$$ ) {
-    my ( $device, $inband, $outband ) = @_;
+sub validate_tc_device( $$$$ ) {
+    my ( $device, $inband, $outband , $options ) = @_;
 
     fatal_error "Duplicate device ($device)"    if $tcdevices{$device};
     fatal_error "Invalid device name ($device)" if $device =~ /[:+]/;
@@ -327,6 +327,17 @@ sub validate_tc_device( $$$ ) {
     $tcdevices{$device} = {};
     $tcdevices{$device}{in_bandwidth}  = rate_to_kbit( $inband ) . 'kbit';
     $tcdevices{$device}{out_bandwidth} = rate_to_kbit( $outband ) . 'kbit';
+    $tcdevices{$device}{classify} = 0;
+
+    if ( $options ne '-' ) {
+	for my $option ( split /,/, $options ) {
+	    if ( $option eq 'classify' ) {
+		$tcdevices{$device}{classify} = 1;
+	    } else {
+		fatal_error "Unknown device option ($option)";
+	    }
+	}
+    }
 
     push @tcdevices, $device;
 
@@ -412,10 +423,10 @@ sub setup_traffic_shaping() {
 
 	while ( read_a_line ) {
 
-	    my ( $device, $inband, $outband ) = split_line 3, 3, 'tcdevices';
+	    my ( $device, $inband, $outband, $options ) = split_line 3, 4, 'tcdevices';
 
 	    fatal_error "Invalid tcdevices entry" if $outband eq '-';
-	    validate_tc_device( $device, $inband, $outband );
+	    validate_tc_device( $device, $inband, $outband , $options );
 	}
     }
 
@@ -510,10 +521,12 @@ sub setup_traffic_shaping() {
 	#
 	# add filters
 	#
-	if ( "$capabilities{CLASSIFY_TARGET}" && known_interface $device ) {
-	    push @deferred_rules, match_dest_dev( $device ) . "-m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
-	} else {
-	    emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid";
+	unless ( $devref->{classify} ) {
+	    if ( "$capabilities{CLASSIFY_TARGET}" && known_interface $device ) {
+		push @deferred_rules, match_dest_dev( $device ) . "-m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid";
+	    } else {
+		emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid";
+	    }
 	}
 	#
 	#options

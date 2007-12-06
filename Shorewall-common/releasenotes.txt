@@ -191,6 +191,37 @@ Other changes in Shorewall 4.1.2.
     DMZ traffic. I use CLASSIFY rules to assign traffic to the first
     and third class and let the rest default to the second class.
 
+5)  COMMENT lines are now supported in macro bodies by Shorewall-perl
+    and are ignored by the Shorewall-shell compiler. The standard
+    macros (with the exception of macro.Drop and macro.Reject) have
+    been modified to include a COMMENT line describing the macro.
+    
+    COMMENT lines in macros work slightly differently from COMMENT
+    lines in other files. COMMENT lines in macros are ignored if
+    COMMENT support is not available or if there was a COMMENT in use
+    when the top-level macro was invoked. This allows the
+    following:
+
+	/usr/share/shorewall/macro.SSH:
+
+	    #ACTION SOURCE  PROTO   DEST    SOURCE  RATE    USER/
+	    #                       PORT(S) PORT(S) LIMIT   GROUP
+	    COMMENT SSH
+	    PARAM   -       -       tcp     22
+
+	/etc/shorewall/rules:
+
+	    COMMENT Allow SSH from home
+	    SSH/ALLOW     net:$MYIP	$FW
+	    COMMENT
+   
+	The comment line in macro.SSH will not override the 
+	COMMENT line in the rules file and the generated rule will show
+
+		/* Allow SSH from home */
+
+	when displayed through the Shorewall show and dump commands.
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero

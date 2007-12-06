@@ -69,6 +69,7 @@ our %EXPORT_TAGS = (
 				       add_command
 				       add_commands
 				       process_comment
+				       no_comment
 				       clear_comment
 				       incr_cmd_level
 				       decr_cmd_level
@@ -346,6 +347,13 @@ sub process_comment() {
     } else {
 	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
     }
+}
+
+#
+# Returns True if there is a current COMMENT or if COMMENTS are not available.
+#
+sub no_comment() {
+    $comment ? 1 : $capabilities{COMMENTS} ? 0 : 1;
 }
 
 #

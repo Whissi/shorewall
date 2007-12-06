@@ -2503,6 +2503,9 @@ process_macro() # $1 = target
     progress_message "..Expanding Macro $(find_file macro.${itarget%%:*})..."
 
     while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+
+	[ mtarget eq 'COMMENT' ] && continue
+
 	mtarget=$(merge_levels $itarget $mtarget)
 
 	case $mtarget in

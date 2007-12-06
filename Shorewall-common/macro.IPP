@@ -8,5 +8,8 @@
 ###############################################################################
 #ACTION	SOURCE	PROTO	DEST	SOURCE	RATE	USER/
 #			PORT(S)	PORT(S)	LIMIT	GROUP
+
+COMMENT IPP
+
 PARAM	-	-	tcp	631
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

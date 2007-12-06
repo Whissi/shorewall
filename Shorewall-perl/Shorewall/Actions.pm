@@ -405,7 +405,9 @@ sub process_macro1 ( $$ ) {
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line 1, 8, 'macro file';
+	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line1 1, 8, 'macro file';
+
+	next if $mtarget eq 'COMMENT';
 
 	$mtarget =~ s/:.*$//;
 
@@ -576,13 +578,20 @@ sub process_action( $$$$$$$$$$ ) {
 sub process_macro3( $$$$$$$$$$$ ) {
     my ( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
 
+    my $nocomment = no_comment;
+
     progress_message "..Expanding Macro $fn...";
 
     push_open $fn;
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file';
+
+	if ( $mtarget eq 'COMMENT' ) {
+	    process_comment unless $nocomment;
+	    next;
+	}
 
 	if ( $mtarget =~ /^PARAM:?/ ) {
 	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
@@ -628,7 +637,9 @@ sub process_macro3( $$$$$$$$$$$ ) {
 
     pop_open;
 
-    progress_message '..End Macro'
+    progress_message '..End Macro';
+
+    clear_comment unless $nocomment;
 }
 
 #

@@ -824,13 +824,20 @@ sub process_rule1 ( $$$$$$$$$$$ );
 sub process_macro ( $$$$$$$$$$$$$ ) {
     my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $wildcard ) = @_;
 
+    my $nocomment = no_comment;
+
     progress_message "..Expanding Macro $macrofile...";
 
     push_open $macrofile;
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line 1, 8, 'macro file';
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file';
+
+	if ( $mtarget eq 'COMMENT' ) {
+	    process_comment unless $nocomment;
+	    next;
+	}
 
 	$mtarget = merge_levels $target, $mtarget;
 
@@ -884,9 +891,11 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
     pop_open;
 
-    progress_message "..End Macro $macrofile"
-}
+    progress_message "..End Macro $macrofile";
 
+    clear_comment unless $nocomment;
+
+}
 #
 # Once a rule has been expanded via wildcards (source and/or dest zone == 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.

@@ -3,11 +3,14 @@
 #
 # /usr/share/shorewall/macro.SixXS
 #
-#	This macro handles SixXS -- An IPv6 Deployment and Tunnel Broken
+#	This macro handles SixXS -- An IPv6 Deployment and Tunnel Broker
 #
 ###############################################################################
 #ACTION		SOURCE		PROTO	DEST	SOURCE	RATE	USER/
 #					PORT(S)	PORT(S)	LIMIT	GROUP
+
+COMMENT SixXS
+
 PARAM		-		-	tcp	3874      # Used for retrieving the tunnel information (eg by AICCU)
 PARAM		-		-	udp	3740      # Used for signaling where the current IPv4 endpoint
 						          # of the tunnel is and that it is alive

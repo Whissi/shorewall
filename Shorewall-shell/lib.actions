@@ -642,6 +642,9 @@ process_actions1() {
 					    progress_message "   ..Expanding Macro $fn..."
 
 					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+
+						[ $mtarget eq COMMENT ] && continue
+
 						temp="${mtarget%%:*}"
 						case "$temp" in
 						    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|PARAM)
@@ -790,7 +793,10 @@ process_action3() {
 	    esac
 
 	    progress_message "..Expanding Macro $(find_file macro.$xtarget1)..."
+
 	    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+
+		[ $mtarget eq COMMENT ] && continue
 
 		mtarget=$(merge_levels $xaction2 $mtarget)
 

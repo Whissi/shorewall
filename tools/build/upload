@@ -110,6 +110,10 @@ case $1 in
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	;;
+    4.1.*-*)
+	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-${1%-*}"
+	SHOREWALL=shorewall-common
+	;;
     4.1.*)
 	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall-common

@@ -230,7 +230,6 @@ get_config() {
 		    -1)
 			;;
 		    0|1|2)
-			[ -n "$STARTUP_LOG" ] || $LOG_VERBOSITY=-1;
 			;;
 		    *)
 		        echo "  ERROR: Invalid LOG_VERBOSITY ($LOG_VERBOSITY)" >&2
@@ -238,7 +237,7 @@ get_config() {
 			;;
 		esac
 	    else
-		$LOG_VERBOSITY=2;
+		LOG_VERBOSITY=2;
 	    fi
 	else
 	    LOG_VERBOSITY=-1;

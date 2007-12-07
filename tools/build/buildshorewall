@@ -933,18 +933,13 @@ if [ -n "$OLDVERSION" ]; then
 
      > patch-$VERSION
 
+     [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
+     [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
+     [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
+     [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
+     
      if [ -n "$PATCHRELEASE" ]; then
-	 [ -n "$BUILDCOMMON" ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
-	 [ -n "$BUILDLITE" ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
-	 [ -n "$BUILDPERL" ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
-	 [ -n "$BUILDSHELL" ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
-
 	 eval perl -i -p -e "'if ( /\+\+\+/ ) { s/shorewall-common-$VERSION/Shorewall-common/;s/shorewall-lite-$VERSION/Shorewall-lite/;s/shorewall-perl-$VERSION/Shorewall-perl/;s/shorewall-shell-$VERSION/Shorewall-shell/ }'" patch-$VERSION
-     else
-	 [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
-	 [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
-	 [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
-	 [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
      fi 
 fi
 

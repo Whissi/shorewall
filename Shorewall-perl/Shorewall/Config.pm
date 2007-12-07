@@ -1792,8 +1792,23 @@ sub get_configuration( $ ) {
     check_trivalue ( 'ROUTE_FILTER',  '' );
     check_trivalue ( 'LOG_MARTIANS',  '' );
 
-    default 'LOG_VERBOSITY' , -1;
     default 'STARTUP_LOG'   , '';
+
+    if ( $config{STARTUP_LOG} ne '' ) {
+	if ( defined $config{LOG_VERBOSITY} ) {
+	    if ( $config{LOG_VERBOSITY} eq '' ) {
+		$config{LOG_VERBOSITY} = 2;
+	    } else {
+		my $val = numeric_value1( $config{LOG_VERBOSITY} );
+		fatal_error "Invalid LOG_VERBOSITY ($config{LOG_VERBOSITY} )" unless defined $val && $val >= -1 && $val <= 2;
+		$config{STARTUP_LOG} = '' if $config{LOG_VERBOSITY} < 0;
+	    }
+	} else {
+	    $config{LOG_VERBOSITY} = 2;
+	}
+    } else {
+	$config{LOG_VERBOSITY} = -1;
+    }
 
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';

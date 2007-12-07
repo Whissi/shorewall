@@ -192,7 +192,11 @@ sub add_a_provider( $$$$$$$$ ) {
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
-    $number = numeric_value $number;
+    my $num = numeric_value $number;
+
+    fatal_error "Invalid Provider number ($number)" unless defined $num;
+
+    $number = $num;
 
     for my $providerref ( values %providers  ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
@@ -237,6 +241,8 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $mark ne '-' ) {
 
 	$val = numeric_value $mark;
+
+	fatal_error "Invalid Mark Value ($mark)" unless defined $val;
 
 	verify_mark $mark;
 

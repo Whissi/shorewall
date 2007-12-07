@@ -1113,7 +1113,7 @@ sub verify_mark( $ ) {
     my $value = numeric_value( $mark );
 
     fatal_error "Invalid Mark or Mask value ($mark)"
-	unless $value <= $limit;
+	unless defined( $value ) && $value <= $limit;
 
     fatal_error "Invalid High Mark or Mask value ($mark)"
 	if ( $value > 0xFF && $value & 0xFF );

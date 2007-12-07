@@ -254,9 +254,9 @@ sub validate_policy()
 	if ( defined $queue ) {
 	    fatal_error "Invalid policy ($policy/$queue)" unless $policy eq 'NFQUEUE';
 	    require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
-	    $queue = numeric_value( $queue );
-	    fatal_error "Invalid NFQUEUE queue number ($queue)" if $queue > 65535;
-	    $policy = "NFQUEUE --queue-num $queue";
+	    my $queuenum = numeric_value( $queue );
+	    fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;
+	    $policy = "NFQUEUE --queue-num $queuenum";
 	} elsif ( $policy eq 'NONE' ) {
 	    fatal_error "NONE policy not allowed with \"all\""
 		if $clientwild || $serverwild;

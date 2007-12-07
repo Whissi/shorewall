@@ -110,8 +110,9 @@ sub process_tos() {
 	    
 	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) {
 		$tos = $tosval;
-	    } elsif ( numeric_value( $tos ) > 0x1e ) {
-		fatal_error "Invalid TOS value ($tos)";
+	    } else {
+		my $val = numeric_value( $tos );
+		fatal_error "Invalid TOS value ($tos)" unless defined( $val ) && $val < 0x1f;
 	    }
 
 	    my $chainref;
@@ -954,9 +955,9 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 
     } elsif ( $actiontype & NFQ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' ); 
-	$param = $param eq '' ? 0 : numeric_value( $param );
-	fatal_error "Invalid value ($param) for NFQUEUE queue number" if $param > 65535;
-	$action = "NFQUEUE --queue-num $param";
+	my $paramval = $param eq '' ? 0 : numeric_value( $param );
+	fatal_error "Invalid value ($param) for NFQUEUE queue number" unless defined($paramval) && $paramval <= 65535;
+	$action = "NFQUEUE --queue-num $paramval";
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }

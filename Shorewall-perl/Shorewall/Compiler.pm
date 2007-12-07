@@ -708,13 +708,13 @@ sub compiler {
     $export = 0;
 
     sub edit_boolean( $ ) {
-	 my $val = numeric_value1( shift ); 
-	 defined $val && $val >=  0 && $val < 2;
+	 my $val = numeric_value( shift ); 
+	 defined($val) && ($val >= 0) && ($val < 2);
      }
 
     sub edit_verbosity( $ ) {
-	 my $val = numeric_value1( shift );
-	 defined $val && $val >= -1 && $val < 3;
+	 my $val = numeric_value( shift );
+	 defined($val) && ($val >= -1) && ($val < 3);
      }
 
     my %elbat = ( object        => { store => \$objectfile },

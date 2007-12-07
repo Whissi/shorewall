@@ -55,7 +55,6 @@ our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shor
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
 				       finalize_object
 		                       numeric_value
-		                       numeric_value1
 				       emit
 				       emit_unindented
 				       save_progress_message
@@ -507,12 +506,6 @@ sub fatal_error1	{
 #
 sub numeric_value ( $ ) {
     my $mark = lc $_[0];
-    fatal_error "Invalid Numeric Value ($mark)" unless $mark =~ /^-?(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
-    $mark =~ /^0/ ? oct $mark : $mark;
-}
-
-sub numeric_value1 ( $ ) {
-    my $mark = lc $_[0];
     return undef unless $mark =~ /^-?(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
     $mark =~ /^0/ ? oct $mark : $mark;
 }
@@ -586,18 +579,14 @@ sub set_log ( $$ ) {
 
     if ( defined $v ) {
 	my $value = numeric_value( $v );
-
-	if ( ( $value < -1 ) || ( $value > 2 ) ) {
-	    fatal_error "Invalid Log Verbosity ( $v )";
-	}
-
+	fatal_error "Invalid Log Verbosity ( $v )" unless defined($value) && ( $value >= -1 ) && ( $value <= 2);
 	$log_verbose = $value;
     }
 
     if ( $l && $log_verbose >= 0 ) {	
 	unless ( open $log , '>>' , $l ) {
 	    $log = undef; 
-	    fatal_error "Unable to open $l for writing: $!";
+	    fatal_error "Unable to open STARTUP_LOG ($l) for writing: $!";
 	}
     } else {
 	$log_verbose = -1;
@@ -1799,8 +1788,8 @@ sub get_configuration( $ ) {
 	    if ( $config{LOG_VERBOSITY} eq '' ) {
 		$config{LOG_VERBOSITY} = 2;
 	    } else {
-		my $val = numeric_value1( $config{LOG_VERBOSITY} );
-		fatal_error "Invalid LOG_VERBOSITY ($config{LOG_VERBOSITY} )" unless defined $val && $val >= -1 && $val <= 2;
+		my $val = numeric_value( $config{LOG_VERBOSITY} );
+		fatal_error "Invalid LOG_VERBOSITY ($config{LOG_VERBOSITY} )" unless defined( $val ) && ( $val >= -1 ) && ( $val <= 2 );
 		$config{STARTUP_LOG} = '' if $config{LOG_VERBOSITY} < 0;
 	    }
 	} else {

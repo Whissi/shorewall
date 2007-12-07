@@ -105,7 +105,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.1.2;
+our $VERSION = 4.1.3;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -253,14 +253,15 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION =>  '4.1.2',
+		    VERSION =>  '4.1.3',
 		    CAPVERSION => 40100 ,
 		  );
     #
     # From shorewall.conf file
     #
     %config =
-	      ( STARTUP_ENABLED => undef,
+	      ( COMPILER_TEST => undef,
+	        STARTUP_ENABLED => undef,
 		VERBOSITY => undef,
 		#
 		# Logging
@@ -1799,6 +1800,7 @@ sub get_configuration( $ ) {
 	$config{LOG_VERBOSITY} = -1;
     }
 
+    default_yes_no 'COMPILER_TEST'              , '';
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';

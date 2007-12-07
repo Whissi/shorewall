@@ -1,4 +1,4 @@
-Shorewall 4.1 Patch Release 2.
+Shorewall 4.1 Patch Release 3.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 1  H I G H L I G H T S
@@ -10,217 +10,21 @@ Shorewall 4.1 Patch Release 2.
 
 3) Enhanced operational logging
 
-Problems corrected in Shorewall 4.1.2.
+Problems corrected in Shorewall 4.1.3.
 
-1)  If any of the following files was missing, a harmless Perl warning
-    was issued:
+1)  If NFLOG or ULOG was specified with parameters, the resulting
+    iptables-restore input contained elements that were incorrectly
+    up-cased.
 
-       accounting
-       maclist
-       masq
-       nat
-       netmap
-       rfc1918
-       routestopped
-       tunnels
+2)  If STARTUP_LOG is specified without LOG_VERBOSITY, /sbin/shorewall
+    produces an error.
 
-    This problem was experienced mostly by Debian users and users of
-    Debian derivatives such as Ubuntu.
+3)  If LOG_VERBOSITY is specified without STARTUP_LOG, run-time error
+    messages are produced.
 
-2)  The iptables utility doesn't retry operations that fail due to
-    resource shortage. Beginning with this release, Shorewall reruns
-    iptables when such a failure occurs.
+Other changes in Shorewall 4.1.3.
 
-3)  Previously, Shorewall-perl did not accept log levels in upper case
-    (e.g., INFO). Log levels are treated in a case-insensitive manner
-    by Shorewall-perl.
-
-4)  The column headers in macro files were not aligned. This has been
-    corrected, along with some inaccuracies in the macro.template file.
-
-5)  The shorewall.conf files in the Samples did not contain some
-    recently-defined options. They are now up to date.
-
-6)  The names of the Jabber macros were shuffled. They are now named
-    correctly.
-
-Other changes in Shorewall 4.1.2.
-
-1)  Shorewall 4.1.2 contains enhanced operational logging capabilities
-    through a set of related enhancements to Shorewall-common and
-    Shorewall-perl. The enhancements are not supported by
-    Shorewall-shell nor are they supported by Shorewall-lite except
-    when the script is compiled using Shorewall-perl.
-
-    a)  The STARTUP_LOG option in /etc/shorewall/shorewall.conf gives
-        the name of the Shorewall operational log. The log will be
-        created if it does not exist.
-
-    b)  The LOG_VERBOSITY option in /etc/shorewall/shorewall.conf gives
-        the verbosity at which logging will occur. It uses the same
-        value range as VERBOSITY:
-
-	-1    Do not log
-	0     Almost quiet
-	1     Only major steps
-	2     Verbose
-
-    c)  An absolute VERBOSITY may be specified on the command line
-        using the -v option followed by -1,0,1 or 2.
-
-	Example:
-
-		shorewall -v2 check
-
-    d)  The /etc/init.d/shorewall script supplied with the
-        shorewall.net packages sets '-v0' as the default. This may be
-        overridden with the OPTIONS setting in /etc/defaults/shorewall or
-        /etc/sysconfig/shorewall.
-
-    Logging occurs on both Shorewall-perl and the generated script when
-    the following commands are issued:
-
-	start
-	restart
-	refresh
-
-    Messages in the log are always timestamped.
-
-    This change implemented two new options to the Shorewall-perl
-    compiler (/usr/share/shorewall-perl/compiler.pl).
-
-	     --log=<logfile>
-	     --log_verbosity={-1|0-2}
-
-    The --log option is ignored when --log_verbosity is not supplied or
-    is supplied with value -1.
-
-    To avoid a proliferation of parameters to
-    Shorewall::Compiler::compile(), that function has been changed to
-    use named parameters. Parameter names are:
-
-	 object          Object file. If omitted or '', the
-			 configuration is syntax checked. 
-	 directory       Directory. If omitted or '', configuration
-			 files are located using
-			 CONFIG_PATH. Otherwise, the directory named by
-			 this parameter is searched first.
-	 verbosity       Verbosity; range -1 to 2
-	 timestamp       0|1 -- timestamp messages.
-	 debug           0|1 -- include stack trace in warning/error
-			 messages. 
-	 export          0|1 -- compile for export.
-	 chains          List of chains to be reloaded by 'refresh'.
-	 log             File to log compiler messages to.
-	 log_verbosity   Log Verbosity; range -1 to 2.
-
-    Those parameters that are supplied must have defined values.
-
-    Defaults are:
-
-	     object		'' ('check' command)
-	     directory		''
-	     verbosity		1
-	     timestamp		0
-	     debug		0
-	     export		0
-	     chains		''
-	     log		''
-	     log_verbosity	-1
-	     
-
-    Example:
-
-    use lib '/usr/share/shorewall-perl/';
-    use Shorewall::Compiler;
-
-    compiler( object        => '/root/firewall', 
-              log           => '/root/compile.log',
-	      log_verbosity => 2 );
-
-2)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
-    mark values < 256 to be assigned in the OUTPUT chain. This has been
-    changed so that only high mark values may be assigned
-    there. Packet marking rules for traffic shaping of packets
-    originating on the firewall must be coded in the POSTROUTING table.
-
-3)  Previously, Shorewall did not range-check the value of the
-    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1.2:
-
-    a) A VERBOSITY setting outside the range -1 through 2 is rejected.
-    b) After the -v and -q options are applied, the resulting value is
-       adjusted to fall within the range -1 through 2.
-
-4)  The tcdevices file has been extended to include an OPTIONS
-    column. Currently only a single option is defined.
-
-    classify   When specified, you must use explicit CLASSIFY tcrules
-	       to classify traffic by class. Shorewall will not create
-               any CLASSIFY rules to classify traffic by mark value.
-
-    The 'classify' option should be specified when you want to do all
-    classification using CLASSIFY tcrules. Because CLASSIFY is not a
-    terminating target, every packet passes through all CLASSIFY
-    rules. 'classify' can prevent packets from having to pass through
-    useless additional rules.
-
-    Example:
-
-    /etc/shorewall/tcdevices
-
-	#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
-	$EXT_IF		1300kbit	384kbit		classify
-
-    /etc/shorewall/tcclasses
-
-	#INTERFACE MARK	RATE	  CEIL	    PRIORITY OPTIONS
-	$EXT_IF	   10	5*full/10 full	    1	     tcp-ack,tos-minimize-delay
-	$EXT_IF	   20	2*full/10 6*full/10 2	     default
-	$EXT_IF	   30	2*full/10 6*full/10 3
-
-    /etc/shorewall/tcrules
-
-	#MARK	SOURCE		DEST	PROTO	PORT(S)	SOURCE
-	#                                               PORT(S)
-	1:110	192.168.0.0/22	$EXT_IF         
-	1:130	206.124.146.177 $EXT_IF	tcp     -       873
-
-    This example shows my own simple traffic shaping configuration. I
-    have three classes; one for traffic from our local network, one for
-    rsync from the master shorewall.net server, and one for all other
-    DMZ traffic. I use CLASSIFY rules to assign traffic to the first
-    and third class and let the rest default to the second class.
-
-5)  COMMENT lines are now supported in macro bodies by Shorewall-perl
-    and are ignored by the Shorewall-shell compiler. The standard
-    macros (with the exception of macro.Drop and macro.Reject) have
-    been modified to include a COMMENT line describing the macro.
-    
-    COMMENT lines in macros work slightly differently from COMMENT
-    lines in other files. COMMENT lines in macros are ignored if
-    COMMENT support is not available or if there was a COMMENT in use
-    when the top-level macro was invoked. This allows the
-    following:
-
-	/usr/share/shorewall/macro.SSH:
-
-	    #ACTION SOURCE  PROTO   DEST    SOURCE  RATE    USER/
-	    #                       PORT(S) PORT(S) LIMIT   GROUP
-	    COMMENT SSH
-	    PARAM   -       -       tcp     22
-
-	/etc/shorewall/rules:
-
-	    COMMENT Allow SSH from home
-	    SSH/ALLOW     net:$MYIP	$FW
-	    COMMENT
-   
-	The comment line in macro.SSH will not override the 
-	COMMENT line in the rules file and the generated rule will show
-
-		/* Allow SSH from home */
-
-	when displayed through the Shorewall show and dump commands.
+None.
 
 Migration Issues.
 
@@ -334,7 +138,7 @@ New Features in Shorewall 4.1.
 
 	ACCEPT:NFLOG(1,0,1) vpn fw tcp ssh,time,631,8080
 
-5)  Shorewall-perl 4.1.0 implements an alternative syntax for macro
+5)  Shorewall-perl 4.1 implements an alternative syntax for macro
     parameters and for the NFQUEUE queue number. Rather than following
     the macro name (or NFQUEUE) with a slash ("/") and the parameter,
     the parameter may be enclosed in parentheses.
@@ -346,3 +150,179 @@ New Features in Shorewall 4.1.
     
     The old syntax will still be accepted but will cease to be documented
     in some future Shorewall release.
+
+6)  Shorewall 4.1 contains enhanced operational logging capabilities
+    through a set of related enhancements to Shorewall-common and
+    Shorewall-perl. The enhancements are not supported by
+    Shorewall-shell nor are they supported by Shorewall-lite except
+    when the script is compiled using Shorewall-perl.
+
+    a)  The STARTUP_LOG option in /etc/shorewall/shorewall.conf gives
+        the name of the Shorewall operational log. The log will be
+        created if it does not exist.
+
+    b)  The LOG_VERBOSITY option in /etc/shorewall/shorewall.conf gives
+        the verbosity at which logging will occur. It uses the same
+        value range as VERBOSITY:
+
+	-1    Do not log
+	0     Almost quiet
+	1     Only major steps
+	2     Verbose
+
+    c)  An absolute VERBOSITY may be specified on the command line
+        using the -v option followed by -1,0,1 or 2.
+
+	Example:
+
+		shorewall -v2 check
+
+    d)  The /etc/init.d/shorewall script supplied with the
+        shorewall.net packages sets '-v0' as the default. This may be
+        overridden with the OPTIONS setting in /etc/defaults/shorewall or
+        /etc/sysconfig/shorewall.
+
+    Logging occurs on both Shorewall-perl and the generated script when
+    the following commands are issued:
+
+	start
+	restart
+	refresh
+
+    Messages in the log are always timestamped.
+
+    This change implemented two new options to the Shorewall-perl
+    compiler (/usr/share/shorewall-perl/compiler.pl).
+
+	     --log=<logfile>
+	     --log_verbosity={-1|0-2}
+
+    The --log option is ignored when --log_verbosity is not supplied or
+    is supplied with value -1.
+
+    To avoid a proliferation of parameters to
+    Shorewall::Compiler::compile(), that function has been changed to
+    use named parameters. Parameter names are:
+
+	 object          Object file. If omitted or '', the
+			 configuration is syntax checked. 
+	 directory       Directory. If omitted or '', configuration
+			 files are located using
+			 CONFIG_PATH. Otherwise, the directory named by
+			 this parameter is searched first.
+	 verbosity       Verbosity; range -1 to 2
+	 timestamp       0|1 -- timestamp messages.
+	 debug           0|1 -- include stack trace in warning/error
+			 messages. 
+	 export          0|1 -- compile for export.
+	 chains          List of chains to be reloaded by 'refresh'.
+	 log             File to log compiler messages to.
+	 log_verbosity   Log Verbosity; range -1 to 2.
+
+    Those parameters that are supplied must have defined values.
+
+    Defaults are:
+
+	     object		'' ('check' command)
+	     directory		''
+	     verbosity		1
+	     timestamp		0
+	     debug		0
+	     export		0
+	     chains		''
+	     log		''
+	     log_verbosity	-1
+	     
+
+    Example:
+
+    use lib '/usr/share/shorewall-perl/';
+    use Shorewall::Compiler;
+
+    compiler( object        => '/root/firewall', 
+              log           => '/root/compile.log',
+	      log_verbosity => 2 );
+
+7)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
+    mark values < 256 to be assigned in the OUTPUT chain. This has been
+    changed so that only high mark values may be assigned
+    there. Packet marking rules for traffic shaping of packets
+    originating on the firewall must be coded in the POSTROUTING table.
+
+8)  Previously, Shorewall did not range-check the value of the
+    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1:
+
+    a) A VERBOSITY setting outside the range -1 through 2 is rejected.
+    b) After the -v and -q options are applied, the resulting value is
+       adjusted to fall within the range -1 through 2.
+
+9)  The tcdevices file has been extended to include an OPTIONS
+    column. Currently only a single option is defined.
+
+    classify   When specified, you must use explicit CLASSIFY tcrules
+	       to classify traffic by class. Shorewall will not create
+               any CLASSIFY rules to classify traffic by mark value.
+
+    The 'classify' option should be specified when you want to do all
+    classification using CLASSIFY tcrules. Because CLASSIFY is not a
+    terminating target, every packet passes through all CLASSIFY
+    rules. 'classify' can prevent packets from having to pass through
+    useless additional rules.
+
+    Example:
+
+    /etc/shorewall/tcdevices
+
+	#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
+	$EXT_IF		1300kbit	384kbit		classify
+
+    /etc/shorewall/tcclasses
+
+	#INTERFACE MARK	RATE	  CEIL	    PRIORITY OPTIONS
+	$EXT_IF	   10	5*full/10 full	    1	     tcp-ack,tos-minimize-delay
+	$EXT_IF	   20	2*full/10 6*full/10 2	     default
+	$EXT_IF	   30	2*full/10 6*full/10 3
+
+    /etc/shorewall/tcrules
+
+	#MARK	SOURCE		DEST	PROTO	PORT(S)	SOURCE
+	#                                               PORT(S)
+	1:110	192.168.0.0/22	$EXT_IF         
+	1:130	206.124.146.177 $EXT_IF	tcp     -       873
+
+    This example shows my own simple traffic shaping configuration. I
+    have three classes; one for traffic from our local network, one for
+    rsync from the master shorewall.net server, and one for all other
+    DMZ traffic. I use CLASSIFY rules to assign traffic to the first
+    and third class and let the rest default to the second class.
+
+10) COMMENT lines are now supported in macro bodies by Shorewall-perl
+    and are ignored by the Shorewall-shell compiler. The standard
+    macros (with the exception of macro.Drop and macro.Reject) have
+    been modified to include a COMMENT line describing the macro.
+    
+    COMMENT lines in macros work slightly differently from COMMENT
+    lines in other files. COMMENT lines in macros are ignored if
+    COMMENT support is not available or if there was a COMMENT in use
+    when the top-level macro was invoked. This allows the
+    following:
+
+	/usr/share/shorewall/macro.SSH:
+
+	    #ACTION SOURCE  PROTO   DEST    SOURCE  RATE    USER/
+	    #                       PORT(S) PORT(S) LIMIT   GROUP
+	    COMMENT SSH
+	    PARAM   -       -       tcp     22
+
+	/etc/shorewall/rules:
+
+	    COMMENT Allow SSH from home
+	    SSH/ALLOW     net:$MYIP	$FW
+	    COMMENT
+   
+	The comment line in macro.SSH will not override the 
+	COMMENT line in the rules file and the generated rule will show
+
+		/* Allow SSH from home */
+
+	when displayed through the Shorewall show and dump commands.

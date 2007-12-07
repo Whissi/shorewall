@@ -701,7 +701,7 @@ sub validate_interfaces_file( $ )
 		} elsif ( $type == NUMERIC_IF_OPTION ) {
 		    fatal_error "The $option option requires a value" unless defined $value;
 		    my $numval = numeric_value $value;
-		    fatal_error "Invalid value for option $option ($value)" unless defined $numval;
+		    fatal_error "Invalid value ($value) for option $option" unless defined $numval;
 		    $options{$option} = $numval;
 		} else {
 		    warning_message "Support for the $option interface option has been removed from Shorewall-perl";

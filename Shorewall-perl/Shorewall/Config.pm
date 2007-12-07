@@ -1309,7 +1309,8 @@ sub level_error( $ ) {
 }
 
 sub validate_level( $ ) {
-    my $level = uc $_[0];
+    my $rawlevel = $_[0];
+    my $level    = uc $rawlevel;
 
     if ( defined $level && $level ne '' ) {
 	$level =~ s/!$//;
@@ -1338,10 +1339,10 @@ sub validate_level( $ ) {
 	}
 
 	if ( $level =~ /^NFLOG --/ or $level =~ /^ULOG --/ ) {
-	    return $level;
+	    return $rawlevel;
 	}
 
-	level_error( $level );
+	level_error( $rawlevel );
     }
 
     '';

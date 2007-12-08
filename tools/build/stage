@@ -21,6 +21,7 @@ UPLOADLITE=
 UPLOADXML=
 UPLOADHTML=
 PARTIAL=Yes
+BASE=
 
 done=
 
@@ -97,6 +98,7 @@ case $1 in
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
+	BASE=Yes
 	;;
     4.0.*-*)
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-${1}"
@@ -109,6 +111,7 @@ case $1 in
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
+	BASE=Yes
 	;;
     4.1.*)
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
@@ -117,6 +120,7 @@ case $1 in
 	literpm=shorewall-lite-${1}-1.noarch.rpm
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
+	BASE=Yes
 	;;
     3.*[13579].*)
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
@@ -173,13 +177,13 @@ fi
 
 if [ "$HOSTNAME" = lists ]; then
 	mkdir -p $DEST
+	[ -n "$BASE" ] && mkdir $DEST/base
 	COMMAND=cp
 else
 	ssh $USER mkdir -p $DEST
+	[ -n "$BASE" ] && ssh $USER mkdir -p $DEST
 	DEST=${USER}:${DEST}
 fi
-
-files="errata known_problems.txt releasenotes.txt patch-$1 ${1}.*"
 
 [ -n "$UPLOADPERL" ]   && files="$files shorewall-perl-${1}.* $perlrpm"
 [ -n "$UPLOADCOMMON" ] && files="$files shorewall-common-${1}.* $rpm"
@@ -187,5 +191,9 @@ files="errata known_problems.txt releasenotes.txt patch-$1 ${1}.*"
 [ -n "$UPLOADLITE" ]   && files="$files shorewall-lite-${1}.* $literpm"
 [ -n "$UPLOADXML" ]    && files="$files shorewall-docs-xml-${1}.* $literpm"
 [ -n "$UPLOADHTML" ]   && files="$files shorewall-docs-html-${1}.* $literpm"
+
+[ -n "$BASE" ] && $COMMAND $files $DEST/base
+
+files="errata known_problems.txt releasenotes.txt patch-$1 ${1}.*"
 
 $COMMAND -r $files $DEST

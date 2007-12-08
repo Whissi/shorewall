@@ -19,9 +19,18 @@
 #
 #
 
+case $(/sbin/shorewall version) in
+    4.0.*)
+	OPTIONS=vvv
+	;;
+    *)
+	OPTIONS=v2
+	;;
+esac
+
 for directory in *; do
     if [ -d $directory ]; then
-	if /sbin/shorewall -v2 compile -t $directory $directory/firewall > $directory/compileroutput 2> $directory/compilererrors; then
+	if /sbin/shorewall -${OPTIONS} compile -t $directory $directory/firewall > $directory/compileroutput 2> $directory/compilererrors; then
 	    if [ -f $directory/firewall.last ]; then
 		if diff -au $directory/firewall.last $directory/firewall > $directory/compare; then
 		    echo "Test $directory PASSED"

@@ -288,6 +288,18 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
+     4.1.*-*)
+	PATCHNUM=${VERSION#*-}
+	SVNBRANCH="tags/${BASEVERSION}/Shorewall-common-${PATCHNUM}"
+	LITESVNBRANCH="/tags/${BASEVERSION}/Shorewall-lite-${PATCHNUM}"
+	PERLBRANCH="tags/${BASEVERSION}/Shorewall-perl-${PATCHNUM}"
+	SHELLBRANCH="tags/${BASEVERSION}/Shorewall-shell-${PATCHNUM}"
+	DOCTAG="trunk/docs"
+	XMLPROJ="docs-4.0"
+	SAMPLESTAG="trunk/Samples"
+	MANPAGETAG=trunk/manpages
+	LITEMANPAGETAG=trunk/manpages-lite
+	;;
      4.1.*)
 	SVNBRANCH="trunk/Shorewall-common"
 	LITESVNBRANCH="trunk/Shorewall-lite"

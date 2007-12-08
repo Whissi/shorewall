@@ -260,8 +260,7 @@ sub initialize() {
     # From shorewall.conf file
     #
     %config =
-	      ( COMPILER_TEST => undef,
-	        STARTUP_ENABLED => undef,
+	      ( STARTUP_ENABLED => undef,
 		VERBOSITY => undef,
 		#
 		# Logging
@@ -1800,7 +1799,6 @@ sub get_configuration( $ ) {
 	$config{LOG_VERBOSITY} = -1;
     }
 
-    default_yes_no 'COMPILER_TEST'              , '';
     default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';

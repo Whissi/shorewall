@@ -1,0 +1,43 @@
+#!/bin/sh
+#
+#     Shorewall Compiler Positive Regression test driver -- (C) 2007, Tom Eastep (teastep@shorewall.net)
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#
+
+for directory in *; do
+    if [ -d $directory ]; then
+	if /sbin/shorewall -v2 compile -t $directory $directory/firewall > $directory/compileroutput 2> $directory/compilererrors; then
+	    if [ -f $directory/firewall.last ]; then
+		if diff -au $directory/firewall.last $directory/firewall > $directory/compare; then
+		    echo "Test $directory PASSED"
+		else
+		    echo "Test $directory FAILED ********* Failure data is in $directory/compare"
+		fi
+	    else
+		cp $directory/firewall $directory/firewall.last
+		echo "Test $directory INITIAL RUN"
+	    fi
+	else
+	    echo "Test $directory FAILED ********* Failure data is in $directory/compilererrors"
+	    rm -f $directory/faildata
+	fi
+    fi
+done
+
+
+  

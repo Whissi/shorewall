@@ -54,6 +54,7 @@ sub usage( $ ) {
     [ --refresh=<chainlist> ]
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
+    [ --test ]
 ';
     exit shift @_;
 }
@@ -70,6 +71,7 @@ my $chains        = '';
 my $log           = '';
 my $log_verbose   = 0;
 my $help          = 0;
+my $test          = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -89,6 +91,7 @@ my $result = GetOptions('h'               => \$help,
 			'log=s'           => \$log,
 			'l=s'             => \$log,
 			'log_verbosity=i' => \$log_verbose,
+			'test'            => \$test,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -102,4 +105,5 @@ compiler( object          => defined $ARGV[0] ? $ARGV[0] : '',
 	  export          => $export,
 	  chains          => $chains,
 	  log             => $log,
-	  log_verbosity   => $log_verbose );
+	  log_verbosity   => $log_verbose,
+	  test            => $test );

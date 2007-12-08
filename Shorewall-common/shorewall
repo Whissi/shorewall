@@ -383,6 +383,7 @@ compiler() {
 	    [ -n "$EXPORT" ] && options="$options --export"
 	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
 	    [ -n "$TIMESTAMP" ] && options="$options --timestamp"
+	    [ -n "$TEST" ] && options="$options --test"
 	    [ "$debugging" = trace ] && options="$options --debug"
 	    [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
 	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
@@ -573,6 +574,10 @@ compile_command() {
 			    option=
 			    shift
 			    ;;
+			t*)
+			    TEST=Yes
+			    option=${option#t}
+			    ;;			    
 			d*)
 			    DEBUG=Yes;
 			    option=${option#d}

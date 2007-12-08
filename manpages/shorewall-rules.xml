@@ -143,9 +143,12 @@
         role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
         role="bold">LOG</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">NFQUEUE</emphasis>[/<emphasis>queuenumber</emphasis>]<emphasis
+        role="bold">NFQUEUE</emphasis>[<emphasis
+        role="bold">(</emphasis><emphasis>queuenumber</emphasis><emphasis
+        role="bold">)</emphasis>]<emphasis
         role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>target</emphasis>]}<emphasis
+        role="bold">(</emphasis><emphasis>target</emphasis><emphasis
+        role="bold">)</emphasis>]}<emphasis
         role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
         role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
         role="bold">!</emphasis></emphasis>][<emphasis
@@ -417,14 +420,18 @@
                 macro.<emphasis>macro</emphasis>. If the macro accepts an
                 action parameter (Look at the macro source to see if it has
                 PARAM in the TARGET column) then the
-                <emphasis>macro</emphasis> name is followed by "/" and the
-                <emphasis>target</emphasis> (<emphasis
+                <emphasis>macro</emphasis> name is followed by the
+                parenthesized <emphasis>target</emphasis> (<emphasis
                 role="bold">ACCEPT</emphasis>, <emphasis
                 role="bold">DROP</emphasis>, <emphasis
                 role="bold">REJECT</emphasis>, ...) to be substituted for the
                 parameter.</para>
 
-                <para>Example: FTP/ACCEPT.</para>
+                <para>Example: FTP(ACCEPT).</para>
+
+                <para>The older syntax where the macro name and the target are
+                separated by a slash (e.g. FTP/ACCEPT) is still allowed but is
+                deprecated.</para>
 
                 <programlisting></programlisting>
               </listitem>

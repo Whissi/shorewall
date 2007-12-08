@@ -372,14 +372,11 @@ sub do_one_nat( $$$$$ )
     fatal_error "Invalid nat file entry" unless defined $interface && defined $internal;
 
     if ( $add_ip_aliases ) {
-	if ( $interface =~ s/:$// ) {
+	if ( defined( $alias ) && $alias eq '' ) {
 	    $add_ip_aliases = '';
 	} else {
-	    my ( $iface , undef ) = split /:/, $interface;
-	    emit "del_ip_addr $external $iface" unless $config{RETAIN_ALIASES};
+	    emit "del_ip_addr $external $interface" unless $config{RETAIN_ALIASES};
 	}
-    } else {
-	$interface =~ s/:$//;
     }
 
     validate_nat_column 'ALL INTERFACES', \$allints;

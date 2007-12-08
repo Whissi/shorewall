@@ -754,6 +754,9 @@ sub initialize_chain_table()
 sub finish_chain_section ($$) {
     my ($chainref, $state ) = @_;
     my $chain = $chainref->{name};
+    my $savecomment = $comment;
+    
+    $comment = '';
 
     add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
 
@@ -777,6 +780,8 @@ sub finish_chain_section ($$) {
 	    }
 	}
     }
+
+    $comment = $savecomment;
 }
 
 #

@@ -23,7 +23,7 @@ Sections, with no Front-Cover, and with no Back-Cover Texts. A copy of the
 license is included in the section entitled “<a href="GnuCopyright.htm"
 target="_self">GNU Free Documentation License</a>”.</p>
 
-<p>2007-12-04 </p>
+<p>2007-12-09 </p>
 <hr>
 
 <h2>Table of Contents</h2>
@@ -209,8 +209,10 @@ drwxr-sr-x    9 1006     8            4096 Nov 23 08:22 ..
 -rw-r--r--    1 1006     8             945 Nov 26 13:26 4.0.6.sha1sums
 -rw-r--r--    1 1006     8             322 Nov 26 08:35 README.txt
 drwxr-xr-x    4 1006     8            4096 Nov 23 17:16 errata
+drwxr-xr-x    4 1006     8            4096 Nov 23 08:21 <strong>base</strong>
 -rw-r--r--    1 1006     8            1570 Dec  1 08:16 known_problems.txt
-
+-rw-r--r--    1 1006     8          148363 Nov 23 08:22 patch-4.0.6
+-rw-r--r--    1 1006     8            5249 Nov 24 07:38 <strong>patch-4.0.6-2</strong>
 ...
 
 -rw-r--r--    1 1006     8          102295 Nov 24 07:38 shorewall-perl-4.0.6<strong>-2</strong>.noarch.rpm   &lt;=========
@@ -232,23 +234,26 @@ ftp</pre>
 <blockquote>
   <p>The lines flagged with &lt;====== show that the Shorewall-perl package
   has been updated to include a bug fix (note the "-2" in the version). The
-  original Shorewall-perl packages may be found in the superseded directory.
-  Note that the fixes are still available in the errata/ directory; the
-  known_problems.txt file indicates which problems are fixed in each updated
-  package.</p>
+  base tarballs for the release are found in the <strong>base</strong>
+  directory. The unified diff file name <strong>patch-4.0.6-2</strong> may be
+  applied to the base (4.0.6) Shorewall-perl release to produce 4.0.6-2. The
+  original Shorewall-perl packages may be found in the
+  <strong>superseded</strong> directory. Note that the fixes are still
+  available in the <strong>errata</strong> directory; the
+  <strong>known_problems.txt</strong> file indicates which problems are fixed
+  in each updated package.</p>
 </blockquote>
 
 <h2><a name="Sites"></a><b>Download Sites</b></h2>
 
-<p style="margin-left: 0.42in;">Use the sites below to download the <b>tarball</b>, the <b>documentation</b>
-and the <b>standard RPM</b> for (<b>SUSE</b>, <b>Power PPC</b>,
-<b>Trustix</b> and <b>TurboLinux</b>).<br>
+<p style="margin-left: 0.42in;">Use the sites below to download the
+<b>tarball</b>, the <b>documentation</b> and the <b>standard RPM</b> for
+(<b>SUSE</b>, <b>Power PPC</b>, <b>Trustix</b> and <b>TurboLinux</b>).<br>
 <br>
 Packages are GPG signed, please <b>verify the integrity of the files</b>
 using our public key <a
 href="https://lists.shorewall.net/shorewall.gpg.key">https://lists.shorewall.net/shorewall.gpg.key</a>
 </p>
-
 <dl>
     <dd>
       <table border="2" cellpadding="2" cellspacing="2">
@@ -397,6 +402,7 @@ href="http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=
 <br>
 <b>Leaf/Bering </b>package is available at <a
 href="http://leaf.sourceforge.net/bering-uclibc/index.php?module=pagemaster&amp;PAGE_user_op=view_page&amp;PAGE_id=3&amp;MMN_position=3:3">http://leaf.sourceforge.net/bering-uclibc/index.php?module=pagemaster&amp;PAGE_user_op=view_page&amp;PAGE_id=3&amp;MMN_position=3:3</a><br>
+</p>
 
 <h2><a name="SVN"></a><b>SVN</b></h2>
 
@@ -406,9 +412,12 @@ href="http://leaf.sourceforge.net/bering-uclibc/index.php?module=pagemaster&amp;
   for Shorewall releases.<br>
   <br>
   You should download and use the latest SVN version only <b>at your own
-  risk</b> -- please do not attempt to install Shorewall from the SVN
+  risk</b> -- <strong>please do not attempt to install Shorewall from the SVN
   components; you will end up with an incomplete and non-working
-  installation. 
+  installation. </strong>
+
+  <p>If you want to build your own packages from the SVN images, use the
+  build script found in tools/build/buildshorewall.</p>
 
   <p>If you are looking for bug fixes for the current release, see <a
   href="#Updates">above.</a><br>

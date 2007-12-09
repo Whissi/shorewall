@@ -188,11 +188,11 @@ fi
 files="errata known_problems.txt releasenotes.txt patch-$1 ${1}.*"
 base=
 
-[ -n "$UPLOADPERL" ]   && base="shorewall-perl-${1}.tar.*" && files="$files shorewall-perl-${1}. $perlrpm"
-[ -n "$UPLOADCOMMON" ] && base="$base shorewall-common-${1}.tar.*" && files="$files shorewall-common-${1}.* $rpm"
-[ -n "$UPLOADSHELL" ]  && base="$base shorewall-shell-${1}.tar.*" && files="$files shorewall-shell-${1}.* $shellrpm"
-[ -n "$UPLOADLITE" ]   && base="$base shorewall-lite-${1}.tar.*" && files="$files shorewall-lite-${1}.* $literpm"
-[ -n "$UPLOADXML" ]    && base="$base shorewall-docs-xml-${1}.tar.*" && files="$files shorewall-docs-xml-${1}.* $literpm"
+[ -n "$UPLOADPERL" ]   && base="shorewall-perl-${1}.tar.*"            && files="$files shorewall-perl-${1}.       $perlrpm"
+[ -n "$UPLOADCOMMON" ] && base="$base shorewall-common-${1}.tar.*"    && files="$files shorewall-common-${1}.*    $rpm"
+[ -n "$UPLOADSHELL" ]  && base="$base shorewall-shell-${1}.tar.*"     && files="$files shorewall-shell-${1}.*     $shellrpm"
+[ -n "$UPLOADLITE" ]   && base="$base shorewall-lite-${1}.tar.*"      && files="$files shorewall-lite-${1}.*      $literpm"
+[ -n "$UPLOADXML" ]    && base="$base shorewall-docs-xml-${1}.tar.*"  && files="$files shorewall-docs-xml-${1}.*  $literpm"
 [ -n "$UPLOADHTML" ]   && base="$base shorewall-docs-html-${1}.tar.*" && files="$files shorewall-docs-html-${1}.* $literpm"
 
 [ -n "$BASE" ] && $COMMAND $base $DEST/base

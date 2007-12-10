@@ -301,6 +301,7 @@ case $VERSION in
 	SAMPLESTAG="tags/${BASEVERSION}/Samples"
 	MANPAGETAG=="tags/${BASEVERSION}/manpages"
 	LITEMANPAGETAG="tags/${BASEVERSION}/manpages-lite"
+	BASEVERSION=$VERSION
 	;;
      4.1.*)
 	SVNBRANCH="trunk/Shorewall-common"
@@ -323,9 +324,10 @@ case $VERSION in
 	SHELLBRANCH="tags/${BASEVERSION}/Shorewall-shell-${PATCHNUM}"
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-4.0"
-	SAMPLESTAG="branches/4.0/Samples"
-	MANPAGETAG=branches/4.0/manpages
-	LITEMANPAGETAG=branches/4.0/manpages-lite
+	SAMPLESTAG="tags/${BASEVERSION}/Samples"
+	MANPAGETAG=="tags/${BASEVERSION}/manpages"
+	LITEMANPAGETAG="tags/${BASEVERSION}/manpages-lite"
+	BASEVERSION=$VERSION
 	;;
      4.0.*)
 	SVNBRANCH="branches/4.0/Shorewall-common"
@@ -341,12 +343,6 @@ case $VERSION in
    *)
 	echo "Unsupported Version: $VERSION"
 	exit 2
-	;;
-esac
-
-case $VERSION in
-    *.*.*.*)
-	PATCHRELEASE=Yes
 	;;
 esac
 

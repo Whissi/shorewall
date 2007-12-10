@@ -251,15 +251,12 @@
           <term>INTERFACE</term>
 
           <listitem>
-            <para>The name of the interface to the provider.</para>
-
-            <caution>
-              <para>The Shorewall implementation of Multi-ISP support requires
-              that each provider has its own interface -- and remember that
-              "virtual interfaces" (e.g., eth0:0) are <ulink
-              url="Shorewall_and_Aliased_Interfaces.html">not
-              interfaces</ulink>.</para>
-            </caution>
+            <para>The name of the interface to the provider. Where multiple
+            providers share the same interface (which is not recommended), you
+            must follow the name of the interface by a colon (":") and the IP
+            address assigned by this provider (e.g., eth0:206.124.146.176).
+            See <link linkend="Shared">below</link> for additional
+            considerations.</para>
           </listitem>
         </varlistentry>
 
@@ -931,6 +928,84 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
 -                       10.8.0.0/24     main            1000</programlisting>
       </section>
+    </section>
+
+    <section id="Shared">
+      <title>Two Providers Sharing an Interface</title>
+
+      <para>Shared interface support is available only in Shorewall-perl 4.1.2
+      and later.</para>
+
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>Only ethernet (or ethernet-like) interfaces can be used. For
+          inbound traffic, the MAC addresses of the gateway routers is used to
+          determine which provider a packet was received through. Note that
+          only routed traffic can be categorized using this technique.</para>
+        </listitem>
+
+        <listitem>
+          <para>You must specify the address on the interface that corresponds
+          to a particular provider in the INTERFACE column by following the
+          interface name with a colon (":") and the address.</para>
+        </listitem>
+
+        <listitem>
+          <para>Entries in <filename>/etc/shorewall/masq</filename> must be
+          qualified by the provider name (or number).</para>
+        </listitem>
+
+        <listitem>
+          <para>This feature requires Realm Match support in your kernel and
+          iptables.</para>
+        </listitem>
+
+        <listitem>
+          <para>You must add route_rules entries for networks that are
+          accessed through a particular provider.</para>
+        </listitem>
+
+        <listitem>
+          <para>If you have additional IP addresses through either provider,
+          you must add <filename>route_rules</filename> to direct traffic FROM
+          each of those addresses through the appropriate provider.</para>
+        </listitem>
+
+        <listitem>
+          <para>You must manually add MARK rules for traffic known to come
+          from each provider.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Example:</para>
+
+      <para>Providers <emphasis role="bold">Blarg</emphasis> (1) and <emphasis
+      role="bold">Avvanta</emphasis> (2) are both connected to eth0. The
+      firewall's IP address with <emphasis role="bold">Blarg</emphasis> is
+      206.124.146.176/24 (gateway 206.124.146.254) and the IP address from
+      <emphasis role="bold">Avvanta</emphasis> is 130.252.144.8/24 (gateway
+      130.252.144.254). We have a second IP address (206.124.146.177) from
+      <emphasis role="bold">Blarg</emphasis>.</para>
+
+      <para>/etc/shorewall/providers:<programlisting>#PROVIDER NUMBER MARK DUPLICATE INTERFACE            GATEWAY
+Blarg     1      1    main      eth0:206.124.146.176 206.124.146.254 ...
+Avvanta   2      2    main      eth0:130.252.144.8   130.252.144.254 ... </programlisting></para>
+
+      <para>/etc/shorewall/masq:<programlisting>#INTERFACE    SOURCE          ADDRESS
+eth0(Blarg)   130.252.144.8   206.124.146.176
+eth0(Avvanta) 206.124.146.176 130.252.144.8
+eth0(Blarg)   eth1            206.124.146.176
+eth0(Avvanta) eth1            130.252.144.8 </programlisting>
+      /etc/shorewall/route_rules:</para>
+
+      <programlisting>#SOURCE           DEST             PROVIDER PRIORITY
+-                 206.124.146.0/24 Blarg    1000
+-                 130.252.144.0/24 Avvanta  1000
+206.124.146.177   -                Blarg    26000</programlisting>
+
+      <para>/etc/shorewall/tcrules:<programlisting>#MARK/CLASSIFY    SOURCE                DEST          PROTO
+1:P               eth0:206.124.146.0/24 0.0.0.0/0
+2:P               eth0:130.252.144.8/24 0.0.0.0/0</programlisting></para>
     </section>
   </section>
 </article>

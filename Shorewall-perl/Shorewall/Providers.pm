@@ -299,7 +299,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	
 	if ( $routemarked_interfaces{$interface} ) {
 	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} > 1;
-	    fatal_error "Multiple providers through the same interface must have the 'share' option" unless $shared;
+	    fatal_error "Multiple providers through the same interface must their IP address specified in the INTERFACES" unless $shared;
 	} else {
 	    $routemarked_interfaces{$interface} = $shared ? 1 : 2;
 	    push @routemarked_interfaces, $interface;

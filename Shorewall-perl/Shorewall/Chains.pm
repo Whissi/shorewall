@@ -1590,7 +1590,7 @@ sub interface_nets( $ ) {
 }
 
 #
-# Record that the ruleset requires the first IP address on the passed interface
+# Record that the ruleset requires the networks routed out of the passed interface
 #
 sub get_interface_nets ( $ ) {
     my ( $interface ) = $_[0];

@@ -62,7 +62,7 @@ New Features in Shorewall 4.1.
 
     d) This feature requires Realm Match support in your kernel and
        iptables. If you use a capabilities file, you need to regenerate
-       the file with Shorewall 4.0.6 or Shorewall-lite 4.0.6.
+       the file with Shorewall 4.1 or Shorewall-lite 4.1.
  
     e) You must add route_rules entries for networks that are accessed
        through a particular provider.
@@ -70,6 +70,9 @@ New Features in Shorewall 4.1.
     f) If you have additional IP addresses through either provider,
        you must add route_rules to direct traffic FROM each of those
        addresses through the appropriate provider.
+
+    g) You must add MARK rules for any traffic that you know originates
+       from a particular provider.
 
      Example:
 
@@ -99,6 +102,12 @@ New Features in Shorewall 4.1.
 	-		206.124.146.0/24	Blarg		1000
 	-		130.252.144.0/24	Avvanta		1000
 	206.124.146.177	-			Blarg		26000
+
+     /etc/shorewall/tcrules
+
+	#MARK/CLASSIFY  SOURCE	               DEST
+	1		eth0:206.124.146.0/24  0.0.0.0/0
+	2		eth0:130.242.144.0/24  0.0.0.0/0
 
 2)  You may now include the name of a table (nat, mangle or filter) in
     a 'shorewall refresh' command by following the table name with a

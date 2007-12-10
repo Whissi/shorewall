@@ -281,24 +281,26 @@ case $# in
 esac
 
 VERSION=$1
-BASEVERSION=${VERSION%-*}
+BASEVERSION=$1
 
 LOGFILE=$LOGDIR/shorewall_build_${VERSION}.log
 touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
-     4.1.*-*)
-	PATCHNUM=${VERSION#*-}
+     4.1.*.*)
+	PATCHRELEASE=Yes
+	PATCHNUM=${VERSION##*.}
+	BASEVERSION=${VERSION%.*}
 	SVNBRANCH="tags/${BASEVERSION}/Shorewall-common-${PATCHNUM}"
 	LITESVNBRANCH="/tags/${BASEVERSION}/Shorewall-lite-${PATCHNUM}"
 	PERLBRANCH="tags/${BASEVERSION}/Shorewall-perl-${PATCHNUM}"
 	SHELLBRANCH="tags/${BASEVERSION}/Shorewall-shell-${PATCHNUM}"
 	DOCTAG="trunk/docs"
-	XMLPROJ="docs-4.0"
-	SAMPLESTAG="trunk/Samples"
-	MANPAGETAG=trunk/manpages
-	LITEMANPAGETAG=trunk/manpages-lite
+	XMLPROJ="docs-4.1"
+	SAMPLESTAG="tags/${BASEVERSION}/Samples"
+	MANPAGETAG=="tags/${BASEVERSION}/manpages"
+	LITEMANPAGETAG="tags/${BASEVERSION}/manpages-lite"
 	;;
      4.1.*)
 	SVNBRANCH="trunk/Shorewall-common"
@@ -311,8 +313,10 @@ case $VERSION in
 	MANPAGETAG=trunk/manpages
 	LITEMANPAGETAG=trunk/manpages-lite
 	;;
-     4.0.*-*)
-	PATCHNUM=${VERSION#*-}
+     4.0.*.*)
+	PATCHRELEASE=Yes
+	PATCHNUM=${VERSION##*.}
+	BASEVERSION=${VERSION%.*}
 	SVNBRANCH="tags/${BASEVERSION}/Shorewall-common-${PATCHNUM}"
 	LITESVNBRANCH="/tags/${BASEVERSION}/Shorewall-lite-${PATCHNUM}"
 	PERLBRANCH="tags/${BASEVERSION}/Shorewall-perl-${PATCHNUM}"
@@ -340,6 +344,12 @@ case $VERSION in
 	;;
 esac
 
+case $VERSION in
+    *.*.*.*)
+	PATCHRELEASE=Yes
+	;;
+esac
+
 [ -d $DIR ] || { echo "Directory $DIR does not exist or is unaccessible" ; exit 2 ; }
 
 progress_message "Distribution directory is $DIR"
@@ -361,24 +371,6 @@ case $VERSION in
 	PERLTARBALL=shorewall-perl-${BASEVERSION}.tgz
 	PERLDIR=shorewall-perl-${BASEVERSION}
 	SHELLRPMNAME=shorewall-shell-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
-	SHELLTARBALL=shorewall-shell-${BASEVERSION}.tgz
-	SHELLDIR=shorewall-shell-${BASEVERSION}
-	;;
-    *-*)
-	#
-	# Patch Release
-	#
-	PATCHRELEASE=Yes
-	[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
-	SHOREWALLLITEDIR=shorewall-lite-${BASEVERSION}
-	TARBALL=shorewall-common-${BASEVERSION}.tgz
-	LITETARBALL=shorewall-lite-${BASEVERSION}.tgz
-	RPMNAME=shorewall-common-${VERSION}.noarch.rpm
-	LITERPMNAME=shorewall-lite-${VERSION}.noarch.rpm
-	PERLRPMNAME=shorewall-perl-${VERSION}.noarch.rpm
-	PERLTARBALL=shorewall-perl-${BASEVERSION}.tgz
-	PERLDIR=shorewall-perl-${BASEVERSION}
-	SHELLRPMNAME=shorewall-shell-${VERSION}.noarch.rpm
 	SHELLTARBALL=shorewall-shell-${BASEVERSION}.tgz
 	SHELLDIR=shorewall-shell-${BASEVERSION}
 	;;
@@ -932,8 +924,8 @@ if [ -n "$PATCHRELEASE" ]; then
     svn update ~/shorewall/tags/${BASEVERSION}
     if [ -f ~/shorewall/tags/${BASEVERSION}/known_problems.txt ]; then
 	cp ~/shorewall/tags/${BASEVERSION}/known_problems.txt .
-    else
-	echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
+    else 
+	[ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
     fi
 else
     echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt

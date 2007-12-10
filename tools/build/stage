@@ -113,6 +113,10 @@ case $1 in
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	BASE=Yes
 	;;
+    4.1.*-*)
+	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-${1%-*}"
+	SHOREWALL=shorewall-common
+	;;
     4.1.*)
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall-common

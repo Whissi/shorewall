@@ -643,7 +643,7 @@ process_actions1() {
 
 					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 
-						[ $mtarget eq COMMENT ] && continue
+						[ $mtarget = COMMENT ] && continue
 
 						temp="${mtarget%%:*}"
 						case "$temp" in
@@ -796,7 +796,7 @@ process_action3() {
 
 	    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 
-		[ $mtarget eq COMMENT ] && continue
+		[ $mtarget = COMMENT ] && continue
 
 		mtarget=$(merge_levels $xaction2 $mtarget)
 

@@ -28,7 +28,11 @@ case $(/sbin/shorewall version) in
 	;;
 esac
 
-for directory in *; do
+DIRECTORIES="$*"
+
+[ -n "${DIRECTORIES:=*}" ]
+
+for directory in $DIRECTORIES; do
     if [ -d $directory ]; then
 	if /sbin/shorewall -${OPTIONS} compile -t $directory $directory/firewall > $directory/compileroutput 2> $directory/compilererrors; then
 	    if [ -f $directory/firewall.last ]; then

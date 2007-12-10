@@ -100,9 +100,15 @@ case $1 in
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	BASE=Yes
 	;;
-    4.0.*-*)
-	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-${1}"
+    *.*.*.*)
+	BASEVERSION=${1%.*}
+	PATCHNUM=${1##*.}
+	DEST="/srv/ftp/pub/shorewall/development/staging/${BASEVERSION%.*}/shorewall-${BASEVERSION}"
 	SHOREWALL=shorewall-common
+	rpm=shorewall-common-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	literpm=shorewall-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	perlrpm=shorewall-perl-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	shellrpm=shorewall-shell-${BASEVERSION}-${PATCHNUM}.noarch.rpm
 	;;
     4.0.*)
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
@@ -112,10 +118,6 @@ case $1 in
 	perlrpm=shorewall-perl-${1}-1.noarch.rpm
 	shellrpm=shorewall-shell-${1}-1.noarch.rpm
 	BASE=Yes
-	;;
-    4.1.*-*)
-	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-${1%-*}"
-	SHOREWALL=shorewall-common
 	;;
     4.1.*)
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"

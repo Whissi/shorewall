@@ -368,7 +368,24 @@ case $VERSION in
 	SHELLTARBALL=shorewall-shell-${BASEVERSION}.tgz
 	SHELLDIR=shorewall-shell-${BASEVERSION}
 	;;
-    *)
+    *.*.*.*)
+        #
+        # Patch Release
+        #
+        [ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
+        SHOREWALLLITEDIR=shorewall-lite-${BASEVERSION}
+        TARBALL=shorewall-common-${BASEVERSION}.tgz
+        LITETARBALL=shorewall-lite-${BASEVERSION}.tgz
+        RPMNAME=shorewall-common-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        LITERPMNAME=shorewall-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        PERLRPMNAME=shorewall-perl-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        PERLTARBALL=shorewall-perl-${BASEVERSION}.tgz
+        PERLDIR=shorewall-perl-${BASEVERSION}
+        SHELLRPMNAME=shorewall-shell-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        SHELLTARBALL=shorewall-shell-${BASEVERSION}.tgz
+        SHELLDIR=shorewall-shell-${BASEVERSION}
+        ;;
+     *)
 	#
 	# Normal Release
 	#

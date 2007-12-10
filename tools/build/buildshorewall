@@ -215,7 +215,7 @@ while [ -z "$done" ]; do
 	-*)
 	    option=${option#-}
 
-	    [ -z "$option" ] && break
+	    [ -z "$option" ] && shift && break 2
 
 	    while [ -n "$option" ]; do
 		case $option in
@@ -946,16 +946,13 @@ if [ -n "$OLDVERSION" ]; then
     
     progress_message "Creating patch-$VERSION ..."
 
-     > patch-$VERSION
+    > patch-$VERSION
 
-     [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
-     [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
-     [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
-     [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
-     
-     if [ -n "$PATCHRELEASE" ]; then
-	 eval perl -i -p -e "'if ( /\+\+\+/ ) { s/shorewall-common-$VERSION/Shorewall-common/;s/shorewall-lite-$VERSION/Shorewall-lite/;s/shorewall-perl-$VERSION/Shorewall-perl/;s/shorewall-shell-$VERSION/Shorewall-shell/ }'" patch-$VERSION
-     fi 
+    [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
+    [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
+    [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
+    [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
+    
 fi
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

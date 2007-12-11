@@ -213,9 +213,10 @@ while [ -z "$done" ]; do
     option=$1
     case $option in
 	-*)
+	    shift
 	    option=${option#-}
 
-	    [ -z "$option" ] && shift && break 2
+	    [ -z "$option" ] && done=Yes && break
 
 	    while [ -n "$option" ]; do
 		case $option in
@@ -261,13 +262,14 @@ while [ -z "$done" ]; do
 			;;
 		esac
 	    done
-	    shift
 	    ;;
 	*)
 	    done=Yes
 	    ;;
     esac
 done
+
+echo "Arguments are $*"
 
 case $# in
     1)
@@ -879,7 +881,7 @@ fi
 		    do_or_die "$GPG $betaball"
 		fi
 
-		if [ -n "$BUILDSHELL" ]; then		
+		if [ -n "$BUILDPERL" ]; then		
 		    betaball=shorewall-perl-$VERSION.${shoresuffix}
 		    report "GPG signing $DIR/$betaball tarball"
 		    rm -f ${betaball}.asc
@@ -946,12 +948,10 @@ if [ -n "$OLDVERSION" ]; then
     
     progress_message "Creating patch-$VERSION ..."
 
-    > patch-$VERSION
-
-    [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION >> patch-$VERSION || true
-    [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
-    [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION >> patch-$VERSION || true
-    [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION >> patch-$VERSION || true
+    [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION > patch-common-$VERSION || true
+    [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION     > patch-lite-$VERSION   || true
+    [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION     > patch-perl-$VERSION   || true
+    [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION   > patch-shell-$VERSION  || true
     
 fi
 

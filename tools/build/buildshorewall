@@ -473,7 +473,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$BUILDPERL" ]; then    
 	fgrep VERSION=$VERSION $PERLDIR/install.sh > /dev/null 2>&1   || fatal_error "Perl install.sh has wrong version"
-	fgrep "VERSION =>  '$VERSION'" $PERLDIR/Shorewall/Config.pm > /dev/null 2>&1 || fatal_error "Perl Config.pm has wrong version"
+	[ $(eval perl -e "'use lib \"$PERLDIR\"; use Shorewall::Config qw(:internal); print \"\$globals{VERSION}\n\"'") = $VERSION ] || \
+	    fatal_error "Perl Config.pm has wrong version"
     fi
 
     if [ -n "$BUILDCOMMON" ]; then

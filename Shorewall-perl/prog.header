@@ -119,10 +119,8 @@ qt1()
     while [ 1 ]; do
 	"$@" >/dev/null 2>&1
 	status=$?
-	[ $status -ne 4 ] && break
+	[ $status -ne 4 ] && return $status
     done
-
-    return $status
 }
 
 #

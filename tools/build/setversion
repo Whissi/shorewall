@@ -2,6 +2,8 @@
 
 [ $# -eq 1 ] || { echo "usage: setversion <version>" >&2; exit 1; }
 
+VERSION=$1
+
 for product in common lite shell perl; do
     eval perl -p -i -e "'s/VERSION=.*/VERSION=$1/'" Shorewall-${product}/install.sh
 done
@@ -10,12 +12,24 @@ for product in common lite; do
     eval perl -p -i -e "'s/^VERSION=.*/VERSION=$1/'" Shorewall-${product}/uninstall.sh Shorewall-${product}/fallback.sh
 done
 
+case $VERSION in
+    *.*.*.*)
+	RELEASE=${VERSION##*.}
+	RPMVERSION=${VERSION%.*}-${RELEASE}
+	;;
+    *)
+	RPMVERSION=${VERSION}
+	RELEASE=1
+	;;
+esac
+
 for product in common lite shell perl; do
-    eval perl -n -i -e "'s/^%define version .*/%device version $1/; \
+    eval perl -n -i -e "'s/^%define version .*/%define version ${RPMVERSION}/; \
+                         s/^%define release .*/%define release ${RELEASE}/; \
                          print \$_; \
                          if ( /%changelog/ ) {\
                              print \"\* $(date +'%a %b %d %Y') Tom Eastep tom\\@shorewall.net\\n\"; \
-                             print \"- Updated to $1\\n\"; \
+                             print \"- Updated to ${RPMVERSION}-${RELEASE}\\n\"; \
                          }'" Shorewall-${product}/shorewall-${product}.spec
 done
 

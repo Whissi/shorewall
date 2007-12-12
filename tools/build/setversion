@@ -18,19 +18,13 @@ case $VERSION in
 esac
 
 for product in common lite shell perl; do
-    file=Shorewall-${product}${SUFFIX}/install.sh
-    [ -f $file ] && eval perl -p -i -e "'s/VERSION=.*/VERSION=${VERSION}/'" $file
-done
-
-for product in common lite; do
     dir=Shorewall-${product}${SUFFIX}
-    for file in $dir/uninstall.sh $dir/fallback.sh; do
+
+    for file in $dir/install.sh $dir/uninstall.sh $dir/fallback.sh; do
 	[ -f $file ] && eval perl -p -i -e "'s/^VERSION=.*/VERSION=${VERSION}/'" $file
     done
-done
 
-for product in common lite shell perl; do
-    file=Shorewall-${product}${SUFFIX}/shorewall-${product}.spec
+    file=$dir/shorewall-${product}.spec
     [ -f $file ] && eval perl -n -i -e "'s/^%define version .*/%define version ${RPMVERSION}/; \
                                          s/^%define release .*/%define release ${RELEASE}/; \
                                          print \$_; \

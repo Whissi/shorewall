@@ -4,35 +4,43 @@
 
 VERSION=$1
 
-for product in common lite shell perl; do
-    eval perl -p -i -e "'s/VERSION=.*/VERSION=$1/'" Shorewall-${product}/install.sh
-done
-
-for product in common lite; do
-    eval perl -p -i -e "'s/^VERSION=.*/VERSION=$1/'" Shorewall-${product}/uninstall.sh Shorewall-${product}/fallback.sh
-done
-
 case $VERSION in
     *.*.*.*)
 	RELEASE=${VERSION##*.}
 	RPMVERSION=${VERSION%.*}-${RELEASE}
+	SUFFIX="-$RELEASE"
 	;;
     *)
 	RPMVERSION=${VERSION}
 	RELEASE=1
+	SUFFIX=
 	;;
 esac
 
 for product in common lite shell perl; do
-    eval perl -n -i -e "'s/^%define version .*/%define version ${RPMVERSION}/; \
-                         s/^%define release .*/%define release ${RELEASE}/; \
-                         print \$_; \
-                         if ( /%changelog/ ) {\
-                             print \"\* $(date +'%a %b %d %Y') Tom Eastep tom\\@shorewall.net\\n\"; \
-                             print \"- Updated to ${RPMVERSION}-${RELEASE}\\n\"; \
-                         }'" Shorewall-${product}/shorewall-${product}.spec
+    file=Shorewall-${product}${SUFFIX}/install.sh
+    [ -f $file ] && eval perl -p -i -e "'s/VERSION=.*/VERSION=${VERSION}/'" $file
 done
 
-eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"$1\",/'" Shorewall-perl/Shorewall/Config.pm
+for product in common lite; do
+    dir=Shorewall-${product}${SUFFIX}
+    for file in $dir/uninstall.sh $dir/fallback.sh; do
+	[ -f $file ] && eval perl -p -i -e "'s/^VERSION=.*/VERSION=${VERSION}/'" $file
+    done
+done
+
+for product in common lite shell perl; do
+    file=Shorewall-${product}${SUFFIX}/shorewall-${product}.spec
+    [ -f $file ] && eval perl -n -i -e "'s/^%define version .*/%define version ${RPMVERSION}/; \
+                                         s/^%define release .*/%define release ${RELEASE}/; \
+                                         print \$_; \
+                                         if ( /%changelog/ ) {\
+                                             print \"\* $(date +'%a %b %d %Y') Tom Eastep tom\\@shorewall.net\\n\"; \
+                                             print \"- Updated to ${RPMVERSION}-${RELEASE}\\n\"; \
+                                         }'" $file
+done
+
+file=Shorewall-perl${SUFFIX}/Shorewall/Config.pm
+[ -f $file ] && eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"${VERSION}\",/'" $file
  
                              

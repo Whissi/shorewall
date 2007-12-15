@@ -105,6 +105,11 @@ process_tc_rule()
 		$FW:*)
 		    r="$(source_ip_range ${source#*:}) "
 		    ;;
+		*:~*|*:!~*)
+		    interface=${source%:*}
+		    verify_interface $interface || fatal_error "Unknown interface $interface in rule \"$rule\""
+		    r="$(match_source_dev $interface) $(mac_match ${source#*:}) "
+		    ;;
 		*:*)
 		    interface=${source%:*}
 		    verify_interface $interface || fatal_error "Unknown interface $interface in rule \"$rule\""

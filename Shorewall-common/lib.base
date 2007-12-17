@@ -1009,7 +1009,15 @@ determine_capabilities() {
     NFQUEUE_TARGET=
     REALM_MATCH=
 
-    qt $IPTABLES -N fooX1234
+    [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
+
+    qt $IPTABLES -F fooX1234
+    qt $IPTABLES -X fooX1234
+    if ! $IPTABLES -N fooX1234; then
+	echo "   ERROR: The command \"$IPTABLES -N fooX1234\" failed" >&2
+	exit 1;
+    fi
+
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
 
     if qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT; then

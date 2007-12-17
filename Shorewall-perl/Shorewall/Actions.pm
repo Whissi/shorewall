@@ -294,8 +294,6 @@ sub createlogactionchain( $$ ) {
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
     
-    mark_referenced $chainref; # Just in case the action body is empty.
-
     unless ( $targets{$action} & STANDARD ) {
 
 	my $file = find_file $chain;
@@ -321,8 +319,6 @@ sub createsimpleactionchain( $ ) {
     my $chainref = new_chain 'filter', $action;
 
     $logactionchains{"$action:none"} = $chainref;
-
-    mark_referenced $chainref; # Just in case the action body is empty.
 
     unless ( $targets{$action} & STANDARD ) {
 

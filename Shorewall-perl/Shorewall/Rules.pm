@@ -628,9 +628,9 @@ sub add_common_rules() {
 		new_standard_chain $chain;
 	    }
 
-	    mark_referenced( new_chain 'nat' , $chain = dynamic_in($interface) );
+	    new_nat_chain( $chain = dynamic_in($interface) );
 
-	    add_rule $filter_table->{input_chain $interface},  "-j $chain";
+	    add_rule $filter_table->{input_chain $interface},   '-j ' . dynamic_in  $interface; 
 	    add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
 	    add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
 	}
@@ -641,7 +641,7 @@ sub add_common_rules() {
     if ( @$list ) {
 	progress_message2 '$doing UPnP';
 
-	mark_referenced( new_chain( 'nat', 'UPnP' ) );
+	new_nat_chain( 'UPnP' );
 
 	for $interface ( @$list ) {
 	    add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';

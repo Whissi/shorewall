@@ -64,6 +64,8 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = @_;
 
+    our $disposition = '';
+
     sub check_for_builtin( $ ) {
 	my $chainref = shift;
 	fatal_error "A builtin Chain ($jumpchainref->{name}) may not appear in the accounting file" if $chainref->{builtin};
@@ -77,7 +79,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	my $jumpchain = $_[0];
 	$jumpchainref = ensure_chain( 'filter', $jumpchain );
 	check_for_builtin( $jumpchainref );
-	mark_referenced $jumpchainref;
+	$disposition = $jumpchain;
 	"-j $jumpchain";
     }
 
@@ -154,7 +156,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	'' ,
 	$target ,
 	'' ,
-	'' ,
+	$disposition ,
 	'' ;
 
     if ( $rule2 ) {

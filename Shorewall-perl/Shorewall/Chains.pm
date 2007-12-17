@@ -89,11 +89,11 @@ our %EXPORT_TAGS = (
 				       snat_chain
 				       ecn_chain
 				       first_chains
-				       mark_referenced
 				       ensure_chain
 				       ensure_mangle_chain
 				       new_standard_chain
 				       new_builtin_chain
+				       new_nat_chain
 				       ensure_filter_chain
 				       initialize_chain_table
 				       finish_section
@@ -391,10 +391,6 @@ sub add_commands {
     }
 
     $chainref->{referenced} = 1;
-}
-
-sub mark_referenced( $ ) {
-    $_[0]->{referenced} = 1;
 }
 
 sub push_rule( $$ ) {
@@ -699,6 +695,12 @@ sub new_builtin_chain($$$)
 
 sub new_standard_chain($) {
     my $chainref = new_chain 'filter' ,$_[0];
+    $chainref->{referenced} = 1;
+    $chainref;
+}
+
+sub new_nat_chain($) {
+    my $chainref = new_chain 'nat' ,$_[0];
     $chainref->{referenced} = 1;
     $chainref;
 }
@@ -1658,7 +1660,6 @@ sub expand_rule( $$$$$$$$$$ )
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
     my $initialcmdlevel = $chainref->{cmdlevel};
-
     #
     # Handle Log Level
     #
@@ -1679,6 +1680,14 @@ sub expand_rule( $$$$$$$$$$ )
     } elsif ( $disposition eq 'LOG' ) {
 	fatal_error "LOG requires a level";
     }
+    #
+    # Mark Target as referenced, if it's a chain
+    #
+    if ( $disposition ) {
+	my $targetref = $chain_table{$chainref->{table}}{$disposition};
+	$targetref->{referenced} = 1 if $targetref;
+    }
+
     #
     # Isolate Source Interface, if any
     #

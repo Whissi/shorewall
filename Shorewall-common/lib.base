@@ -1009,97 +1009,99 @@ determine_capabilities() {
     NFQUEUE_TARGET=
     REALM_MATCH=
 
+    chain=fooX$$
+
     [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
 
-    qt $IPTABLES -F fooX1234
-    qt $IPTABLES -X fooX1234
-    if ! $IPTABLES -N fooX1234; then
-	echo "   ERROR: The command \"$IPTABLES -N fooX1234\" failed" >&2
+    qt $IPTABLES -F $chain
+    qt $IPTABLES -X $chain
+    if ! $IPTABLES -N $chain; then
+	echo "   ERROR: The command \"$IPTABLES -N $chain\" failed" >&2
 	exit 1;
     fi
 
-    qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
+    qt $IPTABLES -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
 
-    if qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT; then
+    if qt $IPTABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
 	MULTIPORT=Yes
-	qt $IPTABLES -A fooX1234 -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
+	qt $IPTABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
     fi
 
-    qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
-    qt $IPTABLES -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
+    qt $IPTABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $IPTABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
 
-    if qt $IPTABLES -A fooX1234 -m physdev --physdev-out eth0 -j ACCEPT; then
+    if qt $IPTABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
 	PHYSDEV_MATCH=Yes
-	qt $IPTABLES -A fooX1234 -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
+	qt $IPTABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
 	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
+	    qt $IPTABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
 	fi
     fi
 
-    if qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
+    if qt $IPTABLES -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
 	IPRANGE_MATCH=Yes
 	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
+	    qt $IPTABLES -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
 	fi
     fi
 
-    qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+    qt $IPTABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $IPTABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
 
-    if qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT; then
+    if qt $IPTABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
 	CONNMARK_MATCH=Yes
-	qt $IPTABLES -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+	qt $IPTABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
     fi
 
-    qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT            && IPP2P_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
+    qt $IPTABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT            && IPP2P_MATCH=Yes
+    qt $IPTABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IPTABLES -A $chain -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
 
-    qt $IPTABLES -A fooX1234 -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
+    qt $IPTABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
 
     if [ -n "$MANGLE_ENABLED" ]; then
-	qt $IPTABLES -t mangle -N fooX1234
+	qt $IPTABLES -t mangle -N $chain
 
-	if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
+	if qt $IPTABLES -t mangle -A $chain -j MARK --set-mark 1; then
 	    MARK=Yes
-	    qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+	    qt $IPTABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
 	fi
 
-	if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
+	if qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark; then
 	    CONNMARK=Yes
-	    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	    qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
 	fi
 
-	qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
-	qt $IPTABLES -t mangle -F fooX1234
-	qt $IPTABLES -t mangle -X fooX1234
+	qt $IPTABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IPTABLES -t mangle -F $chain
+	qt $IPTABLES -t mangle -X $chain
 	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
     fi
 
     qt $IPTABLES -t raw	   -L -n && RAW_TABLE=Yes
 
     if qt mywhich ipset; then
-	qt ipset -X fooX1234 # Just in case something went wrong the last time
+	qt ipset -X $chain # Just in case something went wrong the last time
 
-	if qt ipset -N fooX1234 iphash ; then
-	    if qt $IPTABLES -A fooX1234 -m set --set fooX1234 src -j ACCEPT; then
-		qt $IPTABLES -D fooX1234 -m set --set fooX1234 src -j ACCEPT
+	if qt ipset -N $chain iphash ; then
+	    if qt $IPTABLES -A $chain -m set --set $chain src -j ACCEPT; then
+		qt $IPTABLES -D $chain -m set --set $chain src -j ACCEPT
 		IPSET_MATCH=Yes
 	    fi
-	    qt ipset -X fooX1234
+	    qt ipset -X $chain
 	fi
     fi
 
-    qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
-    qt $IPTABLES -A fooX1234 -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
-    qt $IPTABLES -A fooX1234 -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+    qt $IPTABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+    qt $IPTABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
+    qt $IPTABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
+    qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
 
-    qt $IPTABLES -A fooX1234 -m realm --realm 4 && REALM_MATCH=Yes
+    qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
 
-    qt $IPTABLES -F fooX1234
-    qt $IPTABLES -X fooX1234
+    qt $IPTABLES -F $chain
+    qt $IPTABLES -X $chain
 
     CAPVERSION=$SHOREWALL_CAPVERSION
 }

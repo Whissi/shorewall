@@ -384,7 +384,7 @@ EOF
 	  } else {
 	    emit( '',
 		  'for chain in INPUT OUTPUT; do',
-		  '    setpolicy \$chain ACCEPT',
+		  '    setpolicy $chain ACCEPT',
 		  'done',
 		  '',
 		  'setpolicy FORWARD DROP',

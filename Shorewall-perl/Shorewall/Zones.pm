@@ -234,6 +234,8 @@ sub determine_zones()
 {
     my @z;
 
+    my $ipv4 = 0;
+
     my $fn = open_file 'zones';
 
     first_entry "$doing $fn...";
@@ -264,6 +266,7 @@ sub determine_zones()
 
 	if ( $type =~ /ipv4/i ) {
 	    $type = 'ipv4';
+	    $ipv4 = 1;
 	} elsif ( $type =~ /^ipsec4?$/i ) {
 	    $type = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
@@ -278,6 +281,7 @@ sub determine_zones()
 	    $type = "firewall";
 	} elsif ( $type eq '-' ) {
 	    $type = 'ipv4';
+	    $ipv4 = 1;
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -302,6 +306,7 @@ sub determine_zones()
     }
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
+    fatal_error "No IPv4 zones defined" unless $ipv4;
 
     my %ordered;
 
@@ -321,6 +326,7 @@ sub determine_zones()
     }
 
     fatal_error "Internal error in determine_zones()" unless scalar @zones == scalar @z;
+
 }
 
 #
@@ -750,6 +756,10 @@ sub validate_interfaces_file( $ )
 
 	push @interfaces, $interface unless $interfaceref->{options}{port};
     }
+    #
+    # Be sure that we have at least one interface
+    #
+    fatal_error "No network interfaces defined" unless @interfaces;
 }
 
 #

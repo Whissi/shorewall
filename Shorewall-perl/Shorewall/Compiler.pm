@@ -710,7 +710,7 @@ EOF
 sub compiler {
 
     my ( $objectfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) = 
-	( '',         '',         -1,          '',          0,      '',       '',   -1 );
+       ( '',          '',         -1,          '',          0,      '',       '',   -1 );
 
     $export = 0;
     $test   = 0;
@@ -725,7 +725,7 @@ sub compiler {
 	 defined($val) && ($val >= -1) && ($val < 3);
      }
 
-    my %elbat = ( object        => { store => \$objectfile },
+    my %parms = ( object        => { store => \$objectfile },
 		  directory     => { store => \$directory  },
 		  verbosity     => { store => \$verbosity ,    edit => \&edit_verbosity } ,
 		  timestamp     => { store => \$timestamp,     edit => \&edit_boolean   } ,
@@ -738,7 +738,7 @@ sub compiler {
 		);
     
     while ( defined ( my $name = shift ) ) {
-	fatal_error "Unknown parameter ($name)" unless my $ref = $elbat{$name};
+	fatal_error "Unknown parameter ($name)" unless my $ref = $parms{$name};
 	fatal_error "Undefined value supplied for parameter $name" unless defined ( my $val = shift ) ;
 	if ( $ref->{edit} ) {
 	    fatal_error "Invalid value ( $val ) supplied for parameter $name" unless $ref->{edit}->($val);

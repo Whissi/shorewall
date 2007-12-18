@@ -1013,11 +1013,16 @@ determine_capabilities() {
 
     [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
 
+    if [ -z "$IPTABLES" ]; then
+	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
+	exit 1
+    fi
+
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
     if ! $IPTABLES -N $chain; then
 	echo "   ERROR: The command \"$IPTABLES -N $chain\" failed" >&2
-	exit 1;
+	exit 1
     fi
 
     qt $IPTABLES -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes

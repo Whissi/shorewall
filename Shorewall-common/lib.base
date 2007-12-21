@@ -456,6 +456,17 @@ encodeaddr() {
 }
 
 #
+# Miserable Hack to work around broken BusyBox ash in OpenWRT
+#
+addr_comp() {
+    test $(bc <<EOF
+$1 > $2
+EOF
+) -eq 1
+
+}
+
+#
 # Enumerate the members of an IP range -- When using a shell supporting only
 # 32-bit signed arithmetic, the range cannot span 128.0.0.0.
 #
@@ -488,19 +499,19 @@ ip_range() {
     first=$(decodeaddr ${1%-*})
     last=$(decodeaddr ${1#*-})
 
-    if [ $first -gt $last ]; then
+    if addr_comp $first $last; then
 	fatal_error "Invalid IP address range: $1"
     fi
 
     l=$(( $last + 1 ))
 
-    while [ $first -le $last ]; do
+    while addr_comp $l $first; do
 	vlsm=
 	x=31
 	y=2
 	z=1
 
-	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
+	while [ $(( $first % $y )) -eq 0 ] && addr_comp $l $(( $first + $y )) ; do
 	    vlsm=/$x
 	    x=$(( $x - 1 ))
 	    z=$y
@@ -527,11 +538,11 @@ ip_range_explicit() {
     first=$(decodeaddr ${1%-*})
     last=$(decodeaddr ${1#*-})
 
-    if [ $first -gt $last ]; then
+    if addr_comp $first $last; then
 	fatal_error "Invalid IP address range: $1"
     fi
 
-    while [ $first -le $last ]; do
+    while ! addr_comp $first $last; do
 	echo $(encodeaddr $first)
 	first=$(($first + 1))
     done
@@ -583,8 +594,10 @@ broadcastaddress() {
 in_network() # $1 = IP address, $2 = CIDR network
 {
     local netmask=$(ip_netmask $2)
-
-    test $(( $(decodeaddr $1) & $netmask)) -eq $(( $(decodeaddr ${2%/*}) & $netmask ))
+    #
+    # We compare the values as strings rather than integers to work around broken BusyBox ash on OpenWRT
+    #
+    test $(( $(decodeaddr $1) & $netmask)) = $(( $(decodeaddr ${2%/*}) & $netmask ))
 }
 
 #

@@ -1659,7 +1659,25 @@ sub expand_rule( $$$$$$$$$$ )
 
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
     my $chain = $chainref->{name};
-    my $initialcmdlevel = $chainref->{cmdlevel};
+
+    our @ends = ();
+    #
+    # In the generated rules, we sometimes need run-time loops or conditional blocks. This function is used
+    # to define such a loop or block.
+    #
+    # $chainref = Reference to the chain
+    # $command  = The shell command that begins the loop or conditional
+    # $end      = The shell keyword ('done' or 'fi') that ends the loop or conditional
+    #
+    # All open loops and conditionals are closed just before expand_rule() exits
+    #
+    sub push_command( $$$ ) {
+	my ( $chainref, $command, $end ) = @_;
+
+	add_command $chainref, $command;
+	incr_cmd_level $chainref;
+	push @ends, $end;
+    }
     #
     # Handle Log Level
     #
@@ -1720,11 +1738,10 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    my $networks = get_interface_nets ( $iiface );
 
-	    add_command( $chainref , join( '', 'for source in ', $networks, '; do' ) );
+	    push_command $chainref, join( '', 'for source in ', $networks, '; do' ), 'done';
 
 	    $rule .= '-s $source ';
 	    
-	    incr_cmd_level $chainref;
 	} else {
 	    fatal_error "Source Interface ($iiface) not allowed when the source zone is the firewall zone" if $restriction & OUTPUT_RESTRICT;
 	    $rule .= match_source_dev( $iiface );
@@ -1745,17 +1762,25 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    if ( @interfaces > 1 ) {
 		my $list = "";
+		my $optional;
 
 		for my $interface ( @interfaces ) {
+		    $optional++ if interface_is_optional $interface;
 		    $list = join( ' ', $list , get_interface_address( $interface ) );
 		}
 
-		add_command( $chainref , "for address in $list; do" );
+		push_command( $chainref , "for address in $list; do" , 'done' );
+
+		push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
 
 		$rule .= '-d $address ';
-		incr_cmd_level $chainref;
 	    } else {
-		$rule .= join ( '', '-d ', get_interface_address( $interfaces[0] ), ' ' );
+		my $interface = $interfaces[0];
+		my $variable  = get_interface_address( $interface );
+
+		push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi') if interface_is_optional( $interface );
+
+		$rule .= "-d $variable ";
 	    }
 
 	    $dest = '';
@@ -1811,17 +1836,25 @@ sub expand_rule( $$$$$$$$$$ )
 
 	    if ( @interfaces > 1 ) {
 		my $list = "";
+		my $optional;
 
 		for my $interface ( @interfaces ) {
+		    $optional++ if interface_is_optional $interface;
 		    $list = join( ' ', $list , get_interface_address( $interface ) );
 		}
 
-		add_command( $chainref , "for address in $list; do" );
+		push_command( $chainref , "for address in $list; do" , 'done' );
+
+		push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
+
 		$rule .= '-m conntrack --ctorigdst $address ';
-		incr_cmd_level $chainref;
 	    } else {
-		get_interface_address $interfaces[0];
-		$rule .= join( '', '-m conntrack --ctorigdst $', interface_address ( $interfaces[0] ), ' ' );
+		my $interface = $interfaces[0];
+		my $variable  = get_interface_address( $interface );
+
+		push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi' ) if interface_is_optional( $interface );
+
+		$rule .= "-m conntrack --ctorigdst $variable ";
 	    }
 
 	    $origdest = '';
@@ -1980,9 +2013,9 @@ sub expand_rule( $$$$$$$$$$ )
 	}
     }
 
-    while ( $chainref->{cmdlevel} > $initialcmdlevel ) {
+    while ( @ends ) {
 	decr_cmd_level $chainref;
-	add_command $chainref, 'done';
+	add_command $chainref, pop @ends;
     }
 
     $diface;

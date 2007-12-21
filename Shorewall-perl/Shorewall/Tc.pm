@@ -497,7 +497,7 @@ sub setup_traffic_shaping() {
 	my $devref  = $tcdevices{$device};
 	my $tcref   = $tcclasses{$device}{$mark};
 	my $devnum  = $devref->{number};
-	my $classid = "$devnum:${prefix}${mark}";
+	my $classid = join( '', $devnum, ':', $prefix, $mark);
 	my $rate    = $tcref->{rate};
 	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
@@ -518,13 +518,11 @@ sub setup_traffic_shaping() {
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
 	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
 	       "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10"
-	       );
+	     );
 	#
 	# add filters
 	#
-	unless ( $devref->{classify} ) {
-	    emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid";
-	}
+	emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
 	#
 	#options
 	#

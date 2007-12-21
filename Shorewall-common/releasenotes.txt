@@ -43,6 +43,10 @@ Other changes in Shorewall 4.1.3.
 3)  Shorewall-perl now generates fatal error conditions when there are
     no IPv4 zones defined and when there are no interfaces defined.
 
+4)  Shorewall now unconditionally uses tc filter rules to classify
+    traffic by MARK value. Previously, Shorewall used the CLASSIFY
+    target in the POSTROUTING chain if it was available.
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero

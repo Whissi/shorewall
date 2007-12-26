@@ -47,6 +47,20 @@ Other changes in Shorewall 4.1.3.
     traffic by MARK value. Previously, Shorewall used the CLASSIFY
     target in the POSTROUTING chain if it was available.
 
+5)  The Shorewall-common installer (install.sh) now works on Windows
+    under Cygwin.
+
+    To install Shorewall-perl under Cygwin:
+
+    $ tar -xf shorewall-perl-4.1.3.tar.bz2
+    $ tar -xf shorewall-common-4.1.3.tar.bz2
+    $ cd shorewall-perl-4.1.3
+    $ ./install.sh
+    $ cd ../shorewall-common-4.1.3
+    $ USER=<your user id> GROUP=None ./install.sh
+    
+    The 'shorewall' program is installed in /bin/ (a.k.a, /usr/bin/).
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero

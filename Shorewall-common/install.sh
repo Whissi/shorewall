@@ -184,6 +184,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 DEBIAN=
+CYGWIN=
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
@@ -207,6 +208,10 @@ else
 	DEST="/etc/rc.d"
 	INIT="shorewall"
 	ARCHLINUX=yes
+    elif [ -d /cygdrive ]; then
+	DEST=
+	INIT=
+	CYGWIN=yes
     fi
 fi
 
@@ -231,9 +236,14 @@ else
     first_install="Yes"
 fi
 
-install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+if [ -z "$CYGWIN" ]; then
+   install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+   echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
+else
+   install_file_with_backup shorewall ${PREFIX}/bin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+   echo "shorewall control program installed in ${PREFIX}/bin/shorewall"
+fi
 
-echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 
 #
 # Install the Firewall Script
@@ -242,12 +252,11 @@ if [ -n "$DEBIAN" ]; then
     install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
     install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
-
-else
+elif [ -n "$INIT" ]; then
     install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 fi
 
-echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
+[ -n "$CYGWIN" ] || echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 
 #
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
@@ -704,7 +713,7 @@ echo "Man Pages Installed"
 #
 install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0755
 
-if [ -z "$PREFIX" -a -n "$first_install" ]; then
+if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
     if [ -n "$DEBIAN" ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall
 	ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall

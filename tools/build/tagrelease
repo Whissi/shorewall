@@ -29,7 +29,7 @@ VERSION=$1
 
 case $VERSION in
     4.0.*)
-	BRANCH=~/shorewall/4.0/
+	BRANCH=~/shorewall/branches/4.0/
 	;;
     4.1.*)
 	BRANCH=~/shorewall/trunk/
@@ -45,13 +45,13 @@ svn mkdir $VERSION
 
 cd $VERSION
 
-for directory in shorewall-common shorewall-shell shorewall-lite shorewall-perl manpages manpages-lite Samples; do
+for directory in Shorewall-common Shorewall-shell Shorewall-lite Shorewall-perl manpages manpages-lite Samples; do
     if [ -d $BRANCH/$directory ]; then
 	rm -f $BRANCH/$directory/*~
 	[ -d $BRANCH/$directory/Shorewall ] && rm -f $BRANCH/$directory/Shorewall/*~
 	svn cp $BRANCH/$directory/ .
     fi
-fi
+done
 
 svn commit -m "Tag version $VERSION"
 

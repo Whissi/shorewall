@@ -1,4 +1,4 @@
-Shorewall 4.1 Patch Release 3.
+Shorewall 4.1 Patch Release 4.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 1  H I G H L I G H T S
@@ -8,58 +8,21 @@ Shorewall 4.1 Patch Release 3.
 
 2) Support for NFLOG has been added.
 
-3) Enhanced operational logging
+3) Enhanced operational logging.
 
-Problems corrected in Shorewall 4.1.3.
+4) The tarball installers now work under Cygwin.
 
-1)  If NFLOG or ULOG was specified with parameters, the resulting
-    iptables-restore input contained elements that were incorrectly
-    up-cased.
+Problems corrected in Shorewall 4.1.4.
 
-2)  If STARTUP_LOG is specified without LOG_VERBOSITY, /sbin/shorewall
-    produces an error.
+1)  Previously, a value of 0 was ignored in the TEST column of tcrules
+    and the MARK column of the rules files. 
 
-3)  If LOG_VERBOSITY is specified without STARTUP_LOG, run-time error
-    messages are produced.
-
-4)  Shorewall-shell was mishandling the entries in /etc/shorewall/rules
-    and in /etc/shorewall/tcrules where both a SOURCE interface and MAC
-    address were specified.
-
-    Example:
-
-    ACCEPT	net:eth0:~01-02-03-04-05-06    $FW	tcp	22
+    Also, the default mask for entries in these columns has been
+    changed from 0xFF to 0xFFFF for compatibility with Shorewall-shell.
 
 Other changes in Shorewall 4.1.3.
 
-1)  If the program named in SHOREWALL_SHELL doesn't exist or is not
-    executable, Shorewall and Shorewall-lite now both fall back to
-    /bin/sh after issuing a warning message. Previously, both
-    terminated with a fatal error.
-
-2)  The error message has been improved when a non-root user attempts
-    "shorewall show capabilities".
-
-3)  Shorewall-perl now generates fatal error conditions when there are
-    no IPv4 zones defined and when there are no interfaces defined.
-
-4)  Shorewall now unconditionally uses tc filter rules to classify
-    traffic by MARK value. Previously, Shorewall used the CLASSIFY
-    target in the POSTROUTING chain if it was available.
-
-5)  The Shorewall-common installer (install.sh) now works on Windows
-    under Cygwin.
-
-    To install Shorewall-perl under Cygwin:
-
-    $ tar -xf shorewall-perl-4.1.3.tar.bz2
-    $ tar -xf shorewall-common-4.1.3.tar.bz2
-    $ cd shorewall-perl-4.1.3
-    $ ./install.sh
-    $ cd ../shorewall-common-4.1.3
-    $ USER=<your user id> GROUP=None ./install.sh
-    
-    The 'shorewall' program is installed in /bin/ (a.k.a, /usr/bin/).
+None.
 
 Migration Issues.
 
@@ -370,3 +333,29 @@ New Features in Shorewall 4.1.
 		/* Allow SSH from home */
 
 	when displayed through the Shorewall show and dump commands.
+
+11) If the program named in SHOREWALL_SHELL doesn't exist or is not
+    executable, Shorewall and Shorewall-lite now both fall back to
+    /bin/sh after issuing a warning message. Previously, both
+    terminated with a fatal error.
+
+12) Shorewall-perl now generates fatal error conditions when there are
+    no IPv4 zones defined and when there are no interfaces defined.
+
+13) Shorewall now unconditionally uses tc filter rules to classify
+    traffic by MARK value. Previously, Shorewall used the CLASSIFY
+    target in the POSTROUTING chain if it was available.
+
+14) The Shorewall-common installer (install.sh) now works on Windows
+    under Cygwin.
+
+    To install Shorewall-perl under Cygwin:
+
+    $ tar -xf shorewall-perl-4.1.3.tar.bz2
+    $ tar -xf shorewall-common-4.1.3.tar.bz2
+    $ cd shorewall-perl-4.1.3
+    $ USER=<your user id> GROUP=None ./install.sh
+    $ cd ../shorewall-common-4.1.3
+    $ USER=<your user id> GROUP=None ./install.sh
+    
+    The 'shorewall' program is installed in /bin/ (a.k.a, /usr/bin/).

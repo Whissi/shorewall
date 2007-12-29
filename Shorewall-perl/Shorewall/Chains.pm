@@ -1145,14 +1145,14 @@ sub do_test ( $$ )
 {
     my ($testval, $mask) = @_;
 
-    return '' unless $testval and $testval ne '-';
+    return '' unless defined $testval and $testval ne '-';
 
     my $invert = $testval =~ s/^!// ? '! ' : '';
     my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";
 
     validate_mark $testval;
 
-    $testval .= '/0xFF' unless ( $testval =~ '/' );
+    $testval .= '/0xFFFF' unless ( $testval =~ '/' );
 
     "$match $testval ";
 }

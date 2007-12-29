@@ -68,7 +68,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     sub check_for_builtin( $ ) {
 	my $chainref = shift;
-	fatal_error "A builtin Chain ($jumpchainref->{name}) may not appear in the accounting file" if $chainref->{builtin};
+	fatal_error "A builtin Chain ($chainref->{name}) may not appear in the accounting file" if $chainref->{builtin};
     }
 
     sub accounting_error() {

@@ -186,7 +186,8 @@
           class="directory">/etc/xen/auto</filename> shown below correspond to
           my configuration under Xen 3.0. I'm now running Xen 3.1 which does
           not use configuration files for the domains but rather keeps the
-          configuration in a database managed by xend.</para>
+          configuration in a database managed by xend. See <link
+          linkend="Xen3.1">below</link>.</para>
         </important></para>
 
       <blockquote>
@@ -309,8 +310,8 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
           </blockquote></para>
       </blockquote>
 
-      <para>Instructions for editing entries in the Xen 3.1 xend database may
-      be found at <ulink
+      <para id="Xen3.1">Instructions for editing entries in the Xen 3.1 xend
+      database may be found at <ulink
       url="http://www.novell.com/documentation/vmserver/config_options/index.html?page=/documentation/vmserver/config_options/data/b8uh3zr.html">http://www.novell.com/documentation/vmserver/config_options/index.html?page=/documentation/vmserver/config_options/data/b8uh3zr.html</ulink>,
       The following are excerpts from the XML representations of the two user
       domains (produced by "xm list -l …").</para>
@@ -433,16 +434,16 @@ bootentry = 'hda2:/boot/vmlinuz-xen,/boot/initrd-xen'
       url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> with the
       exception that I've added a fourth interface for our wireless network.
       The firewall runs a routed <ulink url="OPENVPN.html">OpenVPN
-      server</ulink> to provide roadwarrior access for our two laptops and a
+      server</ulink> to provide roadwarrior access for our three laptops and a
       bridged OpenVPN server for the wireless network in our home. Here is the
       firewall's view of the network:</para>
 
       <graphic align="center" fileref="images/network4a.png" />
 
-      <para>The two laptops can be directly attached to the LAN as shown above
-      or they can be attached wirelessly -- their IP addresses are the same in
-      either case; when they are directly attached, the IP address is assigned
-      by the DHCP server running in Dom0 and when they are attached
+      <para>The three laptops can be directly attached to the LAN as shown
+      above or they can be attached wirelessly -- their IP addresses are the
+      same in either case; when they are directly attached, the IP address is
+      assigned by the DHCP server running in Dom0 and when they are attached
       wirelessly, the IP address is assigned by OpenVPN.</para>
 
       <para>The Shorewall configuration files are shown below. All routing and

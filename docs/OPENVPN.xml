@@ -509,8 +509,6 @@ iface br0 inet static
         instances of OpenVPN; this one and a second tunnel-mode instance for
         remote access.</para>
 
-        <para></para>
-
         <programlisting>dev tap0
 
 local 192.168.3.254
@@ -624,6 +622,35 @@ verb 3</programlisting>
         <para>The configuration was the same as shown above only with
         "/Program Files/OpenVPN" replaced with "/etc/openvpn" (I love
         OpenVPN).</para>
+      </section>
+
+      <section>
+        <title>Ursa (Windows Vista) Configuration</title>
+
+        <para>In December 2007, I acquired a new laptop that runs Windows
+        Vista. After a frustrating effort, I managed to get it working. The
+        keys to getting it working were:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>You must run a version of OpenVPN that is "Vista Ready" -- I
+            used Matias Sundman's combined OpenVPN 2.1_rc4/OpenVPN GUI 1.0.3
+            installer (see <ulink
+            url="http://openvpn.se/">http://openvpn.se/</ulink>).</para>
+          </listitem>
+
+          <listitem>
+            <para>OpenVPN GUI must be run as the Administrator. In the
+            Explorer, right click on the OpenVPN GUI binary and select
+            Properties-&gt;Compatibilty and select "Run this program as an
+            administrator".</para>
+          </listitem>
+
+          <listitem>
+            <para>If you encounter problems where everything looks correct but
+            it doesn't work, reboot and try it again.</para>
+          </listitem>
+        </orderedlist>
       </section>
     </section>
 

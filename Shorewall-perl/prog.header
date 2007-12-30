@@ -390,7 +390,7 @@ in_network() # $1 = IP address, $2 = CIDR network
 {
     local netmask=$(ip_netmask $2)
 
-    test $(( $(decodeaddr $1) & $netmask)) -eq $(( $(decodeaddr ${2%/*}) & $netmask ))
+    test $(( $(decodeaddr $1) & $netmask)) = $(( $(decodeaddr ${2%/*}) & $netmask ))
 }
 
 #

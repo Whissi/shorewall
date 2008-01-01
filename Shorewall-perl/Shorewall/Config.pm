@@ -511,6 +511,9 @@ sub numeric_value ( $ ) {
     $mark =~ /^0/ ? oct $mark : $mark;
 }
 
+#
+# Return the argument expressed in Hex
+#
 sub in_hex( $ ) {
     sprintf '0x%x', $_[0];
 }

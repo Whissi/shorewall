@@ -1152,7 +1152,7 @@ sub do_test ( $$ )
 
     validate_mark $testval;
 
-    $testval = join('/', $testval, $mask ) unless ( $testval =~ '/' );
+    $testval = join('/', $testval, in_hex($mask) ) unless ( $testval =~ '/' );
 
     "$match $testval ";
 }

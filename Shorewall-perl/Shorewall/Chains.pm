@@ -1152,7 +1152,7 @@ sub do_test ( $$ )
 
     validate_mark $testval;
 
-    $testval .= '/0xFFFF' unless ( $testval =~ '/' );
+    $testval = join('/', $testval, $mask ) unless ( $testval =~ '/' );
 
     "$match $testval ";
 }

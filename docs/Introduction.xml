@@ -321,6 +321,13 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     compilation step cause the script to be discarded and the command to be
     aborted. If the compilation step doesn't find any errors then the shell
     script is executed.</para>
+
+    <para>The 'compiled' scripts are placed in the directory <filename
+    class="directory">/var/lib/shorewall</filename> and are named to
+    correspond to the command being executed. For example, the command
+    "/sbin/shorewall start" will generate a script named
+    <filename>/var/lib/shorewall/.start</filename> and, if the compilation is
+    error free, that script will then be executed.</para>
   </section>
 
   <section id="Packages">

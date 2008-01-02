@@ -191,7 +191,7 @@ setup_traffic_shaping()
 
 	if [ $(rate_to_kbit ${inband}) -gt 0 ]; then
 	    run_tc qdisc add dev $device handle ffff: ingress
-	    run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	    run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop classid :1
 	fi
 
 	eval ${dev}_devnum=$devnum

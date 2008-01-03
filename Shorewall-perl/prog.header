@@ -389,7 +389,9 @@ broadcastaddress() {
 in_network() # $1 = IP address, $2 = CIDR network
 {
     local netmask=$(ip_netmask $2)
-
+    #
+    # Use string comparison to work around a broken BusyBox ash in OpenWRT
+    #
     test $(( $(decodeaddr $1) & $netmask)) = $(( $(decodeaddr ${2%/*}) & $netmask ))
 }
 

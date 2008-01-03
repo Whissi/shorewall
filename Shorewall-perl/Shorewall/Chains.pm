@@ -317,7 +317,7 @@ sub initialize() {
     #
     $chainseq = undef;
     #
-    # Keep track of which interfaces have active 'address', 'addresses' and 'networks' variables
+    # Keep track of which interfaces have active 'address', 'addresses', 'networks', etc. variables
     #
     %interfaceaddr      = ();
     %interfaceaddrs     = ();

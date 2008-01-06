@@ -204,6 +204,11 @@ esac
 
 [ $# -eq 1 ] || { echo "Usage: $(basename $0) <version>"; exit 2; }
 
+if [ -z "$PATCHNUM" -a -d shorewall-common ]; then
+    echo "   ERROR: Paranoid to upload a base release when a patch release has been built in the current directory" >&2
+    exit 1 
+fi
+
 [ -d errata ] || mkdir errata
 
 [ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $1" > known_problems.txt

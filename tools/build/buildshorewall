@@ -58,7 +58,7 @@ LOGDIR=$PWD
 #
 RPMDIR=~/rpm/
 #
-# Directory where you want the release to be built
+# Directory where you want the release to be built -- must be fully-qualified
 #
 DIR=$PWD
 #
@@ -358,54 +358,27 @@ case $VERSION in
 	# Beta or Release Candidate
 	#
 	BASEVERSION=${VERSION%-*}
-	[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
-	SHOREWALLLITEDIR=shorewall-lite-${BASEVERSION}
-	TARBALL=shorewall-common-${BASEVERSION}.tgz
-	LITETARBALL=shorewall-lite-${BASEVERSION}.tgz
-	RPMNAME=shorewall-common-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
-	LITERPMNAME=shorewall-lite-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
-	PERLRPMNAME=shorewall-perl-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
-	PERLTARBALL=shorewall-perl-${BASEVERSION}.tgz
-	PERLDIR=shorewall-perl-${BASEVERSION}
-	SHELLRPMNAME=shorewall-shell-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
-	SHELLTARBALL=shorewall-shell-${BASEVERSION}.tgz
-	SHELLDIR=shorewall-shell-${BASEVERSION}
 	;;
     *.*.*.*)
         #
         # Patch Release
         #
-        [ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
-        SHOREWALLLITEDIR=shorewall-lite-${BASEVERSION}
-        TARBALL=shorewall-common-${BASEVERSION}.tgz
-        LITETARBALL=shorewall-lite-${BASEVERSION}.tgz
-        RPMNAME=shorewall-common-${BASEVERSION}-${PATCHNUM}.noarch.rpm
-        LITERPMNAME=shorewall-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
-        PERLRPMNAME=shorewall-perl-${BASEVERSION}-${PATCHNUM}.noarch.rpm
-        PERLTARBALL=shorewall-perl-${BASEVERSION}.tgz
-        PERLDIR=shorewall-perl-${BASEVERSION}
-        SHELLRPMNAME=shorewall-shell-${BASEVERSION}-${PATCHNUM}.noarch.rpm
-        SHELLTARBALL=shorewall-shell-${BASEVERSION}.tgz
-        SHELLDIR=shorewall-shell-${BASEVERSION}
-        ;;
-     *)
-	#
-	# Normal Release
-	#
-	[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${BASEVERSION} || SHOREWALLDIR=shorewall-common
-	SHOREWALLLITEDIR=shorewall-lite-$VERSION
-	TARBALL=shorewall-common-$VERSION.tgz
-	LITETARBALL=shorewall-lite-$VERSION.tgz
-	RPMNAME=shorewall-common-${VERSION}-0base.noarch.rpm
-	LITERPMNAME=shorewall-lite-${VERSION}-0base.noarch.rpm
-	PERLRPMNAME=shorewall-perl-${VERSION}-0base.noarch.rpm
-	PERLDIR=shorewall-perl-$VERSION
-	PERLTARBALL=shorewall-perl-$VERSION.tgz
-	SHELLRPMNAME=shorewall-shell-${VERSION}-0base.noarch.rpm
-	SHELLDIR=shorewall-shell-$VERSION
-	SHELLTARBALL=shorewall-shell-$VERSION.tgz
+	BASEVERSION=${VERSION%-*}
 	;;
 esac
+
+[ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${VERSION} || SHOREWALLDIR=shorewall-common
+SHOREWALLLITEDIR=shorewall-lite-$VERSION
+TARBALL=shorewall-common-$VERSION.tgz
+LITETARBALL=shorewall-lite-$VERSION.tgz
+RPMNAME=shorewall-common-${VERSION}-0base.noarch.rpm
+LITERPMNAME=shorewall-lite-${VERSION}-0base.noarch.rpm
+PERLRPMNAME=shorewall-perl-${VERSION}-0base.noarch.rpm
+PERLDIR=shorewall-perl-$VERSION
+PERLTARBALL=shorewall-perl-$VERSION.tgz
+SHELLRPMNAME=shorewall-shell-${VERSION}-0base.noarch.rpm
+SHELLDIR=shorewall-shell-$VERSION
+SHELLTARBALL=shorewall-shell-$VERSION.tgz
 
 HTMLDIR=shorewall-docs-html-$VERSION
 
@@ -586,8 +559,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	if [ -n "$BUILDCOMMON" ]; then	
 	    progress_message "Building $RPMNAME..."
 
-	    rm -rf $RPMDIR/BUILD/shorewall-${BASEVERSION}
-	    do_or_die "cp shorewall-common-${BASEVERSION}.tgz $RPMDIR/SOURCES/"
+	    cd /tmp
+	    rm -rf shorewall-common-${BASEVERSION}
+	    do_or_die "cp -a $DIR/$SHOREWALLDIR shorewall-common-${BASEVERSION}"
+	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-common-${BASEVERSION}.tgz shorewall-common-${BASEVERSION}"
+	    cd $DIR
 	    do_or_die "cp $SHOREWALLDIR/shorewall-common.spec $RPMDIR/SPECS/"
 	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-common.spec"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
@@ -596,8 +572,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	if [ -n "$BUILDLITE" ]; then	
 	    progress_message "Building $LITERPMNAME..."
 
-	    rm -rf $RPMDIR/BUILD/shorewall-${BASEVERSION}
-	    do_or_die "cp shorewall-lite-${BASEVERSION}.tgz $RPMDIR/SOURCES/"
+	    cd /tmp
+	    rm -rf shorewall-lite-${BASEVERSION}
+	    do_or_die "cp -a $DIR/$SHOREWALLLITEDIR shorewall-lite-${BASEVERSION}" 
+	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-lite-${BASEVERSION}.tgz shorewall-lite-${BASEVERSION}"
+	    cd $DIR
 	    do_or_die "cp $SHOREWALLLITEDIR/shorewall-lite.spec $RPMDIR/SPECS/"
 	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
@@ -606,8 +585,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	if [ -n "$BUILDPERL" ]; then	
 	    progress_message "Building $PERLRPMNAME..."
 
-	    rm -rf $RPMDIR/BUILD/shorewall-perl-${BASEVERSION}*
-	    do_or_die "cp shorewall-perl-${BASEVERSION}.tgz $RPMDIR/SOURCES/"
+	    cd /tmp
+	    rm -rf shorewall-perl-${BASEVERSION}
+	    do_or_die "cp -a $DIR/$PERLDIR shorewall-perl-${BASEVERSION}"
+	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-perl-${BASEVERSION}.tgz shorewall-perl-${BASEVERSION}"
+	    cd $DIR
 	    do_or_die "cp $PERLDIR/shorewall-perl.spec $RPMDIR/SPECS/"
 	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-perl.spec"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME  .
@@ -616,8 +598,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	if [ -n "$BUILDSHELL" ]; then	
 	    progress_message "Building $SHELLRPMNAME..."
 
-	    rm -rf $RPMDIR/BUILD/shorewall-shell-${BASEVERSION}*
-	    do_or_die "cp shorewall-shell-${BASEVERSION}.tgz $RPMDIR/SOURCES/"
+	    cd /tmp
+	    rm -rf shorewall-shell-${BASEVERSION}
+	    do_or_die "cp -a $DIR/$SHELLDIR shorewall-shell-${BASEVERSION}"
+	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-shell-${BASEVERSION}.tgz shorewall-shell-${BASEVERSION}"
+	    cd $DIR
 	    do_or_die "cp $SHELLDIR/shorewall-shell.spec $RPMDIR/SPECS/"
 	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-shell.spec"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$SHELLRPMNAME  .
@@ -800,99 +785,6 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	fi
     fi
 fi
-
-[ -n "$BUILDTARBALL" ] && case $VERSION in
-    *-*|*.*.*.*)
-	#
-	# The original tarball created above didn't include the -Beta or -RC portion of the
-	# name in either the tarball name or the directory name. Create it here
-	#
-	if [ -n "$BUILDCOMMON" ]; then		
-	    progress_message "Creating $DIR/shorewall-common-$VERSION..."
-
-	    rm -rf shorewall-common-$VERSION
-
-	    do_or_die mv $SHOREWALLDIR shorewall-common-$VERSION
-
-	    progress_message "Creating $DIR/shorewall-common-${VERSION}.tgz ..."
-
-	    do_or_die "tar -zcvf shorewall-common-${VERSION}.tgz shorewall-common-$VERSION >> $LOGFILE 2>&1"
-	    do_or_die "tar -jcvf shorewall-common-$VERSION.tar.bz2 shorewall-common-$VERSION >> $LOGFILE 2>&1"
-
-	    if [ -n "$SIGN" ]; then
-		for shoresuffix in tgz tar.bz2; do
-		    betaball=shorewall-common-$VERSION.${shoresuffix}
-		    report "GPG signing $DIR/$betaball tarball"
-		    rm -f ${betaball}.asc
-		    do_or_die "$GPG $betaball"
-		done
-	    fi
-	fi
-
-	if [ -n "$BUILDLITE" ]; then		
-	    progress_message "Creating $DIR/shorewall-lite-$VERSION..."
-
-	    rm -rf shorewall-lite-$VERSION
-
-	    do_or_die mv $SHOREWALLLITEDIR shorewall-lite-$VERSION
-
-	    progress_message "Creating $DIR/shorewall-lite-${VERSION}.tgz ..."
-
-	    do_or_die "tar -zcvf shorewall-lite-${VERSION}.tgz shorewall-lite-$VERSION >> $LOGFILE 2>&1"
-	    do_or_die "tar -jcvf shorewall-lite-$VERSION.tar.bz2 shorewall-lite-$VERSION >> $LOGFILE 2>&1"
-	
-	    progress_message "Creating $DIR/shorewall-lite-$VERSION..."
-	    
-	    rm -rf shorewall-shell-$VERSION
-
-	    do_or_die mv $SHELLDIR shorewall-shell-$VERSION
-
-	    progress_message "Creating $DIR/shorewall-shell-${VERSION}.tgz ..."
-
-	    do_or_die "tar -zcvf shorewall-shell-${VERSION}.tgz shorewall-shell-$VERSION >> $LOGFILE 2>&1"
-	    do_or_die "tar -jcvf shorewall-shell-$VERSION.tar.bz2 shorewall-shell-$VERSION >> $LOGFILE 2>&1"
-	
-	    rm -rf shorewall-perl-$VERSION
-	fi
-	
-	if [ -n "$BUILDPERL" ]; then		
-
-	    rm -rf shorewall-perl-$VERSION
-
-	    do_or_die mv $PERLDIR shorewall-perl-$VERSION
-
-	    progress_message "Creating $DIR/shorewall-perl-${VERSION}.tgz ..."
-
-	    do_or_die "tar -zcvf shorewall-perl-${VERSION}.tgz shorewall-perl-$VERSION >> $LOGFILE 2>&1"
-	    do_or_die "tar -jcvf shorewall-perl-$VERSION.tar.bz2 shorewall-perl-$VERSION >> $LOGFILE 2>&1"
-	fi
-	  
-	if [ -n "$SIGN" ]; then
-	    for shoresuffix in tgz tar.bz2; do
-		if [ -n "$BUILDLITE" ]; then		
-		    betaball=shorewall-lite-$VERSION.${shoresuffix}
-		    report "GPG signing $DIR/$betaball tarball"
-		    rm -f ${betaball}.asc
-		    do_or_die "$GPG $betaball"
-		fi
-
-		if [ -n "$BUILDSHELL" ]; then		
-		    betaball=shorewall-shell-$VERSION.${shoresuffix}
-		    report "GPG signing $DIR/$betaball tarball"
-		    rm -f ${betaball}.asc
-		    do_or_die "$GPG $betaball"
-		fi
-
-		if [ -n "$BUILDPERL" ]; then		
-		    betaball=shorewall-perl-$VERSION.${shoresuffix}
-		    report "GPG signing $DIR/$betaball tarball"
-		    rm -f ${betaball}.asc
-		    do_or_die "$GPG $betaball"
-		fi
-	    done
-	fi
-	;;
-esac
 
 progress_message "Creating md5sums and sha1sums"
 

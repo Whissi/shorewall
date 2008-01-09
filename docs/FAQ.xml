@@ -499,7 +499,7 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
         <listitem>
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
-          <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S)
+          <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
 <emphasis role="bold">eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</emphasis></programlisting>
         </listitem>
 
@@ -589,7 +589,7 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
 
           <para>In /etc/shorewall/masq:</para>
 
-          <programlisting>#INTERFACE    SUBNETS     ADDRESS
+          <programlisting>#INTERFACE    SOURCE      ADDRESS
 <emphasis role="bold">eth2          eth2        192.168.2.254</emphasis></programlisting>
 
           <para>Like the silly hack in FAQ 2 above, this will make all
@@ -2190,7 +2190,7 @@ ACCEPT     loc         modem     tcp       80</programlisting>
 
         <para><filename>/etc/shorewall/masq</filename>:</para>
 
-        <programlisting>#INTERFACE         SUBNET          ADDRESS
+        <programlisting>#INTERFACE         SOURCE          ADDRESS
 eth0               eth1                        # eth1 = interface to local network</programlisting>
 
         <para>For an example of this when the ADSL/Cable modem is bridged, see

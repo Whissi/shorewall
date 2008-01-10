@@ -101,7 +101,9 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 		if ( $cmd eq 'COUNT' ) {
 		    $rule2=1;
 		    $target = jump_to_chain $action;
-		} elsif ( $cmd ne 'JUMP' ) {
+		} elsif ( $cmd eq 'JUMP' ) {
+		    $target = jump_to_chain $action;
+		} else {
 		    accounting_error;
 		}
 	    } else {
@@ -134,7 +136,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 			    '' ,
 			    $target ,
 			    '' ,
-			    '' ,
+			    $disposition ,
 			    ''  );
 	    }
 	}

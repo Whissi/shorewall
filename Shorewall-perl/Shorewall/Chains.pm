@@ -122,7 +122,6 @@ our %EXPORT_TAGS = (
 				       log_rule
 				       expand_rule
 				       addnatjump
-				       insertnatjump
 				       get_interface_address
 				       get_interface_addresses
 				       get_interface_bcasts
@@ -2031,21 +2030,6 @@ sub addnatjump( $$$ ) {
 
     if ( $destref->{referenced} ) {
 	add_rule $nat_table->{$source} , $predicates . "-j $dest";
-    } else {
-	clearrule;
-    }
-}
-
-#
-# If the destination chain exists, then at the position in the source chain given by $$countref, add a jump to the destination.
-#
-sub insertnatjump( $$$$ ) {
-    my ( $source, $dest, $countref, $predicates ) = @_;
-
-    my $destref   = $nat_table->{$dest} || {};
-
-    if ( $destref->{referenced} ) {
-	insert_rule $nat_table->{$source} , ($$countref)++, $predicates . "-j $dest";
     } else {
 	clearrule;
     }

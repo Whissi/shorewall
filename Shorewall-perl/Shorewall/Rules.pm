@@ -1478,30 +1478,10 @@ sub generate_matrix() {
     #
     start_matrix;
 
-    my $prerouting_rule  = 1;
-    my $postrouting_rule = 1;
     my $exclusion_seq    = 1;
     my %chain_exclusions;
     my %policy_exclusions;
     my @interfaces = ( all_interfaces );
-
-    for my $interface ( @interfaces ) {
-	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
-    }
-
-    if ( $config{DYNAMIC_ZONES} ) {
-	for my $interface ( @interfaces ) {
-	    addnatjump 'PREROUTING' , dynamic_in( $interface ), match_source_dev( $interface );
-	}
-    }
-
-    addnatjump 'PREROUTING'  , 'nat_in'  , '';
-    addnatjump 'POSTROUTING' , 'nat_out' , '';
-
-    for my $interface ( @interfaces ) {
-	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
-	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
-    }
 
     #
     # Special processing for complex zones
@@ -1610,7 +1590,7 @@ sub generate_matrix() {
 
 			my $source = match_source_net $net;
 
-			insertnatjump 'PREROUTING' , dnat_chain $zone, \$prerouting_rule, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
+			addnatjump 'PREROUTING' , dnat_chain $zone, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {
@@ -1809,6 +1789,27 @@ sub generate_matrix() {
 	    }
 	}
     }
+    #
+    # Add Nat jumps
+    #
+    for my $interface ( @interfaces ) {
+	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
+    }
+
+    if ( $config{DYNAMIC_ZONES} ) {
+	for my $interface ( @interfaces ) {
+	    addnatjump 'PREROUTING' , dynamic_in( $interface ), match_source_dev( $interface );
+	}
+    }
+
+    addnatjump 'PREROUTING'  , 'nat_in'  , '';
+    addnatjump 'POSTROUTING' , 'nat_out' , '';
+
+    for my $interface ( @interfaces ) {
+	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
+	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
+    }
+
     #
     # Now add the jumps to the interface chains from FORWARD, INPUT, OUTPUT and POSTROUTING
     #

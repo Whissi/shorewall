@@ -103,6 +103,71 @@
     192.168.1.3. If you need to exclude more than one zone, simply use
     multiple ACCEPT+ rules. This technique also may be used when the ACTION is
     REDIRECT.</para>
+
+    <para>Care must be taken when nesting occurs as a result of the use of
+    wildcard interfaces (interface names ends in '+').</para>
+
+    <para>Here's an example.
+    <filename>/etc/shorewall/zones</filename>:<programlisting>        #ZONE    TYPE        OPTION
+        fw       firewall
+        net      ipv4
+        loc      ipv4
+        dmz      ipv4</programlisting></para>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>        #ZONE    INTERFACE      BROADCAST        OPTIONS
+        net      ppp0
+        loc      eth1
+        loc      ppp+
+        dmz      eth2</programlisting></para>
+
+    <para>Because the net zone is declared before the loc zone, net is an
+    implicit sub-zone of loc and in the absence of a net-&gt;... CONTINUE
+    policy, traffic from the net zone will not be passed through loc-&gt;...
+    rules. But DNAT and REDIRECT rules are an exception!</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>DNAT and REDIRECT rules generate two Netfilter rules: a 'nat'
+        table rule that rewrites the destination IP address and/or port
+        number, and a 'filter' table rule that ACCEPTs the rewritten
+        connection.</para>
+      </listitem>
+
+      <listitem>
+        <para>Policies only affect the 'filter' table.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>As a consequence, the following rules will have unexpected
+    behavior:<programlisting>        #ACTION     SOURCE               DEST      PROTO        DEST
+        #                                                       PORT(S)
+        ACCEPT      net                  dmz       tcp          80
+        REDIRECT    loc                  3128      tcp          80</programlisting></para>
+
+    <para>The second rule is intended to redirect local web requests to a
+    proxy running on the firewall and listening on TCP port 3128. But the
+    'nat' part of that rule will cause all connection requests for TCP port 80
+    arriving on interface ppp+ (including ppp0!) to have their destination
+    port rewritten to 3128. Hence, the web server running in the DMZ will be
+    inaccessible from the web.</para>
+
+    <para>The above problem can be corrected in a couple of ways. The first is
+    to rewrite the DNAT rule (assume that the local zone is entirely within
+    192.168.2.0/23):<programlisting>        #ACTION     SOURCE                 DEST      PROTO      DEST
+        #                                                       PORT(S)
+        ACCEPT      net                    dmz       tcp        80
+        REDIRECT    loc:192.168.2.0/23     3128      tcp        80</programlisting></para>
+
+    <para>The second way is to restrict the definition of the loc zone:</para>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>        #ZONE    INTERFACE      BROADCAST        OPTIONS
+        net      ppp0
+        loc      eth1
+        -        ppp+
+        dmz      eth2</programlisting></para>
+
+    <para><filename>/etc/shorewall/hosts</filename>:<programlisting>        #ZONE    HOST(S)             OPTIONS
+        loc      ppp+:192.168.2.0/23</programlisting></para>
   </refsect1>
 
   <refsect1>

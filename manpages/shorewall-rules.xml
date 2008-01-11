@@ -1151,6 +1151,58 @@
         REDIRECT net    $FW::81-90:random   tcp   www</programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Example 9:</term>
+
+        <listitem>
+          <para>Shorewall does not impose as much structure on the Netfilter
+          rules in the 'nat' table as it does on those in the filter table. As
+          a consequence, care must be exercised when using DNAT and REDIRECT
+          rules with zones defined with wildcard interfaces (those ending with
+          '+'. Here is an example:</para>
+
+          <para><ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(8):<programlisting>        #ZONE       TYPE    OPTIONS
+        fw          firewall
+        net         ipv4
+        dmz         ipv4
+        loc         ipv4</programlisting></para>
+
+          <para><ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(8):<programlisting>        #ZONE       INTERFACE       BROADCAST      OPTIONS
+        net         ppp0
+        loc         eth1            detect
+        dmz         eth2            detect
+        -           ppp+                           # Addresses are assigned from 192.168.3.0/24</programlisting></para>
+
+          <para><ulink
+          url="shorewall-hosts.html">shorewall-host</ulink>(8):<programlisting>        #ZONE       HOST(S)              OPTIONS
+        loc         ppp+:192.168.3.0/24</programlisting></para>
+
+          <para>rules:</para>
+
+          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DEST
+        #                                                  PORT(S)
+        REDIRECT    loc             3128       tcp         80                                                   </programlisting>
+
+          <simpara>Note that it would have been tempting to simply define the
+          loc zone entirely in shorewall-interfaces(8):</simpara>
+
+          <para><programlisting>        #******************* INCORRECT *****************
+        #ZONE       INTERFACE       BROADCAST      OPTIONS
+        net         ppp0
+        loc         eth1            detect
+        loc         ppp+
+        dmz         eth2</programlisting></para>
+
+          <para>This would have made it impossible to run a
+          internet-accessible web server in the DMZ because all traffic
+          entering ppp+ interfaces would have been redirected to port 3128 on
+          the firewall and there would have been no net-&gt;fw ACCEPT rule for
+          that traffic.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 

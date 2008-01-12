@@ -1598,7 +1598,7 @@ sub generate_matrix() {
 			    add_rule $preroutingref, $_ for ( @returnstack );
 			    @returnstack = ();
 			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $chainref->{name} );
-			    push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) unless $filter_table->{"${zone}2${fw}"}->{policy} eq 'CONTINUE';
+			    push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $zoneref->{options}{nested};
 			}
 
 			if ( $chain2 ) {

@@ -83,6 +83,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
 #                        options =>    { complex => 0|1
+#                                        nested  => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
 #                                        out     => < policy match string >
@@ -297,7 +298,8 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
+					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) ,
+					  nested  => @parents > 0 } ,
 			  interfaces => {} ,
 			  children   => [] ,
 			  hosts      => {}

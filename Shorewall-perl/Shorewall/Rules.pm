@@ -74,7 +74,7 @@ sub initialize() {
     $sectioned = 0;
     $macro_nest_level = 0;
     $current_param = '';
-    @param_stack;
+    @param_stack = ();
 }
 
 INIT {

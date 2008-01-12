@@ -1484,6 +1484,7 @@ sub generate_matrix() {
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my @returnstack;
+    my $fw = firewall_zone;
     #
     # Special processing for complex zones
     #
@@ -1597,7 +1598,7 @@ sub generate_matrix() {
 			    add_rule $preroutingref, $_ for ( @returnstack );
 			    @returnstack = ();
 			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $chainref->{name} );
-			    push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' );
+			    push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) unless $filter_table->{"${zone}2${fw}"}->{policy} eq 'CONTINUE';
 			}
 
 			if ( $chain2 ) {
@@ -1830,7 +1831,6 @@ sub generate_matrix() {
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
     }
 
-    my $fw = firewall_zone;
     my $chainref = $filter_table->{"${fw}2${fw}"};
 
     add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );

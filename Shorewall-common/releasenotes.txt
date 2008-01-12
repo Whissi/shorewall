@@ -23,6 +23,38 @@ Problems corrected in Shorewall 4.1.4.
 2)  The compilation date recorded in the firewall.conf file produced by
     Shorewall-perl was previously mangled.
 
+3)  Previously, the following situation would result in unexpected
+    behavior.
+
+    /etc/shorewall/zones:
+
+	#ZONE	     TYPE
+	fw	     firewall
+	net	     ipv4
+	loc	     ipv4
+	dmz	     ipv4
+
+    /etc/shorewall/interfaces:
+
+	#ZONE        INTERFACE    BROADCAST      OPTIONS
+	net	     ppp0
+	loc	     eth1
+	loc	     ppp+
+	dmz	     eth2
+
+    /etc/shorewall/rules:
+
+	#ACTION   SOURCE     DEST     PROTO    DEST
+	#                                      PORT(S)
+	ACCEPT    net        dmz      tcp      80
+	REDIRECT  loc        3128     tcp      80
+
+    The web server in the dmz (implied by the first rule) is
+    inaccessible from the 'net' zone because the REDIRECT rule 
+    redirects all traffic arriving on 'ppp+' to local port 3128.
+
+    Shorewall 4.1.4 includes a fix for this problem.
+
 Other changes in Shorewall 4.1.4.
 
 1)  When installing on Cygwin, /etc/shorewall is no longer fully

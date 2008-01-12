@@ -91,6 +91,7 @@ our %EXPORT_TAGS = (
 				       first_chains
 				       ensure_chain
 				       ensure_mangle_chain
+				       ensure_nat_chain
 				       new_standard_chain
 				       new_builtin_chain
 				       new_nat_chain
@@ -673,6 +674,16 @@ sub ensure_mangle_chain($) {
     my $chain = $_[0];
 
     my $chainref = ensure_chain 'mangle', $chain;
+
+    $chainref->{referenced} = 1;
+
+    $chainref;
+}
+
+sub ensure_nat_chain($) {
+    my $chain = $_[0];
+
+    my $chainref = ensure_chain 'nat', $chain;
 
     $chainref->{referenced} = 1;
 

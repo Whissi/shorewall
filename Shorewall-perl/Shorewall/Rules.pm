@@ -1482,7 +1482,8 @@ sub generate_matrix() {
     my %chain_exclusions;
     my %policy_exclusions;
     my @interfaces = ( all_interfaces );
-
+    my $preroutingref = ensure_chain 'nat', 'dnat';
+    my @returnstack;
     #
     # Special processing for complex zones
     #
@@ -1590,7 +1591,14 @@ sub generate_matrix() {
 
 			my $source = match_source_net $net;
 
-			addnatjump 'PREROUTING' , dnat_chain $zone, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
+			my $chainref = $nat_table->{dnat_chain $zone};
+
+			if ( $chainref->{referenced} ) {
+			    add_rule $preroutingref, $_ for ( @returnstack );
+			    @returnstack = ();
+			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $chainref->{name} );
+			    push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' );
+			}
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {
@@ -1795,6 +1803,8 @@ sub generate_matrix() {
     for my $interface ( @interfaces ) {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
     }
+
+    addnatjump 'PREROUTING', 'dnat', '';
 
     if ( $config{DYNAMIC_ZONES} ) {
 	for my $interface ( @interfaces ) {

@@ -108,12 +108,7 @@
     nesting occurs as a result of the use of wildcard interfaces (interface
     names ends in '+').</para>
 
-    <para>Here's an example.
-    <filename>/etc/shorewall/zones</filename>:<programlisting>        #ZONE    TYPE        OPTION
-        fw       firewall
-        net      ipv4
-        loc      ipv4
-        dmz      ipv4</programlisting></para>
+    <para>Here's an example. <filename>/etc/shorewall/zones</filename>:</para>
 
     <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>        #ZONE    INTERFACE      BROADCAST        OPTIONS
         net      ppp0
@@ -152,8 +147,17 @@
     port rewritten to 3128. Hence, the web server running in the DMZ will be
     inaccessible from the web.</para>
 
-    <para>The above problem can be corrected in a couple of ways. The first is
-    to rewrite the DNAT rule (assume that the local zone is entirely within
+    <para>The above problem can be corrected in several ways.</para>
+
+    <para>If you are running Shorewall version 4.1.4 or later, the preferred
+    way is to simply make the nested zones explicit:<programlisting>        #ZONE    TYPE        OPTION
+        fw       firewall
+        loc      ipv4
+        net:loc  ipv4
+        dmz      ipv4</programlisting></para>
+
+    <para>When using other Shorewall versions, the first way is to rewrite the
+    DNAT rule (assume that the local zone is entirely within
     192.168.2.0/23):<programlisting>        #ACTION     SOURCE                 DEST      PROTO      DEST
         #                                                       PORT(S)
         ACCEPT      net                    dmz       tcp        80

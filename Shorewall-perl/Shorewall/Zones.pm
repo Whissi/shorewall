@@ -299,7 +299,7 @@ sub determine_zones()
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
 					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) ,
-					  nested  => 0 } ,
+					  nested  => @parents > 0 } ,
 			  interfaces => {} ,
 			  children   => [] ,
 			  hosts      => {}

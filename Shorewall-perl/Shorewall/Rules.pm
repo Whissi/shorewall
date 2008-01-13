@@ -978,10 +978,11 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     # Take care of irregular syntax and targets
     #
     if ( $actiontype & REDIRECT ) {
+	my $z = $actiontype & NATONLY ? '' : firewall_zone;
 	if ( $dest eq '-' ) {
-	    $dest = join( '', firewall_zone, '::' , $ports =~ /[:,]/ ? '' : $ports );
+	    $dest = join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
 	} else {
-	    $dest = join( '', firewall_zone, '::', $dest ) unless $dest =~ /:/;
+	    $dest = join( '', $z, '::', $dest ) unless $dest =~ /:/;
 	}
     } elsif ( $action eq 'REJECT' ) {
 	$action = 'reject';
@@ -1006,7 +1007,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$source = ALLIPv4;
     }
 
-    if ( $dest =~ /^(.+?):(.*)/ ) {
+    if ( $dest =~ /^(.*?):(.*)/ ) {
 	$destzone = $1;
 	$dest = $2;
     } else {
@@ -1016,8 +1017,13 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 
     fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
     fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
-    fatal_error "Missing destination zone" if $destzone eq '-' || $destzone =~ /^:/;
-    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
+
+    if ( $actiontype & NATONLY ) {
+	warning_message "Destination zone ($destzone) ignored" unless $destzone eq '-' || $destzone eq '';
+    } else {
+	fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
+	fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
+    }
 
     my $restriction = NO_RESTRICT;
 
@@ -1027,16 +1033,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	$restriction = INPUT_RESTRICT if $destzone eq firewall_zone;
     }
 
-    #
-    # Check for illegal bridge port rule
-    #
-    if ( $destref->{type} eq 'bport4' ) {
-	unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
-	    return 1 if $wildcard;
-	    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
-	}
-    }
-
+    my ( $chain, $chainref, $policy );
     #
     # For compatibility with older Shorewall versions
     #
@@ -1045,31 +1042,43 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     # Take care of chain
     #
-    my $chain    = "${sourcezone}2${destzone}";
-    my $chainref = ensure_chain 'filter', $chain;
-    my $policy   = $chainref->{policy};
-
-    if ( $policy eq 'NONE' ) {
-	return 1 if $wildcard;
-	fatal_error "Rules may not override a NONE policy";
-    }
-
-    #
-    # Handle Optimization
-    #
-    if ( $optimize > 0 ) {
-	my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
-	if ( $loglevel ne '' ) {
-	    return 1 if $target eq "${policy}:$loglevel}";
-	} else {
-	    return 1 if $basictarget eq $policy;
+    
+    unless ( $actiontype & NATONLY ) {
+	#
+	# Check for illegal bridge port rule
+	#
+	if ( $destref->{type} eq 'bport4' ) {
+	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
+		return 1 if $wildcard;
+		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
+	    }
 	}
+
+	$chain    = "${sourcezone}2${destzone}";
+	$chainref = ensure_chain 'filter', $chain;
+	$policy   = $chainref->{policy};
+
+	if ( $policy eq 'NONE' ) {
+	    return 1 if $wildcard;
+	    fatal_error "Rules may not override a NONE policy";
+	}
+	#
+	# Handle Optimization
+	#
+	if ( $optimize > 0 ) {
+	    my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
+	    if ( $loglevel ne '' ) {
+		return 1 if $target eq "${policy}:$loglevel}";
+	    } else {
+		return 1 if $basictarget eq $policy;
+	    }
+	}
+	#
+	# Mark the chain as referenced and add appropriate rules from earlier sections.
+	#
+	$chainref = ensure_filter_chain $chain, 1;
     }
 
-    #
-    # Mark the chain as referenced and add appropriate rules from earlier sections.
-    #
-    $chainref = ensure_filter_chain $chain, 1;
     #
     # Generate Fixed part of the rule
     #
@@ -1145,7 +1154,11 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	} else {
 	    fatal_error "A server must be specified in the DEST column in $action rules" if $server eq '';
 
-	    validate_address $server, 0;
+	    if ( $server =~ /^(.+)-(.+)$/ ) {
+		validate_range( $1, $2 );
+	    } else {
+		validate_address $server, 0;
+	    }
 
 	    if ( $action eq 'SAME' ) {
 		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
@@ -1208,8 +1221,6 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	# NONAT or ACCEPT+ -- May not specify a destination interface
 	#
 	fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
-
-	$sourceref->{options}{nested} = 1;
 
 	$origdest = '' unless $origdest and $origdest ne '-';
 
@@ -1547,6 +1558,8 @@ sub generate_matrix() {
 	my $exclusions       = $zoneref->{exclusions};
 	my $frwd_ref         = 0;
 	my $chain            = 0;
+	my $dnatref          = $nat_table->{dnat_chain $zone};
+	my $nested           = $zoneref->{options}{nested};
 
 	if ( $complex ) {
 	    $frwd_ref = $filter_table->{"${zone}_frwd"};
@@ -1561,6 +1574,14 @@ sub generate_matrix() {
 	    push @rule_chains , [ $zone , firewall_zone , $chain2 ];
 	}
 
+	if ( $nested && $dnatref->{referenced} ) {
+	    for my $zone1 ( all_zones ) {
+		if ( $filter_table->{"${zone}2${zone1}"}->{policy} eq 'CONTINUE' ) {
+		    $nested = 0;
+		    last;
+		}
+	    }
+	}
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
@@ -1594,15 +1615,13 @@ sub generate_matrix() {
 
 			my $source = match_source_net $net;
 
-			my $chainref = $nat_table->{dnat_chain $zone};
-
-			if ( $chainref->{referenced} ) {
+			if ( $dnatref->{referenced} ) {
 			    add_rule $preroutingref, $_ for ( @returnstack );
 			    @returnstack = ();
-			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $chainref->{name} );
+			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $dnatref->{name} );
 			}
-			
-			push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $zoneref->{options}{nested};
+
+			push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $nested;
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {

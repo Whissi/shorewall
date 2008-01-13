@@ -23,8 +23,7 @@ Problems corrected in Shorewall 4.1.4.
 2)  The compilation date recorded in the firewall.conf file produced by
     Shorewall-perl was previously mangled.
 
-3)  Previously, the following situation would result in unexpected
-    behavior.
+3)  The following situation would result in unexpected behavior.
 
     /etc/shorewall/zones:
 
@@ -46,15 +45,30 @@ Problems corrected in Shorewall 4.1.4.
 
 	#ACTION   SOURCE     DEST     PROTO    DEST
 	#                                      PORT(S)
-	ACCEPT+   net        dmz      tcp      80
+	ACCEPT    net        dmz      tcp      80
 	REDIRECT  loc        3128     tcp      80
 
     The web server in the dmz (implied by the first rule) is
     inaccessible from the 'net' zone because the REDIRECT rule 
-    redirects all traffic arriving on 'ppp+' to local port 3128 (the
-    ACCEPT+ is behaving like ACCEPT).
+    redirects all traffic arriving on 'ppp+' to local port 3128.
 
-    Shorewall 4.1.4 includes a fix for this problem.
+    Shorewall 4.1.4 includes a fix for this problem that also requires
+    a configuration change.
+
+    The basic problem with the above configuration is that 'net' is a
+    sub-zone of 'loc' (since ppp0 is a subset of ppp+) but Shorewall
+    isn't able to recognize that fact. 
+
+    By changing the /etc/shorewall/zones file to make the parent/child
+    relationship explicit:
+
+    /etc/shorewall/zones:
+
+	#ZONE	     TYPE
+	fw	     firewall
+	loc	     ipv4
+	net:loc	     ipv4
+	dmz	     ipv4
 
 Other changes in Shorewall 4.1.4.
 
@@ -62,6 +76,13 @@ Other changes in Shorewall 4.1.4.
     populated. Rather, only the shorewall.conf and params files are
     installed. As always, the full configuration file set is installed
     in /usr/share/shorewall/configfiles.
+
+2)  Specifying a destination zone in a NAT-only rule now generates a
+    warning and the destination zone is ignored. NAT-only rules are:
+
+    	     NONAT
+	     REDIRECT-
+	     DNAT- 
 
 Migration Issues.
 
@@ -77,6 +98,13 @@ Migration Issues.
     a) A VERBOSITY setting outside the range -1 through 2 is rejected.
     b) After the -v and -q options are applied, the resulting value is
        adjusted to fall within the range -1 through 2.
+
+3)  Specifying a destination zone in a NAT-only rule now generates a
+    warning and the destination zone is ignored. NAT-only rules are:
+
+    	     NONAT
+	     REDIRECT-
+	     DNAT- 
 
 New Features in Shorewall 4.1.
 

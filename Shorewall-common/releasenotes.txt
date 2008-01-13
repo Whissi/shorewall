@@ -46,12 +46,13 @@ Problems corrected in Shorewall 4.1.4.
 
 	#ACTION   SOURCE     DEST     PROTO    DEST
 	#                                      PORT(S)
-	ACCEPT    net        dmz      tcp      80
+	ACCEPT+   net        dmz      tcp      80
 	REDIRECT  loc        3128     tcp      80
 
     The web server in the dmz (implied by the first rule) is
     inaccessible from the 'net' zone because the REDIRECT rule 
-    redirects all traffic arriving on 'ppp+' to local port 3128.
+    redirects all traffic arriving on 'ppp+' to local port 3128 (the
+    ACCEPT+ is behaving like ACCEPT).
 
     Shorewall 4.1.4 includes a fix for this problem.
 

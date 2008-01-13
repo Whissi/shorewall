@@ -1209,6 +1209,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	#
 	fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
 
+	$sourceref->{options}{nested} = 1;
+
 	$origdest = '' unless $origdest and $origdest ne '-';
 
 	if ( $origdest eq 'detect' ) {
@@ -1598,8 +1600,9 @@ sub generate_matrix() {
 			    add_rule $preroutingref, $_ for ( @returnstack );
 			    @returnstack = ();
 			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $chainref->{name} );
-			    push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $zoneref->{options}{nested};
 			}
+			
+			push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $zoneref->{options}{nested};
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {

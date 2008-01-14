@@ -1558,14 +1558,14 @@ sub generate_matrix() {
 	my $exclusions       = $zoneref->{exclusions};
 	my $frwd_ref         = 0;
 	my $chain            = 0;
-	my $dnatref          = $nat_table->{dnat_chain $zone};
+	my $dnatref          = $nat_table->{dnat_chain $zone} || {};
 	my $nested           = $zoneref->{options}{nested};
 
 	if ( $complex ) {
 	    $frwd_ref = $filter_table->{"${zone}_frwd"};
-	    my $dnat_ref = ensure_chain 'nat' , dnat_chain( $zone );
+	    $dnatref = ensure_chain 'nat' , dnat_chain( $zone );
 	    if ( @$exclusions ) {
-		insert_exclusions $dnat_ref, $exclusions if $dnat_ref->{referenced};
+		insert_exclusions $dnatref, $exclusions if $dnatref->{referenced};
 	    }
 	}
 
@@ -1574,12 +1574,39 @@ sub generate_matrix() {
 	    push @rule_chains , [ $zone , firewall_zone , $chain2 ];
 	}
 
-	if ( $nested && $dnatref->{referenced} ) {
-	    for my $zone1 ( all_zones ) {
-		if ( $filter_table->{"${zone}2${zone1}"}->{policy} eq 'CONTINUE' ) {
-		    $nested = 0;
-		    last;
+	if ( $nested ) {
+	    #
+	    # This is a sub-zone. We need to determine if
+	    #
+	    #   a) A parent zone defines DNAT/REDIRECT rules; and
+	    #   b) The current zone has a CONTINUE policy to some other zone.
+	    #
+	    # If a) but not b), then we must avoid sending packets from this
+	    # zone through the DNAT/REDIRECT chain for the parent.
+	    #
+	    my $parenthasnat = 0;
+
+	    for my $parent ( @{$zoneref->{parents}} ) {
+		my $ref = $nat_table->{dnat_chain $parent} || {};
+		$parenthasnat = 1, last if $ref->{referenced};
+	    }
+
+	    if ( $parenthasnat ) {
+		for my $zone1 ( all_zones ) {
+		    if ( $filter_table->{"${zone}2${zone1}"}->{policy} eq 'CONTINUE' ) {
+			#
+			# This zone has a continue policy to another zone. We must
+			# send packets from this zone through the parent's DNAT/REDIRECT chain.
+			#
+			$nested = 0;
+			last;
+		    }
 		}
+	    } else {
+		#
+		# No parent has DNAT so there is nothing to worry about. Don't bother to generate needless RETURN rules in the 'dnat' chain.
+		#
+		$nested = 0;
 	    }
 	}
 	#

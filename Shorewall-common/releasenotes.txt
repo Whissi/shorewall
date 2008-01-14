@@ -60,7 +60,8 @@ Problems corrected in Shorewall 4.1.4.
     isn't able to recognize that fact. 
 
     By changing the /etc/shorewall/zones file to make the parent/child
-    relationship explicit:
+    relationship explicit, Shorewall will now know that 'net' is a
+    sub-zone of 'loc'.
 
     /etc/shorewall/zones:
 
@@ -69,6 +70,10 @@ Problems corrected in Shorewall 4.1.4.
 	loc	     ipv4
 	net:loc	     ipv4
 	dmz	     ipv4
+
+    Be sure that there are no CONTINUE policies from net to another
+    zone and that IMPLICIT_CONTINUE=No (to prevent implicit CONTINUE
+    policies from 'net' to all other zones).
 
 Other changes in Shorewall 4.1.4.
 

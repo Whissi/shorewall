@@ -104,9 +104,8 @@
     multiple ACCEPT+ rules. This technique also may be used when the ACTION is
     REDIRECT.</para>
 
-    <para>When using Shorewall versions before 4.1.4, care must be taken when
-    nesting occurs as a result of the use of wildcard interfaces (interface
-    names ends in '+').</para>
+    <para>Care must be taken when nesting occurs as a result of the use of
+    wildcard interfaces (interface names ends in '+').</para>
 
     <para>Here's an example. <filename>/etc/shorewall/zones</filename>:</para>
 
@@ -149,21 +148,28 @@
 
     <para>The above problem can be corrected in several ways.</para>
 
-    <para>If you are running Shorewall version 4.1.4 or later, the preferred
-    way is to simply make the nested zones explicit:<programlisting>        #ZONE    TYPE        OPTION
+    <para>The preferred way is to use the <option>ifname</option> pppd option
+    to change the 'net' interface to something other than ppp0. That way, it
+    won't match ppp+.</para>
+
+    <para>If you are running Shorewall version 4.1.4 or later, a second way is
+    to simply make the nested zones explicit:<programlisting>        #ZONE    TYPE        OPTION
         fw       firewall
         loc      ipv4
         net:loc  ipv4
         dmz      ipv4</programlisting></para>
 
-    <para>When using other Shorewall versions, the first way is to rewrite the
+    <para>If you take this approach, be sure to set IMPLICIT_CONTINUE=No in
+    <filename>shorewall.conf</filename>.</para>
+
+    <para>When using other Shorewall versions, another way is to rewrite the
     DNAT rule (assume that the local zone is entirely within
     192.168.2.0/23):<programlisting>        #ACTION     SOURCE                 DEST      PROTO      DEST
         #                                                       PORT(S)
         ACCEPT      net                    dmz       tcp        80
         REDIRECT    loc:192.168.2.0/23     3128      tcp        80</programlisting></para>
 
-    <para>The second way is to restrict the definition of the loc zone:</para>
+    <para>Another way is to restrict the definition of the loc zone:</para>
 
     <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>        #ZONE    INTERFACE      BROADCAST        OPTIONS
         net      ppp0

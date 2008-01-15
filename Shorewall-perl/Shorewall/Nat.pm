@@ -120,6 +120,7 @@ sub setup_one_masq($$$$$$$)
     my $pre_nat;
     my $add_snat_aliases = $config{ADD_SNAT_ALIASES};
     my $destnets = '';
+    my $baserule = '';
 
     #
     # Leading '+'
@@ -150,7 +151,34 @@ sub setup_one_masq($$$$$$$)
     #
     $networks = ALLIPv4 if $networks eq '-';
     $destnets = ALLIPv4 if $destnets eq '-';
+    
+    #
+    # Handle IPSEC options, if any
+    #
+    if ( $ipsec ne '-' ) {
+	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
+	
+	if ( $ipsec =~ /^yes$/i ) {
+	    $baserule .= '-m policy --pol ipsec --dir out ';
+	} elsif ( $ipsec =~ /^no$/i ) {
+	    $baserule .= '-m policy --pol none --dir out ';
+	} else {
+	    $baserule .= do_ipsec_options $ipsec;
+	}
+    } elsif ( $capabilities{POLICY_MATCH} ) {
+	$baserule .= '-m policy --pol none --dir out ';
+    }
 
+    #
+    # Handle Protocol and Ports
+    #
+    $baserule .= do_proto $proto, $ports, '';
+
+    #
+    # Handle Mark
+    #
+    $baserule .= do_test( $mark, 0xFF) if $mark ne '-';
+	
     for my $fullinterface (split /,/, $interfacelist ) {
 	my $rule = '';
 	my $target = '-j MASQUERADE ';
@@ -171,32 +199,7 @@ sub setup_one_masq($$$$$$$)
 	fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
 
 	my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
-	#
-	# Handle IPSEC options, if any
-	#
-	if ( $ipsec ne '-' ) {
-	    fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
-	    
-	    if ( $ipsec =~ /^yes$/i ) {
-		$rule .= '-m policy --pol ipsec --dir out ';
-	    } elsif ( $ipsec =~ /^no$/i ) {
-		$rule .= '-m policy --pol none --dir out ';
-	    } else {
-		$rule .= do_ipsec_options $ipsec;
-	    }
-	} elsif ( $capabilities{POLICY_MATCH} ) {
-	    $rule .= '-m policy --pol none --dir out ';
-	}
-	
-	#
-	# Handle Protocol and Ports
-	#
-	$rule .= do_proto $proto, $ports, '';
-	#
-	# Handle Mark
-	#
-	$rule .= do_test( $mark, 0xFF) if $mark ne '-';
-	
+
 	my $detectaddress = 0;
 	my $exceptionrule = '';
 	my $randomize     = '';
@@ -247,11 +250,11 @@ sub setup_one_masq($$$$$$$)
 			    $exceptionrule = do_proto( $proto, '', '' );
 			}
 		    }
-		    
+
 		    $target .= $addrlist;
 		}
 	    }
-	    
+
 	    $target .= $randomize;
 	} else {
 	    $add_snat_aliases = 0;
@@ -261,7 +264,7 @@ sub setup_one_masq($$$$$$$)
 	#
 	expand_rule( $chainref ,
 		     POSTROUTE_RESTRICT ,
-		     $rule ,
+		     $baserule . $rule ,
 		     $networks ,
 		     $destnets ,
 		     '' ,

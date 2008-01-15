@@ -203,6 +203,12 @@ ftp&gt;</programlisting>
       /lib/modules/&lt;<emphasis>kernel-version</emphasis>&gt;/kernel/net/ipv4/netfilter/.</para>
     </important>
 
+    <important>
+      <para>Because the ftp helper modules must read and modify commands being
+      sent over the command channel, they won't work when the command channel
+      is encrypted through use of TLS or SSL.</para>
+    </important>
+
     <example id="Example1">
       <title>Example (Kernel 3.2.20)</title>
 

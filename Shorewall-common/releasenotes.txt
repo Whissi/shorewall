@@ -87,7 +87,56 @@ Other changes in Shorewall 4.1.4.
 
     	     NONAT
 	     REDIRECT-
-	     DNAT- 
+	     DNAT-
+
+3)  The /etc/shorewall/masq and /etc/shorewall/nat file now accept a
+    comma-separated list of interface names where before only a single
+    interface name could be listed (Shorewall-perl only).
+
+    This feature is not for beginners. It iterates over the
+    list of interfaces, substituting each interface in place of the
+    list and processing the resulting entry according to the semantics
+    of earlier Shorewall versions. If you don't know where to use this,
+    don't try.
+
+    Example 1:
+
+    /etc/shorewall/masq:
+
+    #INTERFACE              SOURCE          ADDRESS
+    eth0,eth1		    eth2	    1.2.3.4
+
+    equivalent to:
+
+    #INTERFACE              SOURCE          ADDRESS
+    eth0		    eth2	    1.2.3.4
+    eth1		    eth2	    1.2.3.4
+
+    Example 2:
+
+    /etc/shorewall/masq:
+
+    #INTERFACE			SOURCE      ADDRESS
+    eth0,eth1::192.168.1.0/24	eth2	    1.2.3.4
+
+    equivalent to:
+
+    #INTERFACE              SOURCE          ADDRESS
+    eth0::192.168.1.0/24    eth2	    1.2.3.4
+    eth1::192.168.1.0/24    eth2	    1.2.3.4
+
+    Example 3:
+
+    /etc/shorewall/nat:
+
+    #EXTERNAL        INTERFACE       INTERNAL
+    206.124.146.178  eth0,wlan0      192.168.1.3
+
+    equivalent to:
+
+    #EXTERNAL        INTERFACE       INTERNAL
+    206.124.146.178  eth0            192.168.1.3
+    206.124.146.178  wlan0           192.168.1.3
 
 Migration Issues.
 

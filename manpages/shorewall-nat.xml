@@ -57,11 +57,11 @@
 
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> —
-        <emphasis>interface</emphasis>[<emphasis
+        <emphasis>interfacelist</emphasis>[<emphasis
         role="bold">:</emphasis>[<emphasis>digit</emphasis>]]</term>
 
         <listitem>
-          <para>Interface that has the <emphasis
+          <para>Interfacees that have the <emphasis
           role="bold">EXTERNAL</emphasis> address. If ADD_IP_ALIASES=Yes in
           <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5),
           Shorewall will automatically add the EXTERNAL address to this
@@ -70,8 +70,13 @@
           want Shorewall to add the alias with this name (e.g., "eth0:0").
           That allows you to see the alias with ifconfig. <emphasis
           role="bold">That is the only thing that this name is good for -- you
-          cannot use it anwhere else in your Shorewall
-          configuration.</emphasis></para>
+          cannot use it anwhere else in your Shorewall configuration.
+          </emphasis></para>
+
+          <para>Prior to Shorewall 4.1.4,
+          <replaceable>interfacelist</replaceable> must be a single interface
+          name. Beginning with Shorewall-perl 4.1.4, Shorewall-perl users may
+          specify a comma-separated list of interfaces.</para>
 
           <para>If you want to override ADD_IP_ALIASES=Yes for a particular
           entry, follow the interface name with ":" and no digit (e.g.,

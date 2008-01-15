@@ -115,187 +115,189 @@ sub do_ipsec_options($)
 #
 sub setup_one_masq($$$$$$$)
 {
-    my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark) = @_;
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark) = @_;
 
-    my $rule = '';
     my $pre_nat;
     my $add_snat_aliases = $config{ADD_SNAT_ALIASES};
     my $destnets = '';
-    my $target = '-j MASQUERADE ';
-
-    #
-    # Handle IPSEC options, if any
-    #
-    if ( $ipsec ne '-' ) {
-	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
-
-	if ( $ipsec =~ /^yes$/i ) {
-	    $rule .= '-m policy --pol ipsec --dir out ';
-	} elsif ( $ipsec =~ /^no$/i ) {
-	    $rule .= '-m policy --pol none --dir out ';
-	} else {
-	    $rule .= do_ipsec_options $ipsec;
-	}
-    } elsif ( $capabilities{POLICY_MATCH} ) {
-	$rule .= '-m policy --pol none --dir out ';
-    }
 
     #
     # Leading '+'
     #
-    $pre_nat = 1 if $fullinterface =~ s/^\+//;
+    $pre_nat = 1 if $interfacelist =~ s/^\+//;
     #
     # Parse the remaining part of the INTERFACE column
     #
-    if ( $fullinterface =~ /^([^:]+)::([^:]*)$/ ) {
+    if ( $interfacelist =~ /^([^:]+)::([^:]*)$/ ) {
 	$add_snat_aliases = 0;
 	$destnets = $2;
-	$fullinterface = $1;
-    } elsif ( $fullinterface =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
+	$interfacelist = $1;
+    } elsif ( $interfacelist =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
 	$destnets = $2;
-	$fullinterface = $1;
-    } elsif ( $fullinterface =~ /^([^:]+):$/ ) {
+	$interfacelist = $1;
+    } elsif ( $interfacelist =~ /^([^:]+):$/ ) {
 	$add_snat_aliases = 0;
-	$fullinterface = $1;
-    } elsif ( $fullinterface =~ /^([^:]+):([^:]*)$/ ) {
+	$interfacelist = $1;
+    } elsif ( $interfacelist =~ /^([^:]+):([^:]*)$/ ) {
 	my ( $one, $two ) = ( $1, $2 );
 	if ( $2 =~ /\./ ) {
-	    $fullinterface = $one;
+	    $interfacelist = $one;
 	    $destnets = $two;
 	}
     }
-
-    #
-    # Isolate and verify the interface part
-    #
-    ( my $interface = $fullinterface ) =~ s/:.*//;
-
-    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
-	$interface = $1;
-	my $realm  = $2;
-	$fullinterface =~ s/[(]\w*[)]//;
-	$realm = lookup_provider( $realm ) unless $realm =~ /^\d+$/;
-	    
-	$rule .= "-m realm --realm $realm ";
-    }
-
-    fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
-
-    my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
     #
     # If there is no source or destination then allow all addresses
     #
     $networks = ALLIPv4 if $networks eq '-';
     $destnets = ALLIPv4 if $destnets eq '-';
-    #
-    # Handle Protocol and Ports
-    #
-    $rule .= do_proto $proto, $ports, '';
-    #
-    # Handle Mark
-    #
-    $rule .= do_test( $mark, 0xFF) if $mark ne '-';
 
-    my $detectaddress = 0;
-    my $exceptionrule = '';
-    my $randomize     = '';
-    #
-    # Parse the ADDRESSES column
-    #
-    if ( $addresses ne '-' ) {
-	if ( $addresses eq 'random' ) {
-	    $randomize = '--random ';
-	} else {
-	    $addresses =~ s/:random$// and $randomize = '--random ';
+    for my $fullinterface (split /,/, $interfacelist ) {
+	my $rule = '';
+	my $target = '-j MASQUERADE ';
+	#
+	# Isolate and verify the interface part
+	#
+	( my $interface = $fullinterface ) =~ s/:.*//;
 
-	    if ( $addresses =~ /^SAME:nodst:/ ) {
-		fatal_error "':random' is not supported by the SAME target" if $randomize;
-		$target = '-j SAME --nodst ';
-		$addresses =~ s/.*://;
-		for my $addr ( split /,/, $addresses ) {
-		    $target .= "--to $addr ";
-		}
-	    } elsif ( $addresses =~ /^SAME:/ ) {
-		fatal_error "':random' is not supported by the SAME target" if $randomize;
-		$target = '-j SAME ';
-		$addresses =~ s/.*://;
-		for my $addr ( split /,/, $addresses ) {
-		    $target .= "--to $addr ";
-		}
-	    } elsif ( $addresses eq 'detect' ) {
-		my $variable = get_interface_address $interface;
-		$target = "-j SNAT --to-source $variable";
-		
-		if ( interface_is_optional $interface ) {
-		    add_commands( $chainref,
-				  '',
-				  "if [ \"$variable\" != 0.0.0.0 ]; then" );
-		    incr_cmd_level( $chainref );
-		    $detectaddress = 1;
-		}
+	if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
+	    $interface = $1;
+	    my $realm  = $2;
+	    $fullinterface =~ s/[(]\w*[)]//;
+	    $realm = lookup_provider( $realm ) unless $realm =~ /^\d+$/;
+	    
+	    $rule .= "-m realm --realm $realm ";
+	}
+
+	fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
+
+	my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
+	#
+	# Handle IPSEC options, if any
+	#
+	if ( $ipsec ne '-' ) {
+	    fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
+	    
+	    if ( $ipsec =~ /^yes$/i ) {
+		$rule .= '-m policy --pol ipsec --dir out ';
+	    } elsif ( $ipsec =~ /^no$/i ) {
+		$rule .= '-m policy --pol none --dir out ';
 	    } else {
-		my $addrlist = '';
-		for my $addr ( split /,/, $addresses ) {
-		    if ( $addr =~ /^.*\..*\..*\./ ) {
-			$target = '-j SNAT ';
-			$addrlist .= "--to-source $addr ";
-			$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
-		    } else {
-			$addr =~ s/^://;
-			$addrlist .= "--to-ports $addr ";
-			$exceptionrule = do_proto( $proto, '', '' );
-		    }
-		}
+		$rule .= do_ipsec_options $ipsec;
+	    }
+	} elsif ( $capabilities{POLICY_MATCH} ) {
+	    $rule .= '-m policy --pol none --dir out ';
+	}
+	
+	#
+	# Handle Protocol and Ports
+	#
+	$rule .= do_proto $proto, $ports, '';
+	#
+	# Handle Mark
+	#
+	$rule .= do_test( $mark, 0xFF) if $mark ne '-';
+	
+	my $detectaddress = 0;
+	my $exceptionrule = '';
+	my $randomize     = '';
+	#
+	# Parse the ADDRESSES column
+	#
+	if ( $addresses ne '-' ) {
+	    if ( $addresses eq 'random' ) {
+		$randomize = '--random ';
+	    } else {
+		$addresses =~ s/:random$// and $randomize = '--random ';
 		
-		$target .= $addrlist;
+		if ( $addresses =~ /^SAME:nodst:/ ) {
+		    fatal_error "':random' is not supported by the SAME target" if $randomize;
+		    $target = '-j SAME --nodst ';
+		    $addresses =~ s/.*://;
+		    for my $addr ( split /,/, $addresses ) {
+			$target .= "--to $addr ";
+		    }
+		} elsif ( $addresses =~ /^SAME:/ ) {
+		    fatal_error "':random' is not supported by the SAME target" if $randomize;
+		    $target = '-j SAME ';
+		    $addresses =~ s/.*://;
+		    for my $addr ( split /,/, $addresses ) {
+			$target .= "--to $addr ";
+		    }
+		} elsif ( $addresses eq 'detect' ) {
+		    my $variable = get_interface_address $interface;
+		    $target = "-j SNAT --to-source $variable";
+		    
+		    if ( interface_is_optional $interface ) {
+			add_commands( $chainref,
+				      '',
+				      "if [ \"$variable\" != 0.0.0.0 ]; then" );
+			incr_cmd_level( $chainref );
+			$detectaddress = 1;
+		    }
+		} else {
+		    my $addrlist = '';
+		    for my $addr ( split /,/, $addresses ) {
+			if ( $addr =~ /^.*\..*\..*\./ ) {
+			    $target = '-j SNAT ';
+			    $addrlist .= "--to-source $addr ";
+			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
+			} else {
+			    $addr =~ s/^://;
+			    $addrlist .= "--to-ports $addr ";
+			    $exceptionrule = do_proto( $proto, '', '' );
+			}
+		    }
+		    
+		    $target .= $addrlist;
+		}
 	    }
+	    
+	    $target .= $randomize;
+	} else {
+	    $add_snat_aliases = 0;
 	}
-
-	$target .= $randomize;
-    } else {
-	$add_snat_aliases = 0;
-    }
-    #
-    # And Generate the Rule(s)
-    #
-    expand_rule( $chainref ,
-		 POSTROUTE_RESTRICT ,
-		 $rule ,
-		 $networks ,
-		 $destnets ,
-		 '' ,
-		 $target ,
-		 '' ,
-		 '' ,
-		 $exceptionrule );
-
-    if ( $detectaddress ) {
-	decr_cmd_level( $chainref );
-	add_command( $chainref , 'fi' );
-    }
-
-    if ( $add_snat_aliases ) {
-	my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
-	fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
-	for my $address ( split /,/, $addresses ) {
-	    my ( $addrs, $port ) = split /:/, $address;
-	    next unless $addrs;
-	    next if $addrs eq 'detect';
-	    for my $addr ( ip_range_explicit $addrs ) {
-		unless ( $addresses_to_add{$addr} ) {
-		    emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
-		    $addresses_to_add{$addr} = 1;
-		    if ( defined $alias ) {
-			push @addresses_to_add, $addr, "$interface:$alias";
-			$alias++;
-		    } else {
-			push @addresses_to_add, $addr, $interface;
+	#
+	# And Generate the Rule(s)
+	#
+	expand_rule( $chainref ,
+		     POSTROUTE_RESTRICT ,
+		     $rule ,
+		     $networks ,
+		     $destnets ,
+		     '' ,
+		     $target ,
+		     '' ,
+		     '' ,
+		     $exceptionrule );
+	
+	if ( $detectaddress ) {
+	    decr_cmd_level( $chainref );
+	    add_command( $chainref , 'fi' );
+	}
+	
+	if ( $add_snat_aliases ) {
+	    my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
+	    fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
+	    for my $address ( split /,/, $addresses ) {
+		my ( $addrs, $port ) = split /:/, $address;
+		next unless $addrs;
+		next if $addrs eq 'detect';
+		for my $addr ( ip_range_explicit $addrs ) {
+		    unless ( $addresses_to_add{$addr} ) {
+			emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
+			$addresses_to_add{$addr} = 1;
+			if ( defined $alias ) {
+			    push @addresses_to_add, $addr, "$interface:$alias";
+			    $alias++;
+			} else {
+			    push @addresses_to_add, $addr, $interface;
+			}
 		    }
 		}
 	    }
 	}
     }
-
+	
     progress_message "   Masq record \"$currentline\" $done";
 
 }
@@ -399,7 +401,6 @@ sub do_one_nat( $$$$$ )
 	}
     }
 
-    progress_message "   NAT entry \"$currentline\" $done";
 }
 
 #
@@ -413,12 +414,20 @@ sub setup_nat() {
     
     while ( read_a_line ) {
 
-	my ( $external, $interface, $internal, $allints, $localnat ) = split_line1 3, 5, 'nat file';
+	my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 3, 5, 'nat file';
 
 	if ( $external eq 'COMMENT' ) {
 	    process_comment;
 	} else {
-	    do_one_nat $external, $interface, $internal, $allints, $localnat;
+	    ( $interfacelist, my $digit ) = split /:/, $interfacelist;
+
+	    $digit = defined $digit ? ":$digit" : '';
+
+	    for my $interface ( split /,/, $interfacelist ) {
+		do_one_nat $external, "${interface}${digit}", $internal, $allints, $localnat;
+	    }
+
+	    progress_message "   NAT entry \"$currentline\" $done";
 	}
 
     }

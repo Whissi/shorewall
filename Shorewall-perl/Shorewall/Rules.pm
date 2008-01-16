@@ -1496,7 +1496,6 @@ sub generate_matrix() {
     my %policy_exclusions;
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
-    my @returnstack;
     my $fw = firewall_zone;
     #
     # Special processing for complex zones
@@ -1643,12 +1642,17 @@ sub generate_matrix() {
 			my $source = match_source_net $net;
 
 			if ( $dnatref->{referenced} ) {
-			    add_rule $preroutingref, $_ for ( @returnstack );
-			    @returnstack = ();
+			    #
+			    # There are DNAT/REDIRECT rules with this zone as the source.
+			    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
+			    #
 			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $dnatref->{name} );
 			}
-
-			push @returnstack, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $nested;
+			#
+			# If this zone has parents with DNAT/REDIRECT rules and there are no CONTINUE polcies with this zone as the source
+			# then add a RETURN jump for this source network.
+			#
+			add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $nested;
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {

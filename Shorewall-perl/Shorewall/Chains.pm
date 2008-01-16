@@ -1410,7 +1410,7 @@ sub match_ipsec_out( $$ ) {
 sub log_rule_limit( $$$$$$$$ ) {
     my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, $predicates ) = @_;
 
-    my $prefix;
+    my $prefix = '';
 
     $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
 
@@ -1423,38 +1423,48 @@ sub log_rule_limit( $$$$$$$$ ) {
 	$predicates .= $limit if $limit;
     }
 
-    if ( $tag ) {
-	if ( $config{LOGTAGONLY} ) {
-	    $chain = $tag;
-	    $tag   = '';
+    if ( $config{LOGFORMAT} =~ /^\s*$/ ) {
+	if ( $level =~ '^ULOG' ) {
+	    $prefix = "-j $level ";
+	} elsif  ( $level =~ /^NFLOG/ ) {
+	    $prefix = "-j $level ";
 	} else {
-	    $tag .= ' ';
+	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level ";
 	}
     } else {
-	$tag = '' unless defined $tag;
+	if ( $tag ) {
+	    if ( $config{LOGTAGONLY} ) {
+		$chain = $tag;
+		$tag   = '';
+	    } else {
+		$tag .= ' ';
+	    }
+	} else {
+	    $tag = '' unless defined $tag;
+	}
+
+	$disposition =~ s/\s+.*//;
+	
+	if ( $globals{LOGRULENUMBERS} ) {
+	    $prefix = (sprintf $config{LOGFORMAT} , $chain , $chainref->{log}++, $disposition ) . $tag;
+	} else {
+	    $prefix = (sprintf $config{LOGFORMAT} , $chain , $disposition) . $tag;
+	}
+
+	if ( length $prefix > 29 ) {
+	    $prefix = substr( $prefix, 0, 28 ) . ' ';
+	    warning_message "Log Prefix shortened to \"$prefix\"";
+	}
+
+	if ( $level =~ '^ULOG' ) {
+	    $prefix = "-j $level --ulog-prefix \"$prefix\" ";
+	} elsif  ( $level =~ /^NFLOG/ ) {
+	    $prefix = "-j $level --nflog-prefix \"$prefix\" ";
+	} else {
+	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
+	}
     }
 
-    $disposition =~ s/\s+.*//;
-
-    if ( $globals{LOGRULENUMBERS} ) {
-	$prefix = (sprintf $config{LOGFORMAT} , $chain , $chainref->{log}++, $disposition ) . $tag;
-    } else {
-	$prefix = (sprintf $config{LOGFORMAT} , $chain , $disposition) . $tag;
-    }
-
-    if ( length $prefix > 29 ) {
-	$prefix = substr( $prefix, 0, 28 ) . ' ';
-	warning_message "Log Prefix shortened to \"$prefix\"";
-    }
-
-    if ( $level =~ '^ULOG' ) {
-	$prefix = "-j $level --ulog-prefix \"$prefix\" ";
-    } elsif  ( $level =~ /^NFLOG/ ) {
-	$prefix = "-j $level --nflog-prefix \"$prefix\" ";
-    } else {
-	$prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
-    }
-    
     if ( $command eq 'add' ) {
 	add_rule ( $chainref, $predicates . $prefix , 1 );
     } else {

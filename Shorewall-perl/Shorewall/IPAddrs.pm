@@ -69,10 +69,22 @@ sub valid_address( $ ) {
 sub validate_address( $$ ) {
     my ( $addr, $allow_name ) =  @_;
 
+    my @addrs = ( $addr );
+    
     unless ( valid_address $addr ) {
 	fatal_error "Invalid IP Address ($addr)" unless $allow_name;
-	fatal_error "Unknown Host ($addr)" unless defined gethostbyname $addr;
+	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname $addr);
+
+	if ( defined wantarray ) {
+	    shift @addrs for (1..4);
+	    for ( @addrs ) {
+		my (@a) = unpack('C4',$_);
+		$_ = join('.', @a );
+	    }
+	}
     }
+
+    defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
 sub validate_net( $$ ) {

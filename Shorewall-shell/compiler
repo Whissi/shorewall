@@ -2504,7 +2504,7 @@ process_macro() # $1 = target
 
     while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 
-	[ mtarget eq 'COMMENT' ] && continue
+	[ $mtarget = COMMENT ] && continue
 
 	mtarget=$(merge_levels $itarget $mtarget)
 

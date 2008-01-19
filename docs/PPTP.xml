@@ -391,27 +391,7 @@ DNAT         net            loc:<emphasis>&lt;server address&gt;</emphasis>  47 
   <section id="ClientsBehind">
     <title>PPTP Clients Running Behind your Firewall</title>
 
-    <para>You shouldn't have to take any special action for this case unless
-    you wish to connect multiple clients to the same external server. In that
-    case, you must install the PPTP connection/tracking and NAT patch from
-    <ulink url="http://www.netfilter.org">Netfilter Patch-O-Mati</ulink>c
-    (some distributions are now shipping with this patch installed). I
-    recommend that you also add these four lines to your
-    /etc/shorewall/modules file:</para>
-
-    <programlisting>loadmodule ip_conntrack_proto_gre
-loadmodule ip_conntrack_pptp
-loadmodule ip_nat_pptp
-loadmodule ip_nat_proto_gre</programlisting>
-
-    <para>For LEAF/Bering users, the 2.4.20 kernel as already been patched as
-    described at the URL above and the three modules are included in the
-    Bering 1.2 modules tarball.</para>
-
-    <warning>
-      <para>Installing the above modules will prevent any GRE tunnels that you
-      have from working correctly.</para>
-    </warning>
+    <para>Pleas see <ulink url="VPM.htm">this article</ulink>.</para>
   </section>
 
   <section id="ClientFW">

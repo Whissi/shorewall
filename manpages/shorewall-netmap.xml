@@ -66,7 +66,16 @@
         <listitem>
           <para>The name of a network interface. The interface must be defined
           in <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          Prior to Shorewall 4.1.4, this must be an exact match.
+          Shorewall-perl 4.1.4 and later allow loose matches to wildcard
+          entries in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5). For
+          example, <filename class="devicefile">ppp0</filename> in this file
+          will match a <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(8)
+          entry that defines <filename
+          class="devicefile">ppp+</filename>.</para>
         </listitem>
       </varlistentry>
 

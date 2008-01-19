@@ -227,7 +227,7 @@ setup_masq()
 		build_exclusion_chain newchain nat "$nomasq" "$destnets"
 
 		if [ -n "$networks" ]; then
-		    for s in $networks; do
+		    for s in $(separate_list networks); do
 			addnatrule $chain $(source_ip_range $s) $proto $ports $mark $policy -j $newchain
 		    done
 		    networks=
@@ -261,7 +261,7 @@ __EOF__
 		    build_exclusion_chain newchain nat $nomasq
 
 		    if [ -n "$networks" ]; then
-			for s in $networks; do
+			for s in $(separate_list $networks); do
 			    for destnet in $(separate_list $destnets); do
 				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $mark $policy -j $newchain
 			    done
@@ -388,7 +388,7 @@ __EOF__
 	fi
 
 	if [ -n "$networks" ]; then
-	    for network in $networks; do
+	    for network in $(separate_list $networks); do
 		for destnet in $(separate_list $destnets); do
 		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $mark $policy -j $target $addrlist
 		done

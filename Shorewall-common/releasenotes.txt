@@ -138,6 +138,22 @@ Other changes in Shorewall 4.1.4.
     206.124.146.178  eth0            192.168.1.3
     206.124.146.178  wlan0           192.168.1.3
 
+4)  Previously, the INTERFACE name used in the masq, nat and netmap
+    files had to exactly match the name of an interface from the
+    interfaces file. Beginning with Shorewall-perl 4.1.4, the
+    interface may loosely match a wildcard entry in the interfaces
+    file.
+
+    Example:
+
+    /etc/shorewall/interfaces:
+
+	vpn	tun+	
+
+    /etc/shorewall/masq:
+
+	tun1	192.168.4.0/24
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero

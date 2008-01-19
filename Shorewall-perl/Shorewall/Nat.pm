@@ -196,7 +196,12 @@ sub setup_one_masq($$$$$$$)
 	    $rule .= "-m realm --realm $realm ";
 	}
 
-	fatal_error "Unknown interface ($interface)" unless find_interface( $interface )->{root};
+	fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
+
+	unless ( $interfaceref->{root} ) {
+	    $rule .= "-o $interface ";
+	    $interface = $interfaceref->{name};
+	}
 
 	my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
 
@@ -368,6 +373,16 @@ sub do_one_nat( $$$$$ )
 
     my $policyin = '';
     my $policyout = '';
+    my $rulein = '';
+    my $ruleout = '';
+
+    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
+
+    unless ( $interfaceref->{root} ) {
+	$rulein  = "-i $interface ";
+	$ruleout = "-o $interface ";
+	$interface = $interfaceref->{name};
+    }
 
     if ( $capabilities{POLICY_MATCH} ) {
 	$policyin = ' -m policy --pol none --dir in';
@@ -391,8 +406,8 @@ sub do_one_nat( $$$$$ )
 	add_nat_rule 'nat_in' ,  "-d $external $policyin  -j DNAT --to-destination $internal";
 	add_nat_rule 'nat_out' , "-s $internal $policyout -j SNAT --to-source $external";
     } else {
-	add_nat_rule input_chain( $interface ) ,  "-d $external $policyin -j DNAT --to-destination $internal";
-	add_nat_rule output_chain( $interface ) , "-s $internal $policyout -j SNAT --to-source $external";
+	add_nat_rule input_chain( $interface ) ,  $rulein  . "-d $external $policyin -j DNAT --to-destination $internal";
+	add_nat_rule output_chain( $interface ) , $ruleout . "-s $internal $policyout -j SNAT --to-source $external";
     }
 
     add_nat_rule 'OUTPUT' , "-d $external $policyout -j DNAT --to-destination $internal " if $localnat;
@@ -449,20 +464,32 @@ sub setup_netmap() {
 
     while ( read_a_line ) {
 
-	my ( $type, $net1, $interface, $net2 ) = split_line 4, 4, 'netmap file';
+	my ( $type, $net1, $interfacelist, $net2 ) = split_line 4, 4, 'netmap file';
 
-	fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
+	for my $interface ( split /,/, $interfacelist ) {
+	
+	    my $rulein = '';
+	    my $ruleout = '';
+	    my $iface = $interface;
+	    
+	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = find_interface( $interface );
+	
+	    unless ( $interfaceref->{root} ) {
+		$rulein  = "-i $interface ";
+		$ruleout = "-o $interface ";
+		$interface = $interfaceref->{name};
+	    }
 
-	if ( $type eq 'DNAT' ) {
-	    add_rule ensure_chain( 'nat' , input_chain $interface )  , "-d $net1 -j NETMAP --to $net2";
-	} elsif ( $type eq 'SNAT' ) {
-	    add_rule ensure_chain( 'nat' , output_chain $interface ) , "-s $net1 -j NETMAP --to $net2";
-	} else {
-	    fatal_error "Invalid type ($type)";
+	    if ( $type eq 'DNAT' ) {
+		add_rule ensure_chain( 'nat' , input_chain $interface )  , $rulein  . "-d $net1 -j NETMAP --to $net2";
+	    } elsif ( $type eq 'SNAT' ) {
+		add_rule ensure_chain( 'nat' , output_chain $interface ) , $ruleout . "-s $net1 -j NETMAP --to $net2";
+	    } else {
+		fatal_error "Invalid type ($type)";
+	    }
+
+	    progress_message "   Network $net1 on $iface mapped to $net2 ($type)";
 	}
-
-	progress_message "   Network $net1 on $interface mapped to $net2 ($type)";
-
     }
 
 }

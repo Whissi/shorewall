@@ -73,6 +73,18 @@
           cannot use it anwhere else in your Shorewall configuration.
           </emphasis></para>
 
+          <para>Each interface must match an entry in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).
+          Prior to Shorewall 4.1.4, this must be an exact match.
+          Shorewall-perl 4.1.4 and later allow loose matches to wildcard
+          entries in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5). For
+          example, <filename class="devicefile">ppp0</filename> in this file
+          will match a <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          entry that defines <filename
+          class="devicefile">ppp+</filename>.</para>
+
           <para>Prior to Shorewall 4.1.4,
           <replaceable>interfacelist</replaceable> must be a single interface
           name. Beginning with Shorewall-perl 4.1.4, Shorewall-perl users may

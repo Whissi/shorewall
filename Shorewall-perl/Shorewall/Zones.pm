@@ -121,7 +121,8 @@ our %reservedName = ( all => 1,
 #
 #     @interfaces lists the interface names in the order that they appear in the interfaces file.
 #
-#     %interfaces { <interface1> => { root        => <name without trailing '+'>
+#     %interfaces { <interface1> => { name        => <name of interface>
+#                                     root        => <name without trailing '+'>
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
@@ -643,6 +644,8 @@ sub validate_interfaces_file( $ )
 	    $interfaces{$interface}{bridge} = $interface;
 	}
 
+	$interfaces{$interface}{name} = $interface;
+	
 	my $wildcard = 0;
 
 	if ( $interface =~ /\+$/ ) {
@@ -772,19 +775,19 @@ sub validate_interfaces_file( $ )
 sub known_interface($)
 {
     my $interface = $_[0];
-
-    return 1 if $interfaces{$interface};
+    my $interfaceref = $interfaces{$interface};
+    
+    return $interfaceref if $interfaceref;
 
     for my $i ( @interfaces ) {
-	my $interfaceref = $interfaces{$i};
+	$interfaceref = $interfaces{$i};
 	my $val = $interfaceref->{root};
 	next if $val eq $i;
 	if ( substr( $interface, 0, length $val ) eq $val ) {
 	    #
-	    # Cache this result for future reference
+	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces.
 	    #
-	    $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} };
-	    return 1;
+	    return $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} , name => $i };
 	}
     }
 

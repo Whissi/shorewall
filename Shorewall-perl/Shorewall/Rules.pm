@@ -1786,6 +1786,7 @@ sub generate_matrix() {
 		    for my $interface ( keys %$typeref ) {
 			my $arrayref = $typeref->{$interface};
 			for my $hostref ( @$arrayref ) {
+			    next if $hostref->{options}{sourceonly};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				for my $net ( @{$hostref->{hosts}} ) {
@@ -1807,6 +1808,7 @@ sub generate_matrix() {
 				    for my $interface1 ( keys %$type1ref ) {
 					my $array1ref = $type1ref->{$interface1};
 					for my $host1ref ( @$array1ref ) {
+					    next if $host1ref->{options}{sourceonly};
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {

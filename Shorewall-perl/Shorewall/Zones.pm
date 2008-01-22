@@ -895,6 +895,7 @@ sub validate_hosts_file()
 			tcpflags => 1,
 			broadcast => 1,
 			destonly => 1,
+			sourceonly => 1,
 			);
 
     my $ipsec = 0;

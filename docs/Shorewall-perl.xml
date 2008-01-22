@@ -497,6 +497,25 @@ eth0             eth1:!192.168.4.9       ...</programlisting></para>
 all     all      REJECT    info
 loc     net      ACCEPT</programlisting>
         </listitem>
+
+        <listitem>
+          <para> In the SOURCE column of the rules file, when an interface
+          name is followed by a list of IP addresses, the behavior of
+          Shorewall-perl differs from that of Shorewall-shell.</para>
+
+          <para>Example:<programlisting>#ACTION SOURCE                                 DEST PROTO DEST
+#                                                         PORT(S)
+ACCEPT  loc:eth0:192.168.1.3,192.168.1.5       $FW  tcp   22</programlisting>With
+          Shorewall-shell, this rule accepts SSH connection to the firewall
+          from 192.168.1.3 through eth0 or from 192.168.1.5 through any
+          interface. With Shorewall-perl, the rule accepts SSH connections
+          through eth0 from 192.168.1.3 and through eth0 from 192.168.1.5.
+          Shorewall-shell supports this syntax that gives the same result as
+          Shorewall-perl.<programlisting>#ACTION SOURCE                                 DEST PROTO DEST
+#                                                         PORT(S)
+ACCEPT loc:eth0:192.168.1.3,eth0:192.168.1.5   $fw  tcp   22</programlisting>
+          Shorewall-perl does not support this alternative syntax. </para>
+        </listitem>
       </orderedlist>
     </section>
 

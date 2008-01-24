@@ -75,8 +75,11 @@ our %EXPORT_TAGS = (
 				       decr_cmd_level
 				       chain_base 
 				       forward_chain
+				       zone_forward_chain
 				       input_chain
+				       zone_input_chain
 				       output_chain
+				       zone_output_chain
 				       masq_chain
 				       syn_flood_chain
 				       mac_chain
@@ -511,6 +514,13 @@ sub forward_chain($)
 }
 
 #
+# Forward Chain for a zone
+#
+sub zone_forward_chain($) {
+    chain_base($_[0]) . '_frwd';
+}
+
+#
 # Input Chain for an interface
 #
 sub input_chain($)
@@ -519,11 +529,25 @@ sub input_chain($)
 }
 
 #
+# Input Chain for a zone
+#
+sub zone_input_chain($) {
+    chain_base($_[0]) . '_input';
+}
+
+#
 # Output Chain for an interface
 #
 sub output_chain($)
 {
      chain_base_cond($_[0]) . '_out';
+}
+
+#
+# Output Chain for a zone
+#
+sub zone_output_chain($) {
+    chain_base($_[0]) . '_output';
 }
 
 #

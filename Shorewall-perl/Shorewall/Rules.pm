@@ -1498,16 +1498,16 @@ sub generate_matrix() {
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
     #
-    # Special processing for complex zones
+    # Set up forwarding chain for each zone
     #
-    for my $zone ( complex_zones ) {
-	my $frwd_ref   = new_standard_chain "${zone}_frwd";
+    for my $zone ( non_firewall_zones ) {
+	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );
 	my $zoneref    = find_zone( $zone );
 	my $exclusions = $zoneref->{exclusions};
 
 	if ( @$exclusions ) {
-	    my $in_ref  = new_standard_chain "${zone}_input";
-	    my $out_ref = new_standard_chain "${zone}_output";
+	    my $in_ref  = new_standard_chain zone_input_chain $zone;
+	    my $out_ref = new_standard_chain zone_output_chain $zone;
 
 	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 
@@ -1552,20 +1552,15 @@ sub generate_matrix() {
 	my $chain1           = rules_target firewall_zone , $zone;
 	my $chain2           = rules_target $zone, firewall_zone;
 	my $chain3           = rules_target $zone, $zone;
-	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $exclusions       = $zoneref->{exclusions};
-	my $frwd_ref         = 0;
+	my $frwd_ref         = $filter_table->{ zone_forward_chain $zone };
 	my $chain            = 0;
-	my $dnatref          = $nat_table->{dnat_chain $zone} || {};
+	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
 	my $nested           = $zoneref->{options}{nested};
 
-	if ( $complex ) {
-	    $frwd_ref = $filter_table->{"${zone}_frwd"};
-	    $dnatref = ensure_chain 'nat' , dnat_chain( $zone );
-	    if ( @$exclusions ) {
-		insert_exclusions $dnatref, $exclusions if $dnatref->{referenced};
-	    }
+	if ( @$exclusions ) {
+	    insert_exclusions $dnatref, $exclusions if $dnatref->{referenced};
 	}
 
 	if ( $config{DYNAMIC_ZONES} ) {
@@ -1625,9 +1620,10 @@ sub generate_matrix() {
 			    my $outputref = $filter_table->{output_chain $interface};
 
 			    if ( @$exclusions ) {
-				add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j ${zone}_output" );
-				add_rule $filter_table->{"${zone}_output"} , "-j $chain1";
-				$nextchain = "${zone}_output";
+				my $output = zone_output_chain $zone;
+				add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j $output" );
+				add_rule $filter_table->{$output} , "-j $chain1";
+				$nextchain = $output;
 			    } else {
 				add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j $chain1" );
 				$nextchain = $chain1;
@@ -1656,15 +1652,16 @@ sub generate_matrix() {
 
 			if ( $chain2 ) {
 			    if ( @$exclusions ) {
-				add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j ${zone}_input" );
-				add_rule $filter_table->{"${zone}_input"} , "-j $chain2";
+				my $input = zone_input_chain $zone;
+				add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j $input" );
+				add_rule $filter_table->{ $input } , "-j $chain2";
 			    } else {
 				add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j $chain2" );
 			    }
 			}
 
 			add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
-			    if $complex && $hostref->{ipsec} ne 'ipsec';
+			    if $hostref->{ipsec} ne 'ipsec';
 		    }
 		}
 	    }
@@ -1781,49 +1778,15 @@ sub generate_matrix() {
 		}
 	    }
 
-	    if ( $complex ) {
-		for my $typeref ( values %$dest_hosts_ref ) {
-		    for my $interface ( keys %$typeref ) {
-			my $arrayref = $typeref->{$interface};
-			for my $hostref ( @$arrayref ) {
-			    next if $hostref->{options}{sourceonly};
-			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
-				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
-				for my $net ( @{$hostref->{hosts}} ) {
-				    add_rule $frwd_ref, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match, "-j $chain" );
-				}
-			    }
-			}
-		    }
-		}
-	    } else {
-		for my $typeref ( values %$source_hosts_ref ) {
-		    for my $interface ( keys %$typeref ) {
-			my $arrayref = $typeref->{$interface};
-			my $chain3ref = $filter_table->{forward_chain $interface};
-			for my $hostref ( @$arrayref ) {
-			    next if $hostref->{options}{destonly};
+	    for my $typeref ( values %$dest_hosts_ref ) {
+		for my $interface ( keys %$typeref ) {
+		    my $arrayref = $typeref->{$interface};
+		    for my $hostref ( @$arrayref ) {
+			next if $hostref->{options}{sourceonly};
+			if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
+			    my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 			    for my $net ( @{$hostref->{hosts}} ) {
-				for my $type1ref ( values %$dest_hosts_ref ) {
-				    for my $interface1 ( keys %$type1ref ) {
-					my $array1ref = $type1ref->{$interface1};
-					for my $host1ref ( @$array1ref ) {
-					    next if $host1ref->{options}{sourceonly};
-					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
-					    for my $net1 ( @{$host1ref->{hosts}} ) {
-						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
-						    #
-						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
-						    #
-						    add_rule(
-							     $chain3ref ,
-							     join( '', match_dest_dev($interface1), match_source_net($net), match_dest_net($net1), $ipsec_out_match, "-j $chain" )
-							    );
-						}
-					    }
-					}
-				    }
-				}
+				add_rule $frwd_ref, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match, "-j $chain" );
 			    }
 			}
 		    }
@@ -1832,25 +1795,9 @@ sub generate_matrix() {
 	    #
 	    #                                      E N D   F O R W A R D I N G
 	    #
-	    # Now add (an) unconditional jump(s) to the last unique policy-only chain determined above, if any
+	    # Now add an unconditional jump to the last unique policy-only chain determined above, if any
 	    #
-	    if ( $last_chain ) {
-		if ( $complex ) {
-		    add_rule $frwd_ref , "-j $last_chain";
-		} else {
-		    for my $typeref ( values %$source_hosts_ref ) {
-			for my $interface ( keys %$typeref ) {
-			    my $arrayref = $typeref->{$interface};
-			    my $chain2ref = $filter_table->{forward_chain $interface};
-			    for my $hostref ( @$arrayref ) {
-				for my $net ( @{$hostref->{hosts}} ) {
-				    add_rule $chain2ref, match_source_net($net) .  "-j $last_chain";
-				}
-			    }
-			}
-		    }
-		}
-	    }
+	    add_rule $frwd_ref , "-j $last_chain" if $last_chain;
 	}
     }
     #

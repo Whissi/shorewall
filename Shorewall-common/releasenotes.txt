@@ -154,6 +154,29 @@ Other changes in Shorewall 4.1.4.
 
 	tun1	192.168.4.0/24
 
+5)  Previously, Shorewall classified non-firewall zones as either
+    'simple' or 'complex'. Attributes of a zone which made it 'complex'
+    included:
+
+    - The zone was of type 'ipsec' or 'ipsec4' or it had a hosts
+      entry with the 'ipsec' options.
+    - The zone had OPTIONS, IN OPTIONS or OUT OPTIONS
+    - The zone had more than one network on a given interface
+    - The zone had a hosts file entry with an exclusion.
+    - The zone had a hosts file entry specifying an ipset.
+
+    The handling of 'simple' and 'complex' zones was different.
+
+    -  complex zones had their own 'forward' chain (named
+       '<zone>_frwd').
+    -  complex zones with exclusions had their own 'input' and
+       'output' chains.
+
+    Beginning with Shorewall-perl 4.1.4, all non-firewall zones will be
+    treated as 'complex'. This will have the effect of one additional
+    filter chain per zone but in most cases, the average number of
+    filter rules traversed by a connection request will be reduced.
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero

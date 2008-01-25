@@ -185,6 +185,8 @@ sub setup_one_masq($$$$$$$)
 	#
 	# Isolate and verify the interface part
 	#
+	fatal_error "Invalid Interface List ($interfacelist)" unless defined $fullinterface && $fullinterface ne '';
+
 	( my $interface = $fullinterface ) =~ s/:.*//;
 
 	if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
@@ -442,6 +444,7 @@ sub setup_nat() {
 	    $digit = defined $digit ? ":$digit" : '';
 
 	    for my $interface ( split /,/, $interfacelist ) {
+		fatal_error "Invalid Interface List ($interfacelist)" unless defined $interface && $interface ne '';
 		do_one_nat $external, "${interface}${digit}", $internal, $allints, $localnat;
 	    }
 

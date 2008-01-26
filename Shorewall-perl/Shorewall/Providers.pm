@@ -268,7 +268,7 @@ sub add_a_provider( $$$$$$$$ ) {
     my ( $loose, $track, $balance , $optional ) = (0,0,0,interface_is_optional( $interface ));
 
     unless ( $options eq '-' ) {
-	for my $option ( split /,/, $options ) {
+	for my $option ( split_list $options, 'option' ) {
 	    if ( $option eq 'track' ) {
 		$track = 1;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {

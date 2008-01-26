@@ -956,7 +956,7 @@ sub validate_portpair( $$ ) {
 sub validate_port_list( $$ ) {
     my $result = '';
     my ( $proto, $list ) = @_;
-    my @list   = split/,/, $list;
+    my @list   = split_list $list, 'port';
 
     if ( @list > 1 && $list =~ /:/ ) {
 	require_capability( 'XMULTIPORT' , 'Port ranges in a port list', '' );
@@ -1506,7 +1506,7 @@ sub log_rule( $$$$ ) {
 # Split a comma-separated source or destination host list but keep [...] together.
 #
 sub mysplit( $ ) {
-    my @input = split /,/, $_[0];
+    my @input = split_list $_[0], 'host';
 
     return @input unless $_[0] =~ /\[/;
 
@@ -2283,7 +2283,7 @@ sub create_chainlist_reload($) {
 
     my $chains = $_[0];
 
-    my @chains = split ',', $chains;
+    my @chains = split_list $chains, 'chain';
 
     unless ( @chains ) {
 	@chains = qw( blacklst ) if $filter_table->{blacklst};

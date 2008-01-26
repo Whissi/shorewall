@@ -176,7 +176,7 @@ sub setup_ecn()
 
 	    $hosts = ALLIPv4 if $hosts eq '-';
 
-	    for my $host( split /,/, $hosts ) {
+	    for my $host( split_list $hosts, 'host' ) {
 		push @hosts, [ $interface, $host ];
 	    }
 	}
@@ -241,7 +241,7 @@ sub setup_rfc1918_filteration( $ ) {
 	    fatal_error "Invalid target ($target) for $networks";
 	}
 
-	for my $network ( split /,/, $networks ) {
+	for my $network ( split_list $networks, 'network' ) {
 	    add_rule $norfc1918ref , match_source_net( $network ) . "-j $s_target";
 	    add_rule $chainref , match_orig_dest( $network ) . "-j $target" ;
 	}
@@ -356,13 +356,13 @@ sub process_criticalhosts() {
 
 	my @hosts;
 
-	for my $host ( split /,/, $hosts ) {
+	for my $host ( split_list $hosts, 'host' ) {
 	    validate_net $host, 1;
 	    push @hosts, "$interface:$host";
 	}
 
 	unless ( $options eq '-' ) {
-	    for my $option (split /,/, $options ) {
+	    for my $option (split_list $options, 'option' ) {
 		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' ) {
 		    if ( $option eq 'critical' ) {
 			push @critical, @hosts;

@@ -327,7 +327,7 @@ sub validate_tc_device( $$$$ ) {
     my $classify = 0;
 
     if ( $options ne '-' ) {
-	for my $option ( split /,/, $options ) {
+	for my $option ( split_list $options, 'option' ) {
 	    if ( $option eq 'classify' ) {
 		$classify = 1;
 	    } else {
@@ -388,7 +388,7 @@ sub validate_tc_class( $$$$$$ ) {
     $tcref = $tcref->{$markval};
 
     unless ( $options eq '-' ) {
-	for my $option ( split /,/, "\L$options" ) {
+	for my $option ( split_list "\L$options", 'option' ) {
 	    my $optval = $tosoptions{$option};
 
 	    $option = $optval if $optval;

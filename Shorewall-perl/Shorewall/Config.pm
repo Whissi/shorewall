@@ -73,6 +73,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       set_shorewall_dir
 				       set_debug
 				       find_file
+				       split_list
 				       split_line
 				       split_line1
 				       split_line2
@@ -854,6 +855,14 @@ sub find_file($)
     "$globals{CONFDIR}/$filename";
 }
 
+sub split_list( $$ ) {
+    my ($list, $type ) = @_;
+
+    fatal_error "Invalid $type list ($list)" if $list =~ /^,/ or $list =~/,$/ or $list =~ /,,/;
+    
+    split /,/, $list;
+}
+
 #
 # Pre-process a line from a configuration file.
 
@@ -1441,7 +1450,7 @@ sub load_kernel_modules( ) {
     if ( $moduleloader && open_file 'modules' ) {
 	my %loadedmodules;
 
-	$loadedmodules{$_}++ for split /,/, $config{DONT_LOAD};
+	$loadedmodules{$_}++ for split_list( $config{DONT_LOAD}, 'module' );
 
 	progress_message "Loading Modules...";
 

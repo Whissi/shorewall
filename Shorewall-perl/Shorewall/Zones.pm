@@ -187,7 +187,7 @@ sub parse_zone_option_list($$)
     my $fmt;
 
     if ( $list ne '-' ) {
-	for my $e ( split ',' , $list ) {
+	for my $e ( split_list $list, 'option' ) {
 	    my $val    = undef;
 	    my $invert = '';
 
@@ -248,7 +248,7 @@ sub determine_zones()
 
 	if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	    $zone = $1;
-	    @parents = split ',', $2;
+	    @parents = split_list $2, 'zone';
 
 	    for my $p ( @parents ) {
 		fatal_error "Invalid Parent List ($2)" unless $p;
@@ -647,7 +647,7 @@ sub validate_interfaces_file( $ )
 	}
 
 	unless ( $networks eq '' || $networks eq 'detect' ) {
-	    my @broadcasts = split /,/, $networks;
+	    my @broadcasts = split $networks, 'address';
 
 	    for my $address ( @broadcasts ) {
 		fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
@@ -666,7 +666,7 @@ sub validate_interfaces_file( $ )
 
 	if ( $options ) {
 
-	    for my $option (split ',', $options ) {
+	    for my $option (split_list $options, 'option' ) {
 		next if $option eq '-';
 
 		( $option, my $value ) = split /=/, $option;
@@ -931,7 +931,7 @@ sub validate_hosts_file()
 	my $optionsref = {};
 
 	if ( $options ne '-' ) {
-	    my @options = split ',', $options;
+	    my @options = split_list $options, 'option';
 	    my %options;
 
 	    for my $option ( @options )
@@ -964,7 +964,7 @@ sub validate_hosts_file()
 	#
 	$hosts = join( '', ALLIPv4 , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
 
-	add_group_to_zone( $zone, $type , $interface, [ split( ',', $hosts ) ] , $optionsref);
+	add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 
 	progress_message "   Host \"$currentline\" validated";
     }

@@ -78,7 +78,7 @@ sub do_ipsec_options($)
     my $options = '-m policy --pol ipsec --dir out ';
     my $fmt;
 
-    for my $e ( split ',' , $list ) {
+    for my $e ( split_list $list, 'option' ) {
 	my $val    = undef;
 	my $invert = '';
 
@@ -179,14 +179,12 @@ sub setup_one_masq($$$$$$$)
     #
     $baserule .= do_test( $mark, 0xFF) if $mark ne '-';
 	
-    for my $fullinterface (split /,/, $interfacelist ) {
+    for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';
 	my $target = '-j MASQUERADE ';
 	#
 	# Isolate and verify the interface part
 	#
-	fatal_error "Invalid Interface List ($interfacelist)" unless defined $fullinterface && $fullinterface ne '';
-
 	( my $interface = $fullinterface ) =~ s/:.*//;
 
 	if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
@@ -223,14 +221,14 @@ sub setup_one_masq($$$$$$$)
 		    fatal_error "':random' is not supported by the SAME target" if $randomize;
 		    $target = '-j SAME --nodst ';
 		    $addresses =~ s/.*://;
-		    for my $addr ( split /,/, $addresses ) {
+		    for my $addr ( split_list $addresses, 'address' ) {
 			$target .= "--to $addr ";
 		    }
 		} elsif ( $addresses =~ /^SAME:/ ) {
 		    fatal_error "':random' is not supported by the SAME target" if $randomize;
 		    $target = '-j SAME ';
 		    $addresses =~ s/.*://;
-		    for my $addr ( split /,/, $addresses ) {
+		    for my $addr ( split_list $addresses, 'address' ) {
 			$target .= "--to $addr ";
 		    }
 		} elsif ( $addresses eq 'detect' ) {
@@ -246,7 +244,7 @@ sub setup_one_masq($$$$$$$)
 		    }
 		} else {
 		    my $addrlist = '';
-		    for my $addr ( split /,/, $addresses ) {
+		    for my $addr ( split_list $addresses , 'address' ) {
 			if ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = '-j SNAT ';
 			    $addrlist .= "--to-source $addr ";
@@ -288,7 +286,7 @@ sub setup_one_masq($$$$$$$)
 	if ( $add_snat_aliases ) {
 	    my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
 	    fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
-	    for my $address ( split /,/, $addresses ) {
+	    for my $address ( split_list $addresses, 'address' ) {
 		my ( $addrs, $port ) = split /:/, $address;
 		next unless $addrs;
 		next if $addrs eq 'detect';
@@ -443,7 +441,7 @@ sub setup_nat() {
 
 	    $digit = defined $digit ? ":$digit" : '';
 
-	    for my $interface ( split /,/, $interfacelist ) {
+	    for my $interface ( split_list $interfacelist , 'interface' ) {
 		fatal_error "Invalid Interface List ($interfacelist)" unless defined $interface && $interface ne '';
 		do_one_nat $external, "${interface}${digit}", $internal, $allints, $localnat;
 	    }
@@ -469,7 +467,7 @@ sub setup_netmap() {
 
 	my ( $type, $net1, $interfacelist, $net2 ) = split_line 4, 4, 'netmap file';
 
-	for my $interface ( split /,/, $interfacelist ) {
+	for my $interface ( split_list $interfacelist, 'interface' ) {
 	
 	    my $rulein = '';
 	    my $ruleout = '';

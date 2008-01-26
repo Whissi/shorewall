@@ -138,7 +138,7 @@ sub generate_script_1() {
 
     propagateconfig;
 
-    my @dont_load = split /,/, $config{DONT_LOAD};
+    my @dont_load = split_list $config{DONT_LOAD}, 'module';
 
     emit ( '[ -n "${COMMAND:=restart}" ]',
 	   '[ -n "${VERBOSE:=0}" ]',

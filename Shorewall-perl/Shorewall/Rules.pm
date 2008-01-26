@@ -176,7 +176,8 @@ sub setup_ecn()
 
 	    $hosts = ALLIPv4 if $hosts eq '-';
 
-	    for my $host( split_list $hosts, 'host' ) {
+	    for my $host( split_list $hosts, 'address' ) {
+		validate_net( $host , 1 );
 		push @hosts, [ $interface, $host ];
 	    }
 	}

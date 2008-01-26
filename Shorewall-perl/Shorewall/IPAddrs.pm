@@ -91,6 +91,7 @@ sub validate_net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[1];
 
+    fatal_error "Missing address" if $net eq '';
     fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
 
     if ( defined $vlsm ) {

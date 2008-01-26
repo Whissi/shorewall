@@ -858,7 +858,7 @@ sub find_file($)
 sub split_list( $$ ) {
     my ($list, $type ) = @_;
 
-    fatal_error "Invalid $type list ($list)" if $list =~ /^,/ or $list =~/,$/ or $list =~ /,,/;
+    fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
     
     split /,/, $list;
 }

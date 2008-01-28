@@ -1517,10 +1517,10 @@ sub generate_matrix() {
 
 	    for my $host ( @$exclusions ) {
 		my ( $interface, $net ) = split /:/, $host;
-		my $rule = match_source_dev( $interface ) . match_source_net( $net ) . "-j RETURN";
+		my $rule = match_source_dev( $interface ) . match_source_net( $net ) . '-j RETURN';
 		add_rule $frwd_ref , $rule;
 		add_rule $in_ref   , $rule;
-		add_rule $out_ref  , $rule;
+		add_rule $out_ref  , match_dest_dev( $interface ) . match_dest_net( $net ) . '-j RETURN';
 	    }
 	}
 

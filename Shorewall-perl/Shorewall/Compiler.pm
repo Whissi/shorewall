@@ -817,10 +817,6 @@ sub compiler {
     #
     generate_script_2 unless $command eq 'check';
     #
-    # Set up MSS rules
-    #
-    setup_mss;
-    #
     # Do all of the zone-independent stuff
     #
     add_common_rules;

@@ -472,6 +472,8 @@ sub process_routestopped() {
     }
 }
 
+sub setup_mss();
+
 sub add_common_rules() {
     my $interface;
     my $chainref;
@@ -480,6 +482,14 @@ sub add_common_rules() {
     my $rule;
     my $list;
     my $chain;
+
+    new_standard_chain 'dynamic';
+
+    my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
+
+    add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
+
+    setup_mss;
 
     if ( $config{FASTACCEPT} ) {
 	add_rule( $filter_table->{$_} , "-m state --state ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
@@ -492,15 +502,8 @@ sub add_common_rules() {
     add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
     add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
 
-    new_standard_chain 'dynamic';
-
-    my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
-
     for $interface ( all_interfaces ) {
-	for $chain ( first_chains $interface ) {
-	    add_rule new_standard_chain( $chain ) , "$state -j dynamic";
-	}
-
+	new_standard_chain( $_ ) for first_chains( $interface );
 	new_standard_chain output_chain( $interface );
     }
 

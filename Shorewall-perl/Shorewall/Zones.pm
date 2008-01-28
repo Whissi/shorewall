@@ -508,7 +508,7 @@ sub find_zone( $ ) {
 
     my $zoneref = $zones{$zone};
 
-    fatal_error "Unknown zone" unless $zoneref;
+    fatal_error "Unknown zone ($zone)" unless $zoneref;
 
     $zoneref;
 }

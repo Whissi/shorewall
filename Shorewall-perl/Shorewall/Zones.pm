@@ -49,6 +49,7 @@ our @EXPORT = qw( NOTHING
 		  single_interface
 		  validate_interfaces_file
 		  all_interfaces
+		  interface_number
 		  find_interface
 		  known_interface
 		  have_bridges
@@ -128,6 +129,7 @@ our %reservedName = ( all => 1,
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
+#                                     number      => <ordinal position in the interfaces file>
 #                                   }
 #                 }
 #
@@ -543,6 +545,7 @@ sub firewall_zone() {
 sub validate_interfaces_file( $ )
 {
     my $export = shift;
+    my $num    = 0;
 
     use constant { SIMPLE_IF_OPTION   => 1,
 		   BINARY_IF_OPTION   => 2,
@@ -640,6 +643,7 @@ sub validate_interfaces_file( $ )
 
 	$interfaces{$interface}{name} = $interface;
 	$interfaces{$interface}{nets} = 0;
+	$interfaces{$interface}{number} = ++$num;
 	
 	my $wildcard = 0;
 
@@ -782,11 +786,18 @@ sub known_interface($)
 	    #
 	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces.
 	    #
-	    return $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} , name => $i };
+	    return $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} , name => $i , number => $interfaceref->{number} };
 	}
     }
 
     0;
+}
+
+#
+# Return interface number
+#
+sub interface_number( $ ) {
+    $interfaces{$_[0]}{number} || 256;
 }
 
 #

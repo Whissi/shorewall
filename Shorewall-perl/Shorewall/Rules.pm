@@ -1547,7 +1547,7 @@ sub generate_matrix() {
 		create_zone_dyn_chain $zone, $frwd_ref if (%$source_ref || $type eq 'ipsec4' );
 	    }
 
-	    for my $interface ( keys %$source_ref ) {
+	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
 		my $sourcechainref;
 		my $interfacematch = '';
 		
@@ -1637,7 +1637,7 @@ sub generate_matrix() {
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
 	for my $typeref ( values %$source_hosts_ref ) {
-	    for my $interface (keys %$typeref ) {
+	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		my $arrayref = $typeref->{$interface};
 		for my $hostref ( @$arrayref ) {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;

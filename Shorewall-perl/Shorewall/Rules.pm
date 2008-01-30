@@ -1556,6 +1556,7 @@ sub generate_matrix() {
 		} else {
 		    $sourcechainref = $filter_table->{FORWARD};
 		    $interfacematch = match_source_dev $interface;
+		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
 		}
 
 		my $arrayref = $source_ref->{$interface};
@@ -1668,6 +1669,8 @@ sub generate_matrix() {
 
 			    add_rule( $outputref , join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match, "-j $nextchain" ) )
 				if $hostref->{options}{broadcast};
+
+			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$nextchain} ) unless use_output_chain $interface;
 			}
 
 			next if $hostref->{options}{destonly}; 
@@ -1698,13 +1701,19 @@ sub generate_matrix() {
 			}
 			
 			if ( $chain2 ) {
+			    my $nextchain;
+			    
 			    if ( @$exclusions ) {
 				my $input = zone_input_chain $zone;
 				add_rule $inputchainref, join( '', $interfacematch, $source, $ipsec_in_match, "-j $input" );
 				add_rule $filter_table->{ $input } , "-j $chain2";
+				$nextchain = $input;
 			    } else {
 				add_rule $inputchainref, join( '', $interfacematch, $source, $ipsec_in_match, "-j $chain2" );
+				$nextchain = $chain2;
 			    }
+
+			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$nextchain} ) unless use_input_chain $interface;
 			}
 
 			if ( $hostref->{ipsec} ne 'ipsec' ) {
@@ -1712,6 +1721,7 @@ sub generate_matrix() {
 				add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
 			    } else {
 				add_rule $filter_table->{FORWARD} , join( '', match_source_dev( $interface ) , $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
+				move_rules ( $filter_table->{forward_chain $interface} , $frwd_ref );
 			    }
 			}
 		    }

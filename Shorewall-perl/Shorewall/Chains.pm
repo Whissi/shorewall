@@ -68,6 +68,7 @@ our %EXPORT_TAGS = (
 				       
 				       add_command
 				       add_commands
+				       move_rules
 				       process_comment
 				       no_comment
 				       clear_comment
@@ -493,6 +494,25 @@ sub insert_rule($$$)
 }
 
 #
+# Move the rules from one chain to another
+#
+sub move_rules( $$ ) {
+    my ($chain1, $chain2 ) = @_;
+
+    if ( $chain1->{referenced} ) {
+	my @rules = @{$chain1->{rules}};
+
+	s/ $chain1->{name} / $chain2->{name} / for @rules;
+
+	splice @{$chain2->{rules}}, 0, 0, @rules;
+
+	$chain2->{referenced} = 1;
+	$chain1->{referenced} = 0;
+	$chain1->{rules}      = [];
+    }
+}
+
+#
 # Form the name of a chain.
 #
 sub chain_base($) {
@@ -528,12 +548,11 @@ sub zone_forward_chain($) {
 #
 sub use_forward_chain($) {
     my $interface = $_[0];
-    my $chainref = $filter_table->{forward_chain($interface)};
     my $interfaceref = find_interface($interface);
     #
-    # We must use the interfaces's chain if it is referenced (has rules in it) or if the interface is associated with multiple zone nets
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #
-    $interfaceref->{nets} != 1 || $chainref->{referenced};
+    $interfaceref->{nets} != 1;
 }
 
 #
@@ -556,20 +575,19 @@ sub zone_input_chain($) {
 #
 sub use_input_chain($) {
     my $interface = $_[0];
-    my $chainref = $filter_table->{input_chain($interface)};
     my $interfaceref = find_interface($interface);
     #
-    # We must use the interfaces's chain if it is referenced (has rules in it) or if the interface is associated with multiple zone nets
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #    
-    return 1 if $interfaceref->{nets} != 1 || $chainref->{referenced};
+    return 1 if $interfaceref->{nets} != 1;
     
-    my $chainref1 = $filter_table->{zone_input_chain $interfaceref->{zone}};
+    my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone}};
 
-    return 1 if $chainref1;
+    return 1 if $chainref;
 
-    $chainref1 = $filter_table->{join( '' , $interfaceref->{zone} , '2' , firewall_zone )};
+    $chainref = $filter_table->{join( '' , $interfaceref->{zone} , '2' , firewall_zone )};
 
-    ! $chainref1->{referenced};
+    ! $chainref->{referenced};
 }   
 
 #
@@ -592,20 +610,19 @@ sub zone_output_chain($) {
 #
 sub use_output_chain($) {
     my $interface = $_[0];
-    my $chainref = $filter_table->{output_chain($interface)};
     my $interfaceref = find_interface($interface);
     #
-    # We must use the interfaces's chain if it is referenced (has rules in it) or if the interface is associated with multiple zone nets
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #    
-    return 1 if $interfaceref->{nets} != 1 || $chainref->{referenced};
+    return 1 if $interfaceref->{nets} != 1;
     
-    my $chainref1 = $filter_table->{zone_output_chain $interfaceref->{zone}};
+    my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone}};
 
-    return 1 if $chainref1;
+    return 1 if $chainref;
 
-    $chainref1 = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
+    $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
 
-    ! $chainref1->{referenced};
+    ! $chainref->{referenced};
 }
 
 #

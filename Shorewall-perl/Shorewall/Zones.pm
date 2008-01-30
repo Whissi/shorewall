@@ -125,6 +125,7 @@ our %reservedName = ( all => 1,
 #                                                      ...
 #                                                    }
 #                                     zone        => <zone name>
+#                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                   }
@@ -461,6 +462,8 @@ sub add_group_to_zone($$$$$)
     $ifacezone = '' unless defined $ifacezone;
 
     for my $host ( @$networks ) {
+	$interfaces{$interface}{nets}++;
+
 	fatal_error "Invalid Host List" unless defined $host and $host ne '';
 
 	if ( substr( $host, 0, 1 ) eq '!' ) {
@@ -636,6 +639,7 @@ sub validate_interfaces_file( $ )
 	}
 
 	$interfaces{$interface}{name} = $interface;
+	$interfaces{$interface}{nets} = 0;
 	
 	my $wildcard = 0;
 

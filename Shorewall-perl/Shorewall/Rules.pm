@@ -1501,6 +1501,20 @@ sub generate_matrix() {
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
+
+    #
+    # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
+    #
+    for my $interface ( @interfaces ) {
+	
+	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . forward_chain $interface if use_forward_chain $interface;
+	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . input_chain($interface)  if use_input_chain $interface;
+
+	if ( use_output_chain $interface ) {
+	    add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless get_interface_option( $interface, 'port' );
+	}
+    }
+
     #
     # Set up forwarding chain for each zone
     #
@@ -1534,16 +1548,25 @@ sub generate_matrix() {
 	    }
 
 	    for my $interface ( keys %$source_ref ) {
-		if ( use_interface_forward_chain( $interface ) ) {
-		    my $arrayref = $source_ref->{$interface};
-		    for my $hostref ( @{$arrayref} ) {
-			my $ipsec_match = match_ipsec_in $zone , $hostref;
-			for my $net ( @{$hostref->{hosts}} ) {
-			    add_rule(
-				     $filter_table->{forward_chain $interface} ,
-				     join( '', match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" )
-				    );
-			}
+		my $sourcechainref;
+		my $interfacematch = '';
+		
+		if ( use_forward_chain( $interface ) ) {
+		    $sourcechainref = $filter_table->{forward_chain $interface};
+		} else {
+		    $sourcechainref = $filter_table->{FORWARD};
+		    $interfacematch = match_source_dev $interface;
+		}
+
+		my $arrayref = $source_ref->{$interface};
+		
+		for my $hostref ( @{$arrayref} ) {
+		    my $ipsec_match = match_ipsec_in $zone , $hostref;
+		    for my $net ( @{$hostref->{hosts}} ) {
+			add_rule(
+				 $sourcechainref,
+				 join( '', $interfacematch , match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" )
+				);
 		    }
 		}
 	    }
@@ -1623,22 +1646,28 @@ sub generate_matrix() {
 
 			if ( $chain1 ) {
 			    my $nextchain;
-			    my $outputref = interface_output_chain $interface;
+			    my $outputref;
+			    my $interfacematch = '';
 
 			    if ( use_output_chain $interface ) {
-				if ( @$exclusions ) {
-				    my $output = zone_output_chain $zone;
-				    add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j $output" );
-				    add_rule $filter_table->{$output} , "-j $chain1";
-				    $nextchain = $output;
-				} else {
-				    add_rule $outputref , join( '', $dest, $ipsec_out_match, "-j $chain1" );
-				    $nextchain = $chain1;
-				}
-
-				add_rule( $outputref , join('', '-d 255.255.255.255 ' , $ipsec_out_match, "-j $nextchain" ) )
-				    if $hostref->{options}{broadcast};
+				$outputref = $filter_table->{output_chain $interface};
+			    } else {
+				$outputref = $filter_table->{OUTPUT};
+				$interfacematch = match_dest_dev $interface;
 			    }
+
+			    if ( @$exclusions ) {
+				my $output = zone_output_chain $zone;
+				add_rule $outputref , join( '', $interfacematch, $dest, $ipsec_out_match, "-j $output" );
+				add_rule $filter_table->{$output} , "-j $chain1";
+				$nextchain = $output;
+			    } else {
+				add_rule $outputref , join( '', $interfacematch, $dest, $ipsec_out_match, "-j $chain1" );
+				$nextchain = $chain1;
+			    }
+
+			    add_rule( $outputref , join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match, "-j $nextchain" ) )
+				if $hostref->{options}{broadcast};
 			}
 
 			next if $hostref->{options}{destonly}; 
@@ -1658,21 +1687,32 @@ sub generate_matrix() {
 			#
 			add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $nested;
 
-			if ( use_interface_input_chain $interface ) {
-			    if ( $chain2 ) {
-				if ( @$exclusions ) {
-				    my $input = zone_input_chain $zone;
-				    add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j $input" );
-				    add_rule $filter_table->{ $input } , "-j $chain2";
-				} else {
-				    add_rule $filter_table->{input_chain $interface}, join( '', $source, $ipsec_in_match, "-j $chain2" );
-				}
+			my $inputchainref;
+			my $interfacematch = '';
+
+			if ( use_input_chain $interface ) {
+			    $inputchainref = $filter_table->{input_chain $interface};
+			} else {
+			    $inputchainref = $filter_table->{INPUT};
+			    $interfacematch = match_source_dev $interface;
+			}
+			
+			if ( $chain2 ) {
+			    if ( @$exclusions ) {
+				my $input = zone_input_chain $zone;
+				add_rule $inputchainref, join( '', $interfacematch, $source, $ipsec_in_match, "-j $input" );
+				add_rule $filter_table->{ $input } , "-j $chain2";
+			    } else {
+				add_rule $inputchainref, join( '', $interfacematch, $source, $ipsec_in_match, "-j $chain2" );
 			    }
 			}
 
-			if ( use_interface_forward_chain $interface ) {
-			    add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" )
-				if $hostref->{ipsec} ne 'ipsec';
+			if ( $hostref->{ipsec} ne 'ipsec' ) {
+			    if ( use_forward_chain $interface ) {
+				add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
+			    } else {
+				add_rule $filter_table->{FORWARD} , join( '', match_source_dev( $interface ) , $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
+			    }
 			}
 		    }
 		}
@@ -1827,21 +1867,9 @@ sub generate_matrix() {
 	}
     }
 
-    addnatjump 'PREROUTING'  , 'nat_in'  , '';
-    addnatjump 'POSTROUTING' , 'nat_out' , '';
-
     for my $interface ( @interfaces ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
-    }
-
-    #
-    # Now add the jumps to the interface chains from FORWARD, INPUT, OUTPUT and POSTROUTING
-    #
-    for my $interface ( @interfaces ) {
-	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . interface_forward_chain($interface)->{name};
-	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . interface_input_chain($interface)->{name};
-	add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . interface_output_chain($interface)->{name} unless get_interface_option( $interface, 'port' );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
     }
 

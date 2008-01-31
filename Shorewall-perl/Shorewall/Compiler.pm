@@ -437,7 +437,7 @@ EOF
 	  'do_iptables -A OUTPUT -o lo -j ACCEPT'
 	  );
 
-    emit 'do_iptabes -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
+    emit 'do_iptables -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 

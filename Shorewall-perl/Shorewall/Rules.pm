@@ -1841,7 +1841,7 @@ sub generate_matrix() {
 	    }
 
 	    for my $typeref ( values %$dest_hosts_ref ) {
-		for my $interface ( keys %$typeref ) {
+		for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		    my $arrayref = $typeref->{$interface};
 		    for my $hostref ( @$arrayref ) {
 			next if $hostref->{options}{sourceonly};

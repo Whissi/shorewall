@@ -215,11 +215,7 @@ fi
 
 [ -n "$PARTIAL" ] && SHOREWALLDIR=shorewall-common || SHOREWALLDIR=$SHOREWALL-${1}
 
-if [ -f shorewall-lite-${1}/releasenotes.txt ]; then
-    cat $SHOREWALLDIR/releasenotes.txt shorewall-lite-${1}/releasenotes.txt > releasenotes.txt
-else
-    cat $SHOREWALLDIR/releasenotes.txt > releasenotes.txt
-fi
+cp $SHOREWALLDIR/releasenotes.txt releasenotes.txt
 
 if [ "$HOSTNAME" = lists ]; then
 	mkdir -p $DEST

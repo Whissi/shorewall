@@ -499,8 +499,8 @@ loc     net      ACCEPT</programlisting>
         </listitem>
 
         <listitem>
-          <para> In the SOURCE column of the rules file, when an interface
-          name is followed by a list of IP addresses, the behavior of
+          <para>In the SOURCE column of the rules file, when an interface name
+          is followed by a list of IP addresses, the behavior of
           Shorewall-perl differs from that of Shorewall-shell.</para>
 
           <para>Example:<programlisting>#ACTION SOURCE                                 DEST PROTO DEST
@@ -514,7 +514,7 @@ ACCEPT  loc:eth0:192.168.1.3,192.168.1.5       $FW  tcp   22</programlisting>Wit
           Shorewall-perl.<programlisting>#ACTION SOURCE                                 DEST PROTO DEST
 #                                                         PORT(S)
 ACCEPT loc:eth0:192.168.1.3,eth0:192.168.1.5   $fw  tcp   22</programlisting>
-          Shorewall-perl does not support this alternative syntax. </para>
+          Shorewall-perl does not support this alternative syntax.</para>
         </listitem>
       </orderedlist>
     </section>
@@ -681,7 +681,20 @@ ACCEPT loc:eth0:192.168.1.3,eth0:192.168.1.5   $fw  tcp   22</programlisting>
           role="bold">--refresh=</emphasis>&lt;<emphasis>chainlist</emphasis>&gt;</member>
         </simplelist>If given, the compiled script's 'refresh' command will
       refresh the chains in the comma-separated
-      &lt;<emphasis>chainlist</emphasis>&gt; rather than 'blacklst'.</para>
+      &lt;<emphasis>chainlist</emphasis>&gt; rather than
+      'blacklst'.<simplelist>
+          <member><emphasis
+          role="bold">--log</emphasis>=&lt;logfile&gt;</member>
+        </simplelist></para>
+
+      <para>Added in Shorewall 4.1. If given, compiler will log to this file
+      provider that --log_verbosity is &gt; -1.<simplelist>
+          <member><emphasis
+          role="bold">--log_verbosity</emphasis>=-1|0|1|2</member>
+        </simplelist></para>
+
+      <para>Added in Shorewall 4.1. If given, controls the verbosity of
+      logging to the log specified by the --log parameter.</para>
 
       <para>Example (compiles the configuration in the current directory
       generating a script named 'firewall' and using VERBOSITY
@@ -700,75 +713,193 @@ set +a
     <section id="Compiler">
       <title>Shorewall::Compiler</title>
 
-      <para><programlisting> use lib '/usr/share/shorewall-perl';
+      <section id="Compiler-4.0">
+        <title>Shorewall 4.0</title>
+
+        <para><programlisting> use lib '/usr/share/shorewall-perl';
  use Shorewall::Compiler;
         
  compiler $filename, $directory, $verbose, $options $chains</programlisting>Arguments
-      to the compiler are:</para>
+        to the compiler are:</para>
 
-      <variablelist>
-        <varlistentry>
-          <term>$filename</term>
+        <variablelist>
+          <varlistentry>
+            <term>$filename</term>
 
-          <listitem>
-            <para>Name of the compiled script to be created. If the arguments
-            evaluates to false, the configuration is syntax checked.</para>
-          </listitem>
-        </varlistentry>
+            <listitem>
+              <para>Name of the compiled script to be created. If the
+              arguments evaluates to false, the configuration is syntax
+              checked.</para>
+            </listitem>
+          </varlistentry>
 
-        <varlistentry>
-          <term>$directory</term>
+          <varlistentry>
+            <term>$directory</term>
 
-          <listitem>
-            <para>The directory containing the configuration. If passed as '',
-            then <filename class="directory">/etc/shorewall/</filename> is
-            assumed.</para>
-          </listitem>
-        </varlistentry>
+            <listitem>
+              <para>The directory containing the configuration. If passed as
+              '', then <filename class="directory">/etc/shorewall/</filename>
+              is assumed.</para>
+            </listitem>
+          </varlistentry>
 
-        <varlistentry>
-          <term>$verbose</term>
+          <varlistentry>
+            <term>$verbose</term>
 
-          <listitem>
-            <para>The verbosity level that the compiler will run with
-            (0-2).<note>
-                <para>The VERBOSITY setting in the
-                <filename>shorewall.conf</filename> file read by the compiler
-                will determine the default verbosity for the compiled
-                program.</para>
-              </note></para>
-          </listitem>
-        </varlistentry>
+            <listitem>
+              <para>The verbosity level that the compiler will run with
+              (0-2).<note>
+                  <para>The VERBOSITY setting in the
+                  <filename>shorewall.conf</filename> file read by the
+                  compiler will determine the default verbosity for the
+                  compiled program.</para>
+                </note></para>
+            </listitem>
+          </varlistentry>
 
-        <varlistentry>
-          <term>$options</term>
+          <varlistentry>
+            <term>$options</term>
 
-          <listitem>
-            <para>A bitmap of options. Shorewall::Compiler exports three
-            constants to help building this argument:<simplelist>
-                <member>EXPORT = 0x01</member>
+            <listitem>
+              <para>A bitmap of options. Shorewall::Compiler exports three
+              constants to help building this argument:<simplelist>
+                  <member>EXPORT = 0x01</member>
 
-                <member>TIMESTAMP = 0x02</member>
+                  <member>TIMESTAMP = 0x02</member>
 
-                <member>DEBUG = 0x04</member>
-              </simplelist></para>
-          </listitem>
-        </varlistentry>
+                  <member>DEBUG = 0x04</member>
+                </simplelist></para>
+            </listitem>
+          </varlistentry>
 
-        <varlistentry>
-          <term>$chains</term>
+          <varlistentry>
+            <term>$chains</term>
 
-          <listitem>
-            <para>A comma-separated list of chains that the generated script's
-            'refresh' command will reload. If passed as an empty string, then
-            'blacklist' is assumed.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
+            <listitem>
+              <para>A comma-separated list of chains that the generated
+              script's 'refresh' command will reload. If passed as an empty
+              string, then 'blacklist' is assumed.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
 
-      <para>The compiler raises an exception with 'die' if it encounters an
-      error; $@ contains the 'ERROR' messages describing the problem. The
-      compiler function can be called repeatedly with different inputs.</para>
+        <para>The compiler raises an exception with 'die' if it encounters an
+        error; $@ contains the 'ERROR' messages describing the problem. The
+        compiler function can be called repeatedly with different
+        inputs.</para>
+      </section>
+
+      <section>
+        <title>Shorewall 4.1 and Later</title>
+
+        <para>To avoid a proliferation of parameters to
+        Shorewall::Compiler::compile(), that function has been changed to use
+        named parameters. Parameter names are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>object</term>
+
+            <listitem>
+              <para>Object file. If omitted or '', the configuration is syntax
+              checked.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>directory</term>
+
+            <listitem>
+              <para>Directory. If omitted or '', configuration files are
+              located using CONFIG_PATH. Otherwise, the directory named by
+              this parameter is searched first.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>verbosity</term>
+
+            <listitem>
+              <para>Verbosity; range -1 to 2</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>timestamp</term>
+
+            <listitem>
+              <para>0|1 -- timestamp messages.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>debug</term>
+
+            <listitem>
+              <para>0|1 -- include stack trace in warning/error
+              messages.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>export</term>
+
+            <listitem>
+              <para>0|1 -- compile for export.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>chains</term>
+
+            <listitem>
+              <para>List of chains to be reloaded by 'refresh'</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>log</term>
+
+            <listitem>
+              <para>File to log compiler messages to.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>log_verbosity</term>
+
+            <listitem>
+              <para>Log Verbosity; range -1 to 2.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Those parameters that are supplied must have defined values.
+        Defaults are: <simplelist>
+            <member>object '' ('check' command)</member>
+
+            <member>directory ''</member>
+
+            <member>verbosity 1</member>
+
+            <member>timestamp 0</member>
+
+            <member>debug 0</member>
+
+            <member>export 0</member>
+
+            <member>chains ''</member>
+
+            <member>log ''</member>
+
+            <member>log_verbosity -1</member>
+          </simplelist></para>
+
+        <para>Example: <programlisting>use lib '/usr/share/shorewall-perl/';
+use Shorewall::Compiler;
+
+compiler( object =&gt; '/root/firewall', log =&gt; '/root/compile.log', log_verbosity =&gt; 2 ); </programlisting></para>
+      </section>
     </section>
 
     <section id="Chains">
@@ -1049,7 +1180,7 @@ shorewall $config_file_entry;</programlisting>The Shorewall::Config module
       output depending on the current verbosity setting.</para>
 
       <para>The <emphasis role="bold">shorewall()</emphasis> function is used
-      by <ulink url="configuration_file_basics.html%23Embedded">embedded Perl
+      by <ulink url="configuration_file_basics.htm#Embedded">embedded Perl
       scripts</ulink> to generate entries to be included in the current
       configuration file.</para>
     </section>

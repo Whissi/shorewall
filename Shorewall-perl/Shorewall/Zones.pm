@@ -607,9 +607,9 @@ sub validate_interfaces_file( $ )
 
 	( $interface, my ($port, $extra) ) = split /:/ , $interface, 3;
 
-	fatal_error "Invalid INTERFACE" if defined $extra || ! $interface;
+	fatal_error "Invalid INTERFACE (" . join (':', $interface, $port, $extra ) . ')' if defined $extra || ! $interface;
 
-	fatal_error "Invalid Interface Name ($interface)" if $interface eq '+';
+	fatal_error "Invalid Interface Name (+)" if $interface eq '+';
 
 	if ( defined $port ) {
 	    fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
@@ -741,7 +741,7 @@ sub validate_interfaces_file( $ )
 
 	my @networks = allipv4;
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone && @networks;
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

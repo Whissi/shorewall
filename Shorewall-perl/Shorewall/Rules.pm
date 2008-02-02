@@ -1503,19 +1503,6 @@ sub generate_matrix() {
     my $fw = firewall_zone;
 
     #
-    # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
-    #
-    for my $interface ( @interfaces ) {
-	
-	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . forward_chain $interface if use_forward_chain $interface;
-	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . input_chain($interface)  if use_input_chain $interface;
-
-	if ( use_output_chain $interface ) {
-	    add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless get_interface_option( $interface, 'port' );
-	}
-    }
-
-    #
     # Set up forwarding chain for each zone
     #
     for my $zone ( non_firewall_zones ) {
@@ -1881,6 +1868,19 @@ sub generate_matrix() {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
+    }
+
+    #
+    # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
+    #
+    for my $interface ( @interfaces ) {
+	
+	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . forward_chain $interface if use_forward_chain $interface;
+	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . input_chain($interface)  if use_input_chain $interface;
+
+	if ( use_output_chain $interface ) {
+	    add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless get_interface_option( $interface, 'port' );
+	}
     }
 
     my $chainref = $filter_table->{"${fw}2${fw}"};

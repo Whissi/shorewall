@@ -633,26 +633,25 @@ sub validate_interfaces_file( $ )
 
 	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 
-	    $interfaces{$port}{bridge} = $bridge = $interface;
+	    $bridge = $interface;
 	    $interface = $port;
 	} else {
 	    fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
 	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
-	    $interfaces{$interface}{bridge} = $interface;
+	    $bridge = $interface;
 	}
 
-	$interfaces{$interface}{name} = $interface;
-	$interfaces{$interface}{nets} = 0;
-	$interfaces{$interface}{number} = ++$num;
-	
 	my $wildcard = 0;
+	my $root;
 
 	if ( $interface =~ /\+$/ ) {
 	    $wildcard = 1;
-	    $interfaces{$interface}{root} = substr( $interface, 0, -1 );
+	    $root = substr( $interface, 0, -1 );
 	} else {
-	    $interfaces{$interface}{root} = $interface;
+	    $root = $interface;
 	}
+
+	my $broadcasts;
 
 	unless ( $networks eq '' || $networks eq 'detect' ) {
 	    my @broadcasts = split $networks, 'address';
@@ -664,7 +663,7 @@ sub validate_interfaces_file( $ )
 	    if ( $capabilities{ADDRTYPE} ) {
 		warning_message 'Shorewall no longer uses broadcast addresses in rule generation when Address Type Match is available';
 	    } else {
-		$interfaces{$interface}{broadcasts} = \@broadcasts;
+		$broadcasts = \@broadcasts;
 	    }
 	}
 
@@ -728,8 +727,16 @@ sub validate_interfaces_file( $ )
 	    $options{port} = 1;
 	}
 
-	$interfaces{$interface}{options} = $optionsref = \%options;
+	$optionsref = \%options;
 
+	$interfaces{$interface} = { name       => $interface ,
+				    bridge     => $bridge ,
+				    nets       => 0 ,
+				    number     => ++$num ,
+				    root       => $root ,
+				    broadcasts => $broadcasts ,
+				    options    => $optionsref };
+ 
 	push @ifaces, $interface;
 
 	my @networks = allipv4;

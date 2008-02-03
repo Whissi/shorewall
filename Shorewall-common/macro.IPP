@@ -6,10 +6,7 @@
 #	This macro handles Internet Printing Protocol (IPP).
 #
 ###############################################################################
-#ACTION	SOURCE	PROTO	DEST	SOURCE	RATE	USER/
-#			PORT(S)	PORT(S)	LIMIT	GROUP
-
-COMMENT IPP
-
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	tcp	631
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

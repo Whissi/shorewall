@@ -6,11 +6,8 @@
 #	This macro (bidirectional) handles IPsec traffic
 #
 ###############################################################################
-#ACTION	SOURCE	PROTO	DEST	SOURCE	RATE	USER/
-#			PORT(S)	PORT(S)	LIMIT	GROUP
-
-COMMENT IPsec
-
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	udp	500	500	# IKE
 PARAM	-	-	50			# ESP
 PARAM	DEST	SOURCE	udp	500	500	# IKE

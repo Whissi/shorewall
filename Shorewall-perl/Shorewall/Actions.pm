@@ -401,7 +401,7 @@ sub process_macro1 ( $$ ) {
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $ mrate, $muser ) = split_line1 1, 8, 'macro file';
+	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file';
 
 	next if $mtarget eq 'COMMENT';
 

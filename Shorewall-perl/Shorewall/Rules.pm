@@ -1862,8 +1862,6 @@ sub generate_matrix() {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
     }
 
-    addnatjump 'PREROUTING', 'dnat', '';
-
     if ( $config{DYNAMIC_ZONES} ) {
 	for my $interface ( @interfaces ) {
 	    addnatjump 'PREROUTING' , dynamic_in( $interface ), match_source_dev( $interface );

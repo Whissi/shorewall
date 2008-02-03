@@ -883,13 +883,19 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 	    $mdest = '';
 	}
 
-	$mproto  = merge_macro_column $mproto,  $proto;
-	$mports  = merge_macro_column $mports,  $ports;
-	$msports = merge_macro_column $msports, $sports;
-	$mrate   = merge_macro_column $mrate,   $rate;
-	$muser   = merge_macro_column $muser,   $user;
-
-	process_rule1 $mtarget, $msource, $mdest, $mproto, $mports, $msports, $origdest, $mrate, $muser, $mark, $wildcard;
+	process_rule1( 
+		      $mtarget, 
+		      $msource, 
+		      $mdest, 
+		      merge_macro_column( $mproto,  $proto ) , 
+		      merge_macro_column( $mports,  $ports ) ,
+		      merge_macro_column( $msports, $sports ) ,
+		      $origdest, 
+		      merge_macro_column( $mrate,   $rate ) ,
+		      merge_macro_column( $muser,   $user ) ,
+		      $mark, 
+		      $wildcard
+		     );
 
 	progress_message "   Rule \"$currentline\" $done";
     }

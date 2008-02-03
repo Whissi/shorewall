@@ -860,11 +860,12 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO );
 
 	if ( $msource ) {
-	    if ( ( $msource eq '-' ) || ( $msource eq 'SOURCE' ) ) {
+	    if ( $msource eq '-' ) {
 		$msource = $source || '';
-	    } elsif ( $msource eq 'DEST' ) {
-		$msource = $dest || '';
+	    } elsif ( $msource =~ s/^DEST:?// ) {
+		$msource = merge_macro_source_dest $msource, $dest; 
 	    } else {
+		$msource =~ s/^SOURCE:?//;
 		$msource = merge_macro_source_dest $msource, $source;
 	    }
 	} else {
@@ -872,11 +873,12 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 	}
 
 	if ( $mdest ) {
-	    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
+	    if ( $mdest eq '-' ) {
 		$mdest = $dest || '';
-	    } elsif ( $mdest eq 'SOURCE' ) {
-		$mdest = $source || '';
+	    } elsif ( $mdest =~ s/^SOURCE:?// ) {
+		$mdest = merge_macro_source_dest $mdest , $source;
 	    } else {
+		$mdest =~ s/DEST:?//;
 		$mdest = merge_macro_source_dest $mdest, $dest;
 	    }
 	} else {
@@ -1861,6 +1863,8 @@ sub generate_matrix() {
     for my $interface ( @interfaces ) {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
     }
+
+    addnatjump 'PREROUTING', 'dnat', '';
 
     if ( $config{DYNAMIC_ZONES} ) {
 	for my $interface ( @interfaces ) {

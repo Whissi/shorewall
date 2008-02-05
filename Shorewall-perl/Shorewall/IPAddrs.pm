@@ -24,7 +24,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config qw( :DEFAULT :internal );
+use Shorewall::Config qw( :DEFAULT split_list require_capability );
 
 use strict;
 

@@ -24,7 +24,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config;
+use Shorewall::Config qw( :DEFAULT :internal );
 
 use strict;
 
@@ -41,6 +41,12 @@ our @EXPORT = qw( ALLIPv4
 		  ip_range_explicit
 		  allipv4
 		  rfc1918_neworks
+		  resolve_proto
+		  proto_name
+		  validate_port
+		  validate_portpair
+		  validate_port_list
+		  validate_icmp
 		 );
 our @EXPORT_OK = qw( );
 our $VERSION = 4.0.5;
@@ -187,4 +193,135 @@ sub rfc1918_networks() {
     @rfc1918_networks
 }
  
+#
+# Resolve the contents of the PROTO column.
+#
+
+our %nametoproto = ( all => 0, ALL => 0, icmp => 1, ICMP => 1, tcp => 6, TCP => 6, udp => 17, UDP => 17  );
+our @prototoname = ( 'all', 'icmp', '', '', '', '', 'tcp', '', '', '', '', '', '', '', '', '', '', 'udp' );
+
+#
+# Returns the protocol number if the passed argument is a valid protocol number or name. Returns undef otherwise
+#
+sub resolve_proto( $ ) {
+    my $proto = $_[0];
+    my $number;
+
+    $proto =~ /^(\d+)$/ ? $proto <= 65535 ? $proto : undef : defined( $number = $nametoproto{$proto} ) ? $number : scalar getprotobyname $proto;
+}
+
+sub proto_name( $ ) {
+    my $proto = $_[0];
+
+    $proto =~ /^(\d+)$/ ? $prototoname[ $proto ] || scalar getprotobynumber $proto : $proto
+}
+
+sub validate_port( $$ ) {
+    my ($proto, $port) = @_;
+
+    my $value;
+
+    if ( $port =~ /^(\d+)$/ ) {
+	return $port if $port <= 65535;
+    } else {
+	$proto = getprotobyname $proto if $proto =~ /^(\d+)$/;
+	$value = getservbyname( $port, $proto );
+    }
+
+    fatal_error "Invalid/Unknown $proto port/service ($port)" unless defined $value;
+
+    $value;
+}
+
+sub validate_portpair( $$ ) {
+    my ($proto, $portpair) = @_;
+
+    fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/:/:/ > 1;
+
+    $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
+    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
+
+    my @ports = split /:/, $portpair, 2;
+
+    $_ = validate_port( $proto, $_) for ( @ports );
+
+    if ( @ports == 2 ) {
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+    }
+
+    join ':', @ports;
+
+}
+
+sub validate_port_list( $$ ) {
+    my $result = '';
+    my ( $proto, $list ) = @_;
+    my @list   = split_list( $list, 'port' );
+
+    if ( @list > 1 && $list =~ /:/ ) {
+	require_capability( 'XMULTIPORT' , 'Port ranges in a port list', '' );
+    }
+
+    $proto = proto_name $proto;
+
+    for ( @list ) {
+	my $value = validate_portpair( $proto , $_ );
+	$result = $result ? join ',', $result, $value : $value;
+    }
+
+    $result;
+}
+
+my %icmp_types = ( any                          => 'any',
+		   'echo-reply'                 => 0,
+		   'destination-unreachable'    => 3,
+		   'network-unreachable'        => '3/0',
+		   'host-unreachable'           => '3/1',
+		   'protocol-unreachable'       => '3/2',
+		   'port-unreachable'           => '3/3',
+		   'fragmentation-needed'       => '3/4',
+		   'source-route-failed'        => '3/5',
+		   'network-unknown'            => '3/6',
+		   'host-unknown'               => '3/7',
+		   'network-prohibited'         => '3/9',
+		   'host-prohibited'            => '3/10',
+		   'TOS-network-unreachable'    => '3/11',
+		   'TOS-host-unreachable'       => '3/12',
+		   'communication-prohibited'   => '3/13',
+		   'host-precedence-violation'  => '3/14',
+		   'precedence-cutoff'          => '3/15',
+		   'source-quench'              => 4,
+		   'redirect'                   => 5,
+		   'network-redirect'           => '5/0',
+		   'host-redirect'              => '5/1',
+		   'TOS-network-redirect'       => '5/2',
+		   'TOS-host-redirect'          => '5/3',
+		   'echo-request'               => '8',
+		   'router-advertisement'       => 9,
+		   'router-solicitation'        => 10,
+		   'time-exceeded'              => 11,
+		   'ttl-zero-during-transit'    => '11/0',
+		   'ttl-zero-during-reassembly' => '11/1',
+		   'parameter-problem'          => 12,
+		   'ip-header-bad'              => '12/0',
+		   'required-option-missing'    => '12/1',
+		   'timestamp-request'          => 13,
+		   'timestamp-reply'            => 14,
+		   'address-mask-request'       => 17,
+		   'address-mask-reply'         => 18 );
+
+sub validate_icmp( $ ) {
+    my $type = $_[0];
+
+    my $value = $icmp_types{$type};
+
+    return $value if defined $value;
+
+    if ( $type =~ /^(\d+)(\/(\d+))?$/ ) {
+	return $type if $1 < 256 && ( ! $2 || $3 < 256 );
+    }
+
+    fatal_error "Invalid ICMP Type ($type)"
+}
+
 1;

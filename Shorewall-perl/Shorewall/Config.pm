@@ -107,7 +107,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.1.3;
+our $VERSION = 4.1.4;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -255,7 +255,7 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION => "4.1.4",
+		    VERSION => "4.1.5",
 		    CAPVERSION => 40100 ,
 		  );
     #

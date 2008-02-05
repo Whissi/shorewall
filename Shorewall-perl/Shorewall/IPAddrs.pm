@@ -20,7 +20,9 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module provides interfaces for dealing with IPv4 addresses.
+#   This module provides interfaces for dealing with IPv4 addresses, protocol names, and
+#   port names. It also exports functions for validating protocol- and port- (service) 
+#   related constructs.
 #
 package Shorewall::IPAddrs;
 require Exporter;
@@ -49,7 +51,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.0.5;
+our $VERSION = 4.1.5;
 
 #
 # Some IPv4 useful stuff
@@ -194,7 +196,7 @@ sub rfc1918_networks() {
 }
  
 #
-# Resolve the contents of the PROTO column.
+# Protocol/port validation
 #
 
 our %nametoproto = ( all => 0, ALL => 0, icmp => 1, ICMP => 1, tcp => 6, TCP => 6, udp => 17, UDP => 17  );

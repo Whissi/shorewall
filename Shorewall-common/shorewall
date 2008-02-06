@@ -1239,21 +1239,23 @@ reload_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall $debugging $verbose compile -e $compiler $directory $directory/firewall && \
-	progress_message "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
+    [ -n "$TIMESTAMP" ] && timestamp='-t' || timestamp=
+
+    if shorewall $debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
+	progress_message3 "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${LITEDIR}
     then
-	echo "Copy complete"
+	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose start" && \
+	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose save" && \
+	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi

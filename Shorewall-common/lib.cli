@@ -870,7 +870,9 @@ heading() {
 make_verbose() {
     local v=$VERBOSE_OFFSET option=-
 
-    if [ $VERBOSE_OFFSET -gt 0 ]; then
+    if [ -n "$USE_VERBOSITY" ]; then
+	echo "-v$USE_VERBOSITY"
+    elif [ $VERBOSE_OFFSET -gt 0 ]; then
 	while [ $v -gt 0 ]; do
 	    option="${option}v"
 	    v=$(($v - 1))

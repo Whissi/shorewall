@@ -1187,7 +1187,11 @@ sub read_a_line() {
 	    #
 	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
 	    #
-	    # Line not blank -- Handle any first-entry message/capabilities check
+	    # Line not blank -- Check for junk on the line
+	    #
+	    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
+	    #
+	    # Handle any first-entry message/capabilities check
 	    #
 	    if ( $first_entry ) {
 		reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
@@ -1254,6 +1258,7 @@ sub read_a_line1() {
 	    chomp $currentline;
 	    next if $currentline =~ /^\s*$/;
 	    $currentline =~ s/#.*$//;       # Remove Trailing Comments
+	    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 	    $currentlinenumber = $.;
 	    return 1;
 	}

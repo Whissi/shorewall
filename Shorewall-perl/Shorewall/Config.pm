@@ -873,6 +873,7 @@ sub split_line( $$$ ) {
     my ( $mincolumns, $maxcolumns, $description ) = @_;
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $currentline =~ /["'`\\]/;
+    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 
     my @line = split( ' ', $currentline );
 
@@ -897,6 +898,7 @@ sub split_line1( $$$ ) {
     return @line if $line[0] eq 'COMMENT';
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
+    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 
     fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
     fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
@@ -1187,11 +1189,7 @@ sub read_a_line() {
 	    #
 	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
 	    #
-	    # Line not blank -- Check for junk on the line
-	    #
-	    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
-	    #
-	    # Handle any first-entry message/capabilities check
+	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
 	    if ( $first_entry ) {
 		reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );

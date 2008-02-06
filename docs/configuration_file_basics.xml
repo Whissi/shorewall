@@ -284,6 +284,12 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
         <para>Action definition files
         (<filename>/etc/shorewall/action.*</filename>)</para>
       </listitem>
+
+      <listitem>
+        <para>Macro definition files (/etc/shorewall/macro.*) — Added in
+        Shorewall-perl 4.1. They are ignored by Shorewall-shell 4.1 and
+        later.</para>
+      </listitem>
     </itemizedlist>
 
     <para>To attach a comment to one or more rules, insert a record above the
@@ -332,6 +338,24 @@ Chain loc2net (1 references)
 gateway:~ #
 
 </programlisting>
+
+    <para>COMMENT lines in macro files work somewhat differently from other
+    files. COMMENT lines in macros are ignored if COMMENT support is not
+    available or if there was a COMMENT in use when the top-level macro was
+    invoked. This allows the following:</para>
+
+    <para><filename>/usr/share/shorewall/macro.SSH</filename>:</para>
+
+    <para><programlisting>#ACTION SOURCE DEST  PROTO DEST    SOURCE  RATE  USER/
+#                          PORT(S) PORT(S) LIMIT GROUP
+COMMENT SSH
+PARAM   -      -     tcp   22 </programlisting>
+    <filename>/etc/shorewall/rules</filename>:<programlisting>COMMENT Allow SSH from home
+SSH/ALLOW    net:$MYIP      $FW
+COMMENT</programlisting>The comment line in macro.SSH will not override the
+    COMMENT line in the rules file and the generated rule will show <emphasis
+    role="bold">/* Allow SSH from home */</emphasis> when displayed through
+    the Shorewall show and dump commands.</para>
   </section>
 
   <section id="Continuation">

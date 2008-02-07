@@ -1195,6 +1195,7 @@ sub do_user( $ ) {
 	$rule .= "--uid-owner $1 " if defined $1 && $1 ne '';
 	$rule .= "--gid-owner $2 " if defined $2 && $2 ne '';
     } elsif ( $user =~ /^!/ ) {
+	$user =~ s/!//;
 	$rule .= "! --uid-owner $user ";
     } else {
 	$rule .= "--uid-owner $user ";

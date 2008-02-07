@@ -1512,12 +1512,15 @@ sub generate_matrix() {
     my @zones = non_firewall_zones;
 
     #
-    # Set up forwarding chain for each zone
+    # Special processing for complex configurations
     #
     for my $zone ( @zones ) {
-	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );
 	my $zoneref    = find_zone( $zone );
+
+	next if @zones <= 2 && ! $zoneref->{complex};
+
 	my $exclusions = $zoneref->{exclusions};
+	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );
 
 	if ( @$exclusions ) {
 	    my $in_ref  = new_standard_chain zone_input_chain $zone;
@@ -1578,9 +1581,10 @@ sub generate_matrix() {
 	my $chain1           = rules_target firewall_zone , $zone;
 	my $chain2           = rules_target $zone, firewall_zone;
 	my $chain3           = rules_target $zone, $zone;
+	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $exclusions       = $zoneref->{exclusions};
-	my $frwd_ref         = $filter_table->{ zone_forward_chain $zone };
+	my $frwd_ref         = $filter_table->{"${zone}_frwd"};
 	my $chain            = 0;
 	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
 	my $nested           = $zoneref->{options}{nested};
@@ -1712,7 +1716,7 @@ sub generate_matrix() {
 			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$nextchain} ) unless use_input_chain $interface;
 			}
 
-			if ( $hostref->{ipsec} ne 'ipsec' ) {
+			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
 			    if ( use_forward_chain $interface ) {
 				add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
 			    } else {
@@ -1836,15 +1840,64 @@ sub generate_matrix() {
 		}
 	    }
 
-	    for my $typeref ( values %$dest_hosts_ref ) {
-		for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
-		    my $arrayref = $typeref->{$interface};
-		    for my $hostref ( @$arrayref ) {
-			next if $hostref->{options}{sourceonly};
-			if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
-			    my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
+	    if ( $frwd_ref ) {
+		for my $typeref ( values %$dest_hosts_ref ) {
+		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
+			my $arrayref = $typeref->{$interface};
+			for my $hostref ( @$arrayref ) {
+			    next if $hostref->{options}{sourceonly};
+			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
+				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
+				for my $net ( @{$hostref->{hosts}} ) {
+				    add_rule $frwd_ref, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match, "-j $chain" );
+				}
+			    }
+			}
+		    }
+		}
+	    } else {
+		for my $typeref ( values %$source_hosts_ref ) {
+		    for my $interface ( keys %$typeref ) {
+			my $arrayref = $typeref->{$interface};
+			my $chain3ref;
+			my $match_source_dev = '';
+
+			if ( use_forward_chain $interface ) {
+			    $chain3ref = $filter_table->{forward_chain $interface};
+			} else {
+			    $chain3ref  = $filter_table->{FORWARD};
+			    $match_source_dev = match_source_dev $interface;
+			}
+   
+			for my $hostref ( @$arrayref ) {
+			    next if $hostref->{options}{destonly};
 			    for my $net ( @{$hostref->{hosts}} ) {
-				add_rule $frwd_ref, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match, "-j $chain" );
+				for my $type1ref ( values %$dest_hosts_ref ) {
+				    for my $interface1 ( keys %$type1ref ) {
+					my $array1ref = $type1ref->{$interface1};
+					for my $host1ref ( @$array1ref ) {
+					    next if $host1ref->{options}{sourceonly};
+					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
+					    for my $net1 ( @{$host1ref->{hosts}} ) {
+						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
+						    #
+						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
+						    #
+						    add_rule(
+							     $chain3ref ,
+							     join( '', 
+								   $match_source_dev, 
+								   match_dest_dev($interface1), 
+								   match_source_net($net), 
+								   match_dest_net($net1), 
+								   $ipsec_out_match, 
+								   "-j $chain" )
+							    );
+						}
+					    }
+					}
+				    }
+				}
 			    }
 			}
 		    }

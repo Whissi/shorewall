@@ -302,7 +302,7 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
+					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) ,
 					  nested  => @parents > 0 } ,
 			  interfaces => {} ,
 			  children   => [] ,

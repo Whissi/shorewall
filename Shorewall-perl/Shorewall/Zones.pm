@@ -45,6 +45,7 @@ our @EXPORT = qw( NOTHING
 		  defined_zone
 		  zone_type
 		  all_zones
+		  complex_zones
 		  non_firewall_zones
 		  single_interface
 		  validate_interfaces_file
@@ -82,7 +83,8 @@ use constant { NOTHING    => 'NOTHING',
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
 #     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
-#                        options =>    {  nested  => 0|1
+#                        options =>    { complex => 0|1
+#                                        nested  => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
 #                                        out     => < policy match string >
@@ -300,6 +302,7 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
+					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) } ,
 					  nested  => @parents > 0 } ,
 			  interfaces => {} ,
 			  children   => [] ,
@@ -497,6 +500,8 @@ sub add_group_to_zone($$$$$)
     $interfaceref = ( $typeref->{$type}           || ( $interfaceref = $typeref->{$type} = {} ) );
     $arrayref     = ( $interfaceref->{$interface} || ( $interfaceref->{$interface} = [] ) );
 
+    $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 ) || ( @exclusions );
+    
     push @{$zoneref->{exclusions}}, @exclusions;
 
     push @{$arrayref}, { options => $options,
@@ -532,6 +537,10 @@ sub all_zones() {
 
 sub non_firewall_zones() {
    grep ( $zones{$_}{type} ne 'firewall'  ,  @zones );
+}
+
+sub complex_zones() {
+    grep( $zones{$_}{options}{complex} , @zones );
 }
 
 sub firewall_zone() {
@@ -936,6 +945,7 @@ sub validate_hosts_file()
 	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
 	    $interface = $1;
 	    $hosts = $2;
+	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
 	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
@@ -960,6 +970,7 @@ sub validate_hosts_file()
 	    {
 		if ( $option eq 'ipsec' ) {
 		    $type = 'ipsec4';
+		    $zoneref->{options}{complex} = 1;
 		    $ipsec = 1;
 		} elsif ( $validoptions{$option}) {
 		    $options{$option} = 1;

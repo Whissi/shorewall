@@ -1194,9 +1194,9 @@ sub do_user( $ ) {
     } elsif ( $user =~ /^(.*):(.*)$/ ) {
 	$rule .= "--uid-owner $1 " if defined $1 && $1 ne '';
 	$rule .= "--gid-owner $2 " if defined $2 && $2 ne '';
-    } elsif ( $user =~ /^!/ ) {
-	$user =~ s/!//;
-	$rule .= "! --uid-owner $user ";
+    } elsif ( $user =~ /^!(.*)$/ ) {
+	fatal_error "Invalid USER/GROUP (!)" if $1 eq '';
+	$rule .= "! --uid-owner $1 ";
     } else {
 	$rule .= "--uid-owner $user ";
     }

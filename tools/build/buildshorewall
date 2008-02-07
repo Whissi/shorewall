@@ -829,6 +829,12 @@ case $VERSION in
 	    do_or_die "sha1sum shorewall-shell-${BASEVERSION}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
 	fi
 	;;
+    *.*.*.*)
+	[ -f $RPMNAME ]      && do_or_die "md5sum $RPMNAME >> $VERSION.md5sums"
+	[ -f $LITERPMNAME ]  && do_or_die "md5sum $LITERPMNAME >> $VERSION.md5sums"
+	[ -f $PERLRPMNAME ]  && do_or_die "md5sum $PERLRPMNAME >> $VERSION.md5sums"
+	[ -f $SHELLRPMNAME ] && do_or_die "md5sum $SHELLRPMNAME >> $VERSION.md5sums"
+	;;
 esac
 
 for file in *; do

@@ -1509,11 +1509,12 @@ sub generate_matrix() {
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
+    my @zones = non_firewall_zones;
 
     #
     # Set up forwarding chain for each zone
     #
-    for my $zone ( non_firewall_zones ) {
+    for my $zone ( @zones ) {
 	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );
 	my $zoneref    = find_zone( $zone );
 	my $exclusions = $zoneref->{exclusions};
@@ -1571,7 +1572,7 @@ sub generate_matrix() {
     #
     # Main source-zone matrix-generation loop
     #
-    for my $zone ( non_firewall_zones ) {
+    for my $zone ( @zones ) {
 	my $zoneref          = find_zone( $zone );
 	my $source_hosts_ref = $zoneref->{hosts};
 	my $chain1           = rules_target firewall_zone , $zone;
@@ -1734,7 +1735,7 @@ sub generate_matrix() {
 	    my @temp_zones;
 
 	  ZONE1:
-	    for my $zone1 ( non_firewall_zones )  {
+	    for my $zone1 ( @zones )  {
 		my $zone1ref = find_zone( $zone1 );
 		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
 
@@ -1775,7 +1776,7 @@ sub generate_matrix() {
 		$last_chain = '';
 	    }
 	} else {
-	    @dest_zones =  non_firewall_zones ;
+	    @dest_zones =  @zones ;
 	}
 	#
 	# Here it is -- THE BIG UGLY!!!!!!!!!!!!

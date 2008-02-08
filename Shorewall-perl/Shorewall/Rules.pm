@@ -1584,7 +1584,7 @@ sub generate_matrix() {
 	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $exclusions       = $zoneref->{exclusions};
-	my $frwd_ref         = $filter_table->{"${zone}_frwd"};
+	my $frwd_ref         = $filter_table->{zone_forward_chain $zone};
 	my $chain            = 0;
 	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
 	my $nested           = $zoneref->{options}{nested};

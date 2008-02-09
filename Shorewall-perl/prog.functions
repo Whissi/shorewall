@@ -242,9 +242,9 @@ debug_restore_input() {
 		chain=${first#:}
 
 		if [ "x$second" = x- ]; then
-		    $IPTABLES -t $table -N $chain
+		    do_iptables -t $table -N $chain
 		else
-		    $IPTABLES -t $table -P $chain $second
+		    do_iptables -t $table -P $chain $second
 		fi
 
 		if [ $? -ne 0 ]; then

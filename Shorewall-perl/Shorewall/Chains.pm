@@ -592,7 +592,7 @@ sub use_input_chain($) {
     #
     my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone}};
 
-    return 1 if $chainref;
+    return 0 if $chainref;
     #
     # Use the '<zone>2fw' chain if it is referenced.
     #
@@ -631,7 +631,7 @@ sub use_output_chain($) {
     #    
     my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone}};
 
-    return 1 if $chainref;
+    return 0 if $chainref;
     #
     # Use the 'fw2<zone>' chain if it is referenced.
     #
@@ -1145,7 +1145,7 @@ sub do_test ( $$ )
 
     validate_mark $testval;
 
-    $testval = join('/', $testval, in_hex($mask) ) unless ( $testval =~ '/' );
+    $testval = join( '/', $testval, in_hex($mask) ) unless ( $testval =~ '/' );
 
     "$match $testval ";
 }

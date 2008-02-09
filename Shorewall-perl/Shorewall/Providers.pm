@@ -70,11 +70,11 @@ sub initialize() {
     @routemarked_interfaces = ();
     $balance             = 0;
     $first_default_route = 1;
-
-    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 , interface => 'lo' } ,
-		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 , interface => 'lo' } ,
-		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 , interface => 'lo' } ,
-		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 , interface => 'lo' } );
+    
+    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
+		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 } ,
+		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 } ,
+		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 } );
     @providers = ();
 }
 
@@ -433,9 +433,13 @@ sub add_an_rtrule( $$$$ ) {
 
     emit ( "qt ip rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
 
-    my ( $base, $optional, $number ) = ( uc chain_base( $providers{$provider}{interface} ) ,  $providers{$provider}{optional} , $providers{$provider}{number} );
+    my ( $optional, $number ) = ( $providers{$provider}{optional} , $providers{$provider}{number} );
 
-    emit ( '', "if [ -n \$${base}_IS_UP ]; then" ), push_indent if $optional;
+    if ( $optional ) {
+	my $base = uc chain_base( $providers{$provider}{interface} );
+	emit ( '', "if [ -n \$${base}_IS_UP ]; then" );
+	push_indent;
+    }
 
     emit ( "run_ip rule add $source $dest $priority table $number",
 	   "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );

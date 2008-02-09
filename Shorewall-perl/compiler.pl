@@ -43,7 +43,7 @@ use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage( $ ) {
-    print STDERR 'usage: compiler.pl [ <option> ... ] <filename> ]
+    print STDERR 'usage: compiler.pl [ <option> ... ] [ <filename> ]
 
   options are:
     [ --export ]

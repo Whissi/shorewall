@@ -71,10 +71,10 @@ sub initialize() {
     $balance             = 0;
     $first_default_route = 1;
 
-    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
-		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 } ,
-		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 } ,
-		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 } );
+    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 , interface => 'lo' } ,
+		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 , interface => 'lo' } ,
+		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 , interface => 'lo' } ,
+		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 , interface => 'lo' } );
     @providers = ();
 }
 
@@ -100,9 +100,9 @@ sub setup_route_marking() {
 
     for my $providerref ( @routemarked_providers ) {
 	my $interface = $providerref->{interface};
-	my $provider  = $providerref->{provider};
-	    
-	add_command( $chainref, qq(if [ -n "${provider}_is_up" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+	my $base      = uc chain_base $interface;
+
+	add_command( $chainref, qq(if [ -n "${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
@@ -217,6 +217,7 @@ sub add_a_provider( $$$$$$$$ ) {
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
 
     my $provider = chain_base $table;
+    my $base     = uc chain_base $interface;
     
     emit "#\n# Add Provider $table ($number)\n#";
 
@@ -367,14 +368,14 @@ sub add_a_provider( $$$$$$$$ ) {
 
     emit qq(\nprogress_message "   Provider $table ($number) Added"\n);
 
-    emit ( "${provider}_is_up=Yes" ) if $optional;
+    emit ( "${base}_IS_UP=Yes" ) if $optional;
 
     pop_indent;
     emit 'else';
 
     if ( $optional ) {
 	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
-	       "    ${provider}_is_up=" );
+	       "    ${base}_IS_UP=" );
     } else {
 	emit( "    fatal_error \"Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"" );
     }
@@ -432,9 +433,9 @@ sub add_an_rtrule( $$$$ ) {
 
     emit ( "qt ip rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
 
-    my ( $base, $optional, $number ) = ( chain_base( $provider ) ,  $providers{$provider}{optional} , $providers{$provider}{number} );
+    my ( $base, $optional, $number ) = ( uc chain_base( $providers{$provider}{interface} ) ,  $providers{$provider}{optional} , $providers{$provider}{number} );
 
-    emit ( '', "if [ -n \$${base}_is_up ]; then" ), push_indent if $optional;
+    emit ( '', "if [ -n \$${base}_IS_UP ]; then" ), push_indent if $optional;
 
     emit ( "run_ip rule add $source $dest $priority table $number",
 	   "echo \"qt ip rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );

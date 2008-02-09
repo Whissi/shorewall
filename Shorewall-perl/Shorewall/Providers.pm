@@ -83,7 +83,7 @@ INIT {
 }
 
 #
-# Set up marking for 'tracked' interfaces. Unlike in Shorewall 3.x, we add these rules unconditionally, even if the associated interface isn't up.
+# Set up marking for 'tracked' interfaces.
 #
 sub setup_route_marking() {
     my $mask = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
@@ -100,6 +100,9 @@ sub setup_route_marking() {
 
     for my $providerref ( @routemarked_providers ) {
 	my $interface = $providerref->{interface};
+	my $provider  = $providerref->{provider};
+	    
+	add_command( $chainref, qq(if [ -n "${provider}_is_up" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
@@ -107,13 +110,12 @@ sub setup_route_marking() {
 	}
 
 	if ( $providerref->{shared} ) {
-	    my $provider = $providerref->{provider};
-	    add_command( $chainref, qq(if [ -n "${provider}_is_up" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 	    add_rule $chainref, " -i $interface -m mac --mac-source $providerref->{mac} -j MARK --set-mark $providerref->{mark}";
-	    decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
 	} else {
 	    add_rule $chainref, " -i $interface -j MARK --set-mark $providerref->{mark}";
 	}
+	
+	decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
     }
 
     add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";

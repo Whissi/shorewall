@@ -232,6 +232,39 @@ gateway:/etc/shorewall#                                               </programl
       <quote><command>show log</command></quote>,
       <quote><command>logwatch</command></quote> and
       <quote><command>dump</command></quote> commands.</para>
+
+      <para>Beginning in Shorewall-perl 4.1, the NFLOG target is supported.
+      </para>
+
+      <para>NFLOG is a successor to ULOG. In addition, both ULOG and NFLOG may
+      be followed by a list of up to three numbers in parentheses.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The first number specifies the netlink group (1-32). If
+          omitted (e.g., NFLOG(,0,10)) then a value of 1 is assumed. </para>
+        </listitem>
+
+        <listitem>
+          <para>The second number specifies the maximum number of bytes to
+          copy. If omitted, 0 (no limit) is assumed. </para>
+        </listitem>
+
+        <listitem>
+          <para>The third number specifies the number of log messages that
+          should be buffered in the kernel before they are sent to user space.
+          The default is 1.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Examples:</para>
+
+      <para><filename>/etc/shorewall/shorewall.conf</filename>:
+      <programlisting>MACLIST_LOG_LEVEL=NFLOG(1,0,1)</programlisting></para>
+
+      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION             SOURCE     DEST     PROTO     DEST
+#                                                 PORT(S)
+ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlisting></para>
     </section>
   </section>
 

@@ -44,7 +44,7 @@ setup_traffic_shaping()
 	local rateunit rate
 	rate=$1
 	rateunit=$( echo $rate | sed -e 's/[0-9]*//')
-	rate=$( echo $rate | sed -e 's/[a-z]*//gi')
+	rate=$( echo $rate | sed -e 's/[a-zA-Z]*//g')
 
 	case $rateunit in
 	    kbit|Kbit)

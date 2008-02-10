@@ -87,7 +87,14 @@
               <para>- If the SOURCE is <emphasis
               role="bold">$FW</emphasis>[<emphasis
               role="bold">:</emphasis><emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...],
-              then the rule is inserted into the OUTPUT chain.</para>
+              then the rule is inserted into the OUTPUT chain. The behavior
+              changed in Shorewall-perl 4.1. Previously, when
+              HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero mark values
+              &lt; 256 to be assigned in the OUTPUT chain. This has been
+              changed so that only high mark values may be assigned there.
+              Packet marking rules for traffic shaping of packets originating
+              on the firewall must be coded in the POSTROUTING chain (see
+              below).</para>
 
               <para>- Otherwise, the chain is determined by the setting of
               MARK_IN_FORWARD_CHAIN in <ulink

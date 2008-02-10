@@ -380,8 +380,8 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     directive consists of the word INCLUDE followed by a path name and causes
     the contents of the named file to be logically included into the file
     containing the INCLUDE. Relative path names given in an INCLUDE directive
-    are assumed to reside in /etc/shorewall or in an alternate configuration
-    directory if one has been specified for the command.</para>
+    are resolved using the current CONFIG_PATH setting (see <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
 
     <para>INCLUDE's may be nested to a level of 3 -- further nested INCLUDE
     directives are ignored with a warning message.</para>

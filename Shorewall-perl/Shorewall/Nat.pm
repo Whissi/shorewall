@@ -189,9 +189,11 @@ sub setup_one_masq($$$$$$$)
 
 	if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
 	    $interface = $1;
-	    my $realm  = $2;
+	    my $provider  = $2;
 	    $fullinterface =~ s/[(]\w*[)]//;
-	    $realm = lookup_provider( $realm ) unless $realm =~ /^\d+$/;
+	    my $realm = lookup_provider( $provider ) unless $provider =~ /^\d+$/;
+
+	    fatal_error "$provider is not a shared-interface provider" unless $realm;
 	    
 	    $rule .= "-m realm --realm $realm ";
 	}

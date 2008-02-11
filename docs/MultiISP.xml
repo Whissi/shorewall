@@ -427,6 +427,32 @@
                   </note>
                 </listitem>
               </varlistentry>
+
+              <varlistentry>
+                <term>src=<replaceable>source-address</replaceable> (Added in
+                Shorewall-perl 4.1.5)</term>
+
+                <listitem>
+                  <para> Specifies the source address to use when routing to
+                  this provider and none is known (the local client has bound
+                  to the 0 address). May not be specified when an
+                  <replaceable>address</replaceable> is given in the INTERFACE
+                  column. If this option is not used, Shorewall substitutes
+                  the primary IP address on the interface named in the
+                  INTERFACE column.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>mtu=<replaceable>number</replaceable> (Added in
+                Shorewall-perl 4.1.5)</term>
+
+                <listitem>
+                  <para>Specifies the MTU when forwarding through this
+                  provider. If not given, the MTU of the interface named in
+                  the INTERFACE column is assumed.</para>
+                </listitem>
+              </varlistentry>
             </variablelist>
 
             <para>For those of you who are termnally confused between<emphasis

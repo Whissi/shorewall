@@ -585,7 +585,21 @@ sub lookup_provider( $ ) {
     my $provider    = $_[0];
     my $providerref = $providers{ $provider };
 
-    fatal_error "Unknown provider ($provider)" unless $providerref;
+    unless ( $providerref ) {
+	fatal_error "Unknown provider ($provider)" unless $provider =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/;
+
+	my $provider_number = numeric_value $provider;
+
+	for ( keys %providers ) {
+	    if ( $providers{$_}{number} == $provider_number ) {
+		$providerref = $providers{$_};
+		last;
+	    }
+	}
+	
+	fatal_error "Unknown provider ($provider)" unless $providerref;
+    }
+
 
     $providerref->{shared} ? $providerref->{number} : 0;
 }

@@ -228,11 +228,9 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
     if ( $gateway eq 'detect' ) {
-	$address = get_interface_address $interface unless $address;
 	$gateway = get_interface_gateway $interface;
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;
-	$address = get_interface_address $interface unless $address;
     } else {
 	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
 	$gateway = '';
@@ -268,7 +266,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $track, $balance , $optional ) = (0,0,0,interface_is_optional( $interface ));
+    my ( $loose, $track, $balance , $optional, $mtu ) = (0,0,0,interface_is_optional( $interface ), '' );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -283,6 +281,11 @@ sub add_a_provider( $$$$$$$$ ) {
 	    } elsif ( $option eq 'optional' ) {
 		set_interface_option $interface, 'optional', 1;
 		$optional = 1;
+	    } elsif ( $option =~ /^src=(.*)$/ ) {
+		fatal_error "OPTION 'src' not allowed on shared interface" if $shared;
+		$address = validate_address( $1 , 1 );
+	    } elsif ( $option =~ /^mtu=(\d+)$/ ) {
+		$mtu = "mtu $1 ";
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -335,7 +338,8 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     if ( $gateway ) {
-	emit "run_ip route replace $gateway src $address dev $interface table $number $realm";
+	$address = get_interface_address $interface unless $address;
+	emit "run_ip route replace $gateway src $address dev $interface ${mtu}table $number $realm";
 	emit "run_ip route add default via $gateway dev $interface table $number $realm";
     }
 

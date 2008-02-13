@@ -71,7 +71,7 @@ sub initialize() {
     $balance             = 0;
     $first_default_route = 1;
     
-    %providers  = ( 'local' => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
+    %providers  = ( local   => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
 		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 } ,
 		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 } ,
 		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 } );

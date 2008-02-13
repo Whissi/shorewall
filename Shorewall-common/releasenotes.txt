@@ -1,4 +1,4 @@
-Shorewall 4.1 Patch Release 4.
+Shorewall 4.1 Patch Release 6.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 1  H I G H L I G H T S
@@ -11,171 +11,6 @@ Shorewall 4.1 Patch Release 4.
 3) Enhanced operational logging.
 
 4) The tarball installers now work under Cygwin.
-
-Problems corrected in Shorewall 4.1.4.
-
-1)  Previously, a value of 0 was ignored in the TEST column of tcrules
-    and the MARK column of the rules files. 
-
-    Also, the default mask for entries in these columns has been
-    changed from 0xFF to 0xFFFF for compatibility with Shorewall-shell.
-
-2)  The compilation date recorded in the firewall.conf file produced by
-    Shorewall-perl was previously mangled.
-
-3)  The following situation would result in unexpected behavior.
-
-    /etc/shorewall/zones:
-
-	#ZONE	     TYPE
-	fw	     firewall
-	net	     ipv4
-	loc	     ipv4
-	dmz	     ipv4
-
-    /etc/shorewall/interfaces:
-
-	#ZONE        INTERFACE    BROADCAST      OPTIONS
-	net	     ppp0
-	loc	     eth1
-	loc	     ppp+
-	dmz	     eth2
-
-    /etc/shorewall/rules:
-
-	#ACTION   SOURCE     DEST     PROTO    DEST
-	#                                      PORT(S)
-	ACCEPT    net        dmz      tcp      80
-	REDIRECT  loc        3128     tcp      80
-
-    The web server in the dmz (implied by the first rule) is
-    inaccessible from the 'net' zone because the REDIRECT rule 
-    redirects all traffic arriving on 'ppp+' to local port 3128.
-
-    Shorewall 4.1.4 includes a fix for this problem that also requires
-    a configuration change.
-
-    The basic problem with the above configuration is that 'net' is a
-    sub-zone of 'loc' (since ppp0 is a subset of ppp+) but Shorewall
-    isn't able to recognize that fact. 
-
-    By changing the /etc/shorewall/zones file to make the parent/child
-    relationship explicit, Shorewall will now know that 'net' is a
-    sub-zone of 'loc'.
-
-    /etc/shorewall/zones:
-
-	#ZONE	     TYPE
-	fw	     firewall
-	loc	     ipv4
-	net:loc	     ipv4
-	dmz	     ipv4
-
-    Be sure that there are no CONTINUE policies from net to another
-    zone and that IMPLICIT_CONTINUE=No (to prevent implicit CONTINUE
-    policies from 'net' to all other zones).
-
-Other changes in Shorewall 4.1.4.
-
-1)  When installing on Cygwin, /etc/shorewall is no longer fully
-    populated. Rather, only the shorewall.conf and params files are
-    installed. As always, the full configuration file set is installed
-    in /usr/share/shorewall/configfiles.
-
-2)  Specifying a destination zone in a NAT-only rule now generates a
-    warning and the destination zone is ignored. NAT-only rules are:
-
-    	     NONAT
-	     REDIRECT-
-	     DNAT-
-
-3)  The /etc/shorewall/masq and /etc/shorewall/nat file now accept a
-    comma-separated list of interface names where before only a single
-    interface name could be listed (Shorewall-perl only).
-
-    This feature is not for beginners. It iterates over the
-    list of interfaces, substituting each interface in place of the
-    list and processing the resulting entry according to the semantics
-    of earlier Shorewall versions. If you don't know where to use this,
-    don't try.
-
-    Example 1:
-
-    /etc/shorewall/masq:
-
-    #INTERFACE              SOURCE          ADDRESS
-    eth0,eth1		    eth2	    1.2.3.4
-
-    equivalent to:
-
-    #INTERFACE              SOURCE          ADDRESS
-    eth0		    eth2	    1.2.3.4
-    eth1		    eth2	    1.2.3.4
-
-    Example 2:
-
-    /etc/shorewall/masq:
-
-    #INTERFACE			SOURCE      ADDRESS
-    eth0,eth1::192.168.1.0/24	eth2	    1.2.3.4
-
-    equivalent to:
-
-    #INTERFACE              SOURCE          ADDRESS
-    eth0::192.168.1.0/24    eth2	    1.2.3.4
-    eth1::192.168.1.0/24    eth2	    1.2.3.4
-
-    Example 3:
-
-    /etc/shorewall/nat:
-
-    #EXTERNAL        INTERFACE       INTERNAL
-    206.124.146.178  eth0,wlan0      192.168.1.3
-
-    equivalent to:
-
-    #EXTERNAL        INTERFACE       INTERNAL
-    206.124.146.178  eth0            192.168.1.3
-    206.124.146.178  wlan0           192.168.1.3
-
-4)  Previously, the INTERFACE name used in the masq, nat and netmap
-    files had to exactly match the name of an interface from the
-    interfaces file. Beginning with Shorewall-perl 4.1.4, the
-    interface may loosely match a wildcard entry in the interfaces
-    file.
-
-    Example:
-
-    /etc/shorewall/interfaces:
-
-	vpn	tun+	
-
-    /etc/shorewall/masq:
-
-	tun1	192.168.4.0/24
-
-5)  Previously, Shorewall classified non-firewall zones as either
-    'simple' or 'complex'. Attributes of a zone which made it 'complex'
-    included:
-
-    - The zone was of type 'ipsec' or 'ipsec4' or it had a hosts
-      entry with the 'ipsec' options.
-    - The zone had OPTIONS, IN OPTIONS or OUT OPTIONS
-    - The zone had more than one network on a given interface
-    - The zone had a hosts file entry with an exclusion.
-    - The zone had a hosts file entry specifying an ipset.
-
-    The handling of 'simple' and 'complex' zones was different.
-
-    -  complex zones had their own 'forward' chain (named
-       '<zone>_frwd').
-    -  complex zones with exclusions had their own 'input' and
-       'output' chains.
-
-    Beginning with Shorewall-perl 4.1.4, all non-firewall zones will be
-    treated as 'complex'. This will have the effect of one additional
-    filter chain per zone but in most cases, the average number of
-    filter rules traversed by a connection request will be reduced.
 
 Migration Issues.
 
@@ -197,7 +32,18 @@ Migration Issues.
 
     	     NONAT
 	     REDIRECT-
-	     DNAT- 
+	     DNAT-
+
+Problems corrected in 4.1.5.
+
+None.
+
+New Features in 4.1.5.
+
+1)  The need for interface-specific chains (such as eth0_in, eth4_fwd,
+    etc.) in the filter table has been drastically reduced. This has
+    the effect of reducing the average number of rules that each packet
+    must traverse.
 
 New Features in Shorewall 4.1.
 
@@ -414,7 +260,7 @@ New Features in Shorewall 4.1.
     mark values < 256 to be assigned in the OUTPUT chain. This has been
     changed so that only high mark values may be assigned
     there. Packet marking rules for traffic shaping of packets
-    originating on the firewall must be coded in the POSTROUTING table.
+    originating on the firewall must be coded in the POSTROUTING chain.
 
 8)  Previously, Shorewall did not range-check the value of the
     VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1:
@@ -519,3 +365,105 @@ New Features in Shorewall 4.1.
     $ USER=<your user id> GROUP=None ./install.sh
     
     The 'shorewall' program is installed in /bin/ (a.k.a, /usr/bin/).
+
+15) When installing on Cygwin, /etc/shorewall is no longer fully
+    populated. Rather, only the shorewall.conf and params files are
+    installed. As always, the full configuration file set is installed
+    in /usr/share/shorewall/configfiles.
+
+16) Specifying a destination zone in a NAT-only rule now generates a
+    warning and the destination zone is ignored. NAT-only rules are:
+
+    	     NONAT
+	     REDIRECT-
+	     DNAT-
+
+17)  The /etc/shorewall/masq and /etc/shorewall/nat file now accept a
+    comma-separated list of interface names where before only a single
+    interface name could be listed (Shorewall-perl only).
+
+    This feature is not for beginners. It iterates over the
+    list of interfaces, substituting each interface in place of the
+    list and processing the resulting entry according to the semantics
+    of earlier Shorewall versions. If you don't know where to use this,
+    don't try.
+
+    Example 1:
+
+    /etc/shorewall/masq:
+
+    #INTERFACE              SOURCE          ADDRESS
+    eth0,eth1		    eth2	    1.2.3.4
+
+    equivalent to:
+
+    #INTERFACE              SOURCE          ADDRESS
+    eth0		    eth2	    1.2.3.4
+    eth1		    eth2	    1.2.3.4
+
+    Example 2:
+
+    /etc/shorewall/masq:
+
+    #INTERFACE			SOURCE      ADDRESS
+    eth0,eth1::192.168.1.0/24	eth2	    1.2.3.4
+
+    equivalent to:
+
+    #INTERFACE              SOURCE          ADDRESS
+    eth0::192.168.1.0/24    eth2	    1.2.3.4
+    eth1::192.168.1.0/24    eth2	    1.2.3.4
+
+    Example 3:
+
+    /etc/shorewall/nat:
+
+    #EXTERNAL        INTERFACE       INTERNAL
+    206.124.146.178  eth0,wlan0      192.168.1.3
+
+    equivalent to:
+
+    #EXTERNAL        INTERFACE       INTERNAL
+    206.124.146.178  eth0            192.168.1.3
+    206.124.146.178  wlan0           192.168.1.3
+
+18) Previously, the INTERFACE name used in the masq, nat and netmap
+    files had to exactly match the name of an interface from the
+    interfaces file. Beginning with Shorewall-perl 4.1.4, the
+    interface may loosely match a wildcard entry in the interfaces
+    file.
+
+    Example:
+
+    /etc/shorewall/interfaces:
+
+	vpn	tun+	
+
+    /etc/shorewall/masq:
+
+	tun1	192.168.4.0/24
+
+19) Previously, Shorewall classified non-firewall zones as either
+    'simple' or 'complex'. Attributes of a zone which made it 'complex'
+    included:
+
+    - The zone was of type 'ipsec' or 'ipsec4' or it had a hosts
+      entry with the 'ipsec' options.
+    - The zone had OPTIONS, IN OPTIONS or OUT OPTIONS
+    - The zone had more than one network on a given interface
+    - The zone had a hosts file entry with an exclusion.
+    - The zone had a hosts file entry specifying an ipset.
+
+    The handling of 'simple' and 'complex' zones was different.
+
+    -  complex zones had their own 'forward' chain (named
+       '<zone>_frwd').
+    -  complex zones with exclusions had their own 'input' and
+       'output' chains.
+
+    Beginning with Shorewall-perl 4.1, all non-firewall zones will be
+    treated as 'complex'. This will have the effect of one additional
+    filter chain per zone but in most cases, the average number of
+    filter rules traversed by a connection request will be reduced.
+
+

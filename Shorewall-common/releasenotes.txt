@@ -34,13 +34,32 @@ Migration Issues.
 	     REDIRECT-
 	     DNAT-
 
-4)  The default value for LOG_MARTIANS is now 'On'. Previously, the
-    default value was 'Keep'. You can either:
+4)  The default value for LOG_MARTIANS has been changed. Previously,
+    the defaults were:
+
+    	Shorewall-perl - 'Off'
+	Shorewall-shell - 'No'
+
+    The new default values are:
+
+    	Shorewall-perl - 'On'
+	Shorewall-shell - 'Yes'.
+
+    Shorewall-perl users may:
 
     a) Accept the new default -- martians will be logged from all
-       interfaces except those with log_martians=0 in shorewall.conf.
+       interfaces with route filtering except those with log_martians=0
+       in /etc/shorewall/interfaces.
 
-    b) Explicitly set LOG_MARTIANS=keep to maintain compatibility with
+    b) Explicitly set LOG_MARTIANS=Off to maintain compatibility with
+       prior versions of Shorewall.
+
+    Shorewall-shell users may:
+
+    a) Accept the new default -- martians will be logged from all
+       interfaces with the route filtering enabled.
+
+    b) Explicitly set LOG_MARTIONS=No to maintain compatibility with 
        prior versions of Shorewall.
 
 Problems corrected in 4.1.5.
@@ -54,9 +73,11 @@ New Features in 4.1.5.
     the effect of reducing the average number of rules that each packet
     must traverse.
 
-4)  The default value for LOG_MARTIANS is now 'On'. Previously, the
-    default value was 'Keep'. The shorewall.conf file has also been 
-    updated to specify a value of 'On'.
+2)  The default value for LOG_MARTIANS is now 'Yes' ('On' in
+    Shorewall-perl). Previously, the default value was 'No' ('Off' in
+    Shorewall-perl). The shorewall.conf file has also been 
+    updated to specify a value of 'Yes' (which is interpreted as 'On'
+    by Shorewall-perl).
 
 New Features in Shorewall 4.1.
 

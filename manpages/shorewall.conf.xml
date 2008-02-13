@@ -717,10 +717,13 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, sets
           /proc/sys/net/ipv4/conf/all/log_martians and
-          /proc/sys/net/ipv4/conf/default/log_martians to 1. Default is
-          <emphasis role="bold">No</emphasis> which sets both of the above to
-          zero. If you do not enable martian logging for all interfaces, you
-          may still enable it for individual interfaces using the <emphasis
+          /proc/sys/net/ipv4/conf/default/log_martians to 1. In Shorewall
+          versions prior to 4.1.5, the default is <emphasis
+          role="bold">No</emphasis> which sets both of the above to zero. In
+          Shorewall 4.1.5, the default value was chaned to <emphasis
+          role="bold">Yes</emphasis> which sets both of the above to one. If
+          you do not enable martian logging for all interfaces, you may still
+          enable it for individual interfaces using the <emphasis
           role="bold">logmartians</emphasis> interface option in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
 

@@ -34,6 +34,15 @@ Migration Issues.
 	     REDIRECT-
 	     DNAT-
 
+4)  The default value for LOG_MARTIANS is now 'On'. Previously, the
+    default value was 'Keep'. You can either:
+
+    a) Accept the new default -- martians will be logged from all
+       interfaces except those with log_martians=0 in shorewall.conf.
+
+    b) Explicitly set LOG_MARTIANS=keep to maintain compatibility with
+       prior versions of Shorewall.
+
 Problems corrected in 4.1.5.
 
 None.
@@ -44,6 +53,10 @@ New Features in 4.1.5.
     etc.) in the filter table has been drastically reduced. This has
     the effect of reducing the average number of rules that each packet
     must traverse.
+
+4)  The default value for LOG_MARTIANS is now 'On'. Previously, the
+    default value was 'Keep'. The shorewall.conf file has also been 
+    updated to specify a value of 'On'.
 
 New Features in Shorewall 4.1.
 

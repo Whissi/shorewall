@@ -1799,7 +1799,7 @@ sub get_configuration( $ ) {
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
     check_trivalue ( 'ROUTE_FILTER',  '' );
-    check_trivalue ( 'LOG_MARTIANS',  '' );
+    check_trivalue ( 'LOG_MARTIANS',  'on' );
 
     default 'STARTUP_LOG'   , '';
 

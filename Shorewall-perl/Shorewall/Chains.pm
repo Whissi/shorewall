@@ -1941,6 +1941,9 @@ sub expand_rule( $$$$$$$$$$ )
     $dnets = ALLIPv4 unless $dnets;
     $onets = ALLIPv4 unless $onets;
 
+    fatal_error "Input interface may not be specified with a source IP address in the POSTROUTING chain"      if $restriction == POSTROUTE_RESTRICT && $iiface && $inets ne ALLIPv4;
+    fatal_error "Output interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && $dnets ne ALLIPv4;
+
     if ( $iexcl || $dexcl || $oexcl ) {
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain

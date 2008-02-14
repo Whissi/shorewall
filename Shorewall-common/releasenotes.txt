@@ -64,7 +64,29 @@ Migration Issues.
 
 Problems corrected in 4.1.5.
 
-None.
+1)  An optimization added to Shorewall-shell in 4.0.0 has been backed
+    out to work around a limitation of Busybox 'sed'.
+
+2)  Previously, Shorewall would accept both an interface and an IP
+    address in tcrules POSTROUTING entries (such as CLASSIFY).
+
+    Example:
+
+    1:11      eth1:192.168.4.9	-	tcp	22
+
+    It also allows both a destination interface and address.
+
+    Example:
+
+    1:P	      -		eth1:192.168.4.9	tcp	22
+
+    Because Netfilter does not allow an input interface to be specified
+    in POSTROUTING or an output interface to be specified in
+    PREROUTING, Shorewall must use the routing table to generate a list
+    of networks accessed through any interface specified in these
+    cases. Given that a specific address (or set of addresses) has
+    already been specified, it makes no sense qualify it (them) by
+    another list of addresses.
 
 New Features in 4.1.5.
 

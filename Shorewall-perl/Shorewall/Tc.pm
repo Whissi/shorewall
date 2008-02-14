@@ -152,6 +152,10 @@ our %tcclasses;
 
 our $prefix;
 
+our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
+		      tcpost     => POSTROUTE_RESTRICT ,
+		      tcfor      => NO_RESTRICT ,
+		      tcout      => OUTPUT_RESTRICT );
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -226,7 +230,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    $target  = 'CLASSIFY --set-class';
 	}
     }
-
+        
     my $mask = 0xffff;
 
     my ($cmd, $rest) = split( '/', $mark, 2 );
@@ -275,7 +279,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
     }
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
-				     NO_RESTRICT ,
+				     $restrictions{$chain} ,
 				     do_proto( $proto, $ports, $sports) . do_user( $user ) . do_test( $testval, $mask ) . do_tos( $tos ) ,
 				     $source ,
 				     $dest ,

@@ -68,22 +68,9 @@ our %tcs = ( T => { chain  => 'tcpost',
 		    fw       => 0
 		    } ,
 	    CF => { chain    => 'tcfor' ,
+		    connmark => 1 ,
 		    fw       => 0 ,
-		    connmark => 1 ,
 		    } ,
-	    T  => { chain    => 'tcpost' ,
-		    connmark => 0 ,
-		    fw       => 0
-		    } ,
-	    CT => { chain    => 'tcpost' ,
-		    target => 'CONNMARK --set-mark' ,
-		    connmark => 1 ,
-		    fw       => 0
-		    } ,
-	    C  => { target => 'CONNMARK --set-mark' ,
-		    connmark => 1 ,
-		    fw       => 0
-		    }
 	    );
 
 use constant { NOMARK    => 0 ,

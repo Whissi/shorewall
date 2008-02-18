@@ -1284,8 +1284,10 @@ sub get_set_flags( $$ ) {
 #
 # Match a Source. Handles IP addresses and ranges and MAC addresses
 #
-sub match_source_net( $ ) {
-    my $net = $_[0];
+sub match_source_net( $;$ ) {
+    my ( $net, $restriction) = @_;
+
+    $restriction |= NO_RESTRICT;
 
     if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
 	my ($addr1, $addr2) = ( $2, $3 );
@@ -1295,6 +1297,7 @@ sub match_source_net( $ ) {
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
 	( $net = $2 ) =~ tr/-/:/;
 	my $invert = $1 ? '! ' : '';
+	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
 	"-m mac --mac-source ${invert}$net ";
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
@@ -1904,7 +1907,7 @@ sub expand_rule( $$$$$$$$$$ )
 	unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
 	    my @iexcl = mysplit $iexcl;
 	    if ( @iexcl == 1 ) {
-		$rule .= match_source_net "!$iexcl";
+		$rule .= match_source_net "!$iexcl" , $restriction;
 		$iexcl = '';
 	    }
 
@@ -1962,7 +1965,7 @@ sub expand_rule( $$$$$$$$$$ )
 		    #
 		    # We evaluate the source net match in the inner loop to accomodate systems without $capabilities{KLUDGEFREE}
 		    #
-		    add_rule( $chainref, join( '', $rule, match_source_net( $inet), match_dest_net( $dnet ), $onet, "-j $echain" ), 1 );
+		    add_rule( $chainref, join( '', $rule, match_source_net( $inet, $restriction ), match_dest_net( $dnet ), $onet, "-j $echain" ), 1 );
 		}
 	    }
 	}
@@ -1975,7 +1978,7 @@ sub expand_rule( $$$$$$$$$$ )
 	#
 	# Generate RETURNs for each exclusion
 	#
-	add_rule $echainref, ( match_source_net $_ ) . '-j RETURN' for ( mysplit $iexcl );
+	add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN' for ( mysplit $iexcl );
 	add_rule $echainref, ( match_dest_net $_ ) .   '-j RETURN' for ( mysplit $dexcl );
 	add_rule $echainref, ( match_orig_dest $_ ) .  '-j RETURN' for ( mysplit $oexcl );
 	#
@@ -2006,13 +2009,13 @@ sub expand_rule( $$$$$$$$$$ )
 			    '' ,
 			    $logtag ,
 			    'add' ,
-			    join( '', $rule, match_source_net( $inet) , match_dest_net( $dnet ), $onet );
+			    join( '', $rule, match_source_net( $inet , $restriction ) , match_dest_net( $dnet ), $onet );
 		    }
 
 		    unless ( $disposition eq 'LOG' ) {
 			add_rule( 
 				 $chainref,
-				 join( '', $rule, match_source_net ($inet), match_dest_net( $dnet ), $onet, $target  ) ,
+				 join( '', $rule, match_source_net ($inet , $restriction ), match_dest_net( $dnet ), $onet, $target  ) ,
 				 1 );
 		    }
 		}

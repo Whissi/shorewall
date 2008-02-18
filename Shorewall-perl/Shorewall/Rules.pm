@@ -503,8 +503,7 @@ sub add_common_rules() {
     add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
 
     for $interface ( all_interfaces ) {
-	ensure_chain( 'filter', $_ ) for first_chains( $interface );
-	ensure_chain( 'filter',  output_chain( $interface ) );
+	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
     }
 
     run_user_exit1 'initdone';

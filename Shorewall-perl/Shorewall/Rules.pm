@@ -1917,13 +1917,16 @@ sub generate_matrix() {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
     }
 
-    addnatjump 'PREROUTING', 'dnat', '';
+    addnatjump 'PREROUTING'  , 'nat_in'  , '';
+    addnatjump 'POSTROUTING' , 'nat_out' , '';
 
     if ( $config{DYNAMIC_ZONES} ) {
 	for my $interface ( @interfaces ) {
 	    addnatjump 'PREROUTING' , dynamic_in( $interface ), match_source_dev( $interface );
 	}
     }
+
+    addnatjump 'PREROUTING', 'dnat', '';
 
     for my $interface ( @interfaces ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );

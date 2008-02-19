@@ -50,7 +50,7 @@ sub setup_tunnels() {
 
 	my $noah = 1;
 
-	fatal_error "Invalid IPSEC modified ($qualifier:$remainder)" if defined $remainder;
+	fatal_error "Invalid IPSEC modifier ($qualifier:$remainder)" if defined $remainder;
 
 	if ( defined $qualifier ) {
 	    if ( $qualifier eq 'ah' ) {
@@ -229,7 +229,7 @@ sub setup_tunnels() {
 
 	my $zonetype = zone_type( $zone );
 
-	fatal_error "Invalid zone ($zone) for tunnel ZONE" if $zonetype eq 'firewall' || $zonetype eq 'bport4';
+	fatal_error "Invalid tunnel ZONE ($zone)" if $zonetype eq 'firewall' || $zonetype eq 'bport4';
 
 	my $inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
 	my $outchainref = ensure_filter_chain "${fw}2${zone}", 1;

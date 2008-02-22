@@ -123,6 +123,18 @@ New Features in 4.1.5.
 4)  Shorewall-perl now generates an error when a MAC address appears in
     a traffic shaping rule in the OUTPUT or POSTROUTING chains.
 
+5)  Macros are now self-commenting. If there is not a current comment
+    when a macro is invoked, the behavior under Shorewall-perl is as if
+    the first line of the macro file was "COMMENT <macro name>".
+
+    So, if you have this rule:
+
+    	SSH/ACCEPT  loc	 fw
+
+    then the generated netfilter rule will include "/* SSH */" when
+    viewed with 'iptables -L' or 'shorewall show loc2fw' or 'shorewall
+    dump'.
+
 New Features in Shorewall 4.1.
 
 1)  Shorewall 4.1 contains experimental support for multiple Internet
@@ -388,21 +400,19 @@ New Features in Shorewall 4.1.
     and third class and let the rest default to the second class.
 
 10) COMMENT lines are now supported in macro bodies by Shorewall-perl
-    and are ignored by the Shorewall-shell compiler. The standard
-    macros (with the exception of macro.Drop and macro.Reject) have
-    been modified to include a COMMENT line describing the macro.
-    
+    and are ignored by the Shorewall-shell compiler.
+
     COMMENT lines in macros work slightly differently from COMMENT
     lines in other files. COMMENT lines in macros are ignored if
     COMMENT support is not available or if there was a COMMENT in use
     when the top-level macro was invoked. This allows the
     following:
 
-	/usr/share/shorewall/macro.SSH:
+	/etc/shorewall/macro.SSH:
 
 	    #ACTION SOURCE  PROTO   DEST    SOURCE  RATE    USER/
 	    #                       PORT(S) PORT(S) LIMIT   GROUP
-	    COMMENT SSH
+	    COMMENT My SSH Macro
 	    PARAM   -       -       tcp     22
 
 	/etc/shorewall/rules:
@@ -417,6 +427,10 @@ New Features in Shorewall 4.1.
 		/* Allow SSH from home */
 
 	when displayed through the Shorewall show and dump commands.
+
+    If a macro is invoked and there is no current comment, then the
+    name of the macro automatically becomes the current comment. This
+    makes macros self-commenting.   
 
 11) If the program named in SHOREWALL_SHELL doesn't exist or is not
     executable, Shorewall and Shorewall-lite now both fall back to

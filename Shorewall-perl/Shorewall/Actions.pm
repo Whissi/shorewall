@@ -572,9 +572,13 @@ sub process_action( $$$$$$$$$$ ) {
 # Expand Macro in action files.
 #
 sub process_macro3( $$$$$$$$$$$ ) {
-    my ( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
+    my ( $macro, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
 
     my $nocomment = no_comment;
+
+    macro_comment $macro;
+
+    my $fn = $macros{$macro};
 
     progress_message "..Expanding Macro $fn...";
 
@@ -677,9 +681,7 @@ sub process_action3( $$$$$ ) {
 	}
 
 	if ( $action2type == MACRO ) {
-	    fatal_error "Null Macro" unless my $fn = $macros{$action2};
-
-	    process_macro3( $fn, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user );
+	    process_macro3( $action2, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user );
 	} else {
 	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user;
 	}

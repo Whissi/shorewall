@@ -927,6 +927,23 @@ all             all             REJECT          info
     </blockquote>
   </section>
 
+  <section id="ipcomp">
+    <title>IPCOMP</title>
+
+    <para>If your IPSEC tunnel or transport mode connection fails to work with
+    Shorewall started and you see log messages like the following when you try
+    to use the connection, the problem is that ip compression is being
+    used.<programlisting>Feb 18 23:43:52 vpngw kernel: Shorewall:<emphasis
+          role="bold">vpn2fw</emphasis>:REJECT:IN=eth2 OUT= MAC=00:e0:81:32:b3:5e:00:18:de:12:e5:15:08:00
+                              SRC=172.29.59.58 DST=172.29.59.254 LEN=85 TOS=0x00 PREC=0x00 TTL=64 ID=25600 DF <emphasis
+          role="bold">PROTO=4</emphasis></programlisting>The solution is to
+    add an IPCOMP tunnel to /etc/shorewall/tunnels as follows:<programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</programlisting>The
+    above assumes that the name of your IPSEC vpn zone is
+    <emphasis>vpn</emphasis>.</para>
+  </section>
+
   <section id="XP">
     <title>IPSEC and <trademark>Windows</trademark> XP</title>
 

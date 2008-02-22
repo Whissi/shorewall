@@ -113,10 +113,10 @@ our @deferred_rules;
 #
 # TCDevices Table
 #
-# %tcdevices { <interface> -> {in_bandwidth => <value> ,
-#                              out_bandwidth => <value>
-#                              number => <ordinal>
-#                              default => <default class mark value> }
+# %tcdevices { <interface> -> {in_bandwidth  => <value> ,
+#                              out_bandwidth => <value> ,
+#                              number        => <ordinal> ,
+#                              default       => <default class mark value> }
 #
 our @tcdevices;
 our %tcdevices;

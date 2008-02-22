@@ -826,9 +826,13 @@ sub process_rule1 ( $$$$$$$$$$$ );
 # Expand a macro rule from the rules file
 #
 sub process_macro ( $$$$$$$$$$$$$ ) {
-    my ($macrofile, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $wildcard ) = @_;
+    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $wildcard ) = @_;
 
     my $nocomment = no_comment;
+
+    macro_comment $macro;
+
+    my $macrofile = $macros{$macro};
 
     progress_message "..Expanding Macro $macrofile...";
 
@@ -944,7 +948,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    $current_param = $param;
 	}
 
-	process_macro( $macros{$basictarget},
+	process_macro( $basictarget,
 		       $target ,
 		       $current_param,
 		       $source,

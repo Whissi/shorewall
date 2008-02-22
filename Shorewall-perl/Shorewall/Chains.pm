@@ -71,6 +71,7 @@ our %EXPORT_TAGS = (
 				       move_rules
 				       process_comment
 				       no_comment
+				       macro_comment
 				       clear_comment
 				       incr_cmd_level
 				       decr_cmd_level
@@ -366,6 +367,15 @@ sub no_comment() {
 #
 sub clear_comment() {
     $comment = '';
+}
+
+#
+# Set $comment to the passed unless there is a current comment
+#
+sub macro_comment( $ ) {
+    my $macro = $_[0];
+    
+    $comment = $macro unless $comment || ! $capabilities{COMMENTS};
 }
 
 #

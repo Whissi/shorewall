@@ -339,7 +339,12 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $gateway ) {
 	$address = get_interface_address $interface unless $address;
-	emit "run_ip route replace $gateway src $address dev $interface ${mtu}table $number $realm";
+	if ( $config{BROKEN_ROUTING} ) {
+	    emit "qt ip route delete $gateway table $number";
+	    emit "run_ip route add $gateway src $address dev $interface ${mtu}table $number $realm";
+	} else {
+	    emit "run_ip route replace $gateway src $address dev $interface ${mtu}table $number $realm";
+	}
 	emit "run_ip route add default via $gateway dev $interface table $number $realm";
     }
 
@@ -509,9 +514,16 @@ sub setup_providers() {
 
     if ( $providers ) {
 	if ( $balance ) {
-	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then',
-		    '    run_ip route replace default scope global $DEFAULT_ROUTE',
-		    "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
+	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
+
+	    if ( $config{BROKEN_ROUTING} ) {
+		emit( '    run_ip route del default' );
+		emit( '    run_ip route add default scope global $DEFAULT_ROUTE' );
+	    } else {
+		emit( '    run_ip route replace default scope global $DEFAULT_ROUTE' );
+	    }
+
+	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
 		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',
 		    '    restore_default_route',

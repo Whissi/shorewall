@@ -108,6 +108,18 @@ New Features in 4.1.5.
 3)  The /usr/share/shorewall/modules file has been updated to reflect
     module renaming in kernel 2.6.25.
 
+4)  Some users are experiencing 'File Exists' errors when Shorewall
+    executes 'ip route replace' commands. I consider this a bug in
+    either kernel 2.6.24 or in iproute2 but until the issue is
+    resolved, I've added a hack to work around the problem.
+
+    If you are experiencing these problems then add the following line
+    to your shorewall.conf file:
+
+       BROKEN_ROUTING=Yes
+
+    Note: This hack is only available in Shorewall-perl.
+
 4)  Shorewall-perl now generates an error when a MAC address appears in
     a traffic shaping rule in the OUTPUT or POSTROUTING chains.
 

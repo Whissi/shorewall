@@ -375,7 +375,7 @@ sub clear_comment() {
 sub macro_comment( $ ) {
     my $macro = $_[0];
     
-    $comment = $macro unless $comment || ! $capabilities{COMMENTS};
+    $comment = $macro unless $comment || ! ( $capabilities{COMMENTS} && $config{AUTO_COMMENT} );
 }
 
 #

@@ -481,6 +481,8 @@ validate_policy()
 
     ALL_POLICY_CHAINS=
 
+    warned=
+
     for zone in $ZONES $FW; do
 	chain=${zone}2${zone}
 	eval ${chain}_is_policy=Yes
@@ -492,6 +494,7 @@ validate_policy()
 	if [ -n "$IMPLICIT_CONTINUE" ]; then
 	    eval parents=\$${zone}_parents
 	    if [ -n "$parents" ]; then
+		[ -z "$warned" ] && error_message "WARNING: IMPLICIT_CONTINUE=Yes is deprecated" && warned=Yes
 		for zone1 in $ZONES $FW; do 
 		    if [ $zone != $zone1 ]; then
 			chain=${zone}2${zone1}

@@ -173,6 +173,8 @@ sub validate_policy()
 
     my $zone;
 
+    my $warned = 0;
+
     for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
 	my $action = $config{$option};
 	next if $action eq 'none';
@@ -196,6 +198,7 @@ sub validate_policy()
 	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{find_zone( $zone )->{parents}} ) ) {
+	    warning_message "IMPLICT_CONTINUE=Yes is deprecated" unless $warned++;
 	    for my $zone1 ( all_zones ) {
 		unless( $zone eq $zone1 ) {
 		    add_or_modify_policy_chain( $zone, $zone1 );

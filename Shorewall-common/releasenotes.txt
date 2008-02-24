@@ -62,84 +62,17 @@ Migration Issues.
     b) Explicitly set LOG_MARTIONS=No to maintain compatibility with 
        prior versions of Shorewall.
 
+5)  IMPLICIT_CONTINUE=Yes is now deprecated and a warning message is
+    issued if you have that setting and nested zones are defined in
+    /etc/shorewall/shorewall.conf. The warning may be eliminated by
+    setting IMPLICIT_CONTINUE=No and adding explicit CONTINUE policies
+    where needed.
+
 Problems corrected in 4.1.5.
 
-1)  An optimization added to Shorewall-shell in 4.0.0 has been backed
-    out to work around a limitation of Busybox 'sed'.
+None.
 
-2)  Previously, Shorewall would accept both an interface and an IP
-    address in tcrules POSTROUTING entries (such as CLASSIFY).
-
-    Example:
-
-    1:11      eth1:192.168.4.9	-	tcp	22
-
-    It also allows both a destination interface and address.
-
-    Example:
-
-    1:P	      -		eth1:192.168.4.9	tcp	22
-
-    Because Netfilter does not allow an input interface to be specified
-    in POSTROUTING or an output interface to be specified in
-    PREROUTING, Shorewall must use the routing table to generate a list
-    of networks accessed through any interface specified in these
-    cases. Given that a specific address (or set of addresses) has
-    already been specified, it makes no sense qualify it (them) by
-    another list of addresses.
-
-3)  Shorewall-perl incorrectly generated a fatal error when ':C', 
-    ':T' or ':CT' was used in a tcrules entry that gave $FW as the
-    SOURCE.
-
-New Features in 4.1.5.
-
-1)  The need for interface-specific chains (such as eth0_in, eth4_fwd,
-    etc.) in the filter table has been drastically reduced. This has
-    the effect of reducing the average number of rules that each packet
-    must traverse.
-
-2)  The default value for LOG_MARTIANS is now 'Yes' ('On' in
-    Shorewall-perl). Previously, the default value was 'No' ('Off' in
-    Shorewall-perl). The shorewall.conf file has also been 
-    updated to specify a value of 'Yes' (which is interpreted as 'On'
-    by Shorewall-perl).
-
-3)  The /usr/share/shorewall/modules file has been updated to reflect
-    module renaming in kernel 2.6.25.
-
-4)  Some users are experiencing 'File Exists' errors when Shorewall
-    executes 'ip route replace' commands. I consider this a bug in
-    either kernel 2.6.24 or in iproute2 but until the issue is
-    resolved, I've added a hack to work around the problem.
-
-    If you are experiencing these problems then add the following line
-    to your shorewall.conf file:
-
-       BROKEN_ROUTING=Yes
-
-    Note: This hack is only available in Shorewall-perl.
-
-4)  Shorewall-perl now generates an error when a MAC address appears in
-    a traffic shaping rule in the OUTPUT or POSTROUTING chains.
-
-5)  Macros are now self-commenting under control of a new AUTO_COMMENT
-    option in shorewall.conf. When this option is set, if there is not
-    a current comment when a macro is invoked, the behavior under
-    Shorewall-perl is as if the first line of the macro file was
-    "COMMENT <macro name>".
-
-    So, if you have this rule:
-
-    	SSH/ACCEPT  loc	 fw
-
-    then the generated netfilter rule will include "/* SSH */" when
-    viewed with 'iptables -L' or 'shorewall show loc2fw' or 'shorewall
-    dump'.
-
-    The AUTO_COMMENT option has a default value of 'Yes' and is only
-    available under Shorewall-perl The option is ignored by
-    Shorewall-shell.
+New Features in 4.1.6.
 
 New Features in Shorewall 4.1.
 
@@ -564,4 +497,35 @@ New Features in Shorewall 4.1.
     filter chain per zone but in most cases, the average number of
     filter rules traversed by a connection request will be reduced.
 
+20) The need for interface-specific chains (such as eth0_in, eth4_fwd,
+    etc.) in the filter table has been drastically reduced. This has
+    the effect of reducing the average number of rules that each packet
+    must traverse.
+
+21) The default value for LOG_MARTIANS is now 'Yes' ('On' in
+    Shorewall-perl). Previously, the default value was 'No' ('Off' in
+    Shorewall-perl). The shorewall.conf file has also been 
+    updated to specify a value of 'Yes' (which is interpreted as 'On'
+    by Shorewall-perl).
+
+22) Shorewall-perl now generates an error when a MAC address appears in
+    a traffic shaping rule in the OUTPUT or POSTROUTING chains.
+
+23) Macros are now self-commenting under control of a new AUTO_COMMENT
+    option in shorewall.conf. When this option is set, if there is not
+    a current comment when a macro is invoked, the behavior under
+    Shorewall-perl is as if the first line of the macro file was
+    "COMMENT <macro name>".
+
+    So, if you have this rule:
+
+    	SSH/ACCEPT  loc	 fw
+
+    then the generated netfilter rule will include "/* SSH */" when
+    viewed with 'iptables -L' or 'shorewall show loc2fw' or 'shorewall
+    dump'.
+
+    The AUTO_COMMENT option has a default value of 'Yes' and is only
+    available under Shorewall-perl The option is ignored by
+    Shorewall-shell.
 

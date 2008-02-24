@@ -1824,9 +1824,8 @@ sub expand_rule( $$$$$$$$$$ )
 	    # ADDRESS 'detect' in the masq file.
 	    #
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
-	    add_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do' );
+	    push_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
-	    incr_cmd_level $chainref;
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;

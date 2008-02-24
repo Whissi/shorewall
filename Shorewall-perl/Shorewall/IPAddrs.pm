@@ -177,13 +177,13 @@ sub ip_range_explicit( $ ) {
     @result;
 }
 
-sub validate_host( $ ) {
-    my $host = $_[0];
+sub validate_host( $$ ) {
+    my ( $host, $allow_name )  = $_[0];
 
     if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
 	validate_range $1, $2;
     } else {
-	validate_net( $host, 0 );
+	validate_net( $host, $allow_name );
     }
 }
 

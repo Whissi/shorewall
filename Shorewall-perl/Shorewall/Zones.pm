@@ -488,7 +488,7 @@ sub add_group_to_zone($$$$$)
 	if ( substr( $host, 0, 1 ) eq '+' ) {
 	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+[a-zA-Z]\w*$/;
 	} else {
-	    validate_host $host;
+	    validate_host $host, 0;
 	}
 
 	push @$new, $switched ? "$interface:$host" : $host;

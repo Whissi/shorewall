@@ -177,7 +177,7 @@ sub setup_ecn()
 	    $hosts = ALLIPv4 if $hosts eq '-';
 
 	    for my $host( split_list $hosts, 'address' ) {
-		validate_net( $host , 1 );
+		validate_host( $host , 1 );
 		push @hosts, [ $interface, $host ];
 	    }
 	}
@@ -358,7 +358,7 @@ sub process_criticalhosts() {
 	my @hosts;
 
 	for my $host ( split_list $hosts, 'host' ) {
-	    validate_net $host, 1;
+	    validate_host $host, 1;
 	    push @hosts, "$interface:$host";
 	}
 
@@ -399,7 +399,7 @@ sub process_routestopped() {
 	my @hosts;
 
 	for my $host ( split /,/, $hosts ) {
-	    validate_net $host, 1;
+	    validate_host $host, 1;
 	    push @hosts, "$interface:$host";
 	}
 

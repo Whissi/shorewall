@@ -189,12 +189,36 @@
             </varlistentry>
 
             <varlistentry>
+              <term>broadcast</term>
+
+              <listitem>
+                <para>Used when you want to include limited broadcasts
+                (destination IP address 255.255.255.255) from the firewall to
+                this zone. Only necessary when:</para>
+
+                <orderedlist>
+                  <listitem>
+                    <para>The network specified in the HOST(S) column does not
+                    include 255.255.255.255.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The zone does not have an entry for this interface
+                    in <ulink
+                    url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+                  </listitem>
+                </orderedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term>destonly</term>
 
               <listitem>
-                <para>Normally used with the Multi-cast range. Specifies that
-                traffic will be sent to the specified net(s) but that no
-                traffic will be received from the net(s).</para>
+                <para>Normally used with the Multi-cast IP address range
+                (224.0.0.0/4). Specifies that traffic will be sent to the
+                specified net(s) but that no traffic will be received from the
+                net(s).</para>
               </listitem>
             </varlistentry>
           </variablelist>

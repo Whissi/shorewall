@@ -446,6 +446,18 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
        #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
  
      ----- end rules -----</programlisting>
+
+      <para>Users of Shorewall-perl 4.0.6 and later may include multiple files
+      in one command using an <link linkend="Embedded">embedded shell
+      command</link>.</para>
+
+      <para>Example (include all of the files ending in ".rules" in a
+      directory:):<programlisting>gateway:/etc/shorewall # ls rules.d
+ALL.rules  DNAT.rules  FW.rules  NET.rules  REDIRECT.rules  VPN.rules
+gateway:/etc/shorewall # </programlisting></para>
+
+      <para>/etc/shorewall/rules:<programlisting>SECTION NEW
+SHELL cat rules.d/*.rules</programlisting></para>
     </example>
   </section>
 

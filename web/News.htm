@@ -29,6 +29,58 @@ License</a></span>".
 <p>February 23, 2008<br>
 </p>
 <hr style="width: 100%; height: 2px;">
+<p><strong>2008-03-01 Shorewall 3.4.8</strong></p>
+<pre>
+1)  Shorewall now removes any default bindings of ipsets before<br>
+    attempting to reload them. Previously, default bindins were not<br>
+    removed with the result that the ipsets could not be destroyed.<br>
+<br><br>
+2)  When HIGH_ROUTE_MARKS=Yes, unpredictable results could occur when<br>
+    marking in the PREROUTING or OUTPUT chains. When a rule specified a<br>
+    mark value &gt; 255, the compiler was using the '--or-mark' operator<br>
+    rather than the '--set-mark' operator with the result that when a<br>
+    packet matched more than one rule, the resulting routing mark was<br>
+    the logical product of the mark values in the rules.<br>
+<br><br>
+    Example:<br>
+<br><br>
+        0x100   192.168.1.44    0.0.0.0/0<br>
+        0x200   0.0.0.0/0       0.0.0.0/0       tcp     25<br>
+<br><br>
+    A TCP packet from 192.168.1.44 with destination port 25 would end<br>
+    up with a mark value of 0x300.<br>
+<br><br>
+3)  Shorewall now properly parses comma separated SOURCE (formerly<br>
+    SUBNET) values in the masq configuration file.  Previously, the comma<br>
+    separated list was not split up into its components, resulting in an<br>
+    invalid address being passed to the iptables command.<br>
+<br><br>
+    Example:<br>
+<br><br>
+        # /etc/shorewall/masq<br>
+        #INTERFACE  SUBNET                   ADDRESS  PROTO  PORT(S)  IPSEC<br>
+        eth0        192.168.2.1,192.168.2.3<br>
+<br><br>
+4)  Previously, specifying both an interface and a MAC address in the<br>
+    SOURCE column of the tcrules file caused a failure at runtime.<br>
+    Thanks to Justin Joseph for the patch.<br>
+<br><br>
+5)  Previously, specifying both an interface and an address in the<br>
+    tcrules DEST column would cause an incomplete rule to be generated.<br>
+<br><br>
+    Example:<br>
+<br><br>
+    1   192.168.1.4     eth2:206.124.146.177    tcp     22<br>
+<br><br>
+    The resulting tcrule would be as if this had been specified:<br>
+<br><br>
+    1   0.0.0.0/0       eth2:206.124.146.177    tcp     22<br>
+<br><br>
+6)  When HIGH_ROUTE_MARKS=Yes, the routing rules generated to match<br>
+    fwmarks to routing tables overflowed the designated range for such<br>
+    marks (10000 - 11000).
+</pre>
+<hr>
 <p><strong>2008-02-23 Shorewall 4.0.9</strong></p>
 <p><strong></strong></p>
 <pre>Problems corrected in Shorewall-perl 4.0.9.1<br><br>1)  In 4.0.9, Shorewall-perl incorrectly generated the following error<br>    message:<br><br>    ERROR: Your iptables is not recent enough to support bridge ports<br><br>Problems corrected in Shorewall-perl 4.0.9<br><br>1)  If a zone was defined with exclusion in /etc/shorewall/hosts, then<br>    the rules generated for directing outgoing connections to the zone<br>    were incorrect.<br><br>    Example:<br><br>    /etc/shorewall/zones:<br><br>    z   ipv4<br><br>    /etc/shorewall/interfaces:<br><br>    -   eth2    <br><br>    /etc/shorewall/hosts:<br><br>    z   eth2:192.168.1.0/24!192.168.1.5<br><br>    Traffic from the firewall to 192.168.1.5 was incorrectly classified<br>    as $FW-&gt;z.<br><br>2)  Qualifying 'SOURCE' and 'DEST' with an IP address in a macro file<br>    caused 'SOURCE' or 'DEST' to be interpreted incorrectly as the name<br>    of an interface.<br><br>    Example:<br><br>        PARAM   DEST    SOURCE:224.0.0.22<br><br>3)  Specifying '!&lt;user&gt;' in the USER/GROUP column of the files that<br>    support it resulted in an invalid iptables rule under<br>    Shorewall-perl.<br><br>4)  Previously, Shorewall would accept both an interface and an IP<br>    address in tcrules POSTROUTING entries (such as CLASSIFY).<br><br>    Example:<br><br>    1:11      eth1:192.168.4.9  -       tcp     22<br><br>    It also allowed both a destination interface and address.<br><br>    Example:<br><br>    1:P       -         eth1:192.168.4.9        tcp     22<br><br>    Because Netfilter does not allow an input interface to be specified<br>    in POSTROUTING or an output interface to be specified in<br>    PREROUTING, Shorewall must use the routing table to generate a list<br>    of networks accessed through any interface specified in these<br>    cases. Given that a specific address (or set of addresses) has<br>    already been specified, it makes no sense qualify it (them) by<br>    another list of addresses.<br><br>5)  Shorewall-perl incorrectly generated a fatal error when ':C', <br>    ':T' or ':CT' was used in a tcrules entry that gave $FW as the<br>    SOURCE.<br><br>6)  Users have been confused about this error message:<br><br>    ERROR: Bridge Ports require Repeat match in your kernel and iptables <br><br>    The message has been replaced with:<br><br>    ERROR:  Your iptables is not recent enough to support bridge ports<br><br>    The minimum version required is 1.3.8.<br><br>Problems corrected in Shorewall-shell 4.0.9.<br><br>1)  An optimization added to Shorewall-shell in 4.0.0 has been backed<br>    out to work around a limitation of Busybox 'sed'.<br><br>2)  Previously, specifying both an interface and an address in the<br>    tcrules DEST column would cause an incomplete rule to be generated.<br><br>    Example:<br><br>    1   192.168.1.4     eth2:206.124.146.177    tcp     22<br><br>    The resulting tcrule would be as if this had been specified:<br><br>    1   0.0.0.0/0       eth2:206.124.146.177    tcp     22<br><br>3)  When HIGH_ROUTE_MARKS=Yes, the routing rules generated to match<br>    fwmarks to routing tables previously overflowed the designated<br>    range defined for such marks (10000 - 11000). <br><br>Known Problems Remaining.<br><br>1)  The 'refresh' command doesn't refresh the mangle table. So changes<br>    made to /etc/shorewall/providers and/or /etc/shorewall/tcrules may<br>    not be reflected in the running ruleset.<br><br>Other changes in 4.0.9.<br><br>1)  The Shorewall-perl now flags unprintable garbage characters in<br>    configuration files with the message:<br><br>        ERROR: Non-ASCII gunk in file <br><br>2)  The /usr/share/shorewall/modules file has been updated to reflect<br>    module renaming in kernel 2.6.25.<br><br>3)  The 'ip route replace' command is broken in kernel 2.6.24. To work<br>    around this problem, the undocumented option BROKEN_ROUTING has<br>    been added to shorewall.conf. The default is BROKEN_ROUTING=No.<br><br>    If you are experiencing 'File Exists' errors from 'ip route<br>    replace' commands, then add the following line to your<br>    shorewall.conf:<br><br>        BROKEN_ROUTING=Yes<br><br>    Note: This workaround is only available in Shorewall-perl.<br></pre>

@@ -623,7 +623,7 @@ sub validate_interfaces_file( $ )
 	if ( defined $port ) {
 	    fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
-	    require_capability( 'KLUDGEFREE', 'Bridge Ports', '');
+	    fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
 	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
 	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';

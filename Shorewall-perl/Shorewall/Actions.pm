@@ -290,7 +290,7 @@ sub createlogactionchain( $$ ) {
 	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
     }
 
-    $logactionchains{"$action:$level"} = $chainref = new_chain 'filter', '%' . $chain . $actionref->{actchain}++;
+    $logactionchains{"$action:$level"} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
     
@@ -316,7 +316,7 @@ sub createlogactionchain( $$ ) {
 
 sub createsimpleactionchain( $ ) {
     my $action  = shift;
-    my $chainref = new_chain 'filter', $action;
+    my $chainref = new_standard_chain $action;
 
     $logactionchains{"$action:none"} = $chainref;
 

@@ -30,56 +30,7 @@ License</a></span>".
 </p>
 <hr style="width: 100%; height: 2px;">
 <p><strong>2008-03-01 Shorewall 3.4.8</strong></p>
-<pre>
-1)  Shorewall now removes any default bindings of ipsets before<br>
-    attempting to reload them. Previously, default bindins were not<br>
-    removed with the result that the ipsets could not be destroyed.<br>
-<br><br>
-2)  When HIGH_ROUTE_MARKS=Yes, unpredictable results could occur when<br>
-    marking in the PREROUTING or OUTPUT chains. When a rule specified a<br>
-    mark value &gt; 255, the compiler was using the '--or-mark' operator<br>
-    rather than the '--set-mark' operator with the result that when a<br>
-    packet matched more than one rule, the resulting routing mark was<br>
-    the logical product of the mark values in the rules.<br>
-<br><br>
-    Example:<br>
-<br><br>
-        0x100   192.168.1.44    0.0.0.0/0<br>
-        0x200   0.0.0.0/0       0.0.0.0/0       tcp     25<br>
-<br><br>
-    A TCP packet from 192.168.1.44 with destination port 25 would end<br>
-    up with a mark value of 0x300.<br>
-<br><br>
-3)  Shorewall now properly parses comma separated SOURCE (formerly<br>
-    SUBNET) values in the masq configuration file.  Previously, the comma<br>
-    separated list was not split up into its components, resulting in an<br>
-    invalid address being passed to the iptables command.<br>
-<br><br>
-    Example:<br>
-<br><br>
-        # /etc/shorewall/masq<br>
-        #INTERFACE  SUBNET                   ADDRESS  PROTO  PORT(S)  IPSEC<br>
-        eth0        192.168.2.1,192.168.2.3<br>
-<br><br>
-4)  Previously, specifying both an interface and a MAC address in the<br>
-    SOURCE column of the tcrules file caused a failure at runtime.<br>
-    Thanks to Justin Joseph for the patch.<br>
-<br><br>
-5)  Previously, specifying both an interface and an address in the<br>
-    tcrules DEST column would cause an incomplete rule to be generated.<br>
-<br><br>
-    Example:<br>
-<br><br>
-    1   192.168.1.4     eth2:206.124.146.177    tcp     22<br>
-<br><br>
-    The resulting tcrule would be as if this had been specified:<br>
-<br><br>
-    1   0.0.0.0/0       eth2:206.124.146.177    tcp     22<br>
-<br><br>
-6)  When HIGH_ROUTE_MARKS=Yes, the routing rules generated to match<br>
-    fwmarks to routing tables overflowed the designated range for such<br>
-    marks (10000 - 11000).
-</pre>
+<pre>1)  Shorewall now removes any default bindings of ipsets before<br>    attempting to reload them. Previously, default bindins were not<br>    removed with the result that the ipsets could not be destroyed.<br><br><br>2)  When HIGH_ROUTE_MARKS=Yes, unpredictable results could occur when<br>    marking in the PREROUTING or OUTPUT chains. When a rule specified a<br>    mark value &gt; 255, the compiler was using the '--or-mark' operator<br>    rather than the '--set-mark' operator with the result that when a<br>    packet matched more than one rule, the resulting routing mark was<br>    the logical product of the mark values in the rules.<br><br><br>    Example:<br><br><br>        0x100   192.168.1.44    0.0.0.0/0<br>        0x200   0.0.0.0/0       0.0.0.0/0       tcp     25<br><br><br>    A TCP packet from 192.168.1.44 with destination port 25 would end<br>    up with a mark value of 0x300.<br><br><br>3)  Shorewall now properly parses comma separated SOURCE (formerly<br>    SUBNET) values in the masq configuration file.  Previously, the comma<br>    separated list was not split up into its components, resulting in an<br>    invalid address being passed to the iptables command.<br><br><br>    Example:<br><br><br>        # /etc/shorewall/masq<br>        #INTERFACE  SUBNET                   ADDRESS  PROTO  PORT(S)  IPSEC<br>        eth0        192.168.2.1,192.168.2.3<br><br><br>4)  Previously, specifying both an interface and a MAC address in the<br>    SOURCE column of the tcrules file caused a failure at runtime.<br>    Thanks to Justin Joseph for the patch.<br><br><br>5)  Previously, specifying both an interface and an address in the<br>    tcrules DEST column would cause an incomplete rule to be generated.<br><br><br>    Example:<br><br><br>    1   192.168.1.4     eth2:206.124.146.177    tcp     22<br><br><br>    The resulting tcrule would be as if this had been specified:<br><br><br>    1   0.0.0.0/0       eth2:206.124.146.177    tcp     22<br><br><br>6)  When HIGH_ROUTE_MARKS=Yes, the routing rules generated to match<br>    fwmarks to routing tables overflowed the designated range for such<br>    marks (10000 - 11000).</pre>
 <hr>
 <p><strong>2008-02-23 Shorewall 4.0.9</strong></p>
 <p><strong></strong></p>

@@ -65,11 +65,31 @@ Migration Issues.
 5)  The value of IMPLICIT_CONTINUE in shorewall.conf (and samples) has
     been changed from Yes to No.
 
-Problems corrected in 4.1.5.
+Problems corrected in 4.1.6.
 
 None.
 
 New Features in 4.1.6.
+
+1)  The default value for the IMPLICIT_CONTINUE option has been changed
+    to 'No'.
+
+2)  A REDIRECTED INTERFACES option has been added to the tcdevices file
+    to support using an IFB (Intermediate Functional Block) device.
+
+    IFBs can be used to shape incoming traffic by redirecting that
+    traffic through the IFB.
+
+    To use this feature:
+
+       a) Specify the name of your IFB in the INTERFACE column.
+       b) List the redirected device names (comma-separated) in the
+          REDIRECTED INTERFACES column.
+
+    Packets that are input from the redirected interface(s) will appear
+    as output packets on the IFB.
+
+    This support should be considered EXPERIMENTAL.
 
 New Features in Shorewall 4.1.
 

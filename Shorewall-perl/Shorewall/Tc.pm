@@ -309,8 +309,8 @@ sub calculate_quantum( $$ ) {
     int( ( $rate * 125 ) / $r2q );
 }
 
-sub validate_tc_device( $$$$ ) {
-    my ( $device, $inband, $outband , $options ) = @_;
+sub validate_tc_device( $$$$$ ) {
+    my ( $device, $inband, $outband , $options , $redirected ) = @_;
 
     fatal_error "Duplicate device ($device)"    if $tcdevices{$device};
     fatal_error "Invalid device name ($device)" if $device =~ /[:+]/;
@@ -327,9 +327,18 @@ sub validate_tc_device( $$$$ ) {
 	}
     }
 
+    my @redirected;
+
+    @redirected = split_list( $redirected , 'device' ) if defined $redirected;
+
+    for my $rdevice ( @redirected ) {
+	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
+    }
+
     $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit' ,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
-			    classify      => $classify };
+			    classify      => $classify , 
+			    redirected    => \@redirected };
 
     push @tcdevices, $device;
 
@@ -415,10 +424,10 @@ sub setup_traffic_shaping() {
 
 	while ( read_a_line ) {
 
-	    my ( $device, $inband, $outband, $options ) = split_line 3, 4, 'tcdevices';
+	    my ( $device, $inband, $outband, $options , $redirected ) = split_line 3, 5, 'tcdevices';
 
 	    fatal_error "Invalid tcdevices entry" if $outband eq '-';
-	    validate_tc_device( $device, $inband, $outband , $options );
+	    validate_tc_device( $device, $inband, $outband , $options , $redirected );
 	}
     }
 
@@ -465,6 +474,10 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
+	}
+
+	for my $rdev ( @{$devref->{redirected}} ) {
+	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device" );
 	}
 
 	$devref->{number} = $devnum++;

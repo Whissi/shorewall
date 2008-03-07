@@ -1015,6 +1015,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     my $destref;
 
     if ( $source =~ /^(.+?):(.*)/ ) {
+	fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
 	$sourcezone = $1;
 	$source = $2;
     } else {
@@ -1023,6 +1024,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     }
 
     if ( $dest =~ /^(.*?):(.*)/ ) {
+	fatal_error "Missing DEST Qualifier ($dest)" if $2 eq '';
 	$destzone = $1;
 	$dest = $2;
     } else {

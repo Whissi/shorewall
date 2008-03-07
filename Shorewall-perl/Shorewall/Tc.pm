@@ -81,17 +81,20 @@ use constant { NOMARK    => 0 ,
 our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		 target    => 'CONNMARK --save-mark --mask' ,
 		 mark      => SMALLMARK ,
-		 mask      => '0xFF'
+		 mask      => '0xFF' ,
+		 connmark  => 1
 	       } ,
 	      { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
 		target    => 'CONNMARK --restore-mark --mask' ,
 		mark      => SMALLMARK ,
-		mask      => '0xFF'
+		mask      => '0xFF' ,
+		connmark  => 1
 		} ,
 	      { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
 		target    => 'RETURN' ,
 		mark      => NOMARK ,
-		mask      => ''
+		mask      => '' ,
+		connmark  => 0
 		} ,
 	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
 		target    => 'MARK --or-mark' ,
@@ -100,7 +103,8 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 	      { match     => sub ( $ ) { $_[0] =~ '&.*' },
 		target    => 'MARK --and-mark ' ,
 		mark      => HIGHMARK ,
-		mask      => ''
+		mask      => '' ,
+		connmark  => 0
 		}
 	      );
 
@@ -204,6 +208,8 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    $target   = $tcsref->{target} if $tcsref->{target};
 	    $mark     = "$mark/0xFF"      if $connmark = $tcsref->{connmark};
 
+	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
+
 	} else {
 	    fatal_error "Invalid MARK ($original_mark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
 
@@ -228,6 +234,8 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 	    for my $tccmd ( @tccmd ) {
 		if ( $tccmd->{match}($cmd) ) {
 		    fatal_error "$mark not valid with :C[FPT]" if $connmark;
+		    
+		    require_capability ('CONNMARK' , "SAVE/RESTORE Rules", '' ) if $tccmd->{connmark};
 
 		    $target      = "$tccmd->{target} ";
 		    my $marktype = $tccmd->{mark};
@@ -327,9 +335,9 @@ sub validate_tc_device( $$$$$ ) {
 	}
     }
 
-    my @redirected;
+    my @redirected = ();
 
-    @redirected = split_list( $redirected , 'device' ) if defined $redirected;
+    @redirected = split_list( $redirected , 'device' ) if defined $redirected && $redirected ne '-';;
 
     for my $rdevice ( @redirected ) {
 	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;

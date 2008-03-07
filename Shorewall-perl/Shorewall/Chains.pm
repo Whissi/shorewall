@@ -1036,12 +1036,13 @@ sub do_proto( $$$ )
 	  PROTO:
 	    {
 
-		if ( $proto == TCP || $proto == UDP ) {
+		if ( $proto == TCP || $proto == UDP || $proto == SCTP ) {
 		    my $multiport = 0;
 
 		    if ( $ports ne '' ) {
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless $capabilities{MULTIPORT};
+			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 			    $ports = validate_port_list $pname , $ports;
 			    $output .= "-m multiport --dports $ports ";
 			    $multiport = 1;

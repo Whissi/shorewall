@@ -1212,7 +1212,12 @@ sub read_a_line() {
 		#                            $1      $2      $3           -     $4
 		while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 		    my $val = $ENV{$3};
-		    $val = '' unless defined $val;
+
+		    unless ( defined $val ) {
+			fatal_error "Undefined shell variable (\$$3)" unless exists $ENV{$3};
+			$val = '';
+		    }
+
 		    $currentline = join( '', $1 , $val , $4 );
 		    fatal_error "Variable Expansion Loop" if ++$count > 100;
 		}

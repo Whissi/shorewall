@@ -35,6 +35,7 @@ our @EXPORT = qw( ALLIPv4
 		  TCP
 		  UDP
 		  ICMP
+		  SCTP
 
 		  validate_address
 		  validate_net
@@ -58,7 +59,7 @@ our $VERSION = 4.1.5;
 #
 our @allipv4 = ( '0.0.0.0/0' );
 
-use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 };
+use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 , SCTP => 132 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 

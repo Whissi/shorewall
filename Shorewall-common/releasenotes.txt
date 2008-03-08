@@ -91,6 +91,12 @@ New Features in 4.1.6.
 
     This support should be considered EXPERIMENTAL.
 
+3)  Shorewall-perl now supports an 'l2tp' tunnel type. It opens UDP
+    port 1701 in both directions and assumes that the source port will
+    also be 1701. Some implementations (particularly OS X) use a
+    different source port. In that case, you should use
+    'generic:udp:1701' rather than 'l2tp'.
+
 New Features in Shorewall 4.1.
 
 1)  Shorewall 4.1 contains support for multiple Internet providers

@@ -206,6 +206,15 @@ sub setup_tunnels() {
 	add_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
     }
 
+    sub setup_one_l2tp {
+	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
+
+	fatal_error "Unknown option ($1)" if $kind =~ /^.*?:(.*)$/;
+
+	add_rule $inchainref,  "-p udp $source --sport 1701 --dport 1701 -j ACCEPT";
+	add_rule $outchainref, "-p udp $dest   --sport 1701 --dport 1701 -j ACCEPT";
+    }
+
     sub setup_one_generic {
 	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
 
@@ -249,6 +258,7 @@ sub setup_tunnels() {
 			    'openvpn'       => { function => \&setup_one_openvpn,        params   => [ $kind, $source, $dest ] } ,
 			    'openvpnclient' => { function => \&setup_one_openvpn_client, params   => [ $kind, $source, $dest ] } ,
 			    'openvpnserver' => { function => \&setup_one_openvpn_server, params   => [ $kind, $source, $dest ] } ,
+			    'l2tp'          => { function => \&setup_one_l2tp ,          params   => [ $kind, $source, $dest ] } ,
 			    'generic'       => { function => \&setup_one_generic ,       params   => [ $kind, $source, $dest ] } ,
 			  );
 

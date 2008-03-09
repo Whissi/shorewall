@@ -122,7 +122,7 @@ setup_traffic_shaping()
 
     validate_tcdevices_file() {
 	progress_message2 "Validating $devfile..."
-	local device local device inband outband
+	local device inband outband
 	while read device inband outband; do
 	    tcdev="$device $inband $outband"
 	    check_defmark_for_dev $device || fatal_error "Option default is not defined for any class in tcclasses for interface $device"

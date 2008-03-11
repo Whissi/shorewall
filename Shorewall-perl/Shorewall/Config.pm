@@ -426,6 +426,13 @@ sub initialize() {
 
 INIT {
     initialize;
+    #
+    # These variables appear within single quotes in shorewall.conf -- add them to ENV
+    # so that read_a_line doesn't have to be smart enough to parse that usage.
+    #
+    for ( qw/root system command files destination/ ) {
+	$ENV{$_} = '' unless exists $ENV{$_};
+    }
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );

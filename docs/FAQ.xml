@@ -219,8 +219,9 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
           <listitem>
             <para>You have a more basic problem with your local system (the
             one that you are trying to forward to) such as an incorrect
-            default gateway (it should be set to the IP address of your
-            firewall's internal interface).</para>
+            default gateway (it must be set to the IP address of your
+            firewall's internal interface; if that isn't possible for some
+            reason, see <link linkend="faq1f">FAQ 1f</link>).</para>
           </listitem>
 
           <listitem>
@@ -405,6 +406,92 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
 
         <programlisting>#ACTION SOURCE  DEST                    PROTO   DEST PORT(S)
 DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
+      </section>
+
+      <section id="faq1f">
+        <title>(FAQ 1f) Why must the server that I port forward to have it's
+        default gateway set to my Shorewall system's IP address?</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: Let's take an example.
+        Suppose that</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Your Shorewall firewall's external IP address is
+            206.124.146.176 (eth0) and internal IP address 192.168.1.1
+            (eth1).</para>
+          </listitem>
+
+          <listitem>
+            <para>You have another gateway router with external IP address
+            130.252.100.109 and internal IP address 192.168.1.254.</para>
+          </listitem>
+
+          <listitem>
+            <para>You have an FTP server behind both routers with IP address
+            192.168.1.4</para>
+          </listitem>
+
+          <listitem>
+            <para>The FTP server's default gateway is through the second
+            router (192.168.1.254).</para>
+          </listitem>
+
+          <listitem>
+            <para>You have this rule on the Shorewall system:<programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       net           loc:192.168.1.4    tcp      21          -         206.124.146.176</programlisting></para>
+          </listitem>
+
+          <listitem>
+            <para>Internet host 16.105.221.4 issues the command <command>ftp
+            206.124.146.176</command></para>
+          </listitem>
+        </itemizedlist>
+
+        <para>This results in the following set of events:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>16.105.221.4 sends a TCP syn packet to 206.124.146.176
+            specifying destination port 21.</para>
+          </listitem>
+
+          <listitem>
+            <para>The Shorewall box rewrites the destination IP address to
+            192.168.1.4 and forwards the packet.</para>
+          </listitem>
+
+          <listitem>
+            <para>The FTP server receives the packet and accepts the
+            connection, generating a SYN,ACK packet back to 16.105.221.4.
+            Because the server's default gateway is through the second router,
+            it sends the packet to that router.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>At this point, one of two things can happen.either the second
+        router discards or rejects the packet; or, it rewrites the source IP
+        address to 130.252.100.109 and forwards the packet back to
+        16.105.221.4. Regardless of which happens, the connection is doomed.
+        Clearly if the packet is rejected or dropped, the connection will not
+        be successful. But even if the packet reaches 16.105.221.4, that host
+        will reject it since it's SOURCE IP address (130.252.100.109) doesn't
+        match the DESTINATION IP ADDRESS (206.124.146.176) of the original SYN
+        packet.</para>
+
+        <para>The best way to work around this problem is to change the
+        default gateway on the FTP server to the Shorewall system's internal
+        IP address (192.168.1.1). But if that isn't possible, you can work
+        around the problem with the following ugly hack in
+        <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE              SOURCE             ADDRESS            PROTO         PORT
+eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</programlisting></para>
+
+        <para>This rule has the undesirable side effect that it makes all FTP
+        connections from the net appear to the FTP server as if they
+        originated on the Shorewall system. But it will force the FTP server
+        to reply back through the Shorewall system who can then rewrite the
+        SOURCE IP address in the responses properly.</para>
       </section>
     </section>
 

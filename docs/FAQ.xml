@@ -493,6 +493,33 @@ eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</
         to reply back through the Shorewall system who can then rewrite the
         SOURCE IP address in the responses properly.</para>
       </section>
+
+      <section id="faq1g">
+        <title>(FAQ 1g) I would like to redirect port 80 on my public IP
+        address (206.124.146.176) to port 993 on internet host 66.249.93.111
+        </title>
+
+        <para><emphasis role="bold">Answer</emphasis>: This requires a vile
+        hack similar to the one in <link linkend="faq2">FAQ 2</link>. Assuming
+        that your Internet zone is named <emphasis>net</emphasis> and connects
+        on interface <filename class="devicefile">eth0</filename>:</para>
+
+        <para>In <filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION    SOURCE        DEST                   PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                    PORT      DEST.
+DNAT       net           net:66.249.93.111:993  tcp      80          -         206.124.146.176</programlisting></para>
+
+        <para>In <filename>/etc/shorewall/interfaces</filename>, specify the
+        <emphasis role="bold">routeback</emphasis> option on
+        eth0:<programlisting>#ZONE      INTERFACE     BROADCAST            OPTIONS
+net        eth0          detect               <emphasis role="bold">routeback</emphasis></programlisting></para>
+
+        <para>And in <filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE          SOURCE      ADDRESS          PROTO        PORT
+eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlisting></para>
+
+        <para>Like the hack in FAQ 2, this one results in all forwarded
+        connections looking to the server (66.249.93.11) as if they originated
+        on your firewall (206.124.146.176).</para>
+      </section>
     </section>
 
     <section id="faq30">

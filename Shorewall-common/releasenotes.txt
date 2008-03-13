@@ -65,9 +65,31 @@ Migration Issues.
 5)  The value of IMPLICIT_CONTINUE in shorewall.conf (and samples) has
     been changed from Yes to No.
 
-Problems corrected in 4.1.6.
+Problems corrected in Shorewall-perl 4.1.6.
 
-None.
+1)  A problem introduced in 4.1.5 would result in the following error
+    message.
+
+	ERROR: Internal error in create_netfilter_load()	
+
+2)  Under Shorewall-perl, if an empty action was invoked or was named
+    in one of the DEFAULT_xxx options in shorewall.conf, an
+    iptables-restore error occured.
+
+3)  If $ADMIN was empty, then the rule:
+
+       ACCEPT loc:$ADMIN all
+
+    became
+
+       ACCEPT loc   net
+
+    It is now flagged as an error.
+
+Problems corrected in Shorewall-shell 4.1.6.
+
+1)  Specifying a value for ACCEPT_DEFAULT or QUEUE_DEFAULT resulted in
+    a fatal error at compile time. 
 
 New Features in 4.1.6.
 

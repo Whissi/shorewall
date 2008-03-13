@@ -297,6 +297,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 sub rate_to_kbit( $ ) {
     my $rate = $_[0];
 
+    return 0           if $rate eq '-';
     return $1          if $rate =~ /^(\d+)kbit$/i;
     return $1 * 1000   if $rate =~ /^(\d+)mbit$/i;
     return $1 * 8000   if $rate =~ /^(\d+)mbps$/i;
@@ -337,10 +338,13 @@ sub validate_tc_device( $$$$$ ) {
 
     my @redirected = ();
 
-    @redirected = split_list( $redirected , 'device' ) if defined $redirected && $redirected ne '-';;
+    @redirected = split_list( $redirected , 'device' ) if defined $redirected && $redirected ne '-';
 
     for my $rdevice ( @redirected ) {
 	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
+	my $rdevref = $tcdevices{$rdevice};
+	fatal_error "REDIRECTED device ($rdevice) has not been defined in this file" unless $rdevref;
+	fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} ne '0kbit';
     }
 
     $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit' ,
@@ -482,6 +486,8 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
+	} elsif ( @{$devref->{redirected}} ) {
+	    emit ( "run_tc qdisc add dev $device handle ffff: ingress" );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {

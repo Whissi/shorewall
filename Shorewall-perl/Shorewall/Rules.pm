@@ -227,6 +227,8 @@ sub setup_rfc1918_filteration( $ ) {
 
     while ( read_a_line ) {
 
+	require_capability 'CONNTRACK_MATCH', "The norfc1918 option" , 's';
+
 	my ( $networks, $target ) = split_line 2, 2, 'rfc1918 file';
 
 	my $s_target;

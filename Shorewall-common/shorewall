@@ -1300,7 +1300,15 @@ reload_command() # $* = original arguments less the command.
 export_command() # $* = original arguments less the command.
 {
     local verbose
-    verbose=$(make_verbose) file= finished=0 directory target compiler=
+    verbose=$(make_verbose) 
+    local file
+    file= 
+    local finished
+    finished=0 
+    local directory 
+    local target
+    local compiler
+    compiler=
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1

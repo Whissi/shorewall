@@ -811,7 +811,11 @@ find_interface_by_address() {
 
 find_interface_by_mac() {
     local mac
-    mac=$1 first second rest dev
+    mac=$1 
+    local first 
+    local second
+    local rest
+    local dev
 
     ip link list | while read first second rest; do
 	case $first in

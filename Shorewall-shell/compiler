@@ -916,7 +916,8 @@ setup_ecn() # $1 = file name
 build_exclusion_chain() # $1 = variable to store chain name into $2 = table, $3 = SOURCE exclusion list, $4 = DESTINATION exclusion list
 {
     local c
-    c=excl_${EXCLUSION_SEQ} net
+    c=excl_${EXCLUSION_SEQ}
+    local net
 
     EXCLUSION_SEQ=$(( $EXCLUSION_SEQ + 1 ))
 
@@ -3389,7 +3390,8 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 rules_chain() # $1 = source zone, $2 = destination zone
 {
     local chain
-    chain=${1}2${2} local policy
+    chain=${1}2${2}
+    local policy
 
     havechain $chain && { echo $chain; return; }
 

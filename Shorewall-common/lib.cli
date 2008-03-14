@@ -124,7 +124,13 @@ timed_read ()
 # Determine if 'syslog -C' is running
 #
 syslog_circular_buffer() {
-    local pid tty flags cputime path args arg
+    local pid
+    local tty
+    local flags
+    local cputime
+    local path
+    local args
+    local arg
 
     ps ax 2> /dev/null | while read pid tty flags cputime path args; do
 	case $path in
@@ -160,7 +166,8 @@ packet_log() # $1 = number of messages
 show_tc() {
 
     show_one_tc() {
-	local device=${1%@*}
+	local device
+	device=${1%@*}
 	qdisc=$(tc qdisc list dev $device)
 
 	if [ -n "$qdisc" ]; then
@@ -183,7 +190,8 @@ show_tc() {
 show_classifiers() {
 
     show_one_classifier() {
-	local device=${1%@*}
+	local device
+	device=${1%@*}
 	qdisc=$(tc qdisc list dev $device)
 
 	if [ -n "$qdisc" ]; then
@@ -258,7 +266,8 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 #
 save_config() {
 
-    local result=1
+    local result
+    result=1
     
     iptables_save=${IPTABLES}-save
 
@@ -367,7 +376,12 @@ show_routing() {
 # Show Command Executor
 #
 show_command() {
-    local finished=0 local table=filter table_given=
+    local finished
+    finished=0
+    local table
+    table=filter
+    local table_given
+    table_given=
 
     show_macro() {
 	foo=`grep 'This macro' $macro | sed 's/This macro //'`
@@ -619,7 +633,8 @@ show_command() {
 # Dump Command Executor
 #
 dump_command() {
-    local finished=0
+    local finished
+    finished=0
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -743,7 +758,8 @@ dump_command() {
 # Restore Comand Executor
 #
 restore_command() {
-    local finished=0
+    local finished
+    finished=0
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -868,7 +884,10 @@ heading() {
 # Create the appropriate -q option to pass onward
 #
 make_verbose() {
-    local v=$VERBOSE_OFFSET option=-
+    local v
+    v=$VERBOSE_OFFSET
+    local option
+    option=-
 
     if [ -n "$USE_VERBOSITY" ]; then
 	echo "-v$USE_VERBOSITY"
@@ -894,7 +913,10 @@ make_verbose() {
 #
 block() # $1 = command, $2 = Finished, $3 - $n addresses
 {
-    local chain=$1 finished=$2
+    local chain
+    chain=$1
+    local finished
+    finished=$2
 
     shift 3
 
@@ -925,7 +947,10 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 # 'hits' commmand executor
 #
 hits_command() {
-    local finished=0 today=
+    local finished
+    finished=0
+    local today
+    today=
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1

@@ -35,7 +35,8 @@ usage() # $1 = exit status
 }
 
 split() {
-    local ifs=$IFS
+    local ifs
+    ifs=$IFS
     IFS=:
     set -- $1
     echo $*

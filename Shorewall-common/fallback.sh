@@ -53,7 +53,8 @@ restore_directory() # $1 = directory to restore
 restore_file() # $1 = file to restore, $2 = (Optional) Directory to restore from
 {
     if [ -n "$2" ]; then
-	local file=$(basename $1)
+	local file
+	file=$(basename $1)
 
 	if [ -f $2/$file ]; then
 	    if mv -f $2/$file $1 ; then

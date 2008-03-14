@@ -30,7 +30,30 @@
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum rulebase balance save_indent="$INDENT" mask= first=Yes save_indent1=
+    local table
+    local number
+    local mark
+    local duplicate
+    local interface
+    local gateway
+    local options
+    local provider
+    local address
+    local copy
+    local route
+    local loose
+    local addresses
+    local rulenum
+    local rulebase
+    local balance
+    local save_indent
+    save_indent="$INDENT"
+    local mask
+    mask=
+    local first
+    first=Yes
+    local save_indent1
+    save_indent1=
 
     copy_table() {
 	    indent >&3 << __EOF__
@@ -88,7 +111,12 @@ __EOF__
     }
 
     add_a_provider() {
-	local t n iface option optional=
+	local t
+	local n
+	local iface
+	local option
+	local optional
+	optional=
 
 	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
 
@@ -269,7 +297,8 @@ __EOF__
 
     verify_provider()
     {
-	local p n
+	local p
+	local n
 
 	for p in $PROVIDERS main; do
 	    [ "$p" = "$1" ] && return 0
@@ -434,7 +463,10 @@ __EOF__
 #
 setup_route_marking()
 {
-    local mask=0xFF save_indent="$INDENT"
+    local mask
+    mask=0xFF
+    local save_indent
+    save_indent="$INDENT"
 
     [ -n "$HIGH_ROUTE_MARKS" ] && mask=0xFF00
 

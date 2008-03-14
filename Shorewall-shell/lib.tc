@@ -37,11 +37,30 @@
 #
 setup_traffic_shaping()
 {
-    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1 last_device=
-    r2q=10 indent= prefix=1
+    local mtu
+    local r2q
+    local tc_all_devices
+    local device
+    local mark
+    local rate
+    local ceil
+    local prio
+    local options
+    local devfile
+    devfile=$(find_file tcdevices)
+    local classfile
+    classfile=$(find_file tcclasses)
+    local devnum
+    devnum=1
+    local last_device
+    last_device=
+    r2q=10
+    indent=
+    prefix=1
 
     rate_to_kbit() {
-	local rateunit rate
+	local rateunit
+	local rate
 	rate=$1
 	rateunit=$( echo $rate | sed -e 's/[0-9]*//')
 	rate=$( echo $rate | sed -e 's/[a-zA-Z]*//g')
@@ -68,13 +87,16 @@ setup_traffic_shaping()
     }
 
     calculate_quantum() {
-	local rate=$(rate_to_kbit $1)
+	local rate
+	rate=$(rate_to_kbit $1)
 	echo $(( $rate * ( 128 / $r2q ) ))
     }
 
     # get given outbandwidth for device
     get_outband_for_dev() {
-	local device inband outband
+	local device
+	local inband
+	local outband
 	while read device inband outband; do
 	    tcdev="$device $inband $outband"
 	    if [ "$1" = "$device" ] ; then
@@ -102,7 +124,12 @@ setup_traffic_shaping()
     }
 
     get_defmark_for_dev() {
-	local searchdev searchmark device ceil prio options
+	local searchdev
+	local searchmark
+	local device
+	local ceil
+	local prio
+	local options
 	searchdev=$1
 
 	while read device mark rate ceil prio options; do
@@ -122,7 +149,9 @@ setup_traffic_shaping()
 
     validate_tcdevices_file() {
 	progress_message2 "Validating $devfile..."
-	local device inband outband
+	local device
+	local inband
+	local outband
 	while read device inband outband; do
 	    tcdev="$device $inband $outband"
 	    check_defmark_for_dev $device || fatal_error "Option default is not defined for any class in tcclasses for interface $device"
@@ -140,7 +169,16 @@ setup_traffic_shaping()
 
     validate_tcclasses_file() {
 	progress_message2 "Validating $classfile..."
-	local classlist device mark rate ceil prio bandw wrongopt allopts opt
+	local classlist
+	local device
+	local mark
+	local rate
+	local ceil
+	local prio
+	local bandw
+	local wrongopt
+	local allopts
+	local opt
 	allopts=""
 	while read device mark rate ceil prio options; do
 	    tcdev="$device $mark $rate $ceil $prio $options"
@@ -171,7 +209,8 @@ setup_traffic_shaping()
     }
 
     add_root_tc() {
-	local defmark dev
+	local defmark
+	local dev
 
 	dev=$(chain_base $device)
 
@@ -211,7 +250,11 @@ setup_traffic_shaping()
     }
 
     add_tc_class() {
-	local full classid tospair tosmask quantum
+	local full
+	local classid
+	local tospair
+	local tosmask
+	local quantum
 
 	full=$(get_outband_for_dev $device)
 	full=$(rate_to_kbit $full)

@@ -915,7 +915,12 @@ usage() {
 # Find the interface with the passed MAC address
 #################################################################################
 find_interface_by_mac() {
-    local mac=$1 first second rest dev
+    local mac
+    mac=$1
+    local first
+    local second
+    local rest
+    local dev
 
     /sbin/ip link ls | while read first second rest; do
         case $first in
@@ -934,7 +939,9 @@ find_interface_by_mac() {
 # Convert MAC addresses to interface names
 ################################################################################
 get_interfaces() {
-    local interfaces= interface
+    local interfaces
+    interfaces=
+    local interface
 
     for interface in $INTERFACES; do
         case $interface in

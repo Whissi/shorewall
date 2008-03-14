@@ -31,10 +31,13 @@
 #
 setup_masq()
 {
-    local comment=
+    local comment
+    comment=
 
     do_ipsec_options() {
-	local options="$(separate_list $ipsec)" option
+	local options
+	options="$(separate_list $ipsec)"
+	local option
 	[ -n "$ORIGINAL_POLICY_MATCH" ] || \
 	    fatal_error "IPSEC options require policy match support in your kernel and iptables"
 	policy="-m policy --pol ipsec --dir out"
@@ -62,7 +65,14 @@ setup_masq()
     }
 
     setup_one() {
-	local add_snat_aliases=$ADD_SNAT_ALIASES pre_nat= policy= destnets=
+	local add_snat_aliases
+	add_snat_aliases=$ADD_SNAT_ALIASES
+	local pre_nat
+	pre_nat=
+	local policy
+	policy=
+	local destnets
+	destnets=
 
 	[ "x$ipsec" = x- ] && ipsec=
 
@@ -475,7 +485,22 @@ __EOF__
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local external= interface= internal= allints= localnat= policyin= policyout= comment=
+    local external
+    external=
+    local interface
+    interface=
+    local internal
+    internal=
+    local allints
+    allints=
+    local localnat
+    localnat=
+    local policyin
+    policyin=
+    local policyout
+    policyout=
+    local comment
+    comment=
 
     validate_one() #1 = Variable Name, $2 = Column name, $3 = value
     {
@@ -493,7 +518,10 @@ setup_nat() {
     }
 
     do_one_nat() {
-	local add_ip_aliases=$ADD_IP_ALIASES iface=${interface%:*}
+	local add_ip_aliases
+	add_ip_aliases=$ADD_IP_ALIASES
+	local iface
+	iface=${interface%:*}
 
 	if [ -n "$add_ip_aliases" ]; then
 	    case $interface in
@@ -613,7 +641,8 @@ setup_netmap() {
 #
 add_nat_rule() {
     local chain
-    local excludedests=
+    local excludedests
+    excludedests=
 
     # Be sure we can NAT
 

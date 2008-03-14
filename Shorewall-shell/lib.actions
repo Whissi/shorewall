@@ -252,19 +252,32 @@ process_action() # $1 = chain    (Chain to add the rules to)
                  # $10 = userspec
                  # $11 = mark
 {
-    local chain="$1"
-    local action="$2"
-    local target="$3"
-    local clients="$4"
-    local servers="$5"
-    local protocol="$6"
-    local ports="$7"
-    local cports="$8"
-    local ratelimit="$9"
-    local userspec="${10}"
-    local mark="${11}"
-    local userandgroup=
-    local logtag=
+    local chain
+    chain="$1"
+    local action
+    action="$2"
+    local target
+    target="$3"
+    local clients
+    clients="$4"
+    local servers
+    servers="$5"
+    local protocol
+    protocol="$6"
+    local ports
+    ports="$7"
+    local cports
+    cports="$8"
+    local ratelimit
+    ratelimit="$9"
+    local userspec
+    userspec="${10}"
+    local mark
+    mark="${11}"
+    local userandgroup
+    userandgroup=
+    local logtag
+    logtag=
 
     if [ -n "$ratelimit" ]; then
 	case $ratelimit in
@@ -483,7 +496,10 @@ process_action() # $1 = chain    (Chain to add the rules to)
 #
 merge_levels() # $1=level at which superior action is called, $2=level at which the subordinate rule is called
 {
-    local superior=$1 subordinate=$2
+    local superior
+    superior=$1
+    local subordinate
+    subordinate=$2
 
     set -- $(split $1)
 
@@ -690,7 +706,8 @@ process_actions1() {
 
 process_actions2() {
 
-    local interfaces="$(find_interfaces_by_option upnp)"
+    local interfaces
+    interfaces="$(find_interfaces_by_option upnp)"
 
     if [ -n "$interfaces" ]; then
 	if ! list_search forwardUPnP $USEDACTIONS; then
@@ -735,7 +752,10 @@ process_actions2() {
 
 process_action3() {
 
-    local f=action.$xaction1 comment=
+    local f
+    f=action.$xaction1
+    local comment
+    comment=
 
     progress_message2 "$DOING $(find_file $f) for Chain $xchain..."
 

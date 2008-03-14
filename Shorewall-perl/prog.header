@@ -35,7 +35,8 @@ error_message() # $* = Error Message
 #
 progress_message() # $* = Message
 {
-    local timestamp=
+    local timestamp
+    timestamp=
 
     if [ $VERBOSE -gt 1 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
@@ -50,7 +51,8 @@ progress_message() # $* = Message
 
 progress_message2() # $* = Message
 {
-    local timestamp=
+    local timestamp
+    timestamp=
 
     if [ $VERBOSE -gt 0 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
@@ -65,7 +67,8 @@ progress_message2() # $* = Message
 
 progress_message3() # $* = Message
 {
-    local timestamp=
+    local timestamp
+    timestamp=
 
     if [ $VERBOSE -ge 0 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
@@ -82,7 +85,8 @@ progress_message3() # $* = Message
 # Split a colon-separated list into a space-separated list
 #
 split() {
-    local ifs=$IFS
+    local ifs
+    ifs=$IFS
     IFS=:
     echo $*
     IFS=$ifs
@@ -94,7 +98,8 @@ split() {
 #
 list_search() # $1 = element to search for , $2-$n = list
 {
-    local e=$1
+    local e
+    e=$1
 
     while [ $# -gt 1 ]; do
 	shift
@@ -143,7 +148,8 @@ my_pathname() {
 #
 run_user_exit() # $1 = file name
 {
-    local user_exit=$(find_file $1)
+    local user_exit
+    user_exit=$(find_file $1)
 
     if [ -f $user_exit ]; then
 	progress_message "Processing $user_exit ..."
@@ -199,7 +205,8 @@ deleteallchains() {
 #
 loadmodule() # $1 = module name, $2 - * arguments
 {
-    local modulename=$1
+    local modulename
+    modulename=$1
     local modulefile
     local suffix
 
@@ -231,10 +238,13 @@ loadmodule() # $1 = module name, $2 - * arguments
 #
 reload_kernel_modules() {
 
-    local save_modules_dir=$MODULESDIR
+    local save_modules_dir
+    save_modules_dir=$MODULESDIR
     local directory
-    local moduledirectories=
-    local moduleloader=modprobe
+    local moduledirectories
+    moduledirectories=
+    local moduleloader
+    moduleloader=modprobe
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -261,11 +271,15 @@ reload_kernel_modules() {
 #
 load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 {
-    local save_modules_dir=$MODULESDIR
+    local save_modules_dir
+    save_modules_dir=$MODULESDIR
     local directory
-    local moduledirectories=
-    local moduleloader=modprobe
-    local savemoduleinfo=${1:-Yes} # So old compiled scripts still work
+    local moduledirectories
+    moduledirectories=
+    local moduleloader
+    moduleloader=modprobe
+    local savemoduleinfo
+    savemoduleinfo=${1:-Yes} # So old compiled scripts still work
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -313,8 +327,10 @@ LEFTSHIFT='<<'
 #
 decodeaddr() {
     local x
-    local temp=0
-    local ifs=$IFS
+    local temp
+    temp=0
+    local ifs
+    ifs=$IFS
 
     IFS=.
 
@@ -333,7 +349,8 @@ decodeaddr() {
 encodeaddr() {
     addr=$1
     local x
-    local y=$(($addr & 255))
+    local y
+    y=$(($addr & 255))
 
     for x in 1 2 3 ; do
 	addr=$(($addr >> 8))
@@ -347,7 +364,8 @@ encodeaddr() {
 # Netmask from CIDR
 #
 ip_netmask() {
-    local vlsm=${1#*/}
+    local vlsm
+    vlsm=${1#*/}
 
     [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
 }
@@ -356,8 +374,10 @@ ip_netmask() {
 # Network address from CIDR
 #
 ip_network() {
-    local decodedaddr=$(decodeaddr ${1%/*})
-    local netmask=$(ip_netmask $1)
+    local decodedaddr
+    decodedaddr=$(decodeaddr ${1%/*})
+    local netmask
+    netmask=$(ip_netmask $1)
 
     echo $(encodeaddr $(($decodedaddr & $netmask)))
 }
@@ -367,7 +387,8 @@ ip_network() {
 # the popular light-weight Bourne shell derivatives don't support XOR ("^").
 #
 ip_broadcast() {
-    local x=$(( 32 - ${1#*/} ))
+    local x
+    x=$(( 32 - ${1#*/} ))
 
     [ $x -eq 32 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
 }
@@ -376,9 +397,12 @@ ip_broadcast() {
 # Calculate broadcast address from CIDR
 #
 broadcastaddress() {
-    local decodedaddr=$(decodeaddr ${1%/*})
-    local netmask=$(ip_netmask $1)
-    local broadcast=$(ip_broadcast $1)
+    local decodedaddr
+    decodedaddr=$(decodeaddr ${1%/*})
+    local netmask
+    netmask=$(ip_netmask $1)
+    local broadcast
+    broadcast=$(ip_broadcast $1)
 
     echo $(encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast )))
 }
@@ -388,7 +412,8 @@ broadcastaddress() {
 #
 in_network() # $1 = IP address, $2 = CIDR network
 {
-    local netmask=$(ip_netmask $2)
+    local netmask
+    netmask=$(ip_netmask $2)
     #
     # Use string comparison to work around a broken BusyBox ash in OpenWRT
     #
@@ -493,8 +518,10 @@ find_default_interface() {
 #
 
 find_interface_by_address() {
-    local dev="$(find_rt_interface $1)"
-    local first rest
+    local dev
+    dev="$(find_rt_interface $1)"
+    local first
+    local rest
 
     [ -z "$dev" ] && dev=$(find_default_interface)
 
@@ -506,7 +533,12 @@ find_interface_by_address() {
 #
 
 find_interface_by_mac() {
-    local mac=$1 first second rest dev
+    local mac
+    mac=$1
+    local first
+    local second
+    local rest
+    local dev
 
     ip link list | while read first second rest; do
 	case $first in
@@ -611,7 +643,8 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 
 get_interface_bcasts() # $1 = interface
 {
-    local addresses=
+    local addresses
+    addresses=
 
     ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 }
@@ -637,7 +670,9 @@ mywhich() {
 #
 find_file()
 {
-    local saveifs= directory
+    local saveifs
+    saveifs=
+    directory
 
     case $1 in
 	/*)
@@ -691,7 +726,16 @@ del_ip_addr() # $1 = address, $2 = interface
 #
 add_ip_aliases() # $* = List of addresses
 {
-    local addresses external interface inet cidr rest val arping=$(mywhich arping)
+    local local
+    local addresses
+    local external
+    local interface
+    local inet
+    local cidr
+    local rest
+    local val
+    local arping
+    arping=$(mywhich arping)
 
     address_details()
     {
@@ -748,7 +792,8 @@ add_ip_aliases() # $* = List of addresses
 
 detect_gateway() # $1 = interface
 {
-    local interface=$1
+    local interface
+    interface=$1
     #
     # First assume that this is some sort of point-to-point interface
     #
@@ -771,7 +816,8 @@ detect_gateway() # $1 = interface
 # Disable IPV6
 #
 disable_ipv6() {
-    local foo="$(ip -f inet6 addr list 2> /dev/null)"
+    local foo
+    foo="$(ip -f inet6 addr list 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt mywhich ip6tables; then
@@ -825,7 +871,8 @@ delete_tc1()
 #
 get_device_mtu() # $1 = device
 {
-    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local output
+    output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
 
     if [ -n "$output" ]; then
 	echo $(find_mtu $output)
@@ -840,7 +887,8 @@ get_device_mtu() # $1 = device
 #
 get_device_mtu1() # $1 = device
 {
-    local output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local output
+    output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
     local mtu
 
     if [ -n "$output" ]; then
@@ -879,7 +927,9 @@ undo_routing() {
 
 restore_default_route() {
     if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
-	local default_route= route
+	local default_route
+	default_route=
+	local route
 
 	while read route ; do
 	    case $route in
@@ -940,7 +990,8 @@ find_mac() # $1 = IP address, $2 = interface
 {
     qt ping -nc 1 -t 2 -I $2 $1
 
-    local result=$(arp -na |  awk "/[(]$1[)].* $2$/ {print \$4}")
+    local result
+    result=$(arp -na |  awk "/[(]$1[)].* $2$/ {print \$4}")
 
     case $result in
 	\<*\>)

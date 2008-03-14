@@ -37,7 +37,10 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_ipsec() # $1 = Tunnel Kind $2 = gateway zones
     {
-    	local kind=$1 noah=noah
+    	local kind
+    	kind=$1
+    	local noah
+    	noah=noah
 
 	case $kind in
 	    *:*)
@@ -134,8 +137,10 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_openvpn() # $1 = kind[:port]
     {
-	local protocol=udp
-	local p=1194
+	local protocol
+	protocol=udp
+	local p
+	p=1194
 
 	case $1 in
 	    *:*:*)
@@ -159,8 +164,10 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_openvpn_server() # $1 = kind[:port]
     {
-	local protocol=udp
-	local p=1194
+	local protocol
+	protocol=udp
+	local p
+	p=1194
 
 	case $1 in
 	    *:*:*)
@@ -184,8 +191,10 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_openvpn_client() # $1 = kind[:port]
     {
-	local protocol=udp
-	local p=1194
+	local protocol
+	protocol=udp
+	local p
+	p=1194
 
 	case $1 in
 	    *:*:*)
@@ -210,7 +219,8 @@ setup_tunnels() # $1 = name of tunnels file
     setup_one_generic() # $1 = kind:protocol[:port]
     {
 	local protocol
-	local p=
+	local p
+	p=
 
 	case $1 in
 	    *:*:*)

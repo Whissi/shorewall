@@ -38,7 +38,8 @@ expand_line() {
 
 read_file() # $1 = file name, $2 = nest count
 {
-    local first rest
+    local first
+    local rest
 
     if [  -f $1 ]; then
 	while read first rest; do
@@ -61,7 +62,8 @@ read_file() # $1 = file name, $2 = nest count
 # Split a colon-separated list into a space-separated list
 #
 split() {
-    local ifs=$IFS
+    local ifs
+    ifs=$IFS
     IFS=:
     echo $*
     IFS=$ifs
@@ -72,7 +74,9 @@ split() {
 #
 find_file()
 {
-    local saveifs= directory
+    local saveifs
+    saveifs=
+    local directory
 
     case $1 in
 	/*)

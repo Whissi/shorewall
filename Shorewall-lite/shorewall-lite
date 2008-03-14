@@ -178,10 +178,12 @@ verify_firewall_script() {
 # Start Command Executor
 #
 start_command() {
-    local finished=0
+    local finished
+    finished=0
 
     do_it() {
-	local rc=0
+	local rc
+	rc=0
 	[ -n "$nolock" ] || mutex_on
 
 	if [ -x ${LITEDIR}/firewall ]; then
@@ -286,7 +288,10 @@ start_command() {
 # Restart Command Executor
 #
 restart_command() {
-    local finished=0 rc=0
+    local finished
+    finished=0
+    local rc
+    rc=0
 
     verify_firewall_script
 

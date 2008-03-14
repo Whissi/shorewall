@@ -1,11 +1,22 @@
---- /home/teastep/shorewall/branches/3.4/Shorewall/lib.tunnels	2007-03-22 15:27:26.000000000 -0700
-+++ lib.tunnels	2007-07-03 07:57:16.000000000 -0700
-@@ -37,19 +37,28 @@
+--- ../../3.4/Shorewall/lib.tunnels	2007-10-26 19:10:45.000000000 -0400
++++ lib.tunnels	2008-03-09 15:55:46.000000000 -0400
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ #
+-# Shorewall 3.4 -- /usr/share/shorewall/lib.tunnels
++# Shorewall 4.1 -- /usr/share/shorewall/lib.tunnels
+ #
+ #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+ #
+@@ -37,19 +37,31 @@
  
      setup_one_ipsec() # $1 = Tunnel Kind $2 = gateway zones
      {
 -    	local kind=$1 noah=
-+    	local kind=$1 noah=noah
++    	local kind
++    	kind=$1
++    	local noah
++    	noah=noah
  
  	case $kind in
  	    *:*)
@@ -32,3 +43,52 @@
  
  	options="-m state --state NEW -j ACCEPT"
  	addrule2 $inchain	  -p 50	 $source -j ACCEPT
+@@ -125,8 +137,10 @@
+ 
+     setup_one_openvpn() # $1 = kind[:port]
+     {
+-	local protocol=udp
+-	local p=1194
++	local protocol
++	protocol=udp
++	local p
++	p=1194
+ 
+ 	case $1 in
+ 	    *:*:*)
+@@ -150,8 +164,10 @@
+ 
+     setup_one_openvpn_server() # $1 = kind[:port]
+     {
+-	local protocol=udp
+-	local p=1194
++	local protocol
++	protocol=udp
++	local p
++	p=1194
+ 
+ 	case $1 in
+ 	    *:*:*)
+@@ -175,8 +191,10 @@
+ 
+     setup_one_openvpn_client() # $1 = kind[:port]
+     {
+-	local protocol=udp
+-	local p=1194
++	local protocol
++	protocol=udp
++	local p
++	p=1194
+ 
+ 	case $1 in
+ 	    *:*:*)
+@@ -201,7 +219,8 @@
+     setup_one_generic() # $1 = kind:protocol[:port]
+     {
+ 	local protocol
+-	local p=
++	local p
++	p=
+ 
+ 	case $1 in
+ 	    *:*:*)

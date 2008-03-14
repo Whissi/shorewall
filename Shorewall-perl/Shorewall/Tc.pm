@@ -336,18 +336,23 @@ sub validate_tc_device( $$$$$ ) {
 	}
     }
 
+    $inband = rate_to_kbit( $inband );
+
     my @redirected = ();
 
     @redirected = split_list( $redirected , 'device' ) if defined $redirected && $redirected ne '-';
+
+    fatal_error "IN-BANDWIDTH must be zero for IFB devides" if @redirected && $inband;
 
     for my $rdevice ( @redirected ) {
 	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
 	my $rdevref = $tcdevices{$rdevice};
 	fatal_error "REDIRECTED device ($rdevice) has not been defined in this file" unless $rdevref;
 	fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} ne '0kbit';
+	fatal_error "IFB may not be redirected" if @{$rdevref->{redirected}};
     }
 
-    $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit' ,
+    $tcdevices{$device} = { in_bandwidth  => $inband . 'kbit' ,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
 			    classify      => $classify , 
 			    redirected    => \@redirected };
@@ -486,11 +491,10 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
-	} elsif ( @{$devref->{redirected}} ) {
-	    emit ( "run_tc qdisc add dev $device handle ffff: ingress" );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {
+	    emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
 	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device" );
 	}
 

@@ -533,6 +533,16 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcdevices ]; then
 fi
 
 #
+# Install the tcfilters file
+#
+run_install $OWNERSHIP -m 0644 tcfilters ${PREFIX}/usr/share/shorewall/configfiles/tcfilters
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcfilters ]; then
+    run_install $OWNERSHIP -m 0600 tcfilters ${PREFIX}/etc/shorewall/tcfilters
+    echo "TC Filters file installed as ${PREFIX}/etc/shorewall/tcfilters"
+fi
+
+#
 # Install the rfc1918 file
 #
 install_file rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0644

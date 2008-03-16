@@ -56,6 +56,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       finalize_object
 		                       numeric_value
 		                       in_hex
+		                       in_hex4
 		                       in_hex8
 				       emit
 				       emit_unindented
@@ -527,6 +528,10 @@ sub numeric_value ( $ ) {
 #
 sub in_hex( $ ) {
     sprintf '0x%x', $_[0];
+}
+
+sub in_hex4( $ ) {
+    sprintf '0x%04x', $_[0];
 }
 
 sub in_hex8( $ ) {

@@ -112,6 +112,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/route_rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcfilters
 %attr(0600,root,root) /etc/shorewall/Makefile
 
 %attr(0755,root,root) /sbin/shorewall

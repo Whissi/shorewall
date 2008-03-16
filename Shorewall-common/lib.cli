@@ -173,6 +173,7 @@ show_tc() {
 	if [ -n "$qdisc" ]; then
 	    echo Device $device:
 	    tc -s -d qdisc show dev $device
+	    echo
 	    tc -s -d class show dev $device
 	    echo
 	fi

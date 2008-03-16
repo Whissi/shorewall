@@ -365,6 +365,11 @@ sub validate_tc_device( $$$$$ ) {
 
     @redirected = split_list( $redirected , 'device' ) if defined $redirected && $redirected ne '-';
 
+    if ( @redirected ) {
+	fatal_error "IFB devices may not have IN-BANDWIDTH" if $inband ne '-' && $inband;
+	$classify = 1;
+    }	
+
     for my $rdevice ( @redirected ) {
 	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
 	my $rdevref = $tcdevices{$rdevice};
@@ -465,7 +470,7 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
-	    $classnumber = $devnum + $mark;
+	    $classnumber = $devnum . $mark;
 	}
     } else {
 	fatal_error "Missing MARK" unless $devref->{classify};
@@ -585,7 +590,7 @@ sub setup_traffic_shaping() {
 	}
     }
 
-    $devnum = $devnum > 10 ? 1000 : 100;
+    $devnum = $devnum > 10 ? 10 : 1;
 
     $fn = open_file 'tcclasses';
 
@@ -625,11 +630,10 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
-	} elsif ( @{$devref->{redirected}} ) {
-	    emit ( "run_tc qdisc add dev $device handle ffff: ingress" );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {
+	    emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
 	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device" );
 	}
 

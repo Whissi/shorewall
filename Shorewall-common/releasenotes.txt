@@ -12,6 +12,9 @@ Shorewall 4.1 Patch Release 6.
 
 4) The tarball installers now work under Cygwin.
 
+5) Shorewall-perl now supports IFB devices which allow traffic shaping of
+   incoming traffic.
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
@@ -118,6 +121,147 @@ New Features in 4.1.6.
     also be 1701. Some implementations (particularly OS X) use a
     different source port. In that case, you should use
     'generic:udp:1701' rather than 'l2tp'.
+
+4)  The /etc/shorewall/tcdevices and /etc/shorewall/tcclasses files
+    have undergone some changes, especially when the 'classify' option
+    has been specified.
+
+    Normally Shorewall assigns interface numbers sequentially to
+    devices listed in /etc/shorewall/tcdevices. Beginning with
+    Shorewall 4.1.6, you can explicitly specify inteface numbers by
+    prefixing the interface name with the interface number and a colon:
+
+    Example:
+
+     #INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
+     1:eth0	1300kbit	384kbit		classify
+     2:eth1	5600kbit	1000kbit	
+
+     In /etc/shorewall/tcclasses:
+
+     a) You can specify the INTERFACE using either the interface name
+        or interface number.
+
+     b) classes associated with devices which have the 'classify'
+        option _must_ specify a class number by following the interface
+        name/number with a colon (":") and the class number. The same
+        class number may be used for classes defined on different
+        interfaces but a class number may not be the same as any
+        interface number.
+
+    A class number may be specified when 'classify' has not been
+    specified for the associated device. When a class number has not
+    been given, the default class number remains the mark value
+    prefixed by "1".
+
+5)  Shorewall now supports Intermediate Functional Block (IFB) devices.
+    These devices allow shaping of incoming traffic.
+
+    The 'ifb' module is available in the kernels included with today's
+    distributions. You must load the module manually:
+
+    If your distribution has modprobe:
+
+       modprobe ifb [ numifbs=<number> ]
+
+    Otherwise:
+
+       insmod <path to net driver modules>/ifb.ko [ numifbs=<number> ]
+
+    The module automatically creates two IFB devices by default (ifb0
+    and ifb1). To create only one, specify 'numifbs'.
+
+    Example:
+
+	ursa:~ # modprobe ifb numifbs=1
+	ursa:~ # ip link ls
+	1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue 
+    	    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+	2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    	    link/ether cc:2b:cb:24:1b:00 brd ff:ff:ff:ff:ff:ff
+	3: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    	    link/ether 00:1a:73:db:8c:35 brd ff:ff:ff:ff:ff:ff
+        4: ifb0: <BROADCAST,NOARP> mtu 1500 qdisc noop qlen 32
+   	    link/ether 26:99:d8:7d:32:26 brd ff:ff:ff:ff:ff:ff
+	ursa:~ # 
+
+    After you have created the IFB(s), you must bring it(them) up:
+
+    	ip link set dev ifb0 up
+
+    You can place all of this in /etc/shorewall/init as follows:
+
+    	modprobe ifb numifbs=1
+	ip link set dev ifb0 up
+
+    The /etc/shorewall/tcdevices file has been extended to include an
+    additional REDIRECTED DEVICES column. To convert your configuration
+    to using an IFB:
+
+    a) Look at your current /etc/shorewall/tcdevices file. Suppose you
+       have:
+
+	#INTERFACE	IN-BANDWIDTH	OUT-BANDWIDTH	OPTIONS
+	eth0		1300kbit        384kbit		-
+
+        Change it as follows:
+
+	#INTERFACE  IN-BANDWIDTH  OUT-BANDWIDTH	OPTIONS  REDIRECTED
+	#                                                DEVICES
+	eth0	    -	          384kkbit	-
+	ifb0	    -		  1300kbit	-	 eth0
+
+       Note that the old IN-BANDWIDTH for eth0 has become the
+       OUT-BANDWIDTH for ifb0 and that neither device has an
+       IN-BANDWIDTH in the new configuration.
+
+       Finally note that eth0 has been specified as a REDIRECTED device
+       for the IFB.
+
+    b) There are no Netfilter hooks between the real device (eth0) and
+       the IFB (ifb0). So tcrules cannot be used to specify shaping of
+       traffic leaving the IFB. To allow that traffic to be classified,
+       a new /etc/shorewall/filters file has been added.
+
+       /etc/shorewall/filters can be used for classifying traffic on
+       any interface. When using entries in that file, it is important
+       to realize that those entries act on packets as they appear 'on
+       the wire'. That means that on output, SNAT/MASQUERADE has been
+       applied and on input (output to an IFB), DNAT has not yet been
+       applied.
+
+       Columns in the file are:
+
+       INTERFACE:CLASS
+
+		The interface name or number followed by a colon (":")
+		and the class number.
+
+       SOURCE
+                Source IP address. May be a host or network address.
+		Specify "-" if any SOURCE address should match.
+
+       DEST
+		Destination IP address. May be a host or network
+		address. Specify "-" if any DEST address should match.
+
+       PROTO
+		Protocol Name/Number. Specify "-" if any PROTO should
+		match.
+
+       DEST PORT
+	        Destination port. May only be given if the PROTO is
+	        tcp, udp or sctp. Neither port ranges nor port lists
+	        may be given. Specify "-" if any PORT should match.
+
+       SOURCE PORT
+	        Source port. May only be given if the PROTO is
+	        tcp, udp or sctp. Neither port ranges nor port lists
+	        may be given. Specify "-" if any PORT should match.
+
+    Entries in /etc/shorewall/tcfilters generate U32 tc filters which
+    may be displayed using the "shorewall show tc" ("shorewall-lite
+    show tc") command.
 
 New Features in Shorewall 4.1.
 

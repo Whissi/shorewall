@@ -30,6 +30,7 @@
 package Shorewall::Tc;
 require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
+use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Providers;
@@ -119,17 +120,21 @@ our @deferred_rules;
 #
 # %tcdevices { <interface> -> {in_bandwidth  => <value> ,
 #                              out_bandwidth => <value> ,
-#                              number        => <ordinal> ,
+#                              number        => <number>,
 #                              default       => <default class mark value> }
 #
 our @tcdevices;
 our %tcdevices;
+our @devnums;
+our $devnum;
+
 
 #
 # TCClasses Table
 #
 # %tcclasses { device    => <device> ,
 #              mark      => <mark> ,
+#              number    => <number> ,
 #              rate      => <rate> ,
 #              ceiling   => <ceiling> ,
 #              priority  => <priority> ,
@@ -140,8 +145,6 @@ our %tcdevices;
 
 our @tcclasses;
 our %tcclasses;
-
-our $prefix;
 
 our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
@@ -163,7 +166,8 @@ sub initialize() {
     %tcdevices = ();
     @tcclasses = ();
     %tcclasses = ();
-    $prefix = '1';
+    @devnums   = ();
+    $devnum = 0;
 }
 
 INIT {
@@ -321,8 +325,29 @@ sub calculate_quantum( $$ ) {
 sub validate_tc_device( $$$$$ ) {
     my ( $device, $inband, $outband , $options , $redirected ) = @_;
 
-    fatal_error "Duplicate device ($device)"    if $tcdevices{$device};
-    fatal_error "Invalid device name ($device)" if $device =~ /[:+]/;
+    my $devnumber;
+
+    if ( $device =~ /:/ ) {
+	( my $number, $device, my $rest )  = split /:/, $device, 3;
+
+	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
+    
+	if ( defined $number ) {
+	    $devnumber = numeric_value( $number );
+	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
+	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
+	    $devnum = $devnumber if $devnumber > $devnum;
+	} else {
+	    fatal_error "Missing interface NUMBER";
+	}
+    } else {
+	$devnumber = ++$devnum;
+    }
+	
+    $devnums[ $devnumber ] = $device;
+
+    fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
+    fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
 
     my $classify = 0;
 
@@ -336,24 +361,20 @@ sub validate_tc_device( $$$$$ ) {
 	}
     }
 
-    $inband = rate_to_kbit( $inband );
-
     my @redirected = ();
 
     @redirected = split_list( $redirected , 'device' ) if defined $redirected && $redirected ne '-';
-
-    fatal_error "IN-BANDWIDTH must be zero for IFB devides" if @redirected && $inband;
 
     for my $rdevice ( @redirected ) {
 	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
 	my $rdevref = $tcdevices{$rdevice};
 	fatal_error "REDIRECTED device ($rdevice) has not been defined in this file" unless $rdevref;
 	fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} ne '0kbit';
-	fatal_error "IFB may not be redirected" if @{$rdevref->{redirected}};
     }
 
-    $tcdevices{$device} = { in_bandwidth  => $inband . 'kbit' ,
+    $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit' ,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
+			    number        => $devnumber,
 			    classify      => $classify , 
 			    redirected    => \@redirected };
 
@@ -375,8 +396,27 @@ sub convert_rate( $$ ) {
     "${rate}kbit";
 }
 
+sub dev_by_number( $ ) {
+    my $dev = $_[0];
+    my $devnum = numeric_value( $dev );
+    my $devref;
+    
+    if ( defined $devnum ) {
+	$dev = $devnums[ $devnum ];
+	fatal_error "Undefined INTERFACE number ($_[0])" unless defined $dev;
+	$devref = $tcdevices{$dev};
+	fatal_error "Internal Error in dev_by_number()" unless $devref;
+    } else {
+	$devref = $tcdevices{$dev};
+	fatal_error "Unknown INTERFACE ($dev)" unless $devref;
+    }
+
+    ( $dev , $devref );
+    
+}
+	
 sub validate_tc_class( $$$$$$ ) {
-    my ( $device, $mark, $rate, $ceil, $prio, $options ) = @_;
+    my ( $devclass, $mark, $rate, $ceil, $prio, $options ) = @_;
 
     my %tosoptions = ( 'tos-minimize-delay'       => 'tos=0x10/0x10' ,
 		       'tos-maximize-throughput'  => 'tos=0x08/0x08' ,
@@ -384,25 +424,61 @@ sub validate_tc_class( $$$$$$ ) {
 		       'tos-minimize-cost'        => 'tos=0x02/0x02' ,
 		       'tos-normal-service'       => 'tos=0x00/0x1e' );
 
-    my $devref = $tcdevices{$device};
-    fatal_error "Unknown Device ($device)" unless $devref;
+    my $classnumber = 0;
+    my $devref;
+    my $device = $devclass;
+
+    if ( $devclass =~ /:/ ) {
+	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
+	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
+	
+	( $device , $devref) = dev_by_number( $device );
+	    
+	if ( defined $number ) {
+	    if ( $devref->{classify} ) {
+		$classnumber = numeric_value( $number );
+		fatal_error "Invalid interface NUMBER ($number)" unless defined $classnumber && $classnumber;
+		fatal_error "Duplicate interface/class number ($number)" if defined $devnums[ $classnumber ];
+	    } else {
+		warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option";
+	    }
+	} else {
+	    fatal_error "Missing interface NUMBER";
+	}
+    } else {
+	($device, $devref ) = dev_by_number( $device );
+	fatal_error "Missing class NUMBER" if $devref->{classify};
+    }
+	
     my $full  = rate_to_kbit $devref->{out_bandwidth};
 
     $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
+    
+    my $markval;
 
-    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) <= 0xff;
+    if ( $mark ne '-' ) {
+	if ( $devref->{classify} ) {
+	    warning_message "INTERFACE $device has the 'classify' option - MARK value ($mark) ignored";
+	} else {
+	    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) <= 0xff;
 
-    my $markval = numeric_value( $mark );
-    fatal_error "Duplicate Mark ($mark)" if $tcref->{$markval};
+	    $markval = numeric_value( $mark );
+	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
+	    $classnumber = $devnum + $mark;
+	}
+    } else {
+	fatal_error "Missing MARK" unless $devref->{classify};
+	fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
+    }
 
-    $tcref->{$markval} = { tos      => [] ,
-			   rate     => convert_rate( $full, $rate ) ,
-			   ceiling  => convert_rate( $full, $ceil ) ,
-			   priority => $prio eq '-' ? 1 : $prio 
-			 };
+    $tcref->{$classnumber} = { tos      => [] ,
+			       rate     => convert_rate( $full, $rate ) ,
+			       ceiling  => convert_rate( $full, $ceil ) ,
+			       priority => $prio eq '-' ? 1 : $prio 
+			     };
 
-    $tcref = $tcref->{$markval};
+    $tcref = $tcref->{$classnumber};
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list "\L$options", 'option' ) {
@@ -412,7 +488,7 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    if ( $option eq 'default' ) {
 		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
-		$devref->{default} = $markval;
+		$devref->{default} = $classnumber;
 	    } elsif ( $option eq 'tcp-ack' ) {
 		$tcref->{tcp_ack} = 1;
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
@@ -427,9 +503,70 @@ sub validate_tc_class( $$$$$$ ) {
 	}
     }
 
-    push @tcclasses, "$device:$markval";
+    push @tcclasses, "$device:$classnumber";
     progress_message "   Tcclass \"$currentline\" $done.";
 }
+
+sub process_tc_filter( $$$$$$ ) {
+    my ($devclass , $source, $dest , $proto, $port , $sport ) = @_;
+
+    my ($device, $class, $rest ) = split /:/, $devclass, 3;
+
+    fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
+    
+    ( $device , my $devref ) = dev_by_number( $device );
+
+    my $tcref = $tcclasses{$device};
+    
+    fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
+    
+    $tcref = $tcref->{$class};
+
+    fatal_error "Unknown CLASS ($class)" unless $tcref; 
+
+    my $rule = "filter add dev $device protocol ip parent $devref->{number}:0 pref 10 u32";
+
+    my ( $net , $mask ) = decompose_net( $source );
+	
+    $rule .= "\\\n   match u32 $net $mask at 12" unless $mask eq '0x00000000';
+
+    ( $net , $mask ) = decompose_net( $dest );
+
+    $rule .= "\\\n   match u32 $net $mask at 16" unless $mask eq '0x00000000';
+
+    my $protonumber = 0;
+
+    unless ( $proto eq '-' ) {
+	$protonumber = resolve_proto $proto;
+	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
+
+	$rule .= "\\\n   match u8 $protonumber 0xFF at 9";
+    }
+
+    unless ( $port eq '-' ) {
+	fatal_error "Only TCP, UDP and SCTP may specify DEST PORT" 
+	    unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
+	my $portnumber = in_hex8 validate_port( $protonumber , $port );
+
+	$rule .= "\\\n   match u32 $portnumber 0x0000ffff at nexthdr+0";
+    }
+	    
+    unless ( $sport eq '-' ) {
+	fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
+	    unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
+	my $portnumber = in_hex8 validate_port( $protonumber , $sport );
+
+	$portnumber =~ s/0x0000/0x/;
+	
+	$rule .= "\\\n   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0";
+    }
+
+    emit( "run_tc $rule\\" ,
+	  "   flowid $devref->{number}:$class" ,
+	  '' );
+    
+    progress_message "   TC Filter \"$currentline\" $done";
+}   
 
 sub setup_traffic_shaping() {
     save_progress_message "Setting up Traffic Control...";
@@ -448,6 +585,8 @@ sub setup_traffic_shaping() {
 	}
     }
 
+    $devnum = $devnum > 10 ? 1000 : 100;
+
     $fn = open_file 'tcclasses';
 
     if ( $fn ) {
@@ -461,16 +600,11 @@ sub setup_traffic_shaping() {
 	}
     }
 
-    my $devnum = 1;
-
-    $prefix = '10' if @tcdevices > 10;
-
     for my $device ( @tcdevices ) {
 	my $dev     = chain_base( $device );
 	my $devref  = $tcdevices{$device};
 	my $defmark = $devref->{default} || 0;
-
-	$defmark = "${prefix}${defmark}" if $defmark;
+	my $devnum  = $devref->{number};
 
 	emit "if interface_is_up $device; then";
 
@@ -491,14 +625,13 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
+	} elsif ( @{$devref->{redirected}} ) {
+	    emit ( "run_tc qdisc add dev $device handle ffff: ingress" );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {
-	    emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
 	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device" );
 	}
-
-	$devref->{number} = $devnum++;
 
 	save_progress_message_short "   TC Device $device defined.";
 
@@ -518,8 +651,8 @@ sub setup_traffic_shaping() {
 	my ( $device, $mark ) = split /:/, $class;
 	my $devref  = $tcdevices{$device};
 	my $tcref   = $tcclasses{$device}{$mark};
-	my $devnum  = $devref->{number};
-	my $classid = join( '', $devnum, ':', $prefix, $mark);
+	my $devicenumber  = $devref->{number};
+	my $classid = join( '', $devicenumber, ':', $mark);
 	my $rate    = $tcref->{rate};
 	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
@@ -539,12 +672,12 @@ sub setup_traffic_shaping() {
 
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
 	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
-	       "run_tc qdisc add dev $device parent $classid handle ${prefix}${mark}: sfq perturb 10"
+	       "run_tc qdisc add dev $device parent $classid handle ${mark}: sfq perturb 10"
 	     );
 	#
 	# add filters
 	#
-	emit "run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
+	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
 	#
 	#options
 	#
@@ -552,7 +685,7 @@ sub setup_traffic_shaping() {
 
 	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(/), $tospair;
-	    emit "run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
+	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
 	}
 
 	save_progress_message_short qq("   TC Class $class defined.");
@@ -562,6 +695,19 @@ sub setup_traffic_shaping() {
     if ( $lastdevice ) {
 	pop_indent;
 	emit "fi\n";
+    }
+
+    $fn = open_file 'tcfilters';
+
+    if ( $fn ) {
+	first_entry "$doing $fn...";
+
+	while ( read_a_line ) {
+
+	    my ( $devclass, $source, $dest, $proto, $port, $sport ) = split_line 2, 6, 'tcfilters file';
+
+	    process_tc_filter( $devclass, $source, $dest, $proto, $port, $sport );
+	}
     }
 }
 

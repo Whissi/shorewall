@@ -26,7 +26,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config qw( :DEFAULT split_list require_capability );
+use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8);
 
 use strict;
 
@@ -39,6 +39,7 @@ our @EXPORT = qw( ALLIPv4
 
 		  validate_address
 		  validate_net
+		  decompose_net
 		  validate_host
 		  validate_range
 		  ip_range_explicit
@@ -62,6 +63,40 @@ our @allipv4 = ( '0.0.0.0/0' );
 use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 , SCTP => 132 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
+
+our @vlsm_to_mask = ( '0x00000000' ,
+		      '0x80000000' ,
+		      '0xC0000000' ,
+		      '0xE0000000' ,
+		      '0xF0000000' ,
+		      '0xF8000000' ,
+		      '0xFC000000' ,
+		      '0xFE000000' ,
+		      '0xFF000000' ,
+		      '0xFF800000' ,
+		      '0xFFC00000' ,
+		      '0xFFE00000' ,
+		      '0xFFF00000' ,
+		      '0xFFF80000' ,
+		      '0xFFFC0000' ,
+		      '0xFFFE0000' ,
+		      '0xFFFF0000' ,
+		      '0xFFFF8000' ,
+		      '0xFFFFC000' ,
+		      '0xFFFFE000' ,
+		      '0xFFFFF000' ,
+		      '0xFFFFF800' ,
+		      '0xFFFFFC00' ,
+		      '0xFFFFFE00' ,
+		      '0xFFFFFF00' ,
+		      '0xFFFFFF80' ,
+		      '0xFFFFFFC0' ,
+		      '0xFFFFFFE0' ,
+		      '0xFFFFFFF0' ,
+		      '0xFFFFFFF8' ,
+		      '0xFFFFFFFC' ,
+		      '0xFFFFFFFE' ,
+		      '0xFFFFFFFF' );
 
 sub valid_address( $ ) {
     my $address = $_[0];
@@ -96,23 +131,6 @@ sub validate_address( $$ ) {
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
-sub validate_net( $$ ) {
-    my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
-    my $allow_name = $_[1];
-
-    fatal_error "Missing address" if $net eq '';
-    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
-
-    if ( defined $vlsm ) {
-        fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
-	fatal_error "Invalid Network address ($_[0])" if defined $rest;
-	fatal_error "Invalid IP address ($net)"       unless valid_address $net;
-    } else {
-	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	validate_address $net, $_[1];
-    }
-}
-
 sub decodeaddr( $ ) {
     my $address = $_[0];
 
@@ -137,6 +155,33 @@ sub encodeaddr( $ ) {
     }
 
     $result;
+}
+
+sub validate_net( $$ ) {
+    my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
+    my $allow_name = $_[1];
+
+    fatal_error "Missing address" if $net eq '';
+    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
+
+    if ( defined $vlsm ) {
+        fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
+	fatal_error "Invalid Network address ($_[0])" if defined $rest;
+	fatal_error "Invalid IP address ($net)"       unless valid_address $net;
+    } else {
+	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
+	validate_address $net, $_[1];
+	$vlsm = 32;
+    }
+
+    if ( defined wantarray ) {
+	fatal_error "Internal Error in validate_net()" if $allow_name;
+	if ( wantarray ) {
+	    ( decodeaddr( $net ) , $vlsm );
+	} else {
+	    "$net/$vlsm";
+	}	    
+    }
 }
 
 sub validate_range( $$ ) {
@@ -176,6 +221,17 @@ sub ip_range_explicit( $ ) {
     }
 
     @result;
+}
+
+sub decompose_net( $ ) {
+    my $net = $_[0];
+
+    return ( qw/0x00000000 0x00000000/ ) if $net eq '-';
+
+    ( $net, my $vlsm ) = validate_net( $net , 0 );
+
+    ( in_hex8( $net ) , $vlsm_to_mask[ $vlsm ] );
+    
 }
 
 sub validate_host( $$ ) {

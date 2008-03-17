@@ -571,6 +571,13 @@ sub process_tc_filter( $$$$$$ ) {
 	  '' );
     
     progress_message "   TC Filter \"$currentline\" $done";
+
+    $currentline =~ s/\s+/ /g;
+
+    save_progress_message_short qq("   TC Filter \"$currentline\" defined.");
+
+    emit '';
+
 }   
 
 sub setup_traffic_shaping() {
@@ -634,7 +641,7 @@ sub setup_traffic_shaping() {
 
 	for my $rdev ( @{$devref->{redirected}} ) {
 	    emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
-	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device" );
+	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
 	}
 
 	save_progress_message_short "   TC Device $device defined.";
@@ -704,7 +711,7 @@ sub setup_traffic_shaping() {
     $fn = open_file 'tcfilters';
 
     if ( $fn ) {
-	first_entry "$doing $fn...";
+	first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message "Adding TC Filters"; } );
 
 	while ( read_a_line ) {
 

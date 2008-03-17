@@ -166,6 +166,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/route_rules
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcclasses
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcdevices
+%attr(0644,root,root) /usr/share/shorewall/configfiles/tcfilters
 %attr(0644,root,root) /usr/share/shorewall/configfiles/Makefile
 
 %attr(0644,root,root) %{_mandir}/man5/*

@@ -545,7 +545,9 @@ sub process_tc_filter( $$$$$$ ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
 
-	$rule .= "\\\n   match u8 $protonumber 0xFF at 9";
+	my $pnumber = in_hex2 $protonumber;
+
+	$rule .= "\\\n   match u8 $pnumber 0xFF at 9";
     }
 
     unless ( $port eq '-' ) {
@@ -554,6 +556,9 @@ sub process_tc_filter( $$$$$$ ) {
 
 	if ( $protonumber == ICMP ) {
 	    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $port );
+
+	    $icmptype = in_hex2 numeric_value $icmptype;
+	    $icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
 
 	    if ( $config{BROKEN_NEXTHDR} ) {
 		$rule .= "\\\n   match u8 $icmptype 0xFF at 20";

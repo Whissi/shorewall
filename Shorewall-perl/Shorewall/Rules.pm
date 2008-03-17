@@ -1524,7 +1524,7 @@ sub generate_matrix() {
     for my $zone ( @zones ) {
 	my $zoneref    = find_zone( $zone );
 
-	next if @zones <= 2 && ! $zoneref->{complex};
+	next if @zones <= 2 && ! $zoneref->{options}{complex};
 
 	my $exclusions = $zoneref->{exclusions};
 	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );

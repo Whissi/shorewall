@@ -356,6 +356,7 @@ sub initialize() {
 		DONT_LOAD => '',
 		BROKEN_ROUTING => '',
 		AUTO_COMMENT => '' ,
+		BROKEN_NEXTHDR => '' ,
 		#
 		# Packet Disposition
 		#
@@ -1904,6 +1905,7 @@ sub get_configuration( $ ) {
     default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
     default_yes_no 'BROKEN_ROUTING'             , '';
     default_yes_no 'AUTO_COMMENT'               , 'Yes';
+    default_yes_no 'BROKEN_NEXTHDR'             , '';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     

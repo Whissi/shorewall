@@ -549,11 +549,27 @@ sub process_tc_filter( $$$$$$ ) {
     }
 
     unless ( $port eq '-' ) {
-	fatal_error "Only TCP, UDP and SCTP may specify DEST PORT" 
-	    unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
-	my $portnumber = in_hex8 validate_port( $protonumber , $port );
+	fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 
+	    unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
 
-	$rule .= "\\\n   match u32 $portnumber 0x0000ffff at nexthdr+0";
+	if ( $protonumber == ICMP ) {
+	    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $port );
+
+	    if ( $config{BROKEN_NEXTHDR} ) {
+		$rule .= "\\\n   match u8 $icmptype 0xFF at 20";
+		$rule .= "\\\n   match u8 $icmpcode 0xFF at 21" if defined $icmpcode;
+	    } else {
+		$rule .= "\\\n   match u8 $icmptype 0xFF at nexthdr+0";
+		$rule .= "\\\n   match u8 $icmpcode 0xFF at nexthdr+1" if defined $icmpcode;
+	    }
+	} else {
+	    my $portnumber = in_hex8 validate_port( $protonumber , $port );
+	    if ( $config{BROKEN_NEXTHDR} ) {
+		$rule .= "\\\n   match u32 $portnumber 0x0000FFFF at 20";
+	    } else {
+		$rule .= "\\\n   match u32 $portnumber 0x0000FFFF at nexthdr+0";
+	    }
+	}
     }
 	    
     unless ( $sport eq '-' ) {
@@ -563,13 +579,17 @@ sub process_tc_filter( $$$$$$ ) {
 
 	$portnumber =~ s/0x0000/0x/;
 	
-	$rule .= "\\\n   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0";
+	if ( $config{BROKEN_NEXTHDR} ) {
+	    $rule .= "\\\n   match u32 ${portnumber}0000 0xFFFF0000 at 20";
+	} else {
+	    $rule .= "\\\n   match u32 ${portnumber}0000 0xFFFF0000 at nexthdr+0";
+	}
     }
 
     emit( "run_tc $rule\\" ,
 	  "   flowid $devref->{number}:$class" ,
 	  '' );
-    
+
     progress_message "   TC Filter \"$currentline\" $done";
 
     $currentline =~ s/\s+/ /g;

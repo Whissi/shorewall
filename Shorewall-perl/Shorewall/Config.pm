@@ -537,7 +537,7 @@ sub in_hex2( $ ) {
 }
 
 sub in_hex3( $ ) {
-    sprintf '%03x', $_[0];
+    sprintf '0x%03x', $_[0];
 }
 
 sub in_hex4( $ ) {

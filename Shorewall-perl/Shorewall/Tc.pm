@@ -565,7 +565,8 @@ sub process_tc_filter( $$$$$$ ) {
 	#
 	# And link to it using the current contents of $rule
 	#
-	emit( "run_tc $rule link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	emit( "run_tc $rule\\" ,
+	      "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#

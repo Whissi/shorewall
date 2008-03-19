@@ -150,6 +150,7 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT );
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -381,7 +382,8 @@ sub validate_tc_device( $$$$$ ) {
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
 			    number        => $devnumber,
 			    classify      => $classify , 
-			    redirected    => \@redirected };
+			    tablenumber   => 64 ,
+			    redirected    => \@redirected } ,
 
     push @tcdevices, $device;
 
@@ -545,35 +547,34 @@ sub process_tc_filter( $$$$$$ ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
 
-	my $pnumber = in_hex2 $protonumber;
-
-	$rule .= "\\\n   match u8 $pnumber 0xFF at 9";
+	if ( $protonumber ) {
+	    my $pnumber = in_hex2 $protonumber;
+	    $rule .= "\\\n   match u8 $pnumber 0xFF at 9";
+	}
     }
 
     unless ( $port eq '-' ) {
 	fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 
 	    unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
 
+	my $tnum = in_hex3 $devref->{tablenumber}++;
+
+	emit( "run_tc filter add dev $device parent $devref->{number}:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	emit( "run_tc $rule link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+
+	$rule = "filter add dev $device protocol ip parent $devref->{number}:0 pref 10 u32 ht $tnum:0";
+	
 	if ( $protonumber == ICMP ) {
 	    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $port );
 
 	    $icmptype = in_hex2 numeric_value $icmptype;
 	    $icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
 
-	    if ( $config{BROKEN_NEXTHDR} ) {
-		$rule .= "\\\n   match u8 $icmptype 0xFF at 20";
-		$rule .= "\\\n   match u8 $icmpcode 0xFF at 21" if defined $icmpcode;
-	    } else {
-		$rule .= "\\\n   match u8 $icmptype 0xFF at nexthdr+0";
-		$rule .= "\\\n   match u8 $icmpcode 0xFF at nexthdr+1" if defined $icmpcode;
-	    }
+	    $rule .= "\\\n   match u8 $icmptype 0xFF at nexthdr+0";
+	    $rule .= "\\\n   match u8 $icmpcode 0xFF at nexthdr+1" if defined $icmpcode;
 	} else {
 	    my $portnumber = in_hex8 validate_port( $protonumber , $port );
-	    if ( $config{BROKEN_NEXTHDR} ) {
-		$rule .= "\\\n   match u32 $portnumber 0x0000FFFF at 20";
-	    } else {
-		$rule .= "\\\n   match u32 $portnumber 0x0000FFFF at nexthdr+0";
-	    }
+	    $rule .= "\\\n   match u32 $portnumber 0x0000FFFF at nexthdr+0";
 	}
     }
 	    
@@ -582,13 +583,17 @@ sub process_tc_filter( $$$$$$ ) {
 	    unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
 	my $portnumber = in_hex8 validate_port( $protonumber , $sport );
 
-	$portnumber =~ s/0x0000/0x/;
-	
-	if ( $config{BROKEN_NEXTHDR} ) {
-	    $rule .= "\\\n   match u32 ${portnumber}0000 0xFFFF0000 at 20";
-	} else {
-	    $rule .= "\\\n   match u32 ${portnumber}0000 0xFFFF0000 at nexthdr+0";
+	if ( $port eq '-' ) {
+	    my $tnum = in_hex3 $devref->{tablenumber}++;
+
+	    emit( "run_tc filter add dev $device parent $devref->{number}:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	    emit( "run_tc $rule link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+
+	    $rule = "filter add dev $device protocol ip parent $devref->{number}:0 pref 10 u32 ht $tnum:0";
 	}
+
+	$portnumber =~ s/0x0000/0x/;	
+	$rule .= "\\\n   match u32 ${portnumber}0000 0xFFFF0000 at nexthdr+0";
     }
 
     emit( "run_tc $rule\\" ,
@@ -660,7 +665,7 @@ sub setup_traffic_shaping() {
 
 	if ( $inband ) {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   "run_tc filter add dev $device parent ffff: protocol ip pref 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
 	}
 
@@ -713,11 +718,11 @@ sub setup_traffic_shaping() {
 	#
 	# add filters
 	#
-	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
+	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 pref 10 handle $mark fw classid $classid" unless $devref->{classify};
 	#
 	#options
 	#
-	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip pref 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
 	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(/), $tospair;

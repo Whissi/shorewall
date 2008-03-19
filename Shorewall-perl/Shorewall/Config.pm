@@ -57,6 +57,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 		                       numeric_value
 		                       in_hex
 		                       in_hex2
+		                       in_hex3
 		                       in_hex4
 		                       in_hex8
 				       emit
@@ -357,7 +358,6 @@ sub initialize() {
 		DONT_LOAD => '',
 		BROKEN_ROUTING => '',
 		AUTO_COMMENT => '' ,
-		BROKEN_NEXTHDR => '' ,
 		#
 		# Packet Disposition
 		#
@@ -534,6 +534,10 @@ sub in_hex( $ ) {
 
 sub in_hex2( $ ) {
     sprintf '0x%02x', $_[0];
+}
+
+sub in_hex3( $ ) {
+    sprintf '%03x', $_[0];
 }
 
 sub in_hex4( $ ) {
@@ -1910,7 +1914,6 @@ sub get_configuration( $ ) {
     default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
     default_yes_no 'BROKEN_ROUTING'             , '';
     default_yes_no 'AUTO_COMMENT'               , 'Yes';
-    default_yes_no 'BROKEN_NEXTHDR'             , '';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     

@@ -121,7 +121,10 @@ our @deferred_rules;
 # %tcdevices { <interface> -> {in_bandwidth  => <value> ,
 #                              out_bandwidth => <value> ,
 #                              number        => <number>,
-#                              default       => <default class mark value> }
+#                              classify      => 0|1
+#                              tablenumber   => <next u32 table to be allocated for this device>
+#                              default       => <default class mark value>
+#                              redirected    => [ <dev1>, <dev2>, ... ] }
 #
 our @tcdevices;
 our %tcdevices;
@@ -382,7 +385,7 @@ sub validate_tc_device( $$$$$ ) {
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
 			    number        => $devnumber,
 			    classify      => $classify , 
-			    tablenumber   => 64 ,
+			    tablenumber   => 1 ,
 			    redirected    => \@redirected } ,
 
     push @tcdevices, $device;

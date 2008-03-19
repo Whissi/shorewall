@@ -552,7 +552,7 @@ sub process_tc_filter( $$$$$$ ) {
 
 	if ( $protonumber ) {
 	    my $pnumber = in_hex2 $protonumber;
-	    $rule .= "\\\n   match u8 $pnumber 0xFF at 9";
+	    $rule .= "\\\n   match u8 $pnumber 0xff at 9";
 	}
     }
     
@@ -585,21 +585,21 @@ sub process_tc_filter( $$$$$$ ) {
 		$icmptype = in_hex2 numeric_value $icmptype;
 		$icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
 
-		$rule .= "\\\n   match u8 $icmptype 0xFF at nexthdr+0";
-		$rule .= "\\\n   match u8 $icmpcode 0xFF at nexthdr+1" if defined $icmpcode;
+		$rule .= "\\\n   match u8 $icmptype 0xff at nexthdr+0";
+		$rule .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
 	    } else {
 		my $portnumber = in_hex8 validate_port( $protonumber , $port );
-		$rule .= "\\\n   match u32 $portnumber 0x0000FFFF at nexthdr+0";
+		$rule .= "\\\n   match u32 $portnumber 0x0000ffff at nexthdr+0";
 	    }
 	}
 	    
 	unless ( $sport eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
-	    my $portnumber = in_hex8 validate_port( $protonumber , $sport );
 	    
-	    $portnumber =~ s/0x0000/0x/;	
-	    $rule .= "\\\n   match u32 ${portnumber}0000 0xFFFF0000 at nexthdr+0";
+	    my $portnumber = in_hex4 validate_port( $protonumber , $sport );
+	    
+	    $rule .= "\\\n   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0";
 	}
     }
 

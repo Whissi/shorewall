@@ -64,39 +64,11 @@ use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 , SCTP =>
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
-our @vlsm_to_mask = ( '0x00000000' ,
-		      '0x80000000' ,
-		      '0xC0000000' ,
-		      '0xE0000000' ,
-		      '0xF0000000' ,
-		      '0xF8000000' ,
-		      '0xFC000000' ,
-		      '0xFE000000' ,
-		      '0xFF000000' ,
-		      '0xFF800000' ,
-		      '0xFFC00000' ,
-		      '0xFFE00000' ,
-		      '0xFFF00000' ,
-		      '0xFFF80000' ,
-		      '0xFFFC0000' ,
-		      '0xFFFE0000' ,
-		      '0xFFFF0000' ,
-		      '0xFFFF8000' ,
-		      '0xFFFFC000' ,
-		      '0xFFFFE000' ,
-		      '0xFFFFF000' ,
-		      '0xFFFFF800' ,
-		      '0xFFFFFC00' ,
-		      '0xFFFFFE00' ,
-		      '0xFFFFFF00' ,
-		      '0xFFFFFF80' ,
-		      '0xFFFFFFC0' ,
-		      '0xFFFFFFE0' ,
-		      '0xFFFFFFF0' ,
-		      '0xFFFFFFF8' ,
-		      '0xFFFFFFFC' ,
-		      '0xFFFFFFFE' ,
-		      '0xFFFFFFFF' );
+sub vlsm_to_mask( $ ) {
+    my $vlsm = $_[0];
+
+    in_hex8 ( ( 0xFFFFFFFF << ( 32 - $vlsm ) ) && 0xFFFFFFFF );
+}
 
 sub valid_address( $ ) {
     my $address = $_[0];
@@ -230,7 +202,7 @@ sub decompose_net( $ ) {
 
     ( $net, my $vlsm ) = validate_net( $net , 0 );
 
-    ( in_hex8( $net ) , $vlsm_to_mask[ $vlsm ] );
+    ( in_hex8( $net ) , vlsm_to_mask( $vlsm ) );
     
 }
 

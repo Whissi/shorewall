@@ -111,13 +111,21 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> —
-        <emphasis>interface</emphasis></term>
+        <emphasis>interface</emphasis>[:<emphasis>class</emphasis>]</term>
 
         <listitem>
           <para>Name of <emphasis>interface</emphasis>. Each interface may be
           listed only once in this file. You may NOT specify the name of an
           alias (e.g., eth0:0) here; see <ulink
           url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
+
+          <para>If you are running Shorewall-perl 4.1.6 or later, you may
+          specify the interface number rather than the interface name. If the
+          <emphasis role="bold">classify</emphasis> option is given for the
+          interface in <ulink
+          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5), then
+          you must also specify an interface class (an integer that must be
+          unique within classes associated with this interface).</para>
 
           <para>You may NOT specify wildcards here, e.g. if you have multiple
           ppp interfaces, you need to put them all in here!</para>
@@ -131,14 +139,17 @@
 
       <varlistentry>
         <term><emphasis role="bold">MARK</emphasis> —
-        <emphasis>value</emphasis></term>
+        {-|<emphasis>value</emphasis>}</term>
 
         <listitem>
           <para>The mark <emphasis>value</emphasis> which is an integer in the
           range 1-255. You set mark values in the <ulink
           url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) file,
-          marking the traffic you want to fit in the classes defined in
-          here.</para>
+          marking the traffic you want to fit in the classes defined in here.
+          Must be specified as '-' if the <emphasis
+          role="bold">classify</emphasis> option is given for the interface in
+          <ulink
+          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)</para>
 
           <para>You can use the same marks for different interfaces.</para>
         </listitem>

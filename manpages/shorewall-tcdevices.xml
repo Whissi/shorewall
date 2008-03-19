@@ -94,7 +94,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> —
-        <emphasis>interface</emphasis></term>
+        [<emphasis>number</emphasis>:]<emphasis>interface</emphasis></term>
 
         <listitem>
           <para>Name of <emphasis>interface</emphasis>. Each interface may be
@@ -108,6 +108,13 @@
           <para>If the device doesn't exist, a warning message will be issued
           during "shorewall [re]start" and "shorewall refresh" and traffic
           shaping configuration will be skipped for that device.</para>
+
+          <para>Shorewall assigns a sequential <firstterm>interface
+          number</firstterm> to each interface (the first entry in the file is
+          interface 1, the second is interface 2 and so on) Beginning with
+          Shorewall-perl 4.1.6, you can explicitly specify the interface
+          number by prefixing the interface name with the number and a colon
+          (":"). Example: 1:eth0.</para>
         </listitem>
       </varlistentry>
 
@@ -126,7 +133,8 @@
 
           <para>If you don't want any traffic to be dropped, set this to a
           value to zero in which case Shorewall will not create an ingress
-          qdisc.</para>
+          qdisc.Must be set to zero if the REDIRECTED INTERFACES column is
+          non-empty.</para>
         </listitem>
       </varlistentry>
 
@@ -140,8 +148,6 @@
           speed you can refer as "full" if you define the tc classes in <ulink
           url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5).
           Outgoing traffic above this rate will be dropped.</para>
-
-          <para></para>
         </listitem>
       </varlistentry>
 
@@ -157,13 +163,22 @@
           url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5).</para>
         </listitem>
       </varlistentry>
-    </variablelist>
 
-    <warning>
-      <para>This file is currently limited to ten (10) entries. Additional
-      entries will cause run-time errors in the generated firewall
-      script.</para>
-    </warning>
+      <varlistentry>
+        <term><emphasis role="bold">REDIRECTED INTERFACES</emphasis> -
+        [<emphasis>interface</emphasis>[,<emphasis>interface</emphasis>]...]</term>
+
+        <listitem>
+          <para>Added in Shorewall-perl 4.1.6. May only be specified if the
+          interface in the INTERFACE column is an Intermediate Frame Block
+          (IFB) device. Causes packets that enter each listed interface to be
+          passed through the egress filters defined for this device, thus
+          providing a form of incoming traffic shaping. When this column is
+          non-empty, the <emphasis role="bold">classify</emphasis> option is
+          assumed.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </refsect1>
 
   <refsect1>
@@ -178,8 +193,9 @@
           interface for this. The device has an outgoing bandwidth of 500kbit
           and an incoming bandwidth of 6000kbit</para>
 
-          <programlisting>        #INTERFACE   IN-BANDWIDTH    OUT-BANDWIDTH
-        ppp0         6000kbit        500kbit</programlisting>
+          <programlisting>        #INTERFACE   IN-BANDWIDTH    OUT-BANDWIDTH         OPTIONS         REDIRECTED
+        #                                                                  INTERFACES
+        1:ppp0         6000kbit        500kbit</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

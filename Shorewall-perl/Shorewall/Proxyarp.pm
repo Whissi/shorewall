@@ -76,14 +76,7 @@ sub setup_one_proxy_arp( $$$$$ ) {
     }
 
     unless ( $haveroute ) {
-
-	if ( $config{BROKEN_ROUTING} ) {
-	    emit "[ -n \"\$NOROUTES\" ] || qt ip route del $address";
-	    emit "[ -n \"\$NOROUTES\" ] || run_ip route add $address dev $interface";
-	} else {
-	    emit "[ -n \"\$NOROUTES\" ] || run_ip route replace $address dev $interface";
-	}
-
+	emit "[ -n \"\$NOROUTES\" ] || run_ip route replace $address dev $interface";
 	$haveroute = 1 if $persistent;
     }
 

@@ -124,7 +124,8 @@ our @deferred_rules;
 #                              classify      => 0|1
 #                              tablenumber   => <next u32 table to be allocated for this device>
 #                              default       => <default class mark value>
-#                              redirected    => [ <dev1>, <dev2>, ... ] }
+#                              redirected    => [ <dev1>, <dev2>, ... ]
+#                              u32tables     => [ table1 , ... ]                                               }
 #
 our @tcdevices;
 our %tcdevices;
@@ -386,7 +387,9 @@ sub validate_tc_device( $$$$$ ) {
 			    number        => $devnumber,
 			    classify      => $classify , 
 			    tablenumber   => 1 ,
-			    redirected    => \@redirected } ,
+			    redirected    => \@redirected ,
+			    protocols     => [] ,
+			  } ,
 
     push @tcdevices, $device;
 
@@ -529,6 +532,8 @@ sub process_tc_filter( $$$$$$ ) {
     
     ( $device , my $devref ) = dev_by_number( $device );
 
+    my $devnum = $devref->{number};
+
     my $tcref = $tcclasses{$device};
     
     fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
@@ -537,7 +542,7 @@ sub process_tc_filter( $$$$$$ ) {
 
     fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
 
-    my $rule = "filter add dev $device protocol ip parent $devref->{number}:0 pref 10 u32";
+    my $rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32";
 
     my ( $net , $mask ) = decompose_net( $source );
 	
@@ -563,20 +568,24 @@ sub process_tc_filter( $$$$$$ ) {
 	#
 	# In order to be able to access the protocol header, we must create another hash table and link to it.
 	#
-	# Create the Table:
+	# Create the Table if we don't already have a table for this device and protocol.
 	#
-	my $tnum = in_hex3 $devref->{tablenumber}++;
+	my $tnum = $devref->{u32tables}[$protonumber];
 
-	emit( "run_tc filter add dev $device parent $devref->{number}:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
-	#
-	# And link to it using the current contents of $rule
-	#
-	emit( "run_tc $rule\\" ,
-	      "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	unless ( defined $tnum ) {
+	    $tnum = $devref->{u32tables}[$protonumber] = in_hex3 $devref->{tablenumber}++;
+
+	    emit( "run_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	    #
+	    # And link to it using the current contents of $rule
+	    #
+	    emit( "run_tc $rule\\" ,
+		  "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	}
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule = "filter add dev $device protocol ip parent $devref->{number}:0 pref 10 u32 ht $tnum:0";
+	$rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32 ht $tnum:0";
 
 	unless ( $port eq '-' ) {
 	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 

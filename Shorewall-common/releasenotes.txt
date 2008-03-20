@@ -15,6 +15,9 @@ Shorewall 4.1 Patch Release 6.
 5) Shorewall-perl now supports IFB devices which allow traffic shaping of
    incoming traffic.
 
+6) Shorewall-perl supports definition of u32 traffic classification
+   filters.
+
 Migration Issues.
 
 1)  Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero
@@ -262,6 +265,11 @@ New Features in 4.1.6.
     Entries in /etc/shorewall/tcfilters generate U32 tc filters which
     may be displayed using the "shorewall show tc" ("shorewall-lite
     show tc") command.
+
+    Note that /etc/shorewall/tcfilters provides a usable alternative to
+    HIGH_ROUTE_MARKS=Yes. You can use marks to select between providers
+    and use entries in /etc/shorewall/tcfilters (or CLASSIFY tcrules)
+    for traffic shaping.
 
 New Features in Shorewall 4.1.
 

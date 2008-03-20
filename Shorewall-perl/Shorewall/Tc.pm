@@ -517,6 +517,9 @@ sub validate_tc_class( $$$$$$ ) {
     progress_message "   Tcclass \"$currentline\" $done.";
 }
 
+#
+# Process a record from the tcfilters file
+#
 sub process_tc_filter( $$$$$$ ) {
     my ($devclass , $source, $dest , $proto, $port , $sport ) = @_;
 
@@ -532,7 +535,7 @@ sub process_tc_filter( $$$$$$ ) {
     
     $tcref = $tcref->{$class};
 
-    fatal_error "Unknown CLASS ($class)" unless $tcref; 
+    fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
 
     my $rule = "filter add dev $device protocol ip parent $devref->{number}:0 pref 10 u32";
 

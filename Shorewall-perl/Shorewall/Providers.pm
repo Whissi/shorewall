@@ -345,7 +345,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	} else {
 	    emit "run_ip route replace $gateway src $address dev $interface ${mtu}table $number $realm";
 	}
-	emit "run_ip route add default via $gateway dev $interface table $number $realm";
+	emit "run_ip route add default via $gateway src $address dev $interface ${mtu}table $number $realm";
     }
 
     balance_default_route $balance , $gateway, $interface, $realm if $balance;

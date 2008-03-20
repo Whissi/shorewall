@@ -134,39 +134,53 @@
     classes (and their bandwidth limits), and it uses SFQ inside these classes
     to make sure, that different data streams are handled equally.</para>
 
-    <para><emphasis role="bold">You can only shape outgoing traffic. The
-    reason for this is simple, the packets were already received by your
-    network card before you can decide what to do with them</emphasis>. So the
-    only choice would be to drop them which normally makes no sense (since you
-    received the packet already, it went through the possible bottleneck (the
-    incoming connection). The next possible bottleneck might come if the
-    packet leaves on another interface, so this will be the place where
-    queuing might occur. So, defining queues for incoming packets is not very
-    useful, you just want to have it forwarded to the outgoing interface as
-    fast as possible.</para>
+    <para><emphasis role="bold">If you are running Shorewall-shell or if you
+    are running Shorewall-perl 4.1.5 or earlier:</emphasis><blockquote>
+        <para><emphasis role="bold">You can only shape outgoing traffic. The
+        reason for this is simple, the packets were already received by your
+        network card before you can decide what to do with them</emphasis>. So
+        the only choice would be to drop them which normally makes no sense
+        (since you received the packet already, it went through the possible
+        bottleneck (the incoming connection). The next possible bottleneck
+        might come if the packet leaves on another interface, so this will be
+        the place where queuing might occur. So, defining queues for incoming
+        packets is not very useful, you just want to have it forwarded to the
+        outgoing interface as fast as possible.</para>
 
-    <para>There is one exception, though. Limiting incoming traffic to a value
-    a bit slower than your actual line speed will avoid queueing on the other
-    end of that connection. This is mostly useful if you don't have access to
-    traffic control on the other side and if this other side has a faster
-    network connection than you do (the line speed between the systems is the
-    bottleneck, e.g. a DSL or Cable Modem connection to your provider's
-    router, the router itself is normally connected to a much faster
-    backbone). So, if you drop packets that are coming in too fast, the
-    underlying protocol might recognize this and slow down the connection. TCP
-    has a builtin mechanism for this, UDP has not (but the protocol over UDP
-    might recognize it , if there is any).</para>
+        <para>There is one exception, though. Limiting incoming traffic to a
+        value a bit slower than your actual line speed will avoid queueing on
+        the other end of that connection. This is mostly useful if you don't
+        have access to traffic control on the other side and if this other
+        side has a faster network connection than you do (the line speed
+        between the systems is the bottleneck, e.g. a DSL or Cable Modem
+        connection to your provider's router, the router itself is normally
+        connected to a much faster backbone). So, if you drop packets that are
+        coming in too fast, the underlying protocol might recognize this and
+        slow down the connection. TCP has a builtin mechanism for this, UDP
+        has not (but the protocol over UDP might recognize it , if there is
+        any).</para>
 
-    <para>The reason why queing is bad in these cases is, that you might have
-    packets which need to be priorized over others, e.g. VoIP or ssh. For this
-    type of connections it is important that packets arrive in a certain
-    amount of time. For others like http downloads, it does not really matter
-    if it takes a few seconds more.</para>
+        <para>The reason why queing is bad in these cases is, that you might
+        have packets which need to be priorized over others, e.g. VoIP or ssh.
+        For this type of connections it is important that packets arrive in a
+        certain amount of time. For others like http downloads, it does not
+        really matter if it takes a few seconds more.</para>
 
-    <para>If you have a large queue on the other side and the router there
-    does not care about QoS or the QoS bits are not set properly, your
-    important packets will go into the same queue as your less timecritical
-    download packets which will result in a large delay.</para>
+        <para>If you have a large queue on the other side and the router there
+        does not care about QoS or the QoS bits are not set properly, your
+        important packets will go into the same queue as your less
+        timecritical download packets which will result in a large
+        delay.</para>
+      </blockquote></para>
+
+    <para><emphasis role="bold">If you are running Shorewall-perl 4.1.6 or
+    later:</emphasis><blockquote>
+        <para>You can shape incoming traffic through use of an
+        <firstterm>Intermediate Frame Block</firstterm> (IFB) device. <link
+        linkend="IFB">See below</link>. <emphasis role="bold">But beware:
+        using an IFB can result in queues building up both at your ISPs router
+        and at your own.</emphasis></para>
+      </blockquote></para>
 
     <para>You shape and control outgoing traffic by assigning the traffic to
     <firstterm>classes</firstterm>. Each class is associated with exactly one
@@ -350,19 +364,27 @@
 
           <para><emphasis role="bold">WARNING: Device &lt;device name&gt; not
           found -- traffic-shaping configuration skipped</emphasis></para>
+
+          <para>Shorewall assigns a sequential <firstterm>interface
+          number</firstterm> to each interface (the first entry in
+          <filename>/etc/shorewall/tcdevices</filename> is interface 1, the
+          second is interface 2 and so on) Beginning with Shorewall-perl
+          4.1.6, you can explicitly specify the interface number by prefixing
+          the interface name with the number and a colon (":"). Example:
+          1:eth0.</para>
         </listitem>
 
         <listitem>
           <para>IN-BANDWIDTH - The incoming Bandwidth of that interface.
-          Please note that you are not able to do traffic shaping on incoming
-          traffic, as the traffic is already received before you could do so.
-          This Column allows you to define the maximum traffic allowed for
-          this interface in total, if the rate is exceeded, the packets are
-          dropped. You want this mainly if you have a DSL or Cable Connection
-          to avoid queuing at your providers side. If you don't want any
-          traffic to be dropped set this to a value faster than your interface
-          maximum rate (or to 0 (zero), if you are running Shorewall 3.2.6 or
-          later).</para>
+          Please note that when you use this column, you are not traffic
+          shaping incoming traffic, as the traffic is already received before
+          you could do so. This Column allows you to define the maximum
+          traffic allowed for this interface in total, if the rate is
+          exceeded, the packets are dropped. You want this mainly if you have
+          a DSL or Cable Connection to avoid queuing at your providers side.
+          If you don't want any traffic to be dropped set this to a value
+          faster than your interface maximum rate (or to 0 (zero), if you are
+          running Shorewall 3.2.6 or later).</para>
 
           <para>To determine the optimum value for this setting, we recommend
           that you start by setting it significantly below your measured
@@ -378,6 +400,39 @@
           interface. This is the maximum speed your connection can handle. It
           is also the speed you can refer as "full" if you define the tc
           classes. Outgoing traffic above this rate will be dropped.</para>
+        </listitem>
+
+        <listitem>
+          <para>OPTIONS (Added in Shorewall-perl 4.1.4) — A comma-separated
+          list of options from the following list:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>classify</term>
+
+              <listitem>
+                <para>If specified, classification of traffic into the various
+                classes is done by CLASSIFY entries in
+                <filename>/etc/shorewall/tcrules</filename> or by entries in
+                <filename>/etc/shorewall/tcfilters</filename>. No MARK value
+                will be associated with classes on this interface.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+
+        <listitem>
+          <para>REDIRECTED INTERFACES (Added in Shorewall-perl 4.1.6) —
+          Entries are appropriate in this column only if the device in the
+          INTERFACE column names a <link linkend="IFB">Intermediate Frame
+          Block (IFB)</link>. It lists the physical interfaces that will have
+          their input shaped using classes defined on the IFB. Neither the IFB
+          nor any of the interfaces listed in this column may have an
+          IN-BANDWIDTH specified. You may specify zero (0) or a dash ("-:) in
+          the IN-BANDWIDTH column.</para>
+
+          <para>IFB devices automatically get the <emphasis
+          role="bold">classify</emphasis> option.</para>
         </listitem>
       </itemizedlist>
 
@@ -401,16 +456,25 @@ ppp0           6000kbit         500kbit</programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>INTERFACE - Name of interface. Must match the name of an
-          interface with an entry in
-          <filename>/etc/shorewall/tcdevices</filename>.</para>
+          <para>INTERFACE - Name of interface. Users of Shorewall-perl 4.1.6
+          or later may also specify the interface number. Must match the name
+          (or number) of an interface with an entry in
+          <filename>/etc/shorewall/tcdevices</filename>. If the interface has
+          the <emphasis role="bold">classify</emphasis> option in
+          <filename>/etc/shorewall/tcdevices</filename>, then the interface
+          name or number must be followed by a colon and a <firstterm>class
+          number</firstterm>. Examples: eth0:1, 4:9. Class numbers must be
+          unique for a given interface.</para>
         </listitem>
 
         <listitem>
           <para>MARK - The mark value which is an integer in the range 1-255.
           You define these marks in the tcrules file, marking the traffic you
           want to go into the queueing classes defined in here. You can use
-          the same marks for different Interfaces.</para>
+          the same marks for different Interfaces. You must specify "-' in
+          this column if the device specified in the INTERFACE column has the
+          <emphasis role="bold">classify</emphasis> option in
+          <filename>/etc/shorewall/tcdevices</filename>.</para>
         </listitem>
 
         <listitem>
@@ -630,12 +694,13 @@ ppp0           6000kbit         500kbit</programlisting>
           role="bold">except</emphasis> when the SOURCE contains
           $FW[:&lt;<emphasis>address</emphasis>&gt;] in which case, the
           classify action takes place in the OUTPUT chain. When used with the
-          builtin traffic shaper, the &lt;major&gt; class is the device number
-          (the first entry in <filename>/etc/shorewall/tcdevices</filename> is
-          device 1, the second is device 2 and so on) and the &lt;minor&gt;
-          class is the MARK value of the class preceded by the number "1"
-          (MARK value 1 is &lt;minor&gt; class 11, MARK value 22 is
-          &lt;minor&gt; class 122, and so on).</para>
+          builtin traffic shaper, the &lt;major&gt; class is the interface
+          number and the &lt;minor&gt; class is either a) the MARK value of
+          the class preceded by the number "1" (MARK value 1 is &lt;minor&gt;
+          class 11, MARK value 22 is &lt;minor&gt; class 122, and so on) or b)
+          The class number (if the <emphasis role="bold">classify</emphasis>
+          option was specified in for the interface
+          <filename>/etc/shorewall/interfaces</filename>)</para>
         </listitem>
 
         <listitem>
@@ -1044,6 +1109,232 @@ ppp0            4       90kbit          200kbit         3           default</pro
     your domU(s) using the <command>ethtool</command> utility. See the <ulink
     url="XenMyWay-Routed.html">one of the Xen articles</ulink> for
     instructions.</para>
+  </section>
+
+  <section id="IFB">
+    <title>Intermediate Frame Block (IFB) Devices</title>
+
+    <para>Beginning with Shorewall 4.1.6, Shorewall-perl includes support for
+    IFBs. The principles behind an IFB is fairly simple:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It looks like a network interface although it is never given an
+        IPv4 configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para>Because it is a network interface, queuing disciplines can be
+        associated with an IFB.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The magic of an IFB comes in the fact that a filter may be defined
+    on a real network interface such that each packet that arrives on that
+    interface is queued for the IFB! In that way, the IFB provides a means for
+    shaping input traffic.</para>
+
+    <para>To use an IFB, you must have IFB support in your kernel
+    (configuration option CONFIG_IFB). Assuming that you have a modular
+    kernel, the name of the IFB module is 'ifb' and may be loaded using the
+    command <command>modprobe ifb</command> (if you have modprobe installed)
+    or <command>insmod /path/to/module/ifb</command>.</para>
+
+    <para>By default, two IFB devices (ifb0 and ifb1) are created. You can
+    control that using the numifbs option (e.g., <command>modprobe ifb
+    numifbs=1</command>).</para>
+
+    <para>To create a single IFB when Shorewall starts, place the following
+    two commands in <filename>/etc/shorewall/init</filename>:</para>
+
+    <programlisting><command>modprobe ifb numifbs=1
+ip link set ifb0 up</command></programlisting>
+
+    <para>Entries in <filename>/etc/shorewall/tcrules</filename> have no
+    effect on shaping traffic through an IFB. To allow classification of such
+    traffic, the /etc/shorewall/tcfilters file has been added. Entries in that
+    file create <ulink url="http://b42.dz/notes/u32_classifier/">u32
+    classification rules</ulink>.</para>
+
+    <section id="tcfilters">
+      <title>/etc/shorewall/tcfilters</title>
+
+      <para>While this file was created to allow shaping of traffic through an
+      IFB, the file may be used for general traffic classification as well.
+      The file is similar to <ulink
+      url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) with the
+      following key exceptions:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The first match determines the classification, whereas in the
+          tcrules file, the last match determines the classification.</para>
+        </listitem>
+
+        <listitem>
+          <para>IP ranges are not supported</para>
+        </listitem>
+
+        <listitem>
+          <para>ipsets are not supported</para>
+        </listitem>
+
+        <listitem>
+          <para>port lists are not supported</para>
+        </listitem>
+
+        <listitem>
+          <para>port ranges are not supported</para>
+        </listitem>
+
+        <listitem>
+          <para>DNS Names are not supported</para>
+        </listitem>
+
+        <listitem>
+          <para>filters are applied to packets as they <emphasis>appear on the
+          wire</emphasis>. So incoming packets will not have DNAT applied yet
+          (the destination IP address will be the external address) and
+          outgoing packets will have had SNAT applied.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The last point warrants elaboration. When looking at traffic being
+      shaped by an IFB, there are two cases to consider:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Requests — packets being sent from remote clients to local
+          servers. These packets may undergo subsequent DNAT, either as a
+          result of entries in <filename>/etc/shorewall/nat</filename> or as a
+          result of DNAT or REDIRECT rules.</para>
+
+          <para>Example: <filename>/etc/shorewall/rules</filename>:</para>
+
+          <programlisting>#ACTION       SOURCE           DEST            PROTO    DEST            SOURCE         ORIGINAL
+#                                                       PORT(S)         PORT(S)        DEST
+DNAT          net              dmz:192.168.4.5 tcp      80              -              206.124.146.177</programlisting>
+
+          <para>Requests redirected by this rule will have destination IP
+          address 206.124.146.177 and destination port 80.</para>
+        </listitem>
+
+        <listitem>
+          <para>Responses — packets being sent from remote servers to local
+          clients. These packets may undergo subsequent DNAT as a result of
+          entries in <filename>/etc/shorewall/nat</filename> or in
+          <filename>/etc/shorewall/masq</filename>. The packet's destination
+          IP address will be the external address specified in the
+          entry.</para>
+
+          <para>Example:
+          <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE        SOURCE           ADDRESS
+eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
+
+          <para>HTTP response packets corresponding to requests that fall
+          under that rule will have destination IP address 206.124.146.179 and
+          <emphasis role="bold">source</emphasis> port 80.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Columns in the file are as follow. As in all Shorewall
+      configuration files, a hyphen ("-") may be used to indicate that no
+      value is supplied in the column.</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>CLASS</term>
+
+          <listitem>
+            <para>The interface name or number followed by a colon (":") and
+            the class number.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>SOURCE</term>
+
+          <listitem>
+            <para>SOURCE IP address (host or network). DNS names are not
+            allowed.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>DEST</term>
+
+          <listitem>
+            <para>DESTINATION IP address (host or network). DNS names are not
+            allowed.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>PROTO</term>
+
+          <listitem>
+            <para>Protocol name or number.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>DEST PORT</term>
+
+          <listitem>
+            <para>Destination port name or number. May only be specified if
+            the protocol is TCP, UDP, SCTP or ICMP.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>SOURCE PORT</term>
+
+          <listitem>
+            <para>Source port name or number. May only be specified if the
+            protocol is TCP, UDP or SCTP.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Example:</para>
+
+      <para>I've used this configuration on my own firewall. The IFB portion
+      is more for test purposes rather than to serve any well-reasoned QOS
+      strategy.</para>
+
+      <para><filename>/etc/shorewall/init</filename>:<programlisting>qt modprobe ifb numifbs=1
+qt ip link set dev ifb0 up</programlisting></para>
+
+      <para><filename>/etc/shorewall/tcdevices</filename>:<programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH   OPTIONS         REDIRECTED
+#                                                               INTERFACES
+1:eth0          -               384kbit         classify
+2:ifb0          -               1300kbit        -               eth0</programlisting>
+      <filename>/etc/shorewall/tcclasses</filename>:<programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
+1:110           -       5*full/10       full            1               tcp-ack,tos-minimize-delay
+1:120           -       2*full/10       6*full/10       2               default
+1:130           -       2*full/10       6*full/10       3
+2:110           -       5*full/10       full            1               tcp-ack,tos-minimize-delay
+2:120           -       2*full/10       6*full/10       2               default
+2:130           -       2*full/10       6*full/10       3</programlisting><filename>/etc/shorewall/tcfilters</filename>:<programlisting>#INTERFACE:     SOURCE          DEST            PROTO   DEST    SOURCE
+#CLASS                                                  PORT    PORT
+#
+#                                  OUTGOING TRAFFIC
+#
+1:130           206.124.146.178 -               tcp     -       49441    #BITTORRENT on wookie
+1:110           206.124.146.178                                          #wookie
+1:110           206.124.146.179                                          #SNAT of internal systems
+1:110           206.124.146.180                                          #Work Laptop
+1:110           -               -               icmp    echo-request
+1:110           -               -               icmp    echo-reply
+1:130           206.124.146.177 -               tcp     -       873      #
+#
+#                                   INCOMING TRAFFIC
+#
+2:110           -               206.124.146.178                          #Wookie
+2:110           -               206.124.146.179                          #SNAT Responses
+2:110           -               206.124.146.180                          #Work Laptop
+2:130           -               206.124.146.177 tcp     25               #Incoming Email.</programlisting></para>
+    </section>
   </section>
 
   <section id="External">

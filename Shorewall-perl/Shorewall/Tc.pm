@@ -576,12 +576,12 @@ sub process_tc_filter( $$$$$$ ) {
 	    $tnum = $devref->{u32tables}[$protonumber] = in_hex3 $devref->{tablenumber}++;
 
 	    emit( "run_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
-	    #
-	    # And link to it using the current contents of $rule
-	    #
-	    emit( "run_tc $rule\\" ,
-		  "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
 	}
+	#
+	# And link to it using the current contents of $rule
+	#
+	emit( "run_tc $rule\\" ,
+	      "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#

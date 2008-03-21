@@ -358,18 +358,26 @@ sub validate_icmp( $ ) {
 
 sub expand_port_range( $$ ) {
     my ( $proto, $range ) = @_;
-    my ( $first, $last ) = split /:/, $range, 2;
 
-    if ( defined $last ) {
+    if ( $range =~ /^(.*):(.*)$/ ) {
+	my ( $first, $last ) = ( $1, $2);
+
+	fatal_error "Invalid port range ($range)" unless $first ne '' or $last ne '';
+
+	$first = 0     if $first eq '';
+	$last  = 65535 if $last eq '';
+				  
 	my @result;
 	( $first , $last ) = ( validate_port( $proto, $first ) , validate_port( $proto, $last ) );
+
+	my $l = $last + 1;
 	
 	while ( $first <= $last ) {
 	    my $mask = 0xffff;
 	    my $y    = 2;
 	    my $z    = 1;
 
-	    while ( ( $first % $y ) == 0 && ( $first + $y ) < $last ) {
+	    while ( ( $first % $y ) == 0 && ( $first + $y ) <= $l ) {
 		$mask <<= 1;
 		$z  = $y;
 		$y <<= 1;
@@ -384,7 +392,7 @@ sub expand_port_range( $$ ) {
 	@result;
 
     } else {
-	( sprintf( '%04x' , validate_port( $proto, $first ) ) , 'ffff' );
+	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
     } 
 }   
 

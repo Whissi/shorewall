@@ -361,23 +361,23 @@ sub expand_port_range( $$ ) {
 
     if ( $range =~ /^(.*):(.*)$/ ) {
 	my ( $first, $last ) = ( $1, $2);
+	my @result;
 
 	fatal_error "Invalid port range ($range)" unless $first ne '' or $last ne '';
 
 	$first = 0     if $first eq '';
 	$last  = 65535 if $last eq '';
 				  
-	my @result;
 	( $first , $last ) = ( validate_port( $proto, $first ) , validate_port( $proto, $last ) );
 
-	my $l = $last + 1;
+	$last++;
 	
-	while ( $first <= $last ) {
+	while ( $first < $last ) {
 	    my $mask = 0xffff;
 	    my $y    = 2;
 	    my $z    = 1;
 
-	    while ( ( $first % $y ) == 0 && ( $first + $y ) <= $l ) {
+	    while ( ( $first % $y ) == 0 && ( $first + $y ) <= $last ) {
 		$mask <<= 1;
 		$z  = $y;
 		$y <<= 1;

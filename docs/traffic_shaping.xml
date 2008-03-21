@@ -1180,10 +1180,6 @@ ip link set ifb0 up</command></programlisting>
         </listitem>
 
         <listitem>
-          <para>port lists are not supported</para>
-        </listitem>
-
-        <listitem>
           <para>port ranges are not supported</para>
         </listitem>
 
@@ -1278,11 +1274,12 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
         </varlistentry>
 
         <varlistentry>
-          <term>DEST PORT</term>
+          <term>DEST PORT(S)</term>
 
           <listitem>
-            <para>Destination port name or number. May only be specified if
-            the protocol is TCP, UDP, SCTP or ICMP.</para>
+            <para>Comma-separated list of destination port names or numbers.
+            May only be specified if the protocol is TCP, UDP, SCTP or
+            ICMP.</para>
           </listitem>
         </varlistentry>
 
@@ -1290,8 +1287,8 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
           <term>SOURCE PORT</term>
 
           <listitem>
-            <para>Source port name or number. May only be specified if the
-            protocol is TCP, UDP or SCTP.</para>
+            <para>Comma-separated list of source port names or numbers. May
+            only be specified if the protocol is TCP, UDP or SCTP.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -1316,17 +1313,17 @@ qt ip link set dev ifb0 up</programlisting></para>
 2:110           -       5*full/10       full            1               tcp-ack,tos-minimize-delay
 2:120           -       2*full/10       6*full/10       2               default
 2:130           -       2*full/10       6*full/10       3</programlisting><filename>/etc/shorewall/tcfilters</filename>:<programlisting>#INTERFACE:     SOURCE          DEST            PROTO   DEST    SOURCE
-#CLASS                                                  PORT    PORT
+#CLASS                                                  PORT(S) PORT(S)
 #
 #                                  OUTGOING TRAFFIC
 #
-1:130           206.124.146.178 -               tcp     -       49441    #BITTORRENT on wookie
-1:110           206.124.146.178                                          #wookie
-1:110           206.124.146.179                                          #SNAT of internal systems
-1:110           206.124.146.180                                          #Work Laptop
-1:110           -               -               icmp    echo-request
+1:130           206.124.146.178 -               tcp     -       49441,49442    #BITTORRENT on wookie
+1:110           206.124.146.178                                                #wookie
+1:110           206.124.146.179                                                #SNAT of internal systems
+1:110           206.124.146.180                                                #Work Laptop
+1:110           -               -               icmp    echo-request,echo-reply
 1:110           -               -               icmp    echo-reply
-1:130           206.124.146.177 -               tcp     -       873      #
+1:130           206.124.146.177 -               tcp     -       873,25         #Bulk Traffic
 #
 #                                   INCOMING TRAFFIC
 #
@@ -1339,106 +1336,111 @@ qt ip link set dev ifb0 up</programlisting></para>
       show filters</command> command. What follows shows the output for
       <filename class="devicefile">eth0</filename> with the filters shown
       above. <emphasis role="bold">Bold font</emphasis> are comments
-      explaining the rules.<programlisting>gateway:~ # shorewall-lite show filters 
-Shorewall Lite 4.1.6 Clasifiers at gateway - Thu Mar 20 16:38:10 PDT 2008
+      explaining the rules.<programlisting>gateway:~ # shorewall-lite show filters
+Shorewall Lite 4.1.6 Clasifiers at gateway - Fri Mar 21 08:06:47 PDT 2008
 
 Device eth1:
 
 Device eth2:
 
 Device eth0:
-filter parent 1: protocol ip pref 10 u32
+filter parent 1: protocol ip pref 10 u32 
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 3:</emphasis> ht divisor 1 <emphasis
+            role="bold">  &lt;========= Start of table 3. parses TCP header</emphasis>
+
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 3</emphasis>::800 order 2048 key ht 3 bkt 0 <emphasis
+            role="bold">flowid 1:130</emphasis>  (rule hit 102 success 0)
+  match 03690000/ffff0000 at nexthdr+0 (success 0 )        <emphasis
+            role="bold">   &lt;========= SOURCE PORT 873 goes to class 1:130</emphasis>
+
 filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 2:</emphasis> ht divisor 1 <emphasis
-            role="bold">  &lt;========= Start of table 2. parses TCP header</emphasis>
-<emphasis role="bold"> </emphasis>
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 2::800</emphasis> order 2048 key ht 2 bkt 0 <emphasis
-            role="bold">flowid 1:130</emphasis>  (rule hit 2268 success 0)
+            role="bold">  &lt;========= Start of table 2. parses ICMP header</emphasis>
+
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 2</emphasis>::800 order 2048 key ht 2 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 0 success 0)
+  match 08000000/ff000000 at nexthdr+0 (success 0 )        <emphasis
+            role="bold">   &lt;========= ICMP Type 8 goes to class 1:110</emphasis>
+
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 2</emphasis>::801 order 2049 key ht 2 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 0 success 0)
+  match 00000000/ff000000 at nexthdr+0 (success 0 )         <emphasis
+            role="bold">  &lt;========= ICMP Type 0 goes to class 1:110</emphasis>
+
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 1:</emphasis> ht divisor 1 <emphasis
+            role="bold">  &lt;========= Start of table 1. parses TCP header</emphasis>
+
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 1:</emphasis>:800 order 2048 key ht 1 bkt 0 <emphasis
+            role="bold">flowid 1:130</emphasis>  (rule hit 0 success 0)
   match c1210000/ffff0000 at nexthdr+0 (success 0 )         <emphasis
             role="bold">  &lt;========= SOURCE PORT 49441 goes to class 1:130</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 2::801</emphasis> order 2049 key ht 2 bkt 0 flowid <emphasis
-            role="bold">1:130</emphasis>  (rule hit 2268 success 546)
-  match 03690000/ffff0000 at nexthdr+0 (success 546 )       <emphasis
-            role="bold">  &lt;========= SOURCE PORT 873 goes to class 1:130</emphasis>
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 1</emphasis>::801 order 2049 key ht 1 bkt 0 <emphasis
+            role="bold">flowid 1:130</emphasis>  (rule hit 0 success 0)
+  match c1220000/ffff0000 at nexthdr+0 (success 0 )         <emphasis
+            role="bold">  &lt;========= SOURCE PORT 49442 goes to class 1:130</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 1:</emphasis> ht divisor 1 <emphasis
-            role="bold">  &lt;========= Start of table 1. parses ICMP header</emphasis>
-
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 1::800</emphasis> order 2048 key ht 1 bkt 0 <emphasis
-            role="bold">flowid 1:110</emphasis>  (rule hit 16 success 10)
-  match 08000000/ff000000 at nexthdr+0 (success 10 )        <emphasis
-            role="bold">  &lt;========= echo-request goes to class 1:110</emphasis>
-
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 1::801</emphasis> order 2049 key ht 1 bkt 0 flowid 1:110  (rule hit 6 success 6)
-  match 00000000/ff000000 at nexthdr+0 (success 6 )           <emphasis
-            role="bold">&lt;========= echo-reply goes to class 1:110
-</emphasis>
 filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis> ht divisor 1 <emphasis
             role="bold">&lt;========= Start of Table 800. Packets start here!</emphasis>
 
    <emphasis role="bold">=============== The following 2 rules are generated by the class definition in /etc/shorewall/classes ==================</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::800</emphasis> order 2048 key ht 800 bkt 0 <emphasis
-            role="bold">flowid </emphasis><emphasis role="bold">1:110</emphasis>  (rule hit 19434 success 1686)
-  match 00060000/00ff0000 at 8 (success 5359 )                <emphasis
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:800 order 2048 key ht 800 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 2204 success 138)
+  match 00060000/00ff0000 at 8 (success 396 )                 <emphasis
             role="bold">&lt;========= TCP   </emphasis> 
-  match 05000000/0f00ffc0 at 0 (success 2867 )                <emphasis
+  match 05000000/0f00ffc0 at 0 (success 250 )                 <emphasis
             role="bold">&lt;========= Header length 20 and Packet Length &lt; 64</emphasis> 
-  match 00100000/00ff0000 at 32 (success 1686 )               <emphasis
+  match 00100000/00ff0000 at 32 (success 138 )                <emphasis
             role="bold">&lt;========= ACK</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::801</emphasis> order 2049 key ht 800 bkt 0 <emphasis
-            role="bold">flowid 1:110</emphasis>  (rule hit 17748 success 16)
-  match 00100000/00100000 at 0 (success 16 )                  <emphasis
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:801 order 2049 key ht 800 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 2066 success 0)
+  match 00100000/00100000 at 0 (success 0 )                  <emphasis
             role="bold">&lt;========= Minimize-delay</emphasis><emphasis
             role="bold"> jumps to class 1:110</emphasis>
 
-   <emphasis role="bold">                     =============== Jump to Table 2 if the matches are met ==================</emphasis>
+   <emphasis role="bold">                     =============== Jump to Table 1 if the matches are met ==================</emphasis>
  
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::807</emphasis> order 2055 key ht 800 bkt 0 <emphasis
-            role="bold">link 2:</emphasis>  (rule hit 5853 success 0)
-  match ce7c92b2/ffffffff at 12 (success 0 )                  <emphasis
-            role="bold">&lt;========= SOURCE 206.124.146.178 </emphasis>               
-  match 00060000/00ff0000 at 8 (success 0 )                   <emphasis
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:802 order 2050 key ht 800 bkt 0 <emphasis
+            role="bold">link 1:</emphasis>  (rule hit 2066 success 0)
+  match ce7c92b2/ffffffff at 12 (success 1039 )              <emphasis
+            role="bold">&lt;========= SOURCE 206.124.146.178 </emphasis>         
+  match 00060000/00ff0000 at 8 (success 0 )                  <emphasis
             role="bold">&lt;========= PROTO TCP</emphasis>
     offset 0f00&gt;&gt;6 at 0  eat 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::802</emphasis> order 2050 key ht 800 bkt 0 <emphasis
-            role="bold">flowid 1:110 </emphasis> (rule hit 17732 success 3800)
-  match ce7c92b2/ffffffff at 12 (success 3800 )               <emphasis
+
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:803 order 2051 key ht 800 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 2066 success 1039)
+  match ce7c92b2/ffffffff at 12 (success 1039 )               <emphasis
             role="bold">&lt;========= SOURCE 206.124.146.178 goes to class 1:110</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::803</emphasis> order 2051 key ht 800 bkt 0 <emphasis
-            role="bold">flowid 1:110</emphasis>  (rule hit 13932 success 1058)
-  match ce7c92b3/ffffffff at 12 (success 1058 )               <emphasis
-            role="bold">&lt;========= SOURCE 206.124.146.179 goes to class 1:110</emphasis>
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:804 order 2052 key ht 800 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 1027 success 132)
+  match ce7c92b3/ffffffff at 12 (success 132 )               <emphasis
+            role="bold"> &lt;========= SOURCE 206.124.146.179 goes to class 1:110</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::804</emphasis> order 2052 key ht 800 bkt 0 flowid 1:110  (rule hit 12874 success 7005)
-  match ce7c92b4/ffffffff at 12 (success 7005 )               <emphasis
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:805 order 2053 key ht 800 bkt 0 <emphasis
+            role="bold">flowid 1:110</emphasis>  (rule hit 895 success 603)
+  match ce7c92b4/ffffffff at 12 (success 603 )                <emphasis
             role="bold">&lt;========= SOURCE 206.124.146.180 goes to class 1:110</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::805</emphasis> order 2053 key ht 800 bkt 0 <emphasis
-            role="bold">link 1:</emphasis>  (rule hit 5869 success 0)
-  match 00010000/00ff0000 at 8 (success 16 )                  <emphasis
-            role="bold">&lt;========= PROTO ICMP</emphasis> <emphasis
-            role="bold">jumps to Table 1</emphasis>
-    offset 0f00&gt;&gt;6 at 0  eat 
+   <emphasis role="bold">                     =============== Jump to Table 2 if the matches are met ==================</emphasis>
 
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::806</emphasis> order 2054 key ht 800 bkt 0 <emphasis
-            role="bold">link 1: </emphasis> (rule hit 5853 success 0)
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:806 order 2054 key ht 800 bkt 0 <emphasis
+            role="bold">link 2:</emphasis>  (rule hit 292 success 0)
   match 00010000/00ff0000 at 8 (success 0 )                   <emphasis
-            role="bold">&lt;========= PROTO ICMP jumps to Table 1 (Shorewall-perl isn't</emphasis>
-    offset 0f00&gt;&gt;6 at 0  eat                                             <emphasis
-            role="bold">smart enough yet to suppress this duplicate rule)</emphasis>
+            role="bold">&lt;========= PROTO ICMP</emphasis> 
+    offset 0f00&gt;&gt;6 at 0  eat
 
-   <emphasis role="bold">                    =============== Jump to Table 2 if the matches are met ==================</emphasis>
-
-filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800::808</emphasis> order 2056 key ht 800 bkt 0 <emphasis
-            role="bold">link 2: </emphasis> (rule hit 5853 success 0)
-  match ce7c92b1/ffffffff at 12 (success 5654 )               <emphasis
+   <emphasis role="bold">                     =============== Jump to Table 3 if the matches are met ==================</emphasis>
+ 
+filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis>:807 order 2055 key ht 800 bkt 0 <emphasis
+            role="bold">link 3:</emphasis>  (rule hit 292 success 0)
+  match ce7c92b1/ffffffff at 12 (success 265 )                <emphasis
             role="bold">&lt;========= SOURCE 206.124.146.177</emphasis>
-  match 00060000/00ff0000 at 8 (success 2268 )                <emphasis
+  match 00060000/00ff0000 at 8 (success 102 )                 <emphasis
             role="bold">&lt;========= PROTO TCP</emphasis>
-    offset 0f00&gt;&gt;6 at 0  eat</programlisting></para>
+    offset 0f00&gt;&gt;6 at 0  eat </programlisting></para>
     </section>
   </section>
 

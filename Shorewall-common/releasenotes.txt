@@ -171,8 +171,8 @@ New Features in 4.1.6.
 
        insmod <path to net driver modules>/ifb.ko [ numifbs=<number> ]
 
-    The module automatically creates two IFB devices by default (ifb0
-    and ifb1). To create only one, specify 'numifbs'.
+    By default, the module automatically creates two IFB devices (ifb0
+    and ifb1). To create only one, specify 'numifbs=1'.
 
     Example:
 
@@ -199,7 +199,7 @@ New Features in 4.1.6.
 
     The /etc/shorewall/tcdevices file has been extended to include an
     additional REDIRECTED DEVICES column. To convert your configuration
-    to using an IFB:
+    to use an IFB:
 
     a) Look at your current /etc/shorewall/tcdevices file. Suppose you
        have:
@@ -255,7 +255,7 @@ New Features in 4.1.6.
        DEST PORT(S)
 	        A comma-separated list of destination ports. May only
 	        be given if the PROTO is tcp, udp, icmp or
-	        sctp. Port ranges may be used, except with the PROTO is
+	        sctp. Port ranges may be used, except when the PROTO is
 	        icmp. Specify "-" if any PORT should match.
 
        SOURCE PORT(S)
@@ -505,38 +505,8 @@ New Features in Shorewall 4.1.
 	       to classify traffic by class. Shorewall will not create
                any CLASSIFY rules to classify traffic by mark value.
 
-    The 'classify' option should be specified when you want to do all
-    classification using CLASSIFY tcrules. Because CLASSIFY is not a
-    terminating target, every packet passes through all CLASSIFY
-    rules. 'classify' can prevent packets from having to pass through
-    useless additional rules.
-
-    Example:
-
-    /etc/shorewall/tcdevices
-
-	#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
-	$EXT_IF		1300kbit	384kbit		classify
-
-    /etc/shorewall/tcclasses
-
-	#INTERFACE MARK	RATE	  CEIL	    PRIORITY OPTIONS
-	$EXT_IF	   10	5*full/10 full	    1	     tcp-ack,tos-minimize-delay
-	$EXT_IF	   20	2*full/10 6*full/10 2	     default
-	$EXT_IF	   30	2*full/10 6*full/10 3
-
-    /etc/shorewall/tcrules
-
-	#MARK	SOURCE		DEST	PROTO	PORT(S)	SOURCE
-	#                                               PORT(S)
-	1:110	192.168.0.0/22	$EXT_IF         
-	1:130	206.124.146.177 $EXT_IF	tcp     -       873
-
-    This example shows my own simple traffic shaping configuration. I
-    have three classes; one for traffic from our local network, one for
-    rsync from the master shorewall.net server, and one for all other
-    DMZ traffic. I use CLASSIFY rules to assign traffic to the first
-    and third class and let the rest default to the second class.
+    See http://www.shorewall.net/traffic_shaping.htm for further
+    information.
 
 10) COMMENT lines are now supported in macro bodies by Shorewall-perl
     and are ignored by the Shorewall-shell compiler.

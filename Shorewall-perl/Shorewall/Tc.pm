@@ -591,47 +591,61 @@ sub process_tc_filter( $$$$$$ ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
 
-	    for my $sport ( split_list $sportlist , 'port list' ) {
-		my $portnumber = in_hex4 validate_port( $protonumber , $sport );
-		emit( "\nrun_tc $rule\\" ,
-		      "   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0\\" ,
-		      "   flowid $devref->{number}:$class" );
+	    for my $sportrange ( split_list $sportlist , 'port list' ) {
+		my @sportlist = expand_port_range $protonumber , $sportrange;
+
+		while ( @sportlist ) {
+		    my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
+		    emit( "\nrun_tc $rule\\" ,
+			  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+			  "   flowid $devref->{number}:$class" );
+		}
 	    }
 	} else {
 	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
 
-	    for my $port( split_list $portlist, 'port list' ) {
+	    for my $portrange ( split_list $portlist, 'port list' ) {
 		if ( $protonumber == ICMP ) {
-		    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" if $sportlist ne '-';
-		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $port );
+		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
 		
 		    $icmptype = in_hex2 numeric_value $icmptype;
 		    $icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
-
+		    
 		    my $rule1 = "   match u8 $icmptype 0xff at nexthdr+0";
 		    $rule1   .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
 			  "$rule1\\" ,
 			  "   flowid $devref->{number}:$class" );
 		} else {
-		    my $portnumber = in_hex8 validate_port( $protonumber , $port );
-		    my $rule1 = "match u32 $portnumber 0x0000ffff at nexthdr+0";
-		    if ( $sportlist eq '-' ) {
-			emit( "\nrun_tc ${rule}\\" ,
-			      "   $rule1\\" ,
-			      "   flowid $devref->{number}:$class" );
-		    } else {
-			for my $sport ( split_list $sportlist , 'port list' ) {
-			    my $portnumber = in_hex4 validate_port( $protonumber , $sport );
-			    emit( "\nrun_tc ${rule}\\",
+		    my @portlist = expand_port_range $protonumber , $portrange;
+		    
+		    while ( @portlist ) {
+			my ( $port, $mask ) = ( shift @portlist, shift @portlist );
+			
+			my $rule1 = "match u32 0x0000${port} 0x0000${mask} at nexthdr+0";
+			
+			if ( $sportlist eq '-' ) {
+			    emit( "\nrun_tc ${rule}\\" ,
 				  "   $rule1\\" ,
-				  "   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0\\" ,
 				  "   flowid $devref->{number}:$class" );
-			}
+			} else {
+			    for my $sportrange ( split_list $sportlist , 'port list' ) {
+				my @sportlist = expand_port_range $protonumber , $sportrange;
+				
+				while ( @sportlist ) {
+				    my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
+				    
+				    emit( "\nrun_tc ${rule}\\",
+					  "   $rule1\\" ,
+					  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+					  "   flowid $devref->{number}:$class" );
+				}
+			    }
+			}   
 		    }
-		}   
-	    }    
+		}    
+	    }
 	}
     }
 

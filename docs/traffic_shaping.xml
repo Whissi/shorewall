@@ -1180,10 +1180,6 @@ ip link set ifb0 up</command></programlisting>
         </listitem>
 
         <listitem>
-          <para>port ranges are not supported</para>
-        </listitem>
-
-        <listitem>
           <para>DNS Names are not supported</para>
         </listitem>
 
@@ -1278,8 +1274,8 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
 
           <listitem>
             <para>Comma-separated list of destination port names or numbers.
-            May only be specified if the protocol is TCP, UDP, SCTP or
-            ICMP.</para>
+            May only be specified if the protocol is TCP, UDP, SCTP or ICMP.
+            Port ranges are supported except for ICMP.</para>
           </listitem>
         </varlistentry>
 
@@ -1288,7 +1284,8 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
 
           <listitem>
             <para>Comma-separated list of source port names or numbers. May
-            only be specified if the protocol is TCP, UDP or SCTP.</para>
+            only be specified if the protocol is TCP, UDP or SCTP. Port ranges
+            are supported.</para>
           </listitem>
         </varlistentry>
       </variablelist>

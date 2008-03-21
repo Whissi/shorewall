@@ -43,6 +43,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_host
 		  validate_range
 		  ip_range_explicit
+		  expand_port_range
 		  allipv4
 		  rfc1918_neworks
 		  resolve_proto
@@ -354,5 +355,37 @@ sub validate_icmp( $ ) {
 
     fatal_error "Invalid ICMP Type ($type)"
 }
+
+sub expand_port_range( $$ ) {
+    my ( $proto, $range ) = @_;
+    my ( $first, $last ) = split /:/, $range, 2;
+
+    if ( defined $last ) {
+	my @result;
+	( $first , $last ) = ( validate_port( $proto, $first ) , validate_port( $proto, $last ) );
+	
+	while ( $first <= $last ) {
+	    my $mask = 0xffff;
+	    my $y    = 2;
+	    my $z    = 1;
+
+	    while ( ( $first % $y ) == 0 && ( $first + $y ) < $last ) {
+		$mask <<= 1;
+		$z  = $y;
+		$y <<= 1;
+	    }
+
+	    push @result, sprintf( '%04x', $first ) , sprintf( '%04x' , $mask & 0xffff );
+	    $first += $z;
+	}
+	
+	fatal_error "Invalid port range ($range)" unless @result;
+
+	@result;
+
+    } else {
+	( sprintf( '%04x' , validate_port( $proto, $first ) ) , 'ffff' );
+    } 
+}   
 
 1;

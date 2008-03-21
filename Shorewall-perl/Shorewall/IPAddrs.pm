@@ -356,6 +356,15 @@ sub validate_icmp( $ ) {
     fatal_error "Invalid ICMP Type ($type)"
 }
 
+#
+# Expands a port range into a minimal list of ( port, mask ) pairs.
+# Each port and mask are expressed as 4 hex nibbles without a leading '0x'.
+#
+# Example:
+#
+#       DB<3> @foo = Shorewall::IPAddrs::expand_port_range( 6, '110:' ); print "@foo\n"
+#            006e fffe 0070 fff0 0080 ff80 0100 ff00 0200 fe00 0400 fc00 0800 f800 1000 f000 2000 e000 4000 c000 8000 8000
+#
 sub expand_port_range( $$ ) {
     my ( $proto, $range ) = @_;
 
@@ -364,30 +373,42 @@ sub expand_port_range( $$ ) {
 	my @result;
 
 	fatal_error "Invalid port range ($range)" unless $first ne '' or $last ne '';
-
+	#
+	# Supply missing first/last port number
+	#
 	$first = 0     if $first eq '';
 	$last  = 65535 if $last eq '';
-				  
+	#
+	# Validate the ports
+	#
 	( $first , $last ) = ( validate_port( $proto, $first ) , validate_port( $proto, $last ) );
 
-	$last++;
-	
-	while ( $first < $last ) {
-	    my $mask = 0xffff;
-	    my $y    = 2;
-	    my $z    = 1;
-
-	    while ( ( $first % $y ) == 0 && ( $first + $y ) <= $last ) {
+	$last++; #Increment last address for limit testing.
+	#
+	# Break the range into groups:
+	#
+	#      - If the first port in the remaining range is odd, then the next group is ( <first>, ffff ).
+	#      - Otherwise, find the largest power of two P that divides the first address such that 
+	#        the remaining range has less than or equal to P ports. The next group is
+	#        ( <first> , ~( P-1 ) ).
+	#
+	while ( ( my $left = ( $last - $first ) ) > 0 ) {
+	    my $mask = 0xffff;         #Mask for current ports in group.
+	    my $y    = 2;              #Next power of two to test
+	    my $z    = 1;              #Number of ports in current group (Previous value of $y).
+	    
+	    while ( ( ! ( $first % $y ) ) && ( $y <= $left ) ) {
 		$mask <<= 1;
 		$z  = $y;
 		$y <<= 1;
 	    }
-
+	    #
+	    #
 	    push @result, sprintf( '%04x', $first ) , sprintf( '%04x' , $mask & 0xffff );
 	    $first += $z;
 	}
 	
-	fatal_error "Invalid port range ($range)" unless @result;
+	fatal_error "Invalid port range ($range)" unless @result; # first port > last port
 
 	@result;
 

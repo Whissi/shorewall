@@ -125,7 +125,7 @@ our @deferred_rules;
 #                              tablenumber   => <next u32 table to be allocated for this device>
 #                              default       => <default class mark value>
 #                              redirected    => [ <dev1>, <dev2>, ... ]
-#                              u32tables     => [ table1 , ... ]                                               }
+#                                               }
 #
 our @tcdevices;
 our %tcdevices;
@@ -524,7 +524,7 @@ sub validate_tc_class( $$$$$$ ) {
 # Process a record from the tcfilters file
 #
 sub process_tc_filter( $$$$$$ ) {
-    my ($devclass , $source, $dest , $proto, $port , $sport ) = @_;
+    my ($devclass , $source, $dest , $proto, $portlist , $sportlist ) = @_;
 
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
@@ -564,60 +564,78 @@ sub process_tc_filter( $$$$$$ ) {
 	}
     }
     
-    unless ( $port eq '-' && $sport eq '-' ) {
+    if ( $portlist eq '-' && $sportlist eq '-' ) {
+	emit( "\nrun_tc $rule\\" ,
+	      "   flowid $devref->{number}:$class" ,
+	      '' );
+    } else {
 	#
 	# In order to be able to access the protocol header, we must create another hash table and link to it.
 	#
-	# Create the Table if we don't already have a table for this device and protocol.
+	# Create the Table.
 	#
-	my $tnum = $devref->{u32tables}[$protonumber];
+	my $tnum = in_hex3 $devref->{tablenumber}++;
 
-	unless ( defined $tnum ) {
-	    $tnum = $devref->{u32tables}[$protonumber] = in_hex3 $devref->{tablenumber}++;
-
-	    emit( "run_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
-	}
+	emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
 	#
 	# And link to it using the current contents of $rule
 	#
-	emit( "run_tc $rule\\" ,
+	emit( "\nrun_tc $rule\\" ,
 	      "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
 	$rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32 ht $tnum:0";
 
-	unless ( $port eq '-' ) {
-	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 
-		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
-	
-	    if ( $protonumber == ICMP ) {
-		my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $port );
-		
-		$icmptype = in_hex2 numeric_value $icmptype;
-		$icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
-
-		$rule .= "\\\n   match u8 $icmptype 0xff at nexthdr+0";
-		$rule .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
-	    } else {
-		my $portnumber = in_hex8 validate_port( $protonumber , $port );
-		$rule .= "\\\n   match u32 $portnumber 0x0000ffff at nexthdr+0";
-	    }
-	}
-	    
-	unless ( $sport eq '-' ) {
+	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
-	    
-	    my $portnumber = in_hex4 validate_port( $protonumber , $sport );
-	    
-	    $rule .= "\\\n   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0";
+
+	    for my $sport ( split_list $sportlist , 'port list' ) {
+		my $portnumber = in_hex4 validate_port( $protonumber , $sport );
+		emit( "\nrun_tc $rule\\" ,
+		      "   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0\\" ,
+		      "   flowid $devref->{number}:$class" );
+	    }
+	} else {
+	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 
+		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
+
+	    for my $port( split_list $portlist, 'port list' ) {
+		if ( $protonumber == ICMP ) {
+		    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" if $sportlist ne '-';
+		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $port );
+		
+		    $icmptype = in_hex2 numeric_value $icmptype;
+		    $icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
+
+		    my $rule1 = "   match u8 $icmptype 0xff at nexthdr+0";
+		    $rule1   .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
+		    emit( "\nrun_tc ${rule}\\" ,
+			  "$rule1\\" ,
+			  "   flowid $devref->{number}:$class" );
+		} else {
+		    my $portnumber = in_hex8 validate_port( $protonumber , $port );
+		    my $rule1 = "match u32 $portnumber 0x0000ffff at nexthdr+0";
+		    if ( $sportlist eq '-' ) {
+			emit( "\nrun_tc ${rule}\\" ,
+			      "   $rule1\\" ,
+			      "   flowid $devref->{number}:$class" );
+		    } else {
+			for my $sport ( split_list $sportlist , 'port list' ) {
+			    my $portnumber = in_hex4 validate_port( $protonumber , $sport );
+			    emit( "\nrun_tc ${rule}\\",
+				  "   $rule1\\" ,
+				  "   match u32 ${portnumber}0000 0xffff0000 at nexthdr+0\\" ,
+				  "   flowid $devref->{number}:$class" );
+			}
+		    }
+		}   
+	    }    
 	}
     }
 
-    emit( "run_tc $rule\\" ,
-	  "   flowid $devref->{number}:$class" ,
-	  '' );
+    emit '';
 
     progress_message "   TC Filter \"$currentline\" $done";
 

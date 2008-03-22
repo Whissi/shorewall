@@ -607,6 +607,8 @@ sub process_tc_filter( $$$$$$ ) {
 
 	    for my $portrange ( split_list $portlist, 'port list' ) {
 		if ( $protonumber == ICMP ) {
+		    fatal_error "SOURCE PORT(S) are not allowed with ICMP" if $sportlist ne '-';
+ 
 		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
 		
 		    $icmptype = in_hex2 numeric_value $icmptype;

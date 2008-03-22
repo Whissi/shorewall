@@ -909,7 +909,7 @@ sub split_line( $$$ ) {
 
     fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
 
-    1 while --$line >= 0 && $line[$line] eq '-';
+    $line-- while $line > 0 && $line[$line-1] eq '-';
 
     fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
@@ -937,7 +937,7 @@ sub split_line1( $$$ ) {
 
     fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
 
-    1 while --$line >= 0 && $line[$line] eq '-';
+    $line-- while $line > 0 && $line[$line-1] eq '-';
 
     fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
@@ -980,7 +980,7 @@ sub split_line2( $$$ ) {
 
     fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
 
-    1 while --$line >= 0 && $line[$line] eq '-';
+    $line-- while $line > 0 && $line[$line-1] eq '-';
 
     fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 

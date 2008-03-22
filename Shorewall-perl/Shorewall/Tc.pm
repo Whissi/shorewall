@@ -569,14 +569,28 @@ sub process_tc_filter( $$$$$$ ) {
 	      "   flowid $devref->{number}:$class" ,
 	      '' );
     } else {
+	our $lastrule;
+	our $lasttnum;
 	#
 	# In order to be able to access the protocol header, we must create another hash table and link to it.
 	#
 	# Create the Table.
 	#
-	my $tnum = in_hex3 $devref->{tablenumber}++;
+	my $tnum;
 
-	emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	if ( $lastrule eq $rule ) {
+	    #
+	    # The source, dest and protocol are the same as the last rule that specified a port
+	    # Use the same table
+	    #
+	    $tnum = $lasttnum
+	} else {
+	    $tnum     = in_hex3 $devref->{tablenumber}++;
+	    $lasttnum = $tnum;
+	    $lastrule = $rule;
+
+	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	}
 	#
 	# And link to it using the current contents of $rule
 	#
@@ -585,7 +599,7 @@ sub process_tc_filter( $$$$$$ ) {
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32 ht $tnum:0";
+	$rule     = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
@@ -664,6 +678,8 @@ sub process_tc_filter( $$$$$$ ) {
 }   
 
 sub setup_traffic_shaping() {
+    our $lastrule = '';
+
     save_progress_message "Setting up Traffic Control...";
 
     my $fn = open_file 'tcdevices';

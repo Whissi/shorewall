@@ -256,7 +256,7 @@ sub validate_port( $$ ) {
     if ( $port =~ /^(\d+)$/ ) {
 	return $port if $port <= 65535;
     } else {
-	$proto = getprotobyname $proto if $proto =~ /^(\d+)$/;
+	$proto = getprotobynumber $proto if $proto =~ /^(\d+)$/;
 	$value = getservbyname( $port, $proto );
     }
 
@@ -363,7 +363,7 @@ sub validate_icmp( $ ) {
 # Example:
 #
 #       DB<3> @foo = Shorewall::IPAddrs::expand_port_range( 6, '110:' ); print "@foo\n"
-#            006e fffe 0070 fff0 0080 ff80 0100 ff00 0200 fe00 0400 fc00 0800 f800 1000 f000 2000 e000 4000 c000 8000 8000
+#       006e fffe 0070 fff0 0080 ff80 0100 ff00 0200 fe00 0400 fc00 0800 f800 1000 f000 2000 e000 4000 c000 8000 8000
 #
 sub expand_port_range( $$ ) {
     my ( $proto, $range ) = @_;

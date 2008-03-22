@@ -1390,7 +1390,7 @@ filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis
             role="bold">flowid 1:110</emphasis>  (rule hit 2066 success 0)
   match 00100000/00100000 at 0 (success 0 )                  <emphasis
             role="bold">&lt;========= Minimize-delay</emphasis><emphasis
-            role="bold"> jumps to class 1:110</emphasis>
+            role="bold"> goes to class 1:110</emphasis>
 
    <emphasis role="bold">                     =============== Jump to Table 1 if the matches are met ==================</emphasis>
  
@@ -1492,7 +1492,8 @@ qdisc sfq 130: parent 1:130 limit 128p quantum 1514b flows 128/1024 perturb 10se
 
                                    Note the rate and ceiling calculated from 'full'</emphasis>
 
-class htb 1:110 parent 1:1 leaf 110: prio 1 quantum 4800 <emphasis role="bold">rate 192000bit ceil 384000bit</emphasis> burst 1695b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 0 
+class htb <emphasis role="bold">1:110</emphasis> parent 1:1 leaf 110: prio 1 quantum 4800 <emphasis
+        role="bold">rate 192000bit ceil 384000bit</emphasis> burst 1695b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 0 
  Sent 613372519 bytes 2870225 pkt (dropped 0, overlimits 0 requeues 0) 
  <emphasis role="bold">rate 195672bit 28pps backlog 0b 0p</emphasis> requeues 0 <emphasis
         role="bold">&lt;=========== Note the current rate of traffic. There is no queuing (no packet backlog)</emphasis> 
@@ -1501,8 +1502,9 @@ class htb 1:110 parent 1:1 leaf 110: prio 1 quantum 4800 <emphasis role="bold">r
 
                                       <emphasis role="bold">============== The root class ============</emphasis>
 
-class htb 1:1 root rate 384000bit ceil 384000bit burst 1791b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 7 
- Sent 2133276316 bytes 4484785 pkt (dropped 0, overlimits 0 requeues 0) 
+class htb <emphasis role="bold">1:1 root</emphasis> rate 384000bit ceil 384000bit burst 1791b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 7 
+ <emphasis role="bold">Sent 2133276316 bytes 4484785 pkt</emphasis> (dropped 0, overlimits 0 requeues 0) <emphasis
+        role="bold">&lt;==== Total output traffic since last 'restart'</emphasis>
  rate 363240bit 45pps backlog 0b 0p requeues 0 
  lended: 1081936 borrowed: 0 giants: 0
  tokens: -52226 ctokens: -52226

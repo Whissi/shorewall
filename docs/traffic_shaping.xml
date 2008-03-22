@@ -1172,10 +1172,6 @@ ip link set ifb0 up</command></programlisting>
         </listitem>
 
         <listitem>
-          <para>IP ranges are not supported</para>
-        </listitem>
-
-        <listitem>
           <para>ipsets are not supported</para>
         </listitem>
 
@@ -1439,6 +1435,96 @@ filter parent 1: protocol ip pref 10 u32 <emphasis role="bold">fh 800:</emphasis
             role="bold">&lt;========= PROTO TCP</emphasis>
     offset 0f00&gt;&gt;6 at 0  eat </programlisting></para>
     </section>
+  </section>
+
+  <section id="show">
+    <title>Understanding the output of 'shorewall show tc'</title>
+
+    <para>The <command>shorewall show tc</command> (<command>shorewall-lite
+    show tc</command>) command displays information about the current state of
+    traffic shaping. For each device, it executes the following
+    commands:</para>
+
+    <programlisting> echo Device $device:
+ tc -s -d qdisc show dev $device
+ echo
+ tc -s -d class show dev $device
+ echo </programlisting>
+
+    <para>So, the traffic-shaping output is generated entirely by the
+    <command>tc</command> utility.</para>
+
+    <para>Here's the output of for eth0. The configuration is the one shown in
+    the preceding section (the output was obtained almost 24 hours later than
+    the <command>shorewall show filters</command> output shown above).</para>
+
+    <programlisting>Device eth0:
+
+<emphasis role="bold">       ============== The primary queuing discipline is HTB (Hierarchical Token Bucket) ==================== </emphasis>
+
+qdisc htb 1: r2q 10 default 120 direct_packets_stat 9 ver 3.17
+ Sent 2133336743 bytes 4484781 pkt (dropped 198, overlimits 4911403 requeues 21) <emphasis
+        role="bold">&lt;=========== Note the overlimits and dropped counts</emphasis>
+ rate 0bit 0pps backlog 0b 8p requeues 21
+
+<emphasis role="bold">============== The ingress filter. If you specify IN-BANDWIDTH, you can see the 'dropped' count here. =========</emphasis>
+
+                       <emphasis role="bold">In this case, the packets are being sent to the IFB for shaping</emphasis>
+ 
+qdisc ingress ffff: ---------------- 
+ Sent 4069015112 bytes 4997252 pkt (dropped 0, overlimits 0 requeues 0) 
+ rate 0bit 0pps backlog 0b 0p requeues 0
+
+ <emphasis role="bold">============ Each of the leaf HTB classes has an SFQ qdisc to ensure that each flow gets its turn ============</emphasis>
+ 
+qdisc sfq 110: parent 1:110 limit 128p quantum 1514b flows 128/1024 perturb 10sec 
+ Sent 613372519 bytes 2870225 pkt (dropped 0, overlimits 0 requeues 6) 
+ rate 0bit 0pps backlog 0b 0p requeues 6 
+qdisc sfq 120: parent 1:120 limit 128p quantum 1514b flows 128/1024 perturb 10sec 
+ Sent 18434920 bytes 60961 pkt (dropped 0, overlimits 0 requeues 0) 
+ rate 0bit 0pps backlog 0b 0p requeues 0 
+qdisc sfq 130: parent 1:130 limit 128p quantum 1514b flows 128/1024 perturb 10sec 
+ Sent 1501528722 bytes 1553586 pkt (dropped 198, overlimits 0 requeues 15) 
+ rate 0bit 0pps backlog 11706b 8p requeues 15 
+
+                           <emphasis role="bold">============= Class 1:110 -- the high-priority class ===========
+
+
+                                   Note the rate and ceiling calculated from 'full'</emphasis>
+
+class htb 1:110 parent 1:1 leaf 110: prio 1 quantum 4800 <emphasis role="bold">rate 192000bit ceil 384000bit</emphasis> burst 1695b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 0 
+ Sent 613372519 bytes 2870225 pkt (dropped 0, overlimits 0 requeues 0) 
+ <emphasis role="bold">rate 195672bit 28pps backlog 0b 0p</emphasis> requeues 0 <emphasis
+        role="bold">&lt;=========== Note the current rate of traffic. There is no queuing (no packet backlog)</emphasis> 
+ lended: 2758458 borrowed: 111773 giants:
+ tokens: 46263 ctokens: 35157
+
+                                      <emphasis role="bold">============== The root class ============</emphasis>
+
+class htb 1:1 root rate 384000bit ceil 384000bit burst 1791b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 7 
+ Sent 2133276316 bytes 4484785 pkt (dropped 0, overlimits 0 requeues 0) 
+ rate 363240bit 45pps backlog 0b 0p requeues 0 
+ lended: 1081936 borrowed: 0 giants: 0
+ tokens: -52226 ctokens: -52226
+
+                      <emphasis role="bold">============= Bulk Class (outgoing rsync, email and bittorrent) ============</emphasis>
+
+class htb 1:130 parent 1:1 leaf 130: prio 3 quantum 1900 rate 76000bit ceil 230000bit burst 1637b/8 mpu 0b overhead 0b cburst 1714b/8 mpu 0b overhead 0b level 0 
+ Sent 1501528722 bytes 1553586 pkt (dropped 198, overlimits 0 requeues 0) 
+ <emphasis role="bold">rate 162528bit 14pps backlog 0b 8p</emphasis> requeues 0 <emphasis
+        role="bold">&lt;======== Queuing is occurring (8 packet backlog). The rate is still below the ceiling.</emphasis>
+ lended: 587134 borrowed: 966459 giants: 0               <emphasis role="bold">During peak activity, the rate tops out at around 231000 (just above ceiling).</emphasis>
+ tokens: -30919 ctokens: -97657
+
+                       <emphasis role="bold">================= Default class (mostly serving web pages) ===============</emphasis>
+
+class htb 1:120 parent 1:1 leaf 120: prio 2 quantum 1900 rate 76000bit ceil 230000bit burst 1637b/8 mpu 0b overhead 0b cburst 1714b/8 mpu 0b overhead 0b level 0 
+ Sent 18434920 bytes 60961 pkt (dropped 0, overlimits 0 requeues 0) 
+ rate 2240bit 2pps backlog 0b 0p requeues 0 
+ lended: 57257 borrowed: 3704 giants: 0
+ tokens: 156045 ctokens: 54178
+
+</programlisting>
   </section>
 
   <section id="External">

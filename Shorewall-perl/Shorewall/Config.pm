@@ -905,8 +905,13 @@ sub split_line( $$$ ) {
 
     my @line = split( ' ', $currentline );
 
-    fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
-    fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
+    my $line = @line;
+
+    fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
+
+    1 while --$line >= 0 && $line[$line] eq '-';
+
+    fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
     push @line, '-' while @line < $maxcolumns;
 
@@ -928,8 +933,13 @@ sub split_line1( $$$ ) {
     fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
     fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 
-    fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
-    fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
+    my $line = @line;
+
+    fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
+
+    1 while --$line >= 0 && $line[$line] eq '-';
+
+    fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
     push @line, '-' while @line < $maxcolumns;
 
@@ -966,8 +976,13 @@ sub split_line2( $$$ ) {
 
     fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
 
-    fatal_error "Invalid $description entry (too few columns)"  if @line < $mincolumns;
-    fatal_error "Invalid $description entry (too many columns)" if @line > $maxcolumns;
+    my $line = @line;
+
+    fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
+
+    1 while --$line >= 0 && $line[$line] eq '-';
+
+    fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
     push @line, '-' while @line < $maxcolumns;
 

@@ -392,12 +392,12 @@ sub expand_port_range( $$ ) {
 	#        the remaining range has less than or equal to P ports. The next group is
 	#        ( <first> , ~( P-1 ) ).
 	#
-	while ( ( my $left = ( $last - $first ) ) > 0 ) {
+	while ( ( my $ports = ( $last - $first ) ) > 0 ) {
 	    my $mask = 0xffff;         #Mask for current ports in group.
 	    my $y    = 2;              #Next power of two to test
 	    my $z    = 1;              #Number of ports in current group (Previous value of $y).
 	    
-	    while ( ( ! ( $first % $y ) ) && ( $y <= $left ) ) {
+	    while ( ( ! ( $first % $y ) ) && ( $y <= $ports ) ) {
 		$mask <<= 1;
 		$z  = $y;
 		$y <<= 1;

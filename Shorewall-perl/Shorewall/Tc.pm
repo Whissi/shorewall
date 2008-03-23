@@ -180,7 +180,7 @@ INIT {
 }
 
 sub process_tc_rule( $$$$$$$$$$ ) {
-    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = @_;
+    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = @_;
 
     my $original_mark = $mark;
 
@@ -284,7 +284,7 @@ sub process_tc_rule( $$$$$$$$$$ ) {
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} ,
-				     do_proto( $proto, $ports, $sports) . do_user( $user ) . do_test( $testval, $mask ) . do_tos( $tos ) ,
+				     do_proto( $proto, $ports, $sports) . do_user( $user ) . do_test( $testval, $mask ) . do_tos( $tos ) . do_connbytes( $connbytes ),
 				     $source ,
 				     $dest ,
 				     '' ,
@@ -873,7 +873,7 @@ sub setup_tc() {
 
 	while ( read_a_line ) {
 
-	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos ) = split_line1 2, 10, 'tcrules file';
+	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = split_line1 2, 11, 'tcrules file';
 
 	    if ( $mark eq 'COMMENT' ) {
 		process_comment;

@@ -118,6 +118,7 @@ our %EXPORT_TAGS = (
 				       do_ratelimit
 				       do_user
 				       do_tos
+				       do_connbytes
 				       match_source_dev
 				       match_dest_dev
 				       iprange_match
@@ -1232,6 +1233,41 @@ sub do_tos( $ ) {
     my $tos = $_[0];
 
     $tos ne '-' ? "-m tos --tos $tos " : '';
+}
+
+my %dir = ( O => 'original' ,
+	    R => 'reply' ,
+	    B => 'both' );
+
+my %mode = ( P => 'packets' ,
+	     B => 'bytes' );
+
+#
+# Create a "-m connbytes" match for the passed argument
+#
+sub do_connbytes( $ ) {
+    my $connbytes = $_[0];
+
+    return '' if $connbytes eq '-';
+    #                                                                    1     2      3        5       6
+    fatal_error "Invalid CONNBYTES ($connbytes)" unless $connbytes =~ /^(!)? (\d+): (\d+)? ((:[ORB])(:[PB])?)?$/x;
+
+
+    my $invert = $1 || ''; $invert = '! ' if $invert;
+    my $min    = $2 || '';
+    my $max    = $3 || ''; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
+    my $dir    = $5 || ''; 
+    my $mode   = $6 || ''; 
+    
+    $dir  =~ s/://;
+    $mode =~ s/://;
+
+    my $rule   = "${invert}-m connbytes $min:$max ";
+
+    $rule .= "--connbytes-dir $dir{$dir} "    if $dir;
+    $rule .= "--connbytes-mode $mode{$mode} " if $mode;
+
+    $rule;
 }
 
 #

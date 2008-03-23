@@ -256,7 +256,7 @@ sub validate_port( $$ ) {
     if ( $port =~ /^(\d+)$/ ) {
 	return $port if $port <= 65535;
     } else {
-	$proto = getprotobynumber $proto if $proto =~ /^(\d+)$/;
+	$proto = proto_name $proto if $proto =~ /^(\d+)$/;
 	$value = getservbyname( $port, $proto );
     }
 

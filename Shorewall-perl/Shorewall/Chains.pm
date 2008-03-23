@@ -1574,9 +1574,9 @@ sub get_interface_gateway ( $ ) {
     my $variable = interface_gateway( $interface );
 
     if ( interface_is_optional $interface ) {
-	$interfacegateways{$interface} = qq($variable=\$(detect_gateway $interface)\n);
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface)\n);
     } else {
-	$interfacegateways{$interface} = qq($variable=\$(detect_gateway $interface)
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface)
 [ -n "\$$variable" ] || fatal_error "Unable to detect the gateway through interface $interface"
 );
     }

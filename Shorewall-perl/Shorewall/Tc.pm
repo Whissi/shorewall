@@ -179,7 +179,7 @@ INIT {
     initialize;
 }
 
-sub process_tc_rule( $$$$$$$$$$ ) {
+sub process_tc_rule( $$$$$$$$$$$ ) {
     my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = @_;
 
     my $original_mark = $mark;
@@ -878,7 +878,7 @@ sub setup_tc() {
 	    if ( $mark eq 'COMMENT' ) {
 		process_comment;
 	    } else {
-		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos
+		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes;
 	    }
 
 	}

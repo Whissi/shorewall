@@ -1256,18 +1256,13 @@ sub do_connbytes( $ ) {
     my $invert = $1 || ''; $invert = '! ' if $invert;
     my $min    = $2 || '';
     my $max    = $3 || ''; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
-    my $dir    = $5 || ''; 
-    my $mode   = $6 || ''; 
+    my $dir    = $5 || 'B'; 
+    my $mode   = $6 || 'B'; 
     
     $dir  =~ s/://;
     $mode =~ s/://;
 
-    my $rule   = "${invert}-m connbytes $min:$max ";
-
-    $rule .= "--connbytes-dir $dir{$dir} "    if $dir;
-    $rule .= "--connbytes-mode $mode{$mode} " if $mode;
-
-    $rule;
+    "${invert}-m connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
 }
 
 #

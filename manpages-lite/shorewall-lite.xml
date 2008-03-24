@@ -182,7 +182,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>restart</option></arg>
+      <arg
+      choice="plain"><option>restart</option><arg><option>-n</option></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -304,6 +305,8 @@
       <arg>-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>start</option></arg>
+
+      <arg><option>-n</option></arg>
 
       <arg><option>-f</option></arg>
     </cmdsynopsis>
@@ -563,7 +566,9 @@
         <listitem>
           <para>Restart is similar to <emphasis role="bold">shorewall-lite
           stop</emphasis> followed by <emphasis role="bold">shorewall-lite
-          start</emphasis>. Existing connections are maintained. I.</para>
+          start</emphasis>. Existing connections are maintained. The
+          <option>-n</option> option causes Shorewall to avoid updating the
+          routing table(s).</para>
         </listitem>
       </varlistentry>
 
@@ -655,8 +660,8 @@
 
               <listitem>
                 <para>Displays information about the packet classifiers
-                defined on the system as a result of traffic shaping
-                configuration.</para>
+                defined on the system 10-080213-8397as a result of traffic
+                shaping configuration.</para>
               </listitem>
             </varlistentry>
 
@@ -745,6 +750,9 @@
           url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5) will
           be restored if that saved configuration exists and has been modified
           more recently than the files in /etc/shorewall.</para>
+
+          <para>The <option>-n</option> option causes Shorewall to avoid
+          updating the routing table(s).</para>
         </listitem>
       </varlistentry>
 

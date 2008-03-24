@@ -107,17 +107,18 @@ New Features in 4.1.7.
 	      ETH0_1_GATEWAY=$(uci get /var/state/network.wan0.gateway)
 
 2)  A new CONNBYTES column has been added to the tcrules file. The
-    contents are:
+    column defines a byte or packet range that the connection must fall
+    within in order for the rule to match. The contents are:
 
 	     [!]<min>:[<max>[:{O|R|B}[:{B|P|A}]]]
 
     !     matches if the the packet/byte count is not within the range 
           defined by <min> and <max>.
 
-    <min> is an integer which defines the beginning of a byte/packet
+    <min> is an integer which defines the beginning of the byte/packet
           range.
 
-    <max> is an integer which defines the end of a byte/packet range. 
+    <max> is an integer which defines the end of the byte/packet range. 
           If omitted, only the beginning of the range is checked.
 
     The first letter gives the direction which the range refers to:
@@ -572,7 +573,7 @@ New Features in Shorewall 4.1.
     dump'.
 
     The AUTO_COMMENT option has a default value of 'Yes' and is only
-    available under Shorewall-perl The option is ignored by
+    available under Shorewall-perl. The option is ignored by
     Shorewall-shell.
 
 24) The default value for the IMPLICIT_CONTINUE option has been changed

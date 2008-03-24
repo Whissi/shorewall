@@ -1240,7 +1240,8 @@ my %dir = ( O => 'original' ,
 	    B => 'both' );
 
 my %mode = ( P => 'packets' ,
-	     B => 'bytes' );
+	     B => 'bytes' ,
+	     A => 'avgpkt' );
 
 #
 # Create a "-m connbytes" match for the passed argument
@@ -1250,7 +1251,7 @@ sub do_connbytes( $ ) {
 
     return '' if $connbytes eq '-';
     #                                                                    1     2      3        5       6
-    fatal_error "Invalid CONNBYTES ($connbytes)" unless $connbytes =~ /^(!)? (\d+): (\d+)? ((:[ORB])(:[PB])?)?$/x;
+    fatal_error "Invalid CONNBYTES ($connbytes)" unless $connbytes =~ /^(!)? (\d+): (\d+)? ((:[ORB]) (:[PBA])?)?$/x;
 
 
     my $invert = $1 || ''; $invert = '! ' if $invert;

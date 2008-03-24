@@ -847,7 +847,7 @@ sub compiler {
     #
     # ECN
     #
-    setup_ecn;
+    setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
     #
     # Setup Masquerading/SNAT
     #

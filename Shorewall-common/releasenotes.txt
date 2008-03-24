@@ -149,7 +149,25 @@ New Features in 4.1.7.
 
         1000000::O:P      - Connection has sent at least 1,000,000
 			    packets in the direction of the original
-			    connection. 
+			    connection.
+
+3)  A new MANGLE_ENABLED option is added to shorewall.conf. The default
+    setting is 'Yes' which causes Shorewall to assume responsibility for
+    the Netfilter mangle table.
+
+    When MANGLE_ENABLED is set to 'No', Shorewall assumes no
+    responsibility for that table. In this setting:
+
+    a) Shorewall doesn't alter the mangle table.
+    b) You may not use Shorewall Traffic Shaping (TC_ENABLED must be
+       set to 'No'.
+    c) The tcrules file is ignored.
+    d) The providers file must be empty.
+    e) All entries in tcdevices must specify the 'classify' option and
+       traffic classification may only occur using the tcfilters file.
+
+    This allows for another application running on your firewall to
+    take over the mangle table and use it for it's own purposes.  
 
 New Features in Shorewall 4.1.
 

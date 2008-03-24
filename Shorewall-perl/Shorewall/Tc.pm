@@ -826,7 +826,7 @@ sub setup_traffic_shaping() {
 #
 sub setup_tc() {
 
-    if ( $capabilities{MANGLE_ENABLED} ) {
+    if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
 
@@ -867,23 +867,25 @@ sub setup_tc() {
 	setup_traffic_shaping;
     }
 
-    if ( my $fn = open_file 'tcrules' ) {
+    if ( $config{TC_ENABLED} ) {
+	if ( my $fn = open_file 'tcrules' ) {
 
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );
+	    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );
 
-	while ( read_a_line ) {
+	    while ( read_a_line ) {
 
-	    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = split_line1 2, 11, 'tcrules file';
+		my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = split_line1 2, 11, 'tcrules file';
 
-	    if ( $mark eq 'COMMENT' ) {
-		process_comment;
-	    } else {
-		process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes;
+		if ( $mark eq 'COMMENT' ) {
+		    process_comment;
+		} else {
+		    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes;
+		}
+		
 	    }
-
-	}
 	
-	clear_comment;
+	    clear_comment;
+	}
     }
 
     for ( @deferred_rules ) {

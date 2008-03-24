@@ -302,7 +302,7 @@ stop_firewall() {
     run_stop_exit
 EOF
 
-    if ( $capabilities{MANGLE_ENABLED} ) {
+    if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
 	emit <<'EOF';
     run_iptables -t mangle -F
     run_iptables -t mangle -X

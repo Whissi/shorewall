@@ -463,6 +463,8 @@ sub setup_providers() {
 	    progress_message2 "$doing $fn ...";
 	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
 
+	    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
+
 	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
 	    push_indent;

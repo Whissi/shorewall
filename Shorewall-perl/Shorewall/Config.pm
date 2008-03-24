@@ -356,7 +356,8 @@ sub initialize() {
 		DELETE_THEN_ADD => undef,
 		MULTICAST => undef,
 		DONT_LOAD => '',
-		AUTO_COMMENT => '' ,
+		AUTO_COMMENT => undef ,
+		MANGLE_ENABLED => undef ,
 		#
 		# Packet Disposition
 		#
@@ -1929,6 +1930,7 @@ sub get_configuration( $ ) {
     default_yes_no 'AUTO_COMMENT'               , 'Yes';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
+    default_yes_no 'MANGLE_ENABLED'             , 'Yes';
     
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
@@ -1989,6 +1991,8 @@ sub get_configuration( $ ) {
 	fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
 	$config{TC_ENABLED} = '';
     }
+
+    fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" if $config{TC_ENABLED} && ! $config{MANGLE_ENABLED};
 
     default 'RESTOREFILE'           , 'restore';
     default 'IPSECFILE'             , 'zones';

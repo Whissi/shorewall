@@ -2215,7 +2215,7 @@ sub create_netfilter_load() {
 
     push @table_list, 'raw'    if $capabilities{RAW_TABLE};
     push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED};
+    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -2305,7 +2305,7 @@ sub create_chainlist_reload($) {
 
     unless ( @chains ) {
 	@chains = qw( blacklst ) if $filter_table->{blacklst};
-	push @chains, 'mangle:' if $capabilities{MANGLE_ENABLED};
+	push @chains, 'mangle:' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
 	$chains = join( ',', @chains ) if @chains;
     }
 

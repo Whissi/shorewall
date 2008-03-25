@@ -787,11 +787,11 @@ sub setup_traffic_shaping() {
 	#
 	# add filters
 	#
-	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 pref 10 handle $mark fw classid $classid" unless $devref->{classify};
+	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
 	#
 	#options
 	#
-	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip pref 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
 	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(/), $tospair;

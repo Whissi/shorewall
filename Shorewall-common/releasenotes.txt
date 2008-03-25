@@ -79,6 +79,16 @@ Problems corrected in Shorewall-perl 4.1.7.
 2)  Trailing columns containing '-' would outwit Shorewall-perl's
     detection of 'too few columns' errors.
 
+3) 'shorewall start' could fail with an error similar to the following:
+
+   RTNETLINK answers: Invalid argument
+   We have an error talking to the kernel
+      ERROR: Command "tc filter add dev bond0.207 parent 1:0 protocol ip
+      pref 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16
+      0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid 1:11" Failed
+   /sbin/shorewall: line 723:   755 Terminated
+   $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+
 New Features in 4.1.7.
 
 1)  If an interface fails when using balanced multi-ISP routing, the

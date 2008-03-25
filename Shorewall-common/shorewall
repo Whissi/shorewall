@@ -281,8 +281,19 @@ get_config() {
     [ -n "${HOSTNAME:=$(hostname)}" ]
 
     [ -n "$RSH_COMMAND" ] || RSH_COMMAND='ssh ${root}@${system} ${command}'
-    [ -n "$RCP_COMMAND" ] || RCP_COMMAND='scp ${files} ${root}@${system}:${destination}' 
+    [ -n "$RCP_COMMAND" ] || RCP_COMMAND='scp ${files} ${root}@${system}:${destination}'
 
+    case $MANGLE_ENABLED in
+	Yes|yes)
+	    ;;
+	No|no)
+	    MANGLE_ENABLED=
+	    ;;
+	*)
+	    echo "   ERROR: Invalid MANGLE_ENABLED setting ($MANGLE_ENABLED)" >&2
+	    exit 2
+	    ;;
+    esac
 }
 
 #

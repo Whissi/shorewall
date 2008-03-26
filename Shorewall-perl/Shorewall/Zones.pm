@@ -598,7 +598,7 @@ sub validate_interfaces_file( $ )
 	    $first_entry = 0;
 	}
 
-	my ($zone, $interface, $networks, $options ) = split_line 2, 4, 'interfaces file';
+	my ($zone, $originalinterface, $networks, $options ) = split_line 2, 4, 'interfaces file';
 	my $zoneref;
 	my $bridge = '';
 
@@ -614,9 +614,9 @@ sub validate_interfaces_file( $ )
 	$networks = '' if $networks eq '-';
 	$options  = '' if $options  eq '-';
 
-	( $interface, my ($port, $extra) ) = split /:/ , $interface, 3;
+	my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
 
-	fatal_error "Invalid INTERFACE (" . join (':', $interface, $port, $extra ) . ')' if defined $extra || ! $interface;
+	fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
 
 	fatal_error "Invalid Interface Name (+)" if $interface eq '+';
 

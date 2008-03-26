@@ -180,13 +180,11 @@ INIT {
 }
 
 sub process_tc_rule( $$$$$$$$$$$ ) {
-    my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = @_;
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = @_;
 
-    my $original_mark = $mark;
+    my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
-    ( $mark, my ( $designator, $remainder ) ) = split( /:/, $mark, 3 );
-
-    fatal_error "Invalid MARK" if defined $remainder;
+    fatal_error "Invalid MARK ($originalmark)" if defined $remainder || ! defined $mark;
 
     my $chain  = $globals{MARKING_CHAIN};
     my $target = 'MARK --set-mark';
@@ -220,15 +218,15 @@ sub process_tc_rule( $$$$$$$$$$$ ) {
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
 	} else {
-	    fatal_error "Invalid MARK ($original_mark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
+	    fatal_error "Invalid MARK ($originalmark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
 
 	    if ( $config{TC_ENABLED} eq 'Internal' ) {
-		fatal_error "Unknown Class ($original_mark)}" unless ( $device = $classids{$original_mark} );
+		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
 	    }
 
 	    $chain   = 'tcpost';
 	    $classid = 1;
-	    $mark    = $original_mark;
+	    $mark    = $originalmark;
 	    $target  = 'CLASSIFY --set-class';
 	}
     }
@@ -256,7 +254,7 @@ sub process_tc_rule( $$$$$$$$$$$ ) {
 		    }
 
 		    if ( $rest ) {
-			fatal_error "Invalid MARK ($original_mark)" if $marktype == NOMARK;
+			fatal_error "Invalid MARK ($originalmark)" if $marktype == NOMARK;
 
 			$mark = $rest if $tccmd->{mask};
 
@@ -296,7 +294,7 @@ sub process_tc_rule( $$$$$$$$$$$ ) {
 	#
 	# expand_rule() returns destination device if any
 	#
-	fatal_error "Class Id $original_mark is not associated with device $result" if $device ne $result;
+	fatal_error "Class Id $originalmark is not associated with device $result" if $device ne $result;
     }
 
     progress_message "   TC Rule \"$currentline\" $done";

@@ -609,7 +609,7 @@ show_command() {
 	    if [ $# -gt 0 ]; then
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IPTABLES -t $table -L $chain $IPT_OPTIONS; then
-			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2
+			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2
 			exit 1
 		    fi
 		done

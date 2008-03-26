@@ -211,7 +211,7 @@ sub validate_policy()
 
     while ( read_a_line ) {
 
-	my ( $client, $server, $policy, $loglevel, $synparams ) = split_line 3, 5, 'policy file';
+	my ( $client, $server, $originalpolicy, $loglevel, $synparams ) = split_line 3, 5, 'policy file';
 
 	$loglevel  = '' if $loglevel  eq '-';
 	$synparams = '' if $synparams eq '-';
@@ -224,9 +224,7 @@ sub validate_policy()
 
 	fatal_error "Undefined zone $server" unless $serverwild || defined_zone( $server );
 
-	my $originalpolicy = $policy;
-
-	( $policy , my ( $default, $remainder ) ) = split( /:/, $policy, 3 );
+	my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
 
 	fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
 

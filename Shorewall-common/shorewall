@@ -290,8 +290,10 @@ get_config() {
 	    MANGLE_ENABLED=
 	    ;;
 	*)
-	    echo "   ERROR: Invalid MANGLE_ENABLED setting ($MANGLE_ENABLED)" >&2
-	    exit 2
+	    if [ -n "$MANGLE_ENABLED" ]; then
+		echo "   ERROR: Invalid MANGLE_ENABLED setting ($MANGLE_ENABLED)" >&2
+		exit 2
+	    fi
 	    ;;
     esac
 }

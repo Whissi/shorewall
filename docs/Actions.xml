@@ -560,12 +560,13 @@ add_rule $chainref, '-j ACCEPT';
 
     <para><programlisting>     #ACTION             COMMENT (place '# ' below the 'C' in comment followed by
      #                   v        a comment describing the action)
-     LogAndAccept        # LOG and ACCEPT a connection</programlisting><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
-     ACCEPT</programlisting></para>
+     LogAndAccept        # LOG and ACCEPT a connection</programlisting><emphasis
+    role="bold">Note:</emphasis> If your
+    <filename>/etc/shorewall/actions</filename> file doesn't have an
+    indication where to place the comment, put the '#' in column 21.</para>
 
-    <para><emphasis role="bold">Note: </emphasis>If your
-    /etc/shorewall/actions file doesn't indicate where to begin the comment,
-    then place the '#' in column 21.</para>
+    <para><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
+     ACCEPT</programlisting></para>
 
     <para>Placing a comment on the line causes the comment to appear in the
     output of the <command>shorewall show actions</command> command.</para>

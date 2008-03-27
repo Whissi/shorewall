@@ -569,14 +569,18 @@ show_command() {
 		    actions)
 			[ $# -gt 1 ] && usage 1
 			echo "allowBcast          # Silently Allow Broadcast/multicast"
-			echo "dropBcast           # Silently Drop Broadcast/multicast"
-			echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
-			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
-			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
 			echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
-			echo "allowoutUPnP        # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
 			echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
+			echo "allowoutUPnP        # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
+			echo "dropBcast           # Silently Drop Broadcast/multicast"
+			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
+			echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
+			echo "drop1918src         # Drop packets with an RFC 1918 source address (Shorewall-perl only)"
+			echo "drop1918dst         # Drop packets with an RFC 1918 original dest address (Shorewall-perl only)"
 			echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
+			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
+			echo "rej1918src          # Reject packets with an RFC 1918 source address (Shorewall-perl only)"
+			echo "rej1918dst          # Reject packets with an RFC 1918 original dest address (Shorewall-perl only)"
 			cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
 			return
 			;;

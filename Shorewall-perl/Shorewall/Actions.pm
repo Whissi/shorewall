@@ -815,16 +815,75 @@ sub process_actions3 () {
 	add_rule $chainref, '-j ACCEPT';
     }
 
-    my %builtinops = ( 'dropBcast'    => \&dropBcast,
-		       'allowBcast'   => \&allowBcast,
-		       'dropNotSyn'   => \&dropNotSyn,
-		       'rejNotSyn'    => \&rejNotSyn,
-		       'dropInvalid'  => \&dropInvalid,
-		       'allowInvalid' => \&allowInvalid,
-		       'allowinUPnP'  => \&allowinUPnP,
-		       'forwardUPnP'  => \&forwardUPnP,
-		       'Limit'        => \&Limit,
-		       );
+    sub drop1918src( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+
+	if ( $level ne '' ) {
+	    log_rule_limit $level, $chainref, 'dropRFC1918src', 'DROP', '', $tag, 'add', '-s 10.0.0.0/8 ';
+	    log_rule_limit $level, $chainref, 'dropRFC1918src', 'DROP', '', $tag, 'add', '-s 172.16.0.0/12 ';
+	    log_rule_limit $level, $chainref, 'dropRFC1918src', 'DROP', '', $tag, 'add', '-s 192.168.0.0/16 ';
+	}
+
+	add_rule $chainref, '-s 10.0.0.0/8 -j DROP';
+	add_rule $chainref, '-s 172.16.0.0/12 -j DROP';
+	add_rule $chainref, '-s 192.168.0.0/16 -j DROP';
+    }
+
+    sub drop1918dst( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+
+	if ( $level ne '' ) {
+	    log_rule_limit $level, $chainref, 'drop1918src', 'DROP', '', $tag, 'add', '-m conntrack --ctorigdst 10.0.0.0/8 ';
+	    log_rule_limit $level, $chainref, 'drop1918src', 'DROP', '', $tag, 'add', '-m conntrack --ctorigdst 172.16.0.0/12 ';
+	    log_rule_limit $level, $chainref, 'drop1918src', 'DROP', '', $tag, 'add', '-m conntrack --ctorigdst 192.168.0.0/16 ';
+	}
+
+	add_rule $chainref, '-m conntrack --ctorigdst 10.0.0.0/8 -j DROP';
+	add_rule $chainref, '-m conntrack --ctorigdst 172.16.0.0/12 -j DROP';
+	add_rule $chainref, '-m conntrack --ctorigdst  192.168.0.0/16 -j DROP';
+    }
+
+    sub rej1918src( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+
+	if ( $level ne '' ) {
+	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-s 10.0.0.0/8 ';
+	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-s 172.16.0.0/12 ';
+	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-s 192.168.0.0/16 ';
+	}
+
+	add_rule $chainref, '-s 10.0.0.0/8 -j reject';
+	add_rule $chainref, '-s 172.16.0.0/12 -j reject';
+	add_rule $chainref, '-s 192.168.0.0/16 -j reject';
+    }
+
+    sub rej1918dst( $$$ ) {
+	my ($chainref, $level, $tag) = @_;
+
+	if ( $level ne '' ) {
+	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-m conntrack --ctorigdst 10.0.0.0/8 ';
+	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-m conntrack --ctorigdst 172.16.0.0/12 ';
+	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-m conntrack --ctorigdst 192.168.0.0/16 ';
+	}
+
+	add_rule $chainref, '-m conntrack --ctorigdst 10.0.0.0/8 -j reject';
+	add_rule $chainref, '-m conntrack --ctorigdst 172.16.0.0/12 -j reject';
+	add_rule $chainref, '-m conntrack --ctorigdst  192.168.0.0/16 -j reject';
+    }
+
+    my %builtinops = ( 'dropBcast'      => \&dropBcast, 
+		       'allowBcast'     => \&allowBcast,
+		       'dropNotSyn'     => \&dropNotSyn,
+		       'rejNotSyn'      => \&rejNotSyn,
+		       'dropInvalid'    => \&dropInvalid, 
+		       'allowInvalid'   => \&allowInvalid,
+		       'allowinUPnP'    => \&allowinUPnP, 
+		       'forwardUPnP'    => \&forwardUPnP, 
+		       'drop1918src'    => \&drop1918src, 
+		       'drop1918dst'    => \&drop1918dst, 
+		       'rej1918src'     => \&drop1918src, 
+		       'rej1918dst'     => \&drop1918dst, 
+		       'Limit'          => \&Limit, );
 
     for my $wholeaction ( keys %usedactions ) {
 	my $chainref = find_logactionchain $wholeaction;

@@ -215,6 +215,8 @@ sub setup_rfc1918_filteration( $ ) {
     my $rfc1918ref   = new_standard_chain 'rfc1918';
     my $chainref     = $norfc1918ref;
 
+    warning_message q(The 'norfc1918' option is deprecated in favor of the RFC1918-oriented built-in actions);
+
     log_rule $config{RFC1918_LOG_LEVEL} , $rfc1918ref , 'DROP' , '';
 
     add_rule $rfc1918ref , '-j DROP';

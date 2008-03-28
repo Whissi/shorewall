@@ -934,10 +934,7 @@ sub split_line1( $$$;$ ) {
     my $columns = $nopad->{$first};
 
     if ( defined $columns ) {
-	if ( $columns ) {
-	    fatal_error "Invalid $first entry" if @line != $columns;
-	}
-
+	fatal_error "Invalid $first entry" if $columns && @line != $columns;
 	return @line
     }
 

@@ -53,7 +53,7 @@ our @EXPORT = qw( merge_levels
 		  %actions
 
 		  %macros
-		  %macro_commands
+		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = 4.1.1;
@@ -86,7 +86,7 @@ our %macros;
 #
 # Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
 #
-our %macro_commands = ( COMMENT => 0, FORMAT => 2 );
+our $macro_commands = { COMMENT => 0, FORMAT => 2 };
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -407,7 +407,7 @@ sub process_macro1 ( $$ ) {
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', $macro_commands;
 
 	next if $mtarget eq 'COMMENT' || $mtarget eq 'FORMAT';
 
@@ -597,9 +597,9 @@ sub process_macro3( $$$$$$$$$$$ ) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser );
 
 	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $morigdest ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $morigdest ) = split_line1 1, 9, 'macro file', $macro_commands;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', $macro_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {

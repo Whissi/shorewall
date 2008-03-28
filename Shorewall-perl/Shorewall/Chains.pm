@@ -309,10 +309,6 @@ sub initialize() {
 		'allowInvalid'    => BUILTIN  + ACTION,
 		'allowinUPnP'     => BUILTIN  + ACTION,
 		'forwardUPnP'     => BUILTIN  + ACTION,
-		'drop1918src'     => BUILTIN  + ACTION,
-		'drop1918dst'     => BUILTIN  + ACTION,
-		'rej1918src'      => BUILTIN  + ACTION,
-		'rej1918dst'      => BUILTIN  + ACTION,
 		'Limit'           => BUILTIN  + ACTION,
 		);
     #

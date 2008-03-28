@@ -264,6 +264,10 @@
 #			Otherwise, a separate rule will be generated for each
 #			port.
 #
+#       ORIGINAL        Original destination IP address. Must be omitted (
+#       DEST            or '-') if the macro is to be used from within
+#                       an action. See 'man shorewall-rules'.
+#
 #	RATE LIMIT	You may rate-limit the rule by placing a value in
 #			this colume:
 #
@@ -304,8 +308,8 @@
 #
 # /etc/shorewall/macro.FwdFTP:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
-#	#				PORT(S)	PORT(S)	LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
+#	#				PORT(S)	PORT(S)	DEST	 LIMIT	GROUP
 #	DNAT	-	-	tcp	21
 #
 # /etc/shorewall/rules:
@@ -345,7 +349,6 @@
 #				the rules file is appended with a ":"
 #				separator.
 #
-#
 #	Example:		###############################################
 #				#ACTION	 SOURCE	DEST		PROTO	DEST
 #				#					PORT(S)
@@ -356,8 +359,10 @@
 #	Remaining		Any value in the rules file REPLACES the value
 #	columns			given in the macro file.
 #
-#
-###############################################################################
-#ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/
-#						PORT(S)	PORT(S)	LIMIT	GROUP
+#######################################################################################################
+#                                         DO NOT REMOVE THE FOLLOWING LINE
+FORMAT 2
+#######################################################################################################
+#ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/	ORIGINAL
+#						PORT(S)	PORT(S)	DEST		LIMIT	GROUP   DEST
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

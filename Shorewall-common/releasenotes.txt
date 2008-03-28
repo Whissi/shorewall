@@ -71,6 +71,10 @@ Migration Issues.
 5)  The value of IMPLICIT_CONTINUE in shorewall.conf (and samples) has
     been changed from Yes to No.
 
+6)  The 'norfc1918' option is deprecated. Use explicit rules instead.
+    Note that there is a new 'Rfc1918' option that acts on addresses
+    reserved by RFC 1918.
+
 Problems corrected in Shorewall-perl 4.1.7.
 
 1)  Perl run-time errors occurred if an unknown service was named in
@@ -188,22 +192,29 @@ New Features in 4.1.7.
     This allows for another application running on your firewall to
     take over the mangle table and use it for it's own purposes.
 
-4)  Shorewall-perl implements four new built-in actions that deal with
-    RFC 1918 addresses. These actions should be used in place of 
+4)  Shorewall-perl now supports an ORIGINAL DEST column in macro files.
+    The column must be left empty if the macro is to be used in the
+    body of an action.
+
+    Note that the position of the ORIGINAL DEST column is different
+    from its position in the /etc/shorewall/rules file. Beware!
+
+5)  Shorewall-perl implements a new Rfc1918 macro that deals with
+    RFC 1918 addresses. This macro should be used in place of 
     the 'norfc1918' interface option which is deprecated.
 
-    	drop1918src - Drops packets with an RFC 1918 source address.
-	drop1918dst - Drops packets with an RFC 1918 original
-	              destination IP address.
-        rej1918dst  - Rejects packets with an RFC 1918 source address.
-	rej1918dst  - Rejectss packets with an RFC 1918 original
-	             destination IP address.
+    The macro body is:
+
+    #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/	ORIGINAL
+    #						        PORT(S)	PORT(S)	LIMIT	GROUP   DEST
+    PARAM		SOURCE:10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 \
+			                DEST	-	-	-	-	-	-
+    PARAM		SOURCE		DEST	-	-	-	-	-	10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
 
     The 'norfc1918' option on the interface associated with zone 'z'
     and with RFC1018_STRICT=Yes is equivalent to:
 
-    	drop1918src 	   z	all
-	drop1918dst	   z	all
+        Rfc1918(DROP)      z    all
 
 New Features in Shorewall 4.1.
 

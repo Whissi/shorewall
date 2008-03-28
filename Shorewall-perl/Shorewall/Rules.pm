@@ -60,6 +60,14 @@ our $sectioned;
 our $macro_nest_level;
 our $current_param;
 our @param_stack;
+
+#
+# When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
+#
+
+my %rules_commands = ( COMMENT => 0,
+		       SECTION => 2 );
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -215,7 +223,7 @@ sub setup_rfc1918_filteration( $ ) {
     my $rfc1918ref   = new_standard_chain 'rfc1918';
     my $chainref     = $norfc1918ref;
 
-    warning_message q(The 'norfc1918' option is deprecated in favor of the RFC1918-oriented built-in actions);
+    warning_message q(The 'norfc1918' option is deprecated);
 
     log_rule $config{RFC1918_LOG_LEVEL} , $rfc1918ref , 'DROP' , '';
 
@@ -834,6 +842,8 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
     my $nocomment = no_comment;
 
+    my $format = 1;
+
     macro_comment $macro;
 
     my $macrofile = $macros{$macro};
@@ -844,12 +854,26 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file';
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser );
+
+	if ( $format == 1 ) {
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $morigdest ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	} else {
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	}
 
 	if ( $mtarget eq 'COMMENT' ) {
 	    process_comment unless $nocomment;
 	    next;
 	}
+
+	if ( $mtarget eq 'FORMAT' ) {
+	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
+	    $format = $msource;
+	    next;
+	}
+
+	fatal_error "Invalid macro file entry (too many columns)" if $morigdest ne '-' && $format == 1;
 
 	$mtarget = merge_levels $target, $mtarget;
 
@@ -896,12 +920,12 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 		      $mtarget, 
 		      $msource, 
 		      $mdest, 
-		      merge_macro_column( $mproto,  $proto ) , 
-		      merge_macro_column( $mports,  $ports ) ,
-		      merge_macro_column( $msports, $sports ) ,
-		      $origdest, 
-		      merge_macro_column( $mrate,   $rate ) ,
-		      merge_macro_column( $muser,   $user ) ,
+		      merge_macro_column( $mproto,    $proto ) , 
+		      merge_macro_column( $mports,    $ports ) ,
+		      merge_macro_column( $msports,   $sports ) ,
+		      merge_macro_column( $morigdest, $origdest ) , 
+		      merge_macro_column( $mrate,     $rate ) ,
+		      merge_macro_column( $muser,     $user ) ,
 		      $mark, 
 		      $wildcard
 		     );
@@ -1397,7 +1421,7 @@ sub process_rules() {
 
     while ( read_a_line ) {
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line2 1, 10, 'rules file';
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line1 1, 10, 'rules file', \%rules_commands;
 
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;

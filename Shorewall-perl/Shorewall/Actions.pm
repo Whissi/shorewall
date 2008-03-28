@@ -53,6 +53,7 @@ our @EXPORT = qw( merge_levels
 		  %actions
 
 		  %macros
+		  %macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = 4.1.1;
@@ -81,6 +82,11 @@ our %actions;
 our %logactionchains;
 
 our %macros;
+
+#
+# Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
+#
+our %macro_commands = ( COMMENT => 0, FORMAT => 2 );
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -401,9 +407,9 @@ sub process_macro1 ( $$ ) {
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file';
+	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', \%macro_commands;
 
-	next if $mtarget eq 'COMMENT';
+	next if $mtarget eq 'COMMENT' || $mtarget eq 'FORMAT';
 
 	$mtarget =~ s/:.*$//;
 
@@ -576,6 +582,8 @@ sub process_macro3( $$$$$$$$$$$ ) {
 
     my $nocomment = no_comment;
 
+    my $format = 1;
+
     macro_comment $macro;
 
     my $fn = $macros{$macro};
@@ -586,17 +594,33 @@ sub process_macro3( $$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file';
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser );
+
+	if ( $format == 1 ) {
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $morigdest ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	} else {
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', \%macro_commands;
+	}
 
 	if ( $mtarget eq 'COMMENT' ) {
 	    process_comment unless $nocomment;
 	    next;
 	}
 
+	if ( $mtarget eq 'FORMAT' ) {
+	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
+	    $format = $msource;
+	    next;
+	}
+
+	fatal_error "Invalid macro file entry (too many columns)" if $morigdest ne '-' && $format == 1;
+
 	if ( $mtarget =~ /^PARAM:?/ ) {
 	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
 	    $mtarget = substitute_param $param,  $mtarget;
 	}
+
+	fatal_error "Macros used within Actions may not specify an ORIGINAL DEST " if $morigdest ne '-';
 
 	if ( $msource ) {
 	    if ( ( $msource eq '-' ) || ( $msource eq 'SOURCE' ) ) {
@@ -815,62 +839,6 @@ sub process_actions3 () {
 	add_rule $chainref, '-j ACCEPT';
     }
 
-    sub drop1918src( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'dropRFC1918src', 'DROP', '', $tag, 'add', '-s 10.0.0.0/8 ';
-	    log_rule_limit $level, $chainref, 'dropRFC1918src', 'DROP', '', $tag, 'add', '-s 172.16.0.0/12 ';
-	    log_rule_limit $level, $chainref, 'dropRFC1918src', 'DROP', '', $tag, 'add', '-s 192.168.0.0/16 ';
-	}
-
-	add_rule $chainref, '-s 10.0.0.0/8 -j DROP';
-	add_rule $chainref, '-s 172.16.0.0/12 -j DROP';
-	add_rule $chainref, '-s 192.168.0.0/16 -j DROP';
-    }
-
-    sub drop1918dst( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'drop1918src', 'DROP', '', $tag, 'add', '-m conntrack --ctorigdst 10.0.0.0/8 ';
-	    log_rule_limit $level, $chainref, 'drop1918src', 'DROP', '', $tag, 'add', '-m conntrack --ctorigdst 172.16.0.0/12 ';
-	    log_rule_limit $level, $chainref, 'drop1918src', 'DROP', '', $tag, 'add', '-m conntrack --ctorigdst 192.168.0.0/16 ';
-	}
-
-	add_rule $chainref, '-m conntrack --ctorigdst 10.0.0.0/8 -j DROP';
-	add_rule $chainref, '-m conntrack --ctorigdst 172.16.0.0/12 -j DROP';
-	add_rule $chainref, '-m conntrack --ctorigdst  192.168.0.0/16 -j DROP';
-    }
-
-    sub rej1918src( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-s 10.0.0.0/8 ';
-	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-s 172.16.0.0/12 ';
-	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-s 192.168.0.0/16 ';
-	}
-
-	add_rule $chainref, '-s 10.0.0.0/8 -j reject';
-	add_rule $chainref, '-s 172.16.0.0/12 -j reject';
-	add_rule $chainref, '-s 192.168.0.0/16 -j reject';
-    }
-
-    sub rej1918dst( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-m conntrack --ctorigdst 10.0.0.0/8 ';
-	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-m conntrack --ctorigdst 172.16.0.0/12 ';
-	    log_rule_limit $level, $chainref, 'rej1918src', 'REJECT', '', $tag, 'add', '-m conntrack --ctorigdst 192.168.0.0/16 ';
-	}
-
-	add_rule $chainref, '-m conntrack --ctorigdst 10.0.0.0/8 -j reject';
-	add_rule $chainref, '-m conntrack --ctorigdst 172.16.0.0/12 -j reject';
-	add_rule $chainref, '-m conntrack --ctorigdst  192.168.0.0/16 -j reject';
-    }
-
     my %builtinops = ( 'dropBcast'      => \&dropBcast, 
 		       'allowBcast'     => \&allowBcast,
 		       'dropNotSyn'     => \&dropNotSyn,
@@ -879,10 +847,6 @@ sub process_actions3 () {
 		       'allowInvalid'   => \&allowInvalid,
 		       'allowinUPnP'    => \&allowinUPnP, 
 		       'forwardUPnP'    => \&forwardUPnP, 
-		       'drop1918src'    => \&drop1918src, 
-		       'drop1918dst'    => \&drop1918dst, 
-		       'rej1918src'     => \&drop1918src, 
-		       'rej1918dst'     => \&drop1918dst, 
 		       'Limit'          => \&Limit, );
 
     for my $wholeaction ( keys %usedactions ) {

@@ -80,7 +80,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       split_list
 				       split_line
 				       split_line1
-				       split_line2
 				       first_entry
 				       open_file
 				       close_file
@@ -920,52 +919,19 @@ sub split_line( $$$ ) {
 }
 
 #
-# Version of 'split_line' that handles COMMENT lines
+# Version of 'split_line' used on files with exceptions
 #
-sub split_line1( $$$ ) {
-    my ( $mincolumns, $maxcolumns, $description ) = @_;
+sub split_line1( $$$;$ ) {
+    my ( $mincolumns, $maxcolumns, $description, $nopad) = @_;
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $currentline =~ /["`\\]/;
 
     my @line = split( ' ', $currentline );
 
-    return @line if $line[0] eq 'COMMENT';
-
-    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
-    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
-
-    my $line = @line;
-
-    fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
-
-    $line-- while $line > 0 && $line[$line-1] eq '-';
-
-    fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
-
-    push @line, '-' while @line < $maxcolumns;
-
-    @line;
-}
-
-#
-# When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
-#
-
-my %no_pad = ( COMMENT => 0,
-	       SECTION => 2 );
-
-#
-# Version of 'split_line' used on rules file entries
-#
-sub split_line2( $$$ ) {
-    my ( $mincolumns, $maxcolumns, $description ) = @_;
-
-    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $currentline =~ /["`\\]/;
-
-    my @line = split( ' ', $currentline );
+    $nopad = { COMMENT => 0 } unless $nopad;
 
     my $first   = $line[0];
-    my $columns = $no_pad{$first};
+    my $columns = $nopad->{$first};
 
     if ( defined $columns ) {
 	if ( $columns ) {

@@ -581,7 +581,13 @@ show_command() {
 			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
 			echo "rej1918src          # Reject packets with an RFC 1918 source address (Shorewall-perl only)"
 			echo "rej1918dst          # Reject packets with an RFC 1918 original dest address (Shorewall-perl only)"
-			cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
+
+			if [ -f ${CONFDIR}/actions ]; then
+			    cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
+			else
+			    grep -Ev '^\#|^$' ${SHAREDIR}/actions.std
+			fi
+
 			return
 			;;
 		    macros)

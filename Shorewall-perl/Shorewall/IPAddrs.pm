@@ -45,7 +45,7 @@ our @EXPORT = qw( ALLIPv4
 		  ip_range_explicit
 		  expand_port_range
 		  allipv4
-		  rfc1918_neworks
+		  rfc1918_networks
 		  resolve_proto
 		  proto_name
 		  validate_port

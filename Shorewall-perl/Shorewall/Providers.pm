@@ -454,6 +454,19 @@ sub add_an_rtrule( $$$$ ) {
 }
 
 sub setup_providers() {
+    #
+    # This probably doesn't belong here but looking forward to the day when we get Shorewall out of the routing business,
+    # it makes sense to keep all of the routing code together
+    #
+    if ( $config{NULL_ROUTE_RFC1918} ) {
+	emit 'if [ -z "$NOROUTES" ]; then';
+	push_indent;
+        save_progress_message "Null Routing the RFC 1918 subnets";
+	emit "run_ip route replace unreachable $_" for rfc1918_networks;
+	pop_indent;
+	emit "fi\n";
+    }
+
     my $providers = 0;
 
     my $fn = open_file 'providers';

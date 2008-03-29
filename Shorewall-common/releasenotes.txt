@@ -196,8 +196,14 @@ New Features in 4.1.7.
     The column must be left empty if the macro is to be used in the
     body of an action.
 
-    Note that the position of the ORIGINAL DEST column is different
-    from its position in the /etc/shorewall/rules file. Beware!
+    The new column is placed between the SOURCE PORT(S) and RATE LIMIT
+    columns. So that Shorewall-perl can determine which column layout
+    each macro has, a new FORMAT directive is added:
+
+    	 FORMAT {1|2}
+
+    The default is FORMAT 1 which is the old format. FORMAT 2 specifies
+    that the macro is in the new format.
 
 5)  Shorewall-perl implements a new Rfc1918 macro that deals with
     RFC 1918 addresses. This macro should be used in place of 
@@ -205,16 +211,32 @@ New Features in 4.1.7.
 
     The macro body is:
 
-    #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/	ORIGINAL
-    #						        PORT(S)	PORT(S)	LIMIT	GROUP   DEST
+    #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+    #							PORT(S)	PORT(S)	DEST		LIMIT	GROUP
+    FORMAT 2
     PARAM		SOURCE:10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 \
-			                DEST	-	-	-	-	-	-
-    PARAM		SOURCE		DEST	-	-	-	-	-	10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+					DEST	-	-	-	-		-	-
+    PARAM		SOURCE		DEST	-	-	-	10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+    #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 
     The 'norfc1918' option on the interface associated with zone 'z'
     and with RFC1018_STRICT=Yes is equivalent to:
 
         Rfc1918(DROP)      z    all
+
+6)  A better way to perform RFC 1918 filtration is to null-route the
+    address ranges reserved by RFC 1918. You can do that by setting the
+    new NULL_ROUTE_RFC1918 option to 'Yes' in shorewall.conf.
+
+    It is highly recommended that you also set ROUTE_FILTER=Yes to get
+    Martian messages. These will help diagnose problems where you need
+    to be able to access hosts with RFC 1918 addresses that are outside
+    of your local networks. Sometimes, these can be subtle such as the
+    case where your ISP is using RFC 1918 addresses on their DHCP
+    servers.
+
+    NULL_ROUTE_RFC1918 defaults to 'No' and is only supported by
+    Shorewall-perl; Shorewall-shell ignores the option.
 
 New Features in Shorewall 4.1.
 

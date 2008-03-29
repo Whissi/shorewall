@@ -357,6 +357,7 @@ sub initialize() {
 		DONT_LOAD => '',
 		AUTO_COMMENT => undef ,
 		MANGLE_ENABLED => undef ,
+		NULL_ROUTE_RFC1918 => undef ,
 		#
 		# Packet Disposition
 		#
@@ -1894,6 +1895,7 @@ sub get_configuration( $ ) {
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'MANGLE_ENABLED'             , 'Yes';
+    default_yes_no 'NULL_ROUTE_RFC1918'         , '';
     
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 

@@ -690,10 +690,12 @@ setup_forwarding() {
 	On|on|ON|Yes|yes|YES)
 	    save_progress_message "IP Forwarding Enabled"
 	    save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
+	    save_command ""
 	    ;;
 	Off|off|OFF|No|no|NO)
 	    save_progress_message "IP Forwarding Disabled!"
 	    save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
+	    save_command ""
 	    ;;
     esac
 }
@@ -4058,8 +4060,6 @@ __EOF__
 	    run_iptables -t nat -A PREROUTING -i $interface -j UPnP
 	done
     fi
-
-    setup_forwarding
 }
 
 #
@@ -5788,6 +5788,7 @@ __EOF__
     fi
 
 __EOF__
+    setup_forwarding
     save_command "date > \${VARDIR}/restarted"
 
     append_file start

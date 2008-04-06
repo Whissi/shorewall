@@ -662,12 +662,18 @@ if [ $COMMAND = restore ]; then
 else
     if [ $COMMAND = refresh ]; then
         chainlist_reload
+EOF
+    setup_forwarding;
+    emit<<'EOF';
         run_refreshed_exit
         do_iptables -N shorewall
         set_state "Started"
     else
         setup_netfilter
         restore_dynamic_rules
+EOF
+    setup_forwarding;
+    emit<<'EOF';
         run_start_exit
         do_iptables -N shorewall
         set_state "Started"
@@ -827,7 +833,6 @@ sub compiler {
     setup_route_filtering;
     setup_martian_logging;
     setup_source_routing;
-    setup_forwarding;
     #
     # Proxy Arp
     #

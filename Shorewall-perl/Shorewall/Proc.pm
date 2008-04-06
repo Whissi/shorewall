@@ -199,11 +199,11 @@ sub setup_source_routing() {
 
 sub setup_forwarding() {
     if ( $config{IP_FORWARDING} eq 'on' ) {
-	emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Enabled';
+	emit '        echo 1 > /proc/sys/net/ipv4/ip_forward';
+	emit '        progress_message2 IP Forwarding Enabled';
     } elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
-	emit 'progress_message2 IP Forwarding Disabled!';
+	emit '        echo 0 > /proc/sys/net/ipv4/ip_forward';
+	emit '        progress_message2 IP Forwarding Disabled!';
     }
 
     emit '';

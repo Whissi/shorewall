@@ -444,9 +444,15 @@ sub add_rule($$;$)
     # we only worry about the destination ports.
     #
     if ( $expandports && $rule =~  '^(.* --dports\s+)([^ ]+)(.*)$' ) {
+	#
+	# Rule has a --dports specification
+	#
 	my ($first, $ports, $rest) = ( $1, $2, $3 );
 
 	if ( ( $ports =~ tr/:,/:,/ ) > 15 ) {
+	    #
+	    # More than 15 ports specified
+	    #
 	    my @ports = split '([,:])', $ports;
 
 	    while ( @ports ) {

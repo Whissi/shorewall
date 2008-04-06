@@ -72,8 +72,19 @@ Migration Issues.
     been changed from Yes to No.
 
 6)  The 'norfc1918' option is deprecated. Use explicit rules instead.
-    Note that there is a new 'Rfc1918' option that acts on addresses
+    Note that there is a new 'Rfc1918' macro that acts on addresses
     reserved by RFC 1918.
+
+Problems corrected in Shorewall 4.1.7.
+
+1)  Previously, when IP_FORWARDING=Yes in shorewall.conf, Shorewall
+    would enable ip forwarding before instantiating the rules. This
+    could lead to incorrect connection tracking entries being created
+    between the time that forwarding was enabled and when the nat table
+    rules were instantiated.
+
+    Beginning with Shorewall 4.0.11, enabling of forwarding is deferred
+    until after the rules are in place.
 
 Problems corrected in Shorewall-perl 4.1.7.
 

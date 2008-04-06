@@ -3644,6 +3644,11 @@ __EOF__
 	run_iptables -A reject -s $address -j DROP
     done
 
+    #
+    # Don't respond to IGMP with an ICMP
+    #
+    run_iptables -A reject -p 2 -j DROP
+
     run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
     run_iptables -A reject -p udp  -j REJECT
     #

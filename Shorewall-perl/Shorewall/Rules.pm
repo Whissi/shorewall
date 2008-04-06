@@ -564,11 +564,12 @@ sub add_common_rules() {
 	}
     }
 
-    add_rule $rejectref , '-p tcp -j REJECT --reject-with tcp-reset';
+    add_rule $rejectref , '-p 2 -j DROP';
+    add_rule $rejectref , '-p 6 -j REJECT --reject-with tcp-reset';
 
     if ( $capabilities{ENHANCED_REJECT} ) {
-	add_rule $rejectref , '-p udp -j REJECT';
-	add_rule $rejectref, '-p icmp -j REJECT --reject-with icmp-host-unreachable';
+	add_rule $rejectref , '-p 17 -j REJECT';
+	add_rule $rejectref, '-p 1 -j REJECT --reject-with icmp-host-unreachable';
 	add_rule $rejectref, '-j REJECT --reject-with icmp-host-prohibited';
     } else {
 	add_rule $rejectref , '-j REJECT';

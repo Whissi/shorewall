@@ -351,43 +351,8 @@ DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
         works fine but when my local users try to connect to the server using
         the Firewall's external IP address, it doesn't work.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: Let's assume the
-        following:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>External IP address is 206.124.146.176 on <filename
-            class="devicefile">eth0</filename>.</para>
-          </listitem>
-
-          <listitem>
-            <para>Server's IP address is 192.168.2.4</para>
-          </listitem>
-        </itemizedlist>
-
-        <para>You can enable access to the server from your local network
-        using the firewall's external IP address by adding this rule:</para>
-
-        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
-#                                                                PORT        DEST                 
-DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</programlisting>
-
-        <para>If your external IP address is dynamic, then you must do the
-        following:</para>
-
-        <para>In <filename>/etc/shorewall/params</filename>:</para>
-
-        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command>  </programlisting>
-
-        <para>For users of Shorewall 2.1.0 and later:</para>
-
-        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
-
-        <para>and make your DNAT rule:</para>
-
-        <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                PORT      DEST.
-DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
+        <para><emphasis role="bold">Answer</emphasis>: See <link
+        linkend="faq2b">FAQ 2b</link>.</para>
       </section>
 
       <section id="faq1e">

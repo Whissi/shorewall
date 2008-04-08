@@ -273,6 +273,7 @@ sub determine_zones()
 	    $type = 'ipv4';
 	    $ipv4 = 1;
 	} elsif ( $type =~ /^ipsec4?$/i ) {
+	    fatal_error "IPSEC Zones require FASTACCEPT=No" if $config{FASTACCEPT};
 	    $type = 'ipsec4';
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
@@ -969,6 +970,7 @@ sub validate_hosts_file()
 	    for my $option ( @options )
 	    {
 		if ( $option eq 'ipsec' ) {
+		    fatal_error "'ipsec' requires FASTACCEPT=No" if $config{FASTACCEPT};
 		    $type = 'ipsec4';
 		    $zoneref->{options}{complex} = 1;
 		    $ipsec = 1;

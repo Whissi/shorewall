@@ -723,18 +723,18 @@ sub setup_mac_lists( $ ) {
 
 	while ( read_a_line ) {
 
-	    my ( $disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
+	    my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
 
-	    if ( $disposition eq 'COMMENT' ) {
+	    if ( $original_disposition eq 'COMMENT' ) {
 		process_comment;
 	    } else {
-		( $disposition, my ( $level, $remainder) ) = split( /:/, $disposition, 3 );
+		my ( $disposition, $level, $remainder) = split( /:/, $original_disposition, 3 );
 
-		fatal_error "Invalid log level" if defined $remainder;
+		fatal_error "Invalid DISPOSITION ($original_disposition)" if defined $remainder || ! $disposition;
 
 		my $targetref = $maclist_targets{$disposition};
 
-		fatal_error "Invalid DISPOSITION ($disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
+		fatal_error "Invalid DISPOSITION ($original_disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
 
 		unless ( $maclist_interfaces{$interface} ) {
 		    fatal_error "No hosts on $interface have the maclist option specified";
@@ -1430,7 +1430,7 @@ sub process_rules() {
 	    #
 	    # read_a_line has already verified that there are exactly two tokens on the line
 	    #
-	    fatal_error "Invalid SECTION $source" unless defined $sections{$source};
+	    fatal_error "Invalid SECTION ($source)" unless defined $sections{$source};
 	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
 	    $sectioned = 1;
 	    $sections{$source} = 1;
@@ -1583,7 +1583,7 @@ sub generate_matrix() {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
 		my $sourcechainref;
 		my $interfacematch = '';
-		
+	
 		if ( use_forward_chain( $interface ) ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
 		} else {

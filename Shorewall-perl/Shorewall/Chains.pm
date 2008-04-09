@@ -2059,6 +2059,7 @@ sub expand_rule( $$$$$$$$$$ )
 		#
 		for my $dnet ( mysplit $dnets ) {
 		    if ( $loglevel ne '' ) {
+			my $state = $section eq 'NEW' ? '' : "-m state --state $section ";
 			log_rule_limit
 			    $loglevel ,
 			    $chainref ,
@@ -2067,7 +2068,7 @@ sub expand_rule( $$$$$$$$$$ )
 			    '' ,
 			    $logtag ,
 			    'add' ,
-			    join( '', $rule, match_source_net( $inet , $restriction ) , match_dest_net( $dnet ), $onet );
+			    join( '', $state, $rule, match_source_net( $inet , $restriction ) , match_dest_net( $dnet ), $onet );
 		    }
 
 		    unless ( $disposition eq 'LOG' ) {

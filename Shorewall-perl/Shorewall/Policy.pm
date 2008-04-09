@@ -172,6 +172,7 @@ sub validate_policy()
 	        NFQUEUE_DEFAULT => 'NFQUEUE' );
 
     my $zone;
+    my @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
 
     for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
 	my $action = $config{$option};
@@ -308,8 +309,8 @@ sub validate_policy()
 
 	if ( $clientwild ) {
 	    if ( $serverwild ) {
-		for my $zone ( all_zones , 'all' ) {
-		    for my $zone1 ( all_zones , 'all' ) {
+		for my $zone ( @zonelist ) {
+		    for my $zone1 ( @zonelist ) {
 			set_policy_chain $client, $server, "${zone}2${zone1}", $chainref, $policy;
 			print_policy $zone, $zone1, $policy, $chain;
 		    }
@@ -321,7 +322,7 @@ sub validate_policy()
 		}
 	    }
 	} elsif ( $serverwild ) {
-	    for my $zone ( all_zones , 'all' ) {
+	    for my $zone ( @zonelist ) {
 		set_policy_chain $client, $server, "${client}2${zone}", $chainref, $policy;
 		print_policy $client, $zone, $policy, $chain;
 	    }
@@ -413,7 +414,6 @@ sub apply_policy_rules() {
 		run_user_exit $chainref;
 		policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
 	    }
-
 	}
     }
 

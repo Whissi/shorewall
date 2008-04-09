@@ -1,0 +1,23 @@
+#
+# Shorewall version 4 - SANE Macro
+#
+# /usr/share/shorewall/macro.SANE
+#
+#	This macro handles SANE network scanning.
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S)	PORT(S)	LIMIT	GROUP
+PARAM	-	-	tcp	6566
+#
+# Kernels 2.6.23+ has nf_conntrack_sane module which will handle
+# sane data connection.
+#
+# If you don't have sane conntracking support you need to open whole dynamic
+# port range.
+#
+# This is for normal linux 2.4+
+#PARAM	-	-	tcp	32768:61000
+# This is generic rule for any os running saned.
+#PARAM	-	-	tcp	1024:
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

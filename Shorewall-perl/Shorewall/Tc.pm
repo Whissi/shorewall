@@ -274,8 +274,10 @@ sub process_tc_rule( $$$$$$$$$$$ ) {
 	    validate_mark $mark;
 
 	    if ( $config{HIGH_ROUTE_MARKS} ) {
+		my $val = numeric_value( $cmd );
+		fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
 		fatal_error 'Marks < 256 may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes'
-		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && numeric_value( $cmd ) <= 0xFF;
+		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= 0xFF;
 	    }
 	}
     }
@@ -475,6 +477,7 @@ sub validate_tc_class( $$$$$$ ) {
 	    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ && numeric_value( $mark ) <= 0xff;
 
 	    $markval = numeric_value( $mark );
+	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	    $classnumber = $devnum . $mark;
 	}
@@ -623,8 +626,8 @@ sub process_tc_filter( $$$$$$ ) {
  
 		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
 		
-		    $icmptype = in_hex2 numeric_value $icmptype;
-		    $icmpcode = in_hex2 numeric_value $icmpcode if defined $icmpcode;
+		    $icmptype = in_hex2 numeric_value1 $icmptype;
+		    $icmpcode = in_hex2 numeric_value1 $icmpcode if defined $icmpcode;
 		    
 		    my $rule1 = "   match u8 $icmptype 0xff at nexthdr+0";
 		    $rule1   .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;

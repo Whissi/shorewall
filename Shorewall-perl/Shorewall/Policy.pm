@@ -219,11 +219,11 @@ sub validate_policy()
 
 	my $clientwild = ( "\L$client" eq 'all' );
 
-	fatal_error "Undefined zone $client" unless $clientwild || defined_zone( $client );
+	fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
 
 	my $serverwild = ( "\L$server" eq 'all' );
 
-	fatal_error "Undefined zone $server" unless $serverwild || defined_zone( $server );
+	fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
 
 	my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
 
@@ -252,10 +252,10 @@ sub validate_policy()
 	    $default = $default_actions{$policy} || '';
 	}
 
-	fatal_error "Invalid policy $policy" unless exists $validpolicies{$policy};
+	fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
 
 	if ( defined $queue ) {
-	    fatal_error "Invalid policy ($policy/$queue)" unless $policy eq 'NFQUEUE';
+	    fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
 	    require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
 	    my $queuenum = numeric_value( $queue );
 	    fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;

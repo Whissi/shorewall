@@ -55,6 +55,7 @@ our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shor
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
 				       finalize_object
 		                       numeric_value
+		                       numeric_value1
 		                       in_hex
 		                       in_hex2
 		                       in_hex3
@@ -106,6 +107,9 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       %config
 				       %globals
 				       %capabilities
+
+				       MIN_VERBOSITY
+				       MAX_VERBOSITY
 				     ) ] );	       
 
 Exporter::export_ok_tags('internal');
@@ -227,6 +231,9 @@ our $first_entry;             # Message to output or function to call on first n
 our $shorewall_dir;           # Shorewall Directory
 
 our $debug;                   # If true, use Carp to report errors with stack trace.
+
+use constant { MIN_VERBOSITY => -1,
+	       MAX_VERBOSITY => 2 };
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -523,6 +530,12 @@ sub numeric_value ( $ ) {
     my $mark = lc $_[0];
     return undef unless $mark =~ /^-?(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
     $mark =~ /^0/ ? oct $mark : $mark;
+}
+
+sub numeric_value1 ( $ ) {
+    my $val = numeric_value $_[0];
+    fatal_error "Invalid Number ($_[0])" unless defined $val;
+    $val;
 }
 
 #

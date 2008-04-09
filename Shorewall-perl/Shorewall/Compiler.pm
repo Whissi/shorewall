@@ -728,7 +728,7 @@ sub compiler {
 
     sub edit_verbosity( $ ) {
 	 my $val = numeric_value( shift );
-	 defined($val) && ($val >= -1) && ($val < 3);
+	 defined($val) && ($val >= MIN_VERBOSITY) && ($val <= MAX_VERBOSITY);
      }
 
     my %parms = ( object        => { store => \$objectfile },

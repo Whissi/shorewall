@@ -352,7 +352,7 @@ sub policy_rules( $$$$$ ) {
 	fatal_error "Null target in policy_rules()" unless $target;
 	$target = 'reject' if $target eq 'REJECT';
 
-	add_rule( $chainref , "-j $target" ) unless $target eq 'CONTINUE';
+	add_jump( $chainref , $target ) unless $target eq 'CONTINUE';
     }
 }
 
@@ -378,7 +378,7 @@ sub default_policy( $$$ ) {
 		report_syn_flood_protection;
 		policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
 	    } else {
-		add_rule $chainref,  "-j $policyref->{name}";
+		add_jump $chainref,  $policyref;
 		$chainref = $policyref;
 	    }
 	} elsif ( $policy eq 'CONTINUE' ) {
@@ -386,7 +386,7 @@ sub default_policy( $$$ ) {
 	    policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
 	} else {
 	    report_syn_flood_protection if $synparams;
-	    add_rule $chainref , "-j $policyref->{name}";
+	    add_jump $chainref , $policyref;
 	    $chainref = $policyref;
 	}
     }

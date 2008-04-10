@@ -493,8 +493,8 @@ sub add_rule($$;$)
 
 #
 # Add a jump from the chain represented by the reference in the first argument to
-# the chain named in the second argument. The optional third argument specifies any
-# matches to be included in the rule and must end with a space character if it is passed.
+# the target in the second argument. The optional third argument specifies any
+# matches to be included in the rule and must end with a space character if it is non-null.
 #
 
 sub add_jump( $$;$ ) {
@@ -503,14 +503,22 @@ sub add_jump( $$;$ ) {
     $predicate |= '';
 
     my $toref;
-
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
     if ( reftype $to ) {
 	$toref = $to;
 	$to    = $toref->{name};
     } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
 	$toref = ensure_chain( $fromref->{table} , $to ) unless ($targets{$to} | 0 ) & STANDARD;
     }
-
+    
+    #
+    # If the destination is a chain, mark it referenced
+    #
     $toref->{referenced} = 1 if $toref;
 
     add_rule ($fromref, join( '', $predicate, "-j $to" ) );

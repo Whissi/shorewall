@@ -1480,6 +1480,8 @@ sub generate_matrix() {
 	return $chain   if $chainref && $chainref->{referenced};
 	return 'ACCEPT' if $zone eq $zone1;
 
+	fatal_error "Internal Error in rules_target()" unless $chainref;
+
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $filter_table->{$chainref->{policychain}};
 	    return $policyref->{name} if $policyref;
@@ -1494,9 +1496,7 @@ sub generate_matrix() {
     #
     sub create_zone_dyn_chain( $$ ) {
 	my ( $zone , $chainref ) = @_;
-	my $name = "${zone}_dyn";
-	new_standard_chain $name;
-	add_rule $chainref, "-j $name";
+	add_jump $chainref, "${zone}_dyn";
     }
 
     #
@@ -1576,8 +1576,7 @@ sub generate_matrix() {
 	    my $source_ref = ( $zoneref->{hosts}{ipsec4} ) || {};
 
 	    if ( $config{DYNAMIC_ZONES} ) {
-		no warnings;
-		create_zone_dyn_chain $zone, $frwd_ref if (%$source_ref || $type eq 'ipsec4' );
+		create_zone_dyn_chain $zone, $frwd_ref if ( scalar keys %$source_ref ) || ( $type eq 'ipsec4' );
 	    }
 
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
@@ -1597,9 +1596,10 @@ sub generate_matrix() {
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
-			add_rule(
+			add_jump(
 				 $sourcechainref,
-				 join( '', $interfacematch , match_source_net( $net ), $ipsec_match, "-j $frwd_ref->{name}" )
+				 $frwd_ref,
+				 join( '', $interfacematch , match_source_net( $net ), $ipsec_match )
 				);
 		    }
 		}
@@ -1752,9 +1752,9 @@ sub generate_matrix() {
 
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
 			    if ( use_forward_chain $interface ) {
-				add_rule $filter_table->{forward_chain $interface} , join( '', $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
+				add_jump $filter_table->{forward_chain $interface} , $frwd_ref, join( '', $source, $ipsec_in_match );
 			    } else {
-				add_rule $filter_table->{FORWARD} , join( '', match_source_dev( $interface ) , $source, $ipsec_in_match. "-j $frwd_ref->{name}" );
+				add_jump $filter_table->{FORWARD} , $frwd_ref, join( '', match_source_dev( $interface ) , $source, $ipsec_in_match );
 				move_rules ( $filter_table->{forward_chain $interface} , $frwd_ref );
 			    }
 			}

@@ -1496,7 +1496,7 @@ sub generate_matrix() {
     #
     sub create_zone_dyn_chain( $$ ) {
 	my ( $zone , $chainref ) = @_;
-	add_jump $chainref, "${zone}_dyn";
+	add_jump $chainref, zone_dynamic_chain $zone;
     }
 
     #

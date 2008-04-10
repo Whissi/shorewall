@@ -95,6 +95,7 @@ our %EXPORT_TAGS = (
 				       dynamic_in
 				       dynamic_out
 				       dynamic_chains
+				       zone_dynamic_chain
 				       dnat_chain
 				       snat_chain
 				       ecn_chain
@@ -665,7 +666,7 @@ sub use_input_chain($) {
 #
 sub output_chain($)
 {
-     chain_base_cond($_[0]) . '_out';
+    chain_base_cond($_[0]) . '_out';
 }
 
 #
@@ -757,6 +758,11 @@ sub dynamic_chains( $ ) #$1 = interface
     ( $c . '_dyni' , $c . '_dynf' , $c . '_dyno' );
 }
 
+sub zone_dynamic_chain( $ ) # $1 = zone
+{
+    $_[0] . '_dyn';
+
+}
 #
 # DNAT Chain from a zone
 #

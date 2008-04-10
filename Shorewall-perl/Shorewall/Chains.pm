@@ -913,7 +913,7 @@ sub finish_chain_section ($$) {
 
     add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
 
-    if ($sections{RELATED} ) {
+    if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;

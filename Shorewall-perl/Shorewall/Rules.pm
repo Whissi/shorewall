@@ -1693,15 +1693,15 @@ sub generate_matrix() {
 
 			    if ( @$exclusions ) {
 				my $output = zone_output_chain $zone;
-				add_rule $outputref , join( '', $interfacematch, $dest, $ipsec_out_match, "-j $output" );
-				add_rule $filter_table->{$output} , "-j $chain1";
+				add_jump $outputref , $output, join( '', $interfacematch, $dest, $ipsec_out_match );
+				add_jump $filter_table->{$output} , $chain1;
 				$nextchain = $output;
 			    } else {
-				add_rule $outputref , join( '', $interfacematch, $dest, $ipsec_out_match, "-j $chain1" );
+				add_jump $outputref , $chain1, join( '', $interfacematch, $dest, $ipsec_out_match );
 				$nextchain = $chain1;
 			    }
 
-			    add_rule( $outputref , join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match, "-j $nextchain" ) )
+			    add_jump( $outputref , $nextchain, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
 				if $hostref->{options}{broadcast};
 
 			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$nextchain} ) unless use_output_chain $interface;
@@ -1716,7 +1716,7 @@ sub generate_matrix() {
 			    # There are DNAT/REDIRECT rules with this zone as the source.
 			    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
 			    #
-			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j ', $dnatref->{name} );
+			    add_jump $preroutingref, $dnatref, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
 			}
 			#
 			# If this zone has parents with DNAT/REDIRECT rules and there are no CONTINUE polcies with this zone as the source
@@ -1739,11 +1739,11 @@ sub generate_matrix() {
 			    
 			    if ( @$exclusions ) {
 				my $input = zone_input_chain $zone;
-				add_rule $inputchainref, join( '', $interfacematch, $source, $ipsec_in_match, "-j $input" );
-				add_rule $filter_table->{ $input } , "-j $chain2";
+				add_jump $inputchainref, $input, join( '', $interfacematch, $source, $ipsec_in_match );
+				add_jump $filter_table->{ $input } , $chain2;
 				$nextchain = $input;
 			    } else {
-				add_rule $inputchainref, join( '', $interfacematch, $source, $ipsec_in_match, "-j $chain2" );
+				add_jump $inputchainref, $chain2, join( '', $interfacematch, $source, $ipsec_in_match );
 				$nextchain = $chain2;
 			    }
 
@@ -1864,7 +1864,7 @@ sub generate_matrix() {
 			$policy_exclusions{"${chain}_${zone1}"} = $chain1;
 			my $chain1ref = ensure_filter_chain $chain1, 0;
 			add_exclusions $chain1ref, $exclusions1;
-			add_rule $chain1ref, "-j $chain";
+			add_jump $chain1ref, $chain;
 		    }
 
 		    $chain = $chain1;
@@ -1883,7 +1883,7 @@ sub generate_matrix() {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				for my $net ( @{$hostref->{hosts}} ) {
-				    add_rule $frwd_ref, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match, "-j $chain" );
+				    add_jump $frwd_ref, $chain, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match );
 				}
 			    }
 			}
@@ -1917,15 +1917,15 @@ sub generate_matrix() {
 						    #
 						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
 						    #
-						    add_rule(
+						    add_jump(
 							     $chain3ref ,
+							     $chain ,
 							     join( '', 
 								   $match_source_dev, 
 								   match_dest_dev($interface1), 
 								   match_source_net($net), 
 								   match_dest_net($net1), 
-								   $ipsec_out_match, 
-								   "-j $chain" )
+								   $ipsec_out_match )
 							    );
 						}
 					    }
@@ -1942,7 +1942,7 @@ sub generate_matrix() {
 	    #
 	    # Now add an unconditional jump to the last unique policy-only chain determined above, if any
 	    #
-	    add_rule $frwd_ref , "-j $last_chain" if $last_chain;
+	    add_jump $frwd_ref , $last_chain if $last_chain;
 	}
     }
     #
@@ -1974,11 +1974,11 @@ sub generate_matrix() {
     #
     for my $interface ( @interfaces ) {
 	
-	add_rule $filter_table->{FORWARD} , match_source_dev( $interface ) . "-j " . forward_chain $interface if use_forward_chain $interface;
-	add_rule $filter_table->{INPUT}   , match_source_dev( $interface ) . "-j " . input_chain($interface)  if use_input_chain $interface;
+	add_jump( $filter_table->{FORWARD} , forward_chain $interface , match_source_dev( $interface ) ) if use_forward_chain $interface;
+	add_jump( $filter_table->{INPUT}   , input_chain $interface ,   match_source_dev( $interface ) ) if use_input_chain $interface;
 
 	if ( use_output_chain $interface ) {
-	    add_rule $filter_table->{OUTPUT}  , "-o $interface -j " . output_chain $interface unless get_interface_option( $interface, 'port' );
+	    add_jump $filter_table->{OUTPUT} , output_chain $interface , "-o $interface " unless get_interface_option( $interface, 'port' );
 	}
     }
 
@@ -1991,9 +1991,9 @@ sub generate_matrix() {
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
 
-    complete_standard_chain $filter_table->{INPUT}   , 'all' , firewall_zone;
-    complete_standard_chain $filter_table->{OUTPUT}  , firewall_zone , 'all';
-    complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all';
+    complete_standard_chain $filter_table->{INPUT}   , 'all' , firewall_zone , 'DROP';
+    complete_standard_chain $filter_table->{OUTPUT}  , firewall_zone , 'all', 'REJECT';
+    complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all', 'REJECT';
 
     if ( $config{LOGALLNEW} ) {
 	for my $table qw/mangle nat filter/ {

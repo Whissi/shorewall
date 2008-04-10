@@ -27,6 +27,7 @@
 package Shorewall::Chains;
 require Exporter;
 
+use Scalar::Util 'reftype';
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::IPAddrs;
@@ -35,6 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( 
 		  add_rule
+		  add_jump
 		  insert_rule
 		  new_chain
 		  new_manual_chain
@@ -430,7 +432,9 @@ sub push_rule( $$ ) {
 #
 sub add_rule($$;$)
 {
-    my ($chainref, $rule, $expandports) = @_; 
+    my ($chainref, $rule, $expandports) = @_;
+
+    fatal_error 'Internal Error in add_rule()' if reftype $rule;
 
     $iprangematch = 0;
     #
@@ -485,6 +489,31 @@ sub add_rule($$;$)
     } else {
 	push_rule ( $chainref, $rule );
     }
+}
+
+#
+# Add a jump from the chain represented by the reference in the first argument to
+# the chain named in the second argument. The optional third argument specifies any
+# matches to be included in the rule and must end with a space character if it is passed.
+#
+
+sub add_jump( $$;$ ) {
+    my ( $fromref, $to, $predicate ) = @_;
+
+    $predicate |= '';
+
+    my $toref;
+
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	$toref = ensure_chain( $fromref->{table} , $to ) unless ($targets{$to} | 0 ) & STANDARD;
+    }
+
+    $toref->{referenced} = 1 if $toref;
+
+    add_rule ($fromref, join( '', $predicate, "-j $to" ) );
 }
 
 #

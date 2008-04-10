@@ -438,22 +438,22 @@ sub apply_policy_rules() {
 #	- If no applicable policy is found, add rules for an assummed
 #	  policy of DROP INFO
 #
-sub complete_standard_chain ( $$$ ) {
-    my ( $stdchainref, $zone, $zone2 ) = @_;
+sub complete_standard_chain ( $$$$ ) {
+    my ( $stdchainref, $zone, $zone2, $default ) = @_;
 
     add_rule $stdchainref, '-m state --state ESTABLISHED,RELATED -j ACCEPT' unless $config{FASTACCEPT};
 
     run_user_exit $stdchainref;
 
     my $ruleschainref = $filter_table->{"${zone}2${zone2}"};
-    my ( $policy, $loglevel, $default ) = ( 'DROP', 6, $config{DROP_DEFAULT} );
+    my ( $policy, $loglevel, $defaultaction ) = ( $default , 6, $config{$default . '_DEFAULT'} );
     my $policychainref;
 
     $policychainref = $filter_table->{$ruleschainref->{policychain}} if $ruleschainref;
 
-    ( $policy, $loglevel, $default ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
+    ( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
 
-    policy_rules $stdchainref , $policy , $loglevel, $default, 0;
+    policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }
 
 #

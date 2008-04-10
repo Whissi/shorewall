@@ -17,7 +17,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -29,7 +30,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -39,7 +41,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -128,7 +131,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -154,7 +158,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -166,7 +171,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -178,7 +184,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -189,7 +196,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -201,7 +209,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -286,8 +295,6 @@
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
-
       <arg>-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>show</option></arg>
@@ -300,7 +307,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -314,7 +322,8 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
@@ -355,6 +364,11 @@
     <para>The <option>trace</option> and <option>debug</option> options are
     used for debugging. See <ulink
     url="http://www.shorewall.net/starting_and_stopping.htm#Trace">http://www.shorewall.net/starting_and_stopping.htm#Trace</ulink>.</para>
+
+    <para>The nolock <option>option</option> prevents the command from
+    attempting to acquire the Shorewall Lite lockfile. It is useful if you
+    need to include <command>shorewall-lite</command> commands in the
+    <filename>started</filename> extension script.</para>
 
     <para>The <emphasis>options</emphasis> control the amount of output that
     the command produces. They consist of a sequence of the letters <emphasis

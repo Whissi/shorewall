@@ -513,7 +513,7 @@ sub add_jump( $$;$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless ($targets{$to} | 0 ) & STANDARD;
+	$toref = ensure_chain( $fromref->{table} , $to ) unless ( $targets{$to} || 0 ) & STANDARD;
     }
     
     #

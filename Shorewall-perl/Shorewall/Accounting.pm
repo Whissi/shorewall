@@ -68,7 +68,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     sub check_chain( $ ) {
 	my $chainref = shift;
-	fatal_error "A Shorewall-generated chain ($chainref->{name})  may not appear in the accounting file" if $chainref->{policy};
+	fatal_error "A non-accounting chain ($chainref->{name}) may not appear in the accounting file" if $chainref->{policy};
     }
 
     sub accounting_error() {

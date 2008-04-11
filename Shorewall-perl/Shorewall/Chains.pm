@@ -101,6 +101,7 @@ our %EXPORT_TAGS = (
 				       ecn_chain
 				       first_chains
 				       ensure_chain
+				       ensure_accounting_chain
 				       ensure_mangle_chain
 				       ensure_nat_chain
 				       new_standard_chain
@@ -161,6 +162,7 @@ our $VERSION = 4.1.5;
 #                                               referenced   => undef|1 -- If 1, will be written to the iptables-restore-input.
 #                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
 #                                               manual       => undef|1 -- If 1, a manual chain.
+#                                               accounting   => undef|1 -- If 1, an accounting chain
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
@@ -850,6 +852,25 @@ sub ensure_filter_chain( $$ )
     }
 
     $chainref->{referenced} = 1;
+
+    $chainref;
+}
+
+#
+# Create an accounting chain if necessary. 
+#
+sub ensure_accounting_chain( $  )
+{
+    my ($chain) = @_;
+
+    my $chainref = $filter_table->{$chain};
+
+    if ( $chainref ) {
+	fatal_error "Non-accounting chain ($chain) used in accounting rule"  if ! $chainref->{accounting};
+    } else {
+	$chainref = new_chain 'filter' , $chain unless $chainref;
+	$chainref->{accounting} = 1;
+    }
 
     $chainref;
 }

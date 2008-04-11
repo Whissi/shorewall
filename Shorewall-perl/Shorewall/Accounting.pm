@@ -69,6 +69,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     sub check_for_builtin( $ ) {
 	my $chainref = shift;
 	fatal_error "A builtin Chain ($chainref->{name}) may not appear in the accounting file" if $chainref->{builtin};
+	fatal_error "A Shorewall-generated chain ($chainref->{name})  may not appear in the accounting file" if $chainref->{policy};
     }
 
     sub accounting_error() {
@@ -77,7 +78,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
-	$jumpchainref = ensure_chain( 'filter', $jumpchain );
+	$jumpchainref = ensure_accounting_chain( $jumpchain );
 	check_for_builtin( $jumpchainref );
 	$disposition = $jumpchain;
 	"-j $jumpchain";

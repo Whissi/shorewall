@@ -66,9 +66,8 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     our $disposition = '';
 
-    sub check_for_builtin( $ ) {
+    sub check_chain( $ ) {
 	my $chainref = shift;
-	fatal_error "A builtin Chain ($chainref->{name}) may not appear in the accounting file" if $chainref->{builtin};
 	fatal_error "A Shorewall-generated chain ($chainref->{name})  may not appear in the accounting file" if $chainref->{policy};
     }
 
@@ -79,7 +78,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
 	$jumpchainref = ensure_accounting_chain( $jumpchain );
-	check_for_builtin( $jumpchainref );
+	check_chain( $jumpchainref );
 	$disposition = $jumpchain;
 	"-j $jumpchain";
     }
@@ -143,9 +142,9 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	$dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
     }
 
-    my $chainref = ensure_filter_chain $chain , 0;
+    my $chainref = ensure_accounting_chain $chain;
 
-    check_for_builtin( $chainref );
+    check_chain( $chainref );
     
     expand_rule
 	$chainref ,

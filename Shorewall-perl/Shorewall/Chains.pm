@@ -870,6 +870,7 @@ sub ensure_accounting_chain( $  )
     } else {
 	$chainref = new_chain 'filter' , $chain unless $chainref;
 	$chainref->{accounting} = 1;
+	$chainref->{referenced} = 1;
     }
 
     $chainref;

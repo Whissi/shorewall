@@ -144,8 +144,6 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     my $chainref = ensure_accounting_chain $chain;
 
-    check_chain( $chainref );
-    
     expand_rule
 	$chainref ,
 	$restriction ,
@@ -179,6 +177,8 @@ sub setup_accounting() {
 
     first_entry "$doing $fn...";
 
+    my $nonEmpty = 0;
+
     while ( read_a_line ) {
 
 	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line1 1, 9, 'Accounting File';
@@ -186,9 +186,12 @@ sub setup_accounting() {
 	if ( $action eq 'COMMENT' ) {
 	    process_comment;
 	} else {
+	    $nonEmpty = 1;
 	    process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark;
 	}
     }
+
+    fatal_error "Accounring rules are isolated" if $nonEmpty && ! $filter_table->{accounting};
 
     clear_comment;
 

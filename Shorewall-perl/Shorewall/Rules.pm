@@ -114,7 +114,7 @@ sub process_tos() {
 
 	    $first_entry = 0;
 
-	    fatal_error "A value must be supplied in the TOS column" if $tos eq '-';
+	    fatal_error 'A value must be supplied in the TOS column' if $tos eq '-';
 	    
 	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) {
 		$tos = $tosval;
@@ -129,7 +129,7 @@ sub process_tos() {
 
 	    my ( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
 
-	    fatal_error "Invalid SOURCE" if defined $remainder;
+	    fatal_error 'Invalid SOURCE' if defined $remainder;
 
 	    if ( $srczone eq firewall_zone ) {
 		$chainref    = $outtosref;
@@ -198,8 +198,8 @@ sub setup_ecn()
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
 
-		add_rule $mangle_table->{POSTROUTING}, "-p tcp -o $interface -j $chainref->{name}";
-		add_rule $mangle_table->{OUTPUT},     "-p tcp -o $interface -j $chainref->{name}";
+		add_jump $mangle_table->{POSTROUTING} , $chainref, "-p tcp -o $interface ";
+		add_jump $mangle_table->{OUTPUT},       $chainref, "-p tcp -o $interface ";
 	    }
 
 	    for my $host ( @hosts ) {
@@ -305,7 +305,7 @@ sub setup_blacklist() {
 
 		if ( $first_entry ) {
 		    unless  ( @$hosts ) {
-			warning_message "The entries in $fn have been ignored because there are no 'blacklist' interfaces";
+			warning_message q(The entries in $fn have been ignored because there are no 'blacklist' interfaces);
 			close_file;
 			last BLACKLIST;
 		    }

@@ -83,8 +83,8 @@ Problems corrected in Shorewall 4.1.7.
     between the time that forwarding was enabled and when the nat table
     rules were instantiated.
 
-    Beginning with Shorewall 4.0.11, enabling of forwarding is deferred
-    until after the rules are in place.
+    Beginning with Shorewall 4.0.11 and 4.1.7, enabling of forwarding
+    is deferred until after the rules are in place.
 
 Problems corrected in Shorewall-perl 4.1.7.
 
@@ -112,6 +112,14 @@ Problems corrected in Shorewall-perl 4.1.7.
 
 6)  A MARK of ":" in /etc/shorewall/tcrules would produce Perl
     run-time errors.
+
+7)  If both the ESTABLISHED and RELATED sections were present then
+    each connection through chains controlled by a RATE/LIMIT in
+    /etc/shorewall/policies was counted twice toward the limit.
+
+8)  If DYNAMIC_ZONES=Yes and an entry in /etc/shorewall/hosts for an
+    IPv4 zone specified 'ipsec', dynamic IPSEC zone members were
+    mis-handled by the generated ruleset.
 
 New Features in 4.1.7.
 

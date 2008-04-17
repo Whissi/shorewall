@@ -184,7 +184,7 @@ sub process_tc_rule( $$$$$$$$$$$ ) {
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
-    fatal_error "Invalid MARK ($originalmark)" if defined $remainder || ! defined $mark;
+    fatal_error "Invalid MARK ($originalmark)" if defined $remainder || ! defined $mark || $mark eq '';
 
     my $chain  = $globals{MARKING_CHAIN};
     my $target = 'MARK --set-mark';

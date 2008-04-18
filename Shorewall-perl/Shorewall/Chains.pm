@@ -1231,10 +1231,16 @@ sub do_test ( $$ )
 {
     my ($testval, $mask) = @_;
 
+    my $originaltestval = $testval;
+
     return '' unless defined $testval and $testval ne '-';
+
+    $mask = '' unless defined $mask;
 
     my $invert = $testval =~ s/^!// ? '! ' : '';
     my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";
+
+    fatal_error "Invalid MARK value ($originaltestval)" if $testval eq '/';
 
     validate_mark $testval;
 

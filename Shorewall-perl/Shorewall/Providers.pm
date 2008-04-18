@@ -453,20 +453,19 @@ sub add_an_rtrule( $$$$ ) {
     progress_message "   Routing rule \"$currentline\" $done";
 }
 
-sub setup_providers() {
-    #
-    # This probably doesn't belong here but looking forward to the day when we get Shorewall out of the routing business,
-    # it makes sense to keep all of the routing code together
-    #
-    if ( $config{NULL_ROUTE_RFC1918} ) {
-	emit 'if [ -z "$NOROUTES" ]; then';
-	push_indent;
-        save_progress_message "Null Routing the RFC 1918 subnets";
-	emit "run_ip route replace unreachable $_" for rfc1918_networks;
-	pop_indent;
-	emit "fi\n";
-    }
+#
+# This probably doesn't belong here but looking forward to the day when we get Shorewall out of the routing business,
+# it makes sense to keep all of the routing code together
+#
+sub setup_null_routing() {
+    save_progress_message "Null Routing the RFC 1918 subnets";
+    for ( rfc1918_networks ) {
+	emit( "run_ip route replace unreachable $_" );
+	emit( "echo \"qt ip route del unreachable $_\" >> \${VARDIR}/undo_routing" );
+    } 
+}
 
+sub setup_providers() {
     my $providers = 0;
 
     my $fn = open_file 'providers';
@@ -586,6 +585,7 @@ sub setup_providers() {
 	    }
 	}
 
+	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
 	pop_indent;
 	emit "fi\n";
@@ -594,6 +594,22 @@ sub setup_providers() {
     } else {
 	emit "\nundo_routing";
 	emit 'restore_default_route';
+	if ( $config{NULL_ROUTE_RFC1918} ) {
+	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
+
+	    push_indent;
+
+	    emit  ( '#',
+		    '# Initialize the file that holds \'undo\' commands',
+		    '#',
+		    '> ${VARDIR}/undo_routing' );
+	    setup_null_routing;
+	    emit "\nrun_ip route flush cache";
+	    
+	    pop_indent;
+
+	    emit "fi\n";
+	}
     }
 }
 

@@ -195,6 +195,68 @@ disable_critical_hosts()
 }
 
 #
+# Undo changes to routing
+#
+undo_routing() {
+
+    #
+    # Restore rt_tables database
+    #
+    if [ -f ${VARDIR}/rt_tables ]; then
+	[ -w /etc/iproute2/rt_table -a -z "$KEEP_RT_TABLES" ] && cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
+	rm -f ${VARDIR}/rt_tables
+    fi
+    #
+    # Restore the rest of the routing table
+    #
+    if [ -f ${VARDIR}/undo_routing ]; then
+	. ${VARDIR}/undo_routing
+	progress_message "Shorewall-generated routing tables and routing rules removed"
+	rm -f ${VARDIR}/undo_routing
+    fi
+
+}
+
+restore_default_route() {
+    if [ -f ${VARDIR}/default_route ]; then
+	local default_route
+	default_route=
+	local route
+
+	while read route ; do
+	    case $route in
+		default*)
+		    if [ -n "$default_route" ]; then
+			case "$default_route" in
+			    *metric*)
+		                #
+		                # Don't restore a route with a metric -- we only replace the one with metric == 0
+		                #
+				qt ip route delete default metric 0 && \
+				    progress_message "Default Route with metric 0 deleted"
+				;;
+			    *)
+				qt ip route replace $default_route && \
+				    progress_message "Default Route (${default_route# }) restored"
+				;;
+			esac
+
+			break
+		    fi
+
+		    default_route="$default_route $route"
+		    ;;
+		*)
+		    default_route="$default_route $route"
+		    ;;
+	    esac
+	done < ${VARDIR}/default_route
+
+	rm -f ${VARDIR}/default_route
+    fi
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -280,6 +342,9 @@ stop_firewall() {
 
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc1
+
+    undo_routing
+    restore_default_route
 
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
@@ -486,8 +551,11 @@ NOLOCK=
 [ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
 
 SHAREDIR=/usr/share/shorewall
-VARDIR=/var/lib/shorewall
 CONFDIR=/etc/shorewall
+
+[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir ]
+
+[ -n "${VARDIR:=/var/lib/shorewall}" ]
 
 for library in lib.base lib.config; do
     FUNCTIONS=${SHAREDIR}/${library}

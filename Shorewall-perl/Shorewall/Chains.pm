@@ -1334,7 +1334,7 @@ sub do_connbytes( $ ) {
     $dir  =~ s/://;
     $mode =~ s/://;
 
-    "${invert}-m connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
+    "${invert}-m connbytes --connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
 }
 
 #

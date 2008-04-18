@@ -402,6 +402,7 @@ sub convert_rate( $$ ) {
     if ( $rate =~ /\bfull\b/ ) {
 	$rate =~ s/\bfull\b/$full/g;
 	$rate = eval "int( $rate )";
+	fatal_error "Invalid Rate ($_[1])" unless defined $rate;
     } else {
 	$rate = rate_to_kbit $rate
     }

@@ -1326,7 +1326,7 @@ sub do_connbytes( $ ) {
 
 
     my $invert = $1 || ''; $invert = '! ' if $invert;
-    my $min    = $2 || '';
+    my $min    = $2;       $min    = 0 unless defined $min;
     my $max    = $3 || ''; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
     my $dir    = $5 || 'B'; 
     my $mode   = $6 || 'B'; 

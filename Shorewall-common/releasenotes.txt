@@ -1,4 +1,4 @@
-Shorewall 4.1 Patch Release 7.
+Shorewall 4.1 Patch Release 8.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 1  H I G H L I G H T S
@@ -121,147 +121,6 @@ Problems corrected in Shorewall-perl 4.1.7.
     IPv4 zone specified 'ipsec', dynamic IPSEC zone members were
     mis-handled by the generated ruleset.
 
-New Features in 4.1.7.
-
-1)  If an interface fails when using balanced multi-ISP routing, the
-    default route is lost. If there are remaining working interfaces
-    with dynamic gateway addresses, Shorewall will be unable to
-    determine those gateways.
-
-    Beginning with Shorewall (Shorewall-lite) 4.1.7, the 'init' script
-    may participate in gateway detection by setting variables with
-    pre-determined names as follows:
-
-         <gw>_GATEWAY
-
-    where <gw> is the interface name:
-
-    	  - in upper case
-	  - with any characters not allowed in shell variable names
-	    replaced by '_'.
-
-    Example (from OpenWRT): 
-
-    	  Interface:           eth0.1
-	  Variable:            ETH0_1_GATEWAY
-          /etc/shorewall/init: 
-
-	      ETH0_1_GATEWAY=$(uci get /var/state/network.wan0.gateway)
-
-2)  A new CONNBYTES column has been added to the tcrules file. The
-    column defines a byte or packet range that the connection must fall
-    within in order for the rule to match. The contents are:
-
-	     [!]<min>:[<max>[:{O|R|B}[:{B|P|A}]]]
-
-    !     matches if the the packet/byte count is not within the range 
-          defined by <min> and <max>.
-
-    <min> is an integer which defines the beginning of the byte/packet
-          range.
-
-    <max> is an integer which defines the end of the byte/packet range. 
-          If omitted, only the beginning of the range is checked.
-
-    The first letter gives the direction which the range refers to:
-
-    O    - The original direction of the connection.
-    R    - The opposite direction from the original connection.
-    B    - The total of both directions.
-
-    If omitted, 'B' is assumed.
-
-    The second letter determins what the range refers to.
-
-    B    - Bytes
-    P    - Packets
-    A    - Average packet size.
-
-    If omitted, 'B' is assumed.
-
-    Examples:
-
-	1000000:          - Connection has transferred a total of
-                            at least 1,000,000 bytes.
-
-        1000000::R        - Connection has transferred at least
-                            1,000,000 bytes in the direction opposite
-                            of the original direction (typical of a
-                            large download).
-
-        1000000::O:P      - Connection has sent at least 1,000,000
-			    packets in the direction of the original
-			    connection.
-
-3)  A new MANGLE_ENABLED option is added to shorewall.conf. The default
-    setting is 'Yes' which causes Shorewall to assume responsibility for
-    the Netfilter mangle table.
-
-    When MANGLE_ENABLED is set to 'No', Shorewall assumes no
-    responsibility for that table. In this setting:
-
-    a) Shorewall doesn't alter the mangle table.
-    b) You may not use Shorewall Traffic Shaping (TC_ENABLED must be
-       set to 'No'.
-    c) The tcrules file is ignored.
-    d) The providers file must be empty.
-    e) All entries in tcdevices must specify the 'classify' option and
-       traffic classification may only occur using the tcfilters file.
-
-    This allows for another application running on your firewall to
-    take over the mangle table and use it for it's own purposes.
-
-4)  Shorewall-perl now supports an ORIGINAL DEST column in macro files.
-    The column must be left empty if the macro is to be used in the
-    body of an action.
-
-    The new column is placed between the SOURCE PORT(S) and RATE LIMIT
-    columns. So that Shorewall-perl can determine which column layout
-    each macro has, a new FORMAT directive is added:
-
-    	 FORMAT {1|2}
-
-    The default is FORMAT 1 which is the old format. FORMAT 2 specifies
-    that the macro is in the new format.
-
-5)  Shorewall-perl implements a new Rfc1918 macro that deals with
-    RFC 1918 addresses. This macro should be used in place of 
-    the 'norfc1918' interface option which is deprecated.
-
-    The macro body is:
-
-    #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
-    #							PORT(S)	PORT(S)	DEST		LIMIT	GROUP
-    FORMAT 2
-    PARAM		SOURCE:10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 \
-					DEST	-	-	-	-		-	-
-    PARAM		SOURCE		DEST	-	-	-	10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
-    #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-
-    The 'norfc1918' option on the interface associated with zone 'z'
-    and with RFC1018_STRICT=Yes is equivalent to:
-
-        Rfc1918(DROP)      z    all
-
-6)  A better way to perform RFC 1918 filtration is to null-route the
-    address ranges reserved by RFC 1918. You can do that by setting the
-    new NULL_ROUTE_RFC1918 option to 'Yes' in shorewall.conf.
-
-    It is highly recommended that you also set ROUTE_FILTER=Yes to get
-    Martian messages. These will help diagnose problems where you need
-    to be able to access hosts with RFC 1918 addresses that are outside
-    of your local networks. Sometimes, these can be subtle such as the
-    case where your ISP is using RFC 1918 addresses on their DHCP
-    servers.
-
-    NULL_ROUTE_RFC1918 defaults to 'No' and is only supported by
-    Shorewall-perl; Shorewall-shell ignores the option.
-
-7)  There is now a macro.SANE which supports network-attached
-    scanners. Shorewall now automatically loads the sane connection
-    tracking helper module.
-
-    Thanks for this feature go to Tuomo Soini.
 
 New Features in Shorewall 4.1.
 
@@ -845,3 +704,143 @@ New Features in Shorewall 4.1.
     HIGH_ROUTE_MARKS=Yes. You can use marks to select between providers
     and use entries in /etc/shorewall/tcfilters (or CLASSIFY tcrules)
     for traffic shaping.
+
+28) If an interface fails when using balanced multi-ISP routing, the
+    default route is lost. If there are remaining working interfaces
+    with dynamic gateway addresses, Shorewall will be unable to
+    determine those gateways.
+
+    Beginning with Shorewall (Shorewall-lite) 4.1.7, the 'init' script
+    may participate in gateway detection by setting variables with
+    pre-determined names as follows:
+
+         <gw>_GATEWAY
+
+    where <gw> is the interface name:
+
+    	  - in upper case
+	  - with any characters not allowed in shell variable names
+	    replaced by '_'.
+
+    Example (from OpenWRT): 
+
+    	  Interface:           eth0.1
+	  Variable:            ETH0_1_GATEWAY
+          /etc/shorewall/init: 
+
+	      ETH0_1_GATEWAY=$(uci get /var/state/network.wan0.gateway)
+
+29) A new CONNBYTES column has been added to the tcrules file. The
+    column defines a byte or packet range that the connection must fall
+    within in order for the rule to match. The contents are:
+
+	     [!]<min>:[<max>[:{O|R|B}[:{B|P|A}]]]
+
+    !     matches if the the packet/byte count is not within the range 
+          defined by <min> and <max>.
+
+    <min> is an integer which defines the beginning of the byte/packet
+          range.
+
+    <max> is an integer which defines the end of the byte/packet range. 
+          If omitted, only the beginning of the range is checked.
+
+    The first letter gives the direction which the range refers to:
+
+    O    - The original direction of the connection.
+    R    - The opposite direction from the original connection.
+    B    - The total of both directions.
+
+    If omitted, 'B' is assumed.
+
+    The second letter determins what the range refers to.
+
+    B    - Bytes
+    P    - Packets
+    A    - Average packet size.
+
+    If omitted, 'B' is assumed.
+
+    Examples:
+
+	1000000:          - Connection has transferred a total of
+                            at least 1,000,000 bytes.
+
+        1000000::R        - Connection has transferred at least
+                            1,000,000 bytes in the direction opposite
+                            of the original direction (typical of a
+                            large download).
+
+        1000000::O:P      - Connection has sent at least 1,000,000
+			    packets in the direction of the original
+			    connection.
+
+30) A new MANGLE_ENABLED option is added to shorewall.conf. The default
+    setting is 'Yes' which causes Shorewall to assume responsibility for
+    the Netfilter mangle table.
+
+    When MANGLE_ENABLED is set to 'No', Shorewall assumes no
+    responsibility for that table. In this setting:
+
+    a) Shorewall doesn't alter the mangle table.
+    b) You may not use Shorewall Traffic Shaping (TC_ENABLED must be
+       set to 'No'.
+    c) The tcrules file is ignored.
+    d) The providers file must be empty.
+    e) All entries in tcdevices must specify the 'classify' option and
+       traffic classification may only occur using the tcfilters file.
+
+    This allows for another application running on your firewall to
+    take over the mangle table and use it for it's own purposes.
+
+31) Shorewall-perl now supports an ORIGINAL DEST column in macro files.
+    The column must be left empty if the macro is to be used in the
+    body of an action.
+
+    The new column is placed between the SOURCE PORT(S) and RATE LIMIT
+    columns. So that Shorewall-perl can determine which column layout
+    each macro has, a new FORMAT directive is added:
+
+    	 FORMAT {1|2}
+
+    The default is FORMAT 1 which is the old format. FORMAT 2 specifies
+    that the macro is in the new format.
+
+32) Shorewall-perl implements a new Rfc1918 macro that deals with
+    RFC 1918 addresses. This macro should be used in place of 
+    the 'norfc1918' interface option which is deprecated.
+
+    The macro body is:
+
+    #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+    #							PORT(S)	PORT(S)	DEST		LIMIT	GROUP
+    FORMAT 2
+    PARAM		SOURCE:10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 \
+					DEST	-	-	-	-		-	-
+    PARAM		SOURCE		DEST	-	-	-	10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+    #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+
+    The 'norfc1918' option on the interface associated with zone 'z'
+    and with RFC1018_STRICT=Yes is equivalent to:
+
+        Rfc1918(DROP)      z    all
+
+33) A better way to perform RFC 1918 filtration is to null-route the
+    address ranges reserved by RFC 1918. You can do that by setting the
+    new NULL_ROUTE_RFC1918 option to 'Yes' in shorewall.conf.
+
+    It is highly recommended that you also set ROUTE_FILTER=Yes to get
+    Martian messages. These will help diagnose problems where you need
+    to be able to access hosts with RFC 1918 addresses that are outside
+    of your local networks. Sometimes, these can be subtle such as the
+    case where your ISP is using RFC 1918 addresses on their DHCP
+    servers.
+
+    NULL_ROUTE_RFC1918 defaults to 'No' and is only supported by
+    Shorewall-perl; Shorewall-shell ignores the option.
+
+34) There is now a macro.SANE which supports network-attached
+    scanners. Shorewall now automatically loads the sane connection
+    tracking helper module.
+
+    Thanks for this feature go to Tuomo Soini.

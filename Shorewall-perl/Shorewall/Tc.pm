@@ -401,11 +401,14 @@ sub convert_rate( $$ ) {
 
     if ( $rate =~ /\bfull\b/ ) {
 	$rate =~ s/\bfull\b/$full/g;
+	progress_message "   Compiling $_[1]";
 	$rate = eval "int( $rate )";
 	fatal_error "Invalid Rate ($_[1])" unless defined $rate;
     } else {
 	$rate = rate_to_kbit $rate
     }
+
+    fatal_error "Invalid Rate ($_[1])" if $rate > $full;
 
     "${rate}kbit";
 }

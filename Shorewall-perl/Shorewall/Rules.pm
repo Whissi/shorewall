@@ -456,7 +456,7 @@ sub process_routestopped() {
 	my $desti   = match_dest_dev $interface;
 
 	emit "\$IPTABLES -A INPUT $sourcei $source -j ACCEPT";
-	emit "\$IPTABLES -A OUTPUT $desti $dest -j ACCEPT"    if $config{ADMINISABSENTMINDED};
+	emit "\$IPTABLES -A OUTPUT $desti $dest -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 

@@ -402,6 +402,7 @@ sub convert_rate( $$ ) {
     if ( $rate =~ /\bfull\b/ ) {
 	$rate =~ s/\bfull\b/$full/g;
 	progress_message "   Compiling $_[1]";
+	fatal_error "Invalid Rate ($_[1])" if $rate =~ m{[^0-9*/+()-]};
 	$rate = eval "int( $rate )";
 	fatal_error "Invalid Rate ($_[1])" unless defined $rate;
     } else {

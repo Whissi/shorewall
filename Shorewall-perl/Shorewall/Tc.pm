@@ -396,20 +396,22 @@ sub validate_tc_device( $$$$$ ) {
     progress_message "   Tcdevice \"$currentline\" $done.";
 }
 
-sub convert_rate( $$ ) {
-    my ($full, $rate) = @_;
+sub convert_rate( $$$ ) {
+    my ($full, $rate, $column) = @_;
 
     if ( $rate =~ /\bfull\b/ ) {
 	$rate =~ s/\bfull\b/$full/g;
-	progress_message "   Compiling $_[1]";
-	fatal_error "Invalid Rate ($_[1])" if $rate =~ m{[^0-9*/+()-]};
+	progress_message "   Compiling $column $_[1]";
+	fatal_error "Invalid $column ($_[1])" if $rate =~ m{[^0-9*/+()-]};
+	no warnings;
 	$rate = eval "int( $rate )";
-	fatal_error "Invalid Rate ($_[1])" unless defined $rate;
+	use warnings;
+	fatal_error "Invalid $column ($_[1])" unless defined $rate;
     } else {
 	$rate = rate_to_kbit $rate
     }
 
-    fatal_error "Invalid Rate ($_[1])" if $rate > $full;
+    fatal_error "$column ($_[1]) exceeds OUT-BANDWIDTH" if $rate > $full;
 
     "${rate}kbit";
 }
@@ -492,12 +494,14 @@ sub validate_tc_class( $$$$$$ ) {
     }
 
     $tcref->{$classnumber} = { tos      => [] ,
-			       rate     => convert_rate( $full, $rate ) ,
-			       ceiling  => convert_rate( $full, $ceil ) ,
+			       rate     => convert_rate( $full, $rate, 'RATE' ) ,
+			       ceiling  => convert_rate( $full, $ceil, 'CEIL' ) ,
 			       priority => $prio eq '-' ? 1 : $prio 
 			     };
 
     $tcref = $tcref->{$classnumber};
+
+    fatal_error "RATE ($tcref->{rate}) exceeds CEIL ($tcref->{ceiling})" if $tcref->{rate} > $tcref->{ceiling};
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list "\L$options", 'option' ) {

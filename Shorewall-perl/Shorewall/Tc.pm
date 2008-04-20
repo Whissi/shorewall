@@ -311,7 +311,7 @@ sub rate_to_kbit( $ ) {
     return $1 * 1000   if $rate =~ /^(\d+)mbit$/i;
     return $1 * 8000   if $rate =~ /^(\d+)mbps$/i;
     return $1 * 8      if $rate =~ /^(\d+)kbps$/i;
-    return $rate / 125 if $rate =~ /^\d+$/;
+    return $1 / 125    if $rate =~ /^(\d+)(bps)?$/;
     fatal_error "Invalid Rate ($rate)";
 }
 
@@ -411,6 +411,7 @@ sub convert_rate( $$$ ) {
 	$rate = rate_to_kbit $rate
     }
 
+    fatal_error "$column may not be zero" unless $rate;
     fatal_error "$column ($_[1]) exceeds OUT-BANDWIDTH" if $rate > $full;
 
     $rate;

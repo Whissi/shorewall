@@ -1427,10 +1427,7 @@ sub match_source_net( $;$ ) {
 	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^(!?)~(.*)$/ ) {
-	( $net = $2 ) =~ tr/-/:/;
-	my $invert = $1 ? '! ' : '';
-	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
-	"-m mac --mac-source ${invert}$net ";
+	mac_match $net;
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );

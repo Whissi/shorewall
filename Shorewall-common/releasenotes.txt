@@ -75,52 +75,20 @@ Migration Issues.
     Note that there is a new 'Rfc1918' macro that acts on addresses
     reserved by RFC 1918.
 
-Problems corrected in Shorewall 4.1.7.
+Problems Corrected in Shorewall 4.1.8
 
-1)  Previously, when IP_FORWARDING=Yes in shorewall.conf, Shorewall
-    would enable ip forwarding before instantiating the rules. This
-    could lead to incorrect connection tracking entries being created
-    between the time that forwarding was enabled and when the nat table
-    rules were instantiated.
+1)  Changes to your configuration made by NULL_ROUTE_RFC1918=Yes are
+    now reversed during 'shorewall stop' and 'shoreawll restart'.
 
-    Beginning with Shorewall 4.0.11 and 4.1.7, enabling of forwarding
-    is deferred until after the rules are in place.
+Other Changes in Shoreall 4.1.8.
 
-Problems corrected in Shorewall-perl 4.1.7.
-
-1)  Perl run-time errors occurred if an unknown service was named in
-    the /etc/shorewall/tcfilters file.
-
-2)  Trailing columns containing '-' would outwit Shorewall-perl's
-    detection of 'too few columns' errors.
-
-3) 'shorewall start' could fail with an error similar to the following:
-
-   RTNETLINK answers: Invalid argument
-   We have an error talking to the kernel
-      ERROR: Command "tc filter add dev bond0.207 parent 1:0 protocol ip
-      pref 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16
-      0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid 1:11" Failed
-   /sbin/shorewall: line 723:   755 Terminated
-   $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
-
-4)  A POLICY of ":" in /etc/shorewall/policy would produce Perl
-    run-time errors.
-
-5)  An INTERFACE of ":" in /etc/shorewall/interfaces would produce Perl
-    run-time errors.
-
-6)  A MARK of ":" in /etc/shorewall/tcrules would produce Perl
-    run-time errors.
-
-7)  If both the ESTABLISHED and RELATED sections were present then
-    each connection through chains controlled by a RATE/LIMIT in
-    /etc/shorewall/policies was counted twice toward the limit.
-
-8)  If DYNAMIC_ZONES=Yes and an entry in /etc/shorewall/hosts for an
-    IPv4 zone specified 'ipsec', dynamic IPSEC zone members were
-    mis-handled by the generated ruleset.
-
+1)  When using Shorewall-perl, the CEIL and RATE columns must now
+    contain arithmetic expressions consisting of:
+    
+    a) Numeric digits (Hex numbers not allowed).
+    b) Parentheses.
+    c) The arithmetic operators +-* and /.
+    d) The word 'full'.
 
 New Features in Shorewall 4.1.
 
@@ -844,3 +812,14 @@ New Features in Shorewall 4.1.
     tracking helper module.
 
     Thanks for this feature go to Tuomo Soini.
+
+35) Previously, when IP_FORWARDING=Yes in shorewall.conf, Shorewall
+    would enable ip forwarding before instantiating the rules. This
+    could lead to incorrect connection tracking entries being created
+
+    between the time that forwarding was enabled and when the nat table
+    rules were instantiated.
+
+    Beginning with Shorewall 4.0.11 and 4.1.7, enabling of forwarding
+    is deferred until after the rules are in place.
+

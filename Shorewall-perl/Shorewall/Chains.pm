@@ -1191,7 +1191,7 @@ sub mac_match( $ ) {
     my $mac = $_[0];
 
     $mac =~ s/^(!?)~//;
-    $mac =~ s/^!// if my $invert = ( $1 ? '! ' : '');
+    my $invert = ( $1 ? '! ' : '');
     $mac =~ tr/-/:/;
 
     fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;

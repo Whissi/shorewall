@@ -413,7 +413,7 @@ sub convert_rate( $$$ ) {
 
     fatal_error "$column ($_[1]) exceeds OUT-BANDWIDTH" if $rate > $full;
 
-    "${rate}kbit";
+    $rate;
 }
 
 sub dev_by_number( $ ) {
@@ -773,7 +773,7 @@ sub setup_traffic_shaping() {
 	my $tcref   = $tcclasses{$device}{$mark};
 	my $devicenumber  = $devref->{number};
 	my $classid = join( '', $devicenumber, ':', $mark);
-	my $rate    = $tcref->{rate};
+	my $rate    = "$tcref->{rate}kbit";
 	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
 
@@ -791,7 +791,7 @@ sub setup_traffic_shaping() {
 	}
 
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
-	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling} prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
+	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
 	       "run_tc qdisc add dev $device parent $classid handle ${mark}: sfq perturb 10"
 	     );
 	#

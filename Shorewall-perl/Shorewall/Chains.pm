@@ -1432,8 +1432,7 @@ sub match_source_net( $;$ ) {
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
-    } elsif ( $net =~ /^!/ ) {
-	$net =~ s/!//;
+    } elsif ( $net =~ s/^!// ) {
 	validate_net $net, 1;
 	"-s ! $net ";
     } else {

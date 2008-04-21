@@ -1419,14 +1419,14 @@ sub get_set_flags( $$ ) {
 sub match_source_net( $;$ ) {
     my ( $net, $restriction) = @_;
 
-    $restriction ||= NO_RESTRICT;
+    $restriction |= NO_RESTRICT;
 
     if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--src-range $net ";
-    } elsif ( $net =~ /^(!?)~(.*)$/ ) {
+    } elsif ( $net =~ /^!?~.*$/ ) {
 	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;	
 	mac_match $net;
     } elsif ( $net =~ /^(!?)\+/ ) {

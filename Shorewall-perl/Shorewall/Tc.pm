@@ -311,7 +311,7 @@ sub rate_to_kbit( $ ) {
     return $1 * 1000   if $rate =~ /^(\d+)mbit$/i;
     return $1 * 8000   if $rate =~ /^(\d+)mbps$/i;
     return $1 * 8      if $rate =~ /^(\d+)kbps$/i;
-    return $1 / 125    if $rate =~ /^(\d+)(bps)?$/;
+    return int($1/125) if $rate =~ /^(\d+)(bps)?$/;
     fatal_error "Invalid Rate ($rate)";
 }
 

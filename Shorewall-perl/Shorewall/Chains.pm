@@ -1419,7 +1419,7 @@ sub get_set_flags( $$ ) {
 sub match_source_net( $;$ ) {
     my ( $net, $restriction) = @_;
 
-    $restriction |= NO_RESTRICT;
+    $restriction ||= NO_RESTRICT;
 
     if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
 	my ($addr1, $addr2) = ( $2, $3 );

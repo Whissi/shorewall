@@ -484,6 +484,11 @@ start_command() {
 			    FAST=Yes
 			    option=${option#f}
 			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    PURGE=Yes
+			    option=${option%p}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -520,6 +525,7 @@ start_command() {
     esac
 
     export NOROUTES
+    export PURGE
 
     if [ -n "$FAST" ]; then
 	if qt mywhich make; then
@@ -765,6 +771,11 @@ restart_command() {
 			    option=
 			    shift
 			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    PURGE=Yes
+			    option=${option%p}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -803,6 +814,7 @@ restart_command() {
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     export NOROUTES
+    export PURGE
 
     progress_message3 "Compiling..."
 
@@ -1416,11 +1428,11 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -C {shell|perl} ] [ <directory> ] <system>"
     echo "   reset"
-    echo "   restart [ -n ] [ -C {shell|perl} ] [ <directory> ]"
+    echo "   restart [ -n ] [ -p ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"
-    echo "   start [ -f ] [ -n ] [ -C {shell|perl} ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ] [ -p ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
     echo "   try [ -C {shell|perl} ] <directory> [ <timeout> ]"
@@ -1454,6 +1466,7 @@ FAST=
 VERBOSE_OFFSET=0
 USE_VERBOSITY=
 NOROUTES=
+PURGE=
 EXPORT=
 export TIMESTAMP=
 noroutes=

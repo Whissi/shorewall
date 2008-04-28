@@ -671,6 +671,7 @@ EOF
     else
         setup_netfilter
         restore_dynamic_rules
+        conditionally_flush_conntrack
 EOF
     setup_forwarding;
     emit<<'EOF';

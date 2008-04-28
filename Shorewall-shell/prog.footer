@@ -72,7 +72,10 @@ case "$COMMAND" in
 	    progress_message3 "Starting $PRODUCT...."
 	    define_firewall
 	    status=$?
-	    [ -n "$SUBSYSLOCK" -a $status -eq 0 ] && touch $SUBSYSLOCK
+	    if [ $status -eq 0 ]; then
+		[ -n "$PURGE" ]      && conntrack -F
+		[ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
+	    fi
 	    progress_message3 "done."
 	fi
 	;;
@@ -106,9 +109,14 @@ case "$COMMAND" in
 
 	define_firewall
 	status=$?
-	if [ -n "$SUBSYSLOCK" ]; then
- 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+
+	if [ $status -eq 0 ]; then
+	    [ -n "$PURGE" ] && conntrack -F 
+	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
+	else
+ 	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
         fi
+
 	progress_message3 "done."
 	;;
     refresh)

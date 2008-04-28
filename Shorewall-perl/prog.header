@@ -1002,6 +1002,20 @@ find_mac() # $1 = IP address, $2 = interface
     esac
 }
 
+#
+# Flush the conntrack table if $PURGE is non-empty
+#
+conditionally_flush_conntrack() {
+
+    if [ -n "$PURGE" ]; then
+	if [ -n $(which conntrack) ]; then
+            conntrack -F
+	else
+            error_message "WARNING: The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+	fi
+    fi
+}
+
 ################################################################################
 # End of functions imported from /usr/share/shorewall/lib.base
 ################################################################################

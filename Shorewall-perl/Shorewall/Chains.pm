@@ -1474,8 +1474,7 @@ sub match_orig_dest ( $ ) {
     return '' if $net eq ALLIPv4;
     return '' unless $capabilities{CONNTRACK_MATCH};
 
-    if ( $net =~ /^!/ ) {
-	$net =~ s/!//;
+    if ( $net =~ s/^!// ) {
 	validate_net $net, 1;
 	"-m conntrack --ctorigdst ! $net ";
     } else {

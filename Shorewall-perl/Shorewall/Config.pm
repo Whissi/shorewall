@@ -265,7 +265,7 @@ sub initialize() {
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
-		    VERSION => "4.1.7",
+		    VERSION => "4.1.8",
 		    CAPVERSION => 40100 ,
 		  );
     #

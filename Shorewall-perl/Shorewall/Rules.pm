@@ -734,18 +734,14 @@ sub setup_mac_lists( $ ) {
 
 		my $targetref = $maclist_targets{$disposition};
 
-		fatal_error "Invalid DISPOSITION ($original_disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
-
-		fatal_error "Unknown Interface ($interface)" unless known_interface( $interface );
-
-		unless ( $maclist_interfaces{$interface} ) {
-		    fatal_error "No hosts on $interface have the maclist option specified";
-		}
+		fatal_error "Invalid DISPOSITION ($original_disposition)"              if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
+		fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
+		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
 
 		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 
 		$mac       = '' unless $mac && ( $mac ne '-' );
-		$addresses = '' unless $addresses && ( $addresses ne '-' );
+		$addresses = '' unless defined $addresses && ( $addresses ne '-' );
 
 		fatal_error "You must specify a MAC address or an IP address" unless $mac || $addresses;
 

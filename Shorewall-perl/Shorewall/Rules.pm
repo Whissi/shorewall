@@ -736,6 +736,8 @@ sub setup_mac_lists( $ ) {
 
 		fatal_error "Invalid DISPOSITION ($original_disposition)" if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
 
+		fatal_error "Unknown Interface ($interface)" unless known_interface( $interface );
+
 		unless ( $maclist_interfaces{$interface} ) {
 		    fatal_error "No hosts on $interface have the maclist option specified";
 		}

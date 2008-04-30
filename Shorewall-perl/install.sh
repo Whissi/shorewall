@@ -102,13 +102,18 @@ if [ -z "$RUNLEVELS" ] ; then
 	RUNLEVELS=""
 fi
 
-if [ -z "$OWNER" ] ; then
-	OWNER=root
-fi
-
-if [ -z "$GROUP" ] ; then
-	GROUP=root
-fi
+case $(uname) in
+    CYGWIN*)
+	DEST=
+	INIT=
+	OWNER=$(id -un)
+	GROUP=$(id -gn)
+	;;
+    *)
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=root
+	;;
+esac
 
 NOBACKUP=
 

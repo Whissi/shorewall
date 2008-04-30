@@ -101,6 +101,10 @@ Other Changes in Shoreall 4.1.8.
     c) The arithmetic operators +-* and /.
     d) The word 'full'.
 
+2)  The installers (install.sh) now auto-detect a Cygwin environment
+    and install under the current user's ID if OWNER and GROUP are not
+    given.
+
 New Features in Shorewall 4.1.
 
 1)  Shorewall 4.1 contains support for multiple Internet providers
@@ -380,17 +384,23 @@ New Features in Shorewall 4.1.
     traffic by MARK value. Previously, Shorewall used the CLASSIFY
     target in the POSTROUTING chain if it was available.
 
-14) The Shorewall-common installer (install.sh) now works on Windows
-    under Cygwin.
+14) The Shorewall installers (install.sh) now work on Windows
+    under Cygwin. By default, they install under the user id and group
+    of the person doing the install. This can be overridden by
+    specifying OWNER and GROUP explicitly.
+
+    Example:
+
+	OWNER=foo GROUP=bar ./install.sh
 
     To install Shorewall-perl under Cygwin:
 
     $ tar -zxf shorewall-perl-4.x.y.tar.bz2
     $ tar -zxf shorewall-common-4.x.y.tar.bz2
     $ cd shorewall-perl-4.x.y
-    $ USER=<your user id> GROUP=None ./install.sh
+    $ ./install.sh
     $ cd ../shorewall-common-4.x.y
-    $ USER=<your user id> GROUP=None ./install.sh
+    $ ./install.sh
     
     The 'shorewall' program is installed in /bin/ (a.k.a, /usr/bin/).
 

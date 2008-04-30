@@ -149,13 +149,24 @@ if [ -z "$RUNLEVELS" ] ; then
 	RUNLEVELS=""
 fi
 
-if [ -z "$OWNER" ] ; then
-	OWNER=root
-fi
+DEBIAN=
+CYGWIN=
 
-if [ -z "$GROUP" ] ; then
-	GROUP=root
-fi
+case $(uname) in
+    CYGWIN*)
+	DEST=
+	INIT=
+	OWNER=$(id -un)
+	GROUP=$(id -gn)
+	CYGWIN=Yes
+	;;
+    *)
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=root
+	;;
+esac
+
+OWNERSHIP="-o $OWNER -g $GROUP"
 
 NOBACKUP=
 
@@ -184,35 +195,29 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 #
 # Determine where to install the firewall script
 #
-DEBIAN=
-CYGWIN=
-
-OWNERSHIP="-o $OWNER -g $GROUP"
 
 if [ -n "$PREFIX" ]; then
-	if [ `id -u` != 0 ] ; then
-	    echo "Not setting file owner/group permissions, not running as root."
-	    OWNERSHIP=""
-	fi
+    if [ -z "$CYGWIN" -a `id -u` != 0 ] ; then
+	echo "Not setting file owner/group permissions, not running as root."
+	OWNERSHIP=""
 
 	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
 	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    fi    
 else
     [ -x /usr/share/shorewall-shell/compiler -o -x /usr/share/shorewall-perl/compiler.pl ] || \
 	{ echo "   ERROR: No Shorewall compiler is installed" >&2; exit 1; }
-    if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
-	DEBIAN=yes
-    elif [ -f /etc/slackware-version ] ; then
-	DEST="/etc/rc.d"
-	INIT="rc.firewall"
-    elif [ -f /etc/arch-release ] ; then
-	DEST="/etc/rc.d"
-	INIT="shorewall"
-	ARCHLINUX=yes
-    elif [ -d /cygdrive ]; then
-	DEST=
-	INIT=
-	CYGWIN=yes
+    if [ -z "$CYGWIN" ]; then
+	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
+	    DEBIAN=yes
+	elif [ -f /etc/slackware-version ] ; then
+	    DEST="/etc/rc.d"
+	    INIT="rc.firewall"
+	elif [ -f /etc/arch-release ] ; then
+	    DEST="/etc/rc.d"
+	    INIT="shorewall"
+	    ARCHLINUX=yes
+	fi
     fi
 fi
 

@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.1 -- /usr/share/shorewall-perl/Shorewall/Config.pm
+# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #

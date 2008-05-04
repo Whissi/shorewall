@@ -1,7 +1,7 @@
-Shorewall 4.1 Patch Release 8.
+Shorewall 4.2.0 Beta 1.
 
 ----------------------------------------------------------------------------
-               R E L E A S E  4 . 1  H I G H L I G H T S
+               R E L E A S E  4 . 2  H I G H L I G H T S
 ----------------------------------------------------------------------------
 1) Support is included for multiple internet providers through the same
    ethernet interface.
@@ -27,7 +27,7 @@ Migration Issues.
     originating on the firewall must be coded in the POSTROUTING table.
 
 2)  Previously, Shorewall did not range-check the value of the
-    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1:
+    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.2:
 
     a) A VERBOSITY setting outside the range -1 through 2 is rejected.
     b) After the -v and -q options are applied, the resulting value is
@@ -75,46 +75,15 @@ Migration Issues.
     Note that there is a new 'Rfc1918' macro that acts on addresses
     reserved by RFC 1918.
 
-Problems Corrected in Shorewall 4.1.8
+Problems Corrected in Shorewall 4.2.0 Beta 1
 
-1)  Changes to your configuration made by NULL_ROUTE_RFC1918=Yes are
-    now reversed during 'shorewall stop' and 'shoreawll restart'.
+None.
 
-2)  The init script on Debian now reads and utilizes the value of the
-    OPTIONS variable from /etc/default/shorewall[-lite].  Previously,
-    the value of that variable was not passed to the shorewall[-lite]
-    command.
+Other Changes in Shoreall 4.2.0 Beta 1.
 
-3)  With both Shorewall and Shorewall Lite, the 'start' and 'restart'
-    commands now support a '-p' option. This option causes the
-    Netfilter connection tracking table to be flushed (purged) as part
-    of the operation. The 'conntrack' utility must be installed to use
-    this option.
+New Features in Shorewall 4.2.
 
-Other Changes in Shoreall 4.1.8.
-
-1)  When using Shorewall-perl, the CEIL and RATE columns must now
-    contain arithmetic expressions consisting of:
-    
-    a) Numeric digits (Hex numbers not allowed).
-    b) Parentheses.
-    c) The arithmetic operators +-* and /.
-    d) The word 'full'.
-
-2)  The installers (install.sh) now auto-detect a Cygwin environment
-    and install under the current user's ID if OWNER and GROUP are not
-    given.
-
-3)  The 'start' and 'restart' commands now support a '-p' (purge)
-    option which cause all entries to be removed from the Netfilter
-    conntrack table. In order to use this option, the 'conntrack'
-    utility must be installed on your system. Although it is generally
-    not installed by default, Most distributions have this utility in
-    their repositories. 
-
-New Features in Shorewall 4.1.
-
-1)  Shorewall 4.1 contains support for multiple Internet providers
+1)  Shorewall 4.2 contains support for multiple Internet providers
     through a single ethernet interface. Configuring two providers
     through a single interface differs from two providers through two
     interfaces in several ways.
@@ -133,7 +102,7 @@ New Features in Shorewall 4.1.
 
     d) This feature requires Realm Match support in your kernel and
        iptables. If you use a capabilities file, you need to regenerate
-       the file with Shorewall 4.1 or Shorewall-lite 4.1.
+       the file with Shorewall 4.2 or Shorewall-lite 4.2.
  
     e) You must add route_rules entries for networks that are accessed
        through a particular provider.
@@ -218,7 +187,7 @@ New Features in Shorewall 4.1.
 
 	ACCEPT:NFLOG(1,0,1) vpn fw tcp ssh,time,631,8080
 
-5)  Shorewall-perl 4.1 implements an alternative syntax for macro
+5)  Shorewall-perl 4.2 implements an alternative syntax for macro
     parameters and for the NFQUEUE queue number. Rather than following
     the macro name (or NFQUEUE) with a slash ("/") and the parameter,
     the parameter may be enclosed in parentheses.
@@ -231,7 +200,7 @@ New Features in Shorewall 4.1.
     The old syntax will still be accepted but will cease to be documented
     in some future Shorewall release.
 
-6)  Shorewall 4.1 contains enhanced operational logging capabilities
+6)  Shorewall 4.2 contains enhanced operational logging capabilities
     through a set of related enhancements to Shorewall-common and
     Shorewall-perl. The enhancements are not supported by
     Shorewall-shell nor are they supported by Shorewall-lite except
@@ -330,7 +299,7 @@ New Features in Shorewall 4.1.
     originating on the firewall must be coded in the POSTROUTING chain.
 
 8)  Previously, Shorewall did not range-check the value of the
-    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.1:
+    VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.2:
 
     a) A VERBOSITY setting outside the range -1 through 2 is rejected.
     b) After the -v and -q options are applied, the resulting value is
@@ -506,7 +475,7 @@ New Features in Shorewall 4.1.
     -  complex zones with exclusions had their own 'input' and
        'output' chains.
 
-    Beginning with Shorewall-perl 4.1, all non-firewall zones will be
+    Beginning with Shorewall-perl 4.2, all non-firewall zones will be
     treated as 'complex'. This will have the effect of one additional
     filter chain per zone but in most cases, the average number of
     filter rules traversed by a connection request will be reduced.
@@ -850,4 +819,23 @@ New Features in Shorewall 4.1.
 
     Beginning with Shorewall 4.0.11 and 4.1.7, enabling of forwarding
     is deferred until after the rules are in place.
+
+36) When using Shorewall-perl, the CEIL and RATE columns must now
+    contain arithmetic expressions consisting of:
+    
+    a) Numeric digits (Hex numbers not allowed).
+    b) Parentheses.
+    c) The arithmetic operators +-* and /.
+    d) The word 'full'.
+
+37) The installers (install.sh) now auto-detect a Cygwin environment
+    and install under the current user's ID if OWNER and GROUP are not
+    given.
+
+38) The 'start' and 'restart' commands now support a '-p' (purge)
+    option which cause all entries to be removed from the Netfilter
+    conntrack table. In order to use this option, the 'conntrack'
+    utility must be installed on your system. Although it is generally
+    not installed by default, Most distributions have this utility in
+    their repositories. 
 

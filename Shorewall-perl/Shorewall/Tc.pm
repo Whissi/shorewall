@@ -476,7 +476,7 @@ sub validate_tc_class( $$$$$$ ) {
     $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
     
-    my $markval;
+    my $markval = 0;
 
     if ( $mark ne '-' ) {
 	if ( $devref->{classify} ) {
@@ -497,7 +497,8 @@ sub validate_tc_class( $$$$$$ ) {
     $tcref->{$classnumber} = { tos      => [] ,
 			       rate     => convert_rate( $full, $rate, 'RATE' ) ,
 			       ceiling  => convert_rate( $full, $ceil, 'CEIL' ) ,
-			       priority => $prio eq '-' ? 1 : $prio 
+			       priority => $prio eq '-' ? 1 : $prio ,
+			       mark     => $markval
 			     };
 
     $tcref = $tcref->{$classnumber};
@@ -769,11 +770,12 @@ sub setup_traffic_shaping() {
     my $lastdevice = '';
 
     for my $class ( @tcclasses ) {
-	my ( $device, $mark ) = split /:/, $class;
+	my ( $device, $classnum ) = split /:/, $class;
 	my $devref  = $tcdevices{$device};
-	my $tcref   = $tcclasses{$device}{$mark};
+	my $tcref   = $tcclasses{$device}{$classnum};
+	my $mark    = $tcref->{mark};
 	my $devicenumber  = $devref->{number};
-	my $classid = join( '', $devicenumber, ':', $mark);
+	my $classid = join( '', $devicenumber, ':', $classnum);
 	my $rate    = "$tcref->{rate}kbit";
 	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
@@ -793,7 +795,7 @@ sub setup_traffic_shaping() {
 
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
 	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
-	       "run_tc qdisc add dev $device parent $classid handle ${mark}: sfq perturb 10"
+	       "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq perturb 10"
 	     );
 	#
 	# add filters

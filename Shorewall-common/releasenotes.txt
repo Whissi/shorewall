@@ -77,10 +77,14 @@ Migration Issues.
 
 Problems Corrected in Shorewall 4.2.0 Beta 1
 
-1)  Previously, Shorewall was generating an incorrect tc filter when
-    MARK values were used in /etc/shorewall/tcclasses (the filter
+1)  Previously, Shorewall-perl was generating an incorrect tc filter
+    when MARK values were used in /etc/shorewall/tcclasses (the filter
     matched when the mark value was equal to the minor class ID rather
     than the contents of the MARK column).
+
+2)  Shorewall-perl now accepts upper case A through F in the MARK
+    column of the tcclasses file when the mark value is expressed in
+    hex.  Previously, only lower-case A through F were accepted.
 
 Other Changes in Shoreall 4.2.0 Beta 1.
 

@@ -30,10 +30,10 @@ SSH/ACCEPT	loc		$FW
 Ping/ACCEPT	loc		$FW
 
 #
-# Reject Ping from the "bad" net zone.. and prevent your log from being flooded..
+# Drop Ping from the "bad" net zone.. and prevent your log from being flooded..
 #
 
-Ping/REJECT	net		$FW
+Ping/DROP	net		$FW
 
 ACCEPT		$FW		loc		icmp
 ACCEPT		$FW		net		icmp

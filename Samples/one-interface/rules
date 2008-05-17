@@ -1,4 +1,4 @@
-#
+L#
 # Shorewall version 4.0 - Sample Rules File for one-interface configuration.
 # Copyright (C) 2006 by the Shorewall Team
 #
@@ -17,9 +17,9 @@
 #ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK
 #							PORT	PORT(S)		DEST		LIMIT		GROUP
 
-# Reject Ping from the "bad" net zone.. and prevent your log from being flooded..
+# Drop Ping from the "bad" net zone.. and prevent your log from being flooded..
 
-Ping/REJECT	net		$FW
+Ping/DROP	net		$FW
 
 # Permit all ICMP traffic FROM the firewall TO the net zone
 

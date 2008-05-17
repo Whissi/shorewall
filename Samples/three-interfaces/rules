@@ -32,9 +32,9 @@ SSH/ACCEPT      loc             dmz
 DNS/ACCEPT	dmz		net
 
 
-# Reject Ping from the "bad" net zone.
+# Drop Ping from the "bad" net zone.
 
-Ping/REJECT     net             $FW
+Ping/DROP   	net             $FW
 
 #
 #       Make ping work bi-directionally between the dmz, net, Firewall and local zone

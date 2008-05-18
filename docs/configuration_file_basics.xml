@@ -852,8 +852,9 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
   <section id="Variables">
     <title>Using Shell Variables</title>
 
-    <para>You may use the /etc/shorewall/params file to set shell variables
-    that you can then use in some of the other configuration files.</para>
+    <para>You may use the <filename>/etc/shorewall/params</filename> file to
+    set shell variables that you can then use in some of the other
+    configuration files.</para>
 
     <para>It is suggested that variable names begin with an upper case letter
     to distinguish them from variables used internally within the Shorewall
@@ -879,7 +880,21 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     </blockquote>
 
     <para>Variables may be used anywhere in the other configuration
-    files.</para>
+    files.<note>
+        <para>Shorewall-perl users: If you use "$FW" on the right side of
+        assignments in the <filename>/etc/shorewall/params</filename> file,
+        you must also set the FW variable in that file.</para>
+
+        <para>Example:<programlisting>/etc/shorewall/zones:
+
+        #ZONE        TYPE          OPTIONS
+        <emphasis role="bold">fw</emphasis>           firewall
+
+/etc/shorewall/params:
+
+        FW=<emphasis role="bold">fw</emphasis>
+        BLARG=$FW:206.124.146.176</programlisting></para>
+      </note></para>
 
     <para>Because the <filename>/etc/shorewall/params</filename> file is
     simply sourced into the shell, you can place arbitrary shell code in the

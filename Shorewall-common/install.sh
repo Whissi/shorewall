@@ -197,13 +197,15 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 #
 
 if [ -n "$PREFIX" ]; then
-    if [ -z "$CYGWIN" -a `id -u` != 0 ] ; then
-	echo "Not setting file owner/group permissions, not running as root."
-	OWNERSHIP=""
-    fi    
+    if [ -z "$CYGWIN" ]; then
+	if [ -a `id -u` != 0 ] ; then
+	    echo "Not setting file owner/group permissions, not running as root."
+	    OWNERSHIP=""
+	fi    
 
-    install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
-    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
+	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    fi
 else
     [ -x /usr/share/shorewall-shell/compiler -o -x /usr/share/shorewall-perl/compiler.pl ] || \
 	{ echo "   ERROR: No Shorewall compiler is installed" >&2; exit 1; }

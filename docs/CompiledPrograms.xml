@@ -34,6 +34,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 4.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    4.0.0-Beta4 or you are not running Shorewall-perl then please see <ulink
+    url="3.0/NewBridge.html">this article</ulink>.</emphasis></para>
+  </caution>
+
   <section id="Overview">
     <title>Overview</title>
 
@@ -71,36 +78,6 @@
             <listitem>
               <para>If you update an extension script, the compiled program
               will not use the updated script.</para>
-            </listitem>
-
-            <listitem>
-              <para>With Shorewall 3.2.0 through 3.2.8, the
-              <filename>params</filename> extension script is executed at
-              compile time as well as at run time.</para>
-
-              <para>Running the script at compile time allows variable
-              expansion (expanding $variable to its defined value) of
-              variables used in Shorewall configuration files to occur at
-              compile time. Running it at run-time allows your extension
-              scripts to use the variables that it creates. BUT -- for any
-              given variable, the value at compile time may be different from
-              the value at run-time unless you only assign constant
-              values.</para>
-
-              <para>For example, if you have:</para>
-
-              <programlisting>EXT_IP=$(find_first_interface_address eth0)</programlisting>
-
-              <para>in <filename>/etc/shorewall/params</filename> then all
-              occurrences of $EXT_IP in Shorewall configuration files will be
-              replaced with eth0's IP address when the program is being
-              compiled. On the other hand, if you use $EXT_IP in your start
-              script, the value will be the IP address of eth0 when the
-              program is run.</para>
-
-              <para>Bottom line: You probably want to use only constant values
-              for variables set in
-              <filename>/etc/shorewall/params</filename>.</para>
             </listitem>
 
             <listitem>
@@ -211,13 +188,6 @@
   <section id="Lite">
     <title>Shorewall Lite (Added in version 3.2.0 RC 1)</title>
 
-    <important>
-      <para>The following information applies to <emphasis
-      role="bold">Shorewall 3.2.2 and later</emphasis>. Users running versions
-      of Shorewall and Shorewall Lite earlier than 3.2.2 are urged to
-      upgrade.</para>
-    </important>
-
     <para>Shorewall Lite is a companion product to Shorewall and is designed
     to allow you to maintain all Shorewall configuration information on a
     single system within your network.</para>
@@ -237,7 +207,7 @@
           by all users on the administrative system. Not all packages secure
           the files that way and you may have to change the file permissions
           yourself. /sbin/shorewall uses the SHOREWALL_COMPILER setting to
-          determine which compiler to lanuch. If the compiler is
+          determine which compiler to launch. If the compiler is
           shorewall-shell, then the SHOREWALL_SHELL setting from
           <filename>/etc/shorewall/shorewall.conf</filename> determines the
           shell to use. /sbin/shorewall also uses the VERBOSITY setting for
@@ -326,45 +296,22 @@
           </listitem>
 
           <listitem>
-            <para>If you are running Shorewall 3.2.5 or earlier then:</para>
-
-            <blockquote>
-              <programlisting><command>cd &lt;export directory&gt;</command>
-<command>/sbin/shorewall load firewall</command></programlisting>
-
-              <para>The <ulink
-              url="manpages/shorewall.html"><command>load</command></ulink>
-              command compiles a firewall script from the configuration files
-              in the current working directory (using <command>shorewall
-              compile -e</command>), copies that file to the remote system via
-              scp and starts Shorewall Lite on the remote system via
-              ssh.</para>
-
-              <para>Example (firewall's DNS name is 'gateway'):</para>
-
-              <para><command>/sbin/shorewall load gateway</command></para>
-            </blockquote>
-
-            <para>If you are running Shorewall 3.2.6 or later then:</para>
-
-            <blockquote>
-              <programlisting><command>cd &lt;export directory&gt;</command>
+            <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall load -c firewall</command></programlisting>
 
-              <para>The <ulink
-              url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
-              command compiles a firewall script from the configuration files
-              in the current working directory (using <command>shorewall
-              compile -e</command>), copies that file to the remote system via
-              scp and starts Shorewall Lite on the remote system via ssh. The
-              -c option causes the capabilities of the remote system to be
-              generated and copied to a file named capabilities in the export
-              directory. See <link linkend="Shorecap">below</link>.</para>
+            <para>The <ulink
+            url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+            command compiles a firewall script from the configuration files in
+            the current working directory (using <command>shorewall compile
+            -e</command>), copies that file to the remote system via scp and
+            starts Shorewall Lite on the remote system via ssh. The -c option
+            causes the capabilities of the remote system to be generated and
+            copied to a file named capabilities in the export directory. See
+            <link linkend="Shorecap">below</link>.</para>
 
-              <para>Example (firewall's DNS name is 'gateway'):</para>
+            <para>Example (firewall's DNS name is 'gateway'):</para>
 
-              <para><command>/sbin/shorewall load -c gateway</command></para>
-            </blockquote>
+            <para><command>/sbin/shorewall load -c gateway</command></para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -496,13 +443,6 @@ clean:
     use that file on the firewall system to override some of the settings from
     the shorewall.conf file in the export directory.</para>
 
-    <important>
-      <para>In Shorewall 3.2.*, the name of the file was
-      <filename>/etc/shorewall-lite/shorewall.conf</filename> -- it was
-      changed to <filename>shorewall-lite.conf</filename> in version
-      3.4.0.</para>
-    </important>
-
     <para>Settings that you can override are:</para>
 
     <blockquote>
@@ -606,14 +546,6 @@ clean:
         </listitem>
 
         <listitem>
-          <para>If you are running Shorewall 3.2.5 or earlier, then on the
-          firewall system:</para>
-
-          <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
-<command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
-        </listitem>
-
-        <listitem>
           <para>On the administrative system:</para>
 
           <para>It's a good idea to include the IP address of the
@@ -646,74 +578,24 @@ clean:
           <para>If you set variables in the params file, there are a couple of
           issues:</para>
 
-          <itemizedlist>
-            <listitem>
-              <para>With Shorewall 3.2.0 through 3.2.8, the
-              <filename>params</filename> extension script is executed at
-              compile time as well as at run time.</para>
+          <para>Beginning with Shorewall 3.2.9 and 3.4.0 RC2, the
+          <filename>params</filename> file is only processed at compile time
+          if you set EXPORTPARAMS=No in <filename>shorewall.conf</filename>.
+          For run-time setting of shell variables, use the
+          <filename>init</filename> extension script.</para>
 
-              <para>Running the script at compile time allows variable
-              expansion (expanding $variable to its defined value) of
-              variables used in Shorewall configuration files to occur at
-              compile time. Running it at run-time allows your extension
-              scripts to use the variables that it creates. BUT -- for any
-              given variable, the value at compile time may be different from
-              the value at run-time unless you only assign constant
-              values.</para>
+          <para>If the <filename>params</filename> file needs to set shell
+          variables based on the configuration of the firewall system, you can
+          use this trick:</para>
 
-              <para>For example, if you have:</para>
+          <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
 
-              <programlisting>EXT_IP=$(find_first_interface_address eth0)</programlisting>
-
-              <para>in <filename>/etc/shorewall/params</filename> then all
-              occurrences of $EXT_IP in Shorewall configuration files will be
-              replaced with eth0's IP address when the program is being
-              compiled. On the other hand, if you use $EXT_IP in your start
-              script, the value will be the IP address of eth0 when the
-              program is run.</para>
-
-              <para>Bottom line: You probably want to use only constant values
-              for variables set in <filename>/etc/shorewall/params</filename>
-              or upgrade to Shorewall 3.2.9 or later (3.4.0 RC2 or
-              later).</para>
-            </listitem>
-
-            <listitem>
-              <para>Beginning with Shorewall 3.2.9 and 3.4.0 RC2, the
-              <filename>params</filename> file is only processed at compile
-              time if you set EXPORTPARAMS=No in
-              <filename>shorewall.conf</filename>. For run-time setting of
-              shell variables, use the <filename>init</filename> extension
-              script.</para>
-
-              <para>If the <filename>params</filename> file needs to set shell
-              variables based on the configuration of the firewall system, you
-              can use this trick:</para>
-
-              <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
-
-              <para>The <command>shorewall-lite call</command> command allows
-              you to to call interactively any Shorewall function that you can
-              call in an extension script.</para>
-            </listitem>
-          </itemizedlist>
+          <para>The <command>shorewall-lite call</command> command allows you
+          to to call interactively any Shorewall function that you can call in
+          an extension script.</para>
 
           <para>After having made the above changes to the firewall's export
           directory, execute the following commands.</para>
-
-          <para>For Shorewall version 3.2.5 and earlier:</para>
-
-          <blockquote>
-            <programlisting><command>cd &lt;export directory&gt;</command>
-<command>/sbin/shorewall load &lt;firewall system&gt;</command>
-</programlisting>
-
-            <para>Example (firewall's DNS name is 'gateway'):</para>
-
-            <para><command>/sbin/shorewall load gateway</command></para>
-          </blockquote>
-
-          <para>For Shorewall versions 3.2.6 and later:</para>
 
           <blockquote>
             <programlisting><command>cd &lt;export directory&gt;</command>
@@ -876,9 +758,6 @@ CAPVERSION=30405</programlisting>
         version</command></member>
       </simplelist>
     </blockquote>
-
-    <para>The <command>refresh</command> command was added in Shorewall
-    3.2.3.</para>
 
     <para>The options have their same meaning is when they are passed to
     <filename>/sbin/shorewall</filename> itself. The default VERBOSITY level

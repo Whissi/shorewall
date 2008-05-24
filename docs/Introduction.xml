@@ -68,6 +68,26 @@
           a much more efficient way to install a ruleset than running the
           iptables utility once for each rule in the ruleset.</para>
         </listitem>
+
+        <listitem>
+          <para>ifconfig - An obsolete program included in the net-utils
+          package. ifconfig was used to configure network interfaces.</para>
+        </listitem>
+
+        <listitem>
+          <para>route - An obsolete program included in the net-utils package.
+          route was used to configure routing.</para>
+        </listitem>
+
+        <listitem>
+          <para>ip - A program included in the iproute2 package. ip replaces
+          ifconfig and route in modern Linux systems.</para>
+        </listitem>
+
+        <listitem>
+          <para>tc - A program included in the iproute2 package. tc is used to
+          configure QOS/Traffic Shaping on Linux systems.</para>
+        </listitem>
       </itemizedlist>
     </section>
 
@@ -78,16 +98,17 @@
       <quote>Shorewall</quote>, is high-level tool for configuring Netfilter.
       You describe your firewall/gateway requirements using entries in a set
       of configuration files. Shorewall reads those configuration files and
-      with the help of the iptables and iptables-restore utilities, Shorewall
-      configures Netfilter to match your requirements. Shorewall can be used
-      on a dedicated firewall system, a multi-function gateway/router/server
-      or on a standalone GNU/Linux system. Shorewall does not use Netfilter's
-      ipchains compatibility mode and can thus take advantage of Netfilter's
-      connection state tracking capabilities.</para>
+      with the help of the iptables, iptables-restore, ip and tc utilities,
+      Shorewall configures Netfilter and the Linux networking subsystem to
+      match your requirements. Shorewall can be used on a dedicated firewall
+      system, a multi-function gateway/router/server or on a standalone
+      GNU/Linux system. Shorewall does not use Netfilter's ipchains
+      compatibility mode and can thus take advantage of Netfilter's connection
+      state tracking capabilities.</para>
 
-      <para>Shorewall is not a daemon. Once Shorewall has configured
-      Netfilter, its job is complete and there is no <quote>Shorewall
-      process</quote> left running in your system. The <ulink
+      <para>Shorewall is not a daemon. Once Shorewall has configured the Linux
+      networking subsystem, its job is complete and there is no
+      <quote>Shorewall process</quote> left running in your system. The <ulink
       url="starting_and_stopping_shorewall.htm">/sbin/shorewall program can be
       used at any time to monitor the Netfilter firewall</ulink>.</para>
 
@@ -166,12 +187,13 @@ net        eth0          detect        dhcp,routefilter,norfc1918
 loc        eth1          detect
 dmz        eth2          detect</programlisting>
 
-    <para>The above file defines the net zone as all IPv4 hosts interfacing to
-    the firewall through eth0, the loc zone as all IPv4 hosts interfacing
-    through eth1 and the dmz as all IPv4 hosts interfacing through eth2. It is
-    important to note that the composition of a zone is defined in terms of a
-    combination of addresses <emphasis role="bold">and</emphasis> interfaces.
-    When using the <ulink
+    <para>The above file defines the <emphasis>net</emphasis> zone as all IPv4
+    hosts interfacing to the firewall through eth0, the
+    <emphasis>loc</emphasis> zone as all IPv4 hosts interfacing through eth1
+    and the <emphasis>dmz</emphasis> as all IPv4 hosts interfacing through
+    eth2. It is important to note that the composition of a zone is defined in
+    terms of a combination of addresses <emphasis role="bold">and</emphasis>
+    interfaces. When using the <ulink
     url="manpages/shorewall-interfaces.html"><filename>/etc/shorewall/interfaces</filename></ulink>
     file to define a zone, all addresses are included; when you want to define
     a zone that contains a limited subset of the IPv4 address space, you use
@@ -204,8 +226,8 @@ dmz        eth2          detect</programlisting>
           </itemizedlist>
 
           <para>Connection request logging may be specified as part of a
-          policy and it is conventional to log DROP and REJECT
-          policies.</para>
+          policy and it is conventional (and highly recommended) to log DROP
+          and REJECT policies.</para>
         </listitem>
 
         <listitem>
@@ -217,11 +239,11 @@ dmz        eth2          detect</programlisting>
 
         <listitem>
           <para>You only need concern yourself with connection requests. You
-          don't need to define rules for how traffic that is part of an
-          established connection is handled and in most cases you don't have
-          to worry about how related connections are handled (ICMP error
-          packets and <ulink url="FTP.html">related TCP connection requests
-          such as used by FTP</ulink>).</para>
+          don't need to define rules for handling traffic that is part of an
+          established connection is and in most cases you don't have to worry
+          about how related connections are handled (ICMP error packets and
+          <ulink url="FTP.html">related TCP connection requests such as used
+          by FTP</ulink>).</para>
         </listitem>
       </itemizedlist>For each connection request entering the firewall, the
     request is first checked against the <filename
@@ -258,7 +280,7 @@ $FW        net         ACCEPT</programlisting> The above policy will:
 
         <listitem>
           <para>Drop (ignore) all connection requests from the internet to
-          your firewall or local network; these ignored connection requests
+          your firewall or local networks; these ignored connection requests
           will be logged using the <emphasis>info</emphasis> syslog priority
           (log level).</para>
         </listitem>
@@ -337,9 +359,9 @@ ACCEPT     net           $FW       tcp        22</programlisting>
 
     <orderedlist>
       <listitem>
-        <para><emphasis role="bold">Shorewall</emphasis>. This package must be
-        installed on at least one system in your network. That system must
-        also have Shorewall-shell and/or Shorewall-perl installed.</para>
+        <para><emphasis role="bold">Shorewall-common</emphasis>. This package
+        must be installed on at least one system in your network. That system
+        must also have Shorewall-shell and/or Shorewall-perl installed.</para>
       </listitem>
 
       <listitem>

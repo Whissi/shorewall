@@ -853,7 +853,7 @@ to debug/develop the newnat interface.</programlisting></para>
 
       <para><emphasis role="bold">Answer:</emphasis> The default Shorewall
       setup invokes the <emphasis role="bold">Drop</emphasis> action prior to
-      enforcing a DROP policy and the default policy to all zone from the
+      enforcing a DROP policy and the default policy to all zones from the
       internet is DROP. The Drop action is defined in
       <filename>/usr/share/shorewall/action.Drop</filename> which in turn
       invokes the <emphasis role="bold">Auth</emphasis> macro (defined in
@@ -1017,9 +1017,12 @@ to debug/develop the newnat interface.</programlisting></para>
 
       <para>This kernel change, while necessary, means that Shorewall zones
       may no longer be defined in terms of bridge ports. See <ulink
-      url="bridge-Shorewall-perl.html">the new bridging documentation</ulink>
-      for information about configuring a bridge/firewall under kernel 2.6.20
-      and later.<note>
+      url="bridge-Shorewall-perl.html">the new Shorewall-shell bridging
+      documentation</ulink> for information about configuring a
+      bridge/firewall under kernel 2.6.20 and later with Shoreawall shell or
+      the<ulink url="bridge-Shorewall-perl.html"> Shorewall-perl bridging
+      documentation</ulink> if you use Shorewall-perl
+      (highly-recommended).<note>
           <para>Following the instructions in the new bridging documentation
           will not prevent the above message from being issued.</para>
         </note></para>
@@ -1375,7 +1378,8 @@ DROP      net       fw      udp      10619</programlisting>
         </varlistentry>
 
         <varlistentry>
-          <term><emphasis>interface</emphasis>_mac</term>
+          <term><emphasis>interface</emphasis>_mac or
+          <emphasis>interface</emphasis>_rec</term>
 
           <listitem>
             <para>The packet is being logged under the <emphasis
@@ -1409,10 +1413,12 @@ DROP      net       fw      udp      10619</programlisting>
             role="bold">routeback</emphasis> option on that interface in
             <filename> <ulink
             url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>
-            </filename> or you need the <emphasis
+            , </filename>you need the <emphasis
             role="bold">routeback</emphasis> option in the relevant entry in
             <filename> <ulink
-            url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink>.</filename></para>
+            url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink>
+            or you've done something silly like define a default route out of
+            an internal interface.</filename></para>
 
             <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
             <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>,
@@ -1496,7 +1502,9 @@ DROP      net       fw      udp      10619</programlisting>
                 <para>When a DNAT rule is logged, there will never be an OUT=
                 shown because the packet is being logged before it is routed.
                 Also, DNAT logging will show the <emphasis>original</emphasis>
-                destination IP address and destination port number.</para>
+                destination IP address and destination port number. When a
+                REDIRECT rule is logged, the message will also show the
+                original destination IP address and port number.</para>
               </note>
             </listitem>
           </varlistentry>
@@ -2401,8 +2409,8 @@ eth0               eth1                        # eth1 = interface to local netwo
       <title>(FAQ 72) Can I switch to using Shorewall-perl without changing my
       Shorewall configuration?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Probably not. See the
-      <ulink url="???">Shorewall Perl article</ulink> for a list of the
+      <para><emphasis role="bold">Answer</emphasis>: Maybe yes, maybe no. See
+      the <ulink url="???">Shorewall Perl article</ulink> for a list of the
       incompatibilities between Shorewall-shell and Shorewall-perl.</para>
     </section>
   </section>

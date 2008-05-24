@@ -2407,6 +2407,28 @@ eth0               eth1                        # eth1 = interface to local netwo
     </section>
   </section>
 
+  <section id="VOIP">
+    <title>VOIP</title>
+
+    <section>
+      <title>(FAQ 77) Shorewall is eating my Asterisk egress traffic!</title>
+
+      <para>Somehow, my firewall config is causing a one-way audio problem in
+      Asterisk. If a person calls into the PBX, they cannot hear me speaking,
+      but I can hear them. If I plug the Asterisk server directly into the
+      router, bypassing the firewall, the problem goes away.</para>
+
+      <para><emphasis role="bold">Answer (requires Shorewall 4.0.6 or
+      later):</emphasis> If your kernel version is 2.6.20 or
+      earlier:<programlisting>rmmod ip_nat_sip
+rmmod ip_conntrack_sip</programlisting>Then change the DONT_LOAD specification
+      in your shorewall.conf to:<programlisting>DONT_LOAD=ip_nat_sip,ip_conntrack_sip</programlisting>If
+      your kernel version is 2.6.21 or later:<programlisting>rmmod nf_nat_sip
+rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
+      in your shorewall.conf to:<programlisting>DONT_LOAD=nf_nat_sip,nf_conntrack_sip</programlisting></para>
+    </section>
+  </section>
+
   <section id="Misc">
     <title>Miscellaneous</title>
 

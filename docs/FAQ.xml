@@ -2425,7 +2425,10 @@ rmmod ip_conntrack_sip</programlisting>Then change the DONT_LOAD specification
       in your shorewall.conf to:<programlisting>DONT_LOAD=ip_nat_sip,ip_conntrack_sip</programlisting>If
       your kernel version is 2.6.21 or later:<programlisting>rmmod nf_nat_sip
 rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
-      in your shorewall.conf to:<programlisting>DONT_LOAD=nf_nat_sip,nf_conntrack_sip</programlisting></para>
+      in your shorewall.conf to:<programlisting>DONT_LOAD=nf_nat_sip,nf_conntrack_sip</programlisting>If
+      you are running a version of Shorewall earlier than 4.0.6, you can avoid
+      loading the sip helper modules by following the suggestions in <link
+      linkend="faq59">FAQ 59</link>.</para>
     </section>
   </section>
 

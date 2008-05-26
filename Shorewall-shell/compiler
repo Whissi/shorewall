@@ -5491,7 +5491,7 @@ if [ -n "\$addr" ]; then
     addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
     for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
         if in_network \$addr \$network; then
-            startup_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
+            error_message "WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
         fi
     done
 fi

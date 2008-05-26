@@ -1184,67 +1184,30 @@ DROP      net       fw      udp      10619</programlisting>
       url="shorewall_logging.html">Shorewall logging
       documentation</ulink>.</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>Find where klogd is being started (it will be from one of the
-          files in /etc/init.d -- sysklogd, klogd, ...). Modify that file or
-          the appropriate configuration file so that klogd is started with
-          <quote>-c <emphasis>&lt;n&gt;</emphasis> </quote> where
-          <emphasis>&lt;n&gt;</emphasis> is a log level of 5 or less;
-          and/or</para>
-        </listitem>
+      <para>The max log level to be sent to the console is available in
+      /proc/sys/kernel/printk:<programlisting>teastep@ursa:~$ <emphasis
+            role="bold">cat /proc/sys/kernel/printk</emphasis>
+6      6       1       7
+teastep@ursa:~$ </programlisting>The first number determines the maximum log
+      level (syslog priority) sent to the console. Messages with priority
+      <emphasis role="bold">less than</emphasis> this number are sent to the
+      console. On the system shown in the example above, priorities 0-5 are
+      sent to the console. Since Shorewall defaults to using 'info' (6), the
+      Shorewall-generated Netfilter ruleset will generate log messages that
+      <emphasis role="bold">will not appear on the console.</emphasis> </para>
 
-        <listitem>
-          <para>See the <quote>dmesg</quote> man page (<quote>man
-          dmesg</quote>). You must add a suitable <quote>dmesg</quote> command
-          to your startup scripts or place it in /etc/shorewall/start.</para>
-        </listitem>
-      </itemizedlist>
+      <para>The second number is the default log level for kernel printk()
+      calls that do not specify a log level.</para>
 
-      <warning>
-        <para>The hints below are just that; they have been known to work with
-        at least one release in the past but are not guaranteed to continue to
-        work with all releases of a particular distribution. As described
-        above, you may have to dig around in your distribution's init scripts
-        in order to find the correct solution.</para>
-      </warning>
+      <para>The third number specifies the minimum console log level while the
+      fourth gives the default console log level.</para>
 
-      <tip>
-        <para>Under RedHat and Mandriva, the max <ulink
-        url="shorewall_logging.html">log level</ulink> that is sent to the
-        console is specified in /etc/sysconfig/init in the LOGLEVEL variable
-        and in /etc/sysconfig/syslog in the KLOGD_PARAMS variable:</para>
+      <para>If, on your system, the first number is 7 or greater, then the
+      default Shorewall configurations will cause messages to be written to
+      your console. The simplest solution is to add this to your
+      /etc/sysctl.conf file:<programlisting>kernel.printk = 4 4 1 7</programlisting></para>
 
-        <itemizedlist>
-          <listitem>
-            <para>Set <quote>LOGLEVEL=5</quote> to suppress info (log level 6)
-            messages on the console during bootup.</para>
-          </listitem>
-
-          <listitem>
-            <para>Add "-c 5" to KLOGD_PARAMS to suppress info (log level 6)
-            messages on the console.</para>
-          </listitem>
-        </itemizedlist>
-      </tip>
-
-      <tip>
-        <para>Under Debian with syslog, you can set KLOGD=<quote>-c 5</quote>
-        in <filename>/etc/init.d/klogd</filename> to suppress info (log level
-        6) messages on the console.</para>
-      </tip>
-
-      <tip>
-        <para>Under Debian with syslog-ng, you can set "CONSOLE_LOG_LEVEL=5"
-        IN <filename>/etc/default/syslog-ng</filename> to suppress info (log
-        level 6) messages on the console.</para>
-      </tip>
-
-      <tip>
-        <para>Under SUSE, add <quote>-c 5</quote> to KLOGD_PARAMS in
-        /etc/sysconfig/syslog to suppress info (log level 6) messages on the
-        console.</para>
-      </tip>
+      <para>then<programlisting><command>sysctl -p /etc/sysctl.conf</command></programlisting></para>
 
       <section id="faq16a">
         <title>(FAQ 16a) Why can't I see any Shorewall messages in

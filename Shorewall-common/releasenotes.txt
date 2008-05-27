@@ -1,4 +1,4 @@
-Shorewall 4.2.0 Beta 1.
+Shorewall 4.2.0 Beta 2.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -75,18 +75,16 @@ Migration Issues.
     Note that there is a new 'Rfc1918' macro that acts on addresses
     reserved by RFC 1918.
 
-Problems Corrected in Shorewall 4.2.0 Beta 1
+Problems Corrected in Shorewall 4.2.0 Beta 2
 
-1)  Previously, Shorewall-perl was generating an incorrect tc filter
-    when MARK values were used in /etc/shorewall/tcclasses (the filter
-    matched when the mark value was equal to the minor class ID rather
-    than the contents of the MARK column).
+1) When 'norfc1918' was specified on an interface with an RFC 1918 IP
+   address, the compiled script would terminate without changing the
+   state of the firewall. Under these circumstances, the script now
+   issues a warning message and continues. 
 
-2)  Shorewall-perl now accepts upper case A through F in the MARK
-    column of the tcclasses file when the mark value is expressed in
-    hex.  Previously, only lower-case A through F were accepted.
+Other Changes in Shoreall 4.2.0 Beta 2.
 
-Other Changes in Shoreall 4.2.0 Beta 1.
+None.
 
 New Features in Shorewall 4.2.
 

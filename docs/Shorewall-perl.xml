@@ -381,10 +381,12 @@ insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
             <listitem>
               <para>Your ipsets must be loaded before Shorewall starts. You
               are free to try to do that with the following code in
-              <filename>/etc/shorewall/start</filename>:</para>
+              <filename>/etc/shorewall/start (it works for me; your milage may
+              vary)</filename>:</para>
 
               <programlisting>if [ "$COMMAND" = start ]; then
     ipset -U :all: :all:
+    ipset -U :all: :default:
     ipset -F
     ipset -X
     ipset -R &lt; /etc/shorewall/ipsets

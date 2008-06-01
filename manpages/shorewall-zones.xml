@@ -44,10 +44,13 @@
           default LOGFORMAT, zone names can be at most 5 characters
           long.</para>
 
-          <para>Where a zone is nested in one or more other zones, you may
-          follow the (sub)zone name by ":" and a comma-separated list of the
-          parent zones. The parent zones must have been declared in earlier
-          records in this file. See <ulink
+          <para>The order in which Shorewall matches addresses from packets to
+          zones is determined by the order of zone declarations. Where a zone
+          is nested in one or more other zones, you may either ensure that the
+          nested zone precedes its parents in this file, or you may follow the
+          (sub)zone name by ":" and a comma-separated list of the parent
+          zones. The parent zones must have been declared in earlier records
+          in this file. See <ulink
           url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for
           additional information.</para>
 
@@ -60,7 +63,8 @@ c:a,b     ipv4</programlisting>
 
           <para>Currently, Shorewall uses this information to reorder the zone
           list so that parent zones appear after their subzones in the list.
-          The IMPLICIT_CONTINUE option in shorewall.conf can also create
+          The IMPLICIT_CONTINUE option in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5 can also create
           implicit CONTINUE policies to/from the subzone.</para>
 
           <para>In the future, Shorewall may make additional use of nesting
@@ -240,6 +244,9 @@ c:a,b     ipv4</programlisting>
 
   <refsect1>
     <title>See ALSO</title>
+
+    <para><ulink
+    url="http://www.shorewall.net/Multiple_Zones.html">http://www.shorewall.net/Multiple_Zones.html</ulink>.</para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),

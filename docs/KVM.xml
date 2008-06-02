@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>KVM (Kernel-mode Virtual Machine)</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2008</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Kernel-mode Virtual Machines (<ulink
+    url="http://kvm.qumranet.com/">http://kvm.qumranet.com/</ulink>) is a
+    virtualization platform that leverages the virtualization capabilities
+    available with current microprocessors from both
+    <trademark>Intel</trademark> and <trademark>AMD</trademark>. For an
+    overview of KVM, please see my <ulink
+    url="http://www.shorewall.net/Linuxfest-2008.pdf">2008 Linuxfest Northwest
+    presentation</ulink>.</para>
+
+    <para>I use KVM to implement a number of virtual machines running various
+    Linux Distributions. The following diagram shows the entire
+    network.</para>
+
+    <graphic align="center" fileref="images/Network2008.png" />
+
+    <para>My personal laptop (Ursa) hosts the virtual machines. As shown in
+    the diagram, Ursa has routes to the internet through both the
+    <trademark>Linksys</trademark> WRT300N and through my Shorewall firewall.
+    This allows me to test the <ulink url="MultiISP.html">Shorewall Multi-ISP
+    feature</ulink>, even though I only have a single internet
+    connection</para>
+
+    <para>The Linux Bridges shown in the diagram are, of course, actually
+    within their associated system (Firewall or Ursa) but I've pictured them
+    separately.</para>
+  </section>
+
+  <section>
+    <title>Networking Configuration</title>
+
+    <para>I use a network configuration where each VM has it's own VNET and
+    tap device and the tap devices are all configured as ports on a Linux
+    Bridge. For clarity, I've only shown four of the virtual machines
+    available on the system.</para>
+
+    <graphic align="center" fileref="images/KVM1.png" />
+
+    <para>I run a DHCP server on the host to assign IP addresses to the VMs
+    and I also run dmsmasq to act as a nameserver for the VMs. The latter is
+    important when I take the laptop on the road. I'm currently running a
+    separate ISC DHCP server but I have it on my todo list to configure
+    dnsmasq as a DHCP server, thus eliminating one process on the
+    system.</para>
+
+    <para>The bridge is configured using the script described in my Linuxfest
+    presentation linked above. The script may be found at <ulink
+    url="http://www.shorewall.net/pub/shorewall/contrib/kvm/kvm">http://www.shorewall.net/pub/shorewall/contrib/kvm/kvm</ulink>.</para>
+
+    <para>With this configuration, and with only a single network interface on
+    the laptop, this is just a simple <ulink
+    url="two-interface.xml">two-interface masquerading setup</ulink> where the
+    local network interface is <filename class="devicefile">br0</filename>. As
+    with all bridges, <filename class="devicefile">br0</filename> must be
+    configured with the <option>routeback</option> option in <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+  </section>
+</article>

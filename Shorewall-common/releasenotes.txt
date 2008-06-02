@@ -84,6 +84,36 @@ Problems Corrected in Shorewall 4.2.0 Beta 2
 
 Other Changes in Shoreall 4.2.0 Beta 2.
 
+1) A 'save' extension script is added. The script is run after
+   iptables-save has completed successfully.
+
+   The 'load' and 'reload' commands copy the save script (if any) to
+   /etc/shorewall-lite/ on the remove firewall system. The 'export'
+   command copies the file to the same directory as the 'firewall' and
+   'firewall.conf' scripts.
+
+   I have the following commands in my 'save' script:
+
+     [ -s /root/ipsets.save ] && cp -a /root/ipsets.save /root/ipsets.save.backup
+     ipset -S > /root/ipsets.save
+
+   These commands complement my 'init' script:
+
+     qt modprobe ifb numifbs=1
+     qt ip link set dev ifb0 up
+
+     if [ "$COMMAND" = start ]; then
+         ipset -U :all: :all:
+   	 ipset -U :all: :default:
+   	 ipset -F
+   	 ipset -X
+   	 ipset -R < /root/ipsets.save
+     fi
+
+   Those two scripts allow me to save and restore the contents of my
+   ipsets automatically under Shorewall-perl/Shorewall-lite (my
+   routestopped file does not use ipsets).
+    
 None.
 
 New Features in Shorewall 4.2.

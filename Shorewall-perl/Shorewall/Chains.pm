@@ -652,13 +652,13 @@ sub use_input_chain($) {
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one
     #
-    my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone}};
+    my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone4}};
 
     return 0 if $chainref;
     #
     # Use the '<zone>2fw' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '' , $interfaceref->{zone} , '2' , firewall_zone )};
+    $chainref = $filter_table->{join( '' , $interfaceref->{zone4} , '2' , firewall_zone )};
 
     ! $chainref->{referenced};
 }   
@@ -696,13 +696,13 @@ sub use_output_chain($) {
     #
     # Interface associated with a single zone -- use the zone's output chain if it has one
     #    
-    my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone}};
+    my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone4}};
 
     return 0 if $chainref;
     #
     # Use the 'fw2<zone>' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
+    $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone4} )};
 
     ! $chainref->{referenced};
 }

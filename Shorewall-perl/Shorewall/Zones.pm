@@ -127,7 +127,7 @@ our %reservedName = ( all => 1,
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
-#                                     zone        => <zone name>
+#                                     zone4       => <zone name>
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
@@ -455,7 +455,7 @@ sub add_group_to_zone($$$$$)
     my $arrayref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    my $ifacezone = $interfaces{$interface}{zone};
+    my $ifacezone = $interfaces{$interface}{zone4};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -752,7 +752,7 @@ sub validate_interfaces_file( $ )
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
 
-    	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
+    	$interfaces{$interface}{zone4} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$currentline\" Validated";
 
@@ -1028,7 +1028,7 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
+	if ( ! $interfaces{$interface}{zone4} && $interfaces{$interface}{options}{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIPv4 ];
 	}
     }

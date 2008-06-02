@@ -290,7 +290,7 @@ save_config() {
 		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
 			echo "   Dynamic Rules Saved"
 			if [ -f ${VARDIR}/.restore ]; then
-			    if iptables-save | iptablesbug > ${VARDIR}/restore-$$; then
+			    if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
 				cp -f ${VARDIR}/.restore $RESTOREPATH
 				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
 				chmod +x $RESTOREPATH
@@ -333,6 +333,8 @@ save_config() {
 					echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved" >&2
 					;;
 				esac
+
+				run_user_exit save
 			    else
 			        rm -f ${VARDIR}/restore-$$
 				echo "   ERROR: Currently-running Configuration Not Saved" >&2
@@ -838,7 +840,7 @@ restore_command() {
 
 	[ -n "$nolock" ] || mutex_off
     else
-	echo "File ${VARDIR}/$RESTOREFILE: file not found"
+	echo "File $RESTOREPATH: file not found"
 	[ -n "$nolock" ] || mutex_off
 	exit 2
     fi

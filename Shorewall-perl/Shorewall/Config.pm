@@ -204,6 +204,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 HASHLIMIT_MATCH => 'Hashlimit Match',
 		 NFQUEUE_TARGET  => 'NFQUEUE Target',
 		 REALM_MATCH     => 'Realm Match',
+		 HELPER_MATCH    => 'Helper Match',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -266,7 +267,7 @@ sub initialize() {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    VERSION => "4.2.0-Beta2",
-		    CAPVERSION => 40100 ,
+		    CAPVERSION => 40190 ,
 		  );
     #
     # From shorewall.conf file
@@ -409,6 +410,7 @@ sub initialize() {
 	       HASHLIMIT_MATCH => undef,
 	       NFQUEUE_TARGET => undef,
 	       REALM_MATCH => undef,
+	       HELPER_MATCH => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1623,8 +1625,8 @@ sub determine_capabilities( $ ) {
     $capabilities{TCPMSS_MATCH}    = qt1( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
     $capabilities{HASHLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT" );
     $capabilities{NFQUEUE_TARGET}  = qt1( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
-
-    $capabilities{REALM_MATCH} = qt1( "$iptables -A $sillyname -m realm --realm 1" );
+    $capabilities{REALM_MATCH}     = qt1( "$iptables -A $sillyname -m realm --realm 1" );
+    $capabilities{HELPER_MATCH}    = qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
 
     qt1( "$iptables -F $sillyname" );
     qt1( "$iptables -X $sillyname" );

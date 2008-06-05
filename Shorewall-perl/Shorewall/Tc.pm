@@ -179,8 +179,8 @@ INIT {
     initialize;
 }
 
-sub process_tc_rule( $$$$$$$$$$$ ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = @_;
+sub process_tc_rule( $$$$$$$$$$$$ ) {
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes , $helper ) = @_;
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
@@ -284,7 +284,7 @@ sub process_tc_rule( $$$$$$$$$$$ ) {
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} ,
-				     do_proto( $proto, $ports, $sports) . do_user( $user ) . do_test( $testval, $mask ) . do_tos( $tos ) . do_connbytes( $connbytes ),
+				     do_proto( $proto, $ports, $sports) . do_user( $user ) . do_test( $testval, $mask ) . do_tos( $tos ) . do_connbytes( $connbytes ) . do_helper( $helper ),
 				     $source ,
 				     $dest ,
 				     '' ,
@@ -887,12 +887,12 @@ sub setup_tc() {
 
 	    while ( read_a_line ) {
 
-		my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes ) = split_line1 2, 11, 'tcrules file';
+		my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
 
 		if ( $mark eq 'COMMENT' ) {
 		    process_comment;
 		} else {
-		    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes;
+		    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes, $helper;
 		}
 		
 	    }

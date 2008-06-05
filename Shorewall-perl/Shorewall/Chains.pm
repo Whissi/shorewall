@@ -123,6 +123,7 @@ our %EXPORT_TAGS = (
 				       do_user
 				       do_tos
 				       do_connbytes
+				       do_helper
 				       match_source_dev
 				       match_dest_dev
 				       iprange_match
@@ -1343,6 +1344,17 @@ sub do_connbytes( $ ) {
     $mode =~ s/://;
 
     "${invert}-m connbytes --connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
+}
+
+#
+# Create a "-m helper" match for the passed argument
+#
+sub do_helper( $ ) {
+    my $helper = shift;
+
+    return '' if $helper eq '-';
+
+    qq(-m helper --helper "$helper");
 }
 
 #

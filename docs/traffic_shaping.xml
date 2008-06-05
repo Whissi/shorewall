@@ -840,6 +840,13 @@ ppp0           6000kbit         500kbit</programlisting>
             </simplelist>
           </blockquote>
         </listitem>
+
+        <listitem>
+          <para>HELPER (Optional, added in Shorewall version 4.2.0 Beta 2).
+          Names one of the Netfiler protocol helper modules such as
+          <emphasis>ftp</emphasis>, <emphasis>sip</emphasis>,
+          <emphasis>amanda</emphasis>, etc.</para>
+        </listitem>
       </itemizedlist>
 
       <example id="Example1">
@@ -919,6 +926,22 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
           we're done. If the packet is P2P, set the packet mark to 4. If the
           packet mark has been set, save it to the connection mark."</para>
         </blockquote>
+      </example>
+
+      <example>
+        <title></title>
+
+        <para>Mark all forwarded VOIP connections with connection mark 1 and
+        ensure that all VOIP packets also receive that mark (assumes that
+        nf_conntrack_sip is loaded and that Shorewall-perl 4.2.0 or later is
+        being used).</para>
+
+        <programlisting>#MARK    SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST      CONNBYTES      TOS      HELPER
+#                                                                PORT(S)  GROUP
+RESTORE  0.0.0.0/0      0.0.0.0/0       all        -             -        -         0
+CONTINUE 0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0
+1        0.0.0.0/0      0.0.0.0/0       all        -             -        -         -         -              -        sip
+SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0</programlisting>
       </example>
     </section>
 

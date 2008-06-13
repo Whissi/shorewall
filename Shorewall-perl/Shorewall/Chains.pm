@@ -589,16 +589,12 @@ sub chain_base($) {
     $chain;
 }
 
-sub chain_base_cond($) {
-    $config{DYNAMIC_ZONES} ? chain_base($_[0]) : $_[0];
-}
-
 #
 # Forward Chain for an interface
 #
 sub forward_chain($)
 {
-    chain_base_cond($_[0]) . '_fwd';
+    chain_base($_[0]) . '_fwd';
 }
 
 #
@@ -625,7 +621,7 @@ sub use_forward_chain($) {
 #
 sub input_chain($)
 {
-    chain_base_cond($_[0]) . '_in';
+    chain_base($_[0]) . '_in';
 }
 
 #
@@ -669,7 +665,7 @@ sub use_input_chain($) {
 #
 sub output_chain($)
 {
-    chain_base_cond($_[0]) . '_out';
+    chain_base_($_[0]) . '_out';
 }
 
 #
@@ -713,7 +709,7 @@ sub use_output_chain($) {
 #
 sub masq_chain($)
 {
-     chain_base_cond($_[0]) . '_masq';
+     chain_base($_[0]) . '_masq';
 }
 
 #
@@ -728,12 +724,12 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    chain_base_cond($_[0]) . '_mac';
+    chain_base($_[0]) . '_mac';
 }
 
 sub macrecent_target($)
 {
-     $config{MACLIST_TTL} ? chain_base_cond($_[0]) . '_rec' : 'RETURN';
+     $config{MACLIST_TTL} ? chain_base($_[0]) . '_rec' : 'RETURN';
 }
 
 #
@@ -741,22 +737,22 @@ sub macrecent_target($)
 #
 sub dynamic_fwd( $ )
 {
-    chain_base_cond($_[0]) . '_dynf';
+    chain_base($_[0]) . '_dynf';
 }
 
 sub dynamic_in( $ )
 {
-    chain_base_cond($_[0]) . '_dyni';
+    chain_base($_[0]) . '_dyni';
 }
 
 sub dynamic_out( $ ) # $1 = interface
 {
-    chain_base_cond($_[0]) . '_dyno';
+    chain_base($_[0]) . '_dyno';
 }
 
 sub dynamic_chains( $ ) #$1 = interface
 {
-    my $c = chain_base_cond($_[0]);
+    my $c = chain_base($_[0]);
 
     ( $c . '_dyni' , $c . '_dynf' , $c . '_dyno' );
 }
@@ -771,7 +767,7 @@ sub zone_dynamic_chain( $ ) # $1 = zone
 #
 sub dnat_chain( $ )
 {
-    chain_base_cond($_[0]) . '_dnat';
+    chain_base($_[0]) . '_dnat';
 }
 
 #
@@ -779,7 +775,7 @@ sub dnat_chain( $ )
 #
 sub snat_chain( $ )
 {
-    chain_base_cond($_[0]) . '_snat';
+    chain_base($_[0]) . '_snat';
 }
 
 #
@@ -787,7 +783,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    chain_base_cond($_[0]) . '_ecn';
+    chain_base($_[0]) . '_ecn';
 }
 
 #
@@ -795,7 +791,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = chain_base_cond($_[0]);
+    my $c = chain_base($_[0]);
 
     ( $c . '_fwd', $c . '_in' );
 }

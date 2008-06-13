@@ -638,20 +638,6 @@ sub add_common_rules() {
 	}
     }
 
-    if ( $config{DYNAMIC_ZONES} ) {
-	for $interface ( all_interfaces ) {
-	    for $chain ( dynamic_chains $interface ) {
-		new_standard_chain $chain;
-	    }
-
-	    new_nat_chain( $chain = dynamic_in($interface) );
-
-	    add_rule $filter_table->{input_chain $interface},   '-j ' . dynamic_in  $interface; 
-	    add_rule $filter_table->{forward_chain $interface}, '-j ' . dynamic_fwd $interface;
-	    add_rule $filter_table->{output_chain $interface},  '-j ' . dynamic_out $interface;
-	}
-    }
-
     $list = find_interfaces_by_option 'upnp';
 
     if ( @$list ) {
@@ -1573,10 +1559,6 @@ sub generate_matrix() {
 	    my $type       = $zoneref->{type};
 	    my $source_ref = ( $zoneref->{hosts}{ipsec4} ) || {};
 
-	    if ( $config{DYNAMIC_ZONES} ) {
-		create_zone_dyn_chain $zone, $frwd_ref if ( scalar keys %$source_ref ) || ( $type eq 'ipsec4' );
-	    }
-
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
 		my $sourcechainref;
 		my $interfacematch = '';
@@ -1623,11 +1605,6 @@ sub generate_matrix() {
 
 	if ( @$exclusions ) {
 	    insert_exclusions $dnatref, $exclusions if $dnatref->{referenced};
-	}
-
-	if ( $config{DYNAMIC_ZONES} ) {
-	    push @rule_chains , [ firewall_zone , $zone , $chain1 ] if $chain1;
-	    push @rule_chains , [ $zone , firewall_zone , $chain2 ];
 	}
 
 	if ( $nested ) {
@@ -1831,8 +1808,6 @@ sub generate_matrix() {
 
 	    next unless $chain; # CONTINUE policy with no rules
 
-	    push @rule_chains, [ $zone , $zone1 , $chain ] if $config{DYNAMIC_ZONES};
-
 	    my $num_ifaces = 0;
 
 	    if ( $zone eq $zone1 ) {
@@ -1952,13 +1927,6 @@ sub generate_matrix() {
 
     addnatjump 'PREROUTING'  , 'nat_in'  , '';
     addnatjump 'POSTROUTING' , 'nat_out' , '';
-
-    if ( $config{DYNAMIC_ZONES} ) {
-	for my $interface ( @interfaces ) {
-	    addnatjump 'PREROUTING' , dynamic_in( $interface ), match_source_dev( $interface );
-	}
-    }
-
     addnatjump 'PREROUTING', 'dnat', '';
 
     for my $interface ( @interfaces ) {

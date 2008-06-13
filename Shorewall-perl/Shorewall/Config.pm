@@ -1870,7 +1870,7 @@ sub get_configuration( $ ) {
     default_yes_no 'DISABLE_IPV6'               , '';
     default_yes_no 'DYNAMIC_ZONES'              , '';
 
-    fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option" if $config{DYNAMIC_ZONES} && $export;
+    fatal_error "DYNAMIC_ZONES=Yes is not supported by Shorewall-perl $global{VERSION}" if $config{DYNAMIC_ZONES};
 
     default_yes_no 'BRIDGING'                   , '';
 

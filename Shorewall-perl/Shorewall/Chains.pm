@@ -665,7 +665,7 @@ sub use_input_chain($) {
 #
 sub output_chain($)
 {
-    chain_base_($_[0]) . '_out';
+    chain_base($_[0]) . '_out';
 }
 
 #
@@ -1404,6 +1404,8 @@ sub iprange_match() {
 sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
     my $options = $option;
+
+    $setname =~ s/^!//; # Caller has already taken care of leading !
 
     if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
 	$setname  = $1;

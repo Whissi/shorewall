@@ -44,15 +44,10 @@ our @EXPORT = qw( process_tos
 		  process_rules
 		  generate_matrix
 		  setup_mss
-		  dump_rule_chains
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
 our $VERSION = 4.1.5;
 
-#
-# Keep track of chains for the /var/lib/shorewall[-lite]/chains file
-#
-our @rule_chains;
 #
 # Set to one if we find a SECTION
 #
@@ -78,7 +73,6 @@ my %rules_commands = ( COMMENT => 0,
 #
 
 sub initialize() {
-    @rule_chains = ();
     $sectioned = 0;
     $macro_nest_level = 0;
     $current_param = '';
@@ -2026,10 +2020,6 @@ sub setup_mss( ) {
     }
 
     add_rule $chainref , "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS $option" if $clampmss;
-}
-
-sub dump_rule_chains() {
-    emit_unindented "@$_" for ( @rule_chains );
 }
 
 1;

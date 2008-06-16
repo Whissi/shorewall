@@ -614,10 +614,6 @@ sub generate_script_3($) {
 
     push_indent;
 
-    emit 'cat > ${VARDIR}/chains << __EOF__';
-    dump_rule_chains;
-    emit_unindented '__EOF__';
-
     emit 'cat > ${VARDIR}/zones << __EOF__';
     dump_zone_contents;
     emit_unindented '__EOF__';

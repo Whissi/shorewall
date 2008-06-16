@@ -1787,6 +1787,17 @@ sub get_capabilities( $ ) {
 }
 
 #
+# Deal with options that we no longer support
+#
+sub unsupported_yes_no( $ ) {
+    my $option = shift;
+    
+    default_yes_no $option, '';
+
+    fatal_error "$=Yes is not supported by Shorewall-perl $globals{VERSION}" if $config{$option};
+}
+
+#
 # - Read the shorewall.conf file
 # - Read the capabilities file, if any
 # - establish global hashes %config , %globals and %capabilities
@@ -1868,13 +1879,11 @@ sub get_configuration( $ ) {
     default_yes_no 'ADMINISABSENTMINDED'        , '';
     default_yes_no 'BLACKLISTNEWONLY'           , '';
     default_yes_no 'DISABLE_IPV6'               , '';
-    default_yes_no 'DYNAMIC_ZONES'              , '';
 
-    fatal_error "DYNAMIC_ZONES=Yes is not supported by Shorewall-perl $globals{VERSION}" if $config{DYNAMIC_ZONES};
-
-    default_yes_no 'BRIDGING'                   , '';
-
-    fatal_error 'BRIDGING=Yes is not supported by Shorewall-perl' . $globals{VERSION} if $config{BRIDGING};
+    unsupported_yes_no 'DYNAMIC_ZONES';
+    unsupported_yes_no 'BRIDGING';
+    unsupported_yes_no 'SAVE_IPSETS';
+    unsupported_yes_no 'MAPOLDACTIONS';
 
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
@@ -1883,14 +1892,6 @@ sub get_configuration( $ ) {
 
     default_yes_no 'LOGTAGONLY'                 , ''; $globals{LOGTAGONLY} = $config{LOGTAGONLY};
     default_yes_no 'RFC1918_STRICT'             , '';
-    default_yes_no 'SAVE_IPSETS'                , '';
-
-    warning_message 'SAVE_IPSETS=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{SAVE_IPSETS};
-
-    default_yes_no 'MAPOLDACTIONS'              , '';
-
-    warning_message 'MAPOLDACTIONS=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{MAPOLDACTIONS};
-
     default_yes_no 'FASTACCEPT'                 , '';
 
     fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};

@@ -4330,8 +4330,8 @@ activate_rules()
 	fi
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
-	    echo "$FW $zone $chain1" >> $STATEDIR/chains
-	    echo "$zone $FW $chain2" >> $STATEDIR/chains
+	    [ -n "$chain1" ] && echo "$FW $zone $chain1" >> $STATEDIR/chains
+	    [ -n "$chain2" ] && echo "$zone $FW $chain2" >> $STATEDIR/chains
 	fi
 
 	need_broadcast=

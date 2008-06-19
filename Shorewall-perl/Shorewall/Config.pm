@@ -1794,7 +1794,7 @@ sub unsupported_yes_no( $ ) {
     
     default_yes_no $option, '';
 
-    fatal_error "$=Yes is not supported by Shorewall-perl $globals{VERSION}" if $config{$option};
+    fatal_error "$option=Yes is not supported by Shorewall-perl $globals{VERSION}" if $config{$option};
 }
 
 #

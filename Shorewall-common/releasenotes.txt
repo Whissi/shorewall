@@ -1,4 +1,4 @@
-Shorewall 4.2.0 Beta 2.
+Shorewall 4.2.0 Beta 3.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -78,69 +78,16 @@ Migration Issues.
 7)  DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl. Use
     ipset-based zones instead.
 
-Problems Corrected in Shorewall 4.2.0 Beta 2
+Problems corrected in Shorewall-perl-4.2.0 Beta3.
 
-1) When 'norfc1918' was specified on an interface with an RFC 1918 IP
-   address, the compiled script would terminate without changing the
-   state of the firewall. Under these circumstances, the script now
-   issues a warning message and continues.
+1)  The 4.2.0-Beta2 change which defers setting up ip forwarding until
+    the rules are in place did not handle the 'restore' command
+    correctly. So if '-f' is specified to the 'start' command and there
+    is a saved configuration, the setting of ip forwarding will not be
+    changed.
 
-Problems Corrected in Shorewall-perl 4.2.0 Beta 2
+Other Changes in Shoreall 4.2.0 Beta 3.
 
-1) Except in /etc/shorewall/hosts, ipset names may now be preceded by
-   '!' to specify that matching IP addresses are not members of the
-   set. 
-
-Problems Corrected in Shorewall-shell 4.2.0 Beta 2.
-
-1) When DYNAMIC_ZONES=Yes, certain configurations would produce an
-   invalid /var/lib/shorewall/chains file at run-time. The invalid file
-   contents resulted in errors during processing of the "shorewall add"
-   command.
-
-Other Changes in Shoreall 4.2.0 Beta 2.
-
-1) A 'save' extension script is added. The script is run after
-   iptables-save has completed successfully.
-
-   The 'load' and 'reload' commands copy the save script (if any) to
-   /etc/shorewall-lite/ on the remove firewall system. The 'export'
-   command copies the file to the same directory as the 'firewall' and
-   'firewall.conf' scripts.
-
-   I have the following commands in my 'save' script:
-
-     [ -s /root/ipsets.save ] && cp -a /root/ipsets.save /root/ipsets.save.backup
-     ipset -S > /root/ipsets.save
-
-   These commands complement my 'init' script:
-
-     qt modprobe ifb numifbs=1
-     qt ip link set dev ifb0 up
-
-     if [ "$COMMAND" = start ]; then
-         ipset -U :all: :all:
-   	 ipset -U :all: :default:
-   	 ipset -F
-   	 ipset -X
-   	 ipset -R < /root/ipsets.save
-     fi
-
-   Those two scripts allow me to save and restore the contents of my
-   ipsets automatically under Shorewall-perl/Shorewall-lite (my
-   routestopped file does not use ipsets).
-
-2) A HELPER column is included in the tcrules file. The value in this
-   column names one of the Netfilter protocol 'helper' module sets
-   (ftp, sip, amanda, etc).
-
-   See http://www.shorewall.net/traffic_shaping.htm for an example.
-
-3) DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl.
-
-4) Farkas Levante has contributed a macro.Mail macro that covers SMTP,
-   SMTPS and submission. 
-    
 None.
 
 New Features in Shorewall 4.2.
@@ -901,3 +848,43 @@ New Features in Shorewall 4.2.
     not installed by default, Most distributions have this utility in
     their repositories. 
 
+39) A 'save' extension script is added. The script is run after
+    iptables-save has completed successfully.
+
+   The 'load' and 'reload' commands copy the save script (if any) to
+   /etc/shorewall-lite/ on the remove firewall system. The 'export'
+   command copies the file to the same directory as the 'firewall' and
+   'firewall.conf' scripts.
+
+   I have the following commands in my 'save' script:
+
+     [ -s /root/ipsets.save ] && cp -a /root/ipsets.save /root/ipsets.save.backup
+     ipset -S > /root/ipsets.save
+
+    These commands complement my 'init' script:
+
+     qt modprobe ifb numifbs=1
+     qt ip link set dev ifb0 up
+
+     if [ "$COMMAND" = start ]; then
+         ipset -U :all: :all:
+   	 ipset -U :all: :default:
+   	 ipset -F
+   	 ipset -X
+   	 ipset -R < /root/ipsets.save
+     fi
+
+    Those two scripts allow me to save and restore the contents of my
+    ipsets automatically under Shorewall-perl/Shorewall-lite (my
+    routestopped file does not use ipsets).
+
+40) A HELPER column is included in the tcrules file. The value in this
+    column names one of the Netfilter protocol 'helper' module sets
+    (ftp, sip, amanda, etc).
+
+    See http://www.shorewall.net/traffic_shaping.htm for an example.
+
+41) DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl.
+
+42) Farkas Levante has contributed a macro.Mail macro that covers SMTP,
+    SMTPS and submission.

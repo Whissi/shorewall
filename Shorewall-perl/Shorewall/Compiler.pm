@@ -654,6 +654,11 @@ if [ $COMMAND = restore ]; then
     else
         fatal_error "$iptables_save_file does not exist"
     fi
+EOF
+    pop_indent;
+    setup_forwarding;
+    push_indent;
+    emit<<'EOF';
     set_state "Started"
 else
     if [ $COMMAND = refresh ]; then

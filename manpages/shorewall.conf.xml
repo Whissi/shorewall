@@ -1354,6 +1354,30 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">ROUTE_FILTER=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|Keep]</term>
+
+        <listitem>
+          <para>If this parameter is given the value <emphasis
+          role="bold">Yes</emphasis> or <emphasis role="bold">yes</emphasis>
+          then route filtering (anti-spoofing) is enabled on all network
+          interfaces which are brought up while Shorewall is in the started
+          state. The default value is <emphasis
+          role="bold">no</emphasis>.</para>
+
+          <para>The value <emphasis role="bold">Keep</emphasis> is only
+          allowed under Shorewall-perl. It causes Shorewall to ignore the
+          option. If the option is set to <emphasis
+          role="bold">Yes</emphasis>, then route filtering occurs on all
+          interfaces. If the option is set to <emphasis
+          role="bold">No</emphasis>, then route filtering is disabled on all
+          interfaces except those specified in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">SAVE_IPSETS=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 

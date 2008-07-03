@@ -92,6 +92,39 @@ Other Changes in Shoreall 4.2.0 Beta 3.
     default for '/etc/init.d/shorewall start'. Beginning with 4.0.13
     and 4.2.0-Beta3, this is also true for Shoreawall-lite.
 
+2)  A new ROUTE_BALANCE option has been added to shorewall.conf. When
+    set to 'Yes', it causes the Shorewall multi-ISP feature to create
+    a different set of routing rules which are resilient to changes in
+    the main routing table. Such changes can occur for a number of
+    reasons,  VPNs going up and down being an example.
+
+    The idea is to send packets through the main table prior to
+    applying any of the Shorewall-generated routing rules. So changes
+    to the main table will affect the routing of packets by default. 
+
+    When ROUTE_BALANCE=Yes:
+
+    a) Both the DUPLICATE and the COPY columns in the providers file
+       must remain empty (or contain "-").
+
+    b) The 'balance' option is assumed for all interfaces except those
+       specified as 'loose'.
+
+    c) The default route is added to the the 'default' table rather
+       than to the main table.
+
+    d) Packets are sent through the main routing table by a rule with
+       priority 999. In /etc/shorewall/routing_rules, the range 1-998
+       may be used for inserting rules that bypass the main table.
+
+    e) All provider gateways must be specified explicitly in the
+       GATEWAY column. 'detect' may not be specified.
+
+    f) You should disable all default route management outside of 
+       Shorewall. If a default route is added to the mail table while
+       Shorewall is started, then all policy routing will stop working
+       (except for those routing rules in the priority range 1-998).
+
 New Features in Shorewall 4.2.
 
 1)  Shorewall 4.2 contains support for multiple Internet providers

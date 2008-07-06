@@ -228,7 +228,7 @@ sub add_a_provider( $$$$$$$$ ) {
     emit "echo \"qt ip route flush table $number\" >> \${VARDIR}/undo_routing";
 
     if ( $gateway eq 'detect' ) {
-	fatal_error "'detect' is not allowed with ROUTE_BALANCE=Yes" if $config{ROUTE_BALANCE};
+	fatal_error "'detect' is not allowed with USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	$gateway = get_interface_gateway $interface;
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;
@@ -267,7 +267,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $track, $balance , $optional, $mtu ) = (0,0,$config{ROUTE_BALANCE} ? 1 : 0,interface_is_optional( $interface ), '' );
+    my ( $loose, $track, $balance , $optional, $mtu ) = (0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -279,7 +279,7 @@ sub add_a_provider( $$$$$$$$ ) {
 		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose   = 1;
-		$balance = 0 if $config{ROUTE_BALANCE};
+		$balance = 0 if $config{USE_DEFAULT_RT};
 	    } elsif ( $option eq 'optional' ) {
 		set_interface_option $interface, 'optional', 1;
 		$optional = 1;
@@ -324,7 +324,7 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     if ( $duplicate ne '-' ) {
-	fatal_error "The DUPLICATE column must be empty when ROUTE_BALANCE=Yes" if $config{ROUTE_BALANCE};
+	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	if ( $copy eq '-' ) {
 	    copy_table ( $duplicate, $number, $realm );
 	} else {
@@ -337,7 +337,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	    copy_and_edit_table( $duplicate, $number ,$copy , $realm);
 	}
     } else {
-	fatal_error "The COPY column must be empty when ROUTE_BALANCE=Yes" if $config{ROUTE_BALANCE} && $copy ne '-';
+	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT} && $copy ne '-';
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
     }
 
@@ -529,7 +529,7 @@ sub setup_providers() {
 	if ( $balance ) {
 	    my $table = 254; # Main
 
-	    if ( $config{ROUTE_BALANCE} ) {
+	    if ( $config{USE_DEFAULT_RT} ) {
 		emit ( 'run_ip rule add from all table 254 pref 999',
 		       'ip rule del from all table 254 pref 32766',
 		       'echo "qt ip rule add from all table 254 pref 32766" >> ${VARDIR}/undo_routing',
@@ -540,7 +540,7 @@ sub setup_providers() {
 
 	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
 	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
-	    emit  ( '    qt ip route del default table 254' ) if $config{ROUTE_BALANCE};
+	    emit  ( '    qt ip route del default table 254' ) if $config{USE_DEFAULT_RT};
 	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
 		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',

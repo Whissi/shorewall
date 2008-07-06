@@ -761,6 +761,10 @@ restart_command() {
 			    DEBUG=Yes
 			    option=${option#d}
 			    ;;
+			f*)
+			    FAST=Yes
+			    option=${option#f}
+			    ;;
 			n*)
 			    NOROUTES=Yes
 			    option=${option#n}
@@ -804,6 +808,7 @@ restart_command() {
 	    fi
 
 	    SHOREWALL_DIR=$(resolve_file $1)
+	    [ -n "$FAST" ] && fatal_error "Directory may not be specified with the -f option"
 	    export SHOREWALL_DIR
 	    ;;
 	*)
@@ -816,20 +821,27 @@ restart_command() {
     export NOROUTES
     export PURGE
 
-    progress_message3 "Compiling..."
+   if [ -z "$FAST" ]; then  
+       progress_message3 "Compiling..."
 
-    if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
-	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
-	rc=$?
-	[ -n "$nolock" ] || mutex_off
-    else
-	rc=$?
-	logger -p kern.err "ERROR:Shorewall restart failed"
-    fi
+       if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
+	   [ -n "$nolock" ] || mutex_on
+	   $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+	   rc=$?
+	   [ -n "$nolock" ] || mutex_off
+       else
+	   rc=$?
+	   logger -p kern.err "ERROR:Shorewall restart failed"
+       fi
+   else
+       [ -x ${VARDIR}/.restore ] || fatal_error "No ${VARDIR}/.restore file found"
+       [ -n "$nolock" ] || mutex_on
+       $SHOREWALL_SHELL ${VARDIR}/.restore $debugging restart
+       rc=$?
+       [ -n "$nolock" ] || mutex_off
+   fi
 
-
-    return $rc
+   return $rc
 }
 
 #
@@ -1436,7 +1448,7 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -C {shell|perl} ] [ <directory> ] <system>"
     echo "   reset"
-    echo "   restart [ -n ] [ -p ] [ -C {shell|perl} ] [ <directory> ]"
+    echo "   restart [ -n ] [ -p ] [ -f ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"

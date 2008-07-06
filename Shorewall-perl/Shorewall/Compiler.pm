@@ -682,7 +682,7 @@ EOF
         run_started_exit
     fi
 
-    cp -f $(my_pathname) ${VARDIR}/.restore
+    [ $0 = ${VARDIR}/.restore ] || cp -f $(my_pathname) ${VARDIR}/.restore
 fi
 
 date > ${VARDIR}/restarted

@@ -1167,7 +1167,7 @@ compile_refresh_firewall()
 
     append_file refreshed
 
-    save_command "cp -f \$(my_pathname) \${VARDIR}/.restore"
+    save_command "[ \$0 = \${VARDIR}/.restore ] || cp -f \$(my_pathname) \${VARDIR}/.restore"
 
     INDENT=""
 

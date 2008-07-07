@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <article>
   <!--$Id$-->
 
@@ -611,7 +613,13 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
 
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
-          time that you get a new IP address.</para>
+          time that you get a new IP address.<note>
+              <para>If you are running Shorewall 3.2.6 on a Debian-based
+              system, the call to find_first_interface_address in
+              /etc/shorewall/params must be preceded with a load of the
+              Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
+<command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
+            </note></para>
         </listitem>
       </itemizedlist>
 
@@ -731,6 +739,14 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
           save</command> and <command>shorewall[-lite]
           restore</command></ulink>.</para>
         </warning>
+
+        <note>
+          <para>If you are running Shorewall 3.2.6 on a Debian-based system,
+          the call to find_first_interface_address in /etc/shorewall/params
+          must be preceded with a load of the Shorewall function
+          library:<programlisting><command>. /usr/share/shorewall/functions</command>
+<command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
+        </note>
       </section>
 
       <section id="faq2c">

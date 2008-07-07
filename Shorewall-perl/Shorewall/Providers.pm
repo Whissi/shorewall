@@ -37,10 +37,10 @@ our @EXPORT = qw( setup_providers @routemarked_interfaces);
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = 4.1.5;
 
-use constant { LOCAL_NUMBER   => 255,
-	       MAIN_NUMBER    => 254,
-	       DEFAULT_NUMBER => 253,
-	       UNSPEC_NUMBER  => 0
+use constant { LOCAL_TABLE   => 255,
+	       MAIN_TABLE    => 254,
+	       DEFAULT_TABLE => 253,
+	       UNSPEC_TABLE  => 0
 	       };
 
 our @routemarked_providers;
@@ -71,10 +71,10 @@ sub initialize() {
     $balance             = 0;
     $first_default_route = 1;
     
-    %providers  = ( local   => { number => LOCAL_NUMBER   , mark => 0 , optional => 0 } ,
-		    main    => { number => MAIN_NUMBER    , mark => 0 , optional => 0 } ,
-		    default => { number => DEFAULT_NUMBER , mark => 0 , optional => 0 } ,
-		    unspec  => { number => UNSPEC_NUMBER  , mark => 0 , optional => 0 } );
+    %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
+		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
+		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 } ,
+		    unspec  => { number => UNSPEC_TABLE  , mark => 0 , optional => 0 } );
     @providers = ();
 }
 
@@ -336,9 +336,9 @@ sub add_a_provider( $$$$$$$$ ) {
 
 	    copy_and_edit_table( $duplicate, $number ,$copy , $realm);
 	}
-    } else {
-	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT} && $copy ne '-';
-	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' if $copy ne '-';
+    } elsif ( $copy ne '-' ) {
+	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
+	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column';
     }
 
     if ( $gateway ) {
@@ -527,7 +527,7 @@ sub setup_providers() {
 
     if ( $providers ) {
 	if ( $balance ) {
-	    my $table = 254; # Main
+	    my $table = MAIN_TABLE;
 
 	    if ( $config{USE_DEFAULT_RT} ) {
 		emit ( 'run_ip rule add from all table 254 pref 999',
@@ -535,7 +535,7 @@ sub setup_providers() {
 		       'echo "qt ip rule add from all table 254 pref 32766" >> ${VARDIR}/undo_routing',
 		       'echo "qt ip rule del from all table 254 pref 999" >> ${VARDIR}/undo_routing',
 		       '' );
-		$table = 253; # Default
+		$table = DEFAULT_TABLE;
 	    }
 
 	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );

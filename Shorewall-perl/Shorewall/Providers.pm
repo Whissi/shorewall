@@ -530,17 +530,17 @@ sub setup_providers() {
 	    my $table = MAIN_TABLE;
 
 	    if ( $config{USE_DEFAULT_RT} ) {
-		emit ( 'run_ip rule add from all table 254 pref 999',
-		       'ip rule del from all table 254 pref 32766',
-		       'echo "qt ip rule add from all table 254 pref 32766" >> ${VARDIR}/undo_routing',
-		       'echo "qt ip rule del from all table 254 pref 999" >> ${VARDIR}/undo_routing',
+		emit ( 'run_ip rule add from all table ' . MAIN_TABLE . ' pref 999',
+		       'ip rule del from all table ' . MAIN_TABLE . ' pref 32766',
+		       'echo "qt ip rule add from all table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
+		       'echo "qt ip rule del from all table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
 		       '' );
 		$table = DEFAULT_TABLE;
 	    }
 
 	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
 	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
-	    emit  ( '    qt ip route del default table 254' ) if $config{USE_DEFAULT_RT};
+	    emit  ( '    qt ip route del default table ' . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
 	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
 		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',
@@ -564,9 +564,9 @@ sub setup_providers() {
 				  '#',
 				  '# reserved values',
 				  '#',
-				  "255\tlocal",
-				  "254\tmain",
-				  "253\tdefault",
+				  LOCAL_TABLE   . "\tlocal",
+				  MAIN_TABLE    . "\tmain",
+				  DEFAULT_TABLE . "\tdefault",
 				  "0\tunspec",
 				  '#',
 				  '# local',

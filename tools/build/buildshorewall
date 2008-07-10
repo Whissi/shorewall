@@ -69,10 +69,6 @@ GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our pu
 # SVN Repository
 #
 SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
-#
-# Program that generates man pages from Docbook XML
-#
-DOCBOOK2MAN="docbook-to-man --encoding=UTF-8 -C /usr/share/docbook2X/xslt/catalog.xml --utf8trans-map /usr/share/docbook2X/charmaps/roff.charmap"
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -474,11 +470,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		$DOCBOOK2MAN $f
+		do_or_die xmlto --skip-validation man $f
+		case $f in
+		    *.conf.*|shorewall.xml)
+			;;
+		    *)
+			g=${f#shorewall-}
+			h=$(ls ${g%.xml}.[58])
+			mv $h shorewall-$h
+			;;
+		esac
 	    fi
 	done
 	rm *.xml
-	perl -p -i'' -e 's/ \[.*?html\]//g' *.5 *.8
 	cd $DIR
     fi
 
@@ -490,11 +494,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		$DOCBOOK2MAN $f
+		do_or_die xmlto --skip-validation man $f
+		case $f in
+		    *.conf.*|shorewall-lite.xml)
+			;;
+		    *)
+			g=${f#shorewall-lite-}
+			h=$(ls ${g%.xml}.[58])
+			mv $h shorewall-lite-$h
+			;;
+		esac
 	    fi
 	done
 	rm *.xml
-	perl -p -i'' -e 's/ \[.*?html\]//g' *.5 *.8
 	cd $DIR 
     fi	
 

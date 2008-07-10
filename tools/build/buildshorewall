@@ -470,7 +470,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		do_or_die xmlto --skip-validation man $f
+		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
 		case $f in
 		    *.conf.*|shorewall.xml)
 			;;
@@ -494,7 +494,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		do_or_die xmlto --skip-validation man $f
+		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
 		case $f in
 		    *.conf.*|shorewall-lite.xml)
 			;;

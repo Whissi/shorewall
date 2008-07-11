@@ -332,6 +332,7 @@ sub add_a_provider( $$$$$$$$ ) {
 		$copy = $interface;
 	    } else {
 		$copy =~ tr/,/|/;
+		$copy = "$interface|$copy";
 	    }
 
 	    copy_and_edit_table( $duplicate, $number ,$copy , $realm);

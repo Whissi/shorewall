@@ -75,11 +75,11 @@
 
         <listitem>
           <para>A FWMARK <emphasis>value</emphasis> used in your <ulink
-          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) file to
+          url="shorewall-tcrules.html">shorewall-tcrules(5)</ulink> file to
           direct packets to this provider.</para>
 
           <para>If HIGH_ROUTE_MARKS=Yes in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5), then the value
+          url="shorewall.conf.html">shorewall.conf(5)</ulink>, then the value
           must be a multiple of 256 between 256 and 65280 or their hexadecimal
           equivalents (0x0100 and 0xff00 with the low-order byte of the value
           being zero). Otherwise, the value must be between 1 and 255. Each
@@ -95,7 +95,9 @@
           <para>The name of an existing table to duplicate to create this
           routing table. May be <option>main</option> or the name of a
           previously listed provider. You may select only certain entries from
-          the table to copy by using the COPY column below.</para>
+          the table to copy by using the COPY column below. This column should
+          contain a dash ("-') when USE_DEFAULT_RT=Yes in <ulink
+          url="shorewall.conf.html">shorewall.conf(5)</ulink>. </para>
         </listitem>
       </varlistentry>
 
@@ -106,7 +108,7 @@
         <listitem>
           <para>The name of the network interface to the provider. Must be
           listed in <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+          url="shorewall-interfaces.html">shorewall-interfaces(5)</ulink>.</para>
 
           <para>Where more than one provider is serviced through a single
           interface, the <emphasis>interface</emphasis> must be followed by a
@@ -191,7 +193,7 @@
                 and configured with an IPv4 address then ignore this provider.
                 If not specified, the value of the <option>optional</option>
                 option for the INTERFACE in <ulink
-                url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+                url="shorewall-interfaces.html">shorewall-interfaces(5)</ulink>
                 is assumed.</para>
               </listitem>
             </varlistentry>

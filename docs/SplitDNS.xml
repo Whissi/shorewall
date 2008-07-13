@@ -64,7 +64,8 @@
 
       <listitem>
         <para>Install the <emphasis role="bold">dnsmasq</emphasis> package and
-        arrange for it to start at boot time.</para>
+        arrange for it to start at boot time. There are many dnsmasq HOWTOs on
+        the Internet.</para>
       </listitem>
 
       <listitem>
@@ -118,5 +119,15 @@ ff02::3         ipv6-allhosts
     <filename>/etc/hosts</filename> file as defined in that file. All other
     names will be resolved using the firewall/router's Name Server as defined
     in <filename>/etc/resolv.conf</filename>.</para>
+
+    <para>Example:</para>
+
+    <para>From an Internet Host:<programlisting>gateway:~ # host linksys
+linksys.shorewall.net has address 206.124.146.180
+gateway:~ # </programlisting></para>
+
+    <para>From ubuntu (192.168.0.3):<programlisting>teastep@ubuntu:~$ host linksys
+linksys.shorewall.net has address 172.20.1.1
+teastep@ubuntu:~$ </programlisting></para>
   </section>
 </article>

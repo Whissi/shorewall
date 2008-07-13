@@ -183,13 +183,16 @@
       </blockquote></para>
 
     <para><emphasis role="bold">This is not to say that you cannot shape
-    downloads, regardless of which Shorewall release you are
+    download traffic, regardless of which Shorewall release you are
     running</emphasis>.</para>
 
     <blockquote>
       <para>If you wish to shape downloads, you can always configure traffic
       shaping on your firewall's local interface. An example appears <link
       linkend="Downloads">below</link>.</para>
+
+      <para>Again, however, <emphasis role="bold">this can result in queues
+      building up both at your ISPs router and at your own</emphasis>.</para>
     </blockquote>
 
     <para>You shape and control outgoing traffic by assigning the traffic to
@@ -234,7 +237,9 @@
     assign connection mark values in
     <filename>/etc/shorewall/tcrules</filename>, you can copy the current
     packet's mark to the connection mark (SAVE), or you can copy the
-    connection mark value to the current packet's mark (RESTORE).</para>
+    connection mark value to the current packet's mark (RESTORE). For more
+    information, see<ulink url="PacketMarking.html"> this
+    article</ulink>.</para>
   </section>
 
   <section id="Kernel">
@@ -266,18 +271,20 @@
 
     <itemizedlist>
       <listitem>
-        <para>Set <emphasis role="bold">TC_ENABLED</emphasis> to "Internal" in
-        /etc/shorewall/shorewall.conf. Setting TC_ENABLED=Yes causes Shorewall
-        to look for an external tcstart file (See <link linkend="tcstart">a
-        later section</link> for details).</para>
+        <para>Set <emphasis role="bold">TC_ENABLED</emphasis> to "<emphasis
+        role="bold">Internal</emphasis>" in /etc/shorewall/shorewall.conf.
+        Setting <emphasis role="bold">TC_ENABLED=Yes</emphasis> causes
+        Shorewall to look for an external tcstart file (See <link
+        linkend="tcstart">a later section</link> for details).</para>
       </listitem>
 
       <listitem>
         <para>Setting <emphasis role="bold">CLEAR_TC</emphasis> parameter in
-        /etc/shorewall/shorewall.conf to Yes will clear the traffic shaping
-        configuration during Shorewall [re]start and Shorewall stop. This is
-        normally what you want when using the builtin support (and also if you
-        use your own tcstart script)</para>
+        /etc/shorewall/shorewall.conf to <emphasis role="bold">Yes</emphasis>
+        will clear the traffic shaping configuration during Shorewall
+        [re]start and Shorewall stop. This is normally what you want when
+        using the builtin support (and also if you use your own tcstart
+        script)</para>
       </listitem>
 
       <listitem>
@@ -338,13 +345,14 @@
     integer numbers are supported (0.5 is <emphasis role="bold">not
     valid</emphasis>).</para>
 
-    <para>To properly configure the settings for your devices you might need
-    to find out the real up- and downstream rates you have. This is especially
-    the case, if you are using a DSL connection or one of another type that do
-    not have a guaranteed bandwidth. Don't trust the values your provider
-    tells you for this; especially measuring the real download speed is
-    important! There are several online tools that help you find out; search
-    for "dsl speed test" on google (For Germany you can use <ulink
+    <para><emphasis role="bold">To properly configure the settings for your
+    devices you need to find out the real up- and downstream rates you
+    have</emphasis>. This is especially the case, if you are using a DSL
+    connection or one of another type that do not have a guaranteed bandwidth.
+    Don't trust the values your provider tells you for this; especially
+    measuring the real download speed is important! There are several online
+    tools that help you find out; search for "dsl speed test" on google (For
+    Germany you can use <ulink
     url="http://www.speedcheck.arcor.de/cgi-bin/speedcheck.cgi">arcor speed
     check</ulink>). Be sure to choose a test located near you.</para>
 
@@ -390,11 +398,11 @@
           shaping incoming traffic, as the traffic is already received before
           you could do so. This Column allows you to define the maximum
           traffic allowed for this interface in total, if the rate is
-          exceeded, the packets are dropped. You want this mainly if you have
-          a DSL or Cable Connection to avoid queuing at your providers side.
-          If you don't want any traffic to be dropped set this to a value
-          faster than your interface maximum rate (or to 0 (zero), if you are
-          running Shorewall 3.2.6 or later).</para>
+          exceeded, the excess packets are dropped. You want this mainly if
+          you have a DSL or Cable Connection to avoid queuing at your
+          providers side. If you don't want any traffic to be dropped set this
+          to a value faster than your interface maximum rate (or to 0 (zero),
+          if you are running Shorewall 3.2.6 or later).</para>
 
           <para>To determine the optimum value for this setting, we recommend
           that you start by setting it significantly below your measured

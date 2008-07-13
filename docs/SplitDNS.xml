@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Simple way to set up Split DNS</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2008</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>What is Split DNS</title>
+
+    <para><firstterm>Split DNS</firstterm> is simply a configuration in which
+    the IP address to which a DNS name resolves is dependent on where the
+    client is. It is most often used in a NAT environment to insure that
+    lodcal clients resolve server names to their local RFC 1918 addresses
+    while external clients resolve the same server names to their public
+    counterparts.</para>
+  </section>
+
+  <section>
+    <title>Why would I want to use Split DNS?</title>
+
+    <para>See <ulink url="???">Shorewall FAQ 2</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Setting up Split DNS</title>
+
+    <para>Setting up Split DNS is extremely simple:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Be sure that your firewall/router can resolve external DNS
+        names.</para>
+      </listitem>
+
+      <listitem>
+        <para>Install the <emphasis role="bold">dnsmasq</emphasis> package and
+        arrange for it to start at boot time.</para>
+      </listitem>
+
+      <listitem>
+        <para>Add your local hosts to <filename>/etc/hosts</filename> on the
+        firewall/router using their local RFC 1918 addresses. Here's an
+        example:<programlisting>#
+# hosts         This file describes a number of hostname-to-address
+#               mappings for the TCP/IP subsystem.  It is mostly
+#               used at boot time, when no name servers are running.
+#               On small systems, this file can be used instead of a
+#               "named" name server.
+# Syntax:
+#    
+# IP-Address  Full-Qualified-Hostname  Short-Hostname
+#
+
+127.0.0.1       localhost
+
+# special IPv6 addresses
+::1             localhost ipv6-localhost ipv6-loopback
+
+fe00::0         ipv6-localnet
+
+ff00::0         ipv6-mcastprefix
+ff02::1         ipv6-allnodes
+ff02::2         ipv6-allrouters
+ff02::3         ipv6-allhosts
+127.0.0.2       ursa.shorewall.net ursa
+172.20.1.1      linksys.shorewall.net     linksys
+192.168.0.1     opensuse.shorewall.net    opensuse
+192.168.0.2     debian.shorewall.net      debian
+192.168.0.3     ubuntu.shorewall.net      ubuntu
+192.168.0.4     fedora.shoreawll.net      fedora
+192.168.0.5     opensuse11.shorewall.net  opensuse11
+192.168.0.6     centos.shorewall.net      centos
+192.168.0.7     debian32.shorewall.net    debian32
+192.168.0.8     fedora9.shorewall.net     fedora9
+206.124.146.254 blarg.shorewall.net       blarg
+</programlisting></para>
+      </listitem>
+
+      <listitem>
+        <para>Configure your local network hosts to use the firewall/router as
+        their DNS server. If your local hosts are configured using DHCP, that
+        is a simple one-line change to the DHCP configuration.</para>
+      </listitem>
+    </orderedlist>
+
+    <para><emphasis role="bold">And that's it!</emphasis> Your local clients
+    will resolve those names in the firewall/router's
+    <filename>/etc/hosts</filename> file as defined in that file. All other
+    names will be resolved using the firewall/router's Name Server as defined
+    in <filename>/etc/resolv.conf</filename>.</para>
+  </section>
+</article>

@@ -546,12 +546,14 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
         </listitem>
 
         <listitem>
-          <para>The accessibility problem is best solved using <ulink
-          url="shorewall_setup_guide.htm#DNS">Bind Version 9
-          <quote>views</quote> </ulink> (or using a separate DNS server for
-          local clients) such that www.mydomain.com resolves to 130.141.100.69
-          externally and 192.168.1.5 internally. That's what I do here at
-          shorewall.net for my local systems that use one-to-one NAT.</para>
+          <para>The accessibility problem is best solved using
+          <firstterm>Split DNS</firstterm> (either <ulink
+          url="SplitDNS.html">use a separate DNS server</ulink> for local
+          clients or use <ulink url="shorewall_setup_guide.htm#DNS">Bind
+          Version 9 <quote>views</quote></ulink> on your main name server)
+          such that www.mydomain.com resolves to 130.141.100.69 externally and
+          192.168.1.5 internally. That's what I do here at shorewall.net for
+          my local systems that use one-to-one NAT.</para>
         </listitem>
       </itemizedlist>
 
@@ -559,8 +561,8 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
       your internet-accessible server(s) to a separate LAN segment with it's
       own interface to your firewall and follow <link linkend="faq2b">FAQ
       2b</link>. That way, your local systems are still safe if your server
-      gets hacked and you don't have to run a split DNS configuration (Bind 9
-      views or separate server).</para>
+      gets hacked and you don't have to run a split DNS configuration
+      (separate server or Bind 9 views).</para>
 
       <para>And before you complain "It's too hard to set up split DNS!",
       <ulink url="SplitDNS.html"><emphasis role="bold">check

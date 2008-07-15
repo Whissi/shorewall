@@ -536,7 +536,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version IP at $HOSTNAME - $(date)"
 	    echo
-	    ip addr list
+	    ip -4 addr list
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
@@ -717,7 +717,7 @@ dump_command() {
     [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || cat /proc/net/nf_conntrack
 
     heading "IP Configuration"
-    ip addr list
+    ip -4 addr list
 
     heading "IP Stats"
     ip -stat link list

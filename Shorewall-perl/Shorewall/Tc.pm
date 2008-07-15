@@ -388,7 +388,6 @@ sub validate_tc_device( $$$$$ ) {
 			    classify      => $classify , 
 			    tablenumber   => 1 ,
 			    redirected    => \@redirected ,
-			    protocols     => [] ,
 			  } ,
 
     push @tcdevices, $device;

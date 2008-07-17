@@ -348,7 +348,7 @@ ACCEPT   Z1:1.2.3.4     $FW             47</programlisting>
 
       <blockquote>
         <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
-openvpn:P       Z1            1.2.3.4</programlisting>
+openvpn:<emphasis>port</emphasis>    Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
@@ -357,15 +357,15 @@ openvpn:P       Z1            1.2.3.4</programlisting>
         <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
 #                                               PORT    PORT(S)
 
-ACCEPT   Z1:1.2.3.4     $FW             udp     P
-ACCEPT   $FW            Z1:1.2.3.4      udp     P</programlisting>
+ACCEPT   Z1:1.2.3.4     $FW             udp     <emphasis>port</emphasis>
+ACCEPT   $FW            Z1:1.2.3.4      udp     <emphasis>port</emphasis></programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
-openvpnclient:P Z1            1.2.3.4</programlisting>
+        <programlisting>#TYPE              ZONE          GATEWAY          GATEWAY ZONE
+openvpnclient:<emphasis>port</emphasis> Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
@@ -374,15 +374,15 @@ openvpnclient:P Z1            1.2.3.4</programlisting>
         <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
 #                                               PORT    PORT(S)
 
-ACCEPT   Z1:1.2.3.4     $FW             udp     -       P
-ACCEPT   $FW            Z1:1.2.3.4      udp     P</programlisting>
+ACCEPT   Z1:1.2.3.4     $FW             udp     -       <emphasis>port</emphasis>
+ACCEPT   $FW            Z1:1.2.3.4      udp     <emphasis>port</emphasis></programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
-openvpnserver:P Z1            1.2.3.4</programlisting>
+        <programlisting>#TYPE              ZONE          GATEWAY          GATEWAY ZONE
+openvpnserver:<emphasis>port</emphasis> Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
@@ -391,8 +391,8 @@ openvpnserver:P Z1            1.2.3.4</programlisting>
         <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
 #                                               PORT    PORT(S)
 
-ACCEPT   Z1:1.2.3.4     $FW             udp     P
-ACCEPT   $FW            Z1:1.2.3.4      udp     -       P</programlisting>
+ACCEPT   Z1:1.2.3.4     $FW             udp     <emphasis>port</emphasis>
+ACCEPT   $FW            Z1:1.2.3.4      udp     -       <emphasis>port</emphasis></programlisting>
       </blockquote>
     </section>
   </section>

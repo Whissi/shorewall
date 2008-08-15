@@ -49,7 +49,7 @@
     Interconnect (OSI) reference model, a router operates at layer 3,
     Shorewall may also be deployed on a GNU Linux System that acts as a
     <firstterm>bridge</firstterm>. Bridges are layer 2 devices in the OSI
-    model (think of a bridge as an ethernet switch).</para>
+    model (think of a bridge as an Ethernet switch).</para>
 
     <para>Some differences between routers and bridges are:</para>
 
@@ -57,7 +57,7 @@
       <listitem>
         <para>Routers determine packet destination based on the destination IP
         address, while bridges route traffic based on the destination MAC
-        address in the ethernet frame.</para>
+        address in the Ethernet frame.</para>
       </listitem>
 
       <listitem>
@@ -142,7 +142,7 @@
     <itemizedlist>
       <listitem>
         <para>The Shorewall system (the Bridge/Firewall) has only a single IP
-        address even though it has two ethernet interfaces! The IP address is
+        address even though it has two Ethernet interfaces! The IP address is
         configured on the bridge itself, rather than on either of the network
         cards.</para>
       </listitem>
@@ -454,7 +454,7 @@ ifconfig most 192.168.1.31 netmask 255.255.255.0 up
                                            #you don't use rc.inet1
 #########################
 
-3) I made rc.brige executable and added the following line to /etc/rc.d/rc.local
+3) I made rc.bridge executable and added the following line to /etc/rc.d/rc.local
 
 /etc/rc.d/rc.bridge </programlisting>
     </blockquote>
@@ -563,7 +563,7 @@ rc-update add bridge boot
     <filename>shorewall.conf</filename>.</para>
 
     <para>In the scenario pictured above, there would probably be two BP zones
-    defined -- one for the internet and one for the local LAN so in
+    defined -- one for the Internet and one for the local LAN so in
     <filename>/etc/shorewall/zones</filename>:</para>
 
     <programlisting>#ZONE           TYPE            OPTIONS

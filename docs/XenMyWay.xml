@@ -66,7 +66,7 @@
     class="devicefile">eth0</filename><footnote>
         <para>This assumes the default Xen configuration created by
         <command>xend </command>and assumes that the host system has a single
-        ethernet interface named <filename
+        Ethernet interface named <filename
         class="devicefile">eth0</filename>.</para>
       </footnote>in each domain. In Dom0, Xen also creates a bridge (<filename
     class="devicefile">xenbr0</filename>) and a number of virtual interfaces
@@ -156,7 +156,7 @@
       </listitem>
     </orderedlist>
 
-    <para>Most of the Linux systems run <trademark>SuSE </trademark>10.1; my
+    <para>Most of the Linux systems run <trademark>SUSE </trademark>10.1; my
     personal Linux desktop system and our Linux Laptop run
     <trademark>Ubuntu</trademark> "Dapper Drake".</para>
 
@@ -259,7 +259,7 @@
         <filename class="devicefile">eth2</filename> (PCI 00:0a.0) are
         delegated to the firewall DomU where they become <filename
         class="devicefile">eth3</filename> and <filename
-        class="devicefile">eth4</filename> respectively. The SuSE 10.1 Xen
+        class="devicefile">eth4</filename> respectively. The SUSE 10.1 Xen
         kernel compiles pciback as a module so the instructions for PCI
         delegation in the Xen Users Manual can't be followed directly (see
         <ulink
@@ -292,7 +292,7 @@ extra    = "3"
 
 # network interface:
 vif      = [ 'mac=aa:cc:00:00:00:02, bridge=xenbr0', 'mac=aa:cc:00:00:00:03, bridge=xenbr1' ]
-# Interfaces deletgated from Dom0
+# Interfaces delegated from Dom0
 pci=[ '00:09.0' , '00:0a.0' ]
 
 # storage devices:
@@ -357,7 +357,7 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
         <para><command>ethtool -K eth0 tx off</command></para>
 
-        <para>Under SuSE 10.1, I placed the following in
+        <para>Under SUSE 10.1, I placed the following in
         <filename>/etc/sysconfig/network/if-up.d/resettx</filename> (that file
         is executable):</para>
 
@@ -380,13 +380,13 @@ fi</programlisting>
       </caution>
 
       <caution>
-        <para>Update. Under SuSE 10.2, communication from a domU works okay
+        <para>Update. Under SUSE 10.2, communication from a domU works okay
         without running ethtool <emphasis role="bold">but traffic shaping in
         dom0 doesn't work!</emphasis> So it's a good idea to run it just to be
         safe.</para>
       </caution>
 
-      <para>SuSE 10.1 includes Xen 3.0.2 which supports PCI delegation. The
+      <para>SUSE 10.1 includes Xen 3.0.2 which supports PCI delegation. The
       network interfaces that connect to the net and wifi zones are delegated
       to the firewall DomU.</para>
 
@@ -474,7 +474,7 @@ SECTION NEW
       described in the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
       Guide</ulink> with the exception that I've added a fourth interface for
       our wireless network. The firewall runs a routed <ulink
-      url="OPENVPN.html">OpenVPN server</ulink> to provide roadwarrior access
+      url="OPENVPN.html">OpenVPN server</ulink> to provide road warrior access
       for our two laptops and a bridged OpenVPN server for the wireless
       network in our home. Here is the firewall's view of the network:</para>
 
@@ -834,7 +834,7 @@ $EXT_IF         30      2*full/10       6*full/10       3
 
         <para><filename>/etc/shorewall/tcrules</filename><programlisting>#MARK   SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                       PORT(S)
-1:110   192.168.0.0/22  $EXT_IF                                         #Our internel nets get priority
+1:110   192.168.0.0/22  $EXT_IF                                         #Our internal nets get priority
                                                                         #over the server
 1:130   206.124.146.177 $EXT_IF         tcp     -       873             #Throttle rsync traffic to the
                                                                         #Shorewall Mirrors.
@@ -842,7 +842,7 @@ $EXT_IF         30      2*full/10       6*full/10       3
       </blockquote>
 
       <para>The tap0 device used by the bridged OpenVPN server is bridged to
-      eth0 using a SuSE-specific SysV init script:</para>
+      eth0 using a SUSE-specific SysV init script:</para>
 
       <blockquote>
         <programlisting>#!/bin/sh

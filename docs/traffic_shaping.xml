@@ -48,7 +48,7 @@
 
   <important>
     <para>Traffic shaping is complex and the Shorewall community is not well
-    equiped to answer traffic shaping questions. So if you are the type of
+    equipped to answer traffic shaping questions. So if you are the type of
     person who needs "insert tab A into slot B" instructions for everything
     that you do, then please don't try to implement traffic shaping using
     Shorewall. You will just frustrate yourself and we won't be able to help
@@ -92,7 +92,7 @@
     traffic shaping and control. Before this version, the support was quite
     limited. You were able to use your own tcstart script (and you still are),
     but besides the tcrules file it was not possible to define classes or
-    queueing discplines inside the Shorewall config files.</para>
+    queuing disciplines inside the Shorewall config files.</para>
 
     <para>The support for traffic shaping and control still does not cover all
     options available (and especially all algorithms that can be used to queue
@@ -108,7 +108,7 @@
     <title>Linux traffic shaping and control</title>
 
     <para>This section gives a brief introduction of how controlling traffic
-    with the linux kernel works. Although this might be enough for configuring
+    with the Linux kernel works. Although this might be enough for configuring
     it in the Shorewall configuration files, we strongly recommend that you
     take a deeper look into the <ulink url="http://lartc.org/howto/">Linux
     Advanced Routing and Shaping HOWTO</ulink>. At the time of writing this,
@@ -119,7 +119,7 @@
     traffic before it leaves an interface. The standard one is called pfifo
     and is (as the name suggests) of the type First In First out. This means,
     that it does not shape anything, if you have a connection that eats up all
-    your bandwidth, this qeueing algorithm will not stop it from doing
+    your bandwidth, this queuing algorithm will not stop it from doing
     so.</para>
 
     <para>For Shorewall traffic shaping we use two algorithms, one is called
@@ -127,9 +127,9 @@
     is easy to explain: it just tries to track your connections (tcp or udp
     streams) and balances the traffic between them. This normally works well.
     HTB allows you to define a set of classes, and you can put the traffic you
-    want into these classes. You can define minimum and maximum bandwitdh
-    settings for those classes and order them hierachically (the less
-    priorized classes only get bandwitdth if the more important have what they
+    want into these classes. You can define minimum and maximum bandwidth
+    settings for those classes and order them hierarchically (the less
+    prioritized classes only get bandwidth if the more important have what they
     need). Shorewall builtin traffic shaping allows you to define these
     classes (and their bandwidth limits), and it uses SFQ inside these classes
     to make sure, that different data streams are handled equally.</para>
@@ -148,7 +148,7 @@
         outgoing interface as fast as possible.</para>
 
         <para>There is one exception, though. Limiting incoming traffic to a
-        value a bit slower than your actual line speed will avoid queueing on
+        value a bit slower than your actual line speed will avoid queuing on
         the other end of that connection. This is mostly useful if you don't
         have access to traffic control on the other side and if this other
         side has a faster network connection than you do (the line speed
@@ -160,16 +160,16 @@
         has not (but the protocol over UDP might recognize it , if there is
         any).</para>
 
-        <para>The reason why queing is bad in these cases is, that you might
-        have packets which need to be priorized over others, e.g. VoIP or ssh.
+        <para>The reason why queuing is bad in these cases is, that you might
+        have packets which need to be prioritized over others, e.g. VoIP or ssh.
         For this type of connections it is important that packets arrive in a
-        certain amount of time. For others like http downloads, it does not
+        certain amount of time. For others like HTTP downloads, it does not
         really matter if it takes a few seconds more.</para>
 
         <para>If you have a large queue on the other side and the router there
         does not care about QoS or the QoS bits are not set properly, your
         important packets will go into the same queue as your less
-        timecritical download packets which will result in a large
+        time critical download packets which will result in a large
         delay.</para>
       </blockquote></para>
 
@@ -211,7 +211,7 @@
         <para>RATE - The minimum bandwidth this class should get, when the
         traffic load rises. Classes with a higher priority (lower PRIORITY
         value) are served even if there are others that have a guaranteed
-        bandwith but have a lower priority (higher PRIORITY value).</para>
+        bandwidth but have a lower priority (higher PRIORITY value).</para>
       </listitem>
 
       <listitem>
@@ -338,7 +338,7 @@
     the facility. Again, please see the links at top of this article.</para>
 
     <para>For defining bandwidths (for either devices or classes) please use
-    kbit or kbps(for Kilobytes per second) and make sure there is <emphasis
+    kbit or kbps (for Kilobytes per second) and make sure there is <emphasis
     role="bold">NO</emphasis> space between the number and the unit (it is
     100kbit <emphasis role="bold">not</emphasis> 100 kbit). Using mbit, mbps
     or a raw number (which means bytes) could be used, but note that only
@@ -414,7 +414,7 @@
         </listitem>
 
         <listitem>
-          <para>OUT-BANDWIDTH - Specifiy the outgoing bandwidth of that
+          <para>OUT-BANDWIDTH - Specify the outgoing bandwidth of that
           interface. This is the maximum speed your connection can handle. It
           is also the speed you can refer as "full" if you define the tc
           classes. Outgoing traffic above this rate will be dropped.</para>
@@ -488,7 +488,7 @@ ppp0           6000kbit         500kbit</programlisting>
         <listitem>
           <para>MARK - The mark value which is an integer in the range 1-255.
           You define these marks in the tcrules file, marking the traffic you
-          want to go into the queueing classes defined in here. You can use
+          want to go into the queuing classes defined in here. You can use
           the same marks for different Interfaces. You must specify "-' in
           this column if the device specified in the INTERFACE column has the
           <emphasis role="bold">classify</emphasis> option in
@@ -499,7 +499,7 @@ ppp0           6000kbit         500kbit</programlisting>
           <para>RATE - The minimum bandwidth this class should get, when the
           traffic load rises. Please note that first the classes which equal
           or a lesser priority value are served even if there are others that
-          have a guaranteed bandwith but a lower priority. <emphasis
+          have a guaranteed bandwidth but a lower priority. <emphasis
           role="bold">If the sum of the RATEs for all classes assigned to an
           INTERFACE exceed that interfaces's OUT-BANDWIDTH, then the
           OUT-BANDWIDTH limit will not be honored.</emphasis></para>
@@ -517,7 +517,7 @@ ppp0           6000kbit         500kbit</programlisting>
         <listitem>
           <para>PRIORITY - you have to define a priority for the class.
           packets in a class with a higher priority (=lesser value) are
-          handled before less priorized onces. You can just define the mark
+          handled before less prioritized ones. You can just define the mark
           value here also, if you are increasing the mark values with lesser
           priority.</para>
         </listitem>
@@ -749,7 +749,7 @@ ppp0           6000kbit         500kbit</programlisting>
           iprange match support, IP address ranges are also allowed. List
           elements may also consist of an interface name followed by ":" and
           an address (e.g., eth1:192.168.1.0/24). If the MARK column
-          specificies a classification of the form &lt;major&gt;:&lt;minor&gt;
+          specifies a classification of the form &lt;major&gt;:&lt;minor&gt;
           then this column may also contain an interface name.</para>
         </listitem>
 
@@ -791,7 +791,7 @@ ppp0           6000kbit         500kbit</programlisting>
           <para>[!][&lt;user name or number&gt;]:[&lt;group name or
           number&gt;][+&lt;program name&gt;]</para>
 
-          <para>The colon is optionnal when specifying only a user.</para>
+          <para>The colon is optional when specifying only a user.</para>
 
           <para>Examples:</para>
 
@@ -833,7 +833,7 @@ ppp0           6000kbit         500kbit</programlisting>
           match.</para>
 
           <para>You must have iptables length support for this to work. If you
-          let it empy or place an "-" here, no length match will be
+          let it empty or place an "-" here, no length match will be
           done.</para>
 
           <para>Examples: 1024, 64:1500, :100</para>
@@ -861,7 +861,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
         <listitem>
           <para>HELPER (Optional, added in Shorewall version 4.2.0 Beta 2).
-          Names one of the Netfiler protocol helper modules such as
+          Names one of the Netfilter protocol helper modules such as
           <emphasis>ftp</emphasis>, <emphasis>sip</emphasis>,
           <emphasis>amanda</emphasis>, etc.</para>
         </listitem>
@@ -939,7 +939,7 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
         <para>The last four rules can be translated as:</para>
 
         <blockquote>
-          <para>"If a packet hasn't been classifed (packet mark is 0), copy
+          <para>"If a packet hasn't been classified (packet mark is 0), copy
           the connection mark to the packet mark. If the packet mark is set,
           we're done. If the packet is P2P, set the packet mark to 4. If the
           packet mark has been set, save it to the connection mark."</para>
@@ -966,10 +966,10 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
     <section id="ppp">
       <title>ppp devices</title>
 
-      <para>If you use ppp/pppoe/pppoa) to connect to your internet provider
+      <para>If you use ppp/pppoe/pppoa) to connect to your Internet provider
       and you use traffic shaping you need to restart shorewall traffic
       shaping. The reason for this is, that if the ppp connection gets
-      restarted (and it usally does this at least daily), all
+      restarted (and it usually does this at least daily), all
       <quote>tc</quote> filters/qdiscs related to that interface are
       deleted.</para>
 
@@ -994,7 +994,7 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
         url="http://www1.shorewall.net/pub/shorewall/Samples/tc4shorewall/">"http://www1.shorewall.net/pub/shorewall/Samples/tc4shorewall/</ulink>.
         Please note that they are just examples and need to be adjusted to
         work for you. In this example it is assumed that your interface for
-        you internet connection is ppp0 (for DSL), if you use another
+        your Internet connection is ppp0 (for DSL), if you use another
         connection type, you have to change it. You also need to change the
         settings in the tcdevices.wondershaper file to reflect your line
         speed. The relevant lines of the config files follow here. Please note
@@ -1071,7 +1071,7 @@ NOPRIOPORTDST="6662 6663"  </programlisting>
       <section id="simiple">
         <title>A simple setup</title>
 
-        <para>This is a simple setup for people sharing an internet connection
+        <para>This is a simple setup for people sharing an Internet connection
         and using different computers for this. It just basically shapes
         between 2 hosts which have the ip addresses 192.168.2.23 and
         192.168.2.42</para>
@@ -1167,7 +1167,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
 
     <itemizedlist>
       <listitem>
-        <para>Traffic being forwarded from the internet</para>
+        <para>Traffic being forwarded from the Internet</para>
       </listitem>
 
       <listitem>

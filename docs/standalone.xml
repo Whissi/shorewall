@@ -201,7 +201,7 @@
       class="directory">/etc/shorewall</filename> directory is empty. This is
       intentional. The released configuration file skeletons may be found on
       your system in the directory <filename
-      class="directory">/usr/share/doc/shorewall/default-config</filename>.
+      class="directory">/usr/share/doc/shorewall-common/default-config</filename>.
       Simply copy the files you need from that directory to <filename
       class="directory">/etc/shorewall</filename> and modify the
       copies.</para>
@@ -262,11 +262,11 @@ net     ipv4</programlisting>
     <filename><filename>/etc/shorewall/rules</filename></filename> file. If no
     rule in that file matches the connection request then the first policy in
     <filename>/etc/shorewall/policy</filename> that matches the request is
-    applied. If there is a <ulink url="shorewall_extension_scripts.htm">comon
+    applied. If there is a <ulink url="shorewall_extension_scripts.htm">common
     action</ulink> defined for the policy in
     <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    peformed before the policy is applied. The purpose of the common action is
+    performed before the policy is applied. The purpose of the common action is
     two-fold:</para>
 
     <itemizedlist>
@@ -295,11 +295,11 @@ all            all                REJECT   info</programlisting>
     <orderedlist>
       <listitem>
         <para>allow all connection requests from the firewall to the
-        internet</para>
+        Internet</para>
       </listitem>
 
       <listitem>
-        <para>drop (ignore) all connection requests from the internet to your
+        <para>drop (ignore) all connection requests from the Internet to your
         firewall</para>
       </listitem>
 
@@ -310,9 +310,9 @@ all            all                REJECT   info</programlisting>
     </orderedlist>
 
     <para>The word <firstterm>info</firstterm> in the LOG LEVEL column for the
-    last two policies indicates that packets droped or rejected under those
+    last two policies indicates that packets dropped or rejected under those
     policies should be <ulink url="shorewall_logging.html">logged at that
-    leve</ulink>l.</para>
+    level</ulink>.</para>
 
     <para>At this point, edit your <filename>/etc/shorewall/policy</filename>
     and make any changes that you wish.</para>
@@ -324,7 +324,7 @@ all            all                REJECT   info</programlisting>
     <para>The firewall has a single network interface. Where Internet
     connectivity is through a cable or <acronym>DSL</acronym>
     <quote>Modem</quote>, the <emphasis>External Interface</emphasis> will be
-    the ethernet adapter (<filename class="devicefile">eth0</filename>) that
+    the Ethernet adapter (<filename class="devicefile">eth0</filename>) that
     is connected to that <quote>Modem</quote> <emphasis
     role="underline">unless</emphasis> you connect via
     <emphasis>Point-to-Point Protocol over Ethernet</emphasis>
@@ -412,7 +412,7 @@ root@lists:~# </programlisting>
     <acronym>ISP</acronym>s are assigning these addresses then using
     <emphasis>Network Address Translation</emphasis> <emphasis>-
     </emphasis><acronym>NAT</acronym>) to rewrite packet headers when
-    forwarding to/from the internet.</para>
+    forwarding to/from the Internet.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
@@ -453,7 +453,7 @@ root@lists:~# </programlisting>
     <itemizedlist>
       <listitem>
         <para><command>shorewall show log</command> (Displays the last 20
-        netfilter log messages)</para>
+        Netfilter log messages)</para>
       </listitem>
 
       <listitem>
@@ -476,12 +476,12 @@ root@lists:~# </programlisting>
     <para>Most commonly, Netfilter messages are logged to
     <filename>/var/log/messages</filename>. Recent
     <trademark>SuSE/OpenSuSE</trademark> releases come preconfigured with
-    syslog-ng and log netfilter messages to
+    syslog-ng and log Netfilter messages to
     <filename>/var/log/firewall</filename>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>If you are running a distribution that logs netfilter messages to a
+    <para>If you are running a distribution that logs Netfilter messages to a
     log other than <filename>/var/log/messages</filename>, then modify the
     LOGFILE setting in <filename>/etc/shorewall/shorewall.conf</filename> to
     specify the name of your log.</para>
@@ -501,7 +501,7 @@ root@lists:~# </programlisting>
     in your version of Shorewall using the command <command>ls
     <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
 
-    <para>If you wish to enable connections from the internet to your firewall
+    <para>If you wish to enable connections from the Internet to your firewall
     and you find an appropriate macro in
     <filename>/etc/shorewall/macro.*</filename>, the general format of a rule
     in <filename>/etc/shorewall/rules</filename> is:</para>
@@ -544,9 +544,9 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
     uses, see <ulink url="ports.htm">here</ulink>.</para>
 
     <important>
-      <para>I don't recommend enabling telnet to/from the internet because it
+      <para>I don't recommend enabling telnet to/from the Internet because it
       uses clear text (even for login!). If you want shell access to your
-      firewall from the internet, use <acronym>SSH</acronym>:</para>
+      firewall from the Internet, use <acronym>SSH</acronym>:</para>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
 SSH/ACCEPT  net       $FW           </programlisting>
@@ -594,7 +594,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <quote><command>shorewall clear</command></quote>.</para>
 
     <warning>
-      <para>If you are connected to your firewall from the internet, do not
+      <para>If you are connected to your firewall from the Internet, do not
       issue a <quote><command>shorewall stop</command></quote> command unless
       you have added an entry for the IP address that you are connected from
       to <ulink

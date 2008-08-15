@@ -164,7 +164,7 @@
         class="directory">/etc/shorewall</filename> directory is empty. This
         is intentional. The released configuration file skeletons may be found
         on your system in the directory <filename
-        class="directory">/usr/share/doc/shorewall/default-config</filename>.
+        class="directory">/usr/share/doc/shorewall-common/default-config</filename>.
         Simply copy the files you need from that directory to <filename
         class="directory">/etc/shorewall</filename> and modify the
         copies.</para>
@@ -269,10 +269,10 @@ loc     ipv4</programlisting>Zones are defined in the <ulink
     first policy in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     that matches the request is applied. If there is a <ulink
-    url="shorewall_extension_scripts.htm">comon action</ulink> defined for the
+    url="shorewall_extension_scripts.htm">common action</ulink> defined for the
     policy in <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    peformed before the action is applied. The purpose of the common action is
+    performed before the action is applied. The purpose of the common action is
     two-fold:</para>
 
     <itemizedlist>
@@ -296,32 +296,32 @@ loc        net         ACCEPT
 net        all         DROP        info
 all        all         REJECT      info</programlisting>In the two-interface
     sample, the line below is included but commented out. If you want your
-    firewall system to have full access to servers on the internet, uncomment
+    firewall system to have full access to servers on the Internet, uncomment
     that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
 $FW        net         ACCEPT</programlisting> The above policy will:
     <itemizedlist>
         <listitem>
           <para>Allow all connection requests from your local network to the
-          internet</para>
+          Internet</para>
         </listitem>
 
         <listitem>
-          <para>Drop (ignore) all connection requests from the internet to
+          <para>Drop (ignore) all connection requests from the Internet to
           your firewall or local network</para>
         </listitem>
 
         <listitem>
           <para>Optionally accept all connection requests from the firewall to
-          the internet (if you uncomment the additional policy)</para>
+          the Internet (if you uncomment the additional policy)</para>
         </listitem>
 
         <listitem>
           <para>reject all other connection requests.</para>
         </listitem>
       </itemizedlist> The word <firstterm>info</firstterm> in the LOG LEVEL
-    column for the DROP and REJECT policies indicates that packets droped or
+    column for the DROP and REJECT policies indicates that packets dropped or
     rejected under those policies should be <ulink
-    url="shorewall_logging.html">logged at that leve</ulink>l.</para>
+    url="shorewall_logging.html">logged at that level</ulink>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
@@ -349,7 +349,7 @@ $FW        net         ACCEPT</programlisting> The above policy will:
 
     <para>The firewall has two network interfaces. Where Internet connectivity
     is through a cable or <acronym>DSL</acronym> <quote>Modem</quote>, the
-    <emphasis>External Interface</emphasis> will be the ethernet adapter that
+    <emphasis>External Interface</emphasis> will be the Ethernet adapter that
     is connected to that <quote>Modem</quote> (e.g., <filename
     class="devicefile">eth0</filename>) unless you connect via
     <emphasis>Point-to-Point Protocol</emphasis> over Ethernet
@@ -395,7 +395,7 @@ root@lists:~# </programlisting>
     <varname>CLAMPMSS=yes</varname> in <filename
     class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename></emphasis>.</para>
 
-    <para>Your <emphasis>Internal Interface</emphasis> will be an ethernet
+    <para>Your <emphasis>Internal Interface</emphasis> will be an Ethernet
     adapter (<filename class="devicefile">eth1</filename> or <filename
     class="devicefile">eth0</filename>) and will be connected to a hub or
     switch. Your other computers will be connected to the same hub/switch
@@ -565,7 +565,7 @@ root@lists:~# </programlisting>
     (<ulink
     url="http://www.phptr.com/browse/product.asp?product_id={58D4F6D4-54C5-48BA-8EDD-86EBD7A42AF6}">link</ulink>).</para>
 
-    <para id="Diagram">The remainder of this quide will assume that you have
+    <para id="Diagram">The remainder of this guide will assume that you have
     configured your network as shown here: <mediaobject>
         <imageobject>
           <imagedata align="center" fileref="images/basics1.png" format="PNG" />
@@ -588,14 +588,14 @@ root@lists:~# </programlisting>
     don't forward packets which have an RFC-1918 destination address. When one
     of your local systems (let's assume computer 1 in the <link
     linkend="Diagram">above diagram</link>) sends a connection request to an
-    internet host, the firewall must perform <emphasis>Network Address
+    Internet host, the firewall must perform <emphasis>Network Address
     Translation</emphasis> (<acronym>NAT</acronym>). The firewall rewrites the
     source address in the packet to be the address of the firewall's external
     interface; in other words, the firewall makes it appear to the destination
-    internet host as if the firewall itself is initiating the connection. This
+    Internet host as if the firewall itself is initiating the connection. This
     is necessary so that the destination host will be able to route return
     packets back to the firewall (remember that packets whose destination
-    address is reserved by RFC 1918 can't be routed across the internet so the
+    address is reserved by RFC 1918 can't be routed across the Internet so the
     remote host can't address its response to computer 1). When the firewall
     receives a return packet, it rewrites the destination address back to
     <systemitem class="ipaddress">10.10.10.1</systemitem> and forwards the
@@ -662,7 +662,7 @@ root@lists:~# </programlisting>
 
     <para>One of your goals may be to run one or more servers on your local
     computers. Because these computers have RFC-1918 addresses, it is not
-    possible for clients on the internet to connect directly to them. It is
+    possible for clients on the Internet to connect directly to them. It is
     rather necessary for those clients to address their connection requests to
     the firewall who rewrites the destination address to the address of your
     server and forwards the packet to that server. When your server responds,
@@ -682,7 +682,7 @@ root@lists:~# </programlisting>
     <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
 DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting><important>
         <para>Be sure to add your rules after the line that reads <emphasis
-        role="bold">SECTON NEW.</emphasis></para>
+        role="bold">SECTION NEW.</emphasis></para>
       </important><important>
         <para>The server must have a static IP address. If you assign IP
         addresses to your local system using DHCP, you need to configure your
@@ -822,7 +822,7 @@ DNS/ACCEPT  $FW       net</programlisting>This rule allows
     <acronym>DNS</acronym> access from your firewall and may be removed if you
     uncommented the line in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
-    allowing all connections from the firewall to the internet.</para>
+    allowing all connections from the firewall to the Internet.</para>
 
     <para>In the rule shown above, <quote>DNS/ACCEPT</quote> is an example of
     a <emphasis>macro invocation</emphasis>. Shorewall includes a number of
@@ -863,8 +863,8 @@ Web/ACCEPT  loc       $FW       </programlisting>Those two rules would of
       </example> If you don't know what port and protocol a particular
     application uses, look <ulink url="ports.htm">here</ulink>. <important>
         <para>I don't recommend enabling <command>telnet</command> to/from the
-        internet because it uses clear text (even for login!). If you want
-        shell access to your firewall from the internet, use
+        Internet because it uses clear text (even for login!). If you want
+        shell access to your firewall from the Internet, use
         <acronym>SSH</acronym>:</para>
 
         <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
@@ -1022,7 +1022,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     access to/from other hosts, change <filename
     class="directory">/etc/shorewall/</filename><filename>routestopped</filename>
     accordingly. <warning>
-        <para>If you are connected to your firewall from the internet, do not
+        <para>If you are connected to your firewall from the Internet, do not
         issue a <quote><command>shorewall stop</command></quote> command
         unless you have added an entry for the <acronym>IP</acronym> address
         that you are connected from to <filename
@@ -1073,11 +1073,11 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
 
     <para>Once you have the two-interface setup working, the next logical step
     is to add a Wireless Network. The first step involves adding an additional
-    network card to your firewall, either a Wireless card or an ethernet card
+    network card to your firewall, either a Wireless card or an Ethernet card
     that is connected to a Wireless Access Point.<caution>
         <para>When you add a network card, it won't necessarily be detected as
-        the next highest ethernet interface. For example, if you have two
-        ethernet cards in your system (<filename
+        the next highest Ethernet interface. For example, if you have two
+        Ethernet cards in your system (<filename
         class="devicefile">eth0</filename> and <filename
         class="devicefile">eth1</filename>) and you add a third card that uses
         the same driver as one of the other two, that third card won't
@@ -1130,7 +1130,7 @@ loc       wlan0           detect             maclist</programlisting>
         url="MAC_Validation.html">maclist option</ulink> for the wireless
         segment. By adding entries for computers 3 and 4 in
         <filename>/etc/shorewall/maclist</filename>, you help ensure that your
-        neighbors aren't getting a free ride on your internet connection.
+        neighbors aren't getting a free ride on your Internet connection.
         Start by omitting that option; when you have everything working, then
         add the option and configure your
         <filename>/etc/shorewall/maclist</filename> file.</para>
@@ -1139,7 +1139,7 @@ loc       wlan0           detect             maclist</programlisting>
       <listitem>
         <para>You need to add an entry to the
         <filename>/etc/shorewall/masq</filename> file to masquerade traffic
-        from the wireless network to the internet. If your internet interface
+        from the wireless network to the Internet. If your Internet interface
         is <filename class="devicefile">eth0</filename> and your wireless
         interface is <filename class="devicefile">wlan0</filename>, the entry
         would be:</para>

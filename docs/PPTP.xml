@@ -255,7 +255,7 @@ esac</programlisting>
 
         <para>Here' a basic setup that treats your remote users as if they
         were part of your <emphasis role="bold">loc</emphasis> zone. Note that
-        if your primary internet connection uses ppp0, then be sure that
+        if your primary Internet connection uses ppp0, then be sure that
         <emphasis role="bold">loc</emphasis> follows <emphasis
         role="bold">net</emphasis> in /etc/shorewall/zones.</para>
 
@@ -275,7 +275,7 @@ loc            ppp+</programlisting>
 
         <para>If you want to place your remote users in their own zone so that
         you can control connections between these users and the local network,
-        follow this example. Note that if your primary internet connection
+        follow this example. Note that if your primary Internet connection
         uses ppp0 then be sure that <emphasis role="bold">vpn</emphasis>
         follows <emphasis role="bold">net</emphasis> in /etc/shorewall/zones
         as shown below.</para>
@@ -312,7 +312,7 @@ vpn            ppp+</programlisting>
         fileref="images/MultiPPTP.png" /></para>
 
         <para>Here's how you configure this in Shorewall. Note that if your
-        primary internet connection uses ppp0 then be sure that the <emphasis
+        primary Internet connection uses ppp0 then be sure that the <emphasis
         role="bold">vpn{1-3}</emphasis> zones follows <emphasis
         role="bold">net</emphasis> in /etc/shorewall/zones as shown
         below.</para>
@@ -600,10 +600,10 @@ restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
     Modem</title>
 
     <para>Some ADSL systems in Europe (most notably in Austria and the
-    Netherlands) feature a PPTP server built into an ADSL
-    <quote>Modem</quote>. In this setup, an ethernet interface is dedicated to
+    Netherlands) feature a PPTP server builtinto an ADSL
+    <quote>Modem</quote>. In this setup, an Ethernet interface is dedicated to
     supporting the PPTP tunnel between the firewall and the
-    <quote>Modem</quote> while the actual internet access is through PPTP
+    <quote>Modem</quote> while the actual Internet access is through PPTP
     (interface ppp0). If you have this type of setup, you need to modify the
     sample configuration that you downloaded as described in this section.
     <emphasis role="bold">These changes are in addition to those described in

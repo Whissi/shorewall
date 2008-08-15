@@ -109,14 +109,14 @@
         class="directory">/etc/shorewall</filename> directory is empty. This
         is intentional. The released configuration file skeletons may be found
         on your system in the directory <filename
-        class="directory">/usr/share/doc/shorewall/default-config</filename>.
+        class="directory">/usr/share/doc/shorewall-common/default-config</filename>.
         Simply copy the files you need from that directory to <filename
         class="directory">/etc/shorewall</filename> and modify the
         copies.</para>
 
         <para>Note that you must copy <filename
-        class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-        and /usr/share/doc/shorewall/default-config/modules to <filename
+        class="directory">/usr/share/doc/shorewall-common/default-config/shorewall.conf</filename>
+        and /usr/share/doc/shorewall-common/default-config/modules to <filename
         class="directory">/etc/shorewall</filename> even if you do not modify
         those files.</para>
       </warning></para>
@@ -192,7 +192,7 @@ dmz     ipv4</programlisting>
     assigned to the firewall zone, Shorewall attaches absolutely no meaning to
     zone names. Zones are entirely what YOU make of them. That means that you
     should not expect Shorewall to do something special <quote>because this is
-    the internet zone</quote> or <quote>because that is the
+    the Internet zone</quote> or <quote>because that is the
     DMZ</quote>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
@@ -286,11 +286,11 @@ all              all                 REJECT     info</programlisting>
     <orderedlist>
       <listitem>
         <para>allow all connection requests from your local network to the
-        internet</para>
+        Internet</para>
       </listitem>
 
       <listitem>
-        <para>drop (ignore) all connection requests from the internet to your
+        <para>drop (ignore) all connection requests from the Internet to your
         firewall or local network and log a message at the info level (<ulink
         url="shorewall_logging.html">here is a description of log
         levels</ulink>).</para>
@@ -322,7 +322,7 @@ all              all                 REJECT     info</programlisting>
     <itemizedlist>
       <listitem>
         <para>The DMZ Zone consists of systems DMZ 1 and DMZ 2. A DMZ is used
-        to isolate your internet-accessible servers from your local systems so
+        to isolate your Internet-accessible servers from your local systems so
         that if one of those servers is compromised, you still have the
         firewall between the compromised system and your local systems.</para>
       </listitem>
@@ -508,7 +508,7 @@ loc      eth2           detect</programlisting>
       Class C address 192.0.2.14, the network number is hex C00002 and the
       host number is hex 0E.</para>
 
-      <para>As the internet grew, it became clear that such a gross
+      <para>As the Internet grew, it became clear that such a gross
       partitioning of the 32-bit address space was going to be very limiting
       (early on, large corporations and universities were assigned their own
       class A network!). After some false starts, the current technique of
@@ -1067,7 +1067,7 @@ Destination     Gateway         Genmask         Flgs MSS Win irtt Iface
 
       <para>One more thing needs to be emphasized -- all outgoing packet are
       sent using the routing table and reply packets are not a special case.
-      There seems to be a common mis-conception whereby people think that
+      There seems to be a common misconception whereby people think that
       request packets are like salmon and contain a genetic code that is
       magically transferred to reply packets so that the replies follow the
       reverse route taken by the request. That isn't the case; the replies may
@@ -1132,7 +1132,7 @@ tcpdump: listening on eth2
 
       <para>The leading question marks are a result of my having specified the
       <quote>n</quote> option (Windows <quote>arp</quote> doesn't allow that
-      option) which causes the <quote>arp</quote> program to forego IP-&gt;DNS
+      option) which causes the <quote>arp</quote> program to forgo IP-&gt;DNS
       name translation. Had I not given that option, the question marks would
       have been replaced with the FQDN corresponding to each IP address.
       Notice that the last entry in the table records the information we saw
@@ -1167,7 +1167,7 @@ tcpdump: listening on eth2
       somewhat unfortunate because it leads people to the erroneous conclusion
       that traffic destined for one of these addresses can't be sent through a
       router. This is definitely not true; private routers (including your
-      Shorewall-based firewall) can forward RFC 1918 addresed traffic just
+      Shorewall-based firewall) can forward RFC 1918 addressed traffic just
       fine.</para>
 
       <para>When selecting addresses from these ranges, there's a couple of
@@ -1349,7 +1349,7 @@ Destination    Gateway     Genmask         Flags MSS Window irtt Iface
         <para>With SNAT, an internal LAN segment is configured using RFC 1918
         addresses. When a host <emphasis role="bold">A</emphasis> on this
         internal segment initiates a connection to host <emphasis
-        role="bold">B</emphasis> on the internet, the firewall/router rewrites
+        role="bold">B</emphasis> on the Internet, the firewall/router rewrites
         the IP header in the request to use one of your public IP addresses as
         the source address. When <emphasis role="bold">B</emphasis> responds
         and the response is received by the firewall, the firewall changes the
@@ -1359,7 +1359,7 @@ Destination    Gateway     Genmask         Flags MSS Window irtt Iface
 
         <para>Let's suppose that you decide to use SNAT on your local zone and
         use public address 192.0.2.176 as both your firewall's external IP
-        address and the source IP address of internet requests sent from that
+        address and the source IP address of Internet requests sent from that
         zone.</para>
 
         <graphic align="center" fileref="images/dmz5.png" />
@@ -1396,16 +1396,16 @@ eth0           192.168.201.0/29     192.0.2.176</programlisting>
       <section id="dnat">
         <title>DNAT</title>
 
-        <para>When SNAT is used, it is impossible for hosts on the internet to
+        <para>When SNAT is used, it is impossible for hosts on the Internet to
         initiate a connection to one of the internal systems since those
         systems do not have a public IP address. DNAT provides a way to allow
-        selected connections from the internet.</para>
+        selected connections from the Internet.</para>
 
         <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
         <para>Suppose that your daughter wants to run a web server on her
         system <quote>Local 3</quote>. You could allow connections to the
-        internet to her server by adding the following entry in
+        Internet to her server by adding the following entry in
         <filename><ulink
         url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink></filename>:</para>
 
@@ -1489,12 +1489,12 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
         url="ProxyARP.htm"><filename>/etc/shorewall/proxyarp</filename></ulink>
         file.</para>
 
-        <programlisting>#ADDRESS     INTERFACE    EXTERNAL      HAVE ROUTE           PERSISTANT
+        <programlisting>#ADDRESS     INTERFACE    EXTERNAL      HAVE ROUTE           PERSISTENT
 192.0.2.177  eth2         eth0          No
 192.0.2.178  eth2         eth0          No</programlisting>
 
         <para>Because the HAVE ROUTE column contains No, Shorewall will add
-        host routes thru eth2 to 192.0.2.177 and 192.0.2.178. The ethernet
+        host routes thru eth2 to 192.0.2.177 and 192.0.2.178. The Ethernet
         interfaces on DMZ 1 and DMZ 2 should be configured to have the IP
         addresses shown but should have the same default gateway as the
         firewall itself -- namely 192.0.2.254. In other words, they should be
@@ -1511,7 +1511,7 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
         their routers with a long ARP cache timeout. If you move a system from
         parallel to your firewall to behind your firewall with Proxy ARP, it
         will probably be HOURS before that system can communicate with the
-        internet. There are a couple of things that you can try:</para>
+        Internet. There are a couple of things that you can try:</para>
 
         <orderedlist>
           <listitem>
@@ -1630,7 +1630,7 @@ ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
         their routers with a long ARP cache timeout. If you move a system from
         parallel to your firewall to behind your firewall with one-to-one NAT,
         it will probably be HOURS before that system can communicate with the
-        internet. There are a couple of things that you can try:</para>
+        Internet. There are a couple of things that you can try:</para>
 
         <orderedlist>
           <listitem>
@@ -1711,7 +1711,7 @@ ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
       <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
       <para>With the default policies described earlier in this document, your
-      local systems (Local 1-3) can access any server on the internet and the
+      local systems (Local 1-3) can access any server on the Internet and the
       DMZ can't access any other host (including the firewall). With the
       exception of DNAT rules which cause address translation and allow the
       translated connection request to pass through the firewall, the way to
@@ -1929,7 +1929,7 @@ options {
         max-transfer-time-in 60;
 
 allow-transfer {
-        // Servers allowed to request zone tranfers 
+        // Servers allowed to request zone transfers 
        &lt;secondary NS IP&gt;; };
 };
 
@@ -2078,7 +2078,7 @@ view "external" {
 
     <para>Here are the files in <filename
     class="directory">/var/named</filename> (those not shown are usually
-    included in your bind disbribution).</para>
+    included in your bind distribution).</para>
 
     <para><filename>db.192.0.2.176</filename> - This is the reverse zone for
     the firewall's external interface</para>
@@ -2101,7 +2101,7 @@ view "external" {
 @        604800  IN NS   &lt;name of secondary ns&gt;.
 ;
 ; ############################################################
-; Iverse Address Arpa Records (PTR's) 
+; Inverse Address Arpa Records (PTR's) 
 ; ############################################################
 176.2.0.192.in-addr.arpa. 86400 IN PTR firewall.foobar.net.</programlisting>
 
@@ -2125,7 +2125,7 @@ view "external" {
 @        604800  IN NS   &lt;name of secondary ns&gt;.
 ;
 ; ############################################################
-; Iverse Address Arpa Records (PTR's) 
+; Inverse Address Arpa Records (PTR's) 
 ; ############################################################
 177.2.0.192.in-addr.arpa. 86400 IN PTR www.foobar.net.</programlisting>
 
@@ -2150,7 +2150,7 @@ view "external" {
 @        604800  IN NS   &lt;name of secondary ns&gt;.
 ;
 ; ############################################################
-; Iverse Address Arpa Records (PTR's) 
+; Inverse Address Arpa Records (PTR's) 
 ; ############################################################
 178.2.0.192.in-addr.arpa. 86400 IN PTR mail.foobar.net.</programlisting>
 
@@ -2175,7 +2175,7 @@ view "external" {
 @        604800  IN NS   &lt;name of secondary ns&gt;.
 ;
 ; ############################################################
-; Iverse Address Arpa Records (PTR's) 
+; Inverse Address Arpa Records (PTR's) 
 ; ############################################################
 179.2.0.192.in-addr.arpa. 86400 IN PTR nod.foobar.net.</programlisting>
 
@@ -2198,7 +2198,7 @@ view "external" {
 @     604800          IN NS   ns1.foobar.net.
 
 ; ############################################################
-; Iverse Address Arpa Records (PTR's)
+; Inverse Address Arpa Records (PTR's)
 ; ############################################################
 1       86400           IN PTR  localhost.foobar.net.</programlisting>
 
@@ -2221,7 +2221,7 @@ view "external" {
 ; ############################################################
 @       604800          IN NS   ns1.foobar.net.
 ; ############################################################
-; Iverse Address Arpa Records (PTR's)
+; Inverse Address Arpa Records (PTR's)
 ; ############################################################
 1       86400           IN PTR  gateway.foobar.net.
 2       86400           IN PTR  winken.foobar.net.
@@ -2248,7 +2248,7 @@ view "external" {
 @             604800  IN NS   ns1.foobar.net.
 
 ; ############################################################
-; Iverse Address Arpa Records (PTR's)
+; Inverse Address Arpa Records (PTR's)
 ; ############################################################
 1               86400 IN PTR  dmz.foobar.net.</programlisting>
 
@@ -2416,7 +2416,7 @@ foobar.net.      86400   IN A    192.0.2.177
     firewall when it is stopped.</para>
 
     <caution>
-      <para>If you are connected to your firewall from the internet, do not
+      <para>If you are connected to your firewall from the Internet, do not
       issue a <quote>shorewall stop</quote> command unless you have added an
       entry for the IP address that you are connected from to <filename><ulink
       url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>.

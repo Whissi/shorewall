@@ -105,13 +105,13 @@ conn packetdefault
   <section id="GwFw">
     <title>IPSec Gateway on the Firewall System</title>
 
-    <para>Suppose that we have the following sutuation:</para>
+    <para>Suppose that we have the following situation:</para>
 
     <graphic fileref="images/TwoNets1.png" />
 
     <para>We want systems in the 192.168.1.0/24 sub-network to be able to
     communicate with systems in the 10.0.0.0/8 network. We assume that on both
-    systems A and B, eth0 is the internet interface.</para>
+    systems A and B, eth0 is the Internet interface.</para>
 
     <para>To make this work, we need to do two things:</para>
 
@@ -177,7 +177,7 @@ vpn           ipsec0</programlisting>
       <filename>/etc/shorewall/zones</filename>.</emphasis></para>
 
       <para>Remember the assumption that both systems A and B have eth0 as
-      their internet interface.</para>
+      their Internet interface.</para>
 
       <para>You must define the vpn zone using the /etc/shorewall/hosts
       file.</para>
@@ -193,7 +193,7 @@ vpn          eth0:10.0.0.0/8</programlisting>
 vpn          eth0:192.168.1.0/24</programlisting>
 
       <para>In addition, <emphasis role="bold">if you are using Masquerading
-      or SNAT</emphasis> on your firewalls, you need to elmiinate the remote
+      or SNAT</emphasis> on your firewalls, you need to eliminate the remote
       network from Masquerade/SNAT. These entries <emphasis
       role="bold">replace</emphasis> your current masquerade/SNAT entries for
       the local networks.</para>
@@ -229,7 +229,7 @@ vpn           loc         ACCEPT</programlisting>
 
     <para>Shorewall can be used in a VPN Hub environment where multiple remote
     networks are connected to a gateway running Shorewall. This environment is
-    shown in this diatram.</para>
+    shown in this diagram.</para>
 
     <graphic fileref="images/ThreeNets.png" />
 
@@ -425,7 +425,7 @@ ipsec       net        0.0.0.0/0       vpn1,vpn2,vpn3</programlisting>
     Shorewall will issue warnings to that effect. These warnings may be safely
     ignored. FreeS/Wan may now be configured to have three different Road
     Warrior connections with the choice of connection being based on X-509
-    certificates or some other means. Each of these connectioins will utilize
+    certificates or some other means. Each of these connections will utilize
     a different updown script that adds the remote station to the appropriate
     zone when the connection comes up and that deletes the remote station when
     the connection comes down. For example, when 134.28.54.2 connects for the

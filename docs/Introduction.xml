@@ -65,8 +65,8 @@
         <listitem>
           <para>iptables-restore - a program included with iptables that
           allows for atomic installation of a set of Netfilter rules. This is
-          a much more efficient way to install a ruleset than running the
-          iptables utility once for each rule in the ruleset.</para>
+          a much more efficient way to install a rule set than running the
+          iptables utility once for each rule in the rule set.</para>
         </listitem>
 
         <listitem>
@@ -269,17 +269,17 @@ loc        net         ACCEPT
 net        all         DROP        info
 all        all         REJECT      info</programlisting>In the three-interface
     sample, the line below is included but commented out. If you want your
-    firewall system to have full access to servers on the internet, uncomment
+    firewall system to have full access to servers on the Internet, uncomment
     that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
 $FW        net         ACCEPT</programlisting> The above policy will:
     <itemizedlist>
         <listitem>
           <para>Allow all connection requests from your local network to the
-          internet</para>
+          Internet</para>
         </listitem>
 
         <listitem>
-          <para>Drop (ignore) all connection requests from the internet to
+          <para>Drop (ignore) all connection requests from the Internet to
           your firewall or local networks; these ignored connection requests
           will be logged using the <emphasis>info</emphasis> syslog priority
           (log level).</para>
@@ -287,7 +287,7 @@ $FW        net         ACCEPT</programlisting> The above policy will:
 
         <listitem>
           <para>Optionally accept all connection requests from the firewall to
-          the internet (if you uncomment the additional policy)</para>
+          the Internet (if you uncomment the additional policy)</para>
         </listitem>
 
         <listitem>
@@ -298,8 +298,8 @@ $FW        net         ACCEPT</programlisting> The above policy will:
       </itemizedlist></para>
 
     <para>To illustrate how rules provide exceptions to policies, suppose that
-    you have the polcies listed above but you want to be able to connect to
-    your firewall from the internet using Secure Shell (SSH). Recall that SSH
+    you have the polices listed above but you want to be able to connect to
+    your firewall from the Internet using Secure Shell (SSH). Recall that SSH
     connects uses TCP port 22.</para>
 
     <programlisting>#ACTION    SOURCE        DEST      PROTO      DEST
@@ -307,7 +307,7 @@ $FW        net         ACCEPT</programlisting> The above policy will:
 ACCEPT     net           $FW       tcp        22</programlisting>
 
     <para>So although you have a policy of ignoring all connection attempts
-    from the net zone (from the internet), the above exception to that policy
+    from the net zone (from the Internet), the above exception to that policy
     allows you to connect to the SSH server running on your firewall.</para>
 
     <para>Because Shorewall makes no assumptions about what traffic you want
@@ -317,7 +317,7 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     <itemizedlist>
       <listitem>
         <para>The <ulink url="shorewall_quickstart_guide.htm">QuickStart
-        guildes</ulink> point to pre-populated files for use in common setups
+        guides</ulink> point to pre-populated files for use in common setups
         and the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
         Guide</ulink> shows you examples for use with other more complex
         setups.</para>
@@ -377,7 +377,7 @@ ACCEPT     net           $FW       tcp        22</programlisting>
         highly portable to those Unix-like platforms that support Perl
         (including Cygwin) and is the compiler of choice for new Shorewall
         installations. Scripts created using Shorewall-perl use
-        iptables-restore to install the generated Netfilter ruleset.</para>
+        iptables-restore to install the generated Netfilter rule set.</para>
       </listitem>
 
       <listitem>

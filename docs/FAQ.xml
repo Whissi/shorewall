@@ -135,7 +135,7 @@
 
     <section id="faq76">
       <title>(FAQ 76) I just upgraded my Debian system and now masquerading
-      doesn work? What happened?</title>
+      doesn't work? What happened?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> This happens to people
       who ignore <ulink url="Install.htm#Upgrade_Deb">our advice</ulink> and
@@ -149,7 +149,7 @@
 
       <section id="faq76a">
         <title>(FAQ 76a) I just upgraded my Ubuntu system and now masquerading
-        doesn work? What happened?</title>
+        doesn't work? What happened?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> See <link
         linkend="faq76">above</link>.</para>
@@ -157,7 +157,7 @@
 
       <section id="faq76b">
         <title>(FAQ 76b) I just upgraded my Kubuntu system and now
-        masquerading doesn work? What happened?</title>
+        masquerading doesn't work? What happened?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> See <link
         linkend="faq76">above</link>.</para>
@@ -193,7 +193,7 @@ DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 #                                                                               PORT    DEST.
 DNAT    net    loc:<emphasis>local-IP-address</emphasis>&gt;[:<emphasis>local-port</emphasis>]     <emphasis>protocol</emphasis>    <emphasis>port-number</emphasis>   -       <emphasis>external-IP</emphasis></programlisting>
 
-      <para>If you want to forward requests from a particular internet address
+      <para>If you want to forward requests from a particular Internet address
       ( <emphasis>address</emphasis> ):</para>
 
       <programlisting>#ACTION SOURCE        DEST                                   PROTO       DEST PORT     SOURCE  ORIGINAL
@@ -253,7 +253,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
           <listitem>
             <para>As root, type <quote> <command>shorewall reset</command>
             </quote> ("<command>shorewall-lite reset</command>", if you are
-            running Shorewall Lite). This clears all NetFilter
+            running Shorewall Lite). This clears all Netfilter
             counters.</para>
           </listitem>
 
@@ -315,7 +315,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
             the connection is being dropped or rejected. If it is, then you
             may have a zone definition problem such that the server is in a
             different zone than what is specified in the DEST column. At a
-            root promt, type "<command>shorewall show zones</command>"
+            root prompt, type "<command>shorewall show zones</command>"
             ("<command>shorewall-lite show zones</command>") then be sure that
             in the DEST column you have specified the <emphasis
             role="bold">first</emphasis> zone in the list that matches
@@ -335,7 +335,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
       </section>
 
       <section id="faq1c">
-        <title>(FAQ 1c) From the internet, I want to connect to port 1022 on
+        <title>(FAQ 1c) From the Internet, I want to connect to port 1022 on
         my firewall and have the firewall forward the connection to port 22 on
         local system 192.168.1.3. How do I do that?</title>
 
@@ -462,7 +462,7 @@ eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</
 
       <section id="faq1g">
         <title>(FAQ 1g) I would like to redirect port 80 on my public IP
-        address (206.124.146.176) to port 993 on internet host
+        address (206.124.146.176) to port 993 on Internet host
         66.249.93.111</title>
 
         <para><emphasis role="bold">Answer</emphasis>: This requires a vile
@@ -497,8 +497,8 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
       Guide</ulink> appropriate for your setup; the guides cover this topic in
       a tutorial fashion. DNAT rules should be used for connections that need
       to go the opposite direction from SNAT/MASQUERADE. So if you masquerade
-      or use SNAT from your local network to the internet then you will need
-      to use DNAT rules to allow connections from the internet to your local
+      or use SNAT from your local network to the Internet then you will need
+      to use DNAT rules to allow connections from the Internet to your local
       network. You also want to use DNAT rules when you intentionally want to
       rewrite the destination IP address or port number. In all other cases,
       you use ACCEPT unless you need to hijack connections as they go through
@@ -537,7 +537,7 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
 
       <itemizedlist>
         <listitem>
-          <para>Having an internet-accessible server in your local network is
+          <para>Having an Internet-accessible server in your local network is
           like raising foxes in the corner of your hen house. If the server is
           compromised, there's nothing between that server and your other
           internal systems. For the cost of another NIC and a cross-over
@@ -559,7 +559,7 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
       </itemizedlist>
 
       <para>So the best and most secure way to solve this problem is to move
-      your internet-accessible server(s) to a separate LAN segment with it's
+      your Internet-accessible server(s) to a separate LAN segment with it's
       own interface to your firewall and follow <link linkend="faq2b">FAQ
       2b</link>. That way, your local systems are still safe if your server
       gets hacked and you don't have to run a split DNS configuration
@@ -643,7 +643,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
           <para>If the ALL INTERFACES column in /etc/shorewall/nat is empty or
           contains <quote>Yes</quote>, you will also see log messages like the
           following when trying to access a host in Z from another host in Z
-          using the destination hosts's public address:</para>
+          using the destination host's public address:</para>
 
           <programlisting>Oct 4 10:26:40 netgw kernel:
           Shorewall:FORWARD:REJECT:IN=eth1 OUT=eth1 SRC=192.168.118.200
@@ -685,7 +685,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
           <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
 dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis> </programlisting>
 
-          <para>In <filename>/etc/shorewall/na</filename>t, be sure that you
+          <para>In <filename>/etc/shorewall/nat</filename>, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
 
           <para>In /etc/shorewall/masq:</para>
@@ -802,7 +802,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
       <blockquote>
         <para><programlisting>&gt; I know PoM -ng is going to address this issue, but till it is ready, and
 &gt; all the extras are ported to it, is there any way to use the h.323
-&gt; contrack module kernel patch with a 2.6 kernel?
+&gt; conntrack module kernel patch with a 2.6 kernel?
 &gt; Running 2.6.1 - no 2.4 kernel stuff on the system, so downgrade is not
 &gt; an option... The module is not ported yet to 2.6, sorry.
 &gt; Do I have any options besides a gatekeeper app (does not work in my
@@ -831,7 +831,7 @@ to debug/develop the newnat interface.</programlisting></para>
       url="shorewall_quickstart_guide.htm">Quick Start Guides</ulink> should
       have to ask this question.</para>
 
-      <para>Regardless of which guide you used, all outbound communcation is
+      <para>Regardless of which guide you used, all outbound communication is
       open by default. So you do not need to 'open ports' for output.</para>
 
       <para>For input:</para>
@@ -877,7 +877,7 @@ to debug/develop the newnat interface.</programlisting></para>
       <para><emphasis role="bold">Answer:</emphasis> The default Shorewall
       setup invokes the <emphasis role="bold">Drop</emphasis> action prior to
       enforcing a DROP policy and the default policy to all zones from the
-      internet is DROP. The Drop action is defined in
+      Internet is DROP. The Drop action is defined in
       <filename>/usr/share/shorewall/action.Drop</filename> which in turn
       invokes the <emphasis role="bold">Auth</emphasis> macro (defined in
       <filename>/usr/share/shorewall/macro.Auth</filename>) specifying the
@@ -916,7 +916,7 @@ to debug/develop the newnat interface.</programlisting></para>
         establishment of new connections. Once a connection is established
         through the firewall it will be usable until disconnected (tcp) or
         until it times out (other protocols). If you stop telnet and try to
-        establish a new session your firerwall will block that attempt.</para>
+        establish a new session your firewall will block that attempt.</para>
       </section>
 
       <section id="faq4c">
@@ -973,7 +973,7 @@ to debug/develop the newnat interface.</programlisting></para>
           <para>The DNS settings on the local systems are wrong or the user is
           running a DNS server on the firewall and hasn't enabled UDP and TCP
           port 53 from the local net to the firewall or from the firewall to
-          the internet.</para>
+          the Internet.</para>
         </listitem>
 
         <listitem>
@@ -1042,7 +1042,7 @@ to debug/develop the newnat interface.</programlisting></para>
       may no longer be defined in terms of bridge ports. See <ulink
       url="bridge-Shorewall-perl.html">the new Shorewall-shell bridging
       documentation</ulink> for information about configuring a
-      bridge/firewall under kernel 2.6.20 and later with Shoreawall shell or
+      bridge/firewall under kernel 2.6.20 and later with Shorewall shell or
       the<ulink url="bridge-Shorewall-perl.html"> Shorewall-perl bridging
       documentation</ulink> if you use Shorewall-perl
       (highly-recommended).<note>
@@ -1167,7 +1167,7 @@ DROP      net       fw      udp      10619</programlisting>
           </listitem>
 
           <listitem>
-            <para>the ethernet frame type (2 bytes)</para>
+            <para>the Ethernet frame type (2 bytes)</para>
           </listitem>
         </itemizedlist>
 
@@ -1216,7 +1216,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       <emphasis role="bold">less than</emphasis> this number are sent to the
       console. On the system shown in the example above, priorities 0-5 are
       sent to the console. Since Shorewall defaults to using 'info' (6), the
-      Shorewall-generated Netfilter ruleset will generate log messages that
+      Shorewall-generated Netfilter rule set will generate log messages that
       <emphasis role="bold">will not appear on the console.</emphasis></para>
 
       <para>The second number is the default log level for kernel printk()
@@ -1252,7 +1252,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         messages or the content of the messages.</para>
 
         <para>The actual log file where Netfilter messages are written is not
-        standardized and will vary by distribution and distribusion version.
+        standardized and will vary by distribution and distribution version.
         But anytime you see no logging, it's time to look outside the
         Shorewall configuration for the cause. As an example, recent
         <trademark>SuSE</trademark> releases use syslog-ng by default and
@@ -1376,7 +1376,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>blacklst</term>
+          <term>blacklist</term>
 
           <listitem>
             <para>The packet is being logged because the source IP is
@@ -1634,7 +1634,7 @@ modprobe: Can't locate module iptable_raw</programlisting>
     <title>Routing</title>
 
     <section id="faq32">
-      <title>(FAQ 32) My firewall has two connections to the internet from two
+      <title>(FAQ 32) My firewall has two connections to the Internet from two
       different ISPs. How do I set this up in Shorewall?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: See <ulink
@@ -1933,7 +1933,7 @@ iptables: Invalid argument
       of the control of the packaging system and provides consistent behavior
       between the init scripts and <filename>/sbin/shorewall</filename> (and
       <filename>/sbin/shorewall-lite</filename>). For more information on the
-      tradeoffs involved when deciding whether to use the Debian package, see
+      factors involved when deciding whether to use the Debian package, see
       <ulink url="http://wiki.shorewall.net/wiki/ShorewallOnDebian">this
       article</ulink>.</para>
     </section>
@@ -2004,7 +2004,7 @@ iptables: Invalid argument
     <title>Traffic Shaping</title>
 
     <section id="faq67">
-      <title>(FAQ 67) I just configured Shorewall's builtin traffic shaping
+      <title>(FAQ 67) I just configured Shorewall's built in traffic shaping
       and now Shorewall fails to Start.</title>
 
       <para>The error I receive is as follows:<programlisting>RTNETLINK answers: No such file or directory
@@ -2086,7 +2086,7 @@ We have an error talking to the kernel
 
       <section id="faq25a">
         <title>(FAQ 25a) How do I tell which version of Shorewall-perl and
-        Shorewall-shell that I have intalled?</title>
+        Shorewall-shell that I have installed?</title>
 
         <para><emphasis role="bold">Answer</emphasis>: At the shell prompt,
         type:</para>
@@ -2174,7 +2174,7 @@ We have an error talking to the kernel
     <section id="faq14">
       <title>(FAQ 14) I'm connected via a cable modem and it has an internal
       web server that allows me to configure/monitor it but as expected if I
-      enable rfc1918 blocking for my eth0 interface (the internet one), it
+      enable rfc1918 blocking for my eth0 interface (the Internet one), it
       also blocks the cable modems web server.</title>
 
       <para>Is there any way it can add a rule before the rfc1918 blocking
@@ -2217,7 +2217,7 @@ We have an error talking to the kernel
       </section>
 
       <section id="faq14b">
-        <title>(FAQ 14b) I connect to the internet with PPPoE. When I try to
+        <title>(FAQ 14b) I connect to the Internet with PPPoE. When I try to
         access the built-in web server in my DSL Modem, I get connection
         Refused.</title>
 
@@ -2285,7 +2285,7 @@ eth0               eth1                        # eth1 = interface to local netwo
 
     <section id="faq18">
       <title>(FAQ 18) Is there any way to use aliased ip addresses with
-      Shorewall, and maintain separate rulesets for different IPs?</title>
+      Shorewall, and maintain separate rule sets for different IPs?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Yes. See <ulink
       url="Shorewall_and_Aliased_Interfaces.html">Shorewall and Aliased
@@ -2369,7 +2369,7 @@ eth0               eth1                        # eth1 = interface to local netwo
           <command>iptables-restore</command> to instantiate the Netfilter
           configuration. So it runs much faster than the script generated by
           the Shorewall-shell compiler and doesn't disable new connections
-          during ruleset installation.</para>
+          during rule set installation.</para>
         </listitem>
 
         <listitem>
@@ -2432,7 +2432,7 @@ rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
 
     <section id="faq20">
       <title>(FAQ 20) I have just set up a server. Do I have to change
-      Shorewall to allow access to my server from the internet?</title>
+      Shorewall to allow access to my server from the Internet?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Yes. Consult the <ulink
       url="shorewall_quickstart_guide.htm">QuickStart guide</ulink> that you
@@ -2441,8 +2441,8 @@ rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
     </section>
 
     <section id="faq24">
-      <title>(FAQ 24) How can I allow conections to let's say the ssh port
-      only from specific IP Addresses on the internet?</title>
+      <title>(FAQ 24) How can I allow connections to let's say the ssh port
+      only from specific IP Addresses on the Internet?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: In the SOURCE column of
       the rule, follow <quote>net</quote> by a colon and a list of the
@@ -2540,14 +2540,14 @@ REJECT    fw            net:pagead2.googlesyndication.com    all</programlisting
       headers at the front of each packet. Stateful packet filters (of which
       Netfilter is an example) use a combination of header contents and state
       created when the packet filter processed earlier packets. Netfilter (and
-      Shorewall's use of netfilter) also consider the network interface(s)
+      Shorewall's use of Netfilter) also consider the network interface(s)
       where each packet entered and/or where the packet will leave the
       firewall/router.</para>
 
       <para>When you specify <ulink
       url="configuration_file_basics.htm#dnsnames">a domain name in a
       Shorewall rule</ulink>, the iptables program resolves that name to one
-      or more IP addresses and the actual netfilter rules that are created are
+      or more IP addresses and the actual Netfilter rules that are created are
       expressed in terms of those IP addresses. So the rule that you entered
       was equivalent to:</para>
 

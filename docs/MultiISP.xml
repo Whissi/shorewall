@@ -75,7 +75,7 @@
     <title>Multiple Internet Connection Support</title>
 
     <para>Beginning with Shorewall 2.3.2, limited support is included for
-    multiple internet connections. Limitations of this support are as
+    multiple Internet connections. Limitations of this support are as
     follows:</para>
 
     <itemizedlist>
@@ -110,7 +110,7 @@
       <title>Overview</title>
 
       <para>Let's assume that a firewall is connected via two separate
-      ethernet interfaces to two different ISPs as in the following
+      Ethernet interfaces to two different ISPs as in the following
       diagram.</para>
 
       <graphic align="center" fileref="images/TwoISPs.png" valign="middle" />
@@ -148,7 +148,7 @@
 
       <para>When you use the <emphasis role="bold">track</emphasis> option in
       <filename>/etc/shorewall/providers</filename>, connections from the
-      internet are automatically routed back out of the correct interface and
+      Internet are automatically routed back out of the correct interface and
       through the correct ISP gateway. This works whether the connection is
       handled by the firewall itself or if it is routed or port-forwarded to a
       system behind the firewall.</para>
@@ -304,7 +304,7 @@
                   be tracked so that responses may be routed back out this
                   same interface.</para>
 
-                  <para>You want to specify 'track' if internet hosts will be
+                  <para>You want to specify 'track' if Internet hosts will be
                   connecting to local servers through this provider. Any time
                   that you specify 'track', you will also want to specify
                   'balance' (see below).</para>
@@ -338,7 +338,7 @@
                   <important>
                     <para>If you are using
                     <filename>/etc/shorewall/providers</filename> because you
-                    have multiple internet connections, we recommend that you
+                    have multiple Internet connections, we recommend that you
                     specify 'track' even if you don't need it. It helps
                     maintain long-term connections in which there are
                     significant periods with no traffic.</para>
@@ -367,7 +367,7 @@
                   <important>
                     <para>If you are using
                     <filename>/etc/shorewall/providers</filename> because you
-                    have multiple internet connections, we recommend that you
+                    have multiple Internet connections, we recommend that you
                     specify 'balance' even if you don't need it. You can still
                     use entries in <filename>/etc/shorewall/tcrules</filename>
                     to force all traffic to one provider or another.<note>
@@ -464,7 +464,7 @@
               </varlistentry>
             </variablelist>
 
-            <para>For those of you who are termnally confused between<emphasis
+            <para>For those of you who are terminally confused between<emphasis
             role="bold"> track</emphasis> and <emphasis
             role="bold">balance</emphasis>:</para>
 
@@ -494,7 +494,7 @@
             Shorewall copies all routes through the interface specified in the
             INTERFACE column plus the interfaces listed in this column.
             Normally, you will list all interfaces on your firewall in this
-            column except those internet interfaces specified in the INTERFACE
+            column except those Internet interfaces specified in the INTERFACE
             column of entries in this file.</para>
           </listitem>
         </varlistentry>
@@ -532,7 +532,7 @@
       and any interfaces that do not have an IPv4 configuration. You should
       also omit interfaces like <emphasis role="bold">tun</emphasis>
       interfaces that are created dynamically. Traffic to networks handled by
-      those intefaces should be routed through the main table using entries in
+      those interfaces should be routed through the main table using entries in
       <filename>/etc/shorewall/route_rules</filename> (see Example 2 <link
       linkend="Examples">below</link>).</para>
 
@@ -608,7 +608,7 @@
       <title>Martians</title>
 
       <para>One problem that often arises with Multi-ISP configuration is
-      'Martians'. If your internet interfaces are configured with the
+      'Martians'. If your Internet interfaces are configured with the
       <emphasis role="bold">routefilter</emphasis> option in
       <filename>/etc/shorewall/interfaces</filename> (remember that if you set
       that option, you should also select <emphasis
@@ -965,7 +965,7 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         OpenVPN (routed setup w/tunX) in combination with multiple providers.
         In this case you have to set up a rule to ensure that the OpenVPN
         traffic is routed back through the tunX interface(s) rather than
-        through any of the providers. 10.8.0.0/24 is the subnet choosen in
+        through any of the providers. 10.8.0.0/24 is the subnet chosen in
         your OpenVPN configuration (server 10.8.0.0 255.255.255.0).</para>
 
         <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
@@ -981,7 +981,7 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
 
       <orderedlist numeration="loweralpha">
         <listitem>
-          <para>Only ethernet (or ethernet-like) interfaces can be used. For
+          <para>Only Ethernet (or Ethernet-like) interfaces can be used. For
           inbound traffic, the MAC addresses of the gateway routers are used
           to determine which provider a packet was received through. Note that
           only routed traffic can be categorized using this technique.</para>

@@ -76,7 +76,7 @@
     broken when used with a bridge device. The problem has been reported to
     the responsible Netfilter developer who has confirmed the problem. The
     problem was presumably corrected in Kernel 2.6.20 as a result of the
-    removal of defered FORWARD/OUTPUT processing of traffic destined for a
+    removal of deferred FORWARD/OUTPUT processing of traffic destined for a
     bridge. See the <ulink
     url="bridge-Shorewall-perl.html">"<emphasis>Shorewall-perl and Bridged
     Firewalls</emphasis>"</ulink> article.</para>
@@ -134,7 +134,7 @@
     by normal rules and policies.</para>
 
     <para>Under the 2.4 Linux Kernel, the association of unencrypted traffic
-    and zones was made easy by the presense of IPSEC pseudo-interfaces with
+    and zones was made easy by the presence of IPSEC pseudo-interfaces with
     names of the form <filename class="devicefile">ipsecn</filename> (e.g.
     <filename class="devicefile">ipsec0</filename>). Outgoing unencrypted
     traffic (case 1.) was send through an <filename
@@ -201,11 +201,11 @@
 
     <note>
       <para>For simple zones such as are shown in the following examples, the
-      two techniques are equivalent and are used interchangably.</para>
+      two techniques are equivalent and are used interchangeably.</para>
     </note>
 
     <note>
-      <para>It is redundent to have <emphasis role="bold">ipsec</emphasis> in
+      <para>It is redundant to have <emphasis role="bold">ipsec</emphasis> in
       the TYPE column of the <filename>/etc/shorewall/zones</filename> entry
       for a zone and to also have the <emphasis role="bold">ipsec</emphasis>
       option in <filename>/etc/shorewall/hosts</filename> entries for that
@@ -234,13 +234,13 @@
   <section id="GwFw">
     <title>IPSec Gateway on the Firewall System</title>
 
-    <para>Suppose that we have the following sutuation:</para>
+    <para>Suppose that we have the following situation:</para>
 
     <graphic fileref="images/TwoNets1.png" />
 
     <para>We want systems in the 192.168.1.0/24 sub-network to be able to
     communicate with systems in the 10.0.0.0/8 network. We assume that on both
-    systems A and B, eth0 is the internet interface.</para>
+    systems A and B, eth0 is the Internet interface.</para>
 
     <para>To make this work, we need to do two things:</para>
 
@@ -301,7 +301,7 @@ net            ipv4
     </blockquote>
 
     <para>Remember the assumption that both systems A and B have eth0 as their
-    internet interface.</para>
+    Internet interface.</para>
 
     <para>You must define the vpn zone using the
     <filename>/etc/shorewall/hosts</filename> file. The hosts file entries
@@ -448,11 +448,11 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
 }</programlisting>
 
       <warning>
-        <para>If you have hosts that access the internet through an IPSEC
+        <para>If you have hosts that access the Internet through an IPSEC
         tunnel, then it is a good idea to set the MSS value for traffic from
         those hosts explicitly in the
         <filename>/etc/shorewall/zones</filename> file. For example, if hosts
-        in the <emphasis role="bold">sec</emphasis> zone access the internet
+        in the <emphasis role="bold">sec</emphasis> zone access the Internet
         through an ESP tunnel then the following entry would be
         appropriate:</para>
 
@@ -605,7 +605,7 @@ spdflush;</programlisting>
 
       <para>On the mobile system (system B), it is not possible to create a
       static IPSEC configuration because the IP address of the laptop's
-      internet connection isn't static. I have created an 'ipsecvpn' script
+      Internet connection isn't static. I have created an 'ipsecvpn' script
       and included in the tarball and in the RPM's documentation directory;
       this script can be used to start and stop the connection.</para>
 
@@ -726,7 +726,7 @@ loc            ipv4
     <para>Since the L2TP will require the use of pppd, you will end up with
     one or more ppp interfaces (each representing an individual road warrior
     connection) for which you will need to account. This can be done by
-    modifying the inerfaces file. (Modify with additional options as
+    modifying the interfaces file. (Modify with additional options as
     needed.)</para>
 
     <blockquote>

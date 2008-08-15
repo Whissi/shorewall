@@ -90,7 +90,7 @@
 
       <listitem>
         <para>The order of entries in /etc/shorewall/hosts is immaterial as
-        far as the generated ruleset is concerned.</para>
+        far as the generated rule set is concerned.</para>
       </listitem>
     </itemizedlist>
 
@@ -125,7 +125,7 @@
 
       <itemizedlist>
         <listitem>
-          <para>The firewall requirements to/from the internet are the same
+          <para>The firewall requirements to/from the Internet are the same
           for 192.168.1.0/24 and 192.168.2.0/24.</para>
         </listitem>
 
@@ -180,7 +180,7 @@
         <title>Nested Zones</title>
 
         <para>You can define one zone (called it <quote>loc</quote>) as being
-        all hosts connectied to eth1 and a second zone <quote>loc1</quote>
+        all hosts connected to eth1 and a second zone <quote>loc1</quote>
         (192.168.2.0/24) as a sub-zone.</para>
 
         <graphic fileref="images/MultiZone1A.png" />
@@ -190,7 +190,7 @@
         connection request doesn't match a <quote>loc1</quote> rule, it will
         be matched against the <quote>loc</quote> rules. For example, if your
         loc1-&gt;net policy is CONTINUE then if a connection request from loc1
-        to the internet doesn't match any rules for loc1-&gt;net then it will
+        to the Internet doesn't match any rules for loc1-&gt;net then it will
         be checked against the loc-&gt;net rules.</para>
 
         <para><filename>/etc/shorewall/zones</filename></para>
@@ -302,7 +302,7 @@ loc1                loc                  NONE</programlisting>
 
     <para>Nested zones may also be used to configure a
     <quote>one-armed</quote> router (I don't call it a <quote>firewall</quote>
-    because it is very insecure. For example, if you connect to the internet
+    because it is very insecure. For example, if you connect to the Internet
     via cable modem, your next door neighbor has full access to your local
     systems as does everyone else connected to the same cable modem head-end
     controller). Here eth0 is configured with both a public IP address and an

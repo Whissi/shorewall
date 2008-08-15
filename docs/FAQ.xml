@@ -74,7 +74,7 @@
       class="directory">/etc/shorewall</filename> directory is almost empty.
       This is intentional. The released configuration file skeletons may be
       found on your system in the directory <filename
-      class="directory">/usr/share/doc/shorewall/default-config</filename>.
+      class="directory">/usr/share/doc/shorewall-common/default-config</filename>.
       Simply copy the files you need from that directory to <filename
       class="directory">/etc/shorewall</filename> and modify the
       copies.</para>
@@ -84,10 +84,11 @@
         the sample configurations.</title>
 
         <para><emphasis role="bold">Answer</emphasis>: With Shorewall 3.x, the
-        samples are included in the shorewall-doc package and are installed in
+        samples are included in the shorewall package and are installed in
         <filename
         class="directory">/usr/share/doc/shorewall/examples/</filename>.
-        Beginning with Shorewall 4.0, the samples are in <filename
+        Beginning with Shorewall 4.0, the samples are in the shorewall-common
+        package and are installed in <filename
         class="directory">/usr/share/doc/shorewall-common/examples</filename>/.</para>
       </section>
     </section>
@@ -435,7 +436,7 @@ DNAT       net           loc:192.168.1.4    tcp      21          -         206.1
           </listitem>
         </orderedlist>
 
-        <para>At this point, one of two things can happen.either the second
+        <para>At this point, one of two things can happen. Either the second
         router discards or rejects the packet; or, it rewrites the source IP
         address to 130.252.100.109 and forwards the packet back to
         16.105.221.4. Regardless of which happens, the connection is doomed.
@@ -508,7 +509,7 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
     <section id="faq38">
       <title>(FAQ 38) Where can I find more information about DNAT?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:Ian Allen has written a
+      <para><emphasis role="bold">Answer</emphasis>: Ian Allen has written a
       <ulink url="http://ian.idallen.ca/dnat.txt">Paper about DNAT and
       Linux</ulink>.</para>
     </section>
@@ -1924,7 +1925,7 @@ iptables: Invalid argument
       the same thing. In the case of <trademark>Debian</trademark> systems for
       example, that command actually executes <command>/sbin/shorewall
       clear</command> which opens the firewall completely. In other words, in
-      the init scripts <command>stop</command> undoes the effect of
+      the init script's <command>stop</command> reverses the effect of
       <command>start</command>.</para>
 
       <para>One way to avoid these differences is to install Shorewall from

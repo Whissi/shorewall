@@ -63,9 +63,8 @@
 
     <para>We want systems in the 2002:100:333::/64 subnetwork to be able to
     communicate with the systems in the 2002:488:999::/64 network. This is
-    accomplished through use of the
-    <filename><filename>/etc/shorewall/tunnels</filename></filename> file and
-    the <quote>ip</quote> utility for network interface and routing
+    accomplished through use of the <filename>/etc/shorewall/tunnels</filename>
+    file and the <quote>ip</quote> utility for network interface and routing
     configuration.</para>
 
     <para>Unlike GRE and IPIP tunneling, the
@@ -78,13 +77,13 @@
     Separate IPv6 interfaces and ip6tables rules need to be defined to handle
     this traffic.</para>
 
-    <para>In <filename>/etc/shorewall/tunnels </filename>on system A, we need
+    <para>In <filename>/etc/shorewall/tunnels</filename> on system A, we need
     the following:</para>
 
     <programlisting>#TYPE     ZONE     GATEWAY        GATEWAY ZONE
 6to4      net      134.28.54.2</programlisting>
 
-    <para>This entry in <filename>/etc/shorewall/tunnels</filename>, opens the
+    <para>This entry in <filename>/etc/shorewall/tunnels</filename> opens the
     firewall so that the IPv6 encapsulation protocol (41) will be accepted
     to/from the remote gateway.</para>
 

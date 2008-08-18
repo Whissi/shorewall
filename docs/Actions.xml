@@ -97,9 +97,10 @@ ACCEPT   -              -               tcp     135,139,445
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
         <para>If you wish to modify one of the standard actions, do not modify
-        the definition in /usr/share/shorewall. Rather, copy the file to
-        <filename class="directory">/etc/shorewall</filename> (or somewhere
-        else on your CONFIG_PATH) and modify the copy.</para>
+        the definition in <filename
+        class="directory">/usr/share/shorewall</filename>. Rather, copy the
+        file to <filename class="directory">/etc/shorewall</filename> (or
+        somewhere else on your CONFIG_PATH) and modify the copy.</para>
 
         <para>Standard Actions were largely replaced by <ulink
         url="Macros.html">macros</ulink> in Shorewall 3.0 and later major
@@ -108,9 +109,11 @@ ACCEPT   -              -               tcp     135,139,445
 
       <listitem>
         <para>User-defined Actions. These actions are created by end-users.
-        They are listed in the file /etc/shorewall/actions and are defined in
-        action.* files in /etc/shorewall or in another directory listed in
-        your CONFIG_PATH (defined in <ulink
+        They are listed in the file
+        <filename>/etc/shorewall/actions</filename> and are defined in
+        <filename>action.*</filename> files in <filename
+        class="directory">/etc/shorewall</filename> or in another directory
+        listed in your CONFIG_PATH (defined in <ulink
         url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>).</para>
       </listitem>
     </orderedlist>
@@ -148,22 +151,20 @@ ACCEPT   -              -               tcp     135,139,445
         AUTH protocol of client authentication<footnote>
             <para>AUTH is actually pretty silly on today's Internet but it's
             amazing how many servers still employ it.</para>
-          </footnote></para>
+          </footnote>.</para>
       </listitem>
     </orderedlist>
 
     <para>Shorewall supports default actions for the ACCEPT, REJECT, DROP,
     QUEUE and NFQUEUE policies. These default actions are specified in the
-    /etc/shorewall/shorewall.conf file using the ACCEPT_DEFAULT,
-    REJECT_DEFAULT, DROP_DEFAULT, QUEUE_DEFAULT and NFQUEUE_DEFAULT options
-    respectively. Policies whose default is set to a value of "none" have no
-    default action.</para>
+    <filename>/etc/shorewall/shorewall.conf</filename> file using the
+    ACCEPT_DEFAULT, REJECT_DEFAULT, DROP_DEFAULT, QUEUE_DEFAULT and
+    NFQUEUE_DEFAULT options respectively. Policies whose default is set to a
+    value of <quote>none</quote> have no default action.</para>
 
-    <para></para>
-
-    <para>In addition, the default specified in /etc/shorewall/shorewall.conf
-    may be overridden by specifying a different default in the POLICY column
-    of <ulink
+    <para>In addition, the default specified in
+    <filename>/etc/shorewall/shorewall.conf</filename> may be overridden by
+    specifying a different default in the POLICY column of <ulink
     url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink>.</para>
 
     <warning>
@@ -177,15 +178,17 @@ ACCEPT   -              -               tcp     135,139,445
   <section id="Limit">
     <title>Limiting Per-IP Connection Rate</title>
 
-    <para>Beginning with Shorewall 3.0.4, Shorewall has a 'Limit' <ulink
-    url="Actions.html">action</ulink>. Limit is invoked with a comma-separated
-    list in place of a logging tag. The list has three elements:</para>
+    <para>Beginning with Shorewall 3.0.4, Shorewall has a <quote>Limit</quote>
+    <ulink url="Actions.html">action</ulink>. Limit is invoked with a
+    comma-separated list in place of a logging tag. The list has three
+    elements:</para>
 
     <orderedlist>
       <listitem>
-        <para>The name of a 'recent' set; you select the set name which must
-        conform to the rules for a valid chain name. Different rules that
-        specify the same set name will use the same set of counters.</para>
+        <para>The name of a <quote>recent</quote> set; you select the set name
+        which must conform to the rules for a valid chain name. Different
+        rules that specify the same set name will use the same set of
+        counters.</para>
       </listitem>
 
       <listitem>
@@ -200,9 +203,9 @@ ACCEPT   -              -               tcp     135,139,445
 
     <para>Connections that exceed the specified rate are dropped.</para>
 
-    <para>For example,to use a recent set name of <emphasis
-    role="bold">SSHA</emphasis>, and to limiting SSH to 3 per minute, use this
-    entry in <filename>/etc/shorewall/rules</filename>:</para>
+    <para>For example, to use a recent set name of <emphasis
+    role="bold">SSHA</emphasis>, and to limit SSH connections to 3 per minute,
+    use this entry in <filename>/etc/shorewall/rules</filename>:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
@@ -218,12 +221,12 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
 
     <itemizedlist>
       <listitem>
-        <para>The log level. If you don't want to log, specify "none".</para>
+        <para>The log level. If you don't want to log, specify <quote>none</quote>.</para>
       </listitem>
 
       <listitem>
-        <para>The name of the recent set that you want to use ("SSHA" in this
-        example).</para>
+        <para>The name of the recent set that you want to use
+        (<quote>SSHA</quote> in this example).</para>
       </listitem>
 
       <listitem>
@@ -246,7 +249,7 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
       <itemizedlist>
         <listitem>
           <para>The file
-          <filename>/usr/share/shorewall/action</filename>.Limit is
+          <filename>/usr/share/shorewall/action</filename>. Limit is
           empty.</para>
         </listitem>
 
@@ -324,9 +327,9 @@ add_rule $chainref, '-j ACCEPT';
     <orderedlist>
       <listitem>
         <para>Add a line to
-        <filename><filename>/etc/shorewall/actions</filename></filename> that
+        <filename>/etc/shorewall/actions</filename> that
         names your new action. Action names must be valid shell variable names
-        ((must begin with a letter and be composed of letters, digits and
+        (must begin with a letter and be composed of letters, digits and
         underscore characters) as well as valid Netfilter chain names. If you
         intend to log from the action, the name must have a maximum of 11
         characters. It is recommended that the name you select for a new
@@ -335,8 +338,8 @@ add_rule $chainref, '-j ACCEPT';
 
         <para>The name of the action may be optionally followed by a colon
         (<quote>:</quote>) and ACCEPT, DROP or REJECT. When this is done, the
-        named action will become the <emphasis>default action </emphasis>for
-        policies of type ACCEPT, DROP or REJECT respectively. The default
+        named action will become the <emphasis>default action</emphasis> for
+        policies of type ACCEPT, DROP or REJECT, respectively. The default
         action is applied immediately before the policy is enforced (before
         any logging is done under that policy) and is used mainly to suppress
         logging of uninteresting traffic which would otherwise clog your logs.
@@ -350,7 +353,7 @@ add_rule $chainref, '-j ACCEPT';
 
       <listitem>
         <para>Once you have defined your new action name (ActionName), then
-        copy /usr/share/shorewall/action.template to
+        copy <filename>/usr/share/shorewall/action.template</filename> to
         <filename>/etc/shorewall/action.ActionName</filename> (for example, if
         your new action name is <quote>Foo</quote> then copy
         <filename>/usr/share/shorewall/action.template</filename> to
@@ -362,7 +365,8 @@ add_rule $chainref, '-j ACCEPT';
       </listitem>
     </orderedlist>
 
-    <para>Columns in the action.template file are as follows:</para>
+    <para>Columns in the <filename>action.template</filename> file are as
+    follows:</para>
 
     <itemizedlist>
       <listitem>
@@ -392,7 +396,7 @@ add_rule $chainref, '-j ACCEPT';
       <listitem>
         <para>SOURCE - Source hosts to which the rule applies. A
         comma-separated list of subnets and/or hosts. Hosts may be specified
-        by IP or MAC address; mac addresses must begin with <quote>~</quote>
+        by IP or MAC address; MAC addresses must begin with <quote>~</quote>
         and must use <quote>-</quote> as a separator.</para>
 
         <para>Alternatively, clients may be specified by interface name. For
@@ -426,9 +430,9 @@ add_rule $chainref, '-j ACCEPT';
         <para>A port range is expressed as &lt;<emphasis>low
         port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
 
-        <para>This column is ignored if PROTO = "all", but must be entered if
-        any of the following fields are supplied. In that case, it is
-        suggested that this field contain <quote>-</quote>.</para>
+        <para>This column is ignored if PROTO = <quote>all</quote>, but must be
+        entered if any of the following fields are supplied. In that case, it
+        is suggested that this field contain <quote>-</quote>.</para>
 
         <para>If your kernel contains multi-port match support, then only a
         single Netfilter rule will be generated if in this list and in the
@@ -454,7 +458,8 @@ add_rule $chainref, '-j ACCEPT';
         names, port numbers or port ranges.</para>
 
         <para>If you don't want to restrict client ports but need to specify
-        any of the following fields, then place "-" in this column.</para>
+        any of the subsequent fields, then place <quote>-</quote> in this
+        column.</para>
 
         <para>If your kernel contains multi-port match support, then only a
         single Netfilter rule will be generated if in this list and in the
@@ -536,7 +541,7 @@ add_rule $chainref, '-j ACCEPT';
         rule will match only if the test returns true.</para>
 
         <para>If you don’t want to define a test but need to specify anything
-        in the following columns, place a "-" in this field.<simplelist>
+          in the subsequent columns, place a <quote>-</quote> in this field.<simplelist>
             <member>! — Inverts the test (not equal)</member>
 
             <member>&lt;<emphasis>value</emphasis>&gt; — Value of the packet
@@ -552,7 +557,8 @@ add_rule $chainref, '-j ACCEPT';
       </listitem>
     </itemizedlist>
 
-    <para>Omitted column entries should be entered using a dash ("-").</para>
+    <para>Omitted column entries should be entered using a dash
+    (<quote>-</quote>).</para>
 
     <para>Example:</para>
 
@@ -563,7 +569,8 @@ add_rule $chainref, '-j ACCEPT';
      LogAndAccept        # LOG and ACCEPT a connection</programlisting><emphasis
     role="bold">Note:</emphasis> If your
     <filename>/etc/shorewall/actions</filename> file doesn't have an
-    indication where to place the comment, put the '#' in column 21.</para>
+    indication where to place the comment, put the <quote>#</quote> in column
+    21.</para>
 
     <para><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
      ACCEPT</programlisting></para>
@@ -607,8 +614,8 @@ bar:info</programlisting>
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 foo:debug    $FW         net</programlisting>
 
-        <para>Logging in the invoke 'foo' action will be as if foo had been
-        defined as:</para>
+        <para>Logging in the invoke <quote>foo</quote> action will be as if foo
+        had been defined as:</para>
 
         <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22
@@ -616,8 +623,9 @@ bar:info</programlisting>
       </listitem>
 
       <listitem>
-        <para>If you follow the log level with "!" then logging will be set at
-        that level for all rules recursively invoked by the action.</para>
+        <para>If you follow the log level with <quote>!</quote> then logging
+        will be set at that level for all rules recursively invoked by the
+        action.</para>
 
         <para>Example:</para>
 
@@ -632,8 +640,8 @@ bar:info</programlisting>
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 foo:debug!   $FW        net</programlisting>
 
-        <para>Logging in the invoke 'foo' action will be as if foo had been
-        defined as:</para>
+        <para>Logging in the invoke <quote>foo</quote> action will be as if foo
+        had been defined as:</para>
 
         <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22
@@ -641,8 +649,8 @@ bar:debug</programlisting>
       </listitem>
     </orderedlist>
 
-    <para>If you define an action 'acton' and you have an
-    <filename>/etc/shorewall/acton</filename> script then when that script is
+    <para>If you define an action <quote>acton</quote> and you have an
+    <filename>/etc/shorewall/acton</filename> script, when that script is
     invoked, the following three variables will be set for use by the
     script:</para>
 
@@ -670,19 +678,20 @@ bar:debug</programlisting>
     <programlisting>#ACTION          SOURCE           DEST
 acton:info:test  $FW              net</programlisting>
 
-    <para>Your /etc/shorewall/acton file will be run with:</para>
+    <para>Your </filename>/etc/shorewall/acton</filename> file will be run
+    with:</para>
 
     <itemizedlist>
       <listitem>
-        <para>$CHAIN="%acton1"</para>
+        <para>$CHAIN=<quote>%acton1</quote></para>
       </listitem>
 
       <listitem>
-        <para>$LEVEL="info"</para>
+        <para>$LEVEL=<quote>info</quote></para>
       </listitem>
 
       <listitem>
-        <para>$TAG="test"</para>
+        <para>$TAG=<quote>test</quote></para>
       </listitem>
     </itemizedlist>
 
@@ -714,8 +723,8 @@ acton:info:test  $FW              net</programlisting>
     <title>Creating an Action using an Extension Script</title>
 
     <para>There may be cases where you wish to create a chain with rules that
-    can't be constructed using the tools defined in the action.template. In
-    that case, you can use an <ulink
+    can't be constructed using the tools defined in the
+    <filename>action.template</filename>. In that case, you can use an <ulink
     url="shorewall_extension_scripts.htm">extension script</ulink>.<note>
         <para>If you actually need an action to drop broadcast packets, use
         the <command>dropBcast</command> standard action rather than create

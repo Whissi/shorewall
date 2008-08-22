@@ -244,7 +244,7 @@ sub setup_one_masq($$$$$$$)
 			incr_cmd_level( $chainref );
 			$detectaddress = 1;
 		    }
-		} elseif ( $addresses eq 'NONAT' ) {
+		} elsif ( $addresses eq 'NONAT' ) {
 		    $target = '-j RETURN';
 		    $add_snat_aliases = 0;
 		} else {

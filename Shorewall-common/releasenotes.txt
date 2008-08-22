@@ -1,4 +1,4 @@
-Shorewall 4.2.0 Beta 3.
+Shorewall 4.2.0 RC 1.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -78,70 +78,15 @@ Migration Issues.
 7)  DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl. Use
     ipset-based zones instead.
 
-Problems corrected in Shorewall-perl-4.2.0 Beta3.
+Problems corrected in Shorewall 4.2.0 RC 1.
 
-1)  The 4.2.0-Beta2 change which defers setting up ip forwarding until
-    the rules are in place did not handle the 'restore' command
-    correctly. So if '-f' is specified to the 'start' command and there
-    is a saved configuration, the setting of ip forwarding will not be
-    changed.
+None.
 
-2)  Previously, when the COPY column of /etc/shorewall/providers
-    contained one or more interface names, Shorewall-perl was not
-    adding the interface in the INTERFACE column to those interfaces
-    being copied. This has been corrected.  
+Other Changes in Shoreall 4.2.0 RC 1
 
-Other Changes in Shoreall 4.2.0 Beta 3.
-
-1)  Beginning with Shorewall 4.0.0, the -f option was no longer the
-    default for '/etc/init.d/shorewall start'. Beginning with 4.0.13
-    and 4.2.0-Beta3, this is also true for Shoreawall-lite.
-
-2)  A new USE_DEFAULT_RT option has been added to shorewall.conf. When
-    set to 'Yes', it causes the Shorewall multi-ISP feature to create
-    a different set of routing rules which are resilient to changes in
-    the main routing table. Such changes can occur for a number of
-    reasons,  VPNs going up and down being an example.
-
-    The USE_DEFAULT_RT option is currently classified as
-    EXPERIMENTAL. As a consequence, if you have a problem with it, the
-    Shorewall support team may not be able to supply you with a
-    solution.
-
-    The idea is to send packets through the main table prior to
-    applying any of the Shorewall-generated routing rules. So changes
-    to the main table will affect the routing of packets by default. 
-
-    When USE_DEFAULT_RT=Yes:
-
-    a) Both the DUPLICATE and the COPY columns in the providers file
-       must remain empty (or contain "-").
-
-    b) The 'balance' option is assumed for all interfaces except those
-       specified as 'loose'.
-
-    c) The default route is added to the the 'default' table rather
-       than to the main table.
-
-    d) Packets are sent through the main routing table by a rule with
-       priority 999. In /etc/shorewall/routing_rules, the range 1-998
-       may be used for inserting rules that bypass the main table.
-
-    e) All provider gateways must be specified explicitly in the
-       GATEWAY column. 'detect' may not be specified.
-
-    f) You should disable all default route management outside of 
-       Shorewall. If a default route is added to the main table while
-       Shorewall is started, then all policy routing will stop working
-       (except for those routing rules in the priority range 1-998).
-
-3)  The 'shorewall restart' command now supports an -f option. When
-    this option is specified, no compilation occurs; rather, the script
-    which last started or restarted Shorewall is used. 
-
-4) A macro supporting RNDC (BIND remote management protocol) traffic
-   has been added.  It can be used as any other macro (e.g., RNDC/ACCEPT)
-   in the rules file.
+1)  If 'NONAT' is specified in the ADDRESS column of an entry in 
+    /etc/shorewall/masq, then traffic matching that entry is not
+    passed to the entries that follow.
 
 New Features in Shorewall 4.2.
 
@@ -940,3 +885,53 @@ New Features in Shorewall 4.2.
 
 42) Farkas Levante has contributed a macro.Mail macro that covers SMTP,
     SMTPS and submission.
+
+43) Beginning with Shorewall 4.0.0, the -f option was no longer the
+    default for '/etc/init.d/shorewall start'. Beginning with 4.0.13
+    and 4.2.0-Beta3, this is also true for Shoreawall-lite.
+
+44) A new USE_DEFAULT_RT option has been added to shorewall.conf. When
+    set to 'Yes', it causes the Shorewall multi-ISP feature to create
+    a different set of routing rules which are resilient to changes in
+    the main routing table. Such changes can occur for a number of
+    reasons,  VPNs going up and down being an example.
+
+    The USE_DEFAULT_RT option is currently classified as
+    EXPERIMENTAL. As a consequence, if you have a problem with it, the
+    Shorewall support team may not be able to supply you with a
+    solution.
+
+    The idea is to send packets through the main table prior to
+    applying any of the Shorewall-generated routing rules. So changes
+    to the main table will affect the routing of packets by default. 
+
+    When USE_DEFAULT_RT=Yes:
+
+    a) Both the DUPLICATE and the COPY columns in the providers file
+       must remain empty (or contain "-").
+
+    b) The 'balance' option is assumed for all interfaces except those
+       specified as 'loose'.
+
+    c) The default route is added to the the 'default' table rather
+       than to the main table.
+
+    d) Packets are sent through the main routing table by a rule with
+       priority 999. In /etc/shorewall/routing_rules, the range 1-998
+       may be used for inserting rules that bypass the main table.
+
+    e) All provider gateways must be specified explicitly in the
+       GATEWAY column. 'detect' may not be specified.
+
+    f) You should disable all default route management outside of 
+       Shorewall. If a default route is added to the main table while
+       Shorewall is started, then all policy routing will stop working
+       (except for those routing rules in the priority range 1-998).
+
+45) The 'shorewall restart' command now supports an -f option. When
+    this option is specified, no compilation occurs; rather, the script
+    which last started or restarted Shorewall is used. 
+
+46) A macro supporting RNDC (BIND remote management protocol) traffic
+    has been added.  It can be used as any other macro (e.g., RNDC/ACCEPT)
+    in the rules file.

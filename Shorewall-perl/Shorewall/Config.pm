@@ -2031,7 +2031,7 @@ sub get_configuration( $ ) {
 
 	die $@ if $@;
 
-	fatal_error "LOCKFILE=$config{LOCKFILE}: Directory $dir does not exist" unless -d $dir;
+	fatal_error "LOCKFILE=$config{LOCKFILE}: Directory $dir does not exist" unless $export or -d $dir;
     } else {
 	$config{LOCKFILE} = '';
     }

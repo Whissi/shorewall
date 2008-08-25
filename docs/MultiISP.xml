@@ -464,8 +464,8 @@
               </varlistentry>
             </variablelist>
 
-            <para>For those of you who are terminally confused between<emphasis
-            role="bold"> track</emphasis> and <emphasis
+            <para>For those of you who are terminally confused
+            between<emphasis role="bold"> track</emphasis> and <emphasis
             role="bold">balance</emphasis>:</para>
 
             <itemizedlist>
@@ -532,8 +532,8 @@
       and any interfaces that do not have an IPv4 configuration. You should
       also omit interfaces like <emphasis role="bold">tun</emphasis>
       interfaces that are created dynamically. Traffic to networks handled by
-      those interfaces should be routed through the main table using entries in
-      <filename>/etc/shorewall/route_rules</filename> (see Example 2 <link
+      those interfaces should be routed through the main table using entries
+      in <filename>/etc/shorewall/route_rules</filename> (see Example 2 <link
       linkend="Examples">below</link>).</para>
 
       <para>In addition:</para>
@@ -965,8 +965,8 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         OpenVPN (routed setup w/tunX) in combination with multiple providers.
         In this case you have to set up a rule to ensure that the OpenVPN
         traffic is routed back through the tunX interface(s) rather than
-        through any of the providers. 10.8.0.0/24 is the subnet chosen in
-        your OpenVPN configuration (server 10.8.0.0 255.255.255.0).</para>
+        through any of the providers. 10.8.0.0/24 is the subnet chosen in your
+        OpenVPN configuration (server 10.8.0.0 255.255.255.0).</para>
 
         <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
 -                       10.8.0.0/24     main            1000</programlisting>
@@ -1033,6 +1033,12 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
       <para>/etc/shorewall/providers:<programlisting>#PROVIDER NUMBER MARK DUPLICATE INTERFACE            GATEWAY
 Blarg     1      1    main      eth0:206.124.146.176 206.124.146.254 ...
 Avvanta   2      2    main      eth0:130.252.144.8   130.252.144.254 ... </programlisting></para>
+
+      <caution>
+        <para>If the firewall's address is the same for both providers, you
+        must specify the <emphasis role="bold">loose</emphasis> option on both
+        providers.</para>
+      </caution>
 
       <para>/etc/shorewall/masq:<programlisting>#INTERFACE    SOURCE          ADDRESS
 eth0(Blarg)   130.252.144.8   206.124.146.176

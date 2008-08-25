@@ -1032,13 +1032,9 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
 
       <para>/etc/shorewall/providers:<programlisting>#PROVIDER NUMBER MARK DUPLICATE INTERFACE            GATEWAY
 Blarg     1      1    main      eth0:206.124.146.176 206.124.146.254 ...
-Avvanta   2      2    main      eth0:130.252.144.8   130.252.144.254 ... </programlisting></para>
-
-      <caution>
-        <para>If the firewall's address is the same for both providers, you
-        must specify the <emphasis role="bold">loose</emphasis> option on both
-        providers.</para>
-      </caution>
+Avvanta   2      2    main      eth0:130.252.144.8   130.252.144.254 ... </programlisting><note>
+          <para>If the same address is used for both </para>
+        </note></para>
 
       <para>/etc/shorewall/masq:<programlisting>#INTERFACE    SOURCE          ADDRESS
 eth0(Blarg)   130.252.144.8   206.124.146.176

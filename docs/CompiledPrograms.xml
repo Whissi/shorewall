@@ -71,7 +71,7 @@
         <listitem>
           <para>All extension scripts used are copied into the program (with
           the exception of <ulink url="shorewall_extension_scripts.htm">those
-          executed a compile-time by Shorewall-perl</ulink>). The
+          executed at compile-time by Shorewall-perl</ulink>). The
           ramifications of this are:</para>
 
           <itemizedlist>
@@ -152,8 +152,8 @@
 
           <listitem>
             <para>Specifies the compiler to use. Overrides the
-            SHOREWALL_COMPILER setting in <ulink
-            url="manpages/shorewall.conf.html">shorewall.conf</ulink>.</para>
+            SHOREWALL_COMPILER setting in <filename><ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -206,15 +206,15 @@
           <filename>/etc/shorewall/shorewall.conf</filename> must be readable
           by all users on the administrative system. Not all packages secure
           the files that way and you may have to change the file permissions
-          yourself. /sbin/shorewall uses the SHOREWALL_COMPILER setting to
-          determine which compiler to launch. If the compiler is
-          shorewall-shell, then the SHOREWALL_SHELL setting from
-          <filename>/etc/shorewall/shorewall.conf</filename> determines the
-          shell to use. /sbin/shorewall also uses the VERBOSITY setting for
-          determining how much output the compiler generates. All other
-          settings are taken from the <filename>shorewall.conf </filename>file
-          in the remote systems <firstterm>export directory</firstterm> (see
-          below).</para>
+          yourself. <filename>/sbin/shorewall</filename> uses the
+          SHOREWALL_COMPILER setting to determine which compiler to launch. If
+          the compiler is shorewall-shell, then the SHOREWALL_SHELL setting
+          from <filename>/etc/shorewall/shorewall.conf</filename> determines
+          the shell to use. <filename>/sbin/shorewall</filename> also uses the
+          VERBOSITY setting for determining how much output the compiler
+          generates. All other settings are taken from the
+          <filename>shorewall.conf </filename>file in the remote systems
+          <firstterm>export directory</firstterm> (see below).</para>
         </caution>
       </listitem>
 
@@ -234,12 +234,14 @@
       <listitem>
         <para>On the administrative system you create a separate 'export
         directory' for each firewall system. You copy the contents of
-        /usr/share/shorewall/configfiles into each export directory.</para>
+        <filename class="directory">/usr/share/shorewall/configfiles</filename>
+        into each export directory.</para>
       </listitem>
 
       <listitem>
         <para>If you are running Debian or one of its derivatives like Ubuntu
-        then edit /etc/default/shorewall-lite and set startup=1.</para>
+        then edit <filename>/etc/default/shorewall-lite</filename> and set
+        startup=1.</para>
       </listitem>
 
       <listitem>
@@ -268,7 +270,7 @@
             <itemizedlist>
               <listitem>
                 <para>The value of CONFIG_PATH in
-                <filename>/etc/shorewall/shorewall.conf </filename>is ignored
+                <filename>/etc/shorewall/shorewall.conf</filename> is ignored
                 when compiling for export (the -e option in given) and when
                 the <command>load</command> or <command>reload</command>
                 command is being executed (see below).</para>
@@ -535,8 +537,8 @@ clean:
           <para>Install Shorewall Lite on the firewall system.</para>
 
           <para>If you are running Debian or one of its derivatives like
-          Ubuntu then edit /etc/default/shorewall-lite and set
-          startup=1.</para>
+          Ubuntu then edit <filename>/etc/default/shorewall-lite</filename> and
+          set startup=1.</para>
         </listitem>
 
         <listitem>
@@ -546,12 +548,12 @@ clean:
           administrative system in the firewall system's
           <filename>routestopped</filename> file.</para>
 
-          <para>Also, edit the shorewall.conf file in the firewall's export
-          directory and change the CONFIG_PATH setting to remove <filename
-          class="directory">/etc/shorewall</filename>. You can replace it with
-          <filename
-          class="directory">/usr/share/shorewall/configfiles</filename> if you
-          like.</para>
+          <para>Also, edit the <filename>shorewall.conf</filename> file in the
+          firewall's export directory and change the CONFIG_PATH setting to
+          remove <filename class="directory">/etc/shorewall</filename>. You can
+          replace it with <filename
+          class="directory">/usr/share/shorewall/configfiles</filename> if
+          you like.</para>
 
           <para>Example:</para>
 
@@ -605,8 +607,9 @@ clean:
           url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
           command compiles a firewall script from the configuration files in
           the current working directory (using <command>shorewall compile
-          -e</command>), copies that file to the remote system via scp and
-          starts Shorewall Lite on the remote system via ssh.</para>
+          -e</command>), copies that file to the remote system via
+          <command>scp</command> and starts Shorewall Lite on the remote system
+          via <command>ssh</command>.</para>
         </listitem>
 
         <listitem>
@@ -621,14 +624,15 @@ clean:
           url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
           command compiles a firewall script from the configuration files in
           the current working directory (using <command>shorewall compile
-          -e</command>), copies that file to the remote system via scp and
-          restarts Shorewall Lite on the remote system via ssh.</para>
+          -e</command>), copies that file to the remote system via
+          <command>scp</command> and restarts Shorewall Lite on the remote
+          system via <command>ssh</command>.</para>
         </listitem>
 
         <listitem>
           <para>If the kernel/iptables configuration on the firewall later
-          changes and you need to create a new capabilities file, do the
-          following:</para>
+          changes and you need to create a new
+          <filename>capabilities</filename> file, do the following:</para>
 
           <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
@@ -645,8 +649,9 @@ clean:
     <title>The /etc/shorewall/capabilities file and the shorecap
     program</title>
 
-    <para>As mentioned above, the /etc/shorewall/capabilities file specifies
-    that kernel/iptables capabilities of the target system. Here is a sample
+    <para>As mentioned above, the
+    <filename>/etc/shorewall/capabilities</filename>  file specifies that
+    kernel/iptables capabilities of the target system. Here is a sample
     file:</para>
 
     <blockquote>
@@ -690,8 +695,8 @@ CAPVERSION=30405</programlisting>
 
     <para>To aid in creating this file, Shorewall Lite includes a
     <command>shorecap</command> program. The program is installed in the
-    <filename>/usr/share/shorewall-lite/</filename> directory and may be run
-    as follows:</para>
+    <filename class="directory">/usr/share/shorewall-lite/</filename> directory
+    and may be run as follows:</para>
 
     <blockquote>
       <para><command>[ IPTABLES=&lt;iptables binary&gt; ] [
@@ -707,23 +712,23 @@ CAPVERSION=30405</programlisting>
     system with Shorewall installed and used when compiling firewall programs
     to run on the remote system.</para>
 
-    <para>Beginning with Shorewall Lite version 3.2.2, the capabilities file
-    may also be creating using
-    <filename>/sbin/shorewall-lite:</filename><blockquote>
+    <para>Beginning with Shorewall Lite version 3.2.2, the
+    <filename>capabilities</filename> file may also be creating using
+    <filename>/sbin/shorewall-lite</filename>:<blockquote>
         <para><command>shorewall-lite show -f capabilities &gt;
         capabilities</command></para>
       </blockquote></para>
 
-    <para>Note that unlike the shorecap program, the <command>show
-    capabilities</command> command shows the kernel's current capabilities; it
-    does not attempt to load additional kernel modules.</para>
+    <para>Note that unlike the <command>shorecap</command> program, the
+    <command>show capabilities</command> command shows the kernel's current
+    capabilities; it does not attempt to load additional kernel modules.</para>
   </section>
 
   <section id="Running">
     <title>Running compiled programs directly</title>
 
     <para>Compiled firewall programs are complete programs that support the
-    following run-line commands:</para>
+    following command line forms:</para>
 
     <blockquote>
       <simplelist>
@@ -753,9 +758,9 @@ CAPVERSION=30405</programlisting>
       </simplelist>
     </blockquote>
 
-    <para>The options have their same meaning is when they are passed to
+    <para>The options have the same meanings as when they are passed to
     <filename>/sbin/shorewall</filename> itself. The default VERBOSITY level
-    is the level specified in the shorewall.conf file used when then program
-    was compiled.</para>
+    is the level specified in the <filename>shorewall.conf</filename> file used
+    when the program was compiled.</para>
   </section>
 </article>

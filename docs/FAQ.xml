@@ -58,7 +58,7 @@
       <title>(FAQ 37) I just installed Shorewall on Debian and the
       /etc/shorewall directory is almost empty!!!</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:</para>
+      <para><emphasis role="bold">Answer:</emphasis></para>
 
       <important>
         <para>Once you have installed the .deb package and before you attempt
@@ -83,7 +83,7 @@
         <title>(FAQ 37a) I just installed Shorewall on Debian and I can't find
         the sample configurations.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: With Shorewall 3.x, the
+        <para><emphasis role="bold">Answer:</emphasis> With Shorewall 3.x, the
         samples are included in the shorewall package and are installed in
         <filename
         class="directory">/usr/share/doc/shorewall/examples/</filename>.
@@ -97,7 +97,7 @@
       <title>(FAQ 75) I can't find the Shorewall 4.x shorewall-common RPM.
       Where is it?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: If you use Simon Matter's
+      <para><emphasis role="bold">Answer:</emphasis> If you use Simon Matter's
       Redhat/Fedora/CentOS rpms, be aware that Simon calls the
       <emphasis>shorewall-common</emphasis> RPM
       <emphasis>shorewall</emphasis>. So you should download and install the
@@ -113,14 +113,14 @@
       <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.0; where is the
       'shorewall' package?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Please see the <ulink
+      <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
       url="upgrade_issues.htm">upgrade issues.</ulink></para>
 
       <section id="faq66a">
         <title>(FAQ 66a) I'm trying to upgrade to Shorewall 4.0; do I have to
         uninstall the 'shorewall' package?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: Please see the <ulink
+        <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
         url="upgrade_issues.htm">upgrade issues.</ulink></para>
       </section>
 
@@ -128,7 +128,7 @@
         <title>(FAQ 66b) I'm trying to upgrade to Shorewall 4.0: which of
         these packages do I need to install?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: Please see the <ulink
+        <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
         url="upgrade_issues.htm">upgrade issues.</ulink></para>
       </section>
     </section>
@@ -142,9 +142,9 @@
       allow the installer to replace their working
       <filename>/etc/shorewall/shorewall.conf</filename> with one that has
       default settings. Failure to forward traffic (such as during masqueraded
-      net access from a local network) usually means that <ulink
-      url="???">/etc/shorewall/shorewall.conf</ulink> contains the Debian
-      default setting IP_FORWARDING=Keep; it should be
+      net access from a local network) usually means that <filename><ulink
+      url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>
+      contains the Debian default setting IP_FORWARDING=Keep; it should be
       IP_FORWARDING=On.</para>
 
       <section id="faq76a">
@@ -339,7 +339,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
         my firewall and have the firewall forward the connection to port 22 on
         local system 192.168.1.3. How do I do that?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>:In
+        <para><emphasis role="bold">Answer:</emphasis>In
         /<filename>etc/shorewall/rules</filename>:</para>
 
         <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT
@@ -352,7 +352,7 @@ DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
         works fine but when my local users try to connect to the server using
         the Firewall's external IP address, it doesn't work.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: See <link
+        <para><emphasis role="bold">Answer:</emphasis> See <link
         linkend="faq2b">FAQ 2b</link>.</para>
       </section>
 
@@ -378,13 +378,13 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
         <title>(FAQ 1f) Why must the server that I port forward to have it's
         default gateway set to my Shorewall system's IP address?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: Let's take an example.
+        <para><emphasis role="bold">Answer:</emphasis> Let's take an example.
         Suppose that</para>
 
         <itemizedlist>
           <listitem>
             <para>Your Shorewall firewall's external IP address is
-            206.124.146.176 (eth0) and internal IP address 192.168.1.1
+            206.124.146.176 (eth0) and its internal IP address is 192.168.1.1
             (eth1).</para>
           </listitem>
 
@@ -419,7 +419,7 @@ DNAT       net           loc:192.168.1.4    tcp      21          -         206.1
 
         <orderedlist>
           <listitem>
-            <para>16.105.221.4 sends a TCP syn packet to 206.124.146.176
+            <para>16.105.221.4 sends a TCP SYN packet to 206.124.146.176
             specifying destination port 21.</para>
           </listitem>
 
@@ -465,7 +465,7 @@ eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</
         address (206.124.146.176) to port 993 on Internet host
         66.249.93.111</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: This requires a vile
+        <para><emphasis role="bold">Answer:</emphasis> This requires a vile
         hack similar to the one in <link linkend="faq2">FAQ 2</link>. Assuming
         that your Internet zone is named <emphasis>net</emphasis> and connects
         on interface <filename class="devicefile">eth0</filename>:</para>
@@ -492,7 +492,7 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
       <title>(FAQ 30) I'm confused about when to use DNAT rules and when to
       use ACCEPT rules.</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:It would be a good idea to
+      <para><emphasis role="bold">Answer:</emphasis> It would be a good idea to
       review the <ulink url="shorewall_quickstart_guide.htm">QuickStart
       Guide</ulink> appropriate for your setup; the guides cover this topic in
       a tutorial fashion. DNAT rules should be used for connections that need
@@ -509,7 +509,7 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
     <section id="faq38">
       <title>(FAQ 38) Where can I find more information about DNAT?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Ian Allen has written a
+      <para><emphasis role="bold">Answer:</emphasis> Ian Allen has written a
       <ulink url="http://ian.idallen.ca/dnat.txt">Paper about DNAT and
       Linux</ulink>.</para>
     </section>
@@ -518,7 +518,7 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
       <title>(FAQ 48) How do I Set up Transparent HTTP Proxy with
       Shorewall?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: See <ulink
+      <para><emphasis role="bold">Answer:</emphasis> See <ulink
       url="Shorewall_Squid_Usage.html">Shorewall_Squid_Usage.html</ulink>.</para>
     </section>
   </section>
@@ -624,8 +624,10 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
           DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
           time that you get a new IP address.<note>
               <para>If you are running Shorewall 3.2.6 on a Debian-based
-              system, the call to find_first_interface_address in
-              /etc/shorewall/params must be preceded with a load of the
+              system, the call to
+              <command>find_first_interface_address</command> in
+              <filename>/etc/shorewall/params</filename> must be preceded with
+              a load of the
               Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
 <command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
             </note></para>
@@ -704,7 +706,7 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
         www.mydomain.com. That works fine but when my local users try to
         connect to www.mydomain.com, it doesn't work.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: Let's assume the
+        <para><emphasis role="bold">Answer:</emphasis> Let's assume the
         following:</para>
 
         <itemizedlist>
@@ -728,9 +730,9 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
-        <para>In <filename>/etc/shorewall/params (or in your
-        <filename>export-directory/init</filename> file if you are using
-        Shorewall Lite on the firewall system)</filename>:</para>
+        <para>In <filename>/etc/shorewall/params</filename> (or in your
+        <filename>&lt;export directory&gt;/init</filename> file if you are using
+        Shorewall Lite on the firewall system):</para>
 
         <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
 
@@ -751,7 +753,8 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
 
         <note>
           <para>If you are running Shorewall 3.2.6 on a Debian-based system,
-          the call to find_first_interface_address in /etc/shorewall/params
+          the call to <command>find_first_interface_address</command> in
+          <filename>/etc/shorewall/params</filename>
           must be preceded with a load of the Shorewall function
           library:<programlisting><command>. /usr/share/shorewall/functions</command>
 <command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
@@ -762,7 +765,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
         <title>(FAQ 2c) I tried to apply the answer to FAQ 2 to my external
         interface and the net zone and it didn't work. Why?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: Did you set <emphasis
+        <para><emphasis role="bold">Answer:</emphasis> Did you set <emphasis
         role="bold">IP_FORWARDING=On</emphasis> in
         <filename>shorewall.conf</filename>?</para>
       </section>
@@ -776,13 +779,14 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
       <title>(FAQ 63) I just blacklisted IP address 206.124.146.176 and I can
       still ping it. What did I do wrong?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Nothing.</para>
+      <para><emphasis role="bold">Answer:</emphasis> Nothing.</para>
 
       <para>Blacklisting an IP address blocks incoming traffic from that IP
-      address. And if you set BLACKLISTNEWONLY=Yes in shorewall.conf, then
-      only new connections <emphasis role="bold">from</emphasis> that address
-      are disallowed; traffic from that address that is part of an established
-      connection (such as ping replies) is allowed.</para>
+      address. And if you set BLACKLISTNEWONLY=Yes in
+      <filename>shorewall.conf</filename>, then only new connections
+      <emphasis role="bold">from</emphasis> that address are disallowed;
+      traffic from that address that is part of an established connection
+      (such as ping replies) is allowed.</para>
     </section>
   </section>
 
@@ -794,7 +798,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
       Shorewall. What do I do?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> There is an <ulink
-      url="http://www.kfki.hu/%7Ekadlec/sw/netfilter/newnat-suite/">H.323
+      url="http://www.kfki.hu/~kadlec/sw/netfilter/newnat-suite/">H.323
       connection tracking/NAT module</ulink> that helps with Netmeeting. Note
       however that one of the Netfilter developers recently posted the
       following:</para>
@@ -965,8 +969,9 @@ to debug/develop the newnat interface.</programlisting></para>
         </listitem>
 
         <listitem>
-          <para>The entry for the local network in the /etc/shorewall/masq
-          file is wrong or missing.</para>
+          <para>The entry for the local network in the
+          <filename>/etc/shorewall/masq</filename> file is wrong or
+          missing.</para>
         </listitem>
 
         <listitem>
@@ -993,7 +998,7 @@ to debug/develop the newnat interface.</programlisting></para>
     <section id="faq29">
       <title>(FAQ 29) FTP Doesn't Work</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:See the <ulink
+      <para><emphasis role="bold">Answer:</emphasis> See the <ulink
       url="FTP.html">Shorewall and FTP page</ulink>.</para>
     </section>
 
@@ -1002,23 +1007,23 @@ to debug/develop the newnat interface.</programlisting></para>
       sites fail. Connections to the same sites from the firewall itself work
       fine. What's wrong.</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Most likely, you need to
-      set CLAMPMSS=Yes in <ulink
-      url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>.</para>
+      <para><emphasis role="bold">Answer:</emphasis> Most likely, you need to
+      set CLAMPMSS=Yes in <filename><ulink
+      url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
     </section>
 
     <section id="faq35">
       <title>(FAQ 35) I have two Ethernet interfaces to my local network which
       I have bridged. When Shorewall is started, I'm unable to pass traffic
       through the bridge. I have defined the bridge interface (br0) as the
-      local interface in /etc/shorewall/interfaces; the bridged Ethernet
-      interfaces are not defined to Shorewall. How do I tell Shorewall to
-      allow traffic through the bridge?</title>
+      local interface in <filename>/etc/shorewall/interfaces</filename>; the
+      bridged Ethernet interfaces are not defined to Shorewall. How do I tell
+      Shorewall to allow traffic through the bridge?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Add the
+      <para><emphasis role="bold">Answer:</emphasis> Add the
       <firstterm>routeback</firstterm> option to <filename
-      class="devicefile">br0</filename> in <ulink
-      url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>.</para>
+      class="devicefile">br0</filename> in <filename><ulink
+      url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink></filename>.</para>
 
       <para>For more information on this type of configuration, see the <ulink
       url="SimpleBridge.html">Shorewall Simple Bridge
@@ -1063,14 +1068,14 @@ to debug/develop the newnat interface.</programlisting></para>
       kernel's equivalent of syslog (see <quote>man syslog</quote>) to log
       messages. It always uses the LOG_KERN (kern) facility (see <quote>man
       openlog</quote>) and you get to choose the log level (again, see
-      <quote>man syslog</quote>) in your <ulink
-      url="manpages/shorewall-policy.html">policies</ulink> and <ulink
-      url="manpages/shorewall-rules.html">rules</ulink>. The destination for
-      messages logged by syslog is controlled by
+      <quote>man syslog</quote>) in your <filename><ulink
+      url="manpages/shorewall-policy.html">policies</ulink></filename> and
+      <filename><ulink url="manpages/shorewall-rules.html">rules</ulink></filename>.
+      The destination for messages logged by syslog is controlled by
       <filename>/etc/syslog.conf</filename> (see <quote>man
-      syslog.conf</quote>). When you have changed /etc/syslog.conf, be sure to
-      restart syslogd (on a RedHat system, <quote>service syslog
-      restart</quote>).</para>
+      syslog.conf</quote>). When you have changed
+      <filename>/etc/syslog.conf</filename>, be sure to restart syslogd (on a
+      RedHat system, <quote>service syslog restart</quote>).</para>
 
       <para>By default, older versions of Shorewall rate-limited log messages
       through <ulink url="manpages/shorewall.conf.html">settings</ulink> in
@@ -1092,11 +1097,9 @@ LOGBURST=""</programlisting>
 
         <literallayout>
           <ulink url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
-          <ulink url="http://www.fireparse.com">http://www.fireparse.com</ulink>
+          <ulink url="http://aaron.marasco.com/linux.html">http://aaron.marasco.com/linux.html</ulink>
           <ulink url="http://cert.uni-stuttgart.de/projects/fwlogwatch">http://cert.uni-stuttgart.de/projects/fwlogwatch</ulink>
           <ulink url="http://www.logwatch.org">http://www.logwatch.org</ulink>
-          <ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
-          <ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink>
         </literallayout>
 
         <para>I personally use <ulink
@@ -1131,10 +1134,10 @@ LOGBURST=""</programlisting>
 
       <section id="faq6b">
         <title>(FAQ 6b) DROP messages on port 10619 are flooding the logs with
-        their connect requests. Can i exclude these error messages for this
+        their connect requests. Can I exclude these error messages for this
         port temporarily from logging in Shorewall?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>:Temporarily add the
+        <para><emphasis role="bold">Answer:</emphasis> Temporarily add the
         following rule:</para>
 
         <programlisting>#ACTION   SOURCE    DEST    PROTO    DEST PORT(S)
@@ -1153,7 +1156,7 @@ DROP      net       fw      udp      10619</programlisting>
         <title>(FAQ 6d) Why is the MAC address in Shorewall log messages so
         long? I thought MAC addresses were only 6 bytes in length.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>:What is labeled as the
+        <para><emphasis role="bold">Answer:</emphasis> What is labeled as the
         MAC address in a Netfilter (Shorewall) log message is actually the
         Ethernet frame header. It contains:</para>
 
@@ -1228,7 +1231,8 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       <para>If, on your system, the first number is 7 or greater, then the
       default Shorewall configurations will cause messages to be written to
       your console. The simplest solution is to add this to your
-      /etc/sysctl.conf file:<programlisting>kernel.printk = 4 4 1 7</programlisting></para>
+      <filename>/etc/sysctl.conf</filename>
+      file:<programlisting>kernel.printk = 4 4 1 7</programlisting></para>
 
       <para>then<programlisting><command>sysctl -p /etc/sysctl.conf</command></programlisting></para>
 
@@ -1319,10 +1323,10 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
           or all2all</term>
 
           <listitem>
-            <para>You have a <ulink
-            url="manpages/shorewall-policy.html">policy</ulink> that specifies
-            a log level and this packet is being logged under that policy. If
-            you intend to ACCEPT this traffic then you need a <ulink
+            <para>You have a <filename><ulink
+            url="manpages/shorewall-policy.html">policy</ulink></filename> that
+            specifies a log level and this packet is being logged under that
+            policy. If you intend to ACCEPT this traffic then you need a <ulink
             url="manpages/shorewall-rules.html">rule</ulink> to that
             effect.</para>
 
@@ -1340,7 +1344,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
           <listitem>
             <para>Either you have a <ulink
             url="manpages/shorewall-policy.html">policy</ulink> for
-            <emphasis>zone1</emphasis> to<emphasis> zone2</emphasis> that
+            <emphasis>zone1</emphasis> to <emphasis>zone2</emphasis> that
             specifies a log level and this packet is being logged under that
             policy or this packet matches a <ulink
             url="manpages/shorewall-rules.html">rule</ulink> that includes a
@@ -1399,7 +1403,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
             role="bold">routeback</emphasis> option on that interface in
             <filename> <ulink
             url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>
-            , </filename>you need the <emphasis
+            </filename>, you need the <emphasis
             role="bold">routeback</emphasis> option in the relevant entry in
             <filename> <ulink
             url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink>
@@ -1528,9 +1532,6 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
           </varlistentry>
         </variablelist>
 
-        <para>For additional information about the log message, see <ulink
-        url="http://logi.cc/linux/netfilter-log-format.php3">http://logi.cc/linux/netfilter-log-format.php3</ulink>.</para>
-
         <para>In this case, 192.168.2.2 was in the <quote>dmz</quote> zone and
         192.168.1.3 is in the <quote>loc</quote> zone. I was missing the
         rule:</para>
@@ -1564,7 +1565,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       (ICMP) with <quote>ping</quote>, ICMP is a key piece of IP. ICMP is used
       to report problems back to the sender of a packet; this is what is
       happening here. Unfortunately, where NAT is involved (including SNAT,
-      DNAT and Masquerade), there are a lot of broken implementations. That is
+      DNAT and Masquerade), there are many broken implementations. That is
       what you are seeing with these messages. When Netfilter displays these
       messages, the part before the "[" describes the ICMP packet and the part
       between the "[" and "]" describes the packet for which the ICMP is a
@@ -1607,7 +1608,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
                        SRC=130.252.100.59 DST=206.124.146.176 LEN=64 TOS=0x00 PREC=0x00 TTL=43 ID=42444 DF
                        PROTO=TCP SPT=2215 DPT=139 WINDOW=53760 RES=0x00 SYN URGP=0</programlisting>
 
-      <para><emphasis role="bold">Answer</emphasis>: Please refer to the
+      <para><emphasis role="bold">Answer:</emphasis> Please refer to the
       <ulink url="NetfilterOverview.html">Shorewall Netfilter
       Documentation</ulink>. Logging of REDIRECT and DNAT rules occurs in the
       nat table's PREROUTING chain where the original destination IP address
@@ -1637,7 +1638,7 @@ modprobe: Can't locate module iptable_raw</programlisting>
       <title>(FAQ 32) My firewall has two connections to the Internet from two
       different ISPs. How do I set this up in Shorewall?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: See <ulink
+      <para><emphasis role="bold">Answer:</emphasis> See <ulink
       url="MultiISP.html">this article on Shorewall and Multiple
       ISPs</ulink>.</para>
     </section>
@@ -1646,7 +1647,7 @@ modprobe: Can't locate module iptable_raw</programlisting>
       <title>(FAQ 49) When I start Shorewall, my routing table gets blown
       away. Why does Shorewall do that?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: This is usually the
+      <para><emphasis role="bold">Answer:</emphasis> This is usually the
       consequence of a one-to-one nat configuration blunder:</para>
 
       <orderedlist>
@@ -1679,10 +1680,10 @@ modprobe: Can't locate module iptable_raw</programlisting>
       stop</quote>, I can't connect to anything. Why doesn't that command
       work?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:The <quote>
+      <para><emphasis role="bold">Answer:</emphasis> The <quote>
       <command>stop</command> </quote> command is intended to place your
       firewall into a safe state whereby only those hosts listed in
-      <filename>/etc/shorewall/routestopped</filename>' are activated. If you
+      <filename>/etc/shorewall/routestopped</filename> are activated. If you
       want to totally open up your firewall, you must use the <quote>
       <command>shorewall[-lite] clear</command> </quote> command.</para>
     </section>
@@ -1723,8 +1724,8 @@ rmmod ipchains</command></programlisting>
       <title>(FAQ 9) Why can't Shorewall detect my interfaces properly at
       startup?</title>
 
-      <para>I just installed Shorewall and when I issue the start command, I
-      see the following:</para>
+      <para>I just installed Shorewall and when I issue the
+      <command>start</command> command, I see the following:</para>
 
       <programlisting>Processing /etc/shorewall/params ...
 Processing /etc/shorewall/shorewall.conf ...
@@ -1745,38 +1746,38 @@ Creating input Chains...
       <para>Why can't Shorewall detect my interfaces properly?</para>
 
       <para><emphasis role="bold">Answer:</emphasis> The above output is
-      perfectly normal. The Net zone is defined as all hosts that are
-      connected through eth0 and the local zone is defined as all hosts
-      connected through <filename class="devicefile">eth1</filename>. You can
-      set the <emphasis role="bold">routefilter</emphasis> option on an
-      internal interface if you wish to guard against
-      '<firstterm>Martians</firstterm>' (a Martian is a packet with a source
-      IP address that is not routed out of the interface on which the packet
-      was received). If you do that, it is a good idea to also set the
-      <emphasis role="bold">logmartians</emphasis> option.</para>
+      perfectly normal. The Net zone is defined as all hosts that are connected
+      through <filename class="devicefile">eth0</filename> and the local zone
+      is defined as all hosts connected through <filename
+      class="devicefile">eth1</filename>. You can set the <emphasis
+      role="bold">routefilter</emphasis> option on an internal interface if
+      you wish to guard against '<firstterm>Martians</firstterm>' (a Martian is
+      a packet with a source IP address that is not routed out of the interface
+      on which the packet was received). If you do that, it is a good idea to
+      also set the <emphasis role="bold">logmartians</emphasis> option.</para>
     </section>
 
     <section id="faq22">
       <title>(FAQ 22) I have some iptables commands that I want to run when
       Shorewall starts. Which file do I put them in?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:You can place these
+      <para><emphasis role="bold">Answer:</emphasis>You can place these
       commands in one of the <ulink
       url="shorewall_extension_scripts.htm">Shorewall Extension
       Scripts</ulink>. Be sure that you look at the contents of the chain(s)
-      that you will be modifying with your commands to be sure that the
-      commands will do what they are intended. Many iptables commands
-      published in HOWTOs and other instructional material use the -A command
-      which adds the rules to the end of the chain. Most chains that Shorewall
-      constructs end with an unconditional DROP, ACCEPT or REJECT rule and any
-      rules that you add after that will be ignored. Check <quote>man
-      iptables</quote> and look at the -I (--insert) command.</para>
+      that you will be modifying with your commands so that the commands will
+      do what is intended. Many iptables commands published in HOWTOs and other
+      instructional material use the -A command which adds the rules to the end
+      of the chain. Most chains that Shorewall constructs end with an
+      unconditional DROP, ACCEPT or REJECT rule and any rules that you add
+      after that will be ignored. Check <quote>man iptables</quote> and look at
+      the -I (--insert) command.</para>
     </section>
 
     <section id="faq34">
       <title>(FAQ 34) How can I speed up Shorewall start (restart)?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Switch to using <ulink
+      <para><emphasis role="bold">Answer:</emphasis> Switch to using <ulink
       url="Shorewall-perl.html">Shorewall-perl</ulink>.</para>
     </section>
 
@@ -1784,7 +1785,7 @@ Creating input Chains...
       <title>(FAQ 69) When I restart Shorewall, new connections are blocked
       for a long time. Is there a way to avoid that?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Switch to using <ulink
+      <para><emphasis role="bold">Answer:</emphasis> Switch to using <ulink
       url="Shorewall-perl.html">Shorewall-perl</ulink>.</para>
     </section>
 
@@ -1792,11 +1793,11 @@ Creating input Chains...
       <title>(FAQ 43) I just installed the Shorewall RPM and Shorewall doesn't
       start at boot time.</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: When you install using
+      <para><emphasis role="bold">Answer:</emphasis> When you install using
       the "rpm -U" command, Shorewall doesn't run your distribution's tool for
       configuring Shorewall startup. You will need to run that tool (insserv,
       chkconfig, run-level editor, …) to configure Shorewall to start in the
-      run-levels that you run your firewall system at.</para>
+      the default run-levels of your firewall system.</para>
     </section>
 
     <section id="faq45">
@@ -1816,7 +1817,7 @@ Masqueraded Networks and Hosts:
 iptables: Invalid argument
    ERROR: Command "/sbin/iptables -t nat -A …" Failed</programlisting>
 
-      <para><emphasis role="bold">Answer</emphasis>: 99.999% of the time, this
+      <para><emphasis role="bold">Answer:</emphasis> 99.999% of the time, this
       error is caused by a mismatch between your iptables and kernel.</para>
 
       <orderedlist numeration="loweralpha">
@@ -1839,7 +1840,7 @@ iptables: Invalid argument
       <title>(FAQ 59) After I start Shorewall, there are lots of unused
       Netfilter modules loaded. How do I avoid that?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Copy
+      <para><emphasis role="bold">Answer:</emphasis> Copy
       <filename>/usr/share/shorewall[-lite]/modules</filename> to
       <filename>/etc/shorewall/modules </filename>and modify the copy to
       include only the modules that you need.</para>
@@ -1893,7 +1894,7 @@ iptables: Invalid argument
       <para>ERROR: Command "/sbin/iptables -A FORWARD -m state --state
       ESTABLISHED,RELATED -j ACCEPT" failed.</para>
 
-      <para><emphasis role="bold">Answer</emphasis>: At a root shell prompt,
+      <para><emphasis role="bold">Answer:</emphasis> At a root shell prompt,
       type the iptables command shown in the error message. If the command
       fails, you OpenVZ Netfilter/iptables configuration is incorrect. Until
       that command can run without error, no stateful iptables firewall will
@@ -1939,11 +1940,11 @@ iptables: Invalid argument
     </section>
 
     <section id="faq74">
-      <title>(FAQ 74) When I "shorewall start" or "shorewall check" on my SuSE
-      10.0 system, I get FATAL ERROR messages and/or the system
-      crashes"</title>
+      <title>(FAQ 74) When I "<command>shorewall start</command>" or
+      "<command>shorewall check</command>" on my SuSE 10.0 system, I get FATAL
+      ERROR messages and/or the system crashes"</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: These failures result
+      <para><emphasis role="bold">Answer:</emphasis> These failures result
       from trying to load a particular combination of kernel modules. To work
       around the problem:</para>
 
@@ -1984,7 +1985,7 @@ iptables: Invalid argument
       <title>(FAQ 58) But if I specify 'balance' then won't Shorewall balance
       the traffic between the interfaces? I don't want that!</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Suppose that you want all
+      <para><emphasis role="bold">Answer:</emphasis> Suppose that you want all
       traffic to go out through ISP1 (mark 1) unless you specify otherwise.
       Then simply add these two rules as the first marking rules in your
       <filename>/etc/shorewall/tcrules</filename> file:</para>
@@ -2012,7 +2013,7 @@ We have an error talking to the kernel
     ERROR: Command "tc filter add dev eth2 parent ffff: protocol ip prio 
                     50 u32 match ip src 0.0.0.0/0 police rate 500kbit burst 10k drop flowid 
                     :1" Failed</programlisting><emphasis
-      role="bold">Answer</emphasis>: This message indicates that your kernel
+      role="bold">Answer:</emphasis> This message indicates that your kernel
       doesn't have 'traffic policing' support. If your kernel is modularized,
       you may be able to resolve the problem by loading the <emphasis
       role="bold">act_police</emphasis> kernel module. Other kernel modules
@@ -2034,7 +2035,7 @@ We have an error talking to the kernel
     <section id="faq10">
       <title>(FAQ 10) What Distributions does Shorewall work with?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall works with any
+      <para><emphasis role="bold">Answer:</emphasis> Shorewall works with any
       GNU/Linux distribution that includes the <ulink
       url="shorewall_prerequisites.htm">proper prerequisites</ulink>.</para>
     </section>
@@ -2068,7 +2069,7 @@ We have an error talking to the kernel
     <section id="faq23">
       <title>(FAQ 23) Why do you use such ugly fonts on your web site?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: The Shorewall web site is
+      <para><emphasis role="bold">Answer:</emphasis> The Shorewall web site is
       almost font neutral (it doesn't explicitly specify fonts except on a few
       pages) so the fonts you see are largely the default fonts configured in
       your browser. If you don't like them then reconfigure your
@@ -2079,7 +2080,7 @@ We have an error talking to the kernel
       <title>(FAQ 25) How do I tell which version of Shorewall or Shorewall
       Lite I am running?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: At the shell prompt,
+      <para><emphasis role="bold">Answer:</emphasis> At the shell prompt,
       type:</para>
 
       <programlisting><command>/sbin/shorewall[-lite] version</command>      </programlisting>
@@ -2088,7 +2089,7 @@ We have an error talking to the kernel
         <title>(FAQ 25a) How do I tell which version of Shorewall-perl and
         Shorewall-shell that I have installed?</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: At the shell prompt,
+        <para><emphasis role="bold">Answer:</emphasis> At the shell prompt,
         type:</para>
 
         <programlisting><command>/sbin/shorewall version -a</command>    </programlisting>
@@ -2104,7 +2105,7 @@ We have an error talking to the kernel
           internal LAP IP address as the source address?</term>
 
           <listitem>
-            <para><emphasis role="bold">Answer</emphasis>: Yes.</para>
+            <para><emphasis role="bold">Answer:</emphasis> Yes.</para>
           </listitem>
         </varlistentry>
 
@@ -2113,7 +2114,7 @@ We have an error talking to the kernel
           fragments?</term>
 
           <listitem>
-            <para><emphasis role="bold">Answer</emphasis>: This is the
+            <para><emphasis role="bold">Answer:</emphasis> This is the
             responsibility of the IP stack, not the Netfilter-based firewall
             since fragment reassembly occurs before the stateful packet filter
             ever touches each packet.</para>
@@ -2125,7 +2126,7 @@ We have an error talking to the kernel
           broadcast address as the source address?</term>
 
           <listitem>
-            <para><emphasis role="bold">Answer</emphasis>: Shorewall can be
+            <para><emphasis role="bold">Answer:</emphasis> Shorewall can be
             configured to do that using the <ulink
             url="blacklisting_support.htm">blacklisting</ulink> facility.
             Shorewall versions 2.0.0 and later filter these packets under the
@@ -2139,7 +2140,7 @@ We have an error talking to the kernel
           source and destination address?</term>
 
           <listitem>
-            <para><emphasis role="bold">Answer</emphasis>: Yes, if the <ulink
+            <para><emphasis role="bold">Answer:</emphasis> Yes, if the <ulink
             url="manpages/shorewall-interfaces.html">routefilter interface
             option</ulink> is selected.</para>
           </listitem>
@@ -2149,7 +2150,7 @@ We have an error talking to the kernel
           <term>DOS: - SYN Dos - ICMP Dos - Per-host Dos protection</term>
 
           <listitem>
-            <para><emphasis role="bold">Answer</emphasis>: Shorewall has
+            <para><emphasis role="bold">Answer:</emphasis> Shorewall has
             facilities for limiting SYN and ICMP packets. Netfilter as
             included in standard Linux kernels doesn't support per-remote-host
             limiting except by explicit rule that specifies the host IP
@@ -2162,7 +2163,7 @@ We have an error talking to the kernel
     <section id="faq65">
       <title>(FAQ 65) How do I accomplish failover with Shorewall?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: <ulink
+      <para><emphasis role="bold">Answer:</emphasis> <ulink
       url="http://linuxman.wikispaces.com/Clustering+Shorewall">This article
       by Paul Gear</ulink> should help you get started.</para>
     </section>
@@ -2182,8 +2183,8 @@ We have an error talking to the kernel
       modem in/out but still block all other rfc1918 addresses?</para>
 
       <para><emphasis role="bold">Answer:</emphasis> Add the following to
-      <ulink
-      url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink>
+      <filename><ulink
+      url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink></filename>
       (Note: If you are running Shorewall 2.0.0 or later, you may need to
       first copy <filename>/usr/share/shorewall/rfc1918</filename> to
       <filename>/etc/shorewall/rfc1918</filename>):</para>
@@ -2197,9 +2198,10 @@ We have an error talking to the kernel
       <note>
         <para>If you add a second IP address to your external firewall
         interface to correspond to the modem address, you must also make an
-        entry in /etc/shorewall/rfc1918 for that address. For example, if you
-        configure the address 192.168.100.2 on your firewall, then you would
-        add two entries to /etc/shorewall/rfc1918:</para>
+        entry in <filename>/etc/shorewall/rfc1918</filename> for that address.
+        For example, if you configure the address 192.168.100.2 on your
+        firewall, then you would add two entries to
+        <filename>/etc/shorewall/rfc1918</filename>:</para>
 
         <programlisting>#SUBNET        TARGET
 192.168.100.1  RETURN
@@ -2211,7 +2213,7 @@ We have an error talking to the kernel
         DHCP server has an RFC 1918 address. If I enable RFC 1918 filtering on
         my external interface, my DHCP client cannot renew its lease.</title>
 
-        <para><emphasis role="bold">Answer</emphasis>: The solution is the
+        <para><emphasis role="bold">Answer:</emphasis> The solution is the
         same as <xref linkend="faq14" /> above. Simply substitute the IP
         address of your ISPs DHCP server.</para>
       </section>
@@ -2226,7 +2228,7 @@ We have an error talking to the kernel
         <programlisting>Mar  1 18:20:07 Mail kernel: Shorewall:OUTPUT:REJECT:IN= OUT=eth0 SRC=192.168.1.2 DST=192.168.1.1 LEN=60
 TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES=0x00 SYN URGP=0 </programlisting>
 
-        <para><emphasis role="bold">Answer</emphasis>: The fact that the
+        <para><emphasis role="bold">Answer:</emphasis> The fact that the
         message is being logged from the OUTPUT chain means that the
         destination IP address is not in any defined zone (see <link
         linkend="faq17">FAQ 17</link>). You need to:</para>
@@ -2299,7 +2301,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     <section id="faq53">
       <title>(FAQ 53) What is Shorewall Lite?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall Lite is a
+      <para><emphasis role="bold">Answer:</emphasis> Shorewall Lite is a
       companion product to Shorewall and is designed to allow you to maintain
       all Shorewall configuration information on a single system within your
       network. See the <ulink url="CompiledPrograms.html#Lite">Compiled
@@ -2310,7 +2312,7 @@ eth0               eth1                        # eth1 = interface to local netwo
       <title>(FAQ 54) If I want to use Shorewall Lite, do I also need to
       install Shorewall on the same system?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: No. In fact, we recommend
+      <para><emphasis role="bold">Answer:</emphasis> No. In fact, we recommend
       that you do <emphasis role="bold">NOT</emphasis> install Shorewall on
       systems where you wish to use Shorewall Lite. You must have Shorewall
       installed on at least one system within your network in order to use
@@ -2321,7 +2323,7 @@ eth0               eth1                        # eth1 = interface to local netwo
       <title>(FAQ 55) How do I decide which product to use - Shorewall or
       Shorewall Lite?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: If you plan to have only
+      <para><emphasis role="bold">Answer:</emphasis> If you plan to have only
       a single firewall system, then Shorewall is the logical choice. I also
       think that Shorewall is the appropriate choice for laptop systems that
       may need to have their firewall configuration changed while on the road.
@@ -2336,7 +2338,7 @@ eth0               eth1                        # eth1 = interface to local netwo
       <title>(FAQ 60) What are the compatibility restrictions between
       Shorewall and Shorewall Lite</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Beginning with version
+      <para><emphasis role="bold">Answer:</emphasis> Beginning with version
       3.2.3, there are no compatibility constraints between Shorewall and
       Shorewall-lite.</para>
     </section>
@@ -2348,7 +2350,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     <section id="faq70">
       <title>(FAQ 70) What is Shorewall-Perl?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall-perl is a
+      <para><emphasis role="bold">Answer:</emphasis> Shorewall-perl is a
       re-implementation of the Shorewall configuration compiler written in
       Perl.</para>
     </section>
@@ -2356,7 +2358,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     <section id="faq71">
       <title>(FAQ 71) What are the advantages of using Shorewall-perl?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>:</para>
+      <para><emphasis role="bold">Answer:</emphasis></para>
 
       <itemizedlist>
         <listitem>
@@ -2395,7 +2397,7 @@ eth0               eth1                        # eth1 = interface to local netwo
       <title>(FAQ 72) Can I switch to using Shorewall-perl without changing my
       Shorewall configuration?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Maybe yes, maybe no. See
+      <para><emphasis role="bold">Answer:</emphasis> Maybe yes, maybe no. See
       the <ulink url="Shorewall-perl.html">Shorewall Perl article</ulink> for
       a list of the incompatibilities between Shorewall-shell and
       Shorewall-perl.</para>
@@ -2434,17 +2436,17 @@ rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
       <title>(FAQ 20) I have just set up a server. Do I have to change
       Shorewall to allow access to my server from the Internet?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Yes. Consult the <ulink
+      <para><emphasis role="bold">Answer:</emphasis> Yes. Consult the <ulink
       url="shorewall_quickstart_guide.htm">QuickStart guide</ulink> that you
       used during your initial setup for information about how to set up rules
       for your server.</para>
     </section>
 
     <section id="faq24">
-      <title>(FAQ 24) How can I allow connections to let's say the ssh port
+      <title>(FAQ 24) How can I allow connections to, let's say, the ssh port
       only from specific IP Addresses on the Internet?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: In the SOURCE column of
+      <para><emphasis role="bold">Answer:</emphasis> In the SOURCE column of
       the rule, follow <quote>net</quote> by a colon and a list of the
       host/subnet addresses as a comma-separated list.</para>
 
@@ -2462,7 +2464,7 @@ rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
       behind the firewall, I get <quote>operation not permitted</quote>. How
       can I use nmap with Shorewall?"</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Temporarily remove and
+      <para><emphasis role="bold">Answer:</emphasis> Temporarily remove and
       rejNotSyn, dropNotSyn and dropInvalid rules from
       <filename>/etc/shorewall/rules</filename> and restart Shorewall.</para>
     </section>
@@ -2471,7 +2473,7 @@ rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
       <title>(FAQ 27) I'm compiling a new kernel for my firewall. What should
       I look out for?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: First take a look at the
+      <para><emphasis role="bold">Answer:</emphasis> First take a look at the
       <ulink url="kernel.htm">Shorewall kernel configuration page</ulink>. You
       probably also want to be sure that you have selected the <quote>
       <emphasis role="bold">NAT of local connections (READ HELP)</emphasis>
@@ -2510,7 +2512,7 @@ iptables: Invalid argument
     <section id="faq28">
       <title>(FAQ 28) How do I use Shorewall as a Bridging Firewall?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall Bridging
+      <para><emphasis role="bold">Answer:</emphasis> Shorewall Bridging
       Firewall support is available — <ulink
       url="bridge-Shorewall-perl.html">check here for details</ulink>.</para>
     </section>
@@ -2576,7 +2578,7 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       <title>(FAQ 42) How can I tell which features my kernel and iptables
       support?</title>
 
-      <para><emphasis role="bold">Answer</emphasis>: Use the
+      <para><emphasis role="bold">Answer:</emphasis> Use the
       <command>shorewall[-lite] show capabilities</command> command at a root
       prompt.</para>
 

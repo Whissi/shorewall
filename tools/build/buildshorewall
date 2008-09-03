@@ -673,8 +673,8 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 
     if [ -n "$BUILDXML" ]; then
 	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION tarballs"
-        do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
-        do_or_die "tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
+        tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1
+        tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1 || true
 	if [ -n "$SIGN" ]; then
 	    for shoresuffix in tgz tar.bz2; do
 		xmlball=shorewall-docs-xml-$VERSION.${shoresuffix}

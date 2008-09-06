@@ -1022,113 +1022,214 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
 
       <para>Example:</para>
 
-      <para>Providers <emphasis role="bold">Blarg</emphasis> (1) and <emphasis
-      role="bold">Avvanta</emphasis> (2) are both connected to eth0. The
-      firewall's IP address with <emphasis role="bold">Blarg</emphasis> is
-      206.124.146.176/24 (gateway 206.124.146.254) and the IP address from
-      <emphasis role="bold">Avvanta</emphasis> is 130.252.144.8/24 (gateway
-      130.252.144.254). We have a second IP address (206.124.146.177) from
-      <emphasis role="bold">Blarg</emphasis>.</para>
+      <para>This is our home network circa fall 2008. We have two internet
+      providers:</para>
 
-      <para>/etc/shorewall/providers:<programlisting>#PROVIDER NUMBER MARK DUPLICATE INTERFACE            GATEWAY
-Blarg     1      1    main      eth0:206.124.146.176 206.124.146.254 ...
-Avvanta   2      2    main      eth0:130.252.144.8   130.252.144.254 ... </programlisting><note>
-          <para>If the same address is used for both </para>
+      <orderedlist>
+        <listitem>
+          <para>Comcast -- Cable modem with one dynamic IP address.</para>
+        </listitem>
+
+        <listitem>
+          <para>Avvanta -- ADSL with 5 static IP addresses.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Because the old Compaq Presario that I use for a firewall only has
+      three PCI slots and no onboard Ethernet, it doesn't have enough Ethernet
+      controllers to support both providers. So I use a Linksys WRT300n pre-N
+      router as a gateway to that system.</para>
+
+      <para>On my personal laptop (ursa), I have 9 virtual machines running
+      various Linux distributions. <emphasis>It is the Shorewall configuration
+      on ursa that I will describe here</emphasis>.</para>
+
+      <para>Below is a diagram of our network:<graphic align="center"
+      fileref="images/Network2008a.png" /></para>
+
+      <para>The local wired network in my office is connected to both
+      gateways. The Comcast gateway has local IP address 172.20.1.1 while the
+      Avvanta gateway has local IP address 172.20.1.1. Ursa's eth0 interface
+      has a single IP address (172.20.1.130).</para>
+
+      <para>This configuration uses USE_DEFAULT_RT=Yes in
+      <filename>shorewall.conf </filename>(see <link
+      linkend="USE_DEFAULT_RT">below</link>).</para>
+
+      <para>Here is the <filename>providers</filename> file:<programlisting>#NAME           NUMBER  MARK    DUPLICATE       INTERFACE               GATEWAY         OPTIONS                 COPY
+comcast         1       1       -               eth0:172.20.1.130       172.20.1.1      track,loose,balance,optional
+avvanta         2       2       -               eth0:172.20.1.130       172.20.1.254    track,optional,loose</programlisting></para>
+
+      <para>Several things to note:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>172.20.1.130 is specified as the eth0 IP address for both
+          providers.</para>
+        </listitem>
+
+        <listitem>
+          <para>Both providers have the <emphasis role="bold">loose</emphasis>
+          option. This prevents Shorewall from automatically generating
+          routing rules based on the source IP address.</para>
+        </listitem>
+
+        <listitem>
+          <para>Only <emphasis role="bold">comcast</emphasis> has the
+          <emphasis role="bold">balance</emphasis> option. With
+          USE_DEFAULT_RT=yes, that means that <emphasis
+          role="bold">comcast</emphasis> will be the default provider. While
+          <emphasis role="bold">balance</emphasis> is the default, with
+          USE_DEFAULT_RT=Yes, it must be specified explicitly when <emphasis
+          role="bold">loose</emphasis> is also specified.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Here is the route_rules file:<programlisting>#SOURCE                 DEST                    PROVIDER        PRIORITY
+-                       206.124.146.176/31      avvanta         1000
+-                       206.124.146.178/31      avvanta         1000
+-                       206.124.146.180/32      avvanta         1000</programlisting></para>
+
+      <para>Those rules direct traffic to the five static Avvanta IP addresses
+      through the <emphasis role="bold">avvanta</emphasis> provider.</para>
+
+      <para>Here is the tcrules file (MARK_IN_FORWARD_CHAIN=No in
+      <filename>shorewall.conf</filename>):<programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)         CLIENT  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
+#                                                                       PORT(S) 
+2               $FW             206.124.146.176/31
+2               $FW             0.0.0.0/0       tcp     21
+2               $FW             0.0.0.0/0       tcp     -               -       -       -       -       -       -               ftp
+2               $FW             0.0.0.0/0       tcp     119</programlisting></para>
+
+      <para>These rules:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Mark traffic from 206.124.146.176 and 206.124.146.177 to be
+          associated with <emphasis role="bold">avvanta</emphasis>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Use <emphasis role="bold">avvanta</emphasis> for FTP.</para>
+        </listitem>
+
+        <listitem>
+          <para>Use <emphasis role="bold">avvanta</emphasis> for NTTP</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The remaining files are for a rather standard two-interface config
+      with a bridge as the local interface.</para>
+
+      <para><filename>zones</filename>:<programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+fw      firewall
+lan     ipv4
+net     ipv4
+kvm     ipv4</programlisting><filename>policy</filename>:<programlisting>net             net             NONE
+lan             lan             NONE
+fw              net             ACCEPT
+fw              lan             ACCEPT
+fw              kvm             ACCEPT
+kvm             all             ACCEPT
+lan             fw              ACCEPT
+net             lan             NONE
+lan             net             NONE
+net             all             DROP            info
+all             all             REJECT          info</programlisting></para>
+
+      <para>interfaces:<programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS                 GATEWAY
+#
+net     eth0            detect          dhcp,tcpflags,routefilter,blacklist,logmartians,optional,arp_ignore
+net     wlan0           detect          dhcp,tcpflags,routefilter,blacklist,logmartians,optional
+lan     tun0            detect          optional        #OpenVPN
+kvm     br0             detect          routeback       #Virtual Machines</programlisting><note>
+          <para>wlan0 is the wireless adapter in the notebook. Used when I'm
+          not in the office.</para>
         </note></para>
 
-      <para>/etc/shorewall/masq:<programlisting>#INTERFACE    SOURCE          ADDRESS
-eth0(Blarg)   130.252.144.8   206.124.146.176
-eth0(Avvanta) 206.124.146.176 130.252.144.8
-eth0(Blarg)   eth1            206.124.146.176
-eth0(Avvanta) eth1            130.252.144.8 </programlisting>
-      /etc/shorewall/route_rules:</para>
-
-      <programlisting>#SOURCE           DEST             PROVIDER PRIORITY
--                 206.124.146.0/24 Blarg    1000
--                 130.252.144.0/24 Avvanta  1000
-206.124.146.177   -                Blarg    26000</programlisting>
-
-      <para>/etc/shorewall/tcrules:<programlisting>#MARK/CLASSIFY    SOURCE                DEST          PROTO
-1:P               eth0:206.124.146.0/24 0.0.0.0/0
-2:P               eth0:130.252.144.8/24 0.0.0.0/0</programlisting></para>
+      <para>masq:<programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
+tun0                    192.168.0.0/24
+eth0                    192.168.0.0/24
+wlan0                   192.168.0.0/24</programlisting></para>
     </section>
-  </section>
 
-  <section>
-    <title>ROUTE_BALANCE (Experimental)</title>
+    <section id="USE_DEFAULT_RT">
+      <title>USE_DEFAULT_RT</title>
 
-    <para>Beginning with Shorewall 4.2.0 Beta3, Shorewall-perl has supported a
-    ROUTE_BALANCE option in <ulink
-    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+      <para>Beginning with Shorewall 4.2.0 Beta3, Shorewall-perl has supported
+      a USE_DEFAULT_RT option in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
 
-    <para>ROUTE_BALANCE=Yes is marked as Experimental currently. This means
-    that it is a 'use at your own risk' feature; if you encounter problems,
-    the Shorewall support staff may not be able to provide you with a quick
-    solution.</para>
+      <para>One of the drawbacks of the Mulit-ISP support as described in the
+      preceding section is that changes to the main table made by applications
+      are not added to the individual provider tables. This makes route rules
+      such as described in <link linkend="Openvpn">one of the examples
+      above</link> necessary.</para>
 
-    <para>One of the drawbacks of the Mulit-ISP support as described in the
-    preceding section is that changes to the main table made by applications
-    are not added to the individual provider tables. This makes route rules
-    such as described in <link linkend="Openvpn">one of the examples
-    above</link> necessary.</para>
+      <para>USE_DEFAULT_RT=Yes works around that problem by passing packets
+      through the main table first rather than last. This has a number of
+      implications:</para>
 
-    <para>ROUTE_BALANCE=Yes works around that problem by passing packets
-    through the main table first rather than last. This has a number of
-    implications:</para>
+      <orderedlist>
+        <listitem>
+          <para>Both the DUPLICATE and the COPY columns in the providers file
+          must remain empty or contain "-". The individual provider routing
+          tables generated when USE_DEFAULT_RT=Yes contain only a host route
+          to the gateway and a default route via the gateway.</para>
+        </listitem>
 
-    <orderedlist>
-      <listitem>
-        <para>Both the DUPLICATE and the COPY columns in the providers file
-        must remain empty or contain "-". The individual provider routing
-        tables generated when ROUTE_BALANCE=Yes contain only a host route to
-        the gateway and a default route via the gateway.</para>
-      </listitem>
+        <listitem>
+          <para>The <emphasis role="bold">balance</emphasis> option is assumed
+          for all interfaces that do not have the <emphasis
+          role="bold">loose</emphasis> option. When you want both <emphasis
+          role="bold">balance</emphasis> and <emphasis
+          role="bold">loose</emphasis>, both must be specified.</para>
+        </listitem>
 
-      <listitem>
-        <para>The balance option is assumed for all interfaces that do not
-        have the <emphasis role="bold">loose</emphasis> option.</para>
-      </listitem>
+        <listitem>
+          <para>The default route generated by Shorewall is added to the
+          <emphasis>default</emphasis> routing table (253) rather than to the
+          main routing table (254).</para>
+        </listitem>
 
-      <listitem>
-        <para>The default route generated by Shorewall is added to the
-        <emphasis>default</emphasis> routing table (253) rather than to the
-        main routing table (254).</para>
-      </listitem>
+        <listitem>
+          <para>Packets are sent through the main routing table by a routing
+          rule with priority 999. In ), the priority range 1-998 may be used
+          for inserting rules that bypass the main table.</para>
+        </listitem>
 
-      <listitem>
-        <para>Packets are sent through the main routing table by a routing
-        rule with priority 999. In ), the priority range 1-998 may be used for
-        inserting rules that bypass the main table.</para>
-      </listitem>
+        <listitem>
+          <para>All provider gateways must be specified explicitly in the
+          GATEWAY column. 'detect' may not be specified. Note that for ppp
+          interfaces, the GATEWAY may remain unspecified ("-").</para>
+        </listitem>
 
-      <listitem>
-        <para>All provider gateways must be specified explicitly in the
-        GATEWAY column. 'detect' may not be specified. Note that for ppp
-        interfaces, the GATEWAY may remain unspecified ("-").</para>
-      </listitem>
+        <listitem>
+          <para>You should disable all default route management outside of
+          Shorewall. If a default route is inadvertently added to the main
+          table while Shorewall is started, then all policy routing will stop
+          working except for those routing rules in the priority range
+          1-998.</para>
+        </listitem>
+      </orderedlist>
 
-      <listitem>
-        <para>You should disable all default route management outside of
-        Shorewall. If a default route is inadvertently added to the main table
-        while Shorewall is started, then all policy routing will stop working
-        except for those routing rules in the priority range 1-998.</para>
-      </listitem>
-    </orderedlist>
+      <para>Although 'balance' is automatically assumed when
+      USE_DEFAULT_RT=Yes, you can easily cause all traffic to use one provider
+      except when you explicitly direct it to use the other provider via
+      <ulink
+      url="manpages/shorewall-route_rules.html">shorewall-route_rules</ulink>
+      (5) or <ulink
+      url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>
+      (5).</para>
 
-    <para>Although 'balance' is automatically assumed when ROUTE_BALANCE=Yes,
-    you can easily cause all traffic to use one provider except when you
-    explicitly direct it to use the other provider via <ulink
-    url="manpages/shorewall-route_rules.html">shorewall-route_rules</ulink>
-    (5) or <ulink
-    url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>
-    (5).</para>
+      <para>Example (send all traffic through the 'shorewall' provider unless
+      otherwise directed).</para>
 
-    <para>Example (send all traffic through the 'shorewall' provider unless
-    otherwise directed).</para>
-
-    <para>/etc/shorewall/providers:<programlisting>#NAME    NUMBER MARK DUPLICATE INTERFACE GATEWAY       OPTIONS
+      <para>/etc/shorewall/providers:<programlisting>#NAME    NUMBER MARK DUPLICATE INTERFACE GATEWAY       OPTIONS
 linksys       1    1    -        wlan0   172.20.1.1    track,balance=1,optional
 shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional</programlisting>/etc/shorewall/rules:<programlisting>#SOURCE     DEST      PROVIDER        PRIORITY
 -           -         shorewall       11999</programlisting></para>
+    </section>
   </section>
 </article>

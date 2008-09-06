@@ -279,7 +279,6 @@ sub add_a_provider( $$$$$$$$ ) {
 		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose   = 1;
-		$balance = 0 if $config{USE_DEFAULT_RT};
 	    } elsif ( $option eq 'optional' ) {
 		set_interface_option $interface, 'optional', 1;
 		$optional = 1;

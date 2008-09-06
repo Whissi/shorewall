@@ -1,4 +1,4 @@
-Shorewall 4.2.0 RC 1.
+Shorewall 4.2.0 RC 2.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -78,15 +78,15 @@ Migration Issues.
 7)  DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl. Use
     ipset-based zones instead.
 
-Problems corrected in Shorewall 4.2.0 RC 1.
+Problems corrected in Shorewall 4.2.0 RC 2.
+
+1)  Shorewall-perl was incorrectly ignoring the 'balance' option in
+    /etc/shorewall/providers when 'loose' was specified after 'balance'
+    and USE_DEFAULT_RT=Yes in shorewall.conf. 
+
+Other Changes in Shoreall 4.2.0 RC 2
 
 None.
-
-Other Changes in Shoreall 4.2.0 RC 1
-
-1)  If 'NONAT' is specified in the ADDRESS column of an entry in 
-    /etc/shorewall/masq, then traffic matching that entry is not
-    passed to the entries that follow.
 
 New Features in Shorewall 4.2.
 
@@ -935,3 +935,8 @@ New Features in Shorewall 4.2.
 46) A macro supporting RNDC (BIND remote management protocol) traffic
     has been added.  It can be used as any other macro (e.g., RNDC/ACCEPT)
     in the rules file.
+
+47) If 'NONAT' is specified in the ADDRESS column of an entry in 
+    /etc/shorewall/masq, then traffic matching that entry is not
+    passed to the entries that follow.
+

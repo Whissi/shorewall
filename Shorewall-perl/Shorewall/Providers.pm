@@ -267,7 +267,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $track, $balance , $optional, $mtu ) = (0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
+    my ( $loose, $track, $balance , $default_balance, $optional, $mtu ) = (0,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -279,6 +279,7 @@ sub add_a_provider( $$$$$$$$ ) {
 		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose   = 1;
+		$default_balance = 0;
 	    } elsif ( $option eq 'optional' ) {
 		set_interface_option $interface, 'optional', 1;
 		$optional = 1;
@@ -292,6 +293,8 @@ sub add_a_provider( $$$$$$$$ ) {
 	    }
 	}
     }
+
+    $balance = $default_balance unless $balance;
 
     $providers{$table} = { provider  => $table,
 			   number    => $number ,

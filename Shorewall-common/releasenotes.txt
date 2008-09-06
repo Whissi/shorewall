@@ -82,11 +82,12 @@ Problems corrected in Shorewall 4.2.0 RC 2.
 
 1)  Shorewall-perl was incorrectly ignoring the 'balance' option in
     /etc/shorewall/providers when 'loose' was specified after 'balance'
-    and USE_DEFAULT_RT=Yes in shorewall.conf. 
+    and USE_DEFAULT_RT=Yes in shorewall.conf. 'balance' is still the
+    default if 'loose' is not specified.
 
 Other Changes in Shoreall 4.2.0 RC 2
 
-None.
+1)  USE_DEFAULT_RT is no longer marked 'experimental'.
 
 New Features in Shorewall 4.2.
 
@@ -896,11 +897,6 @@ New Features in Shorewall 4.2.
     the main routing table. Such changes can occur for a number of
     reasons,  VPNs going up and down being an example.
 
-    The USE_DEFAULT_RT option is currently classified as
-    EXPERIMENTAL. As a consequence, if you have a problem with it, the
-    Shorewall support team may not be able to supply you with a
-    solution.
-
     The idea is to send packets through the main table prior to
     applying any of the Shorewall-generated routing rules. So changes
     to the main table will affect the routing of packets by default. 
@@ -910,11 +906,10 @@ New Features in Shorewall 4.2.
     a) Both the DUPLICATE and the COPY columns in the providers file
        must remain empty (or contain "-").
 
-    b) The 'balance' option is assumed for all interfaces except those
-       specified as 'loose'.
-
-    c) The default route is added to the the 'default' table rather
+    b) The default route is added to the the 'default' table rather
        than to the main table.
+
+    c) 'balance' is assumed unless 'loose' is specified.
 
     d) Packets are sent through the main routing table by a rule with
        priority 999. In /etc/shorewall/routing_rules, the range 1-998

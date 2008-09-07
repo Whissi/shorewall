@@ -78,12 +78,15 @@ Migration Issues.
 7)  DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl. Use
     ipset-based zones instead.
 
-Problems corrected in Shorewall 4.2.0 RC 2.
+Problems corrected in Shorewall-perl 4.2.0 RC 2.
 
 1)  Shorewall-perl was incorrectly ignoring the 'balance' option in
     /etc/shorewall/providers when 'loose' was specified after 'balance'
     and USE_DEFAULT_RT=Yes in shorewall.conf. 'balance' is still the
     default if 'loose' is not specified.
+
+2)  Route marking was attempted for optional interfaces that were not
+    up, causing 'shorewall start' ('shorewall-lite start') to fail. 
 
 Other Changes in Shoreall 4.2.0 RC 2
 

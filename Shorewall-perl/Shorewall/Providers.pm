@@ -102,7 +102,7 @@ sub setup_route_marking() {
 	my $interface = $providerref->{interface};
 	my $base      = uc chain_base $interface;
 
-	add_command( $chainref, qq(if [ -n "${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+	add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";

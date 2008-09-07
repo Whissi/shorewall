@@ -1060,6 +1060,11 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
 
       <para>Here is the <filename>providers</filename> file:</para>
 
+      <programlisting>#NAME          NUMBER   MARK DUPLICATE INTERFACE            GATEWAY      OPTIONS                            COPY
+comcast        1        1    -         eth0:172.20.1.130    172.20.1.1   track,loose,balance,optional
+avvanta        2        2    -         eth0:172.20.1.130    172.20.1.254 track,optional,loose
+wireless       3        3    -         wlan0                172.20.1.1   track,optional</programlisting>
+
       <para>Several things to note:</para>
 
       <orderedlist>

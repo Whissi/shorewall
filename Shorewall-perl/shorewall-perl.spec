@@ -1,6 +1,6 @@
 %define name shorewall-perl
 %define version 4.2.0
-%define release 0RC1
+%define release 0RC2
 
 Summary: Shoreline Firewall Perl-based compiler.
 Name: %{name}
@@ -64,6 +64,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING releasenotes.txt
 
 %changelog
+* Mon Sep 08 2008 Tom Eastep tom@shorewall.net
+- Updated to 4.2.0-0RC2
 * Tue Aug 19 2008 Tom Eastep tom@shorewall.net
 - Updated to 4.2.0-0RC1
 * Thu Jul 03 2008 Tom Eastep tom@shorewall.net

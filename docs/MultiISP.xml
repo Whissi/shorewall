@@ -1020,9 +1020,9 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         </listitem>
 
         <listitem>
-          <para>You must specify a gateway IP address in the GATEWAY column of
-          /etc/shorewall/providers; <emphasis role="bold">detect</emphasis> is
-          not permitted.</para>
+          <para>You must specify a gateway IP address in the GATEWAY column
+          of<filename> /etc/shorewall/providers</filename>; <emphasis
+          role="bold">detect</emphasis> is not permitted.</para>
         </listitem>
       </orderedlist>
 
@@ -1080,14 +1080,16 @@ wireless       3        3    -         wlan0                172.20.1.1   track,o
 
       <orderedlist>
         <listitem>
-          <para>172.20.1.130 is specified as the eth0 IP address for both
+          <para>172.20.1.130 is specified as the <filename
+          class="devicefile">eth0</filename> IP address for both
           providers.</para>
         </listitem>
 
         <listitem>
-          <para>Both providers have the <emphasis role="bold">loose</emphasis>
-          option. This prevents Shorewall from automatically generating
-          routing rules based on the source IP address.</para>
+          <para>Both wired providers have the <emphasis
+          role="bold">loose</emphasis> option. This prevents Shorewall from
+          automatically generating routing rules based on the source IP
+          address.</para>
         </listitem>
 
         <listitem>
@@ -1099,6 +1101,16 @@ wireless       3        3    -         wlan0                172.20.1.1   track,o
           USE_DEFAULT_RT=Yes, it must be specified explicitly when <emphasis
           role="bold">loose</emphasis> is also specified.</para>
         </listitem>
+
+        <listitem>
+          <para>The <emphasis role="bold">wireless</emphasis> provider is
+          never used when the laptop is connected to the wired network.</para>
+        </listitem>
+
+        <listitem>
+          <para>I use a different Shorewall configuration when I take the
+          laptop on the road.</para>
+        </listitem>
       </orderedlist>
 
       <para>Here is the route_rules file:<programlisting>#SOURCE                 DEST                    PROVIDER        PRIORITY
@@ -1107,12 +1119,12 @@ wireless       3        3    -         wlan0                172.20.1.1   track,o
 -                       206.124.146.180/32      avvanta         1000</programlisting></para>
 
       <para>Those rules direct traffic to the five static Avvanta IP addresses
-      through the <emphasis role="bold">avvanta</emphasis> provider.</para>
+      (only two are currently used) through the <emphasis
+      role="bold">avvanta</emphasis> provider.</para>
 
       <para>Here is the tcrules file (MARK_IN_FORWARD_CHAIN=No in
       <filename>shorewall.conf</filename>):<programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)         CLIENT  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
 #                                                                       PORT(S) 
-2               $FW             206.124.146.176/31
 2               $FW             0.0.0.0/0       tcp     21
 2               $FW             0.0.0.0/0       tcp     -               -       -       -       -       -       -               ftp
 2               $FW             0.0.0.0/0       tcp     119</programlisting></para>
@@ -1120,11 +1132,6 @@ wireless       3        3    -         wlan0                172.20.1.1   track,o
       <para>These rules:</para>
 
       <itemizedlist>
-        <listitem>
-          <para>Mark traffic from 206.124.146.176 and 206.124.146.177 to be
-          associated with <emphasis role="bold">avvanta</emphasis>.</para>
-        </listitem>
-
         <listitem>
           <para>Use <emphasis role="bold">avvanta</emphasis> for FTP.</para>
         </listitem>
@@ -1140,17 +1147,11 @@ wireless       3        3    -         wlan0                172.20.1.1   track,o
       <para><filename>zones</filename>:<programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
 fw      firewall
-lan     ipv4
 net     ipv4
 kvm     ipv4</programlisting><filename>policy</filename>:<programlisting>net             net             NONE
-lan             lan             NONE
 fw              net             ACCEPT
-fw              lan             ACCEPT
 fw              kvm             ACCEPT
 kvm             all             ACCEPT
-lan             fw              ACCEPT
-net             lan             NONE
-lan             net             NONE
 net             all             DROP            info
 all             all             REJECT          info</programlisting></para>
 
@@ -1158,16 +1159,18 @@ all             all             REJECT          info</programlisting></para>
 #
 net     eth0            detect          dhcp,tcpflags,routefilter,blacklist,logmartians,optional,arp_ignore
 net     wlan0           detect          dhcp,tcpflags,routefilter,blacklist,logmartians,optional
-lan     tun0            detect          optional        #OpenVPN
 kvm     br0             detect          routeback       #Virtual Machines</programlisting><note>
-          <para>wlan0 is the wireless adapter in the notebook. Used when I'm
-          not in the office.</para>
+          <para><filename class="devicefile">wlan0</filename> is the wireless
+          adapter in the notebook. Used when the laptop is in our home but not
+          connected to the wired network.</para>
         </note></para>
 
       <para>masq:<programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
-tun0                    192.168.0.0/24
 eth0                    192.168.0.0/24
-wlan0                   192.168.0.0/24</programlisting></para>
+wlan0                   192.168.0.0/24</programlisting><note>
+          <para>Because the firewall has only a single external IP address, I
+          don't need to specify the providers in the masq rules.</para>
+        </note></para>
     </section>
 
     <section id="USE_DEFAULT_RT">

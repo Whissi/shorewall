@@ -229,6 +229,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $gateway eq 'detect' ) {
 	fatal_error "'detect' is not allowed with USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
+	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
     } elsif ( $gateway && $gateway ne '-' ) {
 	validate_address $gateway, 0;

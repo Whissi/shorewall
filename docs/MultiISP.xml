@@ -1018,7 +1018,16 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
           <para>You must manually add MARK rules for traffic known to come
           from each provider.</para>
         </listitem>
+
+        <listitem>
+          <para>You must specify a gateway IP address in the GATEWAY column of
+          /etc/shorewall/providers; <emphasis role="bold">detect</emphasis> is
+          not permitted.</para>
+        </listitem>
       </orderedlist>
+
+      <para>Taken together, b. and h. effectively preclude using this
+      technique with dynamic IP addresses.</para>
 
       <para>Example:</para>
 
@@ -1039,7 +1048,9 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
       <trademark>Presario</trademark> that I use for a firewall only has three
       PCI slots and no onboard Ethernet, it doesn't have enough Ethernet
       controllers to support both providers. So I use a Linksys WRT300n pre-N
-      router as a gateway to that ISP.</para>
+      router as a gateway to that ISP. Note that because the Comcast IP
+      address is dynamic, I could not share a single firewall interface
+      between the two providers directly.</para>
 
       <para>On my personal laptop (ursa), I have 9 virtual machines running
       various Linux distributions. <emphasis>It is the Shorewall configuration

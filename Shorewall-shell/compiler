@@ -2752,10 +2752,14 @@ process_rules()
 		return
 		;;
 	esac
-
+		
 	case $xservers in
 	    all|all-)
-		xservers="$ZONES $FW"
+		if [ "x$xservers" = xall ]; then
+		    xservers="$ZONES $FW"
+		elif [ "x$xservers" = xall- ]; then
+		    xservers="$ZONES"
+		fi
 		process_wildcard_rule "$1" $intrazone
 		return
 		;;

@@ -162,6 +162,18 @@
         <para><emphasis role="bold">Answer:</emphasis> See <link
         linkend="faq76">above</link>.</para>
       </section>
+
+      <section id="faq76c">
+        <title>(faq 77c) After restart and bootup of my Debian firewall, all
+        traffic is blocked for hosts behind the firewall trying to connect out
+        onto the net or through the vpn (although i can reach the internal
+        firewall interface and obtain dumps etc). Once I issue 'shorewall
+        clear' followed by 'shorewall restart' it then works, despite the
+        config not changing</title>
+
+        <para>Answer: Set IP_FORWARDING=On in <filename><ulink
+        url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
+      </section>
     </section>
   </section>
 
@@ -492,8 +504,8 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
       <title>(FAQ 30) I'm confused about when to use DNAT rules and when to
       use ACCEPT rules.</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> It would be a good idea to
-      review the <ulink url="shorewall_quickstart_guide.htm">QuickStart
+      <para><emphasis role="bold">Answer:</emphasis> It would be a good idea
+      to review the <ulink url="shorewall_quickstart_guide.htm">QuickStart
       Guide</ulink> appropriate for your setup; the guides cover this topic in
       a tutorial fashion. DNAT rules should be used for connections that need
       to go the opposite direction from SNAT/MASQUERADE. So if you masquerade
@@ -627,8 +639,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
               system, the call to
               <command>find_first_interface_address</command> in
               <filename>/etc/shorewall/params</filename> must be preceded with
-              a load of the
-              Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
+              a load of the Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
 <command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
             </note></para>
         </listitem>
@@ -731,8 +742,8 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
         following:</para>
 
         <para>In <filename>/etc/shorewall/params</filename> (or in your
-        <filename>&lt;export directory&gt;/init</filename> file if you are using
-        Shorewall Lite on the firewall system):</para>
+        <filename>&lt;export directory&gt;/init</filename> file if you are
+        using Shorewall Lite on the firewall system):</para>
 
         <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
 
@@ -754,9 +765,8 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
         <note>
           <para>If you are running Shorewall 3.2.6 on a Debian-based system,
           the call to <command>find_first_interface_address</command> in
-          <filename>/etc/shorewall/params</filename>
-          must be preceded with a load of the Shorewall function
-          library:<programlisting><command>. /usr/share/shorewall/functions</command>
+          <filename>/etc/shorewall/params</filename> must be preceded with a
+          load of the Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
 <command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
         </note>
       </section>
@@ -783,10 +793,10 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
 
       <para>Blacklisting an IP address blocks incoming traffic from that IP
       address. And if you set BLACKLISTNEWONLY=Yes in
-      <filename>shorewall.conf</filename>, then only new connections
-      <emphasis role="bold">from</emphasis> that address are disallowed;
-      traffic from that address that is part of an established connection
-      (such as ping replies) is allowed.</para>
+      <filename>shorewall.conf</filename>, then only new connections <emphasis
+      role="bold">from</emphasis> that address are disallowed; traffic from
+      that address that is part of an established connection (such as ping
+      replies) is allowed.</para>
     </section>
   </section>
 
@@ -1070,8 +1080,9 @@ to debug/develop the newnat interface.</programlisting></para>
       openlog</quote>) and you get to choose the log level (again, see
       <quote>man syslog</quote>) in your <filename><ulink
       url="manpages/shorewall-policy.html">policies</ulink></filename> and
-      <filename><ulink url="manpages/shorewall-rules.html">rules</ulink></filename>.
-      The destination for messages logged by syslog is controlled by
+      <filename><ulink
+      url="manpages/shorewall-rules.html">rules</ulink></filename>. The
+      destination for messages logged by syslog is controlled by
       <filename>/etc/syslog.conf</filename> (see <quote>man
       syslog.conf</quote>). When you have changed
       <filename>/etc/syslog.conf</filename>, be sure to restart syslogd (on a
@@ -1231,8 +1242,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       <para>If, on your system, the first number is 7 or greater, then the
       default Shorewall configurations will cause messages to be written to
       your console. The simplest solution is to add this to your
-      <filename>/etc/sysctl.conf</filename>
-      file:<programlisting>kernel.printk = 4 4 1 7</programlisting></para>
+      <filename>/etc/sysctl.conf</filename> file:<programlisting>kernel.printk = 4 4 1 7</programlisting></para>
 
       <para>then<programlisting><command>sysctl -p /etc/sysctl.conf</command></programlisting></para>
 
@@ -1324,10 +1334,10 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
 
           <listitem>
             <para>You have a <filename><ulink
-            url="manpages/shorewall-policy.html">policy</ulink></filename> that
-            specifies a log level and this packet is being logged under that
-            policy. If you intend to ACCEPT this traffic then you need a <ulink
-            url="manpages/shorewall-rules.html">rule</ulink> to that
+            url="manpages/shorewall-policy.html">policy</ulink></filename>
+            that specifies a log level and this packet is being logged under
+            that policy. If you intend to ACCEPT this traffic then you need a
+            <ulink url="manpages/shorewall-rules.html">rule</ulink> to that
             effect.</para>
 
             <para>Beginning with Shorewall 3.3.3, packets logged out of these
@@ -1746,15 +1756,16 @@ Creating input Chains...
       <para>Why can't Shorewall detect my interfaces properly?</para>
 
       <para><emphasis role="bold">Answer:</emphasis> The above output is
-      perfectly normal. The Net zone is defined as all hosts that are connected
-      through <filename class="devicefile">eth0</filename> and the local zone
-      is defined as all hosts connected through <filename
+      perfectly normal. The Net zone is defined as all hosts that are
+      connected through <filename class="devicefile">eth0</filename> and the
+      local zone is defined as all hosts connected through <filename
       class="devicefile">eth1</filename>. You can set the <emphasis
       role="bold">routefilter</emphasis> option on an internal interface if
-      you wish to guard against '<firstterm>Martians</firstterm>' (a Martian is
-      a packet with a source IP address that is not routed out of the interface
-      on which the packet was received). If you do that, it is a good idea to
-      also set the <emphasis role="bold">logmartians</emphasis> option.</para>
+      you wish to guard against '<firstterm>Martians</firstterm>' (a Martian
+      is a packet with a source IP address that is not routed out of the
+      interface on which the packet was received). If you do that, it is a
+      good idea to also set the <emphasis role="bold">logmartians</emphasis>
+      option.</para>
     </section>
 
     <section id="faq22">
@@ -1766,12 +1777,12 @@ Creating input Chains...
       url="shorewall_extension_scripts.htm">Shorewall Extension
       Scripts</ulink>. Be sure that you look at the contents of the chain(s)
       that you will be modifying with your commands so that the commands will
-      do what is intended. Many iptables commands published in HOWTOs and other
-      instructional material use the -A command which adds the rules to the end
-      of the chain. Most chains that Shorewall constructs end with an
+      do what is intended. Many iptables commands published in HOWTOs and
+      other instructional material use the -A command which adds the rules to
+      the end of the chain. Most chains that Shorewall constructs end with an
       unconditional DROP, ACCEPT or REJECT rule and any rules that you add
-      after that will be ignored. Check <quote>man iptables</quote> and look at
-      the -I (--insert) command.</para>
+      after that will be ignored. Check <quote>man iptables</quote> and look
+      at the -I (--insert) command.</para>
     </section>
 
     <section id="faq34">

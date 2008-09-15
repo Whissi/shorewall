@@ -162,18 +162,6 @@
         <para><emphasis role="bold">Answer:</emphasis> See <link
         linkend="faq76">above</link>.</para>
       </section>
-
-      <section id="faq76c">
-        <title>(faq 77c) After restart and bootup of my Debian firewall, all
-        traffic is blocked for hosts behind the firewall trying to connect out
-        onto the net or through the vpn (although i can reach the internal
-        firewall interface and obtain dumps etc). Once I issue 'shorewall
-        clear' followed by 'shorewall restart' it then works, despite the
-        config not changing</title>
-
-        <para>Answer: Set IP_FORWARDING=On in <filename><ulink
-        url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
-      </section>
     </section>
   </section>
 
@@ -2009,6 +1997,19 @@ iptables: Invalid argument
       <para>Now any traffic that isn't marked by one of your other MARK rules
       will have mark = 1 and will be sent via ISP1. That will work whether
       <emphasis role="bold">balance</emphasis> is specified or not!</para>
+    </section>
+
+    <section id="faq78">
+      <title>(FAQ 78) After restart and bootup of my Debian firewall, all
+      traffic is blocked for hosts behind the firewall trying to connect out
+      onto the net or through the vpn (although i can reach the internal
+      firewall interface and obtain dumps etc). Once I issue 'shorewall clear'
+      followed by 'shorewall restart' it then works, despite the config not
+      changing</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> Set IP_FORWARDING=On in
+      <filename><ulink
+      url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
     </section>
   </section>
 

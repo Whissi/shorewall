@@ -59,7 +59,7 @@ not_configured () {
 if [ -f "/etc/default/shorewall" ]
 then
 	. /etc/default/shorewall
-	$SRWL_OPTS+="$OPTIONS"
+	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then
 		not_configured

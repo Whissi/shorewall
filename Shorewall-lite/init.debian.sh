@@ -66,7 +66,7 @@ fi
 if [ -f "/etc/default/shorewall-lite" ]
 then
 	. /etc/default/shorewall-lite
-	$SRWL_OPTS+="$OPTIONS"
+	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then
 		not_configured

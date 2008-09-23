@@ -198,7 +198,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
 if [ -n "$PREFIX" ]; then
     if [ -z "$CYGWIN" ]; then
-	if [ -a `id -u` != 0 ] ; then
+	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
 	fi    

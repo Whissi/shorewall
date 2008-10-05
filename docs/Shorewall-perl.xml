@@ -157,10 +157,10 @@
           <para>With the shell-based compiler, extension scripts were copied
           into the compiled script and executed at run-time. In many cases,
           this approach doesn't work with Shorewall Perl because (almost) the
-          entire rule set is built by the compiler. As a result, Shorewall-perl
-          runs some extension scripts at compile-time rather than at run-time.
-          Because the compiler is written in Perl, your extension scripts from
-          earlier versions will no longer work.</para>
+          entire rule set is built by the compiler. As a result,
+          Shorewall-perl runs some extension scripts at compile-time rather
+          than at run-time. Because the compiler is written in Perl, your
+          extension scripts from earlier versions will no longer work.</para>
 
           <para>The following table summarizes when the various extension
           scripts are run:<informaltable frame="all">
@@ -381,8 +381,8 @@ insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
             <listitem>
               <para>Your ipsets must be loaded before Shorewall starts. You
               are free to try to do that with the following code in
-              <filename>/etc/shorewall/start (it works for me; your mileage may
-              vary)</filename>:</para>
+              <filename>/etc/shorewall/start (it works for me; your mileage
+              may vary)</filename>:</para>
 
               <programlisting>if [ "$COMMAND" = start ]; then
     ipset -U :all: :all:
@@ -437,8 +437,8 @@ fi</programlisting>
         </listitem>
 
         <listitem>
-          <para>DELAYBLACKLISTLOAD=Yes is not supported. The entire rule set is
-          atomically loaded with one execution of
+          <para>DELAYBLACKLISTLOAD=Yes is not supported. The entire rule set
+          is atomically loaded with one execution of
           <command>iptables-restore</command>.</para>
         </listitem>
 
@@ -689,7 +689,7 @@ ACCEPT loc:eth0:192.168.1.3,eth0:192.168.1.5   $fw  tcp   22</programlisting>
           role="bold">--log</emphasis>=&lt;logfile&gt;</member>
         </simplelist></para>
 
-      <para>Added in Shorewall 4.1. If given, compiler will log to this file
+      <para>Added in Shorewall 4.2. If given, compiler will log to this file
       provider that --log_verbosity is &gt; -1.<simplelist>
           <member><emphasis
           role="bold">--log_verbosity</emphasis>=-1|0|1|2</member>
@@ -792,7 +792,7 @@ set +a
       </section>
 
       <section>
-        <title>Shorewall 4.1 and Later</title>
+        <title>Shorewall 4.2 and Later</title>
 
         <para>To avoid a proliferation of parameters to
         Shorewall::Compiler::compile(), that function has been changed to use

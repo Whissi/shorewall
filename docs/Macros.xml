@@ -111,7 +111,7 @@ PARAM    -              -               tcp     135,139,445
     when you invoke the macro. The SMB macro shown above is parameterized
     (note PARAM in the TARGET column).</para>
 
-    <para><emphasis role="bold">Shorewall versions prior to 4.1:</emphasis>
+    <para><emphasis role="bold">Shorewall versions prior to 4.2.0:</emphasis>
     When invoking a parameterized macro, you follow the name of the macro with
     a slash ("/") and the action that you want to substitute for PARAM.</para>
 
@@ -133,7 +133,7 @@ ACCEPT       loc           fw           udp     1024:   137
 ACCEPT       loc           fw           tcp     135,139,445</programlisting>
     </blockquote>
 
-    <para><emphasis role="bold">Shorewall versions 4.1 and later:</emphasis>
+    <para><emphasis role="bold">Shorewall versions 4.2.0 and later:</emphasis>
     When invoking a parameterized macro, you follow the name of the macro with
     the action that you want to substitute for PARAM enclosed in parentheses.
     The older syntax described above is still supported but is
@@ -186,7 +186,7 @@ PARAM            -        loc             tcp      25</programlisting>
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMTP/DNAT:info   net      192.168.1.5</programlisting>
 
-            <para>/etc/shorewall/rules (Shorewall 4.1 and later):</para>
+            <para>/etc/shorewall/rules (Shorewall 4.2.0 and later):</para>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMTP(DNAT):info   net      192.168.1.5</programlisting>
@@ -211,7 +211,7 @@ PARAM            -        192.168.1.5     tcp      25</programlisting>
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMTP/DNAT:info   net      loc</programlisting>
 
-            <para>/etc/shorewall/rules (Shorewall 4.1 and later)</para>
+            <para>/etc/shorewall/rules (Shorewall 4.2.0 and later)</para>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMTP(DNAT):info   net      loc</programlisting>
@@ -251,7 +251,7 @@ PARAM   DEST    SOURCE  tcp     135,139,445
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMBBI/ACCEPT     loc      fw</programlisting>
 
-            <para>/etc/shorewall/rules (Shorewall 4.1 and later):</para>
+            <para>/etc/shorewall/rules (Shorewall 4.2.0 and later):</para>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMBBI(ACCEPT)     loc      fw</programlisting>

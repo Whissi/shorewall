@@ -1329,10 +1329,9 @@ sub do_connbytes( $ ) {
     #                                                                    1     2      3        5       6
     fatal_error "Invalid CONNBYTES ($connbytes)" unless $connbytes =~ /^(!)? (\d+): (\d+)? ((:[ORB]) (:[PBA])?)?$/x;
 
-
     my $invert = $1 || ''; $invert = '! ' if $invert;
-    my $min    = $2;       $min    = 0 unless defined $min;
-    my $max    = $3 || ''; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
+    my $min    = $2;       $min    = 0  unless defined $min;
+    my $max    = $3;       $max    = '' unless defined $max; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
     my $dir    = $5 || 'B'; 
     my $mode   = $6 || 'B'; 
     

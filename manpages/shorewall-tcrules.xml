@@ -555,7 +555,16 @@
         <listitem>
           <para>Added in Shorewall-perl 4.2.0. Names a Netfiler protocol
           <firstterm>helper</firstterm> module such as <option>ftp</option>,
-          <option>sip</option>, <option>amanda</option>, etc.</para>
+          <option>sip</option>, <option>amanda</option>, etc. A packet will
+          match if it was accepted by the named helper module. You can also
+          append "-" and a port number to the helper module name (e.g.,
+          <emphasis role="bold">ftp-21</emphasis>) to specify the port number
+          that the original connection was made on.</para>
+
+          <para>Example: Mark all FTP data connections with mark
+          4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
+#CLASSIFY                                        PORT(S)
+4         0.0.0.0/0 0.0.0.0/0 TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
     </variablelist>

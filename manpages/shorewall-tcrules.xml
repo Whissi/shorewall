@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall-tcrules</refentrytitle>
@@ -495,6 +497,52 @@
          <emphasis role="bold">Maximize-Reliability</emphasis> (4)
          <emphasis role="bold">Minimize-Cost</emphasis> (2)
          <emphasis role="bold">Normal-Service</emphasis> (0)</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CONNBYTES</emphasis> -
+        [!]<emphasis>min</emphasis>:[<emphasis>max</emphasis>[:{<emphasis
+        role="bold">O</emphasis>|<emphasis role="bold">R</emphasis>|<emphasis
+        role="bold">B</emphasis>}[:{<emphasis
+        role="bold">B</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
+        role="bold">A</emphasis>}]]] </term>
+
+        <listitem>
+          <para>Connection Bytes; defines a byte or packet range that the
+          connection must fall within in order for the rule to match.</para>
+
+          <para>A packet matches if the the packet/byte count is within the
+          range defined by <emphasis>min</emphasis> and
+          <emphasis>max</emphasis> (unless ! is given in which case, a packet
+          matches if the packet/byte count is not within the range).
+          <emphasis>min</emphasis> is an integer which defines the beginning
+          of the byte/packet range. <emphasis>max</emphasis> is an integer
+          which defines the end of the byte/packet range; if omitted, only the
+          beginning of the range is checked. The first letter gives the
+          direction which the range refers to:<blockquote>
+              <para><emphasis role="bold">O</emphasis> - The original
+              direction of the connection.</para>
+
+              <para><emphasis role="bold">R</emphasis> - The opposite
+              direction from the original connection.</para>
+
+              <para><emphasis role="bold">B</emphasis> - The total of both
+              directions.</para>
+            </blockquote></para>
+
+          <para>If omitted, <emphasis role="bold">B</emphasis> is assumed.
+          </para>
+
+          <para>The second letter determines what the range refers
+          to.<blockquote>
+              <para><emphasis role="bold">B</emphasis> - Bytes</para>
+
+              <para><emphasis role="bold">P</emphasis> - Packets</para>
+
+              <para><emphasis role="bold">A</emphasis> - Average packet
+              size.</para>
+            </blockquote></para>
         </listitem>
       </varlistentry>
 

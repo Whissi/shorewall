@@ -88,6 +88,43 @@ Problems corrected in Shorewall 4.2.1
     non-zero. A value of zero for <max> was equivalent to omitting
     <max>.
 
+Other changes in Shorewall 4.2.1
+
+1)  With the recent renewed interest in DOS attacks, it seems
+    appropriate to have connection limiting support in Shorewall. To
+    that end, a CONNLIMIT column has been added to both the policy and
+    rules files.
+
+    The content of these columns is of the format
+
+    	[!] <limit>[:<mask>]
+
+    where
+
+	<limit> is the limit on simultaneous TCP connections.
+
+	<mask>  specifies the size of the network to which
+		the limit applies and is specified as a
+		CIDR mask length. The default value for
+		<mask> is 32 which means that each remote
+		IP address can have <limit> TCP connections
+		active at once.
+
+ 	!	Not allowed in the policy file. In the rules file, it
+		causes connections to match when the number of
+		current connections exceeds <limit>.
+
+    When specified in the policy file, the limit is envorced on all
+    connections that are subject to the given policy (just like
+    LIMIT:BURST). The limit is checked on new connections before the
+    connection is passed through the rules in the NEW section of the
+    rules file.
+
+    It is important to note that while the limit is only checked for
+    those destinations specified in the DEST column, the number of
+    current connections is calculated over all destinations and not
+    just the destination specified in the DEST column. 
+
 New Features in Shorewall 4.2.
 
 1)  Shorewall 4.2 contains support for multiple Internet providers

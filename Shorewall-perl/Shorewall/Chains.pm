@@ -120,6 +120,7 @@ our %EXPORT_TAGS = (
 				       validate_mark
 				       do_test
 				       do_ratelimit
+				       do_connlimit
 				       do_user
 				       do_tos
 				       do_connbytes
@@ -169,7 +170,7 @@ our $VERSION = 4.1.5;
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
 #                                               policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
 #                                               loglevel     => <level>
-#                                               synparams    => <burst/limit>
+#                                               synparams    => <burst/limit + connlimit>
 #                                               synchain     => <name of synparam chain>
 #                                               default      => <default action>
 #                                               cmdlevel     => <number of open loops or blocks in runtime commands>
@@ -1266,6 +1267,26 @@ sub do_ratelimit( $$ ) {
 	"-m limit --limit $rate ";
     } else {
 	fatal_error "Invalid rate ($rate)";
+    }
+}
+
+#
+# Create a "-m connlimit" match for the passed CONNLIMIT
+#
+sub do_connlimit( $ ) {
+    my ( $limit ) = @_;
+
+    return '' unless $limit and $limit ne '-';
+
+    my $invert =  $limit =~ s/^!// ? '' : '! '; # Note Carefully -- we actually do 'connlimit-at-or-below'
+
+    if ( $limit =~ /^(\d+):(\d+)$/ ) {
+	fatal_error "Invalid Mask ($2)" unless $2 > 0 || $2 < 31;
+	"-m connlimit ${invert}--connlimit-above $1 --connmask $2";
+    } elsif ( $limit =~ /^(\d+)$/ )  {
+	"-m connlimit ${invert}--connlimit-above $limit ";
+    } else {
+	fatal_error "Invalid connlimit ($limit)";
     }
 }
 

@@ -212,10 +212,11 @@ sub validate_policy()
 
     while ( read_a_line ) {
 
-	my ( $client, $server, $originalpolicy, $loglevel, $synparams ) = split_line 3, 5, 'policy file';
+	my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) = split_line 3, 6, 'policy file';
 
 	$loglevel  = '' if $loglevel  eq '-';
 	$synparams = '' if $synparams eq '-';
+	$connlimit = '' if $connlimit eq '-';
 
 	my $clientwild = ( "\L$client" eq 'all' );
 
@@ -300,8 +301,12 @@ sub validate_policy()
 
 	$chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
 
-	if ( $synparams ne '' ) {
-	    $chainref->{synparams} = do_ratelimit $synparams, 'ACCEPT';
+	if ( $synparams ne '' || $connlimit ne '' ) {
+	    my $value = '';
+	    fatal_error "Invalid CONNLIMIT ($connlimit)" if $connlimit =~ /^!/;
+	    $value = do_ratelimit $synparams, 'ACCEPT' if $synparams ne '';
+	    $value = do_connlimit $connlimit           if $connlimit ne '';
+	    $chainref->{synparams} = $value;
 	    $chainref->{synchain}  = $chain
 	}
 

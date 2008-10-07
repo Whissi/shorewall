@@ -811,13 +811,13 @@ sub setup_mac_lists( $ ) {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$ );
 
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$$ ) {
-    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $wildcard ) = @_;
+sub process_macro ( $$$$$$$$$$$$$$ ) {
+    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $wildcard ) = @_;
 
     my $nocomment = no_comment;
 
@@ -906,6 +906,7 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 		      merge_macro_column( $mrate,     $rate ) ,
 		      merge_macro_column( $muser,     $user ) ,
 		      $mark, 
+		      $connlimit,
 		      $wildcard
 		     );
 
@@ -923,8 +924,8 @@ sub process_macro ( $$$$$$$$$$$$$ ) {
 # Once a rule has been expanded via wildcards (source and/or dest zone == 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
-sub process_rule1 ( $$$$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $wildcard ) = @_;
+sub process_rule1 ( $$$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
@@ -967,6 +968,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		       $ratelimit,
 		       $user,
 		       $mark,
+		       $connlimit,
 		       $wildcard );
 
 	$macro_nest_level--;
@@ -1106,7 +1108,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
     #
     # Generate Fixed part of the rule
     #
-    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) );
+    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) , do_connlimit( $connlimit ) );
 
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
@@ -1171,7 +1173,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
 		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
-		} else {
+ 		} else {
 		    $origdest = ALLIPv4;
 		}
 	    }
@@ -1265,6 +1267,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 		     $action ,
 		     '' );
     }
+	
     #
     # Add filter table rule, unless this is a NATONLY rule type
     #
@@ -1281,7 +1284,7 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 	    $origdest = '';
 	}
 
-	expand_rule( ensure_chain ('filter', $chain ) ,
+	expand_rule( ensure_chain( 'filter', $chain ) ,
 		     $restriction ,
 		     $rule ,
 		     $source ,
@@ -1299,8 +1302,8 @@ sub process_rule1 ( $$$$$$$$$$$ ) {
 #
 #     Deals with the ugliness of wildcard zones ('all' in SOURCE and/or DEST column).
 #
-sub process_rule ( $$$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = @_;
+sub process_rule ( $$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit ) = @_;
     my $intrazone = 0;
     my $includesrcfw = 1;
     my $includedstfw = 1;
@@ -1362,7 +1365,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    for my $zone1 ( all_zones ) {
 			if ( $includedstfw || ( zone_type( $zone1 ) ne 'firewall' ) ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
-				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
+				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, 1;
 			    }
 			}
 		    }
@@ -1370,7 +1373,7 @@ sub process_rule ( $$$$$$$$$$ ) {
 		    my $destzone = (split( /:/, $dest, 2 ) )[0];
 		    $destzone = firewall_zone unless defined_zone( $destzone ); # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
-			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
+			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, 1;
 		    }
 		}
 	    }
@@ -1379,11 +1382,11 @@ sub process_rule ( $$$$$$$$$$ ) {
 	for my $zone ( all_zones ) {
 	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
 	    if ( ( $includedstfw || ( zone_type( $zone ) ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
-		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 1;
+		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, 1;
 	    }
 	}
     } else {
-	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, 0;
+	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, 0;
     }
 
     progress_message "   Rule \"$thisline\" $done";
@@ -1400,7 +1403,7 @@ sub process_rules() {
 
     while ( read_a_line ) {
 
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark ) = split_line1 1, 10, 'rules file', \%rules_commands;
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit ) = split_line1 1, 11, 'rules file', \%rules_commands;
 
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;
@@ -1426,7 +1429,7 @@ sub process_rules() {
 	    if ( "\L$source" =~ /^none(:.*)?$/ || "\L$dest" =~ /^none(:.*)?$/ ) {
 		progress_message "Rule \"$currentline\" ignored."
 	    } else {
-		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark;
+		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit;
 	    }
 	}
     }

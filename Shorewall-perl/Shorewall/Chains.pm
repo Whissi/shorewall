@@ -1508,7 +1508,7 @@ sub match_orig_dest ( $ ) {
 
     if ( $net =~ s/^!// ) {
 	validate_net $net, 1;
-	"-m conntrack --ctorigdst ! $net ";
+	$capabilities{NEW_CONNTRACK_MATCH} ? "-m conntrack ! --ctorigdst $net " : "-m conntrack --ctorigdst ! $net ";
     } else {
 	validate_net $net, 1;
 	$net eq ALLIPv4 ? '' : "-m conntrack --ctorigdst $net ";

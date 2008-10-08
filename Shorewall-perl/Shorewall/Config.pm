@@ -177,6 +177,8 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MULTIPORT       => 'Multi-port Match' ,
 		 XMULTIPORT      => 'Extended Multi-port Match',
 		 CONNTRACK_MATCH => 'Connection Tracking Match',
+		 NEW_CONNTRACK_MATCH => 
+		                    'New Connection Tracking Match syntax',
 		 USEPKTTYPE      => 'Packet Type Match',
 		 POLICY_MATCH    => 'Policy Match',
 		 PHYSDEV_MATCH   => 'Physdev Match',
@@ -385,6 +387,7 @@ sub initialize() {
 	       MULTIPORT => undef,
 	       XMULTIPORT => undef,
 	       CONNTRACK_MATCH => undef,
+	       NEW_CONNTRACK_MATCH => undef,
 	       USEPKTTYPE => undef,
 	       POLICY_MATCH => undef,
 	       PHYSDEV_MATCH => undef,
@@ -1551,6 +1554,10 @@ sub determine_capabilities( $ ) {
     qt1( "$iptables -N $sillyname" );
 
     $capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+
+    if ( $capabilities{CONNTRACL_MATCH} ) {
+	$capabilities{NEW_CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdst 192.168.1.1 -j ACCEPT" );
+    }
     
     if ( qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" ) ) {
 	$capabilities{MULTIPORT}  = 1;

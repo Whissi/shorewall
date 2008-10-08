@@ -205,6 +205,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 NFQUEUE_TARGET  => 'NFQUEUE Target',
 		 REALM_MATCH     => 'Realm Match',
 		 HELPER_MATCH    => 'Helper Match',
+		 CONNLIMIT_MATCH => 'Connlimit Match',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -267,7 +268,7 @@ sub initialize() {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    VERSION => "4.2.0",
-		    CAPVERSION => 40190 ,
+		    CAPVERSION => 40200 ,
 		  );
     #
     # From shorewall.conf file
@@ -412,6 +413,7 @@ sub initialize() {
 	       NFQUEUE_TARGET => undef,
 	       REALM_MATCH => undef,
 	       HELPER_MATCH => undef,
+	       CONNLIMIT_MATCH => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1628,6 +1630,7 @@ sub determine_capabilities( $ ) {
     $capabilities{NFQUEUE_TARGET}  = qt1( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
     $capabilities{REALM_MATCH}     = qt1( "$iptables -A $sillyname -m realm --realm 1" );
     $capabilities{HELPER_MATCH}    = qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
+    $capabilities{CONNLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
 
     qt1( "$iptables -F $sillyname" );
     qt1( "$iptables -X $sillyname" );

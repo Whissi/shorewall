@@ -35,7 +35,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40190
+SHOREWALL_CAPVERSION=40200
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -1076,6 +1076,7 @@ determine_capabilities() {
     NFQUEUE_TARGET=
     REALM_MATCH=
     HELPER_MATCH=
+    CONNLIMIT_MATCH=
 
     chain=fooX$$
 
@@ -1177,6 +1178,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
     qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
     qt $IPTABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
+    qt $IPTABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1230,6 +1232,7 @@ report_capabilities() {
 	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
 	report_capability "Realm Match" $REALM_MATCH
 	report_capability "Helper Match" $HELPER_MATCH
+	report_capability "Connlimit Match" $CONNLIMIT_MATCH
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1277,6 +1280,8 @@ report_capabilities1() {
     report_capability1 HASHLIMIT_MATCH
     report_capability1 NFQUEUE_TARGET
     report_capability1 REALM_MATCH
+    report_capability1 HELPER_MATCH
+    report_capability1 CONNLIMIT_MATCH
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

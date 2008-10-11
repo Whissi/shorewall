@@ -1727,8 +1727,18 @@ add_a_rule() {
 	build_exclusion_chain chain filter "$excludesource" "$excludedest"
 
 	if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+	    match='--ctorigdst'
+	    if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+		case $adr in
+		    !*)
+			match='!--ctorigdst'
+			adr=${adr#!}
+			;;
+		esac
+	    fi
+
 	    for adr in $(separate_list $addr); do
-		run_iptables -A $logchain $state $(fix_bang $proto $multiport $sports $dports) $user -m conntrack --ctorigdst $adr -j $chain
+		run_iptables -A $logchain $state $(fix_bang $proto $multiport $sports $dports) $user -m conntrack $match $adr -j $chain
 	    done
 	    addr=
 	else
@@ -1940,14 +1950,24 @@ done
 __EOF__
 			    else
 				for adr in $(separate_list $addr); do
+				    match='--ctorigdst'
+				    if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+					case $adr in
+					    !*)
+						match='!--ctorigdst'
+						adr=${adr#!}
+						;;
+					esac
+				    fi
+
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack $match $adr \
 					    $user $mrk $(fix_bang $proto $multiport $sports $cli $srv $dports) $state
 				    fi
 
 				    if [ "$logtarget" != LOG ]; then
 					run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
-					    $srv $dports -m conntrack --ctorigdst $adr $user $mrk -j $target
+					    $srv $dports -m conntrack $match $adr $user $mrk -j $target
 				    fi
 				done
 			    fi
@@ -2007,20 +2027,30 @@ __EOF__
 
 	if [ -n "$addr" ]; then
 	    for adr in $(separate_list $addr); do
+		match='--ctorigdst'
+		if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+		    case $adr in
+			!*)
+			    match='!--ctorigdst'
+			    adr=${adr#!}
+			    ;;
+		    esac
+		fi
+
 		if [ -n "$loglevel" ]; then
 		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user $mrk \
-			$state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
+			$state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack $match $adr)
 		fi
 
 		if [ "$logtarget" != LOG ]; then
 		    if [ -n "$nonat" ]; then
 			addnatrule $(dnat_chain $source) $proto $multiport \
-			    $cli $sports $dports $ratelimit $user $mrk  -m conntrack --ctorigdst $adr -j RETURN
+			    $cli $sports $dports $ratelimit $user $mrk  -m conntrack $match $adr -j RETURN
 		    fi
 
 		    if [ "$logtarget" != NONAT ]; then
 			run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
-			    $sports $dports $ratelimit $user $mrk  -m conntrack --ctorigdst $adr -j $target
+			    $sports $dports $ratelimit $user $mrk  -m conntrack $match $adr -j $target
 		    fi
 		fi
 	    done
@@ -3791,7 +3821,17 @@ __EOF__
 		    #
 		    # We have connection tracking match -- match on the original destination
 		    #
-		    run_iptables2 -A $chain -m conntrack --ctorigdst $network -j $target
+		    match='--ctorigdst'
+		    if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+			case $network in
+			    !*)
+				match='!--ctorigdst'
+				network=${network#!}
+				;;
+			esac
+		    fi
+
+		    run_iptables2 -A $chain -m conntrack $match $network -j $target
 		elif [ -n "$MANGLE_ENABLED" ]; then
 		    #
 		    # No connection tracking match but we have mangling -- add a rule to

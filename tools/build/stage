@@ -198,7 +198,7 @@ esac
 
 [ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
-[ -n "$PARTIAL" ] && SHOREWALLDIR=shorewall-common || SHOREWALLDIR=$SHOREWALL-${1}
+[ -n "$PARTIAL" -a -z "$UPLOADCOMMON" ]  && SHOREWALLDIR=shorewall-common || SHOREWALLDIR=$SHOREWALL-${1}
 
 cp $SHOREWALLDIR/releasenotes.txt releasenotes.txt
 

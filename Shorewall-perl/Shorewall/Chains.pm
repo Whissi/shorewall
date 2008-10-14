@@ -121,6 +121,7 @@ our %EXPORT_TAGS = (
 				       do_test
 				       do_ratelimit
 				       do_connlimit
+				       do_time
 				       do_user
 				       do_tos
 				       do_connbytes
@@ -1290,6 +1291,43 @@ sub do_connlimit( $ ) {
     } else {
 	fatal_error "Invalid connlimit ($limit)";
     }
+}
+
+sub do_time( $ ) {
+    my ( $time ) = @_;
+
+    return '' unless $time ne '-';
+
+    require_capability 'TIME_MATCH', 'A non-empty TIME', 's';
+
+    my $result = '-m time ';
+    
+    for my $element (split /&/, $time ) {
+	fatal_error "Invalid time element list ($time)" unless defined $element && $element;
+
+	if ( $element =~ /^(timestart|timestop)=(\d{1,2}:\d{1,2}(:\d{1,2})?)$/ ) {
+	    $result .= "--$1 $2 ";
+	} elsif ( $element =~ /^weekdays=(.*)$/ ) {
+	    my $days = $1;
+	    for my $day ( split /,/, $days ) {
+		fatal_error "Invalid weekday ($day)" unless $day =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/ || ( $day =~ /^\d$/ && $day && $day <= 7);0
+	    }
+	    $result .= "--weekday $days ";
+	} elsif ( $element =~ /^monthdays=(.*)$/ ) {
+	    my $days = $1;
+	    for my $day ( split /,/, $days ) {
+		fatal_error "Invalid day of the month ($day)" unless $day =~ /^\d{1,2}$/ && $day && $day <= 31;
+	    }
+	} elsif ( $element =~ /^(datestart|datestop)=(\d{4}(-\d{2}(-\d{2}(T\d{1,2}(:\d{1,2}){0,2})?)?)?)$/ ) {
+	    $result .= "--$1 $2 ";
+	} elsif ( $element =~ /^(utc|localtz)$/ ) {
+	    $result .= "--$1 ";
+	} else {
+	    fatal_error "Invalid time element ($element)";
+	}
+    }
+ 
+    $result;
 }
 
 #

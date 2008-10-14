@@ -1081,11 +1081,12 @@
         <listitem>
           <para>Added in Shorewall-perl 4.2.1. May be used to limit the number
           of simultaneous connections from each individual host to
-          <replaceable>limit</replaceable> connections. While the limit is
-          only checked on rules specifying CONNLIMIT, the number of current
-          connections is calculated over all current connections from the
-          SOURCE host. By default, the limit is applied to each host but can
-          be made to apply to networks of hosts by specifying a
+          <replaceable>limit</replaceable> connections. Requires connlimit
+          match in your kernel and iptables. While the limit is only checked
+          on rules specifying CONNLIMIT, the number of current connections is
+          calculated over all current connections from the SOURCE host. By
+          default, the limit is applied to each host but can be made to apply
+          to networks of hosts by specifying a
           <replaceable>mask</replaceable>. The <replaceable>mask</replaceable>
           specifies the width of a VLSM mask to be applied to the source
           address; the number of current connections is then taken over all
@@ -1094,6 +1095,92 @@
           When<option> !</option> is specified, the rule matches when the
           number of connection exceeds the
           <replaceable>limit</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">TIME</emphasis> -
+        <emphasis>timeelement</emphasis>[,<emphasis>timelement</emphasis>...]</term>
+
+        <listitem>
+          <para>Added in Shorewall-perl 4.2.1. May be used to limit the rule
+          to a particular time period each day, to particular days of the week
+          or month, or to a range defined by dates and times. Requires time
+          match support in your kernel and iptables.</para>
+
+          <para><replaceable>timeelement</replaceable> may be:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>timestart=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+              <listitem>
+                <para>Defines the starting time of day.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>timestop=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+              <listitem>
+                <para>Defines the ending time of day.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>utc</term>
+
+              <listitem>
+                <para>Times are expressed in Greenwich Mean Time.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>localtz</term>
+
+              <listitem>
+                <para>Times are expressed in Local Civil Time
+                (default).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>weekdays=ddd[,ddd]...</term>
+
+              <listitem>
+                <para>where <replaceable>ddd</replaceable> is one of
+                <option>Mon</option>, <option>Tue</option>,
+                <option>Wed</option>, <option>Thu</option>,
+                <option>Fri</option>, <option>Sat</option> or
+                <option>Sun</option></para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>monthdays=dd[,dd],...</term>
+
+              <listitem>
+                <para>where <replaceable>dd</replaceable> is an ordinal day of
+                the month</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>datestart=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+              <listitem>
+                <para>Defines the starting date and time.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>datestop=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+              <listitem>
+                <para>Defines the ending date and time.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </listitem>
       </varlistentry>
     </variablelist>

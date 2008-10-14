@@ -208,6 +208,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 REALM_MATCH     => 'Realm Match',
 		 HELPER_MATCH    => 'Helper Match',
 		 CONNLIMIT_MATCH => 'Connlimit Match',
+		 TIME_MATCH      => 'Time Match',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -417,6 +418,7 @@ sub initialize() {
 	       REALM_MATCH => undef,
 	       HELPER_MATCH => undef,
 	       CONNLIMIT_MATCH => undef,
+	       TIME_MATCH => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1638,6 +1640,7 @@ sub determine_capabilities( $ ) {
     $capabilities{REALM_MATCH}     = qt1( "$iptables -A $sillyname -m realm --realm 1" );
     $capabilities{HELPER_MATCH}    = qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
     $capabilities{CONNLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
+    $capabilities{TIME_MATCH}      = qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
 
     qt1( "$iptables -F $sillyname" );
     qt1( "$iptables -X $sillyname" );

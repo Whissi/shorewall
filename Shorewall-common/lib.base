@@ -1046,6 +1046,7 @@ determine_capabilities() {
     qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
     CONNTRACK_MATCH=
+    NEW_CONNTRACK_MATCH=
     MULTIPORT=
     XMULTIPORT=
     POLICY_MATCH=
@@ -1077,6 +1078,7 @@ determine_capabilities() {
     REALM_MATCH=
     HELPER_MATCH=
     CONNLIMIT_MATCH=
+    TIME_MATCH=
 
     chain=fooX$$
 
@@ -1100,6 +1102,10 @@ determine_capabilities() {
     fi
 
     qt $IPTABLES -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
+
+    if [ -n "$CONNTRACK_MATCH" ]; then
+	qt $IPTABLES -A $chain -m conntrack ! --ctorigdst 192.168.1.1 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
+    fi
 
     if qt $IPTABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
 	MULTIPORT=Yes
@@ -1179,6 +1185,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
     qt $IPTABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
     qt $IPTABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
+    qt $IPTABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1204,6 +1211,7 @@ report_capabilities() {
 	report_capability "Multi-port Match" $MULTIPORT
 	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
 	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+	report_capability "New Connection Tracking Match Syntax" $NEW_CONNTRACK_MATCH
 	report_capability "Packet Type Match" $USEPKTTYPE
 	report_capability "Policy Match" $POLICY_MATCH
 	report_capability "Physdev Match" $PHYSDEV_MATCH
@@ -1233,6 +1241,7 @@ report_capabilities() {
 	report_capability "Realm Match" $REALM_MATCH
 	report_capability "Helper Match" $HELPER_MATCH
 	report_capability "Connlimit Match" $CONNLIMIT_MATCH
+	report_capability "Time Match" $TIME_MATCH
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1253,6 +1262,7 @@ report_capabilities1() {
     report_capability1 MULTIPORT
     report_capability1 XMULTIPORT
     report_capability1 CONNTRACK_MATCH
+    report_capability1 NEW_CONNTRACK_MATCH
     report_capability1 USEPKTTYPE
     report_capability1 POLICY_MATCH
     report_capability1 PHYSDEV_MATCH
@@ -1282,6 +1292,7 @@ report_capabilities1() {
     report_capability1 REALM_MATCH
     report_capability1 HELPER_MATCH
     report_capability1 CONNLIMIT_MATCH
+    report_capability1 TIME_MATCH
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

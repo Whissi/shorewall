@@ -123,6 +123,7 @@ our %EXPORT_TAGS = (
 				       do_connlimit
 				       do_time
 				       do_user
+				       do_length
 				       do_tos
 				       do_connbytes
 				       do_helper
@@ -1411,6 +1412,16 @@ sub do_helper( $ ) {
     return '' if $helper eq '-';
 
     qq(-m helper --helper "$helper");
+}
+
+#
+# Create a "-m length" match for the passed TOS
+#
+sub do_length( $ ) {
+    my $length = $_[0];
+
+    require_capability( 'LENGTH_MATCH' , 'Your kernel and/or iptables does not have length match support.' , '' );
+    $length ne '-' ? "-m length --length $length " : '';
 }
 
 #

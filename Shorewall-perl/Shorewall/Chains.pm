@@ -1420,7 +1420,7 @@ sub do_helper( $ ) {
 sub do_length( $ ) {
     my $length = $_[0];
 
-    require_capability( 'LENGTH_MATCH' , 'Your kernel and/or iptables does not have length match support.' , '' );
+    require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
     $length ne '-' ? "-m length --length $length " : '';
 }
 

@@ -304,8 +304,8 @@ sub validate_policy()
 	if ( $synparams ne '' || $connlimit ne '' ) {
 	    my $value = '';
 	    fatal_error "Invalid CONNLIMIT ($connlimit)" if $connlimit =~ /^!/;
-	    $value = do_ratelimit $synparams, 'ACCEPT' if $synparams ne '';
-	    $value = do_connlimit $connlimit           if $connlimit ne '';
+	    $value  = do_ratelimit $synparams, 'ACCEPT'  if $synparams ne '';
+	    $value .= do_connlimit $connlimit            if $connlimit ne '';
 	    $chainref->{synparams} = $value;
 	    $chainref->{synchain}  = $chain
 	}

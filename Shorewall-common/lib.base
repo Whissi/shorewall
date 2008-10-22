@@ -1211,7 +1211,7 @@ report_capabilities() {
 	report_capability "Multi-port Match" $MULTIPORT
 	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
 	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
-	report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
+	[ -n "$CONNTRACK_MATCH" ] && report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
 	report_capability "Packet Type Match" $USEPKTTYPE
 	report_capability "Policy Match" $POLICY_MATCH
 	report_capability "Physdev Match" $PHYSDEV_MATCH

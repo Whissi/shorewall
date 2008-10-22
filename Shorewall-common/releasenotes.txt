@@ -175,6 +175,13 @@ Other changes in Shorewall 4.2.1
     do port mapping (change the destination port but not the
     destination IP address), the final destination port is not open.
 
+    Example:
+
+    DNAT net loc:206.124.146.177:22 tcp 2222 - 206.124.146.177
+
+    That rule maps port 2222 -> 22 but without this new feature, it
+    also opens port 22 directly.
+
     To use this feature, you must be running Shorewall-perl and the
     output of 'shorewall show capabilities' must show:
 

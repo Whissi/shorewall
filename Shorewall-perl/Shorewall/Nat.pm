@@ -278,6 +278,7 @@ sub setup_one_masq($$$$$$$)
 		     $networks ,
 		     $destnets ,
 		     '' ,
+		     '' ,
 		     $target ,
 		     '' ,
 		     '' ,

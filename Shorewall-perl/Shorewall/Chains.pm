@@ -1859,7 +1859,7 @@ sub get_interface_mac( $$$ ) {
 #
 # Returns the destination interface specified in the rule, if any.
 #
-sub expand_rule( $$$$$$$$$$ )
+sub expand_rule( $$$$$$$$$$$ )
 {
     my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
@@ -1867,6 +1867,7 @@ sub expand_rule( $$$$$$$$$$ )
 	$source,       # SOURCE
 	$dest,         # DEST
 	$origdest,     # ORIGINAL DEST
+	$oport,         # original destination port
 	$target,       # Target ('-j' part of the rule)
 	$loglevel ,    # Log level (and tag)
 	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...)
@@ -2043,6 +2044,9 @@ sub expand_rule( $$$$$$$$$$ )
     if ( $origdest ) {
 	if ( $origdest eq '-' || ! $capabilities{CONNTRACK_MATCH} ) {
 	    $origdest = '';
+	    if ( $capabilities{NEW_CONNTRACK_MATCH} && defined $oport && $oport ne '' ) {
+		$rule .= "-m conntrack --ctorigdstport $oport ";
+	    }
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #
 	    # Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
@@ -2063,6 +2067,7 @@ sub expand_rule( $$$$$$$$$$ )
 		push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
 
 		$rule .= '-m conntrack --ctorigdst $address ';
+		$rule .= "--origdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
 	    } else {
 		my $interface = $interfaces[0];
 		my $variable  = get_interface_address( $interface );
@@ -2070,6 +2075,7 @@ sub expand_rule( $$$$$$$$$$ )
 		push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi' ) if interface_is_optional( $interface );
 
 		$rule .= "-m conntrack --ctorigdst $variable ";
+		$rule .= "--origdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
 	    }
 
 	    $origdest = '';
@@ -2094,9 +2100,16 @@ sub expand_rule( $$$$$$$$$$ )
 		    $oexcl = '';
 		}
 	    }
+
+	    if ( $capabilities{NEW_CONNTRACK_MATCH} && defined $oport && $oport ne '' ) {
+		$rule .= "-m conntrack --ctorigdstport $oport ";
+	    }
 	}
     } else {
 	$oexcl = '';
+	if ( $capabilities{NEW_CONNTRACK_MATCH} && defined $oport && $oport ne '' ) {
+	    $rule .= "-m conntrack --ctorigdstport $oport ";
+	}
     }
 
     #

@@ -568,6 +568,7 @@ sub process_action( $$$$$$$$$$ ) {
 		  $source ,
 		  $dest ,
 		  '', #Original Dest
+		  '', #Original Dest port
 		  "-j $action" ,
 		  $level ,
 		  $action ,

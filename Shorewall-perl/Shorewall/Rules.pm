@@ -143,6 +143,7 @@ sub process_tos() {
 		$src ,
 		$dst ,
 		'' ,
+		'' ,
 		"-j TOS --set-tos $tos" ,
 		'' ,
 		'' ,
@@ -314,6 +315,7 @@ sub setup_blacklist() {
 			    NO_RESTRICT ,
 			    do_proto( $protocol , $ports, '' ) ,
 			    $networks ,
+			    '' ,
 			    '' ,
 			    '' ,
 			    "-j $target" ,
@@ -1024,6 +1026,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     my $destzone;
     my $sourceref;
     my $destref;
+    my $origdstports;
 
     if ( $source =~ /^(.+?):(.*)/ ) {
 	fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
@@ -1135,6 +1138,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    #
 	    $server = $1;      # May be empty
 	    $serverport = $3;  # Not Empty due to RE 
+	    $origdstports = $ports;
 	    if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
 		#
 		# Server Port Range
@@ -1227,6 +1231,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		      $source ,
 		      $origdest ,
 		      '' ,
+		      '' ,
 		      $target ,
 		      $loglevel ,
 		      $action ,
@@ -1264,6 +1269,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
+		     '',
 		     '-j RETURN ' ,
 		     $loglevel ,
 		     $action ,
@@ -1292,6 +1298,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
+		     $origdstports ,
 		     "-j $action " ,
 		     $loglevel ,
 		     $action ,

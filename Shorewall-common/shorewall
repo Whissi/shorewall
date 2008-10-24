@@ -1410,7 +1410,7 @@ export_command() # $* = original arguments less the command.
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $directory/firewall $directory/firewall.conf $target
     then
-	save=(find_file save);
+	save=$(find_file save);
 
 	[ -f $save ] && progress_message3 "Copying $save to ${target#*}..." && rcp_command $save $target
 

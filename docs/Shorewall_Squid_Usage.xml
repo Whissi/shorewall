@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2003-2007</year>
+      <year>2003-2008</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -39,9 +39,9 @@
   Proxy or as a Manual Proxy.</para>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.0 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.0.0 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -199,9 +199,11 @@ Squid   1       202     -               eth1            192.168.1.3     loose</p
         </listitem>
 
         <listitem>
-          <para>In <filename>/etc/shorewall/start</filename> add:</para>
+          <para>In <filename>/etc/shorewall/tcrules</filename> add:</para>
 
-          <programlisting><command>iptables -t mangle -A PREROUTING -i eth1 -s ! 192.168.1.3 -p tcp --dport 80 -j MARK --set-mark 202</command>         </programlisting>
+          <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
+#                                                 PORT(S)
+202:P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
         </listitem>
 
         <listitem>

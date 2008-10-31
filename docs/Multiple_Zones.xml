@@ -185,7 +185,10 @@
 
         <graphic fileref="images/MultiZone1A.png" />
 
-        <para>The advantage of this approach is that the zone
+        <para><note>
+            <para>The Router in the above diagram is assumed to NOT be doing
+            SNAT for the hosts in the 192.168.2.0/24 network.</para>
+          </note>The advantage of this approach is that the zone
         <quote>loc1</quote> can use CONTINUE policies such that if a
         connection request doesn't match a <quote>loc1</quote> rule, it will
         be matched against the <quote>loc</quote> rules. For example, if your
@@ -233,7 +236,10 @@ loc1                loc                  NONE</programlisting>
 
         <graphic fileref="images/MultiZone1B.png" />
 
-        <para><filename>/etc/shorewall/zones</filename></para>
+        <para><note>
+            <para>The Router in the above diagram is assumed to NOT be doing
+            SNAT for the hosts in the 192.168.2.0/24 network.</para>
+          </note><filename>/etc/shorewall/zones</filename></para>
 
         <programlisting>#ZONE       TYPE      OPTIONS
 loc1        ipv4

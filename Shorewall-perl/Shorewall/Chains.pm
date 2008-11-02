@@ -1145,17 +1145,18 @@ sub clearrule() {
 }
 
 #
+# Return the number of ports represented by the passed list
+#
+sub port_count( $ ) {
+    ( $_[0] =~ tr/,:/,:/ ) + 1;
+}
+
+#
 # Handle parsing of PROTO, DEST PORT(S) , SOURCE PORTS(S). Returns the appropriate match string.
 #
 sub do_proto( $$$ )
 {
     my ($proto, $ports, $sports ) = @_;
-    #
-    # Return the number of ports represented by the passed list
-    #
-    sub port_count( $ ) {
-	( $_[0] =~ tr/,:/,:/ ) + 1;
-    }
 
     my $output = '';
 
@@ -1262,10 +1263,6 @@ sub do_proto6( $$$ )
     #
     # Return the number of ports represented by the passed list
     #
-    sub port_count( $ ) {
-	( $_[0] =~ tr/,:/,:/ ) + 1;
-    }
-
     my $output = '';
 
     $proto  = '' if $proto  eq '-';

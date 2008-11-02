@@ -485,10 +485,10 @@ sub validate_6address( $$ ) {
 
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
-}
 
-sub validate_6net( $ ) {
+sub validate_6net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
+    my $allow_name = $_[1];
 
     fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
 
@@ -498,7 +498,7 @@ sub validate_6net( $ ) {
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	validate_6address $net;
+	validate_6address $net, $allow_name;
     }
 }
 
@@ -531,7 +531,7 @@ my %ipv6_icmp_types = ( any                          => 'any',
 			'ttl-exceeded'               =>  3,
 			'ttl-zero-during-transit'    => '3/0',
 			'ttl-zero-during-reassembly' => '3/1',
-			'parameter-problem'          =>  4
+			'parameter-problem'          =>  4,
 			'bad-header'                 => '4/0',
 			'unknown-header-type'        => '4/1',
 			'unknown-option'             => '4/2',

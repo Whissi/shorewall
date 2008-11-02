@@ -2041,7 +2041,7 @@ sub process_6rule ( $$$$$$$$$$$ ) {
 			}
 		    }
 		} else {
-		    my $destzone = (split( /:/, $dest, 2 ) )[0];
+		    my $destzone = (split( /;/, $dest, 2 ) )[0];
 		    $destzone = firewall_zone unless defined_zone( $destzone ); # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
 			process_6rule1 $target, $zone, $dest , $proto, $ports, $sports, $ratelimit, $user, $mark, $connlimit, $time, 1;
@@ -2051,7 +2051,7 @@ sub process_6rule ( $$$$$$$$$$$ ) {
 	}
     } elsif ( $dest eq 'all' ) {
 	for my $zone ( all_6zones ) {
-	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
+	    my $sourcezone = ( split( /;/, $source, 2 ) )[0];
 	    if ( ( $includedstfw || ( zone_type( $zone ) ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
 		process_6rule1 $target, $source, $zone , $proto, $ports, $sports, $ratelimit, $user, $mark, $connlimit, $time, 1;
 	    }
@@ -2110,6 +2110,57 @@ sub process_6rules() {
 }
 
 #
+# Helper functions for generate_matrix()
+#-----------------------------------------
+#
+# Return the target for rules from $zone to $zone1.
+#
+sub rules_target( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+    my $chain = "${zone}2${zone1}";
+    my $chainref = $filter_table->{$chain};
+    
+    return $chain   if $chainref && $chainref->{referenced};
+    return 'ACCEPT' if $zone eq $zone1;
+
+    fatal_error "Internal Error in rules_target()" unless $chainref;
+
+    if ( $chainref->{policy} ne 'CONTINUE' ) {
+	my $policyref = $filter_table->{$chainref->{policychain}};
+	return $policyref->{name} if $policyref;
+	fatal_error "No policy defined for zone $zone to zone $zone1";
+    }
+    
+    '';
+}
+
+#
+# Insert the passed exclusions at the front of the passed chain.
+#
+sub insert_exclusions( $$ ) {
+    my ( $chainref, $exclusionsref ) = @_;
+    
+    my $num = 1;
+    
+    for my $host ( @{$exclusionsref} ) {
+	my ( $interface, $net ) = split /:/, $host;
+	insert_rule $chainref , $num++, join( '', match_dest_dev $interface , match_dest_net( $net ), '-j RETURN' );
+    }
+}
+
+#
+# Add the passed exclusions at the end of the passed chain.
+#
+sub add_exclusions ( $$ ) {
+    my ( $chainref, $exclusionsref ) = @_;
+    
+    for my $host ( @{$exclusionsref} ) {
+	my ( $interface, $net ) = split /:/, $host;
+	add_rule $chainref , join( '', match_dest_dev $interface, match_dest_net( $net ), '-j RETURN' );
+    }
+}
+
+#
 # To quote an old comment, "generate_matrix makes a sow's ear out of a silk purse".
 #
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
@@ -2118,76 +2169,7 @@ sub process_6rules() {
 # The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
 #
 sub generate_matrix() {
-    #
-    # Helper functions for generate_matrix()
-    #-----------------------------------------
-    #
-    # Return the target for rules from $zone to $zone1.
-    #
-    sub rules_target( $$ ) {
-	my ( $zone, $zone1 ) = @_;
-	my $chain = "${zone}2${zone1}";
-	my $chainref = $filter_table->{$chain};
-
-	return $chain   if $chainref && $chainref->{referenced};
-	return 'ACCEPT' if $zone eq $zone1;
-
-	fatal_error "Internal Error in rules_target()" unless $chainref;
-
-	if ( $chainref->{policy} ne 'CONTINUE' ) {
-	    my $policyref = $filter_table->{$chainref->{policychain}};
-	    return $policyref->{name} if $policyref;
-	    fatal_error "No policy defined for zone $zone to zone $zone1";
-	}
-
-	'';
-    }
-
-    #
-    # Add a jump to the passed chain ($chainref) to the dynamic zone chain for the passed zone.
-    #
-    sub create_zone_dyn_chain( $$ ) {
-	my ( $zone , $chainref ) = @_;
-	add_jump $chainref, zone_dynamic_chain $zone;
-    }
-
-    #
-    # Insert the passed exclusions at the front of the passed chain.
-    #
-    sub insert_exclusions( $$ ) {
-	my ( $chainref, $exclusionsref ) = @_;
-
-	my $num = 1;
-
-	for my $host ( @{$exclusionsref} ) {
-	    my ( $interface, $net ) = split /:/, $host;
-	    insert_rule $chainref , $num++, join( '', match_dest_dev $interface , match_dest_net( $net ), '-j RETURN' );
-	}
-    }
-
-    #
-    # Add the passed exclusions at the end of the passed chain.
-    #
-    sub add_exclusions ( $$ ) {
-	my ( $chainref, $exclusionsref ) = @_;
-
-	for my $host ( @{$exclusionsref} ) {
-	    my ( $interface, $net ) = split /:/, $host;
-	    add_rule $chainref , join( '', match_dest_dev $interface, match_dest_net( $net ), '-j RETURN' );
-	}
-    }
-
-    #
-    # Set a breakpoint in this function if you want to step through generate_matrix().
-    #
-    sub start_matrix() {
-	progress_message2 'Generating Rule Matrix...';
-    }
-
-    #
-    #                               G e n e r a t e _ M a t r i x ( )   S t a r t s  H e r e
-    #
-    start_matrix;
+    progress_message2 'Generating Rule Matrix...';
 
     my $exclusion_seq    = 1;
     my %chain_exclusions;
@@ -2635,6 +2617,419 @@ sub generate_matrix() {
 		log_rule_limit
 		    $config{LOGALLNEW} ,
 		    $chain_table{$table}{$chain} ,
+		    $table ,
+		    $chain ,
+		    '' ,
+		    '' ,
+		    'insert' ,
+		    '-m state --state NEW ';
+	    }
+	}
+    }
+}
+
+#
+# Helper functions for generate_6matrix()
+#-----------------------------------------
+#
+# Return the target for rules from $zone to $zone1.
+#
+sub rules6_target( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+    my $chain = "${zone}2${zone1}";
+    my $chainref = $filter6_table->{$chain};
+    
+    return $chain   if $chainref && $chainref->{referenced};
+    return 'ACCEPT' if $zone eq $zone1;
+
+    fatal_error "Internal Error in rules6_target()" unless $chainref;
+
+    if ( $chainref->{policy} ne 'CONTINUE' ) {
+	my $policyref = $filter6_table->{$chainref->{policychain}};
+	return $policyref->{name} if $policyref;
+	fatal_error "No policy defined for zone $zone to zone $zone1";
+    }
+    
+    '';
+}
+
+sub generate_6matrix() {
+    progress_message2 'Generating IPv6 Rule Matrix...';
+
+    my $exclusion_seq    = 1;
+    my %chain_exclusions;
+    my %policy_exclusions;
+    my @interfaces = ( all_6interfaces );
+    my $fw = firewall_zone;
+    my @zones = non_firewall_6zones;
+
+    #
+    # Special processing for complex configurations
+    #
+    for my $zone ( @zones ) {
+	my $zoneref    = find_zone( $zone );
+
+	next if @zones <= 2 && ! $zoneref->{options}{complex};
+
+	my $exclusions = $zoneref->{exclusions};
+	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );
+
+	if ( @$exclusions ) {
+	    my $in_ref  = new_standard_chain zone_input_chain $zone;
+	    my $out_ref = new_standard_chain zone_output_chain $zone;
+
+	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
+
+	    for my $host ( @$exclusions ) {
+		my ( $interface, $net ) = split /:/, $host;
+		my $rule = match_source_dev( $interface ) . match_source_net( $net ) . '-j RETURN';
+		add_rule $frwd_ref , $rule;
+		add_rule $in_ref   , $rule;
+		add_rule $out_ref  , match_dest_dev( $interface ) . match_dest_net( $net ) . '-j RETURN';
+	    }
+	}
+
+	if ( $capabilities{POLICY_MATCH} ) {
+	    my $type       = $zoneref->{type};
+	    my $source_ref = ( $zoneref->{hosts}{ipsec4} ) || {};
+
+	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
+		my $sourcechainref;
+		my $interfacematch = '';
+	
+		if ( use_forward_chain( $interface ) ) {
+		    $sourcechainref = $filter_table->{forward_chain $interface};
+		} else {
+		    $sourcechainref = $filter_table->{FORWARD};
+		    $interfacematch = match_source_dev $interface;
+		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
+		}
+
+		my $arrayref = $source_ref->{$interface};
+		
+		for my $hostref ( @{$arrayref} ) {
+		    my $ipsec_match = match_ipsec_in $zone , $hostref;
+		    for my $net ( @{$hostref->{hosts}} ) {
+			add_jump6(
+				  $sourcechainref,
+				  $frwd_ref,
+				  join( '', $interfacematch , match_source_net( $net ), $ipsec_match )
+				 );
+		    }
+		}
+	    }
+	}
+    }
+    #
+    # Main source-zone matrix-generation loop
+    #
+    for my $zone ( @zones ) {
+	my $zoneref          = find_6zone( $zone );
+	my $source_hosts_ref = $zoneref->{hosts};
+	my $chain1           = rules6_target firewall_zone , $zone;
+	my $chain2           = rules6_target $zone, firewall_zone;
+	my $chain3           = rules6_target $zone, $zone;
+	my $complex          = $zoneref->{options}{complex} || 0;
+	my $type             = $zoneref->{type};
+	my $exclusions       = $zoneref->{exclusions};
+	my $frwd_ref         = $filter6_table->{zone_forward_chain $zone};
+	my $chain            = 0;
+	#
+	# Take care of INPUT and OUTPUT jumps
+	#
+	for my $typeref ( values %$source_hosts_ref ) {
+	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
+		my $arrayref = $typeref->{$interface};
+		for my $hostref ( @$arrayref ) {
+		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
+		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
+		    for my $net ( @{$hostref->{hosts}} ) {
+			my $dest   = match_dest_6net $net;
+
+			if ( $chain1 ) {
+			    my $nextchain;
+			    my $outputref;
+			    my $interfacematch = '';
+
+			    if ( use_output_6chain $interface ) {
+				$outputref = $filter6_table->{output_chain $interface};
+			    } else {
+				$outputref = $filter6_table->{OUTPUT};
+				$interfacematch = match_dest_6dev $interface;
+			    }
+
+			    if ( @$exclusions ) {
+				my $output = zone_output_chain $zone;
+				add_6jump $outputref , $output, join( '', $interfacematch, $dest, $ipsec_out_match );
+				add_6jump $filter_table->{$output} , $chain1;
+				$nextchain = $output;
+			    } else {
+				add_6jump $outputref , $chain1, join( '', $interfacematch, $dest, $ipsec_out_match );
+				$nextchain = $chain1;
+			    }
+
+			    add_6jump( $outputref , $nextchain, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
+				if $hostref->{options}{broadcast};
+
+			    move_rules( $filter6_table->{output_chain $interface} , $filter_table->{$nextchain} ) unless use_output_6chain $interface;
+			}
+
+			next if $hostref->{options}{destonly}; 
+
+			clearrule;
+
+			my $source = match_source_net $net;
+			my $inputchainref;
+			my $interfacematch = '';
+
+			if ( use_input_6chain $interface ) {
+			    $inputchainref = $filter6_table->{input_chain $interface};
+			} else {
+			    $inputchainref = $filter6_table->{INPUT};
+			    $interfacematch = match_source_6dev $interface;
+			}
+			
+			if ( $chain2 ) {
+			    my $nextchain;
+			    
+			    if ( @$exclusions ) {
+				my $input = zone_input_chain $zone;
+				add_6jump $inputchainref, $input, join( '', $interfacematch, $source, $ipsec_in_match );
+				add_6jump $filter6_table->{ $input } , $chain2;
+				$nextchain = $input;
+			    } else {
+				add_6jump $inputchainref, $chain2, join( '', $interfacematch, $source, $ipsec_in_match );
+				$nextchain = $chain2;
+			    }
+
+			    move_rules( $filter6_table->{input_chain $interface} , $filter_table->{$nextchain} ) unless use_input_6chain $interface;
+			}
+
+			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
+			    if ( use_forward_6chain $interface ) {
+				add_6jump $filter6_table->{forward_chain $interface} , $frwd_ref, join( '', $source, $ipsec_in_match );
+			    } else {
+				add_6jump $filter6_table->{FORWARD} , $frwd_ref, join( '', match_source_6dev( $interface ) , $source, $ipsec_in_match );
+				move_rules ( $filter6_table->{forward_chain $interface} , $frwd_ref );
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+	#
+	#                           F O R W A R D I N G
+	#
+	my @dest_zones;
+	my $last_chain = '';
+
+	if ( $config{OPTIMIZE} > 0 ) {
+	    my @temp_zones;
+
+	  ZONE1:
+	    for my $zone1 ( @zones )  {
+		my $zone1ref = find_6zone( $zone1 );
+		my $policy = $filter6_table->{"${zone}2${zone1}"}->{policy};
+
+		next if $policy  eq 'NONE';
+
+		my $chain = rules6_target $zone, $zone1;
+
+		next unless $chain;
+
+		if ( $zone eq $zone1 ) {
+		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+		}
+
+		if ( $zone1ref->{type} eq 'bport6' ) {
+		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
+		}
+
+		if ( $chain =~ /2all$/ ) {
+		    if ( $chain ne $last_chain ) {
+			$last_chain = $chain;
+			push @dest_zones, @temp_zones;
+			@temp_zones = ( $zone1 );
+		    } elsif ( $policy eq 'ACCEPT' ) {
+			push @temp_zones , $zone1;
+		    } else {
+			$last_chain = $chain;
+			@temp_zones = ( $zone1 );
+		    }
+		} else {
+		    push @dest_zones, @temp_zones, $zone1;
+		    @temp_zones = ();
+		    $last_chain = '';
+		}
+	    }
+
+	    if ( $last_chain && @temp_zones == 1 ) {
+		push @dest_zones, @temp_zones;
+		$last_chain = '';
+	    }
+	} else {
+	    @dest_zones =  @zones ;
+	}
+	#
+	# Here it is -- THE BIG UGLY!!!!!!!!!!!!
+	#
+	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
+	# @dest_zones is the list of destination zones that we need to handle from this source zone
+	#
+      ZONE1:
+	for my $zone1 ( @dest_zones ) {
+	    my $zone1ref = find_6zone( $zone1 );
+	    my $policy   = $filter6_table->{"${zone}2${zone1}"}->{policy};
+
+	    next if $policy  eq 'NONE';
+
+	    my $chain = rules6_target $zone, $zone1;
+
+	    next unless $chain; # CONTINUE policy with no rules
+
+	    my $num_ifaces = 0;
+
+	    if ( $zone eq $zone1 ) {
+		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+	    }
+
+	    if ( $zone1ref->{type} eq 'bport6' ) {
+		next ZONE1 unless $zoneref->{bridge} eq $zone1ref->{bridge};
+	    }
+
+	    my $chainref    = $filter_table->{$chain};
+	    my $exclusions1 = $zone1ref->{exclusions};
+
+	    my $dest_hosts_ref = $zone1ref->{hosts};
+
+	    if ( @$exclusions1 ) {
+		if ( $chain eq "all2$zone1" ) {
+		    unless ( $chain_exclusions{$chain} ) {
+			$chain_exclusions{$chain} = 1;
+			insert_exclusions $chainref , $exclusions1;
+		    }
+		} elsif ( $chain =~ /2all$/ ) {
+		    my $chain1 = $policy_exclusions{"${chain}_${zone1}"};
+
+		    unless ( $chain1 ) {
+			$chain1 = newexclusionchain;
+			$policy_exclusions{"${chain}_${zone1}"} = $chain1;
+			my $chain1ref = ensure_filter_chain $chain1, 0;
+			add_exclusions $chain1ref, $exclusions1;
+			add_6jump $chain1ref, $chain;
+		    }
+
+		    $chain = $chain1;
+		} else {
+		    fatal_error "Fatal Error in generate_matrix()" if $chain eq 'ACCEPT';
+		    insert_exclusions $chainref , $exclusions1;
+		}
+	    }
+
+	    if ( $frwd_ref ) {
+		for my $typeref ( values %$dest_hosts_ref ) {
+		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
+			my $arrayref = $typeref->{$interface};
+			for my $hostref ( @$arrayref ) {
+			    next if $hostref->{options}{sourceonly};
+			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
+				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
+				for my $net ( @{$hostref->{hosts}} ) {
+				    add_6jump $frwd_ref, $chain, join( '', match_dest_6dev( $interface) , match_dest_6net($net), $ipsec_out_match );
+				}
+			    }
+			}
+		    }
+		}
+	    } else {
+		for my $typeref ( values %$source_hosts_ref ) {
+		    for my $interface ( keys %$typeref ) {
+			my $arrayref = $typeref->{$interface};
+			my $chain3ref;
+			my $match_source_dev = '';
+
+			if ( use_forward_chain $interface ) {
+			    $chain3ref = $filter6_table->{forward_chain $interface};
+			} else {
+			    $chain3ref  = $filter_table->{FORWARD};
+			    $match_source_dev = match_source_6dev $interface;
+			}
+   
+			for my $hostref ( @$arrayref ) {
+			    next if $hostref->{options}{destonly};
+			    for my $net ( @{$hostref->{hosts}} ) {
+				for my $type1ref ( values %$dest_hosts_ref ) {
+				    for my $interface1 ( keys %$type1ref ) {
+					my $array1ref = $type1ref->{$interface1};
+					for my $host1ref ( @$array1ref ) {
+					    next if $host1ref->{options}{sourceonly};
+					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
+					    for my $net1 ( @{$host1ref->{hosts}} ) {
+						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
+						    #
+						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
+						    #
+						    add_6jump(
+							      $chain3ref ,
+							      $chain ,
+							      join( '', 
+								    $match_source_dev, 
+								    match_dest_6dev($interface1), 
+								    match_source_6net($net), 
+								    match_dest_6net($net1), 
+								    $ipsec_out_match )
+							     );
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	    #
+	    #                                      E N D   F O R W A R D I N G
+	    #
+	    # Now add an unconditional jump to the last unique policy-only chain determined above, if any
+	    #
+	    add_6jump $frwd_ref , $last_chain if $last_chain;
+	}
+    }
+    #
+    # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
+    #
+    for my $interface ( @interfaces ) {
+	
+	add_6jump( $filter6_table->{FORWARD} , forward_chain $interface , match_source_dev( $interface ) ) if use_forward_6chain $interface;
+	add_6jump( $filter6_table->{INPUT}   , input_chain $interface ,   match_source_dev( $interface ) ) if use_input_6chain $interface;
+
+	if ( use_output_6chain $interface ) {
+	    add_6jump $filter6_table->{OUTPUT} , output_chain $interface , "-o $interface " unless get_interface_option( $interface, 'port' );
+	}
+    }
+
+    my $chainref = $filter6_table->{"${fw}2${fw}"};
+
+    add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
+    add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
+
+    my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
+		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
+		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
+
+    complete_standard_6chain $filter6_table->{INPUT}   , 'all' , firewall_zone , 'DROP';
+    complete_standard_6chain $filter6_table->{OUTPUT}  , firewall_zone , 'all', 'REJECT';
+    complete_standard_6chain $filter6_table->{FORWARD} , 'all' , 'all', 'REJECT';
+
+    if ( $config{LOGALLNEW} ) {
+	for my $table qw/mangle filter/ {
+	    for my $chain ( @{$builtins{$table}} ) {
+		log_rule_limit
+		    $config{LOGALLNEW} ,
+		    $chain6_table{$table}{$chain} ,
 		    $table ,
 		    $chain ,
 		    '' ,

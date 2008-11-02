@@ -37,6 +37,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( 
 		  add_rule
 		  add_jump
+		  add_6jump
 		  insert_rule
 		  new_chain
 		  new_manual_chain
@@ -90,12 +91,15 @@ our %EXPORT_TAGS = (
 				       forward_chain
 				       zone_forward_chain
 				       use_forward_chain
+				       use_forward_6chain
 				       input_chain
 				       zone_input_chain
 				       use_input_chain
+				       use_input_6chain
 				       output_chain
 				       zone_output_chain
 				       use_output_chain
+				       use_output_6chain
 				       masq_chain
 				       syn_flood_chain
 				       mac_chain
@@ -630,6 +634,33 @@ sub add_jump( $$;$ ) {
     add_rule ($fromref, join( '', $predicate, "-j $to" ) );
 }
 
+sub add_6jump( $$;$ ) {
+    my ( $fromref, $to, $predicate ) = @_;
+
+    $predicate |= '';
+
+    my $toref;
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
+	$toref = ensure_6chain( $fromref->{table} , $to ) unless ( $targets6{$to} || 0 ) & STANDARD;
+    }
+    
+    #
+    # If the destination is a chain, mark it referenced
+    #
+    $toref->{referenced} = 1 if $toref;
+
+    add_rule ($fromref, join( '', $predicate, "-j $to" ) );
+}
+
 #
 # Insert a rule into a chain. Arguments are:
 #
@@ -718,6 +749,15 @@ sub use_forward_chain($) {
     $interfaceref->{nets} > 1;
 }
 
+sub use_forward_6chain($) {
+    my $interface = $_[0];
+    my $interfaceref = find_6interface($interface);
+    #
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets
+    #
+    $interfaceref->{nets} > 1;
+}
+
 #
 # Input Chain for an interface
 #
@@ -762,6 +802,32 @@ sub use_input_chain($) {
     ! $chainref->{referenced};
 }   
 
+sub use_input_6chain($) {
+    my $interface = $_[0];
+    my $interfaceref = find_6interface($interface);
+    my $nets = $interfaceref->{nets};
+    #
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets
+    #    
+    return 1 if $nets > 1;
+    #
+    # Don't need it if it isn't associated with any zone
+    #
+    return 0 unless $nets;
+    #
+    # Interface associated with a single zone -- use the zone's input chain if it has one
+    #
+    my $chainref = $filter6_table->{zone_input_chain $interfaceref->{zone}};
+
+    return 0 if $chainref;
+    #
+    # Use the '<zone>2fw' chain if it is referenced.
+    #
+    $chainref = $filter6_table->{join( '' , $interfaceref->{zone} , '2' , firewall_zone )};
+
+    ! $chainref->{referenced};
+}   
+
 #
 # Output Chain for an interface
 #
@@ -802,6 +868,32 @@ sub use_output_chain($) {
     # Use the 'fw2<zone>' chain if it is referenced.
     #
     $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
+
+    ! $chainref->{referenced};
+}
+
+sub use_output_6chain($) {
+    my $interface = $_[0];
+    my $interfaceref = find_6interface($interface);
+    my $nets = $interfaceref->{nets};
+    #
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets
+    #    
+    return 1 if $nets > 1;
+    #
+    # Don't need it if it isn't associated with any zone
+    #
+    return 0 unless $nets;
+    #
+    # Interface associated with a single zone -- use the zone's output chain if it has one
+    #    
+    my $chainref = $filter6_table->{zone_output_chain $interfaceref->{zone}};
+
+    return 0 if $chainref;
+    #
+    # Use the 'fw2<zone>' chain if it is referenced.
+    #
+    $chainref = $filter6_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
 
     ! $chainref->{referenced};
 }
@@ -2765,35 +2857,6 @@ sub create_chainlist_reload($) {
     pop_indent;
 
     emit "}\n";
-}
-
-#
-# Returns true if we're to use the interface's output chain
-#
-sub use_output_6chain($) {
-    my $interface = $_[0];
-    my $interfaceref = find_interface6($interface);
-    my $nets = $interfaceref->{nets};
-    #
-    # We must use the interfaces's chain if the interface is associated with multiple zone nets
-    #    
-    return 1 if $nets > 1;
-    #
-    # Don't need it if it isn't associated with any zone
-    #
-    return 0 unless $nets;
-    #
-    # Interface associated with a single zone -- use the zone's output chain if it has one
-    #    
-    my $chainref = $filter6_table->{zone_output_chain $interfaceref->{zone4}};
-
-    return 0 if $chainref;
-    #
-    # Use the 'fw2<zone>' chain if it is referenced.
-    #
-    $chainref = $filter6_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
-
-    ! $chainref->{referenced};
 }
 
 #

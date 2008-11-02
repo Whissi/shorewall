@@ -41,7 +41,7 @@ use Shorewall::Proxyarp;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.1.4;
+our $VERSION = 4.3.0;
 
 our $export;
 
@@ -167,6 +167,13 @@ sub generate_script_1() {
 
     emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
 	  '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
+
+    if ( $config{IPV6} eq 'On' ) {
+	emit( 'IP6TABLES=$(dirname ${IPTABLES})/ip6tables',
+	      '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
+	emit( 'IP6TABLES_RESTORE=$(dirname ${IPTABLES})/ip6tables-restore',
+	      '[ -x "$IP6TABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
+    }
 
     append_file 'params' if $config{EXPORTPARAMS};
 

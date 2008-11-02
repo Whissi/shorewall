@@ -26,25 +26,36 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
+use Socket6;
 use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8);
 
 use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( ALLIPv4
+                  ALLIPv6
 		  TCP
 		  UDP
 		  ICMP
+		  IPv6_ICMP
 		  SCTP
 
+		  F_INET
+		  F_INET6
+
 		  validate_address
+		  validate_6address
 		  validate_net
+		  validate_6net
 		  decompose_net
 		  validate_host
+		  validate_6host
 		  validate_range
+		  validate_6range
 		  ip_range_explicit
 		  expand_port_range
 		  allipv4
+		  allipv6
 		  rfc1918_networks
 		  resolve_proto
 		  proto_name
@@ -54,14 +65,23 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.1.5;
+our $VERSION = 4.3.0;
 
 #
-# Some IPv4 useful stuff
+# Some IPv4/6 useful stuff
 #
 our @allipv4 = ( '0.0.0.0/0' );
+our @allipv6 = ( '::/0' );
 
-use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 , SCTP => 132 };
+use constant { ALLIPv4 => '0.0.0.0/0' ,
+	       ALLIPv6 => '::/0' ,
+	       F_INET => 1,
+	       F_INET6 => 2,
+	       ICMP => 1, 
+	       TCP => 6, 
+	       UDP => 17,
+	       ICMPv6_ICMP => 58,
+	       SCTP => 132 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
@@ -95,8 +115,7 @@ sub validate_address( $$ ) {
 	if ( defined wantarray ) {
 	    shift @addrs for (1..4);
 	    for ( @addrs ) {
-		my (@a) = unpack('C4',$_);
-		$_ = join('.', @a );
+		$_ = inet_htoa $_;
 	    }
 	}
     }
@@ -223,6 +242,10 @@ sub allipv4() {
     @allipv4;
 }
 
+sub allipv6() {
+    @allipv6;
+}
+
 sub rfc1918_networks() {
     @rfc1918_networks
 }
@@ -231,7 +254,7 @@ sub rfc1918_networks() {
 # Protocol/port validation
 #
 
-our %nametoproto = ( all => 0, ALL => 0, icmp => 1, ICMP => 1, tcp => 6, TCP => 6, udp => 17, UDP => 17  );
+our %nametoproto = ( all => 0, ALL => 0, icmp => 1, ICMP => 1, tcp => 6, TCP => 6, udp => 17, UDP => 17 );
 our @prototoname = ( 'all', 'icmp', '', '', '', '', 'tcp', '', '', '', '', '', '', '', '', '', '', 'udp' );
 
 #
@@ -418,5 +441,122 @@ sub expand_port_range( $$ ) {
 	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
     } 
 }   
+
+sub valid_6address( $ ) {
+    my $address = $_[0];
+
+    my @address = split /:/, $address;
+
+    return 0 if @address > 8;
+    return 0 if @address < 8 && ! $address =~ /::/;
+    return 0 if $address =~ /:::/ || $address =~ /::.*::/;
+    
+    if ( $address =~ /^:/ ) {
+	unless ( $address eq '::' ) {
+	    return 0 if $address =~ /:$/ || $address =~ /^:.*::/;
+	}
+    } elsif ( $address =~ /:$/ ) {
+	return 0 if $address =~ /::.*:$/;
+    }
+
+    for my $a ( @address ) {
+	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && oct "0x$a" < 65536 );
+    }
+
+    1;
+}
+
+sub validate_6address( $$ ) {
+    my ( $addr, $allow_name ) =  @_;
+
+    my @addrs = ( $addr );
+    
+    unless ( valid_6address $addr ) {
+	fatal_error "Invalid IPv6 Address ($addr)" unless $allow_name;
+	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname2 $addr, AF_INET6);
+
+	if ( defined wantarray ) {
+	    shift @addrs for (1..4);
+	    for ( @addrs ) {
+		$_ = inet_ntop AF_INET6, $_;
+	    }
+	}
+    }
+
+    defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
+}
+}
+
+sub validate_6net( $ ) {
+    my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
+
+    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
+
+    if ( defined $vlsm ) {
+        fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 64;
+	fatal_error "Invalid Network address ($_[0])"   if defined $rest;
+	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
+    } else {
+	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
+	validate_6address $net;
+    }
+}
+
+sub validate_6range( $$ ) {
+    my ( $low, $high ) = @_;
+
+    validate_6address $low, 0;
+    validate_6address $high, 0;
+
+    my @low  = split ":", $low;
+    my @high = split ":", $high;
+
+    if ( @low == @high ) {
+	my ( $l, $h) = ( pop @low, pop @high );
+	
+	return 1 if hex "0x$l" <= hex "0x$h" && join( ":", @low ) eq join( ":", @high );
+    }
+
+    fatal_error "Invalid IPv6 Range ($low-$high)";
+}
+
+my %ipv6_icmp_types = ( any                          => 'any',
+			'destination-unreachable'    => 1,
+			'no-route'                   => '1/0',
+			'communication-prohibited'   => '1/1',
+			'address-unreachable'        => '1/2',
+			'port-unreachable'           => '1/3',
+			'packet-too-big'             =>  2,
+			'time-exceeded'              =>  3,
+			'ttl-exceeded'               =>  3,
+			'ttl-zero-during-transit'    => '3/0',
+			'ttl-zero-during-reassembly' => '3/1',
+			'parameter-problem'          =>  4
+			'bad-header'                 => '4/0',
+			'unknown-header-type'        => '4/1',
+			'unknown-option'             => '4/2',
+			'echo-request'               => 128,
+			'echo-reply'                 => 129,
+			'router-solicitation'        => 133,
+			'router-advertisement'       => 134,
+			'neighbour-solicitation'     => 135,
+			'neighbour-advertisement'    => 136,
+			redirect                     => 137 );
+
+
+sub validate_icmp6( $ ) {
+    my $type = $_[0];
+
+    my $value = $ipv6_icmp_types{$type};
+
+    return $value if defined $value;
+
+    if ( $type =~ /^(\d+)(\/(\d+))?$/ ) {
+	return $type if $1 < 256 && ( ! $2 || $3 < 256 );
+    }
+
+    fatal_error "Invalid IPv6 ICMP Type ($type)"
+}
+
 
 1;

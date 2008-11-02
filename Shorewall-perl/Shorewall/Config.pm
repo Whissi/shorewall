@@ -114,7 +114,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.2.0;
+our $VERSION = 4.3.0;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -163,7 +163,7 @@ our %config;
 #
 # Config options and global settings that are to be copied to object script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
+our @propagateconfig = qw/ IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
 our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 #
 # From parsing the capabilities file
@@ -177,6 +177,8 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MULTIPORT       => 'Multi-port Match' ,
 		 XMULTIPORT      => 'Extended Multi-port Match',
 		 CONNTRACK_MATCH => 'Connection Tracking Match',
+		 OLD_CONNTRACK_MATCH => 
+		                    'Old conntrack match syntax',
 		 NEW_CONNTRACK_MATCH => 
 		                    'Extended Connection Tracking Match',
 		 USEPKTTYPE      => 'Packet Type Match',
@@ -271,7 +273,7 @@ sub initialize() {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    VERSION => "4.2.1",
-		    CAPVERSION => 40200 ,
+		    CAPVERSION => 40202 ,
 		  );
     #
     # From shorewall.conf file
@@ -348,6 +350,7 @@ sub initialize() {
 		DELAYBLACKLISTLOAD => undef,
 		MODULE_SUFFIX => undef,
 		DISABLE_IPV6 => undef,
+		IPV6 => undef,
 		DYNAMIC_ZONES => undef,
 		PKTTYPE=> undef,
 		RFC1918_STRICT => undef,
@@ -389,6 +392,7 @@ sub initialize() {
 	       XMULTIPORT => undef,
 	       CONNTRACK_MATCH => undef,
 	       NEW_CONNTRACK_MATCH => undef,
+	       OLD_CONNTRACK_MATCH => undef,
 	       USEPKTTYPE => undef,
 	       POLICY_MATCH => undef,
 	       PHYSDEV_MATCH => undef,
@@ -765,12 +769,14 @@ sub copy( $ ) {
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
+	    chomp;
 	    if ( /^\s*$/ ) {
 		print $object "\n" unless $lastlineblank;
 		$lastlineblank = 1;
 	    } else {
 		s/^/$indent/ if $indent;
 		print $object $_;
+		print $object "\n";
 		$lastlineblank = 0;
 	    }
 	}
@@ -791,6 +797,7 @@ sub copy1( $ ) {
 	my $do_indent = 1;
 
 	while ( <IF> ) {
+	    chomp;
 	    if ( /^\s*$/ ) {
 		print $object "\n";
 		$do_indent = 1;
@@ -799,6 +806,7 @@ sub copy1( $ ) {
 
 	    s/^/$indent/ if $indent && $do_indent;
 	    print $object $_;
+	    print $object "\n";
 	    $do_indent = ! ( /\\$/ );
 	}
 
@@ -1557,8 +1565,9 @@ sub determine_capabilities( $ ) {
 
     $capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
 
-    if ( $capabilities{CONNTRACL_MATCH} ) {
+    if ( $capabilities{CONNTRACK_MATCH} ) {
 	$capabilities{NEW_CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
+	$capabilities{OLD_CONNTRACK_MATCH} = ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdstport 1.2.3.4" );
     }
     
     if ( qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" ) ) {
@@ -1892,7 +1901,22 @@ sub get_configuration( $ ) {
 
     default_yes_no 'ADMINISABSENTMINDED'        , '';
     default_yes_no 'BLACKLISTNEWONLY'           , '';
-    default_yes_no 'DISABLE_IPV6'               , '';
+
+    if ( defined $config{IPV6} ) {
+	if ( $config{IPV6} =~ /on/i ) {
+	    $config{IPV6} = 'On';
+	} elsif ( $config{IPV6} =~ /off/i ) {
+	    $config{IPV6} = 'Off';
+	} elsif ( $config{IPV6} =~ /keep/i ) {
+	    $config{IPV6} = '';
+	}
+    }
+
+    default_yes_no 'DISABLE_IPV6' , '';
+
+    fatal_error "Incompatible settings of IPV6 (On) and DISABLE_IPV6 (Yes)" if $config{IPV6} eq 'On' && $config{DISABLE_IPV6} eq 'Yes';
+
+    $config{IPV6} = $config{DISABLE_IPV6} ? 'Off' : '' unless defined $config{IPV6};
 
     unsupported_yes_no 'DYNAMIC_ZONES';
     unsupported_yes_no 'BRIDGING';

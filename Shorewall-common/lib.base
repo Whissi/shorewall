@@ -35,7 +35,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40200
+SHOREWALL_CAPVERSION=40202
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -1047,6 +1047,7 @@ determine_capabilities() {
 
     CONNTRACK_MATCH=
     NEW_CONNTRACK_MATCH=
+    OLD_CONNTRACK_MATCH=
     MULTIPORT=
     XMULTIPORT=
     POLICY_MATCH=
@@ -1105,6 +1106,7 @@ determine_capabilities() {
 
     if [ -n "$CONNTRACK_MATCH" ]; then
 	qt $IPTABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
+	qt $IPTABLES -A $chain -m conntrack ! --ctorigdst 1.2.3.4 || OLD_CONNTRACK_MATCH=Yes
     fi
 
     if qt $IPTABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
@@ -1211,7 +1213,10 @@ report_capabilities() {
 	report_capability "Multi-port Match" $MULTIPORT
 	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
 	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
-	[ -n "$CONNTRACK_MATCH" ] && report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
+	if [ -n "$CONNTRACK_MATCH" ]; then
+	    report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
+	    report_capability "Old Connection Tracking Match Syntax" $OLD_CONNTRACK_MATCH
+	fi
 	report_capability "Packet Type Match" $USEPKTTYPE
 	report_capability "Policy Match" $POLICY_MATCH
 	report_capability "Physdev Match" $PHYSDEV_MATCH
@@ -1263,6 +1268,7 @@ report_capabilities1() {
     report_capability1 XMULTIPORT
     report_capability1 CONNTRACK_MATCH
     report_capability1 NEW_CONNTRACK_MATCH
+    report_capability1 OLD_CONNTRACK_MATCH
     report_capability1 USEPKTTYPE
     report_capability1 POLICY_MATCH
     report_capability1 PHYSDEV_MATCH

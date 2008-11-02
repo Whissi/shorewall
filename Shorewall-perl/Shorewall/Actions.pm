@@ -43,9 +43,11 @@ our @EXPORT = qw( merge_levels
 		  process_actions3
 
 		  find_macro
+		  find_6macro
 		  split_action
 		  substitute_param
 		  merge_macro_source_dest
+		  merge_6macro_source_dest
 		  merge_macro_column
 
 		  %usedactions
@@ -53,6 +55,7 @@ our @EXPORT = qw( merge_levels
 		  %actions
 
 		  %macros
+		  %macros6
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
@@ -82,6 +85,7 @@ our %actions;
 our %logactionchains;
 
 our %macros;
+our %macros6;
 
 #
 # Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
@@ -105,6 +109,8 @@ sub initialize() {
 			 QUEUE    => 'none' );
     %actions         = ();
     %logactionchains = ();
+    %macros          = ();
+    %macros6         = ();
 }
 
 INIT {
@@ -162,6 +168,19 @@ sub find_macro( $ )
     }
 }
 
+sub find_6macro( $ )
+{
+    my $macro = $_[0];
+    my $macrofile = find_file "macro.$macro";
+
+    if ( -f $macrofile ) {
+	$macros6{$macro} = $macrofile;
+	$targets6{$macro} = MACRO;
+    } else {
+	0;
+    }
+}
+
 #
 # Return ( action, level[:tag] ) from passed full action
 #
@@ -204,6 +223,22 @@ sub merge_macro_source_dest( $$ ) {
 	    return $body if $invocation eq '-';
 	    return "$body:$invocation" if $invocation =~ /.*?\.*?\.|^\+|^~|^!~/;
 	    return "$invocation:$body";
+	}
+
+	return $invocation;
+    }
+
+    $body || '';
+}
+
+sub merge_6macro_source_dest( $$ ) {
+    my ( $body, $invocation ) = @_;
+
+    if ( $invocation ) {
+	if ( $body ) {
+	    return $body if $invocation eq '-';
+	    return "$body;$invocation" if $invocation =~ /:|.*?\.*?\.|^\+|^~|^!~/;
+	    return "$invocation;$body";
 	}
 
 	return $invocation;

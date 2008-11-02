@@ -52,6 +52,7 @@ our $VERSION = 4.1.5;
 # Set to one if we find a SECTION
 #
 our $sectioned;
+our $sectioned6;
 our $macro_nest_level;
 our $current_param;
 our @param_stack;
@@ -74,6 +75,7 @@ my %rules_commands = ( COMMENT => 0,
 
 sub initialize() {
     $sectioned = 0;
+    $sectioned6 = 0;
     $macro_nest_level = 0;
     $current_param = '';
     @param_stack = ();
@@ -386,6 +388,125 @@ sub process_criticalhosts() {
     \@critical;
 }
 
+sub setup_6blacklist() {
+
+    my $hosts = find_hosts_by_option '6blacklist';
+    my $chainref;
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
+
+    if ( @$hosts ) {
+	$chainref = new_standard_6chain 'blacklst';
+
+	if ( defined $level && $level ne '' ) {
+	    my $logchainref = new_standard_6chain 'blacklog';
+
+	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+
+	    add_rule $logchainref, "-j $target" ;
+
+	    $target = 'blacklog';
+	}
+    }
+
+  BLACKLIST:
+    {
+	if ( my $fn = open_file '6blacklist' ) {
+
+	    my $first_entry = 1;
+	    
+	    first_entry "$doing $fn...";
+
+	    while ( read_a_line ) {
+
+		if ( $first_entry ) {
+		    unless  ( @$hosts ) {
+			warning_message q(The entries in $fn have been ignored because there are no 'blacklist' interfaces);
+			close_file;
+			last BLACKLIST;
+		    }
+
+		    $first_entry = 0;
+		}
+
+		my ( $networks, $protocol, $ports ) = split_line 1, 3, 'blacklist file';
+
+		expand_rule(
+			    $chainref ,
+			    NO_RESTRICT ,
+			    do_proto6( $protocol , $ports, '' ) ,
+			    $networks ,
+			    '' ,
+			    '' ,
+			    '' ,
+			    "-j $target" ,
+			    '' ,
+			    $disposition ,
+			    '' );
+
+		progress_message "         \"$currentline\" added to blacklist";
+	    }
+	}
+
+	my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
+
+	for my $hostref ( @$hosts ) {
+	    my $interface = $hostref->[0];
+	    my $ipsec     = $hostref->[1];
+	    my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $network   = $hostref->[2];
+	    my $source    = match_source_6net $network;
+
+	    for my $chain ( first_chains $interface ) {
+		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
+	    }
+
+	    progress_message "   Blacklisting enabled on ${interface};${network}";
+	}
+    }
+}
+
+sub process_critical6hosts() {
+
+    my  @critical = ();
+
+    my $fn = open_file '6routestopped';
+
+    first_entry "$doing $fn for critical IPv6 hosts...";
+
+    while ( read_a_line ) {
+
+	my $routeback = 0;
+
+	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
+
+	fatal_error "Unknown interface ($interface)" unless known_6interface $interface;
+
+	$hosts = ALLIPv6 unless $hosts ne '-';
+
+	my @hosts;
+
+	for my $host ( split_list $hosts, 'host' ) {
+	    validate_host $host, 1;
+	    push @hosts, "$interface;$host";
+	}
+
+	unless ( $options eq '-' ) {
+	    for my $option (split_list $options, 'option' ) {
+		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' ) {
+		    if ( $option eq 'critical' ) {
+			push @critical, @hosts;
+		    } else {
+			warning_message "Unknown routestopped option ( $option ) ignored";
+		    }
+		}
+	    }
+	}
+    }
+
+    \@critical;
+}
+
 sub process_routestopped() {
 
     my ( @allhosts, %source, %dest );
@@ -473,6 +594,100 @@ sub process_routestopped() {
 		    my $dest1 = match_dest_net $h1;
 		    my $desti1 = match_dest_dev $interface1;
 		    emit "\$IPTABLES -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";
+		    clearrule;
+		}
+	    }
+	}
+    }
+}
+
+sub process_6routestopped() {
+
+    my ( @allhosts, %source, %dest );
+
+    my $fn = open_file '6routestopped';
+
+    first_entry "$doing $fn...";
+
+    while ( read_a_line ) {
+
+	my $routeback = 0;
+
+	my ($interface, $hosts, $options ) = split_line 1, 3, '6routestopped file';
+
+	fatal_error "Unknown interface ($interface)" unless known_6interface $interface;
+
+	$hosts = ALLIPv6 unless $hosts && $hosts ne '-';
+
+	my @hosts;
+
+	for my $host ( split /,/, $hosts ) {
+	    validate_6host $host, 1;
+	    push @hosts, "$interface;$host";
+	}
+
+	unless ( $options eq '-' ) {
+	    for my $option (split /,/, $options ) {
+		if ( $option eq 'routeback' ) {
+		    if ( $routeback ) {
+			warning_message "Duplicate 'routeback' option ignored";
+		    } else {
+			$routeback = 1;
+
+			for my $host ( split /,/, $hosts ) {
+			    my $source = match_source_6net $host;
+			    my $dest   = match_dest_6net   $host;
+
+			    emit "run_ip6tables -A FORWARD -i $interface -o $interface $source $dest -j ACCEPT";
+			    clearrule;
+			}
+		    }
+		} elsif ( $option eq 'source' ) {
+		    for my $host ( split /,/, $hosts ) {
+			$source{"$interface;$host"} = 1;
+		    }
+		} elsif ( $option eq 'dest' ) {
+		    for my $host ( split /,/, $hosts ) {
+			$dest{"$interface;$host"} = 1;
+		    }
+		} else {
+		    warning_message "Unknown 6routestopped option ( $option ) ignored" unless $option eq 'critical';
+		}
+	    }
+	}
+
+	push @allhosts, @hosts;
+    }
+
+    for my $host ( @allhosts ) {
+	my ( $interface, $h ) = split /;/, $host;
+	my $source  = match_source_6net $h;
+	my $dest    = match_dest_6net $h;
+	my $sourcei = match_source_6dev $interface;
+	my $desti   = match_dest_6dev $interface;
+
+	emit "\$IP6TABLES -A INPUT $sourcei $source -j ACCEPT";
+	emit "\$IP6TABLES -A OUTPUT $desti $dest -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+
+	my $matched = 0;
+
+	if ( $source{$host} ) {
+	    emit "\$IP6TABLES -A FORWARD $sourcei $source -j ACCEPT";
+	    $matched = 1;
+	}
+
+	if ( $dest{$host} ) {
+	    emit "\$IP6TABLES -A FORWARD $desti $dest -j ACCEPT";
+	    $matched = 1;
+	}
+
+	unless ( $matched ) {
+	    for my $host1 ( @allhosts ) {
+		unless ( $host eq $host1 ) {
+		    my ( $interface1, $h1 ) = split /;/, $host1;
+		    my $dest1 = match_dest_6net $h1;
+		    my $desti1 = match_dest_6dev $interface1;
+		    emit "\$IP6TABLES -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";
 		    clearrule;
 		}
 	    }
@@ -914,6 +1129,642 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 		     );
 
 	progress_message "   Rule \"$currentline\" $done";
+    }
+
+    pop_open;
+
+    progress_message "..End Macro $macrofile";
+
+    clear_comment unless $nocomment;
+
+}
+#
+# Once a rule has been expanded via wildcards (source and/or dest zone == 'all'), it is processed by this function. If
+# the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
+#
+sub process_rule1 ( $$$$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wildcard ) = @_;
+    my ( $action, $loglevel) = split_action $target;
+    my ( $basictarget, $param ) = get_target_param $action;
+    my $rule = '';
+    my $actionchainref;
+    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;
+
+    unless ( defined $param ) {
+	( $basictarget, $param ) = ( $1, $2 ) if $action =~ /^(\w+)[(](.*)[)]$/;
+    }
+
+    $param = '' unless defined $param;
+
+    #
+    # Determine the validity of the action
+    #
+    my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
+
+    fatal_error "Unknown action ($action)" unless $actiontype;
+
+    if ( $actiontype == MACRO ) {
+	#
+	# process_macro() will call process_rule1() recursively for each rule in the macro body
+	#
+	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
+
+	if ( $param ne '' ) {
+	    push @param_stack, $current_param;
+	    $current_param = $param;
+	}
+
+	process_macro( $basictarget,
+		       $target ,
+		       $current_param,
+		       $source,
+		       $dest,
+		       $proto,
+		       $ports,
+		       $sports,
+		       $origdest,
+		       $ratelimit,
+		       $user,
+		       $mark,
+		       $connlimit,
+		       $time,
+		       $wildcard );
+
+	$macro_nest_level--;
+
+	$current_param = pop @param_stack if $param ne '';
+
+	return;
+
+    } elsif ( $actiontype & NFQ ) {
+	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' ); 
+	my $paramval = $param eq '' ? 0 : numeric_value( $param );
+	fatal_error "Invalid value ($param) for NFQUEUE queue number" unless defined($paramval) && $paramval <= 65535;
+	$action = "NFQUEUE --queue-num $paramval";
+    } else {
+	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
+    }
+    #
+    # We can now dispense with the postfix character
+    #
+    $action =~ s/[\+\-!]$//;
+    #
+    # Mark target as used
+    #
+    if ( $actiontype & ACTION ) {
+	unless ( $usedactions{$target} ) {
+	    $usedactions{$target} = 1;
+	    createactionchain $target;
+	}
+    }
+    #
+    # Take care of irregular syntax and targets
+    #
+    if ( $actiontype & REDIRECT ) {
+	my $z = $actiontype & NATONLY ? '' : firewall_zone;
+	if ( $dest eq '-' ) {
+	    $dest = join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+	} else {
+	    $dest = join( '', $z, '::', $dest ) unless $dest =~ /:/;
+	}
+    } elsif ( $action eq 'REJECT' ) {
+	$action = 'reject';
+    } elsif ( $action eq 'CONTINUE' ) {
+	$action = 'RETURN';
+    } elsif ( $actiontype & LOGRULE ) {
+	fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne '';
+    }
+    #
+    # Isolate and validate source and destination zones
+    #
+    my $sourcezone;
+    my $destzone;
+    my $sourceref;
+    my $destref;
+    my $origdstports;
+
+    if ( $source =~ /^(.+?):(.*)/ ) {
+	fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
+	$sourcezone = $1;
+	$source = $2;
+    } else {
+	$sourcezone = $source;
+	$source = ALLIPv4;
+    }
+
+    if ( $dest =~ /^(.*?):(.*)/ ) {
+	fatal_error "Missing DEST Qualifier ($dest)" if $2 eq '';
+	$destzone = $1;
+	$dest = $2;
+    } else {
+	$destzone = $dest;
+	$dest = ALLIPv4;
+    }
+
+    fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
+    fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
+
+    if ( $actiontype & NATONLY ) {
+	warning_message "Destination zone ($destzone) ignored" unless $destzone eq '-' || $destzone eq '';
+    } else {
+	fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
+	fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
+    }
+
+    my $restriction = NO_RESTRICT;
+
+    if ( $sourcezone eq firewall_zone ) {
+	$restriction = $destzone eq firewall_zone ? ALL_RESTRICT : OUTPUT_RESTRICT;
+    } else {
+	$restriction = INPUT_RESTRICT if $destzone eq firewall_zone;
+    }
+
+    my ( $chain, $chainref, $policy );
+    #
+    # For compatibility with older Shorewall versions
+    #
+    $origdest = ALLIPv4 if $origdest eq 'all';
+
+    #
+    # Take care of chain
+    #
+    
+    unless ( $actiontype & NATONLY ) {
+	#
+	# Check for illegal bridge port rule
+	#
+	if ( $destref->{type} eq 'bport4' ) {
+	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
+		return 1 if $wildcard;
+		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
+	    }
+	}
+
+	$chain    = "${sourcezone}2${destzone}";
+	$chainref = ensure_chain 'filter', $chain;
+	$policy   = $chainref->{policy};
+
+	if ( $policy eq 'NONE' ) {
+	    return 1 if $wildcard;
+	    fatal_error "Rules may not override a NONE policy";
+	}
+	#
+	# Handle Optimization
+	#
+	if ( $optimize > 0 ) {
+	    my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
+	    if ( $loglevel ne '' ) {
+		return 1 if $target eq "${policy}:$loglevel}";
+	    } else {
+		return 1 if $basictarget eq $policy;
+	    }
+	}
+	#
+	# Mark the chain as referenced and add appropriate rules from earlier sections.
+	#
+	$chainref = ensure_filter_chain $chain, 1;
+    }
+
+    #
+    # Generate Fixed part of the rule
+    #
+    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) , do_connlimit( $connlimit ), do_time( $time ) );
+
+    unless ( $section eq 'NEW' ) {
+	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
+	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
+	$rule .= "-m state --state $section "
+    }
+
+    #
+    # Generate NAT rule(s), if any
+    #
+    if ( $actiontype & NATRULE ) {
+	my ( $server, $serverport );
+	my $randomize = $dest =~ s/:random$// ? '--random ' : '';
+
+	require_capability( 'NAT_ENABLED' , "$basictarget rules", '' );
+	#
+	# Isolate server port 
+	#
+	if ( $dest =~ /^(.*)(:(.+))$/ ) {
+	    #
+	    # Server IP and Port
+	    #
+	    $server = $1;      # May be empty
+	    $serverport = $3;  # Not Empty due to RE 
+	    $origdstports = $ports;
+	    if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
+		#
+		# Server Port Range
+		#
+		fatal_error "Invalid port range ($serverport)" unless $1 < $2;
+		my @ports = ( $1, $2 );
+		$_ = validate_port( proto_name( $proto ), $_) for ( @ports );
+		( $ports = $serverport ) =~ tr/-/:/;
+	    } else {
+		$serverport = $ports = validate_port( proto_name( $proto ), $serverport );
+	    }
+	} elsif ( $dest eq ':' ) {
+	    #
+	    # Rule with no server IP or port ( zone:: )
+	    #
+	    $server = $serverport = '';
+	} else {
+	    #
+	    # Simple server IP address (may be empty or "-")
+	    #
+	    $server = $dest;
+	    $serverport = '';
+	}
+
+	#
+	# Generate the target
+	#
+	my $target = '';
+
+	if ( $actiontype  & REDIRECT ) {
+	    fatal_error "A server IP address may not be specified in a REDIRECT rule" if $server;
+	    $target  = '-j REDIRECT ';
+	    $target .= "--to-port $serverport " if $serverport;
+	    if ( $origdest eq '' || $origdest eq '-' ) {
+		$origdest = ALLIPv4;
+	    } elsif ( $origdest eq 'detect' ) {
+		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		    my $interfacesref = $sourceref->{interfaces};
+		    my @interfaces = keys %$interfacesref;
+		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
+ 		} else {
+		    $origdest = ALLIPv4;
+		}
+	    }
+	} else {
+	    fatal_error "A server must be specified in the DEST column in $action rules" if $server eq '';
+
+	    if ( $server =~ /^(.+)-(.+)$/ ) {
+		validate_range( $1, $2 );
+	    } else {
+		$server = validate_address $server, 1;
+	    }
+
+	    if ( $action eq 'SAME' ) {
+		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
+		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq firewall_zone;
+		fatal_error "':random' is not supported by the SAME target" if $randomize;
+		warning_message 'Netfilter support for SAME is being dropped in early 2008';
+		$target = '-j SAME ';
+		for my $serv ( split /,/, $server ) {
+		    $target .= "--to $serv ";
+		}
+	    } elsif ( $action eq 'DNAT' ) {
+		$target = '-j DNAT ';
+		$serverport = ":$serverport" if $serverport;
+		for my $serv ( split /,/, $server ) {
+		    $target .= "--to-destination ${serv}${serverport} ";
+		}
+	    }
+
+	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
+		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		    my $interfacesref = $sourceref->{interfaces};
+		    my @interfaces = keys %$interfacesref;
+		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
+		} else {
+		    $origdest = ALLIPv4;
+		}
+	    }
+	}
+
+	$target .= $randomize;
+
+	#
+	# And generate the nat table rule(s)
+	#
+	expand_rule ( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
+		      PREROUTE_RESTRICT ,
+		      $rule ,
+		      $source ,
+		      $origdest ,
+		      '' ,
+		      '' ,
+		      $target ,
+		      $loglevel ,
+		      $action ,
+		      $serverport ? do_proto( $proto, '', '' ) : '' );
+	#
+	# After NAT:
+	#   - the destination port will be the server port ($ports) -- we did that above
+	#   - the destination IP   will be the server IP   ($dest)
+	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
+	#   - the target will be ACCEPT.
+	#
+	unless ( $actiontype & NATONLY ) {
+	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , 0xFF ) );
+	    $loglevel = '';
+	    $dest     = $server;
+	    $action   = 'ACCEPT';
+	}
+    } elsif ( $actiontype & NONAT ) {
+	#
+	# NONAT or ACCEPT+ -- May not specify a destination interface
+	#
+	fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
+
+	$origdest = '' unless $origdest and $origdest ne '-';
+
+	if ( $origdest eq 'detect' ) {
+	    my $interfacesref = $sourceref->{interfaces};
+	    my $interfaces = "@$interfacesref";
+	    $origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
+	}
+
+	expand_rule( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+		     PREROUTE_RESTRICT ,
+		     $rule ,
+		     $source ,
+		     $dest ,
+		     $origdest ,
+		     '',
+		     '-j RETURN ' ,
+		     $loglevel ,
+		     $action ,
+		     '' );
+    }
+	
+    #
+    # Add filter table rule, unless this is a NATONLY rule type
+    #
+    unless ( $actiontype & NATONLY ) {
+
+	if ( $actiontype & ACTION ) {
+	    $action = (find_logactionchain $target)->{name};
+	    $loglevel = '';
+	}
+
+	unless ( $origdest eq '-' ) {
+	    require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in a non-NAT rule', 's' ) unless $actiontype & NATRULE;
+	} else {
+	    $origdest = '';
+	}
+
+	expand_rule( ensure_chain( 'filter', $chain ) ,
+		     $restriction ,
+		     $rule ,
+		     $source ,
+		     $dest ,
+		     $origdest ,
+		     $origdstports ,
+		     "-j $action " ,
+		     $loglevel ,
+		     $action ,
+		     '' );
+    }
+}
+
+#
+# Process a Record in the rules file
+#
+#     Deals with the ugliness of wildcard zones ('all' in SOURCE and/or DEST column).
+#
+sub process_rule ( $$$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit , $time ) = @_;
+    my $intrazone = 0;
+    my $includesrcfw = 1;
+    my $includedstfw = 1;
+    my $thisline = $currentline;
+    #
+    # Section Names are optional so once we get to an actual rule, we need to be sure that
+    # we close off any missing sections.
+    #
+    unless ( $sectioned ) {
+	finish_section 'ESTABLISHED,RELATED';
+	$sections{$section = 'NEW'} = 1;
+	$sectioned = 1;
+    }
+
+    #
+    # Handle Wildcards
+    #
+    if ( $source =~ /^all[-+]/ ) {
+	if ( $source eq 'all+' ) {
+	    $source = 'all';
+	    $intrazone = 1;
+	} elsif ( ( $source eq 'all+-' ) || ( $source eq 'all-+' ) ) {
+	    $source = 'all';
+	    $intrazone = 1;
+	    $includesrcfw = 0;
+	} elsif ( $source eq 'all-' ) {
+	    $source = 'all';
+	    $includesrcfw = 0;
+	} else {
+	    fatal_error "Invalid SOURCE ($source)";
+	}
+    }
+
+    if ( $dest =~ /^all[-+]/ ) {
+	if ( $dest eq 'all+' ) {
+	    $dest = 'all';
+	    $intrazone = 1;
+	} elsif ( ( $dest eq 'all+-' ) || ( $dest eq 'all-+' ) ) {
+	    $dest = 'all';
+	    $intrazone = 1;
+	    $includedstfw = 0;
+	} elsif ( $dest eq 'all-' ) {
+	    $dest = 'all';
+	    $includedstfw = 0;
+	} else {
+	    fatal_error "Invalid DEST ($dest)";
+	}
+
+    }
+
+    my $action = isolate_basic_target $target;
+
+    fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
+
+    if ( $source eq 'all' ) {
+	for my $zone ( all_zones ) {
+	    if ( $includesrcfw || ( zone_type( $zone ) ne 'firewall' ) ) {
+		if ( $dest eq 'all' ) {
+		    for my $zone1 ( all_zones ) {
+			if ( $includedstfw || ( zone_type( $zone1 ) ne 'firewall' ) ) {
+			    if ( $intrazone || ( $zone ne $zone1 ) ) {
+				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
+			    }
+			}
+		    }
+		} else {
+		    my $destzone = (split( /:/, $dest, 2 ) )[0];
+		    $destzone = firewall_zone unless defined_zone( $destzone ); # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
+		    if ( $intrazone || ( $zone ne $destzone ) ) {
+			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
+		    }
+		}
+	    }
+	}
+    } elsif ( $dest eq 'all' ) {
+	for my $zone ( all_zones ) {
+	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
+	    if ( ( $includedstfw || ( zone_type( $zone ) ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
+		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
+	    }
+	}
+    } else {
+	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 0;
+    }
+
+    progress_message "   Rule \"$thisline\" $done";
+}
+
+#
+# Process the Rules File
+#
+sub process_rules() {
+
+    my $fn = open_file 'rules';
+
+    first_entry "$doing $fn...";
+
+    while ( read_a_line ) {
+
+	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time ) = split_line1 1, 12, 'rules file', \%rules_commands;
+
+	if ( $target eq 'COMMENT' ) {
+	    process_comment;
+	} elsif ( $target eq 'SECTION' ) {
+	    #
+	    # read_a_line has already verified that there are exactly two tokens on the line
+	    #
+	    fatal_error "Invalid SECTION ($source)" unless defined $sections{$source};
+	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
+	    $sectioned = 1;
+	    $sections{$source} = 1;
+
+	    if ( $source eq 'RELATED' ) {
+		$sections{ESTABLISHED} = 1;
+		finish_section 'ESTABLISHED';
+	    } elsif ( $source eq 'NEW' ) {
+		@sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
+		finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
+	    }
+
+	    $section = $source;
+	} else {
+	    if ( "\L$source" =~ /^none(:.*)?$/ || "\L$dest" =~ /^none(:.*)?$/ ) {
+		progress_message "Rule \"$currentline\" ignored."
+	    } else {
+		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time;
+	    }
+	}
+    }
+
+    clear_comment;
+    $section = 'DONE';
+}
+
+sub process_6rule1 ( $$$$$$$$$$$$ );
+
+#
+# Expand a macro rule from the rules file
+#
+sub process_6macro ( $$$$$$$$$$$$$$ ) {
+    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark, $connlimit, $time, $wildcard ) = @_;
+
+    my $nocomment = no_comment;
+
+    my $format = 1;
+
+    macro_comment $macro;
+
+    my $macrofile = $macros{$macro};
+
+    progress_message "..Expanding Macro $macrofile...";
+
+    push_open $macrofile;
+
+    while ( read_a_line ) {
+
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser );
+
+	if ( $format == 1 ) {
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $morigdest ) = split_line1 1, 9, 'macro file', $macro_commands;
+	} else {
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', $macro_commands;
+	}
+
+	if ( $mtarget eq 'COMMENT' ) {
+	    process_comment unless $nocomment;
+	    next;
+	}
+
+	if ( $mtarget eq 'FORMAT' ) {
+	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
+	    $format = $msource;
+	    next;
+	}
+
+	if ( $morigdest ne '-' ) {
+	    fatal_error "Invalid macro file entry (too many columns)" if $format == 1;
+	    fatal_error "A macro with ORIGINAL DEST cannot be used with IPv6";
+	}
+
+	$mtarget = merge_levels $target, $mtarget;
+
+	if ( $mtarget =~ /^PARAM(:.*)?$/ ) {
+	    fatal_error 'PARAM requires a parameter to be supplied in macro invocation' unless $param ne '';
+	    $mtarget = substitute_param $param,  $mtarget;
+	}
+
+	my $action = isolate_basic_target $mtarget;
+
+	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;
+
+	my $actiontype = $targets6{$action} || find_6macro( $action );
+
+	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO );
+
+	if ( $msource ) {
+	    if ( $msource eq '-' ) {
+		$msource = $source || '';
+	    } elsif ( $msource =~ s/^DEST:?// ) {
+		$msource = merge_6macro_source_dest $msource, $dest; 
+	    } else {
+		$msource =~ s/^SOURCE:?//;
+		$msource = merge_6macro_source_dest $msource, $source;
+	    }
+	} else {
+	    $msource = '';
+	}
+
+	if ( $mdest ) {
+	    if ( $mdest eq '-' ) {
+		$mdest = $dest || '';
+	    } elsif ( $mdest =~ s/^SOURCE:?// ) {
+		$mdest = merge_6macro_source_dest $mdest , $source;
+	    } else {
+		$mdest =~ s/DEST:?//;
+		$mdest = merge_6macro_source_dest $mdest, $dest;
+	    }
+	} else {
+	    $mdest = '';
+	}
+
+	process_6rule1( 
+		       $mtarget, 
+		       $msource, 
+		       $mdest, 
+		       merge_macro_column( $mproto,    $proto ) , 
+		       merge_macro_column( $mports,    $ports ) ,
+		       merge_macro_column( $msports,   $sports ) ,
+		       merge_macro_column( $mrate,     $rate ) ,
+		       merge_macro_column( $muser,     $user ) ,
+		       $mark, 
+		       $connlimit,
+		       $time,
+		       $wildcard
+		     );
+
+	progress_message "   IPv6 Rule \"$currentline\" $done";
     }
 
     pop_open;

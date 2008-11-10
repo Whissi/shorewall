@@ -171,8 +171,13 @@ ACCEPT       +sshok      $FW      tcp      22</programlisting></para>
     <para>As mentioned above, ipsets are well suited for large blacklists. You
     can maintain your blacklist using the 'ipset' utility without ever having
     to restart or refresh Shorewall. If you use the SAVE_IPSETS=Yes feature
-    just be sure to "shorewall save" after altering the blacklist ipset(s).
-    Example:</para>
+    just be sure to "shorewall save" after altering the blacklist
+    ipset(s).</para>
+
+    <para>Example (Note -- this example is applicable to ipset versions up to
+    and including 2.4. In 2.5, the binding feature of ipsets is scheduled for
+    removal in favor of different set types that include both IP addresses and
+    port numbers. Check your ipset documentation):</para>
 
     <para><filename>/etc/shorewall/blacklist</filename>:</para>
 

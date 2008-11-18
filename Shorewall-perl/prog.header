@@ -988,18 +988,20 @@ find_echo() {
 #
 find_mac() # $1 = IP address, $2 = interface
 {
-    qt ping -nc 1 -t 2 -I $2 $1
+    if interface_is_usable $2 ; then
+	qt ping -nc 1 -t 2 -I $2 $1
 
-    local result
-    result=$(arp -na |  awk "/[(]$1[)].* $2$/ {print \$4}")
+	local result
+	result=$(arp -na |  awk "/[(]$1[)].* $2$/ {print \$4}")
 
-    case $result in
-	\<*\>)
-	    ;;
-	*)
-	    [ -n "$result" ] && echo $result
-	    ;;
-    esac
+	case $result in
+	    \<*\>)
+		;;
+	    *)
+		[ -n "$result" ] && echo $result
+		;;
+	esac
+    fi
 }
 
 #

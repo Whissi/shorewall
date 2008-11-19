@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall</refentrytitle>
@@ -1068,13 +1070,23 @@
 
           <para>The <option>-f</option> option suppresses the compilation step
           and simply reused the compiled script which last started/restarted
-          Shorewall. </para>
+          Shorewall.</para>
 
           <para>The <option>-C</option> option determines the compiler to use
           (Shorewall-shell or Shorewall-perl). If not specified, the
           SHOREWALL_COMPILER setting in <ulink
           url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
           compiler to use.</para>
+
+          <warning>
+            <para>If you use Shorewall's multi-ISP feature, you are stronly
+            advised against using the -C option of the
+            <command>restart</command> command when switching between
+            Shorewall-shell and Shorewall-perl. The only supported way to
+            switch compilers is to <command>shorewall stop</command> followed
+            by <command>shorewall start -C</command>
+            <replaceable>compiler</replaceable></para>
+          </warning>
         </listitem>
       </varlistentry>
 
@@ -1113,6 +1125,16 @@
           SHOREWALL_COMPILER setting in <ulink
           url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
           compiler to use.</para>
+
+          <warning>
+            <para>If you use Shorewall's multi-ISP feature, you are stronly
+            advised against using the -C option of the
+            <command>safe-restart</command> command when switching between
+            Shorewall-shell and Shorewall-perl. The only supported way to
+            switch compilers is to <command>shorewall stop</command> followed
+            by <command>shorewall safe-start -C</command>
+            <replaceable>compiler</replaceable></para>
+          </warning>
         </listitem>
       </varlistentry>
 

@@ -63,7 +63,7 @@
       <important>
         <para>Once you have installed the .deb package and before you attempt
         to configure Shorewall, please heed the advice of Lorenzo Martignoni,
-        the Shorewall Debian Maintainer:</para>
+        former Shorewall Debian Maintainer:</para>
 
         <para><quote>For more information about Shorewall usage on Debian
         system please look at /usr/share/doc/shorewall-common/README.Debian
@@ -84,8 +84,8 @@
         the sample configurations.</title>
 
         <para><emphasis role="bold">Answer:</emphasis> With Shorewall 3.x, the
-        samples are included in the shorewall package and are installed in
-        <filename
+        samples are included in the shorewall documentation package and are
+        installed in <filename
         class="directory">/usr/share/doc/shorewall/examples/</filename>.
         Beginning with Shorewall 4.0, the samples are in the shorewall-common
         package and are installed in <filename
@@ -110,14 +110,14 @@
     <title>Upgrading Shorewall</title>
 
     <section id="faq66">
-      <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.0; where is the
+      <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.x; where is the
       'shorewall' package?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
       url="upgrade_issues.htm">upgrade issues.</ulink></para>
 
       <section id="faq66a">
-        <title>(FAQ 66a) I'm trying to upgrade to Shorewall 4.0; do I have to
+        <title>(FAQ 66a) I'm trying to upgrade to Shorewall 4.x; do I have to
         uninstall the 'shorewall' package?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
@@ -125,7 +125,7 @@
       </section>
 
       <section id="faq66b">
-        <title>(FAQ 66b) I'm trying to upgrade to Shorewall 4.0: which of
+        <title>(FAQ 66b) I'm trying to upgrade to Shorewall 4.x: which of
         these packages do I need to install?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
@@ -134,8 +134,8 @@
     </section>
 
     <section id="faq76">
-      <title>(FAQ 76) I just upgraded my Debian system and now masquerading
-      doesn't work? What happened?</title>
+      <title>(FAQ 76) I just upgraded my Debian (Ubuntu, Kubuntu, ...) system
+      and now masquerading doesn't work? What happened?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> This happens to people
       who ignore <ulink url="Install.htm#Upgrade_Deb">our advice</ulink> and
@@ -146,22 +146,6 @@
       url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>
       contains the Debian default setting IP_FORWARDING=Keep; it should be
       IP_FORWARDING=On.</para>
-
-      <section id="faq76a">
-        <title>(FAQ 76a) I just upgraded my Ubuntu system and now masquerading
-        doesn't work? What happened?</title>
-
-        <para><emphasis role="bold">Answer:</emphasis> See <link
-        linkend="faq76">above</link>.</para>
-      </section>
-
-      <section id="faq76b">
-        <title>(FAQ 76b) I just upgraded my Kubuntu system and now
-        masquerading doesn't work? What happened?</title>
-
-        <para><emphasis role="bold">Answer:</emphasis> See <link
-        linkend="faq76">above</link>.</para>
-      </section>
     </section>
   </section>
 
@@ -653,9 +637,9 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
         </note>
 
         <para><emphasis role="bold">Answer:</emphasis> This is another problem
-        that is best solved using Bind Version 9 <quote>views</quote>. It
-        allows both external and internal clients to access a NATed host using
-        the host's DNS name.</para>
+        that is best solved using split DNS. It allows both external and
+        internal clients to access a NATed host using the host's DNS
+        name.</para>
 
         <para>Another good way to approach this problem is to switch from
         one-to-one NAT to Proxy ARP. That way, the hosts in Z have non-RFC1918
@@ -1250,7 +1234,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         the log. Also, it is important to understand that a log level of
         "debug" will generally cause Netfilter messages to be written to fewer
         files in <filename class="directory">/var/log</filename> than a log
-        severity of "info". The log level does not control the number of log
+        level of "info". The log level does not control the number of log
         messages or the content of the messages.</para>
 
         <para>The actual log file where Netfilter messages are written is not
@@ -2207,8 +2191,13 @@ We have an error talking to the kernel
       that will let all traffic to and from the 192.168.100.1 address of the
       modem in/out but still block all other rfc1918 addresses?</para>
 
-      <para><emphasis role="bold">Answer:</emphasis> Add the following to
-      <filename><ulink
+      <para><emphasis role="bold">Answer:</emphasis> Use of the norfc1918
+      interface is currently deprecated and support for the option will be
+      removed entirely in a future version. So deleting the option from <ulink
+      url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
+      (5) is the preferred solution.</para>
+
+      <para>Otherwise, add the following to <filename><ulink
       url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink></filename>
       (Note: If you are running Shorewall 2.0.0 or later, you may need to
       first copy <filename>/usr/share/shorewall/rfc1918</filename> to
@@ -2239,8 +2228,7 @@ We have an error talking to the kernel
         my external interface, my DHCP client cannot renew its lease.</title>
 
         <para><emphasis role="bold">Answer:</emphasis> The solution is the
-        same as <xref linkend="faq14" /> above. Simply substitute the IP
-        address of your ISPs DHCP server.</para>
+        same as <xref linkend="faq14" /> above.</para>
       </section>
 
       <section id="faq14b">

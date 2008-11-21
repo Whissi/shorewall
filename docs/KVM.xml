@@ -50,14 +50,13 @@
     Linux Distributions. The following diagram shows the entire
     network.</para>
 
-    <graphic align="center" fileref="images/Network2008.png" />
+    <graphic align="center" fileref="images/Network2008a.png" />
 
     <para>My personal laptop (Ursa) hosts the virtual machines. As shown in
     the diagram, Ursa has routes to the Internet through both the
     <trademark>Linksys</trademark> WRT300N and through my Shorewall firewall.
     This allows me to test the <ulink url="MultiISP.html">Shorewall Multi-ISP
-    feature</ulink>, even though I only have a single Internet
-    connection</para>
+    feature</ulink>.</para>
 
     <para>The Linux Bridges shown in the diagram are, of course, actually
     within their associated system (Firewall or Ursa) but I've pictured them
@@ -74,12 +73,10 @@
 
     <graphic align="center" fileref="images/KVM1.png" />
 
-    <para>I run a DHCP server on the host to assign IP addresses to the VMs
-    and I also run dmsmasq to act as a nameserver for the VMs. The latter is
-    important when I take the laptop on the road. I'm currently running a
-    separate ISC DHCP server but I have it on my todo list to configure
-    dnsmasq as a DHCP server, thus eliminating one process on the
-    system.</para>
+    <para>I run <ulink url="???">dmsmasq</ulink> to act as a DHCP server and
+    name server for the VMs. The latter is important when I take the laptop on
+    the road because the VMs need a fixed nameserver address and one that will
+    do recursive resolution.</para>
 
     <para>The bridge is configured using the script described in my Linuxfest
     presentation linked above. The script may be found at <ulink
@@ -92,5 +89,8 @@
     with all bridges, <filename class="devicefile">br0</filename> must be
     configured with the <option>routeback</option> option in <ulink
     url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+
+    <para>For additional information about this setup, see <ulink
+    url="MultiISP.html#Shared">http://www.shorewall.net/MultiISP.html#Shared</ulink></para>
   </section>
 </article>

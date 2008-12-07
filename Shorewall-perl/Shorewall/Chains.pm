@@ -70,6 +70,9 @@ our %EXPORT_TAGS = (
 				       OUTPUT_RESTRICT
 				       POSTROUTE_RESTRICT
 				       ALL_RESTRICT
+
+				       use_ipv4_chains
+				       use_ipv6_chains
 				       
 				       add_command
 				       add_commands
@@ -261,13 +264,13 @@ use constant { NULL_MODE => 0 ,   # Generating neither shell commands nor iptabl
 
 our $mode;
 
-sub use_ipv4() {
+sub use_ipv4_chains() {
     $nat_table    = $chain_table{nat};
     $mangle_table = $chain_table{mangle};
     $filter_table = $chain_table{filter};
 }    
 
-sub use_ipv6() {
+sub use_ipv6_chains() {
     $nat_table    = undef;
     $mangle_table = $chain_table{mangle6};
     $filter_table = $chain_table{filter6};
@@ -294,11 +297,11 @@ sub initialize() {
     $chain_table{mangle}{__NAME__}  = 'mangle';
     $chain_table{nat}{__NAME__}     = 'nat';
     $chain_table{filter}{__NAME__}  = 'filter';
-    $chain_table{raw6}{__NAME__}    = 'raw';
-    $chain_table{mangle6}{__NAME__} = 'mangle';
-    $chain_table{filter6}{__NAME__} = 'filter';
+    $chain_table{raw6}{__NAME__}    = 'raw6';
+    $chain_table{mangle6}{__NAME__} = 'mangle6';
+    $chain_table{filter6}{__NAME__} = 'filter6';
 
-    use_ipv4;
+    use_ipv4_chains;
     #
     # These get set to 1 as sections are encountered.
     #

@@ -481,7 +481,7 @@ sub add_group_to_zone($$$$$)
 	unless ( $switched ) {
 	    if ( $type eq $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $ifacezone eq $zone;
-		$ifacezone = $zone if $host eq ALLIPv4;
+		$ifacezone = $zone if $host eq ALLIP;
 	    }
 	}
 
@@ -746,7 +746,7 @@ sub validate_interfaces_file( $ )
  
 	push @ifaces, $interface;
 
-	my @networks = allipv4;
+	my @networks = allip;
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
 
@@ -993,7 +993,7 @@ sub validate_hosts_file()
 	#
 	# Take care of case where the hosts list begins with '!'
 	#
-	$hosts = join( '', ALLIPv4 , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
+	$hosts = join( '', ALLIP , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
 
 	add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 
@@ -1027,7 +1027,7 @@ sub find_hosts_by_option( $ ) {
 
     for my $interface ( @interfaces ) {
 	if ( ! $interfaces{$interface}{zone4} && $interfaces{$interface}{options}{$option} ) {
-	    push @hosts, [ $interface, 'none', ALLIPv4 ];
+	    push @hosts, [ $interface, 'none', ALLIP ];
 	}
     }
 

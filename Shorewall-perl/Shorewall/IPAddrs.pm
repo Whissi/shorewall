@@ -26,16 +26,24 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
+use Socket6;
 use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8);
 
 use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( ALLIPv4
+                  ALLIPv6
+		  ALLIP
+		  ALL
 		  TCP
 		  UDP
 		  ICMP
+		  IPv6_ICMP
 		  SCTP
+
+		  F_INET
+		  F_INET6
 
 		  validate_address
 		  validate_net
@@ -45,25 +53,74 @@ our @EXPORT = qw( ALLIPv4
 		  ip_range_explicit
 		  expand_port_range
 		  allipv4
+		  allipv6
+		  allip
 		  rfc1918_networks
 		  resolve_proto
 		  proto_name
+		  use_ipv4_addrs
+		  use_ipv6_addrs
+		  using_ipv4_addrs
+		  using_ipv6_addrs
 		  validate_port
 		  validate_portpair
 		  validate_port_list
 		  validate_icmp
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.1.5;
+our $VERSION = 4.3.0;
 
 #
-# Some IPv4 useful stuff
+# Some IPv4/6 useful stuff
 #
 our @allipv4 = ( '0.0.0.0/0' );
+our @allipv6 = ( '::/0' );
+our $family;
 
-use constant { ALLIPv4 => '0.0.0.0/0' , ICMP => 1, TCP => 6, UDP => 17 , SCTP => 132 };
+use constant { ALLIPv4 => '0.0.0.0/0' ,
+	       ALLIPv6 => '::/0' ,
+	       F_INET => 1,
+	       F_INET6 => 2,
+	       ICMP => 1, 
+	       TCP => 6, 
+	       UDP => 17,
+	       ICMPv6_ICMP => 58,
+	       SCTP => 132 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
+
+sub use_ipv4() {
+    $family = F_INET;
+}    
+
+sub using_ipv4() {
+    $family == F_INET;
+}    
+
+sub use_ipv6() {
+    $family = F_INET6;
+}    
+
+sub using_ipv6() {
+    $family == F_INET6;
+}    
+
+#
+# Initialize globals -- we take this novel approach to globals initialization to allow
+#                       the compiler to run multiple times in the same process. The
+#                       initialize() function does globals initialization for this
+#                       module and is called from an INIT block below. The function is
+#                       also called by Shorewall::Compiler::compiler at the beginning of
+#                       the second and subsequent calls to that function.
+#
+
+sub initialize() {
+    use_ipv4;
+}
+
+INIT {
+    initialize;
+}
 
 sub vlsm_to_mask( $ ) {
     my $vlsm = $_[0];
@@ -71,7 +128,7 @@ sub vlsm_to_mask( $ ) {
     in_hex8 ( ( 0xFFFFFFFF << ( 32 - $vlsm ) ) && 0xFFFFFFFF );
 }
 
-sub valid_address( $ ) {
+sub valid_4address( $ ) {
     my $address = $_[0];
 
     my @address = split /\./, $address;
@@ -83,20 +140,19 @@ sub valid_address( $ ) {
     1;
 }
 
-sub validate_address( $$ ) {
+sub validate_4address( $$ ) {
     my ( $addr, $allow_name ) =  @_;
 
     my @addrs = ( $addr );
     
-    unless ( valid_address $addr ) {
+    unless ( valid_4address $addr ) {
 	fatal_error "Invalid IP Address ($addr)" unless $allow_name;
 	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname $addr);
 
 	if ( defined wantarray ) {
 	    shift @addrs for (1..4);
 	    for ( @addrs ) {
-		my (@a) = unpack('C4',$_);
-		$_ = join('.', @a );
+		$_ = inet_htoa $_;
 	    }
 	}
     }
@@ -130,7 +186,7 @@ sub encodeaddr( $ ) {
     $result;
 }
 
-sub validate_net( $$ ) {
+sub validate_4net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[1];
 
@@ -142,10 +198,10 @@ sub validate_net( $$ ) {
     if ( defined $vlsm ) {
         fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
 	fatal_error "Invalid Network address ($_[0])" if defined $rest;
-	fatal_error "Invalid IP address ($net)"       unless valid_address $net;
+	fatal_error "Invalid IP address ($net)"       unless valid_4address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	validate_address $net, $_[1];
+	validate_4address $net, $_[1];
 	$vlsm = 32;
     }
 
@@ -159,16 +215,26 @@ sub validate_net( $$ ) {
     }
 }
 
-sub validate_range( $$ ) {
+sub validate_4range( $$ ) {
     my ( $low, $high ) = @_;
 
-    validate_address $low, 0;
-    validate_address $high, 0;
+    validate_4address $low, 0;
+    validate_4address $high, 0;
 
     my $first = decodeaddr $low;
     my $last  = decodeaddr $high;
 
     fatal_error "Invalid IP Range ($low-$high)" unless $first <= $last;
+}
+
+sub validate_4host( $$ ) {
+    my ( $host, $allow_name )  = $_[0];
+
+    if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
+	validate_4ange $1, $2;
+    } else {
+	validate_4net( $host, $allow_name );
+    }
 }
 
 sub ip_range_explicit( $ ) {
@@ -182,7 +248,7 @@ sub ip_range_explicit( $ ) {
     push @result, $low;
 
     if ( defined $high ) {
-	validate_address $high, 0;
+	validate_faddress $high, 0;
 
 	my $first = decodeaddr $low;
 	my $last  = decodeaddr $high;
@@ -209,18 +275,12 @@ sub decompose_net( $ ) {
     
 }
 
-sub validate_host( $$ ) {
-    my ( $host, $allow_name )  = $_[0];
-
-    if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
-	validate_range $1, $2;
-    } else {
-	validate_net( $host, $allow_name );
-    }
-}
-
 sub allipv4() {
     @allipv4;
+}
+
+sub allipv6() {
+    @allipv6;
 }
 
 sub rfc1918_networks() {
@@ -231,7 +291,7 @@ sub rfc1918_networks() {
 # Protocol/port validation
 #
 
-our %nametoproto = ( all => 0, ALL => 0, icmp => 1, ICMP => 1, tcp => 6, TCP => 6, udp => 17, UDP => 17  );
+our %nametoproto = ( all => 0, ALL => 0, icmp => 1, ICMP => 1, tcp => 6, TCP => 6, udp => 17, UDP => 17 );
 our @prototoname = ( 'all', 'icmp', '', '', '', '', 'tcp', '', '', '', '', '', '', '', '', '', '', 'udp' );
 
 #
@@ -345,6 +405,8 @@ my %icmp_types = ( any                          => 'any',
 		   'address-mask-reply'         => 18 );
 
 sub validate_icmp( $ ) {
+    fatal_error "IPv4 ICMP not allowed in an IPv6 Rule" unless $family == F_INET;
+
     my $type = $_[0];
 
     my $value = $icmp_types{$type};
@@ -418,5 +480,160 @@ sub expand_port_range( $$ ) {
 	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
     } 
 }   
+
+sub valid_6address( $ ) {
+    my $address = $_[0];
+
+    my @address = split /:/, $address;
+
+    return 0 if @address > 8;
+    return 0 if @address < 8 && ! $address =~ /::/;
+    return 0 if $address =~ /:::/ || $address =~ /::.*::/;
+    
+    if ( $address =~ /^:/ ) {
+	unless ( $address eq '::' ) {
+	    return 0 if $address =~ /:$/ || $address =~ /^:.*::/;
+	}
+    } elsif ( $address =~ /:$/ ) {
+	return 0 if $address =~ /::.*:$/;
+    }
+
+    for my $a ( @address ) {
+	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && oct "0x$a" < 65536 );
+    }
+
+    1;
+}
+
+sub validate_6address( $$ ) {
+    my ( $addr, $allow_name ) =  @_;
+
+    my @addrs = ( $addr );
+    
+    unless ( valid_6address $addr ) {
+	fatal_error "Invalid IPv6 Address ($addr)" unless $allow_name;
+	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname2 $addr, AF_INET6);
+
+	if ( defined wantarray ) {
+	    shift @addrs for (1..4);
+	    for ( @addrs ) {
+		$_ = inet_ntop AF_INET6, $_;
+	    }
+	}
+    }
+
+    defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
+}
+
+sub validate_6net( $$ ) {
+    my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
+    my $allow_name = $_[1];
+
+    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
+
+    if ( defined $vlsm ) {
+        fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 64;
+	fatal_error "Invalid Network address ($_[0])"   if defined $rest;
+	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
+    } else {
+	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
+	validate_6address $net, $allow_name;
+    }
+}
+
+sub validate_6range( $$ ) {
+    my ( $low, $high ) = @_;
+
+    validate_6address $low, 0;
+    validate_6address $high, 0;
+
+    my @low  = split ":", $low;
+    my @high = split ":", $high;
+
+    if ( @low == @high ) {
+	my ( $l, $h) = ( pop @low, pop @high );
+	
+	return 1 if hex "0x$l" <= hex "0x$h" && join( ":", @low ) eq join( ":", @high );
+    }
+
+    fatal_error "Invalid IPv6 Range ($low-$high)";
+}
+
+sub validate_6host( $$ ) {
+    my ( $host, $allow_name )  = $_[0];
+
+    if ( $host =~ /^(.*:.*)-(.*:.*)$/ ) {
+	validate_6range $1, $2;
+    } else {
+	validate_6net( $host, $allow_name );
+    }
+}
+
+my %ipv6_icmp_types = ( any                          => 'any',
+			'destination-unreachable'    => 1,
+			'no-route'                   => '1/0',
+			'communication-prohibited'   => '1/1',
+			'address-unreachable'        => '1/2',
+			'port-unreachable'           => '1/3',
+			'packet-too-big'             =>  2,
+			'time-exceeded'              =>  3,
+			'ttl-exceeded'               =>  3,
+			'ttl-zero-during-transit'    => '3/0',
+			'ttl-zero-during-reassembly' => '3/1',
+			'parameter-problem'          =>  4,
+			'bad-header'                 => '4/0',
+			'unknown-header-type'        => '4/1',
+			'unknown-option'             => '4/2',
+			'echo-request'               => 128,
+			'echo-reply'                 => 129,
+			'router-solicitation'        => 133,
+			'router-advertisement'       => 134,
+			'neighbour-solicitation'     => 135,
+			'neighbour-advertisement'    => 136,
+			redirect                     => 137 );
+
+
+sub validate_icmp6( $ ) {
+    fatal_error "IPv6 ICMP not allowed in an IPv4 Rule" unless $family == F_INET6;
+    my $type = $_[0];
+
+    my $value = $ipv6_icmp_types{$type};
+
+    return $value if defined $value;
+
+    if ( $type =~ /^(\d+)(\/(\d+))?$/ ) {
+	return $type if $1 < 256 && ( ! $2 || $3 < 256 );
+    }
+
+    fatal_error "Invalid IPv6 ICMP Type ($type)"
+}
+
+sub ALLIP() {
+    $family == F_INET ? ALLIPv4 : ALLIPv6;
+}
+
+sub allip() {
+    $family == F_INET ? ALLIPv4 : ALLIPv6;
+}    
+
+sub valid_address ( $ ) {
+    $family == F_INET ? valid_4address( $_[0] ) :  valid_6address( $_[0] );
+}
+
+sub validate_address ( $$ ) {
+    $family == F_INET ? validate_4address( $_[0], $_[1] ) :  validate_6address( $_[0], $_[1] );
+}
+
+sub validate_net ( $$ ) {
+    $family == F_INET ? validate_4net( $_[0], $_[1] ) :  validate_6net( $_[0], $_[1] );
+}
+
+sub validate_range ($$ ) { 
+    $family == F_INET ? validate_4range( $_[0], $_[1] ) :  validate_6range( $_[0], $_[1] );
+}
+
+sub validate_host ($$ ) { 
+    $family == F_INET ? validate_4host( $_[0], $_[1] ) :  validate_6host( $_[0], $_[1] );
+}
 
 1;

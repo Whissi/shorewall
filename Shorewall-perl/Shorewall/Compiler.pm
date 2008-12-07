@@ -815,9 +815,9 @@ sub compiler {
     #
     process_actions1;
     #
-    # Process the Policy File.
+    # Process the Policy File(s).
     #
-    validate_policy;
+    validate_policy 'policy';
     #
     # Compile the 'stop_firewall()' function
     #

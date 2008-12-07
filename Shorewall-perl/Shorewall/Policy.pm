@@ -28,17 +28,31 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Chains qw( :DEFAULT :internal) ;
 use Shorewall::Actions;
+use Shorewall::IPAddrs;
 
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
+our @EXPORT = qw( use_ipv4_policies use_ipv6_policies validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
 our $VERSION = 4.1.1;
 
 # @policy_chains is a list of references to policy chains in the filter table
 
-our @policy_chains;
+my @policy_chains4;
+my @policy_chains6;
+my $policy_chains;
+my $policy_family;
+
+sub use_ipv4_policies() {
+    $policy_chains = \@policy_chains4;
+    $policy_family = F_INET;
+}
+    
+sub use_ipv6_policies() {
+    $policy_chains = \@policy_chains6;
+    $policy_family = F_INET6;
+}
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -50,7 +64,9 @@ our @policy_chains;
 #
 
 sub initialize() {
-    @policy_chains = ();
+    @policy_chains4 = ();
+    @policy_chains6 = ();
+    use_ipv4_policies;
 }
 
 INIT {
@@ -112,7 +128,7 @@ sub set_policy_chain($$$$$)
 
 	    $chainref1->{default}     = $chainref->{default} if defined $chainref->{default};
 	    $chainref1->{is_policy}   = 1;
-	    push @policy_chains, $chainref1;
+	    push @{$policy_chains}, $chainref1;
 	} else {
 	    $chainref1->{policychain} = $chainref->{name};
 	}
@@ -135,10 +151,10 @@ sub add_or_modify_policy_chain( $$ ) {
     if ( $chainref ) {
 	unless( $chainref->{is_policy} ) {
 	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', OPTIONAL );
-	    push @policy_chains, $chainref;
+	    push @{$policy_chains}, $chainref;
 	}
     } else {
-	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
+	push @{$policy_chains}, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
     }
 }    
 
@@ -153,8 +169,9 @@ sub print_policy($$$$) {
     }
 }
 
-sub validate_policy()
+sub validate_policy( $ )
 {
+    my $filename = shift;
     my %validpolicies = (
 			  ACCEPT => undef,
 			  REJECT => undef,
@@ -194,7 +211,7 @@ sub validate_policy()
     }
 
     for $zone ( all_zones ) {
-	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
+	push @{$policy_chains}, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{find_zone( $zone )->{parents}} ) ) {
 	    for my $zone1 ( all_zones ) {
@@ -206,7 +223,7 @@ sub validate_policy()
 	}
     }
 
-    my $fn = open_file 'policy';
+    my $fn = open_file $filename;
 
     first_entry "$doing $fn...";
 
@@ -292,11 +309,11 @@ sub validate_policy()
 		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 	    } else {
 		convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
-		push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
+		push @{$policy_chains}, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	    }
 	} else {
 	    $chainref = new_policy_chain $client, $server, $policy, 0;
-	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
+	    push @{$policy_chains}, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	}
 
 	$chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
@@ -403,7 +420,7 @@ sub default_policy( $$$ ) {
 sub apply_policy_rules() {
     progress_message2 'Applying Policies...';
 
-    for my $chainref ( @policy_chains ) {
+    for my $chainref ( @{$policy_chains} ) {
 	my $policy = $chainref->{policy};
 	my $loglevel = $chainref->{loglevel};
 	my $optional = $chainref->{is_optional};
@@ -465,7 +482,7 @@ sub complete_standard_chain ( $$$$ ) {
 # Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
 #
 sub setup_syn_flood_chains() {
-    for my $chainref ( @policy_chains ) {
+    for my $chainref ( @{$policy_chains} ) {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};

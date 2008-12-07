@@ -1,0 +1,166 @@
+#!/bin/sh
+
+RCDLINKS="2,S45 3,S45 6,K45"
+################################################################################
+#   Script to create a gre or ipip tunnel -- Shorewall 4
+#
+#   Modified - Steve Cowles 5/9/2000
+#     Incorporated init {start|stop} syntax and iproute2 usage
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
+#   Modify the following variables to match your configuration
+#
+# chkconfig: 2345 26 89
+# description: GRE/IP Tunnel
+#
+################################################################################
+
+#
+# Type of tunnel (gre or ipip)
+#
+
+tunnel_type=gre
+
+# Name of the tunnel
+#
+
+tunnel="dfwbos"
+#
+# Address of your External Interface (only required for gre tunnels)
+#
+myrealip="x.x.x.x"
+
+# Address of the local system -- this is the address of one of your
+# local interfaces (or for a mobile host, the address that this system has
+# when attached to the local network).
+#
+
+myip="192.168.1.254"
+
+# Address of the Remote system -- this is the address of one of the
+# remote system's local interfaces (or if the remote system is a mobile host,
+# the address that it uses when attached to the local network).
+
+hisip="192.168.9.1"
+
+# Internet address of the Remote system
+#
+
+gateway="x.x.x.x"
+
+# Remote sub-network -- if the remote system is a gateway for a
+#                       private subnetwork that you wish to
+#                       access, enter it here. If the remote
+#                       system is a stand-alone/mobile host, leave this
+#                       empty
+
+subnet="192.168.9.0/24"
+
+# GRE Key -- set this to a number or to a dotted quad if you want
+#            a keyed GRE tunnel. You must specify a KEY if you
+#            intend to load ip_conntrack_proto_gre on either
+#            gateway system
+
+key=
+
+PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
+
+load_modules () {
+    case $tunnel_type in
+    ipip)
+	echo "Loading IP-ENCAP Module"
+	modprobe ipip
+	;;
+    gre)
+        echo "Loading GRE Module"
+        modprobe ip_gre
+        ;;
+    esac
+}
+
+do_stop() {
+
+      if [ -n "`ip link show $tunnel 2>/dev/null`" ]; then
+          echo "Stopping $tunnel"
+          ip link set dev $tunnel down
+      fi
+
+      if [ -n "`ip addr show $tunnel 2>/dev/null`" ]; then
+          echo "Deleting $tunnel"
+          ip tunnel del $tunnel
+      fi
+}
+
+do_start() {
+
+      #NOTE: Comment out the next line if you have built gre/ipip into your kernel
+
+      load_modules
+
+      if [ -n "`ip link show $tunnel 2>/dev/null`" ]; then
+          do_stop
+      fi
+
+      echo "Adding $tunnel"
+
+      case $tunnel_type in
+      gre)
+          ip tunnel add $tunnel mode gre remote $gateway local $myrealip ttl 255 ${key:+key $key}
+	  ;;
+      *)
+          ip tunnel add $tunnel mode ipip remote $gateway
+	  ;;
+      esac
+
+      echo "Starting $tunnel"
+
+
+      ip link set dev $tunnel up
+
+      case $tunnel_type in
+      gre)
+          ip addr add $myip dev $tunnel
+	  ;;
+      *)
+          ip addr add $myip peer $hisip dev $tunnel
+	  ;;
+      esac
+
+      #
+      # As with all interfaces, the 2.4 kernels will add the obvious host
+      # route for this point-to-point interface
+      #
+
+      if [ -n "$subnet" ]; then
+          echo "Adding Routes"
+          case $tunnel_type in
+          gre)
+              ip route add $subnet dev $tunnel
+	      ;;
+	  ipip)
+              ip route add $subnet via $gateway dev $tunnel onlink
+              ;;
+	  esac
+      fi
+}
+
+case "$1" in
+  start)
+      do_start
+    ;;
+  stop)
+      do_stop
+    ;;
+  restart)
+      do_stop
+      sleep 1
+      do_start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+exit 0

@@ -2325,7 +2325,7 @@ sub expand_rule( $$$$$$$$$$$ )
     if ( $origdest ) {
 	if ( $origdest eq '-' || ! $capabilities{CONNTRACK_MATCH} ) {
 	    $origdest = '';
-	    if ( $capabilities{NEW_CONNTRACK_MATCH} && defined $oport && $oport ne '' ) {
+	    if ( $capabilities{NEW_CONNTRACK_MATCH} && defined $oport && $oport ne '' && $oport ne '-' ) {
 		$rule .= "-m conntrack --ctorigdstport $oport ";
 	    }
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {

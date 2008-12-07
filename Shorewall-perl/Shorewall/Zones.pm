@@ -47,6 +47,7 @@ our @EXPORT = qw( NOTHING
 		  all_zones
 		  complex_zones
 		  non_firewall_zones
+		  haveipseczones
 		  single_interface
 		  validate_interfaces_file
 		  all_interfaces
@@ -93,6 +94,7 @@ use constant { NOTHING    => 'NOTHING',
 #                        children =>   [ <children> ]
 #                        interfaces => [ <interfaces> ]
 #                        bridge =>     <bridge>
+#                        family =>     1 = IPv4, 2 = IPv6, 3 = firewall
 #                        hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
 #                                                                  options => { <option1> => <value1>
 #                                                                               ...
@@ -127,7 +129,7 @@ our %reservedName = ( all => 1,
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
-#                                     zone4       => <zone name>
+#                                     zone        => <zone name>
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
@@ -135,9 +137,32 @@ our %reservedName = ( all => 1,
 #                                   }
 #                 }
 #
-our @interfaces;
-our %interfaces;
-our @bport_zones;
+our @interfaces4;
+our %interfaces4;
+our @bport_zones4;
+
+our @interfaces6;
+our %interfaces6;
+our @bport_zones6;
+
+our $interface_list;
+our $interface_table;
+our $bport_zones;
+our $zone_family;
+
+sub use_ipv4_interfaces() {
+    $interface_list = \@interfaces4;
+    $interface_table = \%interfaces4;
+    $bport_zones = \@bport_zones4;
+    $zone_family = F_INET;
+}
+
+sub use_ipv6_interfaces() {
+    $interface_list = \@interfaces6;
+    $interface_table = \%interfaces6;
+    $bport_zones = \@bport_zones6;
+    $zone_family = F_INET6;
+}
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -153,9 +178,15 @@ sub initialize() {
     %zones = ();
     $firewall_zone = '';
 
-    @interfaces = ();
-    %interfaces = ();
-    @bport_zones = ();
+    @interfaces4  = ();
+    %interfaces4  = ();
+    @bport_zones4 = ();
+
+    @interfaces6  = ();
+    %interfaces6  = ();
+    @bport_zones6 = ();
+
+    use_ipv4_interfaces;
 }
 
 INIT {
@@ -240,6 +271,7 @@ sub determine_zones()
     my @z;
 
     my $ipv4 = 0;
+    my $ipv6 = 0;
 
     my $fn = open_file 'zones';
 
@@ -262,33 +294,52 @@ sub determine_zones()
 		push @{$zones{$p}{children}}, $zone;
 	    }
 	}
-
+	
 	fatal_error "Invalid zone name ($zone)" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $globals{MAXZONENAMELENGTH};
 	fatal_error "Invalid zone name ($zone)"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
 	fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
 
 	$type = "ipv4" unless $type;
 
+	my $family = F_INET;
+
 	if ( $type =~ /ipv4/i ) {
 	    $type = 'ipv4';
 	    $ipv4 = 1;
+	} elsif ( $type =~ /ipv6/i ) {
+	    $type = 'ipv6';
+	    $ipv6 = 1;
+	    $family = F_INET6;
 	} elsif ( $type =~ /^ipsec4?$/i ) {
 	    $type = 'ipsec4';
+	} elsif ( $type =~ /^ipsec6$/i ) {
+	    $type = 'ipsec6';
+	    $family = F_INET6;
 	} elsif ( $type =~ /^bport4?$/i ) {
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
 	    $type = 'bport4';
-	    push @bport_zones, $zone;
+	    push @bport_zones4, $zone;
+	} elsif ( $type =~ /^bport6$/i ) {
+	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
+	    $type = 'bport6';
+	    $family = F_INET6;
+	    push @bport_zones6, $zone;
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
 	    fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
 	    $firewall_zone = $zone;
 	    $ENV{FW} = $zone;
 	    $type = "firewall";
+	    $family = F_INET | F_INET6;
 	} elsif ( $type eq '-' ) {
 	    $type = 'ipv4';
 	    $ipv4 = 1;
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
+	}
+
+	for ( @parents ) {
+	    fatal_error "Incompatible Parent/Child Zones Types ($_)" unless $zones{$_}{family} == $family
 	}
 
 	for ( $options, $in_options, $out_options ) {
@@ -299,10 +350,11 @@ sub determine_zones()
 			  parents    => \@parents,
 			  exclusions => [],
 			  bridge     => '',
+			  family     => $family,
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) ,
+					  complex => ($type =~ /^ipsec/ || $options || $in_options || $out_options ? 1 : 0) ,
 					  nested  => @parents > 0 } ,
 			  interfaces => {} ,
 			  children   => [] ,
@@ -311,8 +363,8 @@ sub determine_zones()
 	push @z, $zone;
     }
 
-    fatal_error "No firewall zone defined" unless $firewall_zone;
-    fatal_error "No IPv4 zones defined" unless $ipv4;
+    fatal_error "No firewall zone defined"     unless $firewall_zone;
+    fatal_error "No IPv4 or IPv6 zones defined" unless $ipv4 || $ipv6;
 
     my %ordered;
 
@@ -340,7 +392,7 @@ sub determine_zones()
 #
 sub haveipseczones() {
     for my $zoneref ( values %zones ) {
-	return 1 if $zoneref->{type} eq 'ipsec4';
+	return 1 if $zoneref->{type} =~ /^ipsec/;
     }
 
     0;
@@ -384,7 +436,7 @@ sub zone_report()
 	}
 
 	unless ( $printed ) {
-	    fatal_error "No bridge has been associated with zone $zone" if $type eq 'bport4' && ! $zoneref->{bridge};
+	    fatal_error "No bridge has been associated with zone $zone" if $type =~ /^bport*/ && ! $zoneref->{bridge};
 	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type eq 'firewall';
 	}
 
@@ -402,7 +454,7 @@ sub dump_zone_contents()
 	my $exclusions = $zoneref->{exclusions};
 	my $entry      =  "$zone $type";
 
-	$entry .= ":$zoneref->{bridge}" if $type eq 'bport4';
+	$entry .= ":$zoneref->{bridge}" if $type =~ /^bport/;
 
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
@@ -455,7 +507,7 @@ sub add_group_to_zone($$$$$)
     my $arrayref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    my $ifacezone = $interfaces{$interface}{zone4};
+    my $ifacezone = $interface_table->{$interface}{zone};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -467,7 +519,7 @@ sub add_group_to_zone($$$$$)
     $ifacezone = '' unless defined $ifacezone;
 
     for my $host ( @$networks ) {
-	$interfaces{$interface}{nets}++;
+	$interface_table->{$interface}{nets}++;
 
 	fatal_error "Invalid Host List" unless defined $host and $host ne '';
 
@@ -519,6 +571,7 @@ sub find_zone( $ ) {
     my $zoneref = $zones{$zone};
 
     fatal_error "Unknown zone ($zone)" unless $zoneref;
+    fatal_error "Zone has wrong address family" unless $zoneref->{family} & $zone_family;
 
     $zoneref;
 }
@@ -528,19 +581,21 @@ sub zone_type( $ ) {
 }
 
 sub defined_zone( $ ) {
-    $zones{$_[0]};
+    my $zoneref = $zones{$_[0]};
+
+    $zoneref && $zoneref->{family} & $zone_family ? $zoneref : undef;
 }
 
 sub all_zones() {
-    @zones;
+    grep ( $zones{$_}{family} & $zone_family , @zones );
 }
 
 sub non_firewall_zones() {
-   grep ( $zones{$_}{type} ne 'firewall'  ,  @zones );
+   grep ( $zones{$_}{type} ne 'firewall'  ,  all_zones() );
 }
 
 sub complex_zones() {
-    grep( $zones{$_}{options}{complex} , @zones );
+    grep( $zones{$_}{options}{complex} , all_zones() );
 }
 
 sub firewall_zone() {
@@ -551,9 +606,9 @@ sub firewall_zone() {
 # Parse the interfaces file.
 #
 
-sub validate_interfaces_file( $ )
+sub validate_interfaces_file( $$ )
 {
-    my $export = shift;
+    my ( $filename, $export ) = @_;
     my $num    = 0;
 
     use constant { SIMPLE_IF_OPTION   => 1,
@@ -565,27 +620,38 @@ sub validate_interfaces_file( $ )
 
 	           IF_OPTION_ZONEONLY => 8 };
 
-    my %validoptions = (arp_filter  => BINARY_IF_OPTION,
-			arp_ignore  => ENUM_IF_OPTION,
-			blacklist   => SIMPLE_IF_OPTION,
-			bridge      => SIMPLE_IF_OPTION,
-			detectnets  => OBSOLETE_IF_OPTION,
-			dhcp        => SIMPLE_IF_OPTION,
-			maclist     => SIMPLE_IF_OPTION,
-			logmartians => BINARY_IF_OPTION,
-			norfc1918   => SIMPLE_IF_OPTION,
-			nosmurfs    => SIMPLE_IF_OPTION,
-			optional    => SIMPLE_IF_OPTION,
-			proxyarp    => BINARY_IF_OPTION,
-			routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
-			routefilter => BINARY_IF_OPTION,
-			sourceroute => BINARY_IF_OPTION,
-			tcpflags    => SIMPLE_IF_OPTION,
-			upnp        => SIMPLE_IF_OPTION,
-			mss         => NUMERIC_IF_OPTION,
-			);
+    my %validoptions = $zone_family == F_INET ? (arp_filter  => BINARY_IF_OPTION,
+						    arp_ignore  => ENUM_IF_OPTION,
+						    blacklist   => SIMPLE_IF_OPTION,
+						    bridge      => SIMPLE_IF_OPTION,
+						    detectnets  => OBSOLETE_IF_OPTION,
+						    dhcp        => SIMPLE_IF_OPTION,
+						    maclist     => SIMPLE_IF_OPTION,
+						    logmartians => BINARY_IF_OPTION,
+						    norfc1918   => SIMPLE_IF_OPTION,
+						    nosmurfs    => SIMPLE_IF_OPTION,
+						    optional    => SIMPLE_IF_OPTION,
+						    proxyarp    => BINARY_IF_OPTION,
+						    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
+						    routefilter => BINARY_IF_OPTION,
+						    sourceroute => BINARY_IF_OPTION,
+						    tcpflags    => SIMPLE_IF_OPTION,
+						    upnp        => SIMPLE_IF_OPTION,
+						    mss         => NUMERIC_IF_OPTION,
+						   ) :
+						   (blacklist   => SIMPLE_IF_OPTION,
+						    bridge      => SIMPLE_IF_OPTION,
+						    maclist     => SIMPLE_IF_OPTION,
+						    nosmurfs    => SIMPLE_IF_OPTION,
+						    optional    => SIMPLE_IF_OPTION,
+						    proxyndp    => BINARY_IF_OPTION,
+						    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
+						    sourceroute => BINARY_IF_OPTION,
+						    tcpflags    => SIMPLE_IF_OPTION,
+						    mss         => NUMERIC_IF_OPTION,
+						   );
 
-    my $fn = open_file 'interfaces';
+    my $fn = open_file $filename;
 
     my $first_entry = 1;
 
@@ -608,6 +674,7 @@ sub validate_interfaces_file( $ )
 	    $zoneref = $zones{$zone};
 
 	    fatal_error "Unknown zone ($zone)" unless $zoneref;
+	    fatal_error "Zone $zone has wrong address family" unless $zoneref->{family} == $zone_family;
 	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} eq 'firewall';
 	}
 
@@ -622,9 +689,9 @@ sub validate_interfaces_file( $ )
 	    fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
 	    fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
-	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
-	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
+	    fatal_error "Duplicate Interface ($port)" if $interface_table->{$port};
+	    fatal_error "$interface is not a defined bridge" unless $interface_table->{$interface} && $interface_table->{$interface}{options}{bridge};
+	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && ! $zoneref->{type} =~ /^bport/;
 
 	    if ( $zone ) {
 		if ( $zoneref->{bridge} ) {
@@ -643,8 +710,8 @@ sub validate_interfaces_file( $ )
 	    $bridge = $interface;
 	    $interface = $port;
 	} else {
-	    fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
-	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
+	    fatal_error "Duplicate Interface ($interface)" if $interface_table->{$interface};
+	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} =~ /^bport/;
 	    $bridge = $interface;
 	}
 
@@ -661,6 +728,7 @@ sub validate_interfaces_file( $ )
 	my $broadcasts;
 
 	unless ( $networks eq '' || $networks eq 'detect' ) {
+	    fatal_error "BROADCAST may not be specified for IPv6 Interfaces" if $zone_family == F_INET6;
 	    my @broadcasts = split $networks, 'address';
 
 	    for my $address ( @broadcasts ) {
@@ -736,21 +804,21 @@ sub validate_interfaces_file( $ )
 
 	$optionsref = \%options;
 
-	$interfaces{$interface} = { name       => $interface ,
-				    bridge     => $bridge ,
-				    nets       => 0 ,
-				    number     => ++$num ,
-				    root       => $root ,
-				    broadcasts => $broadcasts ,
-				    options    => $optionsref };
- 
+	$interface_table->{$interface} = { name       => $interface ,
+					   bridge     => $bridge ,
+					   nets       => 0 ,
+					   number     => ++$num ,
+					   root       => $root ,
+					   broadcasts => $broadcasts ,
+					   options    => $optionsref };
+
 	push @ifaces, $interface;
 
 	my @networks = allip;
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
 
-    	$interfaces{$interface}{zone4} = $zone; #Must follow the call to add_group_to_zone()
+    	$interface_table->{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$currentline\" Validated";
 
@@ -760,24 +828,24 @@ sub validate_interfaces_file( $ )
     # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge
     #
     for my $interface ( @ifaces ) {
-	my $interfaceref = $interfaces{$interface};
+	my $interfaceref = $interface_table->{$interface};
 
 	if ( $interfaceref->{options}{bridge} ) {
-	    my @ports = grep $interfaces{$_}{options}{port} && $interfaces{$_}{bridge} eq $interface, @ifaces;
+	    my @ports = grep $interface_table->{$_}{options}{port} && $interface_table->{$_}{bridge} eq $interface, @ifaces;
 
 	    if ( @ports ) {
-		push @interfaces, @ports;
+		push @{$interface_list}, @ports;
 	    } else {
 		$interfaceref->{options}{routeback} = 1; #so the bridge will work properly
 	    }
 	}
 
-	push @interfaces, $interface unless $interfaceref->{options}{port};
+	push @{$interface_list}, $interface unless $interfaceref->{options}{port};
     }
     #
     # Be sure that we have at least one interface
     #
-    fatal_error "No network interfaces defined" unless @interfaces;
+    fatal_error "No network interfaces defined" unless @{$interface_list};
 }
 
 #
@@ -788,19 +856,19 @@ sub validate_interfaces_file( $ )
 sub known_interface($)
 {
     my $interface = $_[0];
-    my $interfaceref = $interfaces{$interface};
+    my $interfaceref = $interface_table->{$interface};
     
     return $interfaceref if $interfaceref;
 
-    for my $i ( @interfaces ) {
-	$interfaceref = $interfaces{$i};
+    for my $i ( @{$interface_list} ) {
+	$interfaceref = $interface_table->{$i};
 	my $val = $interfaceref->{root};
 	next if $val eq $i;
 	if ( substr( $interface, 0, length $val ) eq $val ) {
 	    #
 	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces.
 	    #
-	    return $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} , name => $i , number => $interfaceref->{number} };
+	    return $interface_table->{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} , name => $i , number => $interfaceref->{number} };
 	}
     }
 
@@ -811,14 +879,14 @@ sub known_interface($)
 # Return interface number
 #
 sub interface_number( $ ) {
-    $interfaces{$_[0]}{number} || 256;
+    $interface_table->{$_[0]}{number} || 256;
 }
 
 #
 # Return the interfaces list
 #
 sub all_interfaces() {
-    @interfaces;
+    @{$interface_list};
 }
 
 #
@@ -826,7 +894,7 @@ sub all_interfaces() {
 #
 sub find_interface( $ ) {
     my $interface    = $_[0];
-    my $interfaceref = $interfaces{ $interface };
+    my $interfaceref = $interface_table->{ $interface };
     
     fatal_error "Unknown Interface ($interface)" unless $interfaceref;
 
@@ -837,7 +905,7 @@ sub find_interface( $ ) {
 # Returns true if there are bridge port zones defined in the config
 #
 sub have_bridges() {
-    @bport_zones > 0;
+    @{$bport_zones} > 0;
 }
 
 #
@@ -845,7 +913,7 @@ sub have_bridges() {
 # return ''
 #
 sub port_to_bridge( $ ) {
-    my $portref = $interfaces{$_[0]};
+    my $portref = $interface_table->{$_[0]};
     return $portref && $portref->{options}{port} ? $portref->{bridge} : '';
 }
 
@@ -853,7 +921,7 @@ sub port_to_bridge( $ ) {
 # Return the bridge associated with the passed interface.
 #
 sub source_port_to_bridge( $ ) {
-    my $portref = $interfaces{$_[0]};
+    my $portref = $interface_table->{$_[0]};
     return $portref ? $portref->{bridge} : '';
 }
 
@@ -861,7 +929,7 @@ sub source_port_to_bridge( $ ) {
 # Return the 'optional' setting of the passed interface
 #
 sub interface_is_optional($) {
-    my $optionsref = $interfaces{$_[0]}{options};
+    my $optionsref = $interface_table->{$_[0]}{options};
     $optionsref && $optionsref->{optional};
 }
 
@@ -872,8 +940,8 @@ sub find_interfaces_by_option( $ ) {
     my $option = $_[0];
     my @ints = ();
 
-    for my $interface ( @interfaces ) {
-	my $optionsref = $interfaces{$interface}{options};
+    for my $interface ( @{$interface_list} ) {
+	my $optionsref = $interface_table->{$interface}{options};
 	if ( $optionsref && defined $optionsref->{$option} ) {
 	    push @ints , $interface
 	}
@@ -888,7 +956,7 @@ sub find_interfaces_by_option( $ ) {
 sub get_interface_option( $$ ) {
     my ( $interface, $option ) = @_;
 
-    $interfaces{$interface}{options}{$option};
+    $interface_table->{$interface}{options}{$option};
 }
 
 #
@@ -897,14 +965,16 @@ sub get_interface_option( $$ ) {
 sub set_interface_option( $$$ ) {
     my ( $interface, $option, $value ) = @_;
 
-    $interfaces{$interface}{options}{$option} = $value;
+    $interface_table->{$interface}{options}{$option} = $value;
 }
 
 #
 # Validates the hosts file. Generates entries in %zone{..}{hosts}
 #
-sub validate_hosts_file()
+sub validate_hosts_file( $ )
 {
+    my $filename = shift;
+
     my %validoptions = (
 			blacklist => 1,
 			maclist => 1,
@@ -917,11 +987,11 @@ sub validate_hosts_file()
 			destonly => 1,
 			sourceonly => 1,
 			);
-
+    
     my $ipsec = 0;
     my $first_entry = 1;
 
-    my $fn = open_file 'hosts';
+    my $fn = open_file $filename;
 
     while ( read_a_line ) {
 
@@ -944,16 +1014,16 @@ sub validate_hosts_file()
 	    $interface = $1;
 	    $hosts = $2;
 	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	    fatal_error "Unknown interface ($interface)" unless $interface_table->{$interface}{root};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
 
-	if ( $type eq 'bport4' ) {
+	if ( $type =~ /^bport/ ) {
 	    if ( $zoneref->{bridge} eq '' ) {
-		fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
-		$zoneref->{bridge} = $interfaces{$interface}{bridge};
-	    } elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
+		fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interface_table->{$interface}{options}{port};
+		$zoneref->{bridge} = $interface_table->{$interface}{bridge};
+	    } elsif ( $zoneref->{bridge} ne $interface_table->{$interface}{bridge} ) {
 		fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
 	    }
 	}
@@ -1000,7 +1070,7 @@ sub validate_hosts_file()
 	progress_message "   Host \"$currentline\" validated";
     }
 
-    $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
+    return $ipsec;
 }
 
 #
@@ -1011,7 +1081,7 @@ sub find_hosts_by_option( $ ) {
     my $option = $_[0];
     my @hosts;
 
-    for my $zone ( grep $zones{$_}{type} ne 'firewall' , @zones ) {
+    for my $zone ( non_firewall_zones() ) {
 	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {
@@ -1025,8 +1095,8 @@ sub find_hosts_by_option( $ ) {
 	}
     }
 
-    for my $interface ( @interfaces ) {
-	if ( ! $interfaces{$interface}{zone4} && $interfaces{$interface}{options}{$option} ) {
+    for my $interface ( @{$interface_list} ) {
+	if ( ! $interface_table->{$interface}{zone} && $interface_table->{$interface}{options}{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIP ];
 	}
     }

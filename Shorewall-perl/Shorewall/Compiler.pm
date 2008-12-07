@@ -797,13 +797,15 @@ sub compiler {
     #
     determine_zones;
     #
-    # Process the interfaces file.
+    # Process the interfaces file(s).
     #
-    validate_interfaces_file ( $export );
+    validate_interfaces_file ( 'interfaces', $export );
     #
     # Process the hosts file.
     #
-    validate_hosts_file;
+    my $ipsec = validate_hosts_file( 'hosts' );
+
+    $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
     #
     # Report zone contents
     #

@@ -163,7 +163,7 @@ our %config;
 #
 # Config options and global settings that are to be copied to object script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
+our @propagateconfig = qw/ DISABLE_IPV6 IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
 our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 #
 # From parsing the capabilities file

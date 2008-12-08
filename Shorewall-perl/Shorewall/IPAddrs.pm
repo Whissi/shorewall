@@ -55,10 +55,6 @@ our @EXPORT = qw( ALLIPv4
 		  rfc1918_networks
 		  resolve_proto
 		  proto_name
-		  use_ipv4_addrs
-		  use_ipv6_addrs
-		  using_ipv4_addrs
-		  using_ipv6_addrs
 		  validate_port
 		  validate_portpair
 		  validate_port_list
@@ -84,22 +80,6 @@ use constant { ALLIPv4 => '0.0.0.0/0' ,
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
-sub use_ipv4_addrs() {
-    $family = F_IPV4;
-}    
-
-sub using_ipv4() {
-    $family == F_IPV4;
-}    
-
-sub use_ipv6_addrs() {
-    $family = F_IPV6;
-}    
-
-sub using_ipv6() {
-    $family == F_IPV6;
-}    
-
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -109,12 +89,12 @@ sub using_ipv6() {
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
-    use_ipv4_addrs;
+sub initialize( $ ) {
+    $family = shift;
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 sub vlsm_to_mask( $ ) {

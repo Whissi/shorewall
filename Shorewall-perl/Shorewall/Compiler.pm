@@ -62,7 +62,7 @@ use constant { EXPORT => 0x01 ,
 sub reinitialize() {
     Shorewall::Config::initialize($family);
     Shorewall::Chains::initialize ($family);
-    Shorewall::Zones::initialize;
+    Shorewall::Zones::initialize ($family);
     Shorewall::Policy::initialize;
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize;

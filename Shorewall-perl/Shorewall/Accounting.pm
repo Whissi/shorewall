@@ -111,25 +111,25 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 
     my $restriction = NO_RESTRICT;
 
-    $source = ALLIPv4 if $source eq 'any' || $source eq 'all';
+    $source = ALLIP if $source eq 'any' || $source eq 'all';
 
     if ( have_bridges ) {
 	my $fw = firewall_zone;
 
 	if ( $source =~ /^$fw:?(.*)$/ ) {
-	    $source = $1 ? $1 : ALLIPv4;
+	    $source = $1 ? $1 : ALLIP;
 	    $restriction = OUTPUT_RESTRICT;
 	    $chain = 'accountout' unless $chain and $chain ne '-';
-	    $dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
+	    $dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
 	} else {
 	    $chain = 'accounting' unless $chain and $chain ne '-';
-	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIPv4 ) {
+	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIP ) {
 		expand_rule(
 			    ensure_filter_chain( 'accountout' , 0 ) ,
 			    OUTPUT_RESTRICT ,
 			    $rule ,
 			    $source ,
-			    $dest = ALLIPv4 ,
+			    $dest = ALLIP ,
 			    '' ,
 			    '' ,
 			    $target ,
@@ -140,7 +140,7 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	}
     } else {
 	$chain = 'accounting' unless $chain and $chain ne '-';
-	$dest = ALLIPv4 if $dest   eq 'any' || $dest   eq 'all';
+	$dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
     }
 
     my $chainref = ensure_accounting_chain $chain;

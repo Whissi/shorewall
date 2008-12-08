@@ -119,7 +119,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.2.0;
+our $VERSION = 4.3.0;
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -1453,7 +1453,7 @@ sub default_yes_no ( $$ ) {
 sub default_yes_no_ipv4 ( $$ ) {
     my ( $var, $val ) = @_;
     default_yes_no( $var, $val );
-    warning_message "$var=Yes is ignored for IPv6" if $family == F_IPV4 && $config{$var};
+    warning_message "$var=Yes is ignored for IPv6" if $family == F_IPV6 && $config{$var};
 }
 
 my %validlevels = ( DEBUG   => 7,

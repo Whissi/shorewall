@@ -82,7 +82,7 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ipv4', 'ipsec4', 'bport4';
+#     %zones{<zone1> => {type = >      <zone type>       'firewall', 'ip', 'ipsec', 'bport';
 #                        options =>    { complex => 0|1
 #                                        nested  => 0|1
 #                                        in_out  => < policy match string >
@@ -127,7 +127,7 @@ our %reservedName = ( all => 1,
 #                                     options     => { <option1> = <val1> ,
 #                                                      ...
 #                                                    }
-#                                     zone4       => <zone name>
+#                                     zone        => <zone name>
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
@@ -138,6 +138,7 @@ our %reservedName = ( all => 1,
 our @interfaces;
 our %interfaces;
 our @bport_zones;
+our $family;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -148,7 +149,8 @@ our @bport_zones;
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
+    $family = shift;
     @zones = ();
     %zones = ();
     $firewall_zone = '';
@@ -159,7 +161,7 @@ sub initialize() {
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 #
@@ -219,7 +221,7 @@ sub parse_zone_option_list($$)
 	    if ( $key{$e} ) {
 		$h{$e} = $val;
 	    } else {
-		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype eq 'ipsec4';
+		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype eq 'ipsec';
 		$options .= $invert;
 		$options .= "--$e ";
 		$options .= "$val "if defined $val;
@@ -239,7 +241,7 @@ sub determine_zones()
 {
     my @z;
 
-    my $ipv4 = 0;
+    my $ip = 0;
 
     my $fn = open_file 'zones';
 
@@ -267,16 +269,23 @@ sub determine_zones()
 	fatal_error "Invalid zone name ($zone)"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
 	fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
 
-	$type = "ipv4" unless $type;
+	$type = "ip" unless $type;
 
 	if ( $type =~ /ipv4/i ) {
-	    $type = 'ipv4';
-	    $ipv4 = 1;
-	} elsif ( $type =~ /^ipsec4?$/i ) {
-	    $type = 'ipsec4';
-	} elsif ( $type =~ /^bport4?$/i ) {
+	    fatal_error "Invalid zone type ($type)" if $family == F_IPV6;
+	    $type = 'ip';
+	    $ip = 1;
+	} elsif ( $type =~ /ipv6/i ) {
+	    fatal_error "Invalid zone type ($type)" if $family == F_IPV4;
+	    $type = 'ip';
+	    $ip = 1;
+	} elsif ( $type =~ /^ipsec([46])?$/i ) {
+	    fatal_error "Invalid zone type ($type)" if ( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 );
+	    $type = 'ipsec';
+	} elsif ( $type =~ /^bport([46])?$/i ) {
+	    fatal_error "Invalid zone type ($type)" if ( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 );
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $type = 'bport4';
+	    $type = 'bport';
 	    push @bport_zones, $zone;
 	} elsif ( $type eq 'firewall' ) {
 	    fatal_error 'Firewall zone may not be nested' if @parents;
@@ -285,8 +294,8 @@ sub determine_zones()
 	    $ENV{FW} = $zone;
 	    $type = "firewall";
 	} elsif ( $type eq '-' ) {
-	    $type = 'ipv4';
-	    $ipv4 = 1;
+	    $type = 'ip';
+	    $ip = 1;
 	} else {
 	    fatal_error "Invalid zone type ($type)" ;
 	}
@@ -302,7 +311,7 @@ sub determine_zones()
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
 					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type eq 'ipsec4' || $options || $in_options || $out_options ? 1 : 0) ,
+					  complex => ($type eq 'ipsec' || $options || $in_options || $out_options ? 1 : 0) ,
 					  nested  => @parents > 0 } ,
 			  interfaces => {} ,
 			  children   => [] ,
@@ -312,7 +321,7 @@ sub determine_zones()
     }
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
-    fatal_error "No IPv4 zones defined" unless $ipv4;
+    fatal_error "No IP zones defined" unless $ip;
 
     my %ordered;
 
@@ -340,7 +349,7 @@ sub determine_zones()
 #
 sub haveipseczones() {
     for my $zoneref ( values %zones ) {
-	return 1 if $zoneref->{type} eq 'ipsec4';
+	return 1 if $zoneref->{type} eq 'ipsec';
     }
 
     0;
@@ -353,12 +362,16 @@ sub zone_report()
 {
     progress_message2 "Determining Hosts in Zones...";
 
+    my $ipzone = $family == F_IPV4 ? 'ipv4' : 'ipv6';
+
     for my $zone ( @zones )
     {
 	my $zoneref   = $zones{$zone};
 	my $hostref   = $zoneref->{hosts};
 	my $type      = $zoneref->{type};
 	my $optionref = $zoneref->{options};
+
+	$type = $ipzone if $type eq 'ip';
 
 	progress_message "   $zone ($type)";
 
@@ -384,7 +397,7 @@ sub zone_report()
 	}
 
 	unless ( $printed ) {
-	    fatal_error "No bridge has been associated with zone $zone" if $type eq 'bport4' && ! $zoneref->{bridge};
+	    fatal_error "No bridge has been associated with zone $zone" if $type eq 'bport' && ! $zoneref->{bridge};
 	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type eq 'firewall';
 	}
 
@@ -393,6 +406,18 @@ sub zone_report()
 
 sub dump_zone_contents()
 {
+    my %xlate;
+
+    if ( $family == F_IPV4 ) {
+	%xlate = ( ip =>    'ipv4' ,
+		   bport => 'bport4' ,
+		   ipsec => 'ipsec4' )
+    } else {
+	%xlate = ( ip =>    'ipv6' ,
+		   bport => 'bport6' ,
+		   ipsec => 'ipsec6' )
+    }
+
     for my $zone ( @zones )
     {
 	my $zoneref    = $zones{$zone};
@@ -400,9 +425,12 @@ sub dump_zone_contents()
 	my $type       = $zoneref->{type};
 	my $optionref  = $zoneref->{options};
 	my $exclusions = $zoneref->{exclusions};
+
+	$type = $xlate{$type} if $xlate{$type};
+
 	my $entry      =  "$zone $type";
 
-	$entry .= ":$zoneref->{bridge}" if $type eq 'bport4';
+	$entry .= ":$zoneref->{bridge}" if $type =~ /^bport/;
 
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {
@@ -455,7 +483,7 @@ sub add_group_to_zone($$$$$)
     my $arrayref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    my $ifacezone = $interfaces{$interface}{zone4};
+    my $ifacezone = $interfaces{$interface}{zone};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -481,7 +509,7 @@ sub add_group_to_zone($$$$$)
 	unless ( $switched ) {
 	    if ( $type eq $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $ifacezone eq $zone;
-		$ifacezone = $zone if $host eq ALLIPv4;
+		$ifacezone = $zone if $host eq ALLIP;
 	    }
 	}
 
@@ -506,7 +534,7 @@ sub add_group_to_zone($$$$$)
 
     push @{$arrayref}, { options => $options,
 			 hosts   => \@newnetworks,
-			 ipsec   => $type eq 'ipsec4' ? 'ipsec' : 'none' };
+			 ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' };
 }
 
 #
@@ -624,7 +652,7 @@ sub validate_interfaces_file( $ )
 	    fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
 	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport4';
+	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} ne 'bport';
 
 	    if ( $zone ) {
 		if ( $zoneref->{bridge} ) {
@@ -644,7 +672,7 @@ sub validate_interfaces_file( $ )
 	    $interface = $port;
 	} else {
 	    fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
-	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport4';
+	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} eq 'bport';
 	    $bridge = $interface;
 	}
 
@@ -746,11 +774,11 @@ sub validate_interfaces_file( $ )
  
 	push @ifaces, $interface;
 
-	my @networks = allipv4;
+	my @networks = allip;
 
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
 
-    	$interfaces{$interface}{zone4} = $zone; #Must follow the call to add_group_to_zone()
+    	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 
 	progress_message "   Interface \"$currentline\" Validated";
 
@@ -949,7 +977,7 @@ sub validate_hosts_file()
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
 
-	if ( $type eq 'bport4' ) {
+	if ( $type eq 'bport' ) {
 	    if ( $zoneref->{bridge} eq '' ) {
 		fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
 		$zoneref->{bridge} = $interfaces{$interface}{bridge};
@@ -967,7 +995,7 @@ sub validate_hosts_file()
 	    for my $option ( @options )
 	    {
 		if ( $option eq 'ipsec' ) {
-		    $type = 'ipsec4';
+		    $type = 'ipsec';
 		    $zoneref->{options}{complex} = 1;
 		    $ipsec = 1;
 		} elsif ( $validoptions{$option}) {
@@ -993,7 +1021,7 @@ sub validate_hosts_file()
 	#
 	# Take care of case where the hosts list begins with '!'
 	#
-	$hosts = join( '', ALLIPv4 , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
+	$hosts = join( '', ALLIP , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
 
 	add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 
@@ -1026,8 +1054,8 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	if ( ! $interfaces{$interface}{zone4} && $interfaces{$interface}{options}{$option} ) {
-	    push @hosts, [ $interface, 'none', ALLIPv4 ];
+	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
+	    push @hosts, [ $interface, 'none', ALLIP ];
 	}
     }
 

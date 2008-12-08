@@ -419,14 +419,14 @@ sub add_an_rtrule( $$$$ ) {
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
     if ( $dest eq '-' ) {
-	$dest = 'to ' . ALLIPv4; 
+	$dest = 'to ' . ALLIP; 
     } else {
 	validate_net( $dest, 0 );
 	$dest = "to $dest";
     }
 
     if ( $source eq '-' ) {
-	$source = 'from ' . ALLIPv4;
+	$source = 'from ' . ALLIP;
     } elsif ( $source =~ /:/ ) {
 	( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
 	fatal_error "Invalid SOURCE" if defined $remainder;

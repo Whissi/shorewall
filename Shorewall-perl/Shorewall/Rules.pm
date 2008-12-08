@@ -177,7 +177,7 @@ sub setup_ecn()
 
 	    $interfaces{$interface} = 1;
 
-	    $hosts = ALLIPv4 if $hosts eq '-';
+	    $hosts = ALLIP if $hosts eq '-';
 
 	    for my $host( split_list $hosts, 'address' ) {
 		validate_host( $host , 1 );
@@ -361,7 +361,7 @@ sub process_criticalhosts() {
 
 	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
-	$hosts = ALLIPv4 unless $hosts ne '-';
+	$hosts = ALLIP unless $hosts ne '-';
 
 	my @hosts;
 
@@ -402,7 +402,7 @@ sub process_routestopped() {
 
 	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
-	$hosts = ALLIPv4 unless $hosts && $hosts ne '-';
+	$hosts = ALLIP unless $hosts && $hosts ne '-';
 
 	my @hosts;
 
@@ -1034,7 +1034,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$source = $2;
     } else {
 	$sourcezone = $source;
-	$source = ALLIPv4;
+	$source = ALLIP;
     }
 
     if ( $dest =~ /^(.*?):(.*)/ ) {
@@ -1048,7 +1048,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$destzone = '-';
     } else {
 	$destzone = $dest;
-	$dest = ALLIPv4;
+	$dest = ALLIP;
     }
 
     fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
@@ -1073,7 +1073,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # For compatibility with older Shorewall versions
     #
-    $origdest = ALLIPv4 if $origdest eq 'all';
+    $origdest = ALLIP if $origdest eq 'all';
 
     #
     # Take care of chain
@@ -1083,7 +1083,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	# Check for illegal bridge port rule
 	#
-	if ( $destref->{type} eq 'bport4' ) {
+	if ( $destref->{type} eq 'bport' ) {
 	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
 		return 1 if $wildcard;
 		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
@@ -1178,14 +1178,14 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $target  = '-j REDIRECT ';
 	    $target .= "--to-port $serverport " if $serverport;
 	    if ( $origdest eq '' || $origdest eq '-' ) {
-		$origdest = ALLIPv4;
+		$origdest = ALLIP;
 	    } elsif ( $origdest eq 'detect' ) {
 		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
 		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
-		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
+		    $origdest = @interfaces ? "detect:@interfaces" : ALLIP;
  		} else {
-		    $origdest = ALLIPv4;
+		    $origdest = ALLIP;
 		}
 	    }
 	} else {
@@ -1218,9 +1218,9 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
 		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
-		    $origdest = @interfaces ? "detect:@interfaces" : ALLIPv4;
+		    $origdest = @interfaces ? "detect:@interfaces" : ALLIP;
 		} else {
-		    $origdest = ALLIPv4;
+		    $origdest = ALLIP;
 		}
 	    }
 	}
@@ -1265,7 +1265,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	if ( $origdest eq 'detect' ) {
 	    my $interfacesref = $sourceref->{interfaces};
 	    my $interfaces = "@$interfacesref";
-	    $origdest = $interfaces ? "detect:$interfaces" : ALLIPv4;
+	    $origdest = $interfaces ? "detect:$interfaces" : ALLIP;
 	}
 
 	expand_rule( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
@@ -1604,7 +1604,7 @@ sub generate_matrix() {
 
 	if ( $capabilities{POLICY_MATCH} ) {
 	    my $type       = $zoneref->{type};
-	    my $source_ref = ( $zoneref->{hosts}{ipsec4} ) || {};
+	    my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
 
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
 		my $sourcechainref;
@@ -1821,7 +1821,7 @@ sub generate_matrix() {
 		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 		}
 
-		if ( $zone1ref->{type} eq 'bport4' ) {
+		if ( $zone1ref->{type} eq 'bport' ) {
 		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 		}
 
@@ -1873,7 +1873,7 @@ sub generate_matrix() {
 		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
 	    }
 
-	    if ( $zone1ref->{type} eq 'bport4' ) {
+	    if ( $zone1ref->{type} eq 'bport' ) {
 		next ZONE1 unless $zoneref->{bridge} eq $zone1ref->{bridge};
 	    }
 

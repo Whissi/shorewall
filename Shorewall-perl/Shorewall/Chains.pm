@@ -150,7 +150,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.1.5;
+our $VERSION = 4.3.0;
 
 #
 # Chain Table
@@ -623,13 +623,13 @@ sub use_input_chain($) {
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one
     #
-    my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone4}};
+    my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone}};
 
     return 0 if $chainref;
     #
     # Use the '<zone>2fw' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '' , $interfaceref->{zone4} , '2' , firewall_zone )};
+    $chainref = $filter_table->{join( '' , $interfaceref->{zone} , '2' , firewall_zone )};
 
     ! ( $chainref->{referenced} || $chainref->{is_policy} )
 }   
@@ -667,13 +667,13 @@ sub use_output_chain($) {
     #
     # Interface associated with a single zone -- use the zone's output chain if it has one
     #    
-    my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone4}};
+    my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone}};
 
     return 0 if $chainref;
     #
     # Use the 'fw2<zone>' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone4} )};
+    $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
 
     ! ( $chainref->{referenced} || $chainref->{is_policy} )
 }
@@ -1553,7 +1553,7 @@ sub match_source_net( $;$ ) {
 	"-s ! $net ";
     } else {
 	validate_net $net, 1;
-	$net eq ALLIPv4 ? '' : "-s $net ";
+	$net eq ALLIP ? '' : "-s $net ";
     }
 }
 
@@ -1577,7 +1577,7 @@ sub match_dest_net( $ ) {
 	"-d ! $net ";
     } else {
 	validate_net $net, 1;
-	$net eq ALLIPv4 ? '' : "-d $net ";
+	$net eq ALLIP ? '' : "-d $net ";
     }
 }
 
@@ -1587,7 +1587,7 @@ sub match_dest_net( $ ) {
 sub match_orig_dest ( $ ) {
     my $net = $_[0];
 
-    return '' if $net eq ALLIPv4;
+    return '' if $net eq ALLIP;
     return '' unless $capabilities{CONNTRACK_MATCH};
 
     if ( $net =~ s/^!// ) {
@@ -1595,7 +1595,7 @@ sub match_orig_dest ( $ ) {
 	$capabilities{OLD_CONNTRACK_MATCH} ? "-m conntrack --ctorigdst ! $net " : "-m conntrack ! --ctorigdst $net ";
     } else {
 	validate_net $net, 1;
-	$net eq ALLIPv4 ? '' : "-m conntrack --ctorigdst $net ";
+	$net eq ALLIP ? '' : "-m conntrack --ctorigdst $net ";
     }
 }
 
@@ -1608,7 +1608,7 @@ sub match_ipsec_in( $$ ) {
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} eq 'ipsec4' ) {
+    if ( $zoneref->{type} eq 'ipsec' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
@@ -1626,7 +1626,7 @@ sub match_ipsec_out( $$ ) {
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} eq 'ipsec4' ) {
+    if ( $zoneref->{type} eq 'ipsec' ) {
 	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
     } elsif ( $capabilities{POLICY_MATCH} ) {
 	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
@@ -2210,12 +2210,12 @@ sub expand_rule( $$$$$$$$$$$ )
 	$dexcl = '';
     }
 
-    $inets = ALLIPv4 unless $inets;
-    $dnets = ALLIPv4 unless $dnets;
-    $onets = ALLIPv4 unless $onets;
+    $inets = ALLIP unless $inets;
+    $dnets = ALLIP unless $dnets;
+    $onets = ALLIP unless $onets;
 
-    fatal_error "Input interface may not be specified with a source IP address in the POSTROUTING chain"      if $restriction == POSTROUTE_RESTRICT && $iiface && $inets ne ALLIPv4;
-    fatal_error "Output interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && $dnets ne ALLIPv4;
+    fatal_error "Input interface may not be specified with a source IP address in the POSTROUTING chain"      if $restriction == POSTROUTE_RESTRICT && $iiface && $inets ne ALLIP;
+    fatal_error "Output interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && $dnets ne ALLIP;
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#

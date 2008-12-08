@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = 4.1.1;
+our $VERSION = 4.3.0;
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -269,7 +269,7 @@ sub validate_policy()
 	}
 
 	unless ( $clientwild || $serverwild ) {
-	    if ( zone_type( $server ) eq 'bport4' ) {
+	    if ( zone_type( $server ) eq 'bport' ) {
 		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
 		    unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
 	    }

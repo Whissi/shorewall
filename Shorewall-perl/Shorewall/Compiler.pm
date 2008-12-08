@@ -37,6 +37,7 @@ use Shorewall::Accounting;
 use Shorewall::Rules;
 use Shorewall::Proc;
 use Shorewall::Proxyarp;
+use Shorewall::IPAddrs;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
@@ -48,6 +49,8 @@ our $export;
 our $test;
 
 our $reused = 0;
+
+our $family;
 
 use constant { EXPORT => 0x01 ,
 	       TIMESTAMP => 0x02 ,
@@ -68,6 +71,21 @@ sub reinitialize() {
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize;
     Shorewall::Proxyarp::initialize;
+    $family = 0;
+}
+
+sub use_ipv4() {
+    use_ipv4_addrs;
+    use_ipv4_interfaces;
+    use_ipv4_policies;
+    $family = F_INET;
+}
+
+sub use_ipv6() {
+    use_ipv6_addrs;
+    use_ipv6_interfaces;
+    use_ipv6_policies;
+    $family = F_INET;
 }
 
 #
@@ -799,6 +817,7 @@ sub compiler {
     #
     # Process the interfaces file(s).
     #
+    use_ipv4;
     validate_interfaces_file ( 'interfaces', $export );
     #
     # Process the hosts file.

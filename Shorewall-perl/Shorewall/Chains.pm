@@ -50,6 +50,7 @@ our @EXPORT = qw(
 		  $nat_table
 		  $mangle_table
 		  $filter_table
+		  $targets
 		  );
 
 our %EXPORT_TAGS = ( 
@@ -149,7 +150,7 @@ our %EXPORT_TAGS = (
 				       create_chainlist_reload
 				       $section
 				       %sections
-				       %targets
+				       $targets
 				     ) ],
 		   );
 
@@ -231,7 +232,6 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       IPV4ONLY => 2048,           #Not Available with IPV6
 	   };
 
-our %targets;
 #
 # expand_rule() restrictions
 #
@@ -264,16 +264,22 @@ use constant { NULL_MODE => 0 ,   # Generating neither shell commands nor iptabl
 
 our $mode;
 
+our %targets4;
+our %targets6;
+our $targets;
+
 sub use_ipv4_chains() {
     $nat_table    = $chain_table{nat};
     $mangle_table = $chain_table{mangle};
     $filter_table = $chain_table{filter};
+    $targets      = \%targets4;
 }    
 
 sub use_ipv6_chains() {
     $nat_table    = undef;
     $mangle_table = $chain_table{mangle6};
     $filter_table = $chain_table{filter6};
+    $targets      = \%targets6;
 }    
 
 #
@@ -318,40 +324,6 @@ sub initialize() {
     #
     $comment = '';
     #
-    #   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
-    #
-    %targets = ('ACCEPT'          => STANDARD,
-		'ACCEPT+'         => STANDARD  + NONAT    + IPV4ONLY,
-		'ACCEPT!'         => STANDARD,
-		'NONAT'           => STANDARD  + NONAT    + NATONLY + IPV4ONLY,
-		'DROP'            => STANDARD,
-		'DROP!'           => STANDARD,
-		'REJECT'          => STANDARD,
-		'REJECT!'         => STANDARD,
-		'DNAT'            => NATRULE   + IPV4ONLY,
-		'DNAT-'           => NATRULE   + NATONLY  + IPV4ONLY,
-		'REDIRECT'        => NATRULE   + REDIRECT + IPV4ONLY,
-		'REDIRECT-'       => NATRULE   + REDIRECT + NATONLY + IPV4ONLY,
-		'LOG'             => STANDARD  + LOGRULE,
-		'CONTINUE'        => STANDARD,
-		'CONTINUE!'       => STANDARD,
-		'QUEUE'           => STANDARD,
-		'QUEUE!'          => STANDARD,
-                'NFQUEUE'         => STANDARD  + NFQ,
-                'NFQUEUE!'        => STANDARD  + NFQ,
-		'SAME'            => NATRULE   + IPV4ONLY,
-		'SAME-'           => NATRULE   + NATONLY  + IPV4ONLY,
-		'dropBcast'       => BUILTIN   + ACTION,
-		'allowBcast'      => BUILTIN   + ACTION,
-		'dropNotSyn'      => BUILTIN   + ACTION,
-		'rejNotSyn'       => BUILTIN   + ACTION,
-		'dropInvalid'     => BUILTIN   + ACTION,
-		'allowInvalid'    => BUILTIN   + ACTION,
-		'allowinUPnP'     => BUILTIN   + ACTION,
-		'forwardUPnP'     => BUILTIN   + ACTION,
-		'Limit'           => BUILTIN   + ACTION,
-		);
-    #
     # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
     #
     $exclseq = 0;
@@ -374,6 +346,63 @@ sub initialize() {
     %interfacegateways  = ();
 
     @ipv4tables = ( qw/ filter / );
+
+    #
+    #   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
+    #
+    %targets4 = ('ACCEPT'          => STANDARD,
+		 'ACCEPT+'         => STANDARD  + NONAT,
+		 'ACCEPT!'         => STANDARD,
+		 'NONAT'           => STANDARD  + NONAT    + NATONLY,
+		 'DROP'            => STANDARD,
+		 'DROP!'           => STANDARD,
+		 'REJECT'          => STANDARD,
+		 'REJECT!'         => STANDARD,
+		 'DNAT'            => NATRULE,
+		 'DNAT-'           => NATRULE   + NATONLY,
+		 'REDIRECT'        => NATRULE   + REDIRECT,
+		 'REDIRECT-'       => NATRULE   + REDIRECT + NATONLY,
+		 'LOG'             => STANDARD  + LOGRULE,
+		 'CONTINUE'        => STANDARD,
+		 'CONTINUE!'       => STANDARD,
+		 'QUEUE'           => STANDARD,
+		 'QUEUE!'          => STANDARD,
+		 'NFQUEUE'         => STANDARD  + NFQ,
+		 'NFQUEUE!'        => STANDARD  + NFQ,
+		 'SAME'            => NATRULE,
+		 'SAME-'           => NATRULE   + NATONLY,
+		 'dropBcast'       => BUILTIN   + ACTION,
+		 'allowBcast'      => BUILTIN   + ACTION,
+		 'dropNotSyn'      => BUILTIN   + ACTION,
+		 'rejNotSyn'       => BUILTIN   + ACTION,
+		 'dropInvalid'     => BUILTIN   + ACTION,
+		 'allowInvalid'    => BUILTIN   + ACTION,
+		 'allowinUPnP'     => BUILTIN   + ACTION,
+		 'forwardUPnP'     => BUILTIN   + ACTION,
+		 'Limit'           => BUILTIN   + ACTION,
+		);
+
+    %targets6 = ('ACCEPT'          => STANDARD,
+		 'NONAT'           => STANDARD  + NONAT    + NATONLY,
+		 'DROP!'           => STANDARD,
+		 'LOG'             => STANDARD  + LOGRULE,
+		 'CONTINUE'        => STANDARD,
+		 'CONTINUE!'       => STANDARD,
+		 'QUEUE'           => STANDARD,
+		 'QUEUE!'          => STANDARD,
+		 'NFQUEUE'         => STANDARD  + NFQ,
+		 'NFQUEUE!'        => STANDARD  + NFQ,
+		 'dropBcast'       => BUILTIN   + ACTION,
+		 'allowBcast'      => BUILTIN   + ACTION,
+		 'dropNotSyn'      => BUILTIN   + ACTION,
+		 'rejNotSyn'       => BUILTIN   + ACTION,
+		 'dropInvalid'     => BUILTIN   + ACTION,
+		 'allowInvalid'    => BUILTIN   + ACTION,
+		 'allowinUPnP'     => BUILTIN   + ACTION,
+		 'forwardUPnP'     => BUILTIN   + ACTION,
+		 'Limit'           => BUILTIN   + ACTION,
+		);
+
 }
 
 INIT {
@@ -557,7 +586,7 @@ sub add_jump( $$$;$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless ( $targets{$to} || 0 ) & STANDARD;
+	$toref = ensure_chain( $fromref->{table} , $to ) unless ( $targets->{$to} || 0 ) & STANDARD;
     }
     
     #
@@ -933,8 +962,8 @@ sub new_nat_chain($) {
 
 sub new_manual_chain($) {
     my $chain = $_[0];
-    fatal_error "Duplicate Chain Name ($chain)" if $targets{$chain} || $filter_table->{$chain};
-    $targets{$chain} = CHAIN;
+    fatal_error "Duplicate Chain Name ($chain)" if $targets->{$chain} || $filter_table->{$chain};
+    $targets->{$chain} = CHAIN;
     ( my $chainref = ensure_filter_chain( $chain, 0) )->{manual} = 1;
     $chainref->{referenced} = 1;
     $chainref;

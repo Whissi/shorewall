@@ -194,7 +194,7 @@ sub validate_policy( $ )
     for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
 	my $action = $config{$option};
 	next if $action eq 'none';
-	my $actiontype = $targets{$action};
+	my $actiontype = $targets->{$action};
 
 	if ( defined $actiontype ) {
 	    fatal_error "Invalid setting ($action) for $option" unless $actiontype & ACTION;
@@ -202,12 +202,12 @@ sub validate_policy( $ )
 	    fatal_error "Default Action $option=$action not found";
 	}
 
-	unless ( $usedactions{$action} ) {
-	    $usedactions{$action} = 1;
+	unless ( $usedactions->{$action} ) {
+	    $usedactions->{$action} = 1;
 	    createactionchain $action;
 	}
 
-	$default_actions{$map{$option}} = $action;
+	$default_actions->{$map{$option}} = $action;
     }
 
     for $zone ( all_zones ) {
@@ -255,11 +255,11 @@ sub validate_policy( $ )
 	    if ( "\L$default" eq 'none' ) {
 		$default = 'none';
 	    } else {
-		my $defaulttype = $targets{$default} || 0;
+		my $defaulttype = $targets->{$default} || 0;
 
 		if ( $defaulttype & ACTION ) {
-		    unless ( $usedactions{$default} ) {
-			$usedactions{$default} = 1;
+		    unless ( $usedactions->{$default} ) {
+			$usedactions->{$default} = 1;
 			createactionchain $default;
 		    }
 		} else {
@@ -267,7 +267,7 @@ sub validate_policy( $ )
 		}
 	    }
 	} else {
-	    $default = $default_actions{$policy} || '';
+	    $default = $default_actions->{$policy} || '';
 	}
 
 	fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};

@@ -28,6 +28,7 @@ require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
+use Shorewall::IPAddrs;
 
 use strict;
 
@@ -48,11 +49,11 @@ our @EXPORT = qw( merge_levels
 		  merge_macro_source_dest
 		  merge_macro_column
 
-		  %usedactions
-		  %default_actions
-		  %actions
+		  $usedactions
+		  $default_actions
+		  $actions
 
-		  %macros
+		  $macros
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
@@ -61,11 +62,15 @@ our $VERSION = 4.1.1;
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
 #
-our %usedactions;
+our %usedactions4;
+our %usedactions6;
+our $usedactions;
 #
 # Default actions for each policy.
 #
-our %default_actions;
+our %default_actions4;
+our %default_actions6;
+our $default_actions;
 
 #  Action Table
 #
@@ -75,18 +80,46 @@ our %default_actions;
 #                                           } ,
 #                               actchain => <action chain number> # Used for generating unique chain names for each <level>:<tag> pair.
 #
-our %actions;
+our %actions4;
+our %actions6;
+our $actions;
 #
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
-our %logactionchains;
+our %logactionchains4;
+our %logactionchains6;
+our $logactionchains;
 
-our %macros;
+our $action_prefix;
+
+our %macros4;
+our %macros6;
+our $macros;
+
+our $macro_prefix;
 
 #
 # Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
 #
 our $macro_commands = { COMMENT => 0, FORMAT => 2 };
+
+sub use_ipv4_actions() {
+    $usedactions     = \%usedactions4;
+    $default_actions = \%default_actions4;
+    $actions         = \%actions4;
+    $macros          = \%macros4;
+    $action_prefix   = 'action4';
+    $macro_prefix    = 'macro4';
+}
+
+sub use_ipv6_actions() {
+    $usedactions     = \%usedactions6;
+    $default_actions = \%default_actions6;
+    $actions         = \%actions6;
+    $macros          = \%macros6;
+    $action_prefix   = 'action6';
+    $macro_prefix    = 'macro6';
+}
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -98,14 +131,24 @@ our $macro_commands = { COMMENT => 0, FORMAT => 2 };
 #
 
 sub initialize() {
-    %usedactions     = ();
-    %default_actions = ( DROP     => 'none' ,
-			 REJECT   => 'none' ,
-			 ACCEPT   => 'none' ,
-			 QUEUE    => 'none' );
-    %actions         = ();
-    %logactionchains = ();
-    %macros          = ();
+    %usedactions4     = ();
+    %usedactions6     = ();
+    %default_actions4 = ( DROP     => 'none' ,
+			  REJECT   => 'none' ,
+			  ACCEPT   => 'none' ,
+			  QUEUE    => 'none' );
+    %default_actions6 = ( DROP     => 'none' ,
+			  REJECT   => 'none' ,
+			  ACCEPT   => 'none' ,
+			  QUEUE    => 'none' );
+    %actions4         = ();
+    %actions6         = ();
+    %logactionchains4 = ();
+    %logactionchains6 = ();
+    %macros4          = ();
+    %macros6          = ();
+
+    use_ipv4_actions;
 }
 
 INIT {
@@ -153,11 +196,13 @@ sub merge_levels ($$) {
 sub find_macro( $ )
 {
     my $macro = $_[0];
-    my $macrofile = find_file "macro.$macro";
+    my $macrofile = find_file "${macro_prefix}.$macro";
+    
+    $macrofile = find_file "macro.$macro" unless -f $macrofile;
 
     if ( -f $macrofile ) {
-	$macros{$macro} = $macrofile;
-	$targets{$macro} = MACRO;
+	$macros->{$macro} = $macrofile;
+	$targets->{$macro} = MACRO;
     } else {
 	0;
     }
@@ -252,7 +297,7 @@ sub new_action( $ ) {
 
     my $action = $_[0];
 
-    $actions{$action} = { actchain => '', requires => {} };
+    $actions->{$action} = { actchain => '', requires => {} };
 }
 
 #
@@ -260,7 +305,7 @@ sub new_action( $ ) {
 #
 sub add_requiredby ( $$ ) {
     my ($requiredby , $requires ) = @_;
-    $actions{$requires}{requires}{$requiredby} = 1;
+    $actions->{$requires}{requires}{$requiredby} = 1;
 }
 
 #
@@ -280,7 +325,7 @@ sub add_requiredby ( $$ ) {
 sub createlogactionchain( $$ ) {
     my ( $action, $level ) = @_;
     my $chain = $action;
-    my $actionref = $actions{$action};
+    my $actionref = $actions->{$action};
     my $chainref;
     
     my ($lev, $tag) = split ':', $level;
@@ -293,15 +338,15 @@ sub createlogactionchain( $$ ) {
 
   CHECKDUP:
     {
-	$actionref->{actchain}++ while $chain_table{filter}{'%' . $chain . $actionref->{actchain}};
+	$actionref->{actchain}++ while $filter_table->{'%' . $chain . $actionref->{actchain}};
 	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
     }
 
-    $logactionchains{"$action:$level"} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
+    $logactionchains->{"$action:$level"} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
     
-    unless ( $targets{$action} & STANDARD ) {
+    unless ( $targets->{$action} & STANDARD ) {
 
 	my $file = find_file $chain;
 
@@ -325,9 +370,9 @@ sub createsimpleactionchain( $ ) {
     my $action  = shift;
     my $chainref = new_standard_chain $action;
 
-    $logactionchains{"$action:none"} = $chainref;
+    $logactionchains->{"$action:none"} = $chainref;
 
-    unless ( $targets{$action} & STANDARD ) {
+    unless ( $targets->{$action} & STANDARD ) {
 
 	my $file = find_file $action;
 
@@ -374,7 +419,7 @@ sub find_logactionchain( $ ) {
 
     $level = 'none' unless $level;
 
-    fatal_error "Fatal error in find_logactionchain" unless $logactionchains{"$action:$level"};
+    fatal_error "Fatal error in find_logactionchain" unless $logactionchains->{"$action:$level"};
 }
 
 #
@@ -416,7 +461,7 @@ sub process_macro1 ( $$ ) {
 
 	$mtarget = (split '/' , $mtarget)[0];
 
-	my $targettype = $targets{$mtarget};
+	my $targettype = $targets->{$mtarget};
 
 	$targettype = 0 unless defined $targettype;
 
@@ -436,7 +481,7 @@ sub process_action1 ( $$ ) {
 
     $level = 'none' unless $level;
 
-    my $targettype = $targets{$target};
+    my $targettype = $targets->{$target};
 
     if ( defined $targettype ) {
 	return if ( $targettype == STANDARD ) || ( $targettype & ( MACRO | LOGRULE |  NFQ | CHAIN ) );
@@ -454,7 +499,7 @@ sub process_action1 ( $$ ) {
 	return if $target eq 'NFQUEUE';
 
 	if ( defined $param ) {
-	    my $paramtype = $targets{$param} || 0;
+	    my $paramtype = $targets->{$param} || 0;
 
 	    fatal_error "Parameter value not allowed in action files ($param)" if $paramtype & NATRULE;
 	}
@@ -462,7 +507,7 @@ sub process_action1 ( $$ ) {
 	fatal_error "Invalid or missing ACTION ($wholetarget)" unless defined $target;
 
 	if ( find_macro $target ) {
-	    process_macro1( $action, $macros{$target} );
+	    process_macro1( $action, $macros->{$target} );
 	} else {
 	    fatal_error "Invalid TARGET ($target)";
 	}
@@ -473,7 +518,7 @@ sub process_actions1() {
 
     progress_message2 "Preprocessing Action Files...";
 
-    for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
+    for my $act ( grep $targets->{$_} & ACTION , keys %{$targets} ) {
 	new_action $act;
     }
 
@@ -490,18 +535,20 @@ sub process_actions1() {
 
 	    next unless $action;
 
-	    if ( $targets{$action} ) {
-		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ACTION;
+	    if ( $targets->{$action} ) {
+		warning_message "Duplicate Action Name ($action) Ignored" unless $targets->{$action} & ACTION;
 		next;
 	    }
 
-	    $targets{$action} = ACTION;
+	    $targets->{$action} = ACTION;
 
 	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
 
 	    new_action $action;
 
-	    my $actionfile = find_file "action.$action";
+	    my $actionfile = find_file "${action_prefix}.$action";
+
+	    $actionfile = find_file "action.$action" unless -f $actionfile;
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
@@ -529,14 +576,14 @@ sub process_actions2 () {
 
     while ( $changed ) {
 	$changed = 0;
-	for my $target (keys %usedactions) {
+	for my $target (keys %{$usedactions}) {
 	    my ($action, $level) = split_action $target;
-	    my $actionref = $actions{$action};
+	    my $actionref = $actions->{$action};
 	    fatal_error "Null Action Reference in process_actions2" unless $actionref;
 	    for my $action1 ( keys %{$actionref->{requires}} ) {
 		my $action2 = merge_levels $target, $action1;
-		unless ( $usedactions{ $action2 } ) {
-		    $usedactions{ $action2 } = 1;
+		unless ( $usedactions->{ $action2 } ) {
+		    $usedactions->{ $action2 } = 1;
 		    createactionchain $action2;
 		    $changed = 1;
 		}
@@ -588,7 +635,7 @@ sub process_macro3( $$$$$$$$$$$ ) {
 
     macro_comment $macro;
 
-    my $fn = $macros{$macro};
+    my $fn = $macros->{$macro};
 
     progress_message "..Expanding Macro $fn...";
 
@@ -673,7 +720,9 @@ sub process_macro3( $$$$$$$$$$$ ) {
 #
 sub process_action3( $$$$$ ) {
     my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
-    my $actionfile = find_file "action.$action";
+    my $actionfile = find_file "${action_prefix}.$action";
+
+    $actionfile = find_file "action.$action" unless -f $actionfile;
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
@@ -696,7 +745,7 @@ sub process_action3( $$$$$ ) {
 
 	( $action2 , my $param ) = get_target_param $action2;
 
-	my $action2type = $targets{$action2} || 0; 
+	my $action2type = $targets->{$action2} || 0; 
 
 	unless ( $action2type == STANDARD ) {
 	    if ( $action2type & ACTION ) {
@@ -851,14 +900,14 @@ sub process_actions3 () {
 		       'forwardUPnP'    => \&forwardUPnP, 
 		       'Limit'          => \&Limit, );
 
-    for my $wholeaction ( keys %usedactions ) {
+    for my $wholeaction ( keys %{$usedactions} ) {
 	my $chainref = find_logactionchain $wholeaction;
 	my ( $action, $level, $tag ) = split /:/, $wholeaction;
 
 	$level = '' unless defined $level;
 	$tag   = '' unless defined $tag;
 
-	if ( $targets{$action} & BUILTIN ) {
+	if ( $targets->{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;
 	    $builtinops{$action}->($chainref, $level, $tag);
 	} else {

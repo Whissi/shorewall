@@ -827,7 +827,7 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 
     macro_comment $macro;
 
-    my $macrofile = $macros{$macro};
+    my $macrofile = $macros->{$macro};
 
     progress_message "..Expanding Macro $macrofile...";
 
@@ -867,7 +867,7 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 
 	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;
 
-	my $actiontype = $targets{$action} || find_macro( $action );
+	my $actiontype = $targets->{$action} || find_macro( $action );
 
 	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO );
 
@@ -944,7 +944,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
+    my $actiontype = $targets->{$basictarget} || find_macro( $basictarget );
 
     fatal_error "Unknown action ($action)" unless $actiontype;
 
@@ -997,8 +997,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     # Mark target as used
     #
     if ( $actiontype & ACTION ) {
-	unless ( $usedactions{$target} ) {
-	    $usedactions{$target} = 1;
+	unless ( $usedactions->{$target} ) {
+	    $usedactions->{$target} = 1;
 	    createactionchain $target;
 	}
     }

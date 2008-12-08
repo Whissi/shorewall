@@ -89,7 +89,7 @@ use constant { ALLIPv4 => '0.0.0.0/0' ,
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
-sub use_ipv4() {
+sub use_ipv4_addrs() {
     $family = F_INET;
 }    
 
@@ -97,7 +97,7 @@ sub using_ipv4() {
     $family == F_INET;
 }    
 
-sub use_ipv6() {
+sub use_ipv6_addrs() {
     $family = F_INET6;
 }    
 
@@ -115,7 +115,7 @@ sub using_ipv6() {
 #
 
 sub initialize() {
-    use_ipv4;
+    use_ipv4_addrs;
 }
 
 INIT {

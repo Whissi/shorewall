@@ -37,6 +37,9 @@ our @EXPORT = qw( NOTHING
 		  IPSECPROTO
 		  IPSECMODE
 
+		  use_ipv4_interfaces
+		  use_ipv6_interfaces
+
 		  determine_zones
 		  zone_report
 		  dump_zone_contents

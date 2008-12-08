@@ -169,9 +169,8 @@ sub print_policy($$$$) {
     }
 }
 
-sub validate_policy( $ )
+sub validate_policy()
 {
-    my $filename = shift;
     my %validpolicies = (
 			  ACCEPT => undef,
 			  REJECT => undef,
@@ -223,7 +222,7 @@ sub validate_policy( $ )
 	}
     }
 
-    my $fn = open_file $filename;
+    my $fn = open_file( $policy_family == F_INET ? 'policy' : '6policy');
 
     first_entry "$doing $fn...";
 

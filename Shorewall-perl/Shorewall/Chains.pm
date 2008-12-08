@@ -256,6 +256,7 @@ our $mode;
 our %targets4;
 our %targets6;
 our $targets;
+our $chain_family;
 
 sub use_ipv4_chains() {
     $chain_table  = \%chain_table4;
@@ -263,6 +264,7 @@ sub use_ipv4_chains() {
     $mangle_table = $chain_table->{mangle};
     $filter_table = $chain_table->{filter};
     $targets      = \%targets4;
+    $chain_family = F_INET;
 }    
 
 sub use_ipv6_chains() {
@@ -271,6 +273,7 @@ sub use_ipv6_chains() {
     $mangle_table = $chain_table->{mangle};
     $filter_table = $chain_table->{filter};
     $targets      = \%targets6;
+    $chain_family = F_INET6;
 }    
 
 #
@@ -1979,7 +1982,16 @@ sub expand_rule( $$$$$$$$$$$ )
     if ( $source ) {
 	if ( $source eq '-' ) {
 	    $source = '';
-	} elsif ( $source =~ /^([^:]+):([^:]+)$/ ) {
+	} elsif ( $chain_family == F_INET ) {
+	    if ( $source =~ /^([^:]+):([^:]+)$/ ) {
+		$iiface = $1;
+		$inets  = $2;
+	    } elsif ( $source =~ /\+|~|\..*\./ ) {
+		$inets = $source;
+	    } else {
+		$iiface = $source;
+	    }
+	} elsif ( $source =~ /^([^;]+);([^;]+)$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /\+|~|\..*\./ ) {
@@ -2051,7 +2063,16 @@ sub expand_rule( $$$$$$$$$$$ )
 	    }
 
 	    $dest = '';
-	} elsif ( $dest =~ /^([^:]+):([^:]+)$/ ) {
+	} elsif ( $chain_family == F_INET ) {
+	    if ( $dest =~ /^([^:]+):([^:]+)$/ ) {
+		$diface = $1;
+		$dnets  = $2;
+	    } elsif ( $dest =~ /\+|~|\..*\./ ) {
+		$dnets = $dest;
+	    } else {
+		$diface = $dest;
+	    }
+	} elsif ( $dest =~ /^([^;]+);([^;]+)$/ ) {
 	    $diface = $1;
 	    $dnets  = $2;
 	} elsif ( $dest =~ /\+|~|\..*\./ ) {
@@ -2062,7 +2083,6 @@ sub expand_rule( $$$$$$$$$$$ )
     } else {
 	$dest = '';
     }
-
     #
     # Verify Destination Interface, if any
     #

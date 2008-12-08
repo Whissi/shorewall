@@ -152,12 +152,14 @@ our $interface_list;
 our $interface_table;
 our $bport_zones;
 our $zone_family;
+our $zone_family_name;
 
 sub use_ipv4_interfaces() {
     $interface_list = \@interfaces4;
     $interface_table = \%interfaces4;
     $bport_zones = \@bport_zones4;
     $zone_family = F_INET;
+    $zone_family_name = 'IPv4';
 }
 
 sub use_ipv6_interfaces() {
@@ -165,6 +167,7 @@ sub use_ipv6_interfaces() {
     $interface_table = \%interfaces6;
     $bport_zones = \@bport_zones6;
     $zone_family = F_INET6;
+    $zone_family_name = 'IPv6';
 }
 
 #
@@ -401,51 +404,6 @@ sub haveipseczones() {
     0;
 }
 
-#
-# Report about zones.
-#
-sub zone_report()
-{
-    progress_message2 "Determining Hosts in Zones...";
-
-    for my $zone ( @zones )
-    {
-	my $zoneref   = $zones{$zone};
-	my $hostref   = $zoneref->{hosts};
-	my $type      = $zoneref->{type};
-	my $optionref = $zoneref->{options};
-
-	progress_message "   $zone ($type)";
-
-	my $printed = 0;
-
-	if ( $hostref ) {
-	    for my $type ( sort keys %$hostref ) {
-		my $interfaceref = $hostref->{$type};
-
-		for my $interface ( sort keys %$interfaceref ) {
-		    my $arrayref = $interfaceref->{$interface};
-		    for my $groupref ( @$arrayref ) {
-			my $hosts     = $groupref->{hosts};
-			if ( $hosts ) {
-			    my $grouplist = join ',', ( @$hosts );
-			    progress_message "      $interface:$grouplist";
-			    $printed = 1;
-			}
-		    }
-
-		}
-	    }
-	}
-
-	unless ( $printed ) {
-	    fatal_error "No bridge has been associated with zone $zone" if $type =~ /^bport*/ && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type eq 'firewall';
-	}
-
-    }
-}
-
 sub dump_zone_contents()
 {
     for my $zone ( @zones )
@@ -606,12 +564,57 @@ sub firewall_zone() {
 }
 
 #
+# Report about zones.
+#
+sub zone_report()
+{
+    progress_message2 "Determining Hosts in $zone_family_name Zones...";
+
+    for my $zone ( all_zones )
+    {
+	my $zoneref   = $zones{$zone};
+	my $hostref   = $zoneref->{hosts};
+	my $type      = $zoneref->{type};
+	my $optionref = $zoneref->{options};
+
+	progress_message "   $zone ($type)";
+
+	my $printed = 0;
+
+	if ( $hostref ) {
+	    for my $type ( sort keys %$hostref ) {
+		my $interfaceref = $hostref->{$type};
+
+		for my $interface ( sort keys %$interfaceref ) {
+		    my $arrayref = $interfaceref->{$interface};
+		    for my $groupref ( @$arrayref ) {
+			my $hosts     = $groupref->{hosts};
+			if ( $hosts ) {
+			    my $grouplist = join ',', ( @$hosts );
+			    progress_message "      $interface:$grouplist";
+			    $printed = 1;
+			}
+		    }
+
+		}
+	    }
+	}
+
+	unless ( $printed ) {
+	    fatal_error "No bridge has been associated with zone $zone" if $type =~ /^bport*/ && ! $zoneref->{bridge};
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type eq 'firewall';
+	}
+
+    }
+}
+
+#
 # Parse the interfaces file.
 #
 
-sub validate_interfaces_file( $$ )
+sub validate_interfaces_file( $ )
 {
-    my ( $filename, $export ) = @_;
+    my $export = shift;
     my $num    = 0;
 
     use constant { SIMPLE_IF_OPTION   => 1,
@@ -654,7 +657,7 @@ sub validate_interfaces_file( $$ )
 						    mss         => NUMERIC_IF_OPTION,
 						   );
 
-    my $fn = open_file $filename;
+    my $fn = open_file ($zone_family == F_INET ? 'interfaces' : '6interfaces');
 
     my $first_entry = 1;
 
@@ -974,10 +977,8 @@ sub set_interface_option( $$$ ) {
 #
 # Validates the hosts file. Generates entries in %zone{..}{hosts}
 #
-sub validate_hosts_file( $ )
+sub validate_hosts_file()
 {
-    my $filename = shift;
-
     my %validoptions = (
 			blacklist => 1,
 			maclist => 1,
@@ -994,7 +995,7 @@ sub validate_hosts_file( $ )
     my $ipsec = 0;
     my $first_entry = 1;
 
-    my $fn = open_file $filename;
+    my $fn = open_file ($zone_family == F_INET ? 'hosts' : '6hosts');
 
     while ( read_a_line ) {
 
@@ -1013,7 +1014,16 @@ sub validate_hosts_file( $ )
 
 	my $interface;
 
-	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
+	if ( $zone_family == F_INET ) {
+	    if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
+		$interface = $1;
+		$hosts = $2;
+		$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+		fatal_error "Unknown interface ($interface)" unless $interface_table->{$interface}{root};
+	    } else {
+		fatal_error "Invalid HOST(S) column contents: $hosts";
+	    }
+	} elsif ( $hosts =~ /^([\w.@%-]+\+?);(.*)$/ ) {
 	    $interface = $1;
 	    $hosts = $2;
 	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
@@ -1073,7 +1083,7 @@ sub validate_hosts_file( $ )
 	progress_message "   Host \"$currentline\" validated";
     }
 
-    return $ipsec;
+    $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
 }
 
 #

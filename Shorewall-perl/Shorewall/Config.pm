@@ -1928,13 +1928,13 @@ sub get_configuration( $ ) {
 	} elsif ( $config{IPV6} =~ /keep/i ) {
 	    $config{IPV6} = '';
 	}
+    } else {
+	$config{IPV6} = 'Off';
     }
 
     default_yes_no 'DISABLE_IPV6' , '';
 
     fatal_error "Incompatible settings of IPV6 (On) and DISABLE_IPV6 (Yes)" if $config{IPV6} eq 'On' && $config{DISABLE_IPV6} eq 'Yes';
-
-    $config{IPV6} = $config{DISABLE_IPV6} ? 'Off' : '' unless defined $config{IPV6};
 
     unsupported_yes_no 'DYNAMIC_ZONES';
     unsupported_yes_no 'BRIDGING';

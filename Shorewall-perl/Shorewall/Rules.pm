@@ -35,7 +35,9 @@ use Shorewall::Proc;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( process_tos
+our @EXPORT = qw( use_ipv4_rules
+		  use_ipv6_rules
+		  process_tos
 		  setup_ecn
 		  add_common_rules
 		  setup_mac_lists
@@ -55,6 +57,7 @@ our $sectioned;
 our $macro_nest_level;
 our $current_param;
 our @param_stack;
+our $rules_family;
 
 #
 # When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
@@ -62,6 +65,14 @@ our @param_stack;
 
 my %rules_commands = ( COMMENT => 0,
 		       SECTION => 2 );
+
+sub use_ipv4_rules() {
+    $rules_family = F_INET;
+}
+
+sub use_ipv6_rules() {
+    $rules_family = F_INET6;
+}
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -77,6 +88,7 @@ sub initialize() {
     $macro_nest_level = 0;
     $current_param = '';
     @param_stack = ();
+    use_ipv4_rules;
 }
 
 INIT {
@@ -85,7 +97,8 @@ INIT {
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
-sub process_tos() {
+sub process_tos( $ ) {
+    my $filename = shift;
     my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
     my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
 
@@ -95,7 +108,7 @@ sub process_tos() {
 		       'minimize-cost'        => 0x02 ,
 		       'normal-service'       => 0x00 );
 
-    if ( my $fn = open_file 'tos' ) {
+    if ( my $fn = open_file $filename ) {
 	my $first_entry = 1;
 	
 	my ( $pretosref, $outtosref );
@@ -121,8 +134,10 @@ sub process_tos() {
 
 	    my $restriction = NO_RESTRICT;
 
-	    my ( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
+	    my ( $srczone , $source , $remainder );
 
+	    ( $srczone , $source , $remainder ) = split( $rules_family == F_INET ? /:/ : /;/, $src, 3 );
+	    
 	    fatal_error 'Invalid SOURCE' if defined $remainder;
 
 	    if ( $srczone eq firewall_zone ) {
@@ -267,8 +282,8 @@ sub setup_rfc1918_filteration( $ ) {
     }
 }
 
-sub setup_blacklist() {
-
+sub setup_blacklist( $ ) {
+    my $filename = shift;
     my $hosts = find_hosts_by_option 'blacklist';
     my $chainref;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
@@ -290,7 +305,7 @@ sub setup_blacklist() {
 
   BLACKLIST:
     {
-	if ( my $fn = open_file 'blacklist' ) {
+	if ( my $fn = open_file $filename ) {
 
 	    my $first_entry = 1;
 	    
@@ -516,7 +531,7 @@ sub add_common_rules() {
 
     run_user_exit1 'initdone';
 
-    setup_blacklist;
+    setup_blacklist 'blacklist';
 
     $list = find_hosts_by_option 'nosmurfs';
 
@@ -699,7 +714,7 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
 
-	my $fn = open_file 'maclist';
+	my $fn = open_file( $rules_family == F_INET ? 'maclist' : '6maclist');
 
 	first_entry "$doing $fn...";
 

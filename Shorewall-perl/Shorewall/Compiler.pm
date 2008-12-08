@@ -79,6 +79,7 @@ sub use_ipv4() {
     use_ipv4_chains;
     use_ipv4_interfaces;
     use_ipv4_policies;
+    use_ipv4_rules;
     $family = F_INET;
 }
 
@@ -87,6 +88,7 @@ sub use_ipv6() {
     use_ipv6_chains;
     use_ipv6_interfaces;
     use_ipv6_policies;
+    use_ipv6_rules;
     $family = F_INET;
 }
 
@@ -731,6 +733,124 @@ EOF
 }
 
 #
+# Process the configuration for the current address family (F_INET or F_INET6)
+#
+sub process_family( $ ) {
+    my $chains = shift;
+    #
+    # Process the interfaces file(s).
+    #
+    validate_interfaces_file ( $globals{EXPORT} );
+    #
+    # Process the hosts file.
+    #
+    validate_hosts_file;
+    #
+    # Report zone contents
+    #
+    zone_report;
+    #
+    # Do action pre-processing.
+    #
+    process_actions1;
+    #
+    # Process the Policy File(s).
+    #
+    validate_policy;
+    #
+    # Compile the 'stop_firewall()' function
+    #
+    compile_stop_firewall;
+    #
+    # Start Second Part of script
+    #
+    generate_script_2 unless $command eq 'check';
+    #
+    # Do all of the zone-independent stuff
+    #
+    add_common_rules;
+    #
+    # /proc stuff
+    #
+    setup_arp_filtering;
+    setup_route_filtering;
+    setup_martian_logging;
+    setup_source_routing;
+    #
+    # Proxy Arp
+    #
+    setup_proxy_arp;
+    #
+    # Handle MSS setings in the zones file
+    #
+    setup_zone_mss;
+    #
+    # [Re-]establish Routing
+    #
+    setup_providers;
+    #
+    # TOS
+    #
+    process_tos 'tos';
+    #
+    # ECN
+    #
+    setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+    #
+    # Setup Masquerading/SNAT
+    #
+    setup_masq;
+    #
+    # MACLIST Filtration
+    #
+    setup_mac_lists 1;
+    #
+    # Process the rules file.
+    #
+    process_rules;
+    #
+    # Add Tunnel rules.
+    #
+    setup_tunnels;
+    #
+    # Post-rules action processing.
+    #
+    process_actions2;
+    process_actions3;
+    #
+    # MACLIST Filtration again
+    #
+    setup_mac_lists 2;
+    #
+    # Apply Policies
+    #
+    apply_policy_rules;
+    #
+    # TCRules and Traffic Shaping
+    #
+    setup_tc;
+    #
+    # Setup Nat
+    #
+    setup_nat;
+    #
+    # Setup NETMAP
+    #
+    setup_netmap;
+    #
+    # Accounting.
+    #
+    setup_accounting;
+    #
+    # We generate the matrix even though we don't write out the rules. That way, we insure that
+    # a compile of the script won't blow up during that step.
+    #
+    generate_matrix;
+
+    generate_script_3( $chains ) unless $command eq 'check';
+}
+
+#
 #  The Compiler.
 #
 #     Arguments are named -- see %parms below.
@@ -816,126 +936,17 @@ sub compiler {
     # Process the zones file.
     #
     determine_zones;
-    #
-    # Process the interfaces file(s).
-    #
+
     use_ipv4;
-    validate_interfaces_file ( 'interfaces', $export );
-    #
-    # Process the hosts file.
-    #
-    my $ipsec = validate_hosts_file( 'hosts' );
 
-    $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
-    #
-    # Report zone contents
-    #
-    zone_report;
-    #
-    # Do action pre-processing.
-    #
-    process_actions1;
-    #
-    # Process the Policy File(s).
-    #
-    validate_policy 'policy';
-    #
-    # Compile the 'stop_firewall()' function
-    #
-    compile_stop_firewall;
-    #
-    # Start Second Part of script
-    #
-    generate_script_2 unless $command eq 'check';
-    #
-    # Do all of the zone-independent stuff
-    #
-    add_common_rules;
-    #
-    # /proc stuff
-    #
-    setup_arp_filtering;
-    setup_route_filtering;
-    setup_martian_logging;
-    setup_source_routing;
-    #
-    # Proxy Arp
-    #
-    setup_proxy_arp;
-    #
-    # Handle MSS setings in the zones file
-    #
-    setup_zone_mss;
-    #
-    # [Re-]establish Routing
-    #
-    setup_providers;
-    #
-    # TOS
-    #
-    process_tos;
-    #
-    # ECN
-    #
-    setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
-    #
-    # Setup Masquerading/SNAT
-    #
-    setup_masq;
-    #
-    # MACLIST Filtration
-    #
-    setup_mac_lists 1;
-    #
-    # Process the rules file.
-    #
-    process_rules;
-    #
-    # Add Tunnel rules.
-    #
-    setup_tunnels;
-    #
-    # Post-rules action processing.
-    #
-    process_actions2;
-    process_actions3;
-    #
-    # MACLIST Filtration again
-    #
-    setup_mac_lists 2;
-    #
-    # Apply Policies
-    #
-    apply_policy_rules;
-    #
-    # TCRules and Traffic Shaping
-    #
-    setup_tc;
-    #
-    # Setup Nat
-    #
-    setup_nat;
-    #
-    # Setup NETMAP
-    #
-    setup_netmap;
-    #
-    # Accounting.
-    #
-    setup_accounting;
-    #
-    # We generate the matrix even though we don't write out the rules. That way, we insure that
-    # a compile of the script won't blow up during that step.
-    #
-    generate_matrix;
-
+    process_family $chains;
+    
     if ( $command eq 'check' ) {
 	progress_message3 "Shorewall configuration verified";
     } else {
 	#
 	# Finish the script.
 	#
-	generate_script_3( $chains );
 	finalize_object ( $export );
 	#
 	# And generate the auxilary config file

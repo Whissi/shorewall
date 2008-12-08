@@ -37,6 +37,7 @@ use Shorewall::Accounting;
 use Shorewall::Rules;
 use Shorewall::Proc;
 use Shorewall::Proxyarp;
+use Shorewall::IPAddrs;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
@@ -49,6 +50,8 @@ our $test;
 
 our $reused = 0;
 
+our $family = F_IPV4;
+
 use constant { EXPORT => 0x01 ,
 	       TIMESTAMP => 0x02 ,
 	       DEBUG => 0x04 };
@@ -57,8 +60,8 @@ use constant { EXPORT => 0x01 ,
 # Reinitilize the package-globals in the other modules
 #
 sub reinitialize() {
-    Shorewall::Config::initialize;
-    Shorewall::Chains::initialize;
+    Shorewall::Config::initialize($family);
+    Shorewall::Chains::initialize ($family);
     Shorewall::Zones::initialize;
     Shorewall::Policy::initialize;
     Shorewall::Nat::initialize;
@@ -733,8 +736,14 @@ sub compiler {
 	 defined($val) && ($val >= MIN_VERBOSITY) && ($val <= MAX_VERBOSITY);
      }
 
+    sub edit_family( $ ) {
+	my $val = numeric_value( shift );
+	defined($val) && ($val == F_IPV4 || $val == F_IPV6);
+    }
+
     my %parms = ( object        => { store => \$objectfile },
 		  directory     => { store => \$directory  },
+		  family        => { store => \$family    ,    edit => \&edit_family    } ,
 		  verbosity     => { store => \$verbosity ,    edit => \&edit_verbosity } ,
 		  timestamp     => { store => \$timestamp,     edit => \&edit_boolean   } ,
 		  debug         => { store => \$debug,         edit => \&edit_boolean   } ,
@@ -755,7 +764,7 @@ sub compiler {
 	${$ref->{store}} = $val;
     }
 
-    reinitialize if $reused++;
+    reinitialize if ++$reused || $family == F_IPV6;
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;

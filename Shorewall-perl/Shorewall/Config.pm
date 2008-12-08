@@ -100,6 +100,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       run_user_exit2
 				       generate_aux_config
 
+				       $product
+				       $Product
 				       $command
 				       $doing
 				       $done
@@ -107,6 +109,9 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       %config
 				       %globals
 				       %capabilities
+
+		                       F_IPV4
+		                       F_IPV6
 
 				       MIN_VERBOSITY
 				       MAX_VERBOSITY
@@ -240,8 +245,17 @@ our $shorewall_dir;           # Shorewall Directory
 
 our $debug;                   # If true, use Carp to report errors with stack trace.
 
+our $family;
+our $toolname;
+our $toolNAME;
+our $product;
+our $Product;
+
 use constant { MIN_VERBOSITY => -1,
-	       MAX_VERBOSITY => 2 };
+	       MAX_VERBOSITY => 2 ,
+	       F_IPV4 => 1,
+	       F_IPV6 => 2,
+	   };
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -251,7 +265,15 @@ use constant { MIN_VERBOSITY => -1,
 #                       also called by Shorewall::Compiler::compiler at the beginning of
 #                       the second and subsequent calls to that function.
 #
-sub initialize() {
+sub initialize( $ ) {
+    $family = shift;
+
+    if ( $family == F_IPV4 ) {
+	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall  Shorewall iptables  IPTABLES );
+    } else {
+	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall6 Shorewall6 ip6tables IP6TABLES );
+    }	
+
     ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
     $verbose = 0;              # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
@@ -274,115 +296,203 @@ sub initialize() {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
-		    VERSION => "4.2.3",
+		    VERSION => "4.3.0",
 		    CAPVERSION => 40203 ,
 		  );
     #
     # From shorewall.conf file
     #
-    %config =
-	      ( STARTUP_ENABLED => undef,
-		VERBOSITY => undef,
-		#
-		# Logging
-		#
-		LOGFILE => undef,
-		LOGFORMAT => undef,
-		LOGTAGONLY => undef,
-		LOGRATE => undef,
-		LOGBURST => undef,
-		LOGALLNEW => undef,
-		BLACKLIST_LOGLEVEL => undef,
-		MACLIST_LOG_LEVEL => undef,
-		TCP_FLAGS_LOG_LEVEL => undef,
-		RFC1918_LOG_LEVEL => undef,
-		SMURF_LOG_LEVEL => undef,
-		LOG_MARTIANS => undef,
-		LOG_VERBOSITY => undef,
-		STARTUP_LOG => undef,
-		#
-		# Location of Files
-		#
-		IPTABLES => undef,
-		#
-		#PATH is inherited
-		#
-		PATH => undef,
-		SHOREWALL_SHELL => undef,
-		SUBSYSLOCK => undef,
-		MODULESDIR => undef,
-		#
-		#CONFIG_PATH is inherited
-		#
-		CONFIG_PATH => undef,
-		RESTOREFILE => undef,
-		IPSECFILE => undef,
-		LOCKFILE => undef,
-		#
-		# Default Actions/Macros
-		#
-		DROP_DEFAULT => undef,
-		REJECT_DEFAULT => undef,
-		ACCEPT_DEFAULT => undef,
-		QUEUE_DEFAULT => undef,
-		NFQUEUE_DEFAULT => undef,
-		#
-		# RSH/RCP Commands
-		#
-		RSH_COMMAND => undef,
-		RCP_COMMAND => undef,
-		#
-		# Firewall Options
-		#
-		BRIDGING => undef,
-		IP_FORWARDING => undef,
-		ADD_IP_ALIASES => undef,
-		ADD_SNAT_ALIASES => undef,
-		RETAIN_ALIASES => undef,
-		TC_ENABLED => undef,
-		TC_EXPERT => undef,
-		CLEAR_TC => undef,
-		MARK_IN_FORWARD_CHAIN => undef,
-		CLAMPMSS => undef,
-		ROUTE_FILTER => undef,
-		DETECT_DNAT_IPADDRS => undef,
-		MUTEX_TIMEOUT => undef,
-		ADMINISABSENTMINDED => undef,
-		BLACKLISTNEWONLY => undef,
-		DELAYBLACKLISTLOAD => undef,
-		MODULE_SUFFIX => undef,
-		DISABLE_IPV6 => undef,
-		DYNAMIC_ZONES => undef,
-		PKTTYPE=> undef,
-		RFC1918_STRICT => undef,
-		MACLIST_TABLE => undef,
-		MACLIST_TTL => undef,
-		SAVE_IPSETS => undef,
-		MAPOLDACTIONS => undef,
-		FASTACCEPT => undef,
-		IMPLICIT_CONTINUE => undef,
-		HIGH_ROUTE_MARKS => undef,
-		USE_ACTIONS=> undef,
-		OPTIMIZE => undef,
-		EXPORTPARAMS => undef,
-		SHOREWALL_COMPILER => undef,
-		EXPAND_POLICIES => undef,
-		KEEP_RT_TABLES => undef,
-		DELETE_THEN_ADD => undef,
-		MULTICAST => undef,
-		DONT_LOAD => '',
-		AUTO_COMMENT => undef ,
-		MANGLE_ENABLED => undef ,
-		NULL_ROUTE_RFC1918 => undef ,
-		USE_DEFAULT_RT => undef ,
-		#
-		# Packet Disposition
-		#
-		MACLIST_DISPOSITION => undef,
-		TCP_FLAGS_DISPOSITION => undef,
-		BLACKLIST_DISPOSITION => undef,
-		);
-
+    if ( $family == F_IPV4 ) {
+	%config =
+	    ( STARTUP_ENABLED => undef,
+	      VERBOSITY => undef,
+	      #
+	      # Logging
+	      #
+	      LOGFILE => undef,
+	      LOGFORMAT => undef,
+	      LOGTAGONLY => undef,
+	      LOGRATE => undef,
+	      LOGBURST => undef,
+	      LOGALLNEW => undef,
+	      BLACKLIST_LOGLEVEL => undef,
+	      MACLIST_LOG_LEVEL => undef,
+	      TCP_FLAGS_LOG_LEVEL => undef,
+	      RFC1918_LOG_LEVEL => undef,
+	      SMURF_LOG_LEVEL => undef,
+	      LOG_MARTIANS => undef,
+	      LOG_VERBOSITY => undef,
+	      STARTUP_LOG => undef,
+	      #
+	      # Location of Files
+	      #
+	      IPTABLES => undef,
+	      #
+	      #PATH is inherited
+	      #
+	      PATH => undef,
+	      SHOREWALL_SHELL => undef,
+	      SUBSYSLOCK => undef,
+	      MODULESDIR => undef,
+	      #
+	      #CONFIG_PATH is inherited
+	      #
+	      CONFIG_PATH => undef,
+	      RESTOREFILE => undef,
+	      IPSECFILE => undef,
+	      LOCKFILE => undef,
+	      #
+	      # Default Actions/Macros
+	      #
+	      DROP_DEFAULT => undef,
+	      REJECT_DEFAULT => undef,
+	      ACCEPT_DEFAULT => undef,
+	      QUEUE_DEFAULT => undef,
+	      NFQUEUE_DEFAULT => undef,
+	      #
+	      # RSH/RCP Commands
+	      #
+	      RSH_COMMAND => undef,
+	      RCP_COMMAND => undef,
+	      #
+	      # Firewall Options
+	      #
+	      BRIDGING => undef,
+	      IP_FORWARDING => undef,
+	      ADD_IP_ALIASES => undef,
+	      ADD_SNAT_ALIASES => undef,
+	      RETAIN_ALIASES => undef,
+	      TC_ENABLED => undef,
+	      TC_EXPERT => undef,
+	      CLEAR_TC => undef,
+	      MARK_IN_FORWARD_CHAIN => undef,
+	      CLAMPMSS => undef,
+	      ROUTE_FILTER => undef,
+	      DETECT_DNAT_IPADDRS => undef,
+	      MUTEX_TIMEOUT => undef,
+	      ADMINISABSENTMINDED => undef,
+	      BLACKLISTNEWONLY => undef,
+	      DELAYBLACKLISTLOAD => undef,
+	      MODULE_SUFFIX => undef,
+	      DISABLE_IPV6 => undef,
+	      DYNAMIC_ZONES => undef,
+	      PKTTYPE=> undef,
+	      RFC1918_STRICT => undef,
+	      MACLIST_TABLE => undef,
+	      MACLIST_TTL => undef,
+	      SAVE_IPSETS => undef,
+	      MAPOLDACTIONS => undef,
+	      FASTACCEPT => undef,
+	      IMPLICIT_CONTINUE => undef,
+	      HIGH_ROUTE_MARKS => undef,
+	      USE_ACTIONS=> undef,
+	      OPTIMIZE => undef,
+	      EXPORTPARAMS => undef,
+	      SHOREWALL_COMPILER => undef,
+	      EXPAND_POLICIES => undef,
+	      KEEP_RT_TABLES => undef,
+	      DELETE_THEN_ADD => undef,
+	      MULTICAST => undef,
+	      DONT_LOAD => '',
+	      AUTO_COMMENT => undef ,
+	      MANGLE_ENABLED => undef ,
+	      NULL_ROUTE_RFC1918 => undef ,
+	      USE_DEFAULT_RT => undef ,
+	      #
+	      # Packet Disposition
+	      #
+	      MACLIST_DISPOSITION => undef,
+	      TCP_FLAGS_DISPOSITION => undef,
+	      BLACKLIST_DISPOSITION => undef,
+	    );
+    } else {
+	%config =
+	    ( STARTUP_ENABLED => undef,
+	      VERBOSITY => undef,
+	      #
+	      # Logging
+	      #
+	      LOGFILE => undef,
+	      LOGFORMAT => undef,
+	      LOGTAGONLY => undef,
+	      LOGRATE => undef,
+	      LOGBURST => undef,
+	      LOGALLNEW => undef,
+	      BLACKLIST_LOGLEVEL => undef,
+	      MACLIST_LOG_LEVEL => undef,
+	      TCP_FLAGS_LOG_LEVEL => undef,
+	      SMURF_LOG_LEVEL => undef,
+	      LOG_VERBOSITY => undef,
+	      STARTUP_LOG => undef,
+	      #
+	      # Location of Files
+	      #
+	      IP6TABLES => undef,
+	      #
+	      #PATH is inherited
+	      #
+	      PATH => undef,
+	      SHOREWALL_SHELL => undef,
+	      SUBSYSLOCK => undef,
+	      MODULESDIR => undef,
+	      #
+	      #CONFIG_PATH is inherited
+	      #
+	      CONFIG_PATH => undef,
+	      RESTOREFILE => undef,
+	      LOCKFILE => undef,
+	      #
+	      # Default Actions/Macros
+	      #
+	      DROP_DEFAULT => undef,
+	      REJECT_DEFAULT => undef,
+	      ACCEPT_DEFAULT => undef,
+	      QUEUE_DEFAULT => undef,
+	      NFQUEUE_DEFAULT => undef,
+	      #
+	      # RSH/RCP Commands
+	      #
+	      RSH_COMMAND => undef,
+	      RCP_COMMAND => undef,
+	      #
+	      # Firewall Options
+	      #
+	      IP_FORWARDING => undef,
+	      TC_ENABLED => undef,
+	      TC_EXPERT => undef,
+	      CLEAR_TC => undef,
+	      MARK_IN_FORWARD_CHAIN => undef,
+	      CLAMPMSS => undef,
+	      MUTEX_TIMEOUT => undef,
+	      ADMINISABSENTMINDED => undef,
+	      BLACKLISTNEWONLY => undef,
+	      MODULE_SUFFIX => undef,
+	      MACLIST_TABLE => undef,
+	      MACLIST_TTL => undef,
+	      MAPOLDACTIONS => 'Yes',
+	      FASTACCEPT => undef,
+	      IMPLICIT_CONTINUE => undef,
+	      HIGH_ROUTE_MARKS => undef,
+	      OPTIMIZE => undef,
+	      EXPORTPARAMS => undef,
+	      SHOREWALL_COMPILER => undef,
+	      EXPAND_POLICIES => undef,
+	      KEEP_RT_TABLES => undef,
+	      DELETE_THEN_ADD => undef,
+	      MULTICAST => undef,
+	      DONT_LOAD => '',
+	      AUTO_COMMENT => undef,
+	      MANGLE_ENABLED => undef ,
+	      NULL_ROUTE_RFC1918 => undef ,
+	      USE_DEFAULT_RT => undef ,
+	      #
+	      # Packet Disposition
+	      #
+	      MACLIST_DISPOSITION => undef,
+	      TCP_FLAGS_DISPOSITION => undef,
+	      BLACKLIST_DISPOSITION => undef,
+	    );
+	}
     #
     # From parsing the capabilities file
     #
@@ -452,7 +562,7 @@ sub initialize() {
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
     #
     # These variables appear within single quotes in shorewall.conf -- add them to ENV
     # so that read_a_line doesn't have to be smart enough to parse that usage.
@@ -1340,6 +1450,12 @@ sub default_yes_no ( $$ ) {
     }
 }
 
+sub default_yes_no_ipv4 ( $$ ) {
+    my ( $var, $val ) = @_;
+    default_yes_no( $var, $val );
+    warning_message "$var=Yes is ignored for IPv6" if $family == F_IPV4 && $config{$var};
+}
+
 my %validlevels = ( DEBUG   => 7,
 		    INFO    => 6,
 		    NOTICE  => 5,
@@ -1681,7 +1797,7 @@ sub ensure_config_path() {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = '/usr/share/shorewall/configfiles/' if $> != 0;
+    $globals{CONFDIR} = "/usr/share/$product/configfiles/";
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;
@@ -1728,7 +1844,7 @@ sub set_shorewall_dir( $ ) {
 # Small functions called by get_configuration. We separate them so profiling is more useful
 #
 sub process_shorewall_conf() {
-    my $file = find_file 'shorewall.conf';
+    my $file = find_file "$product.conf";
 
     if ( -f $file ) {
 	if ( -r _ ) {
@@ -1774,9 +1890,9 @@ sub read_capabilities() {
     }
 
     if ( $capabilities{CAPVERSION} ) {
-	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by Shorewall version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
+	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
     } else {
-	warning_message "Your capabilities file may not contain all of the capabilities defined by Shorewall version $globals{VERSION}";
+	warning_message "Your capabilities file may not contain all of the capabilities defined by $Product version $globals{VERSION}";
     }
 }
 
@@ -1787,12 +1903,12 @@ sub get_capabilities( $ ) {
     my $export = $_[0];
 
     if ( ! $export && $> == 0 ) { # $> == $EUID
-	my $iptables = $config{IPTABLES};
+	my $iptables = $config{$toolNAME};
 
 	if ( $iptables ) {
-	    fatal_error "IPTABLES=$iptables does not exist or is not executable" unless -x $iptables;
+	    fatal_error "$toolNAME=$iptables does not exist or is not executable" unless -x $iptables;
 	} else {
-	    fatal_error "Can't find iptables executable" unless $iptables = which 'iptables';
+	    fatal_error "Can't find $toolname executable" unless $iptables = which $toolname;
 	}
 
 	my $iptables_restore=$iptables . '-restore';
@@ -1877,8 +1993,8 @@ sub get_configuration( $ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
-    check_trivalue ( 'ROUTE_FILTER',  '' );
-    check_trivalue ( 'LOG_MARTIANS',  'on' );
+    check_trivalue ( 'ROUTE_FILTER',  '' );    fatal_error "ROUTE_FILTER=On is not supported in IPv6" if $config{ROUTE_FILTER} eq 'on' && $family == F_IPV6; 
+    check_trivalue ( 'LOG_MARTIANS',  'on' );  fatal_error "LOG_MARTIANS=On is not supported in IPv6" if $config{LOG_MARTIANS} eq 'on' && $family == F_IPV6;
 
     default 'STARTUP_LOG'   , '';
 
@@ -1913,7 +2029,7 @@ sub get_configuration( $ ) {
     unless ( $config{ADD_IP_ALIASES} || $config{ADD_SNAT_ALIASES} ) {
 	$config{RETAIN_ALIASES} = '';
     } else {
-	default_yes_no 'RETAIN_ALIASES'             , '';
+	default_yes_no_ipv4 'RETAIN_ALIASES'             , '';
     }
 
     default_yes_no 'ADMINISABSENTMINDED'        , '';

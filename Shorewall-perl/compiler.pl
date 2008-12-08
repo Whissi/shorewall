@@ -35,11 +35,13 @@
 #         --refresh=<chainlist>       # Make the 'refresh' command refresh a comma-separated list of chains rather than 'blacklst'.
 #         --log=<filename>            # Log file
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
+#         --family=<number>           # IP family; 1 = IPv4, 2 = IPv6
 #
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
 use Shorewall::Compiler;
+use Shorewall::IPAddrs;
 use Getopt::Long;
 
 sub usage( $ ) {
@@ -55,6 +57,7 @@ sub usage( $ ) {
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
     [ --test ]
+    [ --family={1|2} ]
 ';
     exit shift @_;
 }
@@ -72,6 +75,7 @@ my $log           = '';
 my $log_verbose   = 0;
 my $help          = 0;
 my $test          = 0;
+my $family        = 1; # F_IPV4
 
 Getopt::Long::Configure ('bundling');
 
@@ -92,6 +96,8 @@ my $result = GetOptions('h'               => \$help,
 			'l=s'             => \$log,
 			'log_verbosity=i' => \$log_verbose,
 			'test'            => \$test,
+			'f=i'             => \$family,
+			'family=i'        => \$family,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -106,4 +112,5 @@ compiler( object          => defined $ARGV[0] ? $ARGV[0] : '',
 	  chains          => $chains,
 	  log             => $log,
 	  log_verbosity   => $log_verbose,
-	  test            => $test );
+	  test            => $test,
+	  family          => $family );

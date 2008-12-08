@@ -1,2 +1,2 @@
-This is the Shorewall-perl stable 4.2 branch of SVN.
+This is the Shorewall-perl development 4.2 branch of SVN.
 

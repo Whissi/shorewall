@@ -34,7 +34,7 @@ use Shorewall::IPAddrs;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( 
+our @EXPORT = qw(
 		  add_rule
 		  add_jump
 		  insert_rule
@@ -68,6 +68,7 @@ our %EXPORT_TAGS = (
 				       POSTROUTE_RESTRICT
 				       ALL_RESTRICT
 				       
+				       chain_family
 				       add_command
 				       add_commands
 				       move_rules
@@ -247,6 +248,8 @@ use constant { NULL_MODE => 0 ,   # Generating neither shell commands nor iptabl
 
 our $mode;
 
+our $family;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -256,7 +259,7 @@ our $mode;
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
     %chain_table = ( raw    => {} ,
 		     mangle => {},
 		     nat    => {},
@@ -282,40 +285,6 @@ sub initialize() {
     #
     $comment = '';
     #
-    #   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
-    #
-    %targets = ('ACCEPT'          => STANDARD,
-		'ACCEPT+'         => STANDARD  + NONAT,
-		'ACCEPT!'         => STANDARD,
-		'NONAT'           => STANDARD  + NONAT + NATONLY,
-		'DROP'            => STANDARD,
-		'DROP!'           => STANDARD,
-		'REJECT'          => STANDARD,
-		'REJECT!'         => STANDARD,
-		'DNAT'            => NATRULE,
-		'DNAT-'           => NATRULE  + NATONLY,
-		'REDIRECT'        => NATRULE  + REDIRECT,
-		'REDIRECT-'       => NATRULE  + REDIRECT + NATONLY,
-		'LOG'             => STANDARD + LOGRULE,
-		'CONTINUE'        => STANDARD,
-		'CONTINUE!'       => STANDARD,
-		'QUEUE'           => STANDARD,
-		'QUEUE!'          => STANDARD,
-                'NFQUEUE'         => STANDARD + NFQ,
-                'NFQUEUE!'        => STANDARD + NFQ,
-		'SAME'            => NATRULE,
-		'SAME-'           => NATRULE  + NATONLY,
-		'dropBcast'       => BUILTIN  + ACTION,
-		'allowBcast'      => BUILTIN  + ACTION,
-		'dropNotSyn'      => BUILTIN  + ACTION,
-		'rejNotSyn'       => BUILTIN  + ACTION,
-		'dropInvalid'     => BUILTIN  + ACTION,
-		'allowInvalid'    => BUILTIN  + ACTION,
-		'allowinUPnP'     => BUILTIN  + ACTION,
-		'forwardUPnP'     => BUILTIN  + ACTION,
-		'Limit'           => BUILTIN  + ACTION,
-		);
-    #
     # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
     #
     $exclseq = 0;
@@ -336,10 +305,12 @@ sub initialize() {
     %interfacemacs      = ();
     %interfacebcasts    = ();
     %interfacegateways  = ();
+
+    $family = shift;
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 #
@@ -915,29 +886,108 @@ sub ensure_manual_chain($) {
 #
 sub initialize_chain_table()
 {
-    for my $chain qw(OUTPUT PREROUTING) {
-	new_builtin_chain 'raw', $chain, 'ACCEPT';
-    }
+    if ( $family == F_IPV4 ) {
+	#
+	#   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
+	#
+	%targets = ('ACCEPT'          => STANDARD,
+		    'ACCEPT+'         => STANDARD  + NONAT,
+		    'ACCEPT!'         => STANDARD,
+		    'NONAT'           => STANDARD  + NONAT + NATONLY,
+		    'DROP'            => STANDARD,
+		    'DROP!'           => STANDARD,
+		    'REJECT'          => STANDARD,
+		    'REJECT!'         => STANDARD,
+		    'DNAT'            => NATRULE,
+		    'DNAT-'           => NATRULE  + NATONLY,
+		    'REDIRECT'        => NATRULE  + REDIRECT,
+		    'REDIRECT-'       => NATRULE  + REDIRECT + NATONLY,
+		    'LOG'             => STANDARD + LOGRULE,
+		    'CONTINUE'        => STANDARD,
+		    'CONTINUE!'       => STANDARD,
+		    'QUEUE'           => STANDARD,
+		    'QUEUE!'          => STANDARD,
+		    'NFQUEUE'         => STANDARD + NFQ,
+		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'SAME'            => NATRULE,
+		    'SAME-'           => NATRULE  + NATONLY,
+		    'dropBcast'       => BUILTIN  + ACTION,
+		    'allowBcast'      => BUILTIN  + ACTION,
+		    'dropNotSyn'      => BUILTIN  + ACTION,
+		    'rejNotSyn'       => BUILTIN  + ACTION,
+		    'dropInvalid'     => BUILTIN  + ACTION,
+		    'allowInvalid'    => BUILTIN  + ACTION,
+		    'allowinUPnP'     => BUILTIN  + ACTION,
+		    'forwardUPnP'     => BUILTIN  + ACTION,
+		    'Limit'           => BUILTIN  + ACTION,
+		   );
 
-    for my $chain qw(INPUT OUTPUT FORWARD) {
-	new_builtin_chain 'filter', $chain, 'DROP';
-    }
+	for my $chain qw(OUTPUT PREROUTING) {
+	    new_builtin_chain 'raw', $chain, 'ACCEPT';
+	}
 
-    for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
-	new_builtin_chain 'nat', $chain, 'ACCEPT';
-    }
+	for my $chain qw(INPUT OUTPUT FORWARD) {
+	    new_builtin_chain 'filter', $chain, 'DROP';
+	}
+	
+	for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
+	    new_builtin_chain 'nat', $chain, 'ACCEPT';
+	}
 
-    for my $chain qw(PREROUTING INPUT OUTPUT ) {
-	new_builtin_chain 'mangle', $chain, 'ACCEPT';
-    }
+	for my $chain qw(PREROUTING INPUT OUTPUT ) {
+	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
+	}
 
-    if ( $capabilities{MANGLE_FORWARD} ) {
-	for my $chain qw( FORWARD POSTROUTING ) {
+	if ( $capabilities{MANGLE_FORWARD} ) {
+	    for my $chain qw( FORWARD POSTROUTING ) {
+		new_builtin_chain 'mangle', $chain, 'ACCEPT';
+	    }
+	}
+    } else {
+	#
+	#   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
+	#
+	%targets = ('ACCEPT'          => STANDARD,
+		    'ACCEPT!'         => STANDARD,
+		    'DROP'            => STANDARD,
+		    'DROP!'           => STANDARD,
+		    'REJECT'          => STANDARD,
+		    'REJECT!'         => STANDARD,
+		    'LOG'             => STANDARD + LOGRULE,
+		    'CONTINUE'        => STANDARD,
+		    'CONTINUE!'       => STANDARD,
+		    'QUEUE'           => STANDARD,
+		    'QUEUE!'          => STANDARD,
+		    'NFQUEUE'         => STANDARD + NFQ,
+		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'dropBcast'       => BUILTIN  + ACTION,
+		    'allowBcast'      => BUILTIN  + ACTION,
+		    'dropNotSyn'      => BUILTIN  + ACTION,
+		    'rejNotSyn'       => BUILTIN  + ACTION,
+		    'dropInvalid'     => BUILTIN  + ACTION,
+		    'allowInvalid'    => BUILTIN  + ACTION,
+		    'allowinUPnP'     => BUILTIN  + ACTION,
+		    'forwardUPnP'     => BUILTIN  + ACTION,
+		    'Limit'           => BUILTIN  + ACTION,
+		   );
+
+	for my $chain qw(OUTPUT PREROUTING) {
+	    new_builtin_chain 'raw', $chain, 'ACCEPT';
+	}
+
+	for my $chain qw(INPUT OUTPUT FORWARD) {
+	    new_builtin_chain 'filter', $chain, 'DROP';
+	}
+	
+	for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
+	    new_builtin_chain 'nat', $chain, 'ACCEPT';
+	}
+
+	for my $chain qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
     }
 }
-
 #
 # Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
 #
@@ -1914,7 +1964,16 @@ sub expand_rule( $$$$$$$$$$$ )
     if ( $source ) {
 	if ( $source eq '-' ) {
 	    $source = '';
-	} elsif ( $source =~ /^([^:]+):([^:]+)$/ ) {
+	} elsif ( $family == F_IPV4 ) {
+	    if ( $source =~ /^([^:]+):([^:]+)$/ ) {
+		$iiface = $1;
+		$inets  = $2;
+	    } elsif ( $source =~ /\+|~|\..*\./ ) {
+		$inets = $source;
+	    } else {
+		$iiface = $source;
+	    }
+	} elsif  ( $source =~ /^([^;]+);([^;]+)$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /\+|~|\..*\./ ) {
@@ -1986,7 +2045,16 @@ sub expand_rule( $$$$$$$$$$$ )
 	    }
 
 	    $dest = '';
-	} elsif ( $dest =~ /^([^:]+):([^:]+)$/ ) {
+	} elsif ( $family == F_IPV4 ) { 
+	    if ( $dest =~ /^([^:]+):([^:]+)$/ ) {
+		$diface = $1;
+		$dnets  = $2;
+	    } elsif ( $dest =~ /\+|~|\..*\./ ) {
+		$dnets = $dest;
+	    } else {
+		$diface = $dest;
+	    }
+	} elsif ( $dest =~ /^([^;]+);([^;]+)$/ ) {
 	    $diface = $1;
 	    $dnets  = $2;
 	} elsif ( $dest =~ /\+|~|\..*\./ ) {
@@ -2363,10 +2431,14 @@ sub create_netfilter_load() {
 
     my @table_list;
 
-    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
-    push @table_list, 'filter';
+    if ( $family == F_IPV4 ) {
+	push @table_list, 'raw'    if $capabilities{RAW_TABLE};
+	push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
+	push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+	push @table_list, 'filter';
+    } else {
+	@table_list = qw( raw mangle filter );
+    }
 
     $mode = NULL_MODE;
 
@@ -2376,11 +2448,13 @@ sub create_netfilter_load() {
 
     push_indent;
 
-    save_progress_message "Preparing iptables-restore input...";
+    my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
+
+    save_progress_message "Preparing $utility input...";
 
     emit '';
 
-    emit 'exec 3>${VARDIR}/.iptables-restore-input';
+    emit "exec 3>\${VARDIR}/.${utility}-input";
 
     enter_cat_mode;
 
@@ -2425,7 +2499,7 @@ sub create_netfilter_load() {
 
     enter_cmd_mode;
     #
-    # Now generate the actual iptables-restore command
+    # Now generate the actual ip[6]tables-restore command
     #
     emit(  'exec 3>&-',
 	   '',
@@ -2433,9 +2507,9 @@ sub create_netfilter_load() {
 	   '',
 	   'progress_message2 "Running $command..."',
 	   '',
-	   'cat ${VARDIR}/.iptables-restore-input | $command # Use this nonsensical form to appease SELinux',
+	   "cat \${VARDIR}/.${utility}-input | \$command # Use this nonsensical form to appease SELinux",
 	   'if [ $? != 0 ]; then',
-	   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
+	   qq(    fatal_error "iptables-restore Failed. Input is in \${VARDIR}/.${utility}-input"),
 	   "fi\n"
 	   );
 

@@ -76,6 +76,7 @@ sub reinitialize() {
 
 sub use_ipv4() {
     use_ipv4_addrs;
+    use_ipv4_chains;
     use_ipv4_interfaces;
     use_ipv4_policies;
     $family = F_INET;
@@ -83,6 +84,7 @@ sub use_ipv4() {
 
 sub use_ipv6() {
     use_ipv6_addrs;
+    use_ipv6_chains;
     use_ipv6_interfaces;
     use_ipv6_policies;
     $family = F_INET;

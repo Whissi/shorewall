@@ -43,10 +43,7 @@ our @EXPORT = qw(
 		  ensure_manual_chain
 		  log_rule_limit
 
-		  %chain_table
-		  %xlatetable
-		  %ipv4tables
-		  %ipv6tables
+		  $chain_table
 		  $nat_table
 		  $mangle_table
 		  $filter_table
@@ -194,20 +191,12 @@ our $VERSION = 4.1.5;
 #
 #       'loglevel', 'synparams', 'synchain' and 'default' only apply to policy chains.
 #
-our %chain_table;
+our %chain_table4;
+our %chain_table6;
+our $chain_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-our %xlatetable = ( raw => 'raw' ,
-		    nat => 'nat' ,
-		    mangle => 'mangle' ,
-		    filter => 'filter' ,
-		    raw6 => 'raw' ,
-		    mangle6 => 'mangle' ,
-		    filter6 => 'filter' );
-
-our @ipv4tables = qw( raw mangle nat filter );
-our @ipv6tables = qw( raw6 mangle6 filter6 );
 #
 # It is a layer violation to keep information about the rules file sections in this module but in Shorewall, the rules file
 # and the filter table are very closely tied. By keeping the information here, we avoid making several other modules dependent
@@ -269,16 +258,18 @@ our %targets6;
 our $targets;
 
 sub use_ipv4_chains() {
-    $nat_table    = $chain_table{nat};
-    $mangle_table = $chain_table{mangle};
-    $filter_table = $chain_table{filter};
+    $chain_table  = \%chain_table4;
+    $nat_table    = $chain_table->{nat};
+    $mangle_table = $chain_table->{mangle};
+    $filter_table = $chain_table->{filter};
     $targets      = \%targets4;
 }    
 
 sub use_ipv6_chains() {
+    $chain_table  = \%chain_table6;
     $nat_table    = undef;
-    $mangle_table = $chain_table{mangle6};
-    $filter_table = $chain_table{filter6};
+    $mangle_table = $chain_table->{mangle};
+    $filter_table = $chain_table->{filter};
     $targets      = \%targets6;
 }    
 
@@ -292,20 +283,13 @@ sub use_ipv6_chains() {
 #
 
 sub initialize() {
-    %chain_table = ( raw    =>  {} ,
-		     mangle =>  {} ,
-		     nat    =>  {} ,
-		     filter =>  {} ,
-		     raw6   =>  {} ,
-		     filter6 => {} );
-
-    $chain_table{raw}{__NAME__}     = 'raw';
-    $chain_table{mangle}{__NAME__}  = 'mangle';
-    $chain_table{nat}{__NAME__}     = 'nat';
-    $chain_table{filter}{__NAME__}  = 'filter';
-    $chain_table{raw6}{__NAME__}    = 'raw6';
-    $chain_table{mangle6}{__NAME__} = 'mangle6';
-    $chain_table{filter6}{__NAME__} = 'filter6';
+    %chain_table4 = ( raw    =>  {} ,
+		      mangle =>  {} ,
+		      nat    =>  {} ,
+		      filter =>  {} );
+    %chain_table6 = ( raw    =>  {} ,
+		      mangle =>  {} ,
+		      filter =>  {} );
 
     use_ipv4_chains;
     #
@@ -344,9 +328,6 @@ sub initialize() {
     %interfacemacs      = ();
     %interfacebcasts    = ();
     %interfacegateways  = ();
-
-    @ipv4tables = ( qw/ filter / );
-
     #
     #   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
     #
@@ -843,14 +824,14 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
 
-    fatal_error "Internal error in new_chain()" if $chain_table{$table}{$chain};
+    fatal_error "Internal error in new_chain()" if $chain_table->{$table}{$chain};
 
-    $chain_table{$table}{$chain} = { name      => $chain,
-				     rules     => [],
-				     table     => $table,
-				     loglevel  => '',
-				     log       => 1,
-				     cmdlevel  => 0 };
+    $chain_table->{$table}{$chain} = { name      => $chain,
+				       rules     => [],
+				       table     => $table,
+				       loglevel  => '',
+				       log       => 1,
+				       cmdlevel  => 0 };
 }
 
 #
@@ -862,7 +843,7 @@ sub ensure_chain($$)
 
     fatal_error 'Internal Error in ensure_chain' unless $table && $chain;
 
-    my $ref =  $chain_table{$table}{$chain};
+    my $ref =  $chain_table->{$table}{$chain};
 
     return $ref if $ref;
 
@@ -880,7 +861,7 @@ sub ensure_filter_chain( $$ )
 
     my $chainref = $filter_table->{$chain};
 
-    $chainref = new_chain $filter_table->{__NAME__} , $chain unless $chainref;
+    $chainref = new_chain 'filter' , $chain unless $chainref;
 
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
@@ -907,7 +888,7 @@ sub ensure_accounting_chain( $  )
     if ( $chainref ) {
 	fatal_error "Non-accounting chain ($chain) used in accounting rule"  if ! $chainref->{accounting};
     } else {
-	$chainref = new_chain $filter_table->{__NAME__}  , $chain unless $chainref;
+	$chainref = new_chain 'filter' , $chain unless $chainref;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
     }
@@ -918,7 +899,7 @@ sub ensure_accounting_chain( $  )
 sub ensure_mangle_chain($) {
     my $chain = $_[0];
 
-    my $chainref = ensure_chain  $mangle_table->{__NAME__}, $chain;
+    my $chainref = ensure_chain 'mangle', $chain;
 
     $chainref->{referenced} = 1;
 
@@ -949,7 +930,7 @@ sub new_builtin_chain($$$)
 }
 
 sub new_standard_chain($) {
-    my $chainref = new_chain $filter_table->{__NAME__} ,$_[0];
+    my $chainref = new_chain 'filter' ,$_[0];
     $chainref->{referenced} = 1;
     $chainref;
 }
@@ -984,12 +965,10 @@ sub initialize_chain_table()
 {
     for my $chain qw(OUTPUT PREROUTING) {
 	new_builtin_chain 'raw' , $chain, 'ACCEPT';
-	new_builtin_chain 'raw6', $chain, 'ACCEPT';
     }
 
     for my $chain qw(INPUT OUTPUT FORWARD) {
 	new_builtin_chain 'filter',  $chain, 'DROP';
-	new_builtin_chain 'filter6', $chain, 'DROP';
     }
 
     for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
@@ -998,7 +977,6 @@ sub initialize_chain_table()
 
     for my $chain qw(PREROUTING INPUT OUTPUT ) {
 	new_builtin_chain 'mangle', $chain, 'ACCEPT';
-	new_builtin_chain 'mangle6', $chain, 'ACCEPT';
     }
 
     if ( $capabilities{MANGLE_FORWARD} ) {
@@ -1007,9 +985,22 @@ sub initialize_chain_table()
 	}
     }
 
-    for my $chain qw( FORWARD POSTROUTING ) {
-	new_builtin_chain 'mangle6', $chain, 'ACCEPT';
+    use_ipv6_chains;
+
+    for my $chain qw(OUTPUT PREROUTING) {
+	new_builtin_chain 'raw' , $chain, 'ACCEPT';
     }
+
+    for my $chain qw(INPUT OUTPUT FORWARD) {
+	new_builtin_chain 'filter',  $chain, 'DROP';
+    }
+
+    for my $chain qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) {
+	new_builtin_chain 'mangle', $chain, 'ACCEPT';
+    }
+
+    use_ipv4_chains;
+
 }
 
 #
@@ -1978,7 +1969,7 @@ sub expand_rule( $$$$$$$$$$$ )
     # Mark Target as referenced, if it's a chain
     #
     if ( $disposition ) {
-	my $targetref = $chain_table{$chainref->{table}}{$disposition};
+	my $targetref = $chain_table->{$chainref->{table}}{$disposition};
 	$targetref->{referenced} = 1 if $targetref;
     }
 
@@ -2466,7 +2457,7 @@ sub create_netfilter_load() {
 	# iptables-restore seems to be quite picky about the order of the builtin chains
 	#
 	for my $chain ( @builtins ) {
-	    my $chainref = $chain_table{$table}{$chain};
+	    my $chainref = $chain_table->{$table}{$chain};
 	    if ( $chainref ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
@@ -2476,8 +2467,8 @@ sub create_netfilter_load() {
 	#
 	# First create the chains in the current table
 	#
-	for my $chain ( grep reftype $chain_table{$table}{$_} && $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
-	    my $chainref =  $chain_table{$table}{$chain};
+	for my $chain ( grep $chain_table->{$table}{$_}->{referenced} , ( sort keys %{$chain_table->{$table}} ) ) {
+	    my $chainref =  $chain_table->{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
 		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
 		emit_unindented ":$chainref->{name} - [0:0]";
@@ -2564,11 +2555,11 @@ sub create_chainlist_reload($) {
 	    $chains{$table} = [] unless $chains{$table};
 
 	    if ( $chain ) {
-		fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
-		fatal_error "Built-in chains may not be refreshed" if $chain_table{table}{$chain}{builtin};
+		fatal_error "No $table chain found with name $chain" unless  $chain_table->{$table}{$chain};
+		fatal_error "Built-in chains may not be refreshed" if $chain_table->{table}{$chain}{builtin};
 		push @{$chains{$table}}, $chain;
 	    } else {
-		while ( my ( $chain, $chainref ) = each %{$chain_table{$table}} ) {
+		while ( my ( $chain, $chainref ) = each %{$chain_table->{$table}} ) {
 		    next unless reftype $chainref;
 		    push @{$chains{$table}}, $chain if $chainref->{referenced} && ! $chainref->{builtin};
 		}
@@ -2584,7 +2575,7 @@ sub create_chainlist_reload($) {
 
 	    emit_unindented "*$table";
 
-	    my $tableref=$chain_table{$table};
+	    my $tableref=$chain_table->{$table};
 
 	    @chains = sort @{$chains{$table}};
 

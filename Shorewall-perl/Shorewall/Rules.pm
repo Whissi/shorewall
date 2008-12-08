@@ -720,7 +720,7 @@ sub setup_mac_lists( $ ) {
 		fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
 		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
 
-		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
+		my $chainref = $chain_table->{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 
 		$mac       = '' unless $mac && ( $mac ne '-' );
 		$addresses = '' unless defined $addresses && ( $addresses ne '-' );
@@ -766,7 +766,7 @@ sub setup_mac_lists( $ ) {
 	}
     } else {
 	for my $interface ( @maclist_interfaces ) {
-	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
+	    my $chainref = $chain_table->{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = $chainref->{name};
 
 	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
@@ -1994,7 +1994,7 @@ sub generate_matrix() {
 	    for my $chain ( @{$builtins{$table}} ) {
 		log_rule_limit
 		    $config{LOGALLNEW} ,
-		    $chain_table{$table}{$chain} ,
+		    $chain_table->{$table}{$chain} ,
 		    $table ,
 		    $chain ,
 		    '' ,

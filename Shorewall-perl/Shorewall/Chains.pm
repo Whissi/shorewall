@@ -1140,7 +1140,7 @@ sub do_proto( $$$ )
 	  PROTO:
 	    {
 
-		if ( $proto == TCP || $proto == UDP || $proto == SCTP ) {
+		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP ) {
 		    my $multiport = 0;
 
 		    if ( $ports ne '' ) {
@@ -1172,6 +1172,7 @@ sub do_proto( $$$ )
 		    last PROTO;	}
 	    
 		if ( $proto == ICMP ) {
+		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6;
 		    if ( $ports ne '' ) {
 			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
 			$ports = validate_icmp $ports;
@@ -1181,6 +1182,19 @@ sub do_proto( $$$ )
 		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
 
 		    last PROTO; }
+
+		if ( $proto == IPv6_ICMP ) {
+		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
+		    if ( $ports ne '' ) {
+			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
+			$ports = validate_icmp6 $ports;
+			$output .= "--icmpv6-type $ports ";
+		    }
+		
+		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
+
+		    last PROTO; }
+
 
 		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname" if $ports ne '' || $sports ne '';
 
@@ -1965,7 +1979,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	if ( $source eq '-' ) {
 	    $source = '';
 	} elsif ( $family == F_IPV4 ) {
-	    if ( $source =~ /^([^:]+):([^:]+)$/ ) {
+	    if ( $source =~ /^(.+?):(.+)$/ ) {
 		$iiface = $1;
 		$inets  = $2;
 	    } elsif ( $source =~ /\+|~|\..*\./ ) {
@@ -1973,7 +1987,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	    } else {
 		$iiface = $source;
 	    }
-	} elsif  ( $source =~ /^([^;]+);([^;]+)$/ ) {
+	} elsif  ( $source =~ /^(.+?):\[(.+)\]\s+$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /\+|~|\..*\./ ) {
@@ -2046,7 +2060,7 @@ sub expand_rule( $$$$$$$$$$$ )
 
 	    $dest = '';
 	} elsif ( $family == F_IPV4 ) { 
-	    if ( $dest =~ /^([^:]+):([^:]+)$/ ) {
+	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
 	    } elsif ( $dest =~ /\+|~|\..*\./ ) {
@@ -2054,7 +2068,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	    } else {
 		$diface = $dest;
 	    }
-	} elsif ( $dest =~ /^([^;]+);([^;]+)$/ ) {
+	} elsif ( $dest =~ /^(.+?):\[(.+)\]\s+$/ ) {
 	    $diface = $1;
 	    $dnets  = $2;
 	} elsif ( $dest =~ /\+|~|\..*\./ ) {

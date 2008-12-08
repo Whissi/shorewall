@@ -39,6 +39,7 @@ our @EXPORT = qw( ALLIPv4
 		  TCP
 		  UDP
 		  ICMP
+		  DCCP
 		  IPv6_ICMP
 		  SCTP
 
@@ -75,7 +76,8 @@ use constant { ALLIPv4 => '0.0.0.0/0' ,
 	       ICMP => 1, 
 	       TCP => 6, 
 	       UDP => 17,
-	       ICMPv6_ICMP => 58,
+	       DCCP => 33,
+	       IPv6_ICMP => 58,
 	       SCTP => 132 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );

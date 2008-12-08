@@ -55,6 +55,7 @@ our $sectioned;
 our $macro_nest_level;
 our $current_param;
 our @param_stack;
+our $family;
 
 #
 # When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
@@ -72,7 +73,8 @@ my %rules_commands = ( COMMENT => 0,
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
+    $family = shift;
     $sectioned = 0;
     $macro_nest_level = 0;
     $current_param = '';
@@ -80,7 +82,7 @@ sub initialize() {
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
@@ -121,9 +123,17 @@ sub process_tos() {
 
 	    my $restriction = NO_RESTRICT;
 
-	    my ( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
+	    my ( $srczone , $source , $remainder );
 
-	    fatal_error 'Invalid SOURCE' if defined $remainder;
+	    if ( $family == F_IPV4 ) {
+		( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
+		fatal_error 'Invalid SOURCE' if defined $remainder;
+	    } elsif ( $src =~ /^(.+?):\[(.*)]\s$/ ) {
+		$srczone = $1;
+		$source  = $2;
+	    } else {
+		$srczone = $src;
+	    }
 
 	    if ( $srczone eq firewall_zone ) {
 		$chainref    = $outtosref;
@@ -518,23 +528,25 @@ sub add_common_rules() {
 
     setup_blacklist;
 
-    $list = find_hosts_by_option 'nosmurfs';
+    if ( $family == F_IPV4 ) {
+	$list = find_hosts_by_option 'nosmurfs';
 
-    $chainref = new_standard_chain 'smurfs';
+	$chainref = new_standard_chain 'smurfs';
 
-    if ( $capabilities{ADDRTYPE} ) {
-	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
-	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-    } else {
-	add_command $chainref, 'for address in $ALL_BCASTS; do';
-	incr_cmd_level $chainref;
-	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
-	add_rule $chainref, '-s $address -j DROP';
-	decr_cmd_level $chainref;
-	add_command $chainref, 'done';
+	if ( $capabilities{ADDRTYPE} ) {
+	    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+	    add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
+	} else {
+	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    incr_cmd_level $chainref;
+	    log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
+	    add_rule $chainref, '-s $address -j DROP';
+	    decr_cmd_level $chainref;
+	    add_command $chainref, 'done';
+	}
+
+	add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     }
-
-    add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
 
     if ( $capabilities{ADDRTYPE} ) {
 	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
@@ -585,9 +597,10 @@ sub add_common_rules() {
 	}
     }
 
-    $list = find_hosts_by_option 'norfc1918';
-
-    setup_rfc1918_filteration $list if @$list;
+    if ( $family == F_IPV4 ) {
+	$list = find_hosts_by_option 'norfc1918';
+	setup_rfc1918_filteration $list if @$list;
+    }
 
     $list = find_hosts_by_option 'tcpflags';
 
@@ -634,15 +647,17 @@ sub add_common_rules() {
 	}
     }
 
-    $list = find_interfaces_by_option 'upnp';
+    if ( $family == F_IPV4 ) {
+	$list = find_interfaces_by_option 'upnp';
 
-    if ( @$list ) {
-	progress_message2 '$doing UPnP';
+	if ( @$list ) {
+	    progress_message2 '$doing UPnP';
 
-	new_nat_chain( 'UPnP' );
-
-	for $interface ( @$list ) {
-	    add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
+	    new_nat_chain( 'UPnP' );
+	    
+	    for $interface ( @$list ) {
+		add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
+	    }
 	}
     }
 

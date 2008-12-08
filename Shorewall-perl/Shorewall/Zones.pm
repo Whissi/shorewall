@@ -593,25 +593,40 @@ sub validate_interfaces_file( $ )
 
 	           IF_OPTION_ZONEONLY => 8 };
 
-    my %validoptions = (arp_filter  => BINARY_IF_OPTION,
-			arp_ignore  => ENUM_IF_OPTION,
-			blacklist   => SIMPLE_IF_OPTION,
-			bridge      => SIMPLE_IF_OPTION,
-			detectnets  => OBSOLETE_IF_OPTION,
-			dhcp        => SIMPLE_IF_OPTION,
-			maclist     => SIMPLE_IF_OPTION,
-			logmartians => BINARY_IF_OPTION,
-			norfc1918   => SIMPLE_IF_OPTION,
-			nosmurfs    => SIMPLE_IF_OPTION,
-			optional    => SIMPLE_IF_OPTION,
-			proxyarp    => BINARY_IF_OPTION,
-			routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
-			routefilter => BINARY_IF_OPTION,
-			sourceroute => BINARY_IF_OPTION,
-			tcpflags    => SIMPLE_IF_OPTION,
-			upnp        => SIMPLE_IF_OPTION,
-			mss         => NUMERIC_IF_OPTION,
+    my %validoptions;
+
+    if ( $family == F_IPV4 ) {
+	%validoptions = (arp_filter  => BINARY_IF_OPTION,
+			 arp_ignore  => ENUM_IF_OPTION,
+			 blacklist   => SIMPLE_IF_OPTION,
+			 bridge      => SIMPLE_IF_OPTION,
+			 detectnets  => OBSOLETE_IF_OPTION,
+			 dhcp        => SIMPLE_IF_OPTION,
+			 maclist     => SIMPLE_IF_OPTION,
+			 logmartians => BINARY_IF_OPTION,
+			 norfc1918   => SIMPLE_IF_OPTION,
+			 nosmurfs    => SIMPLE_IF_OPTION,
+			 optional    => SIMPLE_IF_OPTION,
+			 proxyarp    => BINARY_IF_OPTION,
+			 routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
+			 routefilter => BINARY_IF_OPTION,
+			 sourceroute => BINARY_IF_OPTION,
+			 tcpflags    => SIMPLE_IF_OPTION,
+			 upnp        => SIMPLE_IF_OPTION,
+			 mss         => NUMERIC_IF_OPTION,
 			);
+    } else {
+	%validoptions = (  blacklist   => SIMPLE_IF_OPTION,
+			   bridge      => SIMPLE_IF_OPTION,
+			   maclist     => SIMPLE_IF_OPTION,
+			   optional    => SIMPLE_IF_OPTION,
+			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
+			   sourceroute => BINARY_IF_OPTION,
+			   tcpflags    => SIMPLE_IF_OPTION,
+			   mss         => NUMERIC_IF_OPTION,
+			   forward     => NUMERIC_IF_OPTION,
+			  );
+    }
 
     my $fn = open_file 'interfaces';
 
@@ -933,18 +948,33 @@ sub set_interface_option( $$$ ) {
 #
 sub validate_hosts_file()
 {
-    my %validoptions = (
-			blacklist => 1,
-			maclist => 1,
-			norfc1918 => 1,
-			nosmurfs => 1,
-			routeback => 1,
-			routefilter => 1,
-			tcpflags => 1,
-			broadcast => 1,
-			destonly => 1,
-			sourceonly => 1,
+    my %validoptions;
+
+    if ( $family == F_IPV4 ) {
+	%validoptions = (
+			 blacklist => 1,
+			 maclist => 1,
+			 norfc1918 => 1,
+			 nosmurfs => 1,
+			 routeback => 1,
+			 routefilter => 1,
+			 tcpflags => 1,
+			 broadcast => 1,
+			 destonly => 1,
+			 sourceonly => 1,
 			);
+    } else {
+	%validoptions = (
+			 blacklist => 1,
+			 maclist => 1,
+			 nosmurfs => 1,
+			 routeback => 1,
+			 tcpflags => 1,
+			 broadcast => 1,
+			 destonly => 1,
+			 sourceonly => 1,
+			);
+    }
 
     my $ipsec = 0;
     my $first_entry = 1;
@@ -968,13 +998,24 @@ sub validate_hosts_file()
 
 	my $interface;
 
-	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
-	    $interface = $1;
-	    $hosts = $2;
-	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	if ( $family == F_IPV4 ) {
+	    if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
+		$interface = $1;
+		$hosts = $2;
+		$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+		fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	    } else {
+		fatal_error "Invalid HOST(S) column contents: $hosts";
+	    }
 	} else {
-	    fatal_error "Invalid HOST(S) column contents: $hosts";
+	    if ( $hosts =~ /^([\w.@%-]+\+?)\[(.*)\]\s+$/ ) {
+		$interface = $1;
+		$hosts = $2;
+		$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+		fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	    } else {
+		fatal_error "Invalid HOST(S) column contents: $hosts";
+	    }
 	}
 
 	if ( $type eq 'bport' ) {

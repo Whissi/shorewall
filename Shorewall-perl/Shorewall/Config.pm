@@ -352,6 +352,7 @@ sub initialize() {
 		DELAYBLACKLISTLOAD => undef,
 		MODULE_SUFFIX => undef,
 		DISABLE_IPV6 => undef,
+		IPV6 => undef,
 		DYNAMIC_ZONES => undef,
 		PKTTYPE=> undef,
 		RFC1918_STRICT => undef,
@@ -1918,7 +1919,22 @@ sub get_configuration( $ ) {
 
     default_yes_no 'ADMINISABSENTMINDED'        , '';
     default_yes_no 'BLACKLISTNEWONLY'           , '';
-    default_yes_no 'DISABLE_IPV6'               , '';
+
+    if ( defined $config{IPV6} ) {
+	if ( $config{IPV6} =~ /on/i ) {
+	    $config{IPV6} = 'On';
+	} elsif ( $config{IPV6} =~ /off/i ) {
+	    $config{IPV6} = 'Off';
+	} elsif ( $config{IPV6} =~ /keep/i ) {
+	    $config{IPV6} = '';
+	}
+    }
+
+    default_yes_no 'DISABLE_IPV6' , '';
+
+    fatal_error "Incompatible settings of IPV6 (On) and DISABLE_IPV6 (Yes)" if $config{IPV6} eq 'On' && $config{DISABLE_IPV6} eq 'Yes';
+
+    $config{IPV6} = $config{DISABLE_IPV6} ? 'Off' : '' unless defined $config{IPV6};
 
     unsupported_yes_no 'DYNAMIC_ZONES';
     unsupported_yes_no 'BRIDGING';

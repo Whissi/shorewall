@@ -1,0 +1,18 @@
+#
+# Shorewall version 4 - NTPbrd Macro
+#
+# /usr/share/shorewall/macro.NTPbrd
+#
+#	This macro handles NTP traffic (ntpd) including replies to Broadcast
+#	NTP traffic.
+#
+#	It is recommended only to use this where the source host is trusted -
+#	otherwise it opens up a large hole in your firewall because
+#	Netfilter doesn't track connections for broadcast traffic.
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S)	PORT(S)	LIMIT	GROUP
+PARAM	-		-		udp	123
+PARAM	-		-		udp	1024:	123
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

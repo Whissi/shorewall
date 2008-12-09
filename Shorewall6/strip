@@ -1,0 +1,110 @@
+#! /bin/sh
+#
+# Script for use from Perl to strip config files and perform shell variable
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
+#       Shorewall documentation is available at http://shorewall.net
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of Version 2 of the GNU General Public License
+#       as published by the Free Software Foundation.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+###############################################################################
+# Filter that expands variables
+#
+expand_line() {
+    local line
+
+    while read line; do
+	echo $(expand $line)
+    done
+}
+
+#
+# Read a file and handle "INCLUDE" directives
+#
+
+read_file() # $1 = file name, $2 = nest count
+{
+    local first
+    local rest
+
+    if [  -f $1 ]; then
+	while read first rest; do
+	    if [ "x$first"  = "xINCLUDE" ]; then
+		if [ $2 -lt 4 ]; then
+		    read_file $(find_file $(expand ${rest%#*})) $(($2 + 1))
+		else
+		    echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
+		fi
+	    else
+		eval "$first $rest"
+	    fi
+	done < $1
+    else
+	echo "   WARNING -- No such file: $1" >&2
+    fi
+}
+
+#
+# Split a colon-separated list into a space-separated list
+#
+split() {
+    local ifs
+    ifs=$IFS
+    IFS=:
+    echo $*
+    IFS=$ifs
+}
+
+#
+# Find a File -- For relative file name, look in ${SHOREWALL_DIR} then each ${CONFIG_PATH} then ${CONFDIR}
+#
+find_file()
+{
+    local saveifs
+    saveifs=
+    local directory
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	*)
+	    for directory in $(split $CONFIG_PATH); do
+		if [ -f $directory/$1 ]; then
+		    echo $directory/$1
+		    return
+		fi
+	    done
+	    
+	    echo ${CONFDIR}/$1
+	    ;;
+    esac
+}
+
+#
+# Strip comments and blank lines from a file and place the result in the
+# temporary directory
+#
+if [ ! -f $TMP_DIR/$1 ]; then
+    [ $# = 1 ] && fname=$(find_file $1) || fname=$2
+
+    if [ -f $fname ]; then
+	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' | expand_line > $TMP_DIR/$1
+    else
+	> $TMP_DIR/$1
+    fi
+fi

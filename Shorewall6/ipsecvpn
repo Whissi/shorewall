@@ -1,0 +1,296 @@
+#!/bin/sh
+
+################################################################################
+#
+#    ipsecvpn -- script for use on a roadwarrior to start/stop a tunnel-mode
+#                IPSEC connection
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+RCDLINKS="2,S42 3,S42 6,K42"
+
+#### BEGIN INIT INFO
+# Provides:	  ipsecvpn
+# Required-Start: $shorewall
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:	  0 1 6
+# Description:	  starts and stops a tunnel-mode VPN connection
+### END INIT INFO
+
+# chkconfig: 2345 26 89
+# description: IPSEC tunnel-mode connection
+#
+################################################################################
+#
+# External Interface
+#
+INTERFACE=eth0
+#
+# Remote IPSEC Gateway
+#
+GATEWAY=1.2.3.4
+#
+# Networks behind the remote gateway (space-separated list)
+#
+NETWORKS="192.168.1.0/24"
+#
+# Directory where X.509 certificates are stored.
+#
+CERTS=/etc/certs
+#
+# Certificate to be used for this connection. The cert
+# directory must contain:
+#
+#     ${CERT}.pem     - the certificate
+#     ${CERT}_key.pem - the certificates's key
+#
+CERT=roadwarrior
+#
+#     The setkey binary
+#
+SETKEY=/usr/sbin/setkey
+#
+#     The racoon binary
+#
+RACOON=/usr/sbin/racoon
+
+#
+# Message to stderr
+#
+error_message() # $* = Error Message
+{
+   echo "   $@" >&2
+}
+
+#
+# Fatal error -- stops the firewall after issuing the error message
+#
+fatal_error() # $* = Error Message
+{
+    echo "   Error: $@" >&2
+    exit 2
+}
+
+#
+# Find interface address--returns the first IP address assigned to the passed
+# device
+#
+find_first_interface_address() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep inet | head -n1)
+    #
+    # If there wasn't one, bail out now
+    #
+    [ -n "$addr" ] || fatal_error "Can't determine the IP address of $1"
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
+# Create a Racoon configuration file using the variables above
+#
+make_racoon_conf() {
+    echo "path certificate \"$CERTS\";"
+    echo
+    echo "listen"
+    echo "{"
+    echo "    isakmp $IPADDR;"
+    echo "}"
+    echo
+    echo "remote $GATEWAY"
+    echo "{"
+    echo "    exchange_mode main;"
+    echo "    certificate_type x509 \"$CERT.pem\" \"${CERT}_key.pem\";"
+    echo "    verify_cert on;"
+    echo "    my_identifier asn1dn ;"
+    echo "    peers_identifier asn1dn ;"
+    echo "    verify_identifier on ;"
+    echo "    lifetime time 24 hour ;"
+    echo "    proposal {"
+    echo "        encryption_algorithm blowfish;"
+    echo "        hash_algorithm sha1;"
+    echo "        authentication_method rsasig ;"
+    echo "        dh_group 2 ;"
+    echo "    }"
+    echo "}"
+    echo
+
+    for network in $NETWORKS; do
+	echo "sainfo address $IPADDR/32 any address $network any"
+	echo "{"
+	echo "    pfs_group 2;"
+	echo "    lifetime time 12 hour ;"
+	echo "    encryption_algorithm blowfish ;"
+	echo "    authentication_algorithm hmac_sha1, hmac_md5 ;"
+	echo "    compression_algorithm deflate ;"
+	echo "}"
+	echo
+	echo "sainfo address $network any address $IPADDR/32 any"
+	echo "{"
+	echo "    pfs_group 2;"
+	echo "    lifetime time 12 hour ;"
+	echo "    encryption_algorithm blowfish ;"
+	echo "    authentication_algorithm hmac_sha1, hmac_md5 ;"
+	echo "    compression_algorithm deflate ;"
+	echo "}"
+
+    done
+
+    echo "sainfo address $IPADDR/32 any address $GATEWAY/32 any"
+    echo "{"
+    echo "    pfs_group 2;"
+    echo "    lifetime time 12 hour ;"
+    echo "    encryption_algorithm blowfish ;"
+    echo "    authentication_algorithm hmac_sha1, hmac_md5 ;"
+    echo "    compression_algorithm deflate ;"
+    echo "}"
+    echo
+    echo "sainfo address $GATEWAY/32 any address $IPADDR/32 any"
+    echo "{"
+    echo "    pfs_group 2;"
+    echo "    lifetime time 12 hour ;"
+    echo "    encryption_algorithm blowfish ;"
+    echo "    authentication_algorithm hmac_sha1, hmac_md5 ;"
+    echo "    compression_algorithm deflate ;"
+    echo "}"
+}
+
+#
+# Make a setkey configuration file using the variables above
+#
+make_setkey_conf()
+{
+    echo "flush;"
+    echo "spdflush;"
+
+    echo "spdadd $IPADDR/32 $GATEWAY/32 any -P out  ipsec esp/tunnel/${IPADDR}-${GATEWAY}/require;"
+    echo "spdadd $GATEWAY/32 $IPADDR/32 any -P in   ipsec esp/tunnel/${GATEWAY}-${IPADDR}/require;"
+
+    for network in $NETWORKS; do
+	echo "spdadd $IPADDR/32 $network any -P out  ipsec esp/tunnel/${IPADDR}-${GATEWAY}/require;"
+	echo "spdadd $network $IPADDR/32 any -P in   ipsec esp/tunnel/${GATEWAY}-${IPADDR}/require;"
+    done
+}
+
+#
+# Start the Tunnel
+#
+start()
+{
+    #
+    # Get the first IP address configured on the device in INTERFACE
+    #
+    IPADDR=$(find_first_interface_address $INTERFACE)
+    #
+    # Create the name of the setkey temporary file
+    #
+    TEMPFILE=$(mktemp /tmp/$(basename $0).XXXXXXXX)
+    [ $? -eq 0 ] || fatal_error "Can't create temporary file name"
+    #
+    # Create the file
+    #
+    make_setkey_conf > $TEMPFILE
+    #
+    # Create the SPD
+    #
+    $SETKEY -f $TEMPFILE
+    #
+    # We can now remove the file
+    #
+    rm -f $TEMPFILE
+    #
+    # Create another name -- make this distict to aid debugging
+    # (just comment out the 'rm' commands)
+    #
+    TEMPFILE=$(mktemp /tmp/$(basename $0).XXXXXXXX)
+    [ $? -eq 0 ] || fatal_error "Can't create temporary file name"
+    #
+    # Create the file
+    #
+    make_racoon_conf > $TEMPFILE
+    #
+    # Start Racoon Daemon
+    #
+    $RACOON -4 -f $TEMPFILE
+    #
+    # Once the Daemon is running, we can remove the file
+    #
+    rm -f $TEMPFILE
+}
+#
+# Stop the Tunnel
+#
+stop()
+{
+    #
+    # Kill any racoon daemons
+    #
+    killall racoon
+    #
+    # Purge the SAD and SPD
+    #
+    setkey -F -FP
+}
+
+#
+# Display command syntax and abend
+#
+usage()
+{
+    error_message "usage: $(basename $0) [start|stop|restart]"
+    exit 1
+}
+################################################################################
+#                       C O D E    S T A R T S    H E R E
+################################################################################
+[ $# -eq 1 ] || usage
+
+
+case $1 in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    restart)
+	stop
+	sleep 2
+	start
+	;;
+    *)
+	usage
+	;;
+esac
+
+
+
+
+
+
+
+
+
+

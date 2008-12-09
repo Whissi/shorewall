@@ -1,0 +1,816 @@
+#!/bin/sh
+#
+#     Shorewall Lite Packet Filtering Firewall Control Program - V4.1
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2006 - Tom Eastep (teastep@shorewall.net)
+#
+#	This file should be placed in /sbin/shorewall-lite.
+#
+#	Shorewall documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#     If an error occurs while starting or restarting the firewall, the
+#     firewall is automatically stopped.
+#
+#     Commands are:
+#
+#     shorewall-lite dump                          Dumps all Shorewall-related information
+#                                                  for problem analysis
+#     shorewall-lite start 			   Starts the firewall
+#     shorewall-lite restart			   Restarts the firewall
+#     shorewall-lite stop			   Stops the firewall
+#     shorewall-lite status			   Displays firewall status
+#     shorewall-lite reset			   Resets iptables packet and
+#						   byte counts
+#     shorewall-lite clear			   Open the floodgates by
+#						   removing all iptables rules
+#						   and setting the three permanent
+#						   chain policies to ACCEPT
+#     shorewall-lite show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
+#     shorewall-lite show log			   Print the last 20 log messages
+#     shorewall-lite show connections		   Show the kernel's connection
+#						   tracking table
+#     shorewall-lite show nat			   Display the rules in the nat table
+#     shorewall-lite show {mangle|tos}		   Display the rules in the mangle table
+#     shorewall-lite show tc			   Display traffic control info
+#     shorewall-lite show classifiers		   Display classifiers
+#     shorewall-lite show capabilities             Display iptables/kernel capabilities
+#     shorewall-lite show vardir                   Display VARDIR setting
+#     shorewall-lite version			   Display the installed version id
+#     shorewall-lite logwatch [ refresh-interval ] Monitor the local log for Shorewall
+#						   messages.
+#     shorewall-lite drop <address> ...		   Temporarily drop all packets from the
+#						   listed address(es)
+#     shorewall-lite reject <address> ...	   Temporarily reject all packets from the
+#						   listed address(es)
+#     shorewall-lite allow <address> ...	   Reenable address(es) previously
+#						   disabled with "drop" or "reject"
+#     shorewall-lite save [ <file> ]		   Save the list of "rejected" and
+#						   "dropped" addresses so that it will
+#						   be automatically reinstated the
+#						   next time that Shorewall starts.
+#                                                  Save the current state so that 'shorewall
+#                                                  restore' can be used.
+#
+#     shorewall-lite forget [ <file> ]             Discard the data saved by 'shorewall save'
+#
+#     shorewall-lite restore [ <file> ]            Restore the state of the firewall from
+#                                                  previously saved information.
+#
+#     shorewall-lite ipaddr { <address>/<cidr> | <address> <netmask> }
+#
+#                                                  Displays information about the network
+#                                                  defined by the argument[s]
+#
+#     shorewall-lite iprange <address>-<address>   Decomposes a range of IP addresses into
+#                                                  a list of network/host addresses.
+#
+#     shorewall-lite ipdecimal { <address> | <integer> }
+#
+#                                                  Displays the decimal equivalent of an IP
+#                                                  address and vice versa.
+
+#
+# Set the configuration variables from shorewall-lite.conf
+#
+get_config() {
+
+    [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+
+    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
+
+    if ( ps ax 2> /dev/null | grep -v grep |  qt grep 'syslogd.*-C' ) ; then
+	LOGREAD="logread | tac"
+    elif [ -f $LOGFILE ]; then
+	LOGREAD="tac $LOGFILE"
+    else
+	echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	exit 2
+    fi
+    #
+    # See if we have a real version of "tail" -- use separate redirection so
+    # that ash (aka /bin/sh on LRP) doesn't crap
+    #
+    if ( tail -n5 /dev/null > /dev/null 2> /dev/null ) ; then
+	realtail="Yes"
+    else
+	realtail=""
+    fi
+
+    [ -n "$FW" ] || FW=fw
+
+    [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
+
+    [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
+
+    export LOGFORMAT
+
+    if [ -n "$IPTABLES" ]; then
+	if [ ! -x "$IPTABLES" ]; then
+	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+	    exit 2
+	fi
+    else
+	IPTABLES=$(mywhich iptables 2> /dev/null)
+	if [ -z "$IPTABLES" ] ; then
+	    echo "   ERROR: Can't find iptables executable" >&2
+	    exit 2
+	fi
+    fi
+
+    export IPTABLES
+
+    if [ -n "$SHOREWALL_SHELL" ]; then
+	if [ ! -x "$SHOREWALL_SHELL" ]; then
+	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
+	    SHOREWALL_SHELL=/bin/sh
+	fi
+    fi
+
+    [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
+
+    validate_restorefile RESTOREFILE
+
+    export RESTOREFILE
+
+    [ -n "${VERBOSITY:=2}" ]
+
+    [ -n "$USE_VERBOSITY" ] && VERBOSE=$USE_VERBOSITY || VERBOSE=$(($VERBOSE_OFFSET + $VERBOSITY))
+
+    export VERBOSE
+
+    [ -n "${HOSTNAME:=$(hostname)}" ]
+
+}
+
+#
+# Verify that we have a compiled firewall script
+#
+verify_firewall_script() {
+    if [ ! -f $FIREWALL ]; then
+	echo "   ERROR: Shorewall Lite is not properly installed" >&2
+	if [ -L $FIREWALL ]; then
+	    echo "          $FIREWALL is a symbolic link to a" >&2
+	    echo "          non-existant file" >&2
+	else
+	    echo "          The file $FIREWALL does not exist" >&2
+	fi
+	
+	exit 2
+    fi
+}
+
+#
+# Start Command Executor
+#
+start_command() {
+    local finished
+    finished=0
+
+    do_it() {
+	local rc
+	rc=0
+	[ -n "$nolock" ] || mutex_on
+
+	if [ -x ${LITEDIR}/firewall ]; then
+	    ${LITEDIR}/firewall $debugging start
+	    rc=$?
+	else
+	    error_message "${LITEDIR}/firewall is missing or is not executable"
+	    logger -p kern.err "ERROR:Shorewall Lite start failed"
+	    rc=2
+	fi
+
+	[ -n "$nolock" ] || mutex_off
+	exit $rc
+    }
+
+    verify_firewall_script
+
+    if shorewall_is_started; then
+	error_message "Shorewall is already running"
+	exit 0
+    fi
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			f*)
+			    FAST=Yes
+			    option=${option#f}
+			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    PURGE=Yes
+			    option=${option%p}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+
+    if [ -n "$FAST" ]; then
+	if qt mywhich make; then
+	    #
+	    # RESTOREFILE is exported by get_config()
+	    #
+	    make -qf ${CONFDIR}/Makefile || FAST=
+	fi
+
+	if [ -n "$FAST" ]; then
+
+	    RESTOREPATH=${VARDIR}/$RESTOREFILE
+
+	    if [ -x $RESTOREPATH ]; then
+		if [ -x ${RESTOREPATH}-ipsets ]; then
+		    echo Restoring Ipsets...
+		    #
+		    # We must purge iptables to be sure that there are no
+		    # references to ipsets
+		    #
+		    iptables -F
+		    iptables -X
+		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
+		fi
+
+		echo Restoring Shorewall Lite...
+		$SHOREWALL_SHELL $RESTOREPATH restore
+		date > ${VARDIR}/restarted
+		progress_message3 Shorewall Lite restored from $RESTOREPATH
+	    else
+		do_it
+	    fi
+	else
+	    do_it
+	fi
+    else
+	do_it
+    fi
+}
+
+#
+# Restart Command Executor
+#
+restart_command() {
+    local finished
+    finished=0
+    local rc
+    rc=0
+
+    verify_firewall_script
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    PURGE=Yes
+			    option=${option%p}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+
+    [ -n "$nolock" ] || mutex_on
+
+    if [ -x ${LITEDIR}/firewall ]; then
+	$SHOREWALL_SHELL ${LITEDIR}/firewall $debugging restart
+	rc=$?
+    else
+	error_message "${LITEDIR}/firewall is missing or is not executable"
+	logger -p kern.err "ERROR:Shorewall Lite restart failed"
+	rc=2
+    fi
+
+    [ -n "$nolock" ] || mutex_off
+    return $rc
+}
+
+#
+# Give Usage Information
+#
+usage() # $1 = exit status
+{
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v[-1|{0-2}] ] [ -t ] <command>"
+    echo "where <command> is one of:"
+    echo "   allow <address> ..."
+    echo "   clear"
+    echo "   drop <address> ..."
+    echo "   dump [ -x ]"
+    echo "   forget [ <file name> ]"
+    echo "   help"
+    echo "   hits [ -t ]"
+    echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
+    echo "   ipdecimal { <address> | <integer> }"
+    echo "   iprange <address>-<address>"
+    echo "   logdrop <address> ..."
+    echo "   logreject <address> ..."
+    echo "   logwatch [<refresh interval>]"
+    echo "   reject <address> ..."
+    echo "   reset"
+    echo "   restart [ -n ] [ -p ]"
+    echo "   restore [ -n ] [ <file name> ]"
+    echo "   save [ <file name> ]"
+    echo "   show [ -x ] [ -m ] [ -f ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|filters|ip|log|mangle|nat|routing|tc|vardir|zones} ]"
+    echo "   start [ -f ] [ -n ] [ -p ]"
+    echo "   stop"
+    echo "   status"
+    echo "   version"
+    echo
+    exit $1
+}
+
+#
+# Execution begins here
+#
+debugging=
+
+if [ $# -gt 0 ] && [ "$1" = "debug" -o "$1" = "trace" ]; then
+    debugging=$1
+    shift
+fi
+
+nolock=
+
+if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
+    nolock=nolock
+    shift
+fi
+
+IPT_OPTIONS="-nv"
+FAST=
+VERBOSE_OFFSET=0
+USE_VERBOSITY=
+NOROUTES=
+EXPORT=
+export TIMESTAMP=
+noroutes=
+
+finished=0
+
+while [ $finished -eq 0 ]; do
+    [ $# -eq 0 ] && usage 1
+    option=$1
+    case $option in
+	-)
+	    finished=1
+	    ;;
+	-*)
+	    option=${option#-}
+
+	    [ -z "$option" ] && usage 1
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    x*)
+			IPT_OPTIONS="-xnv"
+			option=${option#x}
+			;;
+		    q*)
+			VERBOSE_OFFSET=$(($VERBOSE_OFFSET - 1 ))
+			option=${option#q}
+			;;
+		    f*)
+			FAST=Yes
+			option=${option#f}
+			;;
+		    v*)
+			option=${option#v}
+			case $option in 
+			    -1*)
+				USE_VERBOSITY=-1
+				option=${option#-1}
+				;;
+			    0*)
+				USE_VERBOSITY=0
+				option=${option#0}
+				;;
+			    1*)
+				USE_VERBOSITY=1
+				option=${option#1}
+				;;
+			    2*)
+				USE_VERBOSITY=2
+				option=${option#2}
+				;;
+			    *)
+				VERBOSE_OFFSET=$(($VERBOSE_OFFSET + 1 ))
+				USE_VERBOSITY=
+				;;
+			esac
+			;;
+		    n*)
+			NOROUTES=Yes
+			option=${option#n}
+			;;
+		    t*)
+			TIMESTAMP=Yes
+			option=${option#t}
+			;;
+		    -)
+			finished=1
+			option=
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    finished=1
+            ;;
+    esac
+done
+
+if [ $# -eq 0 ]; then
+    usage 1
+fi
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+MUTEX_TIMEOUT=
+
+SHAREDIR=/usr/share/shorewall-lite
+CONFDIR=/etc/shorewall-lite
+export PRODUCT="Shorewall Lite"
+
+[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir ]
+
+[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]
+
+[ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
+
+LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
+VERSION_FILE=$SHAREDIR/version
+HELP=$SHAREDIR/help
+
+for library in $LIBRARIES; do
+    if [ -f $library ]; then
+	. $library
+    else
+	echo "Installation error: $library does not exist!" >&2
+	exit 2
+    fi
+done
+
+ensure_config_path
+
+config=$(find_file shorewall-lite.conf)
+
+if [ -f $config ]; then
+    if [ -r $config ]; then
+	. $config
+    else
+	echo "Cannot read $config! (Hint: Are you root?)" >&2
+	exit 1
+    fi
+else
+    echo "$config does not exist!" >&2
+    exit 2
+fi
+
+ensure_config_path
+export CONFIG_PATH
+
+LITEDIR=${VARDIR}
+
+[ -f ${LITEDIR}/firewall.conf ] && . ${LITEDIR}/firewall.conf
+
+get_config
+
+FIREWALL=$LITEDIR/firewall
+
+if [ -f $VERSION_FILE ]; then
+    version=$(cat $VERSION_FILE)
+else
+    echo "   ERROR: Shorewall Lite is not properly installed" >&2
+    echo "          The file $VERSION_FILE does not exist" >&2
+    exit 1
+fi
+
+banner="Shorewall Lite $version Status at $HOSTNAME -"
+
+case $(echo -e) in
+    -e*)
+	RING_BELL="echo \a"
+	ECHO_E="echo"
+	;;
+    *)
+	RING_BELL="echo -e \a"
+	ECHO_E="echo -e"
+	;;
+esac
+
+case $(echo -n "Testing") in
+    -n*)
+	ECHO_N=
+	;;
+    *)
+	ECHO_N=-n
+	;;
+esac
+
+COMMAND=$1
+
+case "$COMMAND" in
+    start)
+	shift
+	start_command $@
+	;;
+    stop|reset|clear)
+	[ $# -ne 1 ] && usage 1
+	verify_firewall_script
+	export NOROUTES
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	;;
+    restart)
+	shift
+	restart_command $@
+	;;
+    show|list)
+    	shift
+    	show_command $@
+	;;
+    status)
+	[ $# -eq 1 ] || usage 1
+	echo "Shorewall Lite $version Status at $HOSTNAME - $(date)"
+	echo
+	if shorewall_is_started ; then
+	    echo "Shorewall Lite is running"
+	    status=0
+	else
+	    echo "Shorewall Lite is stopped"
+	    status=4
+	fi
+
+	if [ -f ${VARDIR}/state ]; then
+	    state="$(cat ${VARDIR}/state)"
+	    case $state in
+		Stopped*|Clear*)
+		    status=3
+		    ;;
+	    esac
+	else
+	    state=Unknown
+	fi
+	echo "State:$state"
+	echo
+	exit $status
+	;;
+    dump)
+    	shift
+    	dump_command $@
+	;;
+    hits)
+	[ -n "$debugging" ] && set -x
+	shift
+	hits_command $@
+	;;
+    version)
+	echo $version Lite
+	;;
+    logwatch)
+	logwatch_command $@
+	;;
+    drop)
+	[ -n "$debugging" ] && set -x
+	[ $# -eq 1 ] && usage 1
+	if shorewall_is_started ; then
+	    [ -n "$nolock" ] || mutex_on
+	    block DROP Dropped $*
+	    [ -n "$nolock" ] || mutex_off
+	else
+	    error_message "ERROR: Shorewall Lite is not started"
+	    exit 2
+	fi
+	;;
+    logdrop)
+	[ -n "$debugging" ] && set -x
+	[ $# -eq 1 ] && usage 1
+	if shorewall_is_started ; then
+	    [ -n "$nolock" ] || mutex_on
+	    block logdrop Dropped $*
+	    [ -n "$nolock" ] || mutex_off
+	else
+	    error_message "ERROR: Shorewall Lite is not started"
+	    exit 2
+	fi
+	;;
+    reject|logreject)
+	[ -n "$debugging" ] && set -x
+	[ $# -eq 1 ] && usage 1
+	if shorewall_is_started ; then
+	    [ -n "$nolock" ] || mutex_on
+	    block $COMMAND Rejected $*
+	    [ -n "$nolock" ] || mutex_off
+	else
+	    error_message "ERROR: Shorewall Lite is not started"
+	    exit 2
+	fi
+	;;
+    allow)
+	allow_command $@
+	;;
+    save)
+	[ -n "$debugging" ] && set -x
+
+	case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+	esac
+
+	RESTOREPATH=${VARDIR}/$RESTOREFILE
+
+	[ "$nolock" ] || mutex_on
+
+	save_config
+
+	[ "$nolock" ] || mutex_off
+	;;
+    forget)
+	case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+	esac
+
+
+	RESTOREPATH=${VARDIR}/$RESTOREFILE
+
+	if [ -x $RESTOREPATH ]; then
+
+	    if [ -x ${RESTOREPATH}-ipsets ]; then
+		rm -f ${RESTOREPATH}-ipsets
+		echo "    ${RESTOREPATH}-ipsets removed"
+	    fi
+
+	    rm -f $RESTOREPATH
+	    rm -f ${RESTOREPATH}-iptables
+	    echo "    $RESTOREPATH removed"
+	elif [ -f $RESTOREPATH ]; then
+	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
+	fi
+	rm -f ${VARDIR}/save
+	;;
+    ipcalc)
+    	[ -n "$debugging" ] && set -x
+	if [ $# -eq 2 ]; then
+	    address=${2%/*}
+	    vlsm=${2#*/}
+	elif [ $# -eq 3 ]; then
+	    address=$2
+	    vlsm=$(ip_vlsm $3)
+	else
+	    usage 1
+	fi
+
+	valid_address $address || fatal_error "Invalid IP address: $address"
+	[ -z "$vlsm" ] && exit 2
+	[ "x$address" = "x$vlsm" ] && usage 2
+	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
+
+	address=$address/$vlsm
+
+	                                   echo "   CIDR=$address"
+	temp=$(ip_netmask $address);       echo "   NETMASK=$(encodeaddr $temp)"
+	temp=$(ip_network $address);       echo "   NETWORK=$temp"
+	temp=$(broadcastaddress $address); echo "   BROADCAST=$temp"
+	;;
+
+    iprange)
+	[ -n "$debugging" ] && set -x
+	case $2 in
+	    *.*.*.*-*.*.*.*)
+		for address in ${2%-*} ${2#*-}; do
+		    valid_address $address || fatal_error "Invalid IP address: $address"
+		done
+
+		ip_range $2
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+	;;
+    ipdecimal)
+	[ -n "$debugging" ] && set -x
+	[ $# -eq 2 ] || usage 1
+	case $2 in
+	    *.*.*.*)
+		valid_address $2 || fatal_error "Invalid IP address: $2"
+		echo "   $(decodeaddr $2)"
+		;;
+	    *)
+		echo "   $(encodeaddr $2)"
+		;;
+	esac
+	;;
+    restore)
+	shift
+	STARTUP_ENABLED=Yes
+	restore_command $@
+        ;;
+    call)
+	[ -n "$debugging" ] && set -x
+	#
+	# Undocumented way to call functions in ${SHAREDIR}/functions directly
+	#
+	shift
+	$@
+	;;
+    help)
+	shift
+	usage
+	;;
+    *)
+	usage 1
+	;;
+
+esac

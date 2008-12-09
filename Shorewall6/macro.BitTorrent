@@ -1,0 +1,23 @@
+#
+# Shorewall version 4 - BitTorrent Macro
+#
+# /usr/share/shorewall/macro.BitTorrent
+#
+#	This macro handles BitTorrent traffic.
+#
+#	If you are running a more modern BitTorrent client, then you may need
+#	to tweak the open port range.  This can be done by copying the below
+#	rules into /etc/shorewall and making the necessary edits there:
+#
+#		Replace 6881:6889 with 6881:6899
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S)	PORT(S)	LIMIT	GROUP
+PARAM	-	-	tcp	6881:6889
+#
+# It may also be necessary to allow UDP traffic:
+#
+PARAM	-	-	udp	6881
+#
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

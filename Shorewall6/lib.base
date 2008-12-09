@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# Shorewall 4.2 -- /usr/share/shorewall/lib.base
+# Shorewall6 4.4 -- /usr/share/shorewall/lib.base
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -23,8 +23,6 @@
 #
 # This library contains the code common to all Shorewall components.
 #
-# - It is copied into the compiled script with the -e compiler flag is specified to
-#   shorewall-shell.
 # - It is loaded by /sbin/shorewall.
 # - It is loaded by /usr/share/shorewall/firewall.
 # - It is loaded by /usr/share/shorewall-shell/compiler.
@@ -34,13 +32,12 @@
 #   by the compiler.
 #
 
-SHOREWALL_LIBVERSION=40000
+SHOREWALL_LIBVERSION=40300
 SHOREWALL_CAPVERSION=40203
 
-[ -n "${VARDIR:=/var/lib/shorewall}" ]
-[ -n "${SHAREDIR:=/usr/share/shorewall}" ]
-[ -n "${CONFDIR:=/etc/shorewall}" ]
-SHELLSHAREDIR=/usr/share/shorewall-shell
+[ -n "${VARDIR:=/var/lib/shorewall6}" ]
+[ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
+[ -n "${CONFDIR:=/etc/shorewall6}" ]
 PERLSHAREDIR=/usr/share/shorewall-perl
 
 #
@@ -142,8 +139,8 @@ qt()
 #
 # Determine if Shorewall is "running"
 #
-shorewall_is_started() {
-    qt $IPTABLES -L shorewall -n
+shorewall6_is_started() {
+    qt $IP6TABLES -L shorewall -n
 }
 
 #
@@ -263,7 +260,7 @@ reload_kernel_modules() {
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
-    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
     MODULES=$(lsmod | cut -d ' ' -f1)
 
     for directory in $(split $MODULESDIR); do
@@ -299,7 +296,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
@@ -398,311 +395,11 @@ lib_load() # $1 = Name of the Library, $2 = Error Message heading if the library
 }
 
 #
-# Determine if an optional library is available
-#
-lib_avail() # $1 = Name of the Library
-{
-    [ -f ${SHAREDIR}/lib.$1 ]
-}
-
-#
-#  Note: The following set of IP address manipulation functions have anomalous
-#        behavior when the shell only supports 32-bit signed arithmetic and
-#        the IP address is 128.0.0.0 or 128.0.0.1.
-#
-
-LEFTSHIFT='<<'
-
-#
-# Validate an IP address
-#
-valid_address() {
-    local x
-    local y
-    local ifs
-    ifs=$IFS
-
-    IFS=.
-
-    for x in $1; do
-	case $x in
-	    [0-9]|[0-9][0-9]|[1-2][0-9][0-9])
-		[ $x -lt 256 ] || { IFS=$ifs; return 2; }
-                ;;
-	    *)
-	        IFS=$ifs
-		return 2
-		;;
-	esac
-    done
-    
-    IFS=$ifs
-
-    return 0
-}
-
-#
-# Convert an IP address in dot quad format to an integer
-#
-decodeaddr() {
-    local x
-    local temp
-    temp=0
-    local ifs
-    ifs=$IFS
-
-    IFS=.
-
-    for x in $1; do
-	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
-    done
-
-    echo $temp
-
-    IFS=$ifs
-}
-
-#
-# convert an integer to dot quad format
-#
-encodeaddr() {
-    addr=$1
-    local x
-    local y
-    y=$(($addr & 255))
-
-    for x in 1 2 3 ; do
-	addr=$(($addr >> 8))
-	y=$(($addr & 255)).$y
-    done
-
-    echo $y
-}
-
-#
-# Miserable Hack to work around broken BusyBox ash in OpenWRT
-#
-addr_comp() {
-    test $(bc <<EOF
-$1 > $2
-EOF
-) -eq 1
-
-}
-
-#
-# Enumerate the members of an IP range -- When using a shell supporting only
-# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
-#
-# Comes in two flavors:
-#
-# ip_range() - produces a mimimal list of network/host addresses that spans
-#              the range.
-#
-# ip_range_explicit() - explicitly enumerates the range.
-#
-ip_range() {
-    local first
-    local last
-    local l
-    local x
-    local y
-    local z
-    local vlsm
-
-    case $1 in
-	!*)
-	    #
-	    # Let iptables complain if it's a range
-	    #
-	    echo $1
-	    return
-	    ;;
-	[0-9]*.*.*.*-*.*.*.*)
-            ;;
-	*)
-	    echo $1
-	    return
-	    ;;
-    esac
-
-    first=$(decodeaddr ${1%-*})
-    last=$(decodeaddr ${1#*-})
-
-    if addr_comp $first $last; then
-	fatal_error "Invalid IP address range: $1"
-    fi
-
-    l=$(( $last + 1 ))
-
-    while addr_comp $l $first; do
-	vlsm=
-	x=31
-	y=2
-	z=1
-
-	while [ $(( $first % $y )) -eq 0 ] && addr_comp $l $(( $first + $y )) ; do
-	    vlsm=/$x
-	    x=$(( $x - 1 ))
-	    z=$y
-	    y=$(( $y * 2 ))
-	done
-
-	echo $(encodeaddr $first)$vlsm
-	first=$(($first + $z))
-    done
-}
-
-ip_range_explicit() {
-    local first
-    local last
-
-    case $1 in
-    [0-9]*.*.*.*-*.*.*.*)
-	;;
-    *)
-	echo $1
-	return
-	;;
-    esac
-
-    first=$(decodeaddr ${1%-*})
-    last=$(decodeaddr ${1#*-})
-
-    if addr_comp $first $last; then
-	fatal_error "Invalid IP address range: $1"
-    fi
-
-    while ! addr_comp $first $last; do
-	echo $(encodeaddr $first)
-	first=$(($first + 1))
-    done
-}
-
-#
-# Netmask from CIDR
-#
-ip_netmask() {
-    local vlsm
-    vlsm=${1#*/}
-
-    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
-}
-
-#
-# Network address from CIDR
-#
-ip_network() {
-    local decodedaddr
-    decodedaddr=$(decodeaddr ${1%/*})
-    local netmask
-    netmask=$(ip_netmask $1)
-
-    echo $(encodeaddr $(($decodedaddr & $netmask)))
-}
-
-#
-# The following hack is supplied to compensate for the fact that many of
-# the popular light-weight Bourne shell derivatives don't support XOR ("^").
-#
-ip_broadcast() {
-    local x
-    x=$(( 32 - ${1#*/} ))
-
-    [ $x -eq 32 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
-}
-
-#
-# Calculate broadcast address from CIDR
-#
-broadcastaddress() {
-    local decodedaddr
-    decodedaddr=$(decodeaddr ${1%/*})
-    local netmask
-    netmask=$(ip_netmask $1)
-    local broadcast
-    broadcast=$(ip_broadcast $1)
-
-    echo $(encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast )))
-}
-
-#
-# Test for network membership
-#
-in_network() # $1 = IP address, $2 = CIDR network
-{
-    local netmask
-    netmask=$(ip_netmask $2)
-    #
-    # We compare the values as strings rather than integers to work around broken BusyBox ash on OpenWRT
-    #
-    test $(( $(decodeaddr $1) & $netmask)) = $(( $(decodeaddr ${2%/*}) & $netmask ))
-}
-
-#
-# Netmask to VLSM
-#
-ip_vlsm() {
-    local mask
-    mask=$(decodeaddr $1)
-    local vlsm
-    vlsm=0
-    local x
-    x=$(( 128 << 24 )) # 0x80000000
-
-    while [ $(( $x & $mask )) -ne 0 ]; do
-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
-	vlsm=$(($vlsm + 1))
-    done
-
-    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
-	echo "Invalid net mask: $1" >&2
-    else
-	echo $vlsm
-    fi
-}
-
-
-#
-# Chain name base for an interface -- replace all periods with underscores in the passed name.
-#                                     The result is echoed (less trailing "+").
-#
-chain_base() #$1 = interface
-{
-    local c
-    c=${1%%+}
-
-    while true; do
-	case $c in
-	    @*)
-               c=at_${c#@}
-	       ;;               
-	    *.*)
-		c="${c%.*}_${c##*.}"
-		;;
-	    *-*)
-		c="${c%-*}_${c##*-}"
-		;;
-	    *%*)
-		c="${c%\%*}_${c##*%}"
-		;;
-	    *@*)
-		c="${c%@*}_${c##*@}"
-		;;
-	    *)
-		echo ${c:=common}
-		return
-		;;
-	esac
-    done
-}
-
-#
 # Query NetFilter about the existence of a filter chain
 #
 chain_exists() # $1 = chain name
 {
-    qt $IPTABLES -L $1 -n
+    qt $IP6TABLES -L $1 -n
 }
 
 #
@@ -751,58 +448,20 @@ find_peer() {
 }
 
 #
-# Find the interfaces that have a route to the passed address - the default
-# route is not used.
-#
-
-find_rt_interface() {
-    ip route list | while read addr rest; do
-	case $addr in
-	    */*)
-		in_network ${1%/*} $addr && echo $(find_device $rest)
-		;;
-	    default)
-		;;
-	    *)
-		if [ "$addr" = "$1" -o "$addr/32" = "$1" ]; then
-		    echo $(find_device $rest)
-		fi
-		;;
-	esac
-    done
-}
-
-#
 # Try to find the gateway through an interface looking for 'nexthop'
 
 find_nexthop() # $1 = interface
 {
-    echo $(find_gateway `ip route list | grep "[[:space:]]nexthop.* $1"`)
+    echo $(find_gateway `ip -6 route list | grep "[[:space:]]nexthop.* $1"`)
 }
 
 #
 # Find the default route's interface
 #
 find_default_interface() {
-    ip route list | while read first rest; do
+    ip -6 route list | while read first rest; do
 	[ "$first" = default ] && echo $(find_device $rest) && return
     done
-}
-
-#
-# Echo the name of the interface(s) that will be used to send to the
-# passed address
-#
-
-find_interface_by_address() {
-    local dev
-    dev="$(find_rt_interface $1)"
-    local first
-    local rest
-
-    [ -z "$dev" ] && dev=$(find_default_interface)
-
-    [ -n "$dev" ] && echo $dev
 }
 
 #
@@ -847,16 +506,16 @@ find_first_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    addr=$(ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
     #
     # If there wasn't one, bail out now
     #
-    [ -n "$addr" ] || fatal_error "Can't determine the IP address of $1"
+    [ -n "$addr" ] || fatal_error "Can't determine the IPv6 address of $1"
     #
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
     #
-    echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    echo $addr | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
 }
 
 find_first_interface_address_if_any() # $1 = interface
@@ -864,12 +523,12 @@ find_first_interface_address_if_any() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    addr=$(ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
     #
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
     #
-    [ -n "$addr" ] && echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+    [ -n "$addr" ] && echo $addr | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//' || echo ::
 }
 
 #
@@ -877,7 +536,7 @@ find_first_interface_address_if_any() # $1 = interface
 #
 interface_is_usable() # $1 = interface
 {
-    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]
+    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ]
 }
 
 #
@@ -886,7 +545,7 @@ interface_is_usable() # $1 = interface
 #
 find_interface_addresses() # $1 = interface
 {
-    ip -f inet addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    ip -f inet6 addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
 }
 
 #
@@ -897,7 +556,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
     local address
     local rest
 
-    ip route show dev $1 2> /dev/null |
+    ip -6 route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in
 		default)
@@ -911,16 +570,11 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 		multicast|broadcast|prohibit|nat|throw|nexthop)
 		    ;;
 		*)
-		    [ "$address" = "${address%/*}" ] && address="${address}/32"
+		    [ "$address" = "${address%/*}" ] && address="${address}/128"
 		    echo $address
 		    ;;
 	    esac
         done
-}
-
-get_interface_bcasts() # $1 = interface
-{
-    ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u 
 }
 
 #
@@ -1042,7 +696,6 @@ set_state () # $1 = state
 # Determine which optional facilities are supported by iptables/netfilter
 #
 determine_capabilities() {
-    qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
     qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
     CONNTRACK_MATCH=
@@ -1084,126 +737,126 @@ determine_capabilities() {
 
     chain=fooX$$
 
-    [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
+    [ -n "$IP6TABLES" ] || IP6TABLES=$(mywhich ip6tables)
 
-    if [ -z "$IPTABLES" ]; then
+    if [ -z "$IP6TABLES" ]; then
 	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
 	exit 1
     fi
 
-    qt $IPTABLES -F $chain
-    qt $IPTABLES -X $chain
-    if ! $IPTABLES -N $chain; then
-	echo "   ERROR: The command \"$IPTABLES -N $chain\" failed" >&2
+    qt $IP6TABLES -F $chain
+    qt $IP6TABLES -X $chain
+    if ! $IP6TABLES -N $chain; then
+	echo "   ERROR: The command \"$IP6TABLES -N $chain\" failed" >&2
 	exit 1
     fi
 
     chain1=${chain}1
 
-    qt $IPTABLES -F $chain1
-    qt $IPTABLES -X $chain1
-    if ! $IPTABLES -N $chain1; then
-	echo "   ERROR: The command \"$IPTABLES -N $chain1\" failed" >&2
+    qt $IP6TABLES -F $chain1
+    qt $IP6TABLES -X $chain1
+    if ! $IP6TABLES -N $chain1; then
+	echo "   ERROR: The command \"$IP6TABLES -N $chain1\" failed" >&2
 	exit 1
     fi
 
-    if ! qt $IPTABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT; then
+    if ! qt $IP6TABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT; then
 	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- Shorewall will not run on this system" >&2
 	exit 1
     fi
 
-    qt $IPTABLES -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
+    qt $IP6TABLES -A $chain -m conntrack --ctorigdst ::1 -j ACCEPT && CONNTRACK_MATCH=Yes
 
     if [ -n "$CONNTRACK_MATCH" ]; then
-	qt $IPTABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
-	qt $IPTABLES -A $chain -m conntrack ! --ctorigdst 1.2.3.4 || OLD_CONNTRACK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m conntrack ! --ctorigdst ::1 || OLD_CONNTRACK_MATCH=Yes
     fi
 
-    if qt $IPTABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
+    if qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
 	MULTIPORT=Yes
-	qt $IPTABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
+	qt $IP6TABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
     fi
 
-    qt $IPTABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
-    qt $IPTABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
+    qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $IP6TABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
 
-    if qt $IPTABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
+    if qt $IP6TABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
 	PHYSDEV_MATCH=Yes
-	qt $IPTABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
+	qt $IP6TABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
 	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IPTABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
+	    qt $IP6TABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
 	fi
     fi
 
-    if qt $IPTABLES -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
+    if qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -j ACCEPT; then
 	IPRANGE_MATCH=Yes
 	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IPTABLES -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
+	    qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -m iprange --dst-range ::1-::2 -j ACCEPT && KLUDGEFREE=Yes
 	fi
     fi
 
-    qt $IPTABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
-    qt $IPTABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+    qt $IP6TABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $IP6TABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
 
-    if qt $IPTABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
+    if qt $IP6TABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
 	CONNMARK_MATCH=Yes
-	qt $IPTABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
     fi
 
-    qt $IPTABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT              && IPP2P_MATCH=Yes
-    qt $IPTABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
-    qt $IPTABLES -A $chain -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
+    qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT              && IPP2P_MATCH=Yes
+    qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IP6TABLES -A $chain -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
 
-    qt $IPTABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
+    qt $IP6TABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
 
     if [ -n "$MANGLE_ENABLED" ]; then
-	qt $IPTABLES -t mangle -N $chain
+	qt $IP6TABLES -t mangle -N $chain
 
-	if qt $IPTABLES -t mangle -A $chain -j MARK --set-mark 1; then
+	if qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1; then
 	    MARK=Yes
-	    qt $IPTABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
 	fi
 
-	if qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark; then
+	if qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark; then
 	    CONNMARK=Yes
-	    qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
 	fi
 
-	qt $IPTABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
-	qt $IPTABLES -t mangle -F $chain
-	qt $IPTABLES -t mangle -X $chain
-	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
+	qt $IP6TABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IP6TABLES -t mangle -F $chain
+	qt $IP6TABLES -t mangle -X $chain
+	qt $IP6TABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
     fi
 
-    qt $IPTABLES -t raw	   -L -n && RAW_TABLE=Yes
+    qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
 
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
 
 	if qt ipset -N $chain iphash ; then
-	    if qt $IPTABLES -A $chain -m set --set $chain src -j ACCEPT; then
-		qt $IPTABLES -D $chain -m set --set $chain src -j ACCEPT
+	    if qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
+		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
 		IPSET_MATCH=Yes
 	    fi
 	    qt ipset -X $chain
 	fi
     fi
 
-    qt $IPTABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
-    qt $IPTABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
-    qt $IPTABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
-    qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
-    qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
-    qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
-    qt $IPTABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
-    qt $IPTABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
-    qt $IPTABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
-    qt $IPTABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
+    qt $IP6TABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+    qt $IP6TABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
+    qt $IP6TABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
+    qt $IP6TABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    qt $IP6TABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+    qt $IP6TABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
+    qt $IP6TABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
+    qt $IP6TABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
+    qt $IP6TABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
+    qt $IP6TABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
 
-    qt $IPTABLES -F $chain
-    qt $IPTABLES -X $chain
-    qt $IPTABLES -F $chain1
-    qt $IPTABLES -X $chain1
+    qt $IP6TABLES -F $chain
+    qt $IP6TABLES -X $chain
+    qt $IP6TABLES -F $chain1
+    qt $IP6TABLES -X $chain1
 
     CAPVERSION=$SHOREWALL_CAPVERSION
 }
@@ -1220,8 +873,7 @@ report_capabilities() {
     }
 
     if [ $VERBOSE -gt 1 ]; then
-	echo "Shorewall has detected the following iptables/netfilter capabilities:"
-	report_capability "NAT" $NAT_ENABLED
+	echo "Shorewall6 has detected the following ip6tables/netfilter capabilities:"
 	report_capability "Packet Mangling" $MANGLE_ENABLED
 	report_capability "Multi-port Match" $MULTIPORT
 	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
@@ -1274,9 +926,8 @@ report_capabilities1() {
     }
 
     echo "#"
-    echo "# Shorewall $VERSION detected the following iptables/netfilter capabilities - $(date)"
+    echo "# Shorewall6 $VERSION detected the following ip6tables/netfilter capabilities - $(date)"
     echo "#"
-    report_capability1 NAT_ENABLED
     report_capability1 MANGLE_ENABLED
     report_capability1 MULTIPORT
     report_capability1 XMULTIPORT
@@ -1318,81 +969,6 @@ report_capabilities1() {
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }
 
-#
-# Delete IP address
-#
-del_ip_addr() # $1 = address, $2 = interface
-{
-    [ $(find_first_interface_address_if_any $2) = $1 ] || qt ip addr del $1 dev $2
-}
-
-# Add IP Aliases
-#
-add_ip_aliases() # $* = List of addresses
-{
-    local addresses
-    local external
-    local interface
-    local inet
-    local cidr
-    local rest
-    local val1
-    local arping
-    arping=$(mywhich arping)
-
-    address_details()
-    {
-	#
-	# Folks feel uneasy if they don't see all of the same
-	# decoration on these IP addresses that they see when their
-	# distro's net config tool adds them. In an attempt to reduce
-	# the anxiety level, we have the following code which sets
-	# the VLSM and BRD from an existing address in the same networks
-	#
-	# Get all of the lines that contain inet addresses with broadcast
-	#
-	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
-	    case $cidr in
-		*/*)
-		    if in_network $external $cidr; then
-			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
-			break
-		    fi
-		    ;;
-	    esac
-	done
-    }
-
-    do_one()
-    {
-	val=$(address_details)
-
-	ip addr add ${external}${val} dev $interface $label
-	[ -n "$arping" ] && qt $arping -U -c 2 -I $interface $external
-	echo "$external $interface" >> $VARDIR/nat
-	[ -n "$label" ] && label="with $label"
-	progress_message "   IP Address $external added to interface $interface $label"
-    }
-
-    progress_message "Adding IP Addresses..."
-
-    while [ $# -gt 0 ]; do
-	external=$1
-	interface=$2
-	label=
-
-	if [ "$interface" != "${interface%:*}" ]; then
-	    label="${interface#*:}"
-	    interface="${interface%:*}"
-	    label="label $interface:$label"
-	fi
-
-	shift 2
-
-	list_search $external $(find_interface_addresses $interface) || do_one
-    done
-}
-
 detect_gateway() # $1 = interface
 {
     local interface
@@ -1400,11 +976,11 @@ detect_gateway() # $1 = interface
     #
     # First assume that this is some sort of point-to-point interface
     #
-    gateway=$( find_peer $(ip addr list $interface ) )
+    gateway=$( find_peer $(ip -6 addr list $interface ) )
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route list dev $interface))
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -6 route list dev $interface))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #
@@ -1415,28 +991,6 @@ detect_gateway() # $1 = interface
     [ -n "$gateway" ] && echo $gateway
 }
 
-#
-# Disable IPV6
-#
-disable_ipv6() {
-    local foo
-    foo="$(ip -f inet6 addr list 2> /dev/null)"
-
-    if [ -n "$foo" ]; then
-	if qt mywhich ip6tables; then
-	    ip6tables -P FORWARD DROP
-	    ip6tables -P INPUT DROP
-	    ip6tables -P OUTPUT DROP
-	    ip6tables -F
-	    ip6tables -X
-	    ip6tables -A OUTPUT -o lo -j ACCEPT
-	    ip6tables -A INPUT -i lo -j ACCEPT
-	else
-	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
-	fi
-    fi
-}
-
 # Function to truncate a string -- It uses 'cut -b -<n>'
 # rather than ${v:first:last} because light-weight shells like ash and
 # dash do not support that form of expansion.
@@ -1445,94 +999,6 @@ disable_ipv6() {
 truncate() # $1 = length
 {
     cut -b -${1}
-}
-
-#
-# Add a logging rule.
-#
-do_log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
-{
-    local level
-    level=$1
-    local chain
-    chain=$2
-    local displayChain
-    displayChain=$3
-    local disposition
-    disposition=$4
-    local rulenum
-    rulenum=
-    local limit
-    limit=
-    local tag
-    tag=
-    local command
-    command=
-    local prefix
-    local base
-    base=$(chain_base $displayChain)
-    local pf
-
-    limit="${5:-$LOGLIMIT}" # Do this here rather than in the declaration above to appease /bin/ash.
-    tag=${6:+$6 }
-    command=${7:--A}
-
-    shift 7
-
-    if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
-	displayChain=$tag
-	tag=
-    fi
-
-    if [ -n "$LOGRULENUMBERS" ]; then
-	#
-	# Hack for broken printf on some lightweight shells
-	#
-	[ $(printf "%d" 1) = "1" ] && pf=printf || pf=$(mywhich printf)
-
-	eval rulenum=\$${base}_logrules
-
-	rulenum=${rulenum:-1}
-
-	prefix="$($pf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
-
-	rulenum=$(($rulenum + 1))
-	eval ${base}_logrules=$rulenum
-    else
-	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
-    fi
-
-    if [ ${#prefix} -gt 29 ]; then
-	prefix="`echo "$prefix" | truncate 28` "
-	error_message "WARNING: Log Prefix shortened to \"$prefix\""
-    fi
-
-    case $level in
-	ULOG)
-	    $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
-	    ;;
-	*)
-	    $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
-	    ;;
-    esac
-
-    if [ $? -ne 0 ] ; then
-	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
-    fi
-}
-
-do_log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
-{
-    local level
-    level=$1
-    local chain
-    chain=$2
-    local disposition
-    disposition=$3
-
-    shift 3
-
-    do_log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
 }
 
 delete_tc1()
@@ -1609,7 +1075,7 @@ undo_routing() {
 	#
 	if [ -f ${VARDIR}/undo_routing ]; then
 	    . ${VARDIR}/undo_routing
-	    progress_message "Shorewall-generated routing tables and routing rules removed"
+	    progress_message "Shorewall6-generated routing tables and routing rules removed"
 	    rm -f ${VARDIR}/undo_routing
 	fi
     fi
@@ -1631,11 +1097,11 @@ restore_default_route() {
 		                #
 		                # Don't restore a route with a metric -- we only replace the one with metric == 0
 		                #
-				qt ip route delete default metric 0 && \
+				qt ip -6 route delete default metric 0 && \
 				    progress_message "Default Route with metric 0 deleted"
 				;;
 			    *)
-				qt ip route replace $default_route && \
+				qt ip -6 route replace $default_route && \
 				    progress_message "Default Route (${default_route# }) restored"
 				;;
 			esac

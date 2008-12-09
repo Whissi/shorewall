@@ -6,7 +6,7 @@
 #
 #     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008 - Tom Eastep (teastep@shorewall.net)
 #
-#	This file should be placed in /sbin/shorewall.
+#	This file should be placed in /sbin/shorewall6.
 #
 #	Shorewall documentation is available at http://www.shorewall.net
 #
@@ -31,93 +31,93 @@
 #
 #	Commands are:
 #
-#          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
-#          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
-#          shorewall dump                          Dumps all Shorewall-related information
+#          shorewall6 add <iface>[:<host>] zone    Adds a host or subnet to a zone
+#          shorewall6 delete <iface>[:<host>] zone Deletes a host or subnet from a zone
+#          shorewall6 dump                         Dumps all Shorewall6-related information
 #                                                  for problem analysis
-#	   shorewall start 			   Starts the firewall
-#	   shorewall restart			   Restarts the firewall
-#	   shorewall stop			   Stops the firewall
-#	   shorewall status			   Displays firewall status
-#	   shorewall reset			   Resets iptables packet and
+#	   shorewall6 start 			   Starts the firewall
+#	   shorewall6 restart			   Restarts the firewall
+#	   shorewall6 stop			   Stops the firewall
+#	   shorewall6 status			   Displays firewall status
+#	   shorewall6 reset			   Resets iptables packet and
 #						   byte counts
-#	   shorewall clear			   Open the floodgates by
+#	   shorewall6 clear			   Open the floodgates by
 #						   removing all iptables rules
 #						   and setting the three permanent
 #						   chain policies to ACCEPT
-#	   shorewall refresh			   Rebuild the common chain to
+#	   shorewall6 refresh			   Rebuild the common chain to
 #						   compensate for a change of
 #						   broadcast address on any "detect"
 #						   interface.
-#	   shorewall [re]load [ <directory> ] <system>
+#	   shorewall6 [re]load [ <directory> ] <system>
 #						   Compile a script and install it on a
-#						   remote Shorewall Lite system.
-#	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
-#          shorewall show actions                  Displays the available actions
-#	   shorewall show log			   Print the last 20 log messages
-#	   shorewall show connections		   Show the kernel's connection
+#						   remote Shorewall6 Lite system.
+#	   shorewall6 show <chain> [ <chain> ... ] Display the rules in each <chain> listed
+#          shorewall6 show actions                 Displays the available actions
+#	   shorewall6 show log			   Print the last 20 log messages
+#	   shorewall6 show connections		   Show the kernel's connection
 #						   tracking table
-#	   shorewall show nat			   Display the rules in the nat table
-#	   shorewall show {mangle|tos}		   Display the rules in the mangle table
-#	   shorewall show tc			   Display traffic control info
-#	   shorewall show classifiers		   Display classifiers
-#          shorewall show capabilities             Display iptables/kernel capabilities
-#          shorewall show vardir                   Display the VARDIR setting.
-#	   shorewall version			   Display the installed version id
-#	   shorewall check [ -e ] [ <directory> ]  Dry-run compilation.
-#	   shorewall try <directory> [ <timeout> ] Try a new configuration and if
+#	   shorewall6 show nat			   Display the rules in the nat table
+#	   shorewall6 show {mangle|tos}		   Display the rules in the mangle table
+#	   shorewall6 show tc			   Display traffic control info
+#	   shorewall6 show classifiers		   Display classifiers
+#          shorewall6 show capabilities            Display iptables/kernel capabilities
+#          shorewall6 show vardir                  Display the VARDIR setting.
+#	   shorewall6 version			   Display the installed version id
+#	   shorewall6 check [ -e ] [ <directory> ] Dry-run compilation.
+#	   shorewall6 try <directory> [ <timeout> ] Try a new configuration and if
 #						   it doesn't work, revert to the
 #						   standard one. If a timeout is supplied
 #						   the command reverts back to the
 #						   standard configuration after that many
 #						   seconds have elapsed after successfully
 #						   starting the new configuration.
-#	   shorewall logwatch [ refresh-interval ] Monitor the local log for Shorewall
-#						   messages.
-#	   shorewall drop <address> ...		   Temporarily drop all packets from the
+#	   shorewall6 logwatch [ refresh-interval ] Monitor the local log for Shorewall6
+#						    messages.
+#	   shorewall6 drop <address> ...	   Temporarily drop all packets from the
 #						   listed address(es)
-#	   shorewall reject <address> ...	   Temporarily reject all packets from the
+#	   shorewall6 reject <address> ...	   Temporarily reject all packets from the
 #						   listed address(es)
-#	   shorewall allow <address> ...	   Reenable address(es) previously
+#	   shorewall6 allow <address> ...	   Reenable address(es) previously
 #						   disabled with "drop" or "reject"
-#	   shorewall save [ <file> ]		   Save the list of "rejected" and
+#	   shorewall6 save [ <file> ]		   Save the list of "rejected" and
 #						   "dropped" addresses so that it will
 #						   be automatically reinstated the
-#						   next time that Shorewall starts.
-#                                                  Save the current state so that 'shorewall
+#						   next time that Shorewall6 starts.
+#                                                  Save the current state so that 'shorewall6
 #                                                  restore' can be used.
 #
-#          shorewall forget [ <file> ]             Discard the data saved by 'shorewall save'
+#          shorewall6 forget [ <file> ]            Discard the data saved by 'shorewall6 save'
 #
-#          shorewall restore [ <file> ]            Restore the state of the firewall from
+#          shorewall6 restore [ <file> ]           Restore the state of the firewall from
 #                                                  previously saved information.
 #
-#          shorewall ipaddr { <address>/<cidr> | <address> <netmask> }
+#          shorewall6 ipaddr { <address>/<cidr> | <address> <netmask> }
 #
 #                                                  Displays information about the network
 #                                                  defined by the argument[s]
 #
-#          shorewall iprange <address>-<address>   Decomposes a range of IP addresses into
+#          shorewall6 iprange <address>-<address>  Decomposes a range of IP addresses into
 #                                                  a list of network/host addresses.
 #
-#          shorewall ipdecimal { <address> | <integer> }
+#          shorewall6 ipdecimal { <address> | <integer> }
 #
 #                                                  Displays the decimal equivalent of an IP
 #                                                  address and vice versa.
 #
-#          shorewall safe-start [ <directory> ]    Starts the firewall and promtp for a c
+#          shorewall6 safe-start [ <directory> ]   Starts the firewall and promtp for a c
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall safe-restart [ <directory> ]  Restarts the firewall and prompt for a
+#          shorewall6 safe-restart [ <directory> ] Restarts the firewall and prompt for a
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall compile [ -e ] [ <directory> ] <filename>
+#          shorewall6 compile [ -e ] [ <directory> ] <filename>
 #                                                  Compile a firewall program file.
 
 #
-# Set the configuration variables from shorewall.conf
+# Set the configuration variables from shorewall6.conf
 #
 #     $1 = Yes: read the params file
 #     $2 = Yes: check for STARTUP_ENABLED
@@ -136,7 +136,7 @@ get_config() {
 	fi
     fi
 
-    config=$(find_file shorewall.conf)
+    config=$(find_file shorewall6.conf)
     
     if [ -f $config ]; then
 	if [ -r $config ]; then
@@ -198,7 +198,7 @@ get_config() {
 	if [ "$2" = Yes ]; then
 	    case $STARTUP_ENABLED in
 		No|no|NO)
-		    echo "   ERROR: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
+		    echo "   ERROR: Shorewall6 startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall6.conf" >&2
 		    exit 2
 		    ;;
 		Yes|yes|YES)
@@ -220,7 +220,7 @@ get_config() {
 
 	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
 
-	[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
+	[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall6:"
 
 	export LOGFORMAT
 
@@ -250,7 +250,7 @@ get_config() {
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -x "$SHOREWALL_SHELL" ]; then
-	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
+	    echo "   WARNING: The program specified in SHOREWALL6_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
 	    SHOREWALL_SHELL=/bin/sh
 	fi
     fi
@@ -318,8 +318,8 @@ compiler() {
     shift
     
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/shorewall ]; then
-	    startup_error "Ordinary users may not compile the /etc/shorewall configuration"
+	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/shorewall6 ]; then
+	    startup_error "Ordinary users may not compile the /etc/shorewall6 configuration"
 	fi
     fi
     #
@@ -327,48 +327,8 @@ compiler() {
     #
     ensure_config_path
 
-    compiler=
+    compiler=perl
     haveparams=
-
-    if [ -n "$SHOREWALL_COMPILER" ]; then
-	compiler="$SHOREWALL_COMPILER"              #Compiler specified in /etc/shorewall/shorewall.conf or on the run-line
-    elif [ -x $sc ]; then
-	if [ ! -x $pc ]; then
-	    compiler=shell
-	fi
-    elif [ -x $pc ]; then
-	compiler=perl
-    else
-	fatal_error "No shorewall compiler installed"
-    fi
-
-    if [ -z "$compiler" ]; then
-        #
-        # Both compilers installed. Read the appropriate shorewall.conf to learn the setting of SHOREWALL_COMPILER
-        #
-	if [ -n "$SHOREWALL_DIR" ]; then
-	    shell=$SHOREWALL_SHELL
-	    
-	    [ -x $pc ] && set -a
-	    run_user_exit params
-	    set +a
-	    haveparams=Yes
-
-	    get_config No No No
-	    
-	    SHOREWALL_SHELL=$shell
-	fi
-        #
-        # And initiate the appropriate compiler
-        #
-	if [ -n "$SHOREWALL_COMPILER" ]; then
-	    compiler="$SHOREWALL_COMPILER"
-	elif [ -x $sc ]; then
-	    compiler=shell
-	else
-	    compiler=perl
-	fi
-    fi
 
     case $COMMAND in
 	*start|try|refresh)
@@ -381,48 +341,36 @@ compiler() {
 
     [ $command = exec ] || command=
     
-    case "$compiler" in
-	perl)
-	    debugflags="-w"
-	    [ -n "$DEBUG" ]   && debugflags='-wd'
-	    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
+    debugflags="-w"
+    [ -n "$DEBUG" ]   && debugflags='-wd'
+    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
 
-            # Perl compiler only takes the output file as a argument
+    # Perl compiler only takes the output file as a argument
 	    
-	    [ "$1" = debug -o "$1" = trace ]  && shift;
-	    [ "$1" = nolock ] && shift;
-	    shift 
+    [ "$1" = debug -o "$1" = trace ]  && shift;
+    [ "$1" = nolock ] && shift;
+    shift 
 
-	    options="--verbose=$VERBOSE"
-	    [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
-	    [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
-	    [ -n "$EXPORT" ] && options="$options --export"
-	    [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
-	    [ -n "$TIMESTAMP" ] && options="$options --timestamp"
-	    [ -n "$TEST" ] && options="$options --test"
-	    [ "$debugging" = trace ] && options="$options --debug"
-	    [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
-	    [ -x $pc ] || startup_error "SHOREWALL_COMPILER=perl requires the shorewall-perl package which is not installed"
-	    #
-	    # Run the appropriate params file
-	    #
-	    if [ -z "$haveparams" ]; then
-		set -a; 
-		run_user_exit params
-		set +a
-	    fi
+    options="--verbose=$VERBOSE"
+    [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
+    [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
+    [ -n "$EXPORT" ] && options="$options --export"
+    [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
+    [ -n "$TIMESTAMP" ] && options="$options --timestamp"
+    [ -n "$TEST" ] && options="$options --test"
+    [ "$debugging" = trace ] && options="$options --debug"
+    [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
+    [ -x $pc ] || startup_error "Shorewall6 requires the shorewall-perl package which is not installed"
+    #
+    # Run the appropriate params file
+    #
+    if [ -z "$haveparams" ]; then
+	set -a; 
+	run_user_exit params
+	set +a
+    fi
 
-	    $command perl $debugflags $pc $options $@
-	    ;;
-	shell)
-	    [ -x $sc ] || startup_error "SHOREWALL_COMPILER=shell requires the shorewall-shell package which is not installed"
-	    [ -n "$REFRESHCHAINS" ] && startup_error "Shorewall-shell does not support refresh of specific chains"
-	    $command $SHOREWALL_SHELL $sc $@
-	    ;;
-	*)
-	    startup_error "Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER"
-	    ;;
-    esac
+    $command perl $debugflags $pc $options $@
 }    
 
 #
@@ -445,14 +393,14 @@ start_command() {
 	    [ -n "$nolock" ] || mutex_off
 	else
 	    rc=$?
-	    logger -p kern.err "ERROR:Shorewall start failed"
+	    logger -p kern.err "ERROR:Shorewall6 start failed"
 	fi
 
 	exit $rc
     }
 
-    if shorewall_is_started; then
-	error_message "Shorewall is already running"
+    if shorewall6_is_started; then
+	error_message "Shorewall6 is already running"
 	exit 0
     fi
 
@@ -469,12 +417,6 @@ start_command() {
 			-)
 			    finished=1
 			    option=
-			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
-			    option=
-			    shift
 			    ;;
 			d*)
 			    DEBUG=Yes
@@ -551,10 +493,10 @@ start_command() {
 		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 		fi
 
-		echo Restoring Shorewall...
+		echo Restoring Shorewall6...
 		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > ${VARDIR}/restarted
-		progress_message3 Shorewall restored from $RESTOREPATH
+		progress_message3 Shorewall6 restored from $RESTOREPATH
 	    else
 		do_it
 	    fi
@@ -592,12 +534,6 @@ compile_command() {
 			p*)
 			    PROFILE=Yes
 			    option=${option#p}
-			    ;;
-			C)
-			    [ $# -gt 0 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$1
-			    option=
-			    shift
 			    ;;
 			t*)
 			    TEST=Yes
@@ -688,12 +624,6 @@ check_command() {
 			    DEBUG=Yes;
 			    option=${option#d}
 			    ;;
-			C)
-			    [ $# -gt 0 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
-			    option=
-			    shift
-			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -769,12 +699,6 @@ restart_command() {
 			    NOROUTES=Yes
 			    option=${option#n}
 			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
-			    option=
-			    shift
-			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 			    PURGE=Yes
@@ -831,7 +755,7 @@ restart_command() {
 	   [ -n "$nolock" ] || mutex_off
        else
 	   rc=$?
-	   logger -p kern.err "ERROR:Shorewall restart failed"
+	   logger -p kern.err "ERROR:Shorewall6 restart failed"
        fi
    else
        [ -x ${VARDIR}/.restore ] || fatal_error "No ${VARDIR}/.restore file found"
@@ -863,12 +787,6 @@ refresh_command() {
 			    finished=1
 			    option=
 			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
-			    option=
-			    shift
-			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -892,7 +810,7 @@ refresh_command() {
 	done
     fi
 
-    shorewall_is_started || fatal_error "Shorewall is not running"
+    shorewall6_is_started || fatal_error "Shorewall6 is not running"
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
@@ -942,12 +860,6 @@ safe_commands() {
 			    NOROUTES=Yes
 			    option=${option#n}
 			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
-			    option=
-			    shift
-			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -985,7 +897,7 @@ safe_commands() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    if shorewall_is_started; then
+    if shorewall6_is_started; then
 	running=Yes
     else
 	running=
@@ -993,12 +905,12 @@ safe_commands() {
 
     if [ "$COMMAND" = "safe-start" -a  -n "$running" ]; then
 	# the command is safe-start but the firewall is already running
-	error_message "Shorewall is already started"
+	error_message "Shorewall6 is already started"
 	exit 0
     fi
 
     if [ "$COMMAND" = "safe-start" -o -z "$running" ]; then
-	# the command is safe-start or shorewall is not started yet
+	# the command is safe-start or shorewall6 is not started yet
 	command="start"
     else
 	# the command is safe-restart and the firewall is already running
@@ -1091,12 +1003,6 @@ try_command() {
 			    NOROUTES=Yes
 			    option=${option#n}
 			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    SHOREWALL_COMPILER=$2
-			    option=
-			    shift
-			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1134,14 +1040,14 @@ try_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    if shorewall_is_started; then
+    if shorewall6_is_started; then
 	running=Yes
     else
 	running=
     fi
 
     if [ -z "$running" ]; then
-	# shorewall is not started yet
+	# shorewall6 is not started yet
 	command="start"
     else
 	# the firewall is already running
@@ -1223,7 +1129,7 @@ reload_command() # $* = original arguments less the command.
     local compiler
     compiler=
 
-    LITEDIR=/var/lib/shorewall-lite
+    LITEDIR=/var/lib/shorewall6-lite
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1248,12 +1154,6 @@ reload_command() # $* = original arguments less the command.
 			r)
 			    [ $# -gt 1 ] || fatal_error "Missing Root User name"
 			    root=$2
-			    option=
-			    shift
-			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    compiler="-C $2"
 			    option=
 			    shift
 			    ;;
@@ -1284,7 +1184,7 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    litedir=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+    litedir=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
     [ -n "$litedir" ] && LITEDIR=$litedir
 
@@ -1296,13 +1196,13 @@ reload_command() # $* = original arguments less the command.
     fi
 
     if [ -n "$getcaps" ]; then
-	if [ -f $directory/shorewall.conf ]; then
-	    . $directory/shorewall.conf
+	if [ -f $directory/shorewall6.conf ]; then
+	    . $directory/shorewall6.conf
 	    ensure_config_path
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES /usr/share/shorewall-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES /usr/share/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1311,25 +1211,25 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$TIMESTAMP" ] && timestamp='-t' || timestamp=
 
-    if shorewall $debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
+    if shorewall6 $debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${LITEDIR}
     then
 	save=$(find_file save);
 
-	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/shorewall-lite/" && rcp_command $save /etc/shorewall-lite/
+	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/shorewall6-lite/" && rcp_command $save /etc/shorewall6-lite/
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp restart" && \
+	    rsh_command "/sbin/shorewall6-lite $debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp start" && \
+	    rsh_command "/sbin/shorewall6-lite $debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp save" && \
+	    rsh_command "/sbin/shorewall6-lite $debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
@@ -1363,12 +1263,6 @@ export_command() # $* = original arguments less the command.
 			    finished=1
 			    option=
 			    ;;
-			C)
-			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
-			    compiler="-C $2"
-			    option=
-			    shift
-			    ;;
 			*)
 			    fatal_error "Unrecognized option \"$option\""
 			    ;;
@@ -1392,7 +1286,7 @@ export_command() # $* = original arguments less the command.
 	    target=$2
 	    ;;
 	*)
-	    fatal_error "ERROR: Invalid command syntax (\"man shorewall\" for help)"
+	    fatal_error "ERROR: Invalid command syntax (\"man shorewall6\" for help)"
 	    ;;
     esac
 
@@ -1406,7 +1300,7 @@ export_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall $debugging $verbose compile -e $compiler $directory $directory/firewall && \
+    if shorewall6 $debugging $verbose compile -e $compiler $directory $directory/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $directory/firewall $directory/firewall.conf $target
     then
@@ -1427,32 +1321,28 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ -C {shell|perl} ] [ <directory> ]"
+    echo "   check [ -e ] [ <directory> ]"
     echo "   clear [ -f ]"
-    echo "   compile [ -e ] [ -C {shell|perl} ] [ <directory name> ] <path name>"
+    echo "   compile [ -e ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
-    echo "   export [ -C {shell|perl} ] [ <directory1> ] [<user>@]<system>[:<directory2>]"
+    echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
-    echo "   hits [ -t ]"
-    echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
-    echo "   ipdecimal { <address> | <integer> }"
-    echo "   iprange <address>-<address>"
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ -C {shell|perl} ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
-    echo "   refresh [ -C {shell|perl} ] [ <chain>... ]"
+    echo "   refresh [ <chain>... ]"
     echo "   reject <address> ..."
-    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -C {shell|perl} ] [ <directory> ] <system>"
+    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -p ] [ -f ] [ -C {shell|perl} ] [ <directory> ]"
+    echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"
-    echo "   start [ -f ] [ -n ] [ -p ] [ -C {shell|perl} ] [ <directory> ]"
+    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"
+    echo "   start [ -f ] [ -n ] [ -p ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
     echo "   try [ -C {shell|perl} ] <directory> [ <timeout> ]"
@@ -1626,10 +1516,6 @@ version_command() {
     echo $version
 
     if [ -n "$all" ]; then
-	if [ -f /usr/share/shorewall-shell/version ]; then
-	    echo "Shorewall-shell $(cat /usr/share/shorewall-shell/version)"
-	fi
-
 	if [ -f /usr/share/shorewall-perl/version ]; then
 	    echo "Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
 	fi
@@ -1644,13 +1530,13 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHAREDIR=/usr/share/shorewall
-CONFDIR=/etc/shorewall
-export PRODUCT="Shorewall"
+SHAREDIR=/usr/share/shorewall6
+CONFDIR=/etc/shorewall6
+export PRODUCT="Shorewall6"
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
-[ -n "${VARDIR:=/var/lib/shorewall}" ]
+[ -n "${VARDIR:=/var/lib/shorewall6}" ]
 
 FIREWALL=$SHAREDIR/firewall
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
@@ -1667,7 +1553,7 @@ for library in $LIBRARIES; do
 done
 
 if [ ! -f $FIREWALL ]; then
-    echo "   ERROR: Shorewall is not properly installed" >&2
+    echo "   ERROR: Shorewall6 is not properly installed" >&2
     if [ -L $FIREWALL ]; then
 	echo "	     $FIREWALL is a symbolic link to a" >&2
 	echo "	     non-existant file" >&2
@@ -1681,12 +1567,12 @@ fi
 if [ -f $VERSION_FILE ]; then
     version=$(cat $VERSION_FILE)
 else
-    echo "   ERROR: Shorewall is not properly installed" >&2
+    echo "   ERROR: Shorewall6 is not properly installed" >&2
     echo "	 The file $VERSION_FILE does not exist"  >&2
     exit 1
 fi
 
-banner="Shorewall-$version Status at $HOSTNAME -"
+banner="Shorewall6-$version Status at $HOSTNAME -"
 
 case $(echo -e) in
     -e*)
@@ -1782,13 +1668,13 @@ case "$COMMAND" in
     status)
 	[ $# -eq 1 ] || usage 1
 	get_config
-	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
+	echo "Shorewall6-$version Status at $HOSTNAME - $(date)"
 	echo
-	if shorewall_is_started ; then
-	    echo "Shorewall is running"
+	if shorewall6_is_started ; then
+	    echo "Shorewall6 is running"
 	    status=0
 	else
-	    echo "Shorewall is stopped"
+	    echo "Shorewall6 is stopped"
 	    status=4
 	fi
 
@@ -1811,12 +1697,6 @@ case "$COMMAND" in
     	shift
     	dump_command $@
 	;;
-    hits)
-	get_config Yes No Yes
-	[ -n "$debugging" ] && set -x
-	shift
-	hits_command $@
-	;;
     version)
 	shift
 	version_command $@
@@ -1828,43 +1708,43 @@ case "$COMMAND" in
 	;;
     logwatch)
 	get_config Yes Yes Yes
-	banner="Shorewall-$version Logwatch at $HOSTNAME -"
+	banner="Shorewall6-$version Logwatch at $HOSTNAME -"
 	logwatch_command $@
 	;;
     drop)
 	get_config
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block DROP Dropped $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "Shorewall6 is not started"
 	fi
 	;;
     logdrop)
 	get_config
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block logdrop Dropped $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "Shorewall6 is not started"
 	fi
 	;;
     reject|logreject)
 	get_config
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block $COMMAND Rejected $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "Shorewall6 is not started"
 	fi
 	;;
     allow)
@@ -1927,62 +1807,9 @@ case "$COMMAND" in
 	    rm -f ${RESTOREPATH}-iptables
 	    echo "    $RESTOREPATH removed"
 	elif [ -f $RESTOREPATH ]; then
-	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
+	    echo "   $RESTOREPATH exists and is not a saved Shorewall6 configuration"
 	fi
 	rm -f ${VARDIR}/save
-	;;
-    ipcalc)
-    	[ -n "$debugging" ] && set -x
-	if [ $# -eq 2 ]; then
-	    address=${2%/*}
-	    vlsm=${2#*/}
-	elif [ $# -eq 3 ]; then
-	    address=$2
-	    vlsm=$(ip_vlsm $3)
-	else
-	    usage 1
-	fi
-
-	valid_address $address || fatal_error "Invalid IP address: $address"
-	[ -z "$vlsm" ] && exit 2
-	[ "x$address" = "x$vlsm" ] && usage 2
-	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
-
-	address=$address/$vlsm
-
-	                                   echo "   CIDR=$address"
-	temp=$(ip_netmask $address);       echo "   NETMASK=$(encodeaddr $temp)"
-	temp=$(ip_network $address);       echo "   NETWORK=$temp"
-	temp=$(broadcastaddress $address); echo "   BROADCAST=$temp"
-	;;
-
-    iprange)
-	[ -n "$debugging" ] && set -x
-	case $2 in
-	    *.*.*.*-*.*.*.*)
-		for address in ${2%-*} ${2#*-}; do
-		    valid_address $address || fatal_error "Invalid IP address: $address"
-		done
-
-		ip_range $2
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-	;;
-    ipdecimal)
-	[ -n "$debugging" ] && set -x
-	[ $# -eq 2 ] || usage 1
-	case $2 in
-	    *.*.*.*)
-		valid_address $2 || fatal_error "Invalid IP address: $2"
-		echo "   $(decodeaddr $2)"
-		;;
-	    *)
-		echo "   $(encodeaddr $2)"
-		;;
-	esac
 	;;
     restore)
 	get_config

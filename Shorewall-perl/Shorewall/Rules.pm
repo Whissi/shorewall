@@ -528,11 +528,11 @@ sub add_common_rules() {
 
     setup_blacklist;
 
+    $list = find_hosts_by_option 'nosmurfs';
+
+    $chainref = new_standard_chain 'smurfs';
+
     if ( $family == F_IPV4 ) {
-	$list = find_hosts_by_option 'nosmurfs';
-
-	$chainref = new_standard_chain 'smurfs';
-
 	if ( $capabilities{ADDRTYPE} ) {
 	    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 	    add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
@@ -546,19 +546,23 @@ sub add_common_rules() {
 	}
 
 	add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-    }
 
-    if ( $capabilities{ADDRTYPE} ) {
-	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+	if ( $capabilities{ADDRTYPE} ) {
+	    add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+	} else {
+	    add_command $rejectref, 'for address in $ALL_BCASTS; do';
+	    incr_cmd_level $rejectref;
+	    add_rule $rejectref, '-d $address -j DROP';
+	    decr_cmd_level $rejectref;
+	    add_command $rejectref, 'done';
+	}
+	
+	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
     } else {
-	add_command $rejectref, 'for address in $ALL_BCASTS; do';
-	incr_cmd_level $rejectref;
-	add_rule $rejectref, '-d $address -j DROP';
-	decr_cmd_level $rejectref;
-	add_command $rejectref, 'done';
+	my $predicate =  '-s ' . IPv6_MULTICAST . ' ';
+	add_rule_pair $chainref , $predicate, 'DROP' , $config{SMURF_LOG_LEVEL};
+	add_rule $rejectref, "$predicate -j DROP";
     }
-
-    add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
 
     if ( @$list ) {
 	progress_message2 'Adding Anti-smurf Rules';
@@ -583,21 +587,21 @@ sub add_common_rules() {
 	add_rule $rejectref , '-j REJECT';
     }
 
-    $list = find_interfaces_by_option 'dhcp';
-
-    if ( @$list ) {
-	progress_message2 'Adding rules for DHCP';
-
-	for $interface ( @$list ) {
-	    for $chain ( input_chain $interface, output_chain $interface ) {
-		add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
-	    }
-
-	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if get_interface_option( $interface, 'bridge' );
-	}
-    }
-
     if ( $family == F_IPV4 ) {
+	$list = find_interfaces_by_option 'dhcp';
+
+	if ( @$list ) {
+	    progress_message2 'Adding rules for DHCP';
+	    
+	    for $interface ( @$list ) {
+		for $chain ( input_chain $interface, output_chain $interface ) {
+		    add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
+		}
+		
+		add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if get_interface_option( $interface, 'bridge' );
+	    }
+	}
+
 	$list = find_hosts_by_option 'norfc1918';
 	setup_rfc1918_filteration $list if @$list;
     }
@@ -799,24 +803,32 @@ sub setup_mac_lists( $ ) {
 		    
 		    add_commands( $chainref,
 				  "for address in $variable; do" );
-
-		    if ( $bridgeref->{broadcasts} ) {
-			for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
-			    add_commands( $chainref ,
-					  "    echo \"-A $chainref->{name} -s \$address -d $address -j RETURN\" >&3" );
+		    if ( $family == F_IPV4 ) {
+			if ( $bridgeref->{broadcasts} ) {
+			    for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
+				add_commands( $chainref ,
+					      "    echo \"-A $chainref->{name} -s \$address -d $address -j RETURN\" >&3" );
+			    }
+			} else {
+			    my $variable1 = get_interface_bcasts $bridge;
+			    
+			    add_commands( $chainref, 
+					  "    for address1 in $variable1; do" ,
+					  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
+					  "    done" );
 			}
+
+			add_commands( $chainref, "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" );
 		    } else {
 			my $variable1 = get_interface_bcasts $bridge;
-		    
+			    
 			add_commands( $chainref, 
 				      "    for address1 in $variable1; do" ,
 				      "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
 				      "    done" );
 		    }
 
-		    add_commands( $chainref, 
-				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
-				  'done' );
+		    add_command( $chainref, 'done' );
 		}
 	    }
 

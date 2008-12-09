@@ -1,0 +1,871 @@
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 1999-2008 - Tom Eastep (teastep@shorewall.net)
+#
+#	Options are:
+#
+#	    -n				  Don't alter Routing
+#	    -v and -q			  Standard Shorewall Verbosity control
+#
+#	Commands are:
+#
+#	   start			  Starts the firewall
+#          refresh                        Refresh the firewall
+#	   restart			  Restarts the firewall
+#	   reload			  Reload the firewall
+#	   clear			  Removes all firewall rules
+#	   stop				  Stops the firewall
+#	   status			  Displays firewall status
+#	   version			  Displays the version of Shorewall that
+#	   				  generated this program
+#
+################################################################################
+# Functions imported from /usr/share/shorewall/lib.base
+################################################################################
+#
+# Message to stderr
+#
+error_message() # $* = Error Message
+{
+   echo "   $@" >&2
+}
+
+#
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSE -gt 1 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSE -gt 1 ]; then
+        timestamp="$(date +'%b %_d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
+}
+
+progress_message2() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSE -gt 0 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSE -gt 0 ]; then
+        timestamp="$(date +'%b %_d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
+}
+
+progress_message3() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSE -ge 0 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSE -ge 0 ]; then
+        timestamp="$(date +'%b %_d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
+}
+
+#
+# Split a colon-separated list into a space-separated list
+#
+split() {
+    local ifs
+    ifs=$IFS
+    IFS=:
+    echo $*
+    IFS=$ifs
+}
+
+#
+# Search a list looking for a match -- returns zero if a match found
+# 1 otherwise
+#
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e
+    e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+#
+# Suppress all output for a command
+#
+qt()
+{
+    "$@" >/dev/null 2>&1
+}
+
+qt1()
+{
+    local status
+
+    while [ 1 ]; do
+	"$@" >/dev/null 2>&1
+	status=$?
+	[ $status -ne 4 ] && return $status
+    done
+}
+
+#
+# Determine if Shorewall is "running"
+#
+shorewall_is_started() {
+    qt1 $IPTABLES -L shorewall -n
+}
+
+#
+# Echos the fully-qualified name of the calling shell program
+#
+my_pathname() {
+    cd $(dirname $0)
+    echo $PWD/$(basename $0)
+}
+
+#
+# Source a user exit file if it exists
+#
+run_user_exit() # $1 = file name
+{
+    local user_exit
+    user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	progress_message "Processing $user_exit ..."
+	. $user_exit
+    fi
+}
+
+#
+# Set a standard chain's policy
+#
+setpolicy() # $1 = name of chain, $2 = policy
+{
+    run_iptables -P $1 $2
+}
+
+#
+# Set a standard chain to enable established and related connections
+#
+setcontinue() # $1 = name of chain
+{
+    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+}
+
+#
+# Flush one of the Mangle table chains
+#
+flushmangle() # $1 = name of chain
+{
+    run_iptables -t mangle -F $1
+}
+
+#
+# Flush and delete all user-defined chains in the filter table
+#
+deleteallchains() {
+    run_iptables -F
+    run_iptables -X
+}
+
+#
+# Load a Kernel Module -- assumes that the variable 'moduledirectories' contains
+#                         a space-separated list of directories to search for
+#                         the module and that 'moduleloader' contains the
+#                         module loader command.
+#
+loadmodule() # $1 = module name, $2 - * arguments
+{
+    local modulename
+    modulename=$1
+    local modulefile
+    local suffix
+
+    if ! list_search $modulename $DONT_LOAD $MODULES; then
+	shift
+
+	for suffix in $MODULE_SUFFIX ; do
+	    for directory in $moduledirectories; do
+		modulefile=$directory/${modulename}.${suffix}
+
+		if [ -f $modulefile ]; then
+		    case $moduleloader in
+			insmod)
+			    insmod $modulefile $*
+			    ;;
+			*)
+			    modprobe $modulename $*
+			    ;;
+		    esac
+		    break 2
+		fi
+	    done
+	done
+    fi
+}
+
+#
+# Reload the Modules
+#
+reload_kernel_modules() {
+
+    local save_modules_dir
+    save_modules_dir=$MODULESDIR
+    local directory
+    local moduledirectories
+    moduledirectories=
+    local moduleloader
+    moduleloader=modprobe
+
+    if ! qt mywhich modprobe; then
+	moduleloader=insmod
+    fi
+
+    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+    MODULES=$(lsmod | cut -d ' ' -f1)
+
+    for directory in $(split $MODULESDIR); do
+	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
+    done
+
+    [ -n "$moduledirectories" ] && while read command; do
+	eval $command
+    done
+
+    MODULESDIR=$save_modules_dir
+}
+
+#
+# Load kernel modules required for Shorewall
+#
+load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
+{
+    local save_modules_dir
+    save_modules_dir=$MODULESDIR
+    local directory
+    local moduledirectories
+    moduledirectories=
+    local moduleloader
+    moduleloader=modprobe
+    local savemoduleinfo
+    savemoduleinfo=${1:-Yes} # So old compiled scripts still work
+
+    if ! qt mywhich modprobe; then
+	moduleloader=insmod
+    fi
+
+    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+
+    [ -z "$MODULESDIR" ] && \
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+
+    for directory in $(split $MODULESDIR); do
+	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
+    done
+
+    modules=$(find_file modules)
+
+    if [ -f $modules -a -n "$moduledirectories" ]; then
+	MODULES=$(lsmod | cut -d ' ' -f1)
+	progress_message "Loading Modules..."
+	. $modules
+	if [ $savemoduleinfo = Yes ]; then
+	    [ -d ${VARDIR} ] || mkdir -p ${VARDIR}
+	    echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir
+	    cp -f $modules ${VARDIR}/.modules
+	fi
+    elif [ $savemoduleinfo = Yes ]; then
+	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
+	> ${VARDIR}/.modulesdir
+	> ${VARDIR}/.modules
+    fi
+
+    MODULESDIR=$save_modules_dir
+}
+
+#
+# Query NetFilter about the existence of a filter chain
+#
+chain_exists() # $1 = chain name
+{
+    qt1 $IPTABLES -L $1 -n
+}
+
+#
+# Find the value 'dev' in the passed arguments then echo the next value
+#
+
+find_device() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xdev ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'via' in the passed arguments then echo the next value
+#
+
+find_gateway() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xvia ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'mtu' in the passed arguments then echo the next value
+#
+
+find_mtu() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xmtu ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'peer' in the passed arguments then echo the next value up to
+# "/"
+#
+
+find_peer() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xpeer ] && echo ${2%/*} && return
+	shift
+    done
+}
+
+#
+# Try to find the gateway through an interface looking for 'nexthop'
+
+find_nexthop() # $1 = interface
+{
+    echo $(find_gateway `ip -6 route list | grep "[[:space:]]nexthop.* $1"`)
+}
+
+#
+# Find the default route's interface
+#
+find_default_interface() {
+    ip -6 route list | while read first rest; do
+	[ "$first" = default ] && echo $(find_device $rest) && return
+    done
+}
+
+#
+# Find the interface with the passed MAC address
+#
+
+find_interface_by_mac() {
+    local mac
+    mac=$1
+    local first
+    local second
+    local rest
+    local dev
+
+    ip link list | while read first second rest; do
+	case $first in
+	    *:)
+                dev=$second
+		;;
+	    *)
+	        if [ "$second" = $mac ]; then
+		    echo ${dev%:}
+		    return
+		fi
+	esac
+    done
+}
+
+#
+# Determine if Interface is up
+#
+interface_is_up() {
+    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
+}
+
+#
+# Find interface address--returns the first IP address assigned to the passed
+# device
+#
+find_first_interface_address() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
+    #
+    # If there wasn't one, bail out now
+    #
+    [ -n "$addr" ] || fatal_error "Can't determine the IPv6 address of $1"
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+}
+
+find_first_interface_address_if_any() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    [ -n "$addr" ] && echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+}
+
+#
+# Determine if interface is usable from a Netfilter prespective
+#
+interface_is_usable() # $1 = interface
+{
+    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ] && run_isusable_exit $1
+}
+
+#
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    ip -f inet addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
+#  echo the list of networks routed out of a given interface
+#
+get_routed_networks() # $1 = interface name, $2-n = Fatal error message
+{
+    local address
+    local rest
+
+    ip route show dev $1 2> /dev/null |
+	while read address rest; do
+	    case "$address" in
+		default)
+		    if [ $# -gt 1 ]; then
+			shift
+			fatal_error "$@"
+		    else
+			echo "WARNING: default route ignored on interface $1" >&2
+		    fi
+		    ;;
+		multicast|broadcast|prohibit|nat|throw|nexthop)
+		    ;;
+		*)
+		    [ "$address" = "${address%/*}" ] && address="${address}/32"
+		    echo $address
+		    ;;
+	    esac
+        done
+}
+
+get_interface_bcasts() # $1 = interface
+{
+    local addresses
+    addresses=
+
+    ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+}
+
+#
+# Internal version of 'which'
+#
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    echo $dir/$1
+	    return 0
+	fi
+    done
+
+    return 2
+}
+
+#
+# Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
+#
+find_file()
+{
+    local saveifs
+    saveifs=
+    local directory
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	*)
+	    for directory in $(split $CONFIG_PATH); do
+		if [ -f $directory/$1 ]; then
+		    echo $directory/$1
+		    return
+		fi
+	    done
+
+	    echo ${CONFDIR}/$1
+	    ;;
+    esac
+}
+
+#
+# Set the Shorewall state
+#
+set_state () # $1 = state
+{
+    echo "$1 ($(date))" > ${VARDIR}/state
+}
+
+#
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $@ = contents of variable which may be the name of another variable
+{
+    eval echo \"$@\"
+}
+
+#
+# Function for including one file into another
+#
+INCLUDE() {
+    . $(find_file $(expand $@))
+}
+
+#
+# Delete IP address
+#
+del_ip_addr() # $1 = address, $2 = interface
+{
+    [ $(find_first_interface_address_if_any $2) = $1 ] || qt ip addr del $1 dev $2
+}
+
+# Add IP Aliases
+#
+add_ip_aliases() # $* = List of addresses
+{
+    local local
+    local addresses
+    local external
+    local interface
+    local inet
+    local cidr
+    local rest
+    local val
+    local arping
+    arping=$(mywhich arping)
+
+    address_details()
+    {
+	#
+	# Folks feel uneasy if they don't see all of the same
+	# decoration on these IP addresses that they see when their
+	# distro's net config tool adds them. In an attempt to reduce
+	# the anxiety level, we have the following code which sets
+	# the VLSM and BRD from an existing address in the same networks
+	#
+	# Get all of the lines that contain inet addresses with broadcast
+	#
+	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
+	    case $cidr in
+		*/*)
+		    if in_network $external $cidr; then
+			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
+			break
+		    fi
+		    ;;
+	    esac
+	done
+    }
+
+    do_one()
+    {
+	val=$(address_details)
+
+	ip addr add ${external}${val} dev $interface $label
+	[ -n "$arping" ] && qt $arping -U -c 2 -I $interface $external
+	echo "$external $interface" >> $VARDIR/nat
+	[ -n "$label" ] && label="with $label"
+	progress_message "   IP Address $external added to interface $interface $label"
+    }
+
+    progress_message "Adding IP Addresses..."
+
+    while [ $# -gt 0 ]; do
+	external=$1
+	interface=$2
+	label=
+
+	if [ "$interface" != "${interface%:*}" ]; then
+	    label="${interface#*:}"
+	    interface="${interface%:*}"
+	    label="label $interface:$label"
+	fi
+
+	shift 2
+
+	list_search $external $(find_interface_addresses $interface) || do_one
+    done
+}
+
+detect_gateway() # $1 = interface
+{
+    local interface
+    interface=$1
+    #
+    # First assume that this is some sort of point-to-point interface
+    #
+    gateway=$( find_peer $(ip addr list $interface ) )
+    #
+    # Maybe there's a default route through this gateway already
+    #
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route list dev $interface))
+    #
+    # Last hope -- is there a load-balancing route through the interface?
+    #
+    [ -n "$gateway" ] || gateway=$(find_nexthop $interface)
+    #
+    # Be sure we found one
+    #
+    [ -n "$gateway" ] && echo $gateway
+}
+
+#
+# Disable IPV6
+#
+disable_ipv6() {
+    local foo
+    foo="$(ip -f inet6 addr list 2> /dev/null)"
+
+    if [ -n "$foo" ]; then
+	if qt mywhich ip6tables; then
+	    ip6tables -P FORWARD DROP
+	    ip6tables -P INPUT DROP
+	    ip6tables -P OUTPUT DROP
+	    ip6tables -F
+	    ip6tables -X
+	    ip6tables -A OUTPUT -o lo -j ACCEPT
+	    ip6tables -A INPUT -i lo -j ACCEPT
+	else
+	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
+	fi
+    fi
+}
+
+# Function to truncate a string -- It uses 'cut -b -<n>'
+# rather than ${v:first:last} because light-weight shells like ash and
+# dash do not support that form of expansion.
+#
+
+truncate() # $1 = length
+{
+    cut -b -${1}
+}
+
+delete_tc1()
+{
+    clear_one_tc() {
+        tc qdisc del dev $1 root 2> /dev/null
+        tc qdisc del dev $1 ingress 2> /dev/null
+
+    }
+
+    run_user_exit tcclear
+
+    run_ip link list | \
+    while read inx interface details; do
+        case $inx in
+            [0-9]*)
+                clear_one_tc ${interface%:}
+                ;;
+            *)
+                ;;
+        esac
+    done
+}
+
+#
+# Detect a device's MTU -- echos the passed device's MTU
+#
+get_device_mtu() # $1 = device
+{
+    local output
+    output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+
+    if [ -n "$output" ]; then
+	echo $(find_mtu $output)
+    else
+	echo 1500
+    fi
+}
+
+#
+# Version of the above that doesn't generate any output for MTU 1500.
+# Generates 'mtu <mtu+>' otherwise, where <mtu+> is the device's MTU + 100
+#
+get_device_mtu1() # $1 = device
+{
+    local output
+    output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local mtu
+
+    if [ -n "$output" ]; then
+	mtu=$(find_mtu $output)
+	if [ -n "$mtu" ]; then
+	    [ $mtu = 1500 ] || echo mtu $(($mtu + 100))
+	fi
+    fi
+
+}
+
+#
+# Undo changes to routing
+#
+undo_routing() {
+
+    if [ -z "$NOROUTES"  ]; then
+	#
+	# Restore rt_tables database
+	#
+	if [ -f ${VARDIR}/rt_tables ]; then
+	    [ -w /etc/iproute2/rt_table -a -z "$KEEP_RT_TABLES" ] && cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
+	    rm -f ${VARDIR}/rt_tables
+	fi
+	#
+	# Restore the rest of the routing table
+	#
+	if [ -f ${VARDIR}/undo_routing ]; then
+	    . ${VARDIR}/undo_routing
+	    progress_message "Shorewall-generated routing tables and routing rules removed"
+	    rm -f ${VARDIR}/undo_routing
+	fi
+    fi
+
+}
+
+restore_default_route() {
+    if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
+	local default_route
+	default_route=
+	local route
+
+	while read route ; do
+	    case $route in
+		default*)
+		    if [ -n "$default_route" ]; then
+			case "$default_route" in
+			    *metric*)
+		                #
+		                # Don't restore a route with a metric -- we only replace the one with metric == 0
+		                #
+				qt ip route delete default metric 0 && \
+				    progress_message "Default Route with metric 0 deleted"
+				;;
+			    *)
+				qt ip route replace $default_route && \
+				    progress_message "Default Route (${default_route# }) restored"
+				;;
+			esac
+
+			break
+		    fi
+
+		    default_route="$default_route $route"
+		    ;;
+		*)
+		    default_route="$default_route $route"
+		    ;;
+	    esac
+	done < ${VARDIR}/default_route
+
+	rm -f ${VARDIR}/default_route
+    fi
+}
+
+#
+# Determine how to do "echo -e"
+#
+
+find_echo() {
+    local result
+
+    result=$(echo "a\tb")
+    [ ${#result} -eq 3 ] && { echo echo; return; }
+
+    result=$(echo -e "a\tb")
+    [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
+
+    result=$(which echo)
+    [ -n "$result" ] && { echo "$result -e"; return; }
+
+    echo echo
+}
+
+#
+# Determine the MAC address of the passed IP through the passed interface
+#
+find_mac() # $1 = IP address, $2 = interface
+{
+    if interface_is_usable $2 ; then
+	qt ping -nc 1 -t 2 -I $2 $1
+
+	local result
+	result=$(ip neigh list |  awk "/^$1 / {print \$5}")
+
+	case $result in
+	    \<*\>)
+		;;
+	    *)
+		[ -n "$result" ] && echo $result
+		;;
+	esac
+    fi
+}
+
+#
+# Flush the conntrack table if $PURGE is non-empty
+#
+conditionally_flush_conntrack() {
+
+    if [ -n "$PURGE" ]; then
+	if [ -n $(which conntrack) ]; then
+            conntrack -F
+	else
+            error_message "WARNING: The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+	fi
+    fi
+}
+
+################################################################################
+# End of functions imported from /usr/share/shorewall/lib.base
+################################################################################

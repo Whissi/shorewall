@@ -253,8 +253,8 @@ our $Product;
 
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
-	       F_IPV4 => 1,
-	       F_IPV6 => 2,
+	       F_IPV4 => 4,
+	       F_IPV6 => 6,
 	   };
 
 #

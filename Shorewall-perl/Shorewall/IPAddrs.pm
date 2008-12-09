@@ -34,6 +34,15 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( ALLIPv4
                   ALLIPv6
+	          IPv6_MULTICAST
+	          IPv6_LINKLOCAL
+	          IPv6_SITELOCAL
+	          IPv6_LINKLOCAL
+	          IPv6_LOOPBACK
+	          IPv6_LINK_ALLNODES
+	          IPv6_LINK_ALLRTRS
+	          IPv6_SITE_ALLNODES
+	          IPv6_SITE_ALLRTRS
 		  ALLIP
 		  ALL
 		  TCP
@@ -71,14 +80,23 @@ our @allipv4 = ( '0.0.0.0/0' );
 our @allipv6 = ( '::/0' );
 our $family;
 
-use constant { ALLIPv4 => '0.0.0.0/0' ,
-	       ALLIPv6 => '::/0' ,
-	       ICMP => 1, 
-	       TCP => 6, 
-	       UDP => 17,
-	       DCCP => 33,
-	       IPv6_ICMP => 58,
-	       SCTP => 132 };
+use constant { ALLIPv4             => '0.0.0.0/0' ,
+	       ALLIPv6             => '::/0' ,
+	       IPv6_MULTICAST      => 'FF00::/10' ,
+	       IPv6_LINKLOCAL      => 'FF80::/10' ,
+	       IPv6_SITELOCAL      => 'FFC0::/10' ,
+	       IPv6_LINKLOCAL      => 'FF80::/10' ,
+	       IPv6_LOOPBACK       => '::1' ,
+	       IPv6_LINK_ALLNODES  => 'FF01::1' ,
+	       IPv6_LINK_ALLRTRS   => 'FF01::2' ,
+	       IPv6_SITE_ALLNODES  => 'FF02::1' ,
+	       IPv6_SITE_ALLRTRS   => 'FF02::2' ,
+	       ICMP                => 1, 
+	       TCP                 => 6, 
+	       UDP                 => 17,
+	       DCCP                => 33,
+	       IPv6_ICMP           => 58,
+	       SCTP                => 132 };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 

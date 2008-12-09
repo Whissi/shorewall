@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     Shorewall Lite Packet Filtering Firewall Control Program - V4.1
+#     Shorewall6  Lite Packet Filtering Firewall Control Program - V4.4
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -28,64 +28,64 @@
 #
 #     Commands are:
 #
-#     shorewall-lite dump                          Dumps all Shorewall-related information
+#     shorewall6-lite dump                         Dumps all Shorewall-related information
 #                                                  for problem analysis
-#     shorewall-lite start 			   Starts the firewall
-#     shorewall-lite restart			   Restarts the firewall
-#     shorewall-lite stop			   Stops the firewall
-#     shorewall-lite status			   Displays firewall status
-#     shorewall-lite reset			   Resets iptables packet and
+#     shorewall6-lite start 			   Starts the firewall
+#     shorewall6-lite restart			   Restarts the firewall
+#     shorewall6-lite stop			   Stops the firewall
+#     shorewall6-lite status			   Displays firewall status
+#     shorewall6-lite reset			   Resets ip6tables packet and
 #						   byte counts
-#     shorewall-lite clear			   Open the floodgates by
-#						   removing all iptables rules
+#     shorewall6-lite clear			   Open the floodgates by
+#						   removing all ip6tables rules
 #						   and setting the three permanent
 #						   chain policies to ACCEPT
-#     shorewall-lite show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
-#     shorewall-lite show log			   Print the last 20 log messages
-#     shorewall-lite show connections		   Show the kernel's connection
+#     shorewall6-lite show <chain> [ <chain> ... ] Display the rules in each <chain> listed
+#     shorewall6-lite show log			   Print the last 20 log messages
+#     shorewall6-lite show connections		   Show the kernel's connection
 #						   tracking table
-#     shorewall-lite show nat			   Display the rules in the nat table
-#     shorewall-lite show {mangle|tos}		   Display the rules in the mangle table
-#     shorewall-lite show tc			   Display traffic control info
-#     shorewall-lite show classifiers		   Display classifiers
-#     shorewall-lite show capabilities             Display iptables/kernel capabilities
-#     shorewall-lite show vardir                   Display VARDIR setting
-#     shorewall-lite version			   Display the installed version id
-#     shorewall-lite logwatch [ refresh-interval ] Monitor the local log for Shorewall
+#     shorewall6-lite show nat			   Display the rules in the nat table
+#     shorewall6-lite show {mangle|tos}		   Display the rules in the mangle table
+#     shorewall6-lite show tc			   Display traffic control info
+#     shorewall6-lite show classifiers		   Display classifiers
+#     shorewall6-lite show capabilities            Display ip6tables/kernel capabilities
+#     shorewall6-lite show vardir                  Display VARDIR setting
+#     shorewall6-lite version			   Display the installed version id
+#     shorewall6-lite logwatch [ refresh-interval ] Monitor the local log for Shorewall
 #						   messages.
-#     shorewall-lite drop <address> ...		   Temporarily drop all packets from the
+#     shorewall6-lite drop <address> ...		   Temporarily drop all packets from the
 #						   listed address(es)
-#     shorewall-lite reject <address> ...	   Temporarily reject all packets from the
+#     shorewall6-lite reject <address> ...	   Temporarily reject all packets from the
 #						   listed address(es)
-#     shorewall-lite allow <address> ...	   Reenable address(es) previously
+#     shorewall6-lite allow <address> ...	   Reenable address(es) previously
 #						   disabled with "drop" or "reject"
-#     shorewall-lite save [ <file> ]		   Save the list of "rejected" and
+#     shorewall6-lite save [ <file> ]		   Save the list of "rejected" and
 #						   "dropped" addresses so that it will
 #						   be automatically reinstated the
-#						   next time that Shorewall starts.
-#                                                  Save the current state so that 'shorewall
+#						   next time that Shorewall6-lite starts.
+#                                                  Save the current state so that 'shorewall6-lite
 #                                                  restore' can be used.
 #
-#     shorewall-lite forget [ <file> ]             Discard the data saved by 'shorewall save'
+#     shorewall6-lite forget [ <file> ]            Discard the data saved by 'shorewall6-lite save'
 #
-#     shorewall-lite restore [ <file> ]            Restore the state of the firewall from
+#     shorewall6-lite restore [ <file> ]           Restore the state of the firewall from
 #                                                  previously saved information.
 #
-#     shorewall-lite ipaddr { <address>/<cidr> | <address> <netmask> }
+#     shorewall6-lite ipaddr { <address>/<cidr> | <address> <netmask> }
 #
 #                                                  Displays information about the network
 #                                                  defined by the argument[s]
 #
-#     shorewall-lite iprange <address>-<address>   Decomposes a range of IP addresses into
+#     shorewall6-lite iprange <address>-<address>  Decomposes a range of IP addresses into
 #                                                  a list of network/host addresses.
 #
-#     shorewall-lite ipdecimal { <address> | <integer> }
+#     shorewall6-lite ipdecimal { <address> | <integer> }
 #
 #                                                  Displays the decimal equivalent of an IP
 #                                                  address and vice versa.
 
 #
-# Set the configuration variables from shorewall-lite.conf
+# Set the configuration variables from shorewall6-lite.conf
 #
 get_config() {
 
@@ -119,20 +119,20 @@ get_config() {
 
     export LOGFORMAT
 
-    if [ -n "$IPTABLES" ]; then
-	if [ ! -x "$IPTABLES" ]; then
-	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+    if [ -n "$IP6TABLES" ]; then
+	if [ ! -x "$IP6TABLES" ]; then
+	    echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
 	    exit 2
 	fi
     else
-	IPTABLES=$(mywhich iptables 2> /dev/null)
-	if [ -z "$IPTABLES" ] ; then
+	IP6TABLES=$(mywhich ip6tables 2> /dev/null)
+	if [ -z "$IP6TABLES" ] ; then
 	    echo "   ERROR: Can't find iptables executable" >&2
 	    exit 2
 	fi
     fi
 
-    export IPTABLES
+    export IP6TABLES
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -x "$SHOREWALL_SHELL" ]; then
@@ -162,7 +162,7 @@ get_config() {
 #
 verify_firewall_script() {
     if [ ! -f $FIREWALL ]; then
-	echo "   ERROR: Shorewall Lite is not properly installed" >&2
+	echo "   ERROR: Shorewall6 Lite is not properly installed" >&2
 	if [ -L $FIREWALL ]; then
 	    echo "          $FIREWALL is a symbolic link to a" >&2
 	    echo "          non-existant file" >&2
@@ -191,7 +191,7 @@ start_command() {
 	    rc=$?
 	else
 	    error_message "${LITEDIR}/firewall is missing or is not executable"
-	    logger -p kern.err "ERROR:Shorewall Lite start failed"
+	    logger -p kern.err "ERROR:Shorewall6 Lite start failed"
 	    rc=2
 	fi
 
@@ -201,8 +201,8 @@ start_command() {
 
     verify_firewall_script
 
-    if shorewall_is_started; then
-	error_message "Shorewall is already running"
+    if shorewall6_is_started; then
+	error_message "Shorewall6 is already running"
 	exit 0
     fi
 
@@ -274,10 +274,10 @@ start_command() {
 		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 		fi
 
-		echo Restoring Shorewall Lite...
+		echo Restoring Shorewall6 Lite...
 		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > ${VARDIR}/restarted
-		progress_message3 Shorewall Lite restored from $RESTOREPATH
+		progress_message3 Shorewall6 Lite restored from $RESTOREPATH
 	    else
 		do_it
 	    fi
@@ -351,7 +351,7 @@ restart_command() {
 	rc=$?
     else
 	error_message "${LITEDIR}/firewall is missing or is not executable"
-	logger -p kern.err "ERROR:Shorewall Lite restart failed"
+	logger -p kern.err "ERROR:Shorewall6 Lite restart failed"
 	rc=2
     fi
 
@@ -504,13 +504,13 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHAREDIR=/usr/share/shorewall-lite
-CONFDIR=/etc/shorewall-lite
-export PRODUCT="Shorewall Lite"
+SHAREDIR=/usr/share/shorewall6-lite
+CONFDIR=/etc/shorewall6-lite
+export PRODUCT="Shorewall6 Lite"
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir ]
 
-[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]
+[ -n "${VARDIR:=/var/lib/shorewall6-lite}" ]
 
 [ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
 
@@ -529,7 +529,7 @@ done
 
 ensure_config_path
 
-config=$(find_file shorewall-lite.conf)
+config=$(find_file shorewall6-lite.conf)
 
 if [ -f $config ]; then
     if [ -r $config ]; then
@@ -557,12 +557,12 @@ FIREWALL=$LITEDIR/firewall
 if [ -f $VERSION_FILE ]; then
     version=$(cat $VERSION_FILE)
 else
-    echo "   ERROR: Shorewall Lite is not properly installed" >&2
+    echo "   ERROR: Shorewall6 Lite is not properly installed" >&2
     echo "          The file $VERSION_FILE does not exist" >&2
     exit 1
 fi
 
-banner="Shorewall Lite $version Status at $HOSTNAME -"
+banner="Shorewall6 Lite $version Status at $HOSTNAME -"
 
 case $(echo -e) in
     -e*)
@@ -607,13 +607,13 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	echo "Shorewall Lite $version Status at $HOSTNAME - $(date)"
+	echo "Shorewall6 Lite $version Status at $HOSTNAME - $(date)"
 	echo
-	if shorewall_is_started ; then
-	    echo "Shorewall Lite is running"
+	if shorewall6_is_started ; then
+	    echo "Shorewall6 Lite is running"
 	    status=0
 	else
-	    echo "Shorewall Lite is stopped"
+	    echo "Shorewall6 Lite is stopped"
 	    status=4
 	fi
 
@@ -649,36 +649,36 @@ case "$COMMAND" in
     drop)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block DROP Dropped $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    error_message "ERROR: Shorewall Lite is not started"
+	    error_message "ERROR: Shorewall6 Lite is not started"
 	    exit 2
 	fi
 	;;
     logdrop)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block logdrop Dropped $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    error_message "ERROR: Shorewall Lite is not started"
+	    error_message "ERROR: Shorewall6 Lite is not started"
 	    exit 2
 	fi
 	;;
     reject|logreject)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block $COMMAND Rejected $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    error_message "ERROR: Shorewall Lite is not started"
+	    error_message "ERROR: Shorewall6 Lite is not started"
 	    exit 2
 	fi
 	;;
@@ -735,7 +735,7 @@ case "$COMMAND" in
 	    rm -f ${RESTOREPATH}-iptables
 	    echo "    $RESTOREPATH removed"
 	elif [ -f $RESTOREPATH ]; then
-	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
+	    echo "   $RESTOREPATH exists and is not a saved Shorewall6 configuration"
 	fi
 	rm -f ${VARDIR}/save
 	;;

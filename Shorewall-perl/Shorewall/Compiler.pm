@@ -980,7 +980,7 @@ sub compiler {
     #
     # MACLIST Filtration
     #
-    setup_mac_lists 1;
+    setup_mac_lists 1 if $family == F_IPV4;
     #
     # Process the rules file.
     #
@@ -997,7 +997,7 @@ sub compiler {
     #
     # MACLIST Filtration again
     #
-    setup_mac_lists 2;
+    setup_mac_lists 2 if $family == F_IPV4;
     #
     # Apply Policies
     #

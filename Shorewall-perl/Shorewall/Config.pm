@@ -422,9 +422,7 @@ sub initialize( $ ) {
 	      LOGBURST => undef,
 	      LOGALLNEW => undef,
 	      BLACKLIST_LOGLEVEL => undef,
-	      MACLIST_LOG_LEVEL => undef,
 	      TCP_FLAGS_LOG_LEVEL => undef,
-	      SMURF_LOG_LEVEL => undef,
 	      LOG_VERBOSITY => undef,
 	      STARTUP_LOG => undef,
 	      #
@@ -460,7 +458,6 @@ sub initialize( $ ) {
 	      #
 	      # Firewall Options
 	      #
-	      IP_FORWARDING => undef,
 	      TC_ENABLED => undef,
 	      TC_EXPERT => undef,
 	      CLEAR_TC => undef,
@@ -470,15 +467,12 @@ sub initialize( $ ) {
 	      ADMINISABSENTMINDED => undef,
 	      BLACKLISTNEWONLY => undef,
 	      MODULE_SUFFIX => undef,
-	      MACLIST_TABLE => undef,
-	      MACLIST_TTL => undef,
 	      MAPOLDACTIONS => '',
 	      FASTACCEPT => undef,
 	      IMPLICIT_CONTINUE => undef,
 	      HIGH_ROUTE_MARKS => undef,
 	      OPTIMIZE => undef,
 	      EXPORTPARAMS => undef,
-	      SHOREWALL_COMPILER => undef,
 	      EXPAND_POLICIES => undef,
 	      KEEP_RT_TABLES => undef,
 	      DELETE_THEN_ADD => undef,
@@ -486,12 +480,10 @@ sub initialize( $ ) {
 	      DONT_LOAD => '',
 	      AUTO_COMMENT => undef,
 	      MANGLE_ENABLED => undef ,
-	      NULL_ROUTE_RFC1918 => undef ,
 	      USE_DEFAULT_RT => undef ,
 	      #
 	      # Packet Disposition
 	      #
-	      MACLIST_DISPOSITION => undef,
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
 	    );

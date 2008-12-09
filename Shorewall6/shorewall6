@@ -1592,13 +1592,14 @@ case "$COMMAND" in
 	start_command $@
 	;;
     stop|clear)
-	if [ "x$2" = x-f ]; then
-	    [ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
-	    shift;
-	fi
-
 	[ $# -ne 1 ] && usage 1
 	get_config
+	if [ -x ${VARDIR}/.restore ]; then
+	    FIREWALL=${VARDIR}/.restore
+	else
+	    fatal_error "Shorewall6 has never been started"
+	fi
+	    
 	export NOROUTES
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND

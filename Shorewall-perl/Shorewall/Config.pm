@@ -2341,7 +2341,7 @@ sub generate_aux_config() {
 
 	my $value = $config{$option};
 
-	emit "[ -n \"\${$option:=$value}\" ]" if $value ne '';
+	emit "[ -n \"\${$option:=$value}\" ]" if defined $value && $value ne '';
     }
 
     sub conditionally_add_option1( $ ) {

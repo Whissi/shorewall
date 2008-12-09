@@ -134,12 +134,22 @@ sub generate_script_1() {
 
     emit( '[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir' );
 
-    if ( $export ) {
-	emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
-	       '[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
+    if ( $family == F_IPV4 ) {
+	if ( $export ) {
+	    emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
+		   '[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
+	} else {
+	    emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
+		   '[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
+	}
     } else {
-	emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
-	       '[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
+	if ( $export ) {
+	    emit ( 'CONFIG_PATH="/etc/shorewall6-lite:/usr/share/shorewall6-lite"' ,
+		   '[ -n "${VARDIR:=/var/lib/shorewall6-lite}" ]' );
+	} else {
+	    emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
+		   '[ -n "${VARDIR:=/var/lib/shorewall6}" ]' );
+	}
     }
 
     emit 'TEMPFILE=';

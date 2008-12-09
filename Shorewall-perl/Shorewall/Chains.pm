@@ -2462,6 +2462,7 @@ sub create_netfilter_load() {
     push_indent;
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
+    my $UTILITY = $family == F_IPV4 ? 'IPTABLES_RESTORE' : 'IP6TABLES_RESTORE';
 
     save_progress_message "Preparing $utility input...";
 
@@ -2516,7 +2517,7 @@ sub create_netfilter_load() {
     #
     emit(  'exec 3>&-',
 	   '',
-	   '[ -n "$DEBUG" ] && command=debug_restore_input || command=$IPTABLES_RESTORE',
+	   '[ -n "$DEBUG" ] && command=debug_restore_input || command=$' . $UTILITY,
 	   '',
 	   'progress_message2 "Running $command..."',
 	   '',

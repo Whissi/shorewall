@@ -197,16 +197,44 @@ sub setup_source_routing() {
     }
 }
 
-sub setup_forwarding() {
-    if ( $config{IP_FORWARDING} eq 'on' ) {
-	emit '        echo 1 > /proc/sys/net/ipv4/ip_forward';
-	emit '        progress_message2 IP Forwarding Enabled';
-    } elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	emit '        echo 0 > /proc/sys/net/ipv4/ip_forward';
-	emit '        progress_message2 IP Forwarding Disabled!';
-    }
+sub setup_forwarding( $ ) {
+    my $family = shift;
 
-    emit '';
+    if ( $family == F_IPV4 ) {
+	if ( $config{IP_FORWARDING} eq 'on' ) {
+	    emit '        echo 1 > /proc/sys/net/ipv4/ip_forward';
+	    emit '        progress_message2 IP Forwarding Enabled';
+	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
+	    emit '        echo 0 > /proc/sys/net/ipv4/ip_forward';
+	    emit '        progress_message2 IP Forwarding Disabled!';
+	    emit '';
+	}
+    } else {
+	my $interfaces = find_interfaces_by_option 'forward';
+
+	if ( @$interfaces ) {
+	    progress_message2 "$doing Interface forwarding...";
+
+	    push_indent;
+	    push_indent;
+
+	    save_progress_message 'Setting up IPv6 Interface Forwarding...';
+
+	    for my $interface ( @$interfaces ) {
+		my $file = "/proc/sys/net/ipv6/conf/$interface/forwarding";
+		my $value = get_interface_option $interface, 'forward';
+
+		emit ( "if [ -f $file ]; then" ,
+		       "    echo $value > $file" );
+		emit ( 'else' ,
+		       "    error_message \"WARNING: Cannot set IPv4 forwarding on $interface\"" ) unless interface_is_optional( $interface);
+		emit   "fi\n";
+	    }
+
+	    pop_indent;
+	    pop_indent;
+	}
+    }
 }
 
 1;

@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  setup_mss
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = 4.1.5;
+our $VERSION = 4.3.0;
 
 #
 # Set to one if we find a SECTION

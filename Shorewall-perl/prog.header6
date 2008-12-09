@@ -131,7 +131,7 @@ qt1()
 #
 # Determine if Shorewall is "running"
 #
-shorewall_is_started() {
+shorewall6_is_started() {
     qt1 $IP6TABLES -L shorewall -n
 }
 
@@ -562,82 +562,6 @@ INCLUDE() {
     . $(find_file $(expand $@))
 }
 
-#
-# Delete IP address
-#
-del_ip_addr() # $1 = address, $2 = interface
-{
-    [ $(find_first_interface_address_if_any $2) = $1 ] || qt ip addr del $1 dev $2
-}
-
-# Add IP Aliases
-#
-add_ip_aliases() # $* = List of addresses
-{
-    local local
-    local addresses
-    local external
-    local interface
-    local inet
-    local cidr
-    local rest
-    local val
-    local arping
-    arping=$(mywhich arping)
-
-    address_details()
-    {
-	#
-	# Folks feel uneasy if they don't see all of the same
-	# decoration on these IP addresses that they see when their
-	# distro's net config tool adds them. In an attempt to reduce
-	# the anxiety level, we have the following code which sets
-	# the VLSM and BRD from an existing address in the same networks
-	#
-	# Get all of the lines that contain inet addresses with broadcast
-	#
-	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
-	    case $cidr in
-		*/*)
-		    if in_network $external $cidr; then
-			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
-			break
-		    fi
-		    ;;
-	    esac
-	done
-    }
-
-    do_one()
-    {
-	val=$(address_details)
-
-	ip addr add ${external}${val} dev $interface $label
-	[ -n "$arping" ] && qt $arping -U -c 2 -I $interface $external
-	echo "$external $interface" >> $VARDIR/nat
-	[ -n "$label" ] && label="with $label"
-	progress_message "   IP Address $external added to interface $interface $label"
-    }
-
-    progress_message "Adding IP Addresses..."
-
-    while [ $# -gt 0 ]; do
-	external=$1
-	interface=$2
-	label=
-
-	if [ "$interface" != "${interface%:*}" ]; then
-	    label="${interface#*:}"
-	    interface="${interface%:*}"
-	    label="label $interface:$label"
-	fi
-
-	shift 2
-
-	list_search $external $(find_interface_addresses $interface) || do_one
-    done
-}
-
 detect_gateway() # $1 = interface
 {
     local interface
@@ -659,33 +583,6 @@ detect_gateway() # $1 = interface
     #
     [ -n "$gateway" ] && echo $gateway
 }
-
-#
-# Disable IPV6
-#
-disable_ipv6() {
-    local foo
-    foo="$(ip -f inet6 addr list 2> /dev/null)"
-
-    if [ -n "$foo" ]; then
-	if qt mywhich ip6tables; then
-	    ip6tables -P FORWARD DROP
-	    ip6tables -P INPUT DROP
-	    ip6tables -P OUTPUT DROP
-	    ip6tables -F
-	    ip6tables -X
-	    ip6tables -A OUTPUT -o lo -j ACCEPT
-	    ip6tables -A INPUT -i lo -j ACCEPT
-	else
-	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
-	fi
-    fi
-}
-
-# Function to truncate a string -- It uses 'cut -b -<n>'
-# rather than ${v:first:last} because light-weight shells like ash and
-# dash do not support that form of expansion.
-#
 
 truncate() # $1 = length
 {

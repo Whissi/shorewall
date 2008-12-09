@@ -50,6 +50,7 @@ our @EXPORT = qw( NOTHING
 		  single_interface
 		  validate_interfaces_file
 		  all_interfaces
+		  all_bridges
 		  interface_number
 		  find_interface
 		  known_interface
@@ -618,7 +619,7 @@ sub validate_interfaces_file( $ )
     } else {
 	%validoptions = (  blacklist   => SIMPLE_IF_OPTION,
 			   bridge      => SIMPLE_IF_OPTION,
-			   maclist     => SIMPLE_IF_OPTION,
+			   nosmurfs    => SIMPLE_IF_OPTION,
 			   optional    => SIMPLE_IF_OPTION,
 			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
 			   sourceroute => BINARY_IF_OPTION,
@@ -865,6 +866,13 @@ sub all_interfaces() {
 }
 
 #
+# Return a list of bridges
+#
+sub all_bridges() {
+    grep ( $interfaces{$_}{options}{bridge} , @interfaces );
+}
+
+#
 # Return a reference to the interfaces table entry for an interface
 #
 sub find_interface( $ ) {
@@ -966,13 +974,9 @@ sub validate_hosts_file()
     } else {
 	%validoptions = (
 			 blacklist => 1,
-			 maclist => 1,
 			 nosmurfs => 1,
 			 routeback => 1,
 			 tcpflags => 1,
-			 broadcast => 1,
-			 destonly => 1,
-			 sourceonly => 1,
 			);
     }
 

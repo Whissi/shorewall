@@ -110,7 +110,7 @@ do_iptables()
     local status
 
     while [ 1 ]; do
-	$IPTABLES $@
+	$IP6TABLES $@
 	status=$?
 	[ $status -ne 4 ] && return $status;
     done
@@ -180,32 +180,32 @@ debug_restore_input() {
     #
     # Clear the ruleset 
     #
-    qt1 $IPTABLES -t mangle -F
-    qt1 $IPTABLES -t mangle -X
+    qt1 $IP6TABLES -t mangle -F
+    qt1 $IP6TABLES -t mangle -X
 
     for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	qt1 $IPTABLES -t mangle -P $chain ACCEPT
+	qt1 $IP6TABLES -t mangle -P $chain ACCEPT
     done
 
-    qt1 $IPTABLES -t raw    -F
-    qt1 $IPTABLES -t raw    -X
+    qt1 $IP6TABLES -t raw    -F
+    qt1 $IP6TABLES -t raw    -X
 
     for chain in PREROUTING OUTPUT; do
-	qt1 $IPTABLES -t raw -P $chain ACCEPT
+	qt1 $IP6TABLES -t raw -P $chain ACCEPT
     done
     
     run_iptables -t nat -F
     run_iptables -t nat -X
 
     for chain in PREROUTING POSTROUTING OUTPUT; do
-	qt1 $IPTABLES -t nat -P $chain ACCEPT
+	qt1 $IP6TABLES -t nat -P $chain ACCEPT
     done
     
-    qt1 $IPTABLES -t filter -F
-    qt1 $IPTABLES -t filter -X
+    qt1 $IP6TABLES -t filter -F
+    qt1 $IP6TABLES -t filter -X
 
     for chain in INPUT FORWARD OUTPUT; do
-	qt1 $IPTABLES -t filter -P $chain -P ACCEPT
+	qt1 $IP6TABLES -t filter -P $chain -P ACCEPT
     done
 
     while read first second rest; do
@@ -214,10 +214,10 @@ debug_restore_input() {
 		#
 		# We can't call run_iptables() here because the rules may contain quoted strings
 		#
-		eval $IPTABLES -t $table $first $second $rest
+		eval $IP6TABLES -t $table $first $second $rest
 
 		if [ $? -ne 0 ]; then
-		    error_message "ERROR: Command \"$IPTABLES $first $second $rest\" Failed"
+		    error_message "ERROR: Command \"$IP6TABLES $first $second $rest\" Failed"
 		    stop_firewall
 		    exit 2
 		fi
@@ -232,7 +232,7 @@ debug_restore_input() {
 		fi
 
 		if [ $? -ne 0 ]; then
-		    error_message "ERROR: Command \"$IPTABLES $first $second $rest\" Failed"
+		    error_message "ERROR: Command \"$IP6TABLES $first $second $rest\" Failed"
 		    stop_firewall
 		    exit 2
 		fi

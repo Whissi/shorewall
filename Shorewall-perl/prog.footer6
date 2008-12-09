@@ -1,0 +1,200 @@
+#
+# Give Usage Information
+#
+usage() {
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    exit $1
+}
+################################################################################
+# E X E C U T I O N    B E G I N S   H E R E				       #
+################################################################################
+#
+# Start trace if first arg is "debug" or "trace"
+#
+if [ $# -gt 1 ]; then 
+    if [ "x$1" = "xtrace" ]; then
+	set -x
+	shift
+    elif [ "x$1" = "xdebug" ]; then
+	DEBUG=Yes
+	shift
+    fi
+fi
+
+initialize
+
+finished=0
+
+while [ $finished -eq 0 -a $# -gt 0 ]; do
+    option=$1
+    case $option in
+	-*)
+	    option=${option#-}
+
+	    [ -z "$option" ] && usage 1
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    v*)
+			VERBOSE=$(($VERBOSE + 1 ))
+			option=${option#v}
+			;;
+		    q*)
+			VERBOSE=$(($VERBOSE - 1 ))
+			option=${option#q}
+			;;
+		    n*)
+			NOROUTES=Yes
+			option=${option#n}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    finished=1
+            ;;
+    esac
+done
+
+COMMAND="$1"
+
+[ -n "${PRODUCT:=Shorewall6}" ]
+
+case "$COMMAND" in
+    start)
+	[ $# -ne 1 ] && usage 2
+	if shorewall6_is_started; then
+	    error_message "$PRODUCT is already Running"
+	    status=0
+	else
+	    progress_message3 "Starting $PRODUCT...."
+	    define_firewall
+	    status=$?
+	    [ -n "$SUBSYSLOCK" -a $status -eq 0 ] && touch $SUBSYSLOCK
+	    progress_message3 "done."
+	fi
+	;;
+    stop)
+	[ $# -ne 1 ] && usage 2
+	progress_message3 "Stopping $PRODUCT...."
+	stop_firewall
+	status=0
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	progress_message3 "done."
+	;;
+    reset)
+	if ! shorewall6_is_started ; then
+	    error_message "$PRODUCT is not running"
+	    status=2
+	elif [ $# -eq 1 ]; then
+	    $IP6TABLES -Z
+	    $IP6TABLES -t mangle -Z
+	    date > ${VARDIR}/restarted
+	    status=0
+	    progress_message3 "$PRODUCT Counters Reset"
+	else
+	    shift
+	    status=0
+	    for chain in $@; do
+		if chain_exists $chain; then
+		    if qt $IP6TABLES -Z $chain; then
+			progress_message3 "Filter $chain Counters Reset"
+		    else
+			error_message "ERROR: Reset of chain $chain failed"
+			status=2
+			break
+		    fi
+		else
+		    error_message "WARNING: Filter Chain $chain does not exist"
+		fi
+	    done
+	fi
+	;;
+    restart)
+	[ $# -ne 1 ] && usage 2
+	if shorewall6_is_started; then
+	    progress_message3 "Restarting $PRODUCT...."
+	else
+	    error_message "$PRODUCT is not running"
+	    progress_message3 "Starting $PRODUCT...."
+	fi
+
+	define_firewall
+	status=$?
+	if [ -n "$SUBSYSLOCK" ]; then
+ 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+        fi
+	progress_message3 "done."
+	;;
+    refresh)
+	[ $# -ne 1 ] && usage 2
+	if shorewall6_is_started; then
+	    progress_message3 "Refreshing $PRODUCT...."
+	    define_firewall
+	    status=$?
+	    progress_message3 "done."
+	else
+	    echo "$PRODUCT is not running" >&2
+	    status=2
+	fi
+	;;
+    restore)
+	[ $# -ne 1 ] && usage 2
+	define_firewall
+	status=$?
+	if [ -n "$SUBSYSLOCK" ]; then
+ 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+        fi
+	;;
+    clear)
+	[ $# -ne 1 ] && usage 2
+	progress_message3 "Clearing $PRODUCT...."
+	clear_firewall
+	status=0
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	progress_message3 "done."
+	;;
+    status)
+	[ $# -ne 1 ] && usage 2
+	echo "$PRODUCT-$VERSION Status at $HOSTNAME - $(date)"
+	echo
+	if shorewall6_is_started; then
+	    echo "$PRODUCT is running"
+	    status=0
+	else
+	    echo "$PRODUCT is stopped"
+	    status=4
+	fi
+
+	if [ -f ${VARDIR}/state ]; then
+	    state="$(cat ${VARDIR}/state)"
+	    case $state in
+		Stopped*|Clear*)
+		    status=3
+		    ;;
+	    esac
+	else
+	    state=Unknown
+	fi
+	echo "State:$state"
+	echo
+	;;
+    version)
+	[ $# -ne 1 ] && usage 2
+	echo $VERSION
+	status=0
+	;;
+    help)
+	[ $# -ne 1 ] && usage 2
+	usage 0
+	;;
+    *)
+	usage 2
+	;;
+esac
+
+exit $status

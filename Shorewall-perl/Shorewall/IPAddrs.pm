@@ -69,6 +69,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_portpair
 		  validate_port_list
 		  validate_icmp
+		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
 our $VERSION = 4.3.0;

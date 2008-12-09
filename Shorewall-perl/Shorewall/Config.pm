@@ -469,7 +469,7 @@ sub initialize( $ ) {
 	      MODULE_SUFFIX => undef,
 	      MACLIST_TABLE => undef,
 	      MACLIST_TTL => undef,
-	      MAPOLDACTIONS => 'Yes',
+	      MAPOLDACTIONS => '',
 	      FASTACCEPT => undef,
 	      IMPLICIT_CONTINUE => undef,
 	      HIGH_ROUTE_MARKS => undef,
@@ -1677,14 +1677,19 @@ sub determine_capabilities( $ ) {
     my $pid        = $$;
     my $sillyname  = "fooX$pid";
     my $sillyname1 = "foo1X$pid";
-
-    $capabilities{NAT_ENABLED}    = qt1( "$iptables -t nat -L -n" );
+    
+    $capabilities{NAT_ENABLED}    = qt1( "$iptables -t nat -L -n" ) if $family == F_IPV4;
+	
     $capabilities{MANGLE_ENABLED} = qt1( "$iptables -t mangle -L -n" );
-
+    
     qt1( "$iptables -N $sillyname" );
     qt1( "$iptables -N $sillyname1" );
 
-    $capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+    if ( $family == F_IPV4 ) {
+	$capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+    } else {
+	$capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst ::1 -j ACCEPT" );
+    }
 
     if ( $capabilities{CONNTRACK_MATCH} ) {
 	$capabilities{NEW_CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
@@ -1707,10 +1712,19 @@ sub determine_capabilities( $ ) {
 	}
     }
 
-    if ( qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
-	$capabilities{IPRANGE_MATCH} = 1;
-	unless ( $capabilities{KLUDGEFREE} ) {
-	    $capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+    if ( $family == F_IPV4 ) {
+	if ( qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
+	    $capabilities{IPRANGE_MATCH} = 1;
+	    unless ( $capabilities{KLUDGEFREE} ) {
+		$capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+	    }
+	}
+    } else {
+	if ( qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -j ACCEPT" ) ) {
+	    $capabilities{IPRANGE_MATCH} = 1;
+	    unless ( $capabilities{KLUDGEFREE} ) {
+		$capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+	    }
 	}
     }
 
@@ -1994,7 +2008,13 @@ sub get_configuration( $ ) {
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
     check_trivalue ( 'ROUTE_FILTER',  '' );    fatal_error "ROUTE_FILTER=On is not supported in IPv6" if $config{ROUTE_FILTER} eq 'on' && $family == F_IPV6; 
-    check_trivalue ( 'LOG_MARTIANS',  'on' );  fatal_error "LOG_MARTIANS=On is not supported in IPv6" if $config{LOG_MARTIANS} eq 'on' && $family == F_IPV6;
+
+    if ( $family == F_IPV4 ) {
+	check_trivalue ( 'LOG_MARTIANS',  'on' );
+    } else {
+	check_trivalue ( 'LOG_MARTIANS',  'ff' );
+	fatal_error "LOG_MARTIANS=On is not supported in IPv6" if $config{LOG_MARTIANS} eq 'on';
+    }
 
     default 'STARTUP_LOG'   , '';
 
@@ -2338,7 +2358,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version $globals{VERSION} - $date\n#";
 
-    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE SAVE_IPSETS) {
+    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;
     }
 

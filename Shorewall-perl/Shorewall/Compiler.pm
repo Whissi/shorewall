@@ -71,6 +71,7 @@ sub reinitialize() {
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize($family);
     Shorewall::Proxyarp::initialize;
+    Shorewall::IPAddrs::initialize($family);
 }
 
 #
@@ -162,18 +163,33 @@ sub generate_script_1() {
 	   ''
 	   );
 
-    if ( $config{IPTABLES} ) {
-	emit( qq(IPTABLES="$config{IPTABLES}"),
-	      '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
-	      );
-    } else {
-	emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables) # /sbin/shorewall exports IPTABLES',
-	      '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
-	      );
-    }
+    if ( $family == F_IPV4 ) {
+	if ( $config{IPTABLES} ) {
+	    emit( qq(IPTABLES="$config{IPTABLES}"),
+		  '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
+		);
+	} else {
+	    emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables) # /sbin/shorewall exports IPTABLES',
+		  '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
+		);
+	}
 
-    emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
-	  '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
+	emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
+	      '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
+    } else {
+	if ( $config{IP6TABLES} ) {
+	    emit( qq(IP6TABLES="$config{IP6TABLES}"),
+		  '[ -x "$I6PTABLES" ] || startup_error "IP6TABLES=$IP6TABLES does not exist or is not executable"',
+		);
+	} else {
+	    emit( '[ -z "$IP6TABLES" ] && IP6TABLES=$(mywhich iptables) # /sbin/shorewall6 exports IP6TABLES',
+		  '[ -n "$IP6TABLES" -a -x "$IP6TABLES" ] || startup_error "Can\'t find ip6tables executable"'
+		);
+	}
+
+	emit( 'IP6TABLES_RESTORE=${IP6TABLES}-restore',
+	      '[ -x "$IP6TABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
+    }
 
     append_file 'params' if $config{EXPORTPARAMS};
 
@@ -186,17 +202,31 @@ sub generate_script_1() {
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
 	   );
 
-    emit ( '',
-	   '#',
-	   '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
-	   '#',
-	   'qt1 $IPTABLES -N foox1234',
-	   'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
-	   'result=$?',
-	   'qt1 $IPTABLES -F foox1234',
-	   'qt1 $IPTABLES -X foox1234',
-	   '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
-	   '' );
+    if ( $family == F_IPV4 ) {
+	emit ( '',
+	       '#',
+	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+	       '#',
+	       'qt1 $IPTABLES -N foox1234',
+	       'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	       'result=$?',
+	       'qt1 $IPTABLES -F foox1234',
+	       'qt1 $IPTABLES -X foox1234',
+	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
+	       '' );
+    } else {
+	emit ( '',
+	       '#',
+	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+	       '#',
+	       'qt1 $IP6TABLES -N foox1234',
+	       'qt1 $IP6TABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	       'result=$?',
+	       'qt1 $IP6TABLES -F foox1234',
+	       'qt1 $IP6TABLES -X foox1234',
+	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall6 will run on this system"',
+	       '' );
+    }
 
     pop_indent;
 
@@ -213,7 +243,15 @@ sub compile_stop_firewall() {
 stop_firewall() {
 
     deletechain() {
-	qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1
+EOF
+
+    if ( $family == F_IPV4 ) {
+	emit '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1';
+    } else {
+	emit '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1';
+    }
+
+    emit <<'EOF';
     }
 
     deleteallchains() {
@@ -324,9 +362,15 @@ EOF
     run_iptables -t raw -F
     run_iptables -t raw -X
     for chain in PREROUTING OUTPUT; do
-	qt1 $IPTABLES -t raw -P $chain ACCEPT
-    done
 EOF
+
+	if ( $family == F_IPV4 ) {
+	    emit '        qt1 $IPTABLES -t raw -P $chain ACCEPT';
+	} else {
+	    emit '        qt1 $IP6TABLES -t raw -P $chain ACCEPT';
+	}
+
+	emit '    done';
     }
 
     if ( $capabilities{NAT_ENABLED} ) {
@@ -338,7 +382,8 @@ EOF
 EOF
     }
 
-    emit <<'EOF';
+    if ( $family == F_IPV4 ) {
+	emit <<'EOF';
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
@@ -350,6 +395,7 @@ EOF
 
     rm -f ${VARDIR}/proxyarp
 EOF
+    }
 
     push_indent;
 
@@ -446,26 +492,34 @@ EOF
 
     emit 'do_iptables -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
-    my $interfaces = find_interfaces_by_option 'dhcp';
+    if ( $family == F_IPV4 ) {
+	my $interfaces = find_interfaces_by_option 'dhcp';
 
-    for my $interface ( @$interfaces ) {
-	emit "do_iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT";
-	emit "do_iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT" unless $config{ADMINISABSENTMINDED};
-	#
-	# This might be a bridge
-	#
-	emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT";
+	for my $interface ( @$interfaces ) {
+	    emit "do_iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT";
+	    emit "do_iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	    #
+	    # This might be a bridge
+	    #
+	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT";
+	}
+    } else {
+	for my $interface ( all_bridges ) {
+	    emit "do_iptables -A FORWARD -p 58 -i $interface -o $interface -j ACCEPT";
+	}	    
     }
 
     emit '';
 
-    if ( $config{IP_FORWARDING} eq 'on' ) {
-	emit( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
-	      'progress_message2 IP Forwarding Enabled' );
-    } elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	emit( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
-	      'progress_message2 IP Forwarding Disabled!'
-	      );
+    if ( $family == F_IPV4 ) {
+	if ( $config{IP_FORWARDING} eq 'on' ) {
+	    emit( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
+		  'progress_message2 IP Forwarding Enabled' );
+	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
+	    emit( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
+		  'progress_message2 IP Forwarding Disabled!'
+		);
+	}
     }
 
     emit 'run_stopped_exit';
@@ -556,38 +610,49 @@ sub generate_script_2 () {
 
     emit '';
 
-    for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-	emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
-		'if [ -n "$addr" ]; then',
-		'    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
-		'    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
-		'        if in_network $addr $network; then',
-		"            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
-		'        fi',
-		'    done',
-		"fi\n" );
-    }
-
-    emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
-	    '',
-	    'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
-	    '',
-	    'delete_proxyarp',
-	    ''
-	    );
-
-    if ( $capabilities{NAT_ENABLED} ) {
-	emit(  'if [ -f ${VARDIR}/nat ]; then',
-	       '    while read external interface; do',
-	       '        del_ip_addr $external $interface',
-	       '    done < ${VARDIR}/nat',
+    if ( $family == F_IPV4 ) {
+	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
+	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
+		   'if [ -n "$addr" ]; then',
+		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
+		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
+		   '        if in_network $addr $network; then',
+		   "            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
+		   '        fi',
+		   '    done',
+		   "fi\n" );
+	}
+	
+	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 	       '',
-	       '    rm -f ${VARDIR}/nat',
-	       "fi\n" );
-    }
+	       'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
+	       '',
+	       'delete_proxyarp',
+	       ''
+	     );
 
-    emit "delete_tc1\n"            if $config{CLEAR_TC};
-    emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
+	if ( $capabilities{NAT_ENABLED} ) {
+	    emit(  'if [ -f ${VARDIR}/nat ]; then',
+		   '    while read external interface; do',
+		   '        del_ip_addr $external $interface',
+		   '    done < ${VARDIR}/nat',
+		   '',
+		   '    rm -f ${VARDIR}/nat',
+		   "fi\n" );
+	}
+
+	emit "delete_tc1\n"            if $config{CLEAR_TC};
+	emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
+
+    } else {
+ 	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+	       '',
+	       'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
+	       ''
+	     );
+
+	emit "delete_tc1\n" if $config{CLEAR_TC};
+    }
 
     pop_indent;
 
@@ -643,7 +708,11 @@ sub generate_script_3($) {
 
     emit "}\n";
 
-    progress_message2 "Creating iptables-restore input...";
+    if ( $family == F_IPV4 ) {
+	progress_message2 "Creating iptables-restore input...";
+    } else {
+	progress_message2 "Creating ip6tables-restore input...";
+    }
     create_netfilter_load;
     create_chainlist_reload( $_[0] );
 
@@ -669,7 +738,7 @@ if [ $COMMAND = restore ]; then
     fi
 EOF
     pop_indent;
-    setup_forwarding;
+    setup_forwarding( $family );
     push_indent;
     emit<<'EOF';
     set_state "Started"
@@ -677,7 +746,7 @@ else
     if [ $COMMAND = refresh ]; then
         chainlist_reload
 EOF
-    setup_forwarding;
+    setup_forwarding( $family );
     emit<<'EOF';
         run_refreshed_exit
         do_iptables -N shorewall
@@ -687,7 +756,7 @@ EOF
         restore_dynamic_rules
         conditionally_flush_conntrack
 EOF
-    setup_forwarding;
+    setup_forwarding( $family );
     emit<<'EOF';
         run_start_exit
         do_iptables -N shorewall
@@ -720,7 +789,13 @@ EOF
 
     emit "}\n";
 
-    copy $globals{SHAREDIRPL} . 'prog.footer' unless $test;
+    unless ( $test ) {
+	if ( $family == F_IPV4 ) {
+	    copy $globals{SHAREDIRPL} . 'prog.footer';
+	} else {
+	    copy $globals{SHAREDIRPL} . 'prog.footer6';
+	}
+    }
 }
 
 #
@@ -926,7 +1001,11 @@ sub compiler {
     generate_matrix;
 
     if ( $command eq 'check' ) {
-	progress_message3 "Shorewall configuration verified";
+	if ( $family == F_IPV4 ) {
+	    progress_message3 "Shorewall configuration verified";
+	} else {
+	    progress_message3 "Shorewall6 configuration verified";
+	}
     } else {
 	#
 	# Finish the script.

@@ -960,15 +960,10 @@ sub initialize_chain_table()
 		    'QUEUE!'          => STANDARD,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
-		    'dropBcast'       => BUILTIN  + ACTION,
-		    'allowBcast'      => BUILTIN  + ACTION,
 		    'dropNotSyn'      => BUILTIN  + ACTION,
 		    'rejNotSyn'       => BUILTIN  + ACTION,
 		    'dropInvalid'     => BUILTIN  + ACTION,
 		    'allowInvalid'    => BUILTIN  + ACTION,
-		    'allowinUPnP'     => BUILTIN  + ACTION,
-		    'forwardUPnP'     => BUILTIN  + ACTION,
-		    'Limit'           => BUILTIN  + ACTION,
 		   );
 
 	for my $chain qw(OUTPUT PREROUTING) {
@@ -1990,6 +1985,8 @@ sub expand_rule( $$$$$$$$$$$ )
 	} elsif  ( $source =~ /^(.+?):\[(.+)\]\s+$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
+	} elsif ( $source =~ /:/ ) {
+	    $inets = $source;
 	} elsif ( $source =~ /\+|~|\..*\./ ) {
 	    $inets = $source;
 	} else {
@@ -2071,6 +2068,8 @@ sub expand_rule( $$$$$$$$$$$ )
 	} elsif ( $dest =~ /^(.+?):\[(.+)\]\s+$/ ) {
 	    $diface = $1;
 	    $dnets  = $2;
+	} elsif ( $dest =~ /:/ ) {
+	    $dnets = $dest;
 	} elsif ( $dest =~ /\+|~|\..*\./ ) {
 	    $dnets = $dest;
 	} else {

@@ -479,7 +479,7 @@ find_peer() {
 #
 
 find_rt_interface() {
-    ip route list | while read addr rest; do
+    ip -4 route list | while read addr rest; do
 	case $addr in
 	    */*)
 		in_network ${1%/*} $addr && echo $(find_device $rest)
@@ -500,14 +500,14 @@ find_rt_interface() {
 
 find_nexthop() # $1 = interface
 {
-    echo $(find_gateway `ip route list | grep "[[:space:]]nexthop.* $1"`)
+    echo $(find_gateway `ip -4 route list | grep "[[:space:]]nexthop.* $1"`)
 }
 
 #
 # Find the default route's interface
 #
 find_default_interface() {
-    ip route list | while read first rest; do
+    ip -4 route list | while read first rest; do
 	[ "$first" = default ] && echo $(find_device $rest) && return
     done
 }
@@ -620,7 +620,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
     local address
     local rest
 
-    ip route show dev $1 2> /dev/null |
+    ip -4 route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in
 		default)
@@ -801,7 +801,7 @@ detect_gateway() # $1 = interface
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route list dev $interface))
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -4 route list dev $interface))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #
@@ -940,11 +940,11 @@ restore_default_route() {
 		                #
 		                # Don't restore a route with a metric -- we only replace the one with metric == 0
 		                #
-				qt ip route delete default metric 0 && \
+				qt ip -4 route delete default metric 0 && \
 				    progress_message "Default Route with metric 0 deleted"
 				;;
 			    *)
-				qt ip route replace $default_route && \
+				qt ip -4 route replace $default_route && \
 				    progress_message "Default Route (${default_route# }) restored"
 				;;
 			esac

@@ -1,20 +1,4 @@
 #
-# Clear Proxy Arp
-#
-delete_proxyarp() {
-    if [ -f ${VARDIR}/proxyarp ]; then
-	while read address interface external haveroute; do
-	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt ip -4 route del $address dev $interface
-	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
-	    [ -f $f ] && echo 0 > $f
-	done < ${VARDIR}/proxyarp
-    fi
-
-    rm -f ${VARDIR}/proxyarp
-}
-
-#
 # Remove all Shorewall-added rules
 #
 clear_firewall() {
@@ -106,13 +90,13 @@ run_iptables()
     local status
 
     while [ 1 ]; do
-	$IPTABLES $@
+	$IP6TABLES $@
 	status=$?
 	[ $status -ne 4 ] && break
     done
 
     if [ $status -ne 0 ]; then
-        error_message "ERROR: Command \"$IPTABLES $@\" Failed"
+        error_message "ERROR: Command \"$IP6TABLES $@\" Failed"
 	stop_firewall
         exit 2
     fi
@@ -137,7 +121,7 @@ do_iptables()
 #
 run_ip()
 {
-    if ! ip -4 $@; then
+    if ! ip -6 $@; then
 	error_message "ERROR: Command \"ip $@\" Failed"
 	stop_firewall
 	exit 2

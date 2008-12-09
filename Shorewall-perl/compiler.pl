@@ -41,7 +41,6 @@ use strict;
 use FindBin;
 use lib "$FindBin::Bin";
 use Shorewall::Compiler;
-use Shorewall::IPAddrs;
 use Getopt::Long;
 
 sub usage( $ ) {
@@ -75,7 +74,7 @@ my $log           = '';
 my $log_verbose   = 0;
 my $help          = 0;
 my $test          = 0;
-my $family        = 1; # F_IPV4
+my $family        = 4; # F_IPV4
 
 Getopt::Long::Configure ('bundling');
 

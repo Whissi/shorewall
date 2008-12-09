@@ -132,7 +132,7 @@ qt1()
 # Determine if Shorewall is "running"
 #
 shorewall_is_started() {
-    qt1 $IPTABLES -L shorewall -n
+    qt1 $IP6TABLES -L shorewall -n
 }
 
 #
@@ -311,7 +311,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 #
 chain_exists() # $1 = chain name
 {
-    qt1 $IPTABLES -L $1 -n
+    qt1 $IP6TABLES -L $1 -n
 }
 
 #
@@ -468,7 +468,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
     local address
     local rest
 
-    ip route show dev $1 2> /dev/null |
+    ip -6 route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in
 		default)
@@ -649,7 +649,7 @@ detect_gateway() # $1 = interface
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route list dev $interface))
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -6 route list dev $interface))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #
@@ -788,11 +788,11 @@ restore_default_route() {
 		                #
 		                # Don't restore a route with a metric -- we only replace the one with metric == 0
 		                #
-				qt ip route delete default metric 0 && \
+				qt ip -6 route delete default metric 0 && \
 				    progress_message "Default Route with metric 0 deleted"
 				;;
 			    *)
-				qt ip route replace $default_route && \
+				qt ip -6 route replace $default_route && \
 				    progress_message "Default Route (${default_route# }) restored"
 				;;
 			esac

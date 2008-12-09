@@ -39,10 +39,10 @@
 #	   shorewall6 restart			   Restarts the firewall
 #	   shorewall6 stop			   Stops the firewall
 #	   shorewall6 status			   Displays firewall status
-#	   shorewall6 reset			   Resets iptables packet and
+#	   shorewall6 reset			   Resets ip6tables packet and
 #						   byte counts
 #	   shorewall6 clear			   Open the floodgates by
-#						   removing all iptables rules
+#						   removing all ip6tables rules
 #						   and setting the three permanent
 #						   chain policies to ACCEPT
 #	   shorewall6 refresh			   Rebuild the common chain to
@@ -61,7 +61,7 @@
 #	   shorewall6 show {mangle|tos}		   Display the rules in the mangle table
 #	   shorewall6 show tc			   Display traffic control info
 #	   shorewall6 show classifiers		   Display classifiers
-#          shorewall6 show capabilities            Display iptables/kernel capabilities
+#          shorewall6 show capabilities            Display ip6tables/kernel capabilities
 #          shorewall6 show vardir                  Display the VARDIR setting.
 #	   shorewall6 version			   Display the installed version id
 #	   shorewall6 check [ -e ] [ <directory> ] Dry-run compilation.
@@ -171,20 +171,20 @@ get_config() {
 	    fi
 	fi
 
-	if [ -n "$IPTABLES" ]; then
-	    if [ ! -x "$IPTABLES" ]; then
-		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+	if [ -n "$IP6TABLES" ]; then
+	    if [ ! -x "$IP6TABLES" ]; then
+		echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
 		exit 2
 	    fi
 	else
-	    IPTABLES=$(mywhich iptables 2> /dev/null)
-	    if [ -z "$IPTABLES" ] ; then
-		echo "   ERROR: Can't find iptables executable" >&2
+	    IP6TABLES=$(mywhich ip6tables 2> /dev/null)
+	    if [ -z "$IP6TABLES" ] ; then
+		echo "   ERROR: Can't find ip6tables executable" >&2
 		exit 2
 	    fi
 	fi
 
-	export IPTABLES
+	export IP6TABLES
 
 	#
 	# Compile by non-root needs no restore file
@@ -351,7 +351,7 @@ compiler() {
     [ "$1" = nolock ] && shift;
     shift 
 
-    options="--verbose=$VERBOSE"
+    options="--verbose=$VERBOSE --family=6"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$EXPORT" ] && options="$options --export"
@@ -482,17 +482,6 @@ start_command() {
 	    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then
-		if [ -x ${RESTOREPATH}-ipsets ]; then
-		    echo Restoring Ipsets...
-		    #
-		    # We must purge iptables to be sure that there are no
-		    # references to ipsets
-		    #
-		    iptables -F
-		    iptables -X
-		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
-		fi
-
 		echo Restoring Shorewall6...
 		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > ${VARDIR}/restarted
@@ -1202,7 +1191,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES /usr/share/shorewall6-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES /usr/share/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi

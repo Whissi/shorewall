@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# Script to back out the installation of Shoreline Firewall and to restore the previous version of
+# Script to back out the installation of Shoreline Firewall 6 and to restore the previous version of
 # the program
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2001,2002,2003,2004,2005,2008 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://shorewall.net
 #
@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=4.2.3
+VERSION=4.3.0
 
 usage() # $1 = exit status
 {
@@ -79,26 +79,26 @@ restore_file() # $1 = file to restore, $2 = (Optional) Directory to restore from
     fi
 }
 
-if [ ! -f /usr/share/shorewall-${VERSION}.bkout/version ]; then
-    echo "Shorewall Version $VERSION is not installed"
+if [ ! -f /usr/share/shorewall6-${VERSION}.bkout/version ]; then
+    echo "Shorewall6 Version $VERSION is not installed"
     exit 1
 fi
 
-echo "Backing Out Installation of Shorewall $VERSION"
+echo "Backing Out Installation of Shorewall6 $VERSION"
 
-if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
-    restore_file $FIREWALL /usr/share/shorewall-${VERSION}.bkout
+if [ -L /usr/share/shorewall6/init ]; then
+    FIREWALL=$(ls -l /usr/share/shorewall6/init | sed 's/^.*> //')
+    restore_file $FIREWALL /usr/share/shorewall6-${VERSION}.bkout
 else
-    restore_file /etc/init.d/shorewall /usr/share/shorewall-${VERSION}.bkout
+    restore_file /etc/init.d/shorewall6 /usr/share/shorewall6-${VERSION}.bkout
 fi
 
-restore_file /sbin/shorewall /var/lib/shorewall-${VERSION}.bkout
+restore_file /sbin/shorewall6 /var/lib/shorewall6-${VERSION}.bkout
 
-restore_directory /etc/shorewall
-restore_directory /usr/share/shorewall
-restore_directory /var/lib/shorewall
+restore_directory /etc/shorewall6
+restore_directory /usr/share/shorewall6
+restore_directory /var/lib/shorewall6
 
-echo "Shorewall Restored to Version $(cat /usr/share/shorewall/version)"
+echo "Shorewall6 Restored to Version $(cat /usr/share/shorewall6/version)"
 
 

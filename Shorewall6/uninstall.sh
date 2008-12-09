@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# Script to back uninstall Shoreline Firewall
+# Script to back uninstall Shoreline Firewall 6
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000,2001,2002,2003,2004,2005,2008 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://www.shorewall.net
 #
@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=4.2.3
+VERSION=4.3.0
 
 usage() # $1 = exit status
 {
@@ -60,28 +60,28 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall/version)"
+if [ -f /usr/share/shorewall6/version ]; then
+    INSTALLED_VERSION="$(cat /usr/share/shorewall6/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
+	echo "WARNING: Shorewall6 Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Version $VERSION is not installed"
+    echo "WARNING: Shorewall6 Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling shorewall $VERSION"
+echo "Uninstalling shorewall6 $VERSION"
 
-if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
-   /sbin/shorewall clear
+if qt ip6tables -L shorewall6 -n && [ ! -f /sbin/shorewall6-lite ]; then
+   /sbin/shorewall6 clear
 fi
 
-if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
+if [ -L /usr/share/shorewall6/init ]; then
+    FIREWALL=$(ls -l /usr/share/shorewall6/init | sed 's/^.*> //')
 else
-    FIREWALL=/etc/init.d/shorewall
+    FIREWALL=/etc/init.d/shorewall6
 fi
 
 if [ -n "$FIREWALL" ]; then
@@ -97,18 +97,18 @@ if [ -n "$FIREWALL" ]; then
     rm -f ${FIREWALL}-*.bkout
 fi
 
-rm -f /sbin/shorewall
-rm -f /sbin/shorewall-*.bkout
+rm -f /sbin/shorewall6
+rm -f /sbin/shorewall6-*.bkout
 
-rm -rf /etc/shorewall
-rm -rf /etc/shorewall-*.bkout
-rm -rf /var/lib/shorewall
-rm -rf /var/lib/shorewall-*.bkout
-rm -rf /usr/share/shorewall
-rm -rf /usr/share/shorewall-*.bkout
-rm -rf /usr/share/man/man5/shorewall*
-rm -rf /usr/share/man/man8/shorewall*
+rm -rf /etc/shorewall6
+rm -rf /etc/shorewall6-*.bkout
+rm -rf /var/lib/shorewall6
+rm -rf /var/lib/shorewall6-*.bkout
+rm -rf /usr/share/shorewall6
+rm -rf /usr/share/shorewall6-*.bkout
+rm -rf /usr/share/man/man5/shorewall6*
+rm -rf /usr/share/man/man8/shorewall6*
 
-echo "Shorewall Uninstalled"
+echo "Shorewall6 Uninstalled"
 
 

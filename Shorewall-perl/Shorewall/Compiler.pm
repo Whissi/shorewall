@@ -120,16 +120,30 @@ sub generate_script_1() {
 
     push_indent;
 
-    if ( $export ) {
-	emit ( 'SHAREDIR=/usr/share/shorewall-lite',
-	       'CONFDIR=/etc/shorewall-lite',
-	       'PRODUCT="Shorewall Lite"'
-	       );
+    if ( $family == F_IPV4 ) {
+	if ( $export ) {
+	    emit ( 'SHAREDIR=/usr/share/shorewall-lite',
+		   'CONFDIR=/etc/shorewall-lite',
+		   'PRODUCT="Shorewall Lite"'
+		 );
+	} else {
+	    emit ( 'SHAREDIR=/usr/share/shorewall',
+		   'CONFDIR=/etc/shorewall',
+		   'PRODUCT=\'Shorewall\'',
+		 );
+	}
     } else {
-	emit ( 'SHAREDIR=/usr/share/shorewall',
-	       'CONFDIR=/etc/shorewall',
-	       'PRODUCT=\'Shorewall\'',
-	       );
+	if ( $export ) {
+	    emit ( 'SHAREDIR=/usr/share/shorewall6-lite',
+		   'CONFDIR=/etc/shorewall6-lite',
+		   'PRODUCT="Shorewall6 Lite"'
+		 );
+	} else {
+	    emit ( 'SHAREDIR=/usr/share/shorewall6',
+		   'CONFDIR=/etc/shorewall6',
+		   'PRODUCT=\'Shorewall6\'',
+		 );
+	}
     }
 
     emit( '[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir' );

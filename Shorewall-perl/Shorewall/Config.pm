@@ -406,6 +406,9 @@ sub initialize( $ ) {
 	      BLACKLIST_DISPOSITION => undef,
 	    );
     } else {
+	$globals{SHAREDIR} = '/usr/share/shorewall';
+	$globals{CONFDIR} =  '/etc/shorewall6';
+	
 	%config =
 	    ( STARTUP_ENABLED => undef,
 	      VERBOSITY => undef,
@@ -1811,7 +1814,7 @@ sub ensure_config_path() {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = "/usr/share/$product/configfiles/";
+    $globals{CONFDIR} = "/usr/share/$product/configfiles/" if $> != 0;
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;

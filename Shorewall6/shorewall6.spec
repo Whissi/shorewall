@@ -110,7 +110,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/action.Drop
 %attr(0644,root,root) /usr/share/shorewall6/action.Reject
 %attr(0644,root,root) /usr/share/shorewall6/action.template
-%attr(0755,root,root) /usr/share/shorewall6/firewall
 %attr(-   ,root,root) /usr/share/shorewall6/functions
 %attr(0644,root,root) /usr/share/shorewall6/lib.base
 %attr(0644,root,root) /usr/share/shorewall6/lib.cli

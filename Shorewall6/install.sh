@@ -649,11 +649,6 @@ fi
 
 #echo "Man Pages Installed"
 
-#
-# Install the firewall script
-#
-install_file firewall ${PREFIX}/usr/share/shorewall6/firewall 0755
-
 if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
     if [ -n "$DEBIAN" ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall6

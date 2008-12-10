@@ -1527,7 +1527,7 @@ export PRODUCT="Shorewall6"
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 
-FIREWALL=$SHAREDIR/firewall
+FIREWALL=${VARDIR}/.restore
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
 REFRESHCHAINS=
@@ -1540,18 +1540,6 @@ for library in $LIBRARIES; do
 	exit 2
     fi
 done
-
-if [ ! -f $FIREWALL ]; then
-    echo "   ERROR: Shorewall6 is not properly installed" >&2
-    if [ -L $FIREWALL ]; then
-	echo "	     $FIREWALL is a symbolic link to a" >&2
-	echo "	     non-existant file" >&2
-    else
-	echo "	     The file $FIREWALL does not exist" >&2
-    fi
-
-    exit 2
-fi
 
 if [ -f $VERSION_FILE ]; then
     version=$(cat $VERSION_FILE)
@@ -1594,12 +1582,7 @@ case "$COMMAND" in
     stop|clear)
 	[ $# -ne 1 ] && usage 1
 	get_config
-	if [ -x ${VARDIR}/.restore ]; then
-	    FIREWALL=${VARDIR}/.restore
-	else
-	    fatal_error "Shorewall6 has never been started"
-	fi
-	    
+	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
 	export NOROUTES
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
@@ -1610,6 +1593,7 @@ case "$COMMAND" in
 	export NOROUTE
 	shift
 	mutex_on
+	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@
 	mutex_off
 	;;
@@ -1632,13 +1616,6 @@ case "$COMMAND" in
 	get_config Yes
 	shift
 	check_command $@
-	;;
-    add|delete)
-	[ $# -lt 3 ] && usage 1
-	get_config
-	mutex_on
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
-	mutex_off
 	;;
     show|list)
 	get_config Yes No Yes

@@ -805,7 +805,7 @@ determine_capabilities() {
 
     qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT              && IPP2P_MATCH=Yes
     qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
-    qt $IP6TABLES -A $chain -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
+    qt $IP6TABLES -A $chain -j REJECT --reject-with icmp6-adm-prohibited && ENHANCED_REJECT=Yes
 
     qt $IP6TABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
 

@@ -1752,7 +1752,7 @@ sub determine_capabilities( $ ) {
 
     $capabilities{IPP2P_MATCH}     = qt1( "$iptables -A $sillyname -p tcp -m ipp2p --edk -j ACCEPT" );
     $capabilities{LENGTH_MATCH}    = qt1( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
-    $capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp-host-prohibited" );
+    $capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-admt-prohibited" );
     $capabilities{COMMENTS}        = qt1( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );
 
     if  ( $capabilities{MANGLE_ENABLED} ) {

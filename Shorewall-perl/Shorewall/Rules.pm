@@ -581,8 +581,14 @@ sub add_common_rules() {
 
     if ( $capabilities{ENHANCED_REJECT} ) {
 	add_rule $rejectref , '-p 17 -j REJECT';
-	add_rule $rejectref, '-p 1 -j REJECT --reject-with icmp-host-unreachable';
-	add_rule $rejectref, '-j REJECT --reject-with icmp-host-prohibited';
+	
+	if ( $family == F_IPV4 ) {
+	    add_rule $rejectref, '-p 1 -j REJECT --reject-with icmp-host-unreachable';
+	    add_rule $rejectref, '-j REJECT --reject-with icmp-host-prohibited';
+	} else {
+	    add_rule $rejectref, '-p 58 -j REJECT --reject-with icmp6-addr-unreachable';
+	    add_rule $rejectref, '-j REJECT --reject-with icmp6-adm-prohibited'; 
+	}
     } else {
 	add_rule $rejectref , '-j REJECT';
     }

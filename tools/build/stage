@@ -30,7 +30,9 @@ usage() {
 }
 
 rpm=
+rpm6=
 literpm=
+lite6rpm=
 perlrpm=
 shellrpm=
 
@@ -45,6 +47,8 @@ UPLOADSHELL=
 UPLOADLITE=
 UPLOADXML=
 UPLOADHTML=
+UPLOAD6=
+UPLOAD6LITE=
 PARTIAL=Yes
 BASE=
 
@@ -101,6 +105,14 @@ while [ -z "$done" ]; do
 			UPLOADHTML=Yes
 			option=${option#h}
 			;;
+		    6*)
+			UPLOAD6=Yes
+			option=${option#6}
+			;;
+		    L*)
+			UPLOAD6LITE=Yes
+			option=${option#L}
+			;;
 	    	    *)
 			usage
 			;;
@@ -151,6 +163,17 @@ case $1 in
 	literpm=shorewall-lite-${1}-0base.noarch.rpm
 	perlrpm=shorewall-perl-${1}-0base.noarch.rpm
 	shellrpm=shorewall-shell-${1}-0base.noarch.rpm
+	BASE=Yes
+	;;
+    4.3.*)
+	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
+	SHOREWALL=shorewall-common
+	rpm=shorewall-common-${1}-0base.noarch.rpm
+	literpm=shorewall-lite-${1}-0base.noarch.rpm
+	perlrpm=shorewall-perl-${1}-0base.noarch.rpm
+	shellrpm=shorewall-shell-${1}-0base.noarch.rpm
+	rpm6=shorewall6-${1}-0base.noarch.rpm
+	lite6rpm=shorewall6-lite-${1}-0base.noarch.rpm
 	BASE=Yes
 	;;
     3.*[13579].*)
@@ -215,10 +238,12 @@ fi
 files="errata known_problems.txt releasenotes.txt patch-*-$1 ${1}.*"
 base=
 
+[ -n "$UPLOAD6" ]      && base="shorewall6-${1}.tar.*"                && files="$files shorewall6-${1}.*          $rpm6"
 [ -n "$UPLOADPERL" ]   && base="shorewall-perl-${1}.tar.*"            && files="$files shorewall-perl-${1}.*      $perlrpm"
 [ -n "$UPLOADCOMMON" ] && base="$base shorewall-common-${1}.tar.*"    && files="$files shorewall-common-${1}.*    $rpm"
 [ -n "$UPLOADSHELL" ]  && base="$base shorewall-shell-${1}.tar.*"     && files="$files shorewall-shell-${1}.*     $shellrpm"
 [ -n "$UPLOADLITE" ]   && base="$base shorewall-lite-${1}.tar.*"      && files="$files shorewall-lite-${1}.*      $literpm"
+[ -n "$UPLOAD6LITE" ]  && base="$base shorewall6-lite-${1}.tar.*"     && files="$files shorewall6-lite-${1}.*     $lite6rpm"
 [ -n "$UPLOADXML" ]    && base="$base shorewall-docs-xml-${1}.tar.*"  && files="$files shorewall-docs-xml-${1}.*  $literpm"
 [ -n "$UPLOADHTML" ]   && base="$base shorewall-docs-html-${1}.tar.*" && files="$files shorewall-docs-html-${1}.* $literpm"
 

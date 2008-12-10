@@ -1,23 +1,23 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          shorewall-lite
+# Provides:          shorewall6-lite
 # Required-Start:    $network
 # Required-Stop:     $network
 # Default-Start:     S
 # Default-Stop:      0 6
 # Short-Description: Configure the firewall at boot time
 # Description:       Configure the firewall according to the rules specified in
-#                    /etc/shorewall-lite
+#                    /etc/shorewall6-lite
 ### END INIT INFO
 
 
 
-SRWL=/sbin/shorewall-lite
+SRWL=/sbin/shorewall6-lite
 SRWL_OPTS="-tvv"
 # Note, set INITLOG to /dev/null if you do not want to
 # keep logs of the firewall (not recommended)
-INITLOG=/var/log/shorewall-lite-init.log
+INITLOG=/var/log/shorewall6-lite-init.log
 
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0
@@ -49,7 +49,7 @@ not_configured () {
 	then
 		echo ""
 		echo "Please read about Debian specific customization in"
-		echo "/usr/share/doc/shorewall/README.Debian.gz."
+		echo "/usr/share/doc/shorewall6-lite/README.Debian.gz."
 	fi
 	echo "#################"
 	exit 0
@@ -63,7 +63,7 @@ then
 fi
 
 # check if shorewall is configured or not
-if [ -f "/etc/default/shorewall-lite" ]
+if [ -f "/etc/default/shorewall6-lite" ]
 then
 	. /etc/default/shorewall-lite
 	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
@@ -77,7 +77,7 @@ fi
 
 # start the firewall
 shorewall_start () {
-  echo -n "Starting \"Shorewall firewall\": "
+  echo -n "Starting \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
@@ -91,14 +91,14 @@ shorewall_stop () {
 
 # restart the firewall
 shorewall_restart () {
-  echo -n "Restarting \"Shorewall firewall\": "
+  echo -n "Restarting \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS restart >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # refresh the firewall
 shorewall_refresh () {
-  echo -n "Refreshing \"Shorewall firewall\": "
+  echo -n "Refreshing \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
@@ -117,7 +117,7 @@ case "$1" in
      shorewall_restart
      ;;
   *)
-     echo "Usage: /etc/init.d/shorewall-lite {start|stop|refresh|restart|force-reload}"
+     echo "Usage: /etc/init.d/shorewall6-lite {start|stop|refresh|restart|force-reload}"
      exit 1
 esac
 

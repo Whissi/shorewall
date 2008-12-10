@@ -29,19 +29,19 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #
 #	Commands are:
 #
-#	   shorewall start			  Starts the firewall
-#	   shorewall restart			  Restarts the firewall
-#	   shorewall reload			  Reload the firewall
-#						  (same as restart)
-#	   shorewall stop			  Stops the firewall
-#	   shorewall status			  Displays firewall status
+#	   shorewall6-lite start			  Starts the firewall
+#	   shorewall6-lite restart			  Restarts the firewall
+#	   shorewall6-lite reload			  Reload the firewall
+#						          (same as restart)
+#	   shorewall6-lite stop 			  Stops the firewall
+#	   shorewall6-lite status			  Displays firewall status
 #
 
 # chkconfig: 2345 25 90
 # description: Packet filtering firewall
 
 ### BEGIN INIT INFO
-# Provides:	  shorewall-lite
+# Provides:	  shorewall6-lite
 # Required-Start: $network
 # Required-Stop:
 # Default-Start:  2 3 5
@@ -61,10 +61,10 @@ usage() {
 # Get startup options (override default)
 ################################################################################
 OPTIONS=
-if [ -f /etc/sysconfig/shorewall ]; then
-    . /etc/sysconfig/shorewall
-elif [ -f /etc/default/shorewall ] ; then
-    . /etc/default/shorewall
+if [ -f /etc/sysconfig/shorewall6-lite ]; then
+    . /etc/sysconfig/shorewall6-lite
+elif [ -f /etc/default/shorewall6-lite ] ; then
+    . /etc/default/shorewall6-lite
 fi
 
 ################################################################################
@@ -74,14 +74,14 @@ command="$1"
 
 case "$command" in
     start)
-	exec /sbin/shorewall-lite $OPTIONS $@
+	exec /sbin/shorewall6-lite $OPTIONS $@
 	;;
     stop|restart|status)
-	exec /sbin/shorewall-lite $@
+	exec /sbin/shorewall6-lite $@
 	;;
     reload)
 	shift
-	exec /sbin/shorewall-lite restart $@
+	exec /sbin/shorewall6-lite restart $@
 	;;
     *)
 	usage

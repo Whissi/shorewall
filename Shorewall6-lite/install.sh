@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Script to install Shoreline Firewall Lite
+# Script to install Shoreline Firewall 6 Lite
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.2.1
+VERSION=4.3.0
 
 usage() # $1 = exit status
 {
@@ -73,7 +73,7 @@ run_install()
 cant_autostart()
 {
     echo
-    echo  "WARNING: Unable to configure shorewall to start automatically at boot" >&2
+    echo  "WARNING: Unable to configure shorewall6-lite to start automatically at boot" >&2
 }
 
 backup_directory() # $1 = directory to backup
@@ -142,7 +142,7 @@ if [ -z "$DEST" ] ; then
 fi
 
 if [ -z "$INIT" ] ; then
-	INIT="shorewall-lite"
+	INIT="shorewall6-lite"
 fi
 
 if [ -z "$RUNLEVELS" ] ; then
@@ -165,7 +165,7 @@ while [ $# -gt 0 ] ; do
 	    usage 0
 	    ;;
         -v)
-	    echo "Shorewall Lite Firewall Installer Version $VERSION"
+	    echo "Shorewall6 Lite Firewall Installer Version $VERSION"
 	    exit 0
 	    ;;
 	-n)
@@ -203,7 +203,7 @@ elif [ -f /etc/slackware-version ] ; then
     INIT="rc.firewall"
 elif [ -f /etc/arch-release ] ; then
       DEST="/etc/rc.d"
-      INIT="shorewall-lite"
+      INIT="shorewall6-lite"
       ARCHLINUX=yes
 fi
 
@@ -212,122 +212,122 @@ fi
 #
 cd "$(dirname $0)"
 
-echo "Installing Shorewall Lite Version $VERSION"
+echo "Installing Shorewall6 Lite Version $VERSION"
 
 #
 # First do Backups
 #
 
 #
-# Check for /etc/shorewall-lite
+# Check for /etc/shorewall6-lite
 #
-if [ -z "$PREFIX" -a -d /etc/shorewall-lite ]; then
+if [ -z "$PREFIX" -a -d /etc/shorewall6-lite ]; then
     first_install=""
     if [ -z "$NOBACKUP" ]; then
-	backup_directory /etc/shorewall-lite
-	backup_directory /usr/share/shorewall-lite
-	backup_directory /var/lib/shorewall-lite
+	backup_directory /etc/shorewall6-lite
+	backup_directory /usr/share/shorewall6-lite
+	backup_directory /var/lib/shorewall6-lite
     fi
-    [ -f /etc/shorewall-lite/shorewall.conf ] && \
-	mv -f /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall-lite.conf
+    [ -f /etc/shorewall6-lite/shorewall.conf ] && \
+	mv -f /etc/shorewall6-lite/shorewall.conf /etc/shorewall6-lite/shorewall6-lite.conf
 else
     first_install="Yes"
-    rm -rf ${PREFIX}/etc/shorewall-lite
-    rm -rf ${PREFIX}/usr/share/shorewall-lite
-    rm -rf ${PREFIX}/var/lib/shorewall-lite
+    rm -rf ${PREFIX}/etc/shorewall6-lite
+    rm -rf ${PREFIX}/usr/share/shorewall6-lite
+    rm -rf ${PREFIX}/var/lib/shorewall6-lite
 fi
 
-delete_file ${PREFIX}/usr/share/shorewall-lite/xmodules
+delete_file ${PREFIX}/usr/share/shorewall6-lite/xmodules
 
-install_file_with_backup shorewall-lite ${PREFIX}/sbin/shorewall-lite 0544 ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
+install_file_with_backup shorewall6-lite ${PREFIX}/sbin/shorewall6-lite 0544 ${PREFIX}/var/lib/shorewall6-lite-${VERSION}.bkout
 
-echo "Shorewall Lite control program installed in ${PREFIX}/sbin/shorewall-lite"
+echo "Shorewall6 Lite control program installed in ${PREFIX}/sbin/shorewall6-lite"
 
 #
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file_with_backup init.debian.sh /etc/init.d/shorewall-lite 0544 ${PREFIX}/usr/share/shorewall-lite-${VERSION}.bkout
+    install_file_with_backup init.debian.sh /etc/init.d/shorewall6-lite 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
-    install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-lite-${VERSION}.bkout
+    install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
 
 else
-    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-lite-${VERSION}.bkout
+    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
 fi
 
-echo  "Shorewall Lite script installed in ${PREFIX}${DEST}/$INIT"
+echo  "Shorewall6 Lite script installed in ${PREFIX}${DEST}/$INIT"
 
 #
-# Create /etc/shorewall-lite, /usr/share/shorewall-lite and /var/lib/shorewall-lite if needed
+# Create /etc/shorewall6-lite, /usr/share/shorewall6-lite and /var/lib/shorewall6-lite if needed
 #
-mkdir -p ${PREFIX}/etc/shorewall-lite
-mkdir -p ${PREFIX}/usr/share/shorewall-lite
-mkdir -p ${PREFIX}/var/lib/shorewall-lite
+mkdir -p ${PREFIX}/etc/shorewall6-lite
+mkdir -p ${PREFIX}/usr/share/shorewall6-lite
+mkdir -p ${PREFIX}/var/lib/shorewall6-lite
 
-chmod 755 ${PREFIX}/etc/shorewall-lite
-chmod 755 ${PREFIX}/usr/share/shorewall-lite
+chmod 755 ${PREFIX}/etc/shorewall6-lite
+chmod 755 ${PREFIX}/usr/share/shorewall6-lite
 
 #
 # Install the config file
 #
-if [ ! -f ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf ]; then
-   run_install $OWNERSHIP -m 0744 shorewall-lite.conf ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf
-   echo "Config file installed as ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf"
+if [ ! -f ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf ]; then
+   run_install $OWNERSHIP -m 0744 shorewall6-lite.conf ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf
+   echo "Config file installed as ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf"
 fi
 
 if [ -n "$ARCHLINUX" ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall-lite/shorewall.conf
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall6-lite/shorewall.conf
 fi
 
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall-lite/Makefile
-echo "Makefile installed as ${PREFIX}/etc/shorewall-lite/Makefile"
+run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall6-lite/Makefile
+echo "Makefile installed as ${PREFIX}/etc/shorewall6-lite/Makefile"
 
 #
 # Install the default config path file
 #
-install_file configpath ${PREFIX}/usr/share/shorewall-lite/configpath 0644
-echo "Default config path file installed as ${PREFIX}/usr/share/shorewall-lite/configpath"
+install_file configpath ${PREFIX}/usr/share/shorewall6-lite/configpath 0644
+echo "Default config path file installed as ${PREFIX}/usr/share/shorewall6-lite/configpath"
 
 #
 # Install the libraries
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${PREFIX}/usr/share/shorewall-lite/$f 0644
-	echo "Library ${f#*.} file installed as ${PREFIX}/usr/share/shorewall-lite/$f"
+	install_file $f ${PREFIX}/usr/share/shorewall6-lite/$f 0644
+	echo "Library ${f#*.} file installed as ${PREFIX}/usr/share/shorewall6-lite/$f"
     fi
 done
 
-ln -sf lib.base ${PREFIX}/usr/share/shorewall-lite/functions
+ln -sf lib.base ${PREFIX}/usr/share/shorewall6-lite/functions
 
-echo "Common functions linked through ${PREFIX}/usr/share/shorewall-lite/functions"
+echo "Common functions linked through ${PREFIX}/usr/share/shorewall6-lite/functions"
 
 #
 # Install Shorecap
 #
 
-install_file shorecap ${PREFIX}/usr/share/shorewall-lite/shorecap 0755
+install_file shorecap ${PREFIX}/usr/share/shorewall6-lite/shorecap 0755
 
 echo
-echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall-lite/shorecap"
+echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall6-lite/shorecap"
 
 #
 # Install wait4ifup
 #
 
-install_file wait4ifup ${PREFIX}/usr/share/shorewall-lite/wait4ifup 0755
+install_file wait4ifup ${PREFIX}/usr/share/shorewall6-lite/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall-lite/wait4ifup"
+echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall6-lite/wait4ifup"
 
 #
 # Install the Modules file
 #
-run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/modules
-echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
+run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall6-lite/modules
+echo "Modules file installed as ${PREFIX}/usr/share/shorewall6-lite/modules"
 
 #
 # Install the Man Pages
@@ -354,40 +354,40 @@ echo "Man Pages Installed"
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/usr/share/shorewall-lite/version
-chmod 644 ${PREFIX}/usr/share/shorewall-lite/version
+echo "$VERSION" > ${PREFIX}/usr/share/shorewall6-lite/version
+chmod 644 ${PREFIX}/usr/share/shorewall6-lite/version
 #
 # Remove and create the symbolic link to the init script
 #
 
 if [ -z "$PREFIX" ]; then
-    rm -f /usr/share/shorewall-lite/init
-    ln -s ${DEST}/${INIT} /usr/share/shorewall-lite/init
+    rm -f /usr/share/shorewall6-lite/init
+    ln -s ${DEST}/${INIT} /usr/share/shorewall6-lite/init
 fi
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -n "$DEBIAN" ]; then
-	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall-lite
-	ln -s ../init.d/shorewall-lite /etc/rcS.d/S40shorewall-lite
-	echo "Shorewall Lite will start automatically at boot"
+	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall6-lite
+	ln -s ../init.d/shorewall6-lite /etc/rcS.d/S40shorewall6-lite
+	echo "Shorewall6 Lite will start automatically at boot"
 	touch /var/log/shorewall-init.log
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-	    if insserv /etc/init.d/shorewall-lite ; then
-		echo "Shorewall Lite will start automatically at boot"
+	    if insserv /etc/init.d/shorewall6-lite ; then
+		echo "Shorewall6 Lite will start automatically at boot"
 	    else
 		cant_autostart
 	    fi
 	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	    if chkconfig --add shorewall-lite ; then
-		echo "Shorewall Lite will start automatically in run levels as follows:"
-		chkconfig --list shorewall-lite
+	    if chkconfig --add shorewall6-lite ; then
+		echo "Shorewall6 Lite will start automatically in run levels as follows:"
+		chkconfig --list shorewall6-lite
 	    else
 		cant_autostart
 	    fi
 	elif [ -x /sbin/rc-update ]; then
-	    if rc-update add shorewall-lite default; then
-		echo "Shorewall Lite will start automatically at boot"
+	    if rc-update add shorewall6-lite default; then
+		echo "Shorewall6 Lite will start automatically at boot"
 	    else
 		cant_autostart
 	    fi
@@ -400,4 +400,4 @@ fi
 #
 #  Report Success
 #
-echo "shorewall Lite Version $VERSION Installed"
+echo "shorewall6 Lite Version $VERSION Installed"

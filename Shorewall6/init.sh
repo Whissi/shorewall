@@ -1,7 +1,7 @@
 #!/bin/sh
 RCDLINKS="2,S41 3,S41 6,K41"
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.2
+#     The Shoreline Firewall (Shorewall6) Packet Filtering Firewall - V4.4
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -29,25 +29,25 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #
 #	Commands are:
 #
-#	   shorewall start			  Starts the firewall
-#	   shorewall restart			  Restarts the firewall
-#	   shorewall reload			  Reload the firewall
+#	   shorewall6 start			  Starts the firewall
+#	   shorewall6 restart			  Restarts the firewall
+#	   shorewall6 reload			  Reload the firewall
 #						  (same as restart)
-#	   shorewall stop			  Stops the firewall
-#	   shorewall status			  Displays firewall status
+#	   shorewall6 stop			  Stops the firewall
+#	   shorewall6 status			  Displays firewall status
 #
 
 # chkconfig: 2345 25 90
 # description: Packet filtering firewall
 
 ### BEGIN INIT INFO
-# Provides:	  shorewall
+# Provides:	  shorewall6
 # Required-Start: $local_fs $remote_fs $syslog
 # Should-Start: VMware $time $named
 # Required-Stop:
 # Default-Start:  2 3 5
 # Default-Stop:	  0 1 6
-# Description:	  starts and stops the shorewall firewall
+# Description:	  starts and stops the shorewall6 firewall
 ### END INIT INFO
 
 ################################################################################
@@ -62,10 +62,10 @@ usage() {
 # Get startup options (override default)
 ################################################################################
 OPTIONS="-v0"
-if [ -f /etc/sysconfig/shorewall ]; then
-    . /etc/sysconfig/shorewall
-elif [ -f /etc/default/shorewall ] ; then
-    . /etc/default/shorewall
+if [ -f /etc/sysconfig/shorewall6 ]; then
+    . /etc/sysconfig/shorewall6
+elif [ -f /etc/default/shorewall6 ] ; then
+    . /etc/default/shorewall6
 fi
 
 ################################################################################
@@ -75,14 +75,14 @@ command="$1"
 
 case "$command" in
     start|restart|stop)
-	exec /sbin/shorewall $OPTIONS $@
+	exec /sbin/shorewall6 $OPTIONS $@
 	;;
     stop|restart|status)
-	exec /sbin/shorewall $@
+	exec /sbin/shorewall6 $@
 	;;
     reload)
 	shift
-	exec /sbin/shorewall $OPTIONS restart $@
+	exec /sbin/shorewall6 $OPTIONS restart $@
 	;;
     *)
 	usage

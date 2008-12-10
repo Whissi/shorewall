@@ -1,6 +1,6 @@
 #
-# Shorewall version 4.0 - Sample Rules File for three-interface configuration.
-# Copyright (C) 2006,2007 by the Shorewall Team
+# Shorewall6 version 4.0 - Sample Rules File for three-interface configuration.
+# Copyright (C) 2006,2007,2008 by the Shorewall Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,9 +47,9 @@ Ping/ACCEPT     loc             dmz
 Ping/ACCEPT     dmz             loc
 Ping/ACCEPT     dmz             net
 
-ACCEPT		$FW		net		icmp
-ACCEPT		$FW		loc		icmp
-ACCEPT		$FW		dmz		icmp
+ACCEPT		$FW		net		ipv6-icmp
+ACCEPT		$FW		loc		ipv6-icmp
+ACCEPT		$FW		dmz		ipv6-icmp
 
 # Uncomment this if using Proxy ARP and static NAT and you want to allow ping from
 # the net zone to the dmz and loc

@@ -949,14 +949,17 @@ sub compiler {
     #
     # /proc stuff
     #
-    setup_arp_filtering;
-    setup_route_filtering;
-    setup_martian_logging;
+    if ( $family == F_IPV4 ) {
+	setup_arp_filtering;
+	setup_route_filtering;
+	setup_martian_logging;
+    }
+
     setup_source_routing;
     #
     # Proxy Arp
     #
-    setup_proxy_arp;
+    setup_proxy_arp if $family == F_IPV4;
     #
     # Handle MSS setings in the zones file
     #

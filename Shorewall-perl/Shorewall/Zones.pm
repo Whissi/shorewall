@@ -627,7 +627,6 @@ sub validate_interfaces_file( $ )
     } else {
 	%validoptions = (  blacklist   => SIMPLE_IF_OPTION,
 			   bridge      => SIMPLE_IF_OPTION,
-			   nosmurfs    => SIMPLE_IF_OPTION,
 			   optional    => SIMPLE_IF_OPTION,
 			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
 			   sourceroute => BINARY_IF_OPTION,
@@ -982,7 +981,6 @@ sub validate_hosts_file()
     } else {
 	%validoptions = (
 			 blacklist => 1,
-			 nosmurfs => 1,
 			 routeback => 1,
 			 tcpflags => 1,
 			);

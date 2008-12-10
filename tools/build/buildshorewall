@@ -320,7 +320,7 @@ case $VERSION in
 	SHELLBRANCH="trunk/Shorewall-shell"
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-4.3"
-	SAMPLESTAG="trunk/Samples"
+	SAMPLETAGS="trunk/Samples"
 	SAMPLES6TAG="trunk/Samples6"
 	MANPAGETAG=trunk/manpages
 	LITEMANPAGETAG=trunk/manpages-lite
@@ -573,6 +573,33 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    fi
 	done
 	rm *.xml
+	cd $DIR
+    fi
+
+    if [ -n "$BUILD6" ]; then
+	cd $SHOREWALL6DIR
+	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLES6TAG Samples >> $LOGFILE 2>&1"
+	if false; then
+	    progress_message "Exporting $MANPAGETAG from SVN..."
+	    do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+	    cd manpages
+	    for f in *.xml; do
+		if [ $f != shorewall-template.xml ]; then
+		    progress_message "Generating Man Page from $f..."
+		    do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		    case $f in
+			*.conf.*|shorewall.xml)
+			    ;;
+			*)
+			    g=${f#shorewall-}
+			    h=$(ls ${g%.xml}.[58])
+			    mv $h shorewall-$h
+			    ;;
+		    esac
+		fi
+	    done
+	    rm *.xml
+	fi
 	cd $DIR
     fi
 

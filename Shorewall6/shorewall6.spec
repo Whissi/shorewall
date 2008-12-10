@@ -148,7 +148,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/tcfilters
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/Makefile
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
+%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples6
 
 %changelog
 * Wed Dec 10 2008 Tom Eastep tom@shorewall.net

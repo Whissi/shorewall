@@ -30,7 +30,9 @@ usage() {
 }
 
 rpm=
+rpm6=
 literpm=
+lite6rpm=
 perlrpm=
 shellrpm=
 
@@ -45,6 +47,8 @@ UPLOADSHELL=
 UPLOADLITE=
 UPLOADXML=
 UPLOADHTML=
+UPLOAD6=
+UPLOAD6LITE=
 PARTIAL=Yes
 BASE=
 
@@ -60,6 +64,8 @@ case $1 in
 	UPLOADLITE=Yes
 	UPLOADXML=Yes
 	UPLOADHTML=Yes
+	UPLOAD6=Yes
+	UPLOAD6LITE=Yes
 	PARTIAL=
 	done=Yes
 	;;
@@ -100,6 +106,14 @@ while [ -z "$done" ]; do
 		    h*)
 			UPLOADHTML=Yes
 			option=${option#h}
+			;;
+		    6*)
+			UPLOAD6=Yes
+			option=${option#6}
+			;;
+		    L*)
+			UPLOAD6LITE=Yes
+			option=${option#L}
 			;;
 	    	    *)
 			usage
@@ -142,6 +156,17 @@ case $1 in
 	literpm=shorewall-lite-${1}-0base.noarch.rpm
 	perlrpm=shorewall-perl-${1}-0base.noarch.rpm
 	shellrpm=shorewall-shell-${1}-0base.noarch.rpm
+	BASE=Yes
+	;;
+    4.3.*)
+	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	SHOREWALL=shorewall-common
+	rpm=shorewall-common-${1}-0base.noarch.rpm
+	literpm=shorewall-lite-${1}-0base.noarch.rpm
+	perlrpm=shorewall-perl-${1}-0base.noarch.rpm
+	shellrpm=shorewall-shell-${1}-0base.noarch.rpm
+	rpm6=shorewall6-${1}-0base.noarch.rpm
+	lite6rpm=shorewall6-lite-${1}-0base.noarch.rpm
 	BASE=Yes
 	;;
     3.*[13579].*)

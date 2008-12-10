@@ -29,6 +29,8 @@
 #      -r      Build RPM
 #      -c      Build Common
 #      -l      Build Lite
+#      -L      Build 6 Lite
+#      -6      Build 6
 #      -p      Build Perl
 #      -s      Build Shell
 #      -h      Build HTML documentation
@@ -111,6 +113,18 @@ BUILDSHELL=
 BUILDLITE=
 PATCHRELEASE=
 PATCHNUM=
+
+SVN6BRANCH=
+SAMPLES6TAG=
+LITE6SVNBRANCH=
+SHOREWALL6DIR=
+LITE6DIR=
+BUILD6=
+BUILD6LITE=
+RPM6NAME=
+LITE6RPMNAME=
+TARBALL6=
+LITE6TARBALL=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -238,6 +252,10 @@ while [ -z "$done" ]; do
 			BUILDCOMMON=Yes
 			option=${option#c}
 			;;
+		    6*)
+			BUILD6=Yes
+			option=${option#6}
+			;;
 		    p*)
 			BUILDPERL=Yes
 			option=${option#p}
@@ -249,6 +267,10 @@ while [ -z "$done" ]; do
 		    l*)
 			BUILDLITE=Yes
 			option=${option#l}
+			;;
+		    L*)
+			BUILD6LITE=Yes
+			option=${option#L}
 			;;
 		    S*)
 			SIGN=Yes
@@ -287,6 +309,20 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
+     4.3.*)
+	SVNBRANCH="trunk/Shorewall-common"
+	SVN6BRANCH="trunk/Shorewall6"
+	LITESVNBRANCH=trunk/Shorewall-lite"
+	LITE6SVNBRANCH=trunk/Shorewall6-lite"
+	PERLBRANCH="trunk/Shorewall-perl"
+	SHELLBRANCH="trunk/Shorewall-shell"
+	DOCTAG="trunk/docs"
+	XMLPROJ="docs-4.3"
+	SAMPLESTAG="trunk/Samples"
+	SAMPLES6TAG="trunk/Samples6"
+	MANPAGETAG=trunk/manpages
+	LITEMANPAGETAG=trunk/manpages-lite
+	;;
      4.2.*.*)
 	PATCHRELEASE=Yes
 	PATCHNUM=${VERSION##*.}
@@ -350,10 +386,13 @@ progress_message "Distribution directory is $DIR"
 cd $DIR
 
 [ -n "$BUILDCOMMON" ] && SHOREWALLDIR=shorewall-common-${VERSION} || SHOREWALLDIR=shorewall-common
+SHOREWALL6DIR=shorewall6-${VERSION}
 SHOREWALLLITEDIR=shorewall-lite-${VERSION}
+LITE6DIR=shorewall6-lite-${VERSION}
 TARBALL=shorewall-common-${VERSION}.tgz
+TARBALL6=shorewall6-${VERSION}.tgz
 LITETARBALL=shorewall-lite-${VERSION}.tgz
-LITETARBALL=shorewall-lite-${VERSION}.tgz
+LITE6TARBALL=shorewall6-lite-${VERSION}.tgz
 SHELLTARBALL=shorewall-shell-${VERSION}.tgz
 SHELLDIR=shorewall-shell-${VERSION}
 PERLTARBALL=shorewall-perl-${VERSION}.tgz
@@ -384,7 +423,9 @@ case $VERSION in
 	# Normal Release
 	#
 	RPMNAME=shorewall-common-${VERSION}-0base.noarch.rpm
+	RPM6NAME=shorewall-common-${VERSION}-0base.noarch.rpm
 	LITERPMNAME=shorewall-lite-${VERSION}-0base.noarch.rpm
+	LITE6RPMNAME=shorewall-lite-${VERSION}-0base.noarch.rpm
 	PERLRPMNAME=shorewall-perl-${VERSION}-0base.noarch.rpm
 	SHELLRPMNAME=shorewall-shell-${VERSION}-0base.noarch.rpm
 	;;
@@ -407,21 +448,30 @@ fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
 
+[ -n "$RPM6NAME" ]     || BUILD6=
+[ -n "$LITE6RPMNAME" ] || BUILD6LITE6=
+
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     rm -rf $SHOREWALLDIR
 
+    [ -n "$BUILD6" ]      && rm -rf $SHOREWALL6DIR
     [ -n "$BUILDLITE" ]   && rm -rf $SHOREWALLLITEDIR
+    [ -n "$BUILD6LITE" ]  && rm -rf $LITE6DIR
     [ -n "$BUILDPERL" ]   && rm -rf $PERLDIR
     [ -n "$BUILDSHELL" ]  && rm -rf $SHELLDIR
 
     progress_message "Exporting $SVNBRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
- 
-    [ -n "$BUILDLITE" ]   && progress_message "Exporting $LITESVNBRANCH from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
-    	
-    [ -n "$BUILDPERL" ]   && progress_message "Exporting $PERLBRANCH from SVN..."    && do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
 
-    [ -n "$BUILDSHELL" ]  && progress_message "Exporting $SHELLBRANCH from SVN..."   && do_or_die "svn export --non-interactive --force ${SVN}/$SHELLBRANCH  $SHELLDIR >> $LOGFILE 2>&1"
+    [ -n "$BUILD6" ]      && progress_message "Exporting $SVN6BRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVN6BRANCH $SHOREWALL6DIR >> $LOGFILE 2>&1"
+ 
+    [ -n "$BUILDLITE" ]   && progress_message "Exporting $LITE6SVNBRANCH from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$LITE6SVNBRANCH  $LITE6DIR >> $LOGFILE 2>&1"
+
+    [ -n "$BUILD6LITE" ]  && progress_message "Exporting $LITESVNBRANCH from SVN..."  && do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    	
+    [ -n "$BUILDPERL" ]   && progress_message "Exporting $PERLBRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
+
+    [ -n "$BUILDSHELL" ]  && progress_message "Exporting $SHELLBRANCH from SVN..."    && do_or_die "svn export --non-interactive --force ${SVN}/$SHELLBRANCH  $SHELLDIR >> $LOGFILE 2>&1"
 
     
     if [ -n "$BUILDLITE" ]; then
@@ -435,7 +485,16 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	fi
     fi
 
+    if [ -n "$BUILD6LITE" ]; then
+	do_or_die "cp $SHOREWALL6DIR/modules   $LITE6DIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALL6DIR/lib.base  $LITE6DIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALL6DIR/lib.cli   $LITE6DIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALL6DIR/wait4ifup $LITE6DIR >> $LOGFILE 2>&1"
+    fi
+
+    [ -n "$BUILD6" ]      && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALL6DIR >> $LOGFILE 2>&1"
     [ -n "$BUILDLITE" ]   && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    [ -n "$BUIL6DLITE" ]  && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $LITE6DIR >> $LOGFILE 2>&1"
     [ -n "$BUILDPERL" ]   && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $PERLDIR >> $LOGFILE 2>&1"
     [ -n "$BUILDSHELL" ]  && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHELLDIR >> $LOGFILE 2>&1"
 
@@ -445,10 +504,22 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1    || fatal_error "fallback.sh has wrong version"
     fi
 
+    if [ -n "$BUILD6" ]; then
+	fgrep VERSION=$VERSION $SHOREWALL6DIR/install.sh > /dev/null 2>&1     || fatal_error "6 install.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALL6DIR/uninstall.sh > /dev/null 2>&1   || fatal_error "6 uninstall.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALL6DIR/fallback.sh > /dev/null 2>&1    || fatal_error "6 fallback.sh has wrong version"
+    fi
+
     if [ -n "$BUILDLITE" ]; then
 	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/install.sh > /dev/null 2>&1     || fatal_error "Lite install.sh has wrong version"
 	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "Lite uninstall.sh has wrong version"
 	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite fallback.sh has wrong version"
+    fi
+
+    if [ -n "$BUILD6LITE" ]; then
+	fgrep VERSION=$VERSION $LITE6DIR/install.sh > /dev/null 2>&1     || fatal_error "Lite 6 install.sh has wrong version"
+	fgrep VERSION=$VERSION $LITE6DIR/uninstall.sh > /dev/null 2>&1   || fatal_error "Lite 6 uninstall.sh has wrong version"
+	fgrep VERSION=$VERSION $LITE6DIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite 6 fallback.sh has wrong version"
     fi
 
     if [ -n "$BUILDSHELL" ]; then
@@ -511,7 +582,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fi	
 
     [ -n "$BUILDCOMMON" ] && do_or_die "rm -rf $SHOREWALLDIR/debian"
+    [ -n "$BUILD6" ]      && do_or_die "rm -rf $SHOREWALL6DIR/debian"
     [ -n "$BUILDLITE" ]   && do_or_die "rm -rf $SHOREWALLLITEDIR/debian"
+    [ -n "$BUILD6LITE" ]  && do_or_die "rm -rf $LITE6DIR/debian"
     [ -n "$BUILDPERL" ]   && do_or_die "rm -rf $PERLDIR/debian"
     [ -n "$BUILDSHELL" ]  && do_or_die "rm -rf $SHELLDIR/debian"
 
@@ -531,6 +604,21 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    fi
 	fi
 
+	if [ -n "$BUILD6" ]; then	
+	    progress_message "Creating $DIR/$TARBALL6..."
+	    rm -f $SHOREWALL6DIR/*.diff
+	    do_or_die "tar -zcvf $TARBALL6 $SHOREWALL6DIR >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall6-${VERSION}.tar.bz2 $SHOREWALL6DIR >> $LOGFILE 2>&1"
+	    if [ -n "$SIGN" ]; then
+		for shoresuffix in tgz tar.bz2; do
+		    shoreball=shorewall6-${VERSION}.${shoresuffix}
+		    report "GPG signing $DIR/$shoreball"
+		    rm -f ${shoreball}.asc
+		    do_or_die "$GPG $shoreball"
+		done
+	    fi
+	fi
+
 	if [ -n "$BUILDLITE" ]; then	
 	    progress_message "Creating $DIR/$LITETARBALL..."
 	    rm -f $SHOREWALLLITEDIR/*.diff
@@ -539,6 +627,21 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    if [ -n "$SIGN" ]; then
 		for shoresuffix in tgz tar.bz2; do
 		    shoreball=shorewall-lite-${VERSION}.${shoresuffix}
+		    report "GPG signing $DIR/$shoreball"
+		    rm -f ${shoreball}.asc
+		    do_or_die "$GPG $shoreball"
+		done
+	    fi
+	fi
+    	
+	if [ -n "$BUILD6LITE" ]; then	
+	    progress_message "Creating $DIR/$LITE6TARBALL..."
+	    rm -f $LITE6DIR/*.diff
+	    do_or_die "tar -zcvf $LITE6TARBALL $LITE6DIR >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall6-lite-${VERSION}.tar.bz2 $LITE6DIR >> $LOGFILE 2>&1"
+	    if [ -n "$SIGN" ]; then
+		for shoresuffix in tgz tar.bz2; do
+		    shoreball=shorewall6-lite-${VERSION}.${shoresuffix}
 		    report "GPG signing $DIR/$shoreball"
 		    rm -f ${shoreball}.asc
 		    do_or_die "$GPG $shoreball"
@@ -595,6 +698,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
 	fi
 
+	if [ -n "$BUILD6" ]; then	
+	    progress_message "Building $RPM6NAME..."
+
+	    cd /tmp
+	    rm -rf shorewall6-${BASEVERSION}
+	    do_or_die "cp -a $DIR/$SHOREWALL6DIR shorewall6-${BASEVERSION}"
+	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall6-${BASEVERSION}.tgz shorewall6-${BASEVERSION}"
+	    cd $DIR
+	    do_or_die "cp $SHOREWALL6DIR/shorewall6.spec $RPMDIR/SPECS/"
+	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall6.spec"
+	    do_or_die cp -a $RPMDIR/RPMS/noarch/$RPM6NAME .
+	fi
+
 	if [ -n "$BUILDLITE" ]; then	
 	    progress_message "Building $LITERPMNAME..."
 
@@ -606,6 +722,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    do_or_die "cp $SHOREWALLLITEDIR/shorewall-lite.spec $RPMDIR/SPECS/"
 	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
+	fi
+
+	if [ -n "$BUILD6LITE" ]; then	
+	    progress_message "Building $LITE6RPMNAME..."
+
+	    cd /tmp
+	    rm -rf shorewall6-lite-${BASEVERSION}
+	    do_or_die "cp -a $DIR/$LLITE6DIR shorewall6-lite-${BASEVERSION}" 
+	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall6-lite-${BASEVERSION}.tgz shorewall6-lite-${BASEVERSION}"
+	    cd $DIR
+	    do_or_die "cp $SHOREWALLLITEDIR/shorewall6-lite.spec $RPMDIR/SPECS/"
+	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall6-lite.spec"
+	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITE6RPMNAME .
 	fi
 
 	if [ -n "$BUILDPERL" ]; then	
@@ -844,7 +973,9 @@ case $VERSION in
 	;;
     *.*.*.*)
 	[ -f $RPMNAME ]      && do_or_die "md5sum $RPMNAME >> $VERSION.md5sums"
+	[ -f $RPM6NAME ]     && do_or_die "md5sum $RPM6NAME >> $VERSION.md5sums"
 	[ -f $LITERPMNAME ]  && do_or_die "md5sum $LITERPMNAME >> $VERSION.md5sums"
+	[ -f $LITE6RPMNAME ] && do_or_die "md5sum $LITE6RPMNAME >> $VERSION.md5sums"
 	[ -f $PERLRPMNAME ]  && do_or_die "md5sum $PERLRPMNAME >> $VERSION.md5sums"
 	[ -f $SHELLRPMNAME ] && do_or_die "md5sum $SHELLRPMNAME >> $VERSION.md5sums"
 	;;
@@ -875,7 +1006,9 @@ if [ -n "$OLDVERSION" ]; then
     progress_message "Creating patch-$VERSION ..."
 
     [ -d shorewall-common-$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION > patch-common-$VERSION || true
+    [ -d shorewall6-$VERSION ]       && diff -Naur -X $(dirname $0)/exclude.txt shorewall6-$OLDVERSION       shorewall6-$VERSION       > patch-common-$VERSION || true
     [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION     > patch-lite-$VERSION   || true
+    [ -d shorewall6-lite-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall6-lite-$OLDVERSION shorewall6-lite-$VERSION   > patch-lite-$VERSION   || true
     [ -d shorewall-perl-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-perl-$OLDVERSION shorewall-perl-$VERSION     > patch-perl-$VERSION   || true
     [ -d shorewall-shell-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall-shell-$OLDVERSION shorewall-shell-$VERSION   > patch-shell-$VERSION  || true
     

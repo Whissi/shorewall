@@ -128,7 +128,7 @@ sub process_tos() {
 	    if ( $family == F_IPV4 ) {
 		( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
 		fatal_error 'Invalid SOURCE' if defined $remainder;
-	    } elsif ( $src =~ /^(.+?):\[(.*)]\s$/ ) {
+	    } elsif ( $src =~ /^(.+?):\[(.*)]\s*$/ ) {
 		$srczone = $1;
 		$source  = $2;
 	    } else {

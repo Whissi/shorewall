@@ -528,7 +528,7 @@ sub validate_6net( $$ ) {
     fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
 
     if ( defined $vlsm ) {
-        fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 64;
+        fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 128;
 	fatal_error "Invalid Network address ($_[0])"   if defined $rest;
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {

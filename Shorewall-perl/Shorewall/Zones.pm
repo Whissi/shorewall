@@ -374,7 +374,7 @@ sub zone_report()
 
 	$type = $ipzone if $type eq 'ip';
 
-	progress_message "   $zone ($type)";
+	progress_message_nocompress "   $zone ($type)";
 
 	my $printed = 0;
 
@@ -388,7 +388,11 @@ sub zone_report()
 			my $hosts     = $groupref->{hosts};
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
-			    progress_message "      $interface:$grouplist";
+			    if ( $family == F_IPV4 ) {
+				progress_message_nocompress "      $interface:$grouplist";
+			    } else {
+				progress_message_nocompress "      $interface:\[$grouplist\]";
+			    }
 			    $printed = 1;
 			}
 		    }
@@ -443,7 +447,11 @@ sub dump_zone_contents()
 			my $hosts     = $groupref->{hosts};
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
-			    $entry .= " $interface:$grouplist";
+			    if ( $family == F_IPV4 ) {
+				$entry .= " $interface:$grouplist";
+			    } else {
+				$entry .= " $interface:\[$grouplist\]";
+			    }
 			}
 		    }
 		}

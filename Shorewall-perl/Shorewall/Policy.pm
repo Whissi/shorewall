@@ -149,7 +149,7 @@ sub print_policy($$$$) {
 	    my ( $sourceref, $destref ) = ( find_zone($source) ,find_zone( $dest ) );
 	    warning_message "CONTINUE policy between two un-nested zones ($source, $dest)" if ! ( @{$sourceref->{parents}} || @{$destref->{parents}} );
 	}
-	progress_message "   Policy for $source to $dest is $policy using chain $chain" unless $source eq $dest;
+	progress_message_nocompress "   Policy for $source to $dest is $policy using chain $chain" unless $source eq $dest;
     }
 }
 
@@ -362,7 +362,7 @@ sub policy_rules( $$$$$ ) {
 }
 
 sub report_syn_flood_protection() {
-    progress_message '      Enabled SYN flood protection';
+    progress_message_nocompress '      Enabled SYN flood protection';
 }
 
 sub default_policy( $$$ ) {
@@ -396,7 +396,7 @@ sub default_policy( $$$ ) {
 	}
     }
 
-    progress_message "   Policy $policy from $_[1] to $_[2] using chain $chainref->{name}";
+    progress_message_nocompress "   Policy $policy from $_[1] to $_[2] using chain $chainref->{name}";
 
 }
 

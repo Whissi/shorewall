@@ -155,6 +155,8 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT );
 
+our $family;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -164,7 +166,8 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
+    $family   = shift;
     %classids = ();
     @deferred_rules = ();
     @tcdevices = ();
@@ -176,7 +179,7 @@ sub initialize() {
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 sub process_tc_rule( $$$$$$$$$$$$ ) {
@@ -338,6 +341,8 @@ sub validate_tc_device( $$$$$ ) {
     my ( $device, $inband, $outband , $options , $redirected ) = @_;
 
     my $devnumber;
+
+    fatal_error "Traffic Shaping is not yet available in Shorewall6" if $family == F_IPV6;
 
     if ( $device =~ /:/ ) {
 	( my $number, $device, my $rest )  = split /:/, $device, 3;

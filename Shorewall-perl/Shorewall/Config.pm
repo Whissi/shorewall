@@ -46,6 +46,7 @@ our @EXPORT = qw(
 		 warning_message
 		 fatal_error
 		 progress_message
+		 progress_message_nocompress
 		 progress_message2
 		 progress_message3
                 );
@@ -810,6 +811,24 @@ sub progress_message {
 	my $line = "@_";
 	$line =~ s/\s+/ /g;
 	print $log "$line\n";
+    }
+}
+
+sub progress_message_nocompress {
+    my $havelocaltime = 0;
+
+    if ( $verbose > 1 ) {
+	timestamp, $havelocaltime = 1 if $timestamp;
+	print "@_\n";
+    }
+
+    if ( $log_verbose > 1 ) {
+	our @localtime;
+
+	@localtime = localtime unless $havelocaltime; 
+
+	printf $log '%s %2d %2d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	print $log "@_\n";
     }
 }
 

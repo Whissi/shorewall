@@ -54,6 +54,8 @@ our %providers;
 
 our @providers;
 
+our $family;
+
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -64,7 +66,9 @@ our @providers;
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
+    $family = shift;
+
     @routemarked_providers = ();
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
@@ -79,7 +83,7 @@ sub initialize() {
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 #
@@ -481,6 +485,8 @@ sub setup_providers() {
     while ( read_a_line ) {
 	unless ( $providers ) {
 	    progress_message2 "$doing $fn ...";
+	    fatal_error "Multi-ISP support is not yet available in Shorewall6" if $family == F_IPV6;
+
 	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
 
 	    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};

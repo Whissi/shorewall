@@ -65,8 +65,8 @@ sub reinitialize() {
     Shorewall::Zones::initialize ($family);
     Shorewall::Policy::initialize;
     Shorewall::Nat::initialize;
-    Shorewall::Providers::initialize;
-    Shorewall::Tc::initialize;
+    Shorewall::Providers::initialize($family);
+    Shorewall::Tc::initialize($family);
     Shorewall::Actions::initialize;
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize($family);

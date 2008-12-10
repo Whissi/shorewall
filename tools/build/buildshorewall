@@ -582,7 +582,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$BUILD6" ]; then
 	cd $SHOREWALL6DIR
-	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLES6TAG Samples >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLES6TAG Samples6 >> $LOGFILE 2>&1"
 	if false; then
 	    progress_message "Exporting $MANPAGETAG from SVN..."
 	    do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
@@ -779,10 +779,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	    cd /tmp
 	    rm -rf shorewall6-lite-${BASEVERSION}
-	    do_or_die "cp -a $DIR/$LLITE6DIR shorewall6-lite-${BASEVERSION}" 
+	    do_or_die "cp -a $DIR/$LITE6DIR shorewall6-lite-${BASEVERSION}" 
 	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall6-lite-${BASEVERSION}.tgz shorewall6-lite-${BASEVERSION}"
 	    cd $DIR
-	    do_or_die "cp $SHOREWALLLITEDIR/shorewall6-lite.spec $RPMDIR/SPECS/"
+	    do_or_die "cp $LITE6DIR/shorewall6-lite.spec $RPMDIR/SPECS/"
 	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall6-lite.spec"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITE6RPMNAME .
 	fi

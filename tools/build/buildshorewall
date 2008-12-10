@@ -210,9 +210,11 @@ case $1 in
 	BUILDXML=Yes
 	BUILDRPM=Yes
 	BUILDCOMMON=Yes
+	BUILD6=Yes
 	BUILDPERL=Yes
 	BUILDSHELL=Yes
 	BUILDLITE=Yes
+	BUILD6LITE=Yes
 	done=Yes
 	SIGN=Yes
 	;;
@@ -312,8 +314,8 @@ case $VERSION in
      4.3.*)
 	SVNBRANCH="trunk/Shorewall-common"
 	SVN6BRANCH="trunk/Shorewall6"
-	LITESVNBRANCH=trunk/Shorewall-lite"
-	LITE6SVNBRANCH=trunk/Shorewall6-lite"
+	LITESVNBRANCH="trunk/Shorewall-lite"
+	LITE6SVNBRANCH="trunk/Shorewall6-lite"
 	PERLBRANCH="trunk/Shorewall-perl"
 	SHELLBRANCH="trunk/Shorewall-shell"
 	DOCTAG="trunk/docs"
@@ -435,21 +437,38 @@ HTMLDIR=shorewall-docs-html-$VERSION
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall directory is $DIR/$SHOREWALLDIR"
+    report "Shorewall6 directory is $DIR/$SHOREWALL6DIR"
     report "Shorewall Lite directory is $DIR/$SHOREWALLLITEDIR"
+    report "Shorewall6 Lite directory is $DIR/$LITE6DIR"
     report "Shorewall Shell directory is $DIR/$SHELLDIR"
     report "Shorewall Perl directory is $DIR/$PERLDIR"
     report "SVN tag is $SVNBRANCH"
     report "Lite SVN tag is $LITESVNBRANCH"
     report "Shell SVN tag is $SHELLBRANCH"
     report "Perl SVN tag is $PERLBRANCH"
-    [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL" && report "LITETARBALL is $LITETARBALL"&& report "SHELLTARBALL is $SHELLTARBALL"&& report "PERLTARBALL is $PERLTARBALL"
-    [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME" && report "LITERPM is $LITERPMNAME" && report "SHELLRPM is $SHELLRPMNAME" && report "PERLRPM is $PERLRPMNAME"
+    if [ -n "$BUILDTARBALL" ]; then
+	report "TARBALL is $TARBALL"
+	report "TARBALL6 is $TARBALL6"
+	report "LITETARBALL is $LITETARBALL"
+	report "LITE6TARBALL is $LITE6TARBALL"
+	report "SHELLTARBALL is $SHELLTARBALL"
+	report "PERLTARBALL is $PERLTARBALL"
+    fi
+
+    if [ -n "$BUILDRPM" ]; then
+	report "RPM is $RPMNAME"
+	[ -n "$RPM6NAME" ] && report "RPM6 is $RPM6NAME"
+	report "LITERPM is $LITERPMNAME"
+	[ -n "LITE6RPMNAME" ] && report "LITE6RPM is $LITE6RPMNAME"
+	report "SHELLRPM is $SHELLRPMNAME"
+	report "PERLRPM is $PERLRPMNAME"
+    fi
 fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
 
 [ -n "$RPM6NAME" ]     || BUILD6=
-[ -n "$LITE6RPMNAME" ] || BUILD6LITE6=
+[ -n "$LITE6RPMNAME" ] || BUILD6LITE=
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
@@ -465,9 +484,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     [ -n "$BUILD6" ]      && progress_message "Exporting $SVN6BRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVN6BRANCH $SHOREWALL6DIR >> $LOGFILE 2>&1"
  
-    [ -n "$BUILDLITE" ]   && progress_message "Exporting $LITE6SVNBRANCH from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$LITE6SVNBRANCH  $LITE6DIR >> $LOGFILE 2>&1"
+    [ -n "$BUILDLITE" ]   && progress_message "Exporting $LITESVNBRANCH from SVN..."  && do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 
-    [ -n "$BUILD6LITE" ]  && progress_message "Exporting $LITESVNBRANCH from SVN..."  && do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    [ -n "$BUILD6LITE" ]  && progress_message "Exporting $LITE6SVNBRANCH from SVN..."  && do_or_die "svn export --non-interactive --force ${SVN}/$LITE6SVNBRANCH  $LITE6DIR >> $LOGFILE 2>&1"
     	
     [ -n "$BUILDPERL" ]   && progress_message "Exporting $PERLBRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
 
@@ -494,7 +513,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     [ -n "$BUILD6" ]      && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALL6DIR >> $LOGFILE 2>&1"
     [ -n "$BUILDLITE" ]   && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
-    [ -n "$BUIL6DLITE" ]  && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $LITE6DIR >> $LOGFILE 2>&1"
+    [ -n "$BUILD6LITE" ]  && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $LITE6DIR >> $LOGFILE 2>&1"
     [ -n "$BUILDPERL" ]   && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $PERLDIR >> $LOGFILE 2>&1"
     [ -n "$BUILDSHELL" ]  && do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHELLDIR >> $LOGFILE 2>&1"
 

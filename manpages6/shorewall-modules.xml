@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-modules</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>modules</refname>
+
+    <refpurpose>Shorewall file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/usr/share/shorewall/modules</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file specifies which kernel modules Shorewall will load before
+    trying to determine your iptables/kernel's capabilities. Each record in
+    the file has the following format:</para>
+
+    <cmdsynopsis>
+      <command>loadmodule</command>
+
+      <arg choice="plain"><replaceable
+      class="parameter">modulename</replaceable></arg>
+
+      <arg rep="repeat"><replaceable>moduleoption</replaceable></arg>
+    </cmdsynopsis>
+
+    <para>The <replaceable>modulename</replaceable> names a kernel module
+    (without suffix). Shorewall will search for modules based on your
+    MODULESDIR and MODULE_SUFFIX settings in <ulink
+    url="shorewall.conf.html">shorewall.conf</ulink>(8). The
+    <replaceable>moduleoption</replaceable>s are passed to modprobe (if
+    installed) or to insmod.</para>
+
+    <para>The /usr/share/shorewall/modules file contains a large number of
+    modules. Users are encouraged to copy the file to /etc/shorewall/modules
+    and modify the copy to load only the modules required.<note>
+        <para>If you build monolithic kernels and have not installed
+        module-init-tools, then create an empty /etc/shorewall/modules file;
+        that will prevent Shorewall from trying to load modules at all.
+        </para>
+      </note></para>
+  </refsect1>
+
+  <refsect1>
+    <title>Example</title>
+
+    <para>loadmodule ip_conntrack_ftp ports=21,221</para>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/usr/share/shorewall/modules</para>
+
+    <para>/etc/shorewall/modules</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

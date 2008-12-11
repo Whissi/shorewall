@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-tos</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>tos</refname>
+
+    <refpurpose>Shorewall Type of Service rules file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/tos</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file defines rules for setting Type Of Service (TOS)</para>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> -
+        {<emphasis>zone</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis
+        role="bold">all</emphasis>|<emphasis role="bold">$FW</emphasis>}
+        (Shorewall-shell)</term>
+
+        <listitem>
+          <para>Name of a <replaceable>zone</replaceable> declared in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), <emphasis
+          role="bold">all</emphasis> or <emphasis
+          role="bold">$FW</emphasis>.</para>
+
+          <para>If not <emphasis role="bold">all</emphasis> or <emphasis
+          role="bold">$FW</emphasis>, may optionally be followed by ":" and an
+          IP address, a MAC address, a subnet specification or the name of an
+          interface.</para>
+
+          <para>Example: loc:192.168.2.3</para>
+
+          <para>MAC addresses must be prefixed with "~" and use "-" as a
+          separator.</para>
+
+          <para>Example: ~00-A0-C9-15-39-78</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> - {<emphasis
+        role="bold">all</emphasis>|<emphasis>address</emphasis>]|<emphasis
+        role="bold">all</emphasis>:<emphasis>address</emphasis>|<emphasis
+        role="bold">$FW</emphasis>} (Shorewall-perl)</term>
+
+        <listitem>
+          <para>If <emphasis role="bold">all</emphasis>, may optionally be
+          followed by ":" and an IP address, a MAC address, a subnet
+          specification or the name of an interface.</para>
+
+          <para>Example: all:192.168.2.3</para>
+
+          <para>MAC addresses must be prefixed with "~" and use "-" as a
+          separator.</para>
+
+          <para>Example: ~00-A0-C9-15-39-78</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST</emphasis> -
+        {<emphasis>zone</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis
+        role="bold">all</emphasis>} (Shorewall-shell)</term>
+
+        <listitem>
+          <para>Name of a zone declared in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5) or <emphasis
+          role="bold">all</emphasis>.</para>
+
+          <para>If not <emphasis role="bold">all</emphasis>, may optionally be
+          followed by ":" and an IP address or a subnet specification</para>
+
+          <para>Example: loc:192.168.2.3</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST</emphasis> - {<emphasis
+        role="bold">all</emphasis>|<emphasis>address</emphasis>]|<emphasis
+        role="bold">all</emphasis>:<emphasis>address</emphasis>}
+        (Shorewall-perl)</term>
+
+        <listitem>
+          <para>Example: 192.168.2.3</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTOCOL</emphasis> -
+        <emphasis>proto-name-or-number</emphasis></term>
+
+        <listitem>
+          <para>Protocol name or number.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> -
+        {-|<emphasis>port</emphasis>|<emphasis>lowport</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>highport</emphasis>}</term>
+
+        <listitem>
+          <para>Source port or port range. If all ports, use "-".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S)</emphasis> -
+        {-|<emphasis>port</emphasis>|<emphasis>lowport</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>highport</emphasis>}</term>
+
+        <listitem>
+          <para>Destination port or port range. If all ports, use "-"</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">TOS</emphasis> -
+        <emphasis>tos</emphasis></term>
+
+        <listitem>
+          <para>Must be one of the following;</para>
+
+          <programlisting>        <emphasis role="bold">tos-minimize-delay</emphasis> (16)
+        <emphasis role="bold">tos-maximize-throughput</emphasis> (8)
+        <emphasis role="bold">tos-maximize-reliability</emphasis> (4)
+        <emphasis role="bold">tos-minimize-cost</emphasis> (2)
+        <emphasis role="bold">tos-normal-service</emphasis> (0)</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MARK</emphasis> - [<emphasis
+        role="bold">!</emphasis>]<emphasis>value</emphasis>[/<emphasis>mask</emphasis>][<emphasis
+        role="bold">:C</emphasis>]</term>
+
+        <listitem>
+          <para>If you don't want to define a test but need to specify
+          anything in the following columns, place a "-" in this field.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>!</term>
+
+              <listitem>
+                <para>Inverts the test (not equal)</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>value</emphasis></term>
+
+              <listitem>
+                <para>Value of the packet or connection mark.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>mask</emphasis></term>
+
+              <listitem>
+                <para>A mask to be applied to the mark before testing.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">:C</emphasis></term>
+
+              <listitem>
+                <para>Designates a connection mark. If omitted, the packet
+                mark's value is tested. This option is only supported by
+                Shorewall-perl.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/tos</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

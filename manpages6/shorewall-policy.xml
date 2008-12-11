@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-policy</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>policy</refname>
+
+    <refpurpose>Shorewall policy file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/policy</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file defines the high-level policy for connections between
+    zones defined in <ulink
+    url="shorewall-zones.html">shorewall-zones</ulink>(5).</para>
+
+    <important>
+      <para>The order of entries in this file is important</para>
+
+      <para>This file determines what to do with a new connection request if
+      we don't get a match from the /etc/shorewall/rules file . For each
+      source/destination pair, the file is processed in order until a match is
+      found ("all" will match any client or server).</para>
+    </important>
+
+    <important>
+      <para>Intra-zone policies are pre-defined</para>
+
+      <para>For $FW and for all of the zones defined in /etc/shorewall/zones,
+      the POLICY for connections from the zone to itself is ACCEPT (with no
+      logging or TCP connection rate limiting but may be overridden by an
+      entry in this file. The overriding entry must be explicit (cannot use
+      "all" in the SOURCE or DEST).</para>
+
+      <para>Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall.conf,
+      then the implicit policy to/from any sub-zone is CONTINUE. These
+      implicit CONTINUE policies may also be overridden by an explicit entry
+      in this file.</para>
+    </important>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> -
+        <emphasis>zone</emphasis>|<emphasis
+        role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
+
+        <listitem>
+          <para>Source zone. Must be the name of a zone defined in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW or
+          "all".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST</emphasis> -
+        <emphasis>zone</emphasis>|<emphasis
+        role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
+
+        <listitem>
+          <para>Destination zone. Must be the name of a zone defined in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW or "all".
+          If the DEST is a bport zone, then the SOURCE must be "all", another
+          bport zone associated with the same bridge, or it must be an ipv4
+          zone that is associated with only the same bridge.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">POLICY</emphasis> - {<emphasis
+        role="bold">ACCEPT</emphasis>|<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|<emphasis
+        role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">QUEUE</emphasis>|<emphasis
+        role="bold">NFQUEUE</emphasis>[(<emphasis>queuenumber</emphasis>)]|<emphasis
+        role="bold">NONE</emphasis>}[<emphasis
+        role="bold">:</emphasis>{<emphasis>default-action-or-macro</emphasis>|<emphasis
+        role="bold">None</emphasis>}]</term>
+
+        <listitem>
+          <para>Policy if no match from the rules file is found.</para>
+
+          <para>If the policy is other than CONTINUE or NONE then the policy
+          may be followed by ":" and one of the following:</para>
+
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>The word "None" or "none". This causes any default action
+              defined in <ulink
+              url="shorewall.conf.html">shorewall.conf</ulink>(5) to be
+              omitted for this policy.</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of an action (requires that USE_ACTIONS=Yes in
+              <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5)).
+              That action will be invoked before the policy is
+              enforced.</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of a macro. The rules in that macro will be
+              applied before the policy is enforced. This does not require
+              USE_ACTIONS=Yes.</para>
+            </listitem>
+          </orderedlist>
+
+          <blockquote>
+            <programlisting></programlisting>
+
+            <para>Possible policies are:</para>
+          </blockquote>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">ACCEPT</emphasis></term>
+
+              <listitem>
+                <para>Accept the connection.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">DROP</emphasis></term>
+
+              <listitem>
+                <para>Ignore the connection request.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">REJECT</emphasis></term>
+
+              <listitem>
+                <para>For TCP, send RST. For all other, send an "unreachable"
+                ICMP.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">QUEUE</emphasis></term>
+
+              <listitem>
+                <para>Queue the request for a user-space application such as
+                Snort-inline.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">NFQUEUE</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall-perl 4.0.3. Queue the request for a
+                user-space application using the nfnetlink_queue mechanism. If
+                a <replaceable>queuenumber</replaceable> is not given, queue
+                zero (0) is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">CONTINUE</emphasis></term>
+
+              <listitem>
+                <para>Pass the connection request past any other rules that it
+                might also match (where the source or destination zone in
+                those rules is a superset of the SOURCE or DEST in this
+                policy). See <ulink
+                url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for
+                additional information.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">NONE</emphasis></term>
+
+              <listitem>
+                <para>Assume that there will never be any packets from this
+                SOURCE to this DEST. Shorewall will not create any
+                infrastructure to handle such packets and you may not have any
+                rules with this SOURCE and DEST in the /etc/shorewall/rules
+                file. If such a packet <emphasis role="bold">is</emphasis>
+                received, the result is undefined. NONE may not be used if the
+                SOURCE or DEST columns contain the firewall zone ($FW) or
+                "all".</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">LOG LEVEL</emphasis> (Optional) -
+        [<emphasis>log-level</emphasis>|<emphasis
+        role="bold">ULOG</emphasis>]</term>
+
+        <listitem>
+          <para>If supplied, each connection handled under the default POLICY
+          is logged at that level. If not supplied, no log message is
+          generated. See syslog.conf(5) for a description of log
+          levels.</para>
+
+          <para>You may also specify ULOG (must be in upper case). This will
+          log to the ULOG target and will send to a separate log through use
+          of ulogd (<ulink
+          url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
+
+          <para>If you don't want to log but need to specify the following
+          column, place "-" here.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">BURST:LIMIT</emphasis> -
+        <emphasis>rate</emphasis><emphasis role="bold">/</emphasis>{<emphasis
+        role="bold">second</emphasis>|<emphasis
+        role="bold">minute</emphasis>}:<emphasis>burst</emphasis></term>
+
+        <listitem>
+          <para>If passed, specifies the maximum TCP connection
+          <emphasis>rate</emphasis> and the size of an acceptable
+          <emphasis>burst</emphasis>. If not specified, TCP connections are
+          not limited.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CONNLIMIT</emphasis> -
+        <emphasis>limit</emphasis>[:<emphasis>mask</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall-perl 4.2.1. May be used to limit the number
+          of simultaneous connections from each individual host to
+          <replaceable>limit</replaceable> connections. While the limit is
+          only checked on connections to which this policy could apply, the
+          number of current connections is calculated over all current
+          connections from the SOURCE host. By default, the limit is applied
+          to each host individually but can be made to apply to networks of
+          hosts by specifying a <replaceable>mask</replaceable>. The
+          <replaceable>mask</replaceable> specifies the width of a VLSM mask
+          to be applied to the source address; the number of current
+          connections is then taken over all hosts in the subnet
+          <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Example</title>
+
+    <orderedlist numeration="loweralpha">
+      <listitem>
+        <para>All connections from the local network to the internet are
+        allowed</para>
+      </listitem>
+
+      <listitem>
+        <para>All connections from the internet are ignored but logged at
+        syslog level KERNEL.INFO.</para>
+      </listitem>
+
+      <listitem>
+        <para>All other connection requests are rejected and logged at level
+        KERNEL.INFO.</para>
+      </listitem>
+    </orderedlist>
+
+    <programlisting>        #SOURCE         DEST            POLICY          LOG           BURST:LIMIT
+        #                                               LEVEL
+        loc             net             ACCEPT
+        net             all             DROP            info
+        #
+        # THE FOLLOWING POLICY MUST BE LAST
+        #
+        all             all             REJECT          info</programlisting>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/policy</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

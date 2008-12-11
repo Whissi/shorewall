@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-netmap</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>netmap</refname>
+
+    <refpurpose>Shorewall NETMAP definition file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/netmap</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file is used to map addresses in one network to corresponding
+    addresses in a second network.</para>
+
+    <warning>
+      <para>To use this file, your kernel and iptables must have NETMAP
+      support included.</para>
+    </warning>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">TYPE</emphasis> - <emphasis
+        role="bold">DNAT</emphasis>|<emphasis
+        role="bold">SNAT</emphasis></term>
+
+        <listitem>
+          <para>Must be DNAT or SNAT.</para>
+
+          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
+          it's destination address rewritten to the corresponding address in
+          NET2.</para>
+
+          <para>If SNAT, traffic leaving INTERFACE with a source address in
+          NET1 has it's source address rewritten to the corresponding address
+          in NET2.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">NET1</emphasis> -
+        <emphasis>network-address</emphasis></term>
+
+        <listitem>
+          <para>Network in CIDR format (e.g., 192.168.1.0/24).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACE</emphasis> -
+        <emphasis>interface</emphasis></term>
+
+        <listitem>
+          <para>The name of a network interface. The interface must be defined
+          in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          Prior to Shorewall 4.1.4, this must be an exact match.
+          Shorewall-perl 4.1.4 and later allow loose matches to wildcard
+          entries in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5). For
+          example, <filename class="devicefile">ppp0</filename> in this file
+          will match a <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(8)
+          entry that defines <filename
+          class="devicefile">ppp+</filename>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">NET2</emphasis> -
+        <emphasis>network-address</emphasis></term>
+
+        <listitem>
+          <para>Network in CIDR format</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/netmap</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para><ulink
+    url="http://shorewall.net/netmap.html">http://shorewall.net/netmap.html</ulink></para>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

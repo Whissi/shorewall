@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-accounting</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>accounting</refname>
+
+    <refpurpose>Shorewall Accounting file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/accounting</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>Accounting rules exist simply to count packets and bytes in
+    categories that you define in this file. You may display these rules and
+    their packet and byte counters using the <command>shorewall show
+    accounting</command> command.</para>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
+        role="bold">COUNT</emphasis>|<emphasis
+        role="bold">DONE</emphasis>|<emphasis>chain</emphasis>[:<emphasis
+        role="bold">COUNT</emphasis>]}</term>
+
+        <listitem>
+          <para>What to do when a matching packet is found.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">COUNT</emphasis></term>
+
+              <listitem>
+                <para>Simply count the match and continue with the next
+                rule</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">DONE</emphasis></term>
+
+              <listitem>
+                <para>Count the match and don't attempt to match any other
+                accounting rules in the chain specified in the <emphasis
+                role="bold">CHAIN</emphasis> column.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>chain</emphasis>[<emphasis
+              role="bold">:</emphasis><emphasis
+              role="bold">COUNT</emphasis>]</term>
+
+              <listitem>
+                <para>Where <emphasis>chain</emphasis> is the name of a chain;
+                Shorewall will create the chain automatically if it doesn't
+                already exist. Causes a jump to that chain to be added to the
+                chain specified in the CHAIN column. If <emphasis
+                role="bold">:COUNT</emphasis> is included, a counting rule
+                matching this entry will be added to
+                <emphasis>chain</emphasis></para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CHAIN</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis>chain</emphasis>}</term>
+
+        <listitem>
+          <para>The name of a <emphasis>chain</emphasis>. If specified as
+          <emphasis role="bold">-</emphasis> the <emphasis
+          role="bold">accounting</emphasis> chain is assumed. This is the
+          chain where the accounting rule is added. The
+          <emphasis>chain</emphasis> will be created if it doesn't already
+          exist.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
+
+        <listitem>
+          <para>Packet Source.</para>
+
+          <para>The name of an <replaceable>interface</replaceable>, an
+          <replaceable>address</replaceable> (host or net) or an
+          <replaceable>interface</replaceable> name followed by ":" and a host
+          or net <replaceable>address</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DESTINATION</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
+        role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
+
+        <listitem>
+          <para>Packet Destination.</para>
+
+          <para>Format same as <emphasis role="bold">SOURCE</emphasis>
+          column.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTOCOL</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis
+        role="bold">ipp2p</emphasis>[<emphasis
+        role="bold">:</emphasis>{<emphasis
+        role="bold">udp</emphasis>|<emphasis
+        role="bold">all</emphasis>}]}</term>
+
+        <listitem>
+          <para>A <emphasis>protocol-name</emphasis> (from protocols(5)), a
+          <emphasis>protocol-number</emphasis>, <emphasis
+          role="bold">ipp2p</emphasis>, <emphasis
+          role="bold">ipp2p:udp</emphasis> or <emphasis
+          role="bold">ipp2p:all</emphasis></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S)</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>ipp2p-option</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
+
+        <listitem>
+          <para>Destination Port number. Service name from services(5) or
+          <emphasis>port number</emphasis>. May only be specified if the
+          protocol is <emphasis role="bold">tcp</emphasis> or <emphasis
+          role="bold">udp</emphasis> (6 or 17).</para>
+
+          <para>You may place a comma-separated list of port names or numbers
+          in this column if your kernel and iptables include multiport match
+          support.</para>
+
+          <para>If the PROTOCOL is <emphasis role="bold">ipp2p</emphasis> then
+          this column must contain an <emphasis>ipp2p-option</emphasis>
+          ("iptables -m ipp2p --help") without the leading "--". If no option
+          is given in this column, <emphasis role="bold">ipp2p</emphasis> is
+          assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">any</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
+
+        <listitem>
+          <para>Service name from services(5) or <emphasis>port
+          number</emphasis>. May only be specified if the protocol is TCP or
+          UDP (6 or 17).</para>
+
+          <para>You may place a comma-separated list of port numbers in this
+          column if your kernel and iptables include multiport match
+          support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">USER/GROUP</emphasis> - [<emphasis
+        role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
+        role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
+
+        <listitem>
+          <para>This column may only be non-empty if the <emphasis
+          role="bold">CHAIN</emphasis> is <emphasis
+          role="bold">OUTPUT</emphasis>.</para>
+
+          <para>When this column is non-empty, the rule applies only if the
+          program generating the output is running under the effective
+          <emphasis>user</emphasis> and/or <emphasis>group</emphasis>
+          specified (or is NOT running under that id if "!" is given).</para>
+
+          <para>Examples:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>joe</term>
+
+              <listitem>
+                <para>program must be run by joe</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>:kids</term>
+
+              <listitem>
+                <para>program must be run by a member of the 'kids'
+                group</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>!:kids</term>
+
+              <listitem>
+                <para>program must not be run by a member of the 'kids'
+                group</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>+upnpd</term>
+
+              <listitem>
+                <para>#program named upnpd</para>
+
+                <important>
+                  <para>The ability to specify a program name was removed from
+                  Netfilter in kernel version 2.6.14.</para>
+                </important>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MARK</emphasis> - [<emphasis
+        role="bold">!</emphasis>]<emphasis>value</emphasis>[/<emphasis>mask</emphasis>][<emphasis
+        role="bold">:C</emphasis>]</term>
+
+        <listitem>
+          <para>Defines a test on the existing packet or connection mark. The
+          rule will match only if the test returns true.</para>
+
+          <para>If you don't want to define a test but need to specify
+          anything in the following columns, place a "-" in this field.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>!</term>
+
+              <listitem>
+                <para>Inverts the test (not equal)</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>value</emphasis></term>
+
+              <listitem>
+                <para>Value of the packet or connection mark.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>mask</emphasis></term>
+
+              <listitem>
+                <para>A mask to be applied to the mark before testing.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">:C</emphasis></term>
+
+              <listitem>
+                <para>Designates a connection mark. If omitted, the packet
+                mark's value is tested. This option is only supported by
+                Shorewall-perl.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>In all of the above columns except <emphasis
+    role="bold">ACTION</emphasis> and <emphasis role="bold">CHAIN</emphasis>,
+    the values <emphasis role="bold">-</emphasis>, <emphasis
+    role="bold">any</emphasis> and <emphasis role="bold">all</emphasis> may be
+    used as wildcards. Omitted trailing columns are also treated as
+    wildcards.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/accounting</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para><ulink
+    url="http://shorewall.net/Accounting.html">http://shorewall.net/Accounting.html
+    </ulink></para>
+
+    <para>shorewall(8), shorewall-actions(5), shorewall-blacklist(5),
+    shorewall-hosts(5), shorewall-interfaces(5), shorewall-ipsec(5),
+    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

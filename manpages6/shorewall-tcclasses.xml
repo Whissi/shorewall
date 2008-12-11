@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-tcclasses</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>tcclasses</refname>
+
+    <refpurpose>Shorewall file to define HTB classes</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/tcclasses</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>A note on the <emphasis>rate</emphasis>/bandwidth definitions used
+    in this file:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>don't use a space between the integer value and the unit: 30kbit
+        is valid while 30 kbit is NOT.</para>
+      </listitem>
+
+      <listitem>
+        <para>you can use one of the following units:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term><emphasis role="bold">kpbs</emphasis></term>
+
+            <listitem>
+              <para>Kilobytes per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">mbps</emphasis></term>
+
+            <listitem>
+              <para>Megabytes per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">kbit</emphasis></term>
+
+            <listitem>
+              <para>Kilobits per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">mbit</emphasis></term>
+
+            <listitem>
+              <para>Megabits per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">bps</emphasis> or <emphasis
+            role="bold">number</emphasis></term>
+
+            <listitem>
+              <para>Bytes per second.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </listitem>
+
+      <listitem>
+        <para>if you want the values to be calculated for you depending on the
+        output bandwidth setting defined for an interface in tcdevices, you
+        can use expressions like the following:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>full/3</term>
+
+            <listitem>
+              <para>causes the bandwidth to be calculated as 1/3 of the full
+              outgoing speed that is defined.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>full*9/10</term>
+
+            <listitem>
+              <para>will set this bandwidth to 9/10 of the full
+              bandwidth</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>DO NOT add a unit to the rate if it is calculated !</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACE</emphasis> -
+        <emphasis>interface</emphasis>[:<emphasis>class</emphasis>]</term>
+
+        <listitem>
+          <para>Name of <emphasis>interface</emphasis>. Each interface may be
+          listed only once in this file. You may NOT specify the name of an
+          alias (e.g., eth0:0) here; see <ulink
+          url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
+
+          <para>If you are running Shorewall-perl 4.1.6 or later, you may
+          specify the interface number rather than the interface name. If the
+          <emphasis role="bold">classify</emphasis> option is given for the
+          interface in <ulink
+          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5), then
+          you must also specify an interface class (an integer that must be
+          unique within classes associated with this interface).</para>
+
+          <para>You may NOT specify wildcards here, e.g. if you have multiple
+          ppp interfaces, you need to put them all in here!</para>
+
+          <para>Please note that you can only use interface names in here that
+          have a bandwidth defined in the <ulink
+          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
+          file</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MARK</emphasis> -
+        {-|<emphasis>value</emphasis>}</term>
+
+        <listitem>
+          <para>The mark <emphasis>value</emphasis> which is an integer in the
+          range 1-255. You set mark values in the <ulink
+          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) file,
+          marking the traffic you want to fit in the classes defined in here.
+          Must be specified as '-' if the <emphasis
+          role="bold">classify</emphasis> option is given for the interface in
+          <ulink
+          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)</para>
+
+          <para>You can use the same marks for different interfaces.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">RATE</emphasis> -
+        <emphasis>rate</emphasis></term>
+
+        <listitem>
+          <para>The minimum bandwidth this class should get, when the traffic
+          load rises. If the sum of the rates in this column exceeds the
+          INTERFACE's OUT-BANDWIDTH, then the OUT-BANDWIDTH limit may not be
+          honored.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CEIL</emphasis> -
+        <emphasis>rate</emphasis></term>
+
+        <listitem>
+          <para>The maximum bandwidth this class is allowed to use when the
+          link is idle. Useful if you have traffic which can get full speed
+          when more needed services (e.g. ssh) are not used.</para>
+
+          <para>You can use the value <emphasis role="bold">full</emphasis> in
+          here for setting the maximum bandwidth to the defined output
+          bandwidth of that interface.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PRIORITY</emphasis> -
+        <emphasis>priority</emphasis></term>
+
+        <listitem>
+          <para>The <emphasis>priority</emphasis> in which classes will be
+          serviced by the packet shaping scheduler and also the priority in
+          which bandwidth in excess of the rate will be given to each
+          class.</para>
+
+          <para>Higher priority classes will experience less delay since they
+          are serviced first. Priority values are serviced in ascending order
+          (e.g. 0 is higher priority than 1).</para>
+
+          <para>Classes may be set to the same priority, in which case they
+          will be serviced as equals.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OPTIONS</emphasis> (Optional) -
+        [<emphasis>option</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
+
+        <listitem>
+          <para>Added in Shorewall-perl 4.1. A comma-separated list of options
+          including the following:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">default</emphasis></term>
+
+              <listitem>
+                <para>This is the default class for that interface where all
+                traffic should go, that is not classified otherwise.</para>
+
+                <para></para>
+
+                <note>
+                  <para>You must define <emphasis
+                  role="bold">default</emphasis> for exactly one class per
+                  interface.</para>
+                </note>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tos=0x</emphasis><emphasis>value</emphasis>[/0x<emphasis>mask</emphasis>]
+              (mask defaults to 0xff)</term>
+
+              <listitem>
+                <para>This lets you define a classifier for the given
+                <emphasis>value</emphasis>/<emphasis>mask</emphasis>
+                combination of the IP packet's TOS/Precedence/DiffSrv octet
+                (aka the TOS byte). Please note that classifiers override all
+                mark settings, so if you define a classifer for a class, all
+                traffic having that mark will go in it regardless of any mark
+                set on the packet by a firewall/mangle filter.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tos-</emphasis><emphasis>tosname</emphasis></term>
+
+              <listitem>
+                <para>Aliases for the following TOS octet value and mask
+                encodings. TOS encodings of the "TOS byte" have been
+                deprecated in favor of diffserve classes, but programs like
+                ssh, rlogin, and ftp still use them.</para>
+
+                <programlisting>        <emphasis role="bold">tos-minimize-delay</emphasis>       0x10/0x10
+        <emphasis role="bold">tos-maximize-throughput</emphasis>  0x08/0x08
+        <emphasis role="bold">tos-maximize-reliability</emphasis> 0x04/0x04
+        <emphasis role="bold">tos-minimize-cost</emphasis>        0x02/0x02
+        <emphasis role="bold">tos-normal-service</emphasis>       0x00/0x1e</programlisting>
+
+                <note>
+                  <para>Each of these options is only valid for ONE class per
+                  interface.</para>
+                </note>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">tcp-ack</emphasis></term>
+
+              <listitem>
+                <para>If defined, causes a tc filter to be created that puts
+                all tcp ack packets on that interface that have a size of
+                &lt;=64 Bytes to go in this class. This is useful for speeding
+                up downloads. Please note that the size of the ack packets is
+                limited to 64 bytes because we want only packets WITHOUT
+                payload to match.</para>
+
+                <para></para>
+
+                <note>
+                  <para>This option is only valid for ONE class per
+                  interface.</para>
+                </note>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example 1:</term>
+
+        <listitem>
+          <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
+          interface for this. You have 4 classes here, the first you can use
+          for voice over IP traffic, the second interactive traffic (e.g.
+          ssh/telnet but not scp), the third will be for all unclassified
+          traffic, and the forth is for low priority traffic (e.g.
+          peer-to-peer).</para>
+
+          <para>The voice traffic in the first class will be guaranteed a
+          minimum of 100kbps and always be serviced first (because of the low
+          priority number, giving less delay) and will be granted excess
+          bandwidth (up to 180kbps, the class ceiling) first, before any other
+          traffic. A single VOIP stream, depending upon codecs, after
+          encapsulation, can take up to 80kbps on a PPOE/DSL link, so we pad a
+          little bit just in case. (TOS byte values 0xb8 and 0x68 are DiffServ
+          classes EF and AFF3-1 respectively and are often used by VOIP
+          devices).</para>
+
+          <para>Interactive traffic (tos-minimum-delay) and TCP acks (and ICMP
+          echo traffic if you use the example in tcrules) and any packet with
+          a mark of 2 will be guaranteed 1/4 of the link bandwidth, and may
+          extend up to full speed of the link.</para>
+
+          <para>Unclassified traffic and packets marked as 3 will be
+          guaranteed 1/4th of the link bandwidth, and may extend to the full
+          speed of the link.</para>
+
+          <para>Packets marked with 4 will be treated as low priority packets.
+          (The tcrules example marks p2p traffic as such.) If the link is
+          congested, they're only guaranteed 1/8th of the speed, and even if
+          the link is empty, can only expand to 80% of link bandwidth just as
+          a precaution in case there are upstream queues we didn't account
+          for. This is the last class to get additional bandwidth and the last
+          to get serviced by the scheduler because of the low priority.</para>
+
+          <programlisting>        #INTERFACE  MARK  RATE    CEIL      PRIORITY    OPTIONS
+        ppp0        1     100kbit 180kbit   1           tos=0x68/0xfc,tos=0xb8/0xfc
+        ppp0        2     full/4  full      2           tcp-ack,tos-minimize-delay
+        ppp0        3     full/4  full      3           default
+        ppp0        4     full/8  full*8/10 4</programlisting>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/tcclasses</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para><ulink
+    url="http://shorewall.net/traffic_shaping.htm">http://shorewall.net/traffic_shaping.htm</ulink></para>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Zones.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Zones.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -66,7 +66,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.1.5;
+our $VERSION = 4.3.1;
 
 #
 # IPSEC Option types

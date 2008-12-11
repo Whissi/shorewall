@@ -26,7 +26,6 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Socket6;
 use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 F_IPV4 F_IPV6 );
 
 use strict;
@@ -507,13 +506,14 @@ sub validate_6address( $$ ) {
     my @addrs = ( $addr );
     
     unless ( valid_6address $addr ) {
+	require Socket6;
 	fatal_error "Invalid IPv6 Address ($addr)" unless $allow_name;
-	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname2 $addr, AF_INET6());
+	fatal_error "Unknown Host ($addr)" unless (@addrs = Socket6::gethostbyname2( $addr, Socket6::AF_INET6()));
 
 	if ( defined wantarray ) {
 	    shift @addrs for (1..4);
 	    for ( @addrs ) {
-		$_ = inet_ntop AF_INET6(), $_;
+		$_ = Socket6::inet_ntop( Socket6::AF_INET6(), $_ );
 	    }
 	}
     }

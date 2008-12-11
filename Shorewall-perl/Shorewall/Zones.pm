@@ -1018,7 +1018,7 @@ sub validate_hosts_file()
 		fatal_error "Invalid HOST(S) column contents: $hosts";
 	    }
 	} else {
-	    if ( $hosts =~ /^([\w.@%-]+\+?)\[(.*)\]\s+$/ ) {
+	    if ( $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]\s*$/ ) {
 		$interface = $1;
 		$hosts = $2;
 		$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;

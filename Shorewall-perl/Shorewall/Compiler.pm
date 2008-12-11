@@ -203,7 +203,7 @@ sub generate_script_1() {
     } else {
 	if ( $config{IP6TABLES} ) {
 	    emit( qq(IP6TABLES="$config{IP6TABLES}"),
-		  '[ -x "$I6PTABLES" ] || startup_error "IP6TABLES=$IP6TABLES does not exist or is not executable"',
+		  '[ -x "$IP6TABLES" ] || startup_error "IP6TABLES=$IP6TABLES does not exist or is not executable"',
 		);
 	} else {
 	    emit( '[ -z "$IP6TABLES" ] && IP6TABLES=$(mywhich iptables) # /sbin/shorewall6 exports IP6TABLES',

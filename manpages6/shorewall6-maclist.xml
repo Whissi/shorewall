@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-maclist</refentrytitle>
+    <refentrytitle>shorewall6-maclist</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>maclist</refname>
 
-    <refpurpose>Shorewall MAC Verification file</refpurpose>
+    <refpurpose>shorewall6 MAC Verification file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/maclist</command>
+      <command>/etc/shorewall6/maclist</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -22,12 +24,12 @@
     <title>Description</title>
 
     <para>This file is used to define the MAC addresses and optionally their
-    associated IP addresses to be allowed to use the specified interface. The
-    feature is enabled by using the <emphasis role="bold">maclist</emphasis>
-    option in the <ulink
-    url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5) or <ulink
-    url="shorewall-hosts.html">shorewall-hosts</ulink>(5) configuration
-    file.</para>
+    associated IPv6 addresses to be allowed to use the specified interface.
+    The feature is enabled by using the <emphasis
+    role="bold">maclist</emphasis> option in the <ulink
+    url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5) or
+    <ulink url="shorewall6-hosts.html">shorewall6-hosts</ulink>(5)
+    configuration file.</para>
 
     <para>The columns in the file are as follows.</para>
 
@@ -41,8 +43,8 @@
         <listitem>
           <para><emphasis role="bold">ACCEPT</emphasis> or <emphasis
           role="bold">DROP</emphasis> (if MACLIST_TABLE=filter in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5), then REJECT is
-          also allowed). If specified, the
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5), then REJECT
+          is also allowed). If specified, the
           <replaceable>log-level</replaceable> causes packets matching the
           rule to be logged at that level.</para>
         </listitem>
@@ -63,7 +65,7 @@
 
         <listitem>
           <para>MAC <emphasis>address</emphasis> of the host -- you do not
-          need to use the Shorewall format for MAC addresses here. If
+          need to use the shorewall6 format for MAC addresses here. If
           <emphasis role="bold">IP ADDRESSESES</emphasis> is supplied then
           <emphasis role="bold">MAC</emphasis> can be supplied as a dash
           (<emphasis role="bold">-</emphasis>)</para>
@@ -90,7 +92,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/maclist</para>
+    <para>/etc/shorewall6/maclist</para>
   </refsect1>
 
   <refsect1>
@@ -99,13 +101,12 @@
     <para><ulink
     url="http://shorewall.net/MAC_Validation.html">http://shorewall.net/MAC_Validation.html</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-params(5), shorewall6-policy(5), shorewall6-providers(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

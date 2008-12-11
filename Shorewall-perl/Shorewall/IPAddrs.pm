@@ -480,11 +480,20 @@ sub valid_6address( $ ) {
     my $address = $_[0];
 
     my @address = split /:/, $address;
+    my $max;
 
-    return 0 if @address > 8;
-    return 0 if @address < 8 && ! $address =~ /::/;
-    return 0 if $address =~ /:::/ || $address =~ /::.*::/;
+    if ( $address[-1] && $address[-1] =~ /^\d+\.\d+\.\d+\.\d+$/ ) {
+	return 0 unless valid_4address pop @address;
+	$max = 6;
+	$address = join ':', @address;
+    } else {
+	$max = 8;
+    }
     
+    return 0 if @address > $max;
+    return 0 if @address < $max && ! $address =~ /::/;
+    return 0 if $address =~ /:::/ || $address =~ /::.*::/;
+
     if ( $address =~ /^:/ ) {
 	unless ( $address eq '::' ) {
 	    return 0 if $address =~ /:$/ || $address =~ /^:.*::/;
@@ -506,8 +515,8 @@ sub validate_6address( $$ ) {
     my @addrs = ( $addr );
     
     unless ( valid_6address $addr ) {
-	require Socket6;
 	fatal_error "Invalid IPv6 Address ($addr)" unless $allow_name;
+	require Socket6;
 	fatal_error "Unknown Host ($addr)" unless (@addrs = Socket6::gethostbyname2( $addr, Socket6::AF_INET6()));
 
 	if ( defined wantarray ) {

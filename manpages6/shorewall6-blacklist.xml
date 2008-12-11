@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-blacklist</refentrytitle>
+    <refentrytitle>shorewall6-blacklist</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>blacklist</refname>
 
-    <refpurpose>Shorewall Blacklist file</refpurpose>
+    <refpurpose>shorewall6 Blacklist file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/blacklist</command>
+      <command>/etc/shorewall6/blacklist</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -74,12 +76,12 @@
 
     <para>When a packet arrives on an interface that has the <emphasis
     role="bold">blacklist</emphasis> option specified in <ulink
-    url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5), its
+    url="shorewall-interfaces.html">shorewall6-interfaces</ulink>(5), its
     source IP address and MAC address is checked against this file and
     disposed of according to the <emphasis
     role="bold">BLACKLIST_DISPOSITION</emphasis> and <emphasis
     role="bold">BLACKLIST_LOGLEVEL</emphasis> variables in <ulink
-    url="shorewall.conf.html">shorewall.conf</ulink>(5). If <emphasis
+    url="shorewall.conf.html">shorewall6.conf</ulink>(5). If <emphasis
     role="bold">PROTOCOL</emphasis> or <emphasis
     role="bold">PROTOCOL</emphasis> and <emphasis role="bold">PORTS</emphasis>
     are supplied, only packets matching the protocol (and one of the ports if
@@ -94,10 +96,11 @@
         <term>Example 1:</term>
 
         <listitem>
-          <para>To block DNS queries from address 192.0.2.126:</para>
+          <para>To block DNS queries from address
+          fe80::2a0:ccff:fedb:31c4:</para>
 
-          <programlisting>        #ADDRESS/SUBNET         PROTOCOL        PORT
-        192.0.2.126             udp             53</programlisting>
+          <programlisting>        #ADDRESS/SUBNET            PROTOCOL        PORT
+        fe80::2a0:ccff:fedb:31c4/  udp             53</programlisting>
         </listitem>
       </varlistentry>
 
@@ -118,22 +121,21 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/blacklist</para>
+    <para>/etc/shorewall6/blacklist</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
     <para><ulink
-    url="http://shorewall.net/blacklisting_support.htm">http://shorewall.net/blacklisting_support.htm</ulink></para>
+    url="http://shorewall.net/blacklisting_support.htm">http://shorewall6.net/blacklisting_support.htm</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-hosts(5), shorewall-interfaces(5), shorewall-ipsec(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-hosts(5), shorewall6-interfaces(5), shorewall6-maclist(5),
+    shorewall6-params(5), shorewall6-policy(5), shorewall6-providers(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

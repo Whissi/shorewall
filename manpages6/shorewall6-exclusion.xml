@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-exclusion</refentrytitle>
+    <refentrytitle>shorewall6-exclusion</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,7 +11,7 @@
   <refnamediv>
     <refname>exclusion</refname>
 
-    <refpurpose>Exclude a set of hosts from a definition in a shorewall
+    <refpurpose>Exclude a set of hosts from a definition in a shorewall6
     configuration file.</refpurpose>
   </refnamediv>
 
@@ -26,9 +28,9 @@
     <para>Exclusion is used when you wish to exclude one or more addresses
     from a definition. An exclaimation point is followed by a comma-separated
     list of addresses. The addresses may be single host addresses (e.g.,
-    192.168.1.4) or they may be network addresses in CIDR format (e.g.,
-    192.168.1.0/24). If your kernel and iptables include iprange support, you
-    may also specify ranges of ip addresses of the form
+    fe80::2a0:ccff:fedb:31c4) or they may be network addresses in CIDR format
+    (e.g., fe80::2a0:ccff:fedb:31c4/64). If your kernel and iptables include
+    iprange support, you may also specify ranges of ip addresses of the form
     <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis></para>
 
     <para>No embedded whitespace is allowed.</para>
@@ -40,69 +42,26 @@
   </refsect1>
 
   <refsect1>
-    <title>Examples</title>
-
-    <variablelist>
-      <varlistentry>
-        <term>Example 1 - All IPv4 addresses except 192.168.3.4</term>
-
-        <listitem>
-          <para>!192.168.3.4</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 2 - All IPv4 addresses except the network 192.168.1.0/24
-        and the host 10.2.3.4</term>
-
-        <listitem>
-          <para>!192.168.1.0/24,10.1.3.4</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 3 - All IPv4 addresses except the range
-        192.168.1.3-192.168.1.12 and the network 10.0.0.0/8</term>
-
-        <listitem>
-          <para>!192.168.1.3-192.168.1.12,10.0.0.0/8</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 4 - The network 192.168.1.0/24 except hosts 192.168.1.3
-        and 192.168.1.9</term>
-
-        <listitem>
-          <para>192.168.1.0/24!192.168.1.3,192.168.1.9</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
-  </refsect1>
-
-  <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/hosts</para>
+    <para>/etc/shorewall6/hosts</para>
 
-    <para>/etc/shorewall/masq</para>
+    <para>/etc/shorewall6/masq</para>
 
-    <para>/etc/shorewall/rules</para>
+    <para>/etc/shorewall6/rules</para>
 
-    <para>/etc/shorewall/tcrules</para>
+    <para>/etc/shorewall6/tcrules</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

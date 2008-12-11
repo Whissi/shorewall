@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-modules</refentrytitle>
+    <refentrytitle>shorewall6-modules</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,19 +11,19 @@
   <refnamediv>
     <refname>modules</refname>
 
-    <refpurpose>Shorewall file</refpurpose>
+    <refpurpose>shorewall6 file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/usr/share/shorewall/modules</command>
+      <command>/usr/share/shorewall6/modules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>This file specifies which kernel modules Shorewall will load before
+    <para>This file specifies which kernel modules shorewall6 will load before
     trying to determine your iptables/kernel's capabilities. Each record in
     the file has the following format:</para>
 
@@ -35,19 +37,19 @@
     </cmdsynopsis>
 
     <para>The <replaceable>modulename</replaceable> names a kernel module
-    (without suffix). Shorewall will search for modules based on your
+    (without suffix). shorewall6 will search for modules based on your
     MODULESDIR and MODULE_SUFFIX settings in <ulink
-    url="shorewall.conf.html">shorewall.conf</ulink>(8). The
+    url="shorewall6.conf.html">shorewall6.conf</ulink>(8). The
     <replaceable>moduleoption</replaceable>s are passed to modprobe (if
     installed) or to insmod.</para>
 
-    <para>The /usr/share/shorewall/modules file contains a large number of
-    modules. Users are encouraged to copy the file to /etc/shorewall/modules
+    <para>The /usr/share/shorewall6/modules file contains a large number of
+    modules. Users are encouraged to copy the file to /etc/shorewall6/modules
     and modify the copy to load only the modules required.<note>
         <para>If you build monolithic kernels and have not installed
-        module-init-tools, then create an empty /etc/shorewall/modules file;
-        that will prevent Shorewall from trying to load modules at all.
-        </para>
+        module-init-tools, then create an empty /etc/shorewall6/modules file;
+        that will prevent shorewall6 from trying to load modules at
+        all.</para>
       </note></para>
   </refsect1>
 
@@ -60,22 +62,20 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/usr/share/shorewall/modules</para>
+    <para>/usr/share/shorewall6/modules</para>
 
-    <para>/etc/shorewall/modules</para>
+    <para>/etc/shorewall6/modules</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

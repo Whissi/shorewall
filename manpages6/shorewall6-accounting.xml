@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-accounting</refentrytitle>
+    <refentrytitle>shorewall6-accounting</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>accounting</refname>
 
-    <refpurpose>Shorewall Accounting file</refpurpose>
+    <refpurpose>Shorewall6 Accounting file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/accounting</command>
+      <command>/etc/shorewall6/accounting</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -23,7 +25,7 @@
 
     <para>Accounting rules exist simply to count packets and bytes in
     categories that you define in this file. You may display these rules and
-    their packet and byte counters using the <command>shorewall show
+    their packet and byte counters using the <command>shorewall6 show
     accounting</command> command.</para>
 
     <para>The columns in the file are as follows.</para>
@@ -65,7 +67,7 @@
 
               <listitem>
                 <para>Where <emphasis>chain</emphasis> is the name of a chain;
-                Shorewall will create the chain automatically if it doesn't
+                shorewall6 will create the chain automatically if it doesn't
                 already exist. Causes a jump to that chain to be added to the
                 chain specified in the CHAIN column. If <emphasis
                 role="bold">:COUNT</emphasis> is included, a counting rule
@@ -96,7 +98,7 @@
         role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
-        role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
+        role="bold">:<option>[</option></emphasis><emphasis>address</emphasis><option>]</option>|<emphasis>address</emphasis>}</term>
 
         <listitem>
           <para>Packet Source.</para>
@@ -112,8 +114,7 @@
         <term><emphasis role="bold">DESTINATION</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
-        role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
-        role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
+        role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><option>:[</option><emphasis>address</emphasis><option>]</option>|<emphasis>address</emphasis>}</term>
 
         <listitem>
           <para>Packet Destination.</para>
@@ -306,7 +307,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/accounting</para>
+    <para>/etc/shorewall6/accounting</para>
   </refsect1>
 
   <refsect1>
@@ -316,13 +317,12 @@
     url="http://shorewall.net/Accounting.html">http://shorewall.net/Accounting.html
     </ulink></para>
 
-    <para>shorewall(8), shorewall-actions(5), shorewall-blacklist(5),
-    shorewall-hosts(5), shorewall-interfaces(5), shorewall-ipsec(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-actions(5), shorewall6-blacklist(5),
+    shorewall6-hosts(5), shorewall6-interfaces(5), shorewall6-maclist(5),
+    shorewall6-params(5), shorewall6-policy(5), shorewall6-providers(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

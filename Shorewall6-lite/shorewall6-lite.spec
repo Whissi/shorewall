@@ -21,7 +21,7 @@ The Shoreline Firewall 6, more commonly known as "Shorewall6", is a Netfilter
 (ip6tables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
-Shorewall Lite is a companion product to Shorewall6 that allows network
+Shorewall6 Lite is a companion product to Shorewall6 that allows network
 administrators to centralize the configuration of Shorewall6-based firewalls.
 
 %prep
@@ -49,11 +49,6 @@ if [ $1 -eq 1 ]; then
     elif [ -x /sbin/chkconfig ]; then
 	/sbin/chkconfig --add shorewall6-lite;
     fi
-elif [ -f /etc/shorewall6-lite/shorewall.conf.rpmsave ]; then
-    mv -f /etc/shorewall6-lite/shorewall6-lite.conf /etc/shorewall6-lite/shorewall6-lite.conf.rpmnew
-    mv -f /etc/shorewall6-lite/shorewall.conf.rpmsave /etc/shorewall6-lite/shorewall6-lite.conf
-    echo "/etc/shorewall6-lite/shorewall.conf retained as /etc/shorewall6-lite/shorewall6-lite.conf"
-    echo "/etc/shorewall6-lite/shorewall6-lite.conf installed as /etc/shorewall6-lite/shorewall6-lite.conf.rpmnew"
 fi
 
 %preun

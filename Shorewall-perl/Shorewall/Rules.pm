@@ -454,6 +454,8 @@ sub process_routestopped() {
 	push @allhosts, @hosts;
     }
 
+    my $tool = $family == F_IPV4 ? '$IPTABLES' : '$IP6TABLES';
+
     for my $host ( @allhosts ) {
 	my ( $interface, $h ) = split /\|/, $host;
 	my $source  = match_source_net $h;
@@ -461,18 +463,18 @@ sub process_routestopped() {
 	my $sourcei = match_source_dev $interface;
 	my $desti   = match_dest_dev $interface;
 
-	emit "\$IPTABLES -A INPUT $sourcei $source -j ACCEPT";
-	emit "\$IPTABLES -A OUTPUT $desti $dest -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	emit "$tool -A INPUT $sourcei $source -j ACCEPT";
+	emit "$tool -A OUTPUT $desti $dest -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 
 	if ( $source{$host} ) {
-	    emit "\$IPTABLES -A FORWARD $sourcei $source -j ACCEPT";
+	    emit "$tool -A FORWARD $sourcei $source -j ACCEPT";
 	    $matched = 1;
 	}
 
 	if ( $dest{$host} ) {
-	    emit "\$IPTABLES -A FORWARD $desti $dest -j ACCEPT";
+	    emit "$tool -A FORWARD $desti $dest -j ACCEPT";
 	    $matched = 1;
 	}
 
@@ -482,7 +484,7 @@ sub process_routestopped() {
 		    my ( $interface1, $h1 ) = split /:/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    my $desti1 = match_dest_dev $interface1;
-		    emit "\$IPTABLES -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";
+		    emit "$tool -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";
 		    clearrule;
 		}
 	    }

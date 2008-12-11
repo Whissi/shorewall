@@ -210,6 +210,15 @@ sub setup_forwarding( $ ) {
 	    emit '';
 	}
     } else {
+	if ( $config{IP_FORWARDING} eq 'on' ) {
+	    emit '        echo 1 > /proc/sys/net/ipv6/config/all/forwarding';
+	    emit '        progress_message2 IP Forwarding Enabled';
+	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
+	    emit '        echo 0 > /proc/sys/net/ipv6/config/all/forwarding';
+	    emit '        progress_message2 IP Forwarding Disabled!';
+	    emit '';
+	}
+
 	my $interfaces = find_interfaces_by_option 'forward';
 
 	if ( @$interfaces ) {

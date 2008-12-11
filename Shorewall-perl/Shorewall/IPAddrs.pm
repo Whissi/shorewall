@@ -508,12 +508,12 @@ sub validate_6address( $$ ) {
     
     unless ( valid_6address $addr ) {
 	fatal_error "Invalid IPv6 Address ($addr)" unless $allow_name;
-	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname2 $addr, AF_INET6);
+	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname2 $addr, AF_INET6());
 
 	if ( defined wantarray ) {
 	    shift @addrs for (1..4);
 	    for ( @addrs ) {
-		$_ = inet_ntop AF_INET6, $_;
+		$_ = inet_ntop AF_INET6(), $_;
 	    }
 	}
     }

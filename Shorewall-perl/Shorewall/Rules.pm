@@ -418,7 +418,7 @@ sub process_routestopped() {
 
 	for my $host ( split /,/, $hosts ) {
 	    validate_host $host, 1;
-	    push @hosts, "$interface:$host";
+	    push @hosts, "$interface|$host";
 	}
 
 	unless ( $options eq '-' ) {
@@ -439,11 +439,11 @@ sub process_routestopped() {
 		    }
 		} elsif ( $option eq 'source' ) {
 		    for my $host ( split /,/, $hosts ) {
-			$source{"$interface:$host"} = 1;
+			$source{"$interface|$host"} = 1;
 		    }
 		} elsif ( $option eq 'dest' ) {
 		    for my $host ( split /,/, $hosts ) {
-			$dest{"$interface:$host"} = 1;
+			$dest{"$interface|host"} = 1;
 		    }
 		} else {
 		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
@@ -455,7 +455,7 @@ sub process_routestopped() {
     }
 
     for my $host ( @allhosts ) {
-	my ( $interface, $h ) = split /:/, $host;
+	my ( $interface, $h ) = split /\|/, $host;
 	my $source  = match_source_net $h;
 	my $dest    = match_dest_net $h;
 	my $sourcei = match_source_dev $interface;

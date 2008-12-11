@@ -1986,7 +1986,11 @@ sub expand_rule( $$$$$$$$$$$ )
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /:/ ) {
-	    $inets = $source;
+	    if ( $source =~ /^\[(.+)\]$/ ) {
+		$inets = $1;
+	    } else {
+		$inets = $source;
+	    }
 	} elsif ( $source =~ /\+|~|\..*\./ ) {
 	    $inets = $source;
 	} else {
@@ -2069,7 +2073,11 @@ sub expand_rule( $$$$$$$$$$$ )
 	    $diface = $1;
 	    $dnets  = $2;
 	} elsif ( $dest =~ /:/ ) {
-	    $dnets = $dest;
+	    if ( $dest =~ /^\[(.+)\]$/ ) {
+		$dnets = $1;
+	    } else {
+		$dnets = $dest;
+	    }
 	} elsif ( $dest =~ /\+|~|\..*\./ ) {
 	    $dnets = $dest;
 	} else {

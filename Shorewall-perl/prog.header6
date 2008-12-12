@@ -259,7 +259,7 @@ reload_kernel_modules() {
 }
 
 #
-# Load kernel modules required for Shorewall
+# Load kernel modules required for Shorewall6
 #
 load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 {
@@ -372,7 +372,7 @@ find_nexthop() # $1 = interface
 #
 find_default_interface() {
     ip -6 route list | while read first rest; do
-	[ "$first" = default ] && echo $(find_device $rest) && return
+	[ "$first" = '2000::/3' ] && echo $(find_device $rest) && return
     done
 }
 
@@ -418,7 +418,7 @@ find_first_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
+    addr=$(ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
     #
     # If there wasn't one, bail out now
     #
@@ -427,7 +427,7 @@ find_first_interface_address() # $1 = interface
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
     #
-    echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    echo $addr | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
 }
 
 find_first_interface_address_if_any() # $1 = interface
@@ -435,12 +435,12 @@ find_first_interface_address_if_any() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    addr=$(ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 2.* global' | head -n1)
     #
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
     #
-    [ -n "$addr" ] && echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+    [ -n "$addr" ] && echo $addr | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//' || echo ::
 }
 
 #
@@ -448,7 +448,7 @@ find_first_interface_address_if_any() # $1 = interface
 #
 interface_is_usable() # $1 = interface
 {
-    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ] && run_isusable_exit $1
+    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ] && run_isusable_exit $1
 }
 
 #
@@ -457,7 +457,7 @@ interface_is_usable() # $1 = interface
 #
 find_interface_addresses() # $1 = interface
 {
-    ip -f inet addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 2' | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
 }
 
 #
@@ -471,7 +471,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
     ip -6 route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in
-		default)
+		2000::/3)
 		    if [ $# -gt 1 ]; then
 			shift
 			fatal_error "$@"
@@ -481,8 +481,8 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 		    ;;
 		multicast|broadcast|prohibit|nat|throw|nexthop)
 		    ;;
-		*)
-		    [ "$address" = "${address%/*}" ] && address="${address}/32"
+		2*)
+		    [ "$address" = "${address%/*}" ] && address="${address}/128"
 		    echo $address
 		    ;;
 	    esac
@@ -678,14 +678,14 @@ restore_default_route() {
 
 	while read route ; do
 	    case $route in
-		default*)
+		2000::/3*)
 		    if [ -n "$default_route" ]; then
 			case "$default_route" in
 			    *metric*)
 		                #
 		                # Don't restore a route with a metric -- we only replace the one with metric == 0
 		                #
-				qt ip -6 route delete default metric 0 && \
+				qt ip -6 route delete 2000::/3 metric 0 && \
 				    progress_message "Default Route with metric 0 deleted"
 				;;
 			    *)

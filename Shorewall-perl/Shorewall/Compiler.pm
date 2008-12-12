@@ -527,7 +527,7 @@ EOF
 	    #
 	    # This might be a bridge
 	    #
-	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport $ports-j ACCEPT";
+	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport $ports -j ACCEPT";
 	}
     }
 

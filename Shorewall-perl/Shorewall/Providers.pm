@@ -485,7 +485,6 @@ sub setup_providers() {
     while ( read_a_line ) {
 	unless ( $providers ) {
 	    progress_message2 "$doing $fn ...";
-	    fatal_error "Multi-ISP support is not yet available in Shorewall6";
 
 	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
 

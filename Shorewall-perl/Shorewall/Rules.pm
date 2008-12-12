@@ -534,36 +534,48 @@ sub add_common_rules() {
 
     $chainref = new_standard_chain 'smurfs';
 
-    if ( $family == F_IPV4 ) {
-	if ( $capabilities{ADDRTYPE} ) {
-	    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
-	    add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-	} else {
+    if ( $capabilities{ADDRTYPE} ) {
+	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
+    } else {
+	if ( $family == F_IPV4 ) {
 	    add_command $chainref, 'for address in $ALL_BCASTS; do';
-	    incr_cmd_level $chainref;
-	    log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
-	    add_rule $chainref, '-s $address -j DROP';
-	    decr_cmd_level $chainref;
-	    add_command $chainref, 'done';
-	}
-
-	add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-
-	if ( $capabilities{ADDRTYPE} ) {
-	    add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
 	} else {
-	    add_command $rejectref, 'for address in $ALL_BCASTS; do';
-	    incr_cmd_level $rejectref;
-	    add_rule $rejectref, '-d $address -j DROP';
-	    decr_cmd_level $rejectref;
-	    add_command $rejectref, 'done';
+	    add_command $chainref, 'for address in $ALL_ACASTS; do';
 	}
+
+	incr_cmd_level $chainref;
+	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
+	add_rule $chainref, '-s $address -j DROP';
+	decr_cmd_level $chainref;
+	add_command $chainref, 'done';
+    }
+
+    if ( $family == F_IPV4 ) {
+	add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL};
+    } else {
+	add_rule_pair $chainref, '-s ff00::/10 ', 'DROP', $config{SMURF_LOG_LEVEL} if $family == F_IPV4;
+    }
+
+    if ( $capabilities{ADDRTYPE} ) {
+	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+    } else {
+	if ( $family == F_IPV4 ) {
+	    add_command $rejectref, 'for address in $ALL_BCASTS; do';
+	} else {
+	    add_command $rejectref, 'for address in $ALL_ACASTS; do';
+	}
+
+	incr_cmd_level $rejectref;
+	add_rule $rejectref, '-d $address -j DROP';
+	decr_cmd_level $rejectref;
+	add_command $rejectref, 'done';
+    }
 	
+    if ( $family == F_IPV4 ) {
 	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
     } else {
-	my $predicate =  '-s ' . IPv6_MULTICAST . ' ';
-	add_rule_pair $chainref , $predicate, 'DROP' , $config{SMURF_LOG_LEVEL};
-	add_rule $rejectref, "$predicate -j DROP";
+	add_rule $rejectref , '-s ff00::/10 -j DROP';
     }
 
     if ( @$list ) {

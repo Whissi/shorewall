@@ -14,6 +14,14 @@ Other changes in 4.3.2
 1)  The 'dhcp' option has been added to accomodate IPv6 DHCP (UDP ports
     546 and 547).
 
+2)  The 'allowBcast' and 'dropBcast' builtin actions have been added to
+    Shorewall6. Respectively, they accept or silently drop packets with
+    an anycast or multicast destination address.
+
+3)  The nosmurfs option has been added to
+    /etc/shorewall8/interfaces. The option drops incoming packets whose
+    source address is an anycast or multicast addreess.
+
 Migration Issues.
 
    None.

@@ -83,6 +83,8 @@ our %logactionchains;
 
 our %macros;
 
+our $family;
+
 #
 # Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
 #
@@ -97,7 +99,9 @@ our $macro_commands = { COMMENT => 0, FORMAT => 2 };
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
+
+    $family          = shift;
     %usedactions     = ();
     %default_actions = ( DROP     => 'none' ,
 			 REJECT   => 'none' ,
@@ -109,7 +113,7 @@ sub initialize() {
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 #
@@ -731,7 +735,12 @@ sub process_actions3 () {
 
 	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
 	} else {
-	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    if ( $family == F_IPV4 ) {
+		add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    } else {
+		add_command $chainref, 'for address in $ALL_ACASTS; do';
+	    }
+
 	    incr_cmd_level $chainref;
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
 	    add_rule $chainref, '-d $address -j DROP';
@@ -741,7 +750,12 @@ sub process_actions3 () {
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	}
 
-	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
+	
+	if ( $family == F_IPV4 ) {
+	    add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
+	} else {
+	    add_rule $chainref, '-d ff00::/10 -j DROP';
+	}
     }
 
     sub allowBcast( $$$ ) {
@@ -755,16 +769,26 @@ sub process_actions3 () {
 
 	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
 	} else {
-	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    if ( $family == F_IPV4 ) {
+		add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    } else {
+		add_command $chainref, 'for address in $ALL_MACASTS; do';
+	    }
+
 	    incr_cmd_level $chainref;
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
 	    add_rule $chainref, '-d $address -j ACCEPT';
 	    decr_cmd_level $chainref;
 	    add_command $chainref, 'done';
 
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+	    if ( $family == F_IPV4 ) {
+		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+		add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
+	    } else {
+		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/10 ' if $level ne '';
+		add_rule $chainref, '-d ff00:/10 -j ACCEPT';
+	    }
 	}
-	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
     }
 
     sub dropNotSyn ( $$$ ) {

@@ -506,6 +506,8 @@ show_command() {
 		case $1 in
 		    actions)
 			[ $# -gt 1 ] && usage 1
+			echo "allowBcast          # Accept Multicast and Anycast Packets"
+			echo "dropBcast           # Silently Drop Multicast and Anycast Packets"
 			echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
 			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
 			echo "dropNotSyn          # Silently Drop Non-syn TCP packets"

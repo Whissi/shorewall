@@ -67,7 +67,7 @@ sub reinitialize() {
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize($family);
     Shorewall::Tc::initialize($family);
-    Shorewall::Actions::initialize;
+    Shorewall::Actions::initialize( $family );
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize($family);
     Shorewall::Proxyarp::initialize;

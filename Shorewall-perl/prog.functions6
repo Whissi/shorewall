@@ -157,14 +157,6 @@ restore_dynamic_rules() {
 }
 
 #
-# Get a list of all configured broadcast addresses on the system
-#
-get_all_bcasts()
-{
-    ip -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
-}
-
-#
 # Run the .iptables_restore_input as a set of discrete iptables commands
 #
 debug_restore_input() {

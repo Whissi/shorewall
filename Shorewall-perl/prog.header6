@@ -562,39 +562,43 @@ convert_to_anycast() {
     local m
 
     while read address; do
-	vlsm=${address#*/}
-	if [ ${vlsm:-128} -ne 128 ]; then
-	    #
-	    # Defines a subnet -- get the anycase address
-	    #
-	    address=$(normalize_address ${address%/*})
+	case $address in 
+	    2*|3*)
+		vlsm=${address#*/}
+		if [ ${vlsm:-128} -ne 128 ]; then
+	            #
+	            # Defines a subnet -- get the anycast address
+	            #
+		    address=$(normalize_address ${address%/*})
 
-	    while [ $vlsm -le 112 ]; do
-		address=${address%:*}
-		vlsm=$(($vlsm + 16))
-	    done
+		    while [ $vlsm -le 112 ]; do
+			address=${address%:*}
+			vlsm=$(($vlsm + 16))
+		    done
 
-	    if [ $vlsm -lt 128 ]; then
-		o=$((0x${address##*:}))
-		m=0
-		while [ $vlsm -lt 128 ]; do
-		    m=$((($m >> 1) | 0x8000))
-		    vlsm=$(($vlsm + 1))
-		done
+		    if [ $vlsm -lt 128 ]; then
+			o=$((0x${address##*:}))
+			m=0
+			while [ $vlsm -lt 128 ]; do
+			    m=$((($m >> 1) | 0x8000))
+			    vlsm=$(($vlsm + 1))
+			done
 
-		o=$(($o & $m))
+			o=$(($o & $m))
 
-		address=${address%:*}:$(printf %04x $o)
-	    fi
+			address=${address%:*}:$(printf %04x $o)
+		    fi
 
-	    list_count $(split $address)
+		    list_count $(split $address)
 
-	    if [ $? -lt 8 ]; then
-		address=$address::
-	    fi
+		    if [ $? -lt 8 ]; then
+			address=$address::
+		    fi
 
-	    echo $address
-	fi
+		    echo $address
+		fi
+		;;
+	esac
     done
 }
 
@@ -602,12 +606,20 @@ convert_to_anycast() {
 # Generate a list of anycast addresses for a given interface
 # 
 
-get_interface_bcasts() # $1 = interface
+get_interface_acasts() # $1 = interface
 {
     local addresses
     addresses=
 
     find_interface_full_addresses $1 | convert_to_anycast | sort -u
+}
+
+#
+# Get a list of all configured anycast addresses on the system
+#
+get_all_acasts()
+{
+    find_interface_full_addresses | convert_to_anycast | sort -u
 }
 
 #

@@ -137,6 +137,7 @@ our %EXPORT_TAGS = (
 				       get_interface_address
 				       get_interface_addresses
 				       get_interface_bcasts
+				       get_interface_acasts
 				       get_interface_gateway
 				       get_interface_mac
 				       set_global_variables
@@ -235,6 +236,7 @@ our %interfaceaddrs;
 our %interfacenets;
 our %interfacemacs;
 our %interfacebcasts;
+our %interfaceacasts;
 our %interfacegateways;
 
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
@@ -304,6 +306,7 @@ sub initialize( $ ) {
     %interfacenets      = ();
     %interfacemacs      = ();
     %interfacebcasts    = ();
+    %interfaceacasts    = ();
     %interfacegateways  = ();
 
     $family = shift;
@@ -960,6 +963,8 @@ sub initialize_chain_table()
 		    'QUEUE!'          => STANDARD,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'dropBcast'       => BUILTIN  + ACTION,
+		    'allowBcast'      => BUILTIN  + ACTION,
 		    'dropNotSyn'      => BUILTIN  + ACTION,
 		    'rejNotSyn'       => BUILTIN  + ACTION,
 		    'dropInvalid'     => BUILTIN  + ACTION,
@@ -1790,6 +1795,27 @@ sub get_interface_bcasts ( $ ) {
 }
 
 #
+# Returns the name of the shell variable holding the anycast addresses of the passed interface
+#
+sub interface_acasts( $ ) {
+    my $variable = chain_base( $_[0] ) . '_acasts';
+    uc $variable;
+}
+
+#
+# Record that the ruleset requires the anycast addresses on the passed interface
+#
+sub get_interface_acasts ( $ ) {
+    my ( $interface ) = $_[0];
+
+    my $variable = interface_acasts( $interface );
+
+    $interfaceacasts{$interface} = qq($variable="\$(get_interface_acasts $interface) ff00::/10");
+
+    "\$$variable";
+}
+
+#
 # Returns the name of the shell variable holding the gateway through the passed interface
 #
 sub interface_gateway( $ ) {
@@ -2388,10 +2414,19 @@ sub set_global_variables() {
     unless ( $capabilities{ADDRTYPE} ) {
 	emit_comment unless $emitted_comment;
 	emit_test    unless $emitted_test;
-	emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
 
-	for ( values %interfacebcasts ) {
-	    emit $_;
+	if ( $family == F_IPV4 ) {
+	    emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
+
+	    for ( values %interfacebcasts ) {
+		emit $_;
+	    }
+	} else {
+	    emit 'ALL_ACASTS="$(get_all_acasts)"';
+
+	    for ( values %interfaceacasts ) {
+		emit $_;
+	    }
 	}
     }
 

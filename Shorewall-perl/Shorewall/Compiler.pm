@@ -516,24 +516,20 @@ EOF
 
     emit 'do_iptables -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
-    if ( $family == F_IPV4 ) {
-	my $interfaces = find_interfaces_by_option 'dhcp';
+    my $interfaces = find_interfaces_by_option 'dhcp';
 
+    if ( @$interfaces ) {
+	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
+	
 	for my $interface ( @$interfaces ) {
-	    emit "do_iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT";
-	    emit "do_iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	    emit "do_iptables -A INPUT  -p udp -i $interface --dport $ports -j ACCEPT";
+	    emit "do_iptables -A OUTPUT -p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 	    #
 	    # This might be a bridge
 	    #
-	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT";
+	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport $ports-j ACCEPT";
 	}
-    } else {
-	for my $interface ( all_bridges ) {
-	    emit "do_iptables -A FORWARD -p 58 -i $interface -o $interface -j ACCEPT";
-	}	    
     }
-
-    emit '';
 
     if ( $family == F_IPV4 ) {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
@@ -545,6 +541,10 @@ EOF
 		);
 	}
     } else {
+	for my $interface ( all_bridges ) {
+	    emit "do_iptables -A FORWARD -p 58 -i $interface -o $interface -j ACCEPT";
+	}	    
+
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit( 'echo 1 > /proc/sys/net/ipv6/conf/all/forwarding',
 		  'progress_message2 IP Forwarding Enabled' );

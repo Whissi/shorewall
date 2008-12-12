@@ -1,32 +1,18 @@
-Shorewall 4.3.1
+Shorewall 4.3.2
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 3  H I G H L I G H T S
 ----------------------------------------------------------------------------
 1) Support is included for IPv6.
 
-Problems Corrected in 4.3.1
+Problems Corrected in 4.3.2
 
-1) Shorewall6 parsing of the hosts file HOSTS column has been
-   corrected.
+    None.
 
-Other changes in 4.3.1
+Other changes in 4.3.2
 
-1) It is now permitted to enclose addresses in [] even when an
-   interface name is not specified.
-
-   Example:
-
-	ACCEPT	net:[2001:1::1]	$FW
-
-2) The Socket6 perl module is only required now if DNS names appear in
-   your Shorewall6 configuration files.
-
-3) Shorewall6 now recognizes IPv4 addresses embedded in the IPv6
-   address space (e.g., ::ffff:192.168.1.3).
-
-4) IP_FORWARDING has been added back into shorewall6.conf and works
-   like the corresponding option in Shorewall.
+1)  The 'dhcp' option has been added to accomodate IPv6 DHCP (UDP ports
+    546 and 547).
 
 Migration Issues.
 
@@ -64,6 +50,7 @@ New Features in Shorewall 4.3
 
 	blacklist
         bridge
+	dhcp
 	optional
 	routeback
 	sourceroute
@@ -93,8 +80,14 @@ New Features in Shorewall 4.3
        The HOSTS column in /etc/shorewall6/hosts also uses this
        convention:
 
-       #ZONE      HOSTS					OPTIONS
-       chat6	  eth0:[2001:19f0:feee::dead:beef:cafe]
+           #ZONE      HOSTS					OPTIONS
+           chat6      eth0:[2001:19f0:feee::dead:beef:cafe]
+
+       Even when an interface is not specified, it is permitted to
+       enclose addresses in [] to improve readability. Example:
+
+           #ACTION      SOURCE		DEST
+	   ACCEPT	net:[2001:1::1]	$FW
 
    g)  There are currently no Shorewall6 or Shorewall6-lite manpages.
 

@@ -595,21 +595,23 @@ sub add_common_rules() {
 	add_rule $rejectref , '-j REJECT';
     }
 
-    if ( $family == F_IPV4 ) {
-	$list = find_interfaces_by_option 'dhcp';
+    $list = find_interfaces_by_option 'dhcp';
+    
+    if ( @$list ) {
+	progress_message2 'Adding rules for DHCP';
 
-	if ( @$list ) {
-	    progress_message2 'Adding rules for DHCP';
-	    
-	    for $interface ( @$list ) {
-		for $chain ( input_chain $interface, output_chain $interface ) {
-		    add_rule $filter_table->{$chain} , '-p udp --dport 67:68 -j ACCEPT';
-		}
-		
-		add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport 67:68 -j ACCEPT" if get_interface_option( $interface, 'bridge' );
+	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
+	
+	for $interface ( @$list ) {
+	    for $chain ( input_chain $interface, output_chain $interface ) {
+		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
 	    }
+	    
+	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport $ports -j ACCEPT" if get_interface_option( $interface, 'bridge' );
 	}
+    }
 
+    if ( $family == F_IPV4 ) {
 	$list = find_hosts_by_option 'norfc1918';
 	setup_rfc1918_filteration $list if @$list;
     }

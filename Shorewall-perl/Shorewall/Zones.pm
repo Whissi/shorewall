@@ -627,6 +627,7 @@ sub validate_interfaces_file( $ )
     } else {
 	%validoptions = (  blacklist   => SIMPLE_IF_OPTION,
 			   bridge      => SIMPLE_IF_OPTION,
+			   dhcp        => SIMPLE_IF_OPTION,
 			   optional    => SIMPLE_IF_OPTION,
 			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
 			   sourceroute => BINARY_IF_OPTION,

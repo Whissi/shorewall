@@ -203,19 +203,19 @@ sub setup_forwarding( $ ) {
     if ( $family == F_IPV4 ) {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit '        echo 1 > /proc/sys/net/ipv4/ip_forward';
-	    emit '        progress_message2 IP Forwarding Enabled';
+	    emit '        progress_message2 IPv4 Forwarding Enabled';
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	    emit '        echo 0 > /proc/sys/net/ipv4/ip_forward';
-	    emit '        progress_message2 IP Forwarding Disabled!';
+	    emit '        progress_message2 IPv4 Forwarding Disabled!';
 	    emit '';
 	}
     } else {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit '        echo 1 > /proc/sys/net/ipv6/conf/all/forwarding';
-	    emit '        progress_message2 IP Forwarding Enabled';
+	    emit '        progress_message2 IPv6 Forwarding Enabled';
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	    emit '        echo 0 > /proc/sys/net/ipv6/conf/all/forwarding';
-	    emit '        progress_message2 IP Forwarding Disabled!';
+	    emit '        progress_message2 IPv6 Forwarding Disabled!';
 	    emit '';
 	}
 

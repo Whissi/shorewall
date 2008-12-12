@@ -534,10 +534,10 @@ EOF
     if ( $family == F_IPV4 ) {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
-		  'progress_message2 IP Forwarding Enabled' );
+		  'progress_message2 IPv4 Forwarding Enabled' );
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	    emit( 'echo 0 > /proc/sys/net/ipv4/ip_forward',
-		  'progress_message2 IP Forwarding Disabled!'
+		  'progress_message2 IPv4 Forwarding Disabled!'
 		);
 	}
     } else {
@@ -547,10 +547,10 @@ EOF
 
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit( 'echo 1 > /proc/sys/net/ipv6/conf/all/forwarding',
-		  'progress_message2 IP Forwarding Enabled' );
+		  'progress_message2 IPv6 Forwarding Enabled' );
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	    emit( 'echo 0 > /proc/sys/net/ipv6/conf/all/forwarding',
-		  'progress_message2 IP Forwarding Disabled!'
+		  'progress_message2 IPv6 Forwarding Disabled!'
 		);
 	}
     }

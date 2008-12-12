@@ -6,14 +6,37 @@
 #	This macro ACCEPTs needed ICMP types
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#ACTION	SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 
-COMMENT Needed ICMP types
+COMMENT Needed ICMP types (RFC4890)
 
-ACCEPT	-	-	ipv6-icmp	packet-too-big
-ACCEPT	-	-	ipv6-icmp	time-exceeded
-ACCEPT	-	-	ipv6-icmp	router-solicitation
-ACCEPT	-	-	ipv6-icmp	neighbour-solicitation
-ACCEPT	-	-	ipv6-icmp	neighbour-advertisement
+ACCEPT	-		-	ipv6-icmp	destination-unreachable
+ACCEPT	-		-	ipv6-icmp	packet-too-big
+ACCEPT	-		-	ipv6-icmp	time-exceeded
+ACCEPT	-	-		ipv6-icmp	parameter-problem
+
+# The following should have a ttl of 255 and must be allowed to transit a bridge
+ACCEPT	-		-	ipv6-icmp	router-solicitation
+ACCEPT	-		-	ipv6-icmp	router-advertisement
+ACCEPT	-		-	ipv6-icmp	neighbour-solicitation
+ACCEPT	-		-	ipv6-icmp	neighbour-advertisement
+ACCEPT	-		-	ipv6-icmp	137	# Redirect
+ACCEPT	-		-	ipv6-icmp	141	# Inverse neighbour discovery solicitation
+ACCEPT	-		-	ipv6-icmp	142	# Inverse neighbour discovery advertisement
+
+# The following should have a link local source address and must be allowed to transit a bridge
+ACCEPT	fe80::/10	-	ipv6-icmp	130	# Listener query
+ACCEPT	fe80::/10	-	ipv6-icmp	131	# Listener report
+ACCEPT	fe80::/10	-	ipv6-icmp	132	# Listener done
+ACCEPT	fe80::/10	-	ipv6-icmp	143	# Listener report v2
+
+# The following should be received with a ttl of 255 and must be allowed to transit a bridge
+ACCEPT	-		-	icpv6-icmp	148	# Certificate path solicitation
+ACCEPT	-		-	icpv6-icmp	149	# Certificate path advertisement
+
+# The following should have a link local source address and a ttl of 1 and must be allowed to transit abridge
+ACCEPT	fe80::/10	-	icpv6-icmp	151	# Multicast router advertisement
+ACCEPT	fe80::/10	-	icpv6-icmp	152	# Multicast router solicitation
+ACCEPT	fe80::/10	-	icpv6-icmp	153	# Multicast router termination
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

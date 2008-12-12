@@ -100,6 +100,8 @@ fi
 %changelog
 * Thu Dec 11 2008 Tom Eastep tom@shorewall.net
 - Updated to 4.3.1-0base
+* Thu Dec 11 2008 Tom Eastep tom@shorewall.net
+- Updated to 4.3.1-0base
 * Wed Dec 10 2008 Tom Eastep tom@shorewall.net
 - Updated to 4.3.0-0base
 * Wed Dec 10 2008 Tom Eastep tom@shorewall.net

@@ -211,10 +211,10 @@ sub setup_forwarding( $ ) {
 	}
     } else {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
-	    emit '        echo 1 > /proc/sys/net/ipv6/config/all/forwarding';
+	    emit '        echo 1 > /proc/sys/net/ipv6/conf/all/forwarding';
 	    emit '        progress_message2 IP Forwarding Enabled';
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	    emit '        echo 0 > /proc/sys/net/ipv6/config/all/forwarding';
+	    emit '        echo 0 > /proc/sys/net/ipv6/conf/all/forwarding';
 	    emit '        progress_message2 IP Forwarding Disabled!';
 	    emit '';
 	}

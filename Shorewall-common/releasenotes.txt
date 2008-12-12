@@ -22,6 +22,8 @@ Other changes in 4.3.2
     /etc/shorewall8/interfaces. The option drops incoming packets whose
     source address is an anycast or multicast addreess.
 
+4)  Multi-ISP is now enabled in Shorewall8.
+
 Migration Issues.
 
    None.
@@ -73,15 +75,16 @@ New Features in Shorewall 4.3
 	routeback
 	tcpflags
 
-   e)  Traffic Shaping and Multi-ISP support are currently disabled. Packet
-       marking and connection marking are available to feed your current
-       traffic shaping defined in Shorewall.
+   e)  Traffic Shaping is currently disabled. Packet marking and
+       connection marking are available to feed your current traffic
+       shaping defined in Shorewall.
 
    f)  When both an interface and an address or address list need to
        be specified in a rule, the address or list must be enclosed in
        square brackets. Example:
 
-	ACCEPT	net:eth0:[2001:19f0:feee::dead:beef:cafe]	dmz
+        #ACTION      SOURCE		                        DEST
+	ACCEPT	     net:eth0:[2001:19f0:feee::dead:beef:cafe]	dmz
 
        Note that this includes MAC addresses as well as IPv6 addresses.
 

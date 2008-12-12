@@ -865,7 +865,7 @@ sub process_actions3 () {
 	add_rule $chainref, '-j ACCEPT';
     }
 
-    my %builtinops = ( 'dropBcast'      => \&dropBcast, 
+    my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		       'allowBcast'     => \&allowBcast,
 		       'dropNotSyn'     => \&dropNotSyn,
 		       'rejNotSyn'      => \&rejNotSyn,

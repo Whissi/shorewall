@@ -93,6 +93,30 @@ split() {
 }
 
 #
+# Undo the effect of 'split()'
+#
+join()
+{
+    local f
+    local o
+    o=
+
+    for f in $* ; do
+        o="${o:+$o:}$f"
+    done
+
+    echo $o
+}
+
+#
+# Return the number of elements in a list
+#
+list_count() # $* = list
+{
+    return $#
+}
+
+#
 # Search a list looking for a match -- returns zero if a match found
 # 1 otherwise
 #
@@ -461,6 +485,15 @@ find_interface_addresses() # $1 = interface
 }
 
 #
+# Get all interface addresses with VLSMs
+#
+
+find_interface_full_addresses() # $1 = interface
+{
+    ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 ' | sed 's/\s*inet6 //;s/ scope.*//;s/ peer.*//'
+}
+
+#
 #  echo the list of networks routed out of a given interface
 #
 get_routed_networks() # $1 = interface name, $2-n = Fatal error message
@@ -489,12 +522,92 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
         done
 }
 
+normalize_address() # $1 = valid IPv6 Address
+{
+    local address
+    address=$1
+    local j
+
+    while true; do
+	case $address in
+	    ::*)
+		address=0$address
+		;;
+	    *::*)
+		list_count $(split $address)
+
+		j=$?
+		
+		if [ $j -eq 7 ]; then
+		    address=${address%::*}:0:${address#*::}
+		elif [ $j -eq 8 ]; then
+		    $address=${address%::*}:${address#*::}
+		    break 2
+		else
+		    address=${address%::*}:0::${address#*::}
+		fi
+		;;
+	    *)
+		echo $address
+		break 2
+		;;
+	esac
+    done
+}
+
+convert_to_anycast() {
+    local address
+    local vlsm
+    local o
+    local m
+
+    while read address; do
+	vlsm=${address#*/}
+	if [ ${vlsm:-128} -ne 128 ]; then
+	    #
+	    # Defines a subnet -- get the anycase address
+	    #
+	    address=$(normalize_address ${address%/*})
+
+	    while [ $vlsm -le 112 ]; do
+		address=${address%:*}
+		vlsm=$(($vlsm + 16))
+	    done
+
+	    if [ $vlsm -lt 128 ]; then
+		o=$((0x${address##*:}))
+		m=0
+		while [ $vlsm -lt 128 ]; do
+		    m=$((($m >> 1) | 0x8000))
+		    vlsm=$(($vlsm + 1))
+		done
+
+		o=$(($o & $m))
+
+		address=${address%:*}:$(printf %04x $o)
+	    fi
+
+	    list_count $(split $address)
+
+	    if [ $? -lt 8 ]; then
+		address=$address::
+	    fi
+
+	    echo $address
+	fi
+    done
+}
+
+#
+# Generate a list of anycast addresses for a given interface
+# 
+
 get_interface_bcasts() # $1 = interface
 {
     local addresses
     addresses=
 
-    ip -f inet addr show dev $1 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+    find_interface_full_addresses $1 | convert_to_anycast | sort -u
 }
 
 #

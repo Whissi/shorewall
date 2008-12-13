@@ -1,6 +1,6 @@
-# Shorewall Makefile to restart if config-files are newer than last restart
-VARDIR=$(shell /sbin/shorewall show vardir)
-CONFDIR=/etc/shorewall
+# Shorewall6 Makefile to restart if config-files are newer than last restart
+VARDIR=$(shell /sbin/shorewall6 show vardir)
+CONFDIR=/etc/shorewall6
 RESTOREFILE?=.restore
 all: $(VARDIR)/${RESTOREFILE}
 

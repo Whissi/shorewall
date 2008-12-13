@@ -1,4 +1,4 @@
-#     Shorewall Packet Filtering Firewall Export Directory Makefile - V4.2
+#     Shorewall6 Packet Filtering Firewall Export Directory Makefile - V4.2
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -40,7 +40,7 @@ HOST = gateway
 #
 # Save some typing
 #
-LITEDIR = /var/lib/shorewall-lite
+LITEDIR = /var/lib/shorewall6-lite
 #
 # Set this if the remote system has a non-standard modules directory
 #
@@ -56,25 +56,25 @@ all: firewall
 # Only generate the capabilities file if it doesn't already exist
 #
 capabilities: 
-	ssh root@$(HOST) "MODULESDIR=$(MODULESDIR) /usr/share/shorewall-lite/shorecap > $(LITEDIR)/capabilities"
+	ssh root@$(HOST) "MODULESDIR=$(MODULESDIR) /usr/share/shorewall6-lite/shorecap > $(LITEDIR)/capabilities"
 	scp root@$(HOST):$(LITEDIR)/capabilities .
 #
 # Compile the firewall script. Using the 'wildcard' function causes "*" to be expanded so that
 # 'filter-out' will be presented with the list of files in this directory rather than "*"
 #
 firewall: $(filter-out $(IGNOREFILES) capabilities , $(wildcard *) ) capabilities
-	shorewall compile -e . firewall
+	shorewall6 compile -e . firewall
 #
 # Only reload on demand.
 #
 install: firewall
 	scp firewall firewall.conf root@$(HOST):$(LITEDIR)
-	ssh root@$(HOST) "/sbin/shorewall-lite restart"
+	ssh root@$(HOST) "/sbin/shorewall6-lite restart"
 #
 # Save running configuration
 #
 save:
-	ssh root@$(HOST) "/sbin/shorewall-lite save"
+	ssh root@$(HOST) "/sbin/shorewall6-lite save"
 #
 # Remove generated files
 #

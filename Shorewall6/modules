@@ -1,7 +1,7 @@
 #
-# Shorewall version 4 - Modules File
+# Shorewall6 version 4 - Modules File
 #
-# /usr/share/shorewall/modules
+# /usr/share/shorewall6/modules
 #
 #	This file loads the modules that may be needed by the firewall.
 #
@@ -19,11 +19,12 @@
 loadmodule nfnetlink
 loadmodule x_tables
 loadmodule ip_tables
-loadmodule iptable_filter
-loadmodule iptable_mangle
+ip6table_filter 
+ip6table_mangle 
+ip6table_raw
 loadmodule ip_conntrack
 loadmodule nf_conntrack
-loadmodule nf_conntrack_ipv4
+loadmodule nf_conntrack_ipv6
 loadmodule iptable_nat
 loadmodule xt_state
 loadmodule xt_tcpudp

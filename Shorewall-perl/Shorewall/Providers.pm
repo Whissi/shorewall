@@ -366,7 +366,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	}
     } elsif ( $shared ) {
 	emit  "qt ip -$family rule del from $address" if $config{DELETE_THEN_ADD};
-	emit( "run_ip -$family rule add from $address pref 20000 table $number" ,
+	emit( "run_ip rule add from $address pref 20000 table $number" ,
 	      "echo \"qt ip -$family rule del from $address\" >> \${VARDIR}/undo_routing" );
     } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
@@ -457,7 +457,7 @@ sub add_an_rtrule( $$$$ ) {
 	push_indent;
     }
 
-    emit ( "run_ip -$family rule add $source $dest $priority table $number",
+    emit ( "run_ip rule add $source $dest $priority table $number",
 	   "echo \"qt ip -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
 
     pop_indent, emit ( "fi\n" ) if $optional;

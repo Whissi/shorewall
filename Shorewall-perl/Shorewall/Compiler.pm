@@ -265,14 +265,14 @@ sub compile_stop_firewall() {
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
 stop_firewall() {
-
-    deletechain() {
 EOF
 
     if ( $family == F_IPV4 ) {
-	emit '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1';
+	emit( '    deletechain() {',
+	      '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1' );
     } else {
-	emit '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1';
+	emit( '    deletechain() {',
+	      '         qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1' );
     }
 
     emit <<'EOF';
@@ -382,19 +382,23 @@ EOF
     }
 
     if ( $capabilities{RAW_TABLE} ) {
-	emit <<'EOF';
+	if ( $family == F_IPV4 ) {
+	    emit <<'EOF';
     run_iptables -t raw -F
     run_iptables -t raw -X
     for chain in PREROUTING OUTPUT; do
+        qt1 $IPTABLES -t raw -P $chain ACCEPT
+    done
 EOF
-
-	if ( $family == F_IPV4 ) {
-	    emit '        qt1 $IPTABLES -t raw -P $chain ACCEPT';
 	} else {
-	    emit '        qt1 $IP6TABLES -t raw -P $chain ACCEPT';
+	    emit <<'EOF';
+    run_iptables -t raw -F
+    run_iptables -t raw -X
+    for chain in PREROUTING OUTPUT; do
+        qt1 $IP6TABLES -t raw -P $chain ACCEPT
+    done
+EOF
 	}
-
-	emit '    done';
     }
 
     if ( $capabilities{NAT_ENABLED} ) {
@@ -530,6 +534,8 @@ EOF
 	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport $ports -j ACCEPT";
 	}
     }
+
+    emit '';
 
     if ( $family == F_IPV4 ) {
 	if ( $config{IP_FORWARDING} eq 'on' ) {

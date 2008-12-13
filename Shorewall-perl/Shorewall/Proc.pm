@@ -207,8 +207,9 @@ sub setup_forwarding( $ ) {
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	    emit '        echo 0 > /proc/sys/net/ipv4/ip_forward';
 	    emit '        progress_message2 IPv4 Forwarding Disabled!';
-	    emit '';
 	}
+
+	emit '';
     } else {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit '        echo 1 > /proc/sys/net/ipv6/conf/all/forwarding';
@@ -216,9 +217,10 @@ sub setup_forwarding( $ ) {
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
 	    emit '        echo 0 > /proc/sys/net/ipv6/conf/all/forwarding';
 	    emit '        progress_message2 IPv6 Forwarding Disabled!';
-	    emit '';
 	}
-
+	
+	emit '';
+	
 	my $interfaces = find_interfaces_by_option 'forward';
 
 	if ( @$interfaces ) {

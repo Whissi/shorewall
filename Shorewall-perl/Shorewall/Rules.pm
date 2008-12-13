@@ -443,7 +443,7 @@ sub process_routestopped() {
 		    }
 		} elsif ( $option eq 'dest' ) {
 		    for my $host ( split /,/, $hosts ) {
-			$dest{"$interface|host"} = 1;
+			$dest{"$interface|$host"} = 1;
 		    }
 		} else {
 		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';

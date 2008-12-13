@@ -29,6 +29,8 @@ Other changes in 4.3.3
     a) Multicast.
     b) Source or destination is a link-level address (ff80::/10).
 
+3)  Traffic shaping is now enabled in Shorewall6. See below.
+
 Migration Issues.
 
    None.
@@ -81,9 +83,14 @@ New Features in Shorewall 4.3
 	routeback
 	tcpflags
 
-   e)  Traffic Shaping is currently disabled. Packet marking and
-       connection marking are available to feed your current traffic
-       shaping defined in Shorewall.
+   e)  Traffic Shaping is disabled by default. The tcdevices and
+       tcclasses files are address-family independent so
+       to use the Shorewall builtin Traffic Shaper, TC_ENABLED=Internal
+       should be specified in Shorewall or in Shorewall6 but not in
+       both. In the configuration where the internal traffic shaper is
+       not enabled, CLEAR_TC=No should be specified.
+
+       tcfilters are not available in Shorewall6.
 
    f)  When both an interface and an address or address list need to
        be specified in a rule, the address or list must be enclosed in

@@ -987,18 +987,22 @@ sub compiler {
     # TOS
     #
     process_tos;
-    #
-    # ECN
-    #
-    setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
-    #
-    # Setup Masquerading/SNAT
-    #
-    setup_masq;
+
+    if ( $family == F_IPV4 ) {
+	#
+	# ECN
+	#
+	setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+	#
+	# Setup Masquerading/SNAT
+	#
+	setup_masq; 
+    }
+
     #
     # MACLIST Filtration
     #
-    setup_mac_lists 1 if $family == F_IPV4;
+    setup_mac_lists 1;
     #
     # Process the rules file.
     #
@@ -1015,7 +1019,7 @@ sub compiler {
     #
     # MACLIST Filtration again
     #
-    setup_mac_lists 2 if $family == F_IPV4;
+    setup_mac_lists 2;
     #
     # Apply Policies
     #

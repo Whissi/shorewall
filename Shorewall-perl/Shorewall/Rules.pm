@@ -725,8 +725,20 @@ sub setup_mac_lists( $ ) {
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 
-	    add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
-		if ( $table eq 'mangle' ) && get_interface_option( $interface, 'dhcp' );
+	    if ( $family == F_IPV4 ) {
+		add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN' 
+		    if $table eq 'mangle'  && get_interface_option( $interface, 'dhcp');
+	    } else {
+		#
+		# Accept any packet with a link-level source or destination address
+		#
+		add_rule $chainref , '-s ff80::/10 -j RETURN';
+		add_rule $chainref , '-d ff80::/10 -j RETURN';
+		#
+		# Accept Multicast
+		#
+		add_rule $chainref , '-d ff00::/10 -j RETURN';
+	    }
 
 	    if ( $ttl ) {
 		my $chain1ref = new_chain $table, macrecent_target $interface;
@@ -806,26 +818,27 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
     } else {
-	for my $interface ( @maclist_interfaces ) {
-	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
-	    my $chain    = $chainref->{name};
+	if ( $family == F_IPV4 ) {
+	    for my $interface ( @maclist_interfaces ) {
+		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
+		my $chain    = $chainref->{name};
 
-	    if ( $level ne '' || $disposition ne 'ACCEPT' ) {
-		my $variable = get_interface_addresses source_port_to_bridge( $interface );
+		if ( $level ne '' || $disposition ne 'ACCEPT' ) {
+		    my $variable = get_interface_addresses source_port_to_bridge( $interface );
 
-		if ( $capabilities{ADDRTYPE} ) {
-		    add_commands( $chainref,
-				  "for address in $variable; do",
-				  "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
-				  "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
-				  'done' );
-		} else {
-		    my $bridge    = source_port_to_bridge( $interface );
-		    my $bridgeref = find_interface( $bridge );
-		    
-		    add_commands( $chainref,
-				  "for address in $variable; do" );
-		    if ( $family == F_IPV4 ) {
+		    if ( $capabilities{ADDRTYPE} ) {
+			add_commands( $chainref,
+				      "for address in $variable; do",
+				      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
+				      "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
+				      'done' );
+		    } else {
+			my $bridge    = source_port_to_bridge( $interface );
+			my $bridgeref = find_interface( $bridge );
+			
+			add_commands( $chainref,
+				      "for address in $variable; do" );
+			
 			if ( $bridgeref->{broadcasts} ) {
 			    for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
 				add_commands( $chainref ,
@@ -841,13 +854,6 @@ sub setup_mac_lists( $ ) {
 			}
 
 			add_commands( $chainref, "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" );
-		    } else {
-			my $variable1 = get_interface_bcasts $bridge;
-			    
-			add_commands( $chainref, 
-				      "    for address1 in $variable1; do" ,
-				      "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
-				      "    done" );
 		    }
 
 		    add_command( $chainref, 'done' );

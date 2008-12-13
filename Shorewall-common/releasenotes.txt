@@ -1,4 +1,4 @@
-Shorewall 4.3.2
+Shorewall 4.3.3
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 3  H I G H L I G H T S
@@ -12,32 +12,22 @@ Shorewall 4.3.2
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
 
-Problems Corrected in 4.3.2
+Problems Corrected in 4.3.3
 
-1)  Typos in the macro.AllowICMPs file have been corrected.
+None.
 
-2)  IP_FORWARDING is now correctly recognized by Shorewall-perl.
+Other changes in 4.3.3
 
-3)  A bug in processing of the routestopped file has been fixed. This
-    bug also affected IPv4 configurations.
+1)  In as much as ip6tables doesn't support the ECN target, the 'ecn'
+    file has been removed and its processing disabled. 
 
-Other changes in 4.3.2
+2)  The 'maclist' option is now supported in /etc/shorewall6/interfaces
+    and in /etc/shorewall6/hosts.
 
-1)  The 'dhcp' option has been added to accomodate IPv6 DHCP (UDP ports
-    546 and 547).
+    MAC verification is not performed on the following IPv6 traffic:
 
-2)  The 'allowBcast' and 'dropBcast' builtin actions have been added to
-    Shorewall6. Respectively, they accept or silently drop packets with
-    an anycast or multicast destination address.
-
-3)  The nosmurfs option has been added to
-    /etc/shorewall8/interfaces. The option drops incoming packets with
-    a source address that is an anycast or multicast addreess.
-
-4)  Multi-ISP is now enabled in Shorewall6.
-
-5)  When running the 'ip' utility, Shorewall now unconditionally
-    specifies the address family (-4 or -6).
+    a) Multicast.
+    b) Source or destination is a link-level address (ff80::/10).
 
 Migration Issues.
 

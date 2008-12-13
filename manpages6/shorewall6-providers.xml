@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-providers</refentrytitle>
+    <refentrytitle>shorewall6-providers</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>providers</refname>
 
-    <refpurpose>Shorewall Providers file</refpurpose>
+    <refpurpose>Shorewall6 Providers file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/providers</command>
+      <command>/etc/shorewall6/providers</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -75,15 +77,15 @@
 
         <listitem>
           <para>A FWMARK <emphasis>value</emphasis> used in your <ulink
-          url="shorewall-tcrules.html">shorewall-tcrules(5)</ulink> file to
+          url="shorewall6-tcrules.html">shorewall6-tcrules(5)</ulink> file to
           direct packets to this provider.</para>
 
           <para>If HIGH_ROUTE_MARKS=Yes in <ulink
-          url="shorewall.conf.html">shorewall.conf(5)</ulink>, then the value
-          must be a multiple of 256 between 256 and 65280 or their hexadecimal
-          equivalents (0x0100 and 0xff00 with the low-order byte of the value
-          being zero). Otherwise, the value must be between 1 and 255. Each
-          provider must be assigned a unique mark value.</para>
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink>, then the
+          value must be a multiple of 256 between 256 and 65280 or their
+          hexadecimal equivalents (0x0100 and 0xff00 with the low-order byte
+          of the value being zero). Otherwise, the value must be between 1 and
+          255. Each provider must be assigned a unique mark value.</para>
         </listitem>
       </varlistentry>
 
@@ -97,23 +99,18 @@
           previously listed provider. You may select only certain entries from
           the table to copy by using the COPY column below. This column should
           contain a dash ("-') when USE_DEFAULT_RT=Yes in <ulink
-          url="shorewall.conf.html">shorewall.conf(5)</ulink>. </para>
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> -
-        <emphasis>interface</emphasis>[:<emphasis>address</emphasis>]</term>
+        <emphasis>interface</emphasis></term>
 
         <listitem>
           <para>The name of the network interface to the provider. Must be
           listed in <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces(5)</ulink>.</para>
-
-          <para>Where more than one provider is serviced through a single
-          interface, the <emphasis>interface</emphasis> must be followed by a
-          colon and the IP <emphasis>address</emphasis> of the interface that
-          is supplied by the associated provider.</para>
+          url="shorewall6-interfaces.html">shorewall6-interfaces(5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -125,7 +122,7 @@
         <listitem>
           <para>The IP address of the provider's gateway router.</para>
 
-          <para>You can enter "detect" here and Shorewall will attempt to
+          <para>You can enter "detect" here and Shorewall6 will attempt to
           detect the gateway automatically.</para>
 
           <para>For PPP devices, you may omit this column.</para>
@@ -177,7 +174,7 @@
               <term><emphasis role="bold">loose</emphasis></term>
 
               <listitem>
-                <para>Shorewall normally adds a routing rule for each IP
+                <para>Shorewall6 normally adds a routing rule for each IP
                 address on an interface which forces traffic whose source is
                 that IP address to be sent using the routing table for that
                 interface. Setting <option>loose</option> prevents creation of
@@ -193,7 +190,7 @@
                 and configured with an IPv4 address then ignore this provider.
                 If not specified, the value of the <option>optional</option>
                 option for the INTERFACE in <ulink
-                url="shorewall-interfaces.html">shorewall-interfaces(5)</ulink>
+                url="shorewall6-interfaces.html">shorewall6-interfaces(5)</ulink>
                 is assumed.</para>
               </listitem>
             </varlistentry>
@@ -202,13 +199,13 @@
               <term>src=<replaceable>source-address</replaceable></term>
 
               <listitem>
-                <para>Added in Shorewall-perl 4.1.5. Specifies the source
-                address to use when routing to this provider and none is known
-                (the local client has bound to the 0 address). May not be
-                specified when an <replaceable>address</replaceable> is given
-                in the INTERFACE column. If this option is not used, Shorewall
-                substitutes the primary IP address on the interface named in
-                the INTERFACE column.</para>
+                <para>Specifies the source address to use when routing to this
+                provider and none is known (the local client has bound to the
+                0 address). May not be specified when an
+                <replaceable>address</replaceable> is given in the INTERFACE
+                column. If this option is not used, Shorewall6 substitutes the
+                primary IP address on the interface named in the INTERFACE
+                column.</para>
               </listitem>
             </varlistentry>
 
@@ -216,9 +213,9 @@
               <term>mtu=<replaceable>number</replaceable></term>
 
               <listitem>
-                <para>Added in Shorewall-perl 4.1.5. Specifies the MTU when
-                forwarding through this provider. If not given, the MTU of the
-                interface named in the INTERFACE column is assumed.</para>
+                <para>Specifies the MTU when forwarding through this provider.
+                If not given, the MTU of the interface named in the INTERFACE
+                column is assumed.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -250,11 +247,11 @@
         <term>Example 1:</term>
 
         <listitem>
-          <para>You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
-          interface is eth2</para>
+          <para>You run squid in your DMZ on IP address 2002:ce7c:92b4:1::2.
+          Your DMZ interface is eth2</para>
 
-          <programlisting>        #NAME   NUMBER  MARK DUPLICATE  INTERFACE GATEWAY       OPTIONS
-        Squid   1       1    -          eth2      192.168.2.99  -</programlisting>
+          <programlisting>        #NAME   NUMBER  MARK DUPLICATE  INTERFACE GATEWAY              OPTIONS
+        Squid   1       1    -          eth2      2002:ce7c:92b4:1::2  -</programlisting>
         </listitem>
       </varlistentry>
 
@@ -262,19 +259,17 @@
         <term>Example 2:</term>
 
         <listitem>
-          <para>eth0 connects to ISP 1. The IP address of eth0 is
-          206.124.146.176 and the ISP's gateway router has IP address
-          206.124.146.254.</para>
+          <para>eth0 connects to ISP 1. The ISP's gateway router has IP
+          address 2001:ce7c:92b4:1::2.</para>
 
-          <para>eth1 connects to ISP 2. The IP address of eth1 is
-          130.252.99.27 and the ISP's gateway router has IP address
-          130.252.99.254.</para>
+          <para>eth1 connects to ISP 2. The ISP's gateway router has IP
+          address 2001:d64c:83c9:12::8b.</para>
 
           <para>eth2 connects to a local network.</para>
 
-          <programlisting>        #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY          OPTIONS            COPY
-        ISP1  1       1    main      eth0      206.124.146.254 track,balance      eth2
-        ISP2  2       2    main      eth1      130.252.99.254  track,balance      eth2</programlisting>
+          <programlisting>        #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY               OPTIONS            COPY
+        ISP1  1       1    main      eth0     2001:ce7c:92b4:1::2   track,balance      eth2
+        ISP2  2       2    main      eth1     2001:d64c:83c9:12::8b track,balance      eth2</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -283,22 +278,21 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/providers</para>
+    <para>/etc/shorewall6/providers</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
     <para><ulink
-    url="http://shorewall.net/MultiISP.html">http://shorewall.net/MultiISP.html</ulink></para>
+    url="http://shorewall6.net/MultiISP.html">http://shorewall.net/MultiISP.html</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

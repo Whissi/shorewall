@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-route_rules</refentrytitle>
+    <refentrytitle>shorewall6-route_rules</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>route_rules</refname>
 
-    <refpurpose>Shorewall Routing Rules file</refpurpose>
+    <refpurpose>Shorewall6 Routing Rules file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/route_rules</command>
+      <command>/etc/shorewall6/route_rules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -23,7 +25,7 @@
 
     <para>Entries in this file cause traffic to be routed to one of the
     providers listed in <ulink
-    url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+    url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
 
     <para>The columns in the file are as follows.</para>
 
@@ -87,7 +89,7 @@
               <term>1000-1999</term>
 
               <listitem>
-                <para>Before Shorewall-generated 'MARK' rules</para>
+                <para>Before Shorewall6-generated 'MARK' rules</para>
               </listitem>
             </varlistentry>
 
@@ -95,7 +97,7 @@
               <term>11000-11999</term>
 
               <listitem>
-                <para>After 'MARK' rules but before Shorewall-generated rules
+                <para>After 'MARK' rules but before Shorewall6-generated rules
                 for ISP interfaces.</para>
               </listitem>
             </varlistentry>
@@ -130,30 +132,13 @@
 </programlisting>
         </listitem>
       </varlistentry>
-
-      <varlistentry>
-        <term>Example 2:</term>
-
-        <listitem>
-          <para>You use OpenVPN (routed setup /tunX) in combination with
-          multiple providers. In this case you have to set up a rule to ensure
-          that the OpenVPN traffic is routed back through the tunX
-          interface(s) rather than through any of the providers. 10.8.0.0/24
-          is the subnet chosen in your OpenVPN configuration (server 10.8.0.0
-          255.255.255.0).</para>
-
-          <programlisting>         #SOURCE                 DEST            PROVIDER        PRIORITY
-         -                       10.8.0.0/24     main            1000
-</programlisting>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </refsect1>
 
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/route_rules</para>
+    <para>/etc/shorewall6/route_rules</para>
   </refsect1>
 
   <refsect1>
@@ -162,13 +147,12 @@
     <para><ulink
     url="http://shorewall.net/MultiISP.html">http://shorewall.net/MultiISP.html</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-routestopped(5), shorewall6-rules(5),
+    shorewall6.conf(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
+    shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),
+    shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

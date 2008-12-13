@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-policy</refentrytitle>
+    <refentrytitle>shorewall6-policy</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -11,12 +11,12 @@
   <refnamediv>
     <refname>policy</refname>
 
-    <refpurpose>Shorewall policy file</refpurpose>
+    <refpurpose>shorewall6 policy file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/policy</command>
+      <command>/etc/shorewall6/policy</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -25,13 +25,13 @@
 
     <para>This file defines the high-level policy for connections between
     zones defined in <ulink
-    url="shorewall-zones.html">shorewall-zones</ulink>(5).</para>
+    url="shorewall6-zones.html">shorewall6-zones</ulink>(5).</para>
 
     <important>
       <para>The order of entries in this file is important</para>
 
       <para>This file determines what to do with a new connection request if
-      we don't get a match from the /etc/shorewall/rules file . For each
+      we don't get a match from the /etc/shorewall6/rules file . For each
       source/destination pair, the file is processed in order until a match is
       found ("all" will match any client or server).</para>
     </important>
@@ -39,13 +39,13 @@
     <important>
       <para>Intra-zone policies are pre-defined</para>
 
-      <para>For $FW and for all of the zones defined in /etc/shorewall/zones,
+      <para>For $FW and for all of the zones defined in /etc/shorewall6/zones,
       the POLICY for connections from the zone to itself is ACCEPT (with no
       logging or TCP connection rate limiting but may be overridden by an
       entry in this file. The overriding entry must be explicit (cannot use
       "all" in the SOURCE or DEST).</para>
 
-      <para>Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall.conf,
+      <para>Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall6.conf,
       then the implicit policy to/from any sub-zone is CONTINUE. These
       implicit CONTINUE policies may also be overridden by an explicit entry
       in this file.</para>
@@ -61,7 +61,7 @@
 
         <listitem>
           <para>Source zone. Must be the name of a zone defined in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW or
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(5), $FW or
           "all".</para>
         </listitem>
       </varlistentry>
@@ -73,10 +73,10 @@
 
         <listitem>
           <para>Destination zone. Must be the name of a zone defined in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW or "all".
-          If the DEST is a bport zone, then the SOURCE must be "all", another
-          bport zone associated with the same bridge, or it must be an ipv4
-          zone that is associated with only the same bridge.</para>
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(5), $FW or
+          "all". If the DEST is a bport zone, then the SOURCE must be "all",
+          another bport zone associated with the same bridge, or it must be an
+          ipv6 zone that is associated with only the same bridge.</para>
         </listitem>
       </varlistentry>
 
@@ -102,13 +102,13 @@
             <listitem>
               <para>The word "None" or "none". This causes any default action
               defined in <ulink
-              url="shorewall.conf.html">shorewall.conf</ulink>(5) to be
+              url="shorewall6.conf.html">shorewall6.conf</ulink>(5) to be
               omitted for this policy.</para>
             </listitem>
 
             <listitem>
               <para>The name of an action (requires that USE_ACTIONS=Yes in
-              <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5)).
+              <ulink url="shorewall6.conf.html">shorewall6.conf</ulink>(5)).
               That action will be invoked before the policy is
               enforced.</para>
             </listitem>
@@ -165,7 +165,7 @@
               <term><emphasis role="bold">NFQUEUE</emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall-perl 4.0.3. Queue the request for a
+                <para>Added in shorewall6-perl 4.0.3. Queue the request for a
                 user-space application using the nfnetlink_queue mechanism. If
                 a <replaceable>queuenumber</replaceable> is not given, queue
                 zero (0) is assumed.</para>
@@ -180,8 +180,8 @@
                 might also match (where the source or destination zone in
                 those rules is a superset of the SOURCE or DEST in this
                 policy). See <ulink
-                url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for
-                additional information.</para>
+                url="shorewall6-nesting.html">shorewall6-nesting</ulink>(5)
+                for additional information.</para>
               </listitem>
             </varlistentry>
 
@@ -190,9 +190,9 @@
 
               <listitem>
                 <para>Assume that there will never be any packets from this
-                SOURCE to this DEST. Shorewall will not create any
+                SOURCE to this DEST. shorewall6 will not create any
                 infrastructure to handle such packets and you may not have any
-                rules with this SOURCE and DEST in the /etc/shorewall/rules
+                rules with this SOURCE and DEST in the /etc/shorewall6/rules
                 file. If such a packet <emphasis role="bold">is</emphasis>
                 received, the result is undefined. NONE may not be used if the
                 SOURCE or DEST columns contain the firewall zone ($FW) or
@@ -243,8 +243,8 @@
         <emphasis>limit</emphasis>[:<emphasis>mask</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.1. May be used to limit the number
-          of simultaneous connections from each individual host to
+          <para>Added in shorewall6-perl 4.2.1. May be used to limit the
+          number of simultaneous connections from each individual host to
           <replaceable>limit</replaceable> connections. While the limit is
           only checked on connections to which this policy could apply, the
           number of current connections is calculated over all current
@@ -293,20 +293,20 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/policy</para>
+    <para>/etc/shorewall6/policy</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
+    shorewall6-nat(5), shorewall6-netmap(5), shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-proxyarp(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

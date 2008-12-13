@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-rules</refentrytitle>
+    <refentrytitle>shorewall6-rules</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -11,12 +11,12 @@
   <refnamediv>
     <refname>rules</refname>
 
-    <refpurpose>Shorewall rules file</refpurpose>
+    <refpurpose>Shorewall6 rules file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/rules</command>
+      <command>/etc/shorewall6/rules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -25,7 +25,7 @@
 
     <para>Entries in this file govern connection establishment by defining
     exceptions to the policies layed out in <ulink
-    url="shorewall-policy.html">shorewall-policy</ulink>(5). By default,
+    url="shorewall6-policy.html">shorewall6-policy</ulink>(5). By default,
     subsequent requests and responses are automatically allowed using
     connection tracking. For any particular (source,dest) pair of zones, the
     rules are evaluated in the order in which they appear in this file and the
@@ -97,7 +97,7 @@
 
     <warning>
       <para>If you specify FASTACCEPT=Yes in <ulink
-      url="shorewall.conf.html">shorewall.conf</ulink>(5) then the <emphasis
+      url="shorewall6.conf.html">shorewall6.conf</ulink>(5) then the <emphasis
       role="bold">ESTABLISHED</emphasis> and <emphasis
       role="bold">RELATED</emphasis> sections must be empty.</para>
     </warning>
@@ -188,7 +188,7 @@
               <listitem>
                 <para>like ACCEPT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -217,7 +217,7 @@
               <listitem>
                 <para>like DROP but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -236,7 +236,7 @@
               <listitem>
                 <para>like REJECT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -319,12 +319,12 @@
                 <para>Do not process any of the following rules for this
                 (source zone,destination zone). If the source and/or
                 destination IP address falls into a zone defined later in
-                <ulink url="shorewall-zones.html">shorewall-zones</ulink>(5)
+                <ulink url="shorewall6-zones.html">shorewall6-zones</ulink>(5)
                 or in a parent zone of the source or destination zones, then
                 this connection request will be passed to the rules defined
                 for that (those) zone(s). See <ulink
-                url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for
-                additional information.</para>
+                url="shorewall6-nesting.html">shorewall6-nesting</ulink>(5)
+                for additional information.</para>
               </listitem>
             </varlistentry>
 
@@ -334,7 +334,7 @@
               <listitem>
                 <para>like CONTINUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -363,7 +363,7 @@
               <listitem>
                 <para>like QUEUE but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -371,7 +371,7 @@
               <term>NFQUEUE</term>
 
               <listitem>
-                <para>Only supported by Shorewall-perl &gt;= 4.0.3.</para>
+                <para>Only supported by Shorewall6-perl &gt;= 4.0.3.</para>
 
                 <para>Queues the packet to a user-space application using the
                 nfnetlink_queue mechanism. If a
@@ -386,7 +386,7 @@
               <listitem>
                 <para>like NFQUEUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -397,9 +397,9 @@
                 <para>the rest of the line will be attached as a comment to
                 the Netfilter rule(s) generated by the following entries. The
                 comment will appear delimited by "/* ... */" in the output of
-                "shorewall show &lt;chain&gt;". To stop the comment from being
-                attached to further rules, simply include COMMENT on a line by
-                itself.</para>
+                "shorewall6 show &lt;chain&gt;". To stop the comment from
+                being attached to further rules, simply include COMMENT on a
+                line by itself.</para>
               </listitem>
             </varlistentry>
 
@@ -409,8 +409,8 @@
               <listitem>
                 <para>The name of an <emphasis>action</emphasis> declared in
                 <ulink
-                url="shorewall-actions.html">shorewall-actions</ulink>(5) or
-                in /usr/share/shorewall/actions.std.</para>
+                url="shorewall6-actions.html">shorewall6-actions</ulink>(5) or
+                in /usr/share/shorewall6/actions.std.</para>
               </listitem>
             </varlistentry>
 
@@ -452,8 +452,8 @@
 
             <para>If the <emphasis role="bold">ACTION</emphasis> names an
             <emphasis>action</emphasis> declared in <ulink
-            url="shorewall-actions.html">shorewall-actions</ulink>(5) or in
-            /usr/share/shorewall/actions.std then:</para>
+            url="shorewall6-actions.html">shorewall6-actions</ulink>(5) or in
+            /usr/share/shorewall6/actions.std then:</para>
 
             <itemizedlist>
               <listitem>
@@ -482,7 +482,7 @@
             <para>Actions specifying logging may be followed by a log tag (a
             string of alphanumeric characters) which is appended to the string
             generated by the LOGPREFIX (in <ulink
-            url="shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
+            url="shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
 
             <para>Example: ACCEPT:info:ftp would include 'ftp ' at the end of
             the log prefix generated by the LOGPREFIX setting.</para>
@@ -497,12 +497,12 @@
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
-        role="bold">:</emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
+        role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
         role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
 
         <listitem>
           <para>Source hosts to which the rule applies. May be a zone declared
-          in /etc/shorewall/zones, <emphasis role="bold">$FW</emphasis> to
+          in /etc/shorewall6/zones, <emphasis role="bold">$FW</emphasis> to
           indicate the firewall itself, <emphasis role="bold">all</emphasis>,
           <emphasis role="bold">all+</emphasis>, <emphasis
           role="bold">all-</emphasis>, <emphasis role="bold">all+-</emphasis>
@@ -542,24 +542,24 @@
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
 
           <para>Examples:</para>
 
           <variablelist>
             <varlistentry>
-              <term>dmz:192.168.2.2</term>
+              <term>dmz:2002:ce7c:92b4:1::2</term>
 
               <listitem>
-                <para>Host 192.168.2.2 in the DMZ</para>
+                <para>Host 2002:ce7c:92b4:1::2 in the DMZ</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
-              <term>net:155.186.235.0/24</term>
+              <term>net:2001:4d48:ad51:24:;/64</term>
 
               <listitem>
-                <para>Subnet 155.186.235.0/24 on the Internet</para>
+                <para>Subnet 2001:4d48:ad51:24::/64 on the Internet</para>
               </listitem>
             </varlistentry>
 
@@ -578,23 +578,6 @@
               <listitem>
                 <para>Host in the local zone with MAC address
                 00:A0:C9:15:39:78.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>net:192.0.2.11-192.0.2.17</term>
-
-              <listitem>
-                <para>Hosts 192.0.2.11-192.0.2.17 in the net zone.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>net:!192.0.2.11-192.0.2.17</term>
-
-              <listitem>
-                <para>All hosts in the net zone except for
-                192.0.2.11-192.0.2.17.</para>
               </listitem>
             </varlistentry>
 
@@ -618,7 +601,7 @@
             role="bold">loc:eth1:192.168.1.5</emphasis>).</para>
 
             <para>It is important to note that when <emphasis
-            role="bold">using Shorewall-shell</emphasis> and specifying an
+            role="bold">using Shorewall6-shell</emphasis> and specifying an
             address list that will be split (i.e., a comma separated list),
             there is a subtle behavior which has the potential to cause
             confusion. Consider the two examples below:</para>
@@ -652,7 +635,7 @@
             <para>That is, the interface name must be explicitly stated for
             each member of the comma separated list. Again, this distinction
             in behavior only occurs when <emphasis role="bold">using
-            Shorewall-shell</emphasis>.</para>
+            Shorewall6-shell</emphasis>.</para>
           </blockquote>
         </listitem>
       </varlistentry>
@@ -669,7 +652,7 @@
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink>(5), $<emphasis
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(5), $<emphasis
           role="bold">FW</emphasis> to indicate the firewall itself, <emphasis
           role="bold">all</emphasis>. <emphasis role="bold">all+</emphasis> or
           <emphasis role="bold">none</emphasis>.</para>
@@ -684,7 +667,7 @@
           affected. When <emphasis role="bold">all+</emphasis> is used,
           intra-zone traffic is affected.</para>
 
-          <para>Beginning with Shorewall 4.1.4, the
+          <para>Beginning with Shorewall6 4.1.4, the
           <replaceable>zone</replaceable> should be omitted in DNAT-,
           REDIRECT- and NONAT rules.</para>
 
@@ -716,15 +699,15 @@
 
             <para>You may exclude certain hosts from the set already defined
             through use of an <emphasis>exclusion</emphasis> (see <ulink
-            url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+            url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
 
             <para>Restrictions:</para>
 
             <para>1. MAC addresses are not allowed (this is a Netfilter
             restriction).</para>
 
-            <para>2.Prior to Shorewall 4.1.4, only IP addresses are allowed in
-            <emphasis role="bold">DNAT</emphasis> rules; no DNS names are
+            <para>2.Prior to Shorewall6 4.1.4, only IP addresses are allowed
+            in <emphasis role="bold">DNAT</emphasis> rules; no DNS names are
             permitted. In no case may a network be specified as the
             server.</para>
 
@@ -768,17 +751,17 @@
               </varlistentry>
             </variablelist>
 
-            <para>If you are using Shorewall-shell or Shorewall-perl before
+            <para>If you are using Shorewall6-shell or Shorewall6-perl before
             version 4.0.5, then the port number MUST be specified as an
-            integer and not as a name from services(5). Shorewall-perl 4.0.5
+            integer and not as a name from services(5). Shorewall6-perl 4.0.5
             and later permit the <emphasis>port</emphasis> to be specified as
-            a service name. Additionally, Shorewall-perl 4.0.5 and later
+            a service name. Additionally, Shorewall6-perl 4.0.5 and later
             permit specifying a port range in the form
             <emphasis>lowport-highport</emphasis> to cause connections to be
             assigned to ports in the range in round-robin fashion. When a port
             range is specified, <emphasis>lowport</emphasis> and
             <emphasis>highport</emphasis> must be given as integers; service
-            names are not permitted. Beginning with Shorewall 4.0.6, the port
+            names are not permitted. Beginning with Shorewall6 4.0.6, the port
             range may be optionally followed by <emphasis
             role="bold">:random</emphasis> which causes assignment to ports in
             the list to be random.</para>
@@ -848,8 +831,8 @@
           contain extended multiport match support.</para>
 
           <para>Otherwise, unless you are using <ulink
-          url="../Shorewall-perl.html">Shorewall-perl</ulink>, a separate rule
-          will be generated for each port. Shorewall-perl does not
+          url="../Shorewall6-perl.html">Shorewall6-perl</ulink>, a separate
+          rule will be generated for each port. Shorewall6-perl does not
           automatically break up lists into individual rules.</para>
         </listitem>
       </varlistentry>
@@ -887,8 +870,8 @@
             contain extended multiport match support.</para>
 
             <para>Otherwise, unless you are using <ulink
-            url="../Shorewall-perl.html">Shorewall-perl</ulink>, a separate
-            rule will be generated for each port. Shorewall-perl does not
+            url="../Shorewall6-perl.html">Shorewall6-perl</ulink>, a separate
+            rule will be generated for each port. Shorewall6-perl does not
             automatically break up lists into individual rules.</para>
           </blockquote>
         </listitem>
@@ -932,10 +915,10 @@
           role="bold">192.168.1.0/24!192.168.1.16/28</emphasis> specifies the
           addresses 192.168.1.0-182.168.1.15 and 192.168.1.32-192.168.1.255.
           See <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5).</para>
 
           <para>See <ulink
-          url="../PortKnocking.html">http://shorewall.net/PortKnocking.html</ulink>
+          url="../PortKnocking.html">http://shorewall6.net/PortKnocking.html</ulink>
           for an example of using an entry in this column with a user-defined
           action rule.</para>
         </listitem>
@@ -1067,7 +1050,7 @@
               <listitem>
                 <para>Designates a connection mark. If omitted, the packet
                 mark's value is tested. This option is only supported by
-                Shorewall-perl.</para>
+                Shorewall6-perl.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1079,8 +1062,8 @@
         role="bold">!</emphasis>]<emphasis>limit</emphasis>[:<emphasis>mask</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.1. May be used to limit the number
-          of simultaneous connections from each individual host to
+          <para>Added in Shorewall6-perl 4.2.1. May be used to limit the
+          number of simultaneous connections from each individual host to
           <replaceable>limit</replaceable> connections. Requires connlimit
           match in your kernel and iptables. While the limit is only checked
           on rules specifying CONNLIMIT, the number of current connections is
@@ -1103,7 +1086,7 @@
         <emphasis>timeelement</emphasis>[,<emphasis>timelement</emphasis>...]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.1. May be used to limit the rule
+          <para>Added in Shorewall6-perl 4.2.1. May be used to limit the rule
           to a particular time period each day, to particular days of the week
           or month, or to a range defined by dates and times. Requires time
           match support in your kernel and iptables.</para>
@@ -1190,9 +1173,9 @@
     <title>Restrictions</title>
 
     <para>Unless you are using <ulink
-    url="../Shorewall-perl.html">Shorewall-perl</ulink> and your
+    url="../Shorewall6-perl.html">Shorewall6-perl</ulink> and your
     iptables/kernel have <firstterm>Repeat Match</firstterm> support (see the
-    output of <command>shorewall show capabilities</command>), if you specify
+    output of <command>shorewall6 show capabilities</command>), if you specify
     a list of DEST PORT(S), then you may not specify SOURCE PORT(S) and vice
     versa.</para>
   </refsect1>
@@ -1310,29 +1293,29 @@
         <term>Example 9:</term>
 
         <listitem>
-          <para>Shorewall does not impose as much structure on the Netfilter
+          <para>Shorewall6 does not impose as much structure on the Netfilter
           rules in the 'nat' table as it does on those in the filter table. As
-          a consequence, when using Shorewall versions before 4.1.4, care must
-          be exercised when using DNAT and REDIRECT rules with zones defined
-          with wildcard interfaces (those ending with '+'. Here is an
+          a consequence, when using Shorewall6 versions before 4.1.4, care
+          must be exercised when using DNAT and REDIRECT rules with zones
+          defined with wildcard interfaces (those ending with '+'. Here is an
           example:</para>
 
           <para><ulink
-          url="shorewall-zones.html">shorewall-zones</ulink>(8):<programlisting>        #ZONE       TYPE    OPTIONS
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(8):<programlisting>        #ZONE       TYPE    OPTIONS
         fw          firewall
         net         ipv4
         dmz         ipv4
         loc         ipv4</programlisting></para>
 
           <para><ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(8):<programlisting>        #ZONE       INTERFACE       BROADCAST      OPTIONS
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(8):<programlisting>        #ZONE       INTERFACE       BROADCAST      OPTIONS
         net         ppp0
         loc         eth1            detect
         dmz         eth2            detect
         -           ppp+                           # Addresses are assigned from 192.168.3.0/24</programlisting></para>
 
           <para><ulink
-          url="shorewall-hosts.html">shorewall-host</ulink>(8):<programlisting>        #ZONE       HOST(S)              OPTIONS
+          url="shorewall6-hosts.html">shorewall6-host</ulink>(8):<programlisting>        #ZONE       HOST(S)              OPTIONS
         loc         ppp+:192.168.3.0/24</programlisting></para>
 
           <para>rules:</para>
@@ -1342,7 +1325,7 @@
         REDIRECT    loc             3128       tcp         80                                                   </programlisting>
 
           <simpara>Note that it would have been tempting to simply define the
-          loc zone entirely in shorewall-interfaces(8):</simpara>
+          loc zone entirely in shorewall6-interfaces(8):</simpara>
 
           <para><programlisting>        #******************* INCORRECT *****************
         #ZONE       INTERFACE       BROADCAST      OPTIONS
@@ -1364,19 +1347,19 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/rules</para>
+    <para>/etc/shorewall6/rules</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
+    shorewall6-nat(5), shorewall6-netmap(5), shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-proxyarp(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

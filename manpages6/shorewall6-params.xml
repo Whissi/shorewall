@@ -32,20 +32,19 @@
     <para>Example params file:</para>
 
     <programlisting>NET_IF=eth0
-NET_BCAST=130.252.100.255
-NET_OPTIONS=routefilter,norfc1918</programlisting>
+NET_OPTIONS=dhcp,nosmurfs</programlisting>
 
     <para>Example <ulink
     url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
     file.</para>
 
     <programlisting>ZONE    INTERFACE       BROADCAST       OPTIONS
-net     $NET_IF         $NET_BCAST      $NET_OPTIONS</programlisting>
+net     $NET_IF         -               $NET_OPTIONS</programlisting>
 
     <para>This is the same as if the interfaces file had contained:</para>
 
     <programlisting>ZONE    INTERFACE       BROADCAST       OPTIONS
-net     eth0            130.252.100.255 routefilter,norfc1918</programlisting>
+net     eth0            -               dhcp,nosmurfs</programlisting>
   </refsect1>
 
   <refsect1>
@@ -62,11 +61,10 @@ net     eth0            130.252.100.255 routefilter,norfc1918</programlisting>
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
-    shorewall6-nat(5), shorewall6-netmap(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-proxyarp(5), shorewall6-route_rules(5),
-    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
-    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
-    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
+    shorewall6-maclist(5), shorewall6-policy(5), shorewall6-providers(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

@@ -342,8 +342,6 @@ sub validate_tc_device( $$$$$ ) {
 
     my $devnumber;
 
-    fatal_error "Traffic Shaping is not yet available in Shorewall6" if $family == F_IPV6;
-
     if ( $device =~ /:/ ) {
 	( my $number, $device, my $rest )  = split /:/, $device, 3;
 
@@ -831,16 +829,18 @@ sub setup_traffic_shaping() {
 	emit "fi\n";
     }
 
-    $fn = open_file 'tcfilters';
+    if ( $family == F_IPV4 ) {
+	$fn = open_file 'tcfilters';
 
-    if ( $fn ) {
-	first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message "Adding TC Filters"; } );
+	if ( $fn ) {
+	    first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message "Adding TC Filters"; } );
+	    
+	    while ( read_a_line ) {
+		
+		my ( $devclass, $source, $dest, $proto, $port, $sport ) = split_line 2, 6, 'tcfilters file';
 
-	while ( read_a_line ) {
-
-	    my ( $devclass, $source, $dest, $proto, $port, $sport ) = split_line 2, 6, 'tcfilters file';
-
-	    process_tc_filter( $devclass, $source, $dest, $proto, $port, $sport );
+		process_tc_filter( $devclass, $source, $dest, $proto, $port, $sport );
+	    }
 	}
     }
 }

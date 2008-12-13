@@ -2053,7 +2053,7 @@ sub get_configuration( $ ) {
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
-    default_yes_no 'CLEAR_TC'                   , 'Yes';
+    default_yes_no 'CLEAR_TC'                   , $family == F_IPV4 ? 'Yes' : '';
 
     if ( defined $config{CLAMPMSS} ) {
 	default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
@@ -2150,7 +2150,7 @@ sub get_configuration( $ ) {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
 
-    default 'TC_ENABLED' , 'Internal';
+    default 'TC_ENABLED' , $family == F_IPV4 ? 'Internal' : 'no';
 
     $val = "\L$config{TC_ENABLED}";
 

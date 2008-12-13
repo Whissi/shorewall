@@ -818,11 +818,11 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
     } else {
-	if ( $family == F_IPV4 ) {
-	    for my $interface ( @maclist_interfaces ) {
-		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
-		my $chain    = $chainref->{name};
-
+	for my $interface ( @maclist_interfaces ) {
+	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
+	    my $chain    = $chainref->{name};
+	    
+	    if ( $family == F_IPV4 ) {
 		if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		    my $variable = get_interface_addresses source_port_to_bridge( $interface );
 
@@ -859,7 +859,7 @@ sub setup_mac_lists( $ ) {
 		    add_command( $chainref, 'done' );
 		}
 	    }
-
+	    
 	    run_user_exit2( 'maclog', $chainref );
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';

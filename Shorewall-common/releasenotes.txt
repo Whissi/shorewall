@@ -7,7 +7,7 @@ Shorewall 4.3.3
 
    Minimun system requirements:
 
-   - Kernel 2.6.20 or later with 2.6.25 or later strongly recommended.
+   - Kernel 2.6.23 or later with 2.6.25 or later strongly recommended.
    - iptables 1.4.0 or later with 1.4.1 strongly recommended.
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
@@ -30,6 +30,10 @@ Other changes in 4.3.3
     b) Source or destination is a link-level address (ff80::/10).
 
 3)  Traffic shaping is now enabled in Shorewall6. See below.
+
+4)  Shorewall6 and Shorewall6 Lite now check the kernel version during
+    'start' processing. If the kernel version is less than 2.6.25, a 
+    fatal error is generated.
 
 Migration Issues.
 

@@ -49,6 +49,14 @@ Other changes in 4.3.3
     'start' processing. If the kernel version is less than 2.6.25, a 
     fatal error is generated.
 
+5)  The AllowICMPs macro has been converted to a standard action. This
+    allows for more efficient processing in the case where ipv6-icmp is
+    specified as the PROTO in the invocation of AllowICMPs.
+
+    e.g.,
+
+	AllowICMPs	$FW	net	ipv6-icmp
+
 Migration Issues.
 
    None.

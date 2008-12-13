@@ -1,14 +1,13 @@
 #
-# Shorewall6 version 4 - AllowICMPs Macro
+# Shorewall6 version 4 - AllowICMPs Action
 #
-# /usr/share/shorewall6/macro.AllowICMPs
+# /usr/share/shorewall6/action.AllowICMPs
 #
-#	This macro ACCEPTs needed ICMP types
+#	This action ACCEPTs needed ICMP types
 #
 ###############################################################################
-#ACTION	SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/
-#				PORT(S)	PORT(S)	LIMIT	GROUP
-
+#TARGET	SOURCE		DEST	PROTO		DEST
+#						PORT(S)	
 COMMENT Needed ICMP types (RFC4890)
 
 ACCEPT	-		-	ipv6-icmp	destination-unreachable

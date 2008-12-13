@@ -104,6 +104,7 @@ fi
 
 %attr(0644,root,root) /usr/share/shorewall6/version
 %attr(0644,root,root) /usr/share/shorewall6/actions.std
+%attr(0644,root,root) /usr/share/shorewall6/action.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall6/action.Drop
 %attr(0644,root,root) /usr/share/shorewall6/action.Reject
 %attr(0644,root,root) /usr/share/shorewall6/action.template

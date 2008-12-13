@@ -1,7 +1,7 @@
 #
-# Shorewall version 4 - Action Template
+# Shorewall6 version 4 - Action Template
 #
-# /etc/shorewall/action.template
+# /etc/shorewall6/action.template
 #
 #	This file is a template for files with names of the form
 #	/etc/shorewall/action.<action-name> where <action> is an
@@ -77,36 +77,12 @@
 #			address; mac addresses must begin with "~" and must use
 #			"-" as a separator.
 #
-#			192.168.2.2		Host 192.168.2.2
-#
-#			155.186.235.0/24	Subnet 155.186.235.0/24
-#
-#			10.0.0.4-10.0.0.9	Range of IP addresses; your
-#						kernel and iptables must have
-#						iprange match support.
-#
-#			+remote			The name of an ipset prefaced
-#						by "+". Your kernel and
-#						iptables must have set match
-#						support
-#
-#			+remote[4]		The name of the ipset may
-#						followed by a number of
-#						levels of ipset bindings
-#						enclosed in square brackets.
-#
-#			192.168.1.1,192.168.1.2
-#						Hosts 192.168.1.1 and
-#						192.168.1.2.
-#			~00-A0-C9-15-39-78	Host with
-#						MAC address 00:A0:C9:15:39:78.
-#
 #			Alternatively, clients may be specified by interface
 #			name. For example, eth1 specifies a
 #			client that communicates with the firewall system
 #			through eth1. This may be optionally followed by
 #			another colon (":") and an IP/MAC/subnet address
-#			as described above (e.g., eth1:192.168.1.5).
+#			enclosed in square brackets.
 #
 #	DEST		Location of destination host. Same as above with
 #			the exception that MAC addresses are not allowed and
@@ -116,7 +92,7 @@
 #	PROTO		Protocol - Must be "tcp", "tcp:syn", "udp", "icmp",
 #			"ipp2p", "ipp2p:udp", "ipp2p:all", a number, or "all".
 #                       "ipp2p*" requires ipp2p match support in your kernel
-#                       and iptables.
+#                       and ip6tables.
 #
 #			"tcp:syn" implies "tcp" plus the SYN flag must be
 #			set and the RST, ACK and FIN flags must be reset.
@@ -190,9 +166,6 @@
 #					#the 'kids' group
 #				!:kids	#program must not be run by a member
 #					#of the 'kids' group
-#				+upnpd	#program named upnpd (This feature was
-#					#removed from Netfilter in kernel
-#					#version 2.6.14).
 #
 ###############################################################################
 #TARGET	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/

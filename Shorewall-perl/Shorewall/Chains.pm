@@ -2008,11 +2008,11 @@ sub expand_rule( $$$$$$$$$$$ )
 	    } else {
 		$iiface = $source;
 	    }
-	} elsif  ( $source =~ /^(.+?):\[(.+)\]\s*$/ ) {
+	} elsif  ( $source =~ /^(.+?):<(.+)>\s*$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /:/ ) {
-	    if ( $source =~ /^\[(.+)\]$/ ) {
+	    if ( $source =~ /^<(.+)>$/ ) {
 		$inets = $1;
 	    } else {
 		$inets = $source;
@@ -2095,11 +2095,11 @@ sub expand_rule( $$$$$$$$$$$ )
 	    } else {
 		$diface = $dest;
 	    }
-	} elsif ( $dest =~ /^(.+?):\[(.+)\]\s*$/ ) {
+	} elsif ( $dest =~ /^(.+?):<(.+)>\s*$/ ) {
 	    $diface = $1;
 	    $dnets  = $2;
 	} elsif ( $dest =~ /:/ ) {
-	    if ( $dest =~ /^\[(.+)\]$/ ) {
+	    if ( $dest =~ /^<(.+)>$/ ) {
 		$dnets = $1;
 	    } else {
 		$dnets = $dest;

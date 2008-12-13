@@ -1,5 +1,19 @@
 Shorewall 4.3.3
 
+Notice:
+
+There are two incompatible changes in this release.
+
+1)  Rather than square brackets ([]), addresses following an interface
+    name are now enclosed in angle brackets (<>). This change is made
+    to avoid confusion in the documentation with the meta characters
+    '[' and ']'.
+
+2)  Only those macros that have different contents in IPv6 are now
+    included in /usr/share/shorewall6/. As a consequence,
+    /usr/share/shorewall must be added to your CONFIG_PATH in
+    /etc/shorewall6/shorewall6.conf.
+
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 3  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -98,10 +112,10 @@ New Features in Shorewall 4.3
 
    f)  When both an interface and an address or address list need to
        be specified in a rule, the address or list must be enclosed in
-       square brackets. Example:
+       angle brackets. Example:
 
         #ACTION      SOURCE		                        DEST
-	ACCEPT	     net:eth0:[2001:19f0:feee::dead:beef:cafe]	dmz
+	ACCEPT	     net:eth0:<2001:19f0:feee::dead:beef:cafe>	dmz
 
        Note that this includes MAC addresses as well as IPv6 addresses.
 
@@ -109,13 +123,13 @@ New Features in Shorewall 4.3
        convention:
 
            #ZONE      HOSTS					OPTIONS
-           chat6      eth0:[2001:19f0:feee::dead:beef:cafe]
+           chat6      eth0:<2001:19f0:feee::dead:beef:cafe>
 
        Even when an interface is not specified, it is permitted to
-       enclose addresses in [] to improve readability. Example:
+       enclose addresses in <> to improve readability. Example:
 
            #ACTION      SOURCE		DEST
-	   ACCEPT	net:[2001:1::1]	$FW
+	   ACCEPT	net:<2001:1::1>	$FW
 
    g)  There are currently no Shorewall6 or Shorewall6-lite manpages.
 

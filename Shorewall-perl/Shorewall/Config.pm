@@ -459,6 +459,7 @@ sub initialize( $ ) {
 	      #
 	      # Firewall Options
 	      #
+	      IP_FORWARDING => undef,
 	      TC_ENABLED => undef,
 	      TC_EXPERT => undef,
 	      CLEAR_TC => undef,

@@ -481,7 +481,7 @@ sub process_routestopped() {
 	unless ( $matched ) {
 	    for my $host1 ( @allhosts ) {
 		unless ( $host eq $host1 ) {
-		    my ( $interface1, $h1 ) = split /:/, $host1;
+		    my ( $interface1, $h1 ) = split /\|/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    my $desti1 = match_dest_dev $interface1;
 		    emit "$tool -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";

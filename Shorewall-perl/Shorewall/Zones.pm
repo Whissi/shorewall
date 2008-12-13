@@ -631,6 +631,7 @@ sub validate_interfaces_file( $ )
 			   maclist     => SIMPLE_IF_OPTION,
 			   nosmurfs    => SIMPLE_IF_OPTION,
 			   optional    => SIMPLE_IF_OPTION,
+			   proxyndp    => BINARY_IF_OPTION,
  			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
 			   sourceroute => BINARY_IF_OPTION,
 			   tcpflags    => SIMPLE_IF_OPTION,

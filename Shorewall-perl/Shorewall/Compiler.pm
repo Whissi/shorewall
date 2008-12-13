@@ -70,7 +70,7 @@ sub reinitialize() {
     Shorewall::Actions::initialize( $family );
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize($family);
-    Shorewall::Proxyarp::initialize;
+    Shorewall::Proxyarp::initialize($family);
     Shorewall::IPAddrs::initialize($family);
 }
 
@@ -972,9 +972,9 @@ sub compiler {
 
     setup_source_routing;
     #
-    # Proxy Arp
+    # Proxy Arp/Ndp
     #
-    setup_proxy_arp if $family == F_IPV4;
+    setup_proxy_arp;
     #
     # Handle MSS setings in the zones file
     #

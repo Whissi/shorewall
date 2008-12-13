@@ -39,6 +39,8 @@ our $VERSION = 4.0.6;
 
 our @proxyarp;
 
+our $family;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -48,12 +50,13 @@ our @proxyarp;
 #                       the second and subsequent calls to that function.
 #
 
-sub initialize() {
+sub initialize( $ ) {
+    $family = shift;
     @proxyarp = ();
 }
 
 INIT {
-    initialize;
+    initialize( F_IPV4 );
 }
 
 sub setup_one_proxy_arp( $$$$$ ) {
@@ -95,58 +98,75 @@ sub setup_one_proxy_arp( $$$$$ ) {
 # Setup Proxy ARP
 #
 sub setup_proxy_arp() {
+    if ( $family == F_IPV4 ) {
 
-    my $interfaces= find_interfaces_by_option 'proxyarp';
-    my $fn = open_file 'proxyarp';
+	my $interfaces= find_interfaces_by_option 'proxyarp';
+	my $fn = open_file 'proxyarp';
 
-    if ( @$interfaces || $fn ) {
+	if ( @$interfaces || $fn ) {
 
-	my $first_entry = 1;
+	    my $first_entry = 1;
 
-	save_progress_message "Setting up Proxy ARP...";
+	    save_progress_message "Setting up Proxy ARP...";
+	    
+	    my ( %set, %reset );
 
-	my ( %set, %reset );
+	    while ( read_a_line ) {
 
-	while ( read_a_line ) {
+		my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 3, 5, 'proxyarp file';
 
-	    my ( $address, $interface, $external, $haveroute, $persistent ) = split_line 3, 5, 'proxyarp file';
+		if ( $first_entry ) {
+		    progress_message2 "$doing $fn...";
+		    $first_entry = 0;
+		}
 
-	    if ( $first_entry ) {
-		progress_message2 "$doing $fn...";
-		$first_entry = 0;
+		$set{$interface}  = 1;
+		$reset{$external} = 1 unless $set{$external};
+		
+		setup_one_proxy_arp( $address, $interface, $external, $haveroute, $persistent );
 	    }
 
-	    $set{$interface}  = 1;
-	    $reset{$external} = 1 unless $set{$external};
+	    emit '';
 
-	    setup_one_proxy_arp( $address, $interface, $external, $haveroute, $persistent );
-	}
-
-	emit '';
-
-	for my $interface ( keys %reset ) {
-	    unless ( $set{interface} ) {
+	    for my $interface ( keys %reset ) {
+		unless ( $set{interface} ) {
+		    emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
+			    "    echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		    emit    "fi\n";
+		}
+	    }
+	    
+	    for my $interface ( keys %set ) {
 		emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
-			"    echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+			"    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		emit  ( 'else' ,
+			"    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $interface\"" ) unless interface_is_optional( $interface );
 		emit    "fi\n";
 	    }
+	    
+	    for my $interface ( @$interfaces ) {
+		my $value = get_interface_option $interface, 'proxyarp';
+		emit ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
+		       "    echo $value > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		emit ( 'else' ,
+		       "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface );
+		emit   "fi\n";
+	    }
 	}
+    } else {
+	my $interfaces= find_interfaces_by_option 'proxyndp';
 
-	for my $interface ( keys %set ) {
-	    emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
-		    "    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
-	    emit  ( 'else' ,
-		    "    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $interface\"" ) unless interface_is_optional( $interface );
-	    emit    "fi\n";
-	}
+	if ( @$interfaces ) {
+	    save_progress_message "Setting up Proxy NDP...";
 
-	for my $interface ( @$interfaces ) {
-	    my $value = get_interface_option $interface, 'proxyarp';
-	    emit ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
-		   "    echo $value > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
-	    emit ( 'else' ,
-		   "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface );
-	    emit   "fi\n";
+	    for my $interface ( @$interfaces ) {
+		my $value = get_interface_option $interface, 'proxyndp';
+		emit ( "if [ -f /proc/sys/net/ipv6/conf/$interface/proxy_ndp ] ; then" ,
+		   "    echo $value > /proc/sys/net/ipv6/conf/$interface/proxy_ndp" );
+		emit ( 'else' ,
+		       "    error_message \"WARNING: Unable to set/reset Proxy NDP on $interface\"" ) unless interface_is_optional( $interface );
+		emit   "fi\n";
+	    }
 	}
     }
 }

@@ -476,15 +476,6 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcdevices ]; then
 fi
 
 #
-# Install the tcfilters file
-#
-run_install $OWNERSHIP -m 0644 tcfilters ${PREFIX}/usr/share/shorewall6/configfiles/tcfilters
-
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcfilters ]; then
-    run_install $OWNERSHIP -m 0600 tcfilters ${PREFIX}/etc/shorewall6/tcfilters
-    echo "TC Filters file installed as ${PREFIX}/etc/shorewall6/tcfilters"
-fi
-#
 # Install the default config path file
 #
 install_file configpath ${PREFIX}/usr/share/shorewall6/configpath 0644
@@ -497,15 +488,6 @@ run_install $OWNERSHIP -m 0644 init ${PREFIX}/usr/share/shorewall6/configfiles/i
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/init ]; then
     run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall6/init
     echo "Init file installed as ${PREFIX}/etc/shorewall6/init"
-fi
-#
-# Install the initdone file
-#
-run_install $OWNERSHIP -m 0644 initdone ${PREFIX}/usr/share/shorewall6/configfiles/initdone
-
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/initdone ]; then
-    run_install $OWNERSHIP -m 0600 initdone ${PREFIX}/etc/shorewall6/initdone
-    echo "Initdone file installed as ${PREFIX}/etc/shorewall6/initdone"
 fi
 #
 # Install the start file
@@ -533,15 +515,6 @@ run_install $OWNERSHIP -m 0644 stopped ${PREFIX}/usr/share/shorewall6/configfile
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/stopped ]; then
     run_install $OWNERSHIP -m 0600 stopped ${PREFIX}/etc/shorewall6/stopped
     echo "Stopped file installed as ${PREFIX}/etc/shorewall6/stopped"
-fi
-#
-# Install the ECN file
-#
-run_install $OWNERSHIP -m 0644 ecn ${PREFIX}/usr/share/shorewall6/configfiles/ecn
-
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/ecn ]; then
-    run_install $OWNERSHIP -m 0600 ecn ${PREFIX}/etc/shorewall6/ecn
-    echo "ECN file installed as ${PREFIX}/etc/shorewall6/ecn"
 fi
 #
 # Install the Accounting file

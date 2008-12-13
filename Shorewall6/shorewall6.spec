@@ -88,11 +88,9 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/init
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/initdone
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/stopped
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/ecn
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/accounting
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/actions
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/started
@@ -100,7 +98,6 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/route_rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcclasses
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcdevices
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcfilters
 %attr(0600,root,root) /etc/shorewall6/Makefile
 
 %attr(0755,root,root) /sbin/shorewall6
@@ -132,11 +129,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/hosts
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/blacklist
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/init
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/initdone
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/start
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/stop
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/stopped
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/ecn
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/accounting
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/actions
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/started
@@ -144,7 +139,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/route_rules
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/tcclasses
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/tcdevices
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/tcfilters
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/Makefile
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples6

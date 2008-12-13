@@ -18,16 +18,16 @@
 #
 loadmodule nfnetlink
 loadmodule x_tables
-ip6_tables 
-ip6table_filter 
-ip6table_mangle 
-ip6table_raw
+loadmodule ip6_tables 
+loadmodule ip6table_filter 
+loadmodule ip6table_mangle 
+loadmodule ip6table_raw
 loadmodule xt_conntrack
 loadmodule nf_conntrack_ipv6
 loadmodule xt_state
 loadmodule xt_tcpudp
-ip6t_REJECT
-ip6t_LOG
+loadmodule ip6t_REJECT
+loadmodule ip6t_LOG
 #
 # Other xtables modules
 #
@@ -89,5 +89,5 @@ loadmodule act_police
 #
 # Extensions
 #
-ip6_queue
+loadmodule ip6_queue
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

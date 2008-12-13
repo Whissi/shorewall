@@ -5,9 +5,21 @@ Shorewall 4.3.2
 ----------------------------------------------------------------------------
 1) Support is included for IPv6.
 
+   Minimun system requirements:
+
+   - Kernel 2.6.20 or later with 2.6.25 or later strongly recommended.
+   - iptables 1.4.0 or later with 1.4.1 strongly recommended.
+   - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
+     In that case you will also have to install Perl Socket6 support.
+
 Problems Corrected in 4.3.2
 
-    None.
+1)  Typos in the macro.AllowICMPs file have been corrected.
+
+2)  IP_FORWARDING is now correctly recognized by Shorewall-perl.
+
+3)  A bug in processing of the routestopped file has been fixed. This
+    bug also affected IPv4 configurations.
 
 Other changes in 4.3.2
 
@@ -22,7 +34,10 @@ Other changes in 4.3.2
     /etc/shorewall8/interfaces. The option drops incoming packets with
     a source address that is an anycast or multicast addreess.
 
-4)  Multi-ISP is now enabled in Shorewall8.
+4)  Multi-ISP is now enabled in Shorewall6.
+
+5)  When running the 'ip' utility, Shorewall now unconditionally
+    specifies the address family (-4 or -6).
 
 Migration Issues.
 

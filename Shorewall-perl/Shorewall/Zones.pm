@@ -284,7 +284,7 @@ sub determine_zones()
 	    fatal_error "Invalid zone type ($type)" if $1 && (($1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
 	    $type = 'ipsec';
 	} elsif ( $type =~ /^bport([46])?$/i ) {
-	    fatal_error "Invalid zone type ($type)" if ( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 );
+	    fatal_error "Invalid zone type ($type)" if $1 && (( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
 	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
 	    $type = 'bport';
 	    push @bport_zones, $zone;

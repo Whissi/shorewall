@@ -142,6 +142,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/tcdevices
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/Makefile
 
+%attr(0644,root,root) %{_mandir}/man5/*
+%attr(0644,root,root) %{_mandir}/man8/shorewall6.8.gz
+
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples6
 
 %changelog

@@ -604,23 +604,23 @@ fi
 # Install the Man Pages
 #
 
-#cd manpages
+cd manpages
 
-#for f in *.5; do
-#    gzip -c $f > $f.gz
-#    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
-#    echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
-#done
+for f in *.5; do
+    gzip -c $f > $f.gz
+    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
+    echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
+done
 
-#for f in *.8; do
-#    gzip -c $f > $f.gz
-#    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
-#    echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
-#done
+for f in *.8; do
+    gzip -c $f > $f.gz
+    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
+    echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
+done
 
-#cd ..
+cd ..
 
-#echo "Man Pages Installed"
+echo "Man Pages Installed"
 
 if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
     if [ -n "$DEBIAN" ]; then

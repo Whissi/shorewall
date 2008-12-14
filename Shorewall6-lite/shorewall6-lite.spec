@@ -81,6 +81,11 @@ fi
 %attr(0544,root,root) /usr/share/shorewall6-lite/shorecap
 %attr(0755,root,root) /usr/share/shorewall6-lite/wait4ifup
 
+%attr(0644,root,root) %{_mandir}/man5/shorewall6-lite.conf.5.gz
+%attr(0644,root,root) %{_mandir}/man5/shorewall6-lite-vardir.5.gz
+
+%attr(0644,root,root) %{_mandir}/man8/shorewall6-lite.8.gz
+
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog

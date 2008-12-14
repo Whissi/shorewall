@@ -98,7 +98,9 @@ BUILDHTML=
 SAMPLESTAG=
 SIGN=
 MANPAGETAG=
+MANPAGE6TAG=
 LITEMANPAGETAG=
+LITE6MANPAGETAG=
 PERLDIR=
 SHELLDIR=
 PERLBRANCH=
@@ -323,7 +325,9 @@ case $VERSION in
 	SAMPLESTAG="trunk/Samples"
 	SAMPLES6TAG="trunk/Samples6"
 	MANPAGETAG=trunk/manpages
+	MANPAGE6TAG=trunk/manpages6
 	LITEMANPAGETAG=trunk/manpages-lite
+	LITE6MANPAGETAG=trunk/manpages6-lite
 	;;
      4.2.*.*)
 	PATCHRELEASE=Yes
@@ -583,27 +587,25 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$BUILD6" ]; then
 	cd $SHOREWALL6DIR
 	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLES6TAG Samples6 >> $LOGFILE 2>&1"
-	if false; then
-	    progress_message "Exporting $MANPAGETAG from SVN..."
-	    do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
-	    cd manpages
-	    for f in *.xml; do
-		if [ $f != shorewall-template.xml ]; then
-		    progress_message "Generating Man Page from $f..."
-		    do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
-		    case $f in
-			*.conf.*|shorewall.xml)
-			    ;;
-			*)
-			    g=${f#shorewall-}
-			    h=$(ls ${g%.xml}.[58])
-			    mv $h shorewall-$h
-			    ;;
-		    esac
-		fi
-	    done
-	    rm *.xml
-	fi
+	progress_message "Exporting $MANPAGE6TAG from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGE6TAG manpages >> $LOGFILE 2>&1"
+	cd manpages
+	for f in *.xml; do
+	    if [ $f != shorewall6-template.xml ]; then
+		progress_message "Generating Man Page from $f..."
+		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		case $f in
+		    *.conf.*|shorewall6.xml)
+			;;
+		    *)
+			g=${f#shorewall6-}
+			h=$(ls ${g%.xml}.[58])
+			mv $h shorewall6-$h
+			;;
+		esac
+	    fi
+	done
+	rm *.xml
 	cd $DIR
     fi
 
@@ -623,6 +625,30 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 			g=${f#shorewall-lite-}
 			h=$(ls ${g%.xml}.[58])
 			mv $h shorewall-lite-$h
+			;;
+		esac
+	    fi
+	done
+	rm *.xml
+	cd $DIR 
+    fi	
+
+    if [ -n "$BUILD6LITE" ]; then
+	cd $LITE6DIR
+	progress_message "Exporting $LITE6MANPAGETAG from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$LITE6MANPAGETAG manpages >> $LOGFILE 2>&1"
+	cd manpages
+	for f in *.xml; do
+	    if [ $f != shorewall6-template.xml ]; then
+		progress_message "Generating Man Page from $f..."
+		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		case $f in
+		    *.conf.*|shorewall6-lite.xml)
+			;;
+		    *)
+			g=${f#shorewall6-lite-}
+			h=$(ls ${g%.xml}.[58])
+			mv $h shorewall6-lite-$h
 			;;
 		esac
 	    fi
@@ -833,16 +859,24 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     cd shorewall-docs-xml-$VERSION
 
     progress_message "Exporting $MANPAGETAG from SVN..."
-
     do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+    mv manpages manpages.save
 
-    do_or_die mv manpages manpages.save
+    if [ -n "$MANPAGE6TAG" ]; then
+	progress_message "Exporting $MANPAGE6TAG from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGE6TAG manpages >> $LOGFILE 2>&1"
+	do_or_die mv manpages/* manpages.save/
+    fi
 
-    progress_message "Exporting $LITEMANPAGETAG from SVN..."
-	
+    progress_message "Exporting $LITEMANPAGETAG from SVN..."	
     do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
-    
     do_or_die mv manpages/* manpages.save/
+
+    if [ -n "$LITE6MANPAGETAG" ]; then
+	progress_message "Exporting $LITE6MANPAGETAG from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$LITE6MANPAGETAG manpages >> $LOGFILE 2>&1"    
+	do_or_die mv manpages/* manpages.save/
+    fi
 
     do_or_die rm -rf manpages
 

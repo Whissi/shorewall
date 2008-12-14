@@ -563,6 +563,8 @@ convert_to_anycast() {
     local o
     local m
     m=
+    local z
+    z=65535
     local l
 
     while read address; do
@@ -570,12 +572,13 @@ convert_to_anycast() {
 	    2*|3*)
 		vlsm=${address#*/}
 		vlsm=${vlsm:=128}
-		host=$((128 - $vlsm))
 
-		if [ $vlsm -ne 128 ]; then
+		if [ $vlsm -le 120 ]; then
 	            #
-	            # Defines a subnet -- get the subnet-router anycast address
+	            # Defines a viable subnet -- first get the subnet-router anycast address
 	            #
+		    host=$((128 - $vlsm))
+		    
 		    address=$(normalize_address ${address%/*})
 
 		    while [ $host -ge 16 ]; do
@@ -583,49 +586,64 @@ convert_to_anycast() {
 			host=$(($host - 16))
 		    done
 
-		    badress=$address
-
 		    if [ $host -gt 0 ]; then
+			#
+			# VLSM is not a multiple of 16
+			#
+			host=$((16 - $host))
 			o=$((0x${address##*:}))
 			m=0
 			while [ $host -gt 0 ]; do
 			    m=$((($m >> 1) | 0x8000))
+			    z=$(($z >> 1))
 			    host=$(($host - 1))
 			done
 
 			o=$(($o & $m))
 
-			badress=$badress:ffff
+			badress=${address%:*}
 
-			address=${address%:*}:$(printf %04x $o)
+			address=$badress:$(printf %04x $o)
 
+			z=$(($o | $z))
+
+			if [ $vlsm -gt 112 ]; then
+			    z=$(($z & 0xff80))
+			fi
+
+			badress=$badress:$(printf %04x $z)
+		    else
+			badress=$address
 		    fi
 
 		    list_count $(split $address)
 
-		    if [ $? -lt 8 ]; then
-			address=$address::
-		    fi
-
-		    echo $address
-
-		    list_count $(split $badress)
-		    
 		    l=$?
 		    #
 		    # Now generate the anycast addresses defined by RFC 2526
 		    #
+		    # Note: at this point $address and $badress are the same except possibly for 
+		    #       the contents of the last half-word
+		    #
 		    if [ $l -lt 8 ]; then
+			#
+			# The subnet-router address
+			#
+			echo $address::
+
 		    	while [ $l -lt 8 ]; do
-			    if [ $l -lt 7 ]; then
-				badress=$badress:ffff
-			    else
-				badress=$badress:ff80
-			    fi
+			    badress=$badress:ffff
 			    l=$(($l + 1 ))
 			done
+		    else
+			#
+			# The subnet-router address
+			#
+			echo $address
 		    fi
-
+		    #
+		    # And the RFC 2526 addresses
+		    #
 		    echo $badress/121
 		fi
 		;;

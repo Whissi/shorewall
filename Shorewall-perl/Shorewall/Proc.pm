@@ -185,7 +185,7 @@ sub setup_source_routing() {
 	save_progress_message 'Setting up Source Routing...';
 
 	for my $interface ( @$interfaces ) {
-	    my $file = "/proc/sys/net/ipv4/conf/$interface/accept_source_route";
+	    my $file = "/proc/sys/net/ipv$family/conf/$interface/accept_source_route";
 	    my $value = get_interface_option $interface, 'sourceroute';
 
 	    emit ( "if [ -f $file ]; then" ,

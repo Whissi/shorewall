@@ -555,6 +555,13 @@ normalize_address() # $1 = valid IPv6 Address
     done
 }
 
+#
+# Reads correctly-formed and fully-qualified host and subnet addresses from STDIN. For each
+# that defines a /120 or larger network, it sends to STDOUT:
+#
+#    The corresponding subnet-router anycast address (all host address bits are zero)
+#    The corresponding anycast addresses defined by RFC 2526 (the last 128 addresses in the subnet)
+#
 convert_to_anycast() {
     local address
     local badress
@@ -615,15 +622,15 @@ convert_to_anycast() {
 		    else
 			badress=$address
 		    fi
-
+		    #
+		    # Note: at this point $address and $badress are the same except possibly for 
+		    #       the contents of the last half-word
+		    #
 		    list_count $(split $address)
 
 		    l=$?
 		    #
 		    # Now generate the anycast addresses defined by RFC 2526
-		    #
-		    # Note: at this point $address and $badress are the same except possibly for 
-		    #       the contents of the last half-word
 		    #
 		    if [ $l -lt 8 ]; then
 			#

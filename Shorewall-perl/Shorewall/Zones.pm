@@ -281,7 +281,7 @@ sub determine_zones()
 	    $type = 'ip';
 	    $ip = 1;
 	} elsif ( $type =~ /^ipsec([46])?$/i ) {
-	    fatal_error "Invalid zone type ($type)" if ( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 );
+	    fatal_error "Invalid zone type ($type)" if $1 && (($1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
 	    $type = 'ipsec';
 	} elsif ( $type =~ /^bport([46])?$/i ) {
 	    fatal_error "Invalid zone type ($type)" if ( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 );

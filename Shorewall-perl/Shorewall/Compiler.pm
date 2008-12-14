@@ -206,7 +206,7 @@ sub generate_script_1() {
 		  '[ -x "$IP6TABLES" ] || startup_error "IP6TABLES=$IP6TABLES does not exist or is not executable"',
 		);
 	} else {
-	    emit( '[ -z "$IP6TABLES" ] && IP6TABLES=$(mywhich iptables) # /sbin/shorewall6 exports IP6TABLES',
+	    emit( '[ -z "$IP6TABLES" ] && IP6TABLES=$(mywhich ip6tables) # /sbin/shorewall6 exports IP6TABLES',
 		  '[ -n "$IP6TABLES" -a -x "$IP6TABLES" ] || startup_error "Can\'t find ip6tables executable"'
 		);
 	}

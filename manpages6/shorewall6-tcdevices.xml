@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-tcdevices</refentrytitle>
+    <refentrytitle>shorewall6-tcdevices</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>tcdevices</refname>
 
-    <refpurpose>Shorewall Traffic Shaping Devices file</refpurpose>
+    <refpurpose>Shorewall6 Traffic Shaping Devices file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/tcdevices</command>
+      <command>/etc/shorewall6/tcdevices</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -106,13 +108,13 @@
           ppp interfaces, you need to put them all in here!</para>
 
           <para>If the device doesn't exist, a warning message will be issued
-          during "shorewall [re]start" and "shorewall refresh" and traffic
+          during "shorewall6 [re]start" and "shorewall6 refresh" and traffic
           shaping configuration will be skipped for that device.</para>
 
-          <para>Shorewall assigns a sequential <firstterm>interface
+          <para>Shorewall6 assigns a sequential <firstterm>interface
           number</firstterm> to each interface (the first entry in the file is
           interface 1, the second is interface 2 and so on) Beginning with
-          Shorewall-perl 4.1.6, you can explicitly specify the interface
+          Shorewall6-perl 4.1.6, you can explicitly specify the interface
           number by prefixing the interface name with the number and a colon
           (":"). Example: 1:eth0.</para>
         </listitem>
@@ -132,7 +134,7 @@
           to avoid queuing at your providers side.</para>
 
           <para>If you don't want any traffic to be dropped, set this to a
-          value to zero in which case Shorewall will not create an ingress
+          value to zero in which case Shorewall6 will not create an ingress
           qdisc.Must be set to zero if the REDIRECTED INTERFACES column is
           non-empty.</para>
         </listitem>
@@ -146,7 +148,7 @@
           <para>The outgoing <emphasis>bandwidth</emphasis> of that interface.
           This is the maximum speed your connection can handle. It is also the
           speed you can refer as "full" if you define the tc classes in <ulink
-          url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5).
+          url="shorewall6-tcclasses.html">shorewall6-tcclasses</ulink>(5).
           Outgoing traffic above this rate will be dropped.</para>
         </listitem>
       </varlistentry>
@@ -157,10 +159,10 @@
         role="bold">classify</emphasis>}</term>
 
         <listitem>
-          <para>classify ― When specified, Shorewall will not generate tc or
+          <para>classify ― When specified, Shorewall6 will not generate tc or
           Netfilter rules to classify traffic based on packet marks. You must
           do all classification using CLASSIFY rules in <ulink
-          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5).</para>
+          url="shorewall6-tcrules.html">shorewall6-tcrules</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -169,7 +171,7 @@
         [<emphasis>interface</emphasis>[,<emphasis>interface</emphasis>]...]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.1.6. May only be specified if the
+          <para>Added in Shorewall6-perl 4.1.6. May only be specified if the
           interface in the INTERFACE column is an Intermediate Frame Block
           (IFB) device. Causes packets that enter each listed interface to be
           passed through the egress filters defined for this device, thus
@@ -204,7 +206,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/tcdevices</para>
+    <para>/etc/shorewall6/tcdevices</para>
   </refsect1>
 
   <refsect1>
@@ -213,13 +215,12 @@
     <para><ulink
     url="http://shorewall.net/traffic_shaping.htm">http://shorewall.net/traffic_shaping.htm</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

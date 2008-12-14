@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-lite.conf</refentrytitle>
+    <refentrytitle>shorewall6-lite.conf</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
 
   <refnamediv>
-    <refname>shorewall-lite.conf</refname>
+    <refname>shorewall6-lite.conf</refname>
 
-    <refpurpose>Shorewall Lite global configuration file</refpurpose>
+    <refpurpose>Shorewall6 Lite global configuration file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall-lite/shorewall-lite.conf</command>
+      <command>/etc/shorewall6-lite/shorewall6-lite.conf</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>This file sets options that apply to Shorewall Lite as a
+    <para>This file sets options that apply to Shorewall6 Lite as a
     whole.</para>
 
     <para>The file consists of Shell comments (lines beginning with '#'),
@@ -31,15 +33,15 @@
     it's effect.</para>
 
     <para>Any option not specified in this file gets its value from the
-    shorewall.conf file used during compilation of
-    /var/lib/shorewall-lite/firewall. Those settings may be found in the file
-    /var/lib/shorewall-lite/firewall.conf.</para>
+    shorewall6.conf file used during compilation of
+    /var/lib/shorewall6-lite/firewall. Those settings may be found in the file
+    /var/lib/shorewall6-lite/firewall.conf.</para>
   </refsect1>
 
   <refsect1>
     <title>OPTIONS</title>
 
-    <para>The following options may be set in shorewall.conf.</para>
+    <para>The following options may be set in shorewall6.conf.</para>
 
     <variablelist>
       <varlistentry>
@@ -48,7 +50,7 @@
 
         <listitem>
           <para>This parameter names the iptables executable to be used by
-          Shorewall. If not specified or if specified as a null value, then
+          Shorewall6. If not specified or if specified as a null value, then
           the iptables executable located using the PATH option is
           used.</para>
         </listitem>
@@ -59,8 +61,8 @@
         role="bold">LOGFILE=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>This parameter tells the /sbin/shorewall program where to look
-          for Shorewall messages when processing the <emphasis
+          <para>This parameter tells the /sbin/shorewall6 program where to look
+          for Shorewall6 messages when processing the <emphasis
           role="bold">dump</emphasis>, <emphasis
           role="bold">logwatch</emphasis>, <emphasis role="bold">show
           log</emphasis>, and <emphasis role="bold">hits</emphasis> commands.
@@ -76,7 +78,7 @@
 
         <listitem>
           <para>The value of this variable generate the --log-prefix setting
-          for Shorewall logging rules. It contains a “printf” formatting
+          for Shorewall6 logging rules. It contains a “printf” formatting
           template which accepts three arguments (the chain name, logging rule
           number (optional) and the disposition). To use LOGFORMAT with
           fireparse, set it as:</para>
@@ -87,7 +89,7 @@
           logging rule number is calculated and formatted in that position; if
           that substring is not included then the rule number is not included.
           If not supplied or supplied as empty (LOGFORMAT="") then
-          “Shorewall:%s:%s:” is assumed.</para>
+          “Shorewall6:%s:%s:” is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -96,7 +98,7 @@
         role="bold">:</emphasis><emphasis>pathname</emphasis>]...]</term>
 
         <listitem>
-          <para>Determines the order in which Shorewall searches directories
+          <para>Determines the order in which Shorewall6 searches directories
           for executable files.</para>
         </listitem>
       </varlistentry>
@@ -106,22 +108,22 @@
         role="bold">RESTOREFILE=</emphasis>[<emphasis>filename</emphasis>]</term>
 
         <listitem>
-          <para>Specifies the simple name of a file in /var/lib/shorewall to
+          <para>Specifies the simple name of a file in /var/lib/shorewall6 to
           be used as the default restore script in the <emphasis
-          role="bold">shorewall save</emphasis>, <emphasis
-          role="bold">shorewall restore</emphasis>, <emphasis
-          role="bold">shorewall forget </emphasis>and <emphasis
-          role="bold">shorewall -f start</emphasis> commands.</para>
+          role="bold">shorewall6 save</emphasis>, <emphasis
+          role="bold">shorewall6 restore</emphasis>, <emphasis
+          role="bold">shorewall6 forget </emphasis>and <emphasis
+          role="bold">shorewall6 -f start</emphasis> commands.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis
-        role="bold">SHOREWALL_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
+        role="bold">SHOREWALL6_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
           <para>This option is used to specify the shell program to be used to
-          run the Shorewall compiler and to interpret the compiled script. If
+          run the Shorewall6 compiler and to interpret the compiled script. If
           not specified or specified as a null value, /bin/sh is assumed.
           Using a light-weight shell such as ash or dash can significantly
           improve performance.</para>
@@ -135,10 +137,10 @@
         <listitem>
           <para>This parameter should be set to the name of a file that the
           firewall should create if it starts successfully and remove when it
-          stops. Creating and removing this file allows Shorewall to work with
+          stops. Creating and removing this file allows Shorewall6 to work with
           your distribution's initscripts. For RedHat, this should be set to
-          /var/lock/subsys/shorewall. For Debian, the value is
-          /var/state/shorewall and in LEAF it is /var/run/shorwall.</para>
+          /var/lock/subsys/shorewall6. For Debian, the value is
+          /var/state/shorewall6 and in LEAF it is /var/run/shorwall.</para>
         </listitem>
       </varlistentry>
 
@@ -146,7 +148,7 @@
         <term>VERBOSITY=[<emphasis role="bold">number</emphasis>]</term>
 
         <listitem>
-          <para>Shorewall has traditionally been very noisy (produced lots of
+          <para>Shorewall6 has traditionally been very noisy (produced lots of
           output). You may set the default level of verbosity using the
           VERBOSITY OPTION.</para>
 
@@ -171,7 +173,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall-lite/shorewall.conf</para>
+    <para>/etc/shorewall6-lite/shorewall6.conf</para>
   </refsect1>
 
   <refsect1>
@@ -180,13 +182,13 @@
     <para><ulink
     url="http://www.shorewall.net/Documentation_Index.html">http://www.shorewall.net/Documentation_Index.html</ulink></para>
 
-    <para>shorewall-lite(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6-lite(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
+    shorewall6-nat(5), shorewall6-netmap(5), shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-proxyarp(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5), shorewall6-rules(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

@@ -78,7 +78,7 @@ loc     eth2            -</programlisting>
           url="shorewall6-nesting.html">shorewall6-nesting</ulink>(5) for a
           discussion of this problem.</para>
 
-          <para>Shorewall6-perl allows '+' as an interface name.</para>
+          <para>Shorewall6 allows '+' as an interface name.</para>
 
           <para>There is no need to define the loopback interface (lo) in this
           file.</para>
@@ -127,8 +127,7 @@ loc     eth2            -</programlisting>
               <term><emphasis role="bold">bridge</emphasis></term>
 
               <listitem>
-                <para>(shorewall6-perl only) Designates the interface as a
-                bridge.</para>
+                <para>Designates the interface as a bridge.</para>
               </listitem>
             </varlistentry>
 
@@ -188,8 +187,7 @@ loc     eth2            -</programlisting>
                 <para>Turn on kernel route filtering for this interface
                 (anti-spoofing measure).</para>
 
-                <para>The option value (0 or 1) may only be specified if you
-                are using shorewall6-perl. With shorewall6-perl, only those
+                <para>If a value (0 or 1) is specified, then only those
                 interfaces with the <option>routefilter</option> option will
                 have their setting changes; the value assigned to the setting
                 will be the value specified (if any) or 1 if no value is
@@ -246,16 +244,6 @@ loc     eth2            -</programlisting>
                 have such a combination of flags are handled according to the
                 setting of TCP_FLAGS_DISPOSITION after having been logged
                 according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">upnp</emphasis></term>
-
-              <listitem>
-                <para>Incoming requests from this interface may be remapped
-                via UPNP (upnpd). See <ulink
-                url="../UPnP.html">http://www.shorewall.net/UPnP.html</ulink>.</para>
               </listitem>
             </varlistentry>
           </variablelist>

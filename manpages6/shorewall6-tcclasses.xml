@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-tcclasses</refentrytitle>
+    <refentrytitle>shorewall6-tcclasses</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>tcclasses</refname>
 
-    <refpurpose>Shorewall file to define HTB classes</refpurpose>
+    <refpurpose>Shorewall6 file to define HTB classes</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/tcclasses</command>
+      <command>/etc/shorewall6/tcclasses</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -119,20 +121,19 @@
           alias (e.g., eth0:0) here; see <ulink
           url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
 
-          <para>If you are running Shorewall-perl 4.1.6 or later, you may
-          specify the interface number rather than the interface name. If the
-          <emphasis role="bold">classify</emphasis> option is given for the
-          interface in <ulink
-          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5), then
-          you must also specify an interface class (an integer that must be
-          unique within classes associated with this interface).</para>
+          <para>You may specify either the interface number or the interface
+          name. If the <emphasis role="bold">classify</emphasis> option is
+          given for the interface in <ulink
+          url="shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5),
+          then you must also specify an interface class (an integer that must
+          be unique within classes associated with this interface).</para>
 
           <para>You may NOT specify wildcards here, e.g. if you have multiple
           ppp interfaces, you need to put them all in here!</para>
 
           <para>Please note that you can only use interface names in here that
           have a bandwidth defined in the <ulink
-          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
+          url="shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5)
           file</para>
         </listitem>
       </varlistentry>
@@ -144,12 +145,12 @@
         <listitem>
           <para>The mark <emphasis>value</emphasis> which is an integer in the
           range 1-255. You set mark values in the <ulink
-          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) file,
+          url="shorewall6-tcrules.html">shorewall6-tcrules</ulink>(5) file,
           marking the traffic you want to fit in the classes defined in here.
           Must be specified as '-' if the <emphasis
           role="bold">classify</emphasis> option is given for the interface in
           <ulink
-          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)</para>
+          url="shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5)</para>
 
           <para>You can use the same marks for different interfaces.</para>
         </listitem>
@@ -207,8 +208,8 @@
         role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.1. A comma-separated list of options
-          including the following:</para>
+          <para>A comma-separated list of options including the
+          following:</para>
 
           <variablelist>
             <varlistentry>
@@ -347,7 +348,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/tcclasses</para>
+    <para>/etc/shorewall6/tcclasses</para>
   </refsect1>
 
   <refsect1>
@@ -356,13 +357,12 @@
     <para><ulink
     url="http://shorewall.net/traffic_shaping.htm">http://shorewall.net/traffic_shaping.htm</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

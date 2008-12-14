@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-zones</refentrytitle>
+    <refentrytitle>shorewall6-zones</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,22 +11,22 @@
   <refnamediv>
     <refname>zones</refname>
 
-    <refpurpose>Shorewall zone declaration file</refpurpose>
+    <refpurpose>Shorewall6 zone declaration file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/zones</command>
+      <command>/etc/shorewall6/zones</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>The /etc/shorewall/zones file declares your network zones. You
+    <para>The /etc/shorewall6/zones file declares your network zones. You
     specify the hosts in each zone through entries in
-    <filename>/etc/shorewall/interfaces</filename> or
-    <filename>/etc/shorewall/hosts</filename>.</para>
+    <filename>/etc/shorewall6/interfaces</filename> or
+    <filename>/etc/shorewall6/hosts</filename>.</para>
 
     <para>The columns in the file are as follows.</para>
 
@@ -40,34 +42,34 @@
           "none", "SOURCE" and "DEST" are reserved and may not be used as zone
           names. The maximum length of a zone name is determined by the
           setting of the LOGFORMAT option in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5). With the
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5). With the
           default LOGFORMAT, zone names can be at most 5 characters
           long.</para>
 
-          <para>The order in which Shorewall matches addresses from packets to
-          zones is determined by the order of zone declarations. Where a zone
-          is nested in one or more other zones, you may either ensure that the
-          nested zone precedes its parents in this file, or you may follow the
-          (sub)zone name by ":" and a comma-separated list of the parent
-          zones. The parent zones must have been declared in earlier records
-          in this file. See <ulink
-          url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for
+          <para>The order in which Shorewall6 matches addresses from packets
+          to zones is determined by the order of zone declarations. Where a
+          zone is nested in one or more other zones, you may either ensure
+          that the nested zone precedes its parents in this file, or you may
+          follow the (sub)zone name by ":" and a comma-separated list of the
+          parent zones. The parent zones must have been declared in earlier
+          records in this file. See <ulink
+          url="shorewall6-nesting.html">shorewall6-nesting</ulink>(5) for
           additional information.</para>
 
           <para>Example:</para>
 
           <programlisting>#ZONE     TYPE     OPTIONS         IN OPTIONS        OUT OPTIONS
-a         ipv4
-b         ipv4
-c:a,b     ipv4</programlisting>
+a         ipv6
+b         ipv6
+c:a,b     ipv6</programlisting>
 
-          <para>Currently, Shorewall uses this information to reorder the zone
-          list so that parent zones appear after their subzones in the list.
-          The IMPLICIT_CONTINUE option in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) can also create
-          implicit CONTINUE policies to/from the subzone.</para>
+          <para>Currently, Shorewall6 uses this information to reorder the
+          zone list so that parent zones appear after their subzones in the
+          list. The IMPLICIT_CONTINUE option in <ulink
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5) can also
+          create implicit CONTINUE policies to/from the subzone.</para>
 
-          <para>In the future, Shorewall may make additional use of nesting
+          <para>In the future, Shorewall6 may make additional use of nesting
           information.</para>
         </listitem>
       </varlistentry>
@@ -78,15 +80,15 @@ c:a,b     ipv4</programlisting>
         <listitem>
           <variablelist>
             <varlistentry>
-              <term><emphasis role="bold">ipv4</emphasis></term>
+              <term><emphasis role="bold">ipv6</emphasis></term>
 
               <listitem>
-                <para>This is the standard Shorewall zone type and is the
+                <para>This is the standard Shorewall6 zone type and is the
                 default if you leave this column empty or if you enter "-" in
                 the column. Communication with some zone hosts may be
                 encrypted. Encrypted hosts are designated using the
                 'ipsec'option in <ulink
-                url="shorewall-hosts.html">shorewall-hosts</ulink>(5).</para>
+                url="shorewall6-hosts.html">shorewall6-hosts</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -95,7 +97,7 @@ c:a,b     ipv4</programlisting>
 
               <listitem>
                 <para>Communication with all zone hosts is encrypted. Your
-                kernel and iptables must include policy match support.</para>
+                kernel and ip6tables must include policy match support.</para>
               </listitem>
             </varlistentry>
 
@@ -113,11 +115,11 @@ c:a,b     ipv4</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>bport (or bport4)</term>
+              <term>bport (or bport6)</term>
 
               <listitem>
-                <para>(Shorewall-perl only) The zone is associated with one or
-                more ports on a single bridge.</para>
+                <para>The zone is associated with one or more ports on a
+                single bridge.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -173,9 +175,9 @@ c:a,b     ipv4</programlisting>
               <listitem>
                 <para>sets the MSS field in TCP packets. If you supply this
                 option, you should also set FASTACCEPT=No in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5) to insure
-                that both the SYN and SYN,ACK packets have their MSS field
-                adjusted.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5) to
+                insure that both the SYN and SYN,ACK packets have their MSS
+                field adjusted.</para>
               </listitem>
             </varlistentry>
 
@@ -239,7 +241,7 @@ c:a,b     ipv4</programlisting>
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/zones</para>
+    <para>/etc/shorewall6/zones</para>
   </refsect1>
 
   <refsect1>
@@ -248,14 +250,12 @@ c:a,b     ipv4</programlisting>
     <para><ulink
     url="http://www.shorewall.net/Multiple_Zones.html">http://www.shorewall.net/Multiple_Zones.html</ulink>.</para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-nesting(8), shorewall-netmap(5),
-    shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-nesting(8), shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5)</para>
   </refsect1>
 </refentry>

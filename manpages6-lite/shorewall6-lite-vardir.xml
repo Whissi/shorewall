@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-lite-vardir</refentrytitle>
+    <refentrytitle>shorewall6-lite-vardir</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>vardir</refname>
 
-    <refpurpose>Shorewall Lite file</refpurpose>
+    <refpurpose>Shorewall6 Lite file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall-lite/vardir</command>
+      <command>/etc/shorewall6-lite/vardir</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -22,9 +24,9 @@
     <title>Description</title>
 
     <para>This file does not exist by default. You may create the file if you
-    want to change the directory used by Shorewall Lite to store state
+    want to change the directory used by Shorewall6 Lite to store state
     information, including compiled firewall scripts. By default, the
-    directory used is <filename>/var/lib/shorewall-lite/</filename>.</para>
+    directory used is <filename>/var/lib/shorewall6-lite/</filename>.</para>
 
     <para>The file contains a single variable assignment:</para>
 
@@ -32,33 +34,31 @@
 
     <para>where <replaceable>directory</replaceable> is the name of a
     directory. If you add this file, you should copy the files from
-    <filename>/var/lib/shorewall-lite</filename> to the new directory before
-    performing a <command>shorewall-lite restart</command>.</para>
+    <filename>/var/lib/shorewall6-lite</filename> to the new directory before
+    performing a <command>shorewall6-lite restart</command>.</para>
   </refsect1>
 
   <refsect1>
     <title>Example</title>
 
-    <para>VARDIR=/root/shorewall</para>
+    <para>VARDIR=/root/shorewall6</para>
   </refsect1>
 
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall-lite/vardir</para>
+    <para>/etc/shorewall6-lite/vardir</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-tos</refentrytitle>
+    <refentrytitle>shorewall6-tos</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -9,12 +11,12 @@
   <refnamediv>
     <refname>tos</refname>
 
-    <refpurpose>Shorewall Type of Service rules file</refpurpose>
+    <refpurpose>Shorewall6 Type of Service rules file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/tos</command>
+      <command>/etc/shorewall6/tos</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -27,44 +29,17 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis> -
-        {<emphasis>zone</emphasis>[<emphasis
-        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis
-        role="bold">all</emphasis>|<emphasis role="bold">$FW</emphasis>}
-        (Shorewall-shell)</term>
-
-        <listitem>
-          <para>Name of a <replaceable>zone</replaceable> declared in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink>(5), <emphasis
-          role="bold">all</emphasis> or <emphasis
-          role="bold">$FW</emphasis>.</para>
-
-          <para>If not <emphasis role="bold">all</emphasis> or <emphasis
-          role="bold">$FW</emphasis>, may optionally be followed by ":" and an
-          IP address, a MAC address, a subnet specification or the name of an
-          interface.</para>
-
-          <para>Example: loc:192.168.2.3</para>
-
-          <para>MAC addresses must be prefixed with "~" and use "-" as a
-          separator.</para>
-
-          <para>Example: ~00-A0-C9-15-39-78</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> - {<emphasis
         role="bold">all</emphasis>|<emphasis>address</emphasis>]|<emphasis
         role="bold">all</emphasis>:<emphasis>address</emphasis>|<emphasis
-        role="bold">$FW</emphasis>} (Shorewall-perl)</term>
+        role="bold">$FW</emphasis>}</term>
 
         <listitem>
           <para>If <emphasis role="bold">all</emphasis>, may optionally be
           followed by ":" and an IP address, a MAC address, a subnet
           specification or the name of an interface.</para>
 
-          <para>Example: all:192.168.2.3</para>
+          <para>Example: all:2002:ce7c::92b4:1::2</para>
 
           <para>MAC addresses must be prefixed with "~" and use "-" as a
           separator.</para>
@@ -74,31 +49,12 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST</emphasis> -
-        {<emphasis>zone</emphasis>[<emphasis
-        role="bold">:</emphasis><emphasis>address</emphasis>]|<emphasis
-        role="bold">all</emphasis>} (Shorewall-shell)</term>
-
-        <listitem>
-          <para>Name of a zone declared in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink>(5) or <emphasis
-          role="bold">all</emphasis>.</para>
-
-          <para>If not <emphasis role="bold">all</emphasis>, may optionally be
-          followed by ":" and an IP address or a subnet specification</para>
-
-          <para>Example: loc:192.168.2.3</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> - {<emphasis
         role="bold">all</emphasis>|<emphasis>address</emphasis>]|<emphasis
-        role="bold">all</emphasis>:<emphasis>address</emphasis>}
-        (Shorewall-perl)</term>
+        role="bold">all</emphasis>:<emphasis>address</emphasis>}</term>
 
         <listitem>
-          <para>Example: 192.168.2.3</para>
+          <para>Example: 2002:ce7c::92b4:1::2</para>
         </listitem>
       </varlistentry>
 
@@ -185,8 +141,7 @@
 
               <listitem>
                 <para>Designates a connection mark. If omitted, the packet
-                mark's value is tested. This option is only supported by
-                Shorewall-perl.</para>
+                mark's value is tested.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -198,19 +153,18 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/tos</para>
+    <para>/etc/shorewall6/tos</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

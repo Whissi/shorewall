@@ -3,37 +3,21 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall</refentrytitle>
+    <refentrytitle>shorewall6</refentrytitle>
 
     <manvolnum>8</manvolnum>
   </refmeta>
 
   <refnamediv>
-    <refname>shorewall</refname>
+    <refname>shorewall6</refname>
 
     <refpurpose>Administration tool for Shoreline Firewall
-    (Shorewall)</refpurpose>
+    (Shorewall6)</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>shorewall</command>
-
-      <arg
-      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
-
-      <arg rep="norepeat">-<replaceable>options</replaceable></arg>
-
-      <arg choice="plain"><option>add</option></arg>
-
-      <arg choice="plain"
-      rep="repeat"><replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]</arg>
-
-      <arg choice="plain"><replaceable>zone</replaceable></arg>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -46,7 +30,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -56,8 +40,6 @@
 
       <arg><option>-e</option></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><option>-d</option></arg>
 
       <arg><option>-p</option></arg>
@@ -66,19 +48,18 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg
-      choice="plain"><option>clear</option><arg><option>-f</option></arg></arg>
+      <arg choice="plain"><option>clear</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -87,8 +68,6 @@
       <arg choice="plain"><option>compile</option></arg>
 
       <arg><option>-e</option></arg>
-
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
 
       <arg><option>-d</option></arg>
 
@@ -100,23 +79,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
-
-      <arg
-      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
-
-      <arg rep="norepeat">-<replaceable>options</replaceable></arg>
-
-      <arg choice="plain"><option>delete</option></arg>
-
-      <arg choice="plain"
-      rep="repeat"><replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]</arg>
-
-      <arg choice="plain"><replaceable>zone</replaceable></arg>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -129,7 +92,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -143,15 +106,14 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>export</option><arg><option>-C</option>
-      <option>{shell|perl}</option></arg></arg>
+      <arg choice="plain"><option>export</option></arg>
 
       <arg choice="opt"><replaceable>directory1</replaceable></arg>
 
@@ -160,7 +122,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -173,7 +135,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -183,49 +145,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
-
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
-
-      <arg>-<replaceable>options</replaceable></arg>
-
-      <arg
-      choice="plain"><option>hits</option><arg><option>-t</option></arg></arg>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall</command>
-
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
-
-      <arg>-<replaceable>options</replaceable></arg>
-
-      <arg choice="plain"><option>ipcalc</option></arg>
-
-      <group choice="req">
-        <arg choice="plain"><replaceable>address</replaceable>
-        <replaceable>mask</replaceable></arg>
-
-        <arg
-        choice="plain"><replaceable>address</replaceable>/<replaceable>vlsm</replaceable></arg>
-      </group>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall</command>
-
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
-
-      <arg>-<replaceable>options</replaceable></arg>
-
-      <arg choice="plain"><option>iprange</option></arg>
-
-      <arg
-      choice="plain"><replaceable>address1</replaceable><option>-</option><replaceable>address2</replaceable></arg>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -239,15 +159,13 @@
 
       <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><replaceable>directory</replaceable></arg>
 
       <arg choice="plain"><replaceable>system</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -260,7 +178,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -274,7 +192,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -287,7 +205,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -299,7 +217,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -312,7 +230,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -326,15 +244,13 @@
 
       <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><replaceable>directory</replaceable></arg>
 
       <arg choice="plain"><replaceable>system</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -345,7 +261,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -360,13 +276,11 @@
 
       <arg><option>-f</option></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -379,7 +293,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -388,8 +302,6 @@
 
       <arg choice="plain"><option>safe-restart</option></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><option>-d</option></arg>
 
       <arg><option>-p</option></arg>
@@ -398,7 +310,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -406,8 +318,6 @@
 
       <arg choice="plain"><option>safe-start</option></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><option>-d</option></arg>
 
       <arg><option>-p</option></arg>
@@ -416,7 +326,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -429,7 +339,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -447,7 +357,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -461,7 +371,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -474,7 +384,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -484,11 +394,11 @@
 
       <arg><option>-x</option></arg>
 
-      <arg choice="req"><option>mangle|nat</option></arg>
+      <command><option>nat</option></command>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -500,7 +410,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -514,7 +424,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -525,8 +435,6 @@
 
       <arg><option>-n</option></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg><option>-f</option></arg>
 
       <arg><option>-n</option></arg>
@@ -535,19 +443,18 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg
-      choice="plain"><option>stop</option><arg><option>-f</option></arg></arg>
+      <arg choice="plain"><option>stop</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -557,7 +464,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -566,15 +473,13 @@
 
       <arg choice="plain"><option>try</option></arg>
 
-      <arg><option>-C</option> <option>{shell|perl}</option></arg>
-
       <arg choice="plain"><replaceable>directory</replaceable></arg>
 
       <arg><replaceable>timeout</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
@@ -588,8 +493,8 @@
   <refsect1>
     <title>Description</title>
 
-    <para>The shorewall utility is used to control the Shoreline Firewall
-    (Shorewall).</para>
+    <para>The shorewall6 utility is used to control the Shoreline Firewall 6
+    (Shorewall6).</para>
   </refsect1>
 
   <refsect1>
@@ -600,16 +505,16 @@
     url="http://www.shorewall.net/starting_and_stopping.htm#Trace">http://www.shorewall.net/starting_and_stopping.htm#Trace</ulink>.</para>
 
     <para>The nolock <option>option</option> prevents the command from
-    attempting to acquire the Shorewall lockfile. It is useful if you need to
-    include <command>shorewall</command> commands in
-    <filename>/etc/shorewall/started</filename>.</para>
+    attempting to acquire the Shorewall6 lockfile. It is useful if you need to
+    include <command>shorewall6</command> commands in
+    <filename>/etc/shorewall6/started</filename>.</para>
 
     <para>The <emphasis>options</emphasis> control the amount of output that
     the command produces. They consist of a sequence of the letters <emphasis
     role="bold">v</emphasis> and <emphasis role="bold">q</emphasis>. If the
     options are omitted, the amount of output is determined by the setting of
     the VERBOSITY parameter in <ulink
-    url="shorewall.conf.html">shorewall.conf</ulink>(5). Each <emphasis
+    url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Each <emphasis
     role="bold">v</emphasis> adds one to the effective verbosity and each
     <emphasis role="bold">q</emphasis> subtracts one from the effective
     VERBOSITY. Anternately, <emphasis role="bold">v</emphasis> may be followed
@@ -629,29 +534,6 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">add</emphasis></term>
-
-        <listitem>
-          <para>Adds a list of hosts or subnets to a dynamic zone usually used
-          with VPN's.</para>
-
-          <para>The <emphasis>interface</emphasis> argument names an interface
-          defined in the <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
-          file. A <emphasis>host-list</emphasis> is comma-separated list whose
-          elements are host or network addresses.<caution>
-              <para>The <command>add</command> command is not very robust. If
-              there are errors in the <replaceable>host-list</replaceable>,
-              you may see a large number of error messages yet a subsequent
-              <command>shorewall show zones</command> command will indicate
-              that all hosts were added. If this happens, replace
-              <command>add</command> by <command>delete</command> and run the
-              same command again. Then enter the correct command.</para>
-            </caution></para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">allow</emphasis></term>
 
         <listitem>
@@ -670,27 +552,20 @@
           <para>Compiles the configuraton in the specified
           <emphasis>directory</emphasis> and discards the compiled output
           script. If no <emphasis>directory</emphasis> is given, then
-          /etc/shorewall is assumed.</para>
+          /etc/shorewall6 is assumed.</para>
 
           <para>The <emphasis role="bold">-e</emphasis> option causes the
           compiler to look for a file named capabilities. This file is
-          produced using the command <emphasis role="bold">shorewall-lite show
-          -f capabilities &gt; capabilities</emphasis> on a system with
-          Shorewall Lite installed.</para>
+          produced using the command <emphasis role="bold">shorewall6-lite
+          show -f capabilities &gt; capabilities</emphasis> on a system with
+          Shorewall6 Lite installed.</para>
 
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
+          <para>The <option>-d</option> option causes the compiler to be run
+          under control of the Perl debugger.</para>
 
-          <para>The <option>-d</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be run under control of
-          the Perl debugger.</para>
-
-          <para>The <option>-p</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be profiled via the Perl
-          <option>-wd:DProf</option> command-line option.</para>
+          <para>The <option>-p</option> option causes the compiler to be
+          profiled via the Perl <option>-wd:DProf</option> command-line
+          option.</para>
         </listitem>
       </varlistentry>
 
@@ -698,17 +573,10 @@
         <term><emphasis role="bold">clear</emphasis></term>
 
         <listitem>
-          <para>Clear will remove all rules and chains installed by Shorewall.
-          The firewall is then wide open and unprotected. Existing connections
-          are untouched. Clear is often used to see if the firewall is causing
-          connection problems.</para>
-
-          <para>The <option>-f</option> option was added in Shorewall 4.0.3.
-          If <option>-f</option> is given, the command will be processed by
-          the compiled script that executed the last successful <emphasis
-          role="bold">start</emphasis>, <emphasis
-          role="bold">restart</emphasis> or <emphasis
-          role="bold">refresh</emphasis> command if that script exists.</para>
+          <para>Clear will remove all rules and chains installed by
+          Shorewall6. The firewall is then wide open and unprotected. Existing
+          connections are untouched. Clear is often used to see if the
+          firewall is causing connection problems.</para>
         </listitem>
       </varlistentry>
 
@@ -717,8 +585,9 @@
 
         <listitem>
           <para>Compiles the current configuration into the executable file
-          <emphasis>pathname</emphasis>. If a directory is supplied, Shorewall
-          will look in that directory first for configuration files.</para>
+          <emphasis>pathname</emphasis>. If a directory is supplied,
+          Shorewall6 will look in that directory first for configuration
+          files.</para>
 
           <para>When -e is specified, the compilation is being performed on a
           system other than where the compiled script will run. This option
@@ -726,38 +595,16 @@
           compiled where it is to be run. The use of -e requires the presense
           of a configuration file named <filename>capabilities</filename>
           which may be produced using the command <emphasis
-          role="bold">shorewall-lite show -f capabilities &gt;
-          capabilities</emphasis> on a system with Shorewall Lite
+          role="bold">shorewall6-lite show -f capabilities &gt;
+          capabilities</emphasis> on a system with Shorewall6 Lite
           installed</para>
 
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
+          <para>The <option>-d</option> option causes the compiler to be run
+          under control of the Perl debugger.</para>
 
-          <para>The <option>-d</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be run under control of
-          the Perl debugger.</para>
-
-          <para>The <option>-p</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be profiled via the Perl
-          <option>-wd:DProf</option> command-line option.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">delete</emphasis></term>
-
-        <listitem>
-          <para>The delete command reverses the effect of an earlier <emphasis
-          role="bold">add</emphasis> command.</para>
-
-          <para>The <emphasis>interface</emphasis> argument names an interface
-          defined in the <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
-          file. A <emphasis>host-list</emphasis> is comma-separated list whose
-          elements are a host or network address.</para>
+          <para>The <option>-p</option> option causes the compiler to be
+          profiled via the Perl <option>-wd:DProf</option> command-line
+          option.</para>
         </listitem>
       </varlistentry>
 
@@ -780,7 +627,7 @@
           <para>The <emphasis role="bold">-x</emphasis> option causes actual
           packet and byte counts to be displayed. Without that option, these
           counts are abbreviated. The <emphasis role="bold">-m</emphasis>
-          option causes any MAC addresses included in Shorewall log messages
+          option causes any MAC addresses included in Shorewall6 log messages
           to be displayed.</para>
         </listitem>
       </varlistentry>
@@ -792,17 +639,11 @@
           <para>If <emphasis>directory1</emphasis> is omitted, the current
           working directory is assumed.</para>
 
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
+          <para>Allows a non-root user to compile a shorewall6 script and
+          stage it on a system (provided that the user has access to the
+          system via ssh). The command is equivalent to:</para>
 
-          <para>Allows a non-root user to compile a shorewall script and stage
-          it on a system (provided that the user has access to the system via
-          ssh). The command is equivalent to:</para>
-
-          <programlisting>    <emphasis role="bold">/sbin/shorewall compile -e</emphasis> <emphasis>directory1</emphasis> <emphasis>directory1</emphasis><emphasis
+          <programlisting>    <emphasis role="bold">/sbin/shorewall6 compile -e</emphasis> <emphasis>directory1</emphasis> <emphasis>directory1</emphasis><emphasis
               role="bold">/firewall &amp;&amp;\</emphasis>
     <emphasis role="bold">scp</emphasis> directory1<emphasis role="bold">/firewall</emphasis> <emphasis>directory1</emphasis><emphasis
               role="bold">/firewall.conf</emphasis> [<emphasis>user</emphasis>@]<emphasis
@@ -819,10 +660,10 @@
         <term><emphasis role="bold">forget</emphasis></term>
 
         <listitem>
-          <para>Deletes /var/lib/shorewall/<emphasis>filenam</emphasis>e and
-          /var/lib/shorewall/save. If no <emphasis>filename</emphasis> is
+          <para>Deletes /var/lib/shorewall6/<emphasis>filenam</emphasis>e and
+          /var/lib/shorewall6/save. If no <emphasis>filename</emphasis> is
           given then the file specified by RESTOREFILE in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) is
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5) is
           assumed.</para>
         </listitem>
       </varlistentry>
@@ -839,28 +680,9 @@
         <term><emphasis role="bold">hits</emphasis></term>
 
         <listitem>
-          <para>Generates several reports from Shorewall log messages in the
+          <para>Generates several reports from Shorewall6 log messages in the
           current log file. If the <option>-t</option> option is included, the
           reports are restricted to log messages generated today.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">ipcalc</emphasis></term>
-
-        <listitem>
-          <para>Ipcalc displays the network address, broadcast address,
-          network in CIDR notation and netmask corresponding to the
-          input[s].</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">iprange</emphasis></term>
-
-        <listitem>
-          <para>Iprange decomposes the specified range of IP addresses into
-          the equivalent list of network/host addresses.</para>
         </listitem>
       </varlistentry>
 
@@ -870,47 +692,41 @@
         <listitem>
           <para>If <emphasis>directory</emphasis> is omitted, the current
           working directory is assumed. Allows a non-root user to compile a
-          shorewall script and install it on a system (provided that the user
+          shorewall6 script and install it on a system (provided that the user
           has root access to the system via ssh). The command is equivalent
           to:</para>
 
-          <programlisting>    <emphasis role="bold">/sbin/shorewall compile -e</emphasis> <emphasis><replaceable>directory</replaceable></emphasis> <replaceable>directory</replaceable><emphasis
+          <programlisting>    <emphasis role="bold">/sbin/shorewall6 compile -e</emphasis> <emphasis><replaceable>directory</replaceable></emphasis> <replaceable>directory</replaceable><emphasis
               role="bold">/firewall &amp;&amp;\</emphasis>
     <emphasis role="bold">scp</emphasis> <emphasis>directory</emphasis><emphasis
               role="bold">/firewall</emphasis> <emphasis>directory</emphasis><emphasis
               role="bold">/firewall.conf</emphasis> <emphasis role="bold">root@</emphasis><replaceable>system</replaceable><emphasis
-              role="bold">:/var/lib/shorewall-lite/ &amp;&amp;\</emphasis>
+              role="bold">:/var/lib/shorewall6-lite/ &amp;&amp;\</emphasis>
     <emphasis role="bold">ssh root@</emphasis><replaceable>system</replaceable> <emphasis
-              role="bold">'/sbin/shorewall-lite start'</emphasis></programlisting>
+              role="bold">'/sbin/shorewall6-lite start'</emphasis></programlisting>
 
           <para>In other words, the configuration in the specified (or
           defaulted) directory is compiled to a file called firewall in that
           directory. If compilation succeeds, then firewall is copied to
           <replaceable>system</replaceable> using scp. If the copy succeeds,
-          Shorewall Lite on <replaceable>system</replaceable> is started via
+          Shorewall6 Lite on <replaceable>system</replaceable> is started via
           ssh.</para>
 
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">start</emphasis> command succeeds, then the
-          remote Shorewall-lite configuration is saved by executing <emphasis
-          role="bold">shorewall-lite save</emphasis> via ssh.</para>
+          remote Shorewall6-lite configuration is saved by executing <emphasis
+          role="bold">shorewall6-lite save</emphasis> via ssh.</para>
 
           <para>if <emphasis role="bold">-c</emphasis> is included, the
-          command <emphasis role="bold">shorewall-lite show capabilities -f
-          &gt; /var/lib/shorewall-lite/capabilities</emphasis> is executed via
-          ssh then the generated file is copied to
+          command <emphasis role="bold">shorewall6-lite show capabilities -f
+          &gt; /var/lib/shorewall6-lite/capabilities</emphasis> is executed
+          via ssh then the generated file is copied to
           <replaceable>directory</replaceable> using scp. This step is
           performed before the configuration is compiled.</para>
 
           <para>If <option>-r</option> is included, it specifies that the root
           user on <replaceable>system</replaceable> is named
           <replaceable>root-user-name</replaceable> rather than "root".</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -928,14 +744,14 @@
 
         <listitem>
           <para>Monitors the log file specified by the LOGFILE option in
-          <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5) and
-          produces an audible alarm when new Shorewall messages are logged.
+          <ulink url="shorewall6.conf.html">shorewall6.conf</ulink>(5) and
+          produces an audible alarm when new Shorewall6 messages are logged.
           The <emphasis role="bold">-m</emphasis> option causes the MAC
           address of each packet source to be displayed if that information is
           available. The <replaceable>refresh-interval</replaceable> specifies
           the time in seconds between screen refreshes. You can enter a
           negative number by preceding the number with "--" (e.g.,
-          <command>shorewall logwatch -- -30</command>). In this case, when a
+          <command>shorewall6 logwatch -- -30</command>). In this case, when a
           packet count changes, you will be prompted to hit any key to resume
           screen refreshes.</para>
         </listitem>
@@ -954,23 +770,15 @@
         <term><emphasis role="bold">refresh</emphasis></term>
 
         <listitem>
-          <para>Shorewall-shell: The rules involving the the black list, ECN
-          control rules, and traffic shaping are recreated to reflect any
-          changes made to your configuration files. Existing connections are
-          untouched.</para>
-
-          <para>Shorewall-perl: All steps performed by
-          <command>restart</command> are performed by
-          <command>refresh</command> with the exception that
+          <para>All steps performed by <command>restart</command> are
+          performed by <command>refresh</command> with the exception that
           <command>refresh</command> only recreates the chains specified in
           the command while <command>restart</command> recreates the entire
-          Netfilter ruleset. If no <replaceable>chain</replaceable> is given,
-          the static blacklisting chain <emphasis
-          role="bold">blacklst</emphasis> is assumed.</para>
-
-          <para><emphasis role="bold">Note</emphasis>: Specifying chains in
-          the command requires Shorewall-perl 4.0.3 or later. Earlier versions
-          only refresh the blacklst chain</para>
+          Netfilter ruleset.When no chain name is given to the <emphasis
+          role="bold">refresh</emphasis> command, the mangle table is
+          refreshed along with the blacklist chain (if any). This allows you
+          to modify <filename>/etc/shorewall6/tcrules</filename>and install
+          the changes using <emphasis role="bold">refresh</emphasis>.</para>
 
           <para>The listed chains are assumed to be in the filter table. You
           can refresh chains in other tables by prefixing the chain name with
@@ -979,15 +787,7 @@
           list or until an entry in the list names another table. Built-in
           chains such as FORWARD may not be refreshed.</para>
 
-          <para>Example:<programlisting><command>shorewall refresh net2fw nat:net_dnat</command> #Refresh the 'net2loc' chain in the filter table and the 'net_dnat' chain in the nat table</programlisting></para>
-
-          <para>Beginning with Shorewall 4.1, the <emphasis
-          role="bold">refresh</emphasis> command has slightly different
-          behavior. When no chain name is given to the <emphasis
-          role="bold">refresh</emphasis> command, the mangle table is
-          refreshed along with the blacklist chain (if any). This allows you
-          to modify <filename>/etc/shorewall/tcrules </filename>and install
-          the changes using <emphasis role="bold">refresh</emphasis>.</para>
+          <para>Example:<programlisting><command>shorewall6 refresh net2fw nat:net_dnat</command> #Refresh the 'net2loc' chain in the filter table and the 'net_dnat' chain in the nat table</programlisting></para>
         </listitem>
       </varlistentry>
 
@@ -997,56 +797,53 @@
         <listitem>
           <para>If <emphasis>directory</emphasis> is omitted, the current
           working directory is assumed. Allows a non-root user to compile a
-          shorewall script and install it on a system (provided that the user
+          shorewall6 script and install it on a system (provided that the user
           has root access to the system via ssh). The command is equivalent
           to:</para>
 
-          <programlisting>    <emphasis role="bold">/sbin/shorewall compile -e</emphasis> <emphasis>directory</emphasis> <emphasis>directory</emphasis><emphasis
+          <programlisting>    <emphasis role="bold">/sbin/shorewall6 compile -e</emphasis> <emphasis>directory</emphasis> <emphasis>directory</emphasis><emphasis
               role="bold">/firewall &amp;&amp;\</emphasis>
     <emphasis role="bold">scp</emphasis> <emphasis>directory</emphasis><emphasis
               role="bold">/firewall</emphasis> <emphasis>directory</emphasis><emphasis
               role="bold">/firewall.conf</emphasis> <emphasis role="bold">root@</emphasis><emphasis>system</emphasis><emphasis
-              role="bold">:/var/lib/shorewall-lite/ &amp;&amp;\</emphasis>
+              role="bold">:/var/lib/shorewall6-lite/ &amp;&amp;\</emphasis>
     <emphasis role="bold">ssh root@</emphasis><emphasis>system</emphasis> <emphasis
-              role="bold">'/sbin/shorewall-lite restart'</emphasis></programlisting>
+              role="bold">'/sbin/shorewall6-lite restart'</emphasis></programlisting>
 
           <para>In other words, the configuration in the specified (or
           defaulted) directory is compiled to a file called firewall in that
           directory. If compilation succeeds, then firewall is copied to
           <emphasis>system</emphasis> using scp. If the copy succeeds,
-          Shorewall Lite on <emphasis>system</emphasis> is restarted via
+          Shorewall6 Lite on <emphasis>system</emphasis> is restarted via
           ssh.</para>
 
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">restart</emphasis> command succeeds, then the
-          remote Shorewall-lite configuration is saved by executing <emphasis
-          role="bold">shorewall-lite save</emphasis> via ssh.</para>
+          remote Shorewall6-lite configuration is saved by executing <emphasis
+          role="bold">shorewall6-lite save</emphasis> via ssh.</para>
 
           <para>if <emphasis role="bold">-c</emphasis> is included, the
-          command <emphasis role="bold">shorewall-lite show capabilities -f
-          &gt; /var/lib/shorewall-lite/capabilities</emphasis> is executed via
-          ssh then the generated file is copied to
+          command <emphasis role="bold">shorewall6-lite show capabilities -f
+          &gt; /var/lib/shorewall6-lite/capabilities</emphasis> is executed
+          via ssh then the generated file is copied to
           <emphasis>directory</emphasis> using scp. This step is performed
           before the configuration is compiled.</para>
 
           <para>If <option>-r</option> is included, it specifies that the root
           user on <replaceable>system</replaceable> is named
           <replaceable>root-user-name</replaceable> rather than "root".</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">reset</emphasis></term>
+        <term><emphasis role="bold">reset [<replaceable>chain</replaceable>,
+        ...]</emphasis><acronym></acronym></term>
 
         <listitem>
-          <para>All the packet and byte counters in the firewall are
-          reset.</para>
+          <para>Resets the packet and byte counters in the specified
+          <replaceable>chain</replaceable>(s). If no
+          <replaceable>chain</replaceable> is specified, all the packet and
+          byte counters in the firewall are reset.</para>
         </listitem>
       </varlistentry>
 
@@ -1054,14 +851,14 @@
         <term><emphasis role="bold">restart</emphasis></term>
 
         <listitem>
-          <para>Restart is similar to <emphasis role="bold">shorewall
-          stop</emphasis> followed by <emphasis role="bold">shorewall
+          <para>Restart is similar to <emphasis role="bold">shorewall6
+          stop</emphasis> followed by <emphasis role="bold">shorewall6
           start</emphasis>. Existing connections are maintained. If a
-          <emphasis>directory</emphasis> is included in the command, Shorewall
-          will look in that <emphasis>directory</emphasis> first for
-          configuration files.</para>
+          <emphasis>directory</emphasis> is included in the command,
+          Shorewall6 will look in that <emphasis>directory</emphasis> first
+          for configuration files.</para>
 
-          <para>The <option>-n</option> option causes Shorewall to avoid
+          <para>The <option>-n</option> option causes Shorewall6 to avoid
           updating the routing table(s).</para>
 
           <para>The <option>-p</option> option causes the connection tracking
@@ -1070,23 +867,7 @@
 
           <para>The <option>-f</option> option suppresses the compilation step
           and simply reused the compiled script which last started/restarted
-          Shorewall.</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
-
-          <warning>
-            <para>If you use Shorewall's multi-ISP feature, you are stronly
-            advised against using the -C option of the
-            <command>restart</command> command when switching between
-            Shorewall-shell and Shorewall-perl. The only supported way to
-            switch compilers is to <command>shorewall stop</command> followed
-            by <command>shorewall start -C</command>
-            <replaceable>compiler</replaceable></para>
-          </warning>
+          Shorewall6.</para>
         </listitem>
       </varlistentry>
 
@@ -1094,14 +875,14 @@
         <term><emphasis role="bold">restore</emphasis></term>
 
         <listitem>
-          <para>Restore Shorewall to a state saved using the <emphasis
-          role="bold">shorewall save</emphasis> command. Existing connections
+          <para>Restore Shorewall6 to a state saved using the <emphasis
+          role="bold">shorewall6 save</emphasis> command. Existing connections
           are maintained. The <emphasis>filename</emphasis> names a restore
-          file in /var/lib/shorewall created using <emphasis
-          role="bold">shorewall save</emphasis>; if no
-          <emphasis>filename</emphasis> is given then Shorewall will be
+          file in /var/lib/shorewall6 created using <emphasis
+          role="bold">shorewall6 save</emphasis>; if no
+          <emphasis>filename</emphasis> is given then Shorewall6 will be
           restored from the file specified by the RESTOREFILE option in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -1109,32 +890,16 @@
         <term><emphasis role="bold">safe-restart</emphasis></term>
 
         <listitem>
-          <para>Only allowed if Shorewall is running. The current
-          configuration is saved in /var/lib/shorewall/safe-restart (see the
-          save command below) then a <emphasis role="bold">shorewall
+          <para>Only allowed if Shorewall6 is running. The current
+          configuration is saved in /var/lib/shorewall6/safe-restart (see the
+          save command below) then a <emphasis role="bold">shorewall6
           restart</emphasis> is done. You will then be prompted asking if you
           want to accept the new configuration or not. If you answer "n" or if
           you fail to answer within 60 seconds (such as when your new
           configuration has disabled communication with your terminal), the
           configuration is restored from the saved configuration. If a
-          directory is given, then Shorewall will look in that directory first
-          when opening configuration files.</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
-
-          <warning>
-            <para>If you use Shorewall's multi-ISP feature, you are stronly
-            advised against using the -C option of the
-            <command>safe-restart</command> command when switching between
-            Shorewall-shell and Shorewall-perl. The only supported way to
-            switch compilers is to <command>shorewall stop</command> followed
-            by <command>shorewall safe-start -C</command>
-            <replaceable>compiler</replaceable></para>
-          </warning>
+          directory is given, then Shorewall6 will look in that directory
+          first when opening configuration files.</para>
         </listitem>
       </varlistentry>
 
@@ -1142,19 +907,13 @@
         <term><emphasis role="bold">safe-start</emphasis></term>
 
         <listitem>
-          <para>Shorewall is started normally. You will then be prompted
+          <para>Shorewall6 is started normally. You will then be prompted
           asking if everything went all right. If you answer "n" or if you
           fail to answer within 60 seconds (such as when your new
           configuration has disabled communication with your terminal), a
-          shorewall clear is performed for you. If a directory is given, then
-          Shorewall will look in that directory first when opening
+          shorewall6 clear is performed for you. If a directory is given, then
+          Shorewall6 will look in that directory first when opening
           configuration files.</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -1162,14 +921,14 @@
         <term><emphasis role="bold">save</emphasis></term>
 
         <listitem>
-          <para>The dynamic blacklist is stored in /var/lib/shorewall/save.
+          <para>The dynamic blacklist is stored in /var/lib/shorewall6/save.
           The state of the firewall is stored in
-          /var/lib/shorewall/<emphasis>filename</emphasis> for use by the
-          <emphasis role="bold">shorewall restore</emphasis> and <emphasis
-          role="bold">shorewall -f start</emphasis> commands. If
+          /var/lib/shorewall6/<emphasis>filename</emphasis> for use by the
+          <emphasis role="bold">shorewall6 restore</emphasis> and <emphasis
+          role="bold">shorewall6 -f start</emphasis> commands. If
           <emphasis>filename</emphasis> is not given then the state is saved
           in the file specified by the RESTOREFILE option in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -1194,7 +953,7 @@
               <term><emphasis role="bold">capabilities</emphasis></term>
 
               <listitem>
-                <para>Displays your kernel/iptables capabilities. The
+                <para>Displays your kernel/ip6tables capabilities. The
                 <emphasis role="bold">-f</emphasis> option causes the display
                 to be formatted as a capabilities file for use with <emphasis
                 role="bold">compile -e</emphasis>.</para>
@@ -1207,13 +966,13 @@
 
               <listitem>
                 <para>The rules in each <emphasis>chain</emphasis> are
-                displayed using the <emphasis role="bold">iptables
+                displayed using the <emphasis role="bold">ip6tables
                 -L</emphasis> <emphasis>chain</emphasis> <emphasis
                 role="bold">-n -v</emphasis> command. If no
                 <emphasis>chain</emphasis> is given, all of the chains in the
                 filter table are displayed. The <emphasis
                 role="bold">-x</emphasis> option is passed directly through to
-                iptables and causes actual packet and byte counts to be
+                ip6tables and causes actual packet and byte counts to be
                 displayed. Without this option, those counts are abbreviated.
                 The <emphasis role="bold">-t</emphasis> option specifies the
                 Netfilter table to display. The default is <emphasis
@@ -1258,9 +1017,9 @@
               <term><emphasis role="bold">log</emphasis></term>
 
               <listitem>
-                <para>Displays the last 20 Shorewall messages from the log
+                <para>Displays the last 20 Shorewall6 messages from the log
                 file specified by the LOGFILE option in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). The
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). The
                 <emphasis role="bold">-m</emphasis> option causes the MAC
                 address of each packet source to be displayed if that
                 information is available.</para>
@@ -1281,9 +1040,9 @@
 
               <listitem>
                 <para>Displays the Netfilter mangle table using the command
-                <emphasis role="bold">iptables -t mangle -L -n
+                <emphasis role="bold">ip6tables -t mangle -L -n
                 -v</emphasis>.The <emphasis role="bold">-x</emphasis> option
-                is passed directly through to iptables and causes actual
+                is passed directly through to ip6tables and causes actual
                 packet and byte counts to be displayed. Without this option,
                 those counts are abbreviated.</para>
               </listitem>
@@ -1294,9 +1053,9 @@
 
               <listitem>
                 <para>Displays the Netfilter nat table using the command
-                <emphasis role="bold">iptables -t nat -L -n -v</emphasis>.The
+                <emphasis role="bold">ip6tables -t nat -L -n -v</emphasis>.The
                 <emphasis role="bold">-x</emphasis> option is passed directly
-                through to iptables and causes actual packet and byte counts
+                through to ip6tables and causes actual packet and byte counts
                 to be displayed. Without this option, those counts are
                 abbreviated.</para>
               </listitem>
@@ -1315,7 +1074,7 @@
               <term><emphasis role="bold">zones</emphasis></term>
 
               <listitem>
-                <para>Displays the current composition of the Shorewall zones
+                <para>Displays the current composition of the Shorewall6 zones
                 on the system.</para>
               </listitem>
             </varlistentry>
@@ -1327,31 +1086,26 @@
         <term><emphasis role="bold">start</emphasis></term>
 
         <listitem>
-          <para>Start shorewall. Existing connections through shorewall
+          <para>Start shorewall6. Existing connections through shorewall6
           managed interfaces are untouched. New connections will be allowed
           only if they are allowed by the firewall rules or policies. If a
           <replaceable>directory</replaceable> is included in the command,
-          Shorewall will look in that <emphasis>directory</emphasis> first for
-          configuration files. If <emphasis role="bold">-f</emphasis> is
+          Shorewall6 will look in that <emphasis>directory</emphasis> first
+          for configuration files. If <emphasis role="bold">-f</emphasis> is
           specified, the saved configuration specified by the RESTOREFILE
-          option in <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5)
-          will be restored if that saved configuration exists and has been
-          modified more recently than the files in /etc/shorewall. When
-          <emphasis role="bold">-f</emphasis> is given, a
+          option in <ulink
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5) will be
+          restored if that saved configuration exists and has been modified
+          more recently than the files in /etc/shorewall6. When <emphasis
+          role="bold">-f</emphasis> is given, a
           <replaceable>directory</replaceable> may not be specified.</para>
 
-          <para>The <option>-n</option> option causes Shorewall to avoid
+          <para>The <option>-n</option> option causes Shorewall6 to avoid
           updating the routing table(s).</para>
 
           <para>The <option>-p</option> option causes the connection tracking
           table to be flushed; the <command>conntrack</command> utility must
           be installed to use this option.</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -1361,20 +1115,13 @@
         <listitem>
           <para>Stops the firewall. All existing connections, except those
           listed in <ulink
-          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
+          url="shorewall6-routestopped.html">shorewall6-routestopped</ulink>(5)
           or permitted by the ADMINISABSENTMINDED option in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5), are taken down.
-          The only new traffic permitted through the firewall is from systems
-          listed in <ulink
-          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5), are taken
+          down. The only new traffic permitted through the firewall is from
+          systems listed in <ulink
+          url="shorewall6-routestopped.html">shorewall6-routestopped</ulink>(5)
           or by ADMINISABSENTMINDED.</para>
-
-          <para>The <option>-f</option> option was added in Shorewall 4.0.3.
-          If <option>-f</option> is given, the command will be processed by
-          the compiled script that executed the last successful <emphasis
-          role="bold">start</emphasis>, <emphasis
-          role="bold">restart</emphasis> or <emphasis
-          role="bold">refresh</emphasis> command if that script exists.</para>
         </listitem>
       </varlistentry>
 
@@ -1383,7 +1130,7 @@
 
         <listitem>
           <para>Produces a short report about the state of the
-          Shorewall-configured firewall.</para>
+          Shorewall6-configured firewall.</para>
         </listitem>
       </varlistentry>
 
@@ -1391,32 +1138,26 @@
         <term><emphasis role="bold">try</emphasis></term>
 
         <listitem>
-          <para>If Shorewall is started then the firewall state is saved to a
+          <para>If Shorewall6 is started then the firewall state is saved to a
           temporary saved configuration
-          (<filename>/var/lib/shorewall/.try</filename>). Next, if Shorewall
+          (<filename>/var/lib/shorewall6/.try</filename>). Next, if Shorewall6
           is currently started then a <emphasis role="bold">restart</emphasis>
           command is issued; otherwise, a <emphasis
           role="bold">start</emphasis> command is performed. if an error
           occurs during the compliation phase of the <emphasis
           role="bold">restart</emphasis> or <emphasis
           role="bold">start</emphasis>, the command terminates without
-          changing the Shorewall state. If an error occurs during the
+          changing the Shorewall6 state. If an error occurs during the
           <emphasis role="bold">restart</emphasis> phase, then a <emphasis
-          role="bold">shorewall restore</emphasis> is performed using the
+          role="bold">shorewall6 restore</emphasis> is performed using the
           saved configuration. If an error occurs during the <emphasis
-          role="bold">start</emphasis> phase, then Shorewall is cleared. If
+          role="bold">start</emphasis> phase, then Shorewall6 is cleared. If
           the <emphasis role="bold">start</emphasis>/<emphasis
           role="bold">restart</emphasis> succeeds and a
           <replaceable>timeout</replaceable> is specified then a <emphasis
           role="bold">clear</emphasis> or <emphasis
           role="bold">restore</emphasis> is performed after
           <replaceable>timeout</replaceable> seconds.</para>
-
-          <para>The <option>-C</option> option determines the compiler to use
-          (Shorewall-shell or Shorewall-perl). If not specified, the
-          SHOREWALL_COMPILER setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5) determines the
-          compiler to use.</para>
         </listitem>
       </varlistentry>
 
@@ -1424,9 +1165,9 @@
         <term><emphasis role="bold">version</emphasis></term>
 
         <listitem>
-          <para>Displays Shorewall's version. If the <option>-a</option>
-          option is included, the versions of Shorewall-shell and/or
-          Shorewall-perl will also be displayed.</para>
+          <para>Displays Shorewall6's version. If the <option>-a</option>
+          option is included, the version of Shorewall-perl will also be
+          displayed.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -1435,23 +1176,21 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/</para>
+    <para>/etc/shorewall6/</para>
   </refsect1>
 
   <refsect1>
     <title>See ALSO</title>
 
     <para><ulink
-    url="http://www.shorewall.net/starting_and_stopping_shorewall.htm">http://www.shorewall.net/starting_and_stopping_shorewall.htm</ulink></para>
+    url="http://www.shorewall.net/starting_and_stopping_shorewall6.htm">http://www.shorewall.net/starting_and_stopping_shorewall6.htm</ulink></para>
 
-    <para>shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
-    shorewall-ipsec(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
-    shorewall.conf(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    <para>shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

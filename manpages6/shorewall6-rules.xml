@@ -515,13 +515,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST</emphasis> -
+        <term><emphasis role="bold"><emphasis role="bold">DEST</emphasis> -
         {<emphasis>zone</emphasis>|<emphasis
         role="bold">all</emphasis>[<emphasis
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
-        role="bold">[:{</emphasis><emphasis>interface</emphasis>|<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}]]</term>
+        role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
+        role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
+        role="bold">+</emphasis><emphasis>ipset</emphasis>}</emphasis></term>
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
@@ -573,11 +574,11 @@
             <para>1. MAC addresses are not allowed (this is a Netfilter
             restriction).</para>
 
-            <para>If you kernel and ip6tables have ipset match support then you
-            may give the name of an ipset prefaced by "+". The ipset name may
-            be optionally followed by a number from 1 to 6 enclosed in square
-            brackets ([]) to indicate the number of levels of destination
-            bindings to be matched. Only one of the <emphasis
+            <para>If you kernel and ip6tables have ipset match support then
+            you may give the name of an ipset prefaced by "+". The ipset name
+            may be optionally followed by a number from 1 to 6 enclosed in
+            square brackets ([]) to indicate the number of levels of
+            destination bindings to be matched. Only one of the <emphasis
             role="bold">SOURCE</emphasis> and <emphasis
             role="bold">DEST</emphasis> columns may specify an ipset
             name.</para>

@@ -970,7 +970,7 @@ sub compiler {
 	setup_martian_logging;
     }
 
-    setup_source_routing;
+    setup_source_routing($family);
     #
     # Proxy Arp/Ndp
     #

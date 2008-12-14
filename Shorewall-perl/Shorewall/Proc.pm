@@ -173,7 +173,8 @@ sub setup_martian_logging() {
 #
 # Source Routing
 #
-sub setup_source_routing() {
+sub setup_source_routing( $ ) {
+    my $family = shift;
 
     save_progress_message 'Setting up Accept Source Routing...';
 

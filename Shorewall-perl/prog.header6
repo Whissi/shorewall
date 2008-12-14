@@ -557,36 +557,48 @@ normalize_address() # $1 = valid IPv6 Address
 
 convert_to_anycast() {
     local address
+    local badress
     local vlsm
+    local host
     local o
     local m
+    m=
+    local l
 
     while read address; do
 	case $address in 
 	    2*|3*)
 		vlsm=${address#*/}
-		if [ ${vlsm:-128} -ne 128 ]; then
+		vlsm=${vlsm:=128}
+		host=$((128 - $vlsm))
+
+		if [ $vlsm -ne 128 ]; then
 	            #
-	            # Defines a subnet -- get the anycast address
+	            # Defines a subnet -- get the subnet-router anycast address
 	            #
 		    address=$(normalize_address ${address%/*})
 
-		    while [ $vlsm -le 112 ]; do
+		    while [ $host -ge 16 ]; do
 			address=${address%:*}
-			vlsm=$(($vlsm + 16))
+			host=$(($host - 16))
 		    done
 
-		    if [ $vlsm -lt 128 ]; then
+		    badress=$address
+
+		    if [ $host -gt 0 ]; then
 			o=$((0x${address##*:}))
 			m=0
-			while [ $vlsm -lt 128 ]; do
+			while [ $host -gt 0 ]; do
 			    m=$((($m >> 1) | 0x8000))
-			    vlsm=$(($vlsm + 1))
+			    host=$(($host - 1))
 			done
 
 			o=$(($o & $m))
 
+			badress=$badress:ffff
+
 			address=${address%:*}:$(printf %04x $o)
+
 		    fi
 
 		    list_count $(split $address)
@@ -596,6 +608,25 @@ convert_to_anycast() {
 		    fi
 
 		    echo $address
+
+		    list_count $(split $badress)
+		    
+		    l=$?
+		    #
+		    # Now generate the anycast addresses defined by RFC 2526
+		    #
+		    if [ $l -lt 8 ]; then
+		    	while [ $l -lt 8 ]; do
+			    if [ $l -lt 7 ]; then
+				badress=$badress:ffff
+			    else
+				badress=$badress:ff80
+			    fi
+			    l=$(($l + 1 ))
+			done
+		    fi
+
+		    echo $badress/121
 		fi
 		;;
 	esac

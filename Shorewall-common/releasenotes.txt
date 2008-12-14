@@ -21,7 +21,7 @@ There are two incompatible changes in this release.
 
    Minimun system requirements:
 
-   - Kernel 2.6.23 or later with 2.6.25 or later strongly recommended.
+   - Kernel 2.6.25 or later.
    - iptables 1.4.0 or later with 1.4.1 strongly recommended.
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
@@ -38,7 +38,7 @@ Other changes in 4.3.3
 2)  The 'maclist' option is now supported in /etc/shorewall6/interfaces
     and in /etc/shorewall6/hosts.
 
-    MAC verification is not performed on the following IPv6 traffic:
+    The following IPv6 traffic is exempt from MAC validation:
 
     a) Multicast.
     b) Source or destination is a link-level address (ff80::/10).
@@ -56,6 +56,14 @@ Other changes in 4.3.3
     e.g.,
 
 	AllowICMPs	$FW	net	ipv6-icmp
+
+6)  A 'proxyndp' option has been added to
+    /etc/shorewall6/interfaces. The option is the IPv6 analog of the
+    'proxyarp' option in /etc/shorewall/interfaces.
+
+7)  Source anycast addresses defined by RFC 2526 are not trapped by
+    'nosmurfs'.
+
 
 Migration Issues.
 
@@ -94,7 +102,8 @@ New Features in Shorewall 4.3
 	blacklist
         bridge
 	dhcp
-	nosmurfs
+	nosmurfs (traps multicast and Subnet-router anycast addresses
+        used as the packet source address).
 	optional
 	routeback
 	sourceroute

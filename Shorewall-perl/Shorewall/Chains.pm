@@ -541,16 +541,24 @@ sub move_rules( $$ ) {
 
     if ( $chain1->{referenced} ) {
 	my @rules = @{$chain1->{rules}};
+	my @newrules;
 
-	for ( @rules ) {
-	    fatal_error "Internal Error in move_rules()" unless /^-A/;
+      RULE:
+	for my $rule ( @rules ) {
+	    fatal_error "Internal Error in move_rules()" unless $rule =~ /^-A/;
+	    for ( @{$chain2->{rules}} ) {
+		next RULE if $rule eq $_;
+	    }
+	    push @newrules, $rule;
 	}
 
-	splice @{$chain2->{rules}}, 0, 0, @rules;
+	if ( @newrules ) {
+	    splice @{$chain2->{rules}}, 0, 0, @newrules;
 
-	$chain2->{referenced} = 1;
-	$chain1->{referenced} = 0;
-	$chain1->{rules}      = [];
+	    $chain2->{referenced} = 1;
+	    $chain1->{referenced} = 0;
+	    $chain1->{rules}      = [];
+	}
     }
 }
 

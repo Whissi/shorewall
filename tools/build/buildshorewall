@@ -212,11 +212,19 @@ case $1 in
 	BUILDXML=Yes
 	BUILDRPM=Yes
 	BUILDCOMMON=Yes
-	BUILD6=Yes
 	BUILDPERL=Yes
 	BUILDSHELL=Yes
 	BUILDLITE=Yes
-	BUILD6LITE=Yes
+
+	case $1 in
+	    4.[02].*)
+		;;
+	    *)
+		BUILD6=Yes
+		BUILD6LITE=Yes
+		;;
+	esac
+
 	done=Yes
 	SIGN=Yes
 	;;

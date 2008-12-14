@@ -44,6 +44,7 @@ our @EXPORT = qw( NOTHING
 		  firewall_zone
 		  defined_zone
 		  zone_type
+		  zone_interfaces
 		  all_zones
 		  complex_zones
 		  non_firewall_zones
@@ -562,6 +563,10 @@ sub find_zone( $ ) {
 
 sub zone_type( $ ) {
     find_zone( $_[0] )->{type};
+}
+
+sub zone_interfaces( $ ) {
+    find_zone( $_[0] )->{interfaces};
 }
 
 sub defined_zone( $ ) {

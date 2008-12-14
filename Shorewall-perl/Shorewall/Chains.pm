@@ -541,24 +541,16 @@ sub move_rules( $$ ) {
 
     if ( $chain1->{referenced} ) {
 	my @rules = @{$chain1->{rules}};
-	my @newrules;
 
-      RULE:
-	for my $rule ( @rules ) {
-	    fatal_error "Internal Error in move_rules()" unless $rule =~ /^-A/;
-	    for ( @{$chain2->{rules}} ) {
-		next RULE if $rule eq $_;
-	    }
-	    push @newrules, $rule;
+	for ( @rules ) {
+	    fatal_error "Internal Error in move_rules()" unless /^-A/;
 	}
 
-	if ( @newrules ) {
-	    splice @{$chain2->{rules}}, 0, 0, @newrules;
+	splice @{$chain2->{rules}}, 0, 0, @rules;
 
-	    $chain2->{referenced} = 1;
-	    $chain1->{referenced} = 0;
-	    $chain1->{rules}      = [];
-	}
+	$chain2->{referenced} = 1;
+	$chain1->{referenced} = 0;
+	$chain1->{rules}      = [];
     }
 }
 
@@ -598,7 +590,14 @@ sub use_forward_chain($) {
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #
-    $interfaceref->{nets} > 1;
+    return 1 if $interfaceref->{nets} > 1;
+
+    my $zone = $interfaceref->{zone};
+    #
+    # Interface associated with a single zone -- Must use the interface chain if
+    #                                            the zone has  multiple interfaces
+    #
+    return 1 if keys %{ zone_interfaces( $zone ) } > 1;
 }
 
 #
@@ -631,10 +630,17 @@ sub use_input_chain($) {
     # Don't need it if it isn't associated with any zone
     #
     return 0 unless $nets;
+
+    my $zone = $interfaceref->{zone};
+    #
+    # Interface associated with a single zone -- Must use the interface chain if
+    #                                            the zone has  multiple interfaces
+    #
+    return 1 if keys %{ zone_interfaces( $zone ) } > 1;
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one
     #
-    my $chainref = $filter_table->{zone_input_chain $interfaceref->{zone}};
+    my $chainref = $filter_table->{zone_input_chain $zone};
 
     return 0 if $chainref;
     #

@@ -248,7 +248,7 @@ sub generate_script_1() {
 	       'result=$?',
 	       'qt1 $IP6TABLES -F foox1234',
 	       'qt1 $IP6TABLES -X foox1234',
-	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall6 will run on this system"',
+	       '[ $result = 0 ] || startup_error "Your kernel/ip6tables do not include state match support. No version of Shorewall6 will run on this system"',
 	       '' );
     }
 
@@ -272,7 +272,7 @@ EOF
 	      '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1' );
     } else {
 	emit( '    deletechain() {',
-	      '         qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1' );
+	      '         qt $IP6TABLES -L $1 -n && qt $IP6TABLES -F $1 && qt $IP6TABLES -X $1' );
     }
 
     emit <<'EOF';

@@ -391,7 +391,7 @@ sub zone_report()
 			    if ( $family == F_IPV4 ) {
 				progress_message_nocompress "      $interface:$grouplist";
 			    } else {
-				progress_message_nocompress "      $interface:\[$grouplist\]";
+				progress_message_nocompress "      $interface:<$grouplist>";
 			    }
 			    $printed = 1;
 			}
@@ -450,7 +450,7 @@ sub dump_zone_contents()
 			    if ( $family == F_IPV4 ) {
 				$entry .= " $interface:$grouplist";
 			    } else {
-				$entry .= " $interface:\[$grouplist\]";
+				$entry .= " $interface:<$grouplist>";
 			    }
 			}
 		    }

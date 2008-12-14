@@ -258,6 +258,8 @@ use constant { MIN_VERBOSITY => -1,
 	       F_IPV6 => 6,
 	   };
 
+our %validlevels;
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -406,6 +408,21 @@ sub initialize( $ ) {
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
 	    );
+
+	%validlevels = ( DEBUG   => 7,
+			 INFO    => 6,
+			 NOTICE  => 5,
+			 WARNING => 4,
+			 WARN    => 4,
+			 ERR     => 3,
+			 ERROR   => 3,
+			 CRIT    => 2,
+			 ALERT   => 1,
+			 EMERG   => 0,
+			 PANIC   => 0,
+			 NONE    => '',
+			 ULOG    => 'ULOG',
+			 NFLOG   => 'NFLOG');
     } else {
 	$globals{SHAREDIR} = '/usr/share/shorewall';
 	$globals{CONFDIR} =  '/etc/shorewall6';
@@ -489,6 +506,20 @@ sub initialize( $ ) {
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
 	    );
+
+	%validlevels = ( DEBUG   => 7,
+			 INFO    => 6,
+			 NOTICE  => 5,
+			 WARNING => 4,
+			 WARN    => 4,
+			 ERR     => 3,
+			 ERROR   => 3,
+			 CRIT    => 2,
+			 ALERT   => 1,
+			 EMERG   => 0,
+			 PANIC   => 0,
+			 NONE    => '',
+			 NFLOG   => 'NFLOG');
 	}
     #
     # From parsing the capabilities file
@@ -1471,20 +1502,6 @@ sub default_yes_no_ipv4 ( $$ ) {
     warning_message "$var=Yes is ignored for IPv6" if $family == F_IPV6 && $config{$var};
 }
 
-my %validlevels = ( DEBUG   => 7,
-		    INFO    => 6,
-		    NOTICE  => 5,
-		    WARNING => 4,
-		    WARN    => 4,
-		    ERR     => 3,
-		    ERROR   => 3,
-		    CRIT    => 2,
-		    ALERT   => 1,
-		    EMERG   => 0,
-		    PANIC   => 0,
-		    NONE    => '',
-		    ULOG    => 'ULOG',
-		    NFLOG   => 'NFLOG');
 
 my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
 

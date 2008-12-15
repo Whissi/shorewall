@@ -597,7 +597,7 @@ sub use_forward_chain($) {
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
     #
-    return 1 if keys %{ zone_interfaces( $zone ) } > 1;
+    $interfaceref->{options}{use_forward_chain} && keys %{ zone_interfaces( $zone ) } > 1;
 }
 
 #
@@ -635,8 +635,8 @@ sub use_input_chain($) {
     #
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
-    #
-    return 1 if keys %{ zone_interfaces( $zone ) } > 1;
+    #                                            and this chain has option rules
+    return 1 if $interfaceref->{options}{use_input_chain} && keys %{ zone_interfaces( $zone ) } > 1;
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one
     #

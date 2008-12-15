@@ -274,6 +274,8 @@ sub setup_rfc1918_filteration( $ ) {
 	for my $chain ( first_chains $interface ) {
 	    add_rule $filter_table->{$chain} , join( '', '-m state --state NEW ', match_source_net( $hostref->[2]) , "${policy}-j norfc1918" );
 	}
+	set_interface_option $interface, 'use_input_chain', 1;
+	set_interface_option $interface, 'use_forward_chain', 1;
     }
 }
 
@@ -349,6 +351,9 @@ sub setup_blacklist() {
 	    for my $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
 	    }
+
+	    set_interface_option $interface, 'use_input_chain', 1;
+	    set_interface_option $interface, 'use_forward_chain', 1;
 
 	    progress_message "   Blacklisting enabled on ${interface}:${network}";
 	}
@@ -587,6 +592,9 @@ sub add_common_rules() {
 	    for $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j smurfs" );
 	    }
+	    
+	    set_interface_option $interface, 'use_input_chain', 1;
+	    set_interface_option $interface, 'use_forward_chain', 1;
 	}
     }
 
@@ -615,6 +623,7 @@ sub add_common_rules() {
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
 	
 	for $interface ( @$list ) {
+	    set_interface_option $interface, 'use_input_chain', 1;
 	    for $chain ( input_chain $interface, output_chain $interface ) {
 		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
 	    }
@@ -666,10 +675,13 @@ sub add_common_rules() {
 	add_rule $chainref , "-p tcp --syn --sport 0 -j $disposition";
 
 	for my $hostref  ( @$list ) {
+	    my $interface = $hostref->[0];
 	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
-	    for $chain ( first_chains $hostref->[0] ) {
+	    for $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2] ), "${policy}-j tcpflags" );
 	    }
+	    set_interface_option $interface, 'use_input_chain', 1;
+	    set_interface_option $interface, 'use_forward_chain', 1;
 	}
     }
 
@@ -813,6 +825,8 @@ sub setup_mac_lists( $ ) {
 		for my $chain ( first_chains $interface ) {
 		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
+		set_interface_option $interface, 'use_input_chain', 1;
+		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
 		add_rule $mangle_table->{PREROUTING}, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}-j $target";
 	    }
@@ -1531,7 +1545,6 @@ sub add_interface_jumps {
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
     #
     for my $interface ( @_ ) {
-	
 	add_jump( $filter_table->{FORWARD} , forward_chain $interface , 0, match_source_dev( $interface ) ) if use_forward_chain $interface;
 	add_jump( $filter_table->{INPUT}   , input_chain $interface ,   0, match_source_dev( $interface ) ) if use_input_chain $interface;
 
@@ -1640,12 +1653,11 @@ sub generate_matrix() {
 	next if @zones <= 2 && ! $zoneref->{options}{complex};
 
 	my $exclusions = $zoneref->{exclusions};
-	my $frwd_ref;   
+	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
 	if ( @$exclusions ) {
 	    my $in_ref  = new_standard_chain zone_input_chain $zone;
 	    my $out_ref = new_standard_chain zone_output_chain $zone;
-	    $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
 	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 
@@ -1669,7 +1681,6 @@ sub generate_matrix() {
 		if ( use_forward_chain( $interface ) ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
 		} else {
-		    $frwd_ref = new_standard_chain zone_forward_chain( $zone ) unless $frwd_ref;
 		    $sourcechainref = $filter_table->{FORWARD};
 		    $interfacematch = match_source_dev $interface;
 		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
@@ -1680,7 +1691,6 @@ sub generate_matrix() {
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
-			$frwd_ref = new_standard_chain zone_forward_chain( $zone ) unless $frwd_ref;
 			add_jump(
 				 $sourcechainref,
 				 $frwd_ref,

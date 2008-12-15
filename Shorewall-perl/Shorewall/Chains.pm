@@ -596,7 +596,7 @@ sub use_forward_chain($) {
     #
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
-    #
+    #                                            and this chain has option rules
     $interfaceref->{options}{use_forward_chain} && keys %{ zone_interfaces( $zone ) } > 1;
 }
 
@@ -1565,7 +1565,8 @@ sub match_source_net( $;$ ) {
 
     $restriction |= NO_RESTRICT;
 
-    if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
+    if ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ||
+	 $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
@@ -1591,7 +1592,8 @@ sub match_source_net( $;$ ) {
 sub match_dest_net( $ ) {
     my $net = $_[0];
 
-    if ( $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
+    if ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ||
+	 $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;

@@ -624,6 +624,8 @@ sub add_common_rules() {
 	
 	for $interface ( @$list ) {
 	    set_interface_option $interface, 'use_input_chain', 1;
+	    set_interface_option $interface, 'use_forward_chain', 1;
+
 	    for $chain ( input_chain $interface, output_chain $interface ) {
 		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
 	    }

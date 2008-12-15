@@ -646,7 +646,7 @@ sub use_input_chain($) {
     #
     # Use the '<zone>2fw' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '' , $interfaceref->{zone} , '2' , firewall_zone )};
+    $chainref = $filter_table->{join( '' , $zone , '2' , firewall_zone )};
 
     ! ( $chainref->{referenced} || $chainref->{is_policy} )
 }   

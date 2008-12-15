@@ -488,9 +488,9 @@ sub single_interface( $ ) {
 sub add_group_to_zone($$$$$)
 {
     my ($zone, $type, $interface, $networks, $options) = @_;
+    my $hostsref;
     my $typeref;
     my $interfaceref;
-    my $arrayref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
     my $ifacezone = $interfaces{$interface}{zone};
@@ -534,17 +534,17 @@ sub add_group_to_zone($$$$$)
 
     $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback};
 
-    $typeref      = ( $zoneref->{hosts}           || ( $zoneref->{hosts} = {} ) );
-    $interfaceref = ( $typeref->{$type}           || ( $interfaceref = $typeref->{$type} = {} ) );
-    $arrayref     = ( $interfaceref->{$interface} || ( $interfaceref->{$interface} = [] ) );
+    $hostsref     = ( $zoneref->{hosts}           || ( $zoneref->{hosts} = {} ) );
+    $typeref      = ( $hostsref->{$type}          || ( $hostsref->{$type} = {} ) );
+    $interfaceref = ( $typeref->{$interface}      || ( $typeref->{$interface} = [] ) );
 
-    $zoneref->{options}{complex} = 1 if @$arrayref || ( @newnetworks > 1 ) || ( @exclusions );
+    $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions );
     
     push @{$zoneref->{exclusions}}, @exclusions;
 
-    push @{$arrayref}, { options => $options,
-			 hosts   => \@newnetworks,
-			 ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' };
+    push @{$interfaceref}, { options => $options,
+			     hosts   => \@newnetworks,
+			     ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' };
 }
 
 #

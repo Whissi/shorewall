@@ -1640,11 +1640,12 @@ sub generate_matrix() {
 	next if @zones <= 2 && ! $zoneref->{options}{complex};
 
 	my $exclusions = $zoneref->{exclusions};
-	my $frwd_ref   = new_standard_chain zone_forward_chain( $zone );
+	my $frwd_ref;   
 
 	if ( @$exclusions ) {
 	    my $in_ref  = new_standard_chain zone_input_chain $zone;
 	    my $out_ref = new_standard_chain zone_output_chain $zone;
+	    $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
 	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 
@@ -1668,6 +1669,7 @@ sub generate_matrix() {
 		if ( use_forward_chain( $interface ) ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
 		} else {
+		    $frwd_ref = new_standard_chain zone_forward_chain( $zone ) unless $frwd_ref;
 		    $sourcechainref = $filter_table->{FORWARD};
 		    $interfacematch = match_source_dev $interface;
 		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
@@ -1678,6 +1680,7 @@ sub generate_matrix() {
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
+			$frwd_ref = new_standard_chain zone_forward_chain( $zone ) unless $frwd_ref;
 			add_jump(
 				 $sourcechainref,
 				 $frwd_ref,

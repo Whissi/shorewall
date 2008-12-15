@@ -854,9 +854,9 @@ sub setup_mac_lists( $ ) {
 			}
 
 			add_commands( $chainref, "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" );
-		    }
 
-		    add_command( $chainref, 'done' );
+			add_command( $chainref, 'done' );
+		    }
 		}
 	    }
 	    

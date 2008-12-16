@@ -462,7 +462,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version Connections at $HOSTNAME - $(date)"
 	    echo
-	    [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || cat /proc/net/nf_conntrack
+	    [ -f /proc/net/ip_conntrack ] && /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 1 ] && usage 1
@@ -714,7 +714,7 @@ dump_command() {
     $IPTABLES -t mangle -L $IPT_OPTIONS
 
     heading "Conntrack Table"
-    [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || cat /proc/net/nf_conntrack
+    [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
 
     heading "IP Configuration"
     ip -4 addr list

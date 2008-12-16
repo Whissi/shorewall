@@ -1,18 +1,17 @@
-Shorewall 4.3.3
+Shorewall 4.3.4
 
 Notice:
 
-There are two incompatible changes in this release.
+It was previously my intention to defer release of IPv6 support until
+4.4. That plan was based on an architecture that supported a single
+configuration for both IPv4 and IPv6. 
 
-1)  Rather than square brackets ([]), addresses following an interface
-    name are now enclosed in angle brackets (<>). This change is made
-    to avoid confusion in the documentation with the meta characters
-    '[' and ']'.
+Splitting IPv6 support out into separate products has made adding that
+support an order of magnitude easier and less invasive. So it is my
+current plan to release IPv6 support in a future 4.2.x release.
 
-2)  Only those macros that have different contents in IPv6 are now
-    included in /usr/share/shorewall6/. As a consequence,
-    /usr/share/shorewall must be added to your CONFIG_PATH in
-    /etc/shorewall6/shorewall6.conf.
+I am therefore opening the testing of the development branch to a wider
+audience.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 3  H I G H L I G H T S
@@ -26,46 +25,37 @@ There are two incompatible changes in this release.
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
 
-Problems Corrected in 4.3.3
+Problems Corrected in 4.3.4
 
-1)  Previously, if IP6TABLES wasn't specified in shorewall6.conf, it
-    was set to iptables rather than ip6tables.
+1)  Previously, an extra 'done' could be emitted in the generated shell
+    script resulting in a shell syntax error at run-time.
 
-Other changes in 4.3.3
+2)  In IPv6, ipranges were previously not supported even when the
+    kernel and ip6tables included support for them.
 
-1)  In as much as ip6tables doesn't support the ECN target, the 'ecn'
-    file has been removed and its processing disabled. 
+3)  An optimization in all Shorewall-perl 4.2 and 4.3 versions could
+    cause undesirable side effects. The optimization deleted the
+    <interface>_in and <interface>_fwd chains and moved their rules
+    to the appropriate rules chain (a <zone>2<xxx> chain).
 
-2)  The 'maclist' option is now supported in /etc/shorewall6/interfaces
-    and in /etc/shorewall6/hosts.
+    This worked badly in cases where a zone was associated with more
+    than one interface. Rules could be duplicated or, worse, a rule
+    that was intended for only input from one of the zone's interfaces
+    would be applied to input from all of the zone's interfaces.
+    
+    This problem has been corrected so that an interface-related
+    chains is only deleted if:
 
-    The following IPv6 traffic is exempt from MAC validation:
+    a) the chain has no rules in it; or
+    b) the interface is associated with only one zone and that zone is
+       associated with only that interface in which case it is safe to
+       move the rules.
 
-    a) Multicast.
-    b) Source or destination is a link-level address (ff80::/10).
+Other Changes in 4.3.4
 
-3)  Traffic shaping is now enabled in Shorewall6. See below.
-
-4)  Shorewall6 and Shorewall6 Lite now check the kernel version during
-    'start' processing. If the kernel version is less than 2.6.25, a 
-    fatal error is generated.
-
-5)  The AllowICMPs macro has been converted to a standard action. This
-    allows for more efficient processing in the case where ipv6-icmp is
-    specified as the PROTO in the invocation of AllowICMPs.
-
-    e.g.,
-
-	AllowICMPs	$FW	net	ipv6-icmp
-
-6)  A 'proxyndp' option has been added to
-    /etc/shorewall6/interfaces. The option is the IPv6 analog of the
-    'proxyarp' option in /etc/shorewall/interfaces.
-
-7)  Source anycast addresses defined by RFC 2526 are now trapped by
-    'nosmurfs'.
-
-8)  Manpages are now included for Shorewall6 and Shorewall6-lite.
+1)  Shorewall and Shorewall Lite now show only IPv4 connections in the
+    output of 'shorewall show connections', 'shorewall-lite show
+    connections', 'shorewall dump' and 'shorewall-lite dump'. 
 
 Migration Issues.
 

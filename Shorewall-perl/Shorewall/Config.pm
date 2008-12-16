@@ -441,6 +441,7 @@ sub initialize( $ ) {
 	      LOGALLNEW => undef,
 	      BLACKLIST_LOGLEVEL => undef,
 	      TCP_FLAGS_LOG_LEVEL => undef,
+	      SMURF_LOG_LEVEL => undef,
 	      LOG_VERBOSITY => undef,
 	      STARTUP_LOG => undef,
 	      #

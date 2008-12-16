@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall IPv6 Support</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2008</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Overview</title>
+
+    <para>Beginning with a future Shorewall 4.2.x release, support for
+    firewalling IPv6 will be included. In the meantime, the support is
+    avilable in the 4.3 development releases.</para>
+
+    <section>
+      <title>Prerequisites</title>
+
+      <para>In order to use Shorewall with IPv6, your firewall must meet the
+      following prerequisites:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Kernel 2.6.25 or later.</para>
+        </listitem>
+
+        <listitem>
+          <para>Iptables 1.4.0 or later (1.4.1.1 is strongly
+          recommended)</para>
+        </listitem>
+
+        <listitem>
+          <para>If you wish to include DNS names in your IPv6 configuration
+          files, you must have Perl 5.10 and must install the Perl Socket6
+          library.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+
+    <section>
+      <title>Packages</title>
+
+      <para>Shorewall IPv6 support introduced two new packages:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Shorewall6. This package provides
+          <filename>/sbin/shorewall6</filename> which is the IPv6 equivalent
+          of <filename>/sbin/shorewall</filename> which only handles IPv4.
+          Shorewall6 depends on both Shorewall-common and on Shorewall-perl.
+          The Shorewall6 configuration is stored in <filename
+          class="directory">/etc/shorewall6</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Shorewall6 Lite. This package is to IPv6 what Shorewall Lite
+          is to IPv4. The package stores its configuration in <filename
+          class="directory">/etc/shorewall6-lite</filename>.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+
+    <section>
+      <title>IPv4/IPv6 Interaction</title>
+
+      <para>IP connections are either IPv4 or IPv6; there is no such thing as
+      a mixed IPv4/6 connecton. IPv4 connections are controlled by Shorewall
+      (or Shorewall-lite); IPv6 connections are controlled by Shorewall6 (or
+      Shorewall6-lite). Starting and stopping the firewall for one address
+      family has no effect on the other address family.</para>
+
+      <para>As a consequence, there is very little interaction between
+      Shorewall and Shorewall6. </para>
+
+      <section>
+        <title>DISABLE_IPV6</title>
+
+        <para>An obvious area where the configuration of Shorewall affects
+        Shorewall6 is the DISABLE_IPV6 setting in
+        <filename>/etc/shorewall/shorewall.conf</filename>. When configuring
+        Shorewall6, you will want to set DISABLE_IPV6=No and restart Shorewall
+        or Shorewall-lite.</para>
+
+        <section>
+          <title>TC_ENABLED</title>
+
+          <para>The other area where their configurations overlap is in
+          traffic shaping; the <filename>tcdevices</filename> and tcclasses
+          files do exactly the same thing in both Shorewall and Shorewall6.
+          Consequently, you will have TC_ENABLED=Internal in Shorewall or in
+          Shorewall6 and TC_ENABLED=No in the other product. Also, you will
+          want CLEAR_TC=No in the configuration with TC_ENABLED=No.</para>
+
+          <para>Regardless of which product has TC_ENABLED=Internal:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>IPv4 packet marking is controlled by
+              /etc/shorewall/tcrules</para>
+            </listitem>
+
+            <listitem>
+              <para>IPv6 packet marking is controlled by
+              /etc/shorewall6/tcrules</para>
+            </listitem>
+          </itemizedlist>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Shorewall6 Differences from Shoreawall</title>
+
+    <para>Configuring Shorewall6 is very similar to configuring Shorewall with
+    some notable exceptions:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>No NAT</term>
+
+        <listitem>
+          <para>In Shorewall6, there is no NAT of any kind (Netfilter6 doesn't
+          support any form of NAT). Most people consider this to be a giant
+          step forward.</para>
+
+          <para>When an ISP assigns you an IPv6 address, you are actually
+          assigned an IPv6 <firstterm>prefix</firstterm> (similar to a
+          subnet). A 64-bit prefix defines a subnet with 4 billion hosts
+          squared (the size of the IPv4 address space squared). Regardless of
+          the length of your prefix, you get to assign local addresses within
+          that prefix.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Default Zone Type</term>
+
+        <listitem>
+          <para>The default zone type in Shorewall6 is
+          <firstterm>ipv6</firstterm>. It is suggested that you specify
+          <emphasis role="bold">ipv6</emphasis> in the TYPE column of
+          <filename>/etc/shorewall6/zones</filename> and a type of <emphasis
+          role="bold">ipv4</emphasis> in
+          <filename>/etc/shorewall/zones</filename>; that way, if you run the
+          wrong utility on a configuration, you will get an instant
+          error.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Interface Options</term>
+
+        <listitem>
+          <para>The following interface options are available in
+          <filename>/etc/shorewall6/interfaces</filename>:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>blacklist</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>bridge</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>dhcp</term>
+
+              <listitem>
+                <para>Interface is assigned by IPv6 DHCP or the firewall hosts
+                an IPv6 DHCP server on the interface.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>maclist</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>nosmurfs</term>
+
+              <listitem>
+                <para>Checks the source IP address of packets arriving on the
+                interface and drops packets whose SOURCE address is:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>An IPv6 multicast address</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The subnet-router anycast address for any of the
+                    global unicast addresses assigned to the interface.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>An RFC 2526 anycast address for any of the global
+                    unicast addresses assigned to the interface.</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>optional</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>routeback</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>sourceroute[={0|1}]</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>tcpflags</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>mss=<replaceable>mss</replaceable></term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>forward[={0|1}]</term>
+
+              <listitem>
+                <para>Override the setting of IP_FORWARDING in shorewall6.conf
+                with respect to how the system behaves on this interface. If
+                1, behave as a router; if 0, behave as a host.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Host Options</term>
+
+        <listitem>
+          <para>The following host options are available in<filename>
+          /etc/shorewall6/hosts</filename>:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>blacklist</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>maclist</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>routeback</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>tcpflags</term>
+
+              <listitem>
+                <para>Same as in Shorewall</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Specifying Addresses</term>
+
+        <listitem>
+          <para>Anywhere that an address or address list follows a colon
+          (":"), the address or list may be enclosed in angled brackets
+          ("&lt;" and "&gt;") to improve readability.</para>
+
+          <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
+
+          <programlisting>#ACTION        SOURCE              DEST                        PROTO          DEST
+#                                                                             PORT(S)
+ACCEPT         net                 $FW:&lt;2002:ce7c:92b4::3&gt;     tcp            22</programlisting>
+
+          <para>When the colon is preceeded by an interface name,
+          <emphasis>the angle brackets are required</emphasis>. This is true
+          even when the address is a MAC address in Shorewall format.</para>
+
+          <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
+
+          <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
+#                                                                             PORT(S)
+ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                         22</programlisting>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+
+  <section>
+    <title>Installing IPv6 Support</title>
+
+    <para>You will need at least the following packages:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Shorewall-common 4.3.4 or later.</para>
+      </listitem>
+
+      <listitem>
+        <para>Shorewall-perl 4.3.4 or later.</para>
+      </listitem>
+
+      <listitem>
+        <para>Shorewall6 4.3.4 or later.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>You may also with to install Shorewall6-lite 4.3.4 or later on your
+    remote firewalls to allow for central IPv6 firewall administration.</para>
+  </section>
+</article>

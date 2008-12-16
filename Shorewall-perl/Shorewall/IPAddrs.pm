@@ -226,7 +226,7 @@ sub validate_4host( $$ ) {
     my ( $host, $allow_name )  = $_[0];
 
     if ( $host =~ /^(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) {
-	validate_4ange $1, $2;
+	validate_4range $1, $2;
     } else {
 	validate_4net( $host, $allow_name );
     }

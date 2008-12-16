@@ -573,7 +573,7 @@ sub validate_6range( $$ ) {
 
     while ( @low ) {
 	my ( $l, $h) = ( shift @low, shift @high );
-	next     if $l eq $h;
+	next     if hex "0x$l" == hex "0x$h";
 	return 1 if hex "0x$l"  < hex "0x$h";
     }
 

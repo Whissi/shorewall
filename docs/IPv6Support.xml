@@ -108,37 +108,37 @@
         <filename>/etc/shorewall/shorewall.conf</filename>. When configuring
         Shorewall6, you will want to set DISABLE_IPV6=No and restart Shorewall
         or Shorewall-lite.</para>
+      </section>
 
-        <section>
-          <title>TC_ENABLED</title>
+      <section>
+        <title>TC_ENABLED</title>
 
-          <para>The other area where their configurations overlap is in
-          traffic shaping; the <filename>tcdevices</filename> and tcclasses
-          files do exactly the same thing in both Shorewall and Shorewall6.
-          Consequently, you will have TC_ENABLED=Internal in Shorewall or in
-          Shorewall6 and TC_ENABLED=No in the other product. Also, you will
-          want CLEAR_TC=No in the configuration with TC_ENABLED=No.</para>
+        <para>The other area where their configurations overlap is in traffic
+        shaping; the <filename>tcdevices</filename> and tcclasses files do
+        exactly the same thing in both Shorewall and Shorewall6. Consequently,
+        you will have TC_ENABLED=Internal in Shorewall or in Shorewall6 and
+        TC_ENABLED=No in the other product. Also, you will want CLEAR_TC=No in
+        the configuration with TC_ENABLED=No.</para>
 
-          <para>Regardless of which product has TC_ENABLED=Internal:</para>
+        <para>Regardless of which product has TC_ENABLED=Internal:</para>
 
-          <itemizedlist>
-            <listitem>
-              <para>IPv4 packet marking is controlled by
-              /etc/shorewall/tcrules</para>
-            </listitem>
+        <itemizedlist>
+          <listitem>
+            <para>IPv4 packet marking is controlled by
+            /etc/shorewall/tcrules</para>
+          </listitem>
 
-            <listitem>
-              <para>IPv6 packet marking is controlled by
-              /etc/shorewall6/tcrules</para>
-            </listitem>
-          </itemizedlist>
-        </section>
+          <listitem>
+            <para>IPv6 packet marking is controlled by
+            /etc/shorewall6/tcrules</para>
+          </listitem>
+        </itemizedlist>
       </section>
     </section>
   </section>
 
   <section>
-    <title>Shorewall6 Differences from Shoreawall</title>
+    <title>Shorewall6 Differences from Shorewall</title>
 
     <para>Configuring Shorewall6 is very similar to configuring Shorewall with
     some notable exceptions:</para>

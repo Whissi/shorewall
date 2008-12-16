@@ -555,10 +555,13 @@ sub validate_6range( $$ ) {
     my @low  = split ":", $low;
     my @high = split ":", $high;
 
+
     if ( @low == @high ) {
-	my ( $l, $h) = ( pop @low, pop @high );
-	
-	return 1 if hex "0x$l" <= hex "0x$h" && join( ":", @low ) eq join( ":", @high );
+	while ( @low ) {
+	    my ( $l, $h) = ( shift @low, shift @high );
+	    next     if $l eq $h;
+	    return 1 if hex "0x$l"  < hex "0x$h";
+	}
     }
 
     fatal_error "Invalid IPv6 Range ($low-$high)";

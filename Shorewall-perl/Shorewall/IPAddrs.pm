@@ -491,7 +491,7 @@ sub valid_6address( $ ) {
     }
     
     return 0 if @address > $max;
-    return 0 if @address < $max && ! $address =~ /::/;
+    return 0 unless ( @address == $max ) || $address =~ /::/;
     return 0 if $address =~ /:::/ || $address =~ /::.*::/;
 
     if ( $address =~ /^:/ ) {
@@ -546,22 +546,35 @@ sub validate_6net( $$ ) {
     }
 }
 
+#
+# Note: the input is assumed to be a valid IPv6 address
+#
+sub normalize_6addr( $ ) {
+    my $addr = shift;
+
+    while ( $addr =~ tr/:/:/ < 6 ) {
+	$addr =~ s/::/:0::/;
+    }
+
+    $addr =~ s/::/:0:/;
+
+    $addr;
+}
+
 sub validate_6range( $$ ) {
     my ( $low, $high ) = @_;
 
     validate_6address $low, 0;
     validate_6address $high, 0;
 
-    my @low  = split ":", $low;
-    my @high = split ":", $high;
+    my @low  = split ":", normalize_6addr( $low );
+    my @high = split ":", normalize_6addr( $high );
 
 
-    if ( @low == @high ) {
-	while ( @low ) {
-	    my ( $l, $h) = ( shift @low, shift @high );
-	    next     if $l eq $h;
-	    return 1 if hex "0x$l"  < hex "0x$h";
-	}
+    while ( @low ) {
+	my ( $l, $h) = ( shift @low, shift @high );
+	next     if $l eq $h;
+	return 1 if hex "0x$l"  < hex "0x$h";
     }
 
     fatal_error "Invalid IPv6 Range ($low-$high)";

@@ -64,8 +64,13 @@ case $1 in
 	UPLOADLITE=Yes
 	UPLOADXML=Yes
 	UPLOADHTML=Yes
-	UPLOAD6=Yes
-	UPLOAD6LITE=Yes
+	case $1 in
+	    4.[02].*)
+		;;
+	    *)
+		UPLOAD6=Yes
+		UPLOAD6LITE=Yes
+	esac
 	PARTIAL=
 	done=Yes
 	;;

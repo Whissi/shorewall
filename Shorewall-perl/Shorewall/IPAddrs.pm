@@ -575,6 +575,7 @@ sub validate_6range( $$ ) {
 	my ( $l, $h) = ( shift @low, shift @high );
 	next     if hex "0x$l" == hex "0x$h";
 	return 1 if hex "0x$l"  < hex "0x$h";
+	last;
     }
 
     fatal_error "Invalid IPv6 Range ($low-$high)";

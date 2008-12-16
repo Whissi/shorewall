@@ -299,7 +299,7 @@ sub initialize( $ ) {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
-		    VERSION => "4.3.3",
+		    VERSION => "4.3.4",
 		    CAPVERSION => 40203 ,
 		  );
     #

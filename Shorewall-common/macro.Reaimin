@@ -1,0 +1,17 @@
+#
+# Shorewall version 4 - reaim Macro
+#
+# /usr/share/shorewall/macro.Reaim
+#
+#	This macro handles reaim from the local LAN to the firewall.
+#
+#	Normal usage in your rules file is:
+#
+#		Reaimin	loc
+#
+###############################################################################
+#ACTION	 SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S)	PORT(S)	LIMIT	GROUP
+REDIRECT -   	5190	tcp	5190
+REDIRECT -	1863	tcp     1863
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

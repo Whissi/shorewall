@@ -3,16 +3,14 @@
 #
 # /usr/share/shorewall/macro.Reaim
 #
-#	This macro handles reaim redirection.
+#	This macro handles reaim from the internet to the firewall.
 #
 #	Normal usage in your rules file is:
 #
-#		Reaim	net	loc
+#		Reaimex	net	$FW
 #
 ###############################################################################
 #ACTION	 SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-ACCEPT   SOURCE  $FW	tcp     1863:1864,4443,5566,40000:40099
-REDIRECT DEST    5190	tcp	5190
-REDIRECT DEST    1863   tcp     1863
+ACCEPT   -	-	tcp     1863:1864,4443,5566,40000:40099
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

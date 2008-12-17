@@ -529,7 +529,7 @@ sub add_group_to_zone($$$$$)
 	    validate_host $host, 0;
 	}
 
-	push @$new, $switched ? "$interface:$host" : $host;
+	push @$new, $switched ? "$interface|$host" : $host;
     }
 
     $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback};

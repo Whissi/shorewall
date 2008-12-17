@@ -1608,7 +1608,7 @@ sub generate_matrix() {
 	my $num = 1;
 
 	for my $host ( @{$exclusionsref} ) {
-	    my ( $interface, $net ) = split /:/, $host;
+	    my ( $interface, $net ) = split /\|/, $host;
 	    insert_rule $chainref , $num++, join( '', match_dest_dev $interface , match_dest_net( $net ), '-j RETURN' );
 	}
     }
@@ -1620,7 +1620,7 @@ sub generate_matrix() {
 	my ( $chainref, $exclusionsref ) = @_;
 
 	for my $host ( @{$exclusionsref} ) {
-	    my ( $interface, $net ) = split /:/, $host;
+	    my ( $interface, $net ) = split /\|/, $host;
 	    add_rule $chainref , join( '', match_dest_dev $interface, match_dest_net( $net ), '-j RETURN' );
 	}
     }
@@ -1664,7 +1664,7 @@ sub generate_matrix() {
 	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
 
 	    for my $host ( @$exclusions ) {
-		my ( $interface, $net ) = split /:/, $host;
+		my ( $interface, $net ) = split /\|/, $host;
 		my $rule = match_source_dev( $interface ) . match_source_net( $net ) . '-j RETURN';
 		add_rule $frwd_ref , $rule;
 		add_rule $in_ref   , $rule;

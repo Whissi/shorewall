@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=4.3.4
+VERSION=4.2.4-RC1
 
 usage() # $1 = exit status
 {

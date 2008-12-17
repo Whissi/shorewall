@@ -138,7 +138,7 @@ do_iptables()
 run_ip()
 {
     if ! ip -4 $@; then
-	error_message "ERROR: Command \"ip $@\" Failed"
+	error_message "ERROR: Command \"ip -4 $@\" Failed"
 	stop_firewall
 	exit 2
     fi

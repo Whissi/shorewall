@@ -56,6 +56,8 @@ our @providers;
 
 our $family;
 
+our $default;
+
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -74,6 +76,7 @@ sub initialize( $ ) {
     @routemarked_interfaces = ();
     $balance             = 0;
     $first_default_route = 1;
+    $default = $family == F_IPV4 ? 'default' : '2000::/3';
     
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
@@ -135,7 +138,7 @@ sub copy_table( $$$ ) {
     }
 
     emit ( '    case $net in',
-	   '        default|nexthop)',
+	   '        default|nexthop|2000::/3)',
 	   '            ;;',
 	   '        *)',
 	   "            run_ip route add table $number \$net \$route $realm",
@@ -155,7 +158,7 @@ sub copy_and_edit_table( $$$$ ) {
     }
 
     emit (  '    case $net in',
-	    '        default|nexthop)',
+	    '        default|nexthop|2000::/3)',
 	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',
@@ -240,7 +243,7 @@ sub add_a_provider( $$$$$$$$ ) {
     } else {
 	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
 	$gateway = '';
-	emit "run_ip route add default dev $interface table $number";
+	emit "run_ip route add $default dev $interface table $number";
     }
 
     my $val = 0;
@@ -352,7 +355,7 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $gateway ) {
 	$address = get_interface_address $interface unless $address;
 	emit "run_ip route replace $gateway src $address dev $interface ${mtu}table $number $realm";
-	emit "run_ip route add default via $gateway src $address dev $interface ${mtu}table $number $realm";
+	emit "run_ip route add $default via $gateway src $address dev $interface ${mtu}table $number $realm";
     }
 
     balance_default_route $balance , $gateway, $interface, $realm if $balance;
@@ -511,7 +514,7 @@ sub setup_providers() {
 	    emit  ( '#',
 		    '# Capture the default route(s) if we don\'t have it (them) already.',
 		    '#',
-		    '[ -f ${VARDIR}/default_route ] || ip -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+		    '[ -f ${VARDIR}/default_route ] || ip -' . $family . ' route list | grep -E \'^\s*(default |nexthop |2000::/3 )\' > ${VARDIR}/default_route',
 		    '#',
 		    '# Initialize the file that holds \'undo\' commands',
 		    '#',
@@ -548,8 +551,8 @@ sub setup_providers() {
 	    }
 
 	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
-	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
-	    emit  ( "    qt ip -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
+	    emit  ( "    run_ip route replace $default scope global table $table \$DEFAULT_ROUTE" );
+	    emit  ( "    qt ip -$family route del $default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
 	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
 		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',

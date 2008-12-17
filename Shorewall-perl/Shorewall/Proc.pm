@@ -123,7 +123,7 @@ sub setup_route_filtering() {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	}
 
-	emit "[ -n \"\$NOROUTES\" ] || ip route flush cache";
+	emit "[ -n \"\$NOROUTES\" ] || ip -4 route flush cache";
     }
 }
 

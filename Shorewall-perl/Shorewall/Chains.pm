@@ -68,7 +68,6 @@ our %EXPORT_TAGS = (
 				       POSTROUTE_RESTRICT
 				       ALL_RESTRICT
 				       
-				       chain_family
 				       add_command
 				       add_commands
 				       move_rules
@@ -151,7 +150,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.3.0;
+our $VERSION = 4.2.4;
 
 #
 # Chain Table

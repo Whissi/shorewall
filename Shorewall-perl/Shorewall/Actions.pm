@@ -56,7 +56,7 @@ our @EXPORT = qw( merge_levels
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.1.1;
+our $VERSION = 4.2.4;
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -761,7 +761,7 @@ sub process_actions3 () {
     sub allowBcast( $$$ ) {
 	my ($chainref, $level, $tag) = @_;
 
-	if ( $capabilities{ADDRTYPE} ) {
+	if ( $family == F_IPV4 && $capabilities{ADDRTYPE} ) {
 	    if ( $level ne '' ) {
 		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
 		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';

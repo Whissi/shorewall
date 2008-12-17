@@ -42,7 +42,7 @@ use Shorewall::IPAddrs;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.1.4;
+our $VERSION = 4.2.4;
 
 our $export;
 

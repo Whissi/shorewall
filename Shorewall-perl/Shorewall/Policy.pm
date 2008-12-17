@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = 4.3.0;
+our $VERSION = 4.2.4;
 
 # @policy_chains is a list of references to policy chains in the filter table
 

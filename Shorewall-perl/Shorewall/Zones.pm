@@ -372,6 +372,7 @@ sub zone_report()
 	my $hostref   = $zoneref->{hosts};
 	my $type      = $zoneref->{type};
 	my $optionref = $zoneref->{options};
+	my $exclusions = $zoneref->{exclusions};
 
 	$type = $ipzone if $type eq 'ip';
 
@@ -398,6 +399,18 @@ sub zone_report()
 			}
 		    }
 
+		}
+	    }
+	}
+
+	if ( $exclusions ) {
+	    for ( @$exclusions ) {
+		if ( $family == F_IPV4 ) {
+		    progress_message_nocompress "        !$_";
+		} else {
+		    my $host = $_;
+		    $host =~ s/\|/:</;
+		    progress_message_nocompress "        !$host>";
 		}
 	    }
 	}
@@ -462,8 +475,14 @@ sub dump_zone_contents()
 	if ( @$exclusions ) {
 	    $entry .= ' exclude';
 
-	    for my $host ( @$exclusions ) {
-		$entry .= " $host";
+	    for ( @$exclusions ) {
+		if ( $family == F_IPV4 ) {
+		    $entry .= " $_";
+		} else {
+		    my $host = $_;
+		    $host =~ s/\|/:</;
+		    $entry .= " $host>";
+		}
 	    }
 	}
 

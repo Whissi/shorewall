@@ -1637,7 +1637,6 @@ sub generate_matrix() {
     #
     start_matrix;
 
-    my $exclusion_seq    = 1;
     my %chain_exclusions;
     my %policy_exclusions;
     my @interfaces = ( all_interfaces );

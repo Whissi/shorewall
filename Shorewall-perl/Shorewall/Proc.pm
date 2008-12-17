@@ -239,7 +239,7 @@ sub setup_forwarding( $ ) {
 		emit ( "if [ -f $file ]; then" ,
 		       "    echo $value > $file" );
 		emit ( 'else' ,
-		       "    error_message \"WARNING: Cannot set IPv4 forwarding on $interface\"" ) unless interface_is_optional( $interface);
+		       "    error_message \"WARNING: Cannot set IPv6 forwarding on $interface\"" ) unless interface_is_optional( $interface);
 		emit   "fi\n";
 	    }
 

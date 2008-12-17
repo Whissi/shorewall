@@ -97,9 +97,7 @@
           <para>The name of an existing table to duplicate to create this
           routing table. May be <option>main</option> or the name of a
           previously listed provider. You may select only certain entries from
-          the table to copy by using the COPY column below. This column should
-          contain a dash ("-') when USE_DEFAULT_RT=Yes in <ulink
-          url="shorewall6.conf.html">shorewall6.conf(5)</ulink>.</para>
+          the table to copy by using the COPY column below.</para>
         </listitem>
       </varlistentry>
 
@@ -151,22 +149,6 @@
                 <para>You want to specify <option>track</option> if internet
                 hosts will be connecting to local servers through this
                 provider.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis
-              role="bold">balance[=<replaceable>weight</replaceable>]</emphasis></term>
-
-              <listitem>
-                <para>The providers that have <option>balance</option>
-                specified will get outbound traffic load-balanced among them.
-                By default, all interfaces with <option>balance</option>
-                specified will have the same weight (1). You can change the
-                weight of an interface by specifiying
-                <option>balance=</option><replaceable>weight</replaceable>
-                where <replaceable>weight</replaceable> is the weight of the
-                route out of this interface.</para>
               </listitem>
             </varlistentry>
 
@@ -267,9 +249,9 @@
 
           <para>eth2 connects to a local network.</para>
 
-          <programlisting>        #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY               OPTIONS            COPY
-        ISP1  1       1    main      eth0     2001:ce7c:92b4:1::2   track,balance      eth2
-        ISP2  2       2    main      eth1     2001:d64c:83c9:12::8b track,balance      eth2</programlisting>
+          <programlisting>        #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY               OPTIONS    COPY
+        ISP1  1       1    main      eth0     2001:ce7c:92b4:1::2   track      eth2
+        ISP2  2       2    main      eth1     2001:d64c:83c9:12::8b track      eth2</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

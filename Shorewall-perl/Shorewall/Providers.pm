@@ -284,6 +284,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
 		$balance = $1;
 	    } elsif ( $option eq 'balance' ) {
+		fatal_error q('balance' is not available in IPv6) if $family == F_IPV6;
 		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose   = 1;

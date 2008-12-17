@@ -500,7 +500,6 @@ sub initialize( $ ) {
 	      DONT_LOAD => '',
 	      AUTO_COMMENT => undef,
 	      MANGLE_ENABLED => undef ,
-	      USE_DEFAULT_RT => undef ,
 	      #
 	      # Packet Disposition
 	      #

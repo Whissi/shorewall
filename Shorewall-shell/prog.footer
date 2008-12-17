@@ -55,16 +55,13 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
     esac
 done
 
-if [ $# -ne 1 ]; then
-    usage 2
-else
-    COMMAND="$1"
-fi
+COMMAND="$1"
 
 [ -n "${PRODUCT:=Shorewall}" ]
 
 case "$COMMAND" in
     start)
+	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
 	    error_message "$PRODUCT is already Running"
 	    status=0
@@ -80,6 +77,7 @@ case "$COMMAND" in
 	fi
 	;;
     stop)
+	[ $# -ne 1 ] && usage 2
 	progress_message3 "Stopping $PRODUCT...."
 	stop_firewall
 	status=0
@@ -90,16 +88,32 @@ case "$COMMAND" in
 	if ! shorewall_is_started ; then
 	    error_message "$PRODUCT is not running"
 	    status=2
-	else
+	elif [ $# -eq 1 ]; then
 	    $IPTABLES -Z
 	    $IPTABLES -t nat -Z
 	    $IPTABLES -t mangle -Z
 	    date > ${VARDIR}/restarted
 	    status=0
 	    progress_message3 "$PRODUCT Counters Reset"
+	else
+	    status=0
+	    for chain in $@; do
+		if chain_exists $chain; then
+		    if qt $IPTABLES -Z $chain; then
+			progress_message3 "Filter table $chain Counters Reset"
+		    else
+			error_message "ERROR: Reset of chain $chain failed"
+			status=2
+			break
+		    fi
+		else
+		    error_message "WARNING: Filter Chain $chain does not exist"
+		fi
+	    done
 	fi
 	;;
     restart)
+	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
 	    progress_message3 "Restarting $PRODUCT...."
 	else
@@ -120,6 +134,7 @@ case "$COMMAND" in
 	progress_message3 "done."
 	;;
     refresh)
+	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
 	    progress_message3 "Refreshing $PRODUCT...."
 	    refresh_firewall
@@ -131,6 +146,7 @@ case "$COMMAND" in
 	fi
 	;;
     restore)
+	[ $# -ne 1 ] && usage 2
 	restore_firewall
 	status=$?
 	if [ -n "$SUBSYSLOCK" ]; then
@@ -138,6 +154,7 @@ case "$COMMAND" in
         fi
 	;;
     clear)
+	[ $# -ne 1 ] && usage 2
 	progress_message3 "Clearing $PRODUCT...."
 	clear_firewall
 	status=0
@@ -145,6 +162,7 @@ case "$COMMAND" in
 	progress_message3 "done."
 	;;
     status)
+	[ $# -ne 1 ] && usage 2
 	echo "$PRODUCT-$VERSION Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started; then
@@ -169,10 +187,12 @@ case "$COMMAND" in
 	echo
 	;;
     version)
+	[ $# -ne 1 ] && usage 2
 	echo $VERSION
 	status=0
 	;;
     help)
+	[ $# -ne 1 ] && usage 2
 	usage 0
 	;;
     *)

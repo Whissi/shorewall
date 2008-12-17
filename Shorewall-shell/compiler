@@ -1728,7 +1728,7 @@ add_a_rule() {
 
 	if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 	    match='--ctorigdst'
-	    if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+	    if [ -z "$OLD_CONNTRACK_MATCH" ]; then
 		case $adr in
 		    !*)
 			match='!--ctorigdst'
@@ -1951,7 +1951,7 @@ __EOF__
 			    else
 				for adr in $(separate_list $addr); do
 				    match='--ctorigdst'
-				    if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+				    if [ -z "$OLD_CONNTRACK_MATCH" ]; then
 					case $adr in
 					    !*)
 						match='!--ctorigdst'
@@ -2028,7 +2028,7 @@ __EOF__
 	if [ -n "$addr" ]; then
 	    for adr in $(separate_list $addr); do
 		match='--ctorigdst'
-		if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+		if [ -z "$OLD_CONNTRACK_MATCH" ]; then
 		    case $adr in
 			!*)
 			    match='!--ctorigdst'
@@ -3822,7 +3822,7 @@ __EOF__
 		    # We have connection tracking match -- match on the original destination
 		    #
 		    match='--ctorigdst'
-		    if [ -n "$NEW_CONNTRACK_MATCH" ]; then
+		    if [ -z "$OLD_CONNTRACK_MATCH" ]; then
 			case $network in
 			    !*)
 				match='!--ctorigdst'
@@ -5148,6 +5148,7 @@ compile_firewall() # $1 = File Name
 	[ -d $outfile ] && fatal_error "$outfile is a Directory"
 	[ -h $outfile ] && fatal_error "$outfile is a Symbolic Link"
 	[ -f $outfile -a ! -x $outfile ] && fatal_error "$outfile exists and is not a restore file"
+	[ $(basename $1) = shorewall ] && fatal_error "A compiled script may not be named 'shorewall'"
 
 	DOING=Compiling
 	DONE=compiled

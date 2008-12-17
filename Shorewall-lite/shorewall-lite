@@ -380,7 +380,7 @@ usage() # $1 = exit status
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   reject <address> ..."
-    echo "   reset"
+    echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
@@ -591,15 +591,19 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|reset|clear)
+    stop|clear)
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	;;
+    reset)
+	verify_firewall_script
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
+	;;
     restart)
 	shift
-	restart_command $@
+	restart_command
 	;;
     show|list)
     	shift

@@ -35,7 +35,7 @@
 #         --refresh=<chainlist>       # Make the 'refresh' command refresh a comma-separated list of chains rather than 'blacklst'.
 #         --log=<filename>            # Log file
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
-#         --family=<number>           # IP family; 1 = IPv4, 2 = IPv6
+#         --family=<number>           # IP family; 4 = IPv4, 6 = IPv6
 #
 use strict;
 use FindBin;

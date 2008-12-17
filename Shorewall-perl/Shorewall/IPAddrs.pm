@@ -238,12 +238,12 @@ sub ip_range_explicit( $ ) {
 
     my ( $low, $high ) = split /-/, $range;
 
-    validate_address $low, 0;
+    validate_4address $low, 0;
 
     push @result, $low;
 
     if ( defined $high ) {
-	validate_faddress $high, 0;
+	validate_4address $high, 0;
 
 	my $first = decodeaddr $low;
 	my $last  = decodeaddr $high;

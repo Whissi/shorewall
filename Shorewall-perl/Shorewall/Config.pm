@@ -424,7 +424,7 @@ sub initialize( $ ) {
 			 ULOG    => 'ULOG',
 			 NFLOG   => 'NFLOG');
     } else {
-	$globals{SHAREDIR} = '/usr/share/shorewall';
+	$globals{SHAREDIR} = '/usr/share/shorewall6';
 	$globals{CONFDIR} =  '/etc/shorewall6';
 	
 	%config =

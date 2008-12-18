@@ -512,6 +512,23 @@ EOF
 	      );
     }
 
+    if ( $family == F_IPV6 ) {
+	emit <<'EOF';
+    #
+    # Enable link local and multi-cast
+    #
+    run_iptables -A INPUT -s ff80::/10 -j ACCEPT
+    run_iptables -A INPUT -d ff80::/10 -j ACCEPT
+    run_iptables -A INPUT -d ff00::/10 -j ACCEPT
+EOF
+
+	emit <<'EOF' unless $config{ADMINISABSENTMINDED};
+    run_iptables -A OUTPUT -d ff80::/10 -j ACCEPT
+    run_iptables -A OUTPUT -d ff00::/10 -j ACCEPT
+
+EOF
+    }
+
     process_routestopped;
 
     emit( 'do_iptables -A INPUT  -i lo -j ACCEPT',

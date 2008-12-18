@@ -216,6 +216,24 @@ loc     eth2            -</programlisting>
                 according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>proxyndp[={0|1}]</term>
+
+              <listitem>
+                <para>Sets
+                /proc/sys/net/ipv6/conf/<emphasis>interface</emphasis>/proxy_ndp.</para>
+
+                <para><emphasis role="bold">Note</emphasis>: This option does
+                not work with a wild-card <replaceable>interface</replaceable>
+                name (e.g., eth0.+) in the INTERFACE column.</para>
+
+                <para>Only those interfaces with the <option>proxyndp</option>
+                option will have their setting changed; the value assigned to
+                the setting will be the value specified (if any) or 1 if no
+                value is given.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </listitem>
       </varlistentry>

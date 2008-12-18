@@ -431,10 +431,21 @@ sub add_an_rtrule( $$$$ ) {
 
     if ( $source eq '-' ) {
 	$source = 'from ' . ALLIP;
-    } elsif ( $source =~ /:/ ) {
-	( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
-	fatal_error "Invalid SOURCE" if defined $remainder;
-	validate_net ( $source, 0 );
+    } elsif ( $family == F_IPV4 ) {
+	if ( $source =~ /:/ ) {
+	    ( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
+	    fatal_error "Invalid SOURCE" if defined $remainder;
+	    validate_net ( $source, 0 );
+	    $source = "iif $interface from $source";
+	} elsif ( $source =~ /\..*\..*/ ) {
+	    validate_net ( $source, 0 );
+	    $source = "from $source";
+	} else {
+	    $source = "iif $source";
+	}
+    } elsif ( $source =~  /^(.+?):<(.+)>\s*$/ ) {
+	my ($interface, $source ) = ($1, $2);
+	validate_net ($source, 0);
 	$source = "iif $interface from $source";
     } elsif ( $source =~ /\..*\..*/ ) {
 	validate_net ( $source, 0 );

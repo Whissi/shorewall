@@ -398,6 +398,19 @@ ACCEPT         net                 $FW:&lt;2002:ce7c:92b4::3&gt;     tcp        
 ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                         22</programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Multi-ISP</term>
+
+        <listitem>
+          <para>The Linux IPv6 stack does not support balancing (multi-hop)
+          routes. Hence, neither the <option>balance</option> option in <ulink
+          url="manpages6/shorewall6-providers.html">shorewall6-providers</ulink>(5)
+          nor USE_DEFAULT_RT=Yes in <ulink
+          url="manpages6/shorewall.conf.html">shorewall6.conf</ulink>(5) is
+          supported.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </section>
 

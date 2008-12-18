@@ -46,12 +46,12 @@
     <variablelist>
       <varlistentry>
         <term><emphasis
-        role="bold">IPTABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
+        role="bold">IP6TABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>This parameter names the iptables executable to be used by
+          <para>This parameter names the ip6tables executable to be used by
           Shorewall6. If not specified or if specified as a null value, then
-          the iptables executable located using the PATH option is
+          the ip6tables executable located using the PATH option is
           used.</para>
         </listitem>
       </varlistentry>
@@ -61,8 +61,8 @@
         role="bold">LOGFILE=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>This parameter tells the /sbin/shorewall6 program where to look
-          for Shorewall6 messages when processing the <emphasis
+          <para>This parameter tells the /sbin/shorewall6 program where to
+          look for Shorewall6 messages when processing the <emphasis
           role="bold">dump</emphasis>, <emphasis
           role="bold">logwatch</emphasis>, <emphasis role="bold">show
           log</emphasis>, and <emphasis role="bold">hits</emphasis> commands.
@@ -119,14 +119,13 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">SHOREWALL6_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
+        role="bold">SHOREWALL_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
           <para>This option is used to specify the shell program to be used to
-          run the Shorewall6 compiler and to interpret the compiled script. If
-          not specified or specified as a null value, /bin/sh is assumed.
-          Using a light-weight shell such as ash or dash can significantly
-          improve performance.</para>
+          interpret the compiled script. If not specified or specified as a
+          null value, /bin/sh is assumed. Using a light-weight shell such as
+          ash or dash can significantly improve performance.</para>
         </listitem>
       </varlistentry>
 
@@ -137,9 +136,9 @@
         <listitem>
           <para>This parameter should be set to the name of a file that the
           firewall should create if it starts successfully and remove when it
-          stops. Creating and removing this file allows Shorewall6 to work with
-          your distribution's initscripts. For RedHat, this should be set to
-          /var/lock/subsys/shorewall6. For Debian, the value is
+          stops. Creating and removing this file allows Shorewall6 to work
+          with your distribution's initscripts. For RedHat, this should be set
+          to /var/lock/subsys/shorewall6. For Debian, the value is
           /var/state/shorewall6 and in LEAF it is /var/run/shorwall.</para>
         </listitem>
       </varlistentry>
@@ -187,8 +186,9 @@
     shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
     shorewall6-nat(5), shorewall6-netmap(5), shorewall6-params(5),
     shorewall6-policy(5), shorewall6-providers(5), shorewall6-proxyarp(5),
-    shorewall6-route_rules(5), shorewall6-routestopped(5), shorewall6-rules(5),
-    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
-    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
+    shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),
+    shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

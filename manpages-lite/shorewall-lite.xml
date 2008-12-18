@@ -263,7 +263,7 @@
       <arg choice="plain"><option>show</option></arg>
 
       <arg
-      choice="req"><option>actions|classifiers|connections|config|macros|zones</option></arg>
+      choice="req"><option>actions|classifiers|connections|config|zones</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -581,8 +581,8 @@
 
         <listitem>
           <para>Restart is similar to <emphasis role="bold">shorewall-lite
-          stop</emphasis> followed by <emphasis role="bold">shorewall-lite
-          start</emphasis>. Existing connections are maintained.</para>
+          start</emphasis> but assumes that the firewall is already started.
+          Existing connections are maintained.</para>
 
           <para>The <option>-n</option> option causes Shorewall to avoid
           updating the routing table(s).</para>
@@ -704,15 +704,6 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">macros</emphasis></term>
-
-              <listitem>
-                <para>Displays information about each macro defined on the
-                firewall system.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
               <term><emphasis role="bold">mangle</emphasis></term>
 
               <listitem>
@@ -770,7 +761,7 @@
           saved configuration specified by the RESTOREFILE option in <ulink
           url="shorewall-lite.conf.html">shorewall-lite.conf</ulink>(5) will
           be restored if that saved configuration exists and has been modified
-          more recently than the files in /etc/shorewall. </para>
+          more recently than the files in /etc/shorewall.</para>
 
           <para>The <option>-n</option> option causes Shorewall to avoid
           updating the routing table(s).</para>

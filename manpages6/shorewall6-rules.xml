@@ -99,26 +99,6 @@
     appear in the file then all rules are assumed to be in the NEW
     section.</para>
 
-    <para>When defining rules that rewrite the destination IP address and/or
-    port number (namely DNAT and REDIRECT rules), it is important to keep
-    straight which columns in the file specify the packet before rewriting and
-    which specify how the packet will look after rewriting.</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>The DEST column specifies the final destination for the packet
-        after rewriting and can include the final IP address and/or port
-        number.</para>
-      </listitem>
-
-      <listitem>
-        <para>The remaining columns specify characteristics of the packet
-        before rewriting. In particular, the ORIGINAL DEST column gives the
-        original destination IP address of the packet and the DEST PORT(S)
-        column give the original destination port(s).</para>
-      </listitem>
-    </itemizedlist>
-
     <para>The columns in the file are as follows.</para>
 
     <variablelist>
@@ -126,14 +106,11 @@
         <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
         role="bold">ACCEPT</emphasis>[<emphasis
         role="bold"><option>+</option>|<option>!</option></emphasis>]|<emphasis
-        role="bold">NONAT</emphasis>|<emphasis
         role="bold">DROP[<option>!</option>]</emphasis>|<emphasis
         role="bold">REJECT</emphasis>[<option>!</option>]|<emphasis
         role="bold">DNAT</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
         role="bold">SAME</emphasis>[<emphasis
-        role="bold">-</emphasis>]|<emphasis
-        role="bold">REDIRECT</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
         role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
         role="bold">LOG</emphasis>|<emphasis

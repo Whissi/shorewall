@@ -2044,7 +2044,7 @@ sub get_configuration( $ ) {
     if ( $family == F_IPV4 ) {
 	check_trivalue ( 'LOG_MARTIANS',  'on' );
     } else {
-	check_trivalue ( 'LOG_MARTIANS',  'ff' );
+	check_trivalue ( 'LOG_MARTIANS',  'off' );
 	fatal_error "LOG_MARTIANS=On is not supported in IPv6" if $config{LOG_MARTIANS} eq 'on';
     }
 

@@ -888,7 +888,7 @@ sub compiler {
 	${$ref->{store}} = $val;
     }
 
-    reinitialize if ++$reused || $family == F_IPV6;
+    reinitialize if $reused++ || $family == F_IPV6;
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;

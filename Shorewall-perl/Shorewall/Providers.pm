@@ -360,7 +360,7 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
 	    emit ( "\nfind_interface_addresses $interface | while read address; do",
-		   "    qt ip $family rule del from $address",
+		   "    qt ip -$family rule del from $address",
 		   'done'
 		 );
 	}

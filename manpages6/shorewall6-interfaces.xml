@@ -152,7 +152,7 @@ loc     eth2            -</programlisting>
                 <itemizedlist>
                   <listitem>
                     <para>a <filename
-                    class="directory">/proc/sys/net/ipv5/conf/</filename>
+                    class="directory">/proc/sys/net/ipv6/conf/</filename>
                     entry for the interface cannot be modified.</para>
                   </listitem>
 
@@ -176,36 +176,6 @@ loc     eth2            -</programlisting>
                 when you have used a wildcard in the INTERFACE column if you
                 want to allow traffic between the interfaces that match the
                 wildcard.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis
-              role="bold">routefilter[={0|1}]</emphasis></term>
-
-              <listitem>
-                <para>Turn on kernel route filtering for this interface
-                (anti-spoofing measure).</para>
-
-                <para>If a value (0 or 1) is specified, then only those
-                interfaces with the <option>routefilter</option> option will
-                have their setting changes; the value assigned to the setting
-                will be the value specified (if any) or 1 if no value is
-                given.</para>
-
-                <para></para>
-
-                <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
-                </note>
-
-                <blockquote>
-                  <para>This option can also be enabled globally in the <ulink
-                  url="shorewall6.conf.html">shorewall6.conf</ulink>(5)
-                  file.</para>
-                </blockquote>
               </listitem>
             </varlistentry>
 

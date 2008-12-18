@@ -801,7 +801,7 @@ detect_gateway() # $1 = interface
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -4 route list dev $interface))
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -4 route list dev $interface | grep ^default))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #

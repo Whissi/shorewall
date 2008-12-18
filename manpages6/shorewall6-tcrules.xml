@@ -71,8 +71,8 @@
               current mark value to produce a new mark value.</para>
 
               <para>Both "|" and "&amp;" require Extended MARK Target support
-              in your kernel and ip6tables; neither may be used with connection
-              marks (see below).</para>
+              in your kernel and ip6tables; neither may be used with
+              connection marks (see below).</para>
 
               <para>May optionally be followed by <emphasis
               role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
@@ -554,7 +554,7 @@
           <para>Example: Mark all FTP data connections with mark
           4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
 #CLASSIFY                                        PORT(S)
-4         ::/       ::/       TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
+4         ::/0      ::/0      TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -580,12 +580,12 @@
 
           <programlisting>       #MARK/    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
        #CLASSIFY                                              PORT(S)
-       1         ::/       ::/          icmp    echo-request
-       1         ::/       ::/          icmp    echo-reply
-       RESTORE   ::/       ::/          all     -             -       -       0
-       CONTINUE  ::/       ::/          all     -             -       -      !0
-       4         ::/       ::/          ipp2p:all
-       SAVE      ::/       ::/          all     -             -       -       !0</programlisting>
+       1         ::/0      ::/0         icmp    echo-request
+       1         ::/0      ::/0         icmp    echo-reply
+       RESTORE   ::/0      ::/0         all     -             -       -       0
+       CONTINUE  ::/0      ::/0         all     -             -       -      !0
+       4         ::/0      ::/0         ipp2p:all
+       SAVE      ::/0      ::/0         all     -             -       -       !0</programlisting>
 
           <para>If a packet hasn't been classifed (packet mark is 0), copy the
           connection mark to the packet mark. If the packet mark is set, we're

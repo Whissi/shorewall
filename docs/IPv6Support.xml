@@ -98,7 +98,7 @@
       family has no effect on the other address family.</para>
 
       <para>As a consequence, there is very little interaction between
-      Shorewall and Shorewall6. </para>
+      Shorewall and Shorewall6.</para>
 
       <section>
         <title>DISABLE_IPV6</title>
@@ -113,7 +113,7 @@
       <section>
         <title>TC_ENABLED</title>
 
-        <para>The other area where their configurations overlap is in traffic
+        <para>Another area where their configurations overlap is in traffic
         shaping; the <filename>tcdevices</filename> and tcclasses files do
         exactly the same thing in both Shorewall and Shorewall6. Consequently,
         you will have TC_ENABLED=Internal in Shorewall or in Shorewall6 and
@@ -133,6 +133,41 @@
             /etc/shorewall6/tcrules</para>
           </listitem>
         </itemizedlist>
+      </section>
+
+      <section>
+        <title>KEEP_RT_TABLES</title>
+
+        <para>Multi-ISP users will need to be aware of this one. When there
+        are entries in the providers file, Shorewall normally installs a
+        modified <filename>/etc/iproute2/rt_tables</filename> during
+        <command>shorewall start</command> and <command>shorewall
+        restart</command> and restores a default file during
+        <command>shorewall stop</command>. Setting KEEP_RT_TABLES=Yes in
+        <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+        stops Shorewall (Shorewall lite) from modifying
+        <filename>/etc/iproute2/rt_tables</filename>.</para>
+
+        <para>Shorewall6 is also capable of modifying
+        <filename>/etc/iproute2/rt_tables</filename> in a similar way.</para>
+
+        <para>Our recommendation to Multi-ISP users is to:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Select the same names for similar providers.</para>
+          </listitem>
+
+          <listitem>
+            <para>Set KEEP_RT_TABLES=No in <ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5) and
+            set KEEP_RT_TABLES=Yes in <ulink
+            url="manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>These setting allow Shorewall to control the contents of
+        <filename>/etc/iproute2/rt_tables</filename>.</para>
       </section>
     </section>
   </section>

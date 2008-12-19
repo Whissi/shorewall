@@ -40,13 +40,10 @@
     </legalnotice>
   </articleinfo>
 
-  <warning>
-    <para>The 6to4 tunnel feature of Shorewall only facilitates IPv6 over IPv4
-    tunneling. It does not provide any IPv6 security measures.</para>
-  </warning>
-
   <para>6to4 tunneling with Shorewall can be used to connect your IPv6 network
-  to another IPv6 network over an IPv4 infrastructure.</para>
+  to another IPv6 network over an IPv4 infrastructure. It can also allow you
+  to experiment with IPv6 even if your ISP doesn't provide IPv6
+  connectivity.</para>
 
   <para>More information on Linux and IPv6 can be found in the <ulink
   url="http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO">Linux IPv6 HOWTO</ulink>.
@@ -54,8 +51,244 @@
   url="http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/configuring-ipv6to4-tunnels.html">Setup
   of 6to4 tunnels</ulink>.</para>
 
+  <section id="FeetWet">
+    <title>Getting your Feet Wet with IPv6, by Tom Eastep</title>
+
+    <para>6to4 tunnels provide a good way to introduce yourself to IPv6.
+    Shorewall6 was developed on a network whose only IPv6 connectivity was an
+    6to4 Tunnel. What is shown in this section requires Shorewall6 4.2.4 or
+    later.</para>
+
+    <section>
+      <title>Configuring IPv6</title>
+
+      <para>I have created an init <ulink
+      url="/pub/shorewall/contrib/IPv6/ipv6">script</ulink> to make the job of
+      configuring your firewall for IPv6 easier. The script is installed in
+      /etc/init.d and configures ipv6 at boot. The script works on OpenSuSE
+      11.0 and may need modification for other distributions. On OpenSuSE, the
+      script is installed using the command 'chkconfig --add ipv6'.</para>
+
+      <para>At the top of the script, you will see several variables:</para>
+
+      <programlisting>SIT="sit1"
+INTERFACES="eth1"
+ADDRESS=206.124.146.180
+SLA=0</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>SIT - The name of the tunnel device. Usually 'sit1'</para>
+        </listitem>
+
+        <listitem>
+          <para>INTERFACES - local interfaces that you want to configure for
+          IPv6</para>
+        </listitem>
+
+        <listitem>
+          <para>ADDRESS - A static IPv4 address on your firewall that you want
+          to use for the tunnel.</para>
+        </listitem>
+
+        <listitem>
+          <para>The identity of the first local sub-network that you want to
+          assign to the interfaces listed in INTERFACES. Normally zero
+          (0000).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Here is the file from my firewall:</para>
+
+      <programlisting>SIT="sit1"
+INTERFACES="eth0 eth2"
+ADDRESS=206.124.146.180
+SLA=1</programlisting>
+
+      <para>eth0 is the interface to my local network (both wired and
+      wireless). eth2 goes to my DMZ which holds a single server.</para>
+
+      <graphic fileref="images/Network2008b.png" />
+
+      <para>Here is the configuration after IPv6 is configured; the part it
+      bold is configured by the /etc/init.d/ipv6 script.</para>
+
+      <programlisting>gateway:~ # ip -6 addr ls
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+<emphasis role="bold">    inet6 2002:ce7c:92b4:1::2/64 scope global 
+       valid_lft forever preferred_lft forever</emphasis>
+    inet6 fe80::202:e3ff:fe08:55fa/64 scope link 
+       valid_lft forever preferred_lft forever
+3: eth1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+    inet6 fe80::202:e3ff:fe08:484c/64 scope link 
+       valid_lft forever preferred_lft forever
+4: eth2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+<emphasis role="bold">    inet6 2002:ce7c:92b4:2::2/64 scope global 
+       valid_lft forever preferred_lft forever</emphasis>
+    inet6 fe80::2a0:ccff:fed2:353a/64 scope link 
+       valid_lft forever preferred_lft forever
+24: sit1@NONE: &lt;NOARP,UP,LOWER_UP&gt; mtu 1480 
+<emphasis role="bold">    inet6 ::206.124.146.180/128 scope global 
+       valid_lft forever preferred_lft forever
+    inet6 2002:ce7c:92b4::1/128 scope global 
+       valid_lft forever preferred_lft forever</emphasis>
+gateway:~ # ip -6 route ls
+<emphasis role="bold">::/96 via :: dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295</emphasis>
+<emphasis role="bold">2002:ce7c:92b4::1 dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295
+2002:ce7c:92b4:1::/64 dev eth0  metric 256  expires 21333315sec mtu 1500 advmss 1440 hoplimit 4294967295
+2002:ce7c:92b4:2::/64 dev eth2  metric 256  expires 21333315sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
+fe80::/64 dev eth0  metric 256  expires 20748424sec mtu 1500 advmss 1440 hoplimit 4294967295
+fe80::/64 dev eth1  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimit 4294967295
+fe80::/64 dev eth2  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimit 4294967295
+fe80::/64 dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295
+<emphasis role="bold">default via ::192.88.99.1 dev sit1  metric 1  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295</emphasis>
+gateway:~ # </programlisting>
+
+      <para>You will notice that sit1, eth0 and eth2 each have an IPv6 address
+      beginning with 2002: -- All 6to4 IPv6 addresses have that in their most
+      significant 16 bits. The next 32-bits (ce7c:92b4) encode the IPv4
+      ADDRESS (206.124.146.180). So once you start the 6to4 tunnel, you are
+      the proud owner of 2<superscript>80</superscript> IPv6 addresses! In the
+      case shown here, 2002:ce7c:92b4::/48. The SLA is used to assign each
+      interface in INTERFACES, 2<superscript>64</superscript> addresses; in
+      the case of eth0, 2002:ce7c:92b4:1::/64.</para>
+
+      <para>I run <ulink url="http://www.litech.org/radvd/">radvd</ulink> on
+      the firewall to automatically assign IPv6 addresses to hosts connected
+      to eth0 and eth1. Here is my <filename>/etc/radvd.conf</filename>
+      file:</para>
+
+      <programlisting>interface eth0 { 
+        AdvSendAdvert on;
+        MinRtrAdvInterval 3; 
+        MaxRtrAdvInterval 10;
+        prefix 2002:ce7c:92b4:1::/64 {
+                AdvOnLink on; 
+                AdvAutonomous on; 
+                AdvRouterAddr off; 
+        };
+
+        RDNSS 2002:ce7c:92b4:2:2a0:ccff:fedb:31c4 {
+                AdvRDNSSOpen on;
+                AdvRDNSSPreference 2;
+        };                              
+};
+
+interface eth2 { 
+        AdvSendAdvert on;
+        MinRtrAdvInterval 3; 
+        MaxRtrAdvInterval 10;
+        prefix 2002:ce7c:92b4:2::/64 {
+                AdvOnLink on; 
+                AdvAutonomous on; 
+                AdvRouterAddr off; 
+        };
+
+        RDNSS 2002:ce7c:92b4:2:2a0:ccff:fedb:31c4 {
+                AdvRDNSSOpen on;
+                AdvRDNSSPreference 2;
+        };                              
+};</programlisting>
+
+      <para>Here is the automatic IPv6 configuration on my server attached to
+      eth2:</para>
+
+      <programlisting>webadmin@lists:~/ftpsite/contrib/IPv6&gt; /sbin/ip -6 addr ls
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+<emphasis role="bold">    inet6 2002:ce7c:92b4:2:2a0:ccff:fedb:31c4/64 scope global dynamic 
+       valid_lft 2591995sec preferred_lft 604795sec</emphasis>
+    inet6 fe80::2a0:ccff:fedb:31c4/64 scope link 
+       valid_lft forever preferred_lft forever
+webadmin@lists:~/ftpsite/contrib/IPv6&gt; /sbin/ip -6 route ls
+<emphasis role="bold">2002:ce7c:92b4:2::/64 dev eth2  proto kernel  metric 256  expires 2592161sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
+fe80::/64 dev eth2  metric 256  expires 20746963sec mtu 1500 advmss 1440 hoplimit 4294967295
+fe80::/64 dev ifb0  metric 256  expires 20746985sec mtu 1500 advmss 1440 hoplimit 4294967295
+<emphasis role="bold">default via fe80::2a0:ccff:fed2:353a dev eth2  proto kernel  metric 1024  expires 29sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
+webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
+
+      <para>You will note that the public IPv6 address of eth2 was formed by
+      concatenating the prefix for eth2 shown in radvd.conf (2002:ce7c:92b4:2)
+      and the lower 64 bits of the link level address of eth2
+      (2a0:ccff:fedb:31c4). The default route is described using the link
+      level address of eth2 on the firewall (fe80::2a0:ccff:fed2:353a).</para>
+    </section>
+
+    <section>
+      <title>Configuring Shorewall</title>
+
+      <para>We need to add an entry in /etc/shorewall/tunnels:</para>
+
+      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+6to4                    net
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+    </section>
+
+    <section>
+      <title>Configuring Shorewall6</title>
+
+      <para>The Shorewall6 configuration on my firewall is a very basic
+      three-interface one.</para>
+
+      <para><filename>/etc/shorewall6/zones</filename>:</para>
+
+      <programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
+#					OPTIONS			OPTIONS
+fw	firewall
+net	ipv6
+loc	ipv6
+dmz	ipv6
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall6/interfaces</filename>:</para>
+
+      <programlisting>#ZONE	INTERFACE	BROADCAST	OPTIONS
+net     sit1            detect          tcpflags,forward=1,nosmurfs
+loc     eth0            detect          tcpflags,forward=1
+dmz	eth2		detect		tcpflags,forward=1
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+
+      <para><filename>/etc/shorewall6/policy</filename>:</para>
+
+      <programlisting>#SOURCE    DEST    POLICY    LOG LEVEL    LIMIT:BURST
+net        all     DROP      info
+loc        net     ACCEPT
+dmz        net     ACCEPT
+all        all     REJECT    info</programlisting>
+
+      <para><filename>/etc/shorewall6/rules</filename>:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK
+#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+#
+#       Accept DNS connections from the firewall to the network
+#
+DNS/ACCEPT      $FW             net
+#
+#       Accept SSH connections from the local network for administration
+#
+SSH/ACCEPT      loc             $FW
+#
+#       Allow Ping everywhere
+#
+Ping/ACCEPT     all             all
+
+#
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+    </section>
+  </section>
+
   <section id="Tunnel6to4">
-    <title>Connecting two IPv6 Networks</title>
+    <title>Connecting two IPv6 Networks, by Eric de Thouars</title>
 
     <para>Suppose that we have the following situation:</para>
 
@@ -63,9 +296,9 @@
 
     <para>We want systems in the 2002:100:333::/64 subnetwork to be able to
     communicate with the systems in the 2002:488:999::/64 network. This is
-    accomplished through use of the <filename>/etc/shorewall/tunnels</filename>
-    file and the <quote>ip</quote> utility for network interface and routing
-    configuration.</para>
+    accomplished through use of the
+    <filename>/etc/shorewall/tunnels</filename> file and the <quote>ip</quote>
+    utility for network interface and routing configuration.</para>
 
     <para>Unlike GRE and IPIP tunneling, the
     <filename>/etc/shorewall/policy</filename>,

@@ -74,7 +74,8 @@
           <para>Shorewall6. This package provides
           <filename>/sbin/shorewall6</filename> which is the IPv6 equivalent
           of <filename>/sbin/shorewall</filename>.
-          <filename>/sbin/shorewall6</filename> only handles IPv4. Shorewall6
+          <filename>/sbin/shorewall</filename> only handles IPv4 while
+          <filename>/sbin/shorewall6</filename> handles only IPv6.. Shorewall6
           depends on both Shorewall-common and on Shorewall-perl. The
           Shorewall6 configuration is stored in <filename
           class="directory">/etc/shorewall6</filename>.</para>
@@ -83,7 +84,9 @@
         <listitem>
           <para>Shorewall6 Lite. This package is to IPv6 what Shorewall Lite
           is to IPv4. The package stores its configuration in <filename
-          class="directory">/etc/shorewall6-lite</filename>.</para>
+          class="directory">/etc/shorewall6-lite</filename>. As with Shorewall
+          Lite, Shorewall6 Lite usually requires no configuration changes on
+          the firewall system.</para>
         </listitem>
       </orderedlist>
     </section>
@@ -460,6 +463,12 @@ ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                      
               <para>iprange</para>
             </listitem>
           </itemizedlist>
+
+          <para>Also, please note that since Shorewall6 is based on
+          Shorewall-perl, dynamic zones are not supported. Hence the add and
+          delete commands are not supported by
+          <filename>/sbin/shorewall6</filename> and
+          <filename>/sbin/shorewall6-lite</filename>.</para>
         </listitem>
       </varlistentry>
 

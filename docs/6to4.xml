@@ -26,6 +26,8 @@
     <copyright>
       <year>2003-2004</year>
 
+      <year>2008</year>
+
       <holder>Eric de Thouars and Tom Eastep</holder>
     </copyright>
 
@@ -108,7 +110,7 @@ SLA=1</programlisting>
       <para>eth0 is the interface to my local network (both wired and
       wireless). eth2 goes to my DMZ which holds a single server.</para>
 
-      <graphic fileref="images/Network2008b.png" />
+      <graphic align="center" fileref="images/Network2008b.png" />
 
       <para>Here is the configuration after IPv6 is configured; the part it
       bold is configured by the /etc/init.d/ipv6 script.</para>
@@ -157,9 +159,9 @@ gateway:~ # </programlisting>
       the case of eth0, 2002:ce7c:92b4:1::/64.</para>
 
       <para>I run <ulink url="http://www.litech.org/radvd/">radvd</ulink> on
-      the firewall to automatically assign IPv6 addresses to hosts connected
-      to eth0 and eth1. Here is my <filename>/etc/radvd.conf</filename>
-      file:</para>
+      the firewall to allow hosts conntected to eth0 and eth2 to automatically
+      perform their own IPv6 configuration. Here is my
+      <filename>/etc/radvd.conf</filename> file:</para>
 
       <programlisting>interface eth0 { 
         AdvSendAdvert on;
@@ -212,11 +214,12 @@ fe80::/64 dev ifb0  metric 256  expires 20746985sec mtu 1500 advmss 1440 hoplimi
 <emphasis role="bold">default via fe80::2a0:ccff:fed2:353a dev eth2  proto kernel  metric 1024  expires 29sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
 webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
 
-      <para>You will note that the public IPv6 address of eth2 was formed by
-      concatenating the prefix for eth2 shown in radvd.conf (2002:ce7c:92b4:2)
-      and the lower 64 bits of the link level address of eth2
-      (2a0:ccff:fedb:31c4). The default route is described using the link
-      level address of eth2 on the firewall (fe80::2a0:ccff:fed2:353a).</para>
+      <para>You will note that the public IPv6 address of eth2
+      (2002:ce7c:92b4:2:2a0:ccff:fedb:31c4) was formed by concatenating the
+      prefix for eth2 shown in radvd.conf (2002:ce7c:92b4:2) and the lower 64
+      bits of the link level address of eth2 (2a0:ccff:fedb:31c4). The default
+      route is described using the link level address of eth2 on the firewall
+      (fe80::2a0:ccff:fed2:353a).</para>
     </section>
 
     <section>

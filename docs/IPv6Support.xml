@@ -38,7 +38,7 @@
     <title>Overview</title>
 
     <para>Beginning with Shorewall 4.2.4, support for firewalling IPv6 is
-    included.</para>
+    included as part of Shorewall.</para>
 
     <section>
       <title>Prerequisites</title>
@@ -73,9 +73,10 @@
         <listitem>
           <para>Shorewall6. This package provides
           <filename>/sbin/shorewall6</filename> which is the IPv6 equivalent
-          of <filename>/sbin/shorewall</filename> which only handles IPv4.
-          Shorewall6 depends on both Shorewall-common and on Shorewall-perl.
-          The Shorewall6 configuration is stored in <filename
+          of <filename>/sbin/shorewall</filename>.
+          <filename>/sbin/shorewall6</filename> only handles IPv4. Shorewall6
+          depends on both Shorewall-common and on Shorewall-perl. The
+          Shorewall6 configuration is stored in <filename
           class="directory">/etc/shorewall6</filename>.</para>
         </listitem>
 
@@ -174,8 +175,8 @@
   <section>
     <title>Shorewall6 Differences from Shorewall</title>
 
-    <para>Configuring Shorewall6 is very similar to configuring Shorewall with
-    some notable exceptions:</para>
+    <para>Configuring and operating Shorewall6 is very similar to configuring
+    Shorewall with some notable exceptions:</para>
 
     <variablelist>
       <varlistentry>
@@ -399,6 +400,31 @@ ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                      
       </varlistentry>
 
       <varlistentry>
+        <term>Stopped State</term>
+
+        <listitem>
+          <para>When Shorewall6 or Shorewall6 Lite is in the stopped state,
+          the following traffic is still allowed.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Traffic with a multicast destination IP address
+              (ff00::/8).</para>
+            </listitem>
+
+            <listitem>
+              <para>Traffic with a link local source address
+              (ff800::/8)</para>
+            </listitem>
+
+            <listitem>
+              <para>Traffic with a link local destination address.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>Multi-ISP</term>
 
         <listitem>
@@ -408,6 +434,44 @@ ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                      
           nor USE_DEFAULT_RT=Yes in <ulink
           url="manpages6/shorewall.conf.html">shorewall6.conf</ulink>(5) is
           supported.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>/sbin/shorewall6 and /sbin/shorewall6-lite Commands</term>
+
+        <listitem>
+          <para>Several commands supported by
+          <filename>/sbin/shorewall</filename> and
+          <filename>/sbin/shorewall-lite</filename> are not supported by
+          <filename>/sbin/shorewall6</filename> and
+          <filename>/sbin/shorewall6-lite</filename>:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>hits</para>
+            </listitem>
+
+            <listitem>
+              <para>ipcalc</para>
+            </listitem>
+
+            <listitem>
+              <para>iprange</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Macros</term>
+
+        <listitem>
+          <para>The Shorewall6 package depends on Shorewall-common for
+          application macros. Only certain address-family specific macros such
+          as macro.AllowICMPs are included in Shorewall6. As a consequence,
+          /usr/share/shorewall/ is included in the default Shorewall6
+          CONFIG_PATH. </para>
         </listitem>
       </varlistentry>
     </variablelist>

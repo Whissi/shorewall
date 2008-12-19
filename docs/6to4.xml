@@ -67,9 +67,11 @@
       <para>I have created an init <ulink
       url="/pub/shorewall/contrib/IPv6/ipv6">script</ulink> to make the job of
       configuring your firewall for IPv6 easier. The script is installed in
-      /etc/init.d and configures ipv6 at boot. The script works on OpenSuSE
-      11.0 and may need modification for other distributions. On OpenSuSE, the
-      script is installed using the command 'chkconfig --add ipv6'.</para>
+      /etc/init.d and configures ipv6, including a 6to4 tunnel, at boot time.
+      The script works on OpenSuSE 11.0 and may need modification for other
+      distributions. On OpenSuSE, the script is installed by copying it to
+      <filename>/etc/init.d/</filename> then running the command 'chkconfig
+      --add ipv6'.</para>
 
       <para>At the top of the script, you will see several variables:</para>
 
@@ -112,8 +114,8 @@ SLA=1</programlisting>
 
       <graphic align="center" fileref="images/Network2008b.png" />
 
-      <para>Here is the configuration after IPv6 is configured; the part it
-      bold is configured by the /etc/init.d/ipv6 script.</para>
+      <para>Here is the configuration after IPv6 is configured; the part in
+      bold font is configured by the /etc/init.d/ipv6 script.</para>
 
       <programlisting>gateway:~ # ip -6 addr ls
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 
@@ -217,9 +219,13 @@ webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
       <para>You will note that the public IPv6 address of eth2
       (2002:ce7c:92b4:2:2a0:ccff:fedb:31c4) was formed by concatenating the
       prefix for eth2 shown in radvd.conf (2002:ce7c:92b4:2) and the lower 64
-      bits of the link level address of eth2 (2a0:ccff:fedb:31c4). The default
-      route is described using the link level address of eth2 on the firewall
-      (fe80::2a0:ccff:fed2:353a).</para>
+      bits of the link level address of eth2 (2a0:ccff:fedb:31c4). You will
+      also notice that the address 2002:ce7c:92b4:2:2a0:ccff:fedb:31c4 appears
+      in the RDNSS clauses in radvd.conf; that causes my server to be
+      automatically configured as a DNS server.</para>
+
+      <para>The default route is described using the link level address of
+      eth2 on the firewall (fe80::2a0:ccff:fed2:353a).</para>
     </section>
 
     <section>

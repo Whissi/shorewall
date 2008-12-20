@@ -110,7 +110,8 @@ ADDRESS=206.124.146.180
 SLA=1</programlisting>
 
       <para>eth0 is the interface to my local network (both wired and
-      wireless). eth2 goes to my DMZ which holds a single server.</para>
+      wireless). eth2 goes to my DMZ which holds a single server. Here is a
+      diagram of the IPv4 network:</para>
 
       <graphic align="center" fileref="images/Network2008b.png" />
 
@@ -270,6 +271,22 @@ ursa:~ #</programlisting>
 
     <section>
       <title>Configuring Shorewall6</title>
+
+      <para><emphasis role="bold">STOP</emphasis> -- If you have followed the
+      instructions above, you should have a completely functional IPv6
+      network. Try:</para>
+
+      <programlisting>ping6 2001:19f0:feee::dead:beef:cafe
+</programlisting>
+
+      <para>If that doesn't work from your firewall and from any local IPv6
+      systems that you have behind your firewall, do not go any further until
+      it does work. If you ask for help from the Shorewall team, the first
+      question we will ask is 'Can you ping6 2001:19f0:feee::dead:beef:cafe?'.
+      If you can't we won't help you. It's not that we don't want to help; it
+      is just that most Linux users don't have a clue how IPv4 works let alone
+      IPv6 -- we simply don't have the bandwidth to teach you the basics of
+      IPv6.</para>
 
       <para>The Shorewall6 configuration on my firewall is a very basic
       three-interface one.</para>

@@ -78,7 +78,7 @@
       <programlisting>SIT="sit1"
 INTERFACES="eth1"
 ADDRESS=206.124.146.180
-SLA=0</programlisting>
+SLA=1</programlisting>
 
       <itemizedlist>
         <listitem>
@@ -97,8 +97,8 @@ SLA=0</programlisting>
 
         <listitem>
           <para>The identity of the first local sub-network that you want to
-          assign to the interfaces listed in INTERFACES. Normally zero
-          (0000).</para>
+          assign to the interfaces listed in INTERFACES. Normally one
+          (0001).</para>
         </listitem>
       </itemizedlist>
 
@@ -122,7 +122,7 @@ SLA=1</programlisting>
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
 2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
-<emphasis role="bold">    inet6 2002:ce7c:92b4:1::2/64 scope global 
+<emphasis role="bold">    inet6 2002:ce7c:92b4:1::1/64 scope global 
        valid_lft forever preferred_lft forever</emphasis>
     inet6 fe80::202:e3ff:fe08:55fa/64 scope link 
        valid_lft forever preferred_lft forever
@@ -130,7 +130,7 @@ SLA=1</programlisting>
     inet6 fe80::202:e3ff:fe08:484c/64 scope link 
        valid_lft forever preferred_lft forever
 4: eth2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
-<emphasis role="bold">    inet6 2002:ce7c:92b4:2::2/64 scope global 
+<emphasis role="bold">    inet6 2002:ce7c:92b4:2::1/64 scope global 
        valid_lft forever preferred_lft forever</emphasis>
     inet6 fe80::2a0:ccff:fed2:353a/64 scope link 
        valid_lft forever preferred_lft forever
@@ -226,6 +226,34 @@ webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
 
       <para>The default route is described using the link level address of
       eth2 on the firewall (fe80::2a0:ccff:fed2:353a).</para>
+
+      <para>On my laptop, ursa:</para>
+
+      <programlisting>ursa:~ # ip -6 addr ls dev wlan0
+3: wlan0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+ <emphasis role="bold">   inet6 2002:ce7c:92b4:1:21a:73ff:fedb:8c35/64 scope global dynamic 
+       valid_lft 2591996sec preferred_lft 604796sec</emphasis>
+    inet6 fe80::21a:73ff:fedb:8c35/64 scope link 
+       valid_lft forever preferred_lft forever
+ursa:~ # ip -6 addr ls dev eth0
+3: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+ <emphasis role="bold">   inet6 2002:ce7c:92b4:1:21a:24ff:fecb:2bcc/64 scope global dynamic 
+       valid_lft 2591996sec preferred_lft 604796sec</emphasis>
+    inet6 fe80::21a:73ff:fedb:8c35/64 scope link 
+       valid_lft forever preferred_lft forever
+ursa:~ # ip -6 route ls dev wlan0
+<emphasis role="bold">2002:ce7c:92b4:1::/64  proto kernel  metric 256  expires 2592160sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
+fe80::/64  metric 256  expires 21314573sec mtu 1500 advmss 1440 hoplimit 4294967295
+<emphasis role="bold">default via fe80::202:e3ff:fe08:55fa  proto kernel  metric 1024  expires 28sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
+ursa:~ # ip -6 route ls dev eth0
+<emphasis role="bold">2002:ce7c:92b4:1::/64  proto kernel  metric 256  expires 2592160sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
+fe80::/64  metric 256  expires 21314573sec mtu 1500 advmss 1440 hoplimit 4294967295
+<emphasis role="bold">default via fe80::202:e3ff:fe08:55fa  proto kernel  metric 1024  expires 28sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
+ursa:~ #</programlisting>
+
+      <para>Here is the resulting simple IPv6 Network:</para>
+
+      <graphic align="center" fileref="images/Network2008c.png" />
     </section>
 
     <section>
@@ -261,7 +289,7 @@ dmz	ipv6
       <programlisting>#ZONE	INTERFACE	BROADCAST	OPTIONS
 net     sit1            detect          tcpflags,forward=1,nosmurfs
 loc     eth0            detect          tcpflags,forward=1
-dmz	eth2		detect		tcpflags,forward=1
+dmz     eth2            detect          tcpflags,forward=1
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
 

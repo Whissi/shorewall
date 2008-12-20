@@ -260,7 +260,8 @@ ursa:~ #</programlisting>
     <section>
       <title>Configuring Shorewall</title>
 
-      <para>We need to add an entry in /etc/shorewall/tunnels:</para>
+      <para>We need to add an entry in /etc/shorewall/tunnels and restart
+      Shorewall:</para>
 
       <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
 #                                               ZONE
@@ -282,11 +283,8 @@ ursa:~ #</programlisting>
       <para>If that doesn't work from your firewall and from any local IPv6
       systems that you have behind your firewall, do not go any further until
       it does work. If you ask for help from the Shorewall team, the first
-      question we will ask is 'Can you ping6 2001:19f0:feee::dead:beef:cafe?'.
-      If you can't we won't help you. It's not that we don't want to help; it
-      is just that most Linux users don't have a clue how IPv4 works let alone
-      IPv6 -- we simply don't have the bandwidth to teach you the basics of
-      IPv6.</para>
+      question we will ask is 'With Shorewall6 cleared, can you ping6
+      2001:19f0:feee::dead:beef:cafe?'.</para>
 
       <para>The Shorewall6 configuration on my firewall is a very basic
       three-interface one.</para>
@@ -303,7 +301,7 @@ dmz	ipv6
 
       <para><filename>/etc/shorewall6/interfaces</filename>:</para>
 
-      <programlisting>#ZONE	INTERFACE	BROADCAST	OPTIONS
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 net     sit1            detect          tcpflags,forward=1,nosmurfs
 loc     eth0            detect          tcpflags,forward=1
 dmz     eth2            detect          tcpflags,forward=1

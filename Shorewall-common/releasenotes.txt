@@ -1,4 +1,4 @@
-Shorewall 4.2.4-RC1
+Shorewall 4.2.4-RC2
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -26,6 +26,17 @@ Shorewall 4.2.4-RC1
    - iptables 1.4.0 or later with 1.4.1 strongly recommended.
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
+
+Problems Corrected in 4.2.4-RC2
+
+1)  The IPv6 sample configurations have been extensively reworked.
+
+2)  Special handling of 2000::/3 routes has been removed. Use 'default'
+    routes instead.
+
+3)  When a zone was not specified in an entry in
+    /etc/shorewall/interfaces, the Shorewall-perl compiler could fail
+    with ERROR: Unknown Zone ().
 
 New Features in Shorewall 4.2.4.
 

@@ -592,6 +592,8 @@ sub use_forward_chain($) {
     return 1 if $interfaceref->{nets} > 1;
 
     my $zone = $interfaceref->{zone};
+
+    return 1 unless $zone;
     #
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
@@ -631,6 +633,8 @@ sub use_input_chain($) {
     return 0 unless $nets;
 
     my $zone = $interfaceref->{zone};
+    
+    return 1 unless $zone;
     #
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces

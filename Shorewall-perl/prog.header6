@@ -396,7 +396,7 @@ find_nexthop() # $1 = interface
 #
 find_default_interface() {
     ip -6 route list | while read first rest; do
-	[ "$first" = 2000::/3 -o "$first" = default ] && echo $(find_device $rest) && return
+	[ "$first" = default ] && echo $(find_device $rest) && return
     done
 }
 
@@ -504,7 +504,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
     ip -6 route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in
-		default|2000::/3)
+		default)
 		    if [ $# -gt 1 ]; then
 			shift
 			fatal_error "$@"
@@ -754,7 +754,7 @@ detect_gateway() # $1 = interface
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -6 route list dev $interface | grep -E '^(default |2000::/3)'))
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -6 route list dev $interface | grep '^default'))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #
@@ -859,14 +859,14 @@ restore_default_route() {
 
 	while read route ; do
 	    case $route in
-		2000::/3*)
+		default)
 		    if [ -n "$default_route" ]; then
 			case "$default_route" in
 			    *metric*)
 		                #
 		                # Don't restore a route with a metric -- we only replace the one with metric == 0
 		                #
-				qt ip -6 route delete 2000::/3 metric 0 && \
+				qt ip -6 route delete default metric 0 && \
 				    progress_message "Default Route with metric 0 deleted"
 				;;
 			    *)

@@ -134,7 +134,7 @@ sub copy_table( $$$ ) {
     }
 
     emit ( '    case $net in',
-	   '        default|nexthop|2000::/3)',
+	   '        default|nexthop)',
 	   '            ;;',
 	   '        *)',
 	   "            run_ip route add table $number \$net \$route $realm",
@@ -154,7 +154,7 @@ sub copy_and_edit_table( $$$$ ) {
     }
 
     emit (  '    case $net in',
-	    '        default|nexthop|2000::/3)',
+	    '        default|nexthop)',
 	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',
@@ -522,7 +522,7 @@ sub setup_providers() {
 	    emit  ( '#',
 		    '# Capture the default route(s) if we don\'t have it (them) already.',
 		    '#',
-		    '[ -f ${VARDIR}/default_route ] || ip -' . $family . ' route list | grep -E \'^\s*(default |nexthop |2000::/3 )\' > ${VARDIR}/default_route',
+		    '[ -f ${VARDIR}/default_route ] || ip -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
 		    '#',
 		    '# Initialize the file that holds \'undo\' commands',
 		    '#',

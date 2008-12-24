@@ -271,18 +271,20 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</command></programlisting>
 
     <para>The use of ipsets provides a much better way to define dynamic zones
     than is provided by the native Shorewall implementation. To define a
-    dynamic zone of hosts <emphasis role="bold">dyn</emphasis> that interface
+    dynamic zone of hosts <emphasis role="bold">dyn</emphasis> that is a
+    sub-zone of zone <emphasis role="bold">loc</emphasis> and that interfaces
     through interface eth3, use:</para>
 
     <para>/etc/shorewall/zones:</para>
 
     <programlisting>#ZONE         TYPE         OPTIONS            IN OPTIONS        OUT OPTIONS
-dyn           ipv4</programlisting>
+loc           ipv4
+dyn:loc       ipv4</programlisting>
 
     <para>/etc/shorewall/interfaces:</para>
 
     <programlisting>#ZONE         INTERFACE     OPTIONS
--             eth3          …</programlisting>
+loc           eth3          …</programlisting>
 
     <para>/etc/shorewall/hosts:</para>
 

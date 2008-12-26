@@ -292,6 +292,13 @@
           defined in <ulink
           url="shorewall6-tcrules.html">shorewall6-tcrules</ulink>(5). If not
           specified, CLEAR_TC=No is assumed.</para>
+
+          <warning>
+            <para>If you also run Shorewall and if you have
+            TC_ENABLED=Internal in your <ulink
+            url="../manpages/shorewall.conf.html">shorewall-conf</ulink>(5),
+            then you will want CLEAR_TC=No in this file.</para>
+          </warning>
         </listitem>
       </varlistentry>
 
@@ -1047,6 +1054,13 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>If you set TC_ENABLED=Internal or internal or leave the option
           empty then Shorewall6 will use its builtin traffic shaper
           (tc4shorewall6 written by Arne Bernin.</para>
+
+          <warning>
+            <para>If you also run Shorewall and if you have
+            TC_ENABLED=Internal in your <ulink
+            url="../manpages/shorewall.conf.html">shorewall-conf</ulink>(5),
+            then you will want TC_ENABLED=No in this file.</para>
+          </warning>
         </listitem>
       </varlistentry>
 

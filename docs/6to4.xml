@@ -78,7 +78,7 @@
 
       <programlisting>SIT="sit1"
 INTERFACES="eth1"
-ADDRESS=206.124.146.180
+ADDRESS4=206.124.146.180
 SLA=1</programlisting>
 
       <itemizedlist>
@@ -92,13 +92,13 @@ SLA=1</programlisting>
         </listitem>
 
         <listitem>
-          <para>ADDRESS - A static IPv4 address on your firewall that you want
-          to use for the tunnel.</para>
+          <para>ADDRESS4 - A static IPv4 address on your firewall that you
+          want to use for the tunnel.</para>
         </listitem>
 
         <listitem>
-          <para>The identity of the first local sub-network that you want to
-          assign to the interfaces listed in INTERFACES. Normally one
+          <para>SLA - The identity of the first local sub-network that you
+          want to assign to the interfaces listed in INTERFACES. Normally one
           (0001).</para>
         </listitem>
       </itemizedlist>
@@ -107,7 +107,7 @@ SLA=1</programlisting>
 
       <programlisting>SIT="sit1"
 INTERFACES="eth0 eth2"
-ADDRESS=206.124.146.180
+ADDRESS4=206.124.146.180
 SLA=1</programlisting>
 
       <para>eth0 is the interface to my local network (both wired and
@@ -159,8 +159,8 @@ gateway:~ # </programlisting>
       ADDRESS (206.124.146.180). So once you start the 6to4 tunnel, you are
       the proud owner of 2<superscript>80</superscript> IPv6 addresses! In the
       case shown here, 2002:ce7c:92b4::/48. The SLA is used to assign each
-      interface in INTERFACES, 2<superscript>64</superscript> addresses; in
-      the case of eth0, 2002:ce7c:92b4:1::/64.</para>
+      interface in INTERFACES, a subnet of 2<superscript>64</superscript>
+      addresses; in the case of eth0, 2002:ce7c:92b4:1::/64.</para>
 
       <para>I run <ulink url="http://www.litech.org/radvd/">radvd</ulink> on
       the firewall to allow hosts conntected to eth0 and eth2 to automatically
@@ -289,6 +289,11 @@ ursa:~ #</programlisting>
 
       <para>The Shorewall6 configuration on my firewall is a very basic
       three-interface one.</para>
+
+      <para>Key entry in
+      <filename>/etc/shorewall6/shorewall6.conf</filename>:</para>
+
+      <programlisting>IP_FORWARDING=On</programlisting>
 
       <para><filename>/etc/shorewall6/zones</filename>:</para>
 

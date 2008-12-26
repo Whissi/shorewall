@@ -142,7 +142,9 @@ case $1 in
 	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${1%-*}-0${1#*-}.noarch.rpm
+	rpm6=shorewall6-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
+	lite6rpm=shorewall6-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	BASE=Yes
@@ -153,7 +155,9 @@ case $1 in
 	DEST="/srv/ftp/pub/shorewall/${BASEVERSION%.*}/shorewall-${BASEVERSION}"
 	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	rpm6=shorewall6-${BASEVERSION}-${PATCHNUM}.noarch.rpm
 	literpm=shorewall-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	lite6rpm=shorewall6-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
 	perlrpm=shorewall-perl-${BASEVERSION}-${PATCHNUM}.noarch.rpm
 	shellrpm=shorewall-shell-${BASEVERSION}-${PATCHNUM}.noarch.rpm
 	;;
@@ -161,7 +165,9 @@ case $1 in
 	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${1}-0base.noarch.rpm
+	rpm6=shorewall6-${1}-0base.noarch.rpm
 	literpm=shorewall-lite-${1}-0base.noarch.rpm
+	lite6rpm=shorewall6-lite-${1}-0base.noarch.rpm
 	perlrpm=shorewall-perl-${1}-0base.noarch.rpm
 	shellrpm=shorewall-shell-${1}-0base.noarch.rpm
 	BASE=Yes
@@ -177,42 +183,9 @@ case $1 in
 	lite6rpm=shorewall6-lite-${1}-0base.noarch.rpm
 	BASE=Yes
 	;;
-    3.*[13579].*)
-	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1}-1.noarch.rpm
-	literpm=shorewall-lite-${1}-1.noarch.rpm
-	;;
-    *.*[13579].*)
-	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1}-1.noarch.rpm
-	;;
-    3.*Beta*|*RC*)
-	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
-	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
-	;;
-    *.*Beta*|*RC*)
-	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
-	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
-	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
-	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
-	;;
-    3.[2468].*)
-	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1}-1.noarch.rpm
-	literpm=shorewall-lite-${1}-1.noarch.rpm
-	;;
-    *.[2468].*)
-	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1}-1.noarch.rpm
-	literpm=shorewall-lite-${1}-1.noarch.rpm
-	perlrpm=shorewall-perl-${1}-1.noarch.rpm
-	shellrpm=shorewall-shell-${1}-1.noarch.rpm
-	;;
     *)
-	DEST="/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
-	rpm=shorewall-${1}-1.noarch.rpm
+	echo "Unknown Version $1" >&2
+	exit 1
 	;;
 esac
 

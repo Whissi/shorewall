@@ -24,6 +24,7 @@
 #
 package Shorewall::Rules;
 require Exporter;
+use Scalar::Util 'reftype';
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
@@ -342,14 +343,25 @@ sub setup_blacklist() {
 	my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
 
 	for my $hostref ( @$hosts ) {
-	    my $interface = $hostref->[0];
-	    my $ipsec     = $hostref->[1];
-	    my $policy    = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	    my $network   = $hostref->[2];
-	    my $source    = match_source_net $network;
+	    my $interface  = $hostref->[0];
+	    my $ipsec      = $hostref->[1];
+	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $network    = $hostref->[2];
+	    my $exclusions = $hostref->[3];
+	    my $source     = match_source_net $network;
+	    my $target     = 'blacklst';
+
+	    if ( @$exclusions ) {
+		my $chainref = ensure_filter_chain( $target = newexclusionchain, 0 );
+		for ( @$exclusions ) {
+		    add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
+		}
+
+		add_rule $chainref, "-j blacklist";
+	    }
 
 	    for my $chain ( first_chains $interface ) {
-		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j blacklst";
+		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j $target";
 	    }
 
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -586,11 +598,23 @@ sub add_common_rules() {
     if ( @$list ) {
 	progress_message2 'Adding Anti-smurf Rules';
 	for my $hostref  ( @$list ) {
-	    $interface = $hostref->[0];
-	    my $ipsec  = $hostref->[1];
-	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    $interface     = $hostref->[0];
+	    my $ipsec      = $hostref->[1];
+	    my $exclusions = $hostref->[3];
+	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $target     = 'smurfs';
+
+	    if ( @$exclusions ) {
+		my $chainref = ensure_filter_chain( $target = newexclusionchain, 0 );
+		for ( @$exclusions ) {
+		    add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
+		}
+
+		add_rule $chainref, "-j smurfs";
+	    }	    
+
 	    for $chain ( first_chains $interface ) {
-		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j smurfs" );
+		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j $target" );
 	    }
 	    
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -677,10 +701,22 @@ sub add_common_rules() {
 	add_rule $chainref , "-p tcp --syn --sport 0 -j $disposition";
 
 	for my $hostref  ( @$list ) {
-	    my $interface = $hostref->[0];
-	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
+	    my $interface  = $hostref->[0];
+	    my $exclusions = $hostref->[3];
+	    my $target     = 'tcpflags';
+	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
+
+	    if ( @$exclusions ) {
+		my $chainref = ensure_filter_chain( $target = newexclusionchain, 0 );
+		for ( @$exclusions ) {
+		    add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
+		}
+
+		add_rule $chainref, "-j tcpflags";
+	    }
+
 	    for $chain ( first_chains $interface ) {
-		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2] ), "${policy}-j tcpflags" );
+		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2] ), "${policy}-j $target" );
 	    }
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
@@ -818,18 +854,43 @@ sub setup_mac_lists( $ ) {
 	# Generate jumps from the input and forward chains
 	#
 	for my $hostref ( @$maclist_hosts ) {
-	    my $interface = $hostref->[0];
-	    my $ipsec  = $hostref->[1];
-	    my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	    my $source = match_source_net $hostref->[2];
-	    my $target = mac_chain $interface;
+	    my $interface  = $hostref->[0];
+	    my $ipsec      = $hostref->[1];
+	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $source     = match_source_net $hostref->[2];
+	    my $exclusions = $hostref->[3];
+	    my $target     = mac_chain $interface;
+
 	    if ( $table eq 'filter' ) {
+		if ( @$exclusions ) {
+		    my $chainref = ensure_filter_chain( newexclusionchain, 0 );
+		    for ( @$exclusions ) {
+			add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
+		    }
+
+		    add_rule $chainref, "-j $target";
+
+		    $target = $chainref->{name};
+		}
+		
 		for my $chain ( first_chains $interface ) {
 		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
+
 		set_interface_option $interface, 'use_input_chain', 1;
 		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
+		if ( @$exclusions ) {
+		    my $chainref = ensure_mangle_chain( newexclusionchain );
+		    for ( @$exclusions ) {
+			add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
+		    }
+
+		    add_rule $chainref, "-j $target";
+
+		    $target = $chainref->{name};
+		}
+
 		add_rule $mangle_table->{PREROUTING}, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}-j $target";
 	    }
 	}
@@ -1599,30 +1660,34 @@ sub generate_matrix() {
 	'';
     }
 
-    #
-    # Insert the passed exclusions at the front of the passed chain.
-    #
-    sub insert_exclusions( $$ ) {
-	my ( $chainref, $exclusionsref ) = @_;
+    sub source_exclusion( $$ ) {
+	my ( $exclusions, $targetref ) = @_;
+	
+	return $targetref unless @$exclusions;
 
-	my $num = 1;
+	$targetref = $filter_table->{$targetref} unless reftype $targetref;
 
-	for my $host ( @{$exclusionsref} ) {
-	    my ( $interface, $net ) = split /\|/, $host;
-	    insert_rule $chainref , $num++, join( '', match_dest_dev $interface , match_dest_net( $net ), '-j RETURN' );
-	}
+	my $chainref = new_chain( $targetref->{table}, newexclusionchain );
+
+	add_rule( $chainref, match_source_net( $_ ) . '-j RETURN' ) for @$exclusions;
+	add_rule( $chainref, "-j $targetref->{name}" );
+
+	reftype $_[0] ? $chainref : $chainref->{name};
     }
 
-    #
-    # Add the passed exclusions at the end of the passed chain.
-    #
-    sub add_exclusions ( $$ ) {
-	my ( $chainref, $exclusionsref ) = @_;
+    sub dest_exclusion( $$ ) {
+	my ( $exclusions, $targetref ) = @_;
+	
+	return $targetref unless @$exclusions;
 
-	for my $host ( @{$exclusionsref} ) {
-	    my ( $interface, $net ) = split /\|/, $host;
-	    add_rule $chainref , join( '', match_dest_dev $interface, match_dest_net( $net ), '-j RETURN' );
-	}
+	$targetref = $filter_table->{$targetref} unless reftype $targetref;
+
+	my $chainref = new_chain( $targetref->{table}, newexclusionchain );
+
+	add_rule( $chainref, match_dest_net( $_ ) . '-j RETURN' ) for @$exclusions;
+	add_rule( $chainref, "-j $targetref->{name}" );
+
+	reftype $_[0] ? $targetref : $targetref->{name};
     }
 
     #
@@ -1653,23 +1718,7 @@ sub generate_matrix() {
 
 	next if @zones <= 2 && ! $zoneref->{options}{complex};
 
-	my $exclusions = $zoneref->{exclusions};
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
-
-	if ( @$exclusions ) {
-	    my $in_ref  = new_standard_chain zone_input_chain $zone;
-	    my $out_ref = new_standard_chain zone_output_chain $zone;
-
-	    add_rule ensure_filter_chain( "${zone}2${zone}", 1 ) , '-j ACCEPT' if rules_target( $zone, $zone ) eq 'ACCEPT';
-
-	    for my $host ( @$exclusions ) {
-		my ( $interface, $net ) = split /\|/, $host;
-		my $rule = match_source_dev( $interface ) . match_source_net( $net ) . '-j RETURN';
-		add_rule $frwd_ref , $rule;
-		add_rule $in_ref   , $rule;
-		add_rule $out_ref  , match_dest_dev( $interface ) . match_dest_net( $net ) . '-j RETURN';
-	    }
-	}
 
 	if ( $capabilities{POLICY_MATCH} ) {
 	    my $type       = $zoneref->{type};
@@ -1694,7 +1743,7 @@ sub generate_matrix() {
 		    for my $net ( @{$hostref->{hosts}} ) {
 			add_jump(
 				 $sourcechainref,
-				 $frwd_ref,
+				 source_exclusion( $hostref->{exclusions}, $frwd_ref ),
 				 1,
 				 join( '', $interfacematch , match_source_net( $net ), $ipsec_match )
 				);
@@ -1715,15 +1764,10 @@ sub generate_matrix() {
 	my $chain3           = rules_target $zone, $zone;
 	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
-	my $exclusions       = $zoneref->{exclusions};
 	my $frwd_ref         = $filter_table->{zone_forward_chain $zone};
 	my $chain            = 0;
 	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
 	my $nested           = $zoneref->{options}{nested};
-
-	if ( @$exclusions ) {
-	    insert_exclusions $dnatref, $exclusions if $dnatref->{referenced};
-	}
 
 	if ( $nested ) {
 	    #
@@ -1777,11 +1821,13 @@ sub generate_matrix() {
 		for my $hostref ( @$arrayref ) {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
+		    my $exclusions = $hostref->{exclusions};
+
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $dest   = match_dest_net $net;
 
 			if ( $chain1 ) {
-			    my $nextchain;
+			    my $nextchain = dest_exclusion( $exclusions, $chain1 );
 			    my $outputref;
 			    my $interfacematch = '';
 
@@ -1792,15 +1838,7 @@ sub generate_matrix() {
 				$interfacematch = match_dest_dev $interface;
 			    }
 
-			    if ( @$exclusions ) {
-				my $output = zone_output_chain $zone;
-				add_jump $outputref , $output, 0, join( '', $interfacematch, $dest, $ipsec_out_match );
-				add_jump $filter_table->{$output} , $chain1, 0;
-				$nextchain = $output;
-			    } else {
-				add_jump $outputref , $chain1, 0, join( '', $interfacematch, $dest, $ipsec_out_match );
-				$nextchain = $chain1;
-			    }
+			    add_jump $outputref , $nextchain, 0, join( '', $interfacematch, $dest, $ipsec_out_match );
 
 			    add_jump( $outputref , $nextchain, 0, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
 				if $hostref->{options}{broadcast};
@@ -1819,7 +1857,7 @@ sub generate_matrix() {
 			    # There are DNAT/REDIRECT rules with this zone as the source.
 			    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
 			    #
-			    add_jump $preroutingref, $dnatref, 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
+			    add_jump $preroutingref, source_exclusion( $exclusions, $dnatref), 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
 			}
 			#
 			# If this zone has parents with DNAT/REDIRECT rules and there are no CONTINUE polcies with this zone as the source
@@ -1838,26 +1876,19 @@ sub generate_matrix() {
 			}
 			
 			if ( $chain2 ) {
-			    my $nextchain;
+			    my $nextchain = source_exclusion( $exclusions, $chain2 );
 			    
-			    if ( @$exclusions ) {
-				my $input = zone_input_chain $zone;
-				add_jump $inputchainref, $input, 0, join( '', $interfacematch, $source, $ipsec_in_match );
-				add_jump $filter_table->{ $input } , $chain2, 0;
-				$nextchain = $input;
-			    } else {
-				add_jump $inputchainref, $chain2, 0, join( '', $interfacematch, $source, $ipsec_in_match );
-				$nextchain = $chain2;
-			    }
+			    add_jump $inputchainref, $nextchain, 0, join( '', $interfacematch, $source, $ipsec_in_match );
 
 			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$nextchain} ) unless use_input_chain $interface;
 			}
 
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
+			    my $ref = source_exclusion( $exclusions, $frwd_ref );
 			    if ( use_forward_chain $interface ) {
-				add_jump $filter_table->{forward_chain $interface} , $frwd_ref, 0, join( '', $source, $ipsec_in_match );
+				add_jump $filter_table->{forward_chain $interface} , $ref, 0, join( '', $source, $ipsec_in_match );
 			    } else {
-				add_jump $filter_table->{FORWARD} , $frwd_ref, 0, join( '', match_source_dev( $interface ) , $source, $ipsec_in_match );
+				add_jump $filter_table->{FORWARD} , $ref, 0, join( '', match_source_dev( $interface ) , $source, $ipsec_in_match );
 				move_rules ( $filter_table->{forward_chain $interface} , $frwd_ref );
 			    }
 			}
@@ -1887,7 +1918,7 @@ sub generate_matrix() {
 		next unless $chain;
 
 		if ( $zone eq $zone1 ) {
-		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! $zoneref->{options}{in_out}{routeback};
 		}
 
 		if ( $zone1ref->{type} eq 'bport' ) {
@@ -1939,7 +1970,7 @@ sub generate_matrix() {
 	    my $num_ifaces = 0;
 
 	    if ( $zone eq $zone1 ) {
-		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! ( $zoneref->{options}{in_out}{routeback} || @$exclusions );
+		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
 	    }
 
 	    if ( $zone1ref->{type} eq 'bport' ) {
@@ -1947,33 +1978,8 @@ sub generate_matrix() {
 	    }
 
 	    my $chainref    = $filter_table->{$chain};
-	    my $exclusions1 = $zone1ref->{exclusions};
 
 	    my $dest_hosts_ref = $zone1ref->{hosts};
-
-	    if ( @$exclusions1 ) {
-		if ( $chain eq "all2$zone1" ) {
-		    unless ( $chain_exclusions{$chain} ) {
-			$chain_exclusions{$chain} = 1;
-			insert_exclusions $chainref , $exclusions1;
-		    }
-		} elsif ( $chain =~ /2all$/ ) {
-		    my $chain1 = $policy_exclusions{"${chain}_${zone1}"};
-
-		    unless ( $chain1 ) {
-			$chain1 = newexclusionchain;
-			$policy_exclusions{"${chain}_${zone1}"} = $chain1;
-			my $chain1ref = ensure_filter_chain $chain1, 0;
-			add_exclusions $chain1ref, $exclusions1;
-			add_jump $chain1ref, $chain, 0;
-		    }
-
-		    $chain = $chain1;
-		} else {
-		    fatal_error "Fatal Error in generate_matrix()" if $chain eq 'ACCEPT';
-		    insert_exclusions $chainref , $exclusions1;
-		}
-	    }
 
 	    if ( $frwd_ref ) {
 		for my $typeref ( values %$dest_hosts_ref ) {
@@ -1984,7 +1990,7 @@ sub generate_matrix() {
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				for my $net ( @{$hostref->{hosts}} ) {
-				    add_jump $frwd_ref, $chain, 0, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match );
+				    add_jump $frwd_ref, dest_exclusion( $hostref->{exclusions}, $chain), 0, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match );
 				}
 			    }
 			}
@@ -2003,7 +2009,7 @@ sub generate_matrix() {
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;
 			}
-   
+
 			for my $hostref ( @$arrayref ) {
 			    next if $hostref->{options}{destonly};
 			    for my $net ( @{$hostref->{hosts}} ) {
@@ -2019,8 +2025,8 @@ sub generate_matrix() {
 						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
 						    #
 						    add_jump(
-							     $chain3ref ,
-							     $chain ,
+							     source_exclusion( $hostref->{exclusions}, $chain3ref ),
+							     dest_exclusion( $host1ref->{exclusions}, $chain ),
 							     0,
 							     join( '', 
 								   $match_source_dev, 

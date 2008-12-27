@@ -91,7 +91,7 @@ use constant { NOTHING    => 'NOTHING',
 #                                        in      => < policy match string >
 #                                        out     => < policy match string >
 #                                      }
-#                        parents =>    [ <parents> ]     Parents, Children and interfaces are listed by name
+#                        parents =>    [ <parents> ]      Parents, Children and interfaces are listed by name
 #                        children =>   [ <children> ]
 #                        interfaces => [ <interfaces> ]
 #                        bridge =>     <bridge>
@@ -100,6 +100,7 @@ use constant { NOTHING    => 'NOTHING',
 #                                                                               ...
 #                                                                             }
 #                                                                  hosts   => [ <net1> , <net2> , ... ]
+#                                                                  exclusions => [ <net1>, <net2>, ... ]
 #                                                                }
 #                                                <interface2> => ...
 #                                              }
@@ -308,7 +309,6 @@ sub determine_zones()
 
 	$zones{$zone} = { type       => $type,
 			  parents    => \@parents,
-			  exclusions => [],
 			  bridge     => '',
 			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 					  in      => parse_zone_option_list( $in_options || '', $type ) ,
@@ -390,6 +390,7 @@ sub zone_report()
 			my $hosts     = $groupref->{hosts};
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
+			    $grouplist = join '!', (@{$groupref->{exclusions}}) if @{$groupref->{exclusions}};
 			    if ( $family == F_IPV4 ) {
 				progress_message_nocompress "      $interface:$grouplist";
 			    } else {
@@ -399,18 +400,6 @@ sub zone_report()
 			}
 		    }
 
-		}
-	    }
-	}
-
-	if ( $exclusions ) {
-	    for ( @$exclusions ) {
-		if ( $family == F_IPV4 ) {
-		    progress_message_nocompress "        !$_";
-		} else {
-		    my $host = $_;
-		    $host =~ s/\|/:</;
-		    progress_message_nocompress "        !$host>";
 		}
 	    }
 	}
@@ -443,7 +432,6 @@ sub dump_zone_contents()
 	my $hostref    = $zoneref->{hosts};
 	my $type       = $zoneref->{type};
 	my $optionref  = $zoneref->{options};
-	my $exclusions = $zoneref->{exclusions};
 
 	$type = $xlate{$type} if $xlate{$type};
 
@@ -459,8 +447,13 @@ sub dump_zone_contents()
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
 			my $hosts     = $groupref->{hosts};
+			my $exclusions = $groupref->{exclusions};
+
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
+
+			    $grouplist = join '!', ( @$exclusions ) if @$exclusions;
+
 			    if ( $family == F_IPV4 ) {
 				$entry .= " $interface:$grouplist";
 			    } else {
@@ -468,20 +461,6 @@ sub dump_zone_contents()
 			    }
 			}
 		    }
-		}
-	    }
-	}
-
-	if ( @$exclusions ) {
-	    $entry .= ' exclude';
-
-	    for ( @$exclusions ) {
-		if ( $family == F_IPV4 ) {
-		    $entry .= " $_";
-		} else {
-		    my $host = $_;
-		    $host =~ s/\|/:</;
-		    $entry .= " $host>";
 		}
 	    }
 	}
@@ -517,7 +496,7 @@ sub add_group_to_zone($$$$$)
     $zoneref->{interfaces}{$interface} = 1;
 
     my @newnetworks;
-    my @exclusions;
+    my @exclusions = ();
     my $new = \@newnetworks;
     my $switched = 0;
 
@@ -548,7 +527,7 @@ sub add_group_to_zone($$$$$)
 	    validate_host $host, 0;
 	}
 
-	push @$new, $switched ? "$interface|$host" : $host;
+	push @$new, $host;
     }
 
     $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback};
@@ -559,11 +538,10 @@ sub add_group_to_zone($$$$$)
 
     $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions );
     
-    push @{$zoneref->{exclusions}}, @exclusions;
-
     push @{$interfaceref}, { options => $options,
 			     hosts   => \@newnetworks,
-			     ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' };
+			     ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' ,
+			     exclusions => \@exclusions };
 }
 
 #
@@ -1113,7 +1091,7 @@ sub validate_hosts_file()
 
 #
 # Returns a reference to a array of host entries. Each entry is a
-# reference to an array containing ( interface , polciy match type {ipsec|none} , network );
+# reference to an array containing ( interface , polciy match type {ipsec|none} , network , exclusions );
 #
 sub find_hosts_by_option( $ ) {
     my $option = $_[0];
@@ -1125,7 +1103,7 @@ sub find_hosts_by_option( $ ) {
 		for my $host ( @{$arrayref} ) {
 		    if ( $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $host->{ipsec} , $net ];
+			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}];
 			}
 		    }
 		}
@@ -1135,7 +1113,7 @@ sub find_hosts_by_option( $ ) {
 
     for my $interface ( @interfaces ) {
 	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
-	    push @hosts, [ $interface, 'none', ALLIP ];
+	    push @hosts, [ $interface, 'none', ALLIP , [] ];
 	}
     }
 

@@ -76,11 +76,6 @@
 
       <para>At the top of the script, you will see several variables:</para>
 
-      <programlisting>SIT="sit1"
-INTERFACES="eth1"
-ADDRESS4=206.124.146.180
-SLA=1</programlisting>
-
       <itemizedlist>
         <listitem>
           <para>SIT - The name of the tunnel device. Usually 'sit1'</para>
@@ -101,14 +96,14 @@ SLA=1</programlisting>
           want to assign to the interfaces listed in INTERFACES. Normally one
           (0001).</para>
         </listitem>
+
+        <listitem>
+          <para>GATEWAY - The default IPv6 gateway. For 6to4, this is
+          ::192.88.99.1.</para>
+        </listitem>
       </itemizedlist>
 
       <para>Here is the file from my firewall:</para>
-
-      <programlisting>SIT="sit1"
-INTERFACES="eth0 eth2"
-ADDRESS4=206.124.146.180
-SLA=1</programlisting>
 
       <para>eth0 is the interface to my local network (both wired and
       wireless). eth2 goes to my DMZ which holds a single server. Here is a

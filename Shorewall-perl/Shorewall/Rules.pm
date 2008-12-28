@@ -347,18 +347,8 @@ sub setup_blacklist() {
 	    my $ipsec      = $hostref->[1];
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network    = $hostref->[2];
-	    my $exclusions = $hostref->[3];
 	    my $source     = match_source_net $network;
-	    my $target     = 'blacklst';
-
-	    if ( @$exclusions ) {
-		my $chainref = ensure_filter_chain( $target = newexclusionchain, 0 );
-		for ( @$exclusions ) {
-		    add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
-		}
-
-		add_rule $chainref, "-j blacklist";
-	    }
+	    my $target     = source_exclusion( $hostref->[3], 'blacklst' );
 
 	    for my $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j $target";
@@ -600,18 +590,8 @@ sub add_common_rules() {
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $exclusions = $hostref->[3];
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	    my $target     = 'smurfs';
-
-	    if ( @$exclusions ) {
-		my $chainref = ensure_filter_chain( $target = newexclusionchain, 0 );
-		for ( @$exclusions ) {
-		    add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
-		}
-
-		add_rule $chainref, "-j smurfs";
-	    }	    
+	    my $target     = source_exclusion( $hostref->[3], 'smurfs' );
 
 	    for $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j $target" );
@@ -702,18 +682,8 @@ sub add_common_rules() {
 
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
-	    my $exclusions = $hostref->[3];
-	    my $target     = 'tcpflags';
+	    my $target     = source_exclusion( $hostref->[3], 'tcpflags' );
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
-
-	    if ( @$exclusions ) {
-		my $chainref = ensure_filter_chain( $target = newexclusionchain, 0 );
-		for ( @$exclusions ) {
-		    add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
-		}
-
-		add_rule $chainref, "-j tcpflags";
-	    }
 
 	    for $chain ( first_chains $interface ) {
 		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2] ), "${policy}-j $target" );
@@ -858,21 +828,10 @@ sub setup_mac_lists( $ ) {
 	    my $ipsec      = $hostref->[1];
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $source     = match_source_net $hostref->[2];
-	    my $exclusions = $hostref->[3];
-	    my $target     = mac_chain $interface;
 
 	    if ( $table eq 'filter' ) {
-		if ( @$exclusions ) {
-		    my $chainref = ensure_filter_chain( newexclusionchain, 0 );
-		    for ( @$exclusions ) {
-			add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
-		    }
-
-		    add_rule $chainref, "-j $target";
-
-		    $target = $chainref->{name};
-		}
-		
+		my $target = source_exclusion( $hostref->[3], mac_chain $interface );
+						   
 		for my $chain ( first_chains $interface ) {
 		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
 		}
@@ -880,18 +839,8 @@ sub setup_mac_lists( $ ) {
 		set_interface_option $interface, 'use_input_chain', 1;
 		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
-		if ( @$exclusions ) {
-		    my $chainref = ensure_mangle_chain( newexclusionchain );
-		    for ( @$exclusions ) {
-			add_rule $chainref, match_source_net( $_ ) . "-j RETURN";
-		    }
-
-		    add_rule $chainref, "-j $target";
-
-		    $target = $chainref->{name};
-		}
-
-		add_rule $mangle_table->{PREROUTING}, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}-j $target";
+		my $chainref = source_exclusion( $hostref->[3], $mangle_table->{mac_chain $interface} );
+		add_rule $mangle_table->{PREROUTING}, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}-j $chainref->{name}";
 	    }
 	}
     } else {
@@ -1660,36 +1609,6 @@ sub generate_matrix() {
 	'';
     }
 
-    sub source_exclusion( $$ ) {
-	my ( $exclusions, $targetref ) = @_;
-	
-	return $targetref unless @$exclusions;
-
-	$targetref = $filter_table->{$targetref} unless reftype $targetref;
-
-	my $chainref = new_chain( $targetref->{table}, newexclusionchain );
-
-	add_rule( $chainref, match_source_net( $_ ) . '-j RETURN' ) for @$exclusions;
-	add_rule( $chainref, "-j $targetref->{name}" );
-
-	reftype $_[0] ? $chainref : $chainref->{name};
-    }
-
-    sub dest_exclusion( $$ ) {
-	my ( $exclusions, $targetref ) = @_;
-	
-	return $targetref unless @$exclusions;
-
-	$targetref = $filter_table->{$targetref} unless reftype $targetref;
-
-	my $chainref = new_chain( $targetref->{table}, newexclusionchain );
-
-	add_rule( $chainref, match_dest_net( $_ ) . '-j RETURN' ) for @$exclusions;
-	add_rule( $chainref, "-j $targetref->{name}" );
-
-	reftype $_[0] ? $targetref : $targetref->{name};
-    }
-
     #
     # Set a breakpoint in this function if you want to step through generate_matrix().
     #
@@ -2012,6 +1931,7 @@ sub generate_matrix() {
 
 			for my $hostref ( @$arrayref ) {
 			    next if $hostref->{options}{destonly};
+			    my $excl3ref = source_exclusion( $hostref->{exclusions}, $chain3ref );
 			    for my $net ( @{$hostref->{hosts}} ) {
 				for my $type1ref ( values %$dest_hosts_ref ) {
 				    for my $interface1 ( keys %$type1ref ) {
@@ -2025,7 +1945,7 @@ sub generate_matrix() {
 						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
 						    #
 						    add_jump(
-							     source_exclusion( $hostref->{exclusions}, $chain3ref ),
+							     $excl3ref ,
 							     dest_exclusion( $host1ref->{exclusions}, $chain ),
 							     0,
 							     join( '', 

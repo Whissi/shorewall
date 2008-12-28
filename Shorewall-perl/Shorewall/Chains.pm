@@ -107,6 +107,8 @@ our %EXPORT_TAGS = (
 				       finish_section
 				       setup_zone_mss
 				       newexclusionchain
+				       source_exclusion
+				       dest_exclusion
 				       clearrule
 				       do_proto
 				       mac_match
@@ -1108,6 +1110,59 @@ sub setup_zone_mss() {
 sub newexclusionchain() {
     my $seq = $exclseq++;
     "excl${seq}";
+}
+
+#
+# If the passed exclusion array is non-empty then:
+#
+#       Create a new exclusion chain in the table of the passed chain
+#           (Note: If the chain is not in the filter table then a
+#                  reference to the chain's chain table entry must be
+#                  passed).
+#
+#       Add RETURN rules for each element of the exclusion array
+#
+#       Add a jump to the passed chain
+#
+#       Return the exclusion chain. The type of the returned value 
+#                                   matches what was passed (reference
+#                                   or name).
+#
+# Otherwise
+#
+#       Return the passed chain.
+#
+# There are two versions of the function; one for source exclusion and
+# one for destination exclusion.
+#
+sub source_exclusion( $$ ) {
+    my ( $exclusions, $targetref ) = @_;
+    
+    return $targetref unless @$exclusions;
+    
+    $targetref = ensure_filter_chain( $targetref, 0 ) unless reftype $targetref;
+    
+    my $chainref = new_chain( $targetref->{table}, newexclusionchain );
+    
+    add_rule( $chainref, match_source_net( $_ ) . '-j RETURN' ) for @$exclusions;
+    add_jump( $chainref, $targetref, 1 );
+    
+    reftype $_[1] ? $chainref : $chainref->{name};
+}
+
+sub dest_exclusion( $$ ) {
+    my ( $exclusions, $targetref ) = @_;
+    
+    return $targetref unless @$exclusions;
+    
+    $targetref = ensure_filter_chain( $targetref, 0 ) unless reftype $targetref;
+    
+    my $chainref = new_chain( $targetref->{table}, newexclusionchain );
+    
+    add_rule( $chainref, match_dest_net( $_ ) . '-j RETURN' ) for @$exclusions;
+    add_jump( $chainref, $targetref, 1 );
+    
+    reftype $_[1] ? $targetref : $targetref->{name};
 }
 
 sub clearrule() {

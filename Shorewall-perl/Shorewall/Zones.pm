@@ -372,7 +372,6 @@ sub zone_report()
 	my $hostref   = $zoneref->{hosts};
 	my $type      = $zoneref->{type};
 	my $optionref = $zoneref->{options};
-	my $exclusions = $zoneref->{exclusions};
 
 	$type = $ipzone if $type eq 'ip';
 
@@ -387,10 +386,11 @@ sub zone_report()
 		for my $interface ( sort keys %$interfaceref ) {
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
-			my $hosts     = $groupref->{hosts};
+			my $hosts      = $groupref->{hosts};
+			my $exclusions = join ',', @{$groupref->{exclusions}};
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
-			    $grouplist = join '!', (@{$groupref->{exclusions}}) if @{$groupref->{exclusions}};
+			    $grouplist = join '!', ( $grouplist, $exclusions) if $exclusions;
 			    if ( $family == F_IPV4 ) {
 				progress_message_nocompress "      $interface:$grouplist";
 			    } else {
@@ -447,12 +447,12 @@ sub dump_zone_contents()
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
 			my $hosts     = $groupref->{hosts};
-			my $exclusions = $groupref->{exclusions};
+			my $exclusions = join ',', @{$groupref->{exclusions}};
 
 			if ( $hosts ) {
 			    my $grouplist = join ',', ( @$hosts );
 
-			    $grouplist = join '!', ( @$exclusions ) if @$exclusions;
+			    $grouplist = join '!', ( $grouplist, $exclusions ) if $exclusions;
 
 			    if ( $family == F_IPV4 ) {
 				$entry .= " $interface:$grouplist";

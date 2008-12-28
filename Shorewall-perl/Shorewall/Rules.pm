@@ -24,7 +24,6 @@
 #
 package Shorewall::Rules;
 require Exporter;
-use Scalar::Util 'reftype';
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
@@ -591,10 +590,10 @@ sub add_common_rules() {
 	    $interface     = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
-	    my $target     = source_exclusion( $hostref->[3], 'smurfs' );
+	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( first_chains $interface ) {
-		add_rule $filter_table->{$chain} , join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  "${policy}-j $target" );
+		add_jump $filter_table->{$chain} , $target, 0, join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  $policy );
 	    }
 	    
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -682,11 +681,11 @@ sub add_common_rules() {
 
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
-	    my $target     = source_exclusion( $hostref->[3], 'tcpflags' );
+	    my $target     = source_exclusion( $hostref->[3], $chainref );
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
 
 	    for $chain ( first_chains $interface ) {
-		add_rule $filter_table->{$chain} , join( '', '-p tcp ', match_source_net( $hostref->[2] ), "${policy}-j $target" );
+		add_jump $filter_table->{$chain} , $target, 0, join( '', '-p tcp ', match_source_net( $hostref->[2] ), $policy );
 	    }
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
@@ -830,17 +829,17 @@ sub setup_mac_lists( $ ) {
 	    my $source     = match_source_net $hostref->[2];
 
 	    if ( $table eq 'filter' ) {
-		my $target = source_exclusion( $hostref->[3], mac_chain $interface );
+		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );
 						   
 		for my $chain ( first_chains $interface ) {
-		    add_rule $filter_table->{$chain} , "${source}-m state --state NEW ${policy}-j $target";
+		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}-m state --state NEW ${policy}";
 		}
 
 		set_interface_option $interface, 'use_input_chain', 1;
 		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
 		my $chainref = source_exclusion( $hostref->[3], $mangle_table->{mac_chain $interface} );
-		add_rule $mangle_table->{PREROUTING}, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}-j $chainref->{name}";
+		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}";
 	    }
 	}
     } else {
@@ -1621,8 +1620,6 @@ sub generate_matrix() {
     #
     start_matrix;
 
-    my %chain_exclusions;
-    my %policy_exclusions;
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;

@@ -1,4 +1,4 @@
-Shorewall 4.2.4-RC2
+Shorewall 4.2.4 RC3
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -20,23 +20,50 @@ Shorewall 4.2.4-RC2
 
 7) Support for IPv6 is available beginning with Shorewall 4.2.4.
 
-   Minimun system requirements:
+   Minimun system requirements for IPv6 support:
 
    - Kernel 2.6.25 or later.
    - iptables 1.4.0 or later with 1.4.1 strongly recommended.
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
 
-Problems Corrected in 4.2.4-RC2
+Problems Corrected in 4.2.4 RC3
 
-1)  The IPv6 sample configurations have been extensively reworked.
+1)  Previously, when exclusion was used in an entry in
+    /etc/shorewall/hosts, Shorewall-perl ignored the exclusion when
+    generating rules for the following OPTIONS in that entry:
+ 
+        blacklist
+	maclist
+	norfc1918
+	tcpflags
 
-2)  Special handling of 2000::/3 routes has been removed. Use 'default'
-    routes instead.
+2)  Shorewall-perl previously promoted all exclusion in the
+    /etc/shorewall/hosts file to the zone level. That meant that
+    all traffic to/from the zone passed through exclusion rules 
+    rather than only the traffic matching a hosts records that
+    specified exclusion.
 
-3)  When a zone was not specified in an entry in
-    /etc/shorewall/interfaces, the Shorewall-perl compiler could fail
-    with ERROR: Unknown Zone ().
+    Example /etc/shorewall/hosts:
+
+    	    z	eth0:192.168.4.0/24
+	    z	eth1:10.0.0.0/24!10.0.0.99
+
+        Traffic entering eth0 from network 192.168.4.0/24 would still
+        be checked for '!10.0.0.99'.
+
+    This has been corrected.
+
+Known Problems Remaiining:
+
+1)  When exclusion is used in an entry in /etc/shorewall/hosts, then
+    Shorewall-shell produces an invalid iptables rule if any of the 
+    following OPTIONS are also specified in the entry:    
+
+        blacklist
+	maclist
+	norfc1918
+	tcpflags
 
 New Features in Shorewall 4.2.4.
 

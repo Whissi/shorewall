@@ -1,0 +1,171 @@
+#!/bin/sh
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
+#	On most distributions, this file should be called /etc/init.d/shorewall.
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Camipv6, MA 02139, USA
+#
+#	If an error occurs while starting or restarting the firewall, the
+#	firewall is automatically stopped.
+#
+#	Commands are:
+#
+#	   ipv6 start			  Starts ipv6
+#	   ipv6 restart			  Restarts ipv6
+#	   ipv6 reload			  Restarts ipv6
+#	   ipv6 stop			  Stops ipv6
+#	   ipv6 status		          Displays ipv6 status
+#
+
+# chkconfig: 2345 4 99
+# description: Configure a 6to4 tunnel
+
+### BEGIN INIT INFO
+# Provides:	  ipv6
+# Required-Start: boot.udev
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:	  0 1 6
+# Description:	  starts and stops ipv6
+### END INIT INFO
+
+################################################################################
+# Interfaces to be configured
+#
+# External Interface
+#
+SIT="sit1"
+#
+# If the external interface is a 6to4 tunnel (sit device) then specify the
+# IPv4 address here. Otherwise, leave this variable enpty
+#
+ADDRESS4=206.124.146.180
+#
+# Internal interfaces of the firewall -- space separated
+# 
+INTERFACES="eth0"
+#
+# Bits 48-63 of the first internal interface address. Will be incremented
+# for each additional internal interface.
+#
+SLA=1
+#
+# Default Gateway -- for 6to4, this is ::192.88.99.1
+#
+GATEWAY=::192.88.99.1
+#
+# For 6to4 configurations, the ADDRESS6 variable is calculated as follows.
+#
+# For other configurations, you need to specify ADDRESS6.
+#
+# ADDRESS6 is assumed to be a 48-bit prefix. If not, then the logic for
+# addressing on the internal networks needs to be replaced below.
+#
+ADDRESS6=$(printf 2002:%02x%02x:%02x%02x $(echo $ADDRESS4 | tr '.' ' '))
+#
+# The global address of $SIT
+#
+SITADDR=${ADDRESS6}::1
+################################################################################
+# Give Usage Information						       #
+################################################################################
+usage() {
+    echo "Usage: $0 start|stop|reload|restart|status"
+    exit 1
+}
+################################################################################
+# Start IPv6
+################################################################################
+do_start()
+{
+    local interface
+
+    if [ -n "$SIT" ]; then
+	if [ -n "$ADDRESS4" ]; then
+	    #
+	    # 6to4 -- create tunnel
+	    #
+	    modprobe sit
+	    /sbin/ip tunnel add $SIT mode sit ttl 64 remote any local $ADDRESS4
+	fi
+	#
+	# Configure the external IP address
+	#
+	/sbin/ip -6 addr add ${SITADDR} dev $SIT
+	[ -n "$ADDRESS4" ] && /sbin/ip link set dev $SIT up
+	[ -n "$GATEWAY"  ] && /sbin/ip -6 route add default via $GATEWAY dev $SIT metric 1
+    fi
+
+    for interface in $INTERFACES ; do
+	/sbin/ip -6 addr add ${ADDRESS6}:$SLA::1/64 dev $interface
+	SLA=$(($SLA + 1 ))
+    done
+}
+################################################################################
+# Stop IPv6
+################################################################################
+do_stop()
+{
+    local interface
+    local device
+    device=1
+    local original_sla
+    original_sli=$SLA
+
+    if [ -n "$SIT" ]; then
+	if [ -n "$ADDRESS4" ]; then
+	    /sbin/ip link set $SIT down
+	else
+	    /sbin/ip -6 addr del ${SITADDR} dev $SIT
+	    [ -n "$GATEWAY" ] && /sbin/ip -6 route del default via $GATEWAY dev $SIT metric 1
+	fi
+	[ -n "$ADDRESS4" ] && /sbin/ip tunnel del $SIT
+    fi
+
+    for interface in $INTERFACES; do
+	/sbin/ip -6 addr del ${ADDRESS6}:$SLA::1/64 dev $interface
+	SLA=$(($SLA + 1 ))
+    done
+
+    SLA=$original_sla #In case this is a restart/reload
+}
+################################################################################
+# E X E C U T I O N    B E G I N S   H E R E				       #
+################################################################################
+command="$1"
+
+case "$command" in
+    start)
+	do_start
+	;;
+    stop)
+	do_stop
+	;;
+    restart|reload)
+	do_stop
+	do_start
+	;;
+    status)
+	/sbin/ip -6 addr list
+	/sbin/ip -6 route list
+	;;
+    *)
+	usage
+	;;
+esac

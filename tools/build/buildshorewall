@@ -115,6 +115,7 @@ BUILDSHELL=
 BUILDLITE=
 PATCHRELEASE=
 PATCHNUM=
+BASEURL=http://www.shorewall.net
 
 SVN6BRANCH=
 SAMPLES6TAG=
@@ -401,6 +402,7 @@ case $VERSION in
 	SAMPLESTAG="tags/${BASEVERSION}/Samples"
 	MANPAGETAG="tags/${BASEVERSION}/manpages"
 	LITEMANPAGETAG="tags/${BASEVERSION}/manpages-lite"
+	BASEURL=http://www.shorewall.net/4.0
 	;;
      4.0.*)
 	SVNBRANCH="branches/4.0/Shorewall-common"
@@ -412,6 +414,7 @@ case $VERSION in
 	SAMPLESTAG="branches/4.0/Samples"
 	MANPAGETAG=branches/4.0/manpages
 	LITEMANPAGETAG=branches/4.0/manpages-lite
+	BASEURL=http://www.shorewall.net/4.0
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -606,16 +609,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages/ man $f >> $LOGFILE 2>&1"
 		case $f in
 		    *.conf.*|shorewall.xml)
 			;;
 		    *)
 			g=${f#shorewall-}
 			h=$(ls ${g%.xml}.[58])
-			mv $h shorewall-$h
+			f=shorewall-$h
+			mv $h $f
 			;;
 		esac
+
+		perl -p -w -i -e 's|/(4\.0/)?manpages/\.\.||' $f
 	    fi
 	done
 	rm *.xml
@@ -631,16 +637,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall6-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages6/ man $f >> $LOGFILE 2>&1"
 		case $f in
 		    *.conf.*|shorewall6.xml)
 			;;
 		    *)
 			g=${f#shorewall6-}
 			h=$(ls ${g%.xml}.[58])
-			mv $h shorewall6-$h
+			f=shorewall6-$h
+			mv $h $f
 			;;
 		esac
+
+		perl -p -w -i -e 's|/manpages6/\.\.||' $f
 	    fi
 	done
 	rm *.xml
@@ -655,16 +664,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages/ man $f >> $LOGFILE 2>&1"
 		case $f in
 		    *.conf.*|shorewall-lite.xml)
 			;;
 		    *)
 			g=${f#shorewall-lite-}
 			h=$(ls ${g%.xml}.[58])
-			mv $h shorewall-lite-$h
+			f=shorewall-lite-$h
+			mv $h $f
 			;;
 		esac
+
+		perl -p -w -i -e 's|/(4\.0/)?manpages/\.\.||' $f
 	    fi
 	done
 	rm *.xml
@@ -679,16 +691,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	for f in *.xml; do
 	    if [ $f != shorewall6-template.xml ]; then
 		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation man $f >> $LOGFILE 2>&1"
+		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages6/ man $f >> $LOGFILE 2>&1"
 		case $f in
 		    *.conf.*|shorewall6-lite.xml)
 			;;
 		    *)
 			g=${f#shorewall6-lite-}
 			h=$(ls ${g%.xml}.[58])
-			mv $h shorewall6-lite-$h
+			f=shorewall6-lite-$h
+			mv $h $f
 			;;
 		esac
+
+		perl -p -w -i -e 's|/manpages6/\.\.||' $f
 	    fi
 	done
 	rm *.xml

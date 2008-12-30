@@ -22,7 +22,7 @@ the
 license is included in the section entitled <span
  style="text-decoration: underline;">"</span><a href="GnuCopyright.htm"
  target="_self">GNU Free Documentation License</a>".</p>
-<p>2008-12-22</p>
+<p>2008-12-31</p>
 <hr style="width: 100%; height: 2px;">
 <h2><a style="color: rgb(255, 0, 0);" target="_top"
  href="http://wiki.shorewall.net/wiki/LogoDesignCompetition">Check out
@@ -72,6 +72,22 @@ Netfilter. The term 'iptables' is often used to refer to the
 combination of iptables+Netfilter (with Netfilter not in ipchains
 compatibility mode).</p>
   </li>
+  <li>iptables-restore - a utility program that used to configure and
+control Netfilter. Unlike iptables, which performs only one operation
+per execution, iptables-restore can configure an entire ruleset in one
+execution. It takes much less time to configure a firewall using
+iptables-restore than it does using iptables.<br>
+    <br>
+  </li>
+  <li>Shorewall-shell - the legacy Shorewall rules compiler written in
+Bourne Shell. It generates a shell script that uses iptables to
+configure the firewall.<br>
+    <br>
+  </li>
+  <li>Shorewall-perl - a Shorewall rules compiler written in Perl. It
+generates a shell script that uses iptables-restore to configure the
+firewall.<br>
+  </li>
 </ul>
 <h3><a name="WhatIs"></a>What is Shorewall?</h3>
 <p style="margin-left: 0.42in;">The Shoreline Firewall, more commonly
@@ -80,9 +96,10 @@ as "Shorewall", is a high-level tool for configuring Netfilter. You
 describe
 your firewall/gateway requirements using entries in a set of
 configuration
-files. Shorewall reads those configuration files and with the help of
-the
-iptables utility, Shorewall configures Netfilter to match your
+files. Shorewall reads those configuration files and generates a shell
+script. That shell script&nbsp; uses the
+iptables or iptables-restore utility to configure Netfilter to match
+your
 requirements.
 Shorewall can be used on a dedicated firewall system, a multi-function
 gateway/router/server or on a standalone GNU/Linux system. Shorewall
@@ -90,8 +107,10 @@ does not
 use Netfilter's ipchains compatibility mode; as a consequence,
 Shorewall can
 take advantage of Netfilter's connection state tracking capabilities to
-create a stateful firewall.<br>
-<br>
+create a stateful firewall.</p>
+<p style="margin-left: 0.42in;">The current version of
+Shorewall can configure both IPv4 and IPv6 firewalls.<br>
+&nbsp;<br>
 Shorewall is <u>not</u> a daemon. Once Shorewall has configured
 Netfilter,
 it's job is complete and there is no Shorewall code left running in the
@@ -131,7 +150,8 @@ Features page</a>.<br>
 </p>
 <h3><a name="Releases"></a>Current Shorewall Releases</h3>
 <p style="margin-left: 40px;">The <span style="font-weight: bold;">current
-Stable Release</span> version is 4.2.3<br>
+Stable Release</span> version is 4.2.4 which contains <a
+ href="IPv6Support.html">IPv6 support.</a><br>
 </p>
 <ul style="margin-left: 40px;">
   <li>Here are the <a
@@ -141,7 +161,8 @@ notes</a> <br>
   <li>Here are the <a
  href="http://www1.shorewall.net/pub/shorewall/4.2/shorewall-4.2.3/known_problems.txt">known
 problems</a>.
-    <p>Read more about the <a href="Shorewall-4.html">Release here</a>.<br>
+    <p>Read more about the Shorewall <a href="Shorewall-4.html">4.x
+releases here</a>.<br>
     </p>
   </li>
 </ul>
@@ -161,19 +182,10 @@ problems</a>.</li>
 </div>
 <div style="margin-left: 40px;">
 <p>The <span style="font-weight: bold;">current Development Release</span>
-version is 4.2.4-RC2 which includes support for IPv6<br>
+series is 4.3. There is currently no 4.3 code released.<br>
 </p>
 <ul>
-  <li>Here are the <a
- href="http://www1.shorewall.net/pub/shorewall/development/4.2/shorewall-4.2.4-RC2/releasenotes.txt">release
-notes</a></li>
-  <li>Download it <a
- href="http://www.shorewall.net/pub/shorewall/development/4.2/shorewall-4.2.4-RC1">here.</a><br>
-  </li>
 </ul>
-<p>&nbsp;&nbsp;&nbsp; Read about <a href="IPv6Support.html">Shorewall
-IPv6 Support</a>.<br>
-</p>
 <ul>
 </ul>
 <p>Get them from the <a href="download.htm">download sites</a></p>

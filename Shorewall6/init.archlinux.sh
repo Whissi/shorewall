@@ -2,25 +2,25 @@
 
 OPTIONS="-f"
 
-if [ -f /etc/sysconfig/shorewall ] ; then
-	. /etc/sysconfig/shorewall
-elif [ -f /etc/default/shorewall ] ; then
-	. /etc/default/shorewall
+if [ -f /etc/sysconfig/shorewall6 ] ; then
+	. /etc/sysconfig/shorewall6
+elif [ -f /etc/default/shorewall6 ] ; then
+	. /etc/default/shorewall6
 fi
 
-# if you want to override options, do so in /etc/sysconfig/shorewall or
-# in /etc/default/shorewall --
+# if you want to override options, do so in /etc/sysconfig/shorewall6 or
+# in /etc/default/shorewall6 --
 # i strongly encourage you use the latter, since /etc/sysconfig/ does not exist.
 
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-DAEMON_NAME="shorewall" # of course shorewall is NOT a deamon.
+DAEMON_NAME="shorewall6" # of course shorewall6 is NOT a deamon.
 
 case "$1" in
 	start)
 		stat_busy "Starting $DAEMON_NAME"
-		/sbin/shorewall $OPTIONS start &>/dev/null
+		/sbin/shorewall6 $OPTIONS start &>/dev/null
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else
@@ -32,7 +32,7 @@ case "$1" in
 
 	stop)
 		stat_busy "Stopping $DAEMON_NAME"
-		/sbin/shorewall stop &>/dev/null
+		/sbin/shorewall6 stop &>/dev/null
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else
@@ -43,7 +43,7 @@ case "$1" in
 
 	restart|reload)
 		stat_busy "Restarting $DAEMON_NAME"
-		/sbin/shorewall restart &>/dev/null
+		/sbin/shorewall6 restart &>/dev/null
 		if [ $? -gt 0  ]; then
 			stat_fail
 		else

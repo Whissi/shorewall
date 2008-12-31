@@ -788,7 +788,14 @@ setup_routing_and_traffic_shaping
 if [ $COMMAND = restore ]; then
     iptables_save_file=${VARDIR}/$(basename $0)-iptables
     if [ -f $iptables_save_file ]; then
-        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux
+EOF
+    if ( $family == F_IPV4 ) {
+        emit '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
+    } else {
+        emit '        cat $iptables_save_file | $IP6TABLES_RESTORE # Use this nonsensical form to appease SELinux'
+    }
+
+    emit<<'EOF';
     else
         fatal_error "$iptables_save_file does not exist"
     fi

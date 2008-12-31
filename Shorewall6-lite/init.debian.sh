@@ -57,15 +57,15 @@ not_configured () {
 
 # parse the shorewall params file in order to use params in
 # /etc/default/shorewall
-if [ -f "/etc/shorewall-lite/params" ]
+if [ -f "/etc/shorewall6-lite/params" ]
 then
-	. /etc/shorewall-lite/params
+	. /etc/shorewall6-lite/params
 fi
 
 # check if shorewall is configured or not
 if [ -f "/etc/default/shorewall6-lite" ]
 then
-	. /etc/default/shorewall-lite
+	. /etc/default/shorewall6-lite
 	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then

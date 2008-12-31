@@ -253,9 +253,9 @@ save_config() {
     
     iptables_save=${IP6TABLES}-save
 
-    [ -x $iptables_save ] || echo "$ip6tables-save does not exist or is not executable" >&2
+    [ -x $iptables_save ] || echo "$iptables_save does not exist or is not executable" >&2
 
-    if shorewall66_is_started ; then
+    if shorewall6_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
 	if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
@@ -268,10 +268,10 @@ save_config() {
 		*)
 		    validate_restorefile RESTOREFILE
 
-		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
+		    if $IP6TABLES -L dynamic -n > ${VARDIR}/save; then
 			echo "   Dynamic Rules Saved"
 			if [ -f ${VARDIR}/.restore ]; then
-			    if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
+			    if $iptables_save > ${VARDIR}/restore-$$; then
 				cp -f ${VARDIR}/.restore $RESTOREPATH
 				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
 				chmod +x $RESTOREPATH
@@ -755,8 +755,8 @@ restore_command() {
     if [ -x $RESTOREPATH ]; then
 	if [ -x ${RESTOREPATH}-ipsets ] ; then
 	    echo Restoring Ipsets...
-	    iptables -F
-	    iptables -X
+	    $IP6TABLES -F
+	    $IP6TABLES -X
 	    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 	fi
 

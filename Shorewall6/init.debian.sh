@@ -58,7 +58,7 @@ not_configured () {
 # check if shorewall is configured or not
 if [ -f "/etc/default/shorewall6" ]
 then
-	. /etc/default/shorewall
+	. /etc/default/shorewall6
 	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then

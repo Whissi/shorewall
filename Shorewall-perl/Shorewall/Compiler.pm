@@ -782,13 +782,12 @@ sub generate_script_3($) {
 
     emit '';
 
-    emit<<'EOF';
-setup_routing_and_traffic_shaping
+    emit( 'setup_routing_and_traffic_shaping',
+	  '',
+	  'if [ $COMMAND = restore ]; then',
+	  '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
+	  '    if [ -f $iptables_save_file ]; then' );
 
-if [ $COMMAND = restore ]; then
-    iptables_save_file=${VARDIR}/$(basename $0)-iptables
-    if [ -f $iptables_save_file ]; then
-EOF
     if ( $family == F_IPV4 ) {
         emit '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
     } else {

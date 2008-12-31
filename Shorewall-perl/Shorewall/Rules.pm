@@ -347,10 +347,10 @@ sub setup_blacklist() {
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network    = $hostref->[2];
 	    my $source     = match_source_net $network;
-	    my $target     = source_exclusion( $hostref->[3], 'blacklst' );
+	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for my $chain ( first_chains $interface ) {
-		add_rule $filter_table->{$chain} , "${source}${state}${policy}-j $target";
+		add_jump $filter_table->{$chain} , $chainref, 0, "${source}${state}${policy}";
 	    }
 
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -1759,7 +1759,7 @@ sub generate_matrix() {
 			    add_jump( $outputref , $nextchain, 0, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
 				if $hostref->{options}{broadcast};
 
-			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$nextchain} ) unless use_output_chain $interface;
+			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$chain1} ) unless use_output_chain $interface;
 			}
 
 			clearrule;
@@ -1792,11 +1792,8 @@ sub generate_matrix() {
 			}
 			
 			if ( $chain2 ) {
-			    my $nextchain = source_exclusion( $exclusions, $chain2 );
-			    
-			    add_jump $inputchainref, $nextchain, 0, join( '', $interfacematch, $source, $ipsec_in_match );
-
-			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$nextchain} ) unless use_input_chain $interface;
+			    add_jump $inputchainref, source_exclusion( $exclusions, $chain2 ), 0, join( '', $interfacematch, $source, $ipsec_in_match );
+			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$chain2} ) unless use_input_chain $interface;
 			}
 
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {

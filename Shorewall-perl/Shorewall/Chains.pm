@@ -2749,12 +2749,18 @@ sub create_chainlist_reload($) {
 	emit(  'exec 3>&-',
 	       '',
 	       'progress_message2 "Running iptables-restore..."',
-	       '',
-	       'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
-	       'if [ $? != 0 ]; then',
+	       '' );
+
+	if ( $family == F_IPV4 ) {
+	    emit ( 'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux' );
+	} else {
+	    emit ( 'cat ${VARDIR}/.iptables-restore-input | $IP6TABLES_RESTORE -n # Use this nonsensical form to appease SELinux' );
+	}
+
+	emit ( 'if [ $? != 0 ]; then',
 	       '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
 	       "fi\n"
-	    );
+	     );
     } else {
 	emit('true');
     }

@@ -383,7 +383,7 @@ sub process_criticalhosts() {
 
 	for my $host ( split_list $hosts, 'host' ) {
 	    validate_host $host, 1;
-	    push @hosts, "$interface:$host";
+	    push @hosts, "$interface|$host";
 	}
 
 	unless ( $options eq '-' ) {

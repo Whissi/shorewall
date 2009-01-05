@@ -1310,7 +1310,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <programlisting>#NAME  NUMBER MARK  DUPLICATE INTERFACE GATEWAY         OPTIONS      COPY
 Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose  eth2,eth4,tun*
-Comcast     2 0x200 mai       eth3      detect          track        eth2,eth4,tun*
+Comcast     2 0x200 main      eth3      detect          track        eth2,eth4,tun*
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
     <para>The <emphasis role="bold">loose</emphasis> option on Avvanta results
@@ -1331,7 +1331,10 @@ Comcast     2 0x200 mai       eth3      detect          track        eth2,eth4,t
     <para>The <filename>/etc/shorewall/route_rules </filename>entries provide
     all of the provider selection necessary so my
     <filename>/etc/shorewall/tcrules</filename> file is used exclusively for
-    traffic shaping of the Avvanta line.</para>
+    traffic shaping of the Avvanta line. Note that I still need to provide
+    values in the MARK colum of <filename>/etc/shorewall/providers</filename>
+    because I specify <emphasis role="bold">track</emphasis> on both
+    providers.</para>
 
     <para>Here is the output of <command>shorewall show
     routing</command>:</para>

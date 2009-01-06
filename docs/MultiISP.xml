@@ -462,6 +462,20 @@
                   the INTERFACE column is assumed.</para>
                 </listitem>
               </varlistentry>
+
+              <varlistentry>
+                <term>default_rt (Added in Shorewall-perl 4.2.5)</term>
+
+                <listitem>
+                  <para>Indicates that a default route through the provider
+                  should be added to the default routing table (table 253).
+                  The route is added with a metric equal to the provider
+                  NUMBER so multiple providers can have this option. The
+                  option is ignored with a warning message if
+                  USE_DEFAULT_RT=Yes in
+                  <filename>shorewall.conf</filename>.</para>
+                </listitem>
+              </varlistentry>
             </variablelist>
 
             <para>For those of you who are terminally confused
@@ -1256,7 +1270,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
     </section>
   </section>
 
-  <section>
+  <section id="Complete">
     <title>A Complete Working Example</title>
 
     <para>This section describes the network at shorewall.net early in 2009.
@@ -1298,9 +1312,30 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <para>Because of the speed of the cable provider, all traffic uses that
     provider unless there is a specific need for the traffic to use the DSL
-    line. As a consequence, I have disabled all route filtering on the
+    line.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Responses to connections from the Internet to one of the DSL IP
+        addresses -- the <emphasis role="bold">track</emphasis> option takes
+        care of that.</para>
+      </listitem>
+
+      <listitem>
+        <para>Connections initiated by the server and connection requested by
+        clients on the firewall that have bound their local socket to one of
+        the DSL IP addresses. Two entries in
+        <filename>/etc/shorewall/route_rules</filename> take care of that
+        traffic.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>As a consequence, I have disabled all route filtering on the
     firewall and do not use the <emphasis role="bold">balance</emphasis>
-    option in <filename>/etc/shorewall/providers</filename>.</para>
+    option in <filename>/etc/shorewall/providers</filename>. The default route
+    in the main table is established by DHCP. By specifying the
+    <emphasis>default_rt</emphasis> option on Avvanta, I ensure that there is
+    a default route when Comcast is down.</para>
 
     <para><filename>/etc/sysctl.conf</filename>:</para>
 
@@ -1308,9 +1343,9 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <para><filename>/etc/shorewall/providers</filename>:</para>
 
-    <programlisting>#NAME  NUMBER MARK  DUPLICATE INTERFACE GATEWAY         OPTIONS      COPY
-Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose  eth2,eth4,tun*
-Comcast     2 0x200 main      eth3      detect          track        eth2,eth4,tun*
+    <programlisting>#NAME  NUMBER MARK  DUPLICATE INTERFACE GATEWAY         OPTIONS                 COPY
+Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose,default_rt  eth2,eth4,tun*
+Comcast     2 0x200 main      eth3      detect          track                   eth2,eth4,tun*
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
     <para>The <emphasis role="bold">loose</emphasis> option on Avvanta results
@@ -1369,6 +1404,8 @@ Table Comcast:
 default via 71.227.156.1 dev eth3  src 71.227.156.229 
 
 Table default:
+
+default via 206.124.146.254 dev eth0 metric 1
 
 Table local:
 

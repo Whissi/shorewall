@@ -299,7 +299,7 @@ sub initialize( $ ) {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
-		    VERSION => "4.2.4-RC3",
+		    VERSION => "4.2.4",
 		    CAPVERSION => 40203 ,
 		  );
     #
@@ -995,7 +995,7 @@ sub create_temp_object( $ ) {
     fatal_error "A compiled script may not be named 'shorewall'" if "$file" eq 'shorewall' && $suffix eq '';
 
     eval {
-	$dir = abs_path $dir;
+	$dir = abs_path $dir unless $dir =~ m|^/|; # Work around http://rt.cpan.org/Public/Bug/Display.html?id=1385
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 

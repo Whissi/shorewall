@@ -254,6 +254,21 @@ our $mode;
 our $family;
 
 #
+# These are the zone-oriented builtin targets
+#
+our %builtin_target = ( ACCEPT   => 1,
+			REJECT   => 1,
+			DROP     => 1,
+			RETURN   => 1,
+			DNAT     => 1,
+			SAME     => 1,
+			LOG      => 1,
+			NFLOG    => 1,
+			QUEUE    => 1,
+			NFQUEUE  => 1,
+			REDIRECT => 1 );
+
+#
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
 #                       initialize() function does globals initialization for this
@@ -471,7 +486,7 @@ sub add_rule($$;$)
 	push_rule ( $chainref, $rule );
     }
 }
-
+		 
 #
 # Add a jump from the chain represented by the reference in the first argument to
 # the target in the second argument. The optional third argument specifies any
@@ -494,7 +509,7 @@ sub add_jump( $$$;$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless ( $targets{$to} || 0 ) & STANDARD;
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{ $to };
     }
     
     #
@@ -525,7 +540,6 @@ sub insert_rule($$$)
     $iprangematch = 0;
 
     $chainref->{referenced} = 1;
-
 }
 
 #
@@ -769,7 +783,7 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
 
-    fatal_error "Internal error in new_chain()" if $chain_table{$table}{$chain};
+    fatal_error "Internal error in new_chain()" if $chain_table{$table}{$chain} || $builtin_target{ $chain };
 
     $chain_table{$table}{$chain} = { name      => $chain,
 				     rules     => [],
@@ -1136,33 +1150,29 @@ sub newexclusionchain() {
 # one for destination exclusion.
 #
 sub source_exclusion( $$ ) {
-    my ( $exclusions, $targetref ) = @_;
+    my ( $exclusions, $target ) = @_;
     
-    return $targetref unless @$exclusions;
-    
-    $targetref = ensure_filter_chain( $targetref, 0 ) unless reftype $targetref;
-    
-    my $chainref = new_chain( $targetref->{table}, newexclusionchain );
-    
+    return $target unless @$exclusions;
+
+    my $chainref = new_chain( reftype $target ? $target->{table} : 'filter' , newexclusionchain );
+
     add_rule( $chainref, match_source_net( $_ ) . '-j RETURN' ) for @$exclusions;
-    add_jump( $chainref, $targetref, 1 );
+    add_jump( $chainref, $target, 1 );
     
-    reftype $_[1] ? $chainref : $chainref->{name};
+    reftype $target ? $chainref : $chainref->{name};
 }
 
 sub dest_exclusion( $$ ) {
-    my ( $exclusions, $targetref ) = @_;
+    my ( $exclusions, $target ) = @_;
     
-    return $targetref unless @$exclusions;
+    return $target unless @$exclusions;
     
-    $targetref = ensure_filter_chain( $targetref, 0 ) unless reftype $targetref;
-    
-    my $chainref = new_chain( $targetref->{table}, newexclusionchain );
-    
+    my $chainref = new_chain( reftype $target ? $target->{table} : 'filter' , newexclusionchain );
+
     add_rule( $chainref, match_dest_net( $_ ) . '-j RETURN' ) for @$exclusions;
-    add_jump( $chainref, $targetref, 1 );
+    add_jump( $chainref, $target, 1 );
     
-    reftype $_[1] ? $targetref : $targetref->{name};
+    reftype $target ? $chainref : $chainref->{name};
 }
 
 sub clearrule() {

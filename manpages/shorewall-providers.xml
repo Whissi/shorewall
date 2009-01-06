@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall-providers</refentrytitle>
@@ -97,7 +99,7 @@
           previously listed provider. You may select only certain entries from
           the table to copy by using the COPY column below. This column should
           contain a dash ("-') when USE_DEFAULT_RT=Yes in <ulink
-          url="shorewall.conf.html">shorewall.conf(5)</ulink>. </para>
+          url="shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -199,7 +201,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term>src=<replaceable>source-address</replaceable></term>
+              <term><emphasis
+              role="bold">src=</emphasis><replaceable>source-address</replaceable></term>
 
               <listitem>
                 <para>Added in Shorewall-perl 4.1.5. Specifies the source
@@ -213,12 +216,27 @@
             </varlistentry>
 
             <varlistentry>
-              <term>mtu=<replaceable>number</replaceable></term>
+              <term><emphasis
+              role="bold">mtu=</emphasis><replaceable>number</replaceable></term>
 
               <listitem>
                 <para>Added in Shorewall-perl 4.1.5. Specifies the MTU when
                 forwarding through this provider. If not given, the MTU of the
                 interface named in the INTERFACE column is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">default_rt</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall-perl 4.2.5. Indicates that a default
+                route through the provider should be added to the default
+                routing table (table 253). The route is added with a metric
+                equal to the provider NUMBER so multiple providers can have
+                this option. The option is ignored with a warning message if
+                USE_DEFAULT_RT=Yes in
+                <filename>shorewall.conf</filename>.</para>
               </listitem>
             </varlistentry>
           </variablelist>

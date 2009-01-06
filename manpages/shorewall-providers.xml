@@ -227,15 +227,16 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">default_rt</emphasis></term>
+              <term><emphasis
+              role="bold">fallback[=<replaceable>weight</replaceable>]</emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall-perl 4.2.5. Indicates that a default
-                route through the provider should be added to the default
-                routing table (table 253). The route is added with a metric
-                equal to the provider NUMBER so multiple providers can have
-                this option. The option is ignored with a warning message if
-                USE_DEFAULT_RT=Yes in
+                <para>Added in Shorewall-perl 4.2.5. Indicates that a balanced
+                default route through the provider should be added to the
+                default routing table (table 253). The route is added with a
+                weight equal to the specified
+                <replaceable>weight</replaceable> (default 1). The option is
+                ignored with a warning message if USE_DEFAULT_RT=Yes in
                 <filename>shorewall.conf</filename>.</para>
               </listitem>
             </varlistentry>

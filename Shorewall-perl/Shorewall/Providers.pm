@@ -47,8 +47,10 @@ our @routemarked_providers;
 our %routemarked_interfaces;
 our @routemarked_interfaces;
 
-our $balance;
+our $balancing;
+our $fallback;
 our $first_default_route;
+our $first_fallback_route;
 
 our %providers;
 
@@ -71,8 +73,10 @@ sub initialize( $ ) {
     @routemarked_providers = ();
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
-    $balance             = 0;
-    $first_default_route = 1;
+    $balancing           = 0;
+    $fallback            = 0;
+    $first_default_route  = 1;
+    $first_fallback_route = 1;
     
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
@@ -170,7 +174,7 @@ sub copy_and_edit_table( $$$$ ) {
 sub balance_default_route( $$$$ ) {
     my ( $weight, $gateway, $interface, $realm ) = @_;
 
-    $balance = 1;
+    $balancing = 1;
 
     emit '';
 
@@ -189,6 +193,39 @@ sub balance_default_route( $$$$ ) {
 	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight $realm\"";
 	}
     }
+}
+
+sub balance_fallback_route( $$$$ ) {
+    my ( $weight, $gateway, $interface, $realm ) = @_;
+
+    $fallback = 1;
+
+    emit '';
+
+    if ( $first_fallback_route ) {
+	if ( $gateway ) {
+	    emit "FALLBACK_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	} else {
+	    emit "FALLBACK_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	}
+
+	$first_fallback_route = 0;
+    } else {
+	if ( $gateway ) {
+	    emit "FALLBACK_ROUTE=\"\$FALLBACK_ROUTE nexthop via $gateway dev $interface weight $weight $realm\"";
+	} else {
+	    emit "FALLBACK_ROUTE=\"\$FALLBACK_ROUTE nexthop dev $interface weight $weight $realm\"";
+	}
+    }
+}
+
+sub start_provider( $$ ) {
+    my ($table, $number ) = @_;
+
+    emit "#\n# Add Provider $table ($number)\n#";
+
+    emit "qt ip -$family route flush table $number";
+    emit "echo \"qt ip -$family route flush table $number\" >> \${VARDIR}/undo_routing";
 }
 
 sub add_a_provider( $$$$$$$$ ) {
@@ -221,27 +258,27 @@ sub add_a_provider( $$$$$$$$ ) {
 
     my $provider = chain_base $table;
     my $base     = uc chain_base $interface;
-    
-    emit "#\n# Add Provider $table ($number)\n#";
-
-    emit "if interface_is_usable $interface; then";
-    push_indent;
-
-    emit "qt ip -$family route flush table $number";
-    emit "echo \"qt ip -$family route flush table $number\" >> \${VARDIR}/undo_routing";
 
     if ( $gateway eq 'detect' ) {
 	fatal_error "'detect' is not allowed with USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
-    } elsif ( $gateway && $gateway ne '-' ) {
-	validate_address $gateway, 0;
+	emit qq(if interface_is_usable $interface && [ -n "$gateway" ]; then);
+	push_indent;
+	start_provider( $table, $number );
     } else {
-	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
-	$gateway = '';
-	emit "run_ip route add default dev $interface table $number";
-    }
+	emit "if interface_is_usable $interface; then";
+	push_indent;
+	start_provider( $table, $number );
 
+	if ( $gateway && $gateway ne '-' ) {
+	    validate_address $gateway, 0;
+	} else {
+	    fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
+	    $gateway = '';
+	    emit "run_ip route add default dev $interface table $number";
+	}
+    }
     my $val = 0;
 
     if ( $mark ne '-' ) {
@@ -271,13 +308,14 @@ sub add_a_provider( $$$$$$$$ ) {
 	     );
     }
 
-    my ( $loose, $track, $balance , $default_balance, $optional, $mtu ) = (0,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
+    my ( $loose, $track, $balance , $default, $default_balance, $optional, $mtu ) = (0,0,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
 	    if ( $option eq 'track' ) {
 		$track = 1;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
+		fatal_error q('balance' is not available in IPv6) if $family == F_IPV6;
 		$balance = $1;
 	    } elsif ( $option eq 'balance' ) {
 		fatal_error q('balance' is not available in IPv6) if $family == F_IPV6;
@@ -293,6 +331,20 @@ sub add_a_provider( $$$$$$$$ ) {
 		$address = validate_address( $1 , 1 );
 	    } elsif ( $option =~ /^mtu=(\d+)$/ ) {
 		$mtu = "mtu $1 ";
+	    } elsif ( $option =~ /^fallback=(\d+)$/ ) {
+		fatal_error q('fallback' is not available in IPv6) if $family == F_IPV6;
+		if ( $config{USE_DEFAULT_RT} ) {
+		    warning_message "'fallback' is ignored when USE_DEFAULT_RT=Yes";
+		} else {
+		    $default = $1;
+		}
+	    } elsif ( $option eq 'fallback' ) {
+		fatal_error q('fallback' is not available in IPv6) if $family == F_IPV6;
+		if ( $config{USE_DEFAULT_RT} ) {
+		    warning_message "'fallback' is ignored when USE_DEFAULT_RT=Yes";
+		} else {
+		    $default = 1;
+		}
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -307,7 +359,8 @@ sub add_a_provider( $$$$$$$$ ) {
 			   interface => $interface ,
 			   optional  => $optional ,
 			   gateway   => $gateway ,
-			   shared    => $shared };
+			   shared    => $shared ,
+			   default   => $default };
 
     if ( $track ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
@@ -356,6 +409,7 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     balance_default_route $balance , $gateway, $interface, $realm if $balance;
+    balance_fallback_route $default , $gateway, $interface, $realm if $default;
 
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
@@ -531,6 +585,8 @@ sub setup_providers() {
 	    save_progress_message 'Adding Providers...';
 
 	    emit 'DEFAULT_ROUTE=';
+	    emit 'FALLBACK_ROUTE=';
+	    emit '';
 	}
 
 	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
@@ -546,7 +602,7 @@ sub setup_providers() {
     }
 
     if ( $providers ) {
-	if ( $balance ) {
+	if ( $balancing ) {
 	    my $table = MAIN_TABLE;
 
 	    if ( $config{USE_DEFAULT_RT} ) {
@@ -571,7 +627,16 @@ sub setup_providers() {
 	    emit ( '#',
 		   '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
 		   '#',
-		   'restore_default_route' );
+		   'restore_default_route' ,
+		   '' );
+	}
+
+	if ( $fallback ) {
+	    emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' ,
+		    "    run_ip route replace default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" ,
+		    "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
+		    'fi',
+		    '' );
 	}
 
 	unless ( $config{KEEP_RT_TABLES} ) {

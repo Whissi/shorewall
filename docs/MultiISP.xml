@@ -306,8 +306,8 @@
 
                   <para>You want to specify 'track' if Internet hosts will be
                   connecting to local servers through this provider. Any time
-                  that you specify 'track', you will also want to specify
-                  'balance' (see below).</para>
+                  that you specify 'track', you will normally want to also
+                  specify 'balance' (see below).</para>
 
                   <para>Use of this feature requires that your kernel and
                   iptables include CONNMARK target and connmark match support
@@ -371,9 +371,10 @@
                     specify 'balance' even if you don't need it. You can still
                     use entries in <filename>/etc/shorewall/tcrules</filename>
                     to force all traffic to one provider or another.<note>
-                        <para>If you don't heed this advice then be prepared
-                        to read <ulink url="FAQ.htm#faq57">FAQ 57</ulink> and
-                        <ulink url="FAQ.htm#faq58">FAQ 58</ulink>.</para>
+                        <para>If you don't heed this advice then please read
+                        and follow the advice in <ulink
+                        url="FAQ.htm#faq57">FAQ 57</ulink> and <ulink
+                        url="FAQ.htm#faq58">FAQ 58</ulink>.</para>
                       </note></para>
                   </important>
 
@@ -469,11 +470,15 @@
                 (Added in Shorewall-perl 4.2.5)</emphasis></term>
 
                 <listitem>
-                  <para>Indicates that a balanced default route through the
-                  provider should be added to the default routing table (table
-                  253). The route is added with a weight equal to the
-                  specified <replaceable>weight</replaceable> (default 1). The
-                  option is ignored with a warning message if
+                  <para>Indicates that a default route through the provider
+                  should be added to the default routing table (table 253). If
+                  a <replaceable>weight</replaceable> is given, a balanced
+                  route is added with the weight of this provider equal to the
+                  specified <replaceable>weight</replaceable>. If the option
+                  is given without a <replaceable>weight</replaceable>, an
+                  separate default route is added through the provider's
+                  gateway; the route has a metric equal to the provider's
+                  NUMBER. The option is ignored with a warning message if
                   USE_DEFAULT_RT=Yes in
                   <filename>shorewall.conf</filename>.</para>
                 </listitem>
@@ -1324,7 +1329,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
       </listitem>
 
       <listitem>
-        <para>Connections initiated by the server and connection requested by
+        <para>Connections initiated by the server and connections requested by
         clients on the firewall that have bound their local socket to one of
         the DSL IP addresses. Two entries in
         <filename>/etc/shorewall/route_rules</filename> take care of that
@@ -1335,18 +1340,22 @@ wlan0                   192.168.0.0/24</programlisting><note>
     <para>As a consequence, I have disabled all route filtering on the
     firewall and do not use the <emphasis role="bold">balance</emphasis>
     option in <filename>/etc/shorewall/providers</filename>. The default route
-    in the main table is established by DHCP. By specifying the
-    <emphasis>default_rt</emphasis> option on Avvanta, I ensure that there is
-    a default route when Comcast is down.</para>
+    in the main table is established by DHCP. By specifying the <emphasis
+    role="bold">fallback</emphasis> option on Avvanta, I ensure that there is
+    still a default route if Comcast is down.</para>
 
     <para><filename>/etc/sysctl.conf</filename>:</para>
 
     <programlisting>net.ipv4.conf.all.rp_filter = 0</programlisting>
 
+    <para><filename>/etc/shorewall/shorewall.conf</filename>:</para>
+
+    <programlisting>ROUTE_FILTER=No</programlisting>
+
     <para><filename>/etc/shorewall/providers</filename>:</para>
 
     <programlisting>#NAME  NUMBER MARK  DUPLICATE INTERFACE GATEWAY         OPTIONS                 COPY
-Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose,default_rt  eth2,eth4,tun*
+Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose,fallback    eth2,eth4,tun*
 Comcast     2 0x200 main      eth3      detect          track                   eth2,eth4,tun*
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
@@ -1355,14 +1364,17 @@ Comcast     2 0x200 main      eth3      detect          track                   
     traffic from Avvanta-assigned IP addresses is sent via the Avvanta
     provider. Note that because the Comcast line has a dynamic IP address, I
     am not able to use USE_DEFAULT_RT=Yes in
-    <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+    <filename>/etc/shorewall/shorewall.conf</filename>. The 'tun*' included in
+    the COPY column is there because I run a routed OpenVPN server on the
+    firewall.</para>
 
     <para><filename>/etc/shorewall/route_rules</filename>:</para>
 
-    <programlisting>#SOURCE            DEST         PROVIDER PRIORITY
-206.124.146.176/30 -            Avvanta  26000
-206.124.146.180    -            Avvanta  26000
--                  216.168.3.44 Avvanta  26000   # Avvanta NNTP Server -- verifies source IP address
+    <programlisting>#SOURCE            DEST           PROVIDER PRIORITY
+-                  162.20.0.0.24  main     1000    # Addresses assigned by routed OpenVPN server
+206.124.146.176/30 -              Avvanta  26000
+206.124.146.180    -              Avvanta  26000
+-                  216.168.3.44   Avvanta  26000   # Avvanta NNTP Server -- verifies source IP address
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
     <para>The <filename>/etc/shorewall/route_rules </filename>entries provide
@@ -1378,7 +1390,8 @@ Comcast     2 0x200 main      eth3      detect          track                   
 
     <programlisting>Routing Rules
 
-0:     from all lookup local 
+0:     from all lookup local
+1000:  from all to 172.20.0.0/24 lookup main 
 10000: from all fwmark 0x100 lookup Avvanta 
 10001: from all fwmark 0x200 lookup Comcast 
 20256: from 71.227.156.229 lookup Comcast 
@@ -1462,7 +1475,8 @@ eth0        !206.124.146.0/24 206.124.146.179
 
     <para>All traffic leaving eth3 must use the dynamic IP address assigned to
     that interface as the SOURCE address. All traffic leaving eth0 that does
-    not have an address falling within the Avvanta subnet (206.124.146.0/24)
-    must have its SOURCE address changed to 206.124.146.179.</para>
+    not have a SOURCE address falling within the Avvanta subnet
+    (206.124.146.0/24) must have its SOURCE address changed to
+    206.124.146.179.</para>
   </section>
 </article>

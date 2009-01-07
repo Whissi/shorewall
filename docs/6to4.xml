@@ -105,11 +105,17 @@
 
       <para>Here is the file from my firewall:</para>
 
-      <para>eth0 is the interface to my local network (both wired and
-      wireless). eth2 goes to my DMZ which holds a single server. Here is a
+      <programlisting>SIT="sit1"
+ADDRESS4=206.124.146.180
+INTERFACES="eth2 eth4"
+SLA=1
+GATEWAY=::192.88.99.1</programlisting>
+
+      <para>eth3 is the interface to my local network (both wired and
+      wireless). eth4 goes to my DMZ which holds a single server. Here is a
       diagram of the IPv4 network:</para>
 
-      <graphic align="center" fileref="images/Network2008b.png" />
+      <graphic align="center" fileref="images/Network2009.png" />
 
       <para>Here is the configuration after IPv6 is configured; the part in
       bold font is configured by the /etc/init.d/ipv6 script.</para>
@@ -193,6 +199,23 @@ interface eth2 {
                 AdvRDNSSPreference 2;
         };                              
 };</programlisting>
+
+      <note>
+        <para>radvd terminates immediately if IPv6 forwarding is not enabled.
+        So it is a good idea to include this in<filename>
+        /etc/sysctl.conf</filename>:</para>
+
+        <programlisting>net.ipv6.conf.all.forwarding = 1</programlisting>
+
+        <para>That way, if radvd starts before Shorewall6, it will continue to
+        run.</para>
+
+        <para>An alternative is to modify
+        <filename>/etc/init.d/radvd</filename> so that radvd starts after
+        Shorewall6:</para>
+
+        <programlisting># Should-Start: shorewall6</programlisting>
+      </note>
 
       <para>Here is the automatic IPv6 configuration on my server attached to
       eth2:</para>

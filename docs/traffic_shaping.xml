@@ -129,8 +129,8 @@
     HTB allows you to define a set of classes, and you can put the traffic you
     want into these classes. You can define minimum and maximum bandwidth
     settings for those classes and order them hierarchically (the less
-    prioritized classes only get bandwidth if the more important have what they
-    need). Shorewall builtin traffic shaping allows you to define these
+    prioritized classes only get bandwidth if the more important have what
+    they need). Shorewall builtin traffic shaping allows you to define these
     classes (and their bandwidth limits), and it uses SFQ inside these classes
     to make sure, that different data streams are handled equally.</para>
 
@@ -161,16 +161,15 @@
         any).</para>
 
         <para>The reason why queuing is bad in these cases is, that you might
-        have packets which need to be prioritized over others, e.g. VoIP or ssh.
-        For this type of connections it is important that packets arrive in a
-        certain amount of time. For others like HTTP downloads, it does not
-        really matter if it takes a few seconds more.</para>
+        have packets which need to be prioritized over others, e.g. VoIP or
+        ssh. For this type of connections it is important that packets arrive
+        in a certain amount of time. For others like HTTP downloads, it does
+        not really matter if it takes a few seconds more.</para>
 
         <para>If you have a large queue on the other side and the router there
         does not care about QoS or the QoS bits are not set properly, your
-        important packets will go into the same queue as your less
-        time critical download packets which will result in a large
-        delay.</para>
+        important packets will go into the same queue as your less time
+        critical download packets which will result in a large delay.</para>
       </blockquote></para>
 
     <para><emphasis role="bold">If you are running Shorewall-perl 4.1.6 or
@@ -488,9 +487,9 @@ ppp0           6000kbit         500kbit</programlisting>
         <listitem>
           <para>MARK - The mark value which is an integer in the range 1-255.
           You define these marks in the tcrules file, marking the traffic you
-          want to go into the queuing classes defined in here. You can use
-          the same marks for different Interfaces. You must specify "-' in
-          this column if the device specified in the INTERFACE column has the
+          want to go into the queuing classes defined in here. You can use the
+          same marks for different Interfaces. You must specify "-' in this
+          column if the device specified in the INTERFACE column has the
           <emphasis role="bold">classify</emphasis> option in
           <filename>/etc/shorewall/tcdevices</filename>.</para>
         </listitem>
@@ -748,9 +747,9 @@ ppp0           6000kbit         500kbit</programlisting>
           addresses and/or subnets. If your kernel and iptables include
           iprange match support, IP address ranges are also allowed. List
           elements may also consist of an interface name followed by ":" and
-          an address (e.g., eth1:192.168.1.0/24). If the MARK column
-          specifies a classification of the form &lt;major&gt;:&lt;minor&gt;
-          then this column may also contain an interface name.</para>
+          an address (e.g., eth1:192.168.1.0/24). If the MARK column specifies
+          a classification of the form &lt;major&gt;:&lt;minor&gt; then this
+          column may also contain an interface name.</para>
         </listitem>
 
         <listitem>
@@ -767,7 +766,14 @@ ppp0           6000kbit         500kbit</programlisting>
 
           <para>If the protocol is ipp2p, this column is interpreted as an
           ipp2p option without the leading "--" (example "bit" for
-          bit-torrent). If no PORT is given, "ipp2p" is assumed.</para>
+          bit-torrent). If no PORT is given, "ipp2p" is assumed. Note that the
+          xtables-addons version of IPP2P does not support the "ipp2p" option;
+          to use that version of IPP2P with Shorewall-shell or with
+          Shorewall-perl 4.2.4 or earlier, you must specify an option other
+          than "ipp2p". Shorewall-perl 4.2.5 and later support a
+          comma-separated list of IPP2P options in this column; if the column
+          is empty or contains "ipp2p", then those versions of Shorewall-perl
+          will substitute "edk,kazaa,gnu,dc".</para>
 
           <para>This column is ignored if PROTOCOL = all but must be entered
           if any of the following field is supplied. In that case, it is

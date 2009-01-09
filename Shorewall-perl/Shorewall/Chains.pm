@@ -1289,8 +1289,16 @@ sub do_proto( $$$ )
 		my $p = $2 ? lc $3 : 'tcp';
 		require_capability( 'IPP2P_MATCH' , "PROTO = $proto" , 's' );
 		$proto = '-p ' . proto_name($p) . ' ';
-		$ports = 'ipp2p' unless $ports;
-		$output .= "${proto}-m ipp2p --$ports ";
+
+		my $options = '';
+		
+		if ( $ports ) {
+		    $options .= " --$_" for split /,/, $ports; 
+		} else {
+		    $options = $capabilities{OLD_IPP2P_MATCH} ? '--ipp2p' : '--edk --kazza --gnu --dc';
+		}
+
+		$output .= "${proto}-m ipp2p${options} ";
 	    } else {
 		fatal_error "Invalid/Unknown protocol ($proto)"
 	    }

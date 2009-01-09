@@ -300,7 +300,7 @@ sub initialize( $ ) {
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
 		    VERSION => "4.2.4",
-		    CAPVERSION => 40203 ,
+		    CAPVERSION => 40205 ,
 		  );
     #
     # From shorewall.conf file
@@ -547,6 +547,7 @@ sub initialize( $ ) {
 	       XCONNMARK_MATCH => undef,
 	       RAW_TABLE => undef,
 	       IPP2P_MATCH => undef,
+	       OLD_IPP2P_MATCH => undef,
 	       CLASSIFY_TARGET => undef,
 	       ENHANCED_REJECT => undef,
 	       KLUDGEFREE => undef,
@@ -1769,6 +1770,7 @@ sub determine_capabilities( $ ) {
     }
 
     $capabilities{IPP2P_MATCH}     = qt1( "$iptables -A $sillyname -p tcp -m ipp2p --edk -j ACCEPT" );
+    $capabilities{OLD_IPP2P_MATCH} = qt1( "$iptables -A $sillyname -p tcp -m ipp2p --ipp2p -j ACCEPT" ) if $capabilities{IPP2P_MATCH};
     $capabilities{LENGTH_MATCH}    = qt1( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
     $capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-admt-prohibited" );
     $capabilities{COMMENTS}        = qt1( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );

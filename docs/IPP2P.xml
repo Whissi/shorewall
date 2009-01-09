@@ -77,14 +77,32 @@
     </simplelist>
 
     <para>When the PROTO or PROTOCOL column contains "ipp2p" then the DEST
-    PORT(S) or PORT(S) column may contain a recognized ipp2p option; for a
-    list of the options and their meaning, at a root prompt type:</para>
+    PORT(S) or PORT(S) column may contain a recognized ipp2p option
+    (Shorewall-perl 4.2.5 and later accepts a list of options); for a list of
+    the options and their meaning, at a root prompt type:</para>
 
     <programlisting><command>iptables -m ipp2p --help</command></programlisting>
 
     <para>You must not include the leading "--" on the option; Shorewall will
-    supply those characters for you. If you do not include an option then
-    "ipp2p" is assumed (Shorewall will generate "-m ipp2p --ipp2p").</para>
+    supply those characters for you. If you do not include an option
+    then:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Shorewall-shell and Shorewall-perl up through 4.2.4 will assume
+        "ipp2p". Note that the xtables version of IPP2P does not support this
+        option.</para>
+      </listitem>
+
+      <listitem>
+        <para>Shorewall-perl 4.2.5 and later will assume "ipp2p" if that
+        option is supported by the installed iptables/Netfilter. Otherwise, it
+        will assume "edk,kazza,gnu,dc"</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If 'ipp2p' is specified, Shorewall-perl 4.2.5 and later will
+    substitute "edk,kazza,gnu,dc".</para>
   </section>
 
   <section id="Example">

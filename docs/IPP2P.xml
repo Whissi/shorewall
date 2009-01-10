@@ -50,11 +50,11 @@
 
     <para>Shorewall versions 2.2.0 and later include support for the ipp2p
     match facility. This is a departure from my usual policy in that the ipp2p
-    match facility is included in Patch-O-Matic-ENG and is unlikely to ever be
-    included in the kernel.org source tree. Questions about how to install the
-    patch or how to build your kernel and/or iptables should not be posted on
-    the Shorewall mailing lists but should rather be referred to the Netfilter
-    Mailing List.</para>
+    match facility is included in xtables-addons and is unlikely to ever be
+    included in the kernel.org source tree. Questions about how to install
+    xtables-addons or how to build your kernel and/or iptables should not be
+    posted on the Shorewall mailing lists but should rather be referred to the
+    Netfilter Mailing List.</para>
   </section>
 
   <section id="Scope">
@@ -71,15 +71,16 @@
       url="Accounting.html">/etc/shorewall/accounting</ulink></member>
 
       <member><ulink
-      url="Shorewall_and_Routing.html">/etc/shorewall/rules</ulink> (Recommend
-      that you place the rules in the ESTABLISHED section of that
-      file).</member>
+      url="Shorewall_and_Routing.html">/etc/shorewall/rules</ulink> (Note
+      Recommend. But if you insist, then you should place the rules in the
+      ESTABLISHED section of that file).</member>
     </simplelist>
 
     <para>When the PROTO or PROTOCOL column contains "ipp2p" then the DEST
     PORT(S) or PORT(S) column may contain a recognized ipp2p option
-    (Shorewall-perl 4.2.5 and later accepts a list of options); for a list of
-    the options and their meaning, at a root prompt type:</para>
+    (Shorewall-perl 4.2.5 and later accepts a comma-separated list of
+    options); for a list of the options and their meaning, at a root prompt
+    type:</para>
 
     <programlisting><command>iptables -m ipp2p --help</command></programlisting>
 
@@ -90,8 +91,8 @@
     <itemizedlist>
       <listitem>
         <para>Shorewall-shell and Shorewall-perl up through 4.2.4 will assume
-        "ipp2p". Note that the xtables version of IPP2P no longer supports
-        that option.</para>
+        "ipp2p". Note that the xtables-addons version of IPP2P no longer
+        supports that option.</para>
       </listitem>
 
       <listitem>
@@ -190,25 +191,7 @@ tcp      6 269712 ESTABLISHED src=192.168.3.8 dst=206.124.146.177 sport=50584 dp
 
       <listitem>
         <para>Rule 05# classifies the packet to traffic shaping class 1:12 if
-        it is going out of eth0 and has mark value 1<footnote>
-            <para>There are two ways that Netfilter/iptables can classify
-            traffic. It can be classified directly (which is what this example
-            does) by specifying a <firstterm>classid</firstterm> of the form
-            &lt;number&gt;:&lt;number&gt; in the MARK column. That is the
-            preferred method. A classid is specified when a traffic shaping
-            class is defined. tc4shorewall assigns a classid of &lt;device
-            number&gt;:1&lt;mark value&gt;. The first device in
-            <filename>/etc/shorewall/tcdevices</filename> is device number 1,
-            the second is device number 2, and so on. For the first device,
-            mark value 1 is classid 1:11, mark value 22 is classid 1:122,
-            etc.. They may also be classified using an <firstterm>fwmark
-            classifier</firstterm> which causes the traffic shaping code to
-            classify the traffic based in the packet mark value. That is done
-            by the traffic shaping solution using the <command>tc filter
-            add</command> command. The built-in tc4shorewall shaper uses this
-            command so if you are using the built-in traffic shaping solution,
-            you may use either method.</para>
-          </footnote>.</para>
+        it is going out of eth0 and has mark value 1.</para>
       </listitem>
 
       <listitem>

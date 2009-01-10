@@ -249,22 +249,12 @@ webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
 
       <para>On my laptop, ursa:</para>
 
-      <programlisting>ursa:~ # ip -6 addr ls dev wlan0
-3: wlan0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
- <emphasis role="bold">   inet6 2002:ce7c:92b4:1:21a:73ff:fedb:8c35/64 scope global dynamic 
-       valid_lft 2591996sec preferred_lft 604796sec</emphasis>
-    inet6 fe80::21a:73ff:fedb:8c35/64 scope link 
-       valid_lft forever preferred_lft forever
-ursa:~ # ip -6 addr ls dev eth0
+      <programlisting>ursa:~ # ip -6 addr ls dev eth0
 3: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
  <emphasis role="bold">   inet6 2002:ce7c:92b4:1:21a:24ff:fecb:2bcc/64 scope global dynamic 
        valid_lft 2591996sec preferred_lft 604796sec</emphasis>
     inet6 fe80::21a:73ff:fedb:8c35/64 scope link 
        valid_lft forever preferred_lft forever
-ursa:~ # ip -6 route ls dev wlan0
-<emphasis role="bold">2002:ce7c:92b4:1::/64  proto kernel  metric 256  expires 2592160sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
-fe80::/64  metric 256  expires 21314573sec mtu 1500 advmss 1440 hoplimit 4294967295
-<emphasis role="bold">default via fe80::202:e3ff:fe08:55fa  proto kernel  metric 1024  expires 28sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
 ursa:~ # ip -6 route ls dev eth0
 <emphasis role="bold">2002:ce7c:92b4:1::/64  proto kernel  metric 256  expires 2592160sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
 fe80::/64  metric 256  expires 21314573sec mtu 1500 advmss 1440 hoplimit 4294967295

@@ -27,6 +27,8 @@
 
       <year>2007</year>
 
+      <year>2008</year>
+
       <holder>Thomas M. Eastep</holder>
 
       <holder></holder>
@@ -67,6 +69,109 @@
 
     <para>You can use the <command moreinfo="none">shorewall check</command>
     command to see the groups associated with each of your zones.</para>
+  </section>
+
+  <section>
+    <title>Versions &gt;= 4.2.0</title>
+
+    <orderedlist>
+      <listitem>
+        <para> Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed
+        non-zero mark values &lt; 256 to be assigned in the OUTPUT chain. This
+        has been changed so that only high mark values may be assigned there.
+        Packet marking rules for traffic shaping of packets originating on the
+        firewall must be coded in the POSTROUTING table.</para>
+      </listitem>
+
+      <listitem>
+        <para>Previously, Shorewall did not range-check the value of the
+        VERBOSITY option in shorewall.conf. Beginning with Shorewall 4.2: a) A
+        VERBOSITY setting outside the range -1 through 2 is rejected. b) After
+        the -v and -q options are applied, the resulting value is adjusted to
+        fall within the range -1 through 2.</para>
+      </listitem>
+
+      <listitem>
+        <para>Specifying a destination zone in a NAT-only rule now generates a
+        warning and the destination zone is ignored. NAT-only rules
+        are:<simplelist>
+            <member>NONAT</member>
+
+            <member>REDIRECT-</member>
+
+            <member>DNAT-</member>
+          </simplelist></para>
+      </listitem>
+
+      <listitem>
+        <para>The default value for LOG_MARTIANS has been changed. Previously,
+        the defaults were: Shorewall-perl - 'Off' Shorewall-shell - 'No' The
+        new default values are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>Shorewall-perl</term>
+
+            <listitem>
+              <para>'On.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>Shorewall-shell</term>
+
+            <listitem>
+              <para>'Yes'</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Shorewall-perl users may:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Accept the new default -- martians will be logged from all
+            interfaces with route filtering except those with log_martians=0
+            in /etc/shorewall/interfaces.</para>
+          </listitem>
+
+          <listitem>
+            <para>Explicitly set LOG_MARTIANS=Off to maintain compatibility
+            with prior versions of Shorewall.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>Shorewall-shell users may:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Accept the new default -- martians will be logged from all
+            interfaces with the route filtering enabled.</para>
+          </listitem>
+
+          <listitem>
+            <para>Explicitly set LOG_MARTIONS=No to maintain compatibility
+            with prior versions of Shorewall.</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>The value of IMPLICIT_CONTINUE in shorewall.conf (and samples)
+        has been changed from Yes to No. </para>
+      </listitem>
+
+      <listitem>
+        <para>The 'norfc1918' option is deprecated. Use explicit rules
+        instead. Note that there is a new 'Rfc1918' macro that acts on
+        addresses reserved by RFC 1918.</para>
+      </listitem>
+
+      <listitem>
+        <para>DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl. Use
+        ipset-based zones instead. </para>
+      </listitem>
+    </orderedlist>
   </section>
 
   <section id="V4.0.0">
@@ -596,7 +701,8 @@ all             all             REJECT:MyReject info</programlisting>
 
         <para>The shorewall.conf file included in this release sets
         IPSECFILE=zones so that new users are expected to use the <ulink
-        url="manpages/shorewall-zones.html">new zone file format</ulink>.</para>
+        url="manpages/shorewall-zones.html">new zone file
+        format</ulink>.</para>
       </listitem>
 
       <listitem>

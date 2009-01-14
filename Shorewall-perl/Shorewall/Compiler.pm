@@ -940,7 +940,7 @@ sub compiler {
     initialize_chain_table;
 
     unless ( $command eq 'check' ) {
-	create_temp_object( $objectfile );
+	create_temp_object( $objectfile , $export );
 	generate_script_1;
     }
 

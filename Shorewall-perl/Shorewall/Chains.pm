@@ -240,6 +240,9 @@ our %interfacebcasts;
 our %interfaceacasts;
 our %interfacegateways;
 
+#
+# Built-in Chains
+#
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
 #
@@ -278,6 +281,8 @@ our %builtin_target = ( ACCEPT   => 1,
 #
 
 sub initialize( $ ) {
+    $family = shift;
+
     %chain_table = ( raw    => {} ,
 		     mangle => {},
 		     nat    => {},
@@ -325,7 +330,6 @@ sub initialize( $ ) {
     %interfaceacasts    = ();
     %interfacegateways  = ();
 
-    $family = shift;
 }
 
 INIT {
@@ -1039,17 +1043,17 @@ sub finish_chain_section ($$) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
 		if ( $section eq 'DONE' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
-			add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
+			add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
 		    }
 		} else {
-		    add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
+		    add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
 		}
 	    }
 	} else {
 	    my $policychainref = $filter_table->{$chainref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
-		add_rule $chainref, "-p tcp --syn -j $synchainref->{name}";
+		add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
 	    }
 	}
     }
@@ -1063,9 +1067,7 @@ sub finish_chain_section ($$) {
 sub finish_section ( $ ) {
     my $sections = $_[0];
 
-    for my $section ( split /,/, $sections ) {
-	$sections{$section} = 1;
-    }
+    $sections{$_} = 1 for split /,/, $sections;
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
@@ -1292,11 +1294,11 @@ sub do_proto( $$$ )
 
 		my $options = '';
 		
-		if ( $ports ) {
-		    $options .= " --$_" for split /,/, $ports; 
-		} else {
-		    $options = $capabilities{OLD_IPP2P_MATCH} ? '--ipp2p' : '--edk --kazza --gnu --dc';
+		if ( $ports ne 'ipp2p' ) {
+		    $options .= " --$_" for split /,/, $ports;
 		}
+		
+		$options = $capabilities{OLD_IPP2P_MATCH} ? ' --ipp2p' : ' --edk --kazaa --gnu --dc' unless $options;
 
 		$output .= "${proto}-m ipp2p${options} ";
 	    } else {

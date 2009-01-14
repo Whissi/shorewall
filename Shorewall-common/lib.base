@@ -256,6 +256,7 @@ reload_kernel_modules() {
     moduledirectories=
     local moduleloader
     moduleloader=modprobe
+    local uname
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -263,7 +264,11 @@ reload_kernel_modules() {
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
-    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+
+    [ -z "$MODULESDIR" ] && \
+	uname=$(uname -r) && \
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+
     MODULES=$(lsmod | cut -d ' ' -f1)
 
     for directory in $(split $MODULESDIR); do
@@ -291,6 +296,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     moduleloader=modprobe
     local savemoduleinfo
     savemoduleinfo=${1:-Yes} # So old compiled scripts still work
+    local uname
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -299,7 +305,8 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+	uname=$(uname -r) && \
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
@@ -1151,9 +1158,9 @@ determine_capabilities() {
 	qt $IPTABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
     fi
 
-    qt $IPTABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT              && IPP2P_MATCH=Yes
+    qt $IPTABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
     if [ -n "$IPP2P_MATCH" ]; then
-	qt $IPTABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT        && OLD_IPP2P_MATCH=Yes
+	qt $IPTABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
     fi
 
     qt $IPTABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
@@ -1250,7 +1257,7 @@ report_capabilities() {
 	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
-	[ -n "$IPP2P_MATCH" ] && report_capability "Old IPP2P Match" $OLD_IPP2P_MATCH
+	[ -n "$IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 	report_capability "Extended REJECT" $ENHANCED_REJECT
 	report_capability "Repeat match" $KLUDGEFREE

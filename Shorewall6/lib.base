@@ -33,7 +33,7 @@
 #
 
 SHOREWALL_LIBVERSION=40300
-SHOREWALL_CAPVERSION=40203
+SHOREWALL_CAPVERSION=40205
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
@@ -716,6 +716,7 @@ determine_capabilities() {
     XCONNMARK_MATCH=
     RAW_TABLE=
     IPP2P_MATCH=
+    OLD_IPP2P_MATCH=
     LENGTH_MATCH=
     CLASSIFY_TARGET=
     ENHANCED_REJECT=
@@ -803,8 +804,12 @@ determine_capabilities() {
 	qt $IP6TABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
     fi
 
-    qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT              && IPP2P_MATCH=Yes
-    qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
+    if [ -n "$IPP2P_MATCH" ]; then
+	qt $IP6TABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
+    fi
+
+   qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
     qt $IP6TABLES -A $chain -j REJECT --reject-with icmp6-adm-prohibited && ENHANCED_REJECT=Yes
 
     qt $IP6TABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
@@ -897,6 +902,7 @@ report_capabilities() {
 	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
+	[ -n "$IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 	report_capability "Extended REJECT" $ENHANCED_REJECT
 	report_capability "Repeat match" $KLUDGEFREE
@@ -949,6 +955,7 @@ report_capabilities1() {
     report_capability1 XCONNMARK_MATCH
     report_capability1 RAW_TABLE
     report_capability1 IPP2P_MATCH
+    report_capability1 OLD_IPP2P_MATCH
     report_capability1 CLASSIFY_TARGET
     report_capability1 ENHANCED_REJECT
     report_capability1 KLUDGEFREE

@@ -93,7 +93,7 @@ use constant { NOTHING    => 'NOTHING',
 #                                      }
 #                        parents =>    [ <parents> ]      Parents, Children and interfaces are listed by name
 #                        children =>   [ <children> ]
-#                        interfaces => [ <interfaces> ]
+#                        interfaces => { <interfaces1> => 1, ... }
 #                        bridge =>     <bridge>
 #                        hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
 #                                                                  options => { <option1> => <value1>

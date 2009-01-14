@@ -219,8 +219,11 @@ sub balance_fallback_route( $$$$ ) {
     }
 }
 
-sub start_provider( $$ ) {
-    my ($table, $number ) = @_;
+sub start_provider( $$$ ) {
+    my ($table, $number, $test ) = @_;
+    
+    emit $test;
+    push_indent;
 
     emit "#\n# Add Provider $table ($number)\n#";
 
@@ -263,13 +266,9 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error "'detect' is not allowed with USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
-	emit qq(if interface_is_usable $interface && [ -n "$gateway" ]; then);
-	push_indent;
-	start_provider( $table, $number );
+	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) );
     } else {
-	emit "if interface_is_usable $interface; then";
-	push_indent;
-	start_provider( $table, $number );
+	start_provider( $table, $number, "if interface_is_usable $interface; then" );
 
 	if ( $gateway && $gateway ne '-' ) {
 	    validate_address $gateway, 0;
@@ -279,6 +278,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	    emit "run_ip route add default dev $interface table $number";
 	}
     }
+
     my $val = 0;
 
     if ( $mark ne '-' ) {
@@ -337,13 +337,14 @@ sub add_a_provider( $$$$$$$$ ) {
 		    warning_message "'fallback' is ignored when USE_DEFAULT_RT=Yes";
 		} else {
 		    $default = $1;
+		    fatal_error 'fallback must be non-zero' unless $default;
 		}
 	    } elsif ( $option eq 'fallback' ) {
 		fatal_error q('fallback' is not available in IPv6) if $family == F_IPV6;
 		if ( $config{USE_DEFAULT_RT} ) {
 		    warning_message "'fallback' is ignored when USE_DEFAULT_RT=Yes";
 		} else {
-		    $default = 1;
+		    $default = -1;
 		}
 	    } else {
 		fatal_error "Invalid option ($option)";
@@ -409,7 +410,19 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     balance_default_route $balance , $gateway, $interface, $realm if $balance;
-    balance_fallback_route $default , $gateway, $interface, $realm if $default;
+
+    if ( $default > 0 ) {
+	balance_fallback_route $default , $gateway, $interface, $realm;
+    } elsif ( $default ) {
+	emit '';
+	if ( $gateway ) {
+	    emit qq(run_ip route replace default via $gateway src $address dev $interface table ) . DEFAULT_TABLE . qq( dev $interface metric $number);
+	    emit qq(echo "qt ip route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
+	} else {
+	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $interface metric $number);
+	    emit qq(echo "qt ip route del default dev $interface table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
+	}
+    }
 
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {

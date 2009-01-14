@@ -1,6 +1,6 @@
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999-2008 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999-2009 - Tom Eastep (teastep@shorewall.net)
 #
 #	Options are:
 #
@@ -245,6 +245,7 @@ reload_kernel_modules() {
     moduledirectories=
     local moduleloader
     moduleloader=modprobe
+    local uname
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -252,7 +253,10 @@ reload_kernel_modules() {
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
-    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+    [ -z "$MODULESDIR" ] && \
+	uname=$(uname -r) && \
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+
     MODULES=$(lsmod | cut -d ' ' -f1)
 
     for directory in $(split $MODULESDIR); do
@@ -280,6 +284,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     moduleloader=modprobe
     local savemoduleinfo
     savemoduleinfo=${1:-Yes} # So old compiled scripts still work
+    local uname
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -288,7 +293,8 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+	uname=$(uname -r) && \
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"

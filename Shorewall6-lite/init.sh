@@ -41,7 +41,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 # description: Packet filtering firewall
 
 ### BEGIN INIT INFO
-# Provides:	  shorewall6-lite
+# Provides:	  shorewall6
 # Required-Start: $network
 # Required-Stop:
 # Default-Start:  2 3 5

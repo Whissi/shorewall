@@ -202,6 +202,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 XCONNMARK_MATCH => 'Extended Connmark Match',
 		 RAW_TABLE       => 'Raw Table',
 		 IPP2P_MATCH     => 'IPP2P Match',
+		 OLD_IPP2P_MATCH => 'Old IPP2P Match Syntax',
 		 CLASSIFY_TARGET => 'CLASSIFY Target',
 		 ENHANCED_REJECT => 'Extended Reject',
 		 KLUDGEFREE      => 'Repeat match',
@@ -299,13 +300,16 @@ sub initialize( $ ) {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
-		    VERSION => "4.2.4",
+		    VERSION => "4.2.5",
 		    CAPVERSION => 40205 ,
 		  );
+
     #
     # From shorewall.conf file
     #
     if ( $family == F_IPV4 ) {
+	$globals{PRODUCT} = 'shorewall';
+
 	%config =
 	    ( STARTUP_ENABLED => undef,
 	      VERBOSITY => undef,
@@ -425,8 +429,9 @@ sub initialize( $ ) {
 			 NFLOG   => 'NFLOG');
     } else {
 	$globals{SHAREDIR} = '/usr/share/shorewall6';
-	$globals{CONFDIR} =  '/etc/shorewall6';
-	
+	$globals{CONFDIR}  = '/etc/shorewall6';	
+	$globals{PRODUCT}  = 'shorewall6';
+
 	%config =
 	    ( STARTUP_ENABLED => undef,
 	      VERBOSITY => undef,
@@ -977,8 +982,8 @@ sub copy1( $ ) {
 # Create the temporary object file -- the passed file name is the name of the final file.
 # We create a temporary file in the same directory so that we can use rename to finalize it.
 #
-sub create_temp_object( $ ) {
-    my $objectfile = $_[0];
+sub create_temp_object( $$ ) {
+    my ( $objectfile, $export ) = @_;
     my $suffix;
 
     eval {
@@ -993,10 +998,10 @@ sub create_temp_object( $ ) {
     fatal_error "$objectfile is a Symbolic Link" if -l $objectfile;
     fatal_error "$objectfile is a Directory"     if -d _;
     fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
-    fatal_error "A compiled script may not be named 'shorewall'" if "$file" eq 'shorewall' && $suffix eq '';
+    fatal_error "An exported \u$globals{PRODUCT} compiled script may not be named '$globals{PRODUCT}'" if $export && "$file" eq $globals{PRODUCT} && $suffix eq '';
 
     eval {
-	$dir = abs_path $dir unless $dir =~ m|^/|; # Work around http://rt.cpan.org/Public/Bug/Display.html?id=1385
+	$dir = abs_path $dir unless $dir =~ m|^/|; # Work around http://rt.cpan.org/Public/Bug/Display.html?id=13851
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
@@ -1029,7 +1034,6 @@ sub create_temp_aux_config() {
     };
 
     die if $@;
-
 }
 
 #
@@ -1641,7 +1645,7 @@ sub load_kernel_modules( ) {
 	my $uname = `uname -r`;
 	fatal_error "The command 'uname -r' failed" unless $? == 0;
 	chomp $uname;
-	$modulesdir = "/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter";
+	$modulesdir = "/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset";
     }
 
     my @moduledirectories = split /:/, $modulesdir;

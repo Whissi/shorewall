@@ -1,4 +1,4 @@
-Shorewall 4.2.4 RC3
+Shorewall 4.2.5
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 2  H I G H L I G H T S
@@ -27,32 +27,51 @@ Shorewall 4.2.4 RC3
    - Perl 5.10 if you wish to use DNS names in your IPv6 config files. 
      In that case you will also have to install Perl Socket6 support.
 
-Problems Corrected in 4.2.4 RC3
+Problems corrected in 4.2.5
 
-1)  Previously, when exclusion was used in an entry in
-    /etc/shorewall/hosts, Shorewall-perl ignored the exclusion when
-    generating rules for the following OPTIONS in that entry:
- 
-        blacklist
-	maclist
-	norfc1918
-	tcpflags
+1)  If exclusion is used to define a zone in /etc/shorewall/hosts and
+    that zone is used as the SOURCE zone in a DNAT or REDIRECT rule,
+    then Shorewall-perl can generated invalid iptables-restore input.
 
-2)  Shorewall-perl previously promoted all exclusion in the
-    /etc/shorewall/hosts file to the zone level. That meant that
-    all traffic to/from the zone passed through exclusion rules 
-    rather than only the traffic matching a hosts records that
-    specified exclusion.
+2)  A bug in the Perl Cwd module (see
+    http://rt.cpan.org/Public/Bug/Display.html?id=13851) causes the
+    Shorewall-perl compiler to fail if it doesn't have at least read
+    access to its current working directory. 4.2.5 contains a
+    workaround.
 
-    Example /etc/shorewall/hosts:
+3)  If 'critical' was specified on an entry in
+    /etc/shorewall/routestopped, Shorewall6 (Shorewall-perl) would
+    generate an error. 
 
-    	    z	eth0:192.168.4.0/24
-	    z	eth1:10.0.0.0/24!10.0.0.99
+4)  In certain cases where exclusion occurred in /etc/shorewall/hosts,
+    Shorewall-perl would generate incorrect iptables-restore input.
 
-        Traffic entering eth0 from network 192.168.4.0/24 would still
-        be checked for '!10.0.0.99'.
+5)  In certain cases where exclusion occurred in /etc/shorewall/hosts,
+    Shorewall-perl would generate invalid iptables-restore input.
 
-    This has been corrected.
+6)  The 'shorewall6 refresh' command runs iptables_restore rather than
+    ip6tables_restore.
+
+7)  The commands 'shorewall6 save-start', 'shorewall6-save-restart' and
+    'shorewall6 restore' were previously broken.
+
+8)  The Debian init script was checking $startup in
+    /etc/default/shorewall rather than in /etc/default/shorweall6
+
+9)  The Archlinux init scripts for Shorewall6 and Shorewall6 Lite were
+    unconverted Shorewall scripts.
+
+10) When 'detect' is used in the GATEWAY column of
+    /etc/shorewall/providers, Shorewall-perl now ensures that the
+    gateway was successfully detected. If the gateway cannot be
+    detected, action is taken depending on whether the provider is
+    'optional' or not. If the provider is optional, it's configuration
+    is skipped; if the provider is not optional, the current operation
+    is aborted.
+
+11) The command 'shorewall6 debug start' would previously fail with
+
+    	ERROR: Command "/sbin/ip6tables -t nat -F" Failed
 
 Known Problems Remaiining:
 
@@ -65,100 +84,74 @@ Known Problems Remaiining:
 	norfc1918
 	tcpflags
 
-New Features in Shorewall 4.2.4.
+New Feature in Shorewall 4.2.5
 
-1) Two new packages are included:
+1)  A new 'fallback' option is added in
+    /etc/shorewall/providers. The option works similar to 'balance'
+    except that the default route is added in the default routing table
+    (253) rather than in the main table (254).
 
-   a) Shorewall6 - analagous to Shorewall-common but handles IPv6
-      rather than IPv4.
+    The option can be used by itself or followed by =<number> (e.g,
+    fallback=2).
 
-   b) Shorewall6-lite - analagous to Shorewall-lite but handles IPv6
-      rather than IPv4.
+    When the option is used by itself, a separate (not balanced)
+    default route is added with a metric equal to the provider's NUMBER.
 
-   The packages store their configurations in /etc/shorewall6/ and
-   /etc/shorewall6-lite/ respectively.  
+    When the option is used with a number, a balanced route is added
+    with the weight set to the specified number.
 
-   The fact that the packages are separate from their IPv4 counterparts
-   means that you control IPv4 and IPv6 traffic separately (the same
-   way that Netfilter does). Starting/Stopping the firewall for one
-   address family has no effect on the other address family.
+    'fallback' is ignored if USE_DEFAULT_RT=Yes in shorewall.conf and
+    is only available with Shorewall-perl.
 
-   For additional information, see
-   http://www.shorewall.net/IPV6Support.html.
+    'fallback' is useful in situations where:
 
-   Other features of Shorewall6 are:
+    - You want all traffic to be sent via one primary provider unless
+      there is a compelling reason to use a different provider
 
-   a) There is no NAT of any kind (most people see this as a giant step
-      forward). When an ISP assigns you a public IPv6 address, you are
-      actually assigned an IPv6 'prefix' which is like an IPv4
-      subnet. A 64-bit prefix allows 4 billion squared individual hosts
-      (the size of the current IPv4 address space squared).
+    - If the primary provider is down, then you want to balance the
+      outgoing traffic among a set of other providers or to a
+      ordered list of providers.
 
-   b) The default zone type is ipv6.
+    In this case:
 
-   c) The currently-supported interface options in Shorewall6 are:
+    - Do not specify 'balance' on any of the providers.
+    - Disable route filtering ('ROUTE_FILTER=No' in shorewall.conf).
+    - Specify 'fallback' on those providers that you want to use if 
+      the primary is down.
+    - Only the primary provider should have a default route in the main
+      routing table.
 
-	blacklist
-        bridge
-	dhcp
-	nosmurfs (traps multicast and Subnet-router anycast addresses
-        used as the packet source address).
-	optional
-	routeback
-	sourceroute
-        tcpflags
-	mss
-	forward (setting it to 0 makes the router behave like a host
-                 on that interface rather than like a router).
+    See http://www.shorewall.net/MultiISP.html#Complete for an example
+    of this option's use.
 
-   d)  The currently-supported host options in Shorewall6 are:
+2)  Shorewall-perl now transparently handles the xtables-addon version
+    of ipp2p. Shorewall detects whether the installed ipp2p is from
+    patch-o-matic-ng or from xtables-addon and proceeds accordingly.
 
-	blacklist
-	routeback
-	tcpflags
+    If the patch-o-matic-ng version is installed:
 
-   e)  Traffic Shaping is disabled by default. The tcdevices and
-       tcclasses files are address-family independent so
-       to use the Shorewall builtin Traffic Shaper, TC_ENABLED=Internal
-       should be specified in Shorewall or in Shorewall6 but not in
-       both. In the configuration where the internal traffic shaper is
-       not enabled, CLEAR_TC=No should be specified.
+    a) If no DEST PORT is supplied, the default is "--ipp2p".
+    b) If "ipp2p" is supplied as the DEST PORT, it will be passed to
+       iptables-restore as "--ipp2p".
 
-       tcfilters are not available in Shorewall6.
+    If the xtables-addons version is installed:
 
-   f)  When both an interface and an address or address list need to
-       be specified in a rule, the address or list must be enclosed in
-       angle brackets. Example:
+    a) If no DEST PORT is supplied, the default is "--edk --gnu --dc
+       --kazaa".
+    b) If "ipp2p" is supplied as the DEST PORT, it will be passed to
+       iptables-restore as "--edk --gnu --dc --kazaa". 
 
-        #ACTION      SOURCE		                        DEST
-	ACCEPT	     net:eth0:<2001:19f0:feee::dead:beef:cafe>	dmz
+    Shorewall-perl now also accepts a comma-separated list of options
+    (e.g., "edk,gnu,dc,kazaa).
 
-       Note that this includes MAC addresses as well as IPv6 addresses.
+    Additionally, Shorewall now looks for modules in /lib/modules/$(uname
+    -r)/extra and in /lib/modules/$(uname -r)/extra/ipset
 
-       The HOSTS column in /etc/shorewall6/hosts also uses this
-       convention:
+    This change introduced a new capability ("Old IPP2P Match Syntax")
+    so if you use a capabilities file, be sure to re-generate the
+    file(s) after you have installed 4.2.5.
 
-           #ZONE      HOSTS					OPTIONS
-           chat6      eth0:<2001:19f0:feee::dead:beef:cafe>
-
-       Even when an interface is not specified, it is permitted to
-       enclose addresses in <> to improve readability. Example:
-
-           #ACTION      SOURCE		DEST
-	   ACCEPT	net:<2001:1::1>	$FW
-
-   g)  The options available in shorewall6.conf are a subset of those
-       available in shorewall.conf.
-
-   h)  The Socket6.pm Perl module is required if you include DNS names
-       in your Shorewall6 configuration. Note that it is loaded the
-       first time that a DNS name is encountered so if it is missing,
-       you get a message similar to this one:
-
-       ...
-       Checking /etc/shorewall6/rules...
-       Can't locate Socket6.pm in @INC (@INC contains: /root ...
-       teastep@ursa:~/Configs/standalone6$ 
+3)  There is now a macro.Git, which opens git-daemon's port (9418/tcp).
 
 Migration Issues.
 
@@ -1307,3 +1300,34 @@ Other changes in Shorewall 4.2.3
 
     	    shorewall reset chain1 chain2 ...
 	    shorewall-lite reset chain1 chain2 ...
+
+Problems Corrected in 4.2.4
+
+1)  Previously, when exclusion was used in an entry in
+    /etc/shorewall/hosts, Shorewall-perl ignored the exclusion when
+    generating rules for the following OPTIONS in that entry:
+ 
+        blacklist
+	maclist
+	norfc1918
+	tcpflags
+
+2)  Shorewall-perl previously promoted all exclusion in the
+    /etc/shorewall/hosts file to the zone level. That meant that
+    all traffic to/from the zone passed through exclusion rules 
+    rather than only the traffic matching a hosts records that
+    specified exclusion.
+
+    Example /etc/shorewall/hosts:
+
+    	    z	eth0:192.168.4.0/24
+	    z	eth1:10.0.0.0/24!10.0.0.99
+
+        Traffic entering eth0 from network 192.168.4.0/24 would still
+        be checked for '!10.0.0.99'.
+
+    This has been corrected.
+
+Other changes in 4.2.4
+
+1)  Support for IPv6 was added -- see above.

@@ -178,13 +178,6 @@ debug_restore_input() {
 	qt1 $IP6TABLES -t raw -P $chain ACCEPT
     done
     
-    run_iptables -t nat -F
-    run_iptables -t nat -X
-
-    for chain in PREROUTING POSTROUTING OUTPUT; do
-	qt1 $IP6TABLES -t nat -P $chain ACCEPT
-    done
-    
     qt1 $IP6TABLES -t filter -F
     qt1 $IP6TABLES -t filter -X
 

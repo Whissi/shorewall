@@ -606,20 +606,11 @@ EOF
 #
 # Second Phase of Script Generation
 #
-#    copies the 'prog.functions' file into the script, generates
-#    clear_routing_and_traffic_shaping() and the first part of
-#    'setup_routing_and_traffic_shaping()'
+#    copies the 'prog.functions' file into the script and generates
+#    the first part of 'setup_routing_and_traffic_shaping()'
 #
 #    The bulk of that function is produced by the various config file
 #    parsing routines that are called directly out of 'compiler()'.
-#
-#    We create two separate functions rather than one so that the
-#    define_firewall() shell function can set global IP configuration variables
-#    after the old config has been cleared and before we start instantiating
-#    the new config. That way, the variables reflect the way that the
-#    distribution's tools have configured IP without any Shorewall
-#    modifications and the firewall configuration is the same after
-#    'restart' as it is after 'start'.
 #
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
 #          than those related to writing to the object file.
@@ -634,64 +625,7 @@ sub generate_script_2 () {
 	}
     }
 
-    emit(  '',
-	   '#',
-	   '# Clear Routing and Traffic Shaping',
-	   '#',
-	   'clear_routing_and_traffic_shaping() {'
-	   );
-
-    push_indent;
-
-    if ( $family == F_IPV4 ) {
-	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
-		   'if [ -n "$addr" ]; then',
-		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
-		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
-		   '        if in_network $addr $network; then',
-		   "            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
-		   '        fi',
-		   '    done',
-		   "fi\n" );
-	}
-	
-	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
-	       '',
-	       'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
-	       '',
-	       'delete_proxyarp',
-	       ''
-	     );
-
-	if ( $capabilities{NAT_ENABLED} ) {
-	    emit(  'if [ -f ${VARDIR}/nat ]; then',
-		   '    while read external interface; do',
-		   '        del_ip_addr $external $interface',
-		   '    done < ${VARDIR}/nat',
-		   '',
-		   '    rm -f ${VARDIR}/nat',
-		   "fi\n" );
-	}
-
-	emit "delete_tc1\n"            if $config{CLEAR_TC};
-	emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
-
-    } else {
- 	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
-	       '',
-	       'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
-	       ''
-	     );
-
-	emit "delete_tc1\n" if $config{CLEAR_TC};
-    }
-
-    pop_indent;
-
-    emit "}\n";
-
-    emit(  '#',
+    emit(  "\n#",
 	   '# Setup Routing and Traffic Shaping',
 	   '#',
 	   'setup_routing_and_traffic_shaping() {'
@@ -776,7 +710,51 @@ sub generate_script_3($) {
 
     emit '';
 
-    emit "\nclear_routing_and_traffic_shaping";
+    if ( $family == F_IPV4 ) {
+	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
+	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
+		   'if [ -n "$addr" ]; then',
+		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
+		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
+		   '        if in_network $addr $network; then',
+		   "            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
+		   '        fi',
+		   '    done',
+		   "fi\n" );
+	}
+	
+	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+	       '',
+	       'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
+	       '',
+	       'delete_proxyarp',
+	       ''
+	     );
+
+	if ( $capabilities{NAT_ENABLED} ) {
+	    emit(  'if [ -f ${VARDIR}/nat ]; then',
+		   '    while read external interface; do',
+		   '        del_ip_addr $external $interface',
+		   '    done < ${VARDIR}/nat',
+		   '',
+		   '    rm -f ${VARDIR}/nat',
+		   "fi\n" );
+	}
+
+	emit "delete_tc1\n"            if $config{CLEAR_TC};
+	emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
+
+    } else {
+ 	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+	       '',
+	       'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
+	       ''
+	     );
+
+	emit "delete_tc1\n" if $config{CLEAR_TC};
+    }
+
+    emit '';
 
     set_global_variables;
 

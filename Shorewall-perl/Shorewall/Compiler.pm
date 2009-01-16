@@ -607,7 +607,7 @@ EOF
 # Second Phase of Script Generation
 #
 #    copies the 'prog.functions' file into the script and generates
-#    the first part of 'setup_routing_and_traffic_shaping()'
+#    the first part of 'setup_common()'
 #
 #    The bulk of that function is produced by the various config file
 #    parsing routines that are called directly out of 'compiler()'.
@@ -626,7 +626,29 @@ sub generate_script_2 () {
     }
 
     emit(  "\n#",
-	   '# Setup Routing and Traffic Shaping',
+	   '# Setup Common Rules',
+	   '#',
+	   'setup_common_rules() {'
+	   );
+
+    push_indent;
+
+}
+
+#
+# Third step of script generation
+#
+#    - End the setup_common() function
+#    - Start setup_routing_and_traffic_shaping()
+#
+sub generate_script_3 () {
+
+    pop_indent;
+
+    emit '}';
+
+    emit(  "\n#",
+	   '# Setup routing and traffic shaping',
 	   '#',
 	   'setup_routing_and_traffic_shaping() {'
 	   );
@@ -636,7 +658,7 @@ sub generate_script_2 () {
 }
 
 #
-# Third (final) stage of script generation.
+# Fourth (final) stage of script generation.
 #
 #    Generate the end of 'setup_routing_and_traffic_shaping()':
 #        Generate code for loading the various files in /var/lib/shorewall[-lite]
@@ -648,7 +670,7 @@ sub generate_script_2 () {
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
 #          than those related to writing to the object file.
 #
-sub generate_script_3($) {
+sub generate_script_4($) {
 
     emit 'cat > ${VARDIR}/proxyarp << __EOF__';
     dump_proxy_arp;
@@ -760,7 +782,9 @@ sub generate_script_3($) {
 
     emit '';
 
-    emit( 'setup_routing_and_traffic_shaping',
+    emit( 'setup_common_rules',
+	  '',
+	  'setup_routing_and_traffic_shaping',
 	  '',
 	  'if [ $COMMAND = restore ]; then',
 	  '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
@@ -981,6 +1005,10 @@ sub compiler {
     #
     setup_zone_mss;
     #
+    # Finish setup_common_rules() and start setup_routing_and_traffic_shaping()
+    #
+    generate_script_3;
+    #
     # [Re-]establish Routing
     #
     setup_providers;
@@ -1057,7 +1085,7 @@ sub compiler {
 	#
 	# Finish the script.
 	#
-	generate_script_3( $chains );
+	generate_script_4( $chains );
 	finalize_object ( $export );
 	#
 	# And generate the auxilary config file

@@ -626,7 +626,7 @@ sub generate_script_2 () {
     }
 
     emit(  "\n#",
-	   '# Setup Common Rules',
+	   '# Setup Common Rules (/proc)',
 	   '#',
 	   'setup_common_rules() {'
 	   );
@@ -671,27 +671,6 @@ sub generate_script_3 () {
 #          than those related to writing to the object file.
 #
 sub generate_script_4($) {
-
-    emit 'cat > ${VARDIR}/proxyarp << __EOF__';
-    dump_proxy_arp;
-    emit_unindented '__EOF__';
-
-    emit( '',
-	  'if [ "$COMMAND" != refresh ]; then' );
-
-    push_indent;
-
-    emit 'cat > ${VARDIR}/zones << __EOF__';
-    dump_zone_contents;
-    emit_unindented '__EOF__';
-
-    pop_indent;
-
-    emit "fi\n";
-
-    emit '> ${VARDIR}/nat';
-
-    add_addresses;
 
     pop_indent;
 
@@ -785,7 +764,30 @@ sub generate_script_4($) {
     emit( 'setup_common_rules',
 	  '',
 	  'setup_routing_and_traffic_shaping',
-	  '',
+	  '');
+
+    emit 'cat > ${VARDIR}/proxyarp << __EOF__';
+    dump_proxy_arp;
+    emit_unindented '__EOF__';
+    
+    emit( '',
+	  'if [ "$COMMAND" != refresh ]; then' );
+
+    push_indent;
+
+    emit 'cat > ${VARDIR}/zones << __EOF__';
+    dump_zone_contents;
+    emit_unindented '__EOF__';
+    
+    pop_indent;
+    
+    emit "fi\n";
+    
+    emit '> ${VARDIR}/nat';
+    
+    add_addresses;
+
+    emit( '',
 	  'if [ $COMMAND = restore ]; then',
 	  '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
 	  '    if [ -f $iptables_save_file ]; then' );

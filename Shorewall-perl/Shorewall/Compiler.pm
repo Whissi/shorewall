@@ -643,29 +643,6 @@ sub generate_script_2 () {
 
     push_indent;
 
-    save_progress_message 'Initializing...';
-
-    if ( $export ) {
-	my $fn = find_file 'modules';
-
-	if ( $fn ne "$globals{SHAREDIR}/modules" && -f $fn ) {
-	    emit 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir';
-	    emit 'cat > ${VARDIR}/.modules << EOF';
-	    open_file $fn;
-	    while ( read_a_line ) {
-		emit_unindented $currentline;
-	    }
-	    emit_unindented 'EOF';
-	    emit 'reload_kernel_modules < ${VARDIR}/.modules';
-	} else {
-	    emit 'load_kernel_modules Yes';
-	}
-    } else {
-	emit 'load_kernel_modules Yes';
-    }
-
-    emit '';
-
     if ( $family == F_IPV4 ) {
 	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
 	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
@@ -775,6 +752,29 @@ sub generate_script_3($) {
     emit "#\n# Start/Restart the Firewall\n#";
     emit 'define_firewall() {';
     push_indent;
+
+    save_progress_message 'Initializing...';
+
+    if ( $export ) {
+	my $fn = find_file 'modules';
+
+	if ( $fn ne "$globals{SHAREDIR}/modules" && -f $fn ) {
+	    emit 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir';
+	    emit 'cat > ${VARDIR}/.modules << EOF';
+	    open_file $fn;
+	    while ( read_a_line ) {
+		emit_unindented $currentline;
+	    }
+	    emit_unindented 'EOF';
+	    emit 'reload_kernel_modules < ${VARDIR}/.modules';
+	} else {
+	    emit 'load_kernel_modules Yes';
+	}
+    } else {
+	emit 'load_kernel_modules Yes';
+    }
+
+    emit '';
 
     emit "\nclear_routing_and_traffic_shaping";
 

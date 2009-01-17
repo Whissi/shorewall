@@ -268,19 +268,23 @@
       to configure Shorewall, please heed the advice of Lorenzo Martignoni,
       the Shorewall Debian Maintainer:</para>
 
-      <para><quote>For more information about Shorewall usage on Debian
-      system please look at /usr/share/doc/shorewall-common/README.Debian
-      provided by [the] shorewall-common Debian package.</quote></para>
+      <para><quote>For more information about Shorewall usage on Debian system
+      please look at /usr/share/doc/shorewall-common/README.Debian provided by
+      [the] shorewall-common Debian package.</quote></para>
     </important>
 
     <para>The easiest way to install Shorewall on Debian, is to use
-    apt-get<command>. </command></para>
+    apt-get<command>.</command></para>
 
     <para>First, to ensure that you are installing the latest version of
     Shorewall, please modify your
     <filename>/etc/apt/preferences:</filename></para>
 
-    <para><programlisting>Package: shorewall
+    <para><programlisting>Package: shorewall-common
+Pin: release o=Debian,a=testing
+Pin-Priority: 700
+
+Package: shorewall-perl
 Pin: release o=Debian,a=testing
 Pin-Priority: 700
 
@@ -288,7 +292,7 @@ Package: shorewall-doc
 Pin: release o=Debian,a=testing
 Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
     run:</emphasis></emphasis><programlisting># apt-get update
-# apt-get install shorewall</programlisting></para>
+# apt-get install shorewall-common shorewall-perl</programlisting></para>
 
     <para><emphasis><emphasis role="bold">Once you have completed configuring
     Shorewall, you can enable startup at boot time by setting startup=1 in
@@ -320,11 +324,11 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
         your package manager from overwriting it during subsequent upgrades
         (since the addition of STARTUP_ENABLED, such modification is assured
         since you must manually change the setting of that option). If you
-        feel absolutely compelled to have the latest comments and options in
-        your shorewall.conf then you must proceed carefully. You should
-        determine which new options have been added and you must reset their
-        value (e.g. OPTION=""); otherwise, you will get different behavior
-        from what you expect.</para>
+        feel absolutely compelled to have the latest options in your
+        shorewall.conf then you must proceed carefully. You should determine
+        which new options have been added and you must reset their value (e.g.
+        OPTION=""); otherwise, you will get different behavior from what you
+        expect.</para>
       </listitem>
     </itemizedlist>
   </section>

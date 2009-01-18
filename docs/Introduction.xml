@@ -183,7 +183,7 @@ dmz     ipv4
     that file as follows:</para>
 
     <programlisting>#ZONE      INTERFACE     BROADCAST     OPTIONS
-net        eth0          detect        dhcp,routefilter,norfc1918
+net        eth0          detect        dhcp,routefilter
 loc        eth1          detect
 dmz        eth2          detect</programlisting>
 
@@ -252,14 +252,14 @@ dmz        eth2          detect</programlisting>
     first policy in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     that matches the request is applied. If there is a default action defined
-    for the policy in /etc/shorewall/actions (or
-    <filename>/usr/share/shorewall/actions.std</filename>) then that action is
-    invoked before the policy is enforced. In the standard Shorewall
-    distribution, the DROP policy has a default action called <emphasis
-    role="bold">Drop</emphasis> and the REJECT policy has a default action
-    called <emphasis role="bold">Reject</emphasis>. Default actions are used
-    primarily to discard packets silently so that they don't clutter up your
-    log.</para>
+    for the policy in<filename> <ulink
+    url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>
+    then that action is invoked before the policy is enforced. In the standard
+    Shorewall distribution, the DROP policy has a default action called
+    <emphasis role="bold">Drop</emphasis> and the REJECT policy has a default
+    action called <emphasis role="bold">Reject</emphasis>. Default actions are
+    used primarily to discard packets silently so that they don't clutter up
+    your log.</para>
 
     <para>The <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
@@ -271,7 +271,7 @@ all        all         REJECT      info</programlisting>In the three-interface
     sample, the line below is included but commented out. If you want your
     firewall system to have full access to servers on the Internet, uncomment
     that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
-$FW        net         ACCEPT</programlisting> The above policy will:
+$FW        net         ACCEPT</programlisting> The above policies will:
     <itemizedlist>
         <listitem>
           <para>Allow all connection requests from your local network to the
@@ -388,6 +388,21 @@ ACCEPT     net           $FW       tcp        22</programlisting>
         system where compiled Shorewall scripts are generated. These scripts
         are copied to the firewall systems where they run under the control of
         Shorewall-lite.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>In Shorewall 4.2.4, two additional packages were added:</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Shorewall6</emphasis> - The utilities
+        necessary to <ulink url="IPv6Support.html">control and configure an
+        IPv6 firewall</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall6-lite</emphasis> - The IPv6
+        equivalent of Shorewall-lite.</para>
       </listitem>
     </orderedlist>
   </section>

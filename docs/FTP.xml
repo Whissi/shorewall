@@ -311,9 +311,10 @@ xt_tcpudp               3328  0
     the control connection looking for PASV and PORT commands as well as PASV
     responses. If you run an FTP server on a nonstandard port or you need to
     access such a server, you must therefore let the helpers know by
-    specifying the port in /etc/shorewall/modules entries for the helpers. You
-    should create /etc/shorewall/modules by copying
-    /usr/share/shorewall/modules.<caution>
+    specifying the port in <filename>/etc/shorewall/modules</filename> entries
+    for the helpers. You should create<filename>
+    /etc/shorewall/modules</filename> by copying
+    <filename>/usr/share/shorewall/modules</filename>.<caution>
         <para>You must have modularized FTP connection tracking support in
         order to use FTP on a non-standard port.</para>
       </caution></para>
@@ -375,8 +376,8 @@ options nf_nat_ftp</programlisting>
     <para>Otherwise, for FTP you need exactly <emphasis
     role="bold">one</emphasis> rule:</para>
 
-    <programlisting>#ACTION      SOURCE     DESTINATION    PROTO     PORT(S)    SOURCE      ORIGINAL
-#                                                           PORT(S)     DESTINATION
+    <programlisting>#ACTION      SOURCE     DESTINATION    PROTO     DEST       SOURCE      ORIGINAL
+#                                                PORT(S)    PORT(S)     DESTINATION
 ACCEPT or    &lt;<emphasis>source</emphasis>&gt;   &lt;<emphasis>destination</emphasis>&gt;  tcp       21         -           &lt;external IP addr&gt; if
 DNAT                                                                    ACTION = DNAT</programlisting>
 
@@ -385,10 +386,10 @@ DNAT                                                                    ACTION =
     specific IP address to be forwarded to your server.</para>
 
     <para>Note that you do <emphasis role="bold">NOT </emphasis>need a rule
-    with 20 (ftp-data) in the PORT(S) column. If you post your rules on the
-    mailing list and they show 20 in the PORT(S) column, I will know that you
-    haven't read this article and I will either ignore your post or tell you
-    to RTFM.</para>
+    with 20 (ftp-data) in the DEST PORT(S) column. If you post your rules on
+    the mailing list and they show 20 in the DEST PORT(S) column, we will know
+    that you haven't read this article and will either ignore your post or
+    tell you to RTFM.</para>
 
     <para>Shorewall includes an FTP macro that simplifies creation of FTP
     rules. The macro source is in
@@ -402,14 +403,14 @@ DNAT                                                                    ACTION =
         <para>Suppose that you run an FTP server on 192.168.1.5 in your local
         zone using the standard port (21). You need this rule:</para>
 
-        <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
-#                                                            PORT(S)     DESTINATION
+        <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     DEST       SOURCE      ORIGINAL
+#                                                 PORT(S)    PORT(S)     DESTINATION
 FTP/DNAT      net       loc:192.168.1.5</programlisting>
       </example><example id="Example4">
         <title>Allow your DMZ FTP access to the Internet</title>
 
-        <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
-#                                                            PORT(S)     DESTINATION
+        <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     DEST       SOURCE      ORIGINAL
+#                                                 PORT(S)    PORT(S)     DESTINATION
 FTP/ACCEPT   dmz        net</programlisting>
       </example></para>
 
@@ -423,8 +424,8 @@ FTP/ACCEPT   dmz        net</programlisting>
     <para>I see this problem occasionally with the FTP server in my DMZ. My
     solution is to add the following rule:</para>
 
-    <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
-#                                                            PORT(S)     DESTINATION
+    <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     DEST       SOURCE      ORIGINAL
+#                                                 PORT(S)    PORT(S)     DESTINATION
 ACCEPT:info  dmz        net             tcp       -          20</programlisting>
 
     <para>The above rule accepts and logs all active mode connections from my

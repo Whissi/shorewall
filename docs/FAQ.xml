@@ -1611,6 +1611,19 @@ modprobe: Can't locate module iptable_raw</programlisting>
       Shorewall probes your system to determine the features that it support.
       They are completely harmless.</para>
     </section>
+
+    <section id="faq81">
+      <title>(FAQ 81) logdrop and logreject don't log.</title>
+
+      <para>I love the ability to type 'shorewall logdrop ww.xx.yy.zz' and
+      &gt;&gt; completely block a particular IP address. However, the log part
+      doesn't happen. When I look in the logdrop chain, there is no LOG
+      prefix.</para>
+
+      <para><emphasis role="bold">Answer</emphasis>: You haven't set a value
+      for BLACKLIST_LOGLEVEL in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+    </section>
   </section>
 
   <section id="Routing">

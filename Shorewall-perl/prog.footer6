@@ -2,7 +2,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ -t ] [ start|stop|clear|reset|refresh|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -43,8 +43,23 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			VERBOSE=$(($VERBOSE - 1 ))
 			option=${option#q}
 			;;
+                    t)  
+			if [ -n "$NOTCR" ]; then
+			    error_message "The -n and -t options are mutually exclusive"
+			    exit 1
+			fi
+
+			TCRONLY=Yes
+			option=${option#t}
+			PRODUCT="$PRODUCT Traffic Control and Routing"
+			;;
 		    n*)
-			NOROUTES=Yes
+			if [ -n "$TCRONLY" ]; then
+			    error_message "The -n and -t options are mutually exclusive"
+			    exit 1
+			fi
+
+			NOTCR=Yes
 			option=${option#n}
 			;;
 		    *)
@@ -72,7 +87,12 @@ else
     case "$COMMAND" in
 	start)
 	    [ $# -ne 1 ] && usage 2
-	    if shorewall6_is_started; then
+	    if [ -n "$TCRONLY" ]; then
+		progress_message3 "Starting $PRODUCT...."
+		define_firewall
+		status=$?
+		progress_message3 "done."
+	    elif shorewall6_is_started; then
 		error_message "$PRODUCT is already Running"
 		status=0
 	    else
@@ -86,13 +106,20 @@ else
 	stop)
 	    [ $# -ne 1 ] && usage 2
 	    progress_message3 "Stopping $PRODUCT...."
-	    stop_firewall
+	    if [ -n "$TCRONLY" ]; then
+		delete_tc1
+	    else
+		stop_firewall
+	    fi
 	    status=0
 	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	    progress_message3 "done."
 	    ;;
 	reset)
-	    if ! shorewall6_is_started ; then
+	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
+		error_message "The -n and -t options may not be used with 'reset'"
+		status=1
+	    elif ! shorewall6_is_started ; then
 		error_message "$PRODUCT is not running"
 		status=2
 	    elif [ $# -eq 1 ]; then
@@ -121,23 +148,33 @@ else
 	    ;;
 	restart)
 	    [ $# -ne 1 ] && usage 2
-	    if shorewall6_is_started; then
+	    if [ -n "$TCRONLY" ]; then
 		progress_message3 "Restarting $PRODUCT...."
+		define_firewall
+		status=$?
 	    else
-		error_message "$PRODUCT is not running"
-		progress_message3 "Starting $PRODUCT...."
+		if shorewall6_is_started; then
+		    progress_message3 "Restarting $PRODUCT...."
+		else
+		    error_message "$PRODUCT is not running"
+		    progress_message3 "Starting $PRODUCT...."
+		fi
+		
+		define_firewall
+		status=$?
+		if [ -n "$SUBSYSLOCK" ]; then
+ 		    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+		fi
 	    fi
-	    
-	    define_firewall
-	    status=$?
-	    if [ -n "$SUBSYSLOCK" ]; then
- 		[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-            fi
+
 	    progress_message3 "done."
 	    ;;
 	refresh)
 	    [ $# -ne 1 ] && usage 2
-	    if shorewall6_is_started; then
+	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
+		error_message "The -n and -t options may not be used with 'refresh'"
+		status=1
+	    elif shorewall6_is_started; then
 		progress_message3 "Refreshing $PRODUCT...."
 		define_firewall
 		status=$?
@@ -149,19 +186,29 @@ else
 	    ;;
 	restore)
 	    [ $# -ne 1 ] && usage 2
-	    define_firewall
-	    status=$?
-	    if [ -n "$SUBSYSLOCK" ]; then
- 		[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-            fi
+	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
+		error_message "The -n and -t options may not be used with 'restore'"
+		status=1
+	    else
+		define_firewall
+		status=$?
+		if [ -n "$SUBSYSLOCK" ]; then
+ 		    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+		fi
+	    fi
 	    ;;
 	clear)
 	    [ $# -ne 1 ] && usage 2
-	    progress_message3 "Clearing $PRODUCT...."
-	    clear_firewall
-	    status=0
-	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
-	    progress_message3 "done."
+	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
+		error_message "The -n and -t options may not be used with 'restore'"
+		status=1
+	    else
+		progress_message3 "Clearing $PRODUCT...."
+		clear_firewall
+		status=0
+		[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+		progress_message3 "done."
+	    fi
 	    ;;
 	status)
 	    [ $# -ne 1 ] && usage 2

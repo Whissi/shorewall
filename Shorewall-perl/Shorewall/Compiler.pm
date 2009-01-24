@@ -415,7 +415,7 @@ EOF
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	    [ -z "${haveroute}${NOTCR}" ] && qt ip route del $address dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -709,7 +709,12 @@ sub generate_script_4($) {
 	emit 'load_kernel_modules Yes';
     }
 
-    emit '';
+    emit ( '',
+	   'if [ -n "$TCRONLY" ]; then' ,
+	   '    delete_tc1' ,
+	   'else' );
+    
+    push_indent;
 
     if ( $family == F_IPV4 ) {
 	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
@@ -742,8 +747,7 @@ sub generate_script_4($) {
 		   "fi\n" );
 	}
 
-	emit "delete_tc1\n"            if $config{CLEAR_TC};
-	emit "disable_ipv6\n"          if $config{DISABLE_IPV6};
+	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     } else {
  	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
@@ -752,19 +756,25 @@ sub generate_script_4($) {
 	       ''
 	     );
 
-	emit "delete_tc1\n" if $config{CLEAR_TC};
     }
 
-    emit '';
+    emit qq([ -n "\$NOTCR" ] && delete_tc1\n) if $config{CLEAR_TC};
+
+    pop_indent;
+
+    emit 'fi';
 
     set_global_variables;
 
     emit '';
 
-    emit( 'setup_common_rules',
+    emit( '[ -n "$TCRONLY" ] && setup_common_rules',
 	  '',
-	  'setup_routing_and_traffic_shaping',
-	  '');
+	  '[ -n "$NOTCR"   ] || setup_routing_and_traffic_shaping',
+	  '',
+	  'if [ -z "$TCRONLY" ]; then' );
+
+    push_indent;
 
     emit 'cat > ${VARDIR}/proxyarp << __EOF__';
     dump_proxy_arp;
@@ -834,6 +844,12 @@ EOF
 fi
 
 date > ${VARDIR}/restarted
+EOF
+
+    pop_indent;
+
+    emit 'fi';
+    emit<<'EOF';
 
 case $COMMAND in
     start)

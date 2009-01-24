@@ -318,43 +318,45 @@ EOF
 	            ;;
             esac
 
-            if [ "$RESTOREFILE" = NONE ]; then
-                COMMAND=clear
-                clear_firewall
-                echo "$PRODUCT Cleared"
-
-	        kill $$
-	        exit 2
-            else
-	        RESTOREPATH=${VARDIR}/$RESTOREFILE
-
-	        if [ -x $RESTOREPATH ]; then
-
-		    if [ -x ${RESTOREPATH}-ipsets ]; then
-		        progress_message2 Restoring Ipsets...
-		        #
-		        # We must purge iptables to be sure that there are no
-		        # references to ipsets
-		        #
-		        for table in mangle nat filter; do
-			    do_iptables -t $table -F
-			    do_iptables -t $table -X
-		        done
-
-		        ${RESTOREPATH}-ipsets
-		    fi
-
-		    echo Restoring ${PRODUCT:=Shorewall}...
-
-		    if $RESTOREPATH restore; then
-		        echo "$PRODUCT restored from $RESTOREPATH"
-		        set_state "Started"
-		    else
-		        set_state "Unknown"
-		    fi
+            if [ -z "$RTCONLY" ]; then
+                if [ "$RESTOREFILE" = NONE ]; then
+                    COMMAND=clear
+                    clear_firewall
+                    echo "$PRODUCT Cleared"
 
 	            kill $$
 	            exit 2
+                else
+	            RESTOREPATH=${VARDIR}/$RESTOREFILE
+
+	            if [ -x $RESTOREPATH ]; then
+
+		        if [ -x ${RESTOREPATH}-ipsets ]; then
+		            progress_message2 Restoring Ipsets...
+		            #
+		            # We must purge iptables to be sure that there are no
+		            # references to ipsets
+		            #
+		            for table in mangle nat filter; do
+			        do_iptables -t $table -F
+			        do_iptables -t $table -X
+		            done
+
+		            ${RESTOREPATH}-ipsets
+		        fi
+
+		        echo Restoring ${PRODUCT:=Shorewall}...
+
+		        if $RESTOREPATH restore; then
+		            echo "$PRODUCT restored from $RESTOREPATH"
+		            set_state "Started"
+		        else
+		            set_state "Unknown"
+		        fi
+
+	                kill $$
+	                exit 2
+                    fi
 	        fi
             fi
 	    ;;
@@ -365,66 +367,78 @@ EOF
     STOPPING="Yes"
 
     TERMINATOR=
+EOF
+    emit '    if [ -n "$RTCONLY" ]; then';
 
-    deletechain shorewall
+    push_indent;
+    emit( '    delete_tc1' ) if $config{CLEAR_TC};
 
-    run_stop_exit
+    emit( '    undo_routing',
+	  '    restore_default_route'
+	  );
+    pop_indent;
+    emit <<'EOF';
+    else
+        deletechain shorewall
+
+        run_stop_exit
 EOF
 
     if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
 	emit <<'EOF';
-    run_iptables -t mangle -F
-    run_iptables -t mangle -X
-    for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	qt1 $IPTABLES -t mangle -P $chain ACCEPT
-    done
+        run_iptables -t mangle -F
+        run_iptables -t mangle -X
+        for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	    qt1 $IPTABLES -t mangle -P $chain ACCEPT
+        done
 EOF
     }
 
     if ( $capabilities{RAW_TABLE} ) {
 	if ( $family == F_IPV4 ) {
 	    emit <<'EOF';
-    run_iptables -t raw -F
-    run_iptables -t raw -X
-    for chain in PREROUTING OUTPUT; do
-        qt1 $IPTABLES -t raw -P $chain ACCEPT
-    done
+        run_iptables -t raw -F
+        run_iptables -t raw -X
+        for chain in PREROUTING OUTPUT; do
+            qt1 $IPTABLES -t raw -P $chain ACCEPT
+        done
 EOF
 	} else {
 	    emit <<'EOF';
-    run_iptables -t raw -F
-    run_iptables -t raw -X
-    for chain in PREROUTING OUTPUT; do
-        qt1 $IP6TABLES -t raw -P $chain ACCEPT
-    done
+        run_iptables -t raw -F
+        run_iptables -t raw -X
+        for chain in PREROUTING OUTPUT; do
+            qt1 $IP6TABLES -t raw -P $chain ACCEPT
+        done
 EOF
 	}
     }
 
     if ( $capabilities{NAT_ENABLED} ) {
 	emit <<'EOF';
-    delete_nat
-    for chain in PREROUTING POSTROUTING OUTPUT; do
-        qt1 $IPTABLES -t nat -P $chain ACCEPT
-    done
+        delete_nat
+        for chain in PREROUTING POSTROUTING OUTPUT; do
+            qt1 $IPTABLES -t nat -P $chain ACCEPT
+        done
 EOF
     }
 
     if ( $family == F_IPV4 ) {
 	emit <<'EOF';
-    if [ -f ${VARDIR}/proxyarp ]; then
-	while read address interface external haveroute; do
-	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NORTC}" ] && qt ip route del $address dev $interface
-	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
-	    [ -f $f ] && echo 0 > $f
-	done < ${VARDIR}/proxyarp
-    fi
+        if [ -f ${VARDIR}/proxyarp ]; then
+	    while read address interface external haveroute; do
+	        qt arp -i $external -d $address pub
+	        [ -z "${haveroute}${NORTC}" ] && qt ip route del $address dev $interface
+	        f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
+	        [ -f $f ] && echo 0 > $f
+	    done < ${VARDIR}/proxyarp
+        fi
 
-    rm -f ${VARDIR}/proxyarp
+        rm -f ${VARDIR}/proxyarp
 EOF
     }
 
+    push_indent;
     push_indent;
 
     emit 'delete_tc1' if $config{CLEAR_TC};
@@ -578,12 +592,14 @@ EOF
 	}
     }
 
-    emit 'run_stopped_exit';
+    emit( '', 
+	  'run_stopped_exit' ,
+	  'set_state "Stopped"' );
 
     pop_indent;
+    pop_indent;
 
-    emit '
-    set_state "Stopped"
+    emit '    fi
 
     logger -p kern.info "$PRODUCT Stopped"
 

@@ -123,7 +123,7 @@ sub setup_route_filtering() {
 	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
 	}
 
-	emit "[ -n \"\$NOTCR\" ] || ip -4 route flush cache";
+	emit "[ -n \"\$NORTC\" ] || ip -4 route flush cache";
     }
 }
 

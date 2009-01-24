@@ -1,4 +1,4 @@
-#
+ #
 # Give Usage Information
 #
 usage() {
@@ -46,22 +46,22 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			option=${option#q}
 			;;
                     r*)  
-			if [ -n "$NOTCR" ]; then
+			if [ -n "$NORTC" ]; then
 			    error_message "The -n and -r options are mutually exclusive"
 			    exit 1
 			fi
 
-			TCRONLY=Yes
+			RTCONLY=Yes
 			option=${option#r}
 			PRODUCT="$PRODUCT Traffic Control and Routing"
 			;;
 		    n*)
-			if [ -n "$TCRONLY" ]; then
+			if [ -n "$RTCONLY" ]; then
 			    error_message "The -n and -r options are mutually exclusive"
 			    exit 1
 			fi
 
-			NOTCR=Yes
+			NORTC=Yes
 			option=${option#n}
 			;;
 		    *)
@@ -82,7 +82,7 @@ COMMAND="$1"
 case "$COMMAND" in
     start)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "$TCRONLY" ]; then
+	if [ -n "$RTCONLY" ]; then
 	    progress_message3 "Starting $PRODUCT...."
 	    define_firewall
 	    status=$?
@@ -101,7 +101,7 @@ case "$COMMAND" in
     stop)
 	[ $# -ne 1 ] && usage 2
 	progress_message3 "Stopping $PRODUCT...."
-	if [ -n "$TCRONLY" ]; then
+	if [ -n "$RTCONLY" ]; then
 	    delete_tc1
 	else
 	    stop_firewall
@@ -111,7 +111,7 @@ case "$COMMAND" in
 	progress_message3 "done."
 	;;
     reset)
-	if [ -n "${NOTCR}$"{TCRONLY} ]; then
+	if [ -n "${NORTC}$"{RTCONLY} ]; then
 	    error_message "The -n and -r options may not be used with 'reset'"
 	    status=1
 	elif ! shorewall_is_started ; then
@@ -160,7 +160,7 @@ case "$COMMAND" in
 	;;
     refresh)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "${NOTCR}$"{TCRONLY} ]; then
+	if [ -n "${NORTC}$"{RTCONLY} ]; then
 	    error_message "The -n and -r options may not be used with 'refresh'"
 	    status=1
 	elif shorewall_is_started; then
@@ -175,7 +175,7 @@ case "$COMMAND" in
 	;;
     restore)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "${NOTCR}$"{TCRONLY} ]; then
+	if [ -n "${NORTC}$"{RTCONLY} ]; then
 	    error_message "The -n and -r options may not be used with 'restart'"
 	    status=1
 	else
@@ -188,7 +188,7 @@ case "$COMMAND" in
 	;;
     clear)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "${NOTCR}$"{TCRONLY} ]; then
+	if [ -n "${NORTC}$"{RTCONLY} ]; then
 	    error_message "The -n and -r options may not be used with 'clear'"
 	    status=1
 	else

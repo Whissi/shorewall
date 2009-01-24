@@ -415,7 +415,7 @@ EOF
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOTCR}" ] && qt ip route del $address dev $interface
+	    [ -z "${haveroute}${NORTC}" ] && qt ip route del $address dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -710,7 +710,7 @@ sub generate_script_4($) {
     }
 
     emit ( '',
-	   'if [ -n "$TCRONLY" ]; then' ,
+	   'if [ -n "$RTCONLY" ]; then' ,
 	   '    delete_tc1' ,
 	   'else' );
     
@@ -758,7 +758,7 @@ sub generate_script_4($) {
 
     }
 
-    emit qq([ -n "\$NOTCR" ] && delete_tc1\n) if $config{CLEAR_TC};
+    emit qq([ -n "\$NORTC" ] && delete_tc1\n) if $config{CLEAR_TC};
 
     pop_indent;
 
@@ -768,11 +768,11 @@ sub generate_script_4($) {
 
     emit '';
 
-    emit( '[ -n "$TCRONLY" ] || setup_common_rules',
+    emit( '[ -n "$RTCONLY" ] || setup_common_rules',
 	  '',
-	  '[ -n "$NOTCR"   ] || setup_routing_and_traffic_shaping',
+	  '[ -n "$NORTC"   ] || setup_routing_and_traffic_shaping',
 	  '',
-	  'if [ -z "$TCRONLY" ]; then' );
+	  'if [ -z "$RTCONLY" ]; then' );
 
     push_indent;
 

@@ -216,6 +216,9 @@ get_config() {
 	    No|NO|no)
 	        TC_ENABLED=
 		;;
+	    RTC)
+		NORTC=Yes
+		;;
 	esac
 
 	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
@@ -480,6 +483,16 @@ start_command() {
 			    DEBUG=Yes
 			    option=${option#d}
 			    ;;
+			n*)
+			    NORTC=Yes
+			    RTCONLY=
+			    option=${option#n}
+			    ;;
+			r*)
+			    RTCONLY=Yes
+			    NORTC=
+			    option=${option#r}
+			    ;;
 			f*)
 			    FAST=Yes
 			    option=${option#f}
@@ -524,7 +537,8 @@ start_command() {
 	    ;;
     esac
 
-    export NOROUTES
+    export NORTC
+    export RTCONLY
     export PURGE
 
     if [ -n "$FAST" ]; then
@@ -766,8 +780,14 @@ restart_command() {
 			    option=${option#f}
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    NORTC=Yes
+			    RTCONLY=
 			    option=${option#n}
+			    ;;
+			r*)
+			    RTCONLY=Yes
+			    NORTC=
+			    option=${option#r}
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
@@ -818,7 +838,8 @@ restart_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NOROUTES
+    export NORTC
+    export RTCONLY
     export PURGE
 
    if [ -z "$FAST" ]; then  
@@ -896,7 +917,8 @@ refresh_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NOROUTES
+    export NORTC
+    export RTCONLY
 
     progress_message3 "Compiling..."
 
@@ -939,8 +961,14 @@ safe_commands() {
 			    option=
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    NORTC=Yes
+			    RTCONLY=
 			    option=${option#n}
+			    ;;
+			r*)
+			    RTCONLY=Yes
+			    NORTC=
+			    option=${option#r}
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
@@ -1088,8 +1116,14 @@ try_command() {
 			    option=
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    NORTC=Yes
+			    RTCONLY=
 			    option=${option#n}
+			    ;;
+			r*)
+			    RTCONLY=Yes
+			    NORTC=
+			    option=${option#r}
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
@@ -1485,7 +1519,8 @@ IPT_OPTIONS="-nv"
 FAST=
 VERBOSE_OFFSET=0
 USE_VERBOSITY=
-NOROUTES=
+NORTC=
+RTC=
 PURGE=
 EXPORT=
 export TIMESTAMP=
@@ -1562,8 +1597,14 @@ while [ $finished -eq 0 ]; do
 			esac
 			;;
 		    n*)
-			NOROUTES=Yes
+			NORTC=Yes
+			RTCONLY=
 			option=${option#n}
+			;;
+		    r*)
+			RTCONLY=Yes
+			NORTC=
+			option=${option#r}
 			;;
 		    t*)
 			TIMESTAMP=Yes
@@ -1724,14 +1765,16 @@ case "$COMMAND" in
 
 	[ $# -ne 1 ] && usage 1
 	get_config
-	export NOROUTES
+	export NORTC
+	export RTCONLY
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
 	get_config
-	export NOROUTE
+	export NORTC
+	export RTCONLY
 	shift
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@

@@ -568,7 +568,7 @@ sub setup_providers() {
 
 	    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
 
-	    emit "\nif [ -z \"\$NOTCR\" ]; then";
+	    emit "\nif [ -z \"\$NORTC\" ]; then";
 
 	    push_indent;
 
@@ -708,7 +708,7 @@ sub setup_providers() {
 	emit "\nundo_routing";
 	emit 'restore_default_route';
 	if ( $config{NULL_ROUTE_RFC1918} ) {
-	    emit "\nif [ -z \"\$NOTCR\" ]; then";
+	    emit "\nif [ -z \"\$NORTC\" ]; then";
 
 	    push_indent;
 

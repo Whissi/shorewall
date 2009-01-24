@@ -607,7 +607,7 @@ EOF
 # Second Phase of Script Generation
 #
 #    copies the 'prog.functions' file into the script and generates
-#    the first part of 'setup_common()'
+#    the first part of 'setup_common_rules()'
 #
 #    The bulk of that function is produced by the various config file
 #    parsing routines that are called directly out of 'compiler()'.
@@ -768,7 +768,7 @@ sub generate_script_4($) {
 
     emit '';
 
-    emit( '[ -n "$TCRONLY" ] && setup_common_rules',
+    emit( '[ -n "$TCRONLY" ] || setup_common_rules',
 	  '',
 	  '[ -n "$NOTCR"   ] || setup_routing_and_traffic_shaping',
 	  '',
@@ -997,7 +997,7 @@ sub compiler {
     #
     compile_stop_firewall;
     #
-    # Start Second Part of script
+    # Start Second Part of script ================= setup_common_rules() {
     #
     generate_script_2 unless $command eq 'check';
     #
@@ -1023,7 +1023,7 @@ sub compiler {
     #
     setup_zone_mss;
     #
-    # Finish setup_common_rules() and start setup_routing_and_traffic_shaping()
+    # Finish setup_common_rules() and start setup_routing_and_traffic_shaping() {
     #
     generate_script_3;
     #

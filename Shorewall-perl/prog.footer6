@@ -2,7 +2,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ -t ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ -r ] [ start|stop|clear|reset|refresh|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -22,6 +22,8 @@ if [ $# -gt 1 ]; then
 fi
 
 initialize
+
+[ -n "${PRODUCT:=Shorewall6}" ]
 
 finished=0
 
@@ -43,19 +45,19 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			VERBOSE=$(($VERBOSE - 1 ))
 			option=${option#q}
 			;;
-                    t)  
+                    r*)  
 			if [ -n "$NOTCR" ]; then
-			    error_message "The -n and -t options are mutually exclusive"
+			    error_message "The -n and -r options are mutually exclusive"
 			    exit 1
 			fi
 
 			TCRONLY=Yes
-			option=${option#t}
+			option=${option#r}
 			PRODUCT="$PRODUCT Traffic Control and Routing"
 			;;
 		    n*)
 			if [ -n "$TCRONLY" ]; then
-			    error_message "The -n and -t options are mutually exclusive"
+			    error_message "The -n and -r options are mutually exclusive"
 			    exit 1
 			fi
 
@@ -76,8 +78,6 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 done
 
 COMMAND="$1"
-
-[ -n "${PRODUCT:=Shorewall6}" ]
 
 kernel=$(printf "%2d%02d%02d\n" $(echo $(uname -r) 2> /dev/null | sed 's/-.*//' | tr '.' ' ' ) | head -n1)
 if [ $kernel -lt 20625 ]; then
@@ -117,7 +117,7 @@ else
 	    ;;
 	reset)
 	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
-		error_message "The -n and -t options may not be used with 'reset'"
+		error_message "The -n and -r options may not be used with 'reset'"
 		status=1
 	    elif ! shorewall6_is_started ; then
 		error_message "$PRODUCT is not running"
@@ -172,7 +172,7 @@ else
 	refresh)
 	    [ $# -ne 1 ] && usage 2
 	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
-		error_message "The -n and -t options may not be used with 'refresh'"
+		error_message "The -n and -r options may not be used with 'refresh'"
 		status=1
 	    elif shorewall6_is_started; then
 		progress_message3 "Refreshing $PRODUCT...."
@@ -187,7 +187,7 @@ else
 	restore)
 	    [ $# -ne 1 ] && usage 2
 	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
-		error_message "The -n and -t options may not be used with 'restore'"
+		error_message "The -n and -r options may not be used with 'restore'"
 		status=1
 	    else
 		define_firewall
@@ -200,7 +200,7 @@ else
 	clear)
 	    [ $# -ne 1 ] && usage 2
 	    if [ -n "${NOTCR}$"{TCRONLY} ]; then
-		error_message "The -n and -t options may not be used with 'restore'"
+		error_message "The -n and -r options may not be used with 'clear'"
 		status=1
 	    else
 		progress_message3 "Clearing $PRODUCT...."

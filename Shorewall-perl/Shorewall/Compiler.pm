@@ -997,7 +997,7 @@ sub compiler {
     #
     compile_stop_firewall;
     #
-    # Start Second Part of script ================= setup_common_rules() {
+    # Start Second Part of script -- Begin setup_common_rules() {
     #
     generate_script_2 unless $command eq 'check';
     #

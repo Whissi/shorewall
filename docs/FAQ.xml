@@ -2194,9 +2194,34 @@ We have an error talking to the kernel
       <title>(FAQ 80) Does Shorewall support IPV6?</title>
 
       <para>Answer: <ulink url="IPv6Support.html">Shorewall IPv6
-      support</ulink> is currently available in <ulink
-      url="pub/shorewall/development/4.2/4.2.4-RC1">Shorewall
-      4.2.4-RC1</ulink>.</para>
+      support</ulink> is currently available in Shorewall 4.2.4 and
+      later.</para>
+
+      <section id="faq80a">
+        <title>(FAQ 80a) Why does Shorewall lPv6 Support Require Kernel 2.6.25
+        or later?</title>
+
+        <para><emphasis role="bold">Answer:</emphasis> Shorewall implements a
+        stateful firewall which requires connection tracking be present in
+        ip6tables and in the kernel. Kernel's before 2.6.20 didn't have
+        connection tracking for IPv6. So we could not even start to develop
+        IPv6 support until then. By the time that distributions began shipping
+        with kernels that supported IPv6 connection tracking, they were
+        shipping with 2.6.25. So that is what we developed IPv6 support on and
+        that's all that it has been tested on. If you are running 2.6.20 or
+        later, you can <emphasis role="bold">try</emphasis> to run Shorewall6
+        by hacking<filename> /usr/share/shorewall-perl/prog.footer6</filename>
+        and changing the kernel version test to check for your kernel version
+        rather than 2.6.25 (20625). But after that, you are on your
+        own.</para>
+
+        <programlisting>kernel=$(printf "%2d%02d%02d\n" $(echo $(uname -r) 2&gt; /dev/null | sed 's/-.*//' | tr '.' ' ' ) | head -n1)
+if [ $kernel -lt <emphasis role="bold">20625</emphasis> ]; then
+    error_message "ERROR: $PRODUCT requires Linux kernel <emphasis role="bold">2.6.25</emphasis> or later"
+    status=2
+else 
+ </programlisting>
+      </section>
     </section>
   </section>
 

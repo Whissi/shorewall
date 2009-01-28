@@ -586,6 +586,62 @@ ppp0           6000kbit         500kbit</programlisting>
         evaluation of rules in this file will continue after a match. So the
         final mark for each packet will be the one assigned by the LAST tcrule
         that matches.</para>
+
+        <para>Also unlike rules in the <ulink
+        url="manpages/shorewall-rules.html">shorewall-rules</ulink>(5) file,
+        the tcrules file is not stateful. So every packet that goes into, out
+        of or through your firewall is subject to entries in the tcrules
+        file.</para>
+
+        <para>Because tcrules are not stateful, it is necessary to understand
+        basic IP socket operation. Here is an excerpt from a post on the
+        Shorewall Users list:<blockquote>
+            <para>For the purposes of this discussion, the world is separated
+            into clients and servers. Servers provide services to
+            clients.</para>
+
+            <para>When a server starts, it creates a socket and *binds* the
+            socket to an *address*. For AF_INET (IPv4) and AF_INET6 (IPv6)
+            sockets, that address is an ordered triple consisting of an IPv4
+            or IPv6 address, a protocol, and possibly a port number. Port
+            numbers are only used when the protocol is TCP, UDP, SCTP or SCCP.
+            The protocol and port number used by a server are typically
+            well-known so that clients will be able to connect to it. So SSH
+            servers bind to TCP port 22, SMTP servers bind to TCP port 25,
+            etc. We will call this port the SERVER PORT. </para>
+
+            <para>When a client want to use the service provided by a server,
+            it also creates a socket. Like the server's socket, the client's
+            socket must also be bound to an address. But in the case of the
+            client, the socket is usually given an automatic address binding.
+            For AF_INET and AF_INET6 sockets. the IP address is the IP address
+            of the client system (loose generalization) and the port number is
+            selected from a *local port range*. On Linux systems, the local
+            port ranges can be seen by 'cat
+            /proc/sys/net/ipv4/ip_local_port_range'. So it is not possible in
+            advance to determine what port the client will be using. Whatever
+            it is, we'll call it the CLIENT PORT. </para>
+
+            <para>Now: <blockquote>
+                <para>Packets send from the client to the server will
+                have:<blockquote>
+                    <para>SOURCE PORT = CLIENT PORT</para>
+
+                    <para>DEST PORT = SERVER PORT</para>
+                  </blockquote></para>
+
+                <para>Packets send from the server to the client will have:
+                <blockquote>
+                    <para>SOURCE PORT = SERVER PORT</para>
+
+                    <para>DEST PORT = CLIENT PORT</para>
+                  </blockquote></para>
+              </blockquote></para>
+
+            <para>Since the SERVER PORT is generally the only port known ahead
+            of time, we therefore categorize traffic from the server to the
+            client using the SOURCE PORT.</para>
+          </blockquote></para>
       </important>
 
       <para>The fwmark classifier provides a convenient way to classify

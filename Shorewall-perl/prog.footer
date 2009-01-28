@@ -149,7 +149,7 @@ case "$COMMAND" in
 
 	define_firewall
 	status=$?
-	if [ -n "$SUBSYSLOCK" ]; then
+	if [ -n "$SUBSYSLOCK" -a -z "$RTCONLY" ]; then
  	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
         fi
 	progress_message3 "done."
@@ -177,7 +177,7 @@ case "$COMMAND" in
 	else
 	    define_firewall
 	    status=$?
-	    if [ -n "$SUBSYSLOCK" ]; then
+	    if [ -n "$SUBSYSLOCK" -a -z "$RTCONLY" ]; then
  		[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
             fi
 	fi
@@ -189,7 +189,6 @@ case "$COMMAND" in
 	status=0
 	[ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
-	fi
 	;;
     status)
 	[ $# -ne 1 ] && usage 2

@@ -112,7 +112,7 @@ else
 		stop_firewall
 	    fi
 	    status=0
-	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	    [ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
 	    progress_message3 "done."
 	    ;;
 	reset)
@@ -162,7 +162,7 @@ else
 		
 		define_firewall
 		status=$?
-		if [ -n "$SUBSYSLOCK" ]; then
+		if [ -n "$SUBSYSLOCK" -a -z "$RTCONLY" ]; then
  		    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
 		fi
 	    fi
@@ -192,23 +192,18 @@ else
 	    else
 		define_firewall
 		status=$?
-		if [ -n "$SUBSYSLOCK" ]; then
+		if [ -n "$SUBSYSLOCK" -a -z "$RTCONLY" ]; then
  		    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
 		fi
 	    fi
 	    ;;
 	clear)
 	    [ $# -ne 1 ] && usage 2
-	    if [ -n "${NORTC}$"{RTCONLY} ]; then
-		error_message "The -n and -r options may not be used with 'clear'"
-		status=1
-	    else
-		progress_message3 "Clearing $PRODUCT...."
-		clear_firewall
-		status=0
-		[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
-		progress_message3 "done."
-	    fi
+	    progress_message3 "Clearing $PRODUCT...."
+	    clear_firewall
+	    status=0
+	    [ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
+	    progress_message3 "done."
 	    ;;
 	status)
 	    [ $# -ne 1 ] && usage 2

@@ -565,6 +565,8 @@ sub process_action( $$$$$$$$$$ ) {
 	( $action, my $param ) = get_target_param $action;
 	$param = 1 unless defined $param;
 	$action = "NFQUEUE --queue-num $param";
+    } elsif ( $action eq 'COUNT' ) {
+	$action = '';
     }
 
     expand_rule ( $chainref ,
@@ -574,7 +576,7 @@ sub process_action( $$$$$$$$$$ ) {
 		  $dest ,
 		  '', #Original Dest
 		  '', #Original Dest port
-		  "-j $action" ,
+		  $action ? "-j $action" : '',
 		  $level ,
 		  $action ,
 		  '' );

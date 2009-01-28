@@ -383,6 +383,9 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	CONTINUE)
 	    target=RETURN
 	    ;;
+	COUNT)
+	    return;
+	    ;;
 	*)
 	    ;;
 	esac
@@ -615,7 +618,7 @@ process_actions1() {
 		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec $xmark; do
 			temp="${xtarget%%:*}"
 			case "$temp" in
-			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
+			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|COUNT)
 				;;
 			    COMMENT)
 				if [ "$temp" != "$xtarget" ]; then
@@ -659,7 +662,7 @@ process_actions1() {
 
 					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 
-						[ $mtarget = COMMENT ] && continue
+						[ $mtarget = COMMENT -o $mtarget = COUNT ] && continue
 
 						temp="${mtarget%%:*}"
 						case "$temp" in
@@ -771,7 +774,7 @@ process_action3() {
 	xtarget1=${xaction2%%:*}
 
 	case $xtarget1 in
-	    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
+	    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|COUNT)
 		#
 		# Builtin target -- Nothing to do
 		#
@@ -816,7 +819,7 @@ process_action3() {
 
 	    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 
-		[ $mtarget = COMMENT ] && continue
+		[ $mtarget = COMMENT -o $mtarget = COUNT ] && continue
 
 		mtarget=$(merge_levels $xaction2 $mtarget)
 

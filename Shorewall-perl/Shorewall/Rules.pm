@@ -1096,6 +1096,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$action = 'reject';
     } elsif ( $action eq 'CONTINUE' ) {
 	$action = 'RETURN';
+    } elsif ( $action eq 'COUNT' ) {
+	$action = '';
     } elsif ( $actiontype & LOGRULE ) {
 	fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne '';
     }
@@ -1384,7 +1386,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $dest ,
 		     $origdest ,
 		     $origdstports ,
-		     "-j $action " ,
+		     $action ? "-j $action " : '' ,
 		     $loglevel ,
 		     $action ,
 		     '' );

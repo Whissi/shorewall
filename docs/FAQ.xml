@@ -2203,11 +2203,12 @@ We have an error talking to the kernel
 
         <para><emphasis role="bold">Answer:</emphasis> Shorewall implements a
         stateful firewall which requires connection tracking be present in
-        ip6tables and in the kernel. Kernel's before 2.6.20 didn't have
+        ip6tables and in the kernel. Linux kernel's before 2.6.20 didn't have
         connection tracking for IPv6. So we could not even start to develop
-        IPv6 support until then. By the time that distributions began shipping
-        with kernels that supported IPv6 connection tracking, they were
-        shipping with 2.6.25. So that is what we developed IPv6 support on and
+        IPv6 support until 2.6.20. We understand that there were significant
+        problems with the facility until at least kernel 2.6.23. When
+        distributions began offering IPv6 connection tracking support, it was
+        with kernel 2.6.25. So that is what we developed IPv6 support on and
         that's all that it has been tested on. If you are running 2.6.20 or
         later, you can <emphasis role="bold">try</emphasis> to run Shorewall6
         by hacking<filename> /usr/share/shorewall-perl/prog.footer6</filename>

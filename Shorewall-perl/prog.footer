@@ -101,13 +101,9 @@ case "$COMMAND" in
     stop)
 	[ $# -ne 1 ] && usage 2
 	progress_message3 "Stopping $PRODUCT...."
-	if [ -n "$RTCONLY" ]; then
-	    delete_tc1
-	else
-	    stop_firewall
-	fi
+	stop_firewall
 	status=0
-	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	[ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
     reset)
@@ -188,15 +184,11 @@ case "$COMMAND" in
 	;;
     clear)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "${NORTC}$"{RTCONLY} ]; then
-	    error_message "The -n and -r options may not be used with 'clear'"
-	    status=1
-	else
-	    progress_message3 "Clearing $PRODUCT...."
-	    clear_firewall
-	    status=0
-	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
-	    progress_message3 "done."
+	progress_message3 "Clearing $PRODUCT...."
+	clear_firewall
+	status=0
+	[ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
+	progress_message3 "done."
 	fi
 	;;
     status)

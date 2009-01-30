@@ -103,8 +103,9 @@
 
       <listitem>
         <para>For most routing applications, <ulink
-        url="http://www.quagga.net/">Quagga</ulink> is a better
-        solution.</para>
+        url="http://www.quagga.net/">Quagga</ulink> is a better solution
+        although it requires that your ISPs offer routing protocol
+        support.</para>
       </listitem>
     </itemizedlist>
 
@@ -618,13 +619,136 @@
       <filename>/etc/shorewall/route_rules</filename>.</para>
     </section>
 
-    <section id="Provider_Doesnt">
-      <title>What an entry in the Providers File Does NOT Do</title>
+    <section id="swping">
+      <title>Gateway Monitoring and Failover</title>
 
-      <para>Given that Shorewall is simply a tool to configure Netfilter and
-      does not run continuously in your system, entries in the providers file
-      <emphasis role="bold">do not provide any automatic failover in the event
-      of failure of one of your Internet connections</emphasis>.</para>
+      <para>Beginning with Shorewall 4.2.6, Shorewall includes a sample
+      monitoring script <filename>swping</filename>. The
+      <filename>swping</filename> file is available in the main directory
+      contained in the Shorewall-common tarball and is included in the
+      Shorewall-common documentation directory on the Shorewall-common
+      RPM.</para>
+
+      <para>For those not on 4.2.6 yet, the script may be downloaded from
+      <ulink
+      url="http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/">http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/</ulink>.</para>
+
+      <important>
+        <para>These samples are offered <emphasis>as is</emphasis> — they work
+        for me but I don't make any claim that they will work for anyone else.
+        But if you have a need for automated link monitoring, they offer you a
+        place to start.</para>
+      </important>
+
+      <para>The script monitors two interfaces but it is a trivial exercise to
+      extend it to more than two. At the top are a number of variables to
+      set:</para>
+
+      <programlisting># The commands to run when the status of a line changes. Both commands will be executed.
+#
+COMMAND1=
+COMMAND2="ip -4 route ls"
+...
+#
+# Interfaces to monitor -- you may use shell variables from your params file
+#
+IF1=eth0
+IF2=eth1
+#
+# Sites to Ping. Must not depend on the associated interface having a default route through it.
+#
+TARGET1=
+TARGET2=
+#
+# How often to ping
+#
+PING_INTERVAL=5
+#
+# Value for ping's -W option
+#
+PING_TIMEOUT=2
+#
+# This many successive pings must succeed for the interface to be marked up when it is down
+#
+UP_COUNT=5
+#
+# This many successive pings must fail for the interface to be marked down when it is up
+#
+DOWN_COUNT=2</programlisting>
+
+      <para>If you leave COMMAND1 empty, the script sets its value
+      automatically depending on whether Shorewall-lite is installed.</para>
+
+      <para>When the status of an interface changes:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>For each interface, a file is placed in /etc/shorewall to
+          record the status of the interface: either 0 (UP) or 1 (DOWN). The
+          name of the file is<emphasis> interface</emphasis>.status where
+          <emphasis>interface</emphasis> is the interface (e.g.,
+          <filename>eth0.status</filename>).</para>
+        </listitem>
+
+        <listitem>
+          <para>A <command>shorewall -f restart</command> command is executed
+          (<command>shorewall-lite restart</command>, if Shorewall-lite is
+          installed).</para>
+        </listitem>
+
+        <listitem>
+          <para>The contents of the main routing table are displayed.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The .status files are intended to be used with the following
+      <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
+
+case $1 in
+    <emphasis role="bold">eth0|eth1</emphasis>)
+        [ -f /etc/shorewall/${1}.status ] &amp;&amp; status=$(cat /etc/shorewall/${1}.status)
+        ;;
+esac
+
+return $status</programlisting></para>
+
+      <para>Be sure that you modify the interface names to match your
+      configuration.</para>
+
+      <para>Also included is a sample init script
+      (<filename>swping.init</filename>) to start the monitoring daemon. Copy
+      it to<filename> /etc/init.d/swping</filename> and use your
+      distribution's SysV init tools to cause it to be run at boot. It works
+      on <trademark>OpenSuSE</trademark> 11.0 -- YMMV. Modify the PROG and
+      STATEDIR variables as needed.</para>
+
+      <para>This simple script has a number of limitations:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>It only works on IPv4 (but is easy to modify for IPv6)</para>
+        </listitem>
+
+        <listitem>
+          <para>It's method of determining whether an interface is up or down
+          is crude. You will normally specify the default gateway for each
+          provider as the sites to ping and being able to ping the default
+          gateway is not a surefire indication that the provider is usable.
+          The method of determining whether a site is up or down is also
+          crude.</para>
+        </listitem>
+
+        <listitem>
+          <para>Because of the crudeness of the algorithm, hysteresis may
+          occur.</para>
+        </listitem>
+
+        <listitem>
+          <para>It is tricky to configure a system such that a system works
+          correctly when one of its providers is down unless you largely don't
+          care which interface is used.</para>
+        </listitem>
+      </orderedlist>
     </section>
 
     <section id="Martians">
@@ -1007,7 +1131,7 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
       a USE_DEFAULT_RT option in <ulink
       url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
 
-      <para>One of the drawbacks of the Mulit-ISP support as described in the
+      <para>One of the drawbacks of the Multi-ISP support as described in the
       preceding sections is that changes to the main table made by
       applications are not added to the individual provider tables. This makes
       route rules such as described in <link linkend="Openvpn">one of the
@@ -1136,7 +1260,7 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
 
       <para>Example:</para>
 
-      <para>This is our home network circa fall 2008. We have two internet
+      <para>This is our home network circa fall 2008. We have two Internet
       providers:</para>
 
       <orderedlist>
@@ -1339,11 +1463,12 @@ wlan0                   192.168.0.0/24</programlisting><note>
     </itemizedlist>
 
     <para>As a consequence, I have disabled all route filtering on the
-    firewall and do not use the <emphasis role="bold">balance</emphasis>
-    option in <filename>/etc/shorewall/providers</filename>. The default route
-    in the main table is established by DHCP. By specifying the <emphasis
-    role="bold">fallback</emphasis> option on Avvanta, I ensure that there is
-    still a default route if Comcast is down.</para>
+    firewall and only use the <emphasis role="bold">balance</emphasis> option
+    in <filename>/etc/shorewall/providers</filename> on the Comcast provider
+    whose default route in the main table is established by DHCP. By
+    specifying the <emphasis role="bold">fallback</emphasis> option on
+    Avvanta, I ensure that there is still a default route if Comcast is down.
+    <link linkend="swping">swping</link> is used to monitor the links.</para>
 
     <para><filename>/etc/sysctl.conf</filename>:</para>
 
@@ -1351,13 +1476,19 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <para><filename>/etc/shorewall/shorewall.conf</filename>:</para>
 
-    <programlisting>ROUTE_FILTER=No</programlisting>
+    <programlisting>ROUTE_FILTER=No
+RESTORE_DEFAULT_ROUTE=No</programlisting>
+
+    <para>The RESTORE_DEFAULT_ROUTE option was added in Shorewall-perl 4.2.6
+    and causes the default route in the main table to be deleted when the
+    Comcast link is unavailable. That way, the default route in the default
+    table will be used until Comcast is available again.</para>
 
     <para><filename>/etc/shorewall/providers</filename>:</para>
 
     <programlisting>#NAME  NUMBER MARK  DUPLICATE INTERFACE GATEWAY         OPTIONS                 COPY
 Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose,fallback    eth2,eth4,tun*
-Comcast     2 0x200 main      eth3      detect          track                   eth2,eth4,tun*
+Comcast     2 0x200 main      eth3      detect          track,balance           eth2,eth4,tun*
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
     <para>The <emphasis role="bold">loose</emphasis> option on Avvanta results
@@ -1372,7 +1503,7 @@ Comcast     2 0x200 main      eth3      detect          track                   
     <para><filename>/etc/shorewall/route_rules</filename>:</para>
 
     <programlisting>#SOURCE            DEST           PROVIDER PRIORITY
--                  162.20.0.0.24  main     1000    # Addresses assigned by routed OpenVPN server
+-                  172.20.0.0/24  main     1000    # Addresses assigned by routed OpenVPN server
 206.124.146.176/30 -              Avvanta  26000
 206.124.146.180    -              Avvanta  26000
 -                  216.168.3.44   Avvanta  26000   # Avvanta NNTP Server -- verifies source IP address
@@ -1471,8 +1602,7 @@ COMMENT Masquerade Local Network
 eth3         0.0.0.0/0
 eth0        !206.124.146.0/24 206.124.146.179
 
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
     <para>All traffic leaving eth3 must use the dynamic IP address assigned to
     that interface as the SOURCE address. All traffic leaving eth0 that does

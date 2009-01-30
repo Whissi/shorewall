@@ -1249,6 +1249,27 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
       <varlistentry>
         <term><emphasis
+        role="bold">RESTORE_DEFAULT_ROUTE=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.2.6, this option determines whether to
+          restore the default route saved when here are 'balance' providers
+          defined but all of them are down.</para>
+
+          <para>The default is RESTORE_DEFAULT_ROUTE=Yes which preserves the
+          pre-4.2.6 behavior.</para>
+
+          <para>RESTORE_DEFAULT_ROUTE=No is appropriate when you don't want a
+          default route in the main table (USE_DEFAULT_RT=No) or in the
+          default table (USE_DEFAULT_RT=Yes) when there are no balance
+          providers available. In that case, RESTORE_DEFAULT_ROUTE=No will
+          cause any default route in the relevant table to be deleted.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
         role="bold">RESTOREFILE=</emphasis><emphasis>filename</emphasis></term>
 
         <listitem>

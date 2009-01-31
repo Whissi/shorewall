@@ -856,6 +856,8 @@ restore_default_route() {
 	local default_route
 	default_route=
 	local route
+	local result
+	result=1
 
 	while read route ; do
 	    case $route in
@@ -871,6 +873,7 @@ restore_default_route() {
 				;;
 			    *)
 				qt ip -6 route replace $default_route && \
+				    result=0 && \
 				    progress_message "Default Route (${default_route# }) restored"
 				;;
 			esac
@@ -888,6 +891,8 @@ restore_default_route() {
 
 	rm -f ${VARDIR}/default_route
     fi
+
+    return $result
 }
 
 #

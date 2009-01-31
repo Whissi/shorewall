@@ -457,10 +457,10 @@ sub add_a_provider( $$$$$$$$ ) {
     emit 'else';
 
     if ( $optional ) {
-	emit ( "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\"",
+	emit ( "    error_message \"WARNING: Interface $interface is not usable -- Provider $table ($number) not Added\"",
 	       "    ${base}_IS_UP=" );
     } else {
-	emit( "    fatal_error \"Interface $interface is not configured -- Provider $table ($number) Cannot be Added\"" );
+	emit( "    fatal_error \"Interface $interface is not usable -- Provider $table ($number) Cannot be Added\"" );
     }
 
     emit "fi\n";
@@ -632,9 +632,15 @@ sub setup_providers() {
 	    emit  ( "    qt ip -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
 	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
-		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"',
-		    '    restore_default_route',
-		    'fi',
+		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
+
+	    if ( $config{RESTORE_DEFAULT_ROUTE} ) {
+		emit '    restore_default_route && error_message "NOTICE: Default route restored"'
+	    } else {
+		emit qq(    qt ip -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
+	    }
+
+	    emit(   'fi',
 		    '' );
 	} else {
 	    emit ( '#',

@@ -1614,7 +1614,13 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             <listitem>
               <para>All provider gateways must be specified explicitly in the
               GATEWAY column. <emphasis role="bold">detect</emphasis> may not
-              be specified.</para>
+              be specified.<note>
+                  <para>Beginning with Shorewall 4.2.6, <emphasis
+                  role="bold">detect</emphasis> may be specified for
+                  interfaces whose configuration is managed by dhcpcd.
+                  Shorewall will use dhcpcd's database to find the
+                  interfaces's gateway.</para>
+                </note></para>
             </listitem>
 
             <listitem>

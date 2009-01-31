@@ -1040,7 +1040,12 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         <listitem>
           <para>All provider gateways must be specified explicitly in the
           GATEWAY column. 'detect' may not be specified. Note that for ppp
-          interfaces, the GATEWAY may remain unspecified ("-").</para>
+          interfaces, the GATEWAY may remain unspecified ("-").<note>
+              <para>Beginning with Shorewall 4.2.6, 'detect' may be specified
+              for interfaces whose configuration is managed by dhcpcd.
+              Shorewall will use dhcpcd's database to determine the gateway IP
+              address.</para>
+            </note></para>
         </listitem>
 
         <listitem>
@@ -1114,7 +1119,9 @@ COMMANDB="ip -$FAMILY route ls"
 IF1=eth0
 IF2=eth1
 #
-# Sites to Ping. Must not depend on the associated interface having a default route through it.
+# Sites to Ping. Must depend only on routes in the 'main' routing table. If not specified,
+# the interface is assumed to be managed by dhcpcd and the script uses the gateway address
+# from /var/lib/dhcpcd/dhcpcd-${IFx}.info
 #
 TARGET1=
 TARGET2=
@@ -1519,11 +1526,8 @@ Comcast     2 0x200 main      eth3      detect          track,balance           
     <para>The <emphasis role="bold">loose</emphasis> option on Avvanta results
     in fewer routing rules. The first two routing rules below insure that all
     traffic from Avvanta-assigned IP addresses is sent via the Avvanta
-    provider. Note that because the Comcast line has a dynamic IP address, I
-    am not able to use USE_DEFAULT_RT=Yes in
-    <filename>/etc/shorewall/shorewall.conf</filename>. The 'tun*' included in
-    the COPY column is there because I run a routed OpenVPN server on the
-    firewall.</para>
+    provider. The 'tun*' included in the COPY column is there because I run a
+    routed OpenVPN server on the firewall.</para>
 
     <para><filename>/etc/shorewall/route_rules</filename>:</para>
 

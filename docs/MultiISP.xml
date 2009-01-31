@@ -619,163 +619,6 @@
       <filename>/etc/shorewall/route_rules</filename>.</para>
     </section>
 
-    <section id="swping">
-      <title>Gateway Monitoring and Failover</title>
-
-      <para>Beginning with Shorewall 4.2.6, Shorewall includes a sample
-      monitoring script <filename>swping</filename>. The
-      <filename>swping</filename> file is available in the main directory
-      contained in the Shorewall-common tarball and is included in the
-      Shorewall-common documentation directory on the Shorewall-common
-      RPM.</para>
-
-      <para>For those not on 4.2.6 yet, the script may be downloaded from
-      <ulink
-      url="http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/">http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/</ulink>.</para>
-
-      <important>
-        <para>These samples are offered <emphasis>as is</emphasis> — they work
-        for me but I don't make any claim that they will work for anyone else.
-        But if you have a need for automated link monitoring, they offer you a
-        place to start.</para>
-      </important>
-
-      <para>The script should be copied to a directory on root's PATH such as
-      <filename>/usr/local/sbin/.</filename></para>
-
-      <para>The script monitors two interfaces but it is a trivial exercise to
-      extend it to more than two. At the top are a number of variables to
-      set:</para>
-
-      <programlisting>#
-# IP family -- 4 or 6
-#
-FAMILY=4
-#
-# The commands to run when the status of a line changes. Both commands will be executed.
-#
-COMMANDA=
-COMMANDB="ip -$FAMILY route ls"
-...
-#
-# Interfaces to monitor -- you may use shell variables from your params file
-#
-IF1=eth0
-IF2=eth1
-#
-# Sites to Ping. Must not depend on the associated interface having a default route through it.
-#
-TARGET1=
-TARGET2=
-#
-# How often to ping
-#
-PING_INTERVAL=5
-#
-# Value for ping's -W option
-#
-PING_TIMEOUT=2
-#
-# This many successive pings must succeed for the interface to be marked up when it is down
-#
-UP_COUNT=5
-#
-# This many successive pings must fail for the interface to be marked down when it is up
-#
-DOWN_COUNT=2</programlisting>
-
-      <para>If you leave COMMANDA empty, the script sets its value
-      automatically depending on whether Shorewall-lite is installed.</para>
-
-      <para>When the status of an interface changes:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>For each interface, a file is placed in /etc/shorewall to
-          record the status of the interface: either 0 (UP) or 1 (DOWN). The
-          name of the file is<emphasis> interface</emphasis>.status where
-          <emphasis>interface</emphasis> is the interface (e.g.,
-          <filename>eth0.status</filename>).</para>
-        </listitem>
-
-        <listitem>
-          <para>A <command>shorewall -f restart</command> command is executed
-          (<command>shorewall-lite restart</command>, if Shorewall-lite is
-          installed).</para>
-        </listitem>
-
-        <listitem>
-          <para>The contents of the main routing table are displayed.</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>The .status files are intended to be used with the following
-      <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
-
-case $1 in
-    <emphasis role="bold">eth0|eth1</emphasis>)
-        [ -f /etc/shorewall/${1}.status ] &amp;&amp; status=$(cat /etc/shorewall/${1}.status)
-        ;;
-esac
-
-return $status</programlisting></para>
-
-      <para>Be sure that you modify the interface names to match your
-      configuration.</para>
-
-      <para>Also included is a sample init script
-      (<filename>swping.init</filename>) to start the monitoring daemon. Copy
-      it to<filename> /etc/init.d/swping</filename> and use your
-      distribution's SysV init tools to cause it to be run at boot. It works
-      on <trademark>OpenSuSE</trademark> 11.0 -- YMMV. Modify the PROG and
-      STATEDIR variables as needed.</para>
-
-      <para>As an alternative to using the init script, you can add the
-      following to <filename>/etc/shorewall/started</filename>:</para>
-
-      <programlisting>if [ "$COMMAND" = start ]; then
-   killall -9 swping 2&gt; /dev/null #be sure that there are none left running
-   /usr/local/sbin/swping &amp;
-fi</programlisting>
-
-      <para>and add this to
-      <filename>/etc/shorewall/stopped</filename>.</para>
-
-      <para><programlisting>if [ "$COMMAND" = stop -o "$COMMAND" = clear ]; then
-   killall -9 swping 2&gt; /dev/null
-fi</programlisting></para>
-
-      <para>This simple script has a number of limitations:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>It only works on IPv4 or IPv6 but not both at once. So if you
-          want to monitor both IPv4 and IPv6, you need to clone the script are
-          run two copies; one for IPv4 and one for IPv6.</para>
-        </listitem>
-
-        <listitem>
-          <para>It's method of determining whether an interface is up or down
-          is crude. You will normally specify the default gateway for each
-          provider as the sites to ping and being able to ping the default
-          gateway is not a surefire indication that the provider is usable.
-          The method of determining whether a site is up or down is also
-          crude.</para>
-        </listitem>
-
-        <listitem>
-          <para>Because of the crudeness of the algorithm, hysteresis may
-          occur.</para>
-        </listitem>
-
-        <listitem>
-          <para>It is tricky to configure a system such that the system works
-          correctly when one of its providers is down unless you largely don't
-          care which interface is used.</para>
-        </listitem>
-      </orderedlist>
-    </section>
-
     <section id="Martians">
       <title>Martians</title>
 
@@ -1225,6 +1068,163 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
 linksys       1    1    -        wlan0   172.20.1.1    track,balance=1,optional
 shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional</programlisting>/etc/shorewall/route_rules:<programlisting>#SOURCE     DEST      PROVIDER        PRIORITY
 -           -         shorewall       11999</programlisting></para>
+    </section>
+
+    <section id="swping">
+      <title>Gateway Monitoring and Failover</title>
+
+      <para>Beginning with Shorewall 4.2.6, Shorewall includes a sample
+      monitoring script <filename>swping</filename>. The
+      <filename>swping</filename> file is available in the main directory
+      contained in the Shorewall-common tarball and is included in the
+      Shorewall-common documentation directory on the Shorewall-common
+      RPM.</para>
+
+      <para>For those not on 4.2.6 yet, the script may be downloaded from
+      <ulink
+      url="http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/">http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/</ulink>.</para>
+
+      <important>
+        <para>These samples are offered <emphasis>as is</emphasis> — they work
+        for me but I don't make any claim that they will work for anyone else.
+        But if you have a need for automated link monitoring, they offer you a
+        place to start.</para>
+      </important>
+
+      <para>The script should be copied to a directory on root's PATH such as
+      <filename>/usr/local/sbin/.</filename></para>
+
+      <para>The script monitors two interfaces but it is a trivial exercise to
+      extend it to more than two. At the top are a number of variables to
+      set:</para>
+
+      <programlisting>#
+# IP family -- 4 or 6
+#
+FAMILY=4
+#
+# The commands to run when the status of a line changes. Both commands will be executed.
+#
+COMMANDA=
+COMMANDB="ip -$FAMILY route ls"
+...
+#
+# Interfaces to monitor -- you may use shell variables from your params file
+#
+IF1=eth0
+IF2=eth1
+#
+# Sites to Ping. Must not depend on the associated interface having a default route through it.
+#
+TARGET1=
+TARGET2=
+#
+# How often to ping
+#
+PING_INTERVAL=5
+#
+# Value for ping's -W option
+#
+PING_TIMEOUT=2
+#
+# This many successive pings must succeed for the interface to be marked up when it is down
+#
+UP_COUNT=5
+#
+# This many successive pings must fail for the interface to be marked down when it is up
+#
+DOWN_COUNT=2</programlisting>
+
+      <para>If you leave COMMANDA empty, the script sets its value
+      automatically depending on whether Shorewall-lite is installed.</para>
+
+      <para>When the status of an interface changes:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>For each interface, a file is placed in /etc/shorewall to
+          record the status of the interface: either 0 (UP) or 1 (DOWN). The
+          name of the file is<emphasis> interface</emphasis>.status where
+          <emphasis>interface</emphasis> is the interface (e.g.,
+          <filename>eth0.status</filename>).</para>
+        </listitem>
+
+        <listitem>
+          <para>A <command>shorewall -f restart</command> command is executed
+          (<command>shorewall-lite restart</command>, if Shorewall-lite is
+          installed).</para>
+        </listitem>
+
+        <listitem>
+          <para>The contents of the main routing table are displayed.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The .status files are intended to be used with the following
+      <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
+
+case $1 in
+    <emphasis role="bold">eth0|eth1</emphasis>)
+        [ -f /etc/shorewall/${1}.status ] &amp;&amp; status=$(cat /etc/shorewall/${1}.status)
+        ;;
+esac
+
+return $status</programlisting></para>
+
+      <para>Be sure that you modify the interface names to match your
+      configuration.</para>
+
+      <para>Also included is a sample init script
+      (<filename>swping.init</filename>) to start the monitoring daemon. Copy
+      it to<filename> /etc/init.d/swping</filename> and use your
+      distribution's SysV init tools to cause it to be run at boot. It works
+      on <trademark>OpenSuSE</trademark> 11.0 -- YMMV. Modify the PROG and
+      STATEDIR variables as needed.</para>
+
+      <para>As an alternative to using the init script, you can add the
+      following to <filename>/etc/shorewall/started</filename>:</para>
+
+      <programlisting>if [ "$COMMAND" = start ]; then
+   killall -9 swping 2&gt; /dev/null #be sure that there are none left running
+   /usr/local/sbin/swping &amp;
+fi</programlisting>
+
+      <para>and add this to
+      <filename>/etc/shorewall/stopped</filename>.</para>
+
+      <para><programlisting>if [ "$COMMAND" = stop -o "$COMMAND" = clear ]; then
+   killall -9 swping 2&gt; /dev/null
+fi</programlisting></para>
+
+      <para>This simple script has a number of limitations:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>It only works on IPv4 or IPv6 but not both at once. So if you
+          want to monitor both IPv4 and IPv6, you need to clone the script are
+          run two copies; one for IPv4 and one for IPv6.</para>
+        </listitem>
+
+        <listitem>
+          <para>It's method of determining whether an interface is up or down
+          is crude. You will normally specify the default gateway for each
+          provider as the sites to ping and being able to ping the default
+          gateway is not a surefire indication that the provider is usable.
+          The method of determining whether a site is up or down is also
+          crude.</para>
+        </listitem>
+
+        <listitem>
+          <para>Because of the crudeness of the algorithm, hysteresis may
+          occur.</para>
+        </listitem>
+
+        <listitem>
+          <para>It is tricky to configure a system such that the system works
+          correctly when one of its providers is down unless you largely don't
+          care which interface is used.</para>
+        </listitem>
+      </orderedlist>
     </section>
 
     <section id="Shared">

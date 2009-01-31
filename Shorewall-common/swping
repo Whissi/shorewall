@@ -1,0 +1,190 @@
+#!/bin/sh
+#
+#     Shorewall WAN Interface monitor - V4.2
+#
+#     Inspired by Angsuman Chakraborty's gwping script.
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2009 - Tom Eastep (teastep@shorewall.net)
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+###########################################################################################
+#
+# IP Family == 4 or 6
+#
+FAMILY=4
+#
+# The commands to run when the status of a line changes. Both commands will be executed.
+#
+COMMANDA=
+COMMANDB="ip -$FAMILY route ls"
+
+if [ $FAMILY -eq 4 ]; then
+    if [ -f /usr/share/shorewall-lite/lib.base ]; then
+	. /usr/share/shorewall-lite/lib.base
+	[ -f /etc/shorewall-lite/params ] && . /etc/shorewall-lite/params
+	[ -n "${COMMANDA:="/sbin/shorewall-lite restart"}" ]
+    elif [ -f /usr/share/shorewall/lib.base ]; then
+	. /usr/share/shorewall/lib.base
+	[ -f /etc/shorewall/params ] && . /etc/shorewall/params
+	[ -n "${COMMANDA:="/sbin/shorewall restart -f"}" ]
+    fi
+else
+    if [ -f /usr/share/shorewall6-lite/lib.base ]; then
+	. /usr/share/shorewall6-lite/lib.base
+	[ -f /etc/shorewall6-lite/params ] && . /etc/shorewall6-lite/params
+	[ -n "${COMMANDA:="/sbin/shorewall6-lite restart"}" ]
+    elif [ -f /usr/share/shorewall6/lib.base ]; then
+	. /usr/share/shorewal6l/lib.base
+	[ -f /etc/shorewall6/params ] && . /etc/shorewall6/params
+	[ -n "${COMMANDA:="/sbin/shorewall6 restart -f"}" ]
+    fi
+fi
+#
+# Interfaces to monitor -- you may use shell variables from your params file
+#
+IF1=eth0
+IF2=eth1
+#
+# Sites to Ping. Must depend only on routes in the 'main' routing table.
+#
+TARGET1=xxx.xxx.xxx.xxx
+TARGET2=yyy.yyy.yyy.yyy
+#
+# How often to ping
+#
+PING_INTERVAL=5
+#
+# Value for ping's -W option
+#
+PING_TIMEOUT=2
+#
+# This many successive pings must succeed for the interface to be marked up when it is down
+#
+UP_COUNT=5
+#
+# This many successive pings must fail for the interface to be marked down when it is up
+#
+DOWN_COUNT=2
+#################################################################################################
+# Variables private to the script
+#################################################################################################
+up=0
+down=1
+
+if1_state=$up
+if2_state=$up
+
+last_if1_ping=$up
+last_if2_ping=$up
+
+state_changed=
+
+current_if1_ping=
+current_if2_ping=
+
+count1=0
+count2=0
+
+[ $FAMILY -eq 4 ] && ping=ping || ping=ping6
+#
+# Script starts here
+#
+rm -f $STATEDIR/${IF1}.status
+rm -f $STATEDIR/${IF2}.status
+
+while : ; do
+    $ping -n -W $PING_TIMEOUT -I $IF1 -c 1 $TARGET1 > /dev/null 2>&1 && current_if1_ping=0 || current_if1_ping=1
+
+    if [ $current_if1_ping -ne $last_if1_ping ]; then
+	last_if1_ping=$current_if1_ping
+	count1=1
+    elif [ $current_if1_ping -ne $if1_state ]; then
+	count1=$(($count1 + 1 ))
+    fi
+
+    case $if1_state in
+	0)
+	    #
+	    # Interface is currently up
+	    #
+	    if [ $count1 -ge $DOWN_COUNT ]; then
+		state_changed=Yes
+		count1=0
+		echo "$IF1 is Down!"
+		if1_state=1
+	    fi
+	    ;;
+	1)
+	    #
+	    # Interface is currently down
+	    #
+	    if [ $count1 -ge $UP_COUNT ]; then
+		state_changed=Yes
+		count1=0
+		echo "$IF1 is Up!"
+		if1_state=0
+	    fi
+	    ;;
+    esac
+
+    $ping -n -W $PING_TIMEOUT -I $IF2 -c 1 $TARGET2 > /dev/null 2>&1 && current_if2_ping=0 || current_if2_ping=1
+
+    if [ $current_if2_ping -ne $last_if2_ping ]; then
+	last_if2_ping=$current_if2_ping
+	count2=1
+    elif [ $current_if2_ping -ne $if2_state ]; then
+	count2=$(($count2 + 1 ))
+    fi
+
+    case $if2_state in
+	0)
+	    #
+	    # Interface is currently up
+	    #
+	    if [ $count2 -ge $DOWN_COUNT ]; then
+		state_changed=Yes
+		count2=0
+		echo "$IF2 is Down!"
+		if2_state=1
+	    fi
+	    ;;
+	1)
+	    #
+	    # Interface is currently down
+	    #
+	    if [ $count2 -ge $UP_COUNT ]; then
+		state_changed=Yes
+		count2=0
+		echo "$IF2 is Up!"
+		if2_state=0
+	    fi
+	    ;;
+    esac
+
+    if [ -n "$state_changed" ]; then
+	#
+	# One of the interfaces changed state -- restart Shorewall
+	#
+	echo $if1_state > /etc/shorewall/${IF1}.status
+	echo $if2_state > /etc/shorewall/${IF2}.status 
+	$COMMANDA
+	$COMMANDB
+	state_changed=
+    fi
+
+    sleep $PING_INTERVAL
+done

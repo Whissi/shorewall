@@ -1,0 +1,9 @@
+local status=0
+
+case $1 in
+    $EXT_IF|$COM_IF)
+	[ -f /etc/shorewall/${1}.status ] && status=$(cat /etc/shorewall/${1}.status)
+	;;
+esac
+
+return $status

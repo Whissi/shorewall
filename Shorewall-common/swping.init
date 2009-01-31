@@ -1,0 +1,98 @@
+#!/bin/sh
+#     Shorewall WAN Interface monitor - V4.2
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
+#	On most distributions, this file should be called /etc/init.d/shorewall.
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#	Commands are:
+#
+#	   swping start			  Starts the monitor
+#	   swping restart		  Restarts the monitor
+#	   swping stop			  Stops the monitor
+#	   swping status		  Displays monitor status
+#
+### BEGIN INIT INFO
+# Provides:	  swping
+# Required-Start: shorewall
+# Should-Start: 
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:	  0 1 6
+# Description: Monitor External links and restart Shorewall when a link goes up or down.
+### END INIT INFO
+
+PROG=/usr/local/sbin/swping    # The 'swping' script.
+STATEDIR=/var/lib/shorewall/   # Where to maintain the '.pid' file.
+
+start() {
+    echo "Starting swping."
+
+    if [ -f $STATEDIR/swping.pid ] && ps -p $(cat $STATEDIR/swping.pid) > /dev/null 2>&1; then
+	echo "swping is already running" >&2
+	exit 0
+    fi
+
+    /usr/local/sbin/swping >> /var/log/swping &
+    if [ $? -eq 0 ]; then
+	echo $! > $STATEDIR/swping.pid
+	echo "Done."
+    else
+	rm -f $STATEDIR/swping.pid
+    fi
+}
+
+stop() {
+    echo "Stoping swping."
+    if [ -f $STATEDIR/swping.pid ]; then
+	kill -9 $(cat $STATEDIR/swping.pid)
+	rm -f $STATEDIR/swping.pid
+    fi
+
+    echo "Done."
+}
+
+command="$1"
+
+case "$command" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    restart)
+	stop
+	start
+	;;
+    status)
+	if [ -f $STATEDIR/swping.pid ]; then
+	    echo "swping is running"
+	    exit 0
+	else
+	    echo "swping is stopped" 
+	    exit 3
+	fi
+	;;
+    *)
+	echo "Usage /etc/init.d/swping start|stop|restart|status"
+	;;
+esac
+

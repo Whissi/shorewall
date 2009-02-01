@@ -1082,8 +1082,10 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       monitoring script <filename>swping</filename>. The
       <filename>swping</filename> file is available in the main directory
       contained in the Shorewall-common tarball and is included in the
-      Shorewall-common documentation directory on the Shorewall-common
-      RPM.</para>
+      Shorewall-common documentation directory on the Shorewall-common RPM.
+      The script is inspired by Angsuman Chakraborty's <ulink
+      url="http://blog.taragana.com/index.php/archive/how-to-load-balancing-failover-with-dual-multi-wan-adsl-cable-connections-on-linux/">gwping</ulink>
+      script.</para>
 
       <para>For those not on 4.2.6 yet, the script may be downloaded from
       <ulink
@@ -1097,7 +1099,19 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       </important>
 
       <para>The script should be copied to a directory on root's PATH such as
-      <filename>/usr/local/sbin/.</filename></para>
+      <filename>/usr/local/sbin/</filename>.</para>
+
+      <para>The script works by sending pings to <emphasis>target</emphasis>
+      IP addresses through each external interface. These targets must not
+      depend on any routes other than those that are present in the main
+      routing table. That ensures that a route is available to the target even
+      when the target's interface is not working and Shorewall has omitted it
+      from the routing configuration. An interface is assumed to be
+      <firstterm>up</firstterm> when a specified number (UP_COUNT) of
+      consecutive ping operations succeed. Similarly, an interface is assumed
+      to be <firstterm>down</firstterm> when a specified number (DOWN_COUNT)
+      of consecutive ping operations fail. You can specify the interval
+      between pings (PING_INTERVAL).</para>
 
       <para>The script monitors two interfaces but it is a trivial exercise to
       extend it to more than two. At the top are a number of variables to
@@ -1108,10 +1122,11 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
 #
 FAMILY=4
 #
-# The commands to run when the status of a line changes. Both commands will be executed.
+# The commands to run when the status of a line changes. Multiple commands may be specified 
+# when separated by semicolons (";")
 #
-COMMANDA=
-COMMANDB="ip -$FAMILY route ls"
+COMMAND=
+
 ...
 #
 # Interfaces to monitor -- you may use shell variables from your params file
@@ -1142,7 +1157,7 @@ UP_COUNT=5
 #
 DOWN_COUNT=2</programlisting>
 
-      <para>If you leave COMMANDA empty, the script sets its value
+      <para>If you leave COMMAND empty, the script sets its value
       automatically depending on whether Shorewall-lite is installed.</para>
 
       <para>When the status of an interface changes:</para>
@@ -1151,8 +1166,9 @@ DOWN_COUNT=2</programlisting>
         <listitem>
           <para>For each interface, a file is placed in /etc/shorewall to
           record the status of the interface: either 0 (UP) or 1 (DOWN). The
-          name of the file is<emphasis> interface</emphasis>.status where
-          <emphasis>interface</emphasis> is the interface (e.g.,
+          name of the file is
+          <filename><replaceable>interface</replaceable>.status</filename>
+          where <replaceable>interface</replaceable> is the interface (e.g.,
           <filename>eth0.status</filename>).</para>
         </listitem>
 
@@ -1210,6 +1226,11 @@ fi</programlisting></para>
           <para>It only works on IPv4 or IPv6 but not both at once. So if you
           want to monitor both IPv4 and IPv6, you need to clone the script are
           run two copies; one for IPv4 and one for IPv6.</para>
+        </listitem>
+
+        <listitem>
+          <para>It can only detect the gateway for interfaces managed by
+          dhcpcd.</para>
         </listitem>
 
         <listitem>

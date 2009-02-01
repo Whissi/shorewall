@@ -263,7 +263,6 @@ sub add_a_provider( $$$$$$$$ ) {
     my $base     = uc chain_base $interface;
 
     if ( $gateway eq 'detect' ) {
-	fatal_error "'detect' is not allowed with USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
 	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) );
@@ -427,7 +426,7 @@ sub add_a_provider( $$$$$$$$ ) {
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
 	    emit ( "\nfind_interface_addresses $interface | while read address; do",
-		   "    qt ip -$family rule del from $address",
+		   "    qt ip -$family rule del from \$address",
 		   'done'
 		 );
 	}
@@ -441,7 +440,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	emit "\nrulenum=0\n";
 
 	emit  ( "find_interface_addresses $interface | while read address; do" );
-	emit  (	"    qt ip $family rule del from $address" ) if $config{DELETE_THEN_ADD};
+	emit  (	"    qt ip -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
 	emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
 		"    echo \"qt ip -$family rule del from \$address\" >> \${VARDIR}/undo_routing",
 		'    rulenum=$(($rulenum + 1))',
@@ -568,7 +567,7 @@ sub setup_providers() {
 
 	    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
 
-	    emit "\nif [ -z \"\$NORTC\" ]; then";
+	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
 	    push_indent;
 
@@ -714,7 +713,7 @@ sub setup_providers() {
 	emit "\nundo_routing";
 	emit 'restore_default_route';
 	if ( $config{NULL_ROUTE_RFC1918} ) {
-	    emit "\nif [ -z \"\$NORTC\" ]; then";
+	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
 	    push_indent;
 

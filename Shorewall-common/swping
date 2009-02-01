@@ -27,30 +27,30 @@
 #
 FAMILY=4
 #
-# The commands to run when the status of a line changes. Both commands will be executed.
+# The command to run when the status of a line changes. Can include multiple commands
+# separated by semicolons (";").
 #
-COMMANDA=
-COMMANDB="ip -$FAMILY route ls"
+COMMAND=
 
 if [ $FAMILY -eq 4 ]; then
     if [ -f /usr/share/shorewall-lite/lib.base ]; then
 	. /usr/share/shorewall-lite/lib.base
 	[ -f /etc/shorewall-lite/params ] && . /etc/shorewall-lite/params
-	[ -n "${COMMANDA:="/sbin/shorewall-lite restart"}" ]
+	[ -n "${COMMAND:="/sbin/shorewall-lite restart; /sbin/ip -4 route ls"}" ]
     elif [ -f /usr/share/shorewall/lib.base ]; then
 	. /usr/share/shorewall/lib.base
 	[ -f /etc/shorewall/params ] && . /etc/shorewall/params
-	[ -n "${COMMANDA:="/sbin/shorewall restart -f"}" ]
+	[ -n "${COMMAND:="/sbin/shorewall restart -f; /sbin/ip -4 route ls"}" ]
     fi
 else
     if [ -f /usr/share/shorewall6-lite/lib.base ]; then
 	. /usr/share/shorewall6-lite/lib.base
 	[ -f /etc/shorewall6-lite/params ] && . /etc/shorewall6-lite/params
-	[ -n "${COMMANDA:="/sbin/shorewall6-lite restart"}" ]
+	[ -n "${COMMAND:="/sbin/shorewall6-lite restart; /sbin/ip -4 route ls"}" ]
     elif [ -f /usr/share/shorewall6/lib.base ]; then
 	. /usr/share/shorewal6l/lib.base
 	[ -f /etc/shorewall6/params ] && . /etc/shorewall6/params
-	[ -n "${COMMANDA:="/sbin/shorewall6 restart -f"}" ]
+	[ -n "${COMMAND:="/sbin/shorewall6 restart -f; /sbin/ip -4 route ls"}" ]
     fi
 fi
 #
@@ -59,7 +59,9 @@ fi
 IF1=eth0
 IF2=eth1
 #
-# Sites to Ping. Must depend only on routes in the 'main' routing table.
+# Sites to Ping. Must depend only on routes in the 'main' routing table. If not specified,
+# the interface is assumed to be managed by dhcpcd and the script uses the gateway address
+# from /var/lib/dhcpcd/dhcpcd-${IFx}.info
 #
 TARGET1=xxx.xxx.xxx.xxx
 TARGET2=yyy.yyy.yyy.yyy
@@ -100,6 +102,19 @@ count1=0
 count2=0
 
 [ $FAMILY -eq 4 ] && ping=ping || ping=ping6
+#################################################################################################
+# Determine the GATEWAY of a DHCP interface
+#################################################################################################
+get_target() {
+
+    local GATEWAYS
+    GATEWAYS=
+
+    if [ -f /var/lib/dhcpcd/dhcpcd-${1}.info ]; then
+	eval $(grep ^GATEWAYS=  /var/lib/dhcpcd/dhcpcd-${1}.info 2> /dev/null)
+	[ -n "$GATEWAYS" ] && GATEWAYS=${GATEWAYS%,*} && echo $GATEWAYS
+    fi
+}
 #
 # Script starts here
 #
@@ -107,7 +122,15 @@ rm -f $STATEDIR/${IF1}.status
 rm -f $STATEDIR/${IF2}.status
 
 while : ; do
-    $ping -n -W $PING_TIMEOUT -I $IF1 -c 1 $TARGET1 > /dev/null 2>&1 && current_if1_ping=0 || current_if1_ping=1
+    target=$TARGET1
+
+    [ -n "$target" ] || target=$(get_target $IF1)
+
+    if [ -n "$target" ]; then
+	$ping -n -W $PING_TIMEOUT -I $IF1 -c 1 $target > /dev/null 2>&1 && current_if1_ping=0 || current_if1_ping=1
+    else
+	current_if1_ping=1
+    fi
 
     if [ $current_if1_ping -ne $last_if1_ping ]; then
 	last_if1_ping=$current_if1_ping
@@ -141,7 +164,15 @@ while : ; do
 	    ;;
     esac
 
-    $ping -n -W $PING_TIMEOUT -I $IF2 -c 1 $TARGET2 > /dev/null 2>&1 && current_if2_ping=0 || current_if2_ping=1
+    target=$TARGET2
+
+    [ -n "$target" ] || target=$(get_target $IF2)
+
+    if [ -n "$target" ]; then
+	$ping -n -W $PING_TIMEOUT -I $IF2 -c 1 $target > /dev/null 2>&1 && current_if2_ping=0 || current_if2_ping=1
+    else
+	current_if2_ping=1
+    fi
 
     if [ $current_if2_ping -ne $last_if2_ping ]; then
 	last_if2_ping=$current_if2_ping
@@ -181,8 +212,7 @@ while : ; do
 	#
 	echo $if1_state > /etc/shorewall/${IF1}.status
 	echo $if2_state > /etc/shorewall/${IF2}.status 
-	$COMMANDA
-	$COMMANDB
+	eval $COMMAND
 	state_changed=
     fi
 

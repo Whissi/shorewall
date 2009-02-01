@@ -663,7 +663,7 @@ sub add_common_rules() {
 	    $globals{LOGPARMS} = $savelogparms;
 
 	    if ( $config{TCP_FLAGS_DISPOSITION} eq 'REJECT' ) {
-		add_rule $logflagsref , '-j REJECT --reject-with tcp-reset';
+		add_rule $logflagsref , '-p 6 -j REJECT --reject-with tcp-reset';
 	    } else {
 		add_rule $logflagsref , "-j $config{TCP_FLAGS_DISPOSITION}";
 	    }

@@ -3882,7 +3882,7 @@ __EOF__
 
 	    case $TCP_FLAGS_DISPOSITION in
 		REJECT)
-		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
+		    run_iptables -A logflags -p tcp -j REJECT --reject-with tcp-reset
 		    ;;
 		*)
 		    run_iptables -A logflags -j $TCP_FLAGS_DISPOSITION

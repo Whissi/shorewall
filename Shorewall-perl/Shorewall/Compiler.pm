@@ -697,7 +697,7 @@ sub generate_script_4($) {
     } else {
 	progress_message2 "Creating ip6tables-restore input...";
     }
-    create_netfilter_load;
+    create_netfilter_load( $test );
     create_chainlist_reload( $_[0] );
 
     emit "#\n# Start/Restart the Firewall\n#";

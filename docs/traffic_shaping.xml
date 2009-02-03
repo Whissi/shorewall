@@ -686,7 +686,10 @@ ppp0           6000kbit         500kbit</programlisting>
 
           <note>
             <para>The "T" qualifier was added in Shorewall version 3.3.6 and
-            is not available in earlier versions.</para>
+            is not available in earlier versions. <emphasis role="bold">Use
+            this qualifier if you want the rule to apply equally to traffic
+            being routed through the firewall and to traffic originating on
+            the firewall itself.</emphasis></para>
           </note>
 
           <para>Normally, the mark is applied to the packet. If you follow the
@@ -780,35 +783,78 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>SOURCE - Source of the packet. A comma-separated list of
-          interface names, IP addresses, MAC addresses and/or subnets for
-          packets being routed through a common path. List elements may also
-          consist of an interface name followed by ":" and an address (e.g.,
-          eth1:192.168.1.0/24). For example, all packets for connections
-          masqueraded to eth0 from other interfaces can be matched in a single
-          rule with several alternative SOURCE criteria. However, a connection
-          whose packets gets to eth0 in a different way, e.g., direct from the
-          firewall itself, needs a different rule.</para>
+          <para>SOURCE - Source of the packet. </para>
 
-          <para>Accordingly, use $FW in its own separate rule for packets
-          originating on the firewall. In such a rule, the MARK column may NOT
-          specify either ":P" or ":F" because marking for firewall-originated
-          packets always occurs in the OUTPUT chain.</para>
+          <para>May be:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>An interface name - matches traffic entering the firewall
+              on the specified interface. May not be used in classify rules or
+              in rules using the :T chain qualifier.</para>
+            </listitem>
+
+            <listitem>
+              <para>A comma-separated list of host or network IP addresses or
+              MAC addresses. <emphasis role="bold">This form will not match
+              traffic that originates on the firewall itself unless either
+              &lt;major&gt;&lt;minor&gt; or the :T chain qualifier is used in
+              the MARK column.</emphasis></para>
+
+              <para>Examples:<simplelist>
+                  <member>0.0.0.0/0</member>
+                </simplelist></para>
+
+              <para><simplelist>
+                  <member>192.168.1.0/24, 172.20.4.0/24</member>
+                </simplelist></para>
+            </listitem>
+
+            <listitem>
+              <para>An interface name followed by a colon (":") followed by a
+              comma-separated list of host or network IP addresses or MAC
+              addresses. May not be used in classify rules or in rules using
+              the :T chain qualifier.</para>
+            </listitem>
+
+            <listitem>
+              <para>$FW optionally followed by a colon (":") and a
+              comma-separated list of host or network IP addresses. matches
+              packets originating on the firewall. May not be used with a
+              chain qualifier (:P, :F, etc.) in the MARK column.</para>
+            </listitem>
+          </orderedlist>
 
           <para>MAC addresses must be prefixed with "~" and use "-" as a
           separator.</para>
 
           <para>Example: ~00-A0-C9-15-39-78</para>
+
+          <para>If your kernel includes iprange match support, then address
+          ranges may be included in the address lists.</para>
         </listitem>
 
         <listitem>
-          <para>DEST - Destination of the packet. Comma separated list of IP
-          addresses and/or subnets. If your kernel and iptables include
-          iprange match support, IP address ranges are also allowed. List
-          elements may also consist of an interface name followed by ":" and
-          an address (e.g., eth1:192.168.1.0/24). If the MARK column specifies
-          a classification of the form &lt;major&gt;:&lt;minor&gt; then this
-          column may also contain an interface name.</para>
+          <para>DEST - Destination of the packet. </para>
+
+          <para>May be:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>An interface name. May not be used in the PREROUTING chain
+              (:P in the mark column or no chain qualifier and
+              MARK_IN_FORWARD_CHAIN=No in <ulink
+              url="manpages/shorewall.conf">shorewall.conf</ulink> (5)). The
+              interface name may be optionally followed by a colon (":") and
+              an IP address list.</para>
+            </listitem>
+
+            <listitem>
+              <para>A comma-separated list of host or network IP addresses.
+              The list may include ip address ranges if your kernel and
+              iptables include iprange support.</para>
+            </listitem>
+          </orderedlist>
         </listitem>
 
         <listitem>
@@ -943,17 +989,17 @@ ppp0           6000kbit         500kbit</programlisting>
 1       eth1      0.0.0.0/0      all
 2       eth2      0.0.0.0/0      all
 2       eth3      0.0.0.0/0      all
-3       $FW       0.0.0.0/0     all</programlisting>
+3       $FW       0.0.0.0/0      all</programlisting>
       </example>
 
       <example id="Example2">
         <title></title>
 
-        <para>All GRE (protocol 47) packets not originating on the firewall
-        and destined for 155.186.235.151 should be marked with 12.</para>
+        <para>All GRE (protocol 47) packets destined for 155.186.235.151
+        should be marked with 12.</para>
 
         <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   PORT(S)
-12      0.0.0.0/0 155.182.235.151 47</programlisting>
+12:T    0.0.0.0/0 155.182.235.151 47</programlisting>
       </example>
 
       <example id="Example3">
@@ -963,7 +1009,7 @@ ppp0           6000kbit         500kbit</programlisting>
         destined for 155.186.235.151 should be marked with 22.</para>
 
         <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   PORT(S)
-22      192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
+22:T    192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
       </example>
 
       <example id="Example4">
@@ -989,7 +1035,8 @@ ppp0           6000kbit         500kbit</programlisting>
         ipp2p module is unable to determine all packets in a connection are
         P2P packets, we mark the entire connection as P2P if any of the
         packets are determined to match. We assume packet/connection mark 0 to
-        means unclassified.</para>
+        means unclassified. Traffic originating on the firewall is not covered
+        by this example.</para>
 
         <programlisting>#MARK    SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST
 #                                                                PORT(S)  GROUP

@@ -256,22 +256,45 @@
         role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
-          <para>Source of the packet. A comma-separated list of interface
-          names, IP addresses, MAC addresses and/or subnets for packets being
-          routed through a common path. List elements may also consist of an
-          interface name followed by ":" and an address (e.g.,
-          eth1:192.168.1.0/24). For example, all packets for connections
-          masqueraded to eth0 from other interfaces can be matched in a single
-          rule with several alternative SOURCE criteria. However, a connection
-          whose packets gets to eth0 in a different way, e.g., direct from the
-          firewall itself, needs a different rule.</para>
+          <para>May be:</para>
 
-          <para>Accordingly, use $<emphasis role="bold">FW</emphasis> in its
-          own separate rule for packets originating on the firewall. In such a
-          rule, the MARK column may NOT specify either <emphasis
-          role="bold">:P</emphasis> or <emphasis role="bold">:F</emphasis>
-          because marking for firewall-originated packets always occurs in the
-          OUTPUT chain.</para>
+          <orderedlist>
+            <listitem>
+              <para>An interface name - matches traffic entering the firewall
+              on the specified interface. May not be used in classify rules or
+              in rules using the :T chain qualifier.</para>
+            </listitem>
+
+            <listitem>
+              <para>A comma-separated list of host or network IP addresses or
+              MAC addresses. <emphasis role="bold">This form will not match
+              traffic that originates on the firewall itself unless either
+              &lt;major&gt;&lt;minor&gt; or the :T chain qualifier is used in
+              the MARK column.</emphasis></para>
+
+              <para>Examples:<simplelist>
+                  <member>0.0.0.0/0</member>
+                </simplelist></para>
+
+              <para><simplelist>
+                  <member>192.168.1.0/24, 172.20.4.0/24</member>
+                </simplelist></para>
+            </listitem>
+
+            <listitem>
+              <para>An interface name followed by a colon (":") followed by a
+              comma-separated list of host or network IP addresses or MAC
+              addresses. May not be used in classify rules or in rules using
+              the :T chain qualifier.</para>
+            </listitem>
+
+            <listitem>
+              <para>$FW optionally followed by a colon (":") and a
+              comma-separated list of host or network IP addresses. Matches
+              packets originating on the firewall. May not be used with a
+              chain qualifier (:P, :F, etc.) in the MARK column.</para>
+            </listitem>
+          </orderedlist>
 
           <para>MAC addresses must be prefixed with "~" and use "-" as a
           separator.</para>
@@ -290,14 +313,24 @@
         role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
-          <para>Destination of the packet. Comma separated list of IP
-          addresses and/or subnets. If your kernel and iptables include
-          iprange match support, IP address ranges are also allowed. List
-          elements may also consist of an interface name followed by ":" and
-          an address (e.g., eth1:192.168.1.0/24). If the <emphasis
-          role="bold">MARK</emphasis> column specificies a classification of
-          the form <emphasis>major</emphasis>:<emphasis>minor</emphasis> then
-          this column may also contain an interface name.</para>
+          <para>May be:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>An interface name. May not be used in the PREROUTING chain
+              (:P in the mark column or no chain qualifier and
+              MARK_IN_FORWARD_CHAIN=No in <ulink
+              url="manpages/shorewall.conf">shorewall.conf</ulink> (5)). The
+              interface name may be optionally followed by a colon (":") and
+              an IP address list.</para>
+            </listitem>
+
+            <listitem>
+              <para>A comma-separated list of host or network IP addresses.
+              The list may include ip address ranges if your kernel and
+              iptables include iprange support.</para>
+            </listitem>
+          </orderedlist>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
@@ -506,7 +539,7 @@
         role="bold">O</emphasis>|<emphasis role="bold">R</emphasis>|<emphasis
         role="bold">B</emphasis>}[:{<emphasis
         role="bold">B</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
-        role="bold">A</emphasis>}]]] </term>
+        role="bold">A</emphasis>}]]]</term>
 
         <listitem>
           <para>Connection Bytes; defines a byte or packet range that the
@@ -532,8 +565,8 @@
               directions.</para>
             </blockquote></para>
 
-          <para>If omitted, <emphasis role="bold">B</emphasis> is assumed.
-          </para>
+          <para>If omitted, <emphasis role="bold">B</emphasis> is
+          assumed.</para>
 
           <para>The second letter determines what the range refers
           to.<blockquote>
@@ -544,7 +577,7 @@
               <para><emphasis role="bold">A</emphasis> - Average packet
               size.</para>
             </blockquote>If omitted, <emphasis role="bold">B</emphasis> is
-          assumed. </para>
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -564,7 +597,7 @@
           <para>Example: Mark all FTP data connections with mark
           4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
 #CLASSIFY                                        PORT(S)
-4         0.0.0.0/0 0.0.0.0/0 TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
+4:T       0.0.0.0/0 0.0.0.0/0 TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -588,14 +621,14 @@
 
           <para>We assume packet/connection mark 0 means unclassified.</para>
 
-          <programlisting>       #MARK/    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #CLASSIFY                                              PORT(S)
-       1         0.0.0.0/0 0.0.0.0/0    icmp    echo-request
-       1         0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
-       RESTORE   0.0.0.0/0 0.0.0.0/0    all     -             -       -       0
-       CONTINUE  0.0.0.0/0 0.0.0.0/0    all     -             -       -       !0
-       4         0.0.0.0/0 0.0.0.0/0    ipp2p:all
-       SAVE      0.0.0.0/0 0.0.0.0/0    all     -             -       -       !0</programlisting>
+          <programlisting>       #MARK/     SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
+       #CLASSIFY                                               PORT(S)
+       1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-request
+       1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
+       RESTORE:T  0.0.0.0/0 0.0.0.0/0    all     -             -       -       0
+       CONTINUE:T 0.0.0.0/0 0.0.0.0/0    all     -             -       -       !0
+       4:T         0.0.0.0/0 0.0.0.0/0   ipp2p:all
+       SAVE:T      0.0.0.0/0 0.0.0.0/0   all     -             -       -       !0</programlisting>
 
           <para>If a packet hasn't been classifed (packet mark is 0), copy the
           connection mark to the packet mark. If the packet mark is set, we're

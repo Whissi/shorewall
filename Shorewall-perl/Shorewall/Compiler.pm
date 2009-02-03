@@ -226,32 +226,6 @@ sub generate_script_1() {
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
 	   );
 
-    if ( $family == F_IPV4 ) {
-	emit ( '',
-	       '#',
-	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
-	       '#',
-	       'qt1 $IPTABLES -N foox1234',
-	       'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
-	       'result=$?',
-	       'qt1 $IPTABLES -F foox1234',
-	       'qt1 $IPTABLES -X foox1234',
-	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
-	       '' );
-    } else {
-	emit ( '',
-	       '#',
-	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
-	       '#',
-	       'qt1 $IP6TABLES -N foox1234',
-	       'qt1 $IP6TABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
-	       'result=$?',
-	       'qt1 $IP6TABLES -F foox1234',
-	       'qt1 $IP6TABLES -X foox1234',
-	       '[ $result = 0 ] || startup_error "Your kernel/ip6tables do not include state match support. No version of Shorewall6 will run on this system"',
-	       '' );
-    }
-
     pop_indent;
 
     emit "}\n"; # End of initialize()
@@ -697,6 +671,7 @@ sub generate_script_4($) {
     } else {
 	progress_message2 "Creating ip6tables-restore input...";
     }
+
     create_netfilter_load( $test );
     create_chainlist_reload( $_[0] );
 
@@ -729,10 +704,21 @@ sub generate_script_4($) {
 	   'if [ -n "$RTCONLY" ]; then' ,
 	   '    delete_tc1' ,
 	   'else' );
-    
+
     push_indent;
 
     if ( $family == F_IPV4 ) {
+ 	emit ( '#',
+ 	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+ 	       '#',
+ 	       'qt1 $IPTABLES -N foox1234',
+ 	       'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+ 	       'result=$?',
+ 	       'qt1 $IPTABLES -F foox1234',
+ 	       'qt1 $IPTABLES -X foox1234',
+ 	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
+ 	       '' );
+
 	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
 	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
 		   'if [ -n "$addr" ]; then',
@@ -766,6 +752,17 @@ sub generate_script_4($) {
 	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     } else {
+	emit ( '#',
+	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+	       '#',
+	       'qt1 $IP6TABLES -N foox1234',
+	       'qt1 $IP6TABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	       'result=$?',
+	       'qt1 $IP6TABLES -F foox1234',
+	       'qt1 $IP6TABLES -X foox1234',
+	       '[ $result = 0 ] || startup_error "Your kernel/ip6tables do not include state match support. No version of Shorewall6 will run on this system"',
+	       '' );
+
  	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 	       '',
 	       'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
@@ -936,7 +933,7 @@ sub compiler {
 		  log_verbosity => { store => \$log_verbosity, edit => \&edit_verbosity } ,
 		  test          => { store => \$test },
 		);
-    
+
     while ( defined ( my $name = shift ) ) {
 	fatal_error "Unknown parameter ($name)" unless my $ref = $parms{$name};
 	fatal_error "Undefined value supplied for parameter $name" unless defined ( my $val = shift ) ;

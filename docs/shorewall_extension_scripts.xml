@@ -87,12 +87,14 @@
 
       <listitem>
         <para><filename>start</filename> -- invoked after the firewall has
-        been started or restarted.</para>
+        been started or restarted. The script is also invoked by
+        Shorewall-shell after a successful 'restore'.</para>
       </listitem>
 
       <listitem>
         <para><filename>started</filename> -- invoked after the firewall has
-        been marked as 'running'.</para>
+        been marked as 'running'. The script is also invoked by
+        Shorewall-shell after a successful 'restore'.</para>
       </listitem>
 
       <listitem>
@@ -214,7 +216,12 @@ esac</programlisting><caution>
         <command>run_iptables</command> will run the iptables utility passing
         the arguments to <command>run_iptables</command> and if the command
         fails, the firewall will be stopped (or restored from the last
-        <command>save</command> command, if any).</para>
+        <command>save</command> command, if any). Note that when
+        Shorewall-shell invokes this script during <command>restore</command>,
+        The <command>run_iptables</command> function does nothing; calls to
+        that function are effectively ignored. <command>run_iptables</command>
+        should not be called from the <filename>started</filename> or
+        <filename>restored</filename> scripts.</para>
       </listitem>
 
       <listitem>
@@ -419,6 +426,12 @@ esac</programlisting><caution>
                 <entry></entry>
 
                 <entry>refreshed</entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>restored</entry>
               </row>
             </tbody>
           </tgroup>

@@ -99,7 +99,7 @@ sub generate_script_1() {
 	}
     }
 
-    for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed/ {
+    for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed restored/ {
 	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
@@ -831,6 +831,7 @@ EOF
     push_indent;
     emit<<'EOF';
     set_state "Started"
+    run_restored_exit
 else
     if [ $COMMAND = refresh ]; then
         chainlist_reload

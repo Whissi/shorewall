@@ -1,5 +1,5 @@
 %define name shorewall6
-%define version 4.2.5
+%define version 4.2.6
 %define release 0base
 
 Summary: Shoreline Firewall 6 is an ip6tables-based firewall for Linux systems.
@@ -86,6 +86,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/accounting
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/actions
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/started
+%attr(0600,root,root) %config(noreplace) /etc/shorewall6/restored
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/providers
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/route_rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcclasses
@@ -128,6 +129,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/accounting
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/actions
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/started
+%attr(0644,root,root) /usr/share/shorewall6/configfiles/restored
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/providers
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/route_rules
 %attr(0644,root,root) /usr/share/shorewall6/configfiles/tcclasses
@@ -140,6 +142,12 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn ipv6 Samples6
 
 %changelog
+* Wed Feb 05 2009 Tom Eastep tom@shorewall.net
+- Added 'restored' script
+* Wed Feb 04 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.2.6-0base
+* Thu Jan 29 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.2.6-0base
 * Tue Jan 06 2009 Tom Eastep tom@shorewall.net
 - Updated to 4.2.5-0base
 * Thu Dec 25 2008 Tom Eastep tom@shorewall.net

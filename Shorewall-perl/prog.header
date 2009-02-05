@@ -796,6 +796,27 @@ add_ip_aliases() # $* = List of addresses
     done
 }
 
+detect_dynamic_gateway() { # $1 = interface
+    local interface
+    interface=$1
+    local GATEWAYS
+    GATEWAYS=
+    local gateway
+    #
+    # First assume that this is some sort of point-to-point interface
+    #
+    gateway=$( find_peer $(ip addr list $interface ) )
+    #
+    # If that didn't work, then try DHCP
+    #
+    if [ -z "$gateway" -a -f /var/lib/dhcpcd/dhcpcd-${1}.info ]; then
+	eval $(grep ^GATEWAYS=  /var/lib/dhcpcd/dhcpcd-${1}.info 2> /dev/null)
+	[ -n "$GATEWAYS" ] && GATEWAYS=${GATEWAYS%,*} && gateway=$GATEWAYS
+    fi
+
+    [ -n "$gateway" ] && echo $gateway
+}
+
 detect_gateway() # $1 = interface
 {
     local interface
@@ -808,6 +829,10 @@ detect_gateway() # $1 = interface
     # Maybe there's a default route through this gateway already
     #
     [ -n "$gateway" ] || gateway=$(find_gateway $(ip -4 route list dev $interface | grep ^default))
+    #
+    # Next try dhcpcd's info file for the interface
+    #
+    [ -n "$gateway" ] || gateway=$(get_dhcp_gateway)
     #
     # Last hope -- is there a load-balancing route through the interface?
     #

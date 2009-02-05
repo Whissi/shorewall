@@ -1,5 +1,5 @@
 %define name shorewall-common
-%define version 4.2.5
+%define version 4.2.6
 %define release 0base
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -108,6 +108,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/started
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/restored
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/route_rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
@@ -162,6 +163,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/actions
 %attr(0644,root,root) /usr/share/shorewall/configfiles/continue
 %attr(0644,root,root) /usr/share/shorewall/configfiles/started
+%attr(0644,root,root) /usr/share/shorewall/configfiles/restored
 %attr(0644,root,root) /usr/share/shorewall/configfiles/providers
 %attr(0644,root,root) /usr/share/shorewall/configfiles/route_rules
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcclasses
@@ -172,9 +174,17 @@ fi
 %attr(0644,root,root) %{_mandir}/man5/*
 %attr(0644,root,root) %{_mandir}/man8/shorewall.8.gz
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
+%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples swping swping.init isusable
 
 %changelog
+* Thu Feb 05 2009 Tom Eastep tom@shorewall.net
+- Add 'restored' script
+* Wed Feb 04 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.2.6-0base
+* Fri Jan 30 2009 Tom Eastep tom@shorewall.net
+- Added swping files to the doc directory
+* Thu Jan 29 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.2.6-0base
 * Tue Jan 06 2009 Tom Eastep tom@shorewall.net
 - Updated to 4.2.5-0base
 * Thu Dec 25 2008 Tom Eastep tom@shorewall.net

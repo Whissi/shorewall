@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.2.5
+VERSION=4.2.6
 
 usage() # $1 = exit status
 {
@@ -639,6 +639,15 @@ run_install $OWNERSHIP -m 0644 started ${PREFIX}/usr/share/shorewall/configfiles
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/started ]; then
     run_install $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
     echo "Started file installed as ${PREFIX}/etc/shorewall/started"
+fi
+#
+# Install the Restored file
+#
+run_install $OWNERSHIP -m 0644 restored ${PREFIX}/usr/share/shorewall/configfiles/restored
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/restored ]; then
+    run_install $OWNERSHIP -m 0600 restored ${PREFIX}/etc/shorewall/restored
+    echo "Restored file installed as ${PREFIX}/etc/shorewall/restored"
 fi
 #
 # Install the Standard Actions file

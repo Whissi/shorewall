@@ -69,83 +69,87 @@
 
     <itemizedlist>
       <listitem>
-        <para>compile -- (Added in Shorewall-perl version 4.0.6). Invoked by
-        the Shorewall-perl compiler early in the compilation process. Must be
-        written in Perl.</para>
+        <para><filename>compile</filename> -- (Added in Shorewall-perl version
+        4.0.6). Invoked by the Shorewall-perl compiler early in the
+        compilation process. Must be written in Perl.</para>
       </listitem>
 
       <listitem>
-        <para>init -- invoked early in <quote>shorewall start</quote> and
-        <quote>shorewall restart</quote></para>
+        <para><filename>init</filename> -- invoked early in <quote>shorewall
+        start</quote> and <quote>shorewall restart</quote></para>
       </listitem>
 
       <listitem>
-        <para>initdone -- invoked after Shorewall has flushed all existing
-        rules but before any rules have been added to the builtin
-        chains.</para>
+        <para><filename>initdone</filename> -- invoked after Shorewall has
+        flushed all existing rules but before any rules have been added to the
+        builtin chains.</para>
       </listitem>
 
       <listitem>
-        <para>start -- invoked after the firewall has been started or
-        restarted.</para>
+        <para><filename>start</filename> -- invoked after the firewall has
+        been started or restarted.</para>
       </listitem>
 
       <listitem>
-        <para>started -- invoked after the firewall has been marked as
-        'running'.</para>
+        <para><filename>started</filename> -- invoked after the firewall has
+        been marked as 'running'.</para>
       </listitem>
 
       <listitem>
-        <para>stop -- invoked as a first step when the firewall is being
-        stopped.</para>
+        <para><filename>stop</filename> -- invoked as a first step when the
+        firewall is being stopped.</para>
       </listitem>
 
       <listitem>
-        <para>stopped -- invoked after the firewall has been stopped.</para>
+        <para><filename>stopped</filename> -- invoked after the firewall has
+        been stopped.</para>
       </listitem>
 
       <listitem>
-        <para>clear -- invoked after the firewall has been cleared.</para>
+        <para><filename>clear</filename> -- invoked after the firewall has
+        been cleared.</para>
       </listitem>
 
       <listitem>
-        <para>tcclear -- invoked to clear traffic shaping when CLEAR_TC=Yes in
-        <ulink
+        <para><filename>tcclear</filename> -- invoked to clear traffic shaping
+        when CLEAR_TC=Yes in <ulink
         url="manpages/shorewall.conf.html">shorewall.conf</ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>refresh -- invoked while the firewall is being refreshed but
-        before the blacklst chains have been rebuilt.</para>
+        <para><filename>refresh</filename> -- invoked while the firewall is
+        being refreshed but before the blacklst chains have been
+        rebuilt.</para>
       </listitem>
 
       <listitem>
-        <para>refreshed -- invoked after the firewall has been
-        refreshed.</para>
+        <para><filename>refreshed</filename> -- invoked after the firewall has
+        been refreshed.</para>
       </listitem>
 
       <listitem>
-        <para>continue -- invoked to allow you to insert special rules to
-        allow traffic while Shorewall is [re]starting. Any rules added in this
-        script should be deleted in your <emphasis>start</emphasis> script.
-        This script is invoked earlier in the [re]start process than is the
-        <emphasis>initdone</emphasis> script described above (Not used by
-        Shorewall Perl).</para>
+        <para><filename>continue</filename> -- invoked to allow you to insert
+        special rules to allow traffic while Shorewall is [re]starting. Any
+        rules added in this script should be deleted in your
+        <emphasis>start</emphasis> script. This script is invoked earlier in
+        the [re]start process than is the <emphasis>initdone</emphasis> script
+        described above (Not used by Shorewall Perl).</para>
       </listitem>
 
       <listitem>
-        <para>maclog -- invoked while mac filtering rules are being created.
-        It is invoked once for each interface having 'maclist' specified and
-        it is invoked just before the logging rule is added to the current
-        chain (the name of that chain will be in $CHAIN).</para>
+        <para><filename>maclog</filename> -- invoked while mac filtering rules
+        are being created. It is invoked once for each interface having
+        'maclist' specified and it is invoked just before the logging rule is
+        added to the current chain (the name of that chain will be in
+        $CHAIN).</para>
       </listitem>
 
       <listitem>
-        <para>isusable -- (Added in Shorewall-perl version 4.0.3) invoked when
-        Shorewall is trying to determine the usability of the network
-        interface associated with an optional entry in
-        <filename>/etc/shorewall/providers</filename>. $1 is the name of the
-        interface which will have been determined to be up and configured
+        <para><filename>isusable</filename> -- (Added in Shorewall-perl
+        version 4.0.3) invoked when Shorewall is trying to determine the
+        usability of the network interface associated with an optional entry
+        in <filename>/etc/shorewall/providers</filename>. $1 is the name of
+        the interface which will have been determined to be up and configured
         before the script is invoked. The return value from the script
         indicates whether or not the interface is usable (0 = usable, other =
         unusable).</para>
@@ -179,9 +183,17 @@ esac</programlisting><caution>
       </listitem>
 
       <listitem>
-        <para>save -- (Added in Shorewall version 4.2.0 Beta2). This script is
-        invoked during execution of the <command>shorewall save</command> and
-        <command>shorewall-lite save</command> commands.</para>
+        <para><filename>save</filename> -- (Added in Shorewall version 4.2.0
+        Beta2). This script is invoked during execution of the
+        <command>shorewall save</command> and <command>shorewall-lite
+        save</command> commands.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>restored</filename> -- (Added in Shorewall-perl
+        version 4.2.6). This script is invoked at the completion of a
+        successful <command>shorewall restore</command> and
+        <command>shorewall-lite restore</command>.</para>
       </listitem>
     </itemizedlist>
 

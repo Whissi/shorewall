@@ -110,6 +110,7 @@ our %EXPORT_TAGS = (
 				       source_exclusion
 				       dest_exclusion
 				       clearrule
+				       port_count
 				       do_proto
 				       mac_match
 				       verify_mark
@@ -2251,7 +2252,7 @@ sub expand_rule( $$$$$$$$$$$ )
     if ( $origdest ) {
 	if ( $origdest eq '-' || ! $capabilities{CONNTRACK_MATCH} ) {
 	    $origdest = '';
-	    $rule .= "-m conntrack --ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport && port_count( $oport) == 1;
+	    $rule .= "-m conntrack --ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #
 	    # Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
@@ -2272,7 +2273,7 @@ sub expand_rule( $$$$$$$$$$$ )
 		push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
 
 		$rule .= '-m conntrack --ctorigdst $address ';
-		$rule .= "--ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport && port_count( $oport) == 1;
+		$rule .= "--ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
 	    } else {
 		my $interface = $interfaces[0];
 		my $variable  = get_interface_address( $interface );
@@ -2280,7 +2281,7 @@ sub expand_rule( $$$$$$$$$$$ )
 		push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi' ) if interface_is_optional( $interface );
 
 		$rule .= "-m conntrack --ctorigdst $variable ";
-		$rule .= "--ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport && port_count( $oport) == 1;
+		$rule .= "--ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
 	    }
 
 	    $origdest = '';
@@ -2306,11 +2307,11 @@ sub expand_rule( $$$$$$$$$$$ )
 		}
 	    }
 
-	    $rule .= "-m conntrack --ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport && port_count( $oport) == 1;
+	    $rule .= "-m conntrack --ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
 	}
     } else {
 	$oexcl = '';
-	$rule .= "-m conntrack --ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport && port_count( $oport) == 1;
+	$rule .= "-m conntrack --ctorigdstport $oport " if $capabilities{NEW_CONNTRACK_MATCH} && $oport;
     }
 
     #

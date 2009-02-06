@@ -1226,6 +1226,13 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $server = $1;      # May be empty
 	    $serverport = $3;  # Not Empty due to RE 
 	    $origdstports = $ports;
+	    
+	    if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
+		$origdstports = validate_port( $proto, $origdstports );
+	    } else {
+		$origdstports = '';
+	    }
+	    
 	    if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
 		#
 		# Server Port Range

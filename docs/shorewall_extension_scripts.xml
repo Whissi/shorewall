@@ -206,6 +206,152 @@ esac</programlisting><caution>
     after the /etc/shorewall/rules file has been processed but before the
     /etc/shorewall/policy file has been processed.</para>
 
+    <para>The following table indicate which commands invoke the various
+    scripts.</para>
+
+    <informaltable>
+      <tgroup cols="3">
+        <tbody>
+          <row>
+            <entry>script</entry>
+
+            <entry>Shorewall-shell</entry>
+
+            <entry>Shorewall-perl</entry>
+          </row>
+
+          <row>
+            <entry>clear</entry>
+
+            <entry>clear</entry>
+
+            <entry>clear</entry>
+          </row>
+
+          <row>
+            <entry>compile</entry>
+
+            <entry>-</entry>
+
+            <entry>check, compile, export, load, refresh, reload, restart,
+            restore,start</entry>
+          </row>
+
+          <row>
+            <entry>continue</entry>
+
+            <entry>load, refresh, reload, restart, restore, start</entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>init</entry>
+
+            <entry>load, refresh, reload, restart, restore, start</entry>
+
+            <entry>load, refresh, reload, restart restore, start</entry>
+          </row>
+
+          <row>
+            <entry>initdone</entry>
+
+            <entry>refresh, restart, restore, start</entry>
+
+            <entry>check, compile, export, refresh, restart, start</entry>
+          </row>
+
+          <row>
+            <entry>isusable</entry>
+
+            <entry>refresh, restart, restore, start</entry>
+
+            <entry>refresh, restart, restore, start</entry>
+          </row>
+
+          <row>
+            <entry>maclog</entry>
+
+            <entry>load, refresh, reload, restart, restore, start</entry>
+
+            <entry>check, compile, export, refresh, restart, start</entry>
+          </row>
+
+          <row>
+            <entry>refresh</entry>
+
+            <entry>refresh</entry>
+
+            <entry>refresh</entry>
+          </row>
+
+          <row>
+            <entry>refreshed</entry>
+
+            <entry>refresh</entry>
+
+            <entry>refresh</entry>
+          </row>
+
+          <row>
+            <entry>restored</entry>
+
+            <entry>-</entry>
+
+            <entry>restore</entry>
+          </row>
+
+          <row>
+            <entry>save</entry>
+
+            <entry>save</entry>
+
+            <entry>save</entry>
+          </row>
+
+          <row>
+            <entry>start</entry>
+
+            <entry>load, reload, restart, restore, start</entry>
+
+            <entry>load, reload, restart, start</entry>
+          </row>
+
+          <row>
+            <entry>started</entry>
+
+            <entry>load, reload, restart, restore, start</entry>
+
+            <entry>load, reload, restart, start</entry>
+          </row>
+
+          <row>
+            <entry>stop</entry>
+
+            <entry>stop, clear</entry>
+
+            <entry>stop, clear</entry>
+          </row>
+
+          <row>
+            <entry>stopped</entry>
+
+            <entry>stop, clear</entry>
+
+            <entry>stop, clear</entry>
+          </row>
+
+          <row>
+            <entry>tcclear</entry>
+
+            <entry>load, reload, restart, restore, start</entry>
+
+            <entry>load, reload, restart, restore, start</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
     <para>There are a couple of special considerations for commands in
     extension scripts:</para>
 

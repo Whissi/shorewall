@@ -147,7 +147,15 @@ our $object;
 #
 our $lastlineblank;
 #
-# Number of columns to indent the output
+# Tabs to indent the output
+#
+our $indent1;
+#
+# Characters to indent the output
+#
+our $indent2;
+#
+# Total indentation
 #
 our $indent;
 #
@@ -286,6 +294,8 @@ sub initialize( $ ) {
     $timestamp = '';           # If true, we are to timestamp each progress message
     $object = 0;               # Object (script) file Handle Reference
     $lastlineblank = 0;        # Avoid extra blank lines in the output
+    $indent1       = '';       # Current indentation
+    $indent2       = '';       # Current indentation
     $indent        = '';       # Current indentation
     ( $dir, $file ) = ('',''); # Object's Directory and File
     $tempfile = '';            # Temporary File Name
@@ -405,6 +415,7 @@ sub initialize( $ ) {
 	      MANGLE_ENABLED => undef ,
 	      NULL_ROUTE_RFC1918 => undef ,
 	      USE_DEFAULT_RT => undef ,
+	      RESTORE_DEFAULT_ROUTE => undef ,
 	      #
 	      # Packet Disposition
 	      #
@@ -916,11 +927,24 @@ sub progress_message3 {
 # Push/Pop Indent
 #
 sub push_indent() {
-    $indent = "$indent    ";
+    if ( $indent2 ) {
+	$indent2 = '';
+	$indent = $indent1 = $indent1 . "\t";
+    } else {
+	$indent2 = '    ';
+	$indent = $indent1 . $indent2;
+    }
 }
 
 sub pop_indent() {
-    $indent = substr( $indent , 0 , ( length $indent ) - 4 );
+    if ( $indent2 ) {
+	$indent2 = '';
+	$indent = $indent1;
+    } else {
+	$indent1 = substr( $indent1 , 0, -1 );
+	$indent2 = '    ';
+	$indent = $indent1 . $indent2;
+    }
 }
 
 #
@@ -938,7 +962,11 @@ sub copy( $ ) {
 		print $object "\n" unless $lastlineblank;
 		$lastlineblank = 1;
 	    } else {
-		s/^/$indent/ if $indent;
+		if  ( $indent ) {
+		    s/^(\s*)/$indent1$1$indent2/; 
+		    s/        /\t/ if $indent2;
+		}
+
 		print $object $_;
 		print $object "\n";
 		$lastlineblank = 0;
@@ -950,7 +978,7 @@ sub copy( $ ) {
 }
 
 #
-# This one handles line continuation.
+# This one handles line continuation and 'here documents'
 
 sub copy1( $ ) {
     if ( $object ) {
@@ -958,20 +986,37 @@ sub copy1( $ ) {
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
-	my $do_indent = 1;
+	my ( $do_indent, $here_documents ) = ( 1, '');
 
 	while ( <IF> ) {
 	    chomp;
-	    if ( /^\s*$/ ) {
+
+	    if ( /^${here_documents}\s*$/ ) {
+		print $object $here_documents if $here_documents;
 		print $object "\n";
 		$do_indent = 1;
+		$here_documents = '';
 		next;
 	    }
 
-	    s/^/$indent/ if $indent && $do_indent;
+	    if ( $do_indent && /.*<<\s*([^ ]+)s*(.*)/ ) {
+		$here_documents = $1;
+		s/^(\s*)/$indent1$1$indent2/;
+		s/        /\t/ if $indent2;
+		$do_indent = 0;
+		print $object $_;
+		print $object "\n";
+		next;
+	    }
+
+	    if ( $indent && $do_indent ) {
+		s/^(\s*)/$indent1$1$indent2/;
+		s/        /\t/ if $indent2;
+	    }
+		    
 	    print $object $_;
 	    print $object "\n";
-	    $do_indent = ! ( /\\$/ );
+	    $do_indent = ! ( $here_documents || /\\$/ );
 	}
 
 	close IF;
@@ -1823,7 +1868,7 @@ sub determine_capabilities( $ ) {
     $capabilities{HELPER_MATCH}    = qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
     $capabilities{CONNLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
     $capabilities{TIME_MATCH}      = qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
-    $capabilities{GOTO_SUPPORT}    = qt1( "$iptables -A $sillyname -g $sillyname1" );
+    $capabilities{GOTO_TARGET}     = qt1( "$iptables -A $sillyname -g $sillyname1" );
 
     qt1( "$iptables -F $sillyname" );
     qt1( "$iptables -X $sillyname" );
@@ -2127,6 +2172,7 @@ sub get_configuration( $ ) {
     default_yes_no 'MANGLE_ENABLED'             , 'Yes';
     default_yes_no 'NULL_ROUTE_RFC1918'         , '';
     default_yes_no 'USE_DEFAULT_RT'             , '';
+    default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 

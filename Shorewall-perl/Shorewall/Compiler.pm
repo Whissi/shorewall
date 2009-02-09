@@ -52,10 +52,6 @@ our $reused = 0;
 
 our $family = F_IPV4;
 
-use constant { EXPORT => 0x01 ,
-	       TIMESTAMP => 0x02 ,
-	       DEBUG => 0x04 };
-
 #
 # Reinitilize the package-globals in the other modules
 #
@@ -255,10 +251,6 @@ EOF
     deleteallchains() {
 	do_iptables -F
 	do_iptables -X
-    }
-
-    setcontinue() {
-	do_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
 
     delete_nat() {

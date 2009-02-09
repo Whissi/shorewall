@@ -1775,7 +1775,7 @@ sub determine_capabilities( $ ) {
 
     if ( $capabilities{CONNTRACK_MATCH} ) {
 	$capabilities{NEW_CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
-	$capabilities{OLD_CONNTRACK_MATCH} = ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdstport 1.2.3.4" );
+	$capabilities{OLD_CONNTRACK_MATCH} = ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdst 1.2.3.4" );
     }
     
     if ( qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" ) ) {

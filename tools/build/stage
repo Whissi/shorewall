@@ -22,11 +22,11 @@
 #
 # Usage:
 #
-#       stage [-pclsxh] <version>
+#       stage [-pclL6sxh] <version>
 #
 
 usage() {
-    echo "Usage: stage [-pclsxh] <version>"
+    echo "Usage: stage [-pclL6sxh] <version>"
 }
 
 rpm=
@@ -64,6 +64,16 @@ case $1 in
 	UPLOADLITE=Yes
 	UPLOADXML=Yes
 	UPLOADHTML=Yes
+
+	case $1 in
+	    4.0.*)
+		;;
+	    *)
+		UPLOAD6=Yes
+		UPLOAD6LITE=Yes
+		;;
+	esac
+
 	PARTIAL=
 	done=Yes
 	;;
@@ -132,7 +142,9 @@ case $1 in
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${1%-*}-0${1#*-}.noarch.rpm
+	rpm6=shorewall6-${1%-*}-0${1#*-}.noarch.rpm
 	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
+	lite6rpm=shorewall6-lite-${1%-*}-0${1#*-}.noarch.rpm
 	perlrpm=shorewall-perl-${1%-*}-0${1#*-}.noarch.rpm
 	shellrpm=shorewall-shell-${1%-*}-0${1#*-}.noarch.rpm
 	BASE=Yes
@@ -160,7 +172,9 @@ case $1 in
 	DEST="/srv/ftp/pub/shorewall/development/staging/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall-common
 	rpm=shorewall-common-${1}-0base.noarch.rpm
+	rpm6=shorewall6-${BASEVERSION}-${PATCHNUM}.noarch.rpm
 	literpm=shorewall-lite-${1}-0base.noarch.rpm
+	lite6rpm=shorewall6-lite-${1}-0base.noarch.rpm
 	perlrpm=shorewall-perl-${1}-0base.noarch.rpm
 	shellrpm=shorewall-shell-${1}-0base.noarch.rpm
 	BASE=Yes

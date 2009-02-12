@@ -30,7 +30,7 @@
     connection tracking. For any particular (source,dest) pair of zones, the
     rules are evaluated in the order in which they appear in this file and the
     first terminating match is the one that determines the disposition of the
-    request. All rules are terminating except LOG and QUEUE rules.</para>
+    request. All rules are terminating except LOG and COUNT rules.</para>
 
     <warning>
       <para>If you masquerade or use SNAT from a local system to the internet,
@@ -145,7 +145,7 @@
         role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
         role="bold">LOG</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">NFQUEUE</emphasis>[<emphasis
+        role="bold">NFQUEUE[!]</emphasis>|COUNT[<emphasis
         role="bold">(</emphasis><emphasis>queuenumber</emphasis><emphasis
         role="bold">)</emphasis>]<emphasis
         role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
@@ -387,6 +387,15 @@
                 <para>like NFQUEUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>COUNT</term>
+
+              <listitem>
+                <para>Simply increment the rule's packet and byte count and
+                pass the packet to the next rule.</para>
               </listitem>
             </varlistentry>
 

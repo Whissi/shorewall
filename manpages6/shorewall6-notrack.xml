@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall6-notrack</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>notrack</refname>
+
+    <refpurpose>shorewall6 notrack file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall6/notrack</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>The notrack file is used to exempt certain traffic from Netfilter
+    connection tracking. Traffic matching entries in this fill will not be
+    tracked.</para>
+
+    <para>The file was added in shorewall6-perl 4.2.7 and is not supported by
+    shorewall6-shell or by earlier versions of shorewall6-perl.</para>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>SOURCE ‒
+        <emphasis>zone</emphasis>[:<emphasis>interface</emphasis>][:<emphasis>address-list</emphasis>]</term>
+
+        <listitem>
+          <para>where <replaceable>zone</replaceable> is the name of a zone,
+          <replaceable>interface</replaceable> is an interface to that zone,
+          and <replaceable>address-list</replaceable> is a comma-separated
+          list of addresses (may contain exclusion - see <ulink
+          url="shorewall-exclusion.html">shorewall6-exclusion</ulink>
+          (5)).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DEST ‒ [<replaceable>address-list</replaceable>]</term>
+
+        <listitem>
+          <para>where <replaceable>address-list</replaceable> is a
+          comma-separated list of addresses (may contain exclusion - see
+          <ulink url="shorewall-exclusion.html">shorewall6-exclusion</ulink>
+          (5)).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROTO ‒
+        <replaceable>protocol-name-or-number</replaceable></term>
+
+        <listitem>
+          <para>A protocol name from <filename>/etc/protocols</filename> or a
+          protocol number.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DEST PORT(S) - port-number/service-name-list</term>
+
+        <listitem>
+          <para>A comma-separated list of port numbers and/or service names
+          from <filename>/etc/services</filename>. May also include port
+          ranges of the form
+          <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
+          if your kernel and iptables include port range support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>SOURCE PORT(S) - port-number/service-name-list</term>
+
+        <listitem>
+          <para>A comma-separated list of port numbers and/or service names
+          from <filename>/etc/services</filename>. May also include port
+          ranges of the form
+          <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
+          if your kernel and iptables include port range support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>USER/GROUP ‒
+        [<replaceable>user</replaceable>][:<replaceable>group</replaceable>]</term>
+
+        <listitem>
+          <para>May only be specified if the SOURCE
+          <replaceable>zone</replaceable> is $FW. Specifies the effective user
+          id and or group id of the process sending the traffic.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall6/notrack</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-ipsec(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-proxyarp(5),
+    shorewall6-route_rules(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

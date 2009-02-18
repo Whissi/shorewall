@@ -266,8 +266,8 @@ net     ipv4</programlisting>
     action</ulink> defined for the policy in
     <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    performed before the policy is applied. The purpose of the common action is
-    two-fold:</para>
+    performed before the policy is applied. The purpose of the common action
+    is two-fold:</para>
 
     <itemizedlist>
       <listitem>
@@ -581,6 +581,11 @@ SSH/ACCEPT  net       $FW           </programlisting>
       <filename>/etc/shorewall/shorewall.conf</filename> and setting
       <varname>STARTUP_ENABLED=Yes.</varname></para>
     </important>
+
+    <para>While you are editing <filename>shorewall.conf</filename>, it is a
+    good idea to check the value of the SUBSYSLOCK option. You can find a
+    description of this option by typing 'man shorewall.conf' at a shell
+    prompt and searching for SUBSYSLOCK.</para>
 
     <para>The firewall is started using the <quote><command>shorewall
     start</command></quote> command and stopped using

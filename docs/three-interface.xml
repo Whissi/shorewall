@@ -286,11 +286,11 @@ dmz     ipv4</programlisting>Zone names are defined in
     If no rule in that file matches the connection request then the first
     policy in <filename>/etc/shorewall/policy</filename> that matches the
     request is applied. If there is a <ulink
-    url="shorewall_extension_scripts.htm">common action</ulink> defined for the
-    policy in <filename>/etc/shorewall/actions</filename> or
+    url="shorewall_extension_scripts.htm">common action</ulink> defined for
+    the policy in <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    performed before the action is applied. The purpose of the common action is
-    two-fold:</para>
+    performed before the action is applied. The purpose of the common action
+    is two-fold:</para>
 
     <itemizedlist>
       <listitem>
@@ -615,13 +615,10 @@ root@lists:~# </programlisting>
           <imagedata fileref="images/dmz2.png" />
         </imageobject>
 
-        <caption>
-          <para>The default gateway for the DMZ computers would be <systemitem
-          class="ipaddress">10.10.11.254</systemitem> and the default gateway
-          for the Local computers would be <systemitem
-          class="ipaddress">10.10.10.254</systemitem>.</para>
-
-          <warning>
+        <caption><para>The default gateway for the DMZ computers would be
+        <systemitem class="ipaddress">10.10.11.254</systemitem> and the
+        default gateway for the Local computers would be <systemitem
+        class="ipaddress">10.10.10.254</systemitem>.</para> <warning>
             <para>Your ISP might assign your external interface an RFC 1918
             address. If that address is in the <systemitem
             class="ipaddress">10.10.10.0/24</systemitem> subnet then you will
@@ -629,8 +626,7 @@ root@lists:~# </programlisting>
             and if it is in the <systemitem
             class="ipaddress">10.10.11.0/24</systemitem> subnet then you will
             need to select a different RFC 1918 subnet for your DMZ.</para>
-          </warning>
-        </caption>
+          </warning></caption>
       </mediaobject>
     </figure>
   </section>
@@ -648,10 +644,9 @@ root@lists:~# </programlisting>
     look as if the firewall itself is initiating the connection. This is
     necessary so that the destination host will be able to route return
     packets back to the firewall (remember that packets whose destination
-    address is reserved by RFC 1918 can't be routed across the Internet).
-    When the firewall receives a return packet, it rewrites the destination
-    address back to 10.10.10.1 and forwards the packet on to local computer
-    1.</para>
+    address is reserved by RFC 1918 can't be routed across the Internet). When
+    the firewall receives a return packet, it rewrites the destination address
+    back to 10.10.10.1 and forwards the packet on to local computer 1.</para>
 
     <para>On Linux systems, the above process is often referred to as IP
     Masquerading and you will also see the term Source Network Address
@@ -1086,10 +1081,17 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
         <para>Users of the <filename>.deb</filename> package must edit
         <filename>/etc/default/shorewall</filename> and set
         <varname>startup=1</varname>.</para>
-      </important>The firewall is started using the <command>shorewall
-    start</command> command and stopped using <command>shorewall
-    stop</command>. When the firewall is stopped, routing is enabled on those
-    hosts that have an entry in <ulink
+      </important></para>
+
+    <para>While you are editing <filename>shorewall.conf</filename>, it is a
+    good idea to check the value of the SUBSYSLOCK option. You can find a
+    description of this option by typing 'man shorewall.conf' at a shell
+    prompt and searching for SUBSYSLOCK </para>
+
+    <para>The firewall is started using the <command>shorewall start</command>
+    command and stopped using <command>shorewall stop</command>. When the
+    firewall is stopped, routing is enabled on those hosts that have an entry
+    in <ulink
     url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>.
     A running firewall may be restarted using the <command>shorewall
     restart</command> command. If you want to totally remove any trace of

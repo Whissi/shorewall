@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall-routestopped</refentrytitle>
@@ -127,7 +129,53 @@
                 </itemizedlist>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>notrack</term>
+
+              <listitem>
+                <para>The traffic will be exempted from conntection
+                tracking.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROTO (Optional) ‒
+        <replaceable>protocol-name-or-number</replaceable></term>
+
+        <listitem>
+          <para>Only available with Shorewall-perl 4.2.7 and later.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DEST PORT(S) (Optional) ‒
+        <replaceable>service-name/port-number-list</replaceable></term>
+
+        <listitem>
+          <para>Only available with Shorewall-perl 4.2.7 and later. A
+          comma-separated list of port numbers and/or service names from
+          <filename>/etc/services</filename>. May also include port ranges of
+          the form
+          <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
+          if your kernel and iptables include port range support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>SOURCE PORT(S) (Optional) ‒
+        <replaceable>service-name/port-number-list</replaceable></term>
+
+        <listitem>
+          <para>Only available with Shorewall-perl 4.2.7 and later. A
+          comma-separated list of port numbers and/or service names from
+          <filename>/etc/services</filename>. May also include port ranges of
+          the form
+          <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
+          if your kernel and iptables include port range support.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -148,11 +196,13 @@
         <term>Example 1:</term>
 
         <listitem>
-          <programlisting>        #INTERFACE      HOST(S)                 OPTIONS
+          <programlisting>        #INTERFACE      HOST(S)                 OPTIONS         PROTO          DEST       SOURCE
+        #                                                                      PORT(S)    PORT(S)
         eth2            192.168.1.0/24
         eth0            192.0.2.44
         br0             -                       routeback
-        eth3            -                       source</programlisting>
+        eth3            -                       source
+        eth4            -                       notrack        41</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

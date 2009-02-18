@@ -269,11 +269,11 @@ loc     ipv4</programlisting>Zones are defined in the <ulink
     first policy in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     that matches the request is applied. If there is a <ulink
-    url="shorewall_extension_scripts.htm">common action</ulink> defined for the
-    policy in <filename>/etc/shorewall/actions</filename> or
+    url="shorewall_extension_scripts.htm">common action</ulink> defined for
+    the policy in <filename>/etc/shorewall/actions</filename> or
     <filename>/usr/share/shorewall/actions.std</filename> then that action is
-    performed before the action is applied. The purpose of the common action is
-    two-fold:</para>
+    performed before the action is applied. The purpose of the common action
+    is two-fold:</para>
 
     <itemizedlist>
       <listitem>
@@ -1002,7 +1002,12 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
         <para>Users of the .deb package must edit <filename
         class="directory">/etc/default/</filename><filename>shorewall</filename>
         and set <varname>startup=1</varname>.</para>
-      </important> The firewall is started using the <quote><command>shorewall
+      </important> While you are editing <filename>shorewall.conf</filename>,
+    it is a good idea to check the value of the SUBSYSLOCK option. You can
+    find a description of this option by typing 'man shorewall.conf' at a
+    shell prompt and searching for SUBSYSLOCK.</para>
+
+    <para>The firewall is started using the <quote><command>shorewall
     start</command></quote> command and stopped using
     <quote><command>shorewall stop</command></quote>. When the firewall is
     stopped, routing is enabled on those hosts that have an entry in <filename

@@ -24,6 +24,8 @@
 
       <year>2008</year>
 
+      <year>2009</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -125,6 +127,11 @@ ACCEPT   -              -               tcp     135,139,445
     <para>In Shorewall version 3.4 and later, to make use of any of the three
     types of actions you must set the USE_ACTIONS option to Yes in
     <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+
+    <note>
+      <para>Shorewall-perl will complain if USE_ACTIONS=No since that compiler
+      always includes the capability to use actions.</para>
+    </note>
   </section>
 
   <section id="Default">
@@ -221,7 +228,8 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
 
     <itemizedlist>
       <listitem>
-        <para>The log level. If you don't want to log, specify <quote>none</quote>.</para>
+        <para>The log level. If you don't want to log, specify
+        <quote>none</quote>.</para>
       </listitem>
 
       <listitem>
@@ -248,9 +256,8 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
 
       <itemizedlist>
         <listitem>
-          <para>The file
-          <filename>/usr/share/shorewall/action</filename>. Limit is
-          empty.</para>
+          <para>The file <filename>/usr/share/shorewall/action</filename>.
+          Limit is empty.</para>
         </listitem>
 
         <listitem>
@@ -326,8 +333,7 @@ add_rule $chainref, '-j ACCEPT';
 
     <orderedlist>
       <listitem>
-        <para>Add a line to
-        <filename>/etc/shorewall/actions</filename> that
+        <para>Add a line to <filename>/etc/shorewall/actions</filename> that
         names your new action. Action names must be valid shell variable names
         (must begin with a letter and be composed of letters, digits and
         underscore characters) as well as valid Netfilter chain names. If you
@@ -430,9 +436,9 @@ add_rule $chainref, '-j ACCEPT';
         <para>A port range is expressed as &lt;<emphasis>low
         port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
 
-        <para>This column is ignored if PROTO = <quote>all</quote>, but must be
-        entered if any of the following fields are supplied. In that case, it
-        is suggested that this field contain <quote>-</quote>.</para>
+        <para>This column is ignored if PROTO = <quote>all</quote>, but must
+        be entered if any of the following fields are supplied. In that case,
+        it is suggested that this field contain <quote>-</quote>.</para>
 
         <para>If your kernel contains multi-port match support, then only a
         single Netfilter rule will be generated if in this list and in the
@@ -541,7 +547,8 @@ add_rule $chainref, '-j ACCEPT';
         rule will match only if the test returns true.</para>
 
         <para>If you don’t want to define a test but need to specify anything
-          in the subsequent columns, place a <quote>-</quote> in this field.<simplelist>
+        in the subsequent columns, place a <quote>-</quote> in this
+        field.<simplelist>
             <member>! — Inverts the test (not equal)</member>
 
             <member>&lt;<emphasis>value</emphasis>&gt; — Value of the packet
@@ -614,8 +621,8 @@ bar:info</programlisting>
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 foo:debug    $FW         net</programlisting>
 
-        <para>Logging in the invoke <quote>foo</quote> action will be as if foo
-        had been defined as:</para>
+        <para>Logging in the invoke <quote>foo</quote> action will be as if
+        foo had been defined as:</para>
 
         <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22
@@ -640,8 +647,8 @@ bar:info</programlisting>
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 foo:debug!   $FW        net</programlisting>
 
-        <para>Logging in the invoke <quote>foo</quote> action will be as if foo
-        had been defined as:</para>
+        <para>Logging in the invoke <quote>foo</quote> action will be as if
+        foo had been defined as:</para>
 
         <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22

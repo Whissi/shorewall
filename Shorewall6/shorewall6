@@ -216,10 +216,6 @@ get_config() {
 	    No|NO|no)
 	        TC_ENABLED=
 		;;
-	    RTC)
-		NORTC=Yes
-		RTCONLY=
-		;;
 	esac
 
 	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
@@ -470,8 +466,7 @@ start_command() {
 	    ;;
     esac
 
-    export NORTC
-    export RTCONLY
+    export NOROUTES
     export PURGE
 
     if [ -n "$FAST" ]; then
@@ -690,14 +685,8 @@ restart_command() {
 			    option=${option#f}
 			    ;;
 			n*)
-			    NORTC=Yes
-			    RTCONLY=
+			    NOROUTES=Yes
 			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
 			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
@@ -742,8 +731,7 @@ restart_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NORTC
-    export RTCONLY
+    export NOROUTES
     export PURGE
 
    if [ -z "$FAST" ]; then  
@@ -815,8 +803,7 @@ refresh_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NORTC
-    export RTCONLY
+    export NOROUTES
 
     progress_message3 "Compiling..."
 
@@ -859,14 +846,8 @@ safe_commands() {
 			    option=
 			    ;;
 			n*)
-			    NORTC=Yes
-			    RTCONLY=
+			    NOROUTES=Yes
 			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
 			    ;;
 			*)
 			    usage 1
@@ -1008,14 +989,8 @@ try_command() {
 			    option=
 			    ;;
 			n*)
-			    NORTC=Yes
-			    RTCONLY=
+			    NOROUTES=Yes
 			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
 			    ;;
 			*)
 			    usage 1
@@ -1355,7 +1330,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"
+    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|raw|routing|tc|vardir|zones} ]"
     echo "   start [ -f ] [ -n ] [ -p ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
@@ -1389,8 +1364,7 @@ IPT_OPTIONS="-nv"
 FAST=
 VERBOSE_OFFSET=0
 USE_VERBOSITY=
-NORTC=
-RTCONLY=
+NOROUTES=
 PURGE=
 EXPORT=
 export TIMESTAMP=
@@ -1467,14 +1441,8 @@ while [ $finished -eq 0 ]; do
 			esac
 			;;
 		    n*)
-			NORTC=Yes
-			RTCONLY=
+			NOROUTES=Yes
 			option=${option#n}
-			;;
-		    r*)
-			RTCONLY=Yes
-			NORTC=
-			option=${option#r}
 			;;
 		    t*)
 			TIMESTAMP=Yes
@@ -1615,16 +1583,14 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 1
 	get_config
 	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
-	export NORTC
-	export RTCONLY
+	export NOROUTES
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
 	get_config
-	export NORTC
-	export RTCONLY
+	export NOROUTES
 	shift
 	mutex_on
 	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"

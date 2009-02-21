@@ -1,1 +1,1 @@
-This is the Shorewall-lite Development 4.1 branch of SVN.
+This is the Shorewall-lite stable 4.2 branch of SVN.

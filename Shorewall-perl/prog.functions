@@ -20,27 +20,25 @@ delete_proxyarp() {
 clear_firewall() {
     stop_firewall
 
-    if [ -z "$RTCONLY" ]; then
-	setpolicy INPUT ACCEPT
-	setpolicy FORWARD ACCEPT
-	setpolicy OUTPUT ACCEPT
+    setpolicy INPUT ACCEPT
+    setpolicy FORWARD ACCEPT
+    setpolicy OUTPUT ACCEPT
 
-	run_iptables -F
+    run_iptables -F
 
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	
-	if [ -n "$DISABLE_IPV6" ]; then
-	    if qt mywhich ip6tables; then
-		ip6tables -P INPUT   ACCEPT 2> /dev/null
-		ip6tables -P OUTPUT  ACCEPT 2> /dev/null
-		ip6tables -P FORWARD ACCEPT 2> /dev/null
-	    fi
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+
+    if [ -n "$DISABLE_IPV6" ]; then
+	if qt mywhich ip6tables; then
+	    ip6tables -P INPUT   ACCEPT 2> /dev/null
+	    ip6tables -P OUTPUT  ACCEPT 2> /dev/null
+	    ip6tables -P FORWARD ACCEPT 2> /dev/null
 	fi
-
-	run_clear_exit
-
-	set_state "Cleared"
     fi
+
+    run_clear_exit
+
+    set_state "Cleared"
 
     logger -p kern.info "$PRODUCT Cleared"
 }

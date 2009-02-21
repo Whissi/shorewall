@@ -61,22 +61,22 @@ sub setup_tunnels() {
 	    }
 	}
 
-	my $options = '-m state --state NEW -j ACCEPT';
+	my $options = $globals{UNTRACKED} ? '-m state --state NEW,UNTRACKED -j ACCEPT' : '-m state --state NEW -j ACCEPT';
 
-	add_rule $inchainref,  "-p 50 $source -j ACCEPT";
-	add_rule $outchainref, "-p 50 $dest   -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p 50 $dest   -j ACCEPT";
 
 	unless ( $noah ) {
-	    add_rule $inchainref,  "-p 51 $source -j ACCEPT";
-	    add_rule $outchainref, "-p 51 $dest   -j ACCEPT";
+	    add_tunnel_rule $inchainref,  "-p 51 $source -j ACCEPT";
+	    add_tunnel_rule $outchainref, "-p 51 $dest   -j ACCEPT";
 	}
 
 	if ( $kind eq 'ipsec' ) {
-	    add_rule $inchainref,  "-p udp $source --dport 500 $options";
-	    add_rule $outchainref, "-p udp $dest   --dport 500 $options";
+	    add_tunnel_rule $inchainref,  "-p udp $source --dport 500 $options";
+	    add_tunnel_rule $outchainref, "-p udp $dest   --dport 500 $options";
 	} else {
-	    add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
-	    add_rule $outchainref, "-p udp $dest   -m multiport --dports 500,4500 $options";
+	    add_tunnel_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
+	    add_tunnel_rule $outchainref, "-p udp $dest   -m multiport --dports 500,4500 $options";
 	}
 
 	unless ( $gatewayzones eq '-' ) {
@@ -87,21 +87,21 @@ sub setup_tunnels() {
 		$outchainref = ensure_filter_chain "${fw}2${zone}", 1;
 
 		unless ( $capabilities{POLICY_MATCH} ) {
-		    add_rule $inchainref,  "-p 50 $source -j ACCEPT";
-		    add_rule $outchainref, "-p 50 $dest -j ACCEPT";
+		    add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
+		    add_tunnel_rule $outchainref, "-p 50 $dest -j ACCEPT";
 
 		    unless ( $noah ) {
-			add_rule $inchainref,  "-p 51 $source -j ACCEPT";
-			add_rule $outchainref, "-p 51 $dest -j ACCEPT";
+			add_tunnel_rule $inchainref,  "-p 51 $source -j ACCEPT";
+			add_tunnel_rule $outchainref, "-p 51 $dest -j ACCEPT";
 		    }
 		}
 
 		if ( $kind eq 'ipsec' ) {
-		    add_rule $inchainref,  "-p udp $source --dport 500 $options";
-		    add_rule $outchainref, "-p udp $dest --dport 500 $options";
+		    add_tunnel_rule $inchainref,  "-p udp $source --dport 500 $options";
+		    add_tunnel_rule $outchainref, "-p udp $dest --dport 500 $options";
 		} else {
-		    add_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
-		    add_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
+		    add_tunnel_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
+		    add_tunnel_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
 		}
 	    }
 	}
@@ -110,24 +110,24 @@ sub setup_tunnels() {
     sub setup_one_other {
 	my ($inchainref, $outchainref, $source, $dest , $protocol) = @_;
 
-	add_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
-	add_rule $outchainref , "-p $protocol $dest -j ACCEPT";
+	add_tunnel_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
+	add_tunnel_rule $outchainref , "-p $protocol $dest -j ACCEPT";
     }
 
     sub setup_pptp_client {
 	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
 
-	add_rule $outchainref,  "-p 47 $dest -j ACCEPT";
-	add_rule $inchainref,   "-p 47 $source -j ACCEPT";
-	add_rule $outchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	add_tunnel_rule $outchainref,  "-p 47 $dest -j ACCEPT";
+	add_tunnel_rule $inchainref,   "-p 47 $source -j ACCEPT";
+	add_tunnel_rule $outchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
 	}
 
     sub setup_pptp_server {
 	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
 
-	add_rule $inchainref,  "-p 47 $dest -j ACCEPT";
-	add_rule $outchainref, "-p 47 $source -j ACCEPT";
-	add_rule $inchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	add_tunnel_rule $inchainref,  "-p 47 $dest -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p 47 $source -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
 	}
 
     sub setup_one_openvpn {
@@ -151,8 +151,8 @@ sub setup_tunnels() {
 	    }
 	}
 
-	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
-	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
     }
 
     sub setup_one_openvpn_client {
@@ -176,8 +176,8 @@ sub setup_tunnels() {
 	    }
 	}
 
-	add_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
-	add_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
     }
 
     sub setup_one_openvpn_server {
@@ -201,8 +201,8 @@ sub setup_tunnels() {
 	    }
 	}
 
-	add_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
-	add_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
     }
 
     sub setup_one_l2tp {
@@ -210,8 +210,8 @@ sub setup_tunnels() {
 
 	fatal_error "Unknown option ($1)" if $kind =~ /^.*?:(.*)$/;
 
-	add_rule $inchainref,  "-p udp $source --sport 1701 --dport 1701 -j ACCEPT";
-	add_rule $outchainref, "-p udp $dest   --sport 1701 --dport 1701 -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p udp $source --sport 1701 --dport 1701 -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p udp $dest   --sport 1701 --dport 1701 -j ACCEPT";
     }
 
     sub setup_one_generic {
@@ -228,8 +228,8 @@ sub setup_tunnels() {
 	    ( $kind, $protocol ) = split /:/ , $kind if $kind =~ /.*:.*/;
 	}
 
-	add_rule $inchainref,  "-p $protocol $source $port -j ACCEPT";
-	add_rule $outchainref, "-p $protocol $dest $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  "-p $protocol $source $port -j ACCEPT";
+	add_tunnel_rule $outchainref, "-p $protocol $dest $port -j ACCEPT";
     }
 
     sub setup_one_tunnel($$$$) {

@@ -413,6 +413,13 @@ show_command() {
 	    show_reset
 	    $IP6TABLES -t mangle -L $IPT_OPTIONS
 	    ;;
+	raw)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$PRODUCT $version raw Table at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    $IP6TABLES -t raw -L $IPT_OPTIONS
+	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version Log ($LOGFILE) at $HOSTNAME - $(date)"

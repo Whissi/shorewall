@@ -1,8 +1,8 @@
- #
+#
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ -r ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|refresh|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -22,8 +22,6 @@ if [ $# -gt 1 ]; then
 fi
 
 initialize
-
-[ -n "${PRODUCT:=Shorewall}" ]
 
 finished=0
 
@@ -45,23 +43,8 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			VERBOSE=$(($VERBOSE - 1 ))
 			option=${option#q}
 			;;
-                    r*)  
-			if [ -n "$NORTC" ]; then
-			    error_message "The -n and -r options are mutually exclusive"
-			    exit 1
-			fi
-
-			RTCONLY=Yes
-			option=${option#r}
-			PRODUCT="$PRODUCT Traffic Control and Routing"
-			;;
 		    n*)
-			if [ -n "$RTCONLY" ]; then
-			    error_message "The -n and -r options are mutually exclusive"
-			    exit 1
-			fi
-
-			NORTC=Yes
+			NOROUTES=Yes
 			option=${option#n}
 			;;
 		    *)
@@ -79,15 +62,12 @@ done
 
 COMMAND="$1"
 
+[ -n "${PRODUCT:=Shorewall}" ]
+
 case "$COMMAND" in
     start)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "$RTCONLY" ]; then
-	    progress_message3 "Starting $PRODUCT...."
-	    define_firewall
-	    status=$?
-	    progress_message3 "done."
-	elif shorewall6_is_started; then
+	if shorewall_is_started; then
 	    error_message "$PRODUCT is already Running"
 	    status=0
 	else
@@ -103,14 +83,11 @@ case "$COMMAND" in
 	progress_message3 "Stopping $PRODUCT...."
 	stop_firewall
 	status=0
-	[ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
     reset)
-	if [ -n "${NORTC}$"{RTCONLY} ]; then
-	    error_message "The -n and -r options may not be used with 'reset'"
-	    status=1
-	elif ! shorewall_is_started ; then
+	if ! shorewall_is_started ; then
 	    error_message "$PRODUCT is not running"
 	    status=2
 	elif [ $# -eq 1 ]; then
@@ -149,17 +126,14 @@ case "$COMMAND" in
 
 	define_firewall
 	status=$?
-	if [ -n "$SUBSYSLOCK" -a -z "$RTCONLY" ]; then
+	if [ -n "$SUBSYSLOCK" ]; then
  	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
         fi
 	progress_message3 "done."
 	;;
     refresh)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "${NORTC}$"{RTCONLY} ]; then
-	    error_message "The -n and -r options may not be used with 'refresh'"
-	    status=1
-	elif shorewall_is_started; then
+	if shorewall_is_started; then
 	    progress_message3 "Refreshing $PRODUCT...."
 	    define_firewall
 	    status=$?
@@ -171,23 +145,18 @@ case "$COMMAND" in
 	;;
     restore)
 	[ $# -ne 1 ] && usage 2
-	if [ -n "${NORTC}$"{RTCONLY} ]; then
-	    error_message "The -n and -r options may not be used with 'restart'"
-	    status=1
-	else
-	    define_firewall
-	    status=$?
-	    if [ -n "$SUBSYSLOCK" -a -z "$RTCONLY" ]; then
- 		[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-            fi
-	fi
+	define_firewall
+	status=$?
+	if [ -n "$SUBSYSLOCK" ]; then
+ 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+        fi
 	;;
     clear)
 	[ $# -ne 1 ] && usage 2
 	progress_message3 "Clearing $PRODUCT...."
 	clear_firewall
 	status=0
-	[ -n "$SUBSYSLOCK" ] && [ -z "$RTCONLY" ] && rm -f $SUBSYSLOCK
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
     status)

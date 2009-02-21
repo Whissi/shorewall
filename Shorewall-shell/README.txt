@@ -1,1 +1,1 @@
-This is the Shorewall-shell Development 4.2 branch of SVN.
+This is the Shorewall-shell Stable 4.2 branch of SVN.

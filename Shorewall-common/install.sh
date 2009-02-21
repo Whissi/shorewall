@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.3.6
+VERSION=4.2.6
 
 usage() # $1 = exit status
 {
@@ -436,6 +436,15 @@ run_install $OWNERSHIP -m 0644 masq ${PREFIX}/usr/share/shorewall/configfiles/ma
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/masq ]; then
     run_install $OWNERSHIP -m 0600 masq ${PREFIX}/etc/shorewall/masq
     echo "Masquerade file installed as ${PREFIX}/etc/shorewall/masq"
+fi
+#
+# Install the Notrack file
+#
+run_install $OWNERSHIP -m 0644 notrack ${PREFIX}/usr/share/shorewall/configfiles/notrack
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/notrack ]; then
+    run_install $OWNERSHIP -m 0600 notrack ${PREFIX}/etc/shorewall/notrack
+    echo "Notrack file installed as ${PREFIX}/etc/shorewall/notrack"
 fi
 #
 # Install the Modules file

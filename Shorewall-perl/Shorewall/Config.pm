@@ -54,6 +54,8 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shorewall);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
+				       disable_object
+				       enable_object
 				       finalize_object
 		                       numeric_value
 		                       numeric_value1
@@ -80,6 +82,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       set_debug
 				       find_file
 				       split_list
+				       split_list1
 				       split_line
 				       split_line1
 				       first_entry
@@ -142,6 +145,8 @@ our $timestamp;
 # Object file handle
 #
 our $object;
+
+our $object_enabled;
 #
 # True, if last line emitted is blank
 #
@@ -293,6 +298,7 @@ sub initialize( $ ) {
     $log_verbose = -1;         # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message
     $object = 0;               # Object (script) file Handle Reference
+    $object_enabled = 0;       # Write to object file is disabled.
     $lastlineblank = 0;        # Avoid extra blank lines in the output
     $indent1       = '';       # Current indentation
     $indent2       = '';       # Current indentation
@@ -310,7 +316,8 @@ sub initialize( $ ) {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
-		    VERSION => "4.3.6",
+		    UNTRACKED => 0,
+		    VERSION => "4.2.6",
 		    CAPVERSION => 40205 ,
 		  );
 
@@ -416,6 +423,7 @@ sub initialize( $ ) {
 	      NULL_ROUTE_RFC1918 => undef ,
 	      USE_DEFAULT_RT => undef ,
 	      RESTORE_DEFAULT_ROUTE => undef ,
+	      FAST_STOP => undef ,
 	      #
 	      # Packet Disposition
 	      #
@@ -738,6 +746,8 @@ sub in_hex8( $ ) {
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit {
+    fatal_error 'Internal Error in emit' unless $object_enabled;
+    
     if ( $object ) {
 	#
 	# 'compile' as opposed to 'check'
@@ -762,6 +772,7 @@ sub emit {
 # Write passed message to the object with newline but no indentation.
 #
 sub emit_unindented( $ ) {
+    fatal_error 'Internal Error in emit_unindented' unless $object_enabled;
     print $object "$_[0]\n" if $object;
 }
 
@@ -840,26 +851,28 @@ sub timestamp() {
 sub progress_message {
     my $havelocaltime = 0;
 
-    if ( $verbose > 1 ) {
-	timestamp, $havelocaltime = 1 if $timestamp;
-	#
-	# We use this function to display messages containing raw config file images which may contains tabs (including multiple tabs in succession).
-	# The following makes such messages look more readable and uniform
-	#
+    if ( $verbose > 1 || $log_verbose > 1 ) {
 	my $line = "@_";
+	my $leading = $line =~ /^(\s+)/ ? $1 : '';
 	$line =~ s/\s+/ /g;
-	print "$line\n";
-    }
 
-    if ( $log_verbose > 1 ) {
-	our @localtime;
+	if ( $verbose > 1 ) {
+	    timestamp, $havelocaltime = 1 if $timestamp;
+	    #
+	    # We use this function to display messages containing raw config file images which may contains tabs (including multiple tabs in succession).
+	    # The following makes such messages look more readable and uniform
+	    #
+	    print "${leading}${line}\n";
+	}
 
-	@localtime = localtime unless $havelocaltime; 
+	if ( $log_verbose > 1 ) {
+	    our @localtime;
 
-	printf $log '%s %2d %2d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
-	my $line = "@_";
-	$line =~ s/\s+/ /g;
-	print $log "$line\n";
+	    @localtime = localtime unless $havelocaltime; 
+
+	    printf $log '%s %2d %2d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	    print $log "${leading}${line}\n";
+	}
     }
 }
 
@@ -951,6 +964,8 @@ sub pop_indent() {
 # Functions for copying files into the object
 #
 sub copy( $ ) {
+    fatal_error 'Internal Error in copy' unless $object_enabled;
+
     if ( $object ) {
 	my $file = $_[0];
 
@@ -981,6 +996,8 @@ sub copy( $ ) {
 # This one handles line continuation and 'here documents'
 
 sub copy1( $ ) {
+    fatal_error 'Internal Error in copy1' unless $object_enabled;
+
     if ( $object ) {
 	my $file = $_[0];
 
@@ -1059,6 +1076,20 @@ sub create_temp_object( $$ ) {
 }
 
 #
+# Enable writing to object
+#
+sub enable_object() {
+    $object_enabled = 1;
+}
+
+#
+# Disable writing to object
+#
+sub disable_object() {
+    $object_enabled = 0;
+}
+
+#
 # Finalize the object file
 #
 sub finalize_object( $ ) {
@@ -1130,6 +1161,33 @@ sub split_list( $$ ) {
     fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
     
     split /,/, $list;
+}
+
+sub split_list1( $$ ) {
+    my ($list, $type ) = @_;
+
+    fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
+    
+    my @list1 = split /,/, $list;
+    my @list2;
+    my $element = '';
+    
+    for ( @list1 ) {
+	if ( /\(/ ) {
+	    fatal_error "Invalid $type list ($list)" if $element;
+	    $element = $_;
+	} elsif ( /\)$/ ) {
+	    fatal_error "Invalid $type list ($list)" unless $element;
+	    push @list2, join ',', $element, $_;
+	    $element = '';
+	} elsif ( $element ) {
+	    $element = join ',', $element , $_;
+	} else {
+	    push @list2 , $_;
+	}
+    }
+
+    @list2;
 }
 
 #
@@ -2229,8 +2287,6 @@ sub get_configuration( $ ) {
 	$globals{TC_SCRIPT} = $file;
     } elsif ( $val eq 'internal' ) {
 	$config{TC_ENABLED} = 'Internal';
-    } elsif ( $val eq 'rtc' ) {
-	$config{TC_ENABLED} = 'RTC';
     } else {
 	fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
 	$config{TC_ENABLED} = '';

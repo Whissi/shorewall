@@ -1,9 +1,17 @@
+#
+# Shorewall version 4 - 'isusable' sample script
+#
+# /etc/shorewall/isusable
+#
+#   This script is a companion to the 'swping' script described at 
+#   http://www.shorewall.net/MultiISP.html#swping.
+#
+# See http://shorewall.net/shorewall_extension_scripts.htm for additional
+# information.
+#
+###############################################################################
 local status=0
 
-case $1 in
-    $EXT_IF|$COM_IF)
-	[ -f /etc/shorewall/${1}.status ] && status=$(cat /etc/shorewall/${1}.status)
-	;;
-esac
+[ -f /etc/shorewall/${1}.status ] && status=$(cat /etc/shorewall/${1}.status)
 
 return $status

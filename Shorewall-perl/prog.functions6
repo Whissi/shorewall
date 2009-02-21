@@ -4,19 +4,17 @@
 clear_firewall() {
     stop_firewall
 
-    if [ -z "$RTCONLY" ]; then
-        setpolicy INPUT ACCEPT
-    	setpolicy FORWARD ACCEPT
-	setpolicy OUTPUT ACCEPT
+    setpolicy INPUT ACCEPT
+    setpolicy FORWARD ACCEPT
+    setpolicy OUTPUT ACCEPT
 
-	run_iptables -F
+    run_iptables -F
 
-	echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
-	
-	run_clear_exit
+    echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
 
-	set_state "Cleared"
-    fi
+    run_clear_exit
+
+    set_state "Cleared"
 
     logger -p kern.info "$PRODUCT Cleared"
 }

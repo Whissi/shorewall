@@ -267,12 +267,14 @@ sub setup_rfc1918_filteration( $ ) {
 
     add_rule $norfc1918ref , '-j rfc1918d' if $config{RFC1918_STRICT};
 
+    my $state = $globals{UNTRACKED} ? 'NEW,UNTRACKED' : 'NEW';
+
     for my $hostref  ( @$listref ) {
 	my $interface = $hostref->[0];
 	my $ipsec     = $hostref->[1];
 	my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in "  : '';
 	for my $chain ( first_chains $interface ) {
-	    add_rule $filter_table->{$chain} , join( '', '-m state --state NEW ', match_source_net( $hostref->[2]) , "${policy}-j norfc1918" );
+	    add_rule $filter_table->{$chain} , join( '', "-m state --state $state ", match_source_net( $hostref->[2]) , "${policy}-j norfc1918" );
 	}
 	set_interface_option $interface, 'use_input_chain', 1;
 	set_interface_option $interface, 'use_forward_chain', 1;
@@ -335,11 +337,11 @@ sub setup_blacklist() {
 			    $disposition ,
 			    '' );
 
-		progress_message "         \"$currentline\" added to blacklist";
+		progress_message "  \"$currentline\" added to blacklist";
 	    }
 	}
 
-	my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
+	my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
 
 	for my $hostref ( @$hosts ) {
 	    my $interface  = $hostref->[0];
@@ -356,7 +358,7 @@ sub setup_blacklist() {
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
 
-	    progress_message "   Blacklisting enabled on ${interface}:${network}";
+	    progress_message "  Blacklisting enabled on ${interface}:${network}";
 	}
     }
 }
@@ -367,13 +369,15 @@ sub process_criticalhosts() {
 
     my $fn = open_file 'routestopped';
 
+    my $seq = 0;
+
     first_entry "$doing $fn for critical hosts...";
 
     while ( read_a_line ) {
 
 	my $routeback = 0;
 
-	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
+	my ($interface, $hosts, $options, $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
 
 	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
@@ -381,15 +385,18 @@ sub process_criticalhosts() {
 
 	my @hosts;
 
+	$seq++;
+
 	for my $host ( split_list $hosts, 'host' ) {
 	    validate_host $host, 1;
-	    push @hosts, "$interface|$host";
+	    push @hosts, "$interface|$host|$seq";
 	}
 
 	unless ( $options eq '-' ) {
 	    for my $option (split_list $options, 'option' ) {
-		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' ) {
+		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' || $option eq 'notrack' ) {
 		    if ( $option eq 'critical' ) {
+			fatal_error "PROTO may not be specified with 'critical'" if $proto ne '-';
 			push @critical, @hosts;
 		    } else {
 			warning_message "Unknown routestopped option ( $option ) ignored";
@@ -404,9 +411,11 @@ sub process_criticalhosts() {
 
 sub process_routestopped() {
 
-    my ( @allhosts, %source, %dest );
+    my ( @allhosts, %source, %dest , %notrack, @rule );
 
     my $fn = open_file 'routestopped';
+
+    my $seq = 0;
 
     first_entry "$doing $fn...";
 
@@ -414,7 +423,7 @@ sub process_routestopped() {
 
 	my $routeback = 0;
 
-	my ($interface, $hosts, $options ) = split_line 1, 3, 'routestopped file';
+	my ($interface, $hosts, $options , $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
 
 	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
@@ -422,9 +431,14 @@ sub process_routestopped() {
 
 	my @hosts;
 
+	$seq++;
+
+	my $rule = do_proto( $proto, $ports, $sports );
+
 	for my $host ( split /,/, $hosts ) {
 	    validate_host $host, 1;
-	    push @hosts, "$interface|$host";
+	    push @hosts, "$interface|$host|$seq";
+	    push @rule, $rule;
 	}
 
 	unless ( $options eq '-' ) {
@@ -445,11 +459,15 @@ sub process_routestopped() {
 		    }
 		} elsif ( $option eq 'source' ) {
 		    for my $host ( split /,/, $hosts ) {
-			$source{"$interface|$host"} = 1;
+			$source{"$interface|$host|$seq"} = 1;
 		    }
 		} elsif ( $option eq 'dest' ) {
 		    for my $host ( split /,/, $hosts ) {
-			$dest{"$interface|$host"} = 1;
+			$dest{"$interface|$host|$seq"} = 1;
+		    }
+		} elsif ( $option eq 'notrack' ) {
+		    for my $host ( split /,/, $hosts ) {
+			$notrack{"$interface|$host|$seq"} = 1;
 		    }
 		} else {
 		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
@@ -463,34 +481,40 @@ sub process_routestopped() {
     my $tool = $family == F_IPV4 ? '$IPTABLES' : '$IP6TABLES';
 
     for my $host ( @allhosts ) {
-	my ( $interface, $h ) = split /\|/, $host;
+	my ( $interface, $h, $seq ) = split /\|/, $host;
 	my $source  = match_source_net $h;
 	my $dest    = match_dest_net $h;
 	my $sourcei = match_source_dev $interface;
 	my $desti   = match_dest_dev $interface;
+	my $rule    = shift @rule;
 
-	emit "$tool -A INPUT $sourcei $source -j ACCEPT";
-	emit "$tool -A OUTPUT $desti $dest -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	emit "$tool -A INPUT $sourcei $source $rule -j ACCEPT";
+	emit "$tool -A OUTPUT $desti $dest $rule -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 
 	if ( $source{$host} ) {
-	    emit "$tool -A FORWARD $sourcei $source -j ACCEPT";
+	    emit "$tool -A FORWARD $sourcei $source $rule -j ACCEPT";
 	    $matched = 1;
 	}
 
 	if ( $dest{$host} ) {
-	    emit "$tool -A FORWARD $desti $dest -j ACCEPT";
+	    emit "$tool -A FORWARD $desti $dest $rule -j ACCEPT";
 	    $matched = 1;
+	}
+
+	if ( $notrack{$host} ) {
+	    emit "$tool -t raw -A PREROUTING $sourcei $source $rule -j NOTRACK";
+	    emit "$tool -t raw -A OUTPUT $desti $dest $rule -j NOTRACK";
 	}
 
 	unless ( $matched ) {
 	    for my $host1 ( @allhosts ) {
 		unless ( $host eq $host1 ) {
-		    my ( $interface1, $h1 ) = split /\|/, $host1;
+		    my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    my $desti1 = match_dest_dev $interface1;
-		    emit "$tool -A FORWARD $sourcei $desti1 $source $dest1 -j ACCEPT";
+		    emit "$tool -A FORWARD $sourcei $desti1 $source $dest1 $rule -j ACCEPT";
 		    clearrule;
 		}
 	    }
@@ -511,7 +535,7 @@ sub add_common_rules() {
 
     new_standard_chain 'dynamic';
 
-    my $state = $config{BLACKLISTNEWONLY} ? '-m state --state NEW,INVALID ' : '';
+    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
 
     add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
 
@@ -586,6 +610,9 @@ sub add_common_rules() {
 
     if ( @$list ) {
 	progress_message2 'Adding Anti-smurf Rules';
+
+	my $state = $globals{UNTRACKED} ? 'NEW,INVALID,UNTRACKED' : 'NEW,INVALID';
+
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
@@ -593,7 +620,7 @@ sub add_common_rules() {
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( first_chains $interface ) {
-		add_jump $filter_table->{$chain} , $target, 0, join( '', '-m state --state NEW,INVALID ', match_source_net( $hostref->[2] ),  $policy );
+		add_jump $filter_table->{$chain} , $target, 0, join( '', "-m state --state $state ", match_source_net( $hostref->[2] ),  $policy );
 	    }
 	    
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -696,7 +723,7 @@ sub add_common_rules() {
 	$list = find_interfaces_by_option 'upnp';
 
 	if ( @$list ) {
-	    progress_message2 '$doing UPnP';
+	    progress_message2 "$doing UPnP";
 
 	    new_nat_chain( 'UPnP' );
 	    
@@ -736,8 +763,6 @@ sub setup_mac_lists( $ ) {
     }
 
     my @maclist_interfaces = ( sort keys %maclist_interfaces );
-
-    progress_message "   $doing MAC Verification for @maclist_interfaces -- Phase $phase...";
 
     if ( $phase == 1 ) {
 
@@ -828,18 +853,20 @@ sub setup_mac_lists( $ ) {
 	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
 	    my $source     = match_source_net $hostref->[2];
 
+	    my $state = $globals{UNTRACKED} ? 'NEW,UNTRACKED' : 'NEW';
+
 	    if ( $table eq 'filter' ) {
 		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );
 						   
 		for my $chain ( first_chains $interface ) {
-		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}-m state --state NEW ${policy}";
+		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}-m state --state ${state} ${policy}";
 		}
 
 		set_interface_option $interface, 'use_input_chain', 1;
 		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
 		my $chainref = source_exclusion( $hostref->[3], $mangle_table->{mac_chain $interface} );
-		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}-m state --state NEW ${policy}";
+		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}-m state --state ${state} ${policy}";
 	    }
 	}
     } else {
@@ -1614,7 +1641,7 @@ sub generate_matrix() {
 	    fatal_error "No policy defined for zone $zone to zone $zone1";
 	}
 
-	'';
+	''; # CONTINUE policy
     }
 
     #
@@ -1632,6 +1659,7 @@ sub generate_matrix() {
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
+    my $notrackref = $raw_table->{notrack_chain $fw};
     my @zones = non_firewall_zones;
     my $interface_jumps_added = 0;
 
@@ -1677,7 +1705,11 @@ sub generate_matrix() {
 	    }
 	}
     }
-    
+
+    #
+    # NOTRACK from firewall
+    #
+    add_rule $raw_table->{OUTPUT}, "-j $notrackref->{name}" if $notrackref->{referenced};
     #
     # Main source-zone matrix-generation loop
     #
@@ -1692,31 +1724,36 @@ sub generate_matrix() {
 	my $frwd_ref         = $filter_table->{zone_forward_chain $zone};
 	my $chain            = 0;
 	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
+	my $notrackref       = ensure_chain 'raw' , notrack_chain( $zone );
 	my $nested           = $zoneref->{options}{nested};
+	my $parenthasnat     = 0;
+	my $parenthasnotrack = 0;
+
 
 	if ( $nested ) {
 	    #
 	    # This is a sub-zone. We need to determine if
 	    #
-	    #   a) A parent zone defines DNAT/REDIRECT rules; and
+	    #   a) A parent zone defines DNAT/REDIRECT or notrack rules; and
 	    #   b) The current zone has a CONTINUE policy to some other zone.
 	    #
 	    # If a) but not b), then we must avoid sending packets from this
-	    # zone through the DNAT/REDIRECT chain for the parent.
+	    # zone through the DNAT/REDIRECT or notrack chain for the parent.
 	    #
-	    my $parenthasnat = 0;
-
 	    for my $parent ( @{$zoneref->{parents}} ) {
-		my $ref = $nat_table->{dnat_chain $parent} || {};
-		$parenthasnat = 1, last if $ref->{referenced};
+		my $ref1 = $nat_table->{dnat_chain $parent} || {};
+		my $ref2 = $raw_table->{notrack_chain $parent} || {};
+		$parenthasnat     = 1 if $ref1->{referenced};
+		$parenthasnotrack = 1 if $ref2->{referenced};
+		last if $parenthasnat && $parenthasnotrack;
 	    }
 
-	    if ( $parenthasnat ) {
+	    if ( $parenthasnat || $parenthasnotrack ) {
 		for my $zone1 ( all_zones ) {
 		    if ( $filter_table->{"${zone}2${zone1}"}->{policy} eq 'CONTINUE' ) {
 			#
 			# This zone has a continue policy to another zone. We must
-			# send packets from this zone through the parent's DNAT/REDIRECT chain.
+			# send packets from this zone through the parent's DNAT/REDIRECT/NOTRACK chain.
 			#
 			$nested = 0;
 			last;
@@ -1724,7 +1761,7 @@ sub generate_matrix() {
 		}
 	    } else {
 		#
-		# No parent has DNAT so there is nothing to worry about. Don't bother to generate needless RETURN rules in the 'dnat' chain.
+		# No parent has DNAT or notrack so there is nothing to worry about. Don't bother to generate needless RETURN rules in the 'dnat' or 'notrack' chain.
 		#
 		$nested = 0;
 	    }
@@ -1784,11 +1821,22 @@ sub generate_matrix() {
 			    #
 			    add_jump $preroutingref, source_exclusion( $exclusions, $dnatref), 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
 			}
+
+			if ( $notrackref->{referenced} ) {
+			    #
+			    # There are notrack rules with this zone as the source.
+			    # Add a jump from this source network to this zone's notrack chain
+			    #
+			    add_jump $raw_table->{PREROUTING}, source_exclusion( $exclusions, $notrackref), 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
+			}
 			#
-			# If this zone has parents with DNAT/REDIRECT rules and there are no CONTINUE polcies with this zone as the source
+			# If this zone has parents with DNAT/REDIRECT or notrack rules and there are no CONTINUE polcies with this zone as the source
 			# then add a RETURN jump for this source network.
 			#
-			add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $nested;
+			if ( $nested ) {
+			    add_rule $preroutingref, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' )           if $parenthasnat;
+			    add_rule $raw_table->{PREROUTING}, join( '', match_source_dev( $interface), $source, $ipsec_in_match, '-j RETURN' ) if $parenthasnotrack;
+			}
 
 			my $inputchainref;
 			my $interfacematch = '';

@@ -462,7 +462,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version Connections at $HOSTNAME - $(date)"
 	    echo
-	    [ -f /proc/net/ip_conntrack ] && /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
+	    [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 1 ] && usage 1
@@ -470,6 +470,13 @@ show_command() {
 	    echo
 	    show_reset
 	    $IPTABLES -t nat -L $IPT_OPTIONS
+	    ;;
+	raw)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$PRODUCT $version RAW Table at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    $IPTABLES -t raw -L $IPT_OPTIONS
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1

@@ -109,6 +109,24 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		}
 	      );
 
+our %flow_keys = ( 'src'            => 1,
+		   'dst'            => 1,
+		   'proto'          => 1,
+		   'proto-src'      => 1,
+		   'proto-dst'      => 1,
+		   'iif'            => 1,
+		   'priority'       => 1,
+		   'mark'           => 1,
+		   'nfct'           => 1,
+		   'nfct-src'       => 1,
+		   'nfct-dst'       => 1,
+		   'nfct-proto-src' => 1,
+		   'nfct-proto-dst' => 1,
+		   'rt-classid'     => 1,
+		   'sk-uid'         => 1,
+		   'sk-gid'         => 1,
+		   'vlan-tag'       => 1 );
+
 our %classids;
 
 our @deferred_rules;
@@ -309,7 +327,7 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 	fatal_error "Class Id $originalmark is not associated with device $result" if $device ne $result;
     }
 
-    progress_message "   TC Rule \"$currentline\" $done";
+    progress_message "  TC Rule \"$currentline\" $done";
 
 }
 
@@ -337,6 +355,20 @@ sub calculate_quantum( $$ ) {
     int( ( $rate * 125 ) / $r2q );
 }
 
+sub process_flow($) {
+    my $flow = shift;
+
+    $flow =~ s/^\(// if $flow =~ s/\)$//;
+
+    my @flow = split /,/, $flow;
+
+    for ( @flow ) {
+	fatal_error "Invalid flow key ($_)" unless $flow_keys{$_};
+    }
+    
+    $flow;
+}
+	
 sub validate_tc_device( $$$$$ ) {
     my ( $device, $inband, $outband , $options , $redirected ) = @_;
 
@@ -364,12 +396,18 @@ sub validate_tc_device( $$$$$ ) {
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
     fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
 
-    my $classify = 0;
+    my ( $classify, $pfifo, $flow)  = (0, 0, '' );
 
     if ( $options ne '-' ) {
-	for my $option ( split_list $options, 'option' ) {
+	for my $option ( split_list1 $options, 'option' ) {
 	    if ( $option eq 'classify' ) {
 		$classify = 1;
+	    } elsif ( $option =~ /^flow=(.*)$/ ) {
+		fatal_error "The 'flow' option is not allowed with 'pfifo'" if $pfifo;
+		$flow = process_flow $1;
+	    } elsif ( $option eq 'pfifo' ) {
+		fatal_error "The 'pfifo'' option is not allowed with 'flow='" if $flow;
+		$pfifo = 1;
 	    } else {
 		fatal_error "Unknown device option ($option)";
 	    }
@@ -395,14 +433,16 @@ sub validate_tc_device( $$$$$ ) {
     $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit' ,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit' ,
 			    number        => $devnumber,
-			    classify      => $classify , 
+			    classify      => $classify ,
+			    flow          => $flow ,
+			    pfifo         => $pfifo ,
 			    tablenumber   => 1 ,
 			    redirected    => \@redirected ,
 			  } ,
 
     push @tcdevices, $device;
 
-    progress_message "   Tcdevice \"$currentline\" $done.";
+    progress_message "  Tcdevice \"$currentline\" $done.";
 }
 
 sub convert_rate( $$$ ) {
@@ -410,7 +450,6 @@ sub convert_rate( $$$ ) {
 
     if ( $rate =~ /\bfull\b/ ) {
 	$rate =~ s/\bfull\b/$full/g;
-	progress_message "   Compiling $column $_[1]";
 	fatal_error "Invalid $column ($_[1])" if $rate =~ m{[^0-9*/+()-]};
 	no warnings;
 	$rate = eval "int( $rate )";
@@ -444,7 +483,7 @@ sub dev_by_number( $ ) {
     ( $dev , $devref );
     
 }
-	
+
 sub validate_tc_class( $$$$$$ ) {
     my ( $devclass, $mark, $rate, $ceil, $prio, $options ) = @_;
 
@@ -507,7 +546,9 @@ sub validate_tc_class( $$$$$$ ) {
 			       rate     => convert_rate( $full, $rate, 'RATE' ) ,
 			       ceiling  => convert_rate( $full, $ceil, 'CEIL' ) ,
 			       priority => $prio eq '-' ? 1 : $prio ,
-			       mark     => $markval
+			       mark     => $markval ,
+			       flow     => '' ,
+			       pfifo    => 0
 			     };
 
     $tcref = $tcref->{$classnumber};
@@ -515,7 +556,7 @@ sub validate_tc_class( $$$$$$ ) {
     fatal_error "RATE ($tcref->{rate}) exceeds CEIL ($tcref->{ceiling})" if $tcref->{rate} > $tcref->{ceiling};
 
     unless ( $options eq '-' ) {
-	for my $option ( split_list "\L$options", 'option' ) {
+	for my $option ( split_list1 "\L$options", 'option' ) {
 	    my $optval = $tosoptions{$option};
 
 	    $option = $optval if $optval;
@@ -531,14 +572,23 @@ sub validate_tc_class( $$$$$$ ) {
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
 		( undef, $option ) = split /=/, $option;
 		push @{$tcref->{tos}}, $option;
+	    } elsif ( $option =~ /^flow=(.*)$/ ) {
+		fatal_error "The 'flow' option is not allowed with 'pfifo'" if $tcref->{pfifo};
+		$tcref->{flow} = process_flow $1;
+	    } elsif ( $option eq 'pfifo' ) {
+		fatal_error "The 'pfifo'' option is not allowed with 'flow='" if $tcref->{flow};
+		$tcref->{pfifo} = 1;
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
 	}
     }
 
+    $tcref->{flow}  = $devref->{flow}  unless $tcref->{flow};
+    $tcref->{pfifo} = $devref->{pfifo} unless $tcref->{flow} || $tcref->{pfifo};
+
     push @tcclasses, "$device:$classnumber";
-    progress_message "   Tcclass \"$currentline\" $done.";
+    progress_message "  Tcclass \"$currentline\" $done.";
 }
 
 #
@@ -688,7 +738,7 @@ sub process_tc_filter( $$$$$$ ) {
 
     emit '';
 
-    progress_message "   TC Filter \"$currentline\" $done";
+    progress_message "  TC Filter \"$currentline\" $done";
 
     $currentline =~ s/\s+/ /g;
 
@@ -803,13 +853,14 @@ sub setup_traffic_shaping() {
 	}
 
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
-	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum",
-	       "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq perturb 10"
-	     );
+	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
+
+	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit 127 perturb 10" ) unless $tcref->{pfifo};
 	#
 	# add filters
 	#
 	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
+	emit "run_tc filter add dev $device protocol ip pref 1 parent $classnum: handle 1 flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	#options
 	#
@@ -879,7 +930,7 @@ sub setup_tc() {
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD POSTROUTING) {
-		insert_rule $mangle_table->{$chain}, 1, '-j MARK --and-mark 0xFF';
+		insert_rule1 $mangle_table->{$chain}, 0, '-j MARK --and-mark 0xFF';
 	    }
 	}
     }

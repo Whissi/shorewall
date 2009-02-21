@@ -216,9 +216,6 @@ get_config() {
 	    No|NO|no)
 	        TC_ENABLED=
 		;;
-	    RTC)
-		NORTC=Yes
-		;;
 	esac
 
 	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
@@ -295,6 +292,20 @@ get_config() {
 	*)
 	    if [ -n "$MANGLE_ENABLED" ]; then
 		echo "   ERROR: Invalid MANGLE_ENABLED setting ($MANGLE_ENABLED)" >&2
+		exit 2
+	    fi
+	    ;;
+    esac
+
+    case $FAST_STOP in
+	Yes|yes)
+	    ;;
+	No|no)
+	    FAST_STOP=
+	    ;;
+	*)
+	    if [ -n "$FAST_STOP" ]; then
+		echo "   ERROR: Invalid FAST_STOP setting ($FAST_STOP)" >&2
 		exit 2
 	    fi
 	    ;;
@@ -483,16 +494,6 @@ start_command() {
 			    DEBUG=Yes
 			    option=${option#d}
 			    ;;
-			n*)
-			    NORTC=Yes
-			    RTCONLY=
-			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
-			    ;;
 			f*)
 			    FAST=Yes
 			    option=${option#f}
@@ -537,8 +538,7 @@ start_command() {
 	    ;;
     esac
 
-    export NORTC
-    export RTCONLY
+    export NOROUTES
     export PURGE
 
     if [ -n "$FAST" ]; then
@@ -780,14 +780,8 @@ restart_command() {
 			    option=${option#f}
 			    ;;
 			n*)
-			    NORTC=Yes
-			    RTCONLY=
+			    NOROUTES=Yes
 			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
@@ -838,8 +832,7 @@ restart_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NORTC
-    export RTCONLY
+    export NOROUTES
     export PURGE
 
    if [ -z "$FAST" ]; then  
@@ -917,8 +910,7 @@ refresh_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NORTC
-    export RTCONLY
+    export NOROUTES
 
     progress_message3 "Compiling..."
 
@@ -961,14 +953,8 @@ safe_commands() {
 			    option=
 			    ;;
 			n*)
-			    NORTC=Yes
-			    RTCONLY=
+			    NOROUTES=Yes
 			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
@@ -1116,14 +1102,8 @@ try_command() {
 			    option=
 			    ;;
 			n*)
-			    NORTC=Yes
-			    RTCONLY=
+			    NOROUTES=Yes
 			    option=${option#n}
-			    ;;
-			r*)
-			    RTCONLY=Yes
-			    NORTC=
-			    option=${option#r}
 			    ;;
 			C)
 			    [ $# -gt 1 ] || fatal_error "-C must be followed by a compiler name"
@@ -1485,7 +1465,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ] [ -f ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|vardir|zones} ]"
+    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|raw|routing|tc|vardir|zones} ]"
     echo "   start [ -f ] [ -n ] [ -p ] [ -C {shell|perl} ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
@@ -1519,8 +1499,7 @@ IPT_OPTIONS="-nv"
 FAST=
 VERBOSE_OFFSET=0
 USE_VERBOSITY=
-NORTC=
-RTC=
+NOROUTES=
 PURGE=
 EXPORT=
 export TIMESTAMP=
@@ -1597,14 +1576,8 @@ while [ $finished -eq 0 ]; do
 			esac
 			;;
 		    n*)
-			NORTC=Yes
-			RTCONLY=
+			NOROUTES=Yes
 			option=${option#n}
-			;;
-		    r*)
-			RTCONLY=Yes
-			NORTC=
-			option=${option#r}
 			;;
 		    t*)
 			TIMESTAMP=Yes
@@ -1758,23 +1731,28 @@ case "$COMMAND" in
 	start_command $@
 	;;
     stop|clear)
-	if [ "x$2" = x-f ]; then
-	    [ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
-	    shift;
+	get_config
+	if [ "x$2" = x-s ]; then
+	    shift
+        else
+	    if [ "x$2" = x-f -o "$FAST_STOP" ]; then
+		[ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
+
+		if [ "x$2" = x-f ]; then
+		    shift
+		fi
+	    fi
 	fi
 
 	[ $# -ne 1 ] && usage 1
-	get_config
-	export NORTC
-	export RTCONLY
+	export NOROUTES
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
 	get_config
-	export NORTC
-	export RTCONLY
+	export NOROUTES
 	shift
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@

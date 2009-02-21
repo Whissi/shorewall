@@ -35,7 +35,10 @@
 #         --refresh=<chainlist>       # Make the 'refresh' command refresh a comma-separated list of chains rather than 'blacklst'.
 #         --log=<filename>            # Log file
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
-#         --family=<number>           # IP family; 4 = IPv4, 6 = IPv6
+#         --family=<number>           # IP family; 4 = IPv4 (default), 6 = IPv6
+#         --rtc                       # 0 = Generate Routing and Traffic shaping + Normal Netfilter logic (default)
+#                                     # 1 = Do not Generate Routing and Traffic shaping
+#                                     # 2 = Generate only the Routing and Traffic shaping part
 #
 use strict;
 use FindBin;
@@ -75,6 +78,7 @@ my $log_verbose   = 0;
 my $help          = 0;
 my $test          = 0;
 my $family        = 4; # F_IPV4
+my $rtc           = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -97,6 +101,7 @@ my $result = GetOptions('h'               => \$help,
 			'test'            => \$test,
 			'f=i'             => \$family,
 			'family=i'        => \$family,
+			'rtc=i'           => \$rtc,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -112,4 +117,5 @@ compiler( object          => defined $ARGV[0] ? $ARGV[0] : '',
 	  log             => $log,
 	  log_verbosity   => $log_verbose,
 	  test            => $test,
-	  family          => $family );
+	  family          => $family ,
+	  rtc             => $rtc );

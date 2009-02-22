@@ -76,41 +76,6 @@ cant_autostart()
     echo  "WARNING: Unable to configure shorewall6-lite to start automatically at boot" >&2
 }
 
-backup_directory() # $1 = directory to backup
-{
-    if [ -d $1 ]; then
-	if cp -a $1  ${1}-${VERSION}.bkout ; then
-	    echo
-	    echo "$1 saved to ${1}-${VERSION}.bkout"
-	else
-	    exit 1
-	fi
-    fi
-}
-
-backup_file() # $1 = file to backup, $2 = (optional) Directory in which to create the backup
-{
-    if [ -z "${PREFIX}${NOBACKUP}" ]; then
-	if [ -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
-	    if [ -n "$2" ]; then
-		if [ -d $2 ]; then
-		    if cp -f $1 $2 ; then
-			echo
-			echo "$1 saved to $2/$(basename $1)"
-		    else
-			exit 1
-		    fi
-		fi
-	    elif cp $1 ${1}-${VERSION}.bkout; then
-		echo
-		echo "$1 saved to ${1}-${VERSION}.bkout"
-	    else
-		exit 1
-	    fi
-	fi
-    fi
-}
-
 delete_file() # $1 = file to delete
 {
     rm -f $1
@@ -118,12 +83,6 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $OWNERSHIP -m $3 $1 ${2}
-}
-
-install_file_with_backup() # $1 = source $2 = target $3 = mode $4 = (optional) backup directory
-{
-    backup_file $2 $4
     run_install $OWNERSHIP -m $3 $1 ${2}
 }
 
@@ -157,8 +116,6 @@ if [ -z "$GROUP" ] ; then
 	GROUP=root
 fi
 
-NOBACKUP=
-
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
@@ -167,9 +124,6 @@ while [ $# -gt 0 ] ; do
         -v)
 	    echo "Shorewall6 Lite Firewall Installer Version $VERSION"
 	    exit 0
-	    ;;
-	-n)
-	    NOBACKUP=Yes
 	    ;;
 	*)
 	    usage 1
@@ -215,19 +169,10 @@ cd "$(dirname $0)"
 echo "Installing Shorewall6 Lite Version $VERSION"
 
 #
-# First do Backups
-#
-
-#
 # Check for /etc/shorewall6-lite
 #
 if [ -z "$PREFIX" -a -d /etc/shorewall6-lite ]; then
     first_install=""
-    if [ -z "$NOBACKUP" ]; then
-	backup_directory /etc/shorewall6-lite
-	backup_directory /usr/share/shorewall6-lite
-	backup_directory /var/lib/shorewall6-lite
-    fi
     [ -f /etc/shorewall6-lite/shorewall.conf ] && \
 	mv -f /etc/shorewall6-lite/shorewall.conf /etc/shorewall6-lite/shorewall6-lite.conf
 else
@@ -239,7 +184,7 @@ fi
 
 delete_file ${PREFIX}/usr/share/shorewall6-lite/xmodules
 
-install_file_with_backup shorewall6-lite ${PREFIX}/sbin/shorewall6-lite 0544 ${PREFIX}/var/lib/shorewall6-lite-${VERSION}.bkout
+install_file shorewall6-lite ${PREFIX}/sbin/shorewall6-lite 0544 ${PREFIX}/var/lib/shorewall6-lite-${VERSION}.bkout
 
 echo "Shorewall6 Lite control program installed in ${PREFIX}/sbin/shorewall6-lite"
 
@@ -247,12 +192,12 @@ echo "Shorewall6 Lite control program installed in ${PREFIX}/sbin/shorewall6-lit
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file_with_backup init.debian.sh /etc/init.d/shorewall6-lite 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
+    install_file init.debian.sh /etc/init.d/shorewall6-lite 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
-    install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
+    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
 
 else
-    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
+    install_file init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
 fi
 
 echo  "Shorewall6 Lite script installed in ${PREFIX}${DEST}/$INIT"

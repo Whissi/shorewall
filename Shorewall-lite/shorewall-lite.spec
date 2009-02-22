@@ -34,7 +34,7 @@ administrators to centralize the configuration of Shorewall-based firewalls.
 export PREFIX=$RPM_BUILD_ROOT ; \
 export OWNER=`id -n -u` ; \
 export GROUP=`id -n -g` ;\
-./install.sh -n
+./install.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT

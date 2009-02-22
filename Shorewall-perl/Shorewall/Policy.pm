@@ -32,7 +32,7 @@ use Shorewall::Actions;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain sub setup_syn_flood_chains );
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
 our $VERSION = 4.2.4;
 
@@ -131,7 +131,7 @@ sub add_or_modify_policy_chain( $$ ) {
     my ( $zone, $zone1 ) = @_;
     my $chain    = "${zone}2${zone1}";
     my $chainref = $filter_table->{$chain};
-    
+
     if ( $chainref ) {
 	unless( $chainref->{is_policy} ) {
 	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', OPTIONAL );
@@ -355,9 +355,8 @@ sub policy_rules( $$$$$ ) {
 	add_rule $chainref, "-j $default" if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
-	$target = 'reject' if $target eq 'REJECT';
 
-	add_jump( $chainref , $target, 1 ) unless $target eq 'CONTINUE';
+	add_jump( $chainref , $target eq 'REJECT' ? 'reject' : $target, 1 ) unless $target eq 'CONTINUE';
     }
 }
 

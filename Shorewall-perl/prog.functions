@@ -54,7 +54,7 @@ fatal_error()
         timestamp="$(date +'%_b %d %T') "
         echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
     fi
-	
+
     stop_firewall
     [ -n "$TEMPFILE" ] && rm -f $TEMPFILE
     exit 2
@@ -80,7 +80,7 @@ startup_error() # $* = Error Message
 
     if [ $LOG_VERBOSE -gt 1 ]; then
         timestamp="$(date +'%_b %d %T') "
-    
+
 	case $COMMAND in
 	    start)
 		echo "${timestamp}  ERROR:$PRODUCT start failed" >> $STARTUP_LOG
@@ -209,14 +209,14 @@ debug_restore_input() {
     for chain in PREROUTING OUTPUT; do
 	qt1 $IPTABLES -t raw -P $chain ACCEPT
     done
-    
+
     run_iptables -t nat -F
     run_iptables -t nat -X
 
     for chain in PREROUTING POSTROUTING OUTPUT; do
 	qt1 $IPTABLES -t nat -P $chain ACCEPT
     done
-    
+
     qt1 $IPTABLES -t filter -F
     qt1 $IPTABLES -t filter -X
 

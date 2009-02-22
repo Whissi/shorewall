@@ -251,7 +251,7 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 	    $target  = 'CLASSIFY --set-class';
 	}
     }
-        
+
     my $mask = 0xffff;
 
     my ($cmd, $rest) = split( '/', $mark, 2 );
@@ -262,7 +262,7 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 	    for my $tccmd ( @tccmd ) {
 		if ( $tccmd->{match}($cmd) ) {
 		    fatal_error "$mark not valid with :C[FPT]" if $connmark;
-		    
+
 		    require_capability ('CONNMARK' , "SAVE/RESTORE Rules", '' ) if $tccmd->{connmark};
 
 		    $target      = "$tccmd->{target} ";
@@ -365,10 +365,10 @@ sub process_flow($) {
     for ( @flow ) {
 	fatal_error "Invalid flow key ($_)" unless $flow_keys{$_};
     }
-    
+
     $flow;
 }
-	
+
 sub validate_tc_device( $$$$$ ) {
     my ( $device, $inband, $outband , $options , $redirected ) = @_;
 
@@ -378,7 +378,7 @@ sub validate_tc_device( $$$$$ ) {
 	( my $number, $device, my $rest )  = split /:/, $device, 3;
 
 	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
-    
+
 	if ( defined $number ) {
 	    $devnumber = numeric_value( $number );
 	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
@@ -390,7 +390,7 @@ sub validate_tc_device( $$$$$ ) {
     } else {
 	$devnumber = ++$devnum;
     }
-	
+
     $devnums[ $devnumber ] = $device;
 
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
@@ -469,7 +469,7 @@ sub dev_by_number( $ ) {
     my $dev = $_[0];
     my $devnum = numeric_value( $dev );
     my $devref;
-    
+
     if ( defined $devnum ) {
 	$dev = $devnums[ $devnum ];
 	fatal_error "Undefined INTERFACE number ($_[0])" unless defined $dev;
@@ -481,7 +481,7 @@ sub dev_by_number( $ ) {
     }
 
     ( $dev , $devref );
-    
+
 }
 
 sub validate_tc_class( $$$$$$ ) {
@@ -500,9 +500,9 @@ sub validate_tc_class( $$$$$$ ) {
     if ( $devclass =~ /:/ ) {
 	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
-	
+
 	( $device , $devref) = dev_by_number( $device );
-	    
+
 	if ( defined $number ) {
 	    if ( $devref->{classify} ) {
 		$classnumber = numeric_value( $number );
@@ -518,12 +518,12 @@ sub validate_tc_class( $$$$$$ ) {
 	($device, $devref ) = dev_by_number( $device );
 	fatal_error "Missing class NUMBER" if $devref->{classify};
     }
-	
+
     my $full  = rate_to_kbit $devref->{out_bandwidth};
 
     $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
-    
+
     my $markval = 0;
 
     if ( $mark ne '-' ) {
@@ -600,15 +600,15 @@ sub process_tc_filter( $$$$$$ ) {
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
-    
+
     ( $device , my $devref ) = dev_by_number( $device );
 
     my $devnum = $devref->{number};
 
     my $tcref = $tcclasses{$device};
-    
+
     fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
-    
+
     $tcref = $tcref->{$class};
 
     fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
@@ -616,7 +616,7 @@ sub process_tc_filter( $$$$$$ ) {
     my $rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32";
 
     my ( $net , $mask ) = decompose_net( $source );
-	
+
     $rule .= "\\\n   match u32 $net $mask at 12" unless $mask eq '0x00000000';
 
     ( $net , $mask ) = decompose_net( $dest );
@@ -634,7 +634,7 @@ sub process_tc_filter( $$$$$$ ) {
 	    $rule .= "\\\n   match u8 $pnumber 0xff at 9";
 	}
     }
-    
+
     if ( $portlist eq '-' && $sportlist eq '-' ) {
 	emit( "\nrun_tc $rule\\" ,
 	      "   flowid $devref->{number}:$class" ,
@@ -693,12 +693,12 @@ sub process_tc_filter( $$$$$$ ) {
 	    for my $portrange ( split_list $portlist, 'port list' ) {
 		if ( $protonumber == ICMP ) {
 		    fatal_error "SOURCE PORT(S) are not allowed with ICMP" if $sportlist ne '-';
- 
+
 		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
-		
+
 		    $icmptype = in_hex2 numeric_value1 $icmptype;
 		    $icmpcode = in_hex2 numeric_value1 $icmpcode if defined $icmpcode;
-		    
+
 		    my $rule1 = "   match u8 $icmptype 0xff at nexthdr+0";
 		    $rule1   .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
@@ -706,12 +706,12 @@ sub process_tc_filter( $$$$$$ ) {
 			  "   flowid $devref->{number}:$class" );
 		} else {
 		    my @portlist = expand_port_range $protonumber , $portrange;
-		    
+
 		    while ( @portlist ) {
 			my ( $port, $mask ) = ( shift @portlist, shift @portlist );
-			
+
 			my $rule1 = "match u32 0x0000${port} 0x0000${mask} at nexthdr+0";
-			
+
 			if ( $sportlist eq '-' ) {
 			    emit( "\nrun_tc ${rule}\\" ,
 				  "   $rule1\\" ,
@@ -719,10 +719,10 @@ sub process_tc_filter( $$$$$$ ) {
 			} else {
 			    for my $sportrange ( split_list $sportlist , 'port list' ) {
 				my @sportlist = expand_port_range $protonumber , $sportrange;
-				
+
 				while ( @sportlist ) {
 				    my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
-				    
+
 				    emit( "\nrun_tc ${rule}\\",
 					  "   $rule1\\" ,
 					  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
@@ -885,9 +885,9 @@ sub setup_traffic_shaping() {
 
 	if ( $fn ) {
 	    first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message "Adding TC Filters"; } );
-	    
+
 	    while ( read_a_line ) {
-		
+
 		my ( $devclass, $source, $dest, $proto, $port, $sport ) = split_line 2, 6, 'tcfilters file';
 
 		process_tc_filter( $devclass, $source, $dest, $proto, $port, $sport );
@@ -956,9 +956,9 @@ sub setup_tc() {
 		} else {
 		    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes, $helper;
 		}
-		
+
 	    }
-	
+
 	    clear_comment;
 	}
     }

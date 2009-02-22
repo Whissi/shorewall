@@ -508,7 +508,7 @@ EOF
 
     if ( @$interfaces ) {
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
-	
+
 	for my $interface ( @$interfaces ) {
 	    emit "do_iptables -A INPUT  -p udp -i $interface --dport $ports -j ACCEPT";
 	    emit "do_iptables -A OUTPUT -p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
@@ -631,7 +631,7 @@ sub generate_script_2($) {
 	       'qt1 $IPTABLES -X foox1234',
 	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
 	       '' );
-	
+
 	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
 	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
 		   'if [ -n "$addr" ]; then',
@@ -643,7 +643,7 @@ sub generate_script_2($) {
 		   '    done',
 		   "fi\n" );
 	}
-	
+
 	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 	       '',
 	       'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
@@ -663,7 +663,7 @@ sub generate_script_2($) {
 	}
 
 	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
-	
+
     } else {
 	emit ( '#',
 	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
@@ -675,13 +675,13 @@ sub generate_script_2($) {
 	       'qt1 $IP6TABLES -X foox1234',
 	       '[ $result = 0 ] || startup_error "Your kernel/ip6tables do not include state match support. No version of Shorewall6 will run on this system"',
 	       '' );
-	
+
 	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
 		   '',
 	       'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
 	       ''
 	     );
-	
+
     }
 
     emit qq(delete_tc1\n) if $config{CLEAR_TC};
@@ -697,35 +697,35 @@ sub generate_script_2($) {
     emit 'cat > ${VARDIR}/proxyarp << __EOF__';
     dump_proxy_arp;
     emit_unindented '__EOF__';
-    
+
     emit( '',
 	  'if [ "$COMMAND" != refresh ]; then' );
-    
+
     push_indent;
-    
+
     emit 'cat > ${VARDIR}/zones << __EOF__';
     dump_zone_contents;
     emit_unindented '__EOF__';
-    
+
     pop_indent;
-    
+
     emit "fi\n";
-    
+
     emit '> ${VARDIR}/nat';
-    
+
     add_addresses;
 
     emit( '',
 	  'if [ $COMMAND = restore ]; then',
 	  '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
 	  '    if [ -f $iptables_save_file ]; then' );
-    
+
     if ( $family == F_IPV4 ) {
 	emit '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
     } else {
 	emit '        cat $iptables_save_file | $IP6TABLES_RESTORE # Use this nonsensical form to appease SELinux'
     }
-	
+
     emit<<'EOF';
     else
         fatal_error "$iptables_save_file does not exist"
@@ -761,7 +761,7 @@ EOF
 
     [ $0 = ${VARDIR}/.restore ] || cp -f $(my_pathname) ${VARDIR}/.restore
 fi
-    
+
 date > ${VARDIR}/restarted
 
 case $COMMAND in
@@ -842,10 +842,10 @@ sub compiler {
 	if ( $ref->{edit} ) {
 	    fatal_error "Invalid value ( $val ) supplied for parameter $name" unless $ref->{edit}->($val);
 	}
-	
+
 	${$ref->{store}} = $val;
     }
-    
+
     reinitialize if $reused++ || $family == F_IPV6;
 
     if ( $directory ne '' ) {
@@ -869,7 +869,7 @@ sub compiler {
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{HIGH_ROUTE_MARKS};
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
     require_capability( 'CONNTRACK_MATCH' , 'RFC1918_STRICT=Yes' , 's'   )  if $config{RFC1918_STRICT};
- 
+
     set_command( 'check', 'Checking', 'Checked' ) unless $objectfile;
 
     initialize_chain_table;
@@ -945,7 +945,7 @@ sub compiler {
 		copy $globals{SHAREDIRPL} . 'prog.functions6';
 	    }
 	}
-	
+
 	emit(  "\n#",
 	       '# Setup Common Rules (/proc)',
 	       '#',
@@ -981,21 +981,21 @@ sub compiler {
 	pop_indent;
 	emit '}';
     }
-    
+
     disable_object;
     #
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
     enable_object;
-    
+
     unless ( $command eq 'check' ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
 	       '#',
 	       'setup_routing_and_traffic_shaping() {'
 	    );
-	
+
 	push_indent;
     }
     #
@@ -1006,12 +1006,12 @@ sub compiler {
     # TCRules and Traffic Shaping
     #
     setup_tc;
-    
+
     unless ( $command eq 'check' ) {
 	pop_indent;
 	emit "}\n";
     }
-    
+
     disable_object;
     #
     #                                   N E T F I L T E R

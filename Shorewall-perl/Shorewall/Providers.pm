@@ -77,7 +77,7 @@ sub initialize( $ ) {
     $fallback            = 0;
     $first_default_route  = 1;
     $first_fallback_route = 1;
-    
+
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
 		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 } ,
@@ -121,7 +121,7 @@ sub setup_route_marking() {
 	} else {
 	    add_rule $chainref, " -i $interface -j MARK --set-mark $providerref->{mark}";
 	}
-	
+
 	decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
     }
 
@@ -221,7 +221,7 @@ sub balance_fallback_route( $$$$ ) {
 
 sub start_provider( $$$ ) {
     my ($table, $number, $test ) = @_;
-    
+
     emit $test;
     push_indent;
 
@@ -364,7 +364,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     if ( $track ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
-	
+
 	if ( $routemarked_interfaces{$interface} ) {
 	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} > 1;
 	    fatal_error "Multiple providers through the same interface must their IP address specified in the INTERFACES" unless $shared;
@@ -436,7 +436,7 @@ sub add_a_provider( $$$$$$$$ ) {
 	      "echo \"qt ip -$family rule del from $address\" >> \${VARDIR}/undo_routing" );
     } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
-	
+
 	emit "\nrulenum=0\n";
 
 	emit  ( "find_interface_addresses $interface | while read address; do" );
@@ -675,9 +675,9 @@ sub setup_providers() {
 				  '# local',
 				  '#',
 				  "EOF\n" );
-	    
+
 	    emit "echocommand=\$(find_echo)\n";
-	    
+
 	    for my $table ( @providers ) {
 		emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
 	    }
@@ -692,7 +692,7 @@ sub setup_providers() {
 	if ( $fn ) {
 
 	    first_entry "$doing $fn...";
-	    
+
 	    emit '';
 
 	    while ( read_a_line ) {
@@ -723,7 +723,7 @@ sub setup_providers() {
 		    '> ${VARDIR}/undo_routing' );
 	    setup_null_routing;
 	    emit "\nrun_ip route flush cache";
-	    
+
 	    pop_indent;
 
 	    emit "fi\n";
@@ -746,7 +746,7 @@ sub lookup_provider( $ ) {
 		last;
 	    }
 	}
-	
+
 	fatal_error "Unknown provider ($provider)" unless $providerref;
     }
 

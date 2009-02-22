@@ -537,7 +537,7 @@ normalize_address() # $1 = valid IPv6 Address
 		list_count $(split $address)
 
 		j=$?
-		
+
 		if [ $j -eq 7 ]; then
 		    address=${address%::*}:0:${address#*::}
 		elif [ $j -eq 8 ]; then
@@ -585,7 +585,7 @@ convert_to_anycast() {
 	            # Defines a viable subnet -- first get the subnet-router anycast address
 	            #
 		    host=$((128 - $vlsm))
-		    
+
 		    address=$(normalize_address ${address%/*})
 
 		    while [ $host -ge 16 ]; do

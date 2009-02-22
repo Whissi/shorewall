@@ -286,7 +286,7 @@ sub createlogactionchain( $$ ) {
     my $chain = $action;
     my $actionref = $actions{$action};
     my $chainref;
-    
+
     my ($lev, $tag) = split ':', $level;
 
     validate_level $lev;
@@ -304,7 +304,7 @@ sub createlogactionchain( $$ ) {
     $logactionchains{"$action:$level"} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
-    
+
     unless ( $targets{$action} & STANDARD ) {
 
 	my $file = find_file $chain;
@@ -752,7 +752,7 @@ sub process_actions3 () {
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	}
 
-	
+
 	if ( $family == F_IPV4 ) {
 	    add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
 	} else {

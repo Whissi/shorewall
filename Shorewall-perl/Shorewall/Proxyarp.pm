@@ -108,7 +108,7 @@ sub setup_proxy_arp() {
 	    my $first_entry = 1;
 
 	    save_progress_message "Setting up Proxy ARP...";
-	    
+
 	    my ( %set, %reset );
 
 	    while ( read_a_line ) {
@@ -122,7 +122,7 @@ sub setup_proxy_arp() {
 
 		$set{$interface}  = 1;
 		$reset{$external} = 1 unless $set{$external};
-		
+
 		setup_one_proxy_arp( $address, $interface, $external, $haveroute, $persistent );
 	    }
 
@@ -135,7 +135,7 @@ sub setup_proxy_arp() {
 		    emit    "fi\n";
 		}
 	    }
-	    
+
 	    for my $interface ( keys %set ) {
 		emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
 			"    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
@@ -143,7 +143,7 @@ sub setup_proxy_arp() {
 			"    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $interface\"" ) unless interface_is_optional( $interface );
 		emit    "fi\n";
 	    }
-	    
+
 	    for my $interface ( @$interfaces ) {
 		my $value = get_interface_option $interface, 'proxyarp';
 		emit ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,

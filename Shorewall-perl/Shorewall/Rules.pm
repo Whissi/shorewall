@@ -99,7 +99,7 @@ sub process_tos() {
 
     if ( my $fn = open_file 'tos' ) {
 	my $first_entry = 1;
-	
+
 	my ( $pretosref, $outtosref );
 
 	first_entry( sub { progress_message2 "$doing $fn..."; $pretosref = ensure_chain 'mangle' , $chain; $outtosref = ensure_chain 'mangle' , 'outtos'; } );
@@ -111,7 +111,7 @@ sub process_tos() {
 	    $first_entry = 0;
 
 	    fatal_error 'A value must be supplied in the TOS column' if $tos eq '-';
-	    
+
 	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) {
 		$tos = $tosval;
 	    } else {
@@ -307,7 +307,7 @@ sub setup_blacklist() {
 	if ( my $fn = open_file 'blacklist' ) {
 
 	    my $first_entry = 1;
-	    
+
 	    first_entry "$doing $fn...";
 
 	    while ( read_a_line ) {
@@ -601,7 +601,7 @@ sub add_common_rules() {
 	decr_cmd_level $rejectref;
 	add_command $rejectref, 'done';
     }
-	
+
     if ( $family == F_IPV4 ) {
 	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
     } else {
@@ -622,7 +622,7 @@ sub add_common_rules() {
 	    for $chain ( first_chains $interface ) {
 		add_jump $filter_table->{$chain} , $target, 0, join( '', "-m state --state $state ", match_source_net( $hostref->[2] ),  $policy );
 	    }
-	    
+
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
 	}
@@ -633,7 +633,7 @@ sub add_common_rules() {
 
     if ( $capabilities{ENHANCED_REJECT} ) {
 	add_rule $rejectref , '-p 17 -j REJECT';
-	
+
 	if ( $family == F_IPV4 ) {
 	    add_rule $rejectref, '-p 1 -j REJECT --reject-with icmp-host-unreachable';
 	    add_rule $rejectref, '-j REJECT --reject-with icmp-host-prohibited';
@@ -646,12 +646,12 @@ sub add_common_rules() {
     }
 
     $list = find_interfaces_by_option 'dhcp';
-    
+
     if ( @$list ) {
 	progress_message2 'Adding rules for DHCP';
 
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
-	
+
 	for $interface ( @$list ) {
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
@@ -659,7 +659,7 @@ sub add_common_rules() {
 	    for $chain ( input_chain $interface, output_chain $interface ) {
 		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
 	    }
-	    
+
 	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport $ports -j ACCEPT" if get_interface_option( $interface, 'bridge' );
 	}
     }
@@ -726,7 +726,7 @@ sub add_common_rules() {
 	    progress_message2 "$doing UPnP";
 
 	    new_nat_chain( 'UPnP' );
-	    
+
 	    for $interface ( @$list ) {
 		add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
 	    }
@@ -857,7 +857,7 @@ sub setup_mac_lists( $ ) {
 
 	    if ( $table eq 'filter' ) {
 		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );
-						   
+
 		for my $chain ( first_chains $interface ) {
 		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}-m state --state ${state} ${policy}";
 		}
@@ -873,7 +873,7 @@ sub setup_mac_lists( $ ) {
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = $chainref->{name};
-	    
+
 	    if ( $family == F_IPV4 ) {
 		if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		    my $variable = get_interface_addresses source_port_to_bridge( $interface );
@@ -887,10 +887,10 @@ sub setup_mac_lists( $ ) {
 		    } else {
 			my $bridge    = source_port_to_bridge( $interface );
 			my $bridgeref = find_interface( $bridge );
-			
+
 			add_commands( $chainref,
 				      "for address in $variable; do" );
-			
+
 			if ( $bridgeref->{broadcasts} ) {
 			    for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
 				add_commands( $chainref ,
@@ -898,7 +898,7 @@ sub setup_mac_lists( $ ) {
 			    }
 			} else {
 			    my $variable1 = get_interface_bcasts $bridge;
-			    
+
 			    add_commands( $chainref, 
 					  "    for address1 in $variable1; do" ,
 					  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
@@ -911,7 +911,7 @@ sub setup_mac_lists( $ ) {
 		    }
 		}
 	    }
-	    
+
 	    run_user_exit2( 'maclog', $chainref );
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
@@ -1187,7 +1187,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # Take care of chain
     #
-    
+
     unless ( $actiontype & NATONLY ) {
 	#
 	# Check for illegal bridge port rule
@@ -1253,13 +1253,13 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $server = $1;      # May be empty
 	    $serverport = $3;  # Not Empty due to RE 
 	    $origdstports = $ports;
-	    
+
 	    if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
 		$origdstports = validate_port( $proto, $origdstports );
 	    } else {
 		$origdstports = '';
 	    }
-	    
+
 	    if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
 		#
 		# Server Port Range
@@ -1396,7 +1396,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $action ,
 		     '' );
     }
-	
+
     #
     # Add filter table rule, unless this is a NATONLY rule type
     #
@@ -1680,7 +1680,7 @@ sub generate_matrix() {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
 		my $sourcechainref;
 		my $interfacematch = '';
-	
+
 		if ( use_forward_chain( $interface ) ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
 		} else {
@@ -1690,7 +1690,7 @@ sub generate_matrix() {
 		}
 
 		my $arrayref = $source_ref->{$interface};
-		
+
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
 		    for my $net ( @{$hostref->{hosts}} ) {
@@ -1847,7 +1847,7 @@ sub generate_matrix() {
 			    $inputchainref = $filter_table->{INPUT};
 			    $interfacematch = match_source_dev $interface;
 			}
-			
+
 			if ( $chain2 ) {
 			    add_jump $inputchainref, source_exclusion( $exclusions, $chain2 ), 0, join( '', $interfacematch, $source, $ipsec_in_match );
 			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$chain2} ) unless use_input_chain $interface;

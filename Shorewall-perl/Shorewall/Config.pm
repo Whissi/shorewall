@@ -317,7 +317,7 @@ sub initialize( $ ) {
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
 		    UNTRACKED => 0,
-		    VERSION => "4.2.6",
+		    VERSION => "4.2.7",
 		    CAPVERSION => 40205 ,
 		  );
 
@@ -676,7 +676,7 @@ sub fatal_error	{
 	close $log;
 	$log = undef;
     }
-       
+
     confess "   ERROR: @_$currentlineinfo" if $debug;
     die "   ERROR: @_$currentlineinfo\n";
 }
@@ -697,7 +697,7 @@ sub fatal_error1	{
 	close $log;
 	$log = undef;
     }
-       
+
     confess "   ERROR: @_" if $debug;
     die "   ERROR: @_\n";
 }
@@ -747,7 +747,7 @@ sub in_hex8( $ ) {
 #
 sub emit {
     fatal_error 'Internal Error in emit' unless $object_enabled;
-    
+
     if ( $object ) {
 	#
 	# 'compile' as opposed to 'check'
@@ -1030,7 +1030,7 @@ sub copy1( $ ) {
 		s/^(\s*)/$indent1$1$indent2/;
 		s/        /\t/ if $indent2;
 	    }
-		    
+
 	    print $object $_;
 	    print $object "\n";
 	    $do_indent = ! ( $here_documents || /\\$/ );
@@ -1159,7 +1159,7 @@ sub split_list( $$ ) {
     my ($list, $type ) = @_;
 
     fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
-    
+
     split /,/, $list;
 }
 
@@ -1167,11 +1167,11 @@ sub split_list1( $$ ) {
     my ($list, $type ) = @_;
 
     fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
-    
+
     my @list1 = split /,/, $list;
     my @list2;
     my $element = '';
-    
+
     for ( @list1 ) {
 	if ( /\(/ ) {
 	    fatal_error "Invalid $type list ($list)" if $element;
@@ -1295,7 +1295,7 @@ sub close_file() {
 	my $result = close $currentfile;
 
 	pop_include;
-	
+
 	fatal_error "SHELL Script failed" unless $result;
 
 	$first_entry = 0;
@@ -1367,7 +1367,7 @@ sub embedded_shell( $ ) {
 
     fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
     my ( $command, $linenumber ) = ( "/bin/sh -c '$currentline", $currentlinenumber );
-    
+
     if ( $multiline ) {
 	#
 	# Multi-line script
@@ -1376,19 +1376,19 @@ sub embedded_shell( $ ) {
 	$command .= "\n";
 
 	my $last = 0;
-		    
+
 	while ( <$currentfile> ) {
 	    $currentlinenumber++;
 	    last if $last = s/^\s*END(\s+SHELL)?\s*;?//;
 	    $command .= $_;
 	}
-	
+
 	fatal_error ( "Missing END SHELL" ) unless $last;
 	fatal_error ( "Invalid END SHELL directive" ) unless /^\s*$/;
     }
 
     $command .= q(');
-    
+
     push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
@@ -1399,7 +1399,7 @@ sub embedded_shell( $ ) {
 
 sub embedded_perl( $ ) {
     my $multiline = shift;
-		
+
     my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config qw/shorewall/;\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );		
 
     if ( $multiline ) {
@@ -1408,19 +1408,19 @@ sub embedded_perl( $ ) {
 	#
 	fatal_error "Invalid BEGIN PERL directive" unless $currentline =~ /^\s*$/;
 	$command .= "\n";
-		    
+
 	my $last = 0;
-		    
+
 	while ( <$currentfile> ) {
 	    $currentlinenumber++;
 	    last if $last = s/^\s*END(\s+PERL)?\s*;?//;
 	    $command .= $_;
 	}
-	
+
 	fatal_error ( "Missing END PERL" ) unless $last;
 	fatal_error ( "Invalid END PERL directive" ) unless /^\s*$/;
     }
-    
+
     unless (my $return = eval $command ) {
 	if ( $@ ) {
 	    #
@@ -1429,7 +1429,7 @@ sub embedded_perl( $ ) {
 	    $@ =~ s/, <\$currentfile> line \d+//g;
 	    fatal_error1 "$@";
 	}
-	
+
 	unless ( defined $return ) {
 	    fatal_error "Perl Script failed: $!" if $!; 
 	    fatal_error "Perl Script failed";
@@ -1437,23 +1437,23 @@ sub embedded_perl( $ ) {
 
 	fatal_error "Perl Script Returned False";
     }
-    
+
     if ( $scriptfile ) {
 	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
 
 	close $scriptfile or fatal_error "Internal Error in embedded_perl()";
-	
+
 	$scriptfile = undef;
-	
+
 	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 	$currentfile = undef;
-	
+
 	open $currentfile, '<', $scriptfilename or fatal_error "Unable to open Perl Script $scriptfilename";
 
 	push @tempfiles, $scriptfilename unless unlink $scriptfilename; #unlink fails on Cygwin
-	
+
 	$scriptfilename = '';
-	
+
 	$currentfilename = "PERL\@$currentfilename:$linenumber";
 	$currentline = '';
 	$currentlinenumber = 0;
@@ -1525,19 +1525,19 @@ sub read_a_line() {
 		    $currentline = join( '', $1 , $val , $4 );
 		    fatal_error "Variable Expansion Loop" if ++$count > 100;
 		}
-		
+
 		if ( $currentline =~ /^\s*INCLUDE\s/ ) {
-		    
+
 		    my @line = split ' ', $currentline;
-		    
+
 		    fatal_error "Invalid INCLUDE command"    if @line != 2;
 		    fatal_error "INCLUDEs/Scripts nested too deeply" if @includestack >= 4;
-		    
+
 		    my $filename = find_file $line[1];
-		    
+
 		    fatal_error "INCLUDE file $filename not found" unless -f $filename;
 		    fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
-		    
+
 		    if ( -s _ ) {
 			push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 			$currentfile = undef;
@@ -1545,7 +1545,7 @@ sub read_a_line() {
 		    } else {
 			$currentlinenumber = 0;
 		    }
-		    
+
 		    $currentline = '';
 		} else {
 		    return 1;
@@ -1646,7 +1646,7 @@ sub validate_level( $ ) {
 
 		$index++;
 	    }
-	    
+
 	    return $olevel;
 	}
 
@@ -1817,11 +1817,11 @@ sub determine_capabilities( $ ) {
     my $pid        = $$;
     my $sillyname  = "fooX$pid";
     my $sillyname1 = "foo1X$pid";
-    
+
     $capabilities{NAT_ENABLED}    = qt1( "$iptables -t nat -L -n" ) if $family == F_IPV4;
-	
+
     $capabilities{MANGLE_ENABLED} = qt1( "$iptables -t mangle -L -n" );
-    
+
     qt1( "$iptables -N $sillyname" );
     qt1( "$iptables -N $sillyname1" );
 
@@ -1835,7 +1835,7 @@ sub determine_capabilities( $ ) {
 	$capabilities{NEW_CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
 	$capabilities{OLD_CONNTRACK_MATCH} = ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdst 1.2.3.4" );
     }
-    
+
     if ( qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" ) ) {
 	$capabilities{MULTIPORT}  = 1;
 	$capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
@@ -2092,7 +2092,7 @@ sub get_capabilities( $ ) {
 #
 sub unsupported_yes_no( $ ) {
     my $option = shift;
-    
+
     default_yes_no $option, '';
 
     fatal_error "$option=Yes is not supported by Shorewall-perl $globals{VERSION}" if $config{$option};
@@ -2110,7 +2110,7 @@ sub get_configuration( $ ) {
     $globals{EXPORT} = $export;
 
     our ( $once, @originalinc );
-    
+
     @originalinc = @INC unless $once++;
 
     ensure_config_path;
@@ -2135,7 +2135,7 @@ sub get_configuration( $ ) {
 	if ( defined $config{LOGRATE} ) {
 	    fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
 	}
-	
+
 	if ( defined $config{LOGBURST} ) {
 	    fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
 	}
@@ -2231,7 +2231,7 @@ sub get_configuration( $ ) {
     default_yes_no 'NULL_ROUTE_RFC1918'         , '';
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
-    
+
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
     default 'BLACKLIST_DISPOSITION'             , 'DROP';
@@ -2402,12 +2402,12 @@ sub run_user_exit( $ ) {
 
 	unless (my $return = eval $command ) {
 	    fatal_error "Couldn't parse $file: $@" if $@;
-	    
+
 	    unless ( defined $return ) {
 		fatal_error "Couldn't do $file: $!" if $!;    
 		fatal_error "Couldn't do $file";
 	    }    
-	    
+
 	    fatal_error "$file returned a false value";
 	}
     }

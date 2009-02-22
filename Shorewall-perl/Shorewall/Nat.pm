@@ -151,13 +151,13 @@ sub setup_one_masq($$$$$$$)
     #
     $networks = ALLIPv4 if $networks eq '-';
     $destnets = ALLIPv4 if $destnets eq '-';
-    
+
     #
     # Handle IPSEC options, if any
     #
     if ( $ipsec ne '-' ) {
 	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
-	
+
 	if ( $ipsec =~ /^yes$/i ) {
 	    $baserule .= '-m policy --pol ipsec --dir out ';
 	} elsif ( $ipsec =~ /^no$/i ) {
@@ -178,7 +178,7 @@ sub setup_one_masq($$$$$$$)
     # Handle Mark
     #
     $baserule .= do_test( $mark, 0xFF) if $mark ne '-';
-	
+
     for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';
 	my $target = '-j MASQUERADE ';
@@ -194,7 +194,7 @@ sub setup_one_masq($$$$$$$)
 	    my $realm = lookup_provider( $provider ) unless $provider =~ /^\d+$/;
 
 	    fatal_error "$provider is not a shared-interface provider" unless $realm;
-	    
+
 	    $rule .= "-m realm --realm $realm ";
 	}
 
@@ -218,7 +218,7 @@ sub setup_one_masq($$$$$$$)
 		$randomize = '--random ';
 	    } else {
 		$addresses =~ s/:random$// and $randomize = '--random ';
-		
+
 		if ( $addresses =~ /^SAME:nodst:/ ) {
 		    fatal_error "':random' is not supported by the SAME target" if $randomize;
 		    $target = '-j SAME --nodst ';
@@ -236,7 +236,7 @@ sub setup_one_masq($$$$$$$)
 		} elsif ( $addresses eq 'detect' ) {
 		    my $variable = get_interface_address $interface;
 		    $target = "-j SNAT --to-source $variable";
-		    
+
 		    if ( interface_is_optional $interface ) {
 			add_commands( $chainref,
 				      '',
@@ -283,12 +283,12 @@ sub setup_one_masq($$$$$$$)
 		     '' ,
 		     '' ,
 		     $exceptionrule );
-	
+
 	if ( $detectaddress ) {
 	    decr_cmd_level( $chainref );
 	    add_command( $chainref , 'fi' );
 	}
-	
+
 	if ( $add_snat_aliases ) {
 	    my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
 	    fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
@@ -311,7 +311,7 @@ sub setup_one_masq($$$$$$$)
 	    }
 	}
     }
-	
+
     progress_message "   Masq record \"$currentline\" $done";
 
 }
@@ -324,7 +324,7 @@ sub setup_masq()
     my $fn = open_file 'masq';
 
     first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
-    
+
     while ( read_a_line ) {
 
 	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line1 2, 7, 'masq file';
@@ -435,7 +435,7 @@ sub setup_nat() {
     my $fn = open_file 'nat';
 
     first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty nat file' , 's'; } );
-    
+
     while ( read_a_line ) {
 
 	my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 3, 5, 'nat file';
@@ -474,13 +474,13 @@ sub setup_netmap() {
 	my ( $type, $net1, $interfacelist, $net2 ) = split_line 4, 4, 'netmap file';
 
 	for my $interface ( split_list $interfacelist, 'interface' ) {
-	
+
 	    my $rulein = '';
 	    my $ruleout = '';
 	    my $iface = $interface;
-	    
+
 	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = find_interface( $interface );
-	
+
 	    unless ( $interfaceref->{root} ) {
 		$rulein  = "-i $interface ";
 		$ruleout = "-o $interface ";

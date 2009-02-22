@@ -127,7 +127,7 @@ else
 		error_message "$PRODUCT is not running"
 		progress_message3 "Starting $PRODUCT...."
 	    fi
-	    
+
 	    define_firewall
 	    status=$?
 	    if [ -n "$SUBSYSLOCK" ]; then
@@ -174,7 +174,7 @@ else
 		echo "$PRODUCT is stopped"
 		status=4
 	    fi
-	    
+
 	    if [ -f ${VARDIR}/state ]; then
 		state="$(cat ${VARDIR}/state)"
 		case $state in

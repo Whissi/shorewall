@@ -139,7 +139,7 @@ sub validate_4address( $$ ) {
     my ( $addr, $allow_name ) =  @_;
 
     my @addrs = ( $addr );
-    
+
     unless ( valid_4address $addr ) {
 	fatal_error "Invalid IP Address ($addr)" unless $allow_name;
 	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname $addr);
@@ -267,7 +267,7 @@ sub decompose_net( $ ) {
     ( $net, my $vlsm ) = validate_net( $net , 0 );
 
     ( in_hex8( $net ) , vlsm_to_mask( $vlsm ) );
-    
+
 }
 
 sub allipv4() {
@@ -281,7 +281,7 @@ sub allipv6() {
 sub rfc1918_networks() {
     @rfc1918_networks
 }
- 
+
 #
 # Protocol/port validation
 #
@@ -455,7 +455,7 @@ sub expand_port_range( $$ ) {
 	    my $mask = 0xffff;         #Mask for current ports in group.
 	    my $y    = 2;              #Next power of two to test
 	    my $z    = 1;              #Number of ports in current group (Previous value of $y).
-	    
+
 	    while ( ( ! ( $first % $y ) ) && ( $y <= $ports ) ) {
 		$mask <<= 1;
 		$z  = $y;
@@ -466,7 +466,7 @@ sub expand_port_range( $$ ) {
 	    push @result, sprintf( '%04x', $first ) , sprintf( '%04x' , $mask & 0xffff );
 	    $first += $z;
 	}
-	
+
 	fatal_error "Invalid port range ($range)" unless @result; # first port > last port
 
 	@result;
@@ -489,7 +489,7 @@ sub valid_6address( $ ) {
     } else {
 	$max = 8;
     }
-    
+
     return 0 if @address > $max;
     return 0 unless ( @address == $max ) || $address =~ /::/;
     return 0 if $address =~ /:::/ || $address =~ /::.*::/;
@@ -513,7 +513,7 @@ sub validate_6address( $$ ) {
     my ( $addr, $allow_name ) =  @_;
 
     my @addrs = ( $addr );
-    
+
     unless ( valid_6address $addr ) {
 	fatal_error "Invalid IPv6 Address ($addr)" unless $allow_name;
 	require Socket6;

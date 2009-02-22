@@ -219,9 +219,9 @@ sub setup_forwarding( $ ) {
 	    emit '        echo 0 > /proc/sys/net/ipv6/conf/all/forwarding';
 	    emit '        progress_message2 IPv6 Forwarding Disabled!';
 	}
-	
+
 	emit '';
-	
+
 	my $interfaces = find_interfaces_by_option 'forward';
 
 	if ( @$interfaces ) {

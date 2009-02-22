@@ -475,7 +475,7 @@ sub dump_zone_contents()
 sub single_interface( $ ) {
     my $zone = $_[0];
     my $zoneref = $zones{$zone};
-  
+
     fatal_error "Internal Error in single_zone()" unless $zoneref;
 
     my @keys = keys( %{$zoneref->{interfaces}} );
@@ -537,7 +537,7 @@ sub add_group_to_zone($$$$$)
     $interfaceref = ( $typeref->{$interface}      || ( $typeref->{$interface} = [] ) );
 
     $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions );
-    
+
     push @{$interfaceref}, { options => $options,
 			     hosts   => \@newnetworks,
 			     ipsec   => $type eq 'ipsec' ? 'ipsec' : 'none' ,
@@ -800,7 +800,7 @@ sub validate_interfaces_file( $ )
 				    root       => $root ,
 				    broadcasts => $broadcasts ,
 				    options    => $optionsref };
- 
+
 	push @ifaces, $interface;
 
 	my @networks = allip;
@@ -846,7 +846,7 @@ sub known_interface($)
 {
     my $interface = $_[0];
     my $interfaceref = $interfaces{$interface};
-    
+
     return $interfaceref if $interfaceref;
 
     for my $i ( @interfaces ) {
@@ -891,7 +891,7 @@ sub all_bridges() {
 sub find_interface( $ ) {
     my $interface    = $_[0];
     my $interfaceref = $interfaces{ $interface };
-    
+
     fatal_error "Unknown Interface ($interface)" unless $interfaceref;
 
     $interfaceref;

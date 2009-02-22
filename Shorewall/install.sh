@@ -664,6 +664,27 @@ done
 #
 ln -sf lib.base ${PREFIX}/usr/share/shorewall/functions
 #
+# Install the Compiler
+#
+install_file compiler.pl ${PREFIX}/usr/share/shorewall/compiler.pl 0755
+
+echo
+echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler.pl"
+#
+# Install the libraries
+#
+for f in Shorewall/*.pm ; do
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+    echo "Module ${f%.*} installed as ${PREFIX}/usr/share/shorewall/$f"
+done
+#
+# Install the program skeleton files
+#
+for f in prog.* ; do
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+    echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+done
+#
 # Create the version file
 #
 echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version

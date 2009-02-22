@@ -311,7 +311,6 @@ sub initialize( $ ) {
     #
     %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    CONFDIR =>  '/etc/shorewall',
-		    SHAREDIRPL => '/usr/share/shorewall-perl/',
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',

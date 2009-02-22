@@ -1324,12 +1324,10 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v[-1|{0-2}] ] [ -t ] <command>"
     echo "where <command> is one of:"
-    echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear [ -f ]"
     echo "   compile [ -e ] [ <directory name> ] <path name>"
-    echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
@@ -1542,7 +1540,7 @@ export PRODUCT="Shorewall"
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 
-FIREWALL=$SHAREDIR/firewall
+FIREWALL=${VARDIR}/.restore
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
 REFRESHCHAINS=
@@ -1555,18 +1553,6 @@ for library in $LIBRARIES; do
 	exit 2
     fi
 done
-
-if [ ! -f $FIREWALL ]; then
-    echo "   ERROR: Shorewall is not properly installed" >&2
-    if [ -L $FIREWALL ]; then
-	echo "	     $FIREWALL is a symbolic link to a" >&2
-	echo "	     non-existant file" >&2
-    else
-	echo "	     The file $FIREWALL does not exist" >&2
-    fi
-
-    exit 2
-fi
 
 if [ -f $VERSION_FILE ]; then
     version=$(cat $VERSION_FILE)
@@ -1608,19 +1594,8 @@ case "$COMMAND" in
 	;;
     stop|clear)
 	get_config
-	if [ "x$2" = x-s ]; then
-	    shift
-        else
-	    if [ "x$2" = x-f -o "$FAST_STOP" ]; then
-		[ -x ${VARDIR}/.restore ] && FIREWALL=${VARDIR}/.restore
-
-		if [ "x$2" = x-f ]; then
-		    shift
-		fi
-	    fi
-	fi
-
 	[ $# -ne 1 ] && usage 1
+	[ -x $FIREWALL ] || fatal_error "Shorewall has never been started"
 	export NOROUTES
 	mutex_on
 	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
@@ -1628,10 +1603,9 @@ case "$COMMAND" in
 	;;
     reset)
 	get_config
-	export NOROUTES
 	shift
 	mutex_on
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@
+	reset_command $@
 	mutex_off
 	;;
     compile)
@@ -1653,13 +1627,6 @@ case "$COMMAND" in
 	get_config Yes
 	shift
 	check_command $@
-	;;
-    add|delete)
-	[ $# -lt 3 ] && usage 1
-	get_config
-	mutex_on
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
-	mutex_off
 	;;
     show|list)
 	get_config Yes No Yes

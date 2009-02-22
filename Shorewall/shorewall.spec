@@ -118,12 +118,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Drop
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
-%attr(0755,root,root) /usr/share/shorewall/firewall
 %attr(-   ,root,root) /usr/share/shorewall/functions
 %attr(0644,root,root) /usr/share/shorewall/lib.base
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
-%attr(0644,root,root) /usr/share/shorewall/lib.config
-%attr(0644,root,root) /usr/share/shorewall/lib.dynamiczones
 %attr(0644,root,root) /usr/share/shorewall/macro.*
 %attr(0644,root,root) /usr/share/shorewall/modules
 %attr(0644,root,root) /usr/share/shorewall/rfc1918

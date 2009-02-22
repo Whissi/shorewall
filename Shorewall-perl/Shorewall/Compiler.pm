@@ -53,10 +53,6 @@ our $reused = 0;
 
 our $family = F_IPV4;
 
-our $rtc;
-
-use constant { NORTC => 1, RTCONLY => 2 };
-
 #
 # Reinitilize the package-globals in the other modules
 #
@@ -575,74 +571,6 @@ EOF
 }
 
 #
-# Compile stop_rtc()
-#
-sub compile_stop_rtc() {
-
-    emit <<'EOF';
-#
-# Stop/restore RTC after an error or because of a 'stop' or 'clear' command
-#
-stop_rtc() {
-
-    case $COMMAND in
-	stop|clear|restore)
-	    ;;
-	*)
-	    set +x
-
-            case $COMMAND in
-	        start)
-	            logger -p kern.err "ERROR:$PRODUCT start failed"
-	            ;;
-	        restart)
-	            logger -p kern.err "ERROR:$PRODUCT restart failed"
-	            ;;
-	        restore)
-	            logger -p kern.err "ERROR:$PRODUCT restore failed"
-	            ;;
-            esac
-	    ;;
-    esac
-
-    STOPPING="Yes"
-
-    TERMINATOR=
-
-    run_stop_exit
-EOF
-    push_indent;
-
-    emit 'delete_tc1';
-
-    emit( 'undo_routing',
-	  'restore_default_route'
-	  );
-
-    emit 'run_stopped_exit';
-
-    pop_indent;
-
-    emit '
-    logger -p kern.info "$PRODUCT Stopped"
-
-    case $COMMAND in
-    stop|clear)
-	;;
-    *)
-	#
-	# RTC is being stopped when we were trying to do something
-	# else. Kill the shell in case we\'re running in a subshell
-	#
-	kill $$
-	;;
-    esac
-}
-';
-
-}
-
-#
 # Final stage of script generation.
 #
 #    Generate code for loading the various files in /var/lib/shorewall[-lite]
@@ -656,24 +584,18 @@ EOF
 #
 sub generate_script_2($) {
 
-    unless ( $rtc == RTCONLY ) {
-	if ( $family == F_IPV4 ) {
-	    progress_message2 "Creating iptables-restore input...";
-	} else {
-	    progress_message2 "Creating ip6tables-restore input...";
-	}
-
-	create_netfilter_load( $test );
-	create_chainlist_reload( $_[0] );
+    if ( $family == F_IPV4 ) {
+	progress_message2 "Creating iptables-restore input...";
+    } else {
+	progress_message2 "Creating ip6tables-restore input...";
     }
+
+    create_netfilter_load( $test );
+    create_chainlist_reload( $_[0] );
 
     emit "#\n# Start/Restart the Firewall\n#";
 
-    if ( $rtc == RTCONLY ) {
-	emit 'define_rtc() {';
-    } else {
-	emit 'define_firewall() {';
-    }
+    emit 'define_firewall() {';
 
     push_indent;
 
@@ -698,134 +620,129 @@ sub generate_script_2($) {
 	emit 'load_kernel_modules Yes';
     }
 
-    unless ( $rtc == RTCONLY ) {
-	if ( $family == F_IPV4 ) {
-	    emit ( '#',
-		   '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
-		   '#',
-		   'qt1 $IPTABLES -N foox1234',
-		   'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
-		   'result=$?',
-		   'qt1 $IPTABLES -F foox1234',
-		   'qt1 $IPTABLES -X foox1234',
-		   '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
-		   '' );
-
-	    for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-		emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
-		       'if [ -n "$addr" ]; then',
-		       '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
-		       '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
-		       '        if in_network $addr $network; then',
-		       "            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
-		       '        fi',
-		       '    done',
-		       "fi\n" );
-	    }
+    if ( $family == F_IPV4 ) {
+	emit ( '#',
+	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+	       '#',
+	       'qt1 $IPTABLES -N foox1234',
+	       'qt1 $IPTABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	       'result=$?',
+	       'qt1 $IPTABLES -F foox1234',
+	       'qt1 $IPTABLES -X foox1234',
+	       '[ $result = 0 ] || startup_error "Your kernel/iptables do not include state match support. No version of Shorewall will run on this system"',
+	       '' );
 	
-	    emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
-		   '',
-		   'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
-		   '',
-		   'delete_proxyarp',
-		   ''
-		 );
-
-	    if ( $capabilities{NAT_ENABLED} ) {
-		emit(  'if [ -f ${VARDIR}/nat ]; then',
-		       '    while read external interface; do',
-		       '        del_ip_addr $external $interface',
-		       '    done < ${VARDIR}/nat',
-		       '',
-		       '    rm -f ${VARDIR}/nat',
-		       "fi\n" );
-	    }
-
-	    emit "disable_ipv6\n" if $config{DISABLE_IPV6};
-
-	} else {
-	    emit ( '#',
-		   '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
-		   '#',
-		   'qt1 $IP6TABLES -N foox1234',
-		   'qt1 $IP6TABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
-		   'result=$?',
-		   'qt1 $IP6TABLES -F foox1234',
-		   'qt1 $IP6TABLES -X foox1234',
-		   '[ $result = 0 ] || startup_error "Your kernel/ip6tables do not include state match support. No version of Shorewall6 will run on this system"',
-		   '' );
-	    
-	    emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
-		   '',
-		   'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
-		   ''
-		 );
-	    
+	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
+	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
+		   'if [ -n "$addr" ]; then',
+		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
+		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
+		   '        if in_network $addr $network; then',
+		   "            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
+		   '        fi',
+		   '    done',
+		   "fi\n" );
 	}
+	
+	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+	       '',
+	       'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
+	       '',
+	       'delete_proxyarp',
+	       ''
+	     );
+
+	if ( $capabilities{NAT_ENABLED} ) {
+	    emit(  'if [ -f ${VARDIR}/nat ]; then',
+		   '    while read external interface; do',
+		   '        del_ip_addr $external $interface',
+		   '    done < ${VARDIR}/nat',
+		   '',
+		   '    rm -f ${VARDIR}/nat',
+		   "fi\n" );
+	}
+
+	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
+	
+    } else {
+	emit ( '#',
+	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',
+	       '#',
+	       'qt1 $IP6TABLES -N foox1234',
+	       'qt1 $IP6TABLES -A foox1234 -m state --state ESTABLISHED,RELATED -j ACCEPT',
+	       'result=$?',
+	       'qt1 $IP6TABLES -F foox1234',
+	       'qt1 $IP6TABLES -X foox1234',
+	       '[ $result = 0 ] || startup_error "Your kernel/ip6tables do not include state match support. No version of Shorewall6 will run on this system"',
+	       '' );
+	
+	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+		   '',
+	       'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall',
+	       ''
+	     );
+	
     }
 
-    unless ( $rtc == NORTC ) {
-	emit qq(delete_tc1\n) if $config{CLEAR_TC};
-    }
+    emit qq(delete_tc1\n) if $config{CLEAR_TC};
 
     set_global_variables;
 
     emit '';
 
-    emit( 'setup_common_rules', '' ) unless $rtc == RTCONLY;
+    emit( 'setup_common_rules', '' );
 
-    emit( 'setup_routing_and_traffic_shaping', '' ) unless $rtc == NORTC;
+    emit( 'setup_routing_and_traffic_shaping', '' );
 
-    unless ( $rtc == RTCONLY ) {
-	emit 'cat > ${VARDIR}/proxyarp << __EOF__';
-	dump_proxy_arp;
-	emit_unindented '__EOF__';
-
-	emit( '',
-	      'if [ "$COMMAND" != refresh ]; then' );
-
-	push_indent;
-
-	emit 'cat > ${VARDIR}/zones << __EOF__';
-	dump_zone_contents;
-	emit_unindented '__EOF__';
+    emit 'cat > ${VARDIR}/proxyarp << __EOF__';
+    dump_proxy_arp;
+    emit_unindented '__EOF__';
     
-	pop_indent;
+    emit( '',
+	  'if [ "$COMMAND" != refresh ]; then' );
     
-	emit "fi\n";
+    push_indent;
     
-	emit '> ${VARDIR}/nat';
+    emit 'cat > ${VARDIR}/zones << __EOF__';
+    dump_zone_contents;
+    emit_unindented '__EOF__';
     
-	add_addresses;
+    pop_indent;
+    
+    emit "fi\n";
+    
+    emit '> ${VARDIR}/nat';
+    
+    add_addresses;
 
-	emit( '',
-	      'if [ $COMMAND = restore ]; then',
-	      '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
-	      '    if [ -f $iptables_save_file ]; then' );
+    emit( '',
+	  'if [ $COMMAND = restore ]; then',
+	  '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
+	  '    if [ -f $iptables_save_file ]; then' );
+    
+    if ( $family == F_IPV4 ) {
+	emit '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
+    } else {
+	emit '        cat $iptables_save_file | $IP6TABLES_RESTORE # Use this nonsensical form to appease SELinux'
+    }
 	
-	if ( $family == F_IPV4 ) {
-	    emit '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
-	} else {
-	    emit '        cat $iptables_save_file | $IP6TABLES_RESTORE # Use this nonsensical form to appease SELinux'
-	}
-	
-	emit<<'EOF';
+    emit<<'EOF';
     else
         fatal_error "$iptables_save_file does not exist"
     fi
 EOF
-	pop_indent;
-	setup_forwarding( $family );
-	push_indent;
-	emit<<'EOF';
+    pop_indent;
+    setup_forwarding( $family );
+    push_indent;
+    emit<<'EOF';
     set_state "Started"
     run_restored_exit
 else
     if [ $COMMAND = refresh ]; then
         chainlist_reload
 EOF
-	setup_forwarding( $family );
-	emit<<'EOF';
+    setup_forwarding( $family );
+    emit<<'EOF';
         run_refreshed_exit
         do_iptables -N shorewall
         set_state "Started"
@@ -834,8 +751,8 @@ EOF
         restore_dynamic_rules
         conditionally_flush_conntrack
 EOF
-	setup_forwarding( $family );
-	emit<<'EOF';
+    setup_forwarding( $family );
+    emit<<'EOF';
         run_start_exit
         do_iptables -N shorewall
         set_state "Started"
@@ -844,12 +761,8 @@ EOF
 
     [ $0 = ${VARDIR}/.restore ] || cp -f $(my_pathname) ${VARDIR}/.restore
 fi
-EOF
-
-    }
-
-    emit<<'EOF';
-    date > ${VARDIR}/restarted
+    
+date > ${VARDIR}/restarted
 
 case $COMMAND in
     start)
@@ -892,7 +805,6 @@ sub compiler {
 
     $export = 0;
     $test   = 0;
-    $rtc    = 1;
 
     sub edit_boolean( $ ) {
 	 my $val = numeric_value( shift ); 
@@ -909,11 +821,6 @@ sub compiler {
 	defined($val) && ($val == F_IPV4 || $val == F_IPV6);
     }
 
-    sub edit_rtc( $ ) {
-	my $val = numberic_value( shift );
-	defined($val) && ($val == 0 || $val == NORTC || $val == RTCONLY);
-    }
-
     my %parms = ( object        => { store => \$objectfile },
 		  directory     => { store => \$directory  },
 		  family        => { store => \$family    ,    edit => \&edit_family    } ,
@@ -925,7 +832,6 @@ sub compiler {
 		  log           => { store => \$log },
 		  log_verbosity => { store => \$log_verbosity, edit => \&edit_verbosity } ,
 		  test          => { store => \$test },
-		  rtc           => { store => \$rtc          , edit => \&edit_rtc       } ,
 		);
     #
     #                               P A R A M E T E R    P R O C E S S I N G
@@ -977,33 +883,36 @@ sub compiler {
     #
     run_user_exit1 'compile';
     #
-    #                                 Z O N E   D E F I N I T I O N
-    #                          (Produces no output to the compiled script)
+    #                                     Z O N E   D E F I N I T I O N
+    #                              (Produces no output to the compiled script)
     #
-    unless ( $rtc == RTCONLY ) {
-	determine_zones;
-	#
-	# Process the interfaces file.
-	#
-	validate_interfaces_file ( $export );
-	#
-	# Process the hosts file.
-	#
-	validate_hosts_file;
-	#
-	# Report zone contents
-	#
-	zone_report;
-	#
-	# Do action pre-processing.
-	#
-	process_actions1;
-	#
-	#                                    P O L I C Y
-	#                       (Produces no output to the compiled script)
-	#
-	validate_policy;
-    }
+    determine_zones;
+    #
+    # Process the interfaces file.
+    #
+    validate_interfaces_file ( $export );
+    #
+    # Process the hosts file.
+    #
+    validate_hosts_file;
+    #
+    # Report zone contents
+    #
+    zone_report;
+    #
+    # Do action pre-processing.
+    #
+    process_actions1;
+    #
+    #                                        P O L I C Y
+    #                           (Produces no output to the compiled script)
+    #
+    validate_policy;
+    #
+    #                                       N O T R A C K
+    #                           (Produces no output to the compiled script)
+    #
+    setup_notrack;
     #
     #                                    I N I T I A L I Z E
     #                  (Writes the initialize() function to the compiled script)
@@ -1019,165 +928,153 @@ sub compiler {
     #
     unless ( $command eq 'check' ) {
 	enable_object;
-	
-	if ( $rtc == RTCONLY ) {
-	    compile_stop_rtc;
-	} else {
-	    compile_stop_firewall;
-	}
-	
+	compile_stop_firewall;
 	disable_object;
     }
     #
     #                                   C O M M O N _ R U L E S
     #               (Writes the setup_common_rules() function to the compiled script)
     #
-    if ( $rtc != RTCONLY ) {
-	enable_object;
+    enable_object;
 
-	unless ( $command eq 'check' ) {
-	    unless ( $test ) {
-		if ( $family == F_IPV4 ) {
-		    copy $globals{SHAREDIRPL} . 'prog.functions';
-		} else {
-		    copy $globals{SHAREDIRPL} . 'prog.functions6';
-		}
+    unless ( $command eq 'check' ) {
+	unless ( $test ) {
+	    if ( $family == F_IPV4 ) {
+		copy $globals{SHAREDIRPL} . 'prog.functions';
+	    } else {
+		copy $globals{SHAREDIRPL} . 'prog.functions6';
 	    }
-
-	    emit(  "\n#",
-		   '# Setup Common Rules (/proc)',
-		   '#',
-		   'setup_common_rules() {'
-		);
-
-	    push_indent;
 	}
-	#
-	# Do all of the zone-independent stuff
-	#
-	add_common_rules;
-	#
-	# /proc stuff
-	#
-	if ( $family == F_IPV4 ) {
-	    setup_arp_filtering;
-	    setup_route_filtering;
-	    setup_martian_logging;
-	}
+	
+	emit(  "\n#",
+	       '# Setup Common Rules (/proc)',
+	       '#',
+	       'setup_common_rules() {'
+	    );
 
-	setup_source_routing($family);
-	#
-	# Proxy Arp/Ndp
-	#
-	setup_proxy_arp;
-	#
-	# Handle MSS setings in the zones file
-	#
-	setup_zone_mss;
-
-	unless ( $command eq 'check' ) {
-	    pop_indent;
-	    emit '}';
-	}
-    
-	disable_object;
+	push_indent;
     }
+    #
+    # Do all of the zone-independent stuff
+    #
+    add_common_rules;
+    #
+    # /proc stuff
+    #
+    if ( $family == F_IPV4 ) {
+	setup_arp_filtering;
+	setup_route_filtering;
+	setup_martian_logging;
+    }
+
+    setup_source_routing($family);
+    #
+    # Proxy Arp/Ndp
+    #
+    setup_proxy_arp;
+    #
+    # Handle MSS setings in the zones file
+    #
+    setup_zone_mss;
+
+    unless ( $command eq 'check' ) {
+	pop_indent;
+	emit '}';
+    }
+    
+    disable_object;
     #
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
-    unless ( $rtc == NORTC ) {
-	enable_object;
+    enable_object;
     
-	unless ( $command eq 'check' ) {
-	    emit(  "\n#",
-		   '# Setup routing and traffic shaping',
-		   '#',
-		   'setup_routing_and_traffic_shaping() {'
-		);
-
-	    push_indent;
-	}
-	#
-	# [Re-]establish Routing
-	#
-	setup_providers;
-	#
-	# TCRules and Traffic Shaping
-	#
-	setup_tc;
-
-	unless ( $command eq 'check' ) {
-	    pop_indent;
-	    emit "}\n";
-	}
-    
-	disable_object;
+    unless ( $command eq 'check' ) {
+	emit(  "\n#",
+	       '# Setup routing and traffic shaping',
+	       '#',
+	       'setup_routing_and_traffic_shaping() {'
+	    );
+	
+	push_indent;
     }
+    #
+    # [Re-]establish Routing
+    #
+    setup_providers;
+    #
+    # TCRules and Traffic Shaping
+    #
+    setup_tc;
+    
+    unless ( $command eq 'check' ) {
+	pop_indent;
+	emit "}\n";
+    }
+    
+    disable_object;
     #
     #                                   N E T F I L T E R
     #                       (Produces no output to the compiled script)
     #
-    unless ( $rtc == RTCONLY ) {
-	process_tos;
+    process_tos;
 
-	if ( $family == F_IPV4 ) {
-	    #
-	    # ECN
-	    #
-	    setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
-	    #
-	    # Setup Masquerading/SNAT
-	    #
-	    setup_masq; 
-	}
-
+    if ( $family == F_IPV4 ) {
 	#
-	# MACLIST Filtration
+	# ECN
 	#
-	setup_mac_lists 1;
+	setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
 	#
-	# Process the rules file.
+	# Setup Masquerading/SNAT
 	#
-	process_rules;
-	#
-	# Add Tunnel rules.
-	#
-	setup_tunnels;
-	#
-	# Post-rules action processing.
-	#
-	process_actions2;
-	process_actions3;
-	#
-	# MACLIST Filtration again
-	#
-	setup_mac_lists 2;
-	#
-	# Apply Policies
-	#
-	apply_policy_rules;
-
-	if ( $family == F_IPV4 ) {
-	    #
-	    # Setup Nat
-	    #
-	    setup_nat;
-	    #
-	    # Setup NETMAP
-	    #
-	    setup_netmap;
-	}
-	#
-	# Accounting.
-	#
-	setup_accounting;
-	#
-	# We generate the matrix even though we don't write out the rules. That way, we insure that
-	# a compile of the script won't blow up during that step.
-	#
-	generate_matrix;
+	setup_masq; 
     }
+
+    #
+    # MACLIST Filtration
+    #
+    setup_mac_lists 1;
+    #
+    # Process the rules file.
+    #
+    process_rules;
+    #
+    # Add Tunnel rules.
+    #
+    setup_tunnels;
+    #
+    # Post-rules action processing.
+    #
+    process_actions2;
+    process_actions3;
+    #
+    # MACLIST Filtration again
+    #
+    setup_mac_lists 2;
+    #
+    # Apply Policies
+    #
+    apply_policy_rules;
+
+    if ( $family == F_IPV4 ) {
+	#
+	# Setup Nat
+	#
+	setup_nat;
+	#
+	# Setup NETMAP
+	#
+	setup_netmap;
+    }
+    #
+    # Accounting.
+    #
+    setup_accounting;
+    #
+    # We generate the matrix even though we don't write out the rules. That way, we insure that
+    # a compile of the script won't blow up during that step.
+    #
+    generate_matrix;
 
     if ( $command eq 'check' ) {
 	if ( $family == F_IPV4 ) {

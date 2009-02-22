@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.2.6
+VERSION=4.2.7
 
 usage() # $1 = exit status
 {
@@ -478,7 +478,7 @@ fi
 #
 # Install the Notrack file
 #
-run_install $OWNERSHIP -m 0644 notrack ${PREFIX}/usr/share/shorewal6/configfiles/notrack
+run_install $OWNERSHIP -m 0644 notrack ${PREFIX}/usr/share/shorewall6/configfiles/notrack
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/notrack ]; then
     run_install $OWNERSHIP -m 0600 notrack ${PREFIX}/etc/shorewall6/notrack

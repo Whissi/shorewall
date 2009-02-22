@@ -1,5 +1,5 @@
 %define name shorewall-common
-%define version 4.2.6
+%define version 4.2.7
 %define release 0base
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -114,6 +114,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcfilters
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/notrack
 %attr(0600,root,root) /etc/shorewall/Makefile
 
 %attr(0755,root,root) /sbin/shorewall
@@ -169,6 +170,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcclasses
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcdevices
 %attr(0644,root,root) /usr/share/shorewall/configfiles/tcfilters
+%attr(0644,root,root) /usr/share/shorewall/configfiles/notrack
 %attr(0644,root,root) /usr/share/shorewall/configfiles/Makefile
 
 %attr(0644,root,root) %{_mandir}/man5/*
@@ -177,6 +179,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples swping swping.init isusable
 
 %changelog
+* Sat Feb 21 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.2.7-0base
 * Thu Feb 05 2009 Tom Eastep tom@shorewall.net
 - Add 'restored' script
 * Wed Feb 04 2009 Tom Eastep tom@shorewall.net

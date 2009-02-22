@@ -76,41 +76,6 @@ cant_autostart()
     echo  "WARNING: Unable to configure shorewall to start automatically at boot" >&2
 }
 
-backup_directory() # $1 = directory to backup
-{
-    if [ -d $1 ]; then
-	if cp -a $1  ${1}-${VERSION}.bkout ; then
-	    echo
-	    echo "$1 saved to ${1}-${VERSION}.bkout"
-	else
-	    exit 1
-	fi
-    fi
-}
-
-backup_file() # $1 = file to backup, $2 = (optional) Directory in which to create the backup
-{
-    if [ -z "${PREFIX}{NOBACKUP}" ]; then
-	if [ -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
-	    if [ -n "$2" ]; then
-		if [ -d $2 ]; then
-		    if cp -f $1 $2 ; then
-			echo
-			echo "$1 saved to $2/$(basename $1)"
-		    else
-			exit 1
-		    fi
-		fi
-	    elif cp $1 ${1}-${VERSION}.bkout; then
-		echo
-		echo "$1 saved to ${1}-${VERSION}.bkout"
-	    else
-		exit 1
-	    fi
-	fi
-    fi
-}
-
 delete_file() # $1 = file to delete
 {
     rm -f $1
@@ -118,12 +83,6 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $OWNERSHIP -m $3 $1 ${2}
-}
-
-install_file_with_backup() # $1 = source $2 = target $3 = mode $4 = (optional) backup directory
-{
-    backup_file $2 $4
     run_install $OWNERSHIP -m $3 $1 ${2}
 }
 
@@ -169,8 +128,6 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-NOBACKUP=
-
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
@@ -179,9 +136,6 @@ while [ $# -gt 0 ] ; do
         -v)
 	    echo "Shorewall Firewall Installer Version $VERSION"
 	    exit 0
-	    ;;
-	-n)
-	    NOBACKUP=Yes
 	    ;;
 	*)
 	    usage 1
@@ -238,20 +192,15 @@ echo "Installing Shorewall-common Version $VERSION"
 #
 if [ -d ${PREFIX}/etc/shorewall ]; then
     first_install=""
-    if [ -z "$NOBACKUP" ]; then
-	backup_directory ${PREFIX}/etc/shorewall
-	backup_directory ${PREFIX}/usr/share/shorewall
-	backup_directory ${PREFIX}/var/lib/shorewall
-    fi
 else
     first_install="Yes"
 fi
 
 if [ -z "$CYGWIN" ]; then
-   install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+   install_file shorewall ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
    echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 else
-   install_file_with_backup shorewall ${PREFIX}/bin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+   install_file shorewall ${PREFIX}/bin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
    echo "shorewall control program installed in ${PREFIX}/bin/shorewall"
 fi
 
@@ -260,14 +209,14 @@ fi
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+    install_file init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
-    install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 elif [ -n "$SLACKWARE" ]; then
-	install_file_with_backup init.slackware.firewall.sh ${PREFIX}${DEST}/rc.firewall 0644 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
-	install_file_with_backup init.slackware.shorewall.sh ${PREFIX}${DEST}/rc.shorewall 0644 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+	install_file init.slackware.firewall.sh ${PREFIX}${DEST}/rc.firewall 0644 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+	install_file init.slackware.shorewall.sh ${PREFIX}${DEST}/rc.shorewall 0644 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 elif [ -n "$INIT" ]; then
-    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+    install_file init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 fi
 
 [ -n "$CYGWIN" ] || echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"

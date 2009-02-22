@@ -151,7 +151,7 @@ fi
 
 DEBIAN=
 CYGWIN=
-MANDIR=$(MANDIR:-"/usr/share/man")
+MANDIR=${MANDIR:-"/usr/share/man"}
 
 case $(uname) in
     CYGWIN*)

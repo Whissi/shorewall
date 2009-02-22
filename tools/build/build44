@@ -620,7 +620,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    progress_message "Building $RPMNAME..."
 
 	    cd /tmp
-	    rm -rf shorewall-common-${BASEVERSION}
+	    rm -rf shorewall-${BASEVERSION}
 	    do_or_die "cp -a $DIR/$SHOREWALLDIR shorewall-${BASEVERSION}"
 	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-${BASEVERSION}.tgz shorewall-${BASEVERSION}"
 	    cd $DIR
@@ -906,7 +906,7 @@ if [ -n "$OLDVERSION" ]; then
     
     progress_message "Creating patch-$VERSION ..."
 
-    [ -d shorewall$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-common-$OLDVERSION shorewall-common-$VERSION > patch-common-$VERSION || true
+    [ -d shorewall$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
     [ -d shorewall6-$VERSION ]       && diff -Naur -X $(dirname $0)/exclude.txt shorewall6-$OLDVERSION       shorewall6-$VERSION       > patch-6-$VERSION      || true
     [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION     > patch-lite-$VERSION   || true
     [ -d shorewall6-lite-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall6-lite-$OLDVERSION shorewall6-lite-$VERSION   > patch-6-lite-$VERSION || true

@@ -1,4 +1,4 @@
-%define name shorewall-common
+%define name shorewall
 %define version 4.2.7
 %define release 0base
 
@@ -13,20 +13,14 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: iptables iproute shorewall_compiler
+Requires: iptables iproute
+Supersedes: shorewall-common shorewall-perl
 
 %description
 
 The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 (iptables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
-
-Shorewall offers two alternative firewall compilers, shorewall-perl and
-shorewall-shell. The shorewall-perl compilers is suggested for new installed
-systems and shorewall-shell is provided for backwards compability and smooth
-legacy system upgrades because shorewall perl is not fully compatible with
-all legacy configurations.
-
 %prep
 
 %setup
@@ -135,6 +129,10 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0755,root,root) /usr/share/shorewall/wait4ifup
+
+%attr(755,root,root) /usr/share/shorewall/compiler.pl
+%attr(0644,root,root) /usr/share/shorewall/prog.*
+%attr(0644,root,root) /usr/share/shorewall/Shorewall/*.pm
 
 %attr(0644,root,root) /usr/share/shorewall/configfiles/shorewall.conf
 %attr(0644,root,root) /usr/share/shorewall/configfiles/zones

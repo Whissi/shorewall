@@ -379,7 +379,7 @@ compiler() {
     run_user_exit params
     set +a
 
-    perl $debugflags /usr/share/shorewall-perl/compiler.pl $options $@
+    perl $debugflags /usr/share/shorewall/compiler.pl $options $@
 }    
 
 #
@@ -1524,11 +1524,6 @@ version_command() {
 
     echo $version
 
-    if [ -n "$all" ]; then
-	if [ -f /usr/share/shorewall-perl/version ]; then
-	    echo "Shorewall-perl $(cat /usr/share/shorewall-perl/version)"
-	fi
-    fi
 }
 
 if [ $# -eq 0 ]; then

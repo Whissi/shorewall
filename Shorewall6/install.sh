@@ -151,6 +151,7 @@ fi
 
 DEBIAN=
 CYGWIN=
+MANDIR=$(MANDIR:-"/usr/share/man")
 
 case $(uname) in
     CYGWIN*)
@@ -214,6 +215,7 @@ else
 	    DEBIAN=yes
 	elif [ -f /etc/slackware-version ] ; then
 	    DEST="/etc/rc.d"
+		SLACKWARE=yes
 	    INIT="rc.firewall"
 	elif [ -f /etc/arch-release ] ; then
 	    DEST="/etc/rc.d"
@@ -258,6 +260,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file_with_backup init.debian.sh /etc/init.d/shorewall6 0544 ${PREFIX}/usr/share/shorewall6-${VERSION}.bkout
+elif [ -n "$SLACKWARE" ]; then
+    install_file_with_backup init.slackware.shorewall6.sh ${PREFIX}${DEST}/rc.shorewall6 0544 ${PREFIX}/usr/share/shorewall6-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
     install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-${VERSION}.bkout
 elif [ -n "$INIT" ]; then
@@ -478,7 +482,7 @@ fi
 #
 # Install the Notrack file
 #
-run_install $OWNERSHIP -m 0644 notrack ${PREFIX}/usr/share/shorewall6/configfiles/notrack
+run_install $OWNERSHIP -m 0644 notrack ${PREFIX}/usr/share/shorewal6/configfiles/notrack
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/notrack ]; then
     run_install $OWNERSHIP -m 0600 notrack ${PREFIX}/etc/shorewall6/notrack
@@ -626,14 +630,14 @@ cd manpages
 
 for f in *.5; do
     gzip -c $f > $f.gz
-    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
-    echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
+    run_install -D  -m 0644 $f.gz ${PREFIX}${MANDIR}/man5/$f.gz
+    echo "Man page $f.gz installed to ${PREFIX}${MANDIR}/man5/$f.gz"
 done
 
 for f in *.8; do
     gzip -c $f > $f.gz
-    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
-    echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
+    run_install -D  -m 0644 $f.gz ${PREFIX}${MANDIR}/man/man8/$f.gz
+    echo "Man page $f.gz installed to ${PREFIX}${MANDIR}/man8/$f.gz"
 done
 
 cd ..

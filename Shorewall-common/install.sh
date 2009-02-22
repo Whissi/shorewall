@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.2.6
+VERSION=4.2.7
 
 usage() # $1 = exit status
 {
@@ -151,6 +151,7 @@ fi
 
 DEBIAN=
 CYGWIN=
+MANDIR=${MANDIR:-"/usr/share/man"}
 
 case $(uname) in
     CYGWIN*)
@@ -201,20 +202,22 @@ if [ -n "$PREFIX" ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
-	fi    
+	fi
 
 	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
 	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
     fi
 else
-    [ -x /usr/share/shorewall-perl/compiler.pl ] || \
+    [ -x /usr/share/shorewall-shell/compiler -o -x /usr/share/shorewall-perl/compiler.pl ] || \
 	{ echo "   ERROR: No Shorewall compiler is installed" >&2; exit 1; }
     if [ -z "$CYGWIN" ]; then
 	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
 	    DEBIAN=yes
 	elif [ -f /etc/slackware-version ] ; then
+	    echo "installing Slackware specific configuration..."
 	    DEST="/etc/rc.d"
-	    INIT="rc.firewall"
+	    MANDIR="/usr/man"
+	    SLACKWARE=yes
 	elif [ -f /etc/arch-release ] ; then
 	    DEST="/etc/rc.d"
 	    INIT="shorewall"
@@ -260,6 +263,9 @@ if [ -n "$DEBIAN" ]; then
     install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
     install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+elif [ -n "$SLACKWARE" ]; then
+	install_file_with_backup init.slackware.firewall.sh ${PREFIX}${DEST}/rc.firewall 0644 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+	install_file_with_backup init.slackware.shorewall.sh ${PREFIX}${DEST}/rc.shorewall 0644 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 elif [ -n "$INIT" ]; then
     install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 fi
@@ -732,14 +738,14 @@ cd manpages
 
 for f in *.5; do
     gzip -c $f > $f.gz
-    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
-    echo "Man page $f.gz installed to /usr/share/man/man5/$f.gz"
+    run_install -D  -m 0644 $f.gz ${PREFIX}${MANDIR}/man5/$f.gz
+    echo "Man page $f.gz installed to ${PREFIX}${MANDIR}/man5/$f.gz"
 done
 
 for f in *.8; do
     gzip -c $f > $f.gz
-    run_install -D  -m 0644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
-    echo "Man page $f.gz installed to /usr/share/man/man8/$f.gz"
+    run_install -D  -m 0644 $f.gz ${PREFIX}${MANDIR}/man8/$f.gz
+    echo "Man page $f.gz installed to ${PREFIX}${MANDIR}/man8/$f.gz"
 done
 
 cd ..

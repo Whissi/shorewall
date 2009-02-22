@@ -14,7 +14,7 @@ URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: iptables iproute
-Supersedes: shorewall-common shorewall-perl
+Replaces: shorewall-common shorewall-perl
 
 %description
 

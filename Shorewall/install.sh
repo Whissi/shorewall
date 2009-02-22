@@ -664,6 +664,11 @@ done
 #
 ln -sf lib.base ${PREFIX}/usr/share/shorewall/functions
 #
+# /usr/share/shorewall/Shorewall if needed
+#
+mkdir -p ${PREFIX}/usr/share/shorewall/Shorewall
+chmod 755 ${PREFIX}/usr/share/shorewall/Shorewall
+#
 # Install the Compiler
 #
 install_file compiler.pl ${PREFIX}/usr/share/shorewall/compiler.pl 0755
@@ -719,11 +724,6 @@ done
 cd ..
 
 echo "Man Pages Installed"
-
-#
-# Install the firewall script
-#
-install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0755
 
 if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
     if [ -n "$DEBIAN" ]; then

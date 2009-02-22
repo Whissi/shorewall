@@ -45,7 +45,7 @@ case $VERSION in
 	;;
 esac
 
-for product in -common 6 -lite 6-lite -shell -perl; do
+for product in "" -common 6 -lite 6-lite -shell -perl; do
     dir=Shorewall${product}${SUFFIX}
 
     for file in $dir/install.sh $dir/uninstall.sh $dir/fallback.sh; do
@@ -63,4 +63,7 @@ for product in -common 6 -lite 6-lite -shell -perl; do
 done
 
 file=Shorewall-perl${SUFFIX}/Shorewall/Config.pm
+[ -f $file ] && eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"${VERSION}\",/'" $file
+
+file=Shorewall${SUFFIX}/Shorewall/Config.pm
 [ -f $file ] && eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"${VERSION}\",/'" $file

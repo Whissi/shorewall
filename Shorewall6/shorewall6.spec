@@ -6,7 +6,7 @@ Summary: Shoreline Firewall 6 is an ip6tables-based firewall for Linux systems.
 Name: %{name}
 Version: %{version}
 Release: %{release}
-License: GPL
+License: GPLv2
 Packager: Tom Eastep <teastep@shorewall.net>
 Group: Networking/Utilities
 Source: %{name}-%{version}.tgz

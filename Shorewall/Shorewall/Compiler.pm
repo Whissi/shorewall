@@ -1015,7 +1015,7 @@ sub compiler {
     disable_object;
     #
     #                                   N E T F I L T E R
-    #                       (Produces no output to the compiled script)
+    # (Produces no output to the compiled script -- rules are stored in the chain table)
     #
     process_tos;
 
@@ -1084,10 +1084,14 @@ sub compiler {
 	}
     } else {
 	#
-	# Finish the script.
+	#                          N E T F I L T E R   L O A D
+	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
 	enable_object;
 	generate_script_2( $chains );
+	#
+	# Close, rename and secure the object
+	#
 	finalize_object ( $export );
 	#
 	# And generate the auxilary config file

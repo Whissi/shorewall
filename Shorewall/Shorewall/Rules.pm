@@ -314,7 +314,7 @@ sub setup_blacklist() {
 
 		if ( $first_entry ) {
 		    unless  ( @$hosts ) {
-			warning_message q(The entries in $fn have been ignored because there are no 'blacklist' interfaces);
+			warning_message qq(The entries in $fn have been ignored because there are no 'blacklist' interfaces);
 			close_file;
 			last BLACKLIST;
 		    }

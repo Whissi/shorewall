@@ -600,8 +600,8 @@ sub validate_interfaces_file( $ )
 		   ENUM_IF_OPTION     => 3,
 		   NUMERIC_IF_OPTION  => 4,
 		   OBSOLETE_IF_OPTION => 5,
+		   IPLIST_IF_OPTION   => 6,
 	           MASK_IF_OPTION     => 7,
-
 	           IF_OPTION_ZONEONLY => 8 };
 
     my %validoptions;
@@ -615,6 +615,7 @@ sub validate_interfaces_file( $ )
 			 dhcp        => SIMPLE_IF_OPTION,
 			 maclist     => SIMPLE_IF_OPTION,
 			 logmartians => BINARY_IF_OPTION,
+			 nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
 			 norfc1918   => SIMPLE_IF_OPTION,
 			 nosmurfs    => SIMPLE_IF_OPTION,
 			 optional    => SIMPLE_IF_OPTION,
@@ -649,6 +650,8 @@ sub validate_interfaces_file( $ )
     my @ifaces;
 
     while ( read_a_line ) {
+
+	my $nets;
 
 	if ( $first_entry ) {
 	    progress_message2 "$doing $fn...";
@@ -737,7 +740,7 @@ sub validate_interfaces_file( $ )
 
 	if ( $options ) {
 
-	    for my $option (split_list $options, 'option' ) {
+	    for my $option (split_list1 $options, 'option' ) {
 		next if $option eq '-';
 
 		( $option, my $value ) = split /=/, $option;
@@ -776,6 +779,13 @@ sub validate_interfaces_file( $ )
 		    my $numval = numeric_value $value;
 		    fatal_error "Invalid value ($value) for option $option" unless defined $numval;
 		    $options{$option} = $numval;
+		} elsif ( $type == IPLIST_IF_OPTION ) {
+		    fatal_error "The $option option requires a value" unless defined $value;
+		    fatal_error "Duplicate $option option" if $nets;
+		    $value =~ s/\)$// if $value =~ s/^\(//;
+		    $value = join ',' , ALLIP , $value if $value =~ /^!/;
+		    $nets = [ split_list $value, 'address' ];
+		    $options{broadcast} = 1;
 		} else {
 		    warning_message "Support for the $option interface option has been removed from Shorewall-perl";
 		}
@@ -803,9 +813,9 @@ sub validate_interfaces_file( $ )
 
 	push @ifaces, $interface;
 
-	my @networks = allip;
+	$nets = [ allip ] unless $nets; 
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, \@networks, $optionsref ) if $zone;
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $optionsref ) if $zone;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

@@ -1075,49 +1075,55 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
 -           -         shorewall       11999</programlisting></para>
     </section>
 
-    <section id="swping">
+    <section id="LinkMonitor">
       <title>Gateway Monitoring and Failover</title>
 
-      <para>Beginning with Shorewall 4.2.6, Shorewall includes a sample
-      monitoring script <filename>swping</filename>. The
-      <filename>swping</filename> file is available in the main directory
-      contained in the Shorewall-common tarball and is included in the
-      Shorewall-common documentation directory on the Shorewall-common RPM.
-      The script is inspired by Angsuman Chakraborty's <ulink
-      url="http://blog.taragana.com/index.php/archive/how-to-load-balancing-failover-with-dual-multi-wan-adsl-cable-connections-on-linux/">gwping</ulink>
-      script.</para>
+      <para>There are a couple of options available for monitoring the status
+      of provider links and taking action when a failure occurs.</para>
 
-      <para>For those not on 4.2.6 yet, the script may be downloaded from
-      <ulink
-      url="http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/">http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/</ulink>.</para>
+      <section id="swping">
+        <title>SWPING</title>
 
-      <important>
-        <para>These samples are offered <emphasis>as is</emphasis> — they work
-        for me but I don't make any claim that they will work for anyone else.
-        But if you have a need for automated link monitoring, they offer you a
-        place to start.</para>
-      </important>
+        <para>Beginning with Shorewall 4.2.6, Shorewall includes a sample
+        monitoring script <filename>swping</filename>. The
+        <filename>swping</filename> file is available in the main directory
+        contained in the Shorewall-common tarball and is included in the
+        Shorewall-common documentation directory on the Shorewall-common RPM.
+        The script is inspired by Angsuman Chakraborty's <ulink
+        url="http://blog.taragana.com/index.php/archive/how-to-load-balancing-failover-with-dual-multi-wan-adsl-cable-connections-on-linux/">gwping</ulink>
+        script.</para>
 
-      <para>The script should be copied to a directory on root's PATH such as
-      <filename>/usr/local/sbin/</filename>.</para>
+        <para>For those not on 4.2.6 yet, the script may be downloaded from
+        <ulink
+        url="http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/">http://www.shorewall.net/pub/shorewall/contrib/MultiISP-failover/</ulink>.</para>
 
-      <para>The script works by sending pings to <emphasis>target</emphasis>
-      IP addresses through each external interface. These targets must not
-      depend on any routes other than those that are present in the main
-      routing table. That ensures that a route is available to the target even
-      when the target's interface is not working and Shorewall has omitted it
-      from the routing configuration. An interface is assumed to be
-      <firstterm>up</firstterm> when a specified number (UP_COUNT) of
-      consecutive ping operations succeed. Similarly, an interface is assumed
-      to be <firstterm>down</firstterm> when a specified number (DOWN_COUNT)
-      of consecutive ping operations fail. You can specify the interval
-      between pings (PING_INTERVAL).</para>
+        <important>
+          <para>These samples are offered <emphasis>as is</emphasis> — they
+          work for me but I don't make any claim that they will work for
+          anyone else. But if you have a need for automated link monitoring,
+          they offer you a place to start.</para>
+        </important>
 
-      <para>The script monitors two interfaces but it is a trivial exercise to
-      extend it to more than two. At the top are a number of variables to
-      set:</para>
+        <para>The script should be copied to a directory on root's PATH such
+        as <filename>/usr/local/sbin/</filename>.</para>
 
-      <programlisting>#
+        <para>The script works by sending pings to <emphasis>target</emphasis>
+        IP addresses through each external interface. These targets must not
+        depend on any routes other than those that are present in the main
+        routing table. That ensures that a route is available to the target
+        even when the target's interface is not working and Shorewall has
+        omitted it from the routing configuration. An interface is assumed to
+        be <firstterm>up</firstterm> when a specified number (UP_COUNT) of
+        consecutive ping operations succeed. Similarly, an interface is
+        assumed to be <firstterm>down</firstterm> when a specified number
+        (DOWN_COUNT) of consecutive ping operations fail. You can specify the
+        interval between pings (PING_INTERVAL).</para>
+
+        <para>The script monitors two interfaces but it is a trivial exercise
+        to extend it to more than two. At the top are a number of variables to
+        set:</para>
+
+        <programlisting>#
 # IP family -- 4 or 6
 #
 FAMILY=4
@@ -1157,34 +1163,34 @@ UP_COUNT=5
 #
 DOWN_COUNT=2</programlisting>
 
-      <para>If you leave COMMAND empty, the script sets its value
-      automatically depending on whether Shorewall-lite is installed.</para>
+        <para>If you leave COMMAND empty, the script sets its value
+        automatically depending on whether Shorewall-lite is installed.</para>
 
-      <para>When the status of an interface changes:</para>
+        <para>When the status of an interface changes:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>For each interface, a file is placed in /etc/shorewall to
-          record the status of the interface: either 0 (UP) or 1 (DOWN). The
-          name of the file is
-          <filename><replaceable>interface</replaceable>.status</filename>
-          where <replaceable>interface</replaceable> is the interface (e.g.,
-          <filename>eth0.status</filename>).</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para>For each interface, a file is placed in /etc/shorewall to
+            record the status of the interface: either 0 (UP) or 1 (DOWN). The
+            name of the file is
+            <filename><replaceable>interface</replaceable>.status</filename>
+            where <replaceable>interface</replaceable> is the interface (e.g.,
+            <filename>eth0.status</filename>).</para>
+          </listitem>
 
-        <listitem>
-          <para>A <command>shorewall -f restart</command> command is executed
-          (<command>shorewall-lite restart</command>, if Shorewall-lite is
-          installed).</para>
-        </listitem>
+          <listitem>
+            <para>A <command>shorewall -f restart</command> command is
+            executed (<command>shorewall-lite restart</command>, if
+            Shorewall-lite is installed).</para>
+          </listitem>
 
-        <listitem>
-          <para>The contents of the main routing table are displayed.</para>
-        </listitem>
-      </itemizedlist>
+          <listitem>
+            <para>The contents of the main routing table are displayed.</para>
+          </listitem>
+        </itemizedlist>
 
-      <para>The .status files are intended to be used with the following
-      <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
+        <para>The .status files are intended to be used with the following
+        <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
 
 case $1 in
     <emphasis role="bold">eth0|eth1</emphasis>)
@@ -1194,65 +1200,211 @@ esac
 
 return $status</programlisting></para>
 
-      <para>Be sure that you modify the interface names to match your
-      configuration.</para>
+        <para>Be sure that you modify the interface names to match your
+        configuration.</para>
 
-      <para>Also included is a sample init script
-      (<filename>swping.init</filename>) to start the monitoring daemon. Copy
-      it to<filename> /etc/init.d/swping</filename> and use your
-      distribution's SysV init tools to cause it to be run at boot. It works
-      on <trademark>OpenSuSE</trademark> 11.0 -- YMMV. Modify the PROG and
-      STATEDIR variables as needed.</para>
+        <para>Also included is a sample init script
+        (<filename>swping.init</filename>) to start the monitoring daemon.
+        Copy it to<filename> /etc/init.d/swping</filename> and use your
+        distribution's SysV init tools to cause it to be run at boot. It works
+        on <trademark>OpenSuSE</trademark> 11.0 -- YMMV. Modify the PROG and
+        STATEDIR variables as needed.</para>
 
-      <para>As an alternative to using the init script, you can add the
-      following to <filename>/etc/shorewall/started</filename>:</para>
+        <para>As an alternative to using the init script, you can add the
+        following to <filename>/etc/shorewall/started</filename>:</para>
 
-      <programlisting>if [ "$COMMAND" = start ]; then
+        <programlisting>if [ "$COMMAND" = start ]; then
    killall -9 swping 2&gt; /dev/null #be sure that there are none left running
    /usr/local/sbin/swping &amp;
 fi</programlisting>
 
-      <para>and add this to
-      <filename>/etc/shorewall/stopped</filename>.</para>
+        <para>and add this to
+        <filename>/etc/shorewall/stopped</filename>.</para>
 
-      <para><programlisting>if [ "$COMMAND" = stop -o "$COMMAND" = clear ]; then
+        <para><programlisting>if [ "$COMMAND" = stop -o "$COMMAND" = clear ]; then
    killall -9 swping 2&gt; /dev/null
 fi</programlisting></para>
 
-      <para>This simple script has a number of limitations:</para>
+        <para>This simple script has a number of limitations:</para>
 
-      <orderedlist>
-        <listitem>
-          <para>It only works on IPv4 or IPv6 but not both at once. So if you
-          want to monitor both IPv4 and IPv6, you need to clone the script are
-          run two copies; one for IPv4 and one for IPv6.</para>
-        </listitem>
+        <orderedlist>
+          <listitem>
+            <para>It only works on IPv4 or IPv6 but not both at once. So if
+            you want to monitor both IPv4 and IPv6, you need to clone the
+            script are run two copies; one for IPv4 and one for IPv6.</para>
+          </listitem>
 
-        <listitem>
-          <para>It can only detect the gateway for interfaces managed by
-          dhcpcd.</para>
-        </listitem>
+          <listitem>
+            <para>It can only detect the gateway for interfaces managed by
+            dhcpcd.</para>
+          </listitem>
 
-        <listitem>
-          <para>It's method of determining whether an interface is up or down
-          is crude. You will normally specify the default gateway for each
-          provider as the sites to ping and being able to ping the default
-          gateway is not a surefire indication that the provider is usable.
-          The method of determining whether a site is up or down is also
-          crude.</para>
-        </listitem>
+          <listitem>
+            <para>It's method of determining whether an interface is up or
+            down is crude. You will normally specify the default gateway for
+            each provider as the sites to ping and being able to ping the
+            default gateway is not a surefire indication that the provider is
+            usable. The method of determining whether a site is up or down is
+            also crude.</para>
+          </listitem>
 
-        <listitem>
-          <para>Because of the crudeness of the algorithm, hysteresis may
-          occur.</para>
-        </listitem>
+          <listitem>
+            <para>Because of the crudeness of the algorithm, hysteresis may
+            occur.</para>
+          </listitem>
 
-        <listitem>
-          <para>It is tricky to configure a system such that the system works
-          correctly when one of its providers is down unless you largely don't
-          care which interface is used.</para>
-        </listitem>
-      </orderedlist>
+          <listitem>
+            <para>It is tricky to configure a system such that the system
+            works correctly when one of its providers is down unless you
+            largely don't care which interface is used.</para>
+          </listitem>
+        </orderedlist>
+      </section>
+
+      <section id="lsm">
+        <title>Link Status Monitor (LSM)</title>
+
+        <para><ulink url="http://lsm.foobar.fi/">Link Status Monitor</ulink>
+        was written by Mika Ilmaranta &lt;ilmis at nullnet.fi&gt; and performs
+        more sophisticated monitoring than the simple swping script described
+        in the preceding section.</para>
+
+        <para>I personally use LSM here at shorewall.net. Here are my relevant
+        configuration files:</para>
+
+        <para><filename>/etc/shorewall/isusable</filename>:</para>
+
+        <programlisting>local status
+status=0
+
+case $1 in
+    eth0|eth3)
+        [ -f /etc/shorewall/${1}.status ] &amp;&amp; status=$(cat /etc/shorewall/${1}.status)
+        ;;
+esac
+
+return $status</programlisting>
+
+        <para><filename>/etc/shorewall/started</filename>:</para>
+
+        <programlisting>###############################################################################
+# My 'restored' script calls this one if there is no lsm process running
+###############################################################################
+if [ "$COMMAND" = start -o "$COMMAND" = restore ]; then
+   killproc lsm 2&gt; /dev/null
+   cat &lt;&lt;EOF &gt; /etc/lsm/shorewall.conf
+connection {
+    name=Avvanta
+    checkip=206.124.146.254
+    device=eth0
+    ttl=2
+}
+
+connection {
+    name=Comcast
+    checkip=$ETH3_GATEWAY
+    device=eth3
+    ttl=1
+}
+EOF
+   rm -f /etc/shorewall/*.status
+   /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
+fi</programlisting>
+
+        <para>eth3 has a dynamic IP address so I need to use the
+        Shorewall-detected gateway address ($ETH3_GATEWAY).</para>
+
+        <para><filename>/etc/shorewall/restored</filename>:</para>
+
+        <programlisting>if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
+   run_started_exit
+fi</programlisting>
+
+        <para><filename>/etc/lsm/lsm.conf</filename>:</para>
+
+        <programlisting>#
+# Defaults for the connection entries
+#
+defaults {
+  name=defaults
+  checkip=127.0.0.1
+  eventscript=/etc/lsm/script
+  max_packet_loss=20
+  max_successive_pkts_lost=7
+  min_packet_loss=5
+  min_successive_pkts_rcvd=10
+  interval_ms=2000
+  timeout_ms=2000
+  warn_email=teastep@shorewall.net
+  check_arp=0
+  sourceip=
+  device=eth0
+  ttl=64
+}
+
+include /etc/lsm/shorewall.conf</programlisting>
+
+        <para><filename>/etc/lsm/script</filename><programlisting>#!/bin/sh
+#
+# (C) 2009 Mika Ilmaranta &lt;ilmis@nullnet.fi&gt;
+# (C) 2009 Tom Eastep &lt;teastep@shorewall.net&gt;
+#
+# License: GPLv2
+#
+
+STATE=${1}
+NAME=${2}
+CHECKIP=${3}
+DEVICE=${4}
+WARN_EMAIL=${5}
+REPLIED=${6}
+WAITING=${7}
+TIMEOUT=${8}
+REPLY_LATE=${9}
+CONS_RCVD=${10}
+CONS_WAIT=${11}
+CONS_MISS=${12}
+AVG_RTT=${13}
+
+cat &lt;&lt;EOM | mail -s "${NAME} ${STATE}, DEV ${DEVICE}" ${WARN_EMAIL}
+
+Hi,
+
+Connection ${NAME} is now ${STATE}.
+
+Following parameters were passed:
+newstate     = ${STATE}
+name         = ${NAME}
+checkip      = ${CHECKIP}
+device       = ${DEVICE}
+warn_email   = ${WARN_EMAIL}
+
+Packet counters:
+replied      = ${REPLIED} packets replied
+waiting      = ${WAITING} packets waiting for reply
+timeout      = ${TIMEOUT} packets that have timed out (= packet loss)
+reply_late   = ${REPLY_LATE} packets that received a reply after timeout
+cons_rcvd    = ${CONS_RCVD} consecutively received replies in sequence
+cons_wait    = ${CONS_WAIT} consecutive packets waiting for reply
+cons_miss    = ${CONS_MISS} consecutive packets that have timed out
+avg_rtt      = ${AVG_RTT} average rtt, notice that waiting and timed out packets have rtt = 0 when calculating this
+
+Your LSM Daemon
+
+EOM
+
+[ ${STATE} = up ] &amp;&amp; state=0 || state=1
+
+echo $state &gt; /etc/shorewall/${DEVICE}.status
+
+/sbin/shorewall -f restart &gt;&gt; /var/log/lsm 2&gt;&amp;1
+
+/sbin/shorewall show routing &gt;&gt; /var/log/lsm
+
+exit 0;
+
+#EOF</programlisting>:</para>
+      </section>
     </section>
 
     <section id="Shared">

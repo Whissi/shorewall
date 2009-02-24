@@ -602,42 +602,43 @@ sub validate_interfaces_file( $ )
 		   OBSOLETE_IF_OPTION => 5,
 		   IPLIST_IF_OPTION   => 6,
 	           MASK_IF_OPTION     => 7,
-	           IF_OPTION_ZONEONLY => 8 };
+	           IF_OPTION_ZONEONLY => 8,
+	           IF_OPTION_HOST     => 16};
 
     my %validoptions;
 
     if ( $family == F_IPV4 ) {
 	%validoptions = (arp_filter  => BINARY_IF_OPTION,
 			 arp_ignore  => ENUM_IF_OPTION,
-			 blacklist   => SIMPLE_IF_OPTION,
+			 blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			 bridge      => SIMPLE_IF_OPTION,
 			 detectnets  => OBSOLETE_IF_OPTION,
 			 dhcp        => SIMPLE_IF_OPTION,
-			 maclist     => SIMPLE_IF_OPTION,
+			 maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			 logmartians => BINARY_IF_OPTION,
 			 nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
-			 norfc1918   => SIMPLE_IF_OPTION,
-			 nosmurfs    => SIMPLE_IF_OPTION,
+			 norfc1918   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+			 nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			 optional    => SIMPLE_IF_OPTION,
 			 proxyarp    => BINARY_IF_OPTION,
-			 routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
-			 routefilter => BINARY_IF_OPTION,
+			 routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
+			 routefilter => BINARY_IF_OPTION + IF_OPTION_HOST,
 			 sourceroute => BINARY_IF_OPTION,
-			 tcpflags    => SIMPLE_IF_OPTION,
+			 tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			 upnp        => SIMPLE_IF_OPTION,
 			 mss         => NUMERIC_IF_OPTION,
 			);
     } else {
-	%validoptions = (  blacklist   => SIMPLE_IF_OPTION,
+	%validoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			   bridge      => SIMPLE_IF_OPTION,
 			   dhcp        => SIMPLE_IF_OPTION,
-			   maclist     => SIMPLE_IF_OPTION,
+			   maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			   nosmurfs    => SIMPLE_IF_OPTION,
 			   optional    => SIMPLE_IF_OPTION,
 			   proxyndp    => BINARY_IF_OPTION,
- 			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY,
+ 			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
 			   sourceroute => BINARY_IF_OPTION,
-			   tcpflags    => SIMPLE_IF_OPTION,
+			   tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			   mss         => NUMERIC_IF_OPTION,
 			   forward     => NUMERIC_IF_OPTION,
 			  );
@@ -735,8 +736,10 @@ sub validate_interfaces_file( $ )
 	}
 
 	my $optionsref = {};
+	my $hostoptionsref = {};
 
 	my %options;
+	my %hostoptions;
 
 	if ( $options ) {
 
@@ -749,16 +752,20 @@ sub validate_interfaces_file( $ )
 
 		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
 
+		my $hostopt = $type & IF_OPTION_HOST;
+
 		$type &= MASK_IF_OPTION;
 
 		if ( $type == SIMPLE_IF_OPTION ) {
 		    fatal_error "Option $option does not take a value" if defined $value;
 		    $options{$option} = 1;
+		    $hostoptions{$option} = 1 if $hostopt;
 		} elsif ( $type == BINARY_IF_OPTION ) {
 		    $value = 1 unless defined $value;
 		    fatal_error "Option value for $option must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
 		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
 		    $options{$option} = $value;
+		    $hostoptions{$option} = $value if $hostopt;
 		} elsif ( $type == ENUM_IF_OPTION ) {
 		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
 		    if ( $option eq 'arp_ignore' ) {
@@ -779,13 +786,26 @@ sub validate_interfaces_file( $ )
 		    my $numval = numeric_value $value;
 		    fatal_error "Invalid value ($value) for option $option" unless defined $numval;
 		    $options{$option} = $numval;
+		    $hostoptions{$option} = $numval if $hostopt;
 		} elsif ( $type == IPLIST_IF_OPTION ) {
 		    fatal_error "The $option option requires a value" unless defined $value;
 		    fatal_error "Duplicate $option option" if $nets;
+		    #
+		    # Remove parentheses from address list if present
+		    #
 		    $value =~ s/\)$// if $value =~ s/^\(//;
+		    #
+		    # Add all IP to the front of a list if the list begins with '!'
+		    #
 		    $value = join ',' , ALLIP , $value if $value =~ /^!/;
+		    #
+		    # Convert into a Perl array
+		    #
 		    $nets = [ split_list $value, 'address' ];
-		    $options{broadcast} = 1;
+		    #
+		    # Assume 'broadcast'
+		    #
+		    $hostoptions{broadcast} = 1;
 		} else {
 		    warning_message "Support for the $option interface option has been removed from Shorewall-perl";
 		}
@@ -802,6 +822,7 @@ sub validate_interfaces_file( $ )
 	}
 
 	$optionsref = \%options;
+	$hostoptionsref = \%hostoptions;
 
 	$interfaces{$interface} = { name       => $interface ,
 				    bridge     => $bridge ,
@@ -815,7 +836,7 @@ sub validate_interfaces_file( $ )
 
 	$nets = [ allip ] unless $nets; 
 
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $optionsref ) if $zone;
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref ) if $zone;
 
     	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

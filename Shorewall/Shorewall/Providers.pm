@@ -33,7 +33,7 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers @routemarked_interfaces);
+our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = 4.2.4;
 
@@ -101,18 +101,21 @@ sub setup_route_marking() {
     add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
     add_rule $mangle_table->{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
 
-    my $chainref = new_chain 'mangle', 'routemark';
+    my $chainref  = new_chain 'mangle', 'routemark';
+    my $chainref1 = new_chain 'mangle', 'stickymark';
 
     my %marked_interfaces;
 
     for my $providerref ( @routemarked_providers ) {
 	my $interface = $providerref->{interface};
+	my $mark      = $providerref->{mark};
 	my $base      = uc chain_base $interface;
 
 	add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
+	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "-i ! $interface -m mark --mark  $mark/$mask ";
 	    $marked_interfaces{$interface} = 1;
 	}
 
@@ -752,6 +755,52 @@ sub lookup_provider( $ ) {
 
 
     $providerref->{shared} ? $providerref->{number} : 0;
+}
+
+#
+# The Tc module has collected the 'sticky' rules in the 'sticky' chain. In this function, we apply them
+# to the 'tracked' providers
+#
+sub handle_stickiness() {
+    my $stickyref     = $mangle_table->{sticky};
+    my $stickymarkref = $mangle_table->{stickymark};
+    my $tcpreref      = $mangle_table->{tcpre};
+    my @rules         = purge_rules $stickyref;
+    my %marked_interfaces;
+    my $sticky = 1;
+
+    fatal_error "There are STICKY tcrules but no 'track' providers" unless @routemarked_providers;
+
+    for my $providerref ( @routemarked_providers ) {
+	my $interface = $providerref->{interface};
+	my $base      = uc chain_base $interface;
+	my $mark      = $providerref->{mark};
+	
+	for my $rule ( @rules ) {
+	    my $rule1;
+	    my $list = sprintf "sticky%03d" , $sticky++;
+
+	    $rule =~ s/-A //;
+
+	    for my $chainref ( $tcpreref, $stickymarkref ) {
+
+		add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+
+		if ( $chainref->{name} eq 'tcpre' ) {
+		    $rule1 = $rule;
+		    $rule1 =~ s/-j RETURN/-m recent --name $list --update --seconds 120 -j MARK --set-mark $mark/;
+		} else {
+		    $rule1 = $rule;
+		    $rule1 =~ s/-j RETURN/-m mark --mark $mark -m recent --name $list --set/;
+		}
+		
+		add_rule $chainref, $rule1;
+
+		decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
+	    
+	    }
+	}
+    }
 }
 
 1;

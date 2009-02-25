@@ -735,14 +735,14 @@ sub validate_interfaces_file( $ )
 	    }
 	}
 
-	my $optionsref = {};
-	my $hostoptionsref = {};
-
 	my %options;
-	my %hostoptions;
+
+	my $hostoptionsref = {};
 
 	if ( $options ) {
 
+	    my %hostoptions;
+	    
 	    for my $option (split_list1 $options, 'option' ) {
 		next if $option eq '-';
 
@@ -817,12 +817,12 @@ sub validate_interfaces_file( $ )
 		require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 		fatal_error "Bridges may not have wildcard names" if $wildcard;
 	    }
+
+	    $hostoptionsref = \%hostoptions;
+
 	} elsif ( $port ) {
 	    $options{port} = 1;
 	}
-
-	$optionsref = \%options;
-	$hostoptionsref = \%hostoptions;
 
 	$interfaces{$interface} = { name       => $interface ,
 				    bridge     => $bridge ,
@@ -830,7 +830,7 @@ sub validate_interfaces_file( $ )
 				    number     => ++$num ,
 				    root       => $root ,
 				    broadcasts => $broadcasts ,
-				    options    => $optionsref };
+				    options    => \%options };
 
 	push @ifaces, $interface;
 

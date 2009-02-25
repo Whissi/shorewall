@@ -97,6 +97,12 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		mask      => '' ,
 		connmark  => 0
 		} ,
+	      { match     => sub ( $ ) { $_[0] eq 'SAME' },
+		target    => 'sticky' ,
+		mark      => NOMARK ,
+		mask      => '' ,
+		connmark  => 0
+		} ,
 	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
 		target    => 'MARK --or-mark' ,
 		mark      => HIGHMARK ,
@@ -149,6 +155,7 @@ our @tcdevices;
 our %tcdevices;
 our @devnums;
 our $devnum;
+our $sticky;
 
 
 #
@@ -171,7 +178,8 @@ our %tcclasses;
 our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
-		      tcout      => OUTPUT_RESTRICT );
+		      tcout      => OUTPUT_RESTRICT ,
+		      sticky     => PREROUTE_RESTRICT );
 
 our $family;
 
@@ -194,6 +202,7 @@ sub initialize( $ ) {
     %tcclasses = ();
     @devnums   = ();
     $devnum = 0;
+    $sticky = 0;
 }
 
 INIT {
@@ -214,6 +223,7 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
     my $classid  = 0;
     my $device   = '';
     my $fw       = firewall_zone;
+    my $list;
 
     if ( $source ) {
 	if ( $source eq $fw ) {
@@ -256,6 +266,8 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 
     my ($cmd, $rest) = split( '/', $mark, 2 );
 
+    $list = '';
+
     unless ( $classid ) {
       MARK:
 	{
@@ -272,6 +284,11 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 			$mark = ''
 		    } else {
 			$mark =~ s/^[|&]//;
+		    }
+
+		    if ( $target eq 'sticky ' ) {
+			$target = 'RETURN';
+			$chain  = 'sticky';
 		    }
 
 		    if ( $rest ) {
@@ -904,6 +921,7 @@ sub setup_tc() {
     if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
+	new_chain 'mangle', 'sticky';
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
 	    ensure_mangle_chain 'tcfor';
@@ -965,6 +983,10 @@ sub setup_tc() {
 
     for ( @deferred_rules ) {
 	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
+    }
+
+    if ( $mangle_table->{sticky}{referenced} ) {
+	handle_stickiness;
     }
 }
 

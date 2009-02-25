@@ -758,7 +758,7 @@ sub lookup_provider( $ ) {
 }
 
 #
-# The Tc module has collected the 'sticky' rules in the 'sticky' chain. In this function, we apply them
+# The Tc module has collected the 'sticky' rules in the 'tcpre' chain. In this function, we apply them
 # to the 'tracked' providers
 #
 sub handle_stickiness() {

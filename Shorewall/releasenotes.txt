@@ -78,3 +78,22 @@ New Features in Shorewall 4.4
 
     Note that the 'broadcast' option is automatically assumed and need
     not be explicitly specified.
+
+3)  Some websites run applications that require multiple connections
+    from a client browser. Where multiple 'balanced' providers are
+    configured, this can lead to problems when some of the connections
+    are routed through one provider and some through another.
+
+    To work around this issue, the SAME target has been added to
+    /etc/shorewall/tcrules. SAME may currently be used only in the
+    PREROUTING chain and causes matching connections from an individual
+    local system to all use the same provider.
+
+    For example:
+
+    	SAME:P	192.168.1.0/24	-	tcp	80,443
+
+    If a host in 192.168.1.0/24 attempts a connection on TCP port 80 or
+    443 and it has sent a packet on either of those ports in the last
+    two minutes then the new connection will use the same provider as
+    the connection over which that last packet was sent.

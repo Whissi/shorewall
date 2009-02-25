@@ -764,6 +764,7 @@ sub lookup_provider( $ ) {
 # to the 'tracked' providers
 #
 sub handle_stickiness() {
+    my $mask         = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
     my $setstickyref = $mangle_table->{setsticky};
     my $setstickoref = $mangle_table->{setsticko};
     my $tcpreref     = $mangle_table->{tcpre};
@@ -773,7 +774,6 @@ sub handle_stickiness() {
 
     fatal_error "There are SAME tcrules but no 'track' providers" unless @routemarked_providers;
 
-
     for my $providerref ( @routemarked_providers ) {
 	my $interface = $providerref->{interface};
 	my $base      = uc chain_base $interface;
@@ -781,7 +781,7 @@ sub handle_stickiness() {
 	
 	for ( grep /-j sticky/, @{$tcpreref->{rules}} ) {
 	    my $stickyref = ensure_mangle_chain 'sticky';
-	    my $rule1;
+	    my ( $rule1, $rule2 );
 	    my $list = sprintf "sticky%03d" , $sticky++;
 
 	    for my $chainref ( $stickyref, $setstickyref ) {
@@ -791,14 +791,21 @@ sub handle_stickiness() {
 		if ( $chainref->{name} eq 'sticky' ) {
 		    $rule1 = $_;
 		    $rule1 =~ s/-j sticky/-m recent --name $list --update --seconds 300 -j MARK --set-mark $mark/;
+		    $rule2 = $_;
+		    $rule2 =~ s/-j sticky/-m mark --mark 0\/$mask -m recent --name $list --remove/;
 		} else {
 		    $rule1 = $_;
-		    $rule1 =~ s/-j sticky/-m mark --mark $mark -m recent --name $list --set/;
+		    $rule1 =~ s/-j sticky/-m mark --mark $mark\/$mask -m recent --name $list --set/;
 		}
 		
 		$rule1 =~ s/-A //;
 
 		add_rule $chainref, $rule1;
+
+		if ( $rule2 ) {
+		    $rule2 =~ s/-A //;
+		    add_rule $chainref, $rule2;
+		}
 
 		decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
 	    
@@ -806,17 +813,18 @@ sub handle_stickiness() {
 	}
 
 	for ( grep /-j sticko/, @{$tcoutref->{rules}} ) {
-	    my $rule1;
+	    my ( $rule1, $rule2 );
 	    my $list = sprintf "sticky%03d" , $sticky++;
 	    my $stickoref = ensure_mangle_chain 'sticko';
 
 	    for my $chainref ( $stickoref, $setstickoref ) {
-
 		add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 		if ( $chainref->{name} eq 'sticko' ) {
 		    $rule1 = $_;
 		    $rule1 =~ s/-j sticko/-m recent --name $list --rdest --update --seconds 300 -j MARK --set-mark $mark/;
+		    $rule2 = $_;
+		    $rule2 =~ s/-j sticko/-m mark --mark 0\/$mask -m recent --name $list --rdest --remove/;
 		} else {
 		    $rule1 = $_;
 		    $rule1 =~ s/-j sticko/-m mark --mark $mark -m recent --name $list --rdest --set/;
@@ -826,8 +834,12 @@ sub handle_stickiness() {
 
 		add_rule $chainref, $rule1;
 
+		if ( $rule2 ) {
+		    $rule2 =~ s/-A //;
+		    add_rule $chainref, $rule2;
+		}
+
 		decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
-	    
 	    }
 	}
     }

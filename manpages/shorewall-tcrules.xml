@@ -49,7 +49,7 @@
         role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
         role="bold">SAVE</emphasis>[<emphasis
         role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">CONTINUE</emphasis>|SAME|<emphasis
         role="bold">COMMENT</emphasis>}[<emphasis
         role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
         role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
@@ -232,6 +232,25 @@
               with <emphasis>exclusion</emphasis> (see the SOURCE and DEST
               columns below); that restriction will be removed when
               iptables/Netfilter provides the necessary support.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">SAME</emphasis> (Added in Shorewall
+              4.3.5) -- Some websites run applications that require multiple
+              connections from a client browser. Where multiple 'balanced'
+              providers are configured, this can lead to problems when some of
+              the connections are routed through one provider and some through
+              another. The SAME target allows you to work around that problem.
+              SAME may currently be used only in the PREROUTING chain and
+              causes matching connections from an individual local system to
+              all use the same provider. For example: <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
+#CLASSIFY                                                PORT(S)
+SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
+              If a host in 192.168.1.0/24 attempts a connection on TCP port 80
+              or 443 and it has sent a packet on either of those ports in the
+              last two minutes then the new connection will use the same
+              provider as the connection over which that last packet was sent.
+              </para>
             </listitem>
 
             <listitem>

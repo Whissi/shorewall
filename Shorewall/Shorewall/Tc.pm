@@ -178,8 +178,7 @@ our %tcclasses;
 our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
-		      tcout      => OUTPUT_RESTRICT ,
-		      sticky     => PREROUTE_RESTRICT );
+		      tcout      => OUTPUT_RESTRICT );
 
 our $family;
 
@@ -287,8 +286,8 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 		    }
 
 		    if ( $target eq 'sticky ' ) {
-			$target = 'RETURN';
-			$chain  = 'sticky';
+			fatal_error "SAME rules are only allowed in the PREROUTING chain" if $chain ne 'tcpre';
+			$sticky++;
 		    }
 
 		    if ( $rest ) {
@@ -921,7 +920,6 @@ sub setup_tc() {
     if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
-	new_chain 'mangle', 'sticky';
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
 	    ensure_mangle_chain 'tcfor';
@@ -985,9 +983,7 @@ sub setup_tc() {
 	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
     }
 
-    if ( $mangle_table->{sticky}{referenced} ) {
-	handle_stickiness;
-    }
+    handle_stickiness if $sticky;
 }
 
 1;

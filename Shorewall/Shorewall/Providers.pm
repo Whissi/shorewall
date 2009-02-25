@@ -102,7 +102,7 @@ sub setup_route_marking() {
     add_rule $mangle_table->{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
 
     my $chainref  = new_chain 'mangle', 'routemark';
-    my $chainref1 = new_chain 'mangle', 'stickymark';
+    my $chainref1 = new_chain 'mangle', 'setsticky';
 
     my %marked_interfaces;
 
@@ -762,38 +762,38 @@ sub lookup_provider( $ ) {
 # to the 'tracked' providers
 #
 sub handle_stickiness() {
-    my $stickyref     = $mangle_table->{sticky};
-    my $stickymarkref = $mangle_table->{stickymark};
-    my $tcpreref      = $mangle_table->{tcpre};
-    my @rules         = purge_rules $stickyref;
+    my $setstickyref = $mangle_table->{setsticky};
+    my $tcpreref     = $mangle_table->{tcpre};
     my %marked_interfaces;
     my $sticky = 1;
 
-    fatal_error "There are STICKY tcrules but no 'track' providers" unless @routemarked_providers;
+    fatal_error "There are SAME tcrules but no 'track' providers" unless @routemarked_providers;
+
+    my $stickyref = ensure_mangle_chain 'sticky';
 
     for my $providerref ( @routemarked_providers ) {
 	my $interface = $providerref->{interface};
 	my $base      = uc chain_base $interface;
 	my $mark      = $providerref->{mark};
 	
-	for my $rule ( @rules ) {
+	for ( grep /-j sticky/, @{$tcpreref->{rules}} ) {
 	    my $rule1;
 	    my $list = sprintf "sticky%03d" , $sticky++;
 
-	    $rule =~ s/-A //;
-
-	    for my $chainref ( $tcpreref, $stickymarkref ) {
+	    for my $chainref ( $stickyref, $setstickyref ) {
 
 		add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
-		if ( $chainref->{name} eq 'tcpre' ) {
-		    $rule1 = $rule;
-		    $rule1 =~ s/-j RETURN/-m recent --name $list --update --seconds 120 -j MARK --set-mark $mark/;
+		if ( $chainref->{name} eq 'sticky' ) {
+		    $rule1 = $_;
+		    $rule1 =~ s/-j sticky/-m recent --name $list --update --seconds 120 -j MARK --set-mark $mark/;
 		} else {
-		    $rule1 = $rule;
-		    $rule1 =~ s/-j RETURN/-m mark --mark $mark -m recent --name $list --set/;
+		    $rule1 = $_;
+		    $rule1 =~ s/-j sticky/-m mark --mark $mark -m recent --name $list --set/;
 		}
 		
+		$rule1 =~ s/-A //;
+
 		add_rule $chainref, $rule1;
 
 		decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};

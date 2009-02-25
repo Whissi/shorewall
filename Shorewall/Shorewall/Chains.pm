@@ -72,7 +72,6 @@ our %EXPORT_TAGS = (
 				       add_command
 				       add_commands
 				       move_rules
-				       purge_rules
 				       insert_rule1
 				       add_tunnel_rule
 				       process_comment
@@ -664,17 +663,6 @@ sub move_rules( $$ ) {
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
     }
-}
-
-#
-# Purge the rules from the passed chain are return them
-#
-sub purge_rules( $ ) {
-    my $chainref = shift;
-    my @rules = @{$chainref->{rules}};
-    $chainref->{rules} = [];
-    $chainref->{referenced} = 0;
-    @rules;
 }
 
 #

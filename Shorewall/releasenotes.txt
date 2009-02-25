@@ -85,9 +85,10 @@ New Features in Shorewall 4.4
     are routed through one provider and some through another.
 
     To work around this issue, the SAME target has been added to
-    /etc/shorewall/tcrules. SAME may currently be used only in the
-    PREROUTING chain and causes matching connections from an individual
-    local system to all use the same provider.
+    /etc/shorewall/tcrules. SAME may be used in the PREROUTING and
+    OUTPUT chains. When used in PREROUTING, it causes matching
+    connections from an individual local system to all use the same
+    provider.
 
     For example:
 
@@ -95,5 +96,18 @@ New Features in Shorewall 4.4
 
     If a host in 192.168.1.0/24 attempts a connection on TCP port 80 or
     443 and it has sent a packet on either of those ports in the last
-    two minutes then the new connection will use the same provider as
+    five minutes then the new connection will use the same provider as
     the connection over which that last packet was sent.
+
+    When used in the OUTPUT chain, it causes all matching connections
+    to an individual remote system to all use the same provider.
+
+    For example:
+
+    	SAME	$FW	-	tcp	80,443
+
+    If the firewall attempts a connection on TCP port 80 or
+    443 and it has sent a packet on either of those ports in the last
+    five minutes to the same remote system then the new connection will
+    use the same provider as the connection over which that last packet
+    was sent.

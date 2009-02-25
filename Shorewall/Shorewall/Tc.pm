@@ -286,7 +286,12 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 		    }
 
 		    if ( $target eq 'sticky ' ) {
-			fatal_error "SAME rules are only allowed in the PREROUTING chain" if $chain ne 'tcpre';
+			if ( $chain eq 'tcout' ) {
+			    $target = 'sticko';
+			} else {
+			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
+			}
+
 			$sticky++;
 		    }
 

@@ -103,6 +103,7 @@ sub setup_route_marking() {
 
     my $chainref  = new_chain 'mangle', 'routemark';
     my $chainref1 = new_chain 'mangle', 'setsticky';
+    my $chainref2 = new_chain 'mangle', 'setsticko';
 
     my %marked_interfaces;
 
@@ -116,6 +117,7 @@ sub setup_route_marking() {
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
 	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "-i ! $interface -m mark --mark  $mark/$mask ";
+	    add_jump $mangle_table->{OUTPUT}     , $chainref2, 0, "-m mark --mark  $mark/$mask ";
 	    $marked_interfaces{$interface} = 1;
 	}
 
@@ -763,13 +765,14 @@ sub lookup_provider( $ ) {
 #
 sub handle_stickiness() {
     my $setstickyref = $mangle_table->{setsticky};
+    my $setstickoref = $mangle_table->{setsticko};
     my $tcpreref     = $mangle_table->{tcpre};
+    my $tcoutref     = $mangle_table->{tcout};
     my %marked_interfaces;
     my $sticky = 1;
 
     fatal_error "There are SAME tcrules but no 'track' providers" unless @routemarked_providers;
 
-    my $stickyref = ensure_mangle_chain 'sticky';
 
     for my $providerref ( @routemarked_providers ) {
 	my $interface = $providerref->{interface};
@@ -777,6 +780,7 @@ sub handle_stickiness() {
 	my $mark      = $providerref->{mark};
 	
 	for ( grep /-j sticky/, @{$tcpreref->{rules}} ) {
+	    my $stickyref = ensure_mangle_chain 'sticky';
 	    my $rule1;
 	    my $list = sprintf "sticky%03d" , $sticky++;
 
@@ -786,10 +790,36 @@ sub handle_stickiness() {
 
 		if ( $chainref->{name} eq 'sticky' ) {
 		    $rule1 = $_;
-		    $rule1 =~ s/-j sticky/-m recent --name $list --update --seconds 120 -j MARK --set-mark $mark/;
+		    $rule1 =~ s/-j sticky/-m recent --name $list --update --seconds 300 -j MARK --set-mark $mark/;
 		} else {
 		    $rule1 = $_;
 		    $rule1 =~ s/-j sticky/-m mark --mark $mark -m recent --name $list --set/;
+		}
+		
+		$rule1 =~ s/-A //;
+
+		add_rule $chainref, $rule1;
+
+		decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
+	    
+	    }
+	}
+
+	for ( grep /-j sticko/, @{$tcoutref->{rules}} ) {
+	    my $rule1;
+	    my $list = sprintf "sticky%03d" , $sticky++;
+	    my $stickoref = ensure_mangle_chain 'sticko';
+
+	    for my $chainref ( $stickoref, $setstickoref ) {
+
+		add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+
+		if ( $chainref->{name} eq 'sticko' ) {
+		    $rule1 = $_;
+		    $rule1 =~ s/-j sticko/-m recent --name $list --rdest --update --seconds 300 -j MARK --set-mark $mark/;
+		} else {
+		    $rule1 = $_;
+		    $rule1 =~ s/-j sticko/-m mark --mark $mark -m recent --name $list --rdest --set/;
 		}
 		
 		$rule1 =~ s/-A //;

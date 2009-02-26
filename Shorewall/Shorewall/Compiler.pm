@@ -111,6 +111,10 @@ sub generate_script_1() {
 	   'initialize()',
 	   '{',
 	   '    #',
+	   '    # Be sure that umask is sane',
+	   '    #',
+	   '    umask 077',
+	   '    #',
 	   '    # These variables are required by the library functions called in this script',
 	   '    #'
 	   );

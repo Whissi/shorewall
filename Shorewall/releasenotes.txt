@@ -1,4 +1,7 @@
-Shorewall 4.3.5
+Shorewall 4.3.6
+
+Shorewall 4.3 is the development thread for Shorewall 4.4 which will be
+released late in 2009.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -11,15 +14,32 @@ Shorewall 4.3.5
 2) The interfaces file OPTIONs have been extended to largely remove the
    need for the hosts file.  
 
-Problems corrected in 4.3.5
+Problems corrected in 4.3.6
 
-None.
+1)  The shorewall6 dump command now correctly displays the installed
+    Shorewall version.
+  
+2)   Previously, the 'start' command set the permission flags on
+    /var/lib/shorewall*/state so that it could be read by
+    non-root users while the 'stop' command set the permissions such
+    that the file could not be read by those users.
+
+    Beginning with 4.3.6, both commands will secure the file for
+    root-only access. If you want the file to be world-readable, then
+    add 
+
+    	chmod 744 /var/lib/shorewall*/state
+
+    To your /etc/shorewall*/started, /etc/shorewall*/stopped and
+    /etc/shorewall*/restored files.
 
 Known Problems Remaiining:
 
 None.
 
-New Features in Shorewall 4.3.5
+New Features in Shorewall 4.3.6
+
+None.
 
 New Features in Shorewall 4.4
 

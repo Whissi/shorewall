@@ -640,6 +640,9 @@ dump_command() {
     heading "Mangle Table"
     $IP6TABLES -t mangle -L $IPT_OPTIONS
 
+    heading "Raw Table"
+    $IP6TABLES -t raw -L $IPT_OPTIONS
+
     heading "Conntrack Table"
     grep '^ipv6' /proc/net/nf_conntrack
 

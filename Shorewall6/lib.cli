@@ -624,14 +624,9 @@ dump_command() {
     clear_term
     echo "$PRODUCT $version Dump at $HOSTNAME - $(date)"
     echo
-    if [ -f /usr/share/shorewall6-shell/version ]; then
-	echo "   Shorewall6-shell $(cat /usr/share/shorewall6-shell/version)"
-	if [ -f /usr/share/shorewall6-perl/version ]; then
-	    echo "   Shorewall6-perl  $(cat /usr/share/shorewall6-perl/version)"
-	fi
-	echo 
-    elif [ -f /usr/share/shorewall6-perl/version ]; then
-	echo "   Shorewall6-perl $(cat /usr/share/shorewall6-perl/version)"
+
+    if [ -f /usr/share/shorewall/version ]; then
+	echo "   Shorewall $(cat /usr/share/shorewall/version)"
 	echo
     fi
     

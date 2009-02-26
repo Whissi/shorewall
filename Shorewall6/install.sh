@@ -162,8 +162,8 @@ if [ -n "$PREFIX" ]; then
 	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
     fi
 else
-    [ -x /usr/share/shorewall-perl/compiler.pl ] || \
-	{ echo "   ERROR: Shorewall-perl is not installed" >&2; exit 1; }
+    [ -x /usr/share/shorewall/compiler.pl ] || \
+	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
     if [ -z "$CYGWIN" ]; then
 	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
 	    DEBIAN=yes

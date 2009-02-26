@@ -2273,36 +2273,40 @@ sub expand_rule( $$$$$$$$$$$ )
     if ( $dest ) {
 	if ( $dest eq '-' ) {
 	    $dest = '';
-	} elsif ( ( $restriction & PREROUTE_RESTRICT ) && $dest =~ /^detect:(.*)$/ ) {
-	    #
-	    # DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
-	    #
-	    my @interfaces = split /\s+/, $1;
+	} elsif ( $restriction & PREROUTE_RESTRICT ) {
+	    if ( $dest =~ /^detect:(.*)$/ ) {
+		#
+		# DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
+		#
+		my @interfaces = split /\s+/, $1;
 
-	    if ( @interfaces > 1 ) {
-		my $list = "";
-		my $optional;
+		if ( @interfaces > 1 ) {
+		    my $list = "";
+		    my $optional;
+		    
+		    for my $interface ( @interfaces ) {
+			$optional++ if interface_is_optional $interface;
+			$list = join( ' ', $list , get_interface_address( $interface ) );
+		    }
 
-		for my $interface ( @interfaces ) {
-		    $optional++ if interface_is_optional $interface;
-		    $list = join( ' ', $list , get_interface_address( $interface ) );
+		    push_command( $chainref , "for address in $list; do" , 'done' );
+
+		    push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
+
+		    $rule .= '-d $address ';
+		} else {
+		    my $interface = $interfaces[0];
+		    my $variable  = get_interface_address( $interface );
+		    
+		    push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi') if interface_is_optional( $interface );
+
+		    $rule .= "-d $variable ";
 		}
 
-		push_command( $chainref , "for address in $list; do" , 'done' );
-
-		push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
-
-		$rule .= '-d $address ';
+		$dest = '';
 	    } else {
-		my $interface = $interfaces[0];
-		my $variable  = get_interface_address( $interface );
-
-		push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi') if interface_is_optional( $interface );
-
-		$rule .= "-d $variable ";
+		fatal_error "A DESTINATION interface may not be specified in this rule";
 	    }
-
-	    $dest = '';
 	} elsif ( $family == F_IPV4 ) { 
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;

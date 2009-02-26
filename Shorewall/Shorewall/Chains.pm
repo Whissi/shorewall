@@ -2273,40 +2273,36 @@ sub expand_rule( $$$$$$$$$$$ )
     if ( $dest ) {
 	if ( $dest eq '-' ) {
 	    $dest = '';
-	} elsif ( $restriction & PREROUTE_RESTRICT ) {
-	    if ( $dest =~ /^detect:(.*)$/ ) {
-		#
-		# DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
-		#
-		my @interfaces = split /\s+/, $1;
+	} elsif ( ( $restriction & PREROUTE_RESTRICT ) && $dest =~ /^detect:(.*)$/ ) {
+	    #
+	    # DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
+	    #
+	    my @interfaces = split /\s+/, $1;
 
-		if ( @interfaces > 1 ) {
-		    my $list = "";
-		    my $optional;
-		    
-		    for my $interface ( @interfaces ) {
-			$optional++ if interface_is_optional $interface;
-			$list = join( ' ', $list , get_interface_address( $interface ) );
-		    }
+	    if ( @interfaces > 1 ) {
+		my $list = "";
+		my $optional;
 
-		    push_command( $chainref , "for address in $list; do" , 'done' );
-
-		    push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
-
-		    $rule .= '-d $address ';
-		} else {
-		    my $interface = $interfaces[0];
-		    my $variable  = get_interface_address( $interface );
-		    
-		    push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi') if interface_is_optional( $interface );
-
-		    $rule .= "-d $variable ";
+		for my $interface ( @interfaces ) {
+		    $optional++ if interface_is_optional $interface;
+		    $list = join( ' ', $list , get_interface_address( $interface ) );
 		}
 
-		$dest = '';
+		push_command( $chainref , "for address in $list; do" , 'done' );
+
+		push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
+
+		$rule .= '-d $address ';
 	    } else {
-		fatal_error "A DESTINATION interface may not be specified in this rule";
+		my $interface = $interfaces[0];
+		my $variable  = get_interface_address( $interface );
+
+		push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi') if interface_is_optional( $interface );
+
+		$rule .= "-d $variable ";
 	    }
+
+	    $dest = '';
 	} elsif ( $family == F_IPV4 ) { 
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
@@ -2344,6 +2340,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	    #
 	    # ADDRESS 'detect' in the masq file.
 	    #
+	    fatal_error "A DEST interface may not be specified in this rule" unless $chainref->{table} eq 'nat';
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    push_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
@@ -2482,8 +2479,8 @@ sub expand_rule( $$$$$$$$$$$ )
     $dnets = ALLIP unless $dnets;
     $onets = ALLIP unless $onets;
 
-    fatal_error "Input interface may not be specified with a source IP address in the POSTROUTING chain"      if $restriction == POSTROUTE_RESTRICT && $iiface && $inets ne ALLIP;
-    fatal_error "Output interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && $dnets ne ALLIP;
+    fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && $inets ne ALLIP;
+    fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && $dnets ne ALLIP;
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#

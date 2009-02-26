@@ -2335,26 +2335,16 @@ sub expand_rule( $$$$$$$$$$$ )
     #
     if ( $diface ) {
 	fatal_error "Unknown Interface ($diface)" unless known_interface $diface;
+	fatal_error "A DEST interface may not be specified in this rule"               if $restriction & (PREROUTE_RESTRICT );
+	fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
+	fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
 
-	if ( $restriction & PREROUTE_RESTRICT ) {
-	    #
-	    # ADDRESS 'detect' in the masq file.
-	    #
-	    fatal_error "A DEST interface may not be specified in this rule" unless $chainref->{table} eq 'nat';
-	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
-	    push_command( $chainref , 'for dest in ' . get_interface_addresses( $diface) . '; do', 'done' );
-	    $rule .= '-d $dest ';
-	} else {
-	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
-	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
-
-	    if ( $iiface ) {
-		my $bridge = port_to_bridge( $diface );
-		fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
-	    }
-
-	    $rule .= match_dest_dev( $diface );
+	if ( $iiface ) {
+	    my $bridge = port_to_bridge( $diface );
+	    fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
 	}
+	
+	$rule .= match_dest_dev( $diface );
     } else {
 	$diface = '';
     }

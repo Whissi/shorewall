@@ -1172,15 +1172,18 @@ sub split_list1( $$ ) {
     my $element = '';
 
     for ( @list1 ) {
-	if ( /\(/ ) {
-	    fatal_error "Invalid $type list ($list)" if $element;
-	    if ( /\)/ ) {
+	my $count;
+
+	if ( ( $count = tr/(/(/ ) > 0 ) {
+	    fatal_error "Invalid $type list ($list)" if $element || $count > 1;
+	    if ( ( $count = tr/)/)/ ) > 0 ) {
+		fatal_error "Invalid $type list ($list)" if $count > 1;
 		push @list2 , $_;
 	    } else {
 		$element = $_;
 	    }
-	} elsif ( /\)$/ ) {
-	    fatal_error "Invalid $type list ($list)" unless $element;
+	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
+	    fatal_error "Invalid $type list ($list)" unless $element && $count == 1;
 	    push @list2, join ',', $element, $_;
 	    $element = '';
 	} elsif ( $element ) {

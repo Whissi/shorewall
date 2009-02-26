@@ -1174,7 +1174,11 @@ sub split_list1( $$ ) {
     for ( @list1 ) {
 	if ( /\(/ ) {
 	    fatal_error "Invalid $type list ($list)" if $element;
-	    $element = $_;
+	    if ( /\)/ ) {
+		push @list2 , $_;
+	    } else {
+		$element = $_;
+	    }
 	} elsif ( /\)$/ ) {
 	    fatal_error "Invalid $type list ($list)" unless $element;
 	    push @list2, join ',', $element, $_;

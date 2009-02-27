@@ -73,6 +73,7 @@ our %EXPORT_TAGS = (
 				       add_commands
 				       move_rules
 				       insert_rule1
+				       purge_jump
 				       add_tunnel_rule
 				       process_comment
 				       no_comment
@@ -600,6 +601,21 @@ sub add_jump( $$$;$ ) {
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
     add_rule ($fromref, join( '', $predicate, "-$param $to" ) );
+}
+
+#
+# Purge a jump previously added via add_jump. If the target chain is empty, reset its 
+# referenced flag
+#
+sub purge_jump ( $$ ) {
+    my ( $fromref, $toref ) = @_;
+    my $to = $toref->{name};
+
+    for ( @{$fromref->{rules}} ) {
+	$_ = undef, last if / -j ${to}\b/;
+    }
+	
+    $toref->{referenced} = 0 unless @{$toref->{rules}};
 }
 
 #
@@ -2773,7 +2789,7 @@ sub create_netfilter_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr $chainref->{name}, $_ for ( @{$chainref->{rules}} );
+	    emitr $chainref->{name}, $_ for ( grep defined $_, @{$chainref->{rules}} );
 	}
 	#
 	# Commit the changes to the table
@@ -2885,7 +2901,7 @@ sub create_chainlist_reload($) {
 		#
 		# Emit the chain rules
 		#
-		emitr $chain, $_ for ( @rules );
+		emitr $chain, $_ for ( grep defined $_, @rules );
 	    }
 	    #
 	    # Commit the changes to the table

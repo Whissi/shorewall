@@ -988,7 +988,7 @@ sub setup_tc() {
 	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
     }
 
-    handle_stickiness if $sticky;
+    handle_stickiness( $sticky );
 }
 
 1;

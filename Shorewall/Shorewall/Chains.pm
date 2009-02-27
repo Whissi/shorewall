@@ -2161,7 +2161,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	$exceptionrule # Caller's matches used in exclusion case
        ) = @_;
 
-    my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl );
+    my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl );
     my $chain = $chainref->{name};
 
     our @ends = ();
@@ -2260,7 +2260,6 @@ sub expand_rule( $$$$$$$$$$$ )
 	    push_command $chainref, join( '', 'for source in ', $networks, '; do' ), 'done';
 
 	    $rule .= '-s $source ';
-
 	} else {
 	    fatal_error "Source Interface ($iiface) not allowed when the source zone is the firewall zone" if $restriction & OUTPUT_RESTRICT;
 	    $rule .= match_source_dev( $iiface );
@@ -2335,16 +2334,26 @@ sub expand_rule( $$$$$$$$$$$ )
     #
     if ( $diface ) {
 	fatal_error "Unknown Interface ($diface)" unless known_interface $diface;
-	fatal_error "A DEST interface may not be specified in this rule"               if $restriction & (PREROUTE_RESTRICT );
-	fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
-	fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
 
-	if ( $iiface ) {
-	    my $bridge = port_to_bridge( $diface );
-	    fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
+	if ( $restriction & PREROUTE_RESTRICT ) {
+	    #
+	    # Dest interface -- must use routing table
+	    #
+	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
+	    push_command( $chainref , 'for dest in ' . interface_nets( $diface) . '; do', 'done' );
+	    $rule .= '-d $dest ';
+	} else {
+	    
+	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
+	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
+
+	    if ( $iiface ) {
+		my $bridge = port_to_bridge( $diface );
+		fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
+	    }
+
+	    $rule .= match_dest_dev( $diface );
 	}
-	
-	$rule .= match_dest_dev( $diface );
     } else {
 	$diface = '';
     }
@@ -2434,6 +2443,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	    if ( @iexcl == 1 ) {
 		$rule .= match_source_net "!$iexcl" , $restriction;
 		$iexcl = '';
+		$trivialiexcl = 1;
 	    }
 
 	}
@@ -2459,6 +2469,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	    if ( @dexcl == 1 ) {
 		$rule .= match_dest_net "!$dexcl";
 		$dexcl = '';
+		$trivialdexcl = 1;
 	    }
 	}
     } else {
@@ -2469,8 +2480,8 @@ sub expand_rule( $$$$$$$$$$$ )
     $dnets = ALLIP unless $dnets;
     $onets = ALLIP unless $onets;
 
-    fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && $inets ne ALLIP;
-    fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && $dnets ne ALLIP;
+    fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && ( $inets ne ALLIP || $iexcl || $trivialiexcl);
+    fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && ( $dnets ne ALLIP || $iexcl || $trivialdexcl);
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#

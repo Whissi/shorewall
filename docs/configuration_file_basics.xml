@@ -35,10 +35,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
-    release.</emphasis></para>
+    4.3.5then please see the documentation for that release.</emphasis></para>
   </caution>
 
   <caution>
@@ -183,17 +182,16 @@
         </listitem>
 
         <listitem>
-          <para><filename>/etc/shorewall/route_rules</filename> (Added in
-          Shorewall 3.2.0) - Defines routing rules to be used in conjunction
-          with the routing tables defined in
-          <filename>/etc/shorewall/providers</filename>.</para>
+          <para><filename>/etc/shorewall/route_rules</filename> - Defines
+          routing rules to be used in conjunction with the routing tables
+          defined in <filename>/etc/shorewall/providers</filename>.</para>
         </listitem>
 
         <listitem>
           <para><filename>/etc/shorewall/tcdevices</filename>,
           <filename>/etc/shorewall/tcclasses</filename>,
-          <filename>/etc/shorewall/tcfilters</filename> (tcfilters added in
-          Shorewall 4.2.0) - Define traffic shaping.</para>
+          <filename>/etc/shorewall/tcfilters</filename> - Define traffic
+          shaping.</para>
         </listitem>
 
         <listitem>
@@ -202,9 +200,8 @@
         </listitem>
 
         <listitem>
-          <para><filename>/etc/shorewall/vardir</filename> - (Added in
-          Shorewall 4.0.0-RC2) - Determines the directory where Shorewall
-          maintains its state.</para>
+          <para><filename>/etc/shorewall/vardir</filename> - Determines the
+          directory where Shorewall maintains its state.</para>
         </listitem>
 
         <listitem>
@@ -236,9 +233,9 @@
   <section id="Manpages">
     <title>Man Pages</title>
 
-    <para>Beginning with Shorewall version 3.4, man pages are provided in
-    section 5 for each of the Shorewall configuration files. The name of the
-    page is formed by prefixing the file name with "shorewall-".</para>
+    <para>Man pages are provided in section 5 for each of the Shorewall
+    configuration files. The name of the page is formed by prefixing the file
+    name with "shorewall-".</para>
 
     <para>Example — To view the manual page for
     <filename>/etc/shorewall/interfaces</filename>:</para>
@@ -270,10 +267,10 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
   <section id="COMMENT">
     <title>Attach Comment to Netfilter Rules</title>
 
-    <para>Beginning with Shorewall version 3.3.3, if you kernel and iptables
-    contain comment match support (see the output of <command>shorewall show
-    capabilities</command>), then you can attach comments to Netfilter rules.
-    This feature is available in the following files:</para>
+    <para>If you kernel and iptables contain comment match support (see the
+    output of <command>shorewall show capabilities</command>), then you can
+    attach comments to Netfilter rules. This feature is available in the
+    following files:</para>
 
     <itemizedlist>
       <listitem>
@@ -298,9 +295,7 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
       </listitem>
 
       <listitem>
-        <para>Macro definition files (/etc/shorewall/macro.*) — Added in
-        Shorewall-perl 4.2.0. They are ignored by Shorewall-shell 4.1 and
-        later.</para>
+        <para>Macro definition files (/etc/shorewall/macro.*)</para>
       </listitem>
     </itemizedlist>
 
@@ -330,7 +325,7 @@ COMMENT</programlisting>
     <filename>/sbin/shorewall-lite</filename>:</para>
 
     <programlisting>gateway:~ # <command>shorewall-lite show loc2net</command>
-Shorewall Lite 3.3.3 Chains loc2net at gateway - Mon Oct 16 15:04:52 PDT 2006
+Shorewall Lite 4.3.3 Chains loc2net at gateway - Mon Oct 16 15:04:52 PDT 2008
 
 Counters reset Mon Oct 16 14:52:17 PDT 2006
 
@@ -411,16 +406,16 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
 
     <caution>
       <para>If you are using <ulink
-      url="CompiledPrograms.html%23Lite">Shorewall Lite</ulink> and are
-      running a version of Shorewall earlier than 3.2.9, it is not advisable
-      to use INCLUDE in the <filename>params</filename> file in an export
-      directory. If you do that, you must ensure that the included file is
-      also present on the firewall system's <filename
+      url="CompiledPrograms.html%23Lite">Shorewall Lite</ulink> , it is not
+      advisable to use INCLUDE in the <filename>params</filename> file in an
+      export directory. If you do that, you must ensure that the included file
+      is also present on the firewall system's <filename
       class="directory">/etc/shorewall-lite/</filename> directory.</para>
 
-      <para>Beginning with Shorewall version 3.2.9 (3.4.0 RC2), you can set
-      EXPORTPARAMS=No in <filename>shorewall.conf</filename>. That prevents
-      the <filename>params</filename> file from being copied into the compiled
+      <para>If you only need the <filename>params</filename> file at compile
+      time, you can set EXPORTPARAMS=No in
+      <filename>shorewall.conf</filename>. That prevents the
+      <filename>params</filename> file from being copied into the compiled
       script. With EXPORTPARAMS=No, it is perfectly okay to use INCLUDE in the
       <filename>params</filename> file.</para>
     </caution>
@@ -470,9 +465,8 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
  
      ----- end rules -----</programlisting>
 
-      <para>Users of Shorewall-perl 4.0.6 and later may include multiple files
-      in one command using an <link linkend="Embedded">embedded shell
-      command</link>.</para>
+      <para>You may include multiple files in one command using an <link
+      linkend="Embedded">embedded shell command</link>.</para>
 
       <para>Example (include all of the files ending in ".rules" in a
       directory:):<programlisting>gateway:/etc/shorewall # ls rules.d
@@ -516,9 +510,9 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
 
     <para>Variables may be used anywhere in the other configuration
     files.<note>
-        <para>Shorewall-perl users: If you use "$FW" on the right side of
-        assignments in the <filename>/etc/shorewall/params</filename> file,
-        you must also set the FW variable in that file.</para>
+        <para>If you use "$FW" on the right side of assignments in the
+        <filename>/etc/shorewall/params</filename> file, you must also set the
+        FW variable in that file.</para>
 
         <para>Example:<programlisting>/etc/shorewall/zones:
 
@@ -587,35 +581,22 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
       </listitem>
     </orderedlist>
 
-    <para>When expanding a variable, the acceptable forms of expansion depend
-    on whether you are using Shorewall-shell or Shorewall-perl.</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Shorewall-shell and all Shorewall versions prior to 4.0 can use
-        any form of expansion supported by the shell ($VAR, ${VAR},
-        ${VAR:=val}, ...).</para>
-      </listitem>
-
-      <listitem>
-        <para>Shorewall-perl only supports the $VAR and ${VAR} forms.</para>
-      </listitem>
-    </itemizedlist>
+    <note>
+      <para>Only the $VAR and ${VAR} forms of variable expansion are
+      supported. You may not use the more exotic forms supported by the shell
+      ($VAR, ${VAR}, ${VAR:=val}, ...)</para>
+    </note>
   </section>
 
   <section id="Embedded">
     <title>Embedded Shell and Perl</title>
 
-    <para>This feature was added in Shorewall-perl 4.0.6. To use it, you must
-    be running 4.0.6 or later and must be using Shorewall-perl
-    (SHOREWALL_COMPILER=perl in shorewall.conf).</para>
-
     <para>Earlier versions of Shorewall offered <ulink
     url="shorewall_extension_scripts.htm">extension scripts</ulink> to allow
     users to extend Shorewall's functionality. Extension scripts were designed
-    to work under the limitations of the Bourne Shell. With Shorewall-perl,
-    <firstterm>Embedded scripts</firstterm> offer a richer and more flexible
-    extension capability.</para>
+    to work under the limitations of the Bourne Shell. With the current
+    Perl-based compiler, <firstterm>Embedded scripts</firstterm> offer a
+    richer and more flexible extension capability.</para>
 
     <para>While inline scripts scripts may be written in either Shell or Perl,
     those written in Perl have a lot more power.</para>
@@ -654,7 +635,7 @@ ACCEPT dmz fw tcp 22</programlisting></para>
     <programlisting>package Shorewall::User;
 use Shorewall::Config qw/shorewall/;</programlisting>
 
-    <para>As part of the change that added embedded scripts:</para>
+    <para>A couple of more points should be mentioned:</para>
 
     <orderedlist>
       <listitem>
@@ -663,16 +644,17 @@ use Shorewall::Config qw/shorewall/;</programlisting>
       </listitem>
 
       <listitem>
-        <para>A <emphasis role="bold">compile</emphasis> extension script was
-        added for use by Shorewall-perl. That script is run early in the
-        compilation process and allows users to load additional modules and to
-        define data and functions for use in subsequent embedded scripts and
-        extension scripts.</para>
+        <para>A <emphasis role="bold">compile</emphasis> extension script is
+        supported. That script is run early in the compilation process and
+        allows users to load additional modules and to define data and
+        functions for use in subsequent embedded scripts and extension
+        scripts.</para>
       </listitem>
 
       <listitem>
-        <para>A <ulink url="ManualChains.html">Manual Chain</ulink> facility
-        was added.</para>
+        <para><ulink url="ManualChains.html">Manual Chains</ulink> may be
+        added in the <emphasis role="bold">compile</emphasis> extension
+        script..</para>
       </listitem>
     </orderedlist>
 
@@ -866,8 +848,7 @@ POP/ACCEPT     loc                  net:pop.gmail.com</programlisting>
   <section id="Exclusion">
     <title>Exclusion Lists</title>
 
-    <para>Shorewall 3.0 differs from earlier versions in that in most contexts
-    where a comma-separated list of addresses is accepted, an
+    <para>Where a comma-separated list of addresses is accepted, an
     <firstterm>exclusion list</firstterm> may also be included. An exclusion
     list is a comma-separated list of addresses that begins with "!".</para>
 
@@ -922,30 +903,13 @@ Shorewall has detected the following iptables/netfilter capabilities:
     <filename>/etc/protocols</filename>. Similarly, when giving a port number
     you can use either an integer or a service name from
     <filename>/etc/services</filename>.<note>
-        <para>Shorewall-perl translates protocol names to protocol numbers and
-        service names to port numbers itself.</para>
-
-        <para>In Shorewall versions 4.0.0 - 4.0.4, the mapping that it uses is
-        contained in the Perl module
-        <filename>/usr/share/shorewall-perl/Shorewall/Ports.pm</filename>.
-        That module is built when Shorewall is installed or upgraded using the
-        current <filename>/etc/protocols</filename> and
-        <filename>/etc/services</filename> files as input (if the build
-        program fails, a fallback version of the module is installed).</para>
-
-        <para>To generate a new Ports.pm module:<programlisting>cp /usr/share/shorewall-perl/Shorewall/Ports.pm /usr/share/shorewall-perl/Shorewall/Ports.pm.backup
-/usr/share/shorewall/buildports.pm &gt; /usr/share/shorewall-perl/Shorewall/Ports.pm</programlisting></para>
-
-        <para>Beginning with Shorewall version 4.0.5, the
-        <filename>/usr/share/shorewall-perl/Shorewall/Ports.pm</filename> has
-        been eliminated and the Shorewall-perl compiler uses Perl's interfaces
-        to getprotobyname(3posix) and getservbyname(3posix).</para>
+        <para>The rules compiler translates protocol names to protocol numbers
+        and service names to port numbers itself.</para>
       </note></para>
 
     <para>Also, unless otherwise documented, a protocol number/name can be
-    preceded by '!' to specify "All protocols except this one" (e.g., "!tcp").
-    Shorewall-perl support for that feature was added in Shorewall
-    4.2.6.</para>
+    preceded by '!' to specify "All protocols except this one" (e.g.,
+    "!tcp").</para>
   </section>
 
   <section id="Ranges">
@@ -964,8 +928,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
 
     <para>Also, unless otherwise documented, a port range can be preceded by
     '!' to specify "All ports except those in this range" (e.g.,
-    "!4000:4100"). Shorewall-perl support for that feature was added in
-    Shorewall 4.2.6.</para>
+    "!4000:4100").</para>
   </section>
 
   <section id="Portlists">
@@ -995,18 +958,8 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       </listitem>
     </orderedlist>
 
-    <note>
-      <para>Shorewall-perl requires <emphasis role="bold">multiport</emphasis>
-      match in order to accept port lists in Shorewall configuration files. It
-      further requires Extended <emphasis role="bold">multiport</emphasis>
-      match in order to accept port ranges in port lists. Shorewall-perl
-      versions earlier than 4.0.5 will never break a list longer than 15 ports
-      (with each range counting as two ports) into smaller lists.</para>
-    </note>
-
     <para>Also, unless otherwise documented, a port list can be preceded by
-    '!' to specify "All ports except these" (e.g., "!80,443"). Shorewall-perl
-    support for that feature was added in Shorewall 4.2.6.</para>
+    '!' to specify "All ports except these" (e.g., "!80,443").</para>
   </section>
 
   <section id="MAC">

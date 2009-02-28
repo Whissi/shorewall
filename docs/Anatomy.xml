@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Anatomy of Shorewall 4.0</title>
+    <title>Anatomy of Shorewall 4.3</title>
 
     <authorgroup>
       <author>
@@ -19,6 +19,8 @@
 
     <copyright>
       <year>2007</year>
+
+      <year>2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -37,47 +39,46 @@
   <section id="Products">
     <title>Products</title>
 
-    <para>Shorewall 4.0 consists of four packages.</para>
+    <para>Shorewall 4.3 consists of four packages.</para>
 
     <orderedlist>
       <listitem>
-        <para><emphasis role="bold">Shorewall-common</emphasis>. This package
-        must be installed on at least one system in your network. That system
-        must also have Shorewall-shell and/or Shorewall-perl installed.</para>
+        <para><emphasis role="bold">Shorewall</emphasis>. This package must be
+        installed on at least one system in your network. It contains
+        everything needed to create an IPv4 firewall.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Shorewall-shell</emphasis>. This package
-        includes the legacy Shorewall configuration compiler written in Bourne
-        Shell. This compiler is very portable but suffers from performance
-        problems and has become hard to maintain.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">Shorewall-perl</emphasis>. An alternative
-        to Shorewall-shell written in the Perl language. This compiler is
-        highly portable to those Unix-like platforms that support Perl
-        (including Cygwin) and is the compiler of choice for new Shorewall
-        installations.</para>
+        <para><emphasis role="bold">Shorewall6</emphasis>. This package
+        requires the Shorewall package and adds those components needed to
+        create an IPv6 fireawall. </para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">Shorewall-lite</emphasis>. Shorewall
-        allows for central administration of multiple firewalls through use of
-        Shorewall lite. The full Shorewall product (including Shorewall-common
-        with Shorewall-shell and/or Shorewall-perl) is installed on a central
-        administrative system where compiled Shorewall scripts are generated.
-        These scripts are copied to the firewall systems where they run under
-        the control of Shorewall-lite.</para>
+        allows for central administration of multiple IPv4 firewalls through
+        use of Shorewall lite. The full Shorewall product is installed on a
+        central administrative system where compiled Shorewall scripts are
+        generated. These scripts are copied to the firewall systems where they
+        run under the control of Shorewall-lite.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall6-lite</emphasis>. Shorewall
+        allows for central administration of multiple IPv4 firewalls through
+        use of Shorewall lite. The full Shorewall product is installed on a
+        central administrative system where compiled Shorewall scripts are
+        generated. These scripts are copied to the firewall systems where they
+        run under the control of Shorewall-lite.</para>
       </listitem>
     </orderedlist>
   </section>
 
   <section id="Shorewall">
-    <title>Shorewall-common</title>
+    <title>Shorewall</title>
 
-    <para>The Shorewall-common package includes a large number of files which
-    are installed in <filename class="directory">/sbin</filename>, <filename
+    <para>The Shorewall package includes a large number of files which are
+    installed in <filename class="directory">/sbin</filename>, <filename
     class="directory">/usr/share/shorewall</filename>, <filename
     class="directory">/etc/shorewall</filename>,
     <filename>/etc/init.d</filename> and <filename
@@ -111,6 +112,11 @@
         <listitem>
           <para><filename>actions.std</filename> - file listing the standard
           actions.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>compiler.pl</filename> - The configuration compiler
+          perl program.</para>
         </listitem>
 
         <listitem>
@@ -163,6 +169,16 @@
         </listitem>
 
         <listitem>
+          <para><filename>prog.*</filename> - Shell program fragments used as
+          input to the compiler.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="directory">Shorewall</filename> - Directory
+          containing the Shorewall Perl modules used by the compiler.</para>
+        </listitem>
+
+        <listitem>
           <para><filename>version</filename> - A file containing the currently
           install version of Shorewall.</para>
         </listitem>
@@ -178,7 +194,7 @@
     <section id="shorewall">
       <title>/etc/shorewall</title>
 
-      <para>This is where the modifiable configuration files are
+      <para>This is where the modifiable IPv4 configuration files are
       installed.</para>
     </section>
 
@@ -199,14 +215,6 @@
       url="manpages/shorewall-vardir.html">shorewall-vardir</ulink>(5).</para>
 
       <itemizedlist>
-        <listitem>
-          <para><filename>chains</filename> - If DYNAMIC_ZONES=Yes in <ulink
-          url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5), this
-          file contains information used by the <command>add</command> and
-          <command>delete</command> commands (see <ulink
-          url="manpages/shorewall.html">shorewall</ulink>(8)).</para>
-        </listitem>
-
         <listitem>
           <para><filename>.iptables-restore-input</filename> - The file passed
           as input to the iptables-restore program to initialize the firewall
@@ -290,69 +298,175 @@
     </section>
   </section>
 
-  <section id="Shorewall-shell">
-    <title>Shorewall-shell</title>
-
-    <para>The Shorewall-shell product installs all of its files in
-    /usr/share/<filename class="directory">shorewall-shell</filename>.</para>
-
-    <itemizedlist>
-      <listitem>
-        <para><filename>compiler</filename> - The configuration compiler shell
-        program.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>lib.*</filename> - Shell function libraries used by
-        the compiler. On embedded systems, only a sub-set of the available
-        libraries may be installed as a space-saving measure.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>prog.*</filename> - Shell program fragments used as
-        input to the compiler.</para>
-      </listitem>
-
-      <listitem>
-        <para><filename>version</filename> - A file containing the currently
-        install version of Shorewall-shell.</para>
-      </listitem>
-    </itemizedlist>
-  </section>
-
   <section id="Shorewall-perl">
-    <title>Shorewall-perl</title>
+    <title>Shorewall6</title>
 
-    <para>The Shorewall-perl product installs all of its files in
-    /usr/share/<filename class="directory">shorewall-perl</filename>.</para>
+    <para>Shorewall6 installs its files in a number of directories:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><filename>buildports.pl</filename> - A Perl program that builds
-        the Shorewall/Ports.pm module during installation (This program is
-        removed in Shorewall 4.0.5 and later releases)</para>
-      </listitem>
+    <section id="sbin6">
+      <title>/sbin</title>
 
-      <listitem>
-        <para><filename>compiler.pl</filename> - The configuration compiler
-        perl program.</para>
-      </listitem>
+      <para>The <filename>/sbin/shorewall6</filename> shell program is used to
+      interact with Shorewall6. See <ulink
+      url="manpages6/shorewall6.html">shorewall6</ulink>(8).</para>
+    </section>
 
-      <listitem>
-        <para><filename>prog.*</filename> - Shell program fragments used as
-        input to the compiler.</para>
-      </listitem>
+    <section id="share-shorewall6">
+      <title>/usr/share/shorewall6</title>
 
-      <listitem>
-        <para><filename class="directory">Shorewall</filename> - Directory
-        containing the Shorewall Perl modules used by the compiler.</para>
-      </listitem>
+      <para>The bulk of Shorewall6 is installed here.</para>
 
-      <listitem>
-        <para><filename>version</filename> - A file containing the currently
-        install version of Shorewall-shell.</para>
-      </listitem>
-    </itemizedlist>
+      <itemizedlist>
+        <listitem>
+          <para><filename>action.template</filename> - template file for
+          creating <ulink url="Actions.html">actions</ulink>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>action.*</filename> - standard Shorewall
+          actions.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>actions.std</filename> - file listing the standard
+          actions.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="directory">configfiles</filename> - A
+          directory containing configuration files to copy to create a <ulink
+          url="CompiledPrograms.html#Lite">Shorewall6-lite export
+          directory.</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><filename><filename>configpath</filename></filename> - A file
+          containing distribution-specific path assignments.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>firewall</filename> - A shell program that handles
+          the <command>add</command> and <command>delete</command> commands
+          (see <ulink url="manpages/shorewall.html">shorewall</ulink>(8)). It
+          also handles the <command>stop</command> and
+          <command>clear</command> commands when there is no current compiled
+          firewall script on the system.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="symlink">functions</filename> - A symbolic
+          link to <filename>lib.base</filename> that provides for
+          compatibility with older versions of Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>lib.*</filename> - Shell function libraries used by
+          the other shell programs.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>modules</filename> - File that drives the loading of
+          Netfilter kernel modules. May be overridden by
+          <filename>/etc/shorewall/modules</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>version</filename> - A file containing the currently
+          install version of Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>wait4ifup</filename> - A shell program that <ulink
+          url="shorewall_extension_scripts.htm">extension scripts</ulink> can
+          use to delay until a network interface is available.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="etc-shorewall6">
+      <title>/etc/shorewall6</title>
+
+      <para>This is where the modifiable IPv6 configuration files are
+      installed.</para>
+    </section>
+
+    <section id="var-shorewall6">
+      <title>/var/lib/shorewall6</title>
+
+      <para>Shorewall6 doesn't install any files in this directory but rather
+      uses the directory for storing state information. This directory may be
+      relocated using <ulink
+      url="manpages/shorewall-vardir.html">shorewall-vardir</ulink>(5).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>.ip6tables-restore-input</filename> - The file
+          passed as input to the ip6tables-restore program to initialize the
+          firewall during the last <command>start</command> or
+          <command>restart</command> command (see <ulink
+          url="manpages6/shorewall6.html">shorewall6</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modules</filename> - The contents of the modules
+          file used during the last <command>start</command> or
+          <command>restart</command> command (see <ulink
+          url="manpages6/shorewall6.html">shorewall</ulink>(8) for command
+          information).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modulesdir</filename> - The MODULESDIR setting
+          (<ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)) at the
+          last <command>start</command> or <command>restart</command>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.refresh</filename> - The shell program that
+          performed the last successful <command>refresh</command>
+          command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restart</filename> - The shell program that
+          performed the last successful <command>restart</command>
+          command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>restore</filename> - The default shell program used
+          to execute <command>restore</command> commands.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restore</filename> - The shell program that
+          performed the last successful <command>refresh, restart</command> or
+          <command>start</command> command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>save</filename> - File created by the
+          <command>save</command> command and used to restore the dynamic
+          blacklist during <command>start/restart</command>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.start</filename> - The shell program that performed
+          the last successful <command>start</command> command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>state</filename> - Records the current firewall
+          state.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>zones</filename> - Records the current zone
+          contents.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </section>
 
   <section id="Shorewall-lite">
@@ -363,8 +477,8 @@
     class="directory">/usr/share/shorewall-lite</filename>, <filename
     class="directory">/etc/shorewall-lite</filename>,
     <filename>/etc/init.d</filename> and <filename
-    class="directory">/var/lib/shorewall/</filename>. These are described in
-    the sub-sections that follow.</para>
+    class="directory">/var/lib/shorewall-lite/</filename>. These are described
+    in the sub-sections that follow.</para>
 
     <section id="sbin-lite">
       <title>/sbin</title>
@@ -496,6 +610,183 @@
           <para><filename>proxyarp</filename> - Records the arp entries added
           by entries in <ulink
           url="manpages/shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.refresh</filename> - The shell program that
+          performed the last successful <command>refresh</command>
+          command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restart</filename> - The shell program that
+          performed the last successful <command>restart</command>
+          command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>restore</filename> - The default shell program used
+          to execute <command>restore</command> commands.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.restore</filename> - The shell program that
+          performed the last successful <command>refresh, restart</command> or
+          <command>start</command> command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>save</filename> - File created by the
+          <command>save</command> command and used to restore the dynamic
+          blacklist during <command>start/restart</command>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.start</filename> - The shell program that performed
+          the last successful <command>start</command> command.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>state</filename> - Records the current firewall
+          state.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>zones</filename> - Records the current zone
+          contents.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section id="Shorewall6-lite">
+    <title>Shorewall6-lite</title>
+
+    <para>The Shorewall6-lite product includes files installed in <filename
+    class="directory">/sbin</filename>, <filename
+    class="directory">/usr/share/shorewall6-lite</filename>, <filename
+    class="directory">/etc/shorewall6-lite</filename>,
+    <filename>/etc/init.d</filename> and <filename
+    class="directory">/var/lib/shorewall6-lite/</filename>. These are
+    described in the sub-sections that follow.</para>
+
+    <section id="sbin-lite6">
+      <title>/sbin</title>
+
+      <para>The <filename>/sbin/shorewall6-lite</filename> shell program is
+      use to interact with Shorewall lite. See <ulink
+      url="manpages6/shorewall6-lite.html">shorewall6-lite</ulink>(8).</para>
+    </section>
+
+    <section id="init-lite6">
+      <title>/etc/init.d or /etc/rc.d (depends on distribution)</title>
+
+      <para>An init script is installed here. Depending on the distribution,
+      it is named <filename>shorewall6-lite</filename> or
+      <filename>rc.firewall</filename>.</para>
+    </section>
+
+    <section id="etc-shorewall6-lite">
+      <title>/etc/shorewall6-lite</title>
+
+      <para>This is where the modifiable configuration files are
+      installed.</para>
+    </section>
+
+    <section id="share-lite6">
+      <title>/usr/share/shorewall6-lite</title>
+
+      <para>The bulk of Shorewall-lite is installed here.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename><filename>configpath</filename></filename> - A file
+          containing distribution-specific path assignments.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename class="symlink">functions</filename> - A symbolic
+          link to <filename>lib.base</filename> that provides for
+          compatibility with older versions of Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>lib.*</filename> - Shell function libraries used by
+          the other shell programs. These are copies of the corresponding
+          libraries in the Shorewall product.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>modules</filename> - File that drives the loading of
+          Netfilter kernel modules. May be overridden by
+          <filename>/etc/shorewall-lite/modules</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>shorecap</filename> - A shell program used for
+          generating capabilities files. See the <ulink
+          url="CompiledPrograms.html#Lite">Shorewall-lite
+          documentation</ulink>.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>version</filename> - A file containing the currently
+          install version of Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>wait4ifup</filename> - A shell program that <ulink
+          url="shorewall_extension_scripts.htm">extension scripts</ulink> can
+          use to delay until a network interface is available.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="var-lite6">
+      <title>/var/lib/shorewall6-lite</title>
+
+      <para>Shorewall6-lite doesn't install any files in this directory but
+      rather uses the directory for storing state information. This directory
+      may be relocated using <ulink
+      url="manpages/shorewall-lite-vardir.html">shorewall-lite-vardir</ulink>(5).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>firewall</filename> - Compiled shell script
+          installed by running the load or reload command on the
+          administrative system (see <ulink
+          url="manpages/shorewall.html">shorewall6</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>firewall.conf</filename> - Digest of the
+          shorewall.conf file used to compile the firewall script on the
+          administrative system.</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>.ip6tables-restore-input</filename> - The file
+          passed as input to the ip6tables-restore program to initialize the
+          firewall during the last <command>start</command> or
+          <command>restart</command> command (see <ulink
+          url="manpages/shorewall-lite.html">shorewall-lite</ulink>(8)).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modules</filename> - The contents of the modules
+          file used during the last <command>start</command> or
+          <command>restart</command> command (see <ulink
+          url="manpages/shorewall-lite.html">shorewall-lite</ulink>(8) for
+          command information).</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>.modulesdir</filename> - The MODULESDIR setting
+          (<ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5)) at the
+          last <command>start</command> or <command>restart.</command></para>
         </listitem>
 
         <listitem>

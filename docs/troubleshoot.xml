@@ -36,25 +36,109 @@
     <title><quote>shorewall start</quote> and <quote>shorewall restart</quote>
     Errors</title>
 
-    <section id="Start-shell">
-      <title>Shorewall-shell</title>
+    <para>If the error is detected by the Shorewall compiler, it should be
+    fairly obvious where the problem was found. Each error message includes
+    the configuration file name and line number where the error was detected
+    and often gives the particular item in error. The item is either enclosed
+    in parentheses or is at the end following a colon (":").</para>
 
-      <para>If you use the Shorewall-shell compiler and you receive an error
-      message when starting or restarting the firewall and you can't determine
-      the cause. First, if your VERBOSITY setting in shorewall.conf is less
-      than 2, then try running with a higher verbosity level by using the "-v"
-      option:</para>
+    <para>Example:<programlisting>gateway:~/test # shorewall restart .
+Compiling...
+   ERROR: Invalid ICMP Type (0/400) : /root/test/rules (line 19)
+gateway:~/test # </programlisting>In this case, line 19 in the rules file
+    specified an invalid ICMP Type (0/400).</para>
 
-      <blockquote>
-        <programlisting><command>shorewall -vv [re]start</command></programlisting>
-      </blockquote>
+    <para>Additional information about the error can be obtained using the
+    'debug' keyword:<programlisting>gateway:~/test # shorewall debug restart .
+Compiling...
+   ERROR: Invalid ICMP Type (0/400) : /root/test/rules (line 19) at /usr/share/shorewall/Shorewall/Config.pm line 338
+        Shorewall::Config::fatal_error('Invalid ICMP Type (0/400)') called at /usr/share/shorewall/Shorewall/Chains.pm line 885
+        Shorewall::Chains::validate_icmp('0/400') called at /usr/share/shorewall/Shorewall/Chains.pm line 949
+        Shorewall::Chains::do_proto('icmp', '0/400', '-') called at /usr/share/shorewall/Shorewall/Rules.pm line 1055
+        Shorewall::Rules::process_rule1('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall/Shorewall/Rules.pm line 1290
+        Shorewall::Rules::process_rule('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall/Shorewall/Rules.pm line 1336
+        Shorewall::Rules::process_rules() called at /usr/share/shorewall/Shorewall/Compiler.pm line 799
+        Shorewall::Compiler::compiler('/var/lib/shorewall/.restart', '/root/test', 0, 4) called at /usr/share/shorewall/compiler.pl line 86
+gateway:~/test # </programlisting>This information is useful to Shorewall
+    support if you need to <ulink url="support.html">file a problem
+    report</ulink>.</para>
 
-      <para>That will give you additional progress messages that may make it
-      clear which entry in which file is generating the error.</para>
+    <para>The end of the compile phase is signaled by a message such as the
+    following:<programlisting>Shorewall configuration compiled to /var/lib/shorewall/.restart</programlisting>Errors
+    occurring past that point are said to occur at
+    <firstterm>run-time</firstterm> because they occur during the running of
+    the compiled firewall script (/var/lib/shorewall/.restart in the case of
+    the above message).</para>
 
-      <para>If that didn't help, then do the following:</para>
+    <para>One common run-time failure is that the iptables-restore program
+    encounters an error. This will produce an error such as the
+    following:<programlisting>...
+Restarting Shorewall....
+iptables-restore v1.3.6: No chain/target/match by that name
+Error occurred at line: 83
+Try `iptables-restore -h' or 'iptables-restore --help' for more information.
+   ERROR: iptables-restore Failed. Input is in /var/lib/shorewall/.iptables-restore-input
+Restoring Shorewall...
+Shorewall restored from /var/lib/shorewall/restore
+Terminated
+gateway:~/test # </programlisting>A look at /var/lib/shorewall/restore at line
+    83 might show something like the following:<programlisting>-A reject -p tcp -j REJECT --reject-with tcp-reset</programlisting>In
+    this case, the user had compiled his own kernel and had forgotten to
+    include REJECT target support (see <ulink
+    url="kernel.htm">kernel.htm</ulink>).</para>
 
-      <itemizedlist>
+    <para>You may also include the word <emphasis role="bold">debug</emphasis>
+    as the first argument to the <filename>/sbin/shorewall</filename> and
+    <filename>/sbin/shorewall-lite</filename> commands.<programlisting><command>shorewall debug restart</command></programlisting>In
+    most cases, <emphasis role="bold">debug</emphasis> is a synonym for
+    <emphasis role="bold">trace</emphasis>. The exceptions are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">debug</emphasis> is ignored by the
+        Shorewall compiler.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">debug</emphasis> causes altered behavior
+        of generated scripts. These scripts normally use<command>
+        iptables-restore</command> to install the Netfilter ruleset but with
+        <emphasis role="bold">debug</emphasis>, the commands normally passed
+        to <command>iptables-restore</command> in its input file are passed
+        individually to <command>iptables</command>. This is a diagnostic aid
+        which allows identifying the individual command that is causing
+        <command>iptables-restore</command> to fail; it should be used when
+        iptables-restore fails when executing a <command>COMMIT</command>
+        command.</para>
+      </listitem>
+    </itemizedlist>
+
+    <warning>
+      <para>The <emphasis role="bold">debug</emphasis> feature is strictly for
+      problem analysis. When <emphasis role="bold">debug</emphasis> is
+      used:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>The firewall is made 'wide open' before the rules are
+          applied.</para>
+        </listitem>
+
+        <listitem>
+          <para>The <filename>routestopped</filename> file is not
+          consulted.</para>
+        </listitem>
+
+        <listitem>
+          <para>The rules are applied in the canonical
+          <command>iptables-restore</command> order. So if you need critical
+          hosts to be always available during start/restart, you may not be
+          able to use <emphasis role="bold">debug</emphasis>.</para>
+        </listitem>
+      </orderedlist>
+    </warning>
+
+    <para>In other run-time failure cases:<itemizedlist>
         <listitem>
           <para>Make a note of the error message that you see.</para>
         </listitem>
@@ -67,177 +151,15 @@
         <listitem>
           <para>Look at the <filename>/tmp/trace</filename> file and see if
           that helps you determine what the problem is. Be sure you find the
-          place in the log where the error message you saw is generated -- If
-          you are using Shorewall 1.4.0 or later, you should find the message
-          near the end of the log.</para>
+          place in the log where the error message you saw is generated -- you
+          should find the message near the end of the log.</para>
         </listitem>
 
         <listitem>
           <para>If you still can't determine what's wrong then see the <ulink
           url="support.htm">support page</ulink>.</para>
         </listitem>
-      </itemizedlist>
-
-      <example id="Example1">
-        <title>Startup Error</title>
-
-        <para>During startup, a user sees the following:</para>
-
-        <programlisting>Adding Common Rules
-iptables: No chain/target/match by that name
-Terminated</programlisting>
-
-        <para>A search through the trace for <quote>No chain/target/match by
-        that name</quote> turned up the following:</para>
-
-        <programlisting>+ echo 'Adding Common Rules'
-+ add_common_rules
-+ run_iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
-++ echo -A reject -p tcp -j REJECT --reject-with tcp-reset
-++ sed 's/!/! /g'
-+ iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
-iptables: No chain/target/match by that name
-</programlisting>
-
-        <para>The command that failed was: <quote><command>iptables -A reject
-        -p tcp -j REJECT --reject-with tcp-reset</command></quote>. In this
-        case, the user had compiled his own kernel and had forgotten to
-        include REJECT target support (see <ulink
-        url="kernel.htm">kernel.htm</ulink>)</para>
-      </example>
-    </section>
-
-    <section id="Start-perl">
-      <title>Shorewall-perl</title>
-
-      <para>If the error is detected by the Shorewall-perl compiler, it should
-      be fairly obvious where the problem was found. Each error message
-      includes the configuration file name and line number where the error was
-      detected and often gives the particular item in error. The item is
-      either enclosed in parentheses or is at the end following a colon
-      (":").</para>
-
-      <para>Example:<programlisting>gateway:~/test # shorewall restart .
-Compiling...
-   ERROR: Invalid ICMP Type (0/400) : /root/test/rules (line 19)
-gateway:~/test # </programlisting>In this case, line 19 in the rules file
-      specified an invalid ICMP Type (0/400).</para>
-
-      <para>Additional information about the error can be obtained using the
-      'debug' keyword:<programlisting>gateway:~/test # shorewall debug restart .
-Compiling...
-   ERROR: Invalid ICMP Type (0/400) : /root/test/rules (line 19) at /usr/share/shorewall-perl/Shorewall/Config.pm line 338
-        Shorewall::Config::fatal_error('Invalid ICMP Type (0/400)') called at /usr/share/shorewall-perl/Shorewall/Chains.pm line 885
-        Shorewall::Chains::validate_icmp('0/400') called at /usr/share/shorewall-perl/Shorewall/Chains.pm line 949
-        Shorewall::Chains::do_proto('icmp', '0/400', '-') called at /usr/share/shorewall-perl/Shorewall/Rules.pm line 1055
-        Shorewall::Rules::process_rule1('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall-perl/Shorewall/Rules.pm line 1290
-        Shorewall::Rules::process_rule('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall-perl/Shorewall/Rules.pm line 1336
-        Shorewall::Rules::process_rules() called at /usr/share/shorewall-perl/Shorewall/Compiler.pm line 799
-        Shorewall::Compiler::compiler('/var/lib/shorewall/.restart', '/root/test', 0, 4) called at /usr/share/shorewall-perl/compiler.pl line 86
-gateway:~/test # </programlisting>This information is useful to Shorewall
-      support if you need to <ulink url="support.html">file a problem
-      report</ulink>.</para>
-
-      <para>The end of the compile phase is signaled by a message such as the
-      following:<programlisting>Shorewall configuration compiled to /var/lib/shorewall/.restart</programlisting>Errors
-      occurring past that point are said to occur at
-      <firstterm>run-time</firstterm> because they occur during the running of
-      the compiled firewall script (/var/lib/shorewall/.restart in the case of
-      the above message).</para>
-
-      <para>One common run-time failure is that the iptables-restore program
-      encounters an error. This will produce an error such as the
-      following:<programlisting>...
-Restarting Shorewall....
-iptables-restore v1.3.6: No chain/target/match by that name
-Error occurred at line: 83
-Try `iptables-restore -h' or 'iptables-restore --help' for more information.
-   ERROR: iptables-restore Failed. Input is in /var/lib/shorewall/.iptables-restore-input
-Restoring Shorewall...
-Shorewall restored from /var/lib/shorewall/restore
-Terminated
-gateway:~/test # </programlisting>A look at /var/lib/shorewall/restore at line
-      83 might show something like the following:<programlisting>-A reject -p tcp -j REJECT --reject-with tcp-reset</programlisting>In
-      this case, the user had compiled his own kernel and had forgotten to
-      include REJECT target support (see <ulink
-      url="kernel.htm">kernel.htm</ulink>).</para>
-
-      <para>f you are running Shorewall-perl 4.0.5 or later, you may also
-      include the word <emphasis role="bold">debug</emphasis> as the first
-      argument to the <filename>/sbin/shorewall</filename> and
-      <filename>/sbin/shorewall-lite</filename> commands.<programlisting><command>shorewall debug restart</command></programlisting>In
-      most cases, <emphasis role="bold">debug</emphasis> is a synonym for
-      <emphasis role="bold">trace</emphasis>. The exceptions are:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para><emphasis role="bold">debug</emphasis> is ignored by the
-          Shorewall-perl compiler.</para>
-        </listitem>
-
-        <listitem>
-          <para><emphasis role="bold">debug</emphasis> causes altered behavior
-          of scripts generated by the Shorewall-perl compiler. These scripts
-          normally use<command> iptables-restore</command> to install the
-          Netfilter ruleset but with <emphasis role="bold">debug</emphasis>,
-          the commands normally passed to <command>iptables-restore</command>
-          in its input file are passed individually to
-          <command>iptables</command>. This is a diagnostic aid which allows
-          identifying the individual command that is causing
-          <command>iptables-restore</command> to fail; it should be used when
-          iptables-restore fails when executing a <command>COMMIT</command>
-          command.</para>
-        </listitem>
-      </itemizedlist>
-
-      <warning>
-        <para> The <emphasis role="bold">debug</emphasis> feature is strictly
-        for problem analysis. When <emphasis role="bold">debug</emphasis> is
-        used:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>The firewall is made 'wide open' before the rules are
-            applied.</para>
-          </listitem>
-
-          <listitem>
-            <para>The <filename>routestopped</filename> file is not
-            consulted.</para>
-          </listitem>
-
-          <listitem>
-            <para>The rules are applied in the canonical
-            <command>iptables-restore</command> order. So if you need critical
-            hosts to be always available during start/restart, you may not be
-            able to use <emphasis role="bold">debug</emphasis>.</para>
-          </listitem>
-        </orderedlist>
-      </warning>
-
-      <para>In other run-time failure cases:<itemizedlist>
-          <listitem>
-            <para>Make a note of the error message that you see.</para>
-          </listitem>
-
-          <listitem>
-            <para><command>shorewall debug start 2&gt;
-            /tmp/trace</command></para>
-          </listitem>
-
-          <listitem>
-            <para>Look at the <filename>/tmp/trace</filename> file and see if
-            that helps you determine what the problem is. Be sure you find the
-            place in the log where the error message you saw is generated --
-            you should find the message near the end of the log.</para>
-          </listitem>
-
-          <listitem>
-            <para>If you still can't determine what's wrong then see the
-            <ulink url="support.htm">support page</ulink>.</para>
-          </listitem>
-        </itemizedlist></para>
-    </section>
+      </itemizedlist></para>
   </section>
 
   <section id="Network">

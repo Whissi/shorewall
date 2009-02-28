@@ -33,9 +33,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.5 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -90,17 +90,47 @@
         <para>The firewall monitoring display is greatly improved if you have
         awk (gawk) installed.</para>
       </listitem>
+
+      <listitem>
+        <para>On the system where the Shorewall package itself is installed,
+        you must have Perl installed (preferably Perl 5.8.10):</para>
+
+        <itemizedlist>
+          <listitem>
+            <para> If you want to be able to use DNS names in your Shorewall6
+            configuration files, then Perl 5.10 is required together with the
+            Perl Socket6 module. </para>
+          </listitem>
+
+          <listitem>
+            <para>Perl Cwd Module</para>
+          </listitem>
+
+          <listitem>
+            <para>Perl File::Basename Module</para>
+          </listitem>
+
+          <listitem>
+            <para>Perl File::Temp Module</para>
+          </listitem>
+
+          <listitem>
+            <para>Perl Getopt::Long Module</para>
+          </listitem>
+
+          <listitem>
+            <para>Perl Carp Module</para>
+          </listitem>
+
+          <listitem>
+            <para>Perl FindBin Module</para>
+          </listitem>
+
+          <listitem>
+            <para>Perl Scalar::Util Module</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
     </itemizedlist>
-  </section>
-
-  <section id="Perl">
-    <title>Shorewall-perl Requirements</title>
-
-    <para><ulink url="Shorewall-perl.html">Shorewall-perl</ulink> is a
-    re-implementation of the Shorewall configuration compiler written in Perl.
-    It is much faster than the classic Shorewall-shell compiler and produces a
-    firewall script that runs much faster. It's prerequisites are described in
-    <ulink url="Shorewall-perl.html#Prerequisites">the Shorewall-perl
-    article</ulink>.</para>
   </section>
 </article>

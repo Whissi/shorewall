@@ -41,9 +41,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.5 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -112,33 +112,9 @@ PARAM    -              -               tcp     135,139,445
     when you invoke the macro. The SMB macro shown above is parameterized
     (note PARAM in the TARGET column).</para>
 
-    <para><emphasis role="bold">Shorewall versions prior to 4.2.0:</emphasis>
-    When invoking a parameterized macro, you follow the name of the macro with
-    a slash ("/") and the action that you want to substitute for PARAM.</para>
-
-    <para>Example:</para>
-
-    <blockquote>
-      <para>/etc/shorewall/rules:</para>
-
-      <programlisting>#ACTION      SOURCE        DEST         PROTO   DEST PORT(S)
-SMB/ACCEPT   loc           fw         </programlisting>
-
-      <para>The above is equivalent to coding the following series of
-      rules:</para>
-
-      <programlisting>#TARGET      SOURCE        DEST         PROTO   DEST PORT(s)
-ACCEPT       loc           fw           udp     135,445
-ACCEPT       loc           fw           udp     137:139
-ACCEPT       loc           fw           udp     1024:   137
-ACCEPT       loc           fw           tcp     135,139,445</programlisting>
-    </blockquote>
-
-    <para><emphasis role="bold">Shorewall-perl versions 4.2.0 and
-    later:</emphasis> When invoking a parameterized macro, you follow the name
-    of the macro with the action that you want to substitute for PARAM
-    enclosed in parentheses. The older syntax described above is still
-    supported but is deprecated.</para>
+    <para>When invoking a parameterized macro, you follow the name of the
+    macro with the action that you want to substitute for PARAM enclosed in
+    parentheses. </para>
 
     <para>Example:</para>
 
@@ -168,11 +144,10 @@ ACCEPT       loc           fw           tcp     135,139,445</programlisting>
         <listitem>
           <para>If a value other than "-" appears in both the macro body and
           in the invocation of the macro, then the value in the invocation is
-          examined and the appropriate action is taken (you will want to be
-          running Shorewall 3.0.1 or later). If the value in the invocation
-          appears to be an address (IP or MAC) or the name of an ipset, then
-          it is placed after the value in the macro body. Otherwise, it is
-          placed before the value in the macro body.</para>
+          examined and the appropriate action is taken. If the value in the
+          invocation appears to be an address (IP or MAC) or the name of an
+          ipset, then it is placed after the value in the macro body.
+          Otherwise, it is placed before the value in the macro body.</para>
 
           <para>Example 1:</para>
 
@@ -224,16 +199,16 @@ SMTP(DNAT):info   net      loc</programlisting>
 DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
           </blockquote>
 
-          <para>Beginning with Shorewall 3.1, you may also specify SOURCE or
-          DEST in the SOURCE and DEST columns. This allows you to define
-          macros that work in both directions.</para>
+          <para>You may also specify SOURCE or DEST in the SOURCE and DEST
+          columns. This allows you to define macros that work in both
+          directions.</para>
 
           <para>Example 3:</para>
 
           <blockquote>
             <para><filename>/etc/shorewall/macro.SMBBI</filename> (Note: there
-            is already a macro like this released as part of Shorewall 3.1 and
-            later):</para>
+            is already a standard macro like this released as part of
+            Shorewall):</para>
 
             <programlisting>#ACTION SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL        RATE    USER/
 #                               PORT    PORT(S) DEST            LIMIT   GROUP
@@ -285,32 +260,6 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
 
     <para>One remaining restriction should be noted: macros that are invoked
     from actions cannot themselves invoke other actions.</para>
-  </section>
-
-  <section id="Default">
-    <title>Default Macros</title>
-
-    <para>Beginning with Shorewall release 3.4, Shorewall supports
-    <firstterm>default macros</firstterm>; default macros perform the same
-    function as <ulink url="???">default actions</ulink>. The DEFAULT_ACCEPT,
-    DEFAULT_REJECT, DEFAULT_DROP and DEFAULT_QUEUE options in
-    <filename>/etc/shorewall/shorewall.conf</filename> may specify the name of
-    a macro. In that case, the rules in the macro will be traversed before the
-    associated policy is applied.</para>
-
-    <para>The value of the …_DEFAULT settings is interpreted as follows. If
-    USE_ACTIONS=Yes in shorewall.conf, then the value is treated like the name
-    of an action -- if that action is not found, then the value is treated
-    like the name of a macro. If USE_ACTIONS=No, then the value is treated
-    like the name of a macro. The special value "none" is always interpreted
-    as "no default rules should be applied".</para>
-
-    <para>Shorewall versions 3.4 and later include standard 'Reject' and
-    'Drop' macros that are equivalent to the 'Reject' and 'Drop'
-    actions.</para>
-
-    <para><emphasis>Default Macros are not supported by
-    Shorewall-perl.</emphasis></para>
   </section>
 
   <section id="Defining">

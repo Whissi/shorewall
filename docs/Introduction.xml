@@ -16,7 +16,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2003-2007</year>
+      <year>2003-2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -35,8 +35,8 @@
   <section id="Intro">
     <title>Introduction</title>
 
-    <para>The information in this document applies only to 4.x releases of
-    Shorewall.</para>
+    <para>The information in this document applies only to 4.3 and later
+    releases of Shorewall.</para>
 
     <section id="Glossary">
       <title>Glossary</title>
@@ -337,12 +337,11 @@ ACCEPT     net           $FW       tcp        22</programlisting>
   <section id="Compile">
     <title>Compile then Execute</title>
 
-    <para>Shorewall versions beginning with 3.2.0 use a "compile" then
-    "execute" approach. The Shorewall configuration compiler reads the
-    configuration files and generates a shell script. Errors in the
-    compilation step cause the script to be discarded and the command to be
-    aborted. If the compilation step doesn't find any errors then the shell
-    script is executed.</para>
+    <para>Shorewall uses a "compile" then "execute" approach. The Shorewall
+    configuration compiler reads the configuration files and generates a shell
+    script. Errors in the compilation step cause the script to be discarded
+    and the command to be aborted. If the compilation step doesn't find any
+    errors then the shell script is executed.</para>
 
     <para>The 'compiled' scripts are placed in the directory <filename
     class="directory">/var/lib/shorewall</filename> and are named to
@@ -355,54 +354,37 @@ ACCEPT     net           $FW       tcp        22</programlisting>
   <section id="Packages">
     <title>Shorewall Packages</title>
 
-    <para>Shorewall 4.0 consists of four packages.</para>
+    <para>Shorewall 4.3 and later consists of four packages.</para>
 
     <orderedlist>
       <listitem>
-        <para><emphasis role="bold">Shorewall-common</emphasis>. This package
-        must be installed on at least one system in your network. That system
-        must also have Shorewall-shell and/or Shorewall-perl installed.</para>
+        <para><emphasis role="bold">Shorewall</emphasis>. This package must be
+        installed on at least one system in your network. It contains
+        everything needed to create an IPv4 firewall.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Shorewall-shell</emphasis>. This package
-        includes the legacy Shorewall configuration compiler written in Bourne
-        Shell. This compiler is very portable but suffers from performance
-        problems and has become hard to maintain.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">Shorewall-perl</emphasis>. An alternative
-        to Shorewall-shell written in the Perl language. This compiler is
-        highly portable to those Unix-like platforms that support Perl
-        (including Cygwin) and is the compiler of choice for new Shorewall
-        installations. Scripts created using Shorewall-perl use
-        iptables-restore to install the generated Netfilter rule set.</para>
+        <para><emphasis role="bold">Shorewall6</emphasis>. This package
+        requires the Shorewall package and adds those components needed to
+        create an IPv6 fireawall.</para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">Shorewall-lite</emphasis>. Shorewall
-        allows for central administration of multiple firewalls through use of
-        Shorewall lite. The full Shorewall product (along with Shorewall-shell
-        and/or Shorewall-perl) are installed on a central administrative
-        system where compiled Shorewall scripts are generated. These scripts
-        are copied to the firewall systems where they run under the control of
-        Shorewall-lite.</para>
-      </listitem>
-    </orderedlist>
-
-    <para>In Shorewall 4.2.4, two additional packages were added:</para>
-
-    <orderedlist>
-      <listitem>
-        <para><emphasis role="bold">Shorewall6</emphasis> - The utilities
-        necessary to <ulink url="IPv6Support.html">control and configure an
-        IPv6 firewall</ulink>.</para>
+        allows for central administration of multiple IPv4 firewalls through
+        use of Shorewall lite. The full Shorewall product is installed on a
+        central administrative system where compiled Shorewall scripts are
+        generated. These scripts are copied to the firewall systems where they
+        run under the control of Shorewall-lite.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Shorewall6-lite</emphasis> - The IPv6
-        equivalent of Shorewall-lite.</para>
+        <para><emphasis role="bold">Shorewall6-lite</emphasis>. Shorewall
+        allows for central administration of multiple IPv4 firewalls through
+        use of Shorewall lite. The full Shorewall product is installed on a
+        central administrative system where compiled Shorewall scripts are
+        generated. These scripts are copied to the firewall systems where they
+        run under the control of Shorewall-lite.</para>
       </listitem>
     </orderedlist>
   </section>

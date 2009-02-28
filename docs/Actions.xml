@@ -41,9 +41,10 @@
   </articleinfo>
 
   <caution>
-    <para>This article applies to Shorewall 4.0 and later. If you are running
-    a version of Shorewall earlier than Shorewall 4.0.0 then please see the
-    documentation for that release.</para>
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    4.3.5 then please see the documentation for that
+    release.</emphasis></para>
   </caution>
 
   <section id="Intro">
@@ -104,9 +105,8 @@ ACCEPT   -              -               tcp     135,139,445
         file to <filename class="directory">/etc/shorewall</filename> (or
         somewhere else on your CONFIG_PATH) and modify the copy.</para>
 
-        <para>Standard Actions were largely replaced by <ulink
-        url="Macros.html">macros</ulink> in Shorewall 3.0 and later major
-        versions.</para>
+        <para>Standard Actions have been largely replaced by <ulink
+        url="Macros.html">macros</ulink> .</para>
       </listitem>
 
       <listitem>
@@ -119,19 +119,6 @@ ACCEPT   -              -               tcp     135,139,445
         url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>).</para>
       </listitem>
     </orderedlist>
-  </section>
-
-  <section id="Enabling">
-    <title>Enabling the Use of Actions</title>
-
-    <para>In Shorewall version 3.4 and later, to make use of any of the three
-    types of actions you must set the USE_ACTIONS option to Yes in
-    <filename>/etc/shorewall/shorewall.conf</filename>.</para>
-
-    <note>
-      <para>Shorewall-perl will complain if USE_ACTIONS=No since that compiler
-      always includes the capability to use actions.</para>
-    </note>
   </section>
 
   <section id="Default">
@@ -185,10 +172,9 @@ ACCEPT   -              -               tcp     135,139,445
   <section id="Limit">
     <title>Limiting Per-IP Connection Rate</title>
 
-    <para>Beginning with Shorewall 3.0.4, Shorewall has a <quote>Limit</quote>
-    <ulink url="Actions.html">action</ulink>. Limit is invoked with a
-    comma-separated list in place of a logging tag. The list has three
-    elements:</para>
+    <para>Shorewall supports a <quote>Limit</quote> <ulink
+    url="Actions.html">action</ulink>. Limit is invoked with a comma-separated
+    list in place of a logging tag. The list has three elements:</para>
 
     <orderedlist>
       <listitem>
@@ -251,45 +237,8 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
     <section id="LimitImp">
       <title>How Limit is Implemented</title>
 
-      <para>For those who are curious, the Limit action is implemented in
-      Shorewall 3.0 and Shorewall 3.2 as follows:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>The file <filename>/usr/share/shorewall/action</filename>.
-          Limit is empty.</para>
-        </listitem>
-
-        <listitem>
-          <para>The file <filename>/usr/share/shorewall/Limit</filename> is as
-          follows:</para>
-
-          <programlisting>set -- $(separate_list $TAG)
-
-[ $# -eq 3 ] || fatal_error "Rule must include &lt;set name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag"
-
-run_iptables -A $CHAIN -m recent --name $1 --set
-
-if [ -n "$LEVEL" ]; then
-    run_iptables -N $CHAIN%
-    log_rule_limit $LEVEL $CHAIN% $1 DROP "" "" -A
-    run_iptables -A $CHAIN% -j DROP
-    run_iptables -A $CHAIN -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $CHAIN%
-else
-    run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j DROP
-fi
-
-run_iptables -A $CHAIN -j ACCEPT</programlisting>
-        </listitem>
-      </itemizedlist>
-
-      <para>In Shorewall 3.3, Limit is made into a built-in action; basically
-      that means that the above code now lives inside of Shorewall rather than
-      in a separate file.</para>
-
-      <para>For completeness, here's the above
-      <filename>/usr/share/shorewall/Limit</filename> for use with
-      Shorewall-perl:</para>
+      <para>For those who are curious, the Limit action is implemented as
+      follows:</para>
 
       <programlisting>my @tag = split /,/, $tag;
 
@@ -537,7 +486,7 @@ add_rule $chainref, '-j ACCEPT';
       </listitem>
 
       <listitem>
-        <para>MARK (Added in Shorewall 3.4.4)</para>
+        <para>MARK</para>
 
         <para><simplelist>
             <member>[!]&lt;<emphasis>value</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;][:C]</member>
@@ -743,20 +692,12 @@ acton:info:test  $FW              net</programlisting>
 
       <para>/etc/shorewall/actions<programlisting>DropBcasts</programlisting></para>
 
-      <para>/etc/shorewall/action.DropBcasts<programlisting># This file is empty</programlisting>When
-      using Shorewall-shell:</para>
-
-      <para><blockquote>
-          <para>/etc/shorewall/DropBcasts<programlisting>[ -n "$LEVEL" ] &amp;&amp; log_rule_limit $LEVEL $CHAIN DropBcasts DROP   "" "$TAG" -A
-run_iptables -A DropBcasts -m pkttype --pkttype broadcast -j DROP</programlisting></para>
-        </blockquote>When using Shorewall-Perl:<blockquote>
-          <para>/etc/shorewall/DropBcasts<programlisting>use Shorewall::Chains;
+      <para>/etc/shorewall/action.DropBcasts<programlisting># This file is empty</programlisting>/etc/shorewall/DropBcasts<programlisting>use Shorewall::Chains;
 
 log_rule_limit( $level, $chainref, 'DropBcasts', 'DROP', '', $tag, 'add', '' ) if $level ne ''; 
 add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );
 
 1;</programlisting></para>
-        </blockquote></para>
     </example>
 
     <para>For a richer example, see <ulink url="PortKnocking.html">this

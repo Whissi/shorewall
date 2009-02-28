@@ -35,20 +35,20 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 4.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    4.0.0 then please see the documentation appropriate for your
+    4.3.5 then please see the documentation appropriate for your
     version.</emphasis></para>
   </caution>
 
   <section id="Overview">
     <title>Overview</title>
 
-    <para>Beginning with Shorewall version 3.1, Shorewall has the capability
-    to compile a Shorewall configuration and produce a runnable firewall
-    program script. The script is a complete program which can be placed on a
-    system with <emphasis>Shorewall Lite</emphasis> installed and can serve as
-    the firewall creation script for that system.</para>
+    <para>Shorewall has the capability to compile a Shorewall configuration
+    and produce a runnable firewall program script. The script is a complete
+    program which can be placed on a system with <emphasis>Shorewall
+    Lite</emphasis> installed and can serve as the firewall creation script
+    for that system.</para>
 
     <section id="Restrictions">
       <title>Restrictions</title>
@@ -64,15 +64,10 @@
         </listitem>
 
         <listitem>
-          <para>DYNAMIC_ZONES=Yes in <filename>shorewall.conf</filename> is
-          not supported.</para>
-        </listitem>
-
-        <listitem>
           <para>All extension scripts used are copied into the program (with
           the exception of <ulink url="shorewall_extension_scripts.htm">those
-          executed at compile-time by Shorewall-perl</ulink>). The
-          ramifications of this are:</para>
+          executed at compile-time by the compiler</ulink>). The ramifications
+          of this are:</para>
 
           <itemizedlist>
             <listitem>
@@ -81,9 +76,8 @@
             </listitem>
 
             <listitem>
-              <para>Beginning with Shorewall 3.2.9 and 3.4.0 RC2, the
-              <filename>params</filename> file is only processed at compile
-              time if you set EXPORTPARAMS=No in
+              <para>The <filename>params</filename> file is only processed at
+              compile time if you set EXPORTPARAMS=No in
               <filename>shorewall.conf</filename>. For run-time setting of
               shell variables, use the <filename>init</filename> extension
               script. Although the default setting is EXPORTPARAMS=Yes for
@@ -121,8 +115,8 @@
     command:</para>
 
     <blockquote>
-      <para><command>shorewall compile [ -e ] [ C {perl|shell} ] [
-      &lt;directory name&gt; ] &lt;path name&gt;</command></para>
+      <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ]
+      &lt;path name&gt;</command></para>
     </blockquote>
 
     <para>where</para>
@@ -144,16 +138,6 @@
             supports. It rather reads those capabilities from
             <filename>/etc/shorewall/capabilities</filename>. See below for
             details.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>-C {perl|shell}</term>
-
-          <listitem>
-            <para>Specifies the compiler to use. Overrides the
-            SHOREWALL_COMPILER setting in <filename><ulink
-            url="manpages/shorewall.conf.html">shorewall.conf</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -223,19 +207,10 @@
 
       <listitem>
         <para>The <filename>/etc/shorewall/shorewall.conf</filename> file is
-        used to determine several settings during the compilation process,
-        even though there is a shorewall.conf file in the export directory.
-        <filename>/sbin/shorewall</filename> uses the SHOREWALL_COMPILER
-        setting from <filename>/etc/shorewall/shorewall.conf</filename> to
-        determine which compiler to launch. If the compiler is
-        shorewall-shell, then the SHOREWALL_SHELL setting from
-        <filename>/etc/shorewall/shorewall.conf</filename> determines the
-        shell to use. <filename>/sbin/shorewall</filename> also uses the
-        VERBOSITY setting from
-        <filename>/etc/shorewall/shorewall.conf</filename> for determining how
-        much output the compiler generates. All other settings are taken from
-        the <filename>shorewall.conf </filename>file in the remote systems
-        export directory.</para>
+        used to determine the VERBOSITY setting which determines how much
+        output the compiler generates. All other settings are taken from the
+        <filename>shorewall.conf </filename>file in the remote systems export
+        directory.</para>
 
         <caution>
           <para>If you want to be able to allow non-root users to manage
@@ -321,7 +296,7 @@
             <para><command>/sbin/shorewall load -c gateway</command><note>
                 <para>Although scp and ssh are used by default, you can use
                 other utilities by setting RSH_COMMAND and RCP_COMMAND in
-                <filename>/etc/shorewall/shorewall.conf</filename>. </para>
+                <filename>/etc/shorewall/shorewall.conf</filename>.</para>
               </note></para>
           </listitem>
         </orderedlist>
@@ -339,9 +314,9 @@
         command compiles a firewall script from the configuration files in the
         current working directory (using <command>shorewall compile
         -e</command>), copies that file to the remote system via scp and
-        restarts Shorewall Lite on the remote system via ssh. Note: In
-        Shorewall 3.2.6 and later, the <emphasis role="bold">reload</emphasis>
-        command also supports the '-c' option.</para>
+        restarts Shorewall Lite on the remote system via ssh. The <emphasis
+        role="bold">reload</emphasis> command also supports the '-c'
+        option.</para>
 
         <para>I personally place a <filename>Makefile</filename> in each
         export directory as follows:</para>
@@ -594,11 +569,11 @@ clean:
           <para>If you set variables in the params file, there are a couple of
           issues:</para>
 
-          <para>Beginning with Shorewall 3.2.9 and 3.4.0 RC2, the
-          <filename>params</filename> file is only processed at compile time
-          if you set EXPORTPARAMS=No in <filename>shorewall.conf</filename>.
-          For run-time setting of shell variables, use the
-          <filename>init</filename> extension script.</para>
+          <para>The <filename>params</filename> file is not processed at run
+          time if you set EXPORTPARAMS=No in
+          <filename>shorewall.conf</filename>. For run-time setting of shell
+          variables, use the <filename>init</filename> extension
+          script.</para>
 
           <para>If the <filename>params</filename> file needs to set shell
           variables based on the configuration of the firewall system, you can
@@ -658,8 +633,7 @@ clean:
           <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
 
-          <para>Or, if you are running Shorewall 3.2.6 or later, simply use
-          the -c option the next time that you use the
+          <para>Or simply use the -c option the next time that you use the
           <command>reload</command> command.</para>
         </listitem>
       </orderedlist>
@@ -738,9 +712,8 @@ CAPVERSION=40190</programlisting>
     system with Shorewall installed and used when compiling firewall programs
     to run on the remote system.</para>
 
-    <para>Beginning with Shorewall Lite version 3.2.2, the
-    <filename>capabilities</filename> file may also be creating using
-    <filename>/sbin/shorewall-lite</filename>:<blockquote>
+    <para>The <filename>capabilities</filename> file may also be creating
+    using <filename>/sbin/shorewall-lite</filename>:<blockquote>
         <para><command>shorewall-lite show -f capabilities &gt;
         capabilities</command></para>
       </blockquote></para>

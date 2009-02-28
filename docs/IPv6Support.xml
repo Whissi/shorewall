@@ -20,6 +20,8 @@
     <copyright>
       <year>2008</year>
 
+      <year>2009</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -33,6 +35,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    4.3.5 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>Overview</title>
@@ -77,9 +86,8 @@
           of <filename>/sbin/shorewall</filename>.
           <filename>/sbin/shorewall</filename> only handles IPv4 while
           <filename>/sbin/shorewall6</filename> handles only IPv6.. Shorewall6
-          depends on both Shorewall-common and on Shorewall-perl. The
-          Shorewall6 configuration is stored in <filename
-          class="directory">/etc/shorewall6</filename>.</para>
+          depends on Shorewall. The Shorewall6 configuration is stored in
+          <filename class="directory">/etc/shorewall6</filename>.</para>
         </listitem>
 
         <listitem>
@@ -476,11 +484,7 @@ ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                      
             </listitem>
           </itemizedlist>
 
-          <para>Also, please note that since Shorewall6 is based on
-          Shorewall-perl, dynamic zones are not supported. Hence the add and
-          delete commands are not supported by
-          <filename>/sbin/shorewall6</filename> and
-          <filename>/sbin/shorewall6-lite</filename>.</para>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -505,19 +509,15 @@ ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                      
 
     <itemizedlist>
       <listitem>
-        <para>Shorewall-common 4.2.4 or later.</para>
+        <para>Shorewall 4.3.5 or later.</para>
       </listitem>
 
       <listitem>
-        <para>Shorewall-perl 4.2.4 or later.</para>
-      </listitem>
-
-      <listitem>
-        <para>Shorewall6 4.2.4 or later.</para>
+        <para>Shorewall6 4.3.5 or later.</para>
       </listitem>
     </itemizedlist>
 
-    <para>You may also with to install Shorewall6-lite 4.3.4 or later on your
+    <para>You may also with to install Shorewall6-lite 4.3.5 or later on your
     remote firewalls to allow for central IPv6 firewall administration.</para>
   </section>
 

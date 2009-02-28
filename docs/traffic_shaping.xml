@@ -134,65 +134,17 @@
     classes (and their bandwidth limits), and it uses SFQ inside these classes
     to make sure, that different data streams are handled equally.</para>
 
-    <para><emphasis role="bold">If you are running Shorewall-shell or if you
-    are running Shorewall-perl 4.1.5 or earlier:</emphasis><blockquote>
-        <para><emphasis role="bold">You can only shape outgoing traffic. The
-        reason for this is simple, the packets were already received by your
-        network card before you can decide what to do with them</emphasis>. So
-        the only choice would be to drop them which normally makes no sense
-        (since you received the packet already, it went through the possible
-        bottleneck (the incoming connection). The next possible bottleneck
-        might come if the packet leaves on another interface, so this will be
-        the place where queuing might occur. So, defining queues for incoming
-        packets is not very useful, you just want to have it forwarded to the
-        outgoing interface as fast as possible.</para>
+    <para>You can shape incoming traffic through use of an
+    <firstterm>Intermediate Frame Block</firstterm> (IFB) device. <link
+    linkend="IFB">See below</link>. <emphasis role="bold">But beware: using an
+    IFB can result in queues building up both at your ISPs router and at your
+    own.</emphasis></para>
 
-        <para>There is one exception, though. Limiting incoming traffic to a
-        value a bit slower than your actual line speed will avoid queuing on
-        the other end of that connection. This is mostly useful if you don't
-        have access to traffic control on the other side and if this other
-        side has a faster network connection than you do (the line speed
-        between the systems is the bottleneck, e.g. a DSL or Cable Modem
-        connection to your provider's router, the router itself is normally
-        connected to a much faster backbone). So, if you drop packets that are
-        coming in too fast, the underlying protocol might recognize this and
-        slow down the connection. TCP has a builtin mechanism for this, UDP
-        has not (but the protocol over UDP might recognize it , if there is
-        any).</para>
-
-        <para>The reason why queuing is bad in these cases is, that you might
-        have packets which need to be prioritized over others, e.g. VoIP or
-        ssh. For this type of connections it is important that packets arrive
-        in a certain amount of time. For others like HTTP downloads, it does
-        not really matter if it takes a few seconds more.</para>
-
-        <para>If you have a large queue on the other side and the router there
-        does not care about QoS or the QoS bits are not set properly, your
-        important packets will go into the same queue as your less time
-        critical download packets which will result in a large delay.</para>
-      </blockquote></para>
-
-    <para><emphasis role="bold">If you are running Shorewall-perl 4.1.6 or
-    later:</emphasis><blockquote>
-        <para>You can shape incoming traffic through use of an
-        <firstterm>Intermediate Frame Block</firstterm> (IFB) device. <link
-        linkend="IFB">See below</link>. <emphasis role="bold">But beware:
-        using an IFB can result in queues building up both at your ISPs router
-        and at your own.</emphasis></para>
-      </blockquote></para>
-
-    <para><emphasis role="bold">This is not to say that you cannot shape
-    download traffic, regardless of which Shorewall release you are
-    running</emphasis>.</para>
-
-    <blockquote>
-      <para>If you wish to shape downloads, you can always configure traffic
-      shaping on your firewall's local interface. An example appears <link
-      linkend="Downloads">below</link>.</para>
-
-      <para>Again, however, <emphasis role="bold">this can result in queues
-      building up both at your ISPs router and at your own</emphasis>.</para>
-    </blockquote>
+    <para>If you wish to shape downloads, you can also configure traffic
+    shaping on your firewall's local interface. An example appears <link
+    linkend="Downloads">below</link>. Again, however, <emphasis
+    role="bold">this can result in queues building up both at your ISPs router
+    and at your own</emphasis>.</para>
 
     <para>You shape and control outgoing traffic by assigning the traffic to
     <firstterm>classes</firstterm>. Each class is associated with exactly one
@@ -371,13 +323,10 @@
           only once in this file. You may NOT specify the name of an alias
           (e.g., eth0:0) here; see <ulink url="FAQ.htm#faq18">FAQ #18</ulink>.
           You man NOT specify wildcards here, e.g. if you have multiple ppp
-          interfaces, you need to put them all in here! With Shorewall
-          versions prior to 3.0.8 and 3.2.0 Beta 8, the device named in this
-          column must exist at the time that Shorewall is started, restarted
-          or refreshed. Beginning with Shorewall 3.0.8 and 3.2.0 Beta 8,
-          Shorewall will determine if the device exists and will only
-          configure the device if it does exist. If it doesn't exist, the
-          following warning is issued:</para>
+          interfaces, you need to put them all in here! Shorewall will
+          determine if the device exists and will only configure the device if
+          it does exist. If it doesn't exist, the following warning is
+          issued:</para>
 
           <para><emphasis role="bold">WARNING: Device &lt;device name&gt; not
           found -- traffic-shaping configuration skipped</emphasis></para>
@@ -385,10 +334,9 @@
           <para>Shorewall assigns a sequential <firstterm>interface
           number</firstterm> to each interface (the first entry in
           <filename>/etc/shorewall/tcdevices</filename> is interface 1, the
-          second is interface 2 and so on) Beginning with Shorewall-perl
-          4.1.6, you can explicitly specify the interface number by prefixing
-          the interface name with the number and a colon (":"). Example:
-          1:eth0.</para>
+          second is interface 2 and so on) You can also explicitly specify the
+          interface number by prefixing the interface name with the number and
+          a colon (":"). Example: 1:eth0.</para>
         </listitem>
 
         <listitem>
@@ -400,8 +348,8 @@
           exceeded, the excess packets are dropped. You want this mainly if
           you have a DSL or Cable Connection to avoid queuing at your
           providers side. If you don't want any traffic to be dropped set this
-          to a value faster than your interface maximum rate (or to 0 (zero),
-          if you are running Shorewall 3.2.6 or later).</para>
+          to a value faster than your interface maximum rate (or to 0
+          (zero).</para>
 
           <para>To determine the optimum value for this setting, we recommend
           that you start by setting it significantly below your measured
@@ -420,8 +368,8 @@
         </listitem>
 
         <listitem>
-          <para>OPTIONS (Added in Shorewall-perl 4.1.4) — A comma-separated
-          list of options from the following list:</para>
+          <para>OPTIONS — A comma-separated list of options from the following
+          list:</para>
 
           <variablelist>
             <varlistentry>
@@ -439,14 +387,13 @@
         </listitem>
 
         <listitem>
-          <para>REDIRECTED INTERFACES (Added in Shorewall-perl 4.1.6) —
-          Entries are appropriate in this column only if the device in the
-          INTERFACE column names a <link linkend="IFB">Intermediate Frame
-          Block (IFB)</link>. It lists the physical interfaces that will have
-          their input shaped using classes defined on the IFB. Neither the IFB
-          nor any of the interfaces listed in this column may have an
-          IN-BANDWIDTH specified. You may specify zero (0) or a dash ("-:) in
-          the IN-BANDWIDTH column.</para>
+          <para>REDIRECTED INTERFACES — Entries are appropriate in this column
+          only if the device in the INTERFACE column names a <link
+          linkend="IFB">Intermediate Frame Block (IFB)</link>. It lists the
+          physical interfaces that will have their input shaped using classes
+          defined on the IFB. Neither the IFB nor any of the interfaces listed
+          in this column may have an IN-BANDWIDTH specified. You may specify
+          zero (0) or a dash ("-:) in the IN-BANDWIDTH column.</para>
 
           <para>IFB devices automatically get the <emphasis
           role="bold">classify</emphasis> option.</para>
@@ -473,15 +420,14 @@ ppp0           6000kbit         500kbit</programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>INTERFACE - Name of interface. Users of Shorewall-perl 4.1.6
-          or later may also specify the interface number. Must match the name
-          (or number) of an interface with an entry in
-          <filename>/etc/shorewall/tcdevices</filename>. If the interface has
-          the <emphasis role="bold">classify</emphasis> option in
-          <filename>/etc/shorewall/tcdevices</filename>, then the interface
-          name or number must be followed by a colon and a <firstterm>class
-          number</firstterm>. Examples: eth0:1, 4:9. Class numbers must be
-          unique for a given interface.</para>
+          <para>INTERFACE - Name of interface. Users may also specify the
+          interface number. Must match the name (or number) of an interface
+          with an entry in <filename>/etc/shorewall/tcdevices</filename>. If
+          the interface has the <emphasis role="bold">classify</emphasis>
+          option in <filename>/etc/shorewall/tcdevices</filename>, then the
+          interface name or number must be followed by a colon and a
+          <firstterm>class number</firstterm>. Examples: eth0:1, 4:9. Class
+          numbers must be unique for a given interface.</para>
         </listitem>
 
         <listitem>
@@ -685,11 +631,10 @@ ppp0           6000kbit         500kbit</programlisting>
           </itemizedlist>
 
           <note>
-            <para>The "T" qualifier was added in Shorewall version 3.3.6 and
-            is not available in earlier versions. <emphasis role="bold">Use
-            this qualifier if you want the rule to apply equally to traffic
-            being routed through the firewall and to traffic originating on
-            the firewall itself.</emphasis></para>
+            <para> <emphasis role="bold">Use the 'T' qualifier if you want the
+            rule to apply equally to traffic being routed through the firewall
+            and to traffic originating on the firewall
+            itself.</emphasis></para>
           </note>
 
           <para>Normally, the mark is applied to the packet. If you follow the
@@ -735,12 +680,11 @@ ppp0           6000kbit         500kbit</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">COMMENT</emphasis> (Added in
-              Shorewall version 3.3.3) -- the rest of the line will be
-              attached as a comment to the Netfilter rule(s) generated by the
-              following entries. The comment will appear delimited by "/* ...
-              */" in the output of <command>shorewall show
-              mangle</command></para>
+              <para><emphasis role="bold">COMMENT</emphasis> -- the rest of
+              the line will be attached as a comment to the Netfilter rule(s)
+              generated by the following entries. The comment will appear
+              delimited by "/* ... */" in the output of <command>shorewall
+              show mangle</command></para>
 
               <para>To stop the comment from being attached to further rules,
               simply include COMMENT on a line by itself.</para>
@@ -767,9 +711,7 @@ ppp0           6000kbit         500kbit</programlisting>
             <member>prio</member>
           </simplelist>
 
-          <para>With Shorewall versions prior to 3.2.3, classify rules are
-          always placed in the POSTROUTING chain. Beginning with Shorewall
-          3.2.3, classification occurs in the POSTROUTING chain <emphasis
+          <para>Classification occurs in the POSTROUTING chain <emphasis
           role="bold">except</emphasis> when the SOURCE contains
           $FW[:&lt;<emphasis>address</emphasis>&gt;] in which case, the
           classify action takes place in the OUTPUT chain. When used with the
@@ -783,7 +725,7 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>SOURCE - Source of the packet. </para>
+          <para>SOURCE - Source of the packet.</para>
 
           <para>May be:</para>
 
@@ -835,7 +777,7 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>DEST - Destination of the packet. </para>
+          <para>DEST - Destination of the packet.</para>
 
           <para>May be:</para>
 
@@ -873,12 +815,8 @@ ppp0           6000kbit         500kbit</programlisting>
           ipp2p option without the leading "--" (example "bit" for
           bit-torrent). If no PORT is given, "ipp2p" is assumed. Note that the
           xtables-addons version of IPP2P does not support the "ipp2p" option;
-          to use that version of IPP2P with Shorewall-shell or with
-          Shorewall-perl 4.2.4 or earlier, you must specify an option other
-          than "ipp2p". Shorewall-perl 4.2.5 and later support a
-          comma-separated list of IPP2P options in this column; if the column
-          is empty or contains "ipp2p", then those versions of Shorewall-perl
-          will substitute "edk,kazaa,gnu,dc".</para>
+          if the column is empty or contains "ipp2p" when using that version
+          of IPP2P, Shorewall will substitute "edk,kazaa,gnu,dc".</para>
 
           <para>This column is ignored if PROTOCOL = all but must be entered
           if any of the following field is supplied. In that case, it is
@@ -893,11 +831,10 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>USER/GROUP (Added in Shorewall version 1.4.10) - (Optional)
-          This column may only be non-empty if the SOURCE is the firewall
-          itself. When this column is non-empty, the rule applies only if the
-          program generating the output is running under the effective user
-          and/or group. It may contain :</para>
+          <para>USER/GROUP (Optional) This column may only be non-empty if the
+          SOURCE is the firewall itself. When this column is non-empty, the
+          rule applies only if the program generating the output is running
+          under the effective user and/or group. It may contain :</para>
 
           <para>[!][&lt;user name or number&gt;]:[&lt;group name or
           number&gt;][+&lt;program name&gt;]</para>
@@ -913,9 +850,9 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>TEST - Defines a test on the existing packet or connection
-          mark. The rule will match only if the test returns true. Tests have
-          the format [!]&lt;value&gt;[/&lt;mask&gt;][:C]</para>
+          <para>TEST (Optional) Defines a test on the existing packet or
+          connection mark. The rule will match only if the test returns true.
+          Tests have the format [!]&lt;value&gt;[/&lt;mask&gt;][:C]</para>
 
           <para>Where:</para>
 
@@ -934,11 +871,10 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>LENGTH (Optional, added in Shorewall version 3.2.0) Packet
-          Length - This field, if present, allows you to match the length of a
-          packet against a specific value or range of values. A range is
-          specified in the form &lt;min&gt;:&lt;max&gt; where either
-          &lt;min&gt; or &lt;max&gt; (but not both) may be omitted. If
+          <para>LENGTH (Optional) This field, if present, allows you to match
+          the length of a packet against a specific value or range of values.
+          A range is specified in the form &lt;min&gt;:&lt;max&gt; where
+          either &lt;min&gt; or &lt;max&gt; (but not both) may be omitted. If
           &lt;min&gt; is omitted, then 0 is assumed; if &lt;max&gt; is
           omitted, than any packet that is &lt;min&gt; or longer will
           match.</para>
@@ -951,9 +887,8 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>TOS (Optional, added in Shorewall version 3.2.0 Beta 6) Type
-          of Service. Either a standard name, or a numeric value to
-          match.</para>
+          <para>TOS (Optional) Type of Service. Either a standard name, or a
+          numeric value to match.</para>
 
           <blockquote>
             <simplelist>
@@ -971,9 +906,8 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>HELPER (Optional, added in Shorewall version 4.2.0 Beta 2).
-          Names one of the Netfilter protocol helper modules such as
-          <emphasis>ftp</emphasis>, <emphasis>sip</emphasis>,
+          <para>HELPER (Optional). Names one of the Netfilter protocol helper
+          modules such as <emphasis>ftp</emphasis>, <emphasis>sip</emphasis>,
           <emphasis>amanda</emphasis>, etc.</para>
         </listitem>
       </itemizedlist>
@@ -1063,8 +997,7 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
 
         <para>Mark all forwarded VOIP connections with connection mark 1 and
         ensure that all VOIP packets also receive that mark (assumes that
-        nf_conntrack_sip is loaded and that Shorewall-perl 4.2.0 or later is
-        being used).</para>
+        nf_conntrack_sip is loaded).</para>
 
         <programlisting>#MARK    SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST      CONNBYTES      TOS      HELPER
 #                                                                PORT(S)  GROUP
@@ -1328,8 +1261,7 @@ eth0            4       94mbit          full            default #for local traff
   <section id="IFB">
     <title>Intermediate Frame Block (IFB) Devices</title>
 
-    <para>Beginning with Shorewall 4.1.6, Shorewall-perl includes support for
-    IFBs. The principles behind an IFB is fairly simple:</para>
+    <para>The principles behind an IFB is fairly simple:</para>
 
     <itemizedlist>
       <listitem>

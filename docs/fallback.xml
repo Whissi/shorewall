@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2005</year>
+      <year>2001-2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -44,22 +44,13 @@
     <itemizedlist>
       <listitem>
         <para>cd to the distribution directory for the version of Shoreline
-        Firewall that you are currently running (NOT the version that you want
-        to fall back to).</para>
+        Firewall that you want to fall back to.</para>
       </listitem>
 
       <listitem>
-        <para>Type <quote>./fallback.sh</quote></para>
+        <para>Type <quote>./install.sh</quote></para>
       </listitem>
     </itemizedlist>
-
-    <caution>
-      <para>The fallback script will replace /etc/shorewall[-lite]/*,
-      /var/lib/shorewall[-lite]/*, /etc/init.d/shorewall[-lilte]] (or
-      equivalent), and /sbin/shorewall[-lite] with the version of these files
-      from before the current version was installed. Any changes to any of
-      these files made since the installation will be lost.</para>
-    </caution>
   </section>
 
   <section id="RPM">
@@ -90,27 +81,5 @@
 
     <para>If you installed using an rpm, at a root shell prompt type
     <quote>rpm -e shorewall</quote>.</para>
-  </section>
-
-  <section id="Shell-Perl">
-    <title>Shorewall-shell and Shorewall-perl</title>
-
-    <para>Shorewall-shell and Shorewall-perl have no configuration files and
-    all of their released files are installed in a single directory. To
-    fallback to a prior release of one of these products using the tarballs,
-    simple re-install the older version.</para>
-
-    <para>To uninstall these products when they have been installed using the
-    tarballs:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>rm -rf /usr/share/shorewall-shell</para>
-      </listitem>
-
-      <listitem>
-        <para>rm -rf /usr/share/shorewall-perl</para>
-      </listitem>
-    </itemizedlist>
   </section>
 </article>

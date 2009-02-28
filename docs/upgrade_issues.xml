@@ -29,6 +29,8 @@
 
       <year>2008</year>
 
+      <year>2009</year>
+
       <holder>Thomas M. Eastep</holder>
 
       <holder></holder>
@@ -72,11 +74,21 @@
   </section>
 
   <section>
+    <title>Versions &gt;= 4.3.5</title>
+
+    <para>If you are using Shorewall-perl, there are no additional upgrade
+    issues. If you are using Shorewall-shell or are upgrading from a Shorewall
+    version earlier than 4.0.0 then you will need to <ulink
+    url="Shorewall-perl.html">migrate to Shorewall-perl</ulink>.
+    Shorewall-4.3.5 and later only use the perl-based compiler.</para>
+  </section>
+
+  <section>
     <title>Versions &gt;= 4.2.0</title>
 
     <orderedlist>
       <listitem>
-        <para> Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed
+        <para>Previously, when HIGH_ROUTE_MARKS=Yes, Shorewall allowed
         non-zero mark values &lt; 256 to be assigned in the OUTPUT chain. This
         has been changed so that only high mark values may be assigned there.
         Packet marking rules for traffic shaping of packets originating on the
@@ -158,7 +170,7 @@
 
       <listitem>
         <para>The value of IMPLICIT_CONTINUE in shorewall.conf (and samples)
-        has been changed from Yes to No. </para>
+        has been changed from Yes to No.</para>
       </listitem>
 
       <listitem>
@@ -169,7 +181,7 @@
 
       <listitem>
         <para>DYNAMIC_ZONES=Yes is no longer supported by Shorewall-perl. Use
-        ipset-based zones instead. </para>
+        ipset-based zones instead.</para>
       </listitem>
     </orderedlist>
   </section>

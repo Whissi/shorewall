@@ -37,9 +37,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.0 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -83,12 +83,9 @@
         <title>(FAQ 37a) I just installed Shorewall on Debian and I can't find
         the sample configurations.</title>
 
-        <para><emphasis role="bold">Answer:</emphasis> With Shorewall 3.x, the
-        samples are included in the shorewall documentation package and are
+        <para><emphasis role="bold">Answer:</emphasis> Beginning with
+        Shorewall 4.0, the samples are in the shorewall-common package and are
         installed in <filename
-        class="directory">/usr/share/doc/shorewall/examples/</filename>.
-        Beginning with Shorewall 4.0, the samples are in the shorewall-common
-        package and are installed in <filename
         class="directory">/usr/share/doc/shorewall-common/examples/</filename>.</para>
       </section>
     </section>
@@ -606,14 +603,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
 
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
-          time that you get a new IP address.<note>
-              <para>If you are running Shorewall 3.2.6 on a Debian-based
-              system, the call to
-              <command>find_first_interface_address</command> in
-              <filename>/etc/shorewall/params</filename> must be preceded with
-              a load of the Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
-<command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
-            </note></para>
+          time that you get a new IP address.</para>
         </listitem>
       </itemizedlist>
 
@@ -733,14 +723,6 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
           save</command> and <command>shorewall[-lite]
           restore</command></ulink>.</para>
         </warning>
-
-        <note>
-          <para>If you are running Shorewall 3.2.6 on a Debian-based system,
-          the call to <command>find_first_interface_address</command> in
-          <filename>/etc/shorewall/params</filename> must be preceded with a
-          load of the Shorewall function library:<programlisting><command>. /usr/share/shorewall/functions</command>
-<command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting></para>
-        </note>
       </section>
 
       <section id="faq2c">
@@ -1026,13 +1008,10 @@ to debug/develop the newnat interface.</programlisting></para>
                                                              non-bridged traffic is not supported anymore.</programlisting>
 
       <para>This kernel change, while necessary, means that Shorewall zones
-      may no longer be defined in terms of bridge ports. See <ulink
-      url="bridge-Shorewall-perl.html">the new Shorewall-shell bridging
-      documentation</ulink> for information about configuring a
-      bridge/firewall under kernel 2.6.20 and later with Shorewall shell or
-      the<ulink url="bridge-Shorewall-perl.html"> Shorewall-perl bridging
-      documentation</ulink> if you use Shorewall-perl
-      (highly-recommended).<note>
+      may no longer be defined in terms of bridge ports. See the<ulink
+      url="bridge-Shorewall-perl.html"> Shorewall-perl bridging
+      documentation</ulink> for information about how to configure
+      bridge/firewalls.<note>
           <para>Following the instructions in the new bridging documentation
           will not prevent the above message from being issued.</para>
         </note></para>
@@ -1312,11 +1291,11 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
             <ulink url="manpages/shorewall-rules.html">rule</ulink> to that
             effect.</para>
 
-            <para>Beginning with Shorewall 3.3.3, packets logged out of these
-            chains may have a source and/or destination that is not in any
-            defined zone (see the output of <command>shorewall[-lite] show
-            zones</command>). Remember that zone membership involves both a
-            firewall interface and an ip address.</para>
+            <para>Packets logged out of these chains may have a source and/or
+            destination that is not in any defined zone (see the output of
+            <command>shorewall[-lite] show zones</command>). Remember that
+            zone membership involves both a firewall interface and an ip
+            address.</para>
           </listitem>
         </varlistentry>
 
@@ -1392,10 +1371,10 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
             or you've done something silly like define a default route out of
             an internal interface.</filename></para>
 
-            <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
-            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>,
-            such packets may also be logged out of a &lt;zone&gt;2all chain or
-            the all2all chain.</para>
+            <para>With OPTIMIZE=1 in <ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>, such
+            packets may also be logged out of a &lt;zone&gt;2all chain or the
+            all2all chain.</para>
           </listitem>
         </varlistentry>
 
@@ -1407,10 +1386,10 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
             your defined zones(<command>shorewall[-lite] show zones</command>
             and look at the printed zone definitions).</para>
 
-            <para>In Shorewall 3.3.3 and later versions with OPTIMIZE=1 in
-            <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>,
-            such packets may also be logged out of the fw2all chain or the
-            all2all chain.</para>
+            <para>With OPTIMIZE=1 in <ulink
+            url="manpages/shorewall.conf.html">shorewall.conf</ulink>, such
+            packets may also be logged out of the fw2all chain or the all2all
+            chain.</para>
           </listitem>
         </varlistentry>
 
@@ -1770,21 +1749,6 @@ Creating input Chains...
       at the -I (--insert) command.</para>
     </section>
 
-    <section id="faq34">
-      <title>(FAQ 34) How can I speed up Shorewall start (restart)?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> Switch to using <ulink
-      url="Shorewall-perl.html">Shorewall-perl</ulink>.</para>
-    </section>
-
-    <section id="faq69">
-      <title>(FAQ 69) When I restart Shorewall, new connections are blocked
-      for a long time. Is there a way to avoid that?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> Switch to using <ulink
-      url="Shorewall-perl.html">Shorewall-perl</ulink>.</para>
-    </section>
-
     <section id="faq43">
       <title>(FAQ 43) I just installed the Shorewall RPM and Shorewall doesn't
       start at boot time.</title>
@@ -1864,12 +1828,11 @@ iptables: Invalid argument
       </itemizedlist>
 
       <note>
-        <para>Beginning with Shorewall 3.4.0, Shorewall no longer attempts to
-        use policy match if you have no IPSEC zones and you have not specified
-        the <option>ipsec</option> option on any entry in
-        <filename>/etc/shorewall/hosts</filename>. The subject message will
-        still appear in your kernel log each time that Shorewall determines
-        the capabilities of your kernel/iptables.</para>
+        <para>Shorewall does not attempt to use policy match if you have no
+        IPSEC zones and you have not specified the <option>ipsec</option>
+        option on any entry in <filename>/etc/shorewall/hosts</filename>. The
+        subject message will still appear in your kernel log each time that
+        Shorewall determines the capabilities of your kernel/iptables.</para>
       </note>
     </section>
 
@@ -2072,8 +2035,8 @@ We have an error talking to the kernel
     <section id="faq12">
       <title>(FAQ 12) Is there a GUI?</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> Yes! Shorewall 3.x
-      support is available in Webmin 1.300. See <ulink
+      <para><emphasis role="bold">Answer:</emphasis> Yes! Shorewall support is
+      available in Webmin. See <ulink
       url="http://www.webmin.com">http://www.webmin.com</ulink></para>
     </section>
 
@@ -2106,16 +2069,6 @@ We have an error talking to the kernel
       type:</para>
 
       <programlisting><command>/sbin/shorewall[-lite] version</command>      </programlisting>
-
-      <section id="faq25a">
-        <title>(FAQ 25a) How do I tell which version of Shorewall-perl and
-        Shorewall-shell that I have installed?</title>
-
-        <para><emphasis role="bold">Answer:</emphasis> At the shell prompt,
-        type:</para>
-
-        <programlisting><command>/sbin/shorewall version -a</command>    </programlisting>
-      </section>
     </section>
 
     <section id="faq31">
@@ -2211,8 +2164,8 @@ We have an error talking to the kernel
         with kernel 2.6.25. So that is what we developed IPv6 support on and
         that's all that it has been tested on. If you are running 2.6.20 or
         later, you can <emphasis role="bold">try</emphasis> to run Shorewall6
-        by hacking<filename> /usr/share/shorewall-perl/prog.footer6</filename>
-        and changing the kernel version test to check for your kernel version
+        by hacking<filename> /usr/share/shorewall/prog.footer6</filename> and
+        changing the kernel version test to check for your kernel version
         rather than 2.6.25 (20625). But after that, you are on your
         own.</para>
 
@@ -2399,69 +2352,8 @@ eth0               eth1                        # eth1 = interface to local netwo
       <title>(FAQ 60) What are the compatibility restrictions between
       Shorewall and Shorewall Lite</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> Beginning with version
-      3.2.3, there are no compatibility constraints between Shorewall and
-      Shorewall-lite.</para>
-    </section>
-  </section>
-
-  <section id="Perl">
-    <title>Shorewall-Perl</title>
-
-    <section id="faq70">
-      <title>(FAQ 70) What is Shorewall-Perl?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> Shorewall-perl is a
-      re-implementation of the Shorewall configuration compiler written in
-      Perl.</para>
-    </section>
-
-    <section id="faq71">
-      <title>(FAQ 71) What are the advantages of using Shorewall-perl?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis></para>
-
-      <itemizedlist>
-        <listitem>
-          <para>The Shorewall-perl compiler is much faster than the
-          Shorewall-shell compiler.</para>
-        </listitem>
-
-        <listitem>
-          <para>The script generated by the Shorewall-perl compiler uses
-          <command>iptables-restore</command> to instantiate the Netfilter
-          configuration. So it runs much faster than the script generated by
-          the Shorewall-shell compiler and doesn't disable new connections
-          during rule set installation.</para>
-        </listitem>
-
-        <listitem>
-          <para>The Shorewall-perl compiler does more thorough checking of the
-          configuration than the Shorewall-shell compiler does.</para>
-        </listitem>
-
-        <listitem>
-          <para>The error messages produced by the Shorewall-perl compiler are
-          better, more consistent and always include the file name and line
-          number where the error was detected.</para>
-        </listitem>
-
-        <listitem>
-          <para>Going forward, the Shorewall-perl compiler will get all
-          enhancements; the Shorewall-shell compiler will only get those
-          enhancements that are easy to retrofit.</para>
-        </listitem>
-      </itemizedlist>
-    </section>
-
-    <section id="faq72">
-      <title>(FAQ 72) Can I switch to using Shorewall-perl without changing my
-      Shorewall configuration?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> Maybe yes, maybe no. See
-      the <ulink url="Shorewall-perl.html">Shorewall Perl article</ulink> for
-      a list of the incompatibilities between Shorewall-shell and
-      Shorewall-perl.</para>
+      <para><emphasis role="bold">Answer:</emphasis> There are no
+      compatibility constraints between Shorewall and Shorewall-lite.</para>
     </section>
   </section>
 

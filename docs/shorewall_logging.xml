@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001 - 2007</year>
+      <year>2001 - 2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -35,9 +35,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.5 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -184,13 +184,12 @@
         </listitem>
       </orderedlist>
 
-      <para>Beginning with Shorewall version 1.3.12, if your kernel has ULOG
-      target support (and most vendor-supplied kernels do), you may also
-      specify a log level of ULOG (must be all caps). When ULOG is used,
-      Shorewall will direct Netfilter to log the related messages via the ULOG
-      target which will send them to a process called <quote>ulogd</quote>.
-      The ulogd program is included in most distributions and is also
-      available from <ulink
+      <para>If your kernel has ULOG target support (and most vendor-supplied
+      kernels do), you may also specify a log level of ULOG (must be all
+      caps). When ULOG is used, Shorewall will direct Netfilter to log the
+      related messages via the ULOG target which will send them to a process
+      called <quote>ulogd</quote>. The ulogd program is included in most
+      distributions and is also available from <ulink
       url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>.
       Ulogd can be configured to log all Shorewall messages to their own log
       file.</para>
@@ -233,12 +232,8 @@ gateway:/etc/shorewall#                                               </programl
       <quote><command>logwatch</command></quote> and
       <quote><command>dump</command></quote> commands.</para>
 
-      <para>Beginning in Shorewall-perl 4.1, the NFLOG target is
-      supported.</para>
-
-      <para>NFLOG is a successor to ULOG. When using <ulink
-      url="Shorewall-perl.html">Shorewall-perl</ulink> 4.1 or later, both ULOG
-      and NFLOG may be followed by a list of up to three numbers in
+      <para>The NFLOG target, a successor to ULOG, is supported shorewall.
+      Both ULOG and NFLOG may be followed by a list of up to three numbers in
       parentheses.</para>
 
       <itemizedlist>

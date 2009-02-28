@@ -35,9 +35,10 @@
   </articleinfo>
 
   <caution>
-    <para>This article applies to Shorewall 4.0 and later. If you are running
-    a version of Shorewall earlier than Shorewall 4.0.0 then please see the
-    documentation for that release.</para>
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    4.3.5 then please see the documentation for that
+    release.</emphasis></para>
   </caution>
 
   <section id="Scripts">
@@ -69,9 +70,8 @@
 
     <itemizedlist>
       <listitem>
-        <para><filename>compile</filename> -- (Added in Shorewall-perl version
-        4.0.6). Invoked by the Shorewall-perl compiler early in the
-        compilation process. Must be written in Perl.</para>
+        <para><filename>compile</filename> -- Invoked by the rules compiler
+        early in the compilation process. Must be written in Perl.</para>
       </listitem>
 
       <listitem>
@@ -87,14 +87,12 @@
 
       <listitem>
         <para><filename>start</filename> -- invoked after the firewall has
-        been started or restarted. The script is also invoked by
-        Shorewall-shell after a successful 'restore'.</para>
+        been started or restarted.</para>
       </listitem>
 
       <listitem>
         <para><filename>started</filename> -- invoked after the firewall has
-        been marked as 'running'. The script is also invoked by
-        Shorewall-shell after a successful 'restore'.</para>
+        been marked as 'running'.</para>
       </listitem>
 
       <listitem>
@@ -147,11 +145,11 @@
       </listitem>
 
       <listitem>
-        <para><filename>isusable</filename> -- (Added in Shorewall-perl
-        version 4.0.3) invoked when Shorewall is trying to determine the
-        usability of the network interface associated with an optional entry
-        in <filename>/etc/shorewall/providers</filename>. $1 is the name of
-        the interface which will have been determined to be up and configured
+        <para><filename>isusable</filename> -- invoked when Shorewall is
+        trying to determine the usability of the network interface associated
+        with an optional entry in
+        <filename>/etc/shorewall/providers</filename>. $1 is the name of the
+        interface which will have been determined to be up and configured
         before the script is invoked. The return value from the script
         indicates whether or not the interface is usable (0 = usable, other =
         unusable).</para>
@@ -185,16 +183,14 @@ esac</programlisting><caution>
       </listitem>
 
       <listitem>
-        <para><filename>save</filename> -- (Added in Shorewall version 4.2.0
-        Beta2). This script is invoked during execution of the
-        <command>shorewall save</command> and <command>shorewall-lite
-        save</command> commands.</para>
+        <para><filename>save</filename> -- This script is invoked during
+        execution of the <command>shorewall save</command> and
+        <command>shorewall-lite save</command> commands.</para>
       </listitem>
 
       <listitem>
-        <para><filename>restored</filename> -- (Added in Shorewall-perl
-        version 4.2.6). This script is invoked at the completion of a
-        successful <command>shorewall restore</command> and
+        <para><filename>restored</filename> -- This script is invoked at the
+        completion of a successful <command>shorewall restore</command> and
         <command>shorewall-lite restore</command>.</para>
       </listitem>
     </itemizedlist>
@@ -210,19 +206,15 @@ esac</programlisting><caution>
     scripts.</para>
 
     <informaltable frame="none" rowheader="firstcol">
-      <tgroup cols="3">
+      <tgroup cols="2">
         <tbody>
           <row>
             <entry><emphasis role="bold">script</emphasis></entry>
 
-            <entry><emphasis role="bold">Shorewall-shell</emphasis></entry>
-
-            <entry><emphasis role="bold">Shorewall-perl</emphasis></entry>
+            <entry><emphasis role="bold">Commands</emphasis></entry>
           </row>
 
           <row>
-            <entry>clear</entry>
-
             <entry>clear</entry>
 
             <entry>clear</entry>
@@ -231,8 +223,6 @@ esac</programlisting><caution>
           <row>
             <entry>compile</entry>
 
-            <entry>-</entry>
-
             <entry>check, compile, export, load, refresh, reload, restart,
             restore,start</entry>
           </row>
@@ -240,23 +230,17 @@ esac</programlisting><caution>
           <row>
             <entry>continue</entry>
 
-            <entry>load, refresh, reload, restart, restore, start</entry>
-
             <entry></entry>
           </row>
 
           <row>
             <entry>init</entry>
 
-            <entry>load, refresh, reload, restart, restore, start</entry>
-
             <entry>load, refresh, reload, restart restore, start</entry>
           </row>
 
           <row>
             <entry>initdone</entry>
-
-            <entry>refresh, restart, restore, start</entry>
 
             <entry>check, compile, export, refresh, restart, start</entry>
           </row>
@@ -265,21 +249,15 @@ esac</programlisting><caution>
             <entry>isusable</entry>
 
             <entry>refresh, restart, restore, start</entry>
-
-            <entry>refresh, restart, restore, start</entry>
           </row>
 
           <row>
             <entry>maclog</entry>
 
-            <entry>load, refresh, reload, restart, restore, start</entry>
-
             <entry>check, compile, export, refresh, restart, start</entry>
           </row>
 
           <row>
-            <entry>refresh</entry>
-
             <entry>refresh</entry>
 
             <entry>refresh</entry>
@@ -289,14 +267,10 @@ esac</programlisting><caution>
             <entry>refreshed</entry>
 
             <entry>refresh</entry>
-
-            <entry>refresh</entry>
           </row>
 
           <row>
             <entry>restored</entry>
-
-            <entry>-</entry>
 
             <entry>restore</entry>
           </row>
@@ -305,22 +279,16 @@ esac</programlisting><caution>
             <entry>save</entry>
 
             <entry>save</entry>
-
-            <entry>save</entry>
           </row>
 
           <row>
             <entry>start</entry>
-
-            <entry>load, reload, restart, restore, start</entry>
 
             <entry>load, reload, restart, start</entry>
           </row>
 
           <row>
             <entry>started</entry>
-
-            <entry>load, reload, restart, restore, start</entry>
 
             <entry>load, reload, restart, start</entry>
           </row>
@@ -329,22 +297,16 @@ esac</programlisting><caution>
             <entry>stop</entry>
 
             <entry>stop, clear</entry>
-
-            <entry>stop, clear</entry>
           </row>
 
           <row>
             <entry>stopped</entry>
 
             <entry>stop, clear</entry>
-
-            <entry>stop, clear</entry>
           </row>
 
           <row>
             <entry>tcclear</entry>
-
-            <entry>load, reload, restart, restore, start</entry>
 
             <entry>load, reload, restart, restore, start</entry>
           </row>
@@ -362,12 +324,10 @@ esac</programlisting><caution>
         <command>run_iptables</command> will run the iptables utility passing
         the arguments to <command>run_iptables</command> and if the command
         fails, the firewall will be stopped (or restored from the last
-        <command>save</command> command, if any). Note that when
-        Shorewall-shell invokes this script during <command>restore</command>,
-        The <command>run_iptables</command> function does nothing; calls to
-        that function are effectively ignored. <command>run_iptables</command>
-        should not be called from the <filename>started</filename> or
-        <filename>restored</filename> scripts.</para>
+        <command>save</command> command, if any).
+        <command>run_iptables</command> should not be called from the
+        <filename>started</filename> or <filename>restored</filename>
+        scripts.</para>
       </listitem>
 
       <listitem>
@@ -428,99 +388,38 @@ esac</programlisting><caution>
 
     <para></para>
 
-    <section id="v3.2.9">
-      <title>Shorewall-shell</title>
-
-      <para>When compiling your firewall configuration, Shorewall copies most
-      extension scripts directly into the "compiled" program where they are
-      executed in-line during processing of the start, restart and restore
-      commands. When copying a script, Shorewall indents the script to match
-      the surrounding code; if you have 'awk' installed on the system where
-      the configuration is being compiled, Shorewall can correctly handle line
-      continuation in your script ("\" as the last character on a line). If
-      you do not have awk, you may not use line continuation in your scripts.
-      Also beware that quoted strings continued from one line to another will
-      have extra whitespace inserted as a result of indentation.</para>
-
-      <note>
-        <para>The <filename>/etc/shorewall/params</filename> script is
-        processed only during compilation if EXPORTPARAMS=No in
-        <filename>shorewall.conf</filename>. So shell variables set in that
-        file may be used in Shorewall configuration files only. Any variables
-        that your extension scripts require at run-time on the firewall system
-        should be set in the <filename>init</filename> extension script (if
-        you need variable values in the <filename>stop</filename> or
-        <filename>stopped</filename> scripts, you will need to set their value
-        in <filename>stop</filename> since <filename>init</filename> is not
-        invoked when processing the <command>stop</command> and
-        <command>clear</command> commands).</para>
-
-        <para>When EXPORTPARAMS=Yes (the default), the
-        <filename>/etc/shorewall/params</filename> script is processed during
-        compilation <emphasis role="bold">and</emphasis> copied into the
-        compiled script as described above. So shell variables set during
-        compilation may be used in Shorewall configuration files while those
-        set at run-time are available to your other extension scripts.Note
-        that if you assign dynamic values to variables, there is no guarantee
-        that the value calculated at compile time will be the same as what is
-        calculated at run time. This is particularly true if you use the
-        <command>shorewall compile</command> command to compile a program then
-        run that program at a later time or if you use Shorewall Lite.</para>
-      </note>
-
-      <note>
-        <para>Extension scripts associated with a particular chain or action
-        are not copied into the compiled script; they are rather processed
-        directly by the compiler using the Bourne shell "." command. For
-        example, if A is an action then if <filename
-        class="directory">/etc/shorewall/A</filename> exists then it will be
-        processed by the compiler rather than copied into the compiled
-        script.</para>
-      </note>
-    </section>
-
     <section id="Perl">
-      <title>Shorewall-perl</title>
+      <title>Compile-time vs Run-time Scripts</title>
 
-      <para>Because the compiler is written in Perl, some of your extension
-      scripts from earlier versions will no longer work because Shorewall-perl
-      runs those extension scripts at compile-time rather than at
-      run-time.</para>
+      <para>Shorewall runs some extension scripts at compile-time rather than
+      at run-time.</para>
 
       <para>The following table summarizes when the various extension scripts
       are run:<informaltable frame="all">
-          <tgroup cols="3">
+          <tgroup cols="2">
             <tbody>
               <row>
                 <entry><emphasis role="bold">Compile-time</emphasis></entry>
 
                 <entry><emphasis role="bold">Run-time</emphasis></entry>
-
-                <entry><emphasis role="bold">Eliminated</emphasis></entry>
               </row>
 
               <row>
                 <entry>compile</entry>
 
                 <entry>clear</entry>
-
-                <entry>continue</entry>
               </row>
 
               <row>
                 <entry>initdone</entry>
 
                 <entry>init</entry>
-
-                <entry></entry>
               </row>
 
               <row>
                 <entry>maclog</entry>
 
                 <entry>isusable</entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -528,32 +427,24 @@ esac</programlisting><caution>
                 actions)</entry>
 
                 <entry>start</entry>
-
-                <entry></entry>
               </row>
 
               <row>
                 <entry></entry>
 
                 <entry>started</entry>
-
-                <entry></entry>
               </row>
 
               <row>
                 <entry></entry>
 
                 <entry>stop</entry>
-
-                <entry></entry>
               </row>
 
               <row>
                 <entry></entry>
 
                 <entry>stopped</entry>
-
-                <entry></entry>
               </row>
 
               <row>
@@ -588,8 +479,7 @@ esac</programlisting><caution>
       script returns a 'true' value; otherwise, the compiler will assume that
       the script failed and will abort the compilation.</para>
 
-      <para>Beginning with Shorewall version 4.0.6, each compile-time script
-      is implicitly prefaced with:</para>
+      <para>Each compile-time script is implicitly prefaced with:</para>
 
       <programlisting>package Shorewall::User;</programlisting>
 
@@ -597,7 +487,7 @@ esac</programlisting><caution>
       line:<programlisting>use Shorewall::Chains;</programlisting>For more
       complex scripts, you may need to 'use' other Shorewall Perl modules --
       browse <filename
-      class="directory">/usr/share/shorewall-perl/Shorewall/</filename> to see
+      class="directory">/usr/share/shorewall/Shorewall/</filename> to see
       what's available.</para>
 
       <para>When a script is invoked, the <emphasis
@@ -616,12 +506,12 @@ esac</programlisting><caution>
           name</emphasis>&gt;"</member>
         </simplelist>Example:<programlisting>add_rule( $chainref, '-j ACCEPT' );</programlisting></para>
 
-      <para>Beginning with Shorewall 4.0.5, add_rule() accepts an optional
-      third argument; If that argument evaluates to true and the passed rule
-      contains a <emphasis role="bold">--dports</emphasis> list with more than
-      15 ports (a port range counts as two ports), the rule will be split into
-      multiple rules where each resulting rule has 15 or fewer ports in its
-      <emphasis role="bold">--dports</emphasis> list.</para>
+      <para>The add_rule() function accepts an optional third argument; If
+      that argument evaluates to true and the passed rule contains a <emphasis
+      role="bold">--dports</emphasis> list with more than 15 ports (a port
+      range counts as two ports), the rule will be split into multiple rules
+      where each resulting rule has 15 or fewer ports in its <emphasis
+      role="bold">--dports</emphasis> list.</para>
 
       <para>To insert a rule into the chain:<programlisting> insert_rule( $chainref, &lt;<emphasis>rulenum</emphasis>&gt;, &lt;<emphasis>the rule</emphasis>&gt; );</programlisting>The
       <emphasis role="bold">log_rule_limit()</emphasis> function works like it
@@ -662,12 +552,6 @@ esac</programlisting><caution>
       <para>Example:</para>
 
       <programlisting>my $chainref = $filter_table-&gt;{INPUT}; #Same as above with a few less keystrokes; runs faster too</programlisting>
-
-      <para>The 'continue' script has been eliminated because it no longer
-      make any sense under Shorewall-perl. That script was designed to allow
-      you to add special temporary rules during [re]start. Shorewall-perl
-      doesn't need such rules since the rule set is instantiated atomically by
-      table.</para>
     </section>
   </section>
 </article>

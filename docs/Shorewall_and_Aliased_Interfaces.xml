@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2007</year>
+      <year>2001-2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -35,9 +35,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.5 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -198,11 +198,10 @@ eth0                   eth1            206.124.146.178</programlisting>
         connections using those addresses may be severed.</para>
       </warning>
 
-      <para>Beginning with Shorewall 1.3.14, Shorewall can actually create the
-      <quote>label</quote> (virtual interface) so that you can see the created
-      address using ifconfig. In addition to setting ADD_SNAT_ALIASES=Yes, you
-      specify the virtual interface name in the INTERFACE column as
-      follows.</para>
+      <para>Shorewall can create the <quote>label</quote> (virtual interface)
+      so that you can see the created address using ifconfig. In addition to
+      setting ADD_SNAT_ALIASES=Yes, you specify the virtual interface name in
+      the INTERFACE column as follows.</para>
 
       <para><filename>/etc/shorewall/masq</filename><programlisting>#INTERFACE              SUBNET         ADDRESS
 eth0:0                  eth1           206.124.146.178</programlisting></para>
@@ -243,11 +242,10 @@ eth0:2 = 206.124.146.180</programlisting>
         connections using those addresses may be severed.</para>
       </warning>
 
-      <para>Beginning with Shorewall 1.3.14, Shorewall can actually create the
-      <quote>label</quote> (virtual interface) so that you can see the created
-      address using ifconfig. In addition to setting ADD_IP_ALIASES=Yes, you
-      specify the virtual interface name in the INTERFACE column as
-      follows.</para>
+      <para>Shorewall can create the <quote>label</quote> (virtual interface)
+      so that you can see the created address using ifconfig. In addition to
+      setting ADD_IP_ALIASES=Yes, you specify the virtual interface name in
+      the INTERFACE column as follows.</para>
 
       <para><filename>/etc/shorewall/nat</filename><programlisting>#EXTERNAL          INTERFACE         INTERNAL     ALL INTERFACES    LOCAL
 206.124.146.178    eth0:0            192.168.1.3  no                no</programlisting></para>
@@ -283,8 +281,6 @@ ACCEPT     net        loc:192.168.1.3   tcp       22</programlisting></para>
         192.168.20.0/24. The primary IP address of eth1 is 192.168.1.254 and
         eth1:0 is 192.168.20.254. You simply want your firewall to route
         between these two subnetworks.</title>
-
-        <para>This example applies to Shorewall 1.4.2 and later.</para>
 
         <para>In <filename>/etc/shorewall/zones</filename>:</para>
 

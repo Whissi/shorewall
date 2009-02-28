@@ -22,6 +22,8 @@
 
       <year>2006</year>
 
+      <year>2009</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -37,9 +39,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are installing or upgrading to a version of Shorewall
-    earlier than Shorewall 3.0.0 then please see the documentation for that
+    earlier than Shorewall 4.3.5 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -47,7 +49,9 @@
     <para>Before attempting installation, I strongly urge you to read and
     print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
     QuickStart</ulink> Guide for the configuration that most closely matches
-    your own.</para>
+    your own. This article only tells you how to install the product on your
+    system. The QuickStart Guides describe how to configure the
+    product.</para>
   </important>
 
   <important>
@@ -91,27 +95,13 @@
         page</ulink>.</para>
 
         <para>If you try to install the wrong package, it probably won't
-        work.<note>
-            <para>If you are installing Shorewall 4.0.0 or later then you need
-            to install at least two packages.<itemizedlist>
-                <listitem>
-                  <para>Either Shorewall-shell (the classic shell-based
-                  configuration compiler) and/or Shorewall-perl (the newer and
-                  faster compiler written in Perl).</para>
-                </listitem>
-
-                <listitem>
-                  <para>Shorewall-common</para>
-                </listitem>
-              </itemizedlist>If you are installing Shorewall for the first
-            time, we strongly suggest that you install Shorewall-perl.</para>
-          </note></para>
+        work.</para>
       </listitem>
 
       <listitem>
         <para>Install the RPMs</para>
 
-        <programlisting><command>rpm -ivh &lt;compiler rpm&gt; ... &lt;shorewall-common rpm&gt;</command></programlisting>
+        <programlisting><command>rpm -ivh &lt;shorewall rpm&gt;</command></programlisting>
 
         <caution>
           <para>Some users are in the habit of using the <command>rpm
@@ -122,15 +112,6 @@
           whatever utility you use to manipulate you init symbolic
           links.</para>
         </caution>
-
-        <note>
-          <para>Some <trademark>SUSE</trademark> users have encountered a
-          problem whereby rpm reports a conflict with kernel &lt;= 2.2 even
-          though a 2.4 kernel is installed. If this happens, simply use the
-          --nodeps option to rpm.</para>
-
-          <programlisting><filename><command>rpm -ivh --nodeps &lt;rpms&gt;</command></filename></programlisting>
-        </note>
 
         <note>
           <para>Shorewall is dependent on the iproute package. Unfortunately,
@@ -146,39 +127,7 @@
           <programlisting><command>rpm -ivh --nodeps &lt;rpms&gt;</command></programlisting>
         </note>
 
-        <para>Example:<programlisting><command>rpm -ivh shorewall-perl-4.0.0-1.noarch.rpm shorewall-common-4.0.0-1.noarch.rpm</command></programlisting><important>
-            <para>Simon Matter names his '<emphasis>common</emphasis>' rpm
-            '<emphasis>shorewall</emphasis>' rather than
-            '<emphasis>shorewall-common</emphasis>'. So if you are installing
-            his RPMs, the command would be:<programlisting><command>rpm -ivh shorewall-perl-4.0.0-1.noarch.rpm shorewall-4.0.0-1.noarch.rpm</command></programlisting></para>
-          </important></para>
-      </listitem>
-
-      <listitem>
-        <para>Edit the <link linkend="Config_Files">configuration files</link>
-        to match your configuration.</para>
-
-        <warning>
-          <para>YOU CAN <emphasis role="bold">NOT</emphasis> SIMPLY INSTALL
-          THE RPM AND ISSUE A <quote>shorewall start</quote> COMMAND. SOME
-          CONFIGURATION IS REQUIRED BEFORE THE FIREWALL WILL START. IF YOU
-          ISSUE A <quote>start</quote> COMMAND AND THE FIREWALL FAILS TO
-          START, YOUR SYSTEM WILL NO LONGER ACCEPT ANY NETWORK TRAFFIC. IF
-          THIS HAPPENS, ISSUE A <quote>shorewall clear</quote> COMMAND TO
-          RESTORE NETWORK CONNECTIVITY.</para>
-        </warning>
-      </listitem>
-
-      <listitem>
-        <para>Enable startup by editing
-        /<filename>etc/shorewall/shorewall.conf</filename> and set
-        STARTUP_ENABLED to Yes).</para>
-      </listitem>
-
-      <listitem>
-        <para>Start the firewall by typing</para>
-
-        <programlisting><command>shorewall start</command></programlisting>
+        <para>Example:<programlisting><command>rpm -ivh shorewall-4.3.5-0base.noarch.rpm</command></programlisting></para>
       </listitem>
     </orderedlist>
   </section>
@@ -186,69 +135,22 @@
   <section id="Install_Tarball">
     <title>Install using tarball</title>
 
-    <note>
-      <para>If you are installing Shorewall 4.0.0 or later then you need to
-      install at least two packages.<itemizedlist>
-          <listitem>
-            <para>Either Shorewall-shell (the classic shell-based
-            configuration compiler) and/or Shorewall-perl (the newer and
-            faster compiler written in Perl).</para>
-          </listitem>
-
-          <listitem>
-            <para>Shorewall-common</para>
-          </listitem>
-        </itemizedlist>If you are installing Shorewall for the first time, we
-      strongly suggest that you install Shorewall-perl.</para>
-    </note>
-
-    <para>To install Shorewall-perl and Shorewall-common using the tarball and
-    install scripts:</para>
+    <para>To install Shorewall using the tarball and install script:</para>
 
     <orderedlist>
       <listitem>
-        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2</command>
-<command>tar -jxf shorewall-perl-4.0.0.tar.bz2
-</command></programlisting></para>
+        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-4.3.5.tar.bz2</command></programlisting></para>
       </listitem>
 
       <listitem>
-        <para>cd to the shorewall-perl directory (the version is encoded in
-        the directory name as in <quote>shorewall-perl-4.0.0</quote>).</para>
-      </listitem>
-
-      <listitem>
-        <para>Type:</para>
-
-        <programlisting><command>./install.sh</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para>cd to the shorewall-common directory (the version is encoded in
-        the directory name as in <quote>shorewall-common-4.0.0</quote>)</para>
+        <para>cd to the shorewall directory (the version is encoded in the
+        directory name as in <quote>shorewall-4.3.5</quote>).</para>
       </listitem>
 
       <listitem>
         <para>Type:</para>
 
         <programlisting><command>./install.sh</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para>Edit the <link linkend="Config_Files">configuration files</link>
-        to match your configuration.</para>
-      </listitem>
-
-      <listitem>
-        <para>Enable Startup by editing
-        <filename>/etc/shorewall/shorewall.conf</filename> and set
-        STARTUP_ENABLED=Yes.</para>
-      </listitem>
-
-      <listitem>
-        <para>Start the firewall by typing</para>
-
-        <programlisting><command>shorewall start</command></programlisting>
       </listitem>
 
       <listitem>
@@ -280,11 +182,7 @@
     Shorewall, please modify your
     <filename>/etc/apt/preferences:</filename></para>
 
-    <para><programlisting>Package: shorewall-common
-Pin: release o=Debian,a=testing
-Pin-Priority: 700
-
-Package: shorewall-perl
+    <para><programlisting>Package: shorewall
 Pin: release o=Debian,a=testing
 Pin-Priority: 700
 
@@ -292,7 +190,7 @@ Package: shorewall-doc
 Pin: release o=Debian,a=testing
 Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
     run:</emphasis></emphasis><programlisting># apt-get update
-# apt-get install shorewall-common shorewall-perl</programlisting></para>
+# apt-get install shorewall</programlisting></para>
 
     <para><emphasis><emphasis role="bold">Once you have completed configuring
     Shorewall, you can enable startup at boot time by setting startup=1 in
@@ -365,16 +263,7 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
       <listitem>
         <para>Upgrade the RPM</para>
 
-        <programlisting><command>rpm -Uvh &lt;compiler rpm file&gt; ... &lt;shorewall-common rpm file&gt; </command></programlisting>
-
-        <note>
-          <para>Some <trademark>SUSE</trademark> users have encountered a
-          problem whereby rpm reports a conflict with kernel &lt;= 2.2 even
-          though a 2.4 kernel is installed. If this happens, simply use the
-          --nodeps option to rpm.</para>
-
-          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall-common rpm&gt; &lt;compiler rpm&gt; ...</command></programlisting>
-        </note>
+        <programlisting><command>rpm -Uvh &lt;shorewall rpm file&gt; </command></programlisting>
 
         <note>
           <para>Shorewall is dependent on the iproute package. Unfortunately,
@@ -386,7 +275,7 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
           <para>This may be worked around by using the --nodeps option of
           rpm.</para>
 
-          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt; &lt;compiler-rpm&gt; ...</command></programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt; ...</command></programlisting>
         </note>
       </listitem>
 
@@ -420,30 +309,12 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
 
     <orderedlist>
       <listitem>
-        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-common-4.0.0.tar.bz2</command>
-<command>tar -jxf shorewall-perl-4.0.0.tar.bz2
-tar -jxf shorewall-shell-4.0.0.tar.bz2</command> (if you use this compiler)</programlisting></para>
+        <para>unpack the tarball:<programlisting><command>tar -jxf shorewall-4.3.5.tar.bz2</command></programlisting></para>
       </listitem>
 
       <listitem>
         <para>cd to the shorewall-perl directory (the version is encoded in
-        the directory name as in <quote>shorewall-perl-4.0.0</quote>).</para>
-      </listitem>
-
-      <listitem>
-        <para>Type:</para>
-
-        <programlisting><command>./install.sh</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para>Perform the above two steps for the shorewall-shell directory if
-        you use that compiler.</para>
-      </listitem>
-
-      <listitem>
-        <para>cd to the shorewall-common directory (the version is encoded in
-        the directory name as in <quote>shorewall-perl-4.0.0</quote>)</para>
+        the directory name as in <quote>shorewall-4.3.5</quote>).</para>
       </listitem>
 
       <listitem>
@@ -483,140 +354,6 @@ tar -jxf shorewall-shell-4.0.0.tar.bz2</command> (if you use this compiler)</pro
       /etc/shorewall/shorewall.conf with the new version, we strongly advise
       you to say No. See <link linkend="Upgrade">above</link>.</para>
     </warning>
-  </section>
-
-  <section id="LRP_Upgrade">
-    <title>Upgrade the .lrp</title>
-
-    <para>The following was contributed by Charles Steinkuehler on the Leaf
-    mailing list:</para>
-
-    <blockquote>
-      <para>It's *VERY* simple...just put in a new CD and reboot!  :-)
-      Actually, I'm only slightly kidding...that's exactly how I upgrade my
-      production firewalls.  The partial backup feature I added to Dachstein
-      allows configuration data to be stored separately from the rest of the
-      package.</para>
-
-      <para>Once the config data is separated from the rest of the package,
-      it's an easy matter to upgrade the package while keeping your current
-      configuration (in my case, just inserting a new CD and
-      re-booting).</para>
-
-      <para>Users who aren't running with multiple package paths and using
-      partial backups can still upgrade a package, it just takes a bit of
-      extra work.  The general idea is to use a partial backup to save your
-      configuration, replace the package, and restore your old configuration
-      files. Step-by-step instructions for one way to do this (assuming a
-      conventional single-floppy LEAF system) would be:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Make a backup copy of your firewall disk ('NEW').  This is the
-          disk you will add the upgraded package(s) to.</para>
-        </listitem>
-
-        <listitem>
-          <para>Format a floppy to use as a temporary location for your
-          configuration file(s) ('XFER').  This disk should have the same
-          format as your firewall disk (and could simply be another backup
-          copy of your current firewall).</para>
-        </listitem>
-
-        <listitem>
-          <para>Make sure you have a working copy of your existing firewall
-          ('OLD') in a safe place, that you *DO NOT* use during this process.
-          That way, if anything goes wrong you can simply reboot off the OLD
-          disk to get back to a working configuration.</para>
-        </listitem>
-
-        <listitem>
-          <para>Remove your current firewall configuration disk and replace it
-          with the XFER disk.</para>
-        </listitem>
-
-        <listitem>
-          <para>Use the lrcfg backup menu to make a partial backup of the
-          package(s) you want to upgrade, being sure to backup the files to
-          the XFER disk.  From the backup menu:</para>
-
-          <programlisting>t e &lt;enter&gt; p &lt;enter&gt;
-b &lt;package1&gt; &lt;enter&gt;
-b &lt;package2&gt; &lt;enter&gt;
-...</programlisting>
-        </listitem>
-
-        <listitem>
-          <para>Download and copy the package(s) you want to upgrade onto the
-          NEW disk.</para>
-        </listitem>
-
-        <listitem>
-          <para>Reboot your firewall using the NEW disk...at this point your
-          upgraded packages will have their default configuration.</para>
-        </listitem>
-
-        <listitem>
-          <para>Mount the XFER disk (mount -t msdos /dev/fd0u1680 /mnt)</para>
-        </listitem>
-
-        <listitem>
-          <para>CD to the root directory (cd /)</para>
-        </listitem>
-
-        <listitem>
-          <para>Manually extract configuration data for each package you
-          upgraded:</para>
-
-          <programlisting>tar -xzvf /mnt/package1.lrp
-tar -xzvf /mnt/package2.lrp
-...</programlisting>
-        </listitem>
-
-        <listitem>
-          <para>Unmount (umount /mnt) and remove the XFER disk</para>
-        </listitem>
-
-        <listitem>
-          <para>Using lrcfg, do *FULL* backups of your upgraded
-          packages.</para>
-        </listitem>
-
-        <listitem>
-          <para>Reboot, verifying the firewall works as expected.  Some
-          configuration files may need to be 'tweaked' to work properly with
-          the upgraded package binaries.</para>
-        </listitem>
-      </itemizedlist>
-
-      <important>
-        <para>The new package file &lt;package&gt;.local can be used to
-        fine-tune which files are included (and excluded) from the partial
-        backup (see the Dachstein-CD README for details).  If this file
-        doesn't exist, the backup scripts assume anything from the
-        &lt;package&gt;.list file that resides in /etc or /var/lib/lrpkg is
-        part of the configuration data and is used to create the partial
-        backup.  If shorewall puts anything in /etc that isn't a user modified
-        configuration file, a proper shorewall.local file should be created
-        prior to making the partial backup [<emphasis role="bold">Editor's
-        note</emphasis>: Shorewall places only user-modifiable files in
-        /etc].</para>
-      </important>
-
-      <note>
-        <para>It's obviously possible to do the above 'in-place', without
-        using multiple disks, and even without making a partial backup (ie:
-        copy current config files to /tmp, manually extract new package on top
-        of current running firewall, then copy or merge config data from /tmp
-        and backup...or similar), but anyone capable of that level of command
-        line gymnastics is probably doing it already, without needing detailed
-        instructions! :-)</para>
-      </note>
-    </blockquote>
-
-    <para>For information on other LEAF/Bering upgrade tools, check out <ulink
-    url="http://leaf.cvs.sourceforge.net/*checkout*/leaf/devel/alexrh/lck/README.html">this
-    article by Alex Rhomberg</ulink>.</para>
   </section>
 
   <section id="Config_Files">

@@ -89,20 +89,7 @@
 
       <listitem>
         <para>Create /etc/shorewall/SSHKnock with the following
-        contents.</para>
-
-        <para>If using Shorewall-shell:</para>
-
-        <programlisting>if [ -n "$LEVEL" ]; then
-    log_rule_limit $LEVEL $CHAIN SSHKnock ACCEPT "" "$TAG" -A -p tcp --dport 22   -m recent --rcheck --name SSH
-    log_rule_limit $LEVEL $CHAIN SSHKnock DROP   "" "$TAG" -A -p tcp --dport ! 22
-fi
-run_iptables -A $CHAIN -p tcp --dport 22   -m recent --rcheck --seconds 60 --name SSH          -j ACCEPT
-run_iptables -A $CHAIN -p tcp --dport 1599 -m recent                       --name SSH --remove -j DROP
-run_iptables -A $CHAIN -p tcp --dport 1600 -m recent                       --name SSH --set    -j DROP
-run_iptables -A $CHAIN -p tcp --dport 1601 -m recent                       --name SSH --remove -j DROP</programlisting>
-
-        <para>If using Shorewall-perl:<programlisting>use Shorewall::Chains;
+        contents.<programlisting>use Shorewall::Chains;
 
 if ( $level ) {
     log_rule_limit( $level, 
@@ -148,10 +135,9 @@ SSHKnock:info    net               $FW            tcp         22,1599,1600,1601<
       </listitem>
 
       <listitem>
-        <para>If you wish to use SSHKnock with a forwarded connection, you
-        must be using Shorewall 2.3.1 or later for fullest protection. Assume
-        that you forward port 22 from external IP address 206.124.146.178 to
-        internal system 192.168.1.5. In /etc/shorewall/rules:</para>
+        <para>Assume that you forward port 22 from external IP address
+        206.124.146.178 to internal system 192.168.1.5. In
+        /etc/shorewall/rules:</para>
 
         <programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
 #                                                                            PORT(S)     DEST

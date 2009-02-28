@@ -41,26 +41,22 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.5 then please see the documentation for that
     release.</emphasis></para>
-
-    <para><emphasis role="bold">If you are running the xtables-addons version
-    of IPP2P, you are strongly advised to use Shorewall-perl 4.2.5 or
-    later.</emphasis></para>
   </caution>
 
   <section id="Intro">
     <title>Introduction</title>
 
-    <para>Shorewall versions 2.2.0 and later include support for the ipp2p
-    match facility. This is a departure from my usual policy in that the ipp2p
-    match facility is included in xtables-addons and is unlikely to ever be
-    included in the kernel.org source tree. Questions about how to install
-    xtables-addons or how to build your kernel and/or iptables should not be
-    posted on the Shorewall mailing lists but should rather be referred to the
-    Netfilter Mailing List.</para>
+    <para>Shorewall includes support for the ipp2p match facility. This is a
+    departure from my usual policy in that the ipp2p match facility is
+    included in xtables-addons and is unlikely to ever be included in the
+    kernel.org source tree. Questions about how to install xtables-addons or
+    how to build your kernel and/or iptables should not be posted on the
+    Shorewall mailing lists but should rather be referred to the Netfilter
+    Mailing List.</para>
   </section>
 
   <section id="Scope">
@@ -91,25 +87,11 @@
     <programlisting><command>iptables -m ipp2p --help</command></programlisting>
 
     <para>You must not include the leading "--" on the option(s); Shorewall
-    will supply those characters for you. If you do not include an option
-    then:</para>
+    will supply those characters for you. If you do not include an option then
+    Shorewall will assume "edk,kazaa,gnu,dc".</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>Shorewall-shell and Shorewall-perl up through 4.2.4 will assume
-        "ipp2p". Note that the xtables-addons version of IPP2P no longer
-        supports that option.</para>
-      </listitem>
-
-      <listitem>
-        <para>Shorewall-perl 4.2.5 and later will assume "ipp2p" if that
-        option is supported by the installed iptables/Netfilter. Otherwise,
-        Shorewall-perl will assume "edk,kazaa,gnu,dc"</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>If 'ipp2p' is specified, Shorewall-perl 4.2.5 and later will
-    substitute "edk,kazaa,gnu,dc".</para>
+    <para>If 'ipp2p' is specified, Shorewall will substitute
+    "edk,kazaa,gnu,dc".</para>
   </section>
 
   <section id="Example">

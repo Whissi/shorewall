@@ -83,7 +83,7 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $OWNERSHIP -m $3 $1 ${2}
+    run_install $OWNESHIP -m $3 $1 ${2}
 }
 
 #

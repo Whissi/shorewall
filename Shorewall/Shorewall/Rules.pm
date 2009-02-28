@@ -1978,6 +1978,7 @@ sub generate_matrix() {
 			} else {
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;
+			    move_rules $filter_table->{forward_chain $interface}, $chainref;
 			}
 
 			for my $hostref ( @$arrayref ) {

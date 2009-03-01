@@ -310,7 +310,7 @@ sub initialize( $ ) {
     # Misc Globals
     #
     %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
-		    SHAREDIRPL => '/usr/share/shorewall' ,
+		    SHAREDIRPL => '/usr/share/shorewall/' ,
 		    CONFDIR =>  '/etc/shorewall',
 		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',

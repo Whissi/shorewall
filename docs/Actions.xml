@@ -178,9 +178,9 @@ ACCEPT   -              -               tcp     135,139,445
 
     <orderedlist>
       <listitem>
-        <para>The name of a <quote>recent</quote> set; you select the set name
-        which must conform to the rules for a valid chain name. Different
-        rules that specify the same set name will use the same set of
+        <para>The name of a <quote>recent</quote> list. You select the list
+        name which must conform to the rules for a valid chain name. Different
+        rules that specify the same list name will use the same set of
         counters.</para>
       </listitem>
 
@@ -196,7 +196,7 @@ ACCEPT   -              -               tcp     135,139,445
 
     <para>Connections that exceed the specified rate are dropped.</para>
 
-    <para>For example, to use a recent set name of <emphasis
+    <para>For example, to use a recent list name of <emphasis
     role="bold">SSHA</emphasis>, and to limit SSH connections to 3 per minute,
     use this entry in <filename>/etc/shorewall/rules</filename>:</para>
 
@@ -219,7 +219,7 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
       </listitem>
 
       <listitem>
-        <para>The name of the recent set that you want to use
+        <para>The name of the recent list that you want to use
         (<quote>SSHA</quote> in this example).</para>
       </listitem>
 
@@ -242,10 +242,10 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
 
       <programlisting>my @tag = split /,/, $tag;
 
-fatal_error 'Limit rules must include &lt;set name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
+fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
     unless @tag == 3;
 
-my $set = $tag[0];
+my $list = $tag[0];
 
 for ( @tag[1,2] ) {
     fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
@@ -253,15 +253,15 @@ for ( @tag[1,2] ) {
 
 my $count = $tag[1] + 1;
 
-add_rule $chainref, "-m recent --name $set --set";
+add_rule $chainref, "-m recent --name $list --set";
 
 if ( $level ) {
     my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
     log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
     add_rule $xchainref, '-j DROP';
-    add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref-&gt;{name}";
+    add_rule $chainref,  "-m recent --name $list --update --seconds $tag[2] --hitcount $count -j $xchainref-&gt;{name}";
 } else {
-    add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
+    add_rule $chainref, "-m recent --update --name $list --seconds $tag[2] --hitcount $count -j DROP";
 }
 
 add_rule $chainref, '-j ACCEPT';

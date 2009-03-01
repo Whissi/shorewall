@@ -289,9 +289,9 @@ save_config() {
 
 		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
 			echo "   Dynamic Rules Saved"
-			if [ -f ${VARDIR}/.restore ]; then
+			if [ -f ${VARDIR}/firewall ]; then
 			    if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
-				cp -f ${VARDIR}/.restore $RESTOREPATH
+				cp -f ${VARDIR}/firewall $RESTOREPATH
 				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
 				chmod +x $RESTOREPATH
 				echo "   Currently-running Configuration Saved to $RESTOREPATH"
@@ -340,7 +340,7 @@ save_config() {
 				echo "   ERROR: Currently-running Configuration Not Saved" >&2
 			    fi
 			else
-			    echo "   ERROR: ${VARDIR}/.restore does not exist" >&2
+			    echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
 			fi
 		    else
 		        echo "Error Saving the Dynamic Rules" >&2

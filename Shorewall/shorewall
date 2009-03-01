@@ -767,9 +767,9 @@ restart_command() {
 	   logger -p kern.err "ERROR:Shorewall restart failed"
        fi
    else
-       [ -x ${VARDIR}/.restore ] || fatal_error "No ${VARDIR}/.restore file found"
+       [ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
        [ -n "$nolock" ] || mutex_on
-       $SHOREWALL_SHELL ${VARDIR}/.restore $debugging restart
+       $SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
        rc=$?
        [ -n "$nolock" ] || mutex_off
    fi
@@ -1540,7 +1540,11 @@ export PRODUCT="Shorewall"
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 
-FIREWALL=${VARDIR}/.restore
+if [ ! -f ${VARDIR}/firewall ]; then
+    [ -f ${VARDIR}/.restore ] && cp -f ${VARDIR}/.restore ${VARDIR}/firewall 
+fi
+
+FIREWALL=${VARDIR}/firewall
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
 REFRESHCHAINS=

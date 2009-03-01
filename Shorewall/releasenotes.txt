@@ -1,4 +1,4 @@
-Shorewall 4.3.6
+Shorewall 4.3.7
 
 Shorewall 4.3 is the development thread for Shorewall 4.4 which will be
 released late in 2009.
@@ -18,98 +18,50 @@ released late in 2009.
    that cause new connections to use the same provider as an existing
    connection of the same kind.
 
-4) Shorewall now supports NOTRACK rules (this feature will also be
-   released in Shorewall 4.2.7). 
+----------------------------------------------------------------------------
+                    M I G R A T I O N   I S S U E S
+----------------------------------------------------------------------------
 
-Problems corrected in 4.3.6
+1)  The 'shorewall stop', 'shorewall clear', 'shorewall6 stop' and
+    'shorewall6 clear' commands no longer read the 'routestopped'
+    file. The 'routestopped' file used is the one that was present at
+    the last 'start', 'restart' or 'restore' command.
 
-1)  The shorewall6 dump command now correctly displays the installed
-    Shorewall version.
-  
-2)   Previously, the 'start' command set the permission flags on
-    /var/lib/shorewall*/state so that it could be read by
-    non-root users while the 'stop' command set the permissions such
-    that the file could not be read by those users.
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 7
+----------------------------------------------------------------------------
 
-    Beginning with 4.3.6, both commands will secure the file for
-    root-only access. If you want the file to be world-readable, then
-    add 
+1) Klemens Rutz reported a problem that affects all Shorewall-perl 4.2
+   and 4.3 versions.
 
-    	chmod 744 /var/lib/shorewall*/state
+   The problem:
 
-    To your /etc/shorewall*/started, /etc/shorewall*/stopped and
-    /etc/shorewall*/restored files.
+   a) Only occurs when there are more than one non-firewall zone.
+   b) Results in the following interface options not being applied to
+      forwarded traffic.
 
-3)  If nets=(<single address>) was specified in
-    /etc/shorewall/interfaces then the specification was ignored.
-
-4)  Shorewall6 compilation failed with this error:
-
-    ERROR: Unable to open /usr/share/shorewall6/prog.header6:
-           No such file or directory
-
-Known Problems Remaiining:
+	blacklist
+	dhcp
+	maclist (when MACLIST_TABLE=filter)
+	norfc1918
+	nosmurfs
+	tcpflags
+ 
+----------------------------------------------------------------------------
+             K N O W N   P R O B L E M S   R E M A I N I N G
+----------------------------------------------------------------------------
 
 None.
 
-New Features in Shorewall 4.3.6
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 3 . 6
+----------------------------------------------------------------------------
 
-1)  To allow bypassing of connection tracking for certain traffic,
-    /etc/shorewall/notrack and /etc/shorewall6/notrack files have been
-    added.
+None.
 
-    Columns in the file are:
-
-        SOURCE - <zone>[:<interface>][:<address list>]
-
-    	DEST - [<address list>]
-
-    	PROTO - <protocol name or number>
-
-    	DEST PORT(S) - <port number list>
-
-    	SOURCE PORT(S) - <port number list>
-
-    	USER/GROUP - [<user>][:<group>]
-
-            May only be specified if the SOURCE <zone> is $FW.
-
-    Traffic that matches all given criteria will not be subject to
-    connection tracking. For such traffic, your policies and/or rules
-    must deal with ALL of the packets involved, in both the original
-    and the opposite directions. All untracked traffic is passed
-    through the relevant rules in the NEW section of the rules
-    file. Untracked encapsulated tunnel traffic can be handled by
-    entries in /etc/shorewall/tunnels just like tracked traffic
-    is. Because every packet of an untracked connection must pass
-    through the NEW section rules, it is suggested that rules that deal
-    with untracked traffic should appear at the top of the file.
-
-    Example:
-
-    /etc/shorewall/tunnels:
-
-	#TYPE	ZONE	GATEWAY
-	6to4	net
-
-    /etc/shorewall/notrack
-
-	#SOURCE		 DEST		PROTO	DEST	SOURCE	USER/
-	#               			PORT(S)	PORT(S)	GROUP
-	net:!192.88.99.1 -		41
-
-    Given that 192.88.99.1 is an anycast address, many hosts can
-    respond to outward traffic to that address. The entry in
-    /etc/shorewall/tunnels allows protocol 41 net<->fw. The entry in
-    /etc/shorewall/notrack prevents the inbound traffic from creating
-    additional useless conntrack entries.
-
-    As part of this change, the 'show' command is enhanced to support a 
-    'show raw' command that is an alias for 'show -t raw'. The raw
-    table is where NOTRACK rules are created. The dump command is also
-    enhanced to display the contents of the raw table.
-
-New Features in Shorewall 4.3
+----------------------------------------------------------------------------
+                 N E W   F E A T U R E S   IN   4 . 3
+----------------------------------------------------------------------------
 
 1)  The Shorewall packaging has been completely revamped in Shorewall
     4.3.

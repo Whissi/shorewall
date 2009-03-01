@@ -43,7 +43,7 @@ use Shorewall::Raw;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = 4.2.6;
+our $VERSION = 4.3.7;
 
 our $export;
 
@@ -763,7 +763,7 @@ EOF
         run_started_exit
     fi
 
-    [ $0 = ${VARDIR}/.restore ] || cp -f $(my_pathname) ${VARDIR}/.restore
+    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall
 fi
 
 date > ${VARDIR}/restarted

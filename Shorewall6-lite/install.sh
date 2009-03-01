@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.3.6
+VERSION=4.3.7
 
 usage() # $1 = exit status
 {

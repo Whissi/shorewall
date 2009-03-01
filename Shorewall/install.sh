@@ -195,10 +195,10 @@ else
 fi
 
 if [ -z "$CYGWIN" ]; then
-   install_file shorewall ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+   install_file shorewall.sh ${PREFIX}/sbin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
    echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 else
-   install_file shorewall ${PREFIX}/bin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+   install_file shorewall.sh ${PREFIX}/bin/shorewall 0755 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
    echo "shorewall control program installed in ${PREFIX}/bin/shorewall"
 fi
 

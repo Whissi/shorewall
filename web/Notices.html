@@ -14,6 +14,9 @@
  cellspacing="0">
   <tbody>
     <tr>
+      <td style="vertical-align: top;"><a href="#Perl"><span
+ style="font-weight: bold;">Attention Shorewall-perl 4.2 Users</span></a><br>
+      </td>
       <td style="vertical-align: top; font-weight: bold;"><a
  href="#Notice">Attention Users of Shorewall's Multi-ISP Feature</a><br>
       </td>
@@ -26,7 +29,46 @@
     </tr>
   </tbody>
 </table>
-<hr><span style="font-weight: bold;">2009-01-15</span>
+<hr><span style="font-weight: bold;">2009-02-28<br>
+</span>
+<h2><span style="font-weight: bold;"><a name="Perl"></a>Attention
+Shorewall-perl 4.2 Users</span></h2>
+On February 28, Klemens Rutz reported a problem that affects all<span
+ style="font-family: monospace;"><span style="font-family: sans-serif;">
+</span></span>Shorewall-perl 4.2 versions prior to 4.2.6.1.<br>
+<span style="font-family: monospace;"><br>
+</span>The problem:<br>
+<ol>
+  <li>Only occurs when there are more than one non-firewall zone.</li>
+  <li>Results in the following interface options not being applied to
+forwarded traffic.</li>
+</ol>
+<div style="margin-left: 40px;">blacklist<br>
+dhcp<br>
+maclist (when MACLIST_TABLE=filter)<br>
+norfc1918<br>
+nosmurfs<br>
+tcpflags<br>
+</div>
+<br>
+User are encouraged to either:<br>
+<ul>
+  <li>Upgrade to Shorewall-perl-4.2.6.1 or later; or</li>
+  <li>Apply the patch found at:</li>
+</ul>
+<div style="margin-left: 40px;"><a class="moz-txt-link-freetext"
+ href="http://www.shorewall.net/pub/shorewall/4.2/forward.patch">http://www.shorewall.net/pub/shorewall/4.2/forward.patch</a><br>
+<a class="moz-txt-link-freetext"
+ href="ftp://ftp.shorewall.net/pub/shorewall/4.2/forward.patch">ftp://ftp.shorewall.net/pub/shorewall/4.2/forward.patch</a></div>
+<br>
+<div style="margin-left: 40px;">To apply the patch, execute this
+command:<br>
+</div>
+<div style="margin-left: 80px;">
+<pre> patch /usr/share/shorewall-perl/Shorewall/Rules.pm &lt; forward.patch</pre>
+</div>
+<div style="margin-left: 40px;">The patch may apply with fuzz and/or an
+offset, depending on your particular version.</div>
 <h2><a name="Notice">Attention Users of Shorewall's Multi-ISP
 Feature</a></h2>
 <p>A bug in Shorewall versions 3.2.0-3.2.10, 3.4.0-3.4.6 and

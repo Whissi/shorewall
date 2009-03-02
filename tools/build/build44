@@ -38,9 +38,9 @@
 # If no options are given, all options are assumed.
 #
 # If <previous version> is given, patch files reflecting the differences
-# between that version and the current version ( <version> ) are generated
-# generated. The directory ./shorewall-<previous version> must exist and
-# contain the version against which the patch is generated.
+# between that version and the current version ( <version> ) are generated.
+# The directory ./shorewall-<previous version> must exist and contain the
+# version against which the patch is generated.
 ################################################################################
 #                          C O N F I G U R A T I O N
 ################################################################################
@@ -906,7 +906,7 @@ if [ -n "$OLDVERSION" ]; then
     
     progress_message "Creating patch-$VERSION ..."
 
-    [ -d shorewall$VERSION ] && diff -Naur -X $(dirname $0)/exclude.txt shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
+    [ -d shorewall-$VERSION ]        && diff -Naur -X $(dirname $0)/exclude.txt shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
     [ -d shorewall6-$VERSION ]       && diff -Naur -X $(dirname $0)/exclude.txt shorewall6-$OLDVERSION       shorewall6-$VERSION       > patch-6-$VERSION      || true
     [ -d shorewall-lite-$VERSION ]   && diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION     > patch-lite-$VERSION   || true
     [ -d shorewall6-lite-$VERSION ]  && diff -Naur -X $(dirname $0)/exclude.txt shorewall6-lite-$OLDVERSION shorewall6-lite-$VERSION   > patch-6-lite-$VERSION || true

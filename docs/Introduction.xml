@@ -199,7 +199,21 @@ dmz        eth2          detect</programlisting>
     a zone that contains a limited subset of the IPv4 address space, you use
     the <ulink
     url="manpages/shorewall-hosts.html"><filename>/etc/shorewall/hosts</filename></ulink>
-    file.</para>
+    file or you may use the nets= option in
+    <filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE      INTERFACE     BROADCAST     OPTIONS
+net        eth0          detect        dhcp,routefilter,nets=(!192.168.0.0/23)
+loc        eth1          detect        nets=(192.168.0.0/24)
+dmz        eth2          detect        nets=(192.168.1.0/24)</programlisting>
+
+    <para>The above file defines the <emphasis>net</emphasis> zone as all IPv4
+    hosts interfacing to the firewall through eth0 <emphasis>except</emphasis>
+    for 192.168.0.0/23, the <emphasis>loc</emphasis> zone as IPv4 hosts
+    192.168.0.0/24 interfacing through eth1 and the <emphasis>dmz</emphasis>
+    as IPv4 hosts 192.168.1.0/24 interfacing through eth2 (Note that
+    192.168.0.0/24 together with 192.168.1.0/24 constitutes
+    192.168.0.0.23).</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones. <itemizedlist spacing="compact">

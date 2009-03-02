@@ -20,7 +20,7 @@
 #	   				  generated this program
 #
 ################################################################################
-# Functions imported from /usr/share/shorewall/lib.base
+# Functions imported from /usr/share/shorewall/prog.header
 ################################################################################
 #
 # Message to stderr
@@ -647,6 +647,9 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
         done
 }
 
+#
+# Get the broadcast addresses associated with an interface
+#
 get_interface_bcasts() # $1 = interface
 {
     local addresses
@@ -796,6 +799,9 @@ add_ip_aliases() # $* = List of addresses
     done
 }
 
+#
+# Detect the gateway through a PPP or DHCP-configured interface
+#
 detect_dynamic_gateway() { # $1 = interface
     local interface
     interface=$1
@@ -817,6 +823,9 @@ detect_dynamic_gateway() { # $1 = interface
     [ -n "$gateway" ] && echo $gateway
 }
 
+#
+# Detect the gateway through an interface
+#
 detect_gateway() # $1 = interface
 {
     local interface
@@ -871,6 +880,10 @@ truncate() # $1 = length
 {
     cut -b -${1}
 }
+
+#
+# Clear the current traffic shaping configuration
+#
 
 delete_tc1()
 {
@@ -953,6 +966,9 @@ undo_routing() {
 
 }
 
+#
+# Restore the default route that was in place before the initial 'shorewall start'
+#
 restore_default_route() {
     if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
 	local default_route
@@ -1052,5 +1068,5 @@ conditionally_flush_conntrack() {
 }
 
 ################################################################################
-# End of functions imported from /usr/share/shorewall/lib.base
+# End of functions in /usr/share/shorewall/prog.header
 ################################################################################

@@ -20,7 +20,7 @@
 #	   				  generated this program
 #
 ################################################################################
-# Functions imported from /usr/share/shorewall/lib.base
+# Functions imported from /usr/share/shorewall/prog.header
 ################################################################################
 #
 # Message to stderr
@@ -522,6 +522,9 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
         done
 }
 
+#
+# Normalize an IPv6 Address by compressing out consecutive zero elements
+#
 normalize_address() # $1 = valid IPv6 Address
 {
     local address
@@ -743,6 +746,9 @@ INCLUDE() {
     . $(find_file $(expand $@))
 }
 
+#
+# Detect the gateway through an interface
+#
 detect_gateway() # $1 = interface
 {
     local interface
@@ -765,10 +771,19 @@ detect_gateway() # $1 = interface
     [ -n "$gateway" ] && echo $gateway
 }
 
+# Function to truncate a string -- It uses 'cut -b -<n>'
+# rather than ${v:first:last} because light-weight shells like ash and
+# dash do not support that form of expansion.
+#
+
 truncate() # $1 = length
 {
     cut -b -${1}
 }
+
+#
+# Clear the current traffic shaping configuration
+#
 
 delete_tc1()
 {
@@ -851,6 +866,9 @@ undo_routing() {
 
 }
 
+#
+# Restore the default route that was in place before the initial 'shorewall start'
+#
 restore_default_route() {
     if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
 	local default_route
@@ -950,5 +968,5 @@ conditionally_flush_conntrack() {
 }
 
 ################################################################################
-# End of functions imported from /usr/share/shorewall/lib.base
+# End of functions imported from /usr/share/shorewall/prog.header
 ################################################################################

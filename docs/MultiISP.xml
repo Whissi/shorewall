@@ -301,7 +301,10 @@
                   <para>You want to specify 'track' if Internet hosts will be
                   connecting to local servers through this provider. Any time
                   that you specify 'track', you will normally want to also
-                  specify 'balance' (see below).</para>
+                  specify 'balance' (see below). 'track' will also ensure that
+                  outgoing connections remain stay anchored to a single
+                  provider and don't try to switch providers when route cache
+                  entries expire.</para>
 
                   <para>Use of this feature requires that your kernel and
                   iptables include CONNMARK target and connmark match support
@@ -751,7 +754,7 @@ eth1             eth2              130.252.99.27</programlisting>
 
       <para>Now suppose that you want to route all outgoing SMTP traffic from
       your local network through ISP 2. You would make this entry in <ulink
-      url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink> </para>
+      url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink></para>
 
       <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)

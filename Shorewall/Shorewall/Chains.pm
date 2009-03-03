@@ -612,7 +612,7 @@ sub purge_jump ( $$ ) {
     my $to = $toref->{name};
 
     for ( @{$fromref->{rules}} ) {
-	$_ = undef, last if / -j ${to}\b/;
+	$_ = undef if / -j ${to}\b/;
     }
 	
     $toref->{referenced} = 0 unless @{$toref->{rules}};

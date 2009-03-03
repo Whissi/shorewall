@@ -921,27 +921,18 @@ sub compiler {
     #                                    I N I T I A L I Z E
     #                  (Writes the initialize() function to the compiled script)
     #
-    unless ( $command eq 'check' ) {
-	enable_object;
-	generate_script_1;
-	disable_object;
-    }
-    #
-    #                                   S T O P _ F I R E W A L L
-    #                 (Writes the stop_firewall() function to the compiled script)
-    #
-    unless ( $command eq 'check' ) {
-	enable_object;
-	compile_stop_firewall;
-	disable_object;
-    }
-    #
-    #                                   C O M M O N _ R U L E S
-    #               (Writes the setup_common_rules() function to the compiled script)
-    #
     enable_object;
-
+    
     unless ( $command eq 'check' ) {
+	generate_script_1;
+	#                               S T O P _ F I R E W A L L
+	#             (Writes the stop_firewall() function to the compiled script)
+	#
+	compile_stop_firewall;
+	#
+	#                               C O M M O N _ R U L E S
+	#           (Writes the setup_common_rules() function to the compiled script)
+	#
 	unless ( $test ) {
 	    if ( $family == F_IPV4 ) {
 		copy $globals{SHAREDIRPL} . 'prog.functions';
@@ -957,7 +948,7 @@ sub compiler {
 	    );
 
 	push_indent;
-    }
+    } 
     #
     # Do all of the zone-independent stuff
     #
@@ -986,13 +977,10 @@ sub compiler {
 	emit '}';
     }
 
-    disable_object;
     #
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
-    enable_object;
-
     unless ( $command eq 'check' ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',

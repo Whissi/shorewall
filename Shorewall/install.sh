@@ -409,10 +409,10 @@ fi
 #
 # Install the TOS file
 #
-run_install $OWNERSHIP -m 0644 tos ${PREFIX}/usr/share/shorewall/configfiles/tos
+run_install $OWNERSHIP -m 0644 configfiles/tos ${PREFIX}/usr/share/shorewall/configfiles/tos
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tos ]; then
-    run_install $OWNERSHIP -m 0600 tos ${PREFIX}/etc/shorewall/tos
+    run_install $OWNERSHIP -m 0600 configfiles/tos ${PREFIX}/etc/shorewall/tos
     echo "TOS file installed as ${PREFIX}/etc/shorewall/tos"
 fi
 #

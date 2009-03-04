@@ -646,10 +646,14 @@ done
 
 # Install the Macro files
 #
+cd Macros
+
 for f in macro.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
     echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
+
+cd ..
 #
 # Install the libraries
 #

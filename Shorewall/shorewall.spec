@@ -169,7 +169,7 @@ fi
 %attr(0644,root,root) %{_mandir}/man5/*
 %attr(0644,root,root) %{_mandir}/man8/shorewall.8.gz
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples swping swping.init isusable
+%doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples 
 
 %changelog
 * Sun Mar 01 2009 Tom Eastep tom@shorewall.net

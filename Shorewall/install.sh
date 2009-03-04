@@ -515,10 +515,10 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/config
 #
 # Install the init file
 #
-run_install $OWNERSHIP -m 0644 init ${PREFIX}/usr/share/shorewall/configfiles/init
+run_install $OWNERSHIP -m 0644 configfiles/init ${PREFIX}/usr/share/shorewall/configfiles/init
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/init ]; then
-    run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall/init
+    run_install $OWNERSHIP -m 0600 configfiles/init ${PREFIX}/etc/shorewall/init
     echo "Init file installed as ${PREFIX}/etc/shorewall/init"
 fi
 #

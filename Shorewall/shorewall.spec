@@ -78,7 +78,6 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/interfaces
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/ipsec
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/netmap
@@ -135,7 +134,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/zones
 %attr(0644,root,root) /usr/share/shorewall/configfiles/policy
 %attr(0644,root,root) /usr/share/shorewall/configfiles/interfaces
-%attr(0644,root,root) /usr/share/shorewall/configfiles/ipsec
 %attr(0644,root,root) /usr/share/shorewall/configfiles/rules
 %attr(0644,root,root) /usr/share/shorewall/configfiles/nat
 %attr(0644,root,root) /usr/share/shorewall/configfiles/netmap

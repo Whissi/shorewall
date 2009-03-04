@@ -560,10 +560,10 @@ fi
 #
 # Install the ECN file
 #
-run_install $OWNERSHIP -m 0644 ecn ${PREFIX}/usr/share/shorewall/configfiles/ecn
+run_install $OWNERSHIP -m 0644 configfiles/ecn ${PREFIX}/usr/share/shorewall/configfiles/ecn
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/ecn ]; then
-    run_install $OWNERSHIP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
+    run_install $OWNERSHIP -m 0600 configfiles/ecn ${PREFIX}/etc/shorewall/ecn
     echo "ECN file installed as ${PREFIX}/etc/shorewall/ecn"
 fi
 #

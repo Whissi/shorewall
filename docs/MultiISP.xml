@@ -941,6 +941,19 @@ gateway:~ #</programlisting>
         </variablelist>
       </section>
 
+      <section>
+        <title>Multi-ISP and VPN</title>
+
+        <para>For those VPN types that use routing to direct traffic to remote
+        VPN clients (including but not limited to OpenVPN in routed mode and
+        PPTP), the VPN software adds a host route to the <emphasis
+        role="bold">main</emphasis> table for each VPN client. It follows that
+        you must add a routing rule in the 1000-1999 range to specify the
+        <emphasis role="bold">main</emphasis> table for traffic addressed to
+        those clients. See<link linkend="Openvpn"> Example 2</link>
+        below.</para>
+      </section>
+
       <section id="Examples">
         <title>Examples</title>
 

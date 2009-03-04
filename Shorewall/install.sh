@@ -666,6 +666,8 @@ chmod 755 ${PREFIX}/usr/share/shorewall/Shorewall
 #
 # Install the Compiler
 #
+cd Perl
+
 install_file compiler.pl ${PREFIX}/usr/share/shorewall/compiler.pl 0755
 
 echo
@@ -684,6 +686,8 @@ for f in prog.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
 done
+
+cd ..
 #
 # Create the version file
 #

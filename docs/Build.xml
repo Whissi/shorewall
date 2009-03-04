@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Building Shorewall from SVN</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2009</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <note>
+    <para>This information is provided primarily for Shorewall developers.
+    Users are expected to install from pre-built tarballs or packages. </para>
+  </note>
+
+  <section>
+    <title>SVN Taxonomy</title>
+
+    <para>The Shorewall SVN tree at Sourceforge has a number of branches which
+    are described in the following sections. It is not possible to simply
+    export a directory from SVN and run the <command>install.sh</command>
+    script in that directory. A build step is required to produce a directory
+    that is suitable for the <command>install.sh</command> script to run
+    in.</para>
+
+    <section>
+      <title>tags</title>
+
+      <para>As new stable releases are made, they are copied into this branch.
+      Each release has it's own directory which is named with the minor
+      release number (e.g., 4.2.6).</para>
+    </section>
+
+    <section>
+      <title>branches</title>
+
+      <para>The latest copy of each stable major release is kept in this
+      branch. Each major release has its own directory which is named with the
+      major release number (e.g., 4.2).</para>
+    </section>
+
+    <section>
+      <title>trunk</title>
+
+      <para>The development branch of each product is kept here.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Shorewall</para>
+        </listitem>
+
+        <listitem>
+          <para>Shorewall6</para>
+        </listitem>
+
+        <listitem>
+          <para>Shorewall-lite</para>
+        </listitem>
+
+        <listitem>
+          <para>Shorewall6-lite</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>There are also several other directories which are described in
+      the following sub-sections.</para>
+
+      <section>
+        <title>trunk/docs</title>
+
+        <para>The development release XML documents. Depending on the point in
+        the release cycle, these documents may also apply to the current
+        stable version. In that case, there is no docs directory in that
+        release's directory in <emphasis
+        role="bold">branches</emphasis>.</para>
+      </section>
+
+      <section>
+        <title>trunk/web</title>
+
+        <para>The files from the web site that are maintained in HTML format.
+        are kept in this directory.</para>
+      </section>
+
+      <section>
+        <title>trunk/manpages, trunk/manpages6, trunk/manpages-lite and
+        trunk/manpages6-lite</title>
+
+        <para>The development release XML manpages. Depending on the point in
+        the release cycle, these documents may also apply to the current
+        stable version. In that case, there will be no corresponding
+        directories in the release's directory in <emphasis
+        role="bold">branches</emphasis>.</para>
+      </section>
+
+      <section>
+        <title>trunk/tools</title>
+
+        <para>This is where the release and build tools are kept. There are
+        two subordinate directories:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>trunk/tools/build</term>
+
+            <listitem>
+              <para>Tools for building and uploading new releases.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>trunk/tools/web</term>
+
+            <listitem>
+              <para>Tools for publishing web content.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Build Tools</title>
+
+    <para>As described above, the build tools are kept in <filename
+    class="directory">trunk/tools/build.</filename> They are described in the
+    following sections.</para>
+
+    <section>
+      <title>setversion</title>
+
+      <para>The <command>setversion</command> script updates the version
+      number is a directory.</para>
+
+      <blockquote>
+        <para><command>setversion</command>
+        <replaceable>version</replaceable></para>
+      </blockquote>
+
+      <para>The <replaceable>version</replaceable> may either be a minor
+      version or a patch version. The sub-directores that are updates are
+      those which match the specified version:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>Minor Version (e.g., 4.2.7)</term>
+
+          <listitem>
+            <para>Updates Shorewall, Shorewall-common, Shorewall-perl,
+            Shorewall-shell, Shorewall-lite, Shorewall6 and Shorewall6-lite.
+            Only those directories that are present are updated.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Patch Version (e.g., 4.2.7.1)</term>
+
+          <listitem>
+            <para>Update those directories matching the patch version
+            <replaceable>n</replaceable> (last digit):
+            Shorewall-<replaceable>n</replaceable>
+            ,Shorewall-common-<replaceable>n</replaceable>,
+            Shorewall-shell-<replaceable>n</replaceable>,
+            Shorewall-lite-<replaceable>n</replaceable>,
+            Shorewall6-<replaceable>n</replaceable>, and
+            Shorewall6-lite-<replaceable>n</replaceable>.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>buildshorewall and build44</title>
+
+      <para>These are the scripts that build Shorewall packages from SVN. The
+      <command>buildshorewall</command> script builds Shorewall 4.0 and
+      Shorewall 4.2 packages; the <command>build44</command> script builds
+      Shorewall 4.3 and 4.4 packages. Because the scripts work similarly, they
+      will be described together.</para>
+
+      <para>The build scripts copy content from SVN using the <command>svn
+      export</command> command. They then use that content to build the
+      packages. In addition to the usual Gnu utilities, the following software
+      is required:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>rpmbuild (I use rpm version 4.4.2.3-20.3)</term>
+
+          <listitem>
+            <para>Required to build the RPM packages.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>xsltproc (libxslt -- I use version 1.1.24-19.1)</term>
+
+          <listitem>
+            <para>Required to convert the XML documents to other
+            formats.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Docbook XSL Stylesheets (I use docbook-xsl-stylesheets version
+          1.74.0-1.35)</term>
+
+          <listitem>
+            <para>Required to convert the XML documents to other
+            formats.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Perl (I use Perl 5.10.0-62.17.1)</term>
+
+          <listitem>
+            <para>Required to massage some of the config files.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>xmlto (I use version 0.0.18-182.27)</term>
+
+          <listitem>
+            <para>Required to convert the XML manpages to manpages.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>You should ensure that you have the latest script. The scripts
+      change periodically as we move through the release cycles. </para>
+
+      <para>The scripts may need to be modified to fit your particular
+      environment. There are a number of variables that are set near the front
+      of the script:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>STYLESHEET</term>
+
+          <listitem>
+            <para>Must point to the XHTML docbook.xsl stylesheet from your
+            Docbook XSL Stylesheets installation.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>LOGDIR</term>
+
+          <listitem>
+            <para>Directory where you want the build log placed. Defaults to
+            the current working directory.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>RPMDIR</term>
+
+          <listitem>
+            <para>Points to your RPM directory .</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>DIR</term>
+
+          <listitem>
+            <para>Directory where you want the release to be built. Defaults
+            to the current working directory.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>GPG</term>
+
+          <listitem>
+            <para>Command to be used for signing your packages</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>SVN</term>
+
+          <listitem>
+            <para>Shorewall SVN repository</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The scripts assume that there will be a separete <firstterm>build
+      directory</firstterm> per major release. To build a release, you cd to
+      the appropriate directory and run the build script.</para>
+
+      <para>The general form of the build command is:</para>
+
+      <blockquote>
+        <para><replaceable>buildscript</replaceable> [
+        -<replaceable>options</replaceable> ]
+        <replaceable>release</replaceable> [ <replaceable>prior
+        release</replaceable> ]</para>
+      </blockquote>
+
+      <para>where</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><emphasis>buildscript</emphasis></term>
+
+          <listitem>
+            <para>is either <command>buildshorewall</command> or
+            <command>build44</command></para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>opt<emphasis>i</emphasis>ons</term>
+
+          <listitem>
+            <para>are one of the following. If no options are given then all
+            options are assumed</para>
+
+            <variablelist>
+              <varlistentry>
+                <term>t</term>
+
+                <listitem>
+                  <para>build tar files</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>r</term>
+
+                <listitem>
+                  <para>build RPMs</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>S</term>
+
+                <listitem>
+                  <para>sign the packages using GnuPg</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>c</term>
+
+                <listitem>
+                  <para>Build the <firstterm>common</firstterm> package
+                  (shorewall-common on versions 4.0 and 4.2 and shorewall on
+                  4.3 and later)</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>l</term>
+
+                <listitem>
+                  <para>Build the shorewall-lite package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>6</term>
+
+                <listitem>
+                  <para>Build the shorewall6 package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>L</term>
+
+                <listitem>
+                  <para>Build the shorewall6-lite package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>p</term>
+
+                <listitem>
+                  <para>Build the shorewall-perl package (versions 4.0 and 4.2
+                  only)</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>s</term>
+
+                <listitem>
+                  <para>Build the shorewall-shell package (versions 4.0 and
+                  4.2 only)</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis>release</emphasis></term>
+
+          <listitem>
+            <para>The release version to build. Must match the version in the
+            associated SVN path.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis>prior release</emphasis></term>
+
+          <listitem>
+            <para>The release to be used to generate patch files. </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Example 1 - Build Shorewall 4.2.7 and generate patches against
+      4.2.6:</para>
+
+      <blockquote>
+        <para><command>buildshorewall 4.2.7 4.2.6</command></para>
+      </blockquote>
+
+      <para>Example 2 - Build Shorewall 4.2.7.1 Shorewall-perl and generate
+      patches against 4.2.7:</para>
+
+      <blockquote>
+        <para><command>buildshorewall -trSp 4.2.7.1 4.2.7</command></para>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>upload</title>
+
+      <para>This script is used to upload a release to lists.shorewall.net.
+      The command is run in the build directory for the major release of the
+      product.</para>
+
+      <blockquote>
+        <para><command>upload</command> [ -<replaceable>products</replaceable>
+        ] <replaceable>release</replaceable></para>
+      </blockquote>
+
+      <para>where</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><emphasis>products</emphasis></term>
+
+          <listitem>
+            <para>specifes the products to upload. If not given, all products
+            are uploaded. This option is generally given only when uploading a
+            patch release.</para>
+
+            <variablelist>
+              <varlistentry>
+                <term>c</term>
+
+                <listitem>
+                  <para>Upload the <firstterm>common</firstterm> package
+                  (shorewall-common on versions 4.0 and 4.2 and shorewall on
+                  4.3 and later)</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>l</term>
+
+                <listitem>
+                  <para>Upload the shorewall-lite package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>6</term>
+
+                <listitem>
+                  <para>Upload the shorewall6 package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>L</term>
+
+                <listitem>
+                  <para>Upload the shorewall6-lite package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>p</term>
+
+                <listitem>
+                  <para>Upload the shorewall-perl package (versions 4.0 and
+                  4.2 only)</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>s</term>
+
+                <listitem>
+                  <para>Upload the shorewall-shell package (versions 4.0 and
+                  4.2 only)</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis>release</emphasis></term>
+
+          <listitem>
+            <para>The version number of the release to update.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Example 1 - Upload release 4.2.7:</para>
+
+      <blockquote>
+        <para><command>upload 4.2.7</command></para>
+      </blockquote>
+
+      <para>Example 2 - Upload shorewall-perl-4.2.7.3:</para>
+
+      <blockquote>
+        <para><command>upload -p 4.2.7.3</command></para>
+      </blockquote>
+    </section>
+  </section>
+
+  <section>
+    <title>Patch Releases</title>
+
+    <para>Patch releases are created when a defect is found in the current
+    stable release of one of the products and the nature of the problem
+    warrents releasing a fix before the next minor release. The basic steps in
+    creating a patch release <replaceable>n</replaceable> are as
+    follows:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Create
+        tags/<replaceable>minor-version</replaceable>/Shorewall-common-<replaceable>n</replaceable>
+        or Shorewall-<replaceable>n</replaceable> depending on which release.
+        If that product is being changed, the <command>svn cp</command>
+        command can be used. Otherwise, use <command>svn mkdir</command> and
+        then <command>svn cp</command> the <filename>changelog.txt</filename>
+        and <filename>releasenotes.txt</filename> files from the last release
+        (either the minor release itself or the preceding patch
+        release.</para>
+      </listitem>
+
+      <listitem>
+        <para>For each of the other products, create a
+        <replaceable>product-n</replaceable> directory (e.g.,
+        Shorewall-perl-<replaceable>n</replaceable>) using <command>svn
+        cp</command>. Again the last released version of the minor version of
+        the product should be the source.</para>
+      </listitem>
+
+      <listitem>
+        <para>Apply the changes necessary to fix the bug, including updating
+        the change log and release notes.</para>
+      </listitem>
+
+      <listitem>
+        <para>Run <command>setversion</command> to set the version of the
+        updated product(s).</para>
+      </listitem>
+
+      <listitem>
+        <para>Create
+        <filename>tags/<replaceable>minor-version</replaceable>/known_problems.txt</filename>
+        if it doesn already exist and add a description of the defect and
+        indicate the patch release in which it was corrected.</para>
+      </listitem>
+
+      <listitem>
+        <para>Commit the fix to SVN.</para>
+      </listitem>
+
+      <listitem>
+        <para>Build the product(s).</para>
+      </listitem>
+    </orderedlist>
+  </section>
+</article>

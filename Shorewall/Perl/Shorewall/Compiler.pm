@@ -1006,8 +1006,8 @@ sub compiler {
 
     disable_object;
     #
-    #                                   N E T F I L T E R
-    # (Produces no output to the compiled script -- rules are stored in the chain table)
+    #                                       N E T F I L T E R
+    #       (Produces no output to the compiled script -- rules are stored in the chain table)
     #
     process_tos;
 

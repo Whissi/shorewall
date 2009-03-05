@@ -1164,7 +1164,10 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
 
     if ( $actiontype & NATONLY ) {
-	warning_message "Destination zone ($destzone) ignored" unless $destzone eq '-' || $destzone eq '';
+	unless ( $destzone eq '-' || $destzone eq '' ) {
+	    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
+	    warning_message "Destination zone ($destzone) ignored";
+	}
     } else {
 	fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
 	fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );

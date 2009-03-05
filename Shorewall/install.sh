@@ -202,7 +202,6 @@ else
    echo "shorewall control program installed in ${PREFIX}/bin/shorewall"
 fi
 
-
 #
 # Install the Firewall Script
 #
@@ -241,7 +240,6 @@ if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
-
 
 if [ -n "$ARCHLINUX" ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf

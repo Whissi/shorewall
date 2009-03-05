@@ -46,7 +46,21 @@ released late in 2009.
 	norfc1918
 	nosmurfs
 	tcpflags
- 
+
+2) Matt LaPlante reported a problem whereby a valid DNAT- rule was
+   badly mis-handled.
+
+   The rule:
+
+       DNAT-	loc	net:1.2.3.4:2525	tcp	25
+
+   The result:
+
+     WARNING: Destination zone (1.2.3.4) ignored : /etc/shorewall/rules (line 459)
+     Can't call method "inet_htoa" without a package or object reference at
+       /usr/share/shorewall-perl/Shorewall/IPAddrs.pm line 150,
+      <$currentfile> line 459.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

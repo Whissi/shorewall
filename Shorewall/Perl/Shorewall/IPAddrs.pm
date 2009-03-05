@@ -27,6 +27,7 @@
 package Shorewall::IPAddrs;
 require Exporter;
 use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 F_IPV4 F_IPV6 );
+use Socket;
 
 use strict;
 
@@ -142,13 +143,10 @@ sub validate_4address( $$ ) {
 
     unless ( valid_4address $addr ) {
 	fatal_error "Invalid IP Address ($addr)" unless $allow_name;
-	fatal_error "Unknown Host ($addr)" unless (@addrs = gethostbyname $addr);
+	fatal_error "Unknown Host ($addr)" unless (defined ( $addr = gethostbyname $addr) );
 
 	if ( defined wantarray ) {
-	    shift @addrs for (1..4);
-	    for ( @addrs ) {
-		$_ = inet_htoa $_;
-	    }
+	    @addrs = ( inet_ntoa( $addr ) );
 	}
     }
 

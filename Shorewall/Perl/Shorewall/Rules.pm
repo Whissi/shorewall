@@ -1165,8 +1165,14 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
     if ( $actiontype & NATONLY ) {
 	unless ( $destzone eq '-' || $destzone eq '' ) {
-	    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
-	    warning_message "Destination zone ($destzone) ignored";
+	    $destref = defined_zone( $destzone );
+	    
+	    if ( $destref ) {
+		warning_message "Destination zone ($destzone) ignored";
+	    } else {
+		$dest = join ':', $destzone, $dest;
+		$destzone = '';
+	    }
 	}
     } else {
 	fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';

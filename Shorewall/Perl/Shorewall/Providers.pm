@@ -332,7 +332,8 @@ sub add_a_provider( $$$$$$$$ ) {
 		$optional = 1;
 	    } elsif ( $option =~ /^src=(.*)$/ ) {
 		fatal_error "OPTION 'src' not allowed on shared interface" if $shared;
-		$address = validate_address( $1 , 1 );
+		my @addresses = validate_address( $1 , 1 );
+		$address = $addresses[0];
 	    } elsif ( $option =~ /^mtu=(\d+)$/ ) {
 		$mtu = "mtu $1 ";
 	    } elsif ( $option =~ /^fallback=(\d+)$/ ) {

@@ -143,10 +143,13 @@ sub validate_4address( $$ ) {
 
     unless ( valid_4address $addr ) {
 	fatal_error "Invalid IP Address ($addr)" unless $allow_name;
-	fatal_error "Unknown Host ($addr)" unless (defined ( $addr = gethostbyname $addr) );
+	fatal_error "Unknown Host ($addr)" unless  @addrs = gethostbyname( $addr );
 
 	if ( defined wantarray ) {
-	    @addrs = ( inet_ntoa( $addr ) );
+	    shift @addrs for (1..4);
+	    for ( @addrs ) {
+		$_ = ( inet_ntoa( $_ ) );
+	    }
 	}
     }
 

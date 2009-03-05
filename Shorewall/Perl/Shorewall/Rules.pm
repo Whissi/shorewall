@@ -1319,7 +1319,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    if ( $server =~ /^(.+)-(.+)$/ ) {
 		validate_range( $1, $2 );
 	    } else {
-		$server = validate_address $server, 1;
+		my @servers = validate_address $server, 1;
+		$server = join ',', @servers;
 	    }
 
 	    if ( $action eq 'SAME' ) {

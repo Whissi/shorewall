@@ -1339,7 +1339,6 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   list <zone>"
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
@@ -1351,7 +1350,21 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|raw|routing|tc|vardir|zones} ]"
+    echo "   show [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   show actions"
+    echo "   show [ -f ] capabilities"
+    echo "   show classifiers"
+    echo "   show config"
+    echo "   show connections"
+    echo "   show dynamic <zone>"
+    echo "   show filter"
+    echo "   show ip"
+    echo "   show [ -m ] log"
+    echo "   show macros"
+    echo "   show [ -x ] mangle|nat|raw|routing"
+    echo "   show tc"
+    echo "   show vardir"
+    echo "   show zones"
     echo "   start [ -f ] [ -n ] [ -p ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
@@ -1635,7 +1648,7 @@ case "$COMMAND" in
 	shift
 	check_command $@
 	;;
-    show)
+    show|list)
 	get_config Yes No Yes
     	shift
     	show_command $@
@@ -1751,12 +1764,6 @@ case "$COMMAND" in
 	get_config
 	shift
 	add_command $@
-	;;
-    list)
-	get_config
-	shift;
-	[ $# -eq 1 ] || usage 1
-	list_command $1
 	;;
     save)
 	get_config

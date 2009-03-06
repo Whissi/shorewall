@@ -384,8 +384,21 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [ -f ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|filters|ip|log|mangle|nat|routing|tc|vardir|zones} ]"
-    echo "   start [ -f ] [ -n ] [ -p ]"
+    echo "   show [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   show [ -f ] capabilities"
+    echo "   show classifiers"
+    echo "   show config"
+    echo "   show connections"
+    echo "   show dynamic <zone>"
+    echo "   show filter"
+    echo "   show ip"
+    echo "   show [ -m ] log"
+    echo "   show [ -x ] mangle|nat|raw"
+    echo "   show routing"
+    echo "   show tc"
+    echo "   show vardir"
+    echo "   show zones"
+    echo "   start [ -n ] [ -p ]"
     echo "   stop"
     echo "   status"
     echo "   version"
@@ -688,6 +701,16 @@ case "$COMMAND" in
 	;;
     allow)
 	allow_command $@
+	;;
+    add)
+	get_config
+	shift
+	add_command $@
+	;;
+    delete)
+	get_config
+	shift
+	add_command $@
 	;;
     save)
 	[ -n "$debugging" ] && set -x

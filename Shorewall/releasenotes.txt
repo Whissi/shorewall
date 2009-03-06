@@ -86,6 +86,8 @@ None.
     is built on top of ipsets so you must have installed the
     xtable-addons.
 
+    Dynamic zones are available when Shorewall-lite is used as well.
+
     Note that the dynamic zone support built into Shorewall provides no
     additional functionality over what is provided by simply defining a
     zone in terms of an ipset (see
@@ -100,9 +102,10 @@ None.
       entry for the zone in /etc/shorewall/hosts.
 
     When there are any dynamic zones present in your configuration, 
-    Shorewall will:
+    Shorewall (Shorewall-lite) will:
 
-    a) Execute the following commands during 'shorewall start'.
+    a) Execute the following commands during 'shorewall start' or
+    'shorewall-lite start'.
 
            ipset -U :all: :all:
 	   ipset -U :all: :default:
@@ -110,8 +113,10 @@ None.
 	   ipset -X   
 	   ipset -R < ${VARDIR}/ipsets.save
 
-       where $VARDIR normally contains /var/lib/shorewall but may be
-       modified by /etc/shorewall/vardir.
+       where $VARDIR normally contains /var/lib/shorewall
+       (/var/lib/shorewall-lite) but may be modified by
+       /etc/shorewall/vardir (/etc/shorewall-lite/vardir).
+
 
     b) During 'start', 'restart' and 'restore' processing, Shorewall
        will then attempt to create an ipset named <zone>_<interface>
@@ -119,7 +124,8 @@ None.
        dynamic. The type of ipset created is 'iphash' so that only
        individual IPv4 addresses may be added to the set.
 
-    c) Execute the following commands during 'shorewall stop':
+    c) Execute the following commands during 'shorewall stop' or
+       'shorewall-lite stop':
 
            if ipset -S > ${VARDIR}/ipsets.tmp; then
               mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
@@ -132,10 +138,12 @@ None.
 
            delete <interface>[:<host-list>] ... <zone>
 
-    In addition, a list command is supported that lists the dynamic
+    In addition, the 'show dynamic' command is added that lists the dynamic
     content of a zone.
 
-    	    list <zone>
+    	    show dynamic <zone>
+
+    These commands are supported by shorewall-lite as well.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

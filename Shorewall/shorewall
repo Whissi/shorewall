@@ -1339,6 +1339,7 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
+    echo "   list <zone>"
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
@@ -1634,7 +1635,7 @@ case "$COMMAND" in
 	shift
 	check_command $@
 	;;
-    show|list)
+    show)
 	get_config Yes No Yes
     	shift
     	show_command $@
@@ -1750,7 +1751,13 @@ case "$COMMAND" in
 	get_config
 	shift
 	add_command $@
-	;;	
+	;;
+    list)
+	get_config
+	shift;
+	[ $# -eq 1 ] || usage 1
+	list_command $1
+	;;
     save)
 	get_config
 	[ -n "$debugging" ] && set -x

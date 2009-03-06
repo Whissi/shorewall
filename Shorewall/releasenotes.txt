@@ -18,6 +18,9 @@ released late in 2009.
    that cause new connections to use the same provider as an existing
    connection of the same kind.
 
+4) Dynamic Zone support is once again available for IPv4; ipset support is
+   required in your kernel and in iptables.
+
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
@@ -76,7 +79,63 @@ None.
     Shorewall6.
 
     When a successful start or restart is completed, the script that
-    executed the command copies itself to to /var/lib/shorewall[6/firewall.
+    executed the command copies itself to to
+    /var/lib/shorewall[6/firewall.
+
+2)  Dynamic zone support is once again available for IPv4. This support 
+    is built on top of ipsets so you must have installed the
+    xtable-addons.
+
+    Note that the dynamic zone support built into Shorewall provides no
+    additional functionality over what is provided by simply defining a
+    zone in terms of an ipset (see
+    http://www1.shorewall.net/ipsets.html#Dynamic). 
+
+    You define a zone as having dynamic content in one of two ways:
+
+    - By specifying nets=dynamic in the OPTIONS column of an entry for
+      the zone in /etc/shorewall/interfaces; or
+
+    - By specifying <interface>:dynamic in the HOST(S) column of an
+      entry for the zone in /etc/shorewall/hosts.
+
+    When there are any dynamic zones present in your configuration, 
+    Shorewall will:
+
+    a) Execute the following commands during 'shorewall start'.
+
+           ipset -U :all: :all:
+	   ipset -U :all: :default:
+	   ipset -F
+	   ipset -X   
+	   ipset -R < ${VARDIR}/ipsets.save
+
+       where $VARDIR normally contains /var/lib/shorewall but may be
+       modified by /etc/shorewall/vardir.
+
+    b) During 'start', 'restart' and 'restore' processing, Shorewall
+       will then attempt to create an ipset named <zone>_<interface>
+       for each zone/interface pair that has been specified as
+       dynamic. The type of ipset created is 'iphash' so that only
+       individual IPv4 addresses may be added to the set.
+
+    c) Execute the following commands during 'shorewall stop':
+
+           if ipset -S > ${VARDIR}/ipsets.tmp; then
+              mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
+	   fi
+
+    The 'shorewall add' and 'shorewall delete' commands are supported
+    with their original syntax:
+
+           add <interface>[:<host-list>] ... <zone>
+
+           delete <interface>[:<host-list>] ... <zone>
+
+    In addition, a list command is supported that lists the dynamic
+    content of a zone.
+
+    	    list <zone>
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

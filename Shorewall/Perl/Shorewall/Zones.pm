@@ -64,6 +64,7 @@ our @EXPORT = qw( NOTHING
 		  set_interface_option
 		  validate_hosts_file
 		  find_hosts_by_option
+		  all_ipsets
 		 );
 
 our @EXPORT_OK = qw( initialize );
@@ -141,6 +142,7 @@ our %reservedName = ( all => 1,
 our @interfaces;
 our %interfaces;
 our @bport_zones;
+our %ipsets;
 our $family;
 
 #
@@ -161,6 +163,7 @@ sub initialize( $ ) {
     @interfaces = ();
     %interfaces = ();
     @bport_zones = ();
+    %ipsets = ();
 }
 
 INIT {
@@ -803,6 +806,7 @@ sub validate_interfaces_file( $ )
 			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
 			$value = "+${zone}_${interface}";
 			$hostoptions{dynamic} = 1;
+			$ipsets{$value} = 1;
 		    }   
 		    #
 		    # Convert into a Perl array reference
@@ -1122,6 +1126,8 @@ sub validate_hosts_file()
 	    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
 	    $hosts = "+${zone}_${interface}";
 	    $optionsref->{dynamic} = 1;
+	    $ipsets{$hosts} = 1;
+
 	}
    
 	add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
@@ -1161,6 +1167,10 @@ sub find_hosts_by_option( $ ) {
     }
 
     \@hosts;
+}
+
+sub all_ipsets() {
+    sort keys %ipsets;
 }
 
 1;

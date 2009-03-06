@@ -300,21 +300,6 @@ EOF
 	        RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	        if [ -x $RESTOREPATH ]; then
-
-		    if [ -x ${RESTOREPATH}-ipsets ]; then
-		        progress_message2 Restoring Ipsets...
-		        #
-		        # We must purge iptables to be sure that there are no
-		        # references to ipsets
-		        #
-		        for table in mangle nat filter; do
-			    do_iptables -t $table -F
-			    do_iptables -t $table -X
-		        done
-
-		        ${RESTOREPATH}-ipsets
-		    fi
-
 		    echo Restoring ${PRODUCT:=Shorewall}...
 
 		    if $RESTOREPATH restore; then
@@ -549,11 +534,24 @@ EOF
 	}
     }
 
-    emit 'run_stopped_exit';
-
     pop_indent;
 
     emit '
+    run_stopped_exit';
+
+    my @ipsets = all_ipsets; 
+
+    if ( @ipsets ) {
+	emit <<EOF
+    if [ -n "$(which ipset)" ]; then
+        if ipset -S > ${VARDIR}/ipsets.tmp; then
+            mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
+	fi
+    fi
+EOF
+    }
+    
+    emit ' 
     set_state "Stopped"
 
     logger -p kern.info "$PRODUCT Stopped"
@@ -646,6 +644,26 @@ sub generate_script_2($) {
 		   '        fi',
 		   '    done',
 		   "fi\n" );
+	}
+
+	my @ipsets = all_ipsets;
+
+	if ( @ipsets ) {
+	    emit ( 'if "$COMMAND" = start; then' ,
+		   '   if [ -n "$(which ipset)"; then' ,    
+		   '       ipset -U :all: :all:' ,
+		   '       ipset -U :all: :default:' ,
+		   '       ipset -F' ,
+		   '       ipset -X' ,
+		   '       ipset -R < ${VARDIR}/ipsets.save' );
+
+	    emit ( "       qt ipset -L $_ || ipset -N $_ iphash" ) for @ipsets;
+
+	    emit ( '    fi' ,
+		   'else' ,
+		   '    fatal_error "The ipset utility cannot be located"' ,
+		   'fi',
+		   '' );
 	}
 
 	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
@@ -925,10 +943,6 @@ sub compiler {
     
     unless ( $command eq 'check' ) {
 	generate_script_1;
-	#                               S T O P _ F I R E W A L L
-	#             (Writes the stop_firewall() function to the compiled script)
-	#
-	compile_stop_firewall;
 	#
 	#                               C O M M O N _ R U L E S
 	#           (Writes the setup_common_rules() function to the compiled script)
@@ -1075,11 +1089,15 @@ sub compiler {
 	    progress_message3 "Shorewall6 configuration verified";
 	}
     } else {
+	enable_object;
+	#                               S T O P _ F I R E W A L L
+	#             (Writes the stop_firewall() function to the compiled script)
+	#
+	compile_stop_firewall;
 	#
 	#                          N E T F I L T E R   L O A D
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
-	enable_object;
 	generate_script_2( $chains );
 	#
 	# Close, rename and secure the object

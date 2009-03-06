@@ -185,7 +185,6 @@ sub parse_zone_option_list($$)
 			 "tunnel-src" => NETWORK,
 			 "tunnel-dst" => NETWORK,
 		       );
-
     #
     # Hash of options that have their own key in the returned hash.
     #
@@ -523,6 +522,7 @@ sub add_group_to_zone($$$$$)
 
 	if ( substr( $host, 0, 1 ) eq '+' ) {
 	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+[a-zA-Z]\w*$/;
+	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', ''); 
 	} else {
 	    validate_host $host, 0;
 	}
@@ -741,7 +741,7 @@ sub validate_interfaces_file( $ )
 
 	if ( $options ) {
 
-	    my %hostoptions;
+	    my %hostoptions = ( dynamic => 0 );
 	    
 	    for my $option (split_list1 $options, 'option' ) {
 		next if $option eq '-';
@@ -798,8 +798,14 @@ sub validate_interfaces_file( $ )
 		    # Add all IP to the front of a list if the list begins with '!'
 		    #
 		    $value = join ',' , ALLIP , $value if $value =~ /^!/;
+
+		    if ( $value eq 'dynamic' ) {
+			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
+			$value = "+${zone}_${interface}";
+			$hostoptions{dynamic} = 1;
+		    }   
 		    #
-		    # Convert into a Perl array
+		    # Convert into a Perl array reference
 		    #
 		    $nets = [ split_list $value, 'address' ];
 		    #
@@ -1075,11 +1081,11 @@ sub validate_hosts_file()
 	    }
 	}
 
-	my $optionsref = {};
+	my $optionsref = { dynamic => 0 };
 
 	if ( $options ne '-' ) {
 	    my @options = split_list $options, 'option';
-	    my %options;
+	    my %options = ( dynamic => 0 );
 
 	    for my $option ( @options )
 	    {
@@ -1112,6 +1118,12 @@ sub validate_hosts_file()
 	#
 	$hosts = join( '', ALLIP , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
 
+	if ( $hosts eq 'dynamic' ) {
+	    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
+	    $hosts = "+${zone}_${interface}";
+	    $optionsref->{dynamic} = 1;
+	}
+   
 	add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 
 	progress_message "   Host \"$currentline\" validated";

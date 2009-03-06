@@ -806,7 +806,7 @@ sub validate_interfaces_file( $ )
 			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
 			$value = "+${zone}_${interface}";
 			$hostoptions{dynamic} = 1;
-			$ipsets{$value} = 1;
+			$ipsets{"${zone}_${interface}"} = 1;
 		    }   
 		    #
 		    # Convert into a Perl array reference
@@ -1126,7 +1126,7 @@ sub validate_hosts_file()
 	    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
 	    $hosts = "+${zone}_${interface}";
 	    $optionsref->{dynamic} = 1;
-	    $ipsets{$hosts} = 1;
+	    $ipsets{"${zone}_${interface}"} = 1;
 
 	}
    

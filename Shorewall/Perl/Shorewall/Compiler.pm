@@ -542,8 +542,8 @@ EOF
     my @ipsets = all_ipsets; 
 
     if ( @ipsets ) {
-	emit <<EOF
-    if [ -n "$(which ipset)" ]; then
+	emit <<'EOF'
+    if [ -n "$(mywhich ipset)" ]; then
         if ipset -S > ${VARDIR}/ipsets.tmp; then
             mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
 	fi
@@ -649,8 +649,8 @@ sub generate_script_2($) {
 	my @ipsets = all_ipsets;
 
 	if ( @ipsets ) {
-	    emit ( 'if "$COMMAND" = start; then' ,
-		   '   if [ -n "$(which ipset)"; then' ,    
+	    emit ( 'if [ "$COMMAND" = start ]; then' ,
+		   '   if [ -n "$(mywhich ipset)" ]; then' ,    
 		   '       ipset -U :all: :all:' ,
 		   '       ipset -U :all: :default:' ,
 		   '       ipset -F' ,
@@ -659,9 +659,9 @@ sub generate_script_2($) {
 
 	    emit ( "       qt ipset -L $_ || ipset -N $_ iphash" ) for @ipsets;
 
-	    emit ( '    fi' ,
-		   'else' ,
-		   '    fatal_error "The ipset utility cannot be located"' ,
+	    emit ( '    else' ,
+		   '        fatal_error "The ipset utility cannot be located"' ,
+		   '    fi' ,
 		   'fi',
 		   '' );
 	}

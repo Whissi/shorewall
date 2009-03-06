@@ -1324,10 +1324,12 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v[-1|{0-2}] ] [ -t ] <command>"
     echo "where <command> is one of:"
+    echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear [ -f ]"
     echo "   compile [ -e ] [ <directory name> ] <path name>"
+    echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
@@ -1739,6 +1741,16 @@ case "$COMMAND" in
 	get_config
 	allow_command $@
 	;;
+    add)
+	get_config
+	shift
+	add_command $@
+	;;
+    delete)
+	get_config
+	shift
+	add_command $@
+	;;	
     save)
 	get_config
 	[ -n "$debugging" ] && set -x

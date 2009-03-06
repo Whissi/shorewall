@@ -830,13 +830,6 @@ restore_command() {
     [ -n "$nolock" ] || mutex_on
 
     if [ -x $RESTOREPATH ]; then
-	if [ -x ${RESTOREPATH}-ipsets ] ; then
-	    echo Restoring Ipsets...
-	    iptables -F
-	    iptables -X
-	    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
-	fi
-
 	progress_message3 "Restoring Shorewall..."
 
 	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
@@ -990,6 +983,182 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 	echo "$1 $finished"
 	shift
     done
+}
+
+#
+# Replace commas with spaces and echo the result
+#
+separate_list() {
+    local list
+    list="$@"
+    local part
+    local newlist
+    local firstpart
+    local lastpart
+    local enclosure
+
+    case "$list" in
+	*,|,*|*,,*|*[[:space:]]*)
+	    #
+	    # There's been whining about us not catching embedded white space in
+	    # comma-separated lists. This is an attempt to snag some of the cases.
+	    #
+	    # The 'TERMINATOR' function will be set by the 'firewall' script to
+	    # either 'startup_error' or 'fatal_error' depending on the command and
+	    # command phase
+	    #
+            [ -n "$TERMINATOR" ] && \
+		$TERMINATOR "Invalid comma-separated list \"$@\""
+            echo "WARNING -- invalid comma-separated list \"$@\"" >&2
+	    ;;
+	*\[*\]*)
+	    #
+	    # Where we need to embed comma-separated lists within lists, we enclose them
+	    # within square brackets.
+	    #
+	    firstpart=${list%%\[*}
+	    lastpart=${list#*\[}
+	    enclosure=${lastpart%%\]*}
+	    lastpart=${lastpart#*\]}
+	    case $lastpart in
+		\,*)
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure] $(separate_list ${lastpart#,})"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
+			    ;;
+		    esac
+		    ;;
+		*)
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure]$(separate_list $lastpart)"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    return
+	    ;;
+    esac
+
+    list="$@"
+    part="${list%%,*}"
+    newlist="$part"
+
+    while [ "x$part" != "x$list" ]; do
+	list="${list#*,}";
+	part="${list%%,*}";
+	newlist="$newlist $part";
+    done
+
+    echo "$newlist"
+}
+
+#
+# add command executor
+#
+add_command() {
+    local interface host hostlist zone ipset
+    if ! shorewall_is_started ; then
+	echo "Shorewall Not Started" >&2
+	exit 2;
+    fi
+
+    #
+    # Normalize host list
+    #
+    while [ $# -gt 1 ]; do
+	interface=${1%%:*}
+	host=${1#*:}
+	[ "$host" = "$1" ] && host=
+
+	if [ -z "$host" ]; then
+	    hostlist="$hostlist $interface:0.0.0.0/0"
+	else
+	    for h in $(separate_list $host); do
+		hostlist="$hostlist $interface:$h"
+	    done
+	fi
+
+	shift
+    done
+
+    zone=$1
+
+    for host in $hostlist; do
+	interface=${host%:*}
+
+	ipset=${zone}_${interface};
+
+	if ! qt ipset -L $ipset -n; then
+	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
+	fi
+	
+	host=${host#*:}
+
+	if ipset -A $ipset $host; then
+	    echo "Host $interface:$host added to zone $zone"
+	else
+	    fatal_error "Unable to add $interface:$host to zone $zone"
+	fi
+    done
+	
+}
+
+#
+# delete command executor
+#
+delete_command() {
+    local interface host hostent hostlist zone ipset
+    if ! shorewall_is_started ; then
+	echo "Shorewall Not Started" >&2
+	exit 2;
+    fi
+
+    #
+    # Normalize host list
+    #
+    while [ $# -gt 1 ]; do
+	interface=${1%%:*}
+	host=${1#*:}
+	[ "$host" = "$1" ] && host=
+
+	if [ -z "$host" ]; then
+	    hostlist="$hostlist $interface:0.0.0.0/0"
+	else
+	    for h in $(separate_list $host); do
+		hostlist="$hostlist $interface:$h"
+	    done
+	fi
+
+	shift
+    done
+
+    zone=$1
+
+    for hostent in $hostlist; do
+	interface=${hostent%:*}
+
+	ipset=${zone}_${interface};
+
+	if ! qt ipset -L $ipset -n; then
+	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
+	fi
+	
+	host=${hostent#*:}
+
+	if ipset -D $ipset $host; then
+	    echo "Host $hostend deleted from zone $zone"
+	else
+	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
+	fi
+    done
+	
 }
 
 #

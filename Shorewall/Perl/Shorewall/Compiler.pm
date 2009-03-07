@@ -543,9 +543,13 @@ EOF
 
     if ( @ipsets ) {
 	emit <<'EOF'
+
     if [ -n "$(mywhich ipset)" ]; then
         if ipset -S > ${VARDIR}/ipsets.tmp; then
-            mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
+            #
+            # Don't save an 'empty' file
+            #
+            grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
 	fi
     fi
 EOF
@@ -649,24 +653,42 @@ sub generate_script_2($) {
 	my @ipsets = all_ipsets;
 
 	if ( @ipsets ) {
-	    emit ( 'if [ "$COMMAND" = start ]; then' ,
-		   '   if [ -n "$(mywhich ipset)" ]; then' ,    
-		   '       ipset -U :all: :all:' ,
-		   '       ipset -U :all: :default:' ,
-		   '       ipset -F' ,
-		   '       ipset -X' ,
-		   '       ipset -R < ${VARDIR}/ipsets.save' );
-
-	    emit ( "       qt ipset -L $_ || ipset -N $_ iphash" ) for @ipsets;
-
-	    emit ( '    else' ,
-		   '        fatal_error "The ipset utility cannot be located"' ,
+	    emit ( '[ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"' ,    
+		   '',
+		   'if [ "$COMMAND" = start ]; then' ,
+		   '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
+		   '        ipset -U :all: :all:' ,
+		   '        ipset -U :all: :default:' ,
+		   '        ipset -F' ,
+		   '        ipset -X' ,
+		   '        ipset -R < ${VARDIR}/ipsets.save' ,
 		   '    fi' ,
-		   'fi',
+		   '' );
+
+	    emit ( "    qt ipset -L $_ -n || ipset -N $_ iphash" ) for @ipsets;
+
+	    emit ( '' ,
+		   'elif [ "$COMMAND" = restart ]; then' ,
+		   '' );
+
+	    emit ( "    qt ipset -L $_ -n || ipset -N $_ iphash" ) for @ipsets;
+
+	    emit ( '' , 
+		   '    if ipset -S > ${VARDIR}/ipsets.tmp; then' ,
+		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
+		   '    fi' );
+	    emit ( 'fi',
 		   '' );
 	}
 
-	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+	emit ( 'if [ "$COMMAND" = refresh ]; then' ,
+	       '   run_refresh_exit' );
+
+	emit ( "   qt ipset -L $_ -n || ipset -N $_ iphash" ) for @ipsets;
+
+	emit ( 'else' ,
+	       '    run_init_exit',
+	       'fi',
 	       '',
 	       'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall',
 	       '',

@@ -1022,7 +1022,6 @@ sub validate_hosts_file()
 			 norfc1918 => 1,
 			 nosmurfs => 1,
 			 routeback => 1,
-			 routefilter => 1,
 			 tcpflags => 1,
 			 broadcast => 1,
 			 destonly => 1,

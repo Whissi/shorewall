@@ -34,13 +34,13 @@ released late in 2009.
           P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 7
 ----------------------------------------------------------------------------
 
-1) Klemens Rutz reported a problem that affects all Shorewall-perl 4.2
-   and 4.3 versions.
+1)  Klemens Rutz reported a problem that affects all Shorewall-perl 4.2
+    and 4.3 versions.
 
-   The problem:
+    The problem:
 
-   a) Only occurs when there are more than one non-firewall zone.
-   b) Results in the following interface options not being applied to
+    a) Only occurs when there are more than one non-firewall zone.
+    b) Results in the following interface options not being applied to
       forwarded traffic.
 
 	blacklist
@@ -50,19 +50,30 @@ released late in 2009.
 	nosmurfs
 	tcpflags
 
-2) Matt LaPlante reported a problem whereby a valid DNAT- rule was
-   badly mis-handled.
+2)  Matt LaPlante reported a problem whereby a valid DNAT- rule was
+    badly mis-handled.
 
-   The rule:
+    The rule:
 
        DNAT-	loc	net:1.2.3.4:2525	tcp	25
 
-   The result:
+    The result:
 
      WARNING: Destination zone (1.2.3.4) ignored : /etc/shorewall/rules (line 459)
      Can't call method "inet_htoa" without a package or object reference at
        /usr/share/shorewall-perl/Shorewall/IPAddrs.pm line 150,
       <$currentfile> line 459.
+
+3)  Previously, OPTIONS were not allowed with a bridge port in
+    /etc/shorewall/interfaces. That oversight has been corrected and
+    now the following OPTIONS are allowed:
+
+    	blacklist
+	maclist
+	norfc1918
+	nosmurfs
+	routeback
+	tcpflags
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

@@ -605,8 +605,10 @@ sub validate_interfaces_file( $ )
 		   OBSOLETE_IF_OPTION => 5,
 		   IPLIST_IF_OPTION   => 6,
 	           MASK_IF_OPTION     => 7,
+		       
 	           IF_OPTION_ZONEONLY => 8,
-	           IF_OPTION_HOST     => 16};
+	           IF_OPTION_HOST     => 16,
+	       };
 
     my %validoptions;
 
@@ -625,7 +627,7 @@ sub validate_interfaces_file( $ )
 			 optional    => SIMPLE_IF_OPTION,
 			 proxyarp    => BINARY_IF_OPTION,
 			 routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
-			 routefilter => BINARY_IF_OPTION + IF_OPTION_HOST,
+			 routefilter => BINARY_IF_OPTION ,
 			 sourceroute => BINARY_IF_OPTION,
 			 tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 			 upnp        => SIMPLE_IF_OPTION,
@@ -636,6 +638,7 @@ sub validate_interfaces_file( $ )
 			   bridge      => SIMPLE_IF_OPTION,
 			   dhcp        => SIMPLE_IF_OPTION,
 			   maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+			   nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
 			   nosmurfs    => SIMPLE_IF_OPTION,
 			   optional    => SIMPLE_IF_OPTION,
 			   proxyndp    => BINARY_IF_OPTION,
@@ -698,8 +701,6 @@ sub validate_interfaces_file( $ )
 		}
 	    }
 
-	    fatal_error "Bridge Ports may not have options" if $options && $options ne '-';
-
 	    next if $port eq '';
 
 	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
@@ -740,6 +741,8 @@ sub validate_interfaces_file( $ )
 
 	my %options;
 
+	$options{port} = 1 if $port;
+
 	my $hostoptionsref = {};
 
 	if ( $options ) {
@@ -756,6 +759,8 @@ sub validate_interfaces_file( $ )
 		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
 
 		my $hostopt = $type & IF_OPTION_HOST;
+
+		fatal_error "The \"$option\" option is not allowed on a bridge port" if $port && ! $hostopt;
 
 		$type &= MASK_IF_OPTION;
 
@@ -830,8 +835,6 @@ sub validate_interfaces_file( $ )
 
 	    $hostoptionsref = \%hostoptions;
 
-	} elsif ( $port ) {
-	    $options{port} = 1;
 	}
 
 	$interfaces{$interface} = { name       => $interface ,

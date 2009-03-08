@@ -1,9 +1,9 @@
 #
-# Shorewall 4.2 -- /usr/share/shorewall-perl/Shorewall/Proc.pm
+# Shorewall 4.4 -- /usr/share/shorewall-perl/Shorewall/Proc.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -41,7 +41,7 @@ our @EXPORT = qw(
 		 setup_forwarding
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 #
 # ARP Filtering

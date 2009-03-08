@@ -1,9 +1,9 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Providers.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Providers.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,

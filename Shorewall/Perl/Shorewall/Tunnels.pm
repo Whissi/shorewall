@@ -1,9 +1,9 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Tunnels.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Tunnels.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tunnels );
 our @EXPORT_OK = ( );
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 #
 # Here starts the tunnel stuff -- we really should get rid of this crap...

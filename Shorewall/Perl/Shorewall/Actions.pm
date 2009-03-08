@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Actions.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Actions.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -56,7 +56,7 @@ our @EXPORT = qw( merge_levels
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.

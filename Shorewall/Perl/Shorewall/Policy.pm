@@ -1,9 +1,9 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Policy.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Policy.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains );
 our @EXPORT_OK = qw(  );
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 # @policy_chains is a list of references to policy chains in the filter table
 

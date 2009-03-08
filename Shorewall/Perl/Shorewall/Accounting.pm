@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Accounting.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Accounting.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow

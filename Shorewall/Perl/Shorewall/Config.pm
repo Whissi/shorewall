@@ -1,9 +1,9 @@
 #
-# Shorewall-perl 4.2 -- /usr/share/shorewall-perl/Shorewall/Config.pm
+# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -123,7 +123,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 4.2.4;
+our $VERSION = '4.3_7';
 
 #
 # describe the current command, it's present progressive, and it's completion.

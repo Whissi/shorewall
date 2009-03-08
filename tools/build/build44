@@ -119,6 +119,8 @@ RPM6NAME=
 LITE6RPMNAME=
 TARBALL6=
 LITE6TARBALL=
+
+USEGIT=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -182,6 +184,16 @@ usage()
     echo "usage: $(basename $0) [ -trhxlcpsS] <version> [ <old-version> ]"
     exit 2
 }
+
+do_export()
+{
+    if [ -n "$USEGIT" ]; then
+	progress_message "Copying $1..." && do_or_die "cp -a $1 $2 >> $LOGFILE 2>&1"
+    else
+	progress_message "Exporting $1 from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$1  $2 >> $LOGFILE 2>&1"
+    fi
+}
+
 ################################################################################
 #                E X E C U T I O N   S T A R T S   H E R E
 ################################################################################
@@ -297,18 +309,34 @@ progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
      4.3.*)
-	SVNBRANCH="trunk/Shorewall"
-	SVN6BRANCH="trunk/Shorewall6"
-	LITESVNBRANCH="trunk/Shorewall-lite"
-	LITE6SVNBRANCH="trunk/Shorewall6-lite"
-	DOCTAG="trunk/docs"
+	USEGIT=Yes
 	XMLPROJ="docs-4.3"
-	SAMPLESTAG="trunk/Samples"
-	SAMPLES6TAG="trunk/Samples6"
-	MANPAGETAG=trunk/manpages
-	MANPAGE6TAG=trunk/manpages6
-	LITEMANPAGETAG=trunk/manpages-lite
-	LITE6MANPAGETAG=trunk/manpages6-lite
+
+	if [ -n "$USEGIT" ]; then
+	    SVNBRANCH="~/git/Shorewall"
+	    SVN6BRANCH="~/git/Shorewall6"
+	    LITESVNBRANCH="~/git/Shorewall-lite"
+	    LITE6SVNBRANCH="~/git/Shorewall6-lite"
+	    DOCTAG="~/git/docs"
+	    SAMPLESTAG="~/git/Samples"
+	    SAMPLES6TAG="~/git/Samples6"
+	    MANPAGETAG=~/git//manpages
+	    MANPAGE6TAG=~/git/manpages6
+	    LITEMANPAGETAG=~/git/manpages-lite
+	    LITE6MANPAGETAG=~/git/manpages6-lite
+	else
+	    SVNBRANCH="trunk/Shorewall"
+	    SVN6BRANCH="trunk/Shorewall6"
+	    LITESVNBRANCH="trunk/Shorewall-lite"
+	    LITE6SVNBRANCH="trunk/Shorewall6-lite"
+	    DOCTAG="trunk/docs"
+	    SAMPLESTAG="trunk/Samples"
+	    SAMPLES6TAG="trunk/Samples6"
+	    MANPAGETAG=trunk/manpages
+	    MANPAGE6TAG=trunk/manpages6
+	    LITEMANPAGETAG=trunk/manpages-lite
+	    LITE6MANPAGETAG=trunk/manpages6-lite
+	fi
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -350,12 +378,14 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall6 directory is $DIR/$SHOREWALL6DIR"
     report "Shorewall Lite directory is $DIR/$SHOREWALLLITEDIR"
     report "Shorewall6 Lite directory is $DIR/$LITE6DIR"
+
     report "SVN tag is $SVNBRANCH"
     report "Samples tag is $SAMPLESTAG"
     report "Samples6 tag is $SAMPLES6TAG"
     report "SVN6 tag is $SVN6BRANCH"
     report "Lite SVN tag is $LITESVNBRANCH"
     report "Lite6 SVN tag is $LITE6SVNBRANCH"
+	
     if [ -n "$BUILDTARBALL" ]; then
 	report "TARBALL is $TARBALL"
 	report "TARBALL6 is $TARBALL6"
@@ -384,13 +414,13 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     [ -n "$BUILDLITE" ]   && rm -rf $SHOREWALLLITEDIR
     [ -n "$BUILD6LITE" ]  && rm -rf $LITE6DIR
 
-    progress_message "Exporting $SVNBRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+    do_export $SVNBRANCH $SHOREWALLDIR
 
-    [ -n "$BUILD6" ]      && progress_message "Exporting $SVN6BRANCH from SVN..."     && do_or_die "svn export --non-interactive --force ${SVN}/$SVN6BRANCH $SHOREWALL6DIR >> $LOGFILE 2>&1"
+    [ -n "$BUILD6" ]      && do_export $SVN6BRANCH $SHOREWALL6DIR
  
-    [ -n "$BUILDLITE" ]   && progress_message "Exporting $LITESVNBRANCH from SVN..."  && do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    [ -n "$BUILDLITE" ]   && do_export $LITESVNBRANCH  $SHOREWALLLITEDIR
 
-    [ -n "$BUILD6LITE" ]  && progress_message "Exporting $LITE6SVNBRANCH from SVN..."  && do_or_die "svn export --non-interactive --force ${SVN}/$LITE6SVNBRANCH  $LITE6DIR >> $LOGFILE 2>&1"
+    [ -n "$BUILD6LITE" ]  && do_export $LITE6SVNBRANCH  $LITE6DIR
     	
     if [ -n "$BUILDLITE" ]; then
 	do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
@@ -443,9 +473,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$BUILDCOMMON" ]; then
 	cd $SHOREWALLDIR
-	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
-	progress_message "Exporting $MANPAGETAG from SVN..."
-	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+	do_export $SAMPLESTAG Samples
+	do_export $MANPAGETAG manpages
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
@@ -471,9 +500,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$BUILD6" ]; then
 	cd $SHOREWALL6DIR
-	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLES6TAG Samples6 >> $LOGFILE 2>&1"
-	progress_message "Exporting $MANPAGE6TAG from SVN..."
-	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGE6TAG manpages >> $LOGFILE 2>&1"
+	do_export $SAMPLES6TAG Samples6
+	do_export $MANPAGE6TAG manpages
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall6-template.xml ]; then
@@ -499,8 +527,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$BUILDLITE" ]; then
 	cd $SHOREWALLLITEDIR
-	progress_message "Exporting $LITEMANPAGETAG from SVN..."
-	do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
+	do_export $LITEMANPAGETAG manpages
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall-template.xml ]; then
@@ -526,8 +553,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$BUILD6LITE" ]; then
 	cd $LITE6DIR
-	progress_message "Exporting $LITE6MANPAGETAG from SVN..."
-	do_or_die "svn export --non-interactive --force ${SVN}/$LITE6MANPAGETAG manpages >> $LOGFILE 2>&1"
+	do_export $LITE6MANPAGETAG manpages
 	cd manpages
 	for f in *.xml; do
 	    if [ $f != shorewall6-template.xml ]; then
@@ -676,12 +702,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 fi
 
 if [ -n "${BUILDXML}${BUILDHTML}" ]; then
-    progress_message "Exporting $XMLPROJ from SVN..."
-
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "svn export --non-interactive --force ${SVN}/$DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
+    do_export $DOCTAG $XMLPROJ
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd
@@ -692,23 +716,19 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 
     cd shorewall-docs-xml-$VERSION
 
-    progress_message "Exporting $MANPAGETAG from SVN..."
-    do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+    do_export $MANPAGETAG manpages
     mv manpages manpages.save
 
     if [ -n "$MANPAGE6TAG" ]; then
-	progress_message "Exporting $MANPAGE6TAG from SVN..."
-	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGE6TAG manpages >> $LOGFILE 2>&1"
+	do_export $MANPAGE6TAG manpages
 	do_or_die mv manpages/* manpages.save/
     fi
 
-    progress_message "Exporting $LITEMANPAGETAG from SVN..."	
-    do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
+    do_export $LITEMANPAGETAG manpages
     do_or_die mv manpages/* manpages.save/
 
     if [ -n "$LITE6MANPAGETAG" ]; then
-	progress_message "Exporting $LITE6MANPAGETAG from SVN..."
-	do_or_die "svn export --non-interactive --force ${SVN}/$LITE6MANPAGETAG manpages >> $LOGFILE 2>&1"    
+	do_export $LITE6MANPAGETAG manpages
 	do_or_die mv manpages/* manpages.save/
     fi
 
@@ -897,12 +917,18 @@ for file in *; do
 done
 
 if [ -n "$PATCHRELEASE" ]; then
-    svn update ~/shorewall/tags/${BASEVERSION}
-    if [ -f ~/shorewall/tags/${BASEVERSION}/known_problems.txt ]; then
-	cp ~/shorewall/tags/${BASEVERSION}/known_problems.txt .
-    else 
-	[ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
+    if [ -n "$USEGIT" ]; then
+	if [ -f ~/git/tags/${BASEVERSION}/known_problems.txt ]; then
+	   cp ~/git/tags/${BASEVERSION}/known_problems.txt .
+	fi
+    else
+	svn update ~/shorewall/tags/${BASEVERSION}
+	if [ -f ~/shorewall/tags/${BASEVERSION}/known_problems.txt ]; then
+	    cp ~/shorewall/tags/${BASEVERSION}/known_problems.txt .
+	fi
     fi
+	
+    [ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
 else
     echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
 fi

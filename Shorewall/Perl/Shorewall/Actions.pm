@@ -96,7 +96,8 @@ our $macro_commands = { COMMENT => 0, FORMAT => 2 };
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function.
+#                       the second and subsequent calls to that function or when compiling
+#                       for IPv6.
 #
 
 sub initialize( $ ) {
@@ -228,7 +229,7 @@ sub merge_macro_column( $$ ) {
 }
 
 #
-# Get Macro Name -- strips away trailing /* and :* from the first column in a rule, macro or action.
+# Get Macro Name -- strips away trailing /*, :* and (*) from the first column in a rule, macro or action.
 #
 sub isolate_basic_target( $ ) {
     my $target = ( split '[/:]', $_[0])[0]; 
@@ -382,28 +383,8 @@ sub find_logactionchain( $ ) {
 }
 
 #
-# The functions process_actions1-3() implement the three phases of action processing.
+# Scans a macro file invoked from an action file ensuring that all targets mentioned in the file are known and that none are actions.
 #
-# The first phase (process_actions1) occurs before the rules file is processed. ${SHAREDIR}/actions.std
-# and ${CONFDIR}/actions are scanned (in that order) and for each action:
-#
-#      a) The related action definition file is located and scanned.
-#      b) Forward and unresolved action references are trapped as errors.
-#      c) A dependency graph is created using the 'requires' field in the 'actions' table.
-#
-# As the rules file is scanned, each action[:level[:tag]] is merged onto the 'usedactions' hash. When an <action>
-# is merged into the hash, its action chain is created. Where logging is specified, a chain with the name
-# %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
-# length of the chain name does not exceed 30 characters.
-#
-# The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of
-# %usedactions is generated; again, as new actions are merged into the hash, their action chains are created.
-#
-# The final phase (process_actions3) is to traverse the keys of %usedactions populating each chain appropriately
-# by reading the action definition files and creating rules. Note that a given action definition file is
-# processed once for each unique [:level[:tag]] applied to an invocation of the action.
-#
-
 sub process_macro1 ( $$ ) {
     my ( $action, $macrofile ) = @_;
 
@@ -432,6 +413,29 @@ sub process_macro1 ( $$ ) {
 
     pop_open;
 }
+
+#
+# The functions process_actions1-3() implement the three phases of action processing.
+#
+# The first phase (process_actions1) occurs before the rules file is processed. ${SHAREDIR}/actions.std
+# and ${CONFDIR}/actions are scanned (in that order) and for each action:
+#
+#      a) The related action definition file is located and scanned.
+#      b) Forward and unresolved action references are trapped as errors.
+#      c) A dependency graph is created using the 'requires' field in the 'actions' table.
+#
+# As the rules file is scanned, each action[:level[:tag]] is merged onto the 'usedactions' hash. When an <action>
+# is merged into the hash, its action chain is created. Where logging is specified, a chain with the name
+# %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
+# length of the chain name does not exceed 30 characters.
+#
+# The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of
+# %usedactions is generated; again, as new actions are merged into the hash, their action chains are created.
+#
+# The final phase (process_actions3) traverses the keys of %usedactions populating each chain appropriately
+# by reading the related action definition file and creating rules. Note that a given action definition file is
+# processed once for each unique [:level[:tag]] applied to an invocation of the action.
+#
 
 sub process_action1 ( $$ ) {
     my ( $action, $wholetarget ) = @_;

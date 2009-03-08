@@ -287,7 +287,8 @@ our %builtin_target = ( ACCEPT   => 1,
 #                       initialize() function does globals initialization for this
 #                       module and is called from an INIT block below. The function is
 #                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function.
+#                       the second and subsequent calls to that function or when compiling
+#                       for IPv6.
 #
 
 sub initialize( $ ) {
@@ -304,7 +305,7 @@ sub initialize( $ ) {
     $filter_table = $chain_table{filter};
 
     #
-    # These get set to 1 as sections are encountered.
+    # These are set to 1 as sections are encountered.
     #
     %sections = ( ESTABLISHED => 0,
 		  RELATED     => 0,
@@ -327,10 +328,6 @@ sub initialize( $ ) {
     #
     $iprangematch = 0;
     #
-    # Sequence for naming temporary chains
-    #
-    $chainseq = undef;
-    #
     # Keep track of which interfaces have active 'address', 'addresses', 'networks', etc. variables
     #
     %interfaceaddr      = ();
@@ -346,12 +343,6 @@ sub initialize( $ ) {
 INIT {
     initialize( F_IPV4 );
 }
-
-#
-# Add a run-time command to a chain. Arguments are:
-#
-#    Chain reference , Command
-#
 
 #
 # Process a COMMENT line (in $currentline)
@@ -399,6 +390,11 @@ sub decr_cmd_level( $ ) {
     fatal_error "Internal error in decr_cmd_level()" if --$_[0]->{cmdlevel} < 0;
 }
 
+#
+# Add a run-time command to a chain. Arguments are:
+#
+#    Chain reference , Command
+#
 sub add_command($$)
 {
     my ($chainref, $command) = @_;
@@ -570,8 +566,9 @@ sub add_rule($$;$)
 
 #
 # Add a jump from the chain represented by the reference in the first argument to
-# the target in the second argument. The optional third argument specifies any
-# matches to be included in the rule and must end with a space character if it is non-null.
+# the target in the second argument. The third argument determines if a GOTO may be
+# used rather than a jump. The optional fourth argument specifies any matches to be
+# included in the rule and must end with a space character if it is non-null.
 #
 
 sub add_jump( $$$;$ ) {
@@ -604,7 +601,7 @@ sub add_jump( $$$;$ ) {
 }
 
 #
-# Purge a jump previously added via add_jump. If the target chain is empty, reset its 
+# Purge jumps previously added via add_jump. If the target chain is empty, reset its 
 # referenced flag
 #
 sub purge_jump ( $$ ) {
@@ -622,6 +619,9 @@ sub purge_jump ( $$ ) {
 # Insert a rule into a chain. Arguments are:
 #
 #    Chain reference , Rule Number, Rule
+#
+# In the first function, the rule number is zero-relative. In the second function,
+# the rule number is one-relative.
 #
 sub insert_rule1($$$)
 {
@@ -682,7 +682,7 @@ sub move_rules( $$ ) {
 }
 
 #
-# Change the passed interface name so it is a legal shell variable name.
+# Transform the passed interface name into a legal shell variable name.
 #
 sub chain_base($) {
     my $chain = $_[0];
@@ -725,7 +725,7 @@ sub use_forward_chain($) {
     #
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
-    #                                            and this chain has option rules
+    #                                            and this interface has option rules
     $interfaceref->{options}{use_forward_chain} && keys %{ zone_interfaces( $zone ) } > 1;
 }
 
@@ -766,7 +766,7 @@ sub use_input_chain($) {
     #
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
-    #                                            and this chain has option rules
+    #                                            and this interface has option rules
     return 1 if $interfaceref->{options}{use_input_chain} && keys %{ zone_interfaces( $zone ) } > 1;
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one
@@ -924,9 +924,7 @@ sub ensure_chain($$)
 
     my $ref =  $chain_table{$table}{$chain};
 
-    return $ref if $ref;
-
-    new_chain $table, $chain;
+    $ref ? $ref : new_chain $table, $chain;
 }
 
 sub finish_chain_section( $$ );
@@ -1562,7 +1560,7 @@ sub do_connlimit( $ ) {
 sub do_time( $ ) {
     my ( $time ) = @_;
 
-    return '' unless $time ne '-';
+    return '' if $time eq '-';
 
     require_capability 'TIME_MATCH', 'A non-empty TIME', 's';
 
@@ -1955,7 +1953,23 @@ sub log_rule( $$$$ ) {
 }
 
 #
-# Split a comma-separated source or destination host list but keep [...] together.
+# If the destination chain exists, then at the end of the source chain add a jump to the destination.
+#
+sub addnatjump( $$$ ) {
+    my ( $source , $dest, $predicates ) = @_;
+
+    my $destref   = $nat_table->{$dest} || {};
+
+    if ( $destref->{referenced} ) {
+	add_rule $nat_table->{$source} , $predicates . "-j $dest";
+    } else {
+	clearrule;
+    }
+}
+
+#
+# Split a comma-separated source or destination host list but keep [...] together. Used for spliting address lists
+# where an element of the list might be +ipset[binding].
 #
 sub mysplit( $ ) {
     my @input = split_list $_[0], 'host';
@@ -1982,6 +1996,11 @@ sub mysplit( $ ) {
     @result;
 }
 
+####################################################################################################################
+# The following functions come in pairs. The first function returns the name of a run-time shell variable that
+# will hold a piece of interface-oriented data detected at run-time. The second creates a code fragment to detect
+# the information and stores it in a hash keyed by the interface name.
+####################################################################################################################
 #
 # Returns the name of the shell variable holding the first address of the passed interface
 #
@@ -2158,6 +2177,78 @@ sub get_interface_mac( $$$ ) {
 }
 
 #
+# Generate setting of run-time global shell variables
+#
+sub emit_comment() {
+    emit  ( '#',
+	    '# Establish the values of shell variables used in the following function calls',
+	    '#' );
+    our $emitted_comment = 1;
+}
+
+sub emit_test() {
+    emit ( 'if [ "$COMMAND" != restore ]; then' ,
+	   '' );
+    push_indent;
+    our $emitted_test = 1;
+}
+
+sub set_global_variables() {
+
+    our ( $emitted_comment, $emitted_test ) = (0, 0);
+
+    for ( values %interfaceaddr ) {
+	emit_comment unless $emitted_comment;
+	emit $_;
+    }
+
+    for ( values %interfacegateways ) {
+	emit_comment unless $emitted_comment;
+	emit $_;
+    }    
+
+    for ( values %interfacemacs ) {
+	emit_comment unless $emitted_comment;
+	emit $_;
+    }    
+
+    for ( values %interfaceaddrs ) {
+	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
+	emit $_;
+    }
+
+    for ( values %interfacenets ) {
+	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
+	emit $_;
+    }
+
+    unless ( $capabilities{ADDRTYPE} ) {
+	emit_comment unless $emitted_comment;
+	emit_test    unless $emitted_test;
+
+	if ( $family == F_IPV4 ) {
+	    emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
+
+	    for ( values %interfacebcasts ) {
+		emit $_;
+	    }
+	} else {
+	    emit 'ALL_ACASTS="$(get_all_acasts)"';
+
+	    for ( values %interfaceacasts ) {
+		emit $_;
+	    }
+	}
+    }
+
+    pop_indent,	emit "fi\n" if $emitted_test;
+
+}
+
+################################################################################################################
+#
 # This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
 #
 # Returns the destination interface specified in the rule, if any.
@@ -2170,7 +2261,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	$source,       # SOURCE
 	$dest,         # DEST
 	$origdest,     # ORIGINAL DEST
-	$oport,         # original destination port
+	$oport,        # original destination port
 	$target,       # Target ('-j' part of the rule)
 	$loglevel ,    # Log level (and tag)
 	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...)
@@ -2581,92 +2672,6 @@ sub expand_rule( $$$$$$$$$$$ )
     }
 
     $diface;
-}
-
-#
-# If the destination chain exists, then at the end of the source chain add a jump to the destination.
-#
-sub addnatjump( $$$ ) {
-    my ( $source , $dest, $predicates ) = @_;
-
-    my $destref   = $nat_table->{$dest} || {};
-
-    if ( $destref->{referenced} ) {
-	add_rule $nat_table->{$source} , $predicates . "-j $dest";
-    } else {
-	clearrule;
-    }
-}
-
-sub emit_comment() {
-    emit  ( '#',
-	    '# Establish the values of shell variables used in the following function calls',
-	    '#' );
-    our $emitted_comment = 1;
-}
-
-sub emit_test() {
-    emit ( 'if [ "$COMMAND" != restore ]; then' ,
-	   '' );
-    push_indent;
-    our $emitted_test = 1;
-}
-
-#
-# Generate setting of global variables
-#
-sub set_global_variables() {
-
-    our ( $emitted_comment, $emitted_test ) = (0, 0);
-
-    for ( values %interfaceaddr ) {
-	emit_comment unless $emitted_comment;
-	emit $_;
-    }
-
-    for ( values %interfacegateways ) {
-	emit_comment unless $emitted_comment;
-	emit $_;
-    }    
-
-    for ( values %interfacemacs ) {
-	emit_comment unless $emitted_comment;
-	emit $_;
-    }    
-
-    for ( values %interfaceaddrs ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
-	emit $_;
-    }
-
-    for ( values %interfacenets ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
-	emit $_;
-    }
-
-    unless ( $capabilities{ADDRTYPE} ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
-
-	if ( $family == F_IPV4 ) {
-	    emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
-
-	    for ( values %interfacebcasts ) {
-		emit $_;
-	    }
-	} else {
-	    emit 'ALL_ACASTS="$(get_all_acasts)"';
-
-	    for ( values %interfaceacasts ) {
-		emit $_;
-	    }
-	}
-    }
-
-    pop_indent,	emit "fi\n" if $emitted_test;
-
 }
 
 #

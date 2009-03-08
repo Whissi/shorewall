@@ -69,6 +69,10 @@ GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our pu
 # SVN Repository
 #
 SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
+#
+# GIT Repository
+#
+GIT=~/shorewall/
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -313,17 +317,17 @@ case $VERSION in
 	XMLPROJ="docs-4.3"
 
 	if [ -n "$USEGIT" ]; then
-	    SVNBRANCH="~/git/Shorewall"
-	    SVN6BRANCH="~/git/Shorewall6"
-	    LITESVNBRANCH="~/git/Shorewall-lite"
-	    LITE6SVNBRANCH="~/git/Shorewall6-lite"
-	    DOCTAG="~/git/docs"
-	    SAMPLESTAG="~/git/Samples"
-	    SAMPLES6TAG="~/git/Samples6"
-	    MANPAGETAG=~/git//manpages
-	    MANPAGE6TAG=~/git/manpages6
-	    LITEMANPAGETAG=~/git/manpages-lite
-	    LITE6MANPAGETAG=~/git/manpages6-lite
+	    SVNBRANCH="${GIT}/trunk/Shorewall"
+	    SVN6BRANCH="${GIT}/trunk/Shorewall6"
+	    LITESVNBRANCH="${GIT}/trunk/Shorewall-lite"
+	    LITE6SVNBRANCH="${GIT}/trunk/Shorewall6-lite"
+	    DOCTAG="${GIT}/trunk/docs"
+	    SAMPLESTAG="${GIT}/trunk/Samples"
+	    SAMPLES6TAG="${GIT}/trunk/Samples6"
+	    MANPAGETAG=${GIT}/trunk//manpages
+	    MANPAGE6TAG=${GIT}/trunk/manpages6
+	    LITEMANPAGETAG=${GIT}/trunk/manpages-lite
+	    LITE6MANPAGETAG=${GIT}/trunk/manpages6-lite
 	else
 	    SVNBRANCH="trunk/Shorewall"
 	    SVN6BRANCH="trunk/Shorewall6"
@@ -918,8 +922,8 @@ done
 
 if [ -n "$PATCHRELEASE" ]; then
     if [ -n "$USEGIT" ]; then
-	if [ -f ~/git/tags/${BASEVERSION}/known_problems.txt ]; then
-	   cp ~/git/tags/${BASEVERSION}/known_problems.txt .
+	if [ -f ${GIT}/tags/${BASEVERSION}/known_problems.txt ]; then
+	   cp ${GIT}/tags/${BASEVERSION}/known_problems.txt .
 	fi
     else
 	svn update ~/shorewall/tags/${BASEVERSION}

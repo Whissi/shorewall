@@ -72,7 +72,7 @@ SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
 #
 # GIT Repository
 #
-GIT=~/shorewall/
+GIT=~/shorewall/trunk/
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -192,7 +192,8 @@ usage()
 do_export()
 {
     if [ -n "$USEGIT" ]; then
-	progress_message "Copying $1..." && do_or_die "cp -a $1 $2 >> $LOGFILE 2>&1"
+	progress_message "Exporting $1 from Git..." && do_or_die "git --git-dir=$GIT/.git archive --format=tar HEAD $1 | tar -xf - >> $LOGFILE 2>&1"
+	[ $1 = $2 ] || do_or_die "mv -f $1 $2 >> $LOGFILE 2>&1"
     else
 	progress_message "Exporting $1 from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$1  $2 >> $LOGFILE 2>&1"
     fi
@@ -317,17 +318,17 @@ case $VERSION in
 	XMLPROJ="docs-4.3"
 
 	if [ -n "$USEGIT" ]; then
-	    SVNBRANCH="${GIT}/trunk/Shorewall"
-	    SVN6BRANCH="${GIT}/trunk/Shorewall6"
-	    LITESVNBRANCH="${GIT}/trunk/Shorewall-lite"
-	    LITE6SVNBRANCH="${GIT}/trunk/Shorewall6-lite"
-	    DOCTAG="${GIT}/trunk/docs"
-	    SAMPLESTAG="${GIT}/trunk/Samples"
-	    SAMPLES6TAG="${GIT}/trunk/Samples6"
-	    MANPAGETAG=${GIT}/trunk//manpages
-	    MANPAGE6TAG=${GIT}/trunk/manpages6
-	    LITEMANPAGETAG=${GIT}/trunk/manpages-lite
-	    LITE6MANPAGETAG=${GIT}/trunk/manpages6-lite
+	    SVNBRANCH="Shorewall"
+	    SVN6BRANCH="Shorewall6"
+	    LITESVNBRANCH="Shorewall-lite"
+	    LITE6SVNBRANCH="Shorewall6-lite"
+	    DOCTAG="docs"
+	    SAMPLESTAG="Samples"
+	    SAMPLES6TAG="Samples6"
+	    MANPAGETAG=manpages
+	    MANPAGE6TAG=manpages6
+	    LITEMANPAGETAG=manpages-lite
+	    LITE6MANPAGETAG=manpages6-lite
 	else
 	    SVNBRANCH="trunk/Shorewall"
 	    SVN6BRANCH="trunk/Shorewall6"
@@ -919,23 +920,6 @@ for file in *; do
 	    ;;
     esac
 done
-
-if [ -n "$PATCHRELEASE" ]; then
-    if [ -n "$USEGIT" ]; then
-	if [ -f ${GIT}/tags/${BASEVERSION}/known_problems.txt ]; then
-	   cp ${GIT}/tags/${BASEVERSION}/known_problems.txt .
-	fi
-    else
-	svn update ~/shorewall/tags/${BASEVERSION}
-	if [ -f ~/shorewall/tags/${BASEVERSION}/known_problems.txt ]; then
-	    cp ~/shorewall/tags/${BASEVERSION}/known_problems.txt .
-	fi
-    fi
-	
-    [ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
-else
-    echo "There are no known problems in Shorewall version $VERSION" > known_problems.txt
-fi
 
 if [ -n "$OLDVERSION" ]; then
     

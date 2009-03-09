@@ -703,6 +703,9 @@ sub fatal_error1	{
     die "   ERROR: @_\n";
 }
 
+#
+# C/C++-like assertion checker
+#
 sub assert( $ ) {
     unless ( $_[0] ) {
 	my @caller = caller 1;

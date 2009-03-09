@@ -71,7 +71,7 @@ sub setup_arp_filtering() {
 	    my $file  = "/proc/sys/net/ipv4/conf/$interface/arp_ignore";
 	    my $value = get_interface_option $interface, 'arp_ignore';
 
-	    fatal_error "Internal Error in setup_arp_filtering()" unless defined $value;
+	    assert( defined $value );
 
 	    emit ( "if [ -f $file ]; then",
 		   "    echo $value > $file");

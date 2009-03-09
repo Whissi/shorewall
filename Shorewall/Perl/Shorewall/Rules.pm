@@ -1643,7 +1643,7 @@ sub generate_matrix() {
 	return $chain   if $chainref && $chainref->{referenced};
 	return 'ACCEPT' if $zone eq $zone1;
 
-	fatal_error "Internal Error in rules_target()" unless $chainref;
+	assert( $chainref );
 
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $filter_table->{$chainref->{policychain}};

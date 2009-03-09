@@ -344,7 +344,7 @@ sub determine_zones()
 	}
     }
 
-    fatal_error "Internal error in determine_zones()" unless scalar @zones == scalar @z;
+    assert( scalar @zones == scalar @z );
 
 }
 

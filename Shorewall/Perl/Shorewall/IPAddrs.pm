@@ -202,7 +202,7 @@ sub validate_4net( $$ ) {
     }
 
     if ( defined wantarray ) {
-	fatal_error "Internal Error in validate_net()" if $allow_name;
+	assert ( ! $allow_name );
 	if ( wantarray ) {
 	    ( decodeaddr( $net ) , $vlsm );
 	} else {

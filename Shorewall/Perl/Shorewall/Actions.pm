@@ -712,7 +712,7 @@ sub process_action3( $$$$$ ) {
 	    if ( $action2type & ACTION ) {
 		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
 	    } else {
-		fatal_error "Internal Error" unless $action2type & ( MACRO | LOGRULE | NFQ | CHAIN );
+		assert( $action2type & ( MACRO | LOGRULE | NFQ | CHAIN ) );
 	    }
 	}
 

@@ -495,7 +495,7 @@ sub dev_by_number( $ ) {
 	$dev = $devnums[ $devnum ];
 	fatal_error "Undefined INTERFACE number ($_[0])" unless defined $dev;
 	$devref = $tcdevices{$dev};
-	fatal_error "Internal Error in dev_by_number()" unless $devref;
+	assert( $devref );
     } else {
 	$devref = $tcdevices{$dev};
 	fatal_error "Unknown INTERFACE ($dev)" unless $devref;

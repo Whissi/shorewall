@@ -372,7 +372,7 @@ sub default_policy( $$$ ) {
     my $policy     = $policyref->{policy};
     my $loglevel   = $policyref->{loglevel};
 
-    fatal_error "Internal error in default_policy()" unless $policyref;
+    assert( $policyref );
 
     if ( $chainref eq $policyref ) {
 	policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};

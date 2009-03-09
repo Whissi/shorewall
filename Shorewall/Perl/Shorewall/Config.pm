@@ -45,6 +45,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		 warning_message
 		 fatal_error
+		 assert
 		 progress_message
 		 progress_message_nocompress
 		 progress_message2
@@ -702,6 +703,14 @@ sub fatal_error1	{
     die "   ERROR: @_\n";
 }
 
+sub assert( $ ) {
+    unless ( $_[0] ) {
+	my @caller = caller 1;
+
+	fatal_error "Internal error in $caller[0]::$caller[3]";
+    }
+}
+
 #
 # Convert value to decimal number
 #
@@ -746,7 +755,7 @@ sub in_hex8( $ ) {
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit {
-    fatal_error 'Internal Error in emit' unless $object_enabled;
+    assert ( $object_enabled );
 
     if ( $object ) {
 	#
@@ -772,7 +781,7 @@ sub emit {
 # Write passed message to the object with newline but no indentation.
 #
 sub emit_unindented( $ ) {
-    fatal_error 'Internal Error in emit_unindented' unless $object_enabled;
+    assert( $object_enabled );
     print $object "$_[0]\n" if $object;
 }
 
@@ -964,7 +973,7 @@ sub pop_indent() {
 # Functions for copying files into the object
 #
 sub copy( $ ) {
-    fatal_error 'Internal Error in copy' unless $object_enabled;
+    assert( $object_enabled );
 
     if ( $object ) {
 	my $file = $_[0];
@@ -996,7 +1005,7 @@ sub copy( $ ) {
 # This one handles line continuation and 'here documents'
 
 sub copy1( $ ) {
-    fatal_error 'Internal Error in copy1' unless $object_enabled;
+    assert( $object_enabled );
 
     if ( $object ) {
 	my $file = $_[0];
@@ -1274,7 +1283,7 @@ sub do_open_file( $ ) {
 sub open_file( $ ) {
     my $fname = find_file $_[0];
 
-    fatal_error 'Internal Error in open_file()' if defined $currentfile;
+    assert( ! defined $currentfile );
 
     -f $fname && -s _ ? do_open_file $fname : '';
 }
@@ -1448,7 +1457,7 @@ sub embedded_perl( $ ) {
     if ( $scriptfile ) {
 	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
 
-	close $scriptfile or fatal_error "Internal Error in embedded_perl()";
+	close $scriptfile or assert(0);
 
 	$scriptfile = undef;
 

@@ -387,7 +387,7 @@ sub incr_cmd_level( $ ) {
 }
 
 sub decr_cmd_level( $ ) {
-    fatal_error "Internal error in decr_cmd_level()" if --$_[0]->{cmdlevel} < 0;
+    assert( --$_[0]->{cmdlevel} >= 0);
 }
 
 #
@@ -535,7 +535,7 @@ sub add_rule($$;$)
 {
     my ($chainref, $rule, $expandports) = @_;
 
-    fatal_error 'Internal Error in add_rule()' if reftype $rule;
+    assert( ! reftype $rule );
 
     $iprangematch = 0;
     #
@@ -627,7 +627,7 @@ sub insert_rule1($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    fatal_error 'Internal Error in insert_rule()' if $chainref->{cmdlevel};
+    assert( ! $chainref->{cmdlevel});
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
@@ -670,7 +670,7 @@ sub move_rules( $$ ) {
 	my @rules = @{$chain1->{rules}};
 
 	for ( @rules ) {
-	    fatal_error "Internal Error in move_rules()" unless /^-A/;
+	    assert( /^-A/ );
 	}
 
 	splice @{$chain2->{rules}}, 0, 0, @rules;
@@ -903,7 +903,7 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
 
-    fatal_error "Internal error in new_chain()" if $chain_table{$table}{$chain} || $builtin_target{ $chain };
+    assert( ! $chain_table{$table}{$chain} && ! $builtin_target{ $chain } );
 
     $chain_table{$table}{$chain} = { name      => $chain,
 				     rules     => [],
@@ -920,7 +920,7 @@ sub ensure_chain($$)
 {
     my ($table, $chain) = @_;
 
-    fatal_error 'Internal Error in ensure_chain' unless $table && $chain;
+    assert( $table && $chain );
 
     my $ref =  $chain_table{$table}{$chain};
 
@@ -2774,7 +2774,7 @@ sub create_netfilter_load( $ ) {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
+		assert( $chainref->{cmdlevel} == 0 );
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
@@ -2785,7 +2785,7 @@ sub create_netfilter_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		fatal_error "Internal error in create_netfilter_load()" if $chainref->{cmdlevel};
+		assert( $chainref->{cmdlevel} == 0 );
 		emit_unindented ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }

@@ -708,9 +708,10 @@ sub fatal_error1	{
 #
 sub assert( $ ) {
     unless ( $_[0] ) {
-	my @caller = caller 1;
+	my @caller0 = caller 0; # Where assert() was called
+	my @caller1 = caller 1; # Who called assert()
 
-	fatal_error "Internal error in $caller[0]::$caller[3]";
+	fatal_error "Internal error in $caller1[3] at $caller0[1] line $caller0[2]";
     }
 }
 

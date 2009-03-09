@@ -28,7 +28,7 @@ test -n $INITLOG || {
 
 if [ "$(id -u)" != "0" ]
 then
-  echo "You must be root to start, stop or restart \"Shorewall firewall\"."
+  echo "You must be root to start, stop or restart \"Shorewall6 Lite firewall\"."
   exit 1
 fi
 
@@ -55,8 +55,8 @@ not_configured () {
 	exit 0
 }
 
-# parse the shorewall params file in order to use params in
-# /etc/default/shorewall
+# parse the shorewall6 params file in order to use params in
+# /etc/default/shorewall6
 if [ -f "/etc/shorewall6-lite/params" ]
 then
 	. /etc/shorewall6-lite/params
@@ -76,28 +76,28 @@ else
 fi
 
 # start the firewall
-shorewall_start () {
+shorewall6_start () {
   echo -n "Starting \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # stop the firewall
-shorewall_stop () {
-  echo -n "Stopping \"Shorewall firewall\": "
+shorewall6_stop () {
+  echo -n "Stopping \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS clear >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # restart the firewall
-shorewall_restart () {
+shorewall6_restart () {
   echo -n "Restarting \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS restart >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # refresh the firewall
-shorewall_refresh () {
+shorewall6_refresh () {
   echo -n "Refreshing \"Shorewall6 Lite firewall\": "
   $SRWL $SRWL_OPTS refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
@@ -105,16 +105,16 @@ shorewall_refresh () {
 
 case "$1" in
   start)
-     shorewall_start
+     shorewall6_start
      ;;
   stop)
-     shorewall_stop
+     shorewall6_stop
      ;;
   refresh)
-     shorewall_refresh
+     shorewall6_refresh
      ;;
   force-reload|restart)
-     shorewall_restart
+     shorewall6_restart
      ;;
   *)
      echo "Usage: /etc/init.d/shorewall6-lite {start|stop|refresh|restart|force-reload}"

@@ -62,11 +62,11 @@ INIT {
 #
 sub convert_to_policy_chain($$$$$)
 {
-    my ($chainref, $source, $dest, $policy, $optional ) = @_;
+    my ($chainref, $source, $dest, $policy, $provisional ) = @_;
 
     $chainref->{is_policy}   = 1;
     $chainref->{policy}      = $policy;
-    $chainref->{is_optional} = $optional;
+    $chainref->{provisional} = $provisional;
     $chainref->{policychain} = $chainref->{name};
     $chainref->{policypair}  = [ $source, $dest ];
 }
@@ -282,8 +282,8 @@ sub validate_policy()
 	    $chainref = $filter_table->{$chain};
 
 	    if ( $chainref->{is_policy} ) {
-		if ( $chainref->{is_optional} ) {
-		    $chainref->{is_optional} = 0;
+		if ( $chainref->{provisional} ) {
+		    $chainref->{provisional} = 0;
 		    $chainref->{policy} = $policy;
 		} else {
 		    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
@@ -403,14 +403,14 @@ sub apply_policy_rules() {
     progress_message2 'Applying Policies...';
 
     for my $chainref ( @policy_chains ) {
-	my $policy = $chainref->{policy};
-	my $loglevel = $chainref->{loglevel};
-	my $optional = $chainref->{is_optional};
-	my $default  = $chainref->{default};
-	my $name     = $chainref->{name};
+	my $policy      = $chainref->{policy};
+	my $loglevel    = $chainref->{loglevel};
+	my $provisional = $chainref->{provisional};
+	my $default     = $chainref->{default};
+	my $name        = $chainref->{name};
 
 	if ( $policy ne 'NONE' ) {
-	    if ( ! $chainref->{referenced} && ( ! $optional && $policy ne 'CONTINUE' ) ) {
+	    if ( ! $chainref->{referenced} && ( ! $provisional && $policy ne 'CONTINUE' ) ) {
 		ensure_filter_chain $name, 1;
 	    }
 

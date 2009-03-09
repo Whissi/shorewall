@@ -167,7 +167,7 @@ our $VERSION = '4.3_7';
 #    %chain_table { <table> => { <chain1>  => { name         => <chain name>
 #                                               table        => <table name>
 #                                               is_policy    => undef|1 -- if 1, this is a policy chain
-#                                               is_optional  => undef|1 -- See below.
+#                                               provisional  => undef|1 -- See below.
 #                                               referenced   => undef|1 -- If 1, will be written to the iptables-restore-input.
 #                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
 #                                               manual       => undef|1 -- If 1, a manual chain.
@@ -191,8 +191,8 @@ our $VERSION = '4.3_7';
 #                              }
 #                 }
 #
-#       'is_optional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
-#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with is_optional == 1.
+#       'provisional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
+#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with provisional == 1.
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #

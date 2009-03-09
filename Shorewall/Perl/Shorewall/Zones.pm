@@ -478,7 +478,7 @@ sub single_interface( $ ) {
     my $zone = $_[0];
     my $zoneref = $zones{$zone};
 
-    fatal_error "Internal Error in single_zone()" unless $zoneref;
+    assert( $zoneref );
 
     my @keys = keys( %{$zoneref->{interfaces}} );
 
@@ -787,7 +787,7 @@ sub validate_interfaces_file( $ )
 			    $options{arp_ignore} = 1;
 			}
 		    } else {
-			fatal_error "Internal Error in validate_interfaces_file";
+			assert( 0 );
 		    }
 		} elsif ( $type == NUMERIC_IF_OPTION ) {
 		    fatal_error "The $option option requires a value" unless defined $value;

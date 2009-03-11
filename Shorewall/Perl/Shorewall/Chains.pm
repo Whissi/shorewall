@@ -294,7 +294,7 @@ our %builtin_target = ( ACCEPT   => 1,
 sub initialize( $ ) {
     $family = shift;
 
-    %chain_table = ( raw    => {} ,
+    %chain_table = ( raw    => {},
 		     mangle => {},
 		     nat    => {},
 		     filter => {} );
@@ -669,9 +669,7 @@ sub move_rules( $$ ) {
     if ( $chain1->{referenced} ) {
 	my @rules = @{$chain1->{rules}};
 
-	for ( @rules ) {
-	    assert( /^-A/ );
-	}
+	assert( /^-A/ ) for @rules;
 
 	splice @{$chain2->{rules}}, 0, 0, @rules;
 
@@ -1201,9 +1199,7 @@ sub finish_section ( $ ) {
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
 	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
-	    if ( $chainref->{referenced} ) {
-		finish_chain_section $chainref, $sections;
-	    }
+	    finish_chain_section $chainref, $sections if $chainref->{referenced};
 	}
     }
 }
@@ -2249,7 +2245,8 @@ sub set_global_variables() {
 
 ################################################################################################################
 #
-# This function provides a uniform way to generate rules (something the original Shorewall sorely needed).
+# This function provides a uniform way to generate Netfilter[6] rules (something the original Shorewall
+# sorely needed).
 #
 # Returns the destination interface specified in the rule, if any.
 #
@@ -2675,7 +2672,7 @@ sub expand_rule( $$$$$$$$$$$ )
 }
 
 #
-# What follows is the code that generates the input to iptables-restore
+# The following code generates the input to iptables-restore
 #
 # We always write the iptables-restore input into a file then pass the
 # file to iptables-restore. That way, if things go wrong, the user (and Shorewall support)

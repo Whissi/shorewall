@@ -1201,7 +1201,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	# Check for illegal bridge port rule
 	#
-	if ( $destref->{type} eq 'bport' ) {
+	if ( $destref->{type} == BPORT ) {
 	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
 		return 1 if $wildcard;
 		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
@@ -1356,7 +1356,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	expand_rule ( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone ),
+	expand_rule ( ensure_chain ('nat' , $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
 		      PREROUTE_RESTRICT ,
 		      $rule ,
 		      $source ,
@@ -1394,7 +1394,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $origdest = $interfaces ? "detect:$interfaces" : ALLIP;
 	}
 
-	expand_rule( ensure_chain ('nat' , $sourceref->{type} eq 'firewall' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	expand_rule( ensure_chain ('nat' , $sourceref->{type} == 'FIREWALL' ? 'OUTPUT' : dnat_chain $sourcezone) ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
 		     $source ,
@@ -1500,10 +1500,10 @@ sub process_rule ( $$$$$$$$$$$$ ) {
 
     if ( $source eq 'all' ) {
 	for my $zone ( all_zones ) {
-	    if ( $includesrcfw || ( zone_type( $zone ) ne 'firewall' ) ) {
+	    if ( $includesrcfw || ( zone_type( $zone ) != FIREWALL ) ) {
 		if ( $dest eq 'all' ) {
 		    for my $zone1 ( all_zones ) {
-			if ( $includedstfw || ( zone_type( $zone1 ) ne 'firewall' ) ) {
+			if ( $includedstfw || ( zone_type( $zone1 ) != FIREWALL ) ) {
 			    if ( $intrazone || ( $zone ne $zone1 ) ) {
 				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
 			    }
@@ -1521,7 +1521,7 @@ sub process_rule ( $$$$$$$$$$$$ ) {
     } elsif ( $dest eq 'all' ) {
 	for my $zone ( all_zones ) {
 	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
-	    if ( ( $includedstfw || ( zone_type( $zone ) ne 'firewall') ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
+	    if ( ( $includedstfw || ( zone_type( $zone ) != FIREWALL ) ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
 		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
 	    }
 	}
@@ -1901,7 +1901,7 @@ sub generate_matrix() {
 		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! $zoneref->{options}{in_out}{routeback};
 		}
 
-		if ( $zone1ref->{type} eq 'bport' ) {
+		if ( $zone1ref->{type} == BPORT ) {
 		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 		}
 
@@ -1953,7 +1953,7 @@ sub generate_matrix() {
 		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
 	    }
 
-	    if ( $zone1ref->{type} eq 'bport' ) {
+	    if ( $zone1ref->{type} == BPORT ) {
 		next ZONE1 unless $zoneref->{bridge} eq $zone1ref->{bridge};
 	    }
 

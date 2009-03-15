@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall on a Laptop</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2009</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Overview</title>
+
+    <para>Laptop computers generally have several network interfaces, one of
+    which will be used at a time.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Ethernet interface ‒ Used when the computer is on the desktop at
+        home or at work.</para>
+      </listitem>
+
+      <listitem>
+        <para>Wireless interface ‒ Used when the laptop is being used in a
+        cafe, train or airline terminal.</para>
+      </listitem>
+
+      <listitem>
+        <para>Point-to-point (PPP) interface ‒ Used when neither wired nor
+        wireless service are available.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Shorewall can be configured to treat these interfaces the same and
+    to be able to switch between them without having to reconfigure.</para>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>The key to configuring Shorewall on a laptop is to define multiple
+    optional interfaces for the 'net' zone in
+    <filename>/etc/shorewall/interfaces</filename>.</para>
+
+    <programlisting>#ZONE          INTERFACE      BROADCAST           OPTIONS
+net            eth0           detect              optional,…
+net            wlan0          detect              optional,…
+net            ppp0           -                   optional,…</programlisting>
+
+    <para>With this configuration, access to the 'net' zone is possible
+    regardless of which of the interfaces is being used.</para>
+  </section>
+</article>

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall-zones</refentrytitle>
@@ -43,6 +45,46 @@
           url="shorewall.conf.html">shorewall.conf</ulink>(5). With the
           default LOGFORMAT, zone names can be at most 5 characters
           long.</para>
+
+          <blockquote>
+            <para>The maximum length of an iptables log prefix is 29 bytes. As
+            explained in <ulink
+            url="shorewall.conf.html">shorewall.conf</ulink> (5), the default
+            LOGPREFIX formatting string is “Shorewall:%s:%s:” where the first
+            %s is replaced by the chain name and the second is replaced by the
+            disposition.</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>The default formatting string has 12 fixed characters
+                ("Shorewall" and three colons).</para>
+              </listitem>
+
+              <listitem>
+                <para>The longest of the standard dispositions are ACCEPT and
+                REJECT which have 6 characters each.</para>
+              </listitem>
+
+              <listitem>
+                <para>The canonical name for the chain containing the rules
+                for traffic going from zone 1 to zone 2 is "&lt;zone
+                1&gt;2&lt;zone 2&gt;".</para>
+              </listitem>
+
+              <listitem>
+                <para>So if M is the maximum zone name length, such chains can
+                have length 2*M + 1.</para>
+
+                <simplelist>
+                  <member>12 + 6 + 2*M + 1 = 29 which reduces to</member>
+
+                  <member>2*M = 29 - 12 - 6 = 11 or</member>
+
+                  <member>M = 5</member>
+                </simplelist>
+              </listitem>
+            </itemizedlist>
+          </blockquote>
 
           <para>The order in which Shorewall matches addresses from packets to
           zones is determined by the order of zone declarations. Where a zone

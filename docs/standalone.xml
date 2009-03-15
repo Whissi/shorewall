@@ -507,7 +507,7 @@ root@lists:~# </programlisting>
     in <filename>/etc/shorewall/rules</filename> is:</para>
 
     <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
-&lt;<emphasis>macro</emphasis>&gt;/ACCEPT  net       $FW</programlisting>
+&lt;<emphasis>macro</emphasis>&gt;(ACCEPT) net       $FW</programlisting>
 
     <important>
       <para>Be sure to add your rules after the line that reads <emphasis
@@ -519,8 +519,8 @@ root@lists:~# </programlisting>
       system:</title>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
-Web/ACCEPT  net       $FW
-IMAP/ACCEPT net       $FW</programlisting>
+Web(ACCEPT) net       $FW
+IMAP(ACCEPT)net       $FW</programlisting>
     </example>
 
     <para>You may also choose to code your rules directly without using the
@@ -549,7 +549,7 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       firewall from the Internet, use <acronym>SSH</acronym>:</para>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
-SSH/ACCEPT  net       $FW           </programlisting>
+SSH(ACCEPT) net       $FW           </programlisting>
     </important>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>

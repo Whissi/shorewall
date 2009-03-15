@@ -686,27 +686,27 @@ ACCEPT          loc                             fw                      tcp     
 ACCEPT          loc                             fw                      udp     161,ntp,631
 ACCEPT          loc:192.168.1.5                 fw                      udp     111
 DROP            loc                             fw                      tcp     3185          #SUSE Meta pppd
-Ping/ACCEPT     loc                             fw
+Ping(ACCEPT)    loc                             fw
 REDIRECT        loc                             3128                    tcp     80                                      -               !206.124.146.177
 ###############################################################################################################################################################################
 # Road Warriors to Firewall
 #
 ACCEPT            vpn                             fw                      tcp     ssh,time,631,8080
 ACCEPT            vpn                             fw                      udp     161,ntp,631
-Ping/ACCEPT       vpn                             fw
+Ping(ACCEPT)      vpn                             fw
 ###############################################################################################################################################################################
 # Road Warriors to DMZ
 #
 ACCEPT            vpn                             dmz                     udp     domain
 ACCEPT            vpn                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3       -
-Ping/ACCEPT       vpn                             dmz
+Ping(ACCEPT)      vpn                             dmz
 ###############################################################################################################################################################################
 # Local network to DMZ
 #
 ACCEPT          loc                             dmz                     udp     domain
 ACCEPT          loc                             dmz                     tcp     ssh,smtps,www,ftp,imaps,domain,https    -
 ACCEPT          loc                             dmz                     tcp     smtp
-Trcrt/ACCEPT    loc                             dmz
+Trcrt(ACCEPT)   loc                             dmz
 ###############################################################################################################################################################################
 # Internet to ALL -- drop NewNotSyn packets
 #
@@ -723,7 +723,7 @@ ACCEPT          net                             dmz                     udp     
 Mirrors         net                             dmz                     tcp     rsync
 Limit:$LOG:SSHA,3,60\
                 net                             dmz                     tcp     22
-Trcrt/ACCEPT    net                             dmz
+Trcrt(ACCEPT)   net                             dmz
 ##############################################################################################################################################################################
 #
 # Net to Local
@@ -755,7 +755,7 @@ ACCEPT          net                             loc:192.168.1.6         tcp     
 #
 # Traceroute
 #
-Trcrt/ACCEPT    net                             loc:192.168.1.3
+Trcrt(ACCEPT)   net                             loc:192.168.1.3
 #
 # Silently Handle common probes
 #
@@ -767,7 +767,7 @@ DROP            net                             loc                     icmp    
 ACCEPT          dmz                             net                     udp     domain,ntp
 ACCEPT          dmz                             net                     tcp     echo,ftp,ssh,smtp,whois,domain,www,81,https,cvspserver,2702,2703,8080
 ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
-Ping/ACCEPT     dmz                             net
+Ping(ACCEPT)    dmz                             net
 #
 # Some FTP clients seem prone to sending the PORT command split over two packets. This prevents the FTP connection tracking
 # code from processing the command  and setting up the proper expectation. The following rule allows active FTP to work in these cases
@@ -779,13 +779,13 @@ ACCEPT:$LOG     dmz                             net                     tcp     
 #
 ACCEPT          loc                             dmz                     udp     domain,xdmcp
 ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,rsync,https,imaps,ftp,10023,pop3,3128
-Trcrt/ACCEPT    loc                             dmz
+Trcrt(ACCEPT)   loc                             dmz
 ###############################################################################################################################################################################
 # DMZ to Local
 #
 ACCEPT          dmz                             loc:192.168.1.5         udp     123
 ACCEPT          dmz                             loc:192.168.1.5         tcp     21
-Ping/ACCEPT     dmz                             loc
+Ping(ACCEPT)    dmz                             loc
 
 ###############################################################################################################################################################################
 # DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
@@ -793,7 +793,7 @@ Ping/ACCEPT     dmz                             loc
 ACCEPT          dmz                             fw                      tcp     161,ssh
 ACCEPT          dmz                             fw                      udp     161
 REJECT          dmz                             fw                      tcp     auth
-Ping/ACCEPT     dmz                             fw
+Ping(ACCEPT)    dmz                             fw
 ###############################################################################################################################################################################
 # Internet to Firewall
 #
@@ -805,14 +805,14 @@ ACCEPT          net                             fw                      tcp     
 ACCEPT          net:$OMAK                       fw                      tcp     22
 Limit:$LOG:SSHA,3,60\
                 net                             fw                      tcp     22
-Trcrt/ACCEPT    net                             fw
+Trcrt(ACCEPT)   net                             fw
 ###############################################################################################################################################################################
 # Firewall to DMZ
 #
 ACCEPT          fw                              dmz                     tcp     domain,www,ftp,ssh,smtp,https,993,465
 ACCEPT          fw                              dmz                     udp     domain
 REJECT          fw                              dmz                     udp     137:139
-Ping/ACCEPT     fw                              dmz
+Ping(ACCEPT)    fw                              dmz
 ##############################################################################################################################################################################
 # Avoid logging Freenode.net probes
 #

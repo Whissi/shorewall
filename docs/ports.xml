@@ -62,7 +62,7 @@
       role="bold">net</emphasis> zone:</para>
 
       <programlisting>#ACTION         SOURCE        DESTINATION
-DNS/ACCEPT      dmz           net</programlisting>
+DNS(ACCEPT)     dmz           net</programlisting>
     </note>
 
     <note>
@@ -75,12 +75,12 @@ DNS/ACCEPT      dmz           net</programlisting>
       at 192.168.1.4 in your DMZ. The FTP section below gives you:</para>
 
       <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+FTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
 
       <para>You would code your rule as follows:</para>
 
       <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-FTP/DNAT       net       dmz:192.168.1.4  </programlisting>
+FTP(DNAT)       net       dmz:192.168.1.4  </programlisting>
     </note>
   </section>
 
@@ -94,7 +94,7 @@ FTP/DNAT       net       dmz:192.168.1.4  </programlisting>
     </caution>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Auth/ACCEPT     <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+Auth(ACCEPT)    <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="BT">
@@ -111,14 +111,14 @@ Auth/ACCEPT     <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
     </caution>
 
     <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DEST PORT(S)
-BitTorrent/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+BitTorrent(ACCEPT)<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="DNS">
     <title>DNS</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
-DNS/ACCEPT     <emphasis>  &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    </programlisting>
+DNS(ACCEPT)    <emphasis>  &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    </programlisting>
 
     <para>Note that if you are setting up a DNS server that supports recursive
     resolution, the server is the &lt;<emphasis>destination</emphasis>&gt; for
@@ -129,8 +129,8 @@ DNS/ACCEPT     <emphasis>  &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
     local clients then you would need:</para>
 
     <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DEST PORT(S)
-DNS/ACCEPT  all       dmz              
-DNS/ACCEPT  dmz       net              </programlisting>
+DNS(ACCEPT) all       dmz              
+DNS(ACCEPT) dmz       net              </programlisting>
 
     <note>
       <para>Recursive Resolution means that if the server itself can't resolve
@@ -175,7 +175,7 @@ DNS/ACCEPT  dmz       net              </programlisting>
     <para><filename>/etc/shorewall/rules:</filename></para>
 
     <programlisting>#ACTION       SOURCE   DESTINATION          PROTO         DEST PORT(S)
-Edonkey/DNAT  net      loc:192.168.1.4
+Edonkey(DNAT)  net      loc:192.168.1.4
 #if you wish to enable the Emule webserver, add this rule too.
 DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
   </section>
@@ -184,7 +184,7 @@ DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
     <title>FTP</title>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+FTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
 
     <para>Look <ulink url="FTP.html">here</ulink> for much more
     information.</para>
@@ -213,14 +213,14 @@ FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
           <para>Your loc-&gt;net policy is ACCEPT</para>
         </listitem>
       </orderedlist><programlisting>#ACTION              SOURCE   DESTINATION      PROTO      DEST PORT(S)
-Gnutella/DNAT        net      loc:192.168.1.4</programlisting></para>
+Gnutella(DNAT)       net      loc:192.168.1.4</programlisting></para>
   </section>
 
   <section id="ICQ">
     <title>ICQ/AIM</title>
 
     <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ICQ/ACCEPT  <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
+ICQ(ACCEPT) <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
   </section>
 
   <section id="IMAP">
@@ -237,8 +237,8 @@ ICQ/ACCEPT  <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
     </caution>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-IMAP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> # Unsecure IMAP 
-IMAPS/ACCEPT    &lt;source&gt;  &lt;destination&gt; # IMAP over SSL.</programlisting>
+IMAP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> # Unsecure IMAP 
+IMAPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt; # IMAP over SSL.</programlisting>
   </section>
 
   <section id="IPSEC">
@@ -264,8 +264,8 @@ ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</e
     </caution>
 
     <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
-LDAP/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>     #Insecure LDAP</emphasis>
-LDAPS/ACCEPT     <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis></emphasis>   # LDAP over SSL</programlisting>
+LDAP(ACCEPT)     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>     #Insecure LDAP</emphasis>
+LDAPS(ACCEPT)    <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis></emphasis>   # LDAP over SSL</programlisting>
   </section>
 
   <section id="MySQL">
@@ -285,7 +285,7 @@ LDAPS/ACCEPT     <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &
     </caution>
 
     <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
-MySQL/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>    </emphasis></programlisting>
+MySQL(ACCEPT)     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>    </emphasis></programlisting>
   </section>
 
   <section id="NFS">
@@ -303,14 +303,14 @@ ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis
     <title>NTP (Network Time Protocol)</title>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-NTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+NTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="PCA">
     <title><trademark>PCAnywhere</trademark></title>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-PCA/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+PCA(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="POP3">
@@ -326,8 +326,8 @@ PCA/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
     </caution>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-POP3/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>   # Secure
-POP3S/ACCEPT    &lt;source&gt;  &lt;destination&gt;  #Unsecure Pop3</programlisting>
+POP3(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>   # Secure
+POP3S(ACCEPT)   &lt;source&gt;  &lt;destination&gt;  #Unsecure Pop3</programlisting>
   </section>
 
   <section id="PPTP">
@@ -345,14 +345,14 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>rdate</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Rdate/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+Rdate(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="rsync">
     <title>rsync</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Rsync/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+Rsync(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="Siproxd">
@@ -373,7 +373,7 @@ ACCEPT     <emphasis>       net           fw           udp        7070:7089</emp
     <title>SSH/SFTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-SSH/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
+SSH(ACCEPT)<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
   </section>
 
   <section id="SMB">
@@ -381,8 +381,8 @@ SSH/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     Sharing)</title>
 
     <programlisting>#ACTION        SOURCE         DESTINATION      PROTO      DEST PORT(S)
-SMB/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>
-SMB/ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis></programlisting>
+SMB(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>
+SMB(ACCEPT)    <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis></programlisting>
 
     <para>Also, see <ulink url="samba.htm">this page</ulink>.</para>
   </section>
@@ -395,15 +395,15 @@ SMB/ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt
     </caution>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-SMTP/ACCEPT<emphasis>      &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #Insecure SMTP
-SMTPS/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #SMTP over SSL (TLS)</programlisting>
+SMTP(ACCEPT)<emphasis>     &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #Insecure SMTP
+SMTPS(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #SMTP over SSL (TLS)</programlisting>
   </section>
 
   <section id="SNMP">
     <title>SNMP</title>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-SNMP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+SNMP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="SVN">
@@ -419,7 +419,7 @@ SNMP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
     </caution>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-SVN/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+SVN(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="Telnet">
@@ -431,7 +431,7 @@ SVN/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
     </caution>
 
     <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Telnet/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+Telnet(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="TFTP">
@@ -455,7 +455,7 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>Traceroute</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Trcrt/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  #Good for 10 hops</programlisting>
+Trcrt(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  #Good for 10 hops</programlisting>
 
     <para>UDP traceroute uses ports 33434 through 33434+&lt;max number of
     hops&gt;-1. Note that for the firewall to respond with a TTL expired ICMP
@@ -474,8 +474,8 @@ ACCEPT     fw        ...</programlisting>
     <title>Usenet (NNTP)</title>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-NNTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>
-NNTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisting>
+NNTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>
+NNTPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisting>
 
     <para>TCP Port 119</para>
   </section>
@@ -494,13 +494,13 @@ NNTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisti
     9.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-VNC/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>      
+VNC(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>      
 </programlisting>
 
     <para>Vncserver to Vncviewer in listen mode -- TCP port 5500.</para>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-VNCL/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+VNCL(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="Vonage">
@@ -520,15 +520,15 @@ VNCL/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
     </caution>
 
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-HTTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Insecure HTTP 
-HTTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt; #Secure   HTTP</programlisting>
+HTTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Insecure HTTP 
+HTTPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt; #Secure   HTTP</programlisting>
   </section>
 
   <section id="Webmin">
     <title>Webmin</title>
 
     <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Webmin/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting>Webmin
+Webmin(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting>Webmin
     use TCP port 10000.</para>
   </section>
 
@@ -536,7 +536,7 @@ Webmin/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination
     <title>Whois</title>
 
     <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Whois/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting></para>
+Whois(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting></para>
   </section>
 
   <section id="X">

@@ -701,14 +701,14 @@ DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<e
         linkend="Diagram">the above diagram</link> and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
         <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
-Web/DNAT  net       loc:10.10.10.2</programlisting></para>
+Web(DNAT) net       loc:10.10.10.2</programlisting></para>
       </example> <example id="Example2" label="2">
         <title>FTP Server</title>
 
         <para>You run an <acronym>FTP</acronym> Server on <link
         linkend="Diagram">computer 1</link> so you want to forward incoming
         <acronym>TCP</acronym> port 21 to that system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
-FTP/DNAT   net       loc:10.10.10.1</programlisting> For
+FTP(DNAT)  net       loc:10.10.10.1</programlisting> For
         <acronym>FTP</acronym>, you will also need to have
         <acronym>FTP</acronym> connection tracking and <acronym>NAT</acronym>
         support in your kernel. For vendor-supplied kernels, this means that
@@ -808,7 +808,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
           in <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.
           <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT loc       $FW</programlisting></para>
+DNS(ACCEPT)loc       $FW</programlisting></para>
         </listitem>
       </itemizedlist></para>
   </section>
@@ -818,13 +818,13 @@ DNS/ACCEPT loc       $FW</programlisting></para>
 
     <para>The two-interface sample includes the following rules:
     <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT  $FW       net</programlisting>This rule allows
+DNS(ACCEPT) $FW       net</programlisting>This rule allows
     <acronym>DNS</acronym> access from your firewall and may be removed if you
     uncommented the line in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     allowing all connections from the firewall to the Internet.</para>
 
-    <para>In the rule shown above, <quote>DNS/ACCEPT</quote> is an example of
+    <para>In the rule shown above, <quote>DNS</quote>(ACCEPT)is an example of
     a <emphasis>macro invocation</emphasis>. Shorewall includes a number of
     macros (see <filename>/usr/share/shorewall/macro.*</filename>) and <ulink
     url="Macros.html">you can add your own</ulink>.</para>
@@ -841,13 +841,13 @@ ACCEPT     $FW       net                tcp       53</programlisting></para>
     code the appropriate rules directly.</para>
 
     <para>The sample also includes: <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   loc       $FW  </programlisting>That rule allows you to run an
+SSH(ACCEPT)  loc       $FW  </programlisting>That rule allows you to run an
     <acronym>SSH</acronym> server on your firewall and connect to that server
     from your local systems.</para>
 
     <para>If you wish to enable other connections from your firewall to other
     systems, the general format using a macro is: <programlisting>#ACTION         SOURCE    DEST               PROTO      DEST PORT(S)
-&lt;macro&gt;/ACCEPT  $FW       <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
+&lt;macro&gt;(ACCEPT) $FW       <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
     general format when not using defined actions is:<programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
 ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example
         id="Example3">
@@ -855,8 +855,8 @@ ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;por
 
         <para>You want to run a Web Server on your firewall system:
         <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-Web/ACCEPT  net       $FW
-Web/ACCEPT  loc       $FW       </programlisting>Those two rules would of
+Web(ACCEPT) net       $FW
+Web(ACCEPT) loc       $FW       </programlisting>Those two rules would of
         course be in addition to the rules listed above under <quote><link
         linkend="cachingdns">You can configure a Caching Name Server on your
         firewall</link></quote>.</para>
@@ -868,7 +868,7 @@ Web/ACCEPT  loc       $FW       </programlisting>Those two rules would of
         <acronym>SSH</acronym>:</para>
 
         <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   net       $FW</programlisting>
+SSH(ACCEPT)  net       $FW</programlisting>
       </important> <inlinegraphic fileref="images/leaflogo.gif"
     format="GIF" />Bering users will want to add the following two rules to be
     compatible with Jacques's Shorewall configuration.<programlisting>#ACTION    SOURCE    DEST    PROTO     DEST PORT(S)

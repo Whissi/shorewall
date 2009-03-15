@@ -739,8 +739,8 @@ DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<e
       incoming TCP port 80 to that system</title>
 
       <para><programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
-Web/DNAT     net    dmz:10.10.11.2  
-Web/ACCEPT   loc    dmz:10.10.11.2</programlisting><itemizedlist>
+Web(DNAT)   net    dmz:10.10.11.2  
+Web(ACCEPT)  loc    dmz:10.10.11.2</programlisting><itemizedlist>
           <listitem>
             <para>Entry 1 forwards port 80 from the Internet.</para>
           </listitem>
@@ -857,13 +857,13 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
         </listitem>
       </itemizedlist> If you run the name server on the firewall:
     <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
-DNS/ACCEPT  loc       $FW
-DNS/ACCEPT  dmz       $FW            </programlisting> Run name server on DMZ
+DNS(ACCEPT) loc       $FW
+DNS(ACCEPT) dmz       $FW            </programlisting> Run name server on DMZ
     computer 1: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
-DNS/ACCEPT  loc       dmz:10.10.11.1
-DNS/ACCEPT  $FW       dmz:10.10.11.1             </programlisting></para>
+DNS(ACCEPT) loc       dmz:10.10.11.1
+DNS(ACCEPT) $FW       dmz:10.10.11.1             </programlisting></para>
 
-    <para>In the rules shown above, <quote>DNS/ACCEPT</quote> is an example of
+    <para>In the rules shown above, <quote>DNS</quote>(ACCEPT)is an example of
     a <emphasis>defined macro</emphasis>. Shorewall includes a number of
     defined macros and <ulink url="Macros.html">you can add your own</ulink>.
     To see the list of macros included with your version of Shorewall, run the
@@ -892,20 +892,20 @@ ACCEPT    dmz       $FW                 udp        53              </programlist
 
     <para>The three-interface sample includes the following rule:
     <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
-DNS/ACCEPT  $FW       net       </programlisting>That rule allow DNS access
+DNS(ACCEPT) $FW       net       </programlisting>That rule allow DNS access
     from your firewall and may be removed if you commented out the line in
     <filename>/etc/shorewall/policy</filename> allowing all connections from
     the firewall to the Internet.</para>
 
     <para>The sample also includes: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
-SSH/ACCEPT  loc       $FW
-SSH/ACCEPT  loc       dmz        </programlisting>Those rules allow you to run
+SSH(ACCEPT) loc       $FW
+SSH(ACCEPT) loc       dmz        </programlisting>Those rules allow you to run
     an SSH server on your firewall and in each of your DMZ systems and to
     connect to those servers from your local systems.</para>
 
     <para>If you wish to enable other connections between your systems, the
     general format for using a defined macro is: <programlisting>#ACTION         SOURCE        DEST                PROTO      DEST PORT(S)                      
-&lt;<emphasis>macro</emphasis>&gt;/ACCEPT  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
+&lt;<emphasis>macro</emphasis>&gt;(ACCEPT) <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
 
     <para>The general format when not using a defined action
     is:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
@@ -918,7 +918,7 @@ ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&g
       <para>Using defined macros:</para>
 
       <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
-DNS/ACCEPT  net       $FW</programlisting>
+DNS(ACCEPT) net       $FW</programlisting>
 
       <para>Not using defined macros:</para>
 
@@ -937,7 +937,7 @@ ACCEPT    net       $FW                 udp        53        </programlisting>
       <para>I don't recommend enabling telnet to/from the Internet because it
       uses clear text (even for login!). If you want shell access to your
       firewall from the Internet, use SSH: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
-SSH/ACCEPT  net       $FW</programlisting></para>
+SSH(ACCEPT) net       $FW</programlisting></para>
     </important>
 
     <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> Bering
@@ -1086,7 +1086,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     <para>While you are editing <filename>shorewall.conf</filename>, it is a
     good idea to check the value of the SUBSYSLOCK option. You can find a
     description of this option by typing 'man shorewall.conf' at a shell
-    prompt and searching for SUBSYSLOCK </para>
+    prompt and searching for SUBSYSLOCK</para>
 
     <para>The firewall is started using the <command>shorewall start</command>
     command and stopped using <command>shorewall stop</command>. When the

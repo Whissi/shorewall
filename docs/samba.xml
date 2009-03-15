@@ -35,9 +35,9 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
     later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
+    4.3.5 then please see the documentation for that
     release.</emphasis></para>
   </caution>
 
@@ -46,15 +46,15 @@
 
   <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
 #                                                 PORT(S)
-SMB/ACCEPT  $FW      loc
-SMB/ACCEPT  loc      $FW</programlisting>
+SMB(ACCEPT)  $FW      loc
+SMB(ACCEPT)  loc      $FW</programlisting>
 
   <para>To pass traffic SMB/Samba traffic between zones Z1 and Z2:</para>
 
   <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
 #                                                 PORT(S)
-SMB/ACCEPT  Z1       Z2
-SMB/ACCEPT  Z2       Z1</programlisting>
+SMB(ACCEPT)  Z1       Z2
+SMB(ACCEPT)  Z2       Z1</programlisting>
 
   <para>To make network browsing (<quote>Network Neighborhood</quote>) work
   properly between Z1 and Z2 <emphasis role="bold">requires a Windows Domain
@@ -74,8 +74,8 @@ SMB/ACCEPT  Z2       Z1</programlisting>
 
     <listitem>
       <para>Edit the copies and remove the <emphasis
-      role="bold">SMB/DROP</emphasis> and <emphasis
-      role="bold">SMB/REJECT</emphasis> lines.</para>
+      role="bold">SMB(DROP)</emphasis> and <emphasis
+      role="bold">SMB(REJECT)</emphasis> lines.</para>
     </listitem>
 
     <listitem>

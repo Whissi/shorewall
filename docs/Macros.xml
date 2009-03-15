@@ -114,7 +114,7 @@ PARAM    -              -               tcp     135,139,445
 
     <para>When invoking a parameterized macro, you follow the name of the
     macro with the action that you want to substitute for PARAM enclosed in
-    parentheses. </para>
+    parentheses.</para>
 
     <para>Example:</para>
 
@@ -160,7 +160,7 @@ PARAM            -        loc             tcp      25</programlisting>
             <para>/etc/shorewall/rules (Shorewall 4.0):</para>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMTP/DNAT:info   net      192.168.1.5</programlisting>
+SMTP(DNAT):info  net      192.168.1.5</programlisting>
 
             <para>/etc/shorewall/rules (Shorewall 4.2.0 and later):</para>
 
@@ -182,12 +182,7 @@ DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
             <programlisting>#TARGET          SOURCE   DEST            PROTO    DEST PORT(S)
 PARAM            -        192.168.1.5     tcp      25</programlisting>
 
-            <para>/etc/shorewall/rules (Shorewall 4.0)</para>
-
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMTP/DNAT:info   net      loc</programlisting>
-
-            <para>/etc/shorewall/rules (Shorewall 4.2.0 and later)</para>
+            <para>/etc/shorewall/rules</para>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMTP(DNAT):info   net      loc</programlisting>
@@ -222,12 +217,7 @@ PARAM   DEST    SOURCE  udp     1024:   137
 PARAM   DEST    SOURCE  tcp     135,139,445
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-            <para>/etc/shorewall/rules (Shorewall 4.0):</para>
-
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMBBI/ACCEPT     loc      fw</programlisting>
-
-            <para>/etc/shorewall/rules (Shorewall 4.2.0 and later):</para>
+            <para>/etc/shorewall/rules:</para>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMBBI(ACCEPT)     loc      fw</programlisting>

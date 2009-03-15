@@ -56,7 +56,7 @@
     <filename>/etc/shorewall/rules</filename> of the form:</para>
 
     <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
-Ping/ACCEPT    z1        z2</programlisting>
+Ping(ACCEPT) z1        z2</programlisting>
 
     <example id="Example1">
       <title>Ping from local zone to firewall</title>
@@ -64,7 +64,7 @@ Ping/ACCEPT    z1        z2</programlisting>
       <para>To permit ping from the local zone to the firewall:</para>
 
       <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
-Ping/ACCEPT   loc      $FW</programlisting>
+Ping(ACCEPT) loc       $FW</programlisting>
     </example>
 
     <para>If you would like to accept <quote>ping</quote> by default even when
@@ -74,13 +74,13 @@ Ping/ACCEPT   loc      $FW</programlisting>
     <filename class="directory">/etc/shorewall</filename> and simply add this
     line to the copy:</para>
 
-    <programlisting>Ping/ACCEPT</programlisting>
+    <programlisting>Ping(ACCEPT)</programlisting>
 
     <para>With that rule in place, if you want to ignore <quote>ping</quote>
     from z1 to z2 then you need a rule of the form:</para>
 
     <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
-Ping/DROP     z1        z2</programlisting>
+Ping(DROP)   z1        z2</programlisting>
 
     <example id="Example2">
       <title>Silently drop pings from the Internet</title>
@@ -89,7 +89,7 @@ Ping/DROP     z1        z2</programlisting>
       <filename>/etc/shorewall/rules</filename>:</para>
 
       <programlisting>#ACTION    SOURCE    DEST     PROTO    DEST PORT(S)
-Ping/DROP  net       $FW</programlisting>
+Ping(DROP) net       $FW</programlisting>
     </example>
 
     <para>Note that the above rule may be used without changing the action

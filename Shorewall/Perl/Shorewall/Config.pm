@@ -186,7 +186,7 @@ our %config;
 our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
 our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 #
-# From parsing the capabilities file
+# From parsing the capabilities file or detecting capabilities
 #
 our %capabilities;
 #
@@ -257,15 +257,15 @@ our $scriptfilename;          # Name of that file.
 our @tempfiles;               # Files that need unlinking at END
 our $first_entry;             # Message to output or function to call on first non-blank line of a file
 
-our $shorewall_dir;           # Shorewall Directory
+our $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
 our $debug;                   # If true, use Carp to report errors with stack trace.
 
-our $family;
-our $toolname;
-our $toolNAME;
-our $product;
-our $Product;
+our $family;                  # Protocol family (4 or 6)
+our $toolname;                # Name of the tool to use (iptables or iptables6)
+our $toolNAME;                # Tool name in CAPS
+our $product;                 # Name of product that will run the generated script
+our $Product;                 # $product with initial cap.
 
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
@@ -273,7 +273,7 @@ use constant { MIN_VERBOSITY => -1,
 	       F_IPV6 => 6,
 	   };
 
-our %validlevels;
+our %validlevels;             # Valid log levels.
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -302,9 +302,9 @@ sub initialize( $ ) {
     $object = 0;               # Object (script) file Handle Reference
     $object_enabled = 0;       # Write to object file is disabled.
     $lastlineblank = 0;        # Avoid extra blank lines in the output
-    $indent1       = '';       # Current indentation
-    $indent2       = '';       # Current indentation
-    $indent        = '';       # Current indentation
+    $indent1       = '';       # Current indentation tabs
+    $indent2       = '';       # Current indentation spaces
+    $indent        = '';       # Current total indentation
     ( $dir, $file ) = ('',''); # Object's Directory and File
     $tempfile = '';            # Temporary File Name
 

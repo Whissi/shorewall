@@ -134,12 +134,13 @@
 
       <para>Entries in <filename>/etc/shorewall/providers</filename> can
       specify that outgoing connections are to be load-balanced between the
-      two ISPs. Entries in <filename>/etc/shorewall/tcrules</filename> can be
-      used to direct particular outgoing connections to one ISP or the other.
-      Use of <filename>/etc/shorewall/tcrules</filename> is not required for
-      <filename>/etc/shorewall/providers</filename> to work, but you must
-      select a unique MARK value for each provider so Shorewall can set up the
-      correct marking rules for you.</para>
+      two ISPs. Entries in <filename>/etc/shorewall/tcrules</filename> and
+      <filename>/etc/shorewall/route_rules</filename> can be used to direct
+      particular outgoing connections to one ISP or the other. Use of
+      <filename>/etc/shorewall/tcrules</filename> is not required for
+      <filename>/etc/shorewall/providers</filename> to work, but in most
+      cases, you must select a unique MARK value for each provider so
+      Shorewall can set up the correct marking rules for you.</para>
 
       <para>When you use the <emphasis role="bold">track</emphasis> option in
       <filename>/etc/shorewall/providers</filename>, connections from the
@@ -166,11 +167,15 @@
           </listitem>
 
           <listitem>
-            <para>You may not use the SAVE or RESTORE options.</para>
+            <para>You may not use the SAVE or RESTORE options unless you also
+            set HIGH_ROUTE_MARKS=Yes in
+            <filename>/etc/shorewall/shorewall.conf</filename>.</para>
           </listitem>
 
           <listitem>
-            <para>You may not use connection marking.</para>
+            <para>You may not use connection marking unless you also set
+            HIGH_ROUTE_MARKS=Yes in
+            <filename>/etc/shorewall/shorewall.conf</filename>.</para>
           </listitem>
         </itemizedlist>
       </caution>
@@ -235,6 +240,11 @@
                 low-order 8 bits being zero).</para>
               </listitem>
             </itemizedlist>
+
+            <para>This column may be omitted if you don´t use packet marking
+            to direct connections to a particular provider and you don´t
+            specify <emphasis role="bold">track</emphasis> in the OPTIONS
+            column.</para>
           </listitem>
         </varlistentry>
 
@@ -336,9 +346,10 @@
                     <para>If you are using
                     <filename>/etc/shorewall/providers</filename> because you
                     have multiple Internet connections, we recommend that you
-                    specify 'track' even if you don't need it. It helps
-                    maintain long-term connections in which there are
-                    significant periods with no traffic.</para>
+                    specify <emphasis role="bold">track</emphasis> even if you
+                    don't need it. It helps maintain long-term connections in
+                    which there are significant periods with no
+                    traffic.</para>
                   </important>
                 </listitem>
               </varlistentry>
@@ -347,27 +358,29 @@
                 <term>balance</term>
 
                 <listitem>
-                  <para>The providers that have 'balance' specified will get
-                  outbound traffic load-balanced among them. Balancing will
-                  not be perfect, as it is route based, and routes are cached.
-                  This means that routes to often-used sites will always be
-                  over the same provider.</para>
+                  <para>The providers that have <emphasis
+                  role="bold">balance</emphasis> specified will get outbound
+                  traffic load-balanced among them. Balancing will not be
+                  perfect, as it is route based, and routes are cached. This
+                  means that routes to often-used sites will always be over
+                  the same provider.</para>
 
                   <para>By default, each provider is given the same weight (1)
                   . You can change the weight of a given provider by following
-                  <emphasis>balance</emphasis> with "=" and the desired weight
-                  (e.g., balance=2). The weights reflect the relative
-                  bandwidth of the providers connections and should be small
-                  numbers since the kernel actually creates additional default
-                  routes for each weight increment.</para>
+                  <emphasis role="bold">balance</emphasis> with "=" and the
+                  desired weight (e.g., balance=2). The weights reflect the
+                  relative bandwidth of the providers connections and should
+                  be small numbers since the kernel actually creates
+                  additional default routes for each weight increment.</para>
 
                   <important>
                     <para>If you are using
                     <filename>/etc/shorewall/providers</filename> because you
                     have multiple Internet connections, we recommend that you
-                    specify 'balance' even if you don't need it. You can still
-                    use entries in <filename>/etc/shorewall/tcrules</filename>
-                    to force all traffic to one provider or another.<note>
+                    specify <emphasis role="bold">balance</emphasis> even if
+                    you don't need it. You can still use entries in
+                    <filename>/etc/shorewall/tcrules</filename> to force all
+                    traffic to one provider or another.<note>
                         <para>If you don't heed this advice then please read
                         and follow the advice in <ulink
                         url="FAQ.htm#faq57">FAQ 57</ulink> and <ulink
@@ -376,7 +389,8 @@
                   </important>
 
                   <important>
-                    <para>If you specify 'balance' and still find that all
+                    <para>If you specify <emphasis
+                    role="bold">balance</emphasis> and still find that all
                     traffic is going out through only one provider, you may
                     need to install a kernel built with
                     CONFIG_IP_ROUTE_MULTIPATH_CACHED=n. Several users have
@@ -414,17 +428,18 @@
                 <term>optional</term>
 
                 <listitem>
-                  <para>Shorewall will determine of this interface is up and
+                  <para>Shorewall will determine if this interface is up and
                   has a configured IPv4 address. If it is not, a warning is
                   issued and this provider is not configured.</para>
 
                   <note>
-                    <para>'optional' is designed to detect interface states
-                    that will cause <command>shorewall start</command> or
-                    <command>shorewall restart</command> to fail; just because
-                    an interface is in a state that Shorewall can [re]start
-                    without error doesn't mean that traffic can actually be
-                    sent through the interface.</para>
+                    <para><emphasis role="bold">optional</emphasis> is
+                    designed to detect interface states that will cause
+                    <command>shorewall start</command> or <command>shorewall
+                    restart</command> to fail; just because an interface is in
+                    a state that Shorewall can [re]start without error doesn't
+                    mean that traffic can actually be sent through the
+                    interface.</para>
 
                     <para>You can supply an 'isusable' <ulink
                     url="shorewall_extension_scripts.htm">extension
@@ -478,8 +493,8 @@
               </varlistentry>
             </variablelist>
 
-            <para>For those of you who are terminally confused
-            between<emphasis role="bold"> track</emphasis> and <emphasis
+            <para>For those of you who are confused between<emphasis
+            role="bold"> track</emphasis> and <emphasis
             role="bold">balance</emphasis>:</para>
 
             <itemizedlist>
@@ -500,7 +515,7 @@
           <term>COPY</term>
 
           <listitem>
-            <para>A comma-separated list if interface names. Wildcards
+            <para>A comma-separated list of interface names. Wildcards
             specified using an asterisk ("*") are permitted (e.g., tun*
             ).</para>
 
@@ -624,7 +639,7 @@
 Feb  9 17:23:45 gw.ilinx kernel: ll header: 00:a0:24:2a:1f:72:00:13:5f:07:97:05:08:00</programlisting>
 
       <para>The above message is somewhat awkwardly phrased. The source IP in
-      this incoming packet was 64.86.88.116 and the destination IP address is
+      this incoming packet was 64.86.88.116 and the destination IP address was
       206.124.146.176. Another gotcha is that the incoming packet has already
       had the destination IP address changed for DNAT or because the original
       outgoing connection was altered by an entry in
@@ -646,14 +661,14 @@ Feb  9 17:23:45 gw.ilinx kernel: ll header: 00:a0:24:2a:1f:72:00:13:5f:07:97:05:
         <listitem>
           <para>You are specifying both the <emphasis
           role="bold">loose</emphasis> and <emphasis
-          role="bold">balance</emphasis> options on your provider(s). This
-          causes individual connections to ping-pong back and forth between
-          the interfaces which is guaranteed to cause problems.</para>
+          role="bold">balance</emphasis> options on your provider(s). This can
+          cause individual connections to ping-pong back and forth between the
+          interfaces which is almost guaranteed to cause problems.</para>
         </listitem>
 
         <listitem>
-          <para>You are redirecting traffic from the local system out of one
-          interface or the other using packet marking in your
+          <para>You are redirecting traffic from the firewall system out of
+          one interface or the other using packet marking in your
           <filename>/etc/shorewall/tcrules</filename> file. A better approach
           is to configure the application to use the appropriate local IP
           address (the IP address of the interface that you want the
@@ -839,14 +854,6 @@ eth3             eth2              16.105.78.4</programlisting></para>
       such traffic to a particular ISP.</para>
     </section>
 
-    <section id="IPSEC">
-      <title>IPSEC</title>
-
-      <para>If you have an IPSEC gateway on your firewall, be sure to arrange
-      for ESP packets to be routed out of the same interface that you have
-      configured your keying daemon to use.</para>
-    </section>
-
     <section id="route_rules">
       <title>/etc/shorewall/route_rules</title>
 
@@ -947,11 +954,17 @@ gateway:~ #</programlisting>
         <para>For those VPN types that use routing to direct traffic to remote
         VPN clients (including but not limited to OpenVPN in routed mode and
         PPTP), the VPN software adds a host route to the <emphasis
-        role="bold">main</emphasis> table for each VPN client. It follows that
-        you must add a routing rule in the 1000-1999 range to specify the
+        role="bold">main</emphasis> table for each VPN client. The best
+        approach is to use USE_DEFAULT_RT=Yes as described <link
+        linkend="USE_DEFAULT_RT">below</link>. If that isn't possible, you
+        must add a routing rule in the 1000-1999 range to specify the
         <emphasis role="bold">main</emphasis> table for traffic addressed to
         those clients. See<link linkend="Openvpn"> Example 2</link>
         below.</para>
+
+        <para>If you have an IPSEC gateway on your firewall, be sure to
+        arrange for ESP packets to be routed out of the same interface that
+        you have configured your keying daemon to use.</para>
       </section>
 
       <section id="Examples">

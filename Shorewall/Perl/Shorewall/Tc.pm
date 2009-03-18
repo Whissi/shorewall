@@ -881,7 +881,7 @@ sub setup_traffic_shaping() {
 	# add filters
 	#
 	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
-	emit "run_tc filter add dev $device protocol ip pref 1 parent $classnum: handle 1 flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	emit "run_tc filter add dev $device protocol ip pref 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	#options
 	#

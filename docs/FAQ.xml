@@ -1644,6 +1644,20 @@ modprobe: Can't locate module iptable_raw</programlisting>
       solution is to <emphasis role="bold">not specify the primary IP address
       of an interface in the EXTERNAL column</emphasis>.</para>
     </section>
+
+    <section id="faq82">
+      <title>(FAQ 82) When I enable USE_DEFAULT_RT, Shorewall won't
+      start</title>
+
+      <para>I get the following errors:</para>
+
+      <programlisting>RTNETLINK answers: Numerical result out of range
+ERROR: Command "ip -4 rule add from all table 254 pref 999" Failed</programlisting>
+
+      <para><emphasis role="bold">Answer:</emphasis> This is a known kernel
+      issue -- see <ulink
+      url="http://lkml.org/lkml/2007/3/30/253">http://lkml.org/lkml/2007/3/30/253</ulink>.</para>
+    </section>
   </section>
 
   <section id="Start-Stop">

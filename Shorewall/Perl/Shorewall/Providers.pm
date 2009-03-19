@@ -623,10 +623,10 @@ sub setup_providers() {
 	    my $table = MAIN_TABLE;
 
 	    if ( $config{USE_DEFAULT_RT} ) {
-		emit ( 'run_ip rule add from all table ' . MAIN_TABLE . ' pref 999',
-		       "ip -$family rule del from all table " . MAIN_TABLE . ' pref 32766',
-		       qq(echo "qt ip -$family rule add from all table ) . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
-		       qq(echo "qt ip -$family rule del from all table ) . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
+		emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE . ' pref 999',
+		       "ip -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
+		       qq(echo "qt ip -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
+		       qq(echo "qt ip -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
 		       '' );
 		$table = DEFAULT_TABLE;
 	    }

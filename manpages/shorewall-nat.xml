@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall-nat</refentrytitle>
@@ -38,7 +40,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">EXTERNAL</emphasis> -
-        <emphasis>address</emphasis></term>
+        {<emphasis>address</emphasis>|COMMENT}</term>
 
         <listitem>
           <para>External IP Address - this should NOT be the primary IP
@@ -52,6 +54,14 @@
 
           <para>To stop the comment from being attached to further rules,
           simply include COMMENT on a line by itself.</para>
+
+          <para>Comments may be attached to Netfilter rules generated from
+          entries in this file through the use of COMMENT lines. These lines
+          begin with the word COMMENT; the remainder of the line is treated as
+          a comment which is attached to subsequent rules until another
+          COMMENT line is found or until the end of the file is reached. To
+          stop adding comments to rules, use a line with only the word
+          COMMENT.</para>
         </listitem>
       </varlistentry>
 

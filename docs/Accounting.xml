@@ -45,12 +45,12 @@
     <title>Accounting Basics</title>
 
     <para>Shorewall accounting rules are described in the file
-    <filename>/etc/shorewall/accounting</filename>. By default, the
-    accounting rules are placed in a chain called <quote>accounting</quote>
-    and can thus be displayed using <quote>shorewall[-lite] show
-    accounting</quote>. All traffic passing into, out of, or through the
-    firewall traverses the accounting chain including traffic that will later
-    be rejected by interface options such as <quote>tcpflags</quote> and
+    <filename>/etc/shorewall/accounting</filename>. By default, the accounting
+    rules are placed in a chain called <quote>accounting</quote> and can thus
+    be displayed using <quote>shorewall[-lite] show accounting</quote>. All
+    traffic passing into, out of, or through the firewall traverses the
+    accounting chain including traffic that will later be rejected by
+    interface options such as <quote>tcpflags</quote> and
     <quote>maclist</quote>. If your kernel doesn't support the connection
     tracking match extension (Kernel 2.4.21) then some traffic rejected under
     <quote>norfc1918</quote> will not traverse the accounting chain.</para>
@@ -76,12 +76,12 @@
           <listitem>
             <para><emphasis>&lt;chain&gt;</emphasis> - The name of a chain;
             Shorewall will create the chain automatically if it doesn't
-            already exist. A jump to this chain will be generated from
-            the chain specified by the CHAIN column. If the name of the chain
-            is followed by <quote>:COUNT</quote> then a COUNT rule matching
-            this entry will automatically be added to &lt;chain&gt;. Chain
-            names must start with a letter, must be composed of letters and
-            digits, and may contain underscores (<quote>_</quote>) and periods
+            already exist. A jump to this chain will be generated from the
+            chain specified by the CHAIN column. If the name of the chain is
+            followed by <quote>:COUNT</quote> then a COUNT rule matching this
+            entry will automatically be added to &lt;chain&gt;. Chain names
+            must start with a letter, must be composed of letters and digits,
+            and may contain underscores (<quote>_</quote>) and periods
             (<quote>.</quote>). Beginning with Shorewall version 1.4.8, chain
             names may also contain embedded dashes (<quote>-</quote>) and are
             not required to start with a letter.</para>
@@ -117,8 +117,8 @@
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">PROTOCOL</emphasis> - A protocol name (from
-        <filename>/etc/protocols</filename>), a protocol number or
+        <para><emphasis role="bold">PROTOCOL</emphasis> - A protocol name
+        (from <filename>/etc/protocols</filename>), a protocol number or
         <quote>ipp2p</quote>. For <quote>ipp2p</quote>, your kernel and
         iptables must have ipp2p match support from <ulink
         url="http://www.netfilter.org">Netfilter
@@ -128,8 +128,8 @@
       <listitem>
         <para><emphasis role="bold">DEST PORT</emphasis> - Destination Port
         number. Service name from <filename>/etc/services</filename> or port
-        number. May only be specified if the protocol is TCP or UDP (6 or
-        17).  If the PROTOCOL is <quote>ipp2p</quote>, then this column is
+        number. May only be specified if the protocol is TCP or UDP (6 or 17).
+        If the PROTOCOL is <quote>ipp2p</quote>, then this column is
         interpreted as an ipp2p option without the leading <quote>--</quote>
         (default <quote>ipp2p</quote>). For a list of value ipp2p options, as
         root type <command>iptables -m ipp2p --help</command>.</para>
@@ -171,13 +171,13 @@
 
       <listitem>
         <para><emphasis role="bold">MARK</emphasis> - Only count packets with
-        particular mark values.
-        <programlisting>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</programlisting>
-        Defines a test on the existing packet or connection mark. The rule will
-        match only if the test returns true.</para>
+        particular mark values. <programlisting>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</programlisting>
+        Defines a test on the existing packet or connection mark. The rule
+        will match only if the test returns true.</para>
 
         <para>If you don’t want to define a test but need to specify anything
-        in the following columns, place a <quote>-</quote> in this field.<simplelist>
+        in the following columns, place a <quote>-</quote> in this
+        field.<simplelist>
             <member>! — Inverts the test (not equal)</member>
 
             <member>&lt;value&gt; — Value of the packet or connection
@@ -193,8 +193,8 @@
       </listitem>
     </itemizedlist>
 
-    <para>In all columns except ACTION and CHAIN, the values
-    <quote>-</quote>, <quote>any</quote> and <quote>all</quote> are treated as
+    <para>In all columns except ACTION and CHAIN, the values <quote>-</quote>,
+    <quote>any</quote> and <quote>all</quote> are treated as
     wild-cards.</para>
 
     <para>The accounting rules are evaluated in the Netfilter
@@ -224,9 +224,9 @@
         web:COUNT       -       eth1    eth0            tcp             -               443
         DONE            web</programlisting>
 
-    <para>Now <command>shorewall show web</command> (or <command>shorewall-lite
-    show web</command> for Shorewall Lite users) will give you a breakdown
-    of your web traffic:</para>
+    <para>Now <command>shorewall show web</command> (or
+    <command>shorewall-lite show web</command> for Shorewall Lite users) will
+    give you a breakdown of your web traffic:</para>
 
     <programlisting>     [root@gateway shorewall]# shorewall show web
      Shorewall-1.4.6-20030821 Chain web at gateway.shorewall.net - Wed Aug 20 09:48:56 PDT 2003
@@ -253,9 +253,9 @@
         COUNT           web     eth0    eth1
         COUNT           web     eth1    eth0</programlisting>
 
-    <para>Now <command>shorewall show web</command> (or <command>shorewall-lite
-    show web</command> for Shorewall Lite users) simply gives you a
-    breakdown by input and output:</para>
+    <para>Now <command>shorewall show web</command> (or
+    <command>shorewall-lite show web</command> for Shorewall Lite users)
+    simply gives you a breakdown by input and output:</para>
 
     <programlisting>     [root@gateway shorewall]# shorewall show accounting web
      Shorewall-1.4.6-20030821 Chains accounting web at gateway.shorewall.net - Wed Aug 20 10:27:21 PDT 2003
@@ -367,5 +367,14 @@
         role="bold">accounting</emphasis> only.</para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section id="Collectd">
+    <title>Integrating Shorewall Accounting with Collectd</title>
+
+    <para>Sergiusz Pawlowicz has written a nice article that shows how to
+    integrate Shorewall Accounting with collectd to produce nice graphs of
+    traffic activity. The article may be found at <ulink
+    url="http://collectd.org/wiki/index.php/Plugin:IPTables">http://collectd.org/wiki/index.php/Plugin:IPTables</ulink>.</para>
   </section>
 </article>

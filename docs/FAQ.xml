@@ -467,6 +467,17 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
         connections looking to the server (66.249.93.11) as if they originated
         on your firewall (206.124.146.176).</para>
       </section>
+
+      <section id="faq1h">
+        <title>(FAQ 1h) How do I set shorewall to allow ssh on port 9022 from
+        net? SSHD is listening on port 22.</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: Use this rule.</para>
+
+        <programlisting>#ACTION         SOURCE        DEST        PROTO        DEST
+#                                                      PORT(S)
+REDIRECT        net           22          tcp          9022</programlisting>
+      </section>
     </section>
 
     <section id="faq30">

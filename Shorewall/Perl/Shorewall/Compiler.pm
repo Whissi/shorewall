@@ -75,11 +75,6 @@ sub reinitialize() {
 # First stage of script generation.
 #
 #    Copy the prog.header to the generated script.
-#    Generate the various user-exit jacket functions.
-#    Generate the 'initialize()' function.
-#
-#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
-#          than those related to writing to the object file.
 
 sub generate_script_1() {
 
@@ -95,6 +90,18 @@ sub generate_script_1() {
 	    copy $globals{SHAREDIRPL} . 'prog.header6';
 	}
     }
+}
+
+#
+# Second stage of script generation.
+#
+#    Generate the various user-exit jacket functions.
+#    Generate the 'initialize()' function.
+#
+#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
+#          than those related to writing to the object file.
+
+sub generate_script_2() {
 
     for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed restored/ {
 	emit "\nrun_${exit}_exit() {";
@@ -227,9 +234,50 @@ sub generate_script_1() {
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
 	   );
 
+    my $global_variables = have_global_variables;
+
+    if ( $global_variables ) {
+	emit( '' ,
+	      '#' ,
+	      '# Set global variables holding detected IP information' ,
+	      '#' ,
+	      'case $COMMAND in' );
+
+	push_indent;
+
+	if ( $global_variables & NOT_RESTORE ) {
+	    emit( 'start|restart|refresh)' );
+	} else {
+	    emit( 'start|restart|refresh|restore)' );
+	}
+	 
+	push_indent;
+
+	set_global_variables(1);
+
+	emit ';;';
+    
+	if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
+	    pop_indent;
+	
+	    emit 'restore)';
+
+	    push_indent;
+
+	    set_global_variables(0);
+
+	    emit ';;';
+	}
+
+	pop_indent;
+	pop_indent;
+
+	emit ( 'esac' ) ,
+    }
+
     pop_indent;
 
-    emit "}\n"; # End of initialize()
+    emit "\n}\n"; # End of initialize()
 
 }
 
@@ -579,6 +627,7 @@ EOF
 #
 # Final stage of script generation.
 #
+#    Copy prog.functions to the object file.
 #    Generate code for loading the various files in /var/lib/shorewall[-lite]
 #    Generate code to add IP addresses under ADD_IP_ALIASES and ADD_SNAT_ALIASES
 #
@@ -588,7 +637,15 @@ EOF
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
 #          than those related to writing to the object file.
 #
-sub generate_script_2($) {
+sub generate_script_3($) {
+
+    unless ( $test ) {
+	if ( $family == F_IPV4 ) {
+	    copy $globals{SHAREDIRPL} . 'prog.functions';
+	} else {
+	    copy $globals{SHAREDIRPL} . 'prog.functions6';
+	}
+    }
 
     if ( $family == F_IPV4 ) {
 	progress_message2 "Creating iptables-restore input...";
@@ -729,10 +786,6 @@ sub generate_script_2($) {
     }
 
     emit qq(delete_tc1\n) if $config{CLEAR_TC};
-
-    set_global_variables;
-
-    emit '';
 
     emit( 'setup_common_rules', '' );
 
@@ -957,26 +1010,18 @@ sub compiler {
     #                           (Produces no output to the compiled script)
     #
     setup_notrack;
-    #
-    #                                    I N I T I A L I Z E
-    #                  (Writes the initialize() function to the compiled script)
-    #
+
     enable_object;
-    
+
     unless ( $command eq 'check' ) {
+	#
+	# Place Header in the object
+	#
 	generate_script_1;
 	#
 	#                               C O M M O N _ R U L E S
 	#           (Writes the setup_common_rules() function to the compiled script)
 	#
-	unless ( $test ) {
-	    if ( $family == F_IPV4 ) {
-		copy $globals{SHAREDIRPL} . 'prog.functions';
-	    } else {
-		copy $globals{SHAREDIRPL} . 'prog.functions6';
-	    }
-	}
-
 	emit(  "\n#",
 	       '# Setup Common Rules (/proc)',
 	       '#',
@@ -1112,6 +1157,11 @@ sub compiler {
 	}
     } else {
 	enable_object;
+	#
+	#                                    I N I T I A L I Z E
+	#                  (Writes the initialize() function to the compiled script)
+	#
+	generate_script_2;
 	#                               S T O P _ F I R E W A L L
 	#             (Writes the stop_firewall() function to the compiled script)
 	#
@@ -1120,7 +1170,7 @@ sub compiler {
 	#                          N E T F I L T E R   L O A D
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
-	generate_script_2( $chains );
+	generate_script_3( $chains );
 	#
 	# Close, rename and secure the object
 	#

@@ -68,6 +68,8 @@ our %EXPORT_TAGS = (
 				       OUTPUT_RESTRICT
 				       POSTROUTE_RESTRICT
 				       ALL_RESTRICT
+				       ALL_COMMANDS
+				       NOT_RESTORE
 
 				       add_command
 				       add_commands
@@ -148,6 +150,7 @@ our %EXPORT_TAGS = (
 				       get_interface_acasts
 				       get_interface_gateway
 				       get_interface_mac
+				       have_global_variables
 				       set_global_variables
 				       create_netfilter_load
 				       create_chainlist_reload
@@ -240,6 +243,10 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 our $exclseq;
 our $iprangematch;
 our $chainseq;
+
+our $global_variables;
+
+use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
 
 our %interfaceaddr;
 our %interfaceaddrs;
@@ -337,6 +344,8 @@ sub initialize( $ ) {
     %interfacebcasts    = ();
     %interfaceacasts    = ();
     %interfacegateways  = ();
+
+    $global_variables   = 0;
 
 }
 
@@ -2014,6 +2023,8 @@ sub get_interface_address ( $ ) {
     my $variable = interface_address( $interface );
     my $function = interface_is_optional( $interface ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
 
+    $global_variables |= ALL_COMMANDS;
+
     $interfaceaddr{$interface} = "$variable=\$($function $interface)\n";
 
     "\$$variable";
@@ -2035,6 +2046,8 @@ sub get_interface_bcasts ( $ ) {
 
     my $variable = interface_bcasts( $interface );
 
+    $global_variables |= NOT_RESTORE;
+
     $interfacebcasts{$interface} = qq($variable="\$(get_interface_bcasts $interface) 255.255.255.255");
 
     "\$$variable";
@@ -2053,6 +2066,8 @@ sub interface_acasts( $ ) {
 #
 sub get_interface_acasts ( $ ) {
     my ( $interface ) = $_[0];
+
+    $global_variables |= NOT_RESTORE;
 
     my $variable = interface_acasts( $interface );
 
@@ -2079,11 +2094,13 @@ sub get_interface_gateway ( $ ) {
 
     my $routine = $config{USE_DEFAULT_RT} ? 'detect_dynamic_gateway' : 'detect_gateway';
 
+    $global_variables |= ALL_COMMANDS;
+
     if ( interface_is_optional $interface ) {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)\n);
     } else {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)
-[ -n "\$$variable" ] || fatal_error "Unable to detect the gateway through interface $interface"
+[ -n "\$$variable" ] || startup_error "Unable to detect the gateway through interface $interface"
 );
     }
 
@@ -2106,11 +2123,13 @@ sub get_interface_addresses ( $ ) {
 
     my $variable = interface_addresses( $interface );
 
+    $global_variables |= NOT_RESTORE;
+
     if ( interface_is_optional $interface ) {
 	$interfaceaddrs{$interface} = qq($variable=\$(find_interface_addresses $interface)\n);
     } else {
 	$interfaceaddrs{$interface} = qq($variable=\$(find_interface_addresses $interface)
-[ -n "\$$variable" ] || fatal_error "Unable to determine the IP address(es) of $interface"
+[ -n "\$$variable" ] || startup_error "Unable to determine the IP address(es) of $interface"
 );
     }
 
@@ -2133,11 +2152,13 @@ sub get_interface_nets ( $ ) {
 
     my $variable = interface_nets( $interface );
 
+    $global_variables |= ALL_COMMANDS;
+
     if ( interface_is_optional $interface ) {
 	$interfacenets{$interface} = qq($variable=\$(get_routed_networks $interface)\n);
     } else {
 	$interfacenets{$interface} = qq($variable=\$(get_routed_networks $interface)
-[ -n "\$$variable" ] || fatal_error "Unable to determine the routes through interface \\"$interface\\""
+[ -n "\$$variable" ] || startup_error "Unable to determine the routes through interface \\"$interface\\""
 );
     }
 
@@ -2161,86 +2182,50 @@ sub get_interface_mac( $$$ ) {
 
     my $variable = interface_mac( $interface , $table );
 
+    $global_variables |= NOT_RESTORE;
+
     if ( interface_is_optional $interface ) {
 	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)\n);
     } else {
 	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)
-[ -n "\$$variable" ] || fatal_error "Unable to determine the MAC address of $ipaddr through interface \\"$interface\\""
+[ -n "\$$variable" ] || startup_error "Unable to determine the MAC address of $ipaddr through interface \\"$interface\\""
 );
     }
 
     "\$$variable";
 }
 
+sub have_global_variables() {
+    $capabilities{ADDRTYPE} ? $global_variables : $global_variables | NOT_RESTORE;
+}
+
 #
 # Generate setting of run-time global shell variables
 #
-sub emit_comment() {
-    emit  ( '#',
-	    '# Establish the values of shell variables used in the following function calls',
-	    '#' );
-    our $emitted_comment = 1;
-}
 
-sub emit_test() {
-    emit ( 'if [ "$COMMAND" != restore ]; then' ,
-	   '' );
-    push_indent;
-    our $emitted_test = 1;
-}
+sub set_global_variables( $ ) {
+    
+    my $setall = shift;
 
-sub set_global_variables() {
+    emit $_ for values %interfaceaddr;
+    emit $_ for values %interfacegateways;
+    emit $_ for values %interfacemacs;
+	
+    if ( $setall ) {    
+	emit $_ for values %interfaceaddrs;
+	emit $_ for values %interfacenets;
 
-    our ( $emitted_comment, $emitted_test ) = (0, 0);
+	unless ( $capabilities{ADDRTYPE} ) {
 
-    for ( values %interfaceaddr ) {
-	emit_comment unless $emitted_comment;
-	emit $_;
-    }
-
-    for ( values %interfacegateways ) {
-	emit_comment unless $emitted_comment;
-	emit $_;
-    }    
-
-    for ( values %interfacemacs ) {
-	emit_comment unless $emitted_comment;
-	emit $_;
-    }    
-
-    for ( values %interfaceaddrs ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
-	emit $_;
-    }
-
-    for ( values %interfacenets ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
-	emit $_;
-    }
-
-    unless ( $capabilities{ADDRTYPE} ) {
-	emit_comment unless $emitted_comment;
-	emit_test    unless $emitted_test;
-
-	if ( $family == F_IPV4 ) {
-	    emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
-
-	    for ( values %interfacebcasts ) {
-		emit $_;
-	    }
-	} else {
-	    emit 'ALL_ACASTS="$(get_all_acasts)"';
-
-	    for ( values %interfaceacasts ) {
-		emit $_;
+	    if ( $family == F_IPV4 ) {
+		emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';		
+		emit $_ for values %interfacebcasts;
+	    } else {
+		emit 'ALL_ACASTS="$(get_all_acasts)"';
+		emit $_ for values %interfaceacasts;
 	    }
 	}
     }
-
-    pop_indent,	emit "fi\n" if $emitted_test;
-
 }
 
 ################################################################################################################
@@ -2736,7 +2721,10 @@ sub create_netfilter_load( $ ) {
 
     $mode = NULL_MODE;
 
-    emit ( 'setup_netfilter()',
+    emit ( '#',
+	   '# Create the input to iptables-restore/ip6tables-restore and pass that input to the utility',
+	   '#',
+	   'setup_netfilter()',
 	   '{'
 	   );
 

@@ -201,7 +201,7 @@ sub parse_zone_option_list($$)
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => "mss" );
+    my %key = ( mss => 'mss' );
 
     my ( $list, $zonetype ) = @_;
     my %h;
@@ -284,8 +284,6 @@ sub determine_zones()
 	fatal_error "Invalid zone name ($zone)"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
 	fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
 
-	$type = IP unless $type;
-
 	if ( $type =~ /ipv4/i ) {
 	    fatal_error "Invalid zone type ($type)" if $family == F_IPV6;
 	    $type = IP;
@@ -332,6 +330,7 @@ sub determine_zones()
 			  hosts      => {}
 			};
 	push @z, $zone;
+
     }
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
@@ -588,7 +587,7 @@ sub all_zones() {
 }
 
 sub non_firewall_zones() {
-   grep ( $zones{$_}{type} != FIREWALL  ,  @zones );
+   grep ( $zones{$_}{type} != FIREWALL ,  @zones );
 }
 
 sub complex_zones() {

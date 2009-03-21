@@ -2332,6 +2332,29 @@ eth0               eth1                        # eth1 = interface to local netwo
       url="Shorewall_and_Aliased_Interfaces.html">Shorewall and Aliased
       Interfaces</ulink>.</para>
     </section>
+
+    <section id="faq83">
+      <title>(FAQ 83) Is there no way to nest the firewall zone or create
+      subzones? I've got a system with Linux-VServers, it's one interface
+      (eth0) with multiple IPs</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: There is no way to create
+      sub-zones of the firewall zone. But you can use shell variables to make
+      vservers easier to deal with.</para>
+
+      <para><filename>/etc/shorewall/params</filename>:</para>
+
+      <programlisting>VS1=fw:192.168.2.12
+VS2=fw:192.168.2.13
+VS3=fw:192.168.2.14</programlisting>
+
+      <para><filename>/etc/shorewall/rules</filename>:</para>
+
+      <programlisting>#ACTION      SOURCE         DEST        PROTO         DEST PORT(S)
+ACCEPT       $VS1           net         tcp           25
+DNAT         net            $VS1        tcp           25
+etc...</programlisting>
+    </section>
   </section>
 
   <section id="Lite">

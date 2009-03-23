@@ -43,6 +43,9 @@ released late in 2009.
     kernel's (see FAQ 82) that caused 'shorewall start' to fail when
     USE_DEFAULT_RT=Yes .
 
+2)  The swping program was not purging the interface status files when
+    it first started.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -53,7 +56,10 @@ None.
                 N E W   F E A T U R E S   I N   4 . 3 . 8
 ----------------------------------------------------------------------------
 
-None.
+1)  The generated program now attempts to detect all dynamic
+    information when it first starts. If any of those steps fail, an
+    error message is generated and the state of the firewall is not
+    changed.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

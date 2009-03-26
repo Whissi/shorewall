@@ -172,11 +172,11 @@ gateway:~ # </programlisting>
       addresses; in the case of eth0, 2002:ce7c:92b4:1::/64.</para>
 
       <para>I run <ulink url="http://www.litech.org/radvd/">radvd</ulink> on
-      the firewall to allow hosts conntected to eth0 and eth2 to automatically
+      the firewall to allow hosts conntected to eth2 and eth4 to automatically
       perform their own IPv6 configuration. Here is my
       <filename>/etc/radvd.conf</filename> file:</para>
 
-      <programlisting>interface eth0 { 
+      <programlisting>interface eth2 { 
         AdvSendAdvert on;
         MinRtrAdvInterval 3; 
         MaxRtrAdvInterval 10;
@@ -192,7 +192,7 @@ gateway:~ # </programlisting>
         };                              
 };
 
-interface eth2 { 
+interface eth4 { 
         AdvSendAdvert on;
         MinRtrAdvInterval 3; 
         MaxRtrAdvInterval 10;

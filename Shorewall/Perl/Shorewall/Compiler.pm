@@ -74,8 +74,9 @@ sub reinitialize() {
 #
 # First stage of script generation.
 #
-#    Copy the prog.header to the generated script.
-
+#    Copy prog.header to the generated script.
+#    Generate the various user-exit jacket functions.
+#
 sub generate_script_1() {
 
     my $date = localtime;
@@ -90,18 +91,12 @@ sub generate_script_1() {
 	    copy $globals{SHAREDIRPL} . 'prog.header6';
 	}
     }
-}
 
-#
-# Second stage of script generation.
-#
-#    Generate the various user-exit jacket functions.
-#    Generate the 'initialize()' function.
-#
-#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
-#          than those related to writing to the object file.
-
-sub generate_script_2() {
+    emit <<'EOF';
+################################################################################
+# Functions to execute the various user exits (extension scripts)
+################################################################################
+EOF
 
     for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed restored/ {
 	emit "\nrun_${exit}_exit() {";
@@ -110,6 +105,24 @@ sub generate_script_2() {
 	pop_indent;
 	emit '}';
     }
+
+    emit <<'EOF';
+################################################################################
+# End user exit functions
+################################################################################
+EOF
+
+}
+
+#
+# Second stage of script generation.
+#
+#    Generate the 'initialize()' function.
+#
+#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
+#          than those related to writing to the object file.
+
+sub generate_script_2() {
 
     emit ( '',
 	   '#',

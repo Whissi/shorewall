@@ -1504,6 +1504,10 @@ sub read_a_line() {
 
 	    chomp;
 	    #
+	    # Suppress leading whitespace in certain continuation lines
+	    #
+	    s/^\s*// if $currentline =~ /[,:]$/;
+	    #
 	    # Continuation
 	    #
 	    chop $currentline, next if substr( ( $currentline .= $_ ), -1, 1 ) eq '\\';

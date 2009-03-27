@@ -400,6 +400,35 @@ br0                -                    routeback</programlisting></para>
 
       <programlisting>ACCEPT  net     $FW      tcp \↵
 smtp,www,pop3,imap  #Services running on the firewall</programlisting>
+
+      <para>In certain cases, leading white space is ignored in continuation
+      lines:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The continued line ends with a colon (":")</para>
+        </listitem>
+
+        <listitem>
+          <para>The continued line ends with a comma (",")</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
+
+      <programlisting>#ACTION     SOURCE          DEST            PROTO           DEST
+#                                                           PORT(S)
+ACCEPT      net:\
+            206.124.146.177,\
+            206.124.146.178,\
+            206.124.146.180\
+                            dmz             tcp             873</programlisting>
+
+      <para> The leading white space on the first through third continuation
+      lines is ignored so the SOURCE column effectively contains
+      "net:206.124.146.177,206.124.147.178,206.124.146.180". Because the third
+      continuation line does not end with a comma or colon, the leading white
+      space in the last line is not ignored.</para>
     </example>
   </section>
 

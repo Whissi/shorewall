@@ -65,6 +65,24 @@ None.
     the dhclient lease file for the interface
     (/var/run/dhcp/dhclient-<if>.lease).
 
+3)  To improve readability of the configuration files, Shorewall now
+    allows leading white space in continuation lines when the continued
+    line ends in ":" or ",".
+
+    Example (/etc/shorewall/rules):
+
+    #ACTION	SOURCE		DEST		PROTO		DEST
+    #                                                           PORT(S)
+    ACCEPT	net:\
+    		206.124.146.177,\
+		206.124.146.178,\
+		206.124.146.180\
+				dmz		tcp		873
+
+    The leading white space on the lines that contain just an IP
+    address is ignored so the SOURCE column effectively contains
+    "net:206.124.146.177,206.124.147.178,206.124.146.180".
+
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

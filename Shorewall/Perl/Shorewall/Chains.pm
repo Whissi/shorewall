@@ -154,7 +154,6 @@ our %EXPORT_TAGS = (
 				       get_interface_mac
 				       have_global_variables
 				       set_global_variables
-				       compile_stop_firewall
 				       create_netfilter_load
 				       create_chainlist_reload
 				       $section

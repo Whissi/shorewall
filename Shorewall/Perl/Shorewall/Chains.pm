@@ -144,6 +144,8 @@ our %EXPORT_TAGS = (
 				       log_rule
 				       expand_rule
 				       addnatjump
+				       set_chain_variables
+				       mark_firewall_not_started
 				       get_interface_address
 				       get_interface_addresses
 				       get_interface_bcasts
@@ -152,6 +154,7 @@ our %EXPORT_TAGS = (
 				       get_interface_mac
 				       have_global_variables
 				       set_global_variables
+				       compile_stop_firewall
 				       create_netfilter_load
 				       create_chainlist_reload
 				       $section
@@ -1999,6 +2002,46 @@ sub mysplit( $ ) {
     }
 
     @result;
+}
+
+#
+# Set up the IPTABLES-related run-time variables
+#
+sub set_chain_variables() {
+    if ( $family == F_IPV4 ) {
+	if ( $config{IPTABLES} ) {
+	    emit( qq(IPTABLES="$config{IPTABLES}"),
+		  '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
+		);
+	} else {
+	    emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables) # /sbin/shorewall exports IPTABLES',
+		  '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
+		);
+	}
+
+	emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
+	      '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
+    } else {
+	if ( $config{IP6TABLES} ) {
+	    emit( qq(IP6TABLES="$config{IP6TABLES}"),
+		  '[ -x "$IP6TABLES" ] || startup_error "IP6TABLES=$IP6TABLES does not exist or is not executable"',
+		);
+	} else {
+	    emit( '[ -z "$IP6TABLES" ] && IP6TABLES=$(mywhich ip6tables) # /sbin/shorewall6 exports IP6TABLES',
+		  '[ -n "$IP6TABLES" -a -x "$IP6TABLES" ] || startup_error "Can\'t find ip6tables executable"'
+		);
+	}
+
+	emit( 'IP6TABLES_RESTORE=${IP6TABLES}-restore',
+	      '[ -x "$IP6TABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
+    }
+}
+
+#
+# Emit code that marks the firewall as not started.
+#
+sub mark_firewall_not_started() {
+    emit ( 'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall' );
 }
 
 ####################################################################################################################

@@ -1850,6 +1850,9 @@ sub determine_capabilities( $ ) {
     qt1( "$iptables -N $sillyname" );
     qt1( "$iptables -N $sillyname1" );
 
+    fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
+	unless qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");
+
     if ( $family == F_IPV4 ) {
 	$capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
     } else {

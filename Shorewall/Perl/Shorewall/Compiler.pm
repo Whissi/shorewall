@@ -797,15 +797,15 @@ sub compiler {
 	#                  (Writes the initialize() function to the compiled script)
 	#
 	generate_script_2;
-	#                               S T O P _ F I R E W A L L
-	#             (Writes the stop_firewall() function to the compiled script)
-	#
-	compile_stop_firewall;
 	#
 	#                          N E T F I L T E R   L O A D
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
 	generate_script_3( $chains );
+	#                               S T O P _ F I R E W A L L
+	#             (Writes the stop_firewall() function to the compiled script)
+	#
+	compile_stop_firewall;
 	#
 	# Close, rename and secure the object
 	#

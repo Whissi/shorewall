@@ -83,6 +83,11 @@ None.
     address is ignored so the SOURCE column effectively contains
     "net:206.124.146.177,206.124.147.178,206.124.146.180".
 
+4)  The generated script now uses iptables[6]-restore to instantiate
+    the Netfilter ruleset during processing of the 'stop' command. As a
+    consequence, the 'critical' option in /etc/shorewall/route_stopped
+    is no longer needed and will result in a warning.
+
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

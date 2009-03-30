@@ -39,7 +39,6 @@ our @EXPORT = qw( process_tos
 		  setup_ecn
 		  add_common_rules
 		  setup_mac_lists
-		  process_criticalhosts
 		  process_routestopped
 		  process_rules
 		  generate_matrix
@@ -364,52 +363,6 @@ sub setup_blacklist() {
     }
 }
 
-sub process_criticalhosts() {
-
-    my  @critical = ();
-
-    my $fn = open_file 'routestopped';
-
-    my $seq = 0;
-
-    first_entry "$doing $fn for critical hosts...";
-
-    while ( read_a_line ) {
-
-	my $routeback = 0;
-
-	my ($interface, $hosts, $options, $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
-
-	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
-
-	$hosts = ALLIP unless $hosts ne '-';
-
-	my @hosts;
-
-	$seq++;
-
-	for my $host ( split_list $hosts, 'host' ) {
-	    validate_host $host, 1;
-	    push @hosts, "$interface|$host|$seq";
-	}
-
-	unless ( $options eq '-' ) {
-	    for my $option (split_list $options, 'option' ) {
-		unless ( $option eq 'routeback' || $option eq 'source' || $option eq 'dest' || $option eq 'notrack' ) {
-		    if ( $option eq 'critical' ) {
-			fatal_error "PROTO may not be specified with 'critical'" if $proto ne '-';
-			push @critical, @hosts;
-		    } else {
-			warning_message "Unknown routestopped option ( $option ) ignored";
-		    }
-		}
-	    }
-	}
-    }
-
-    \@critical;
-}
-
 sub process_routestopped() {
 
     my ( @allhosts, %source, %dest , %notrack, @rule );
@@ -472,14 +425,13 @@ sub process_routestopped() {
 		    }
 		} else {
 		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
+		    warning_message "The 'critical' option is no longer supported (or needed)";
 		}
 	    }
 	}
 
 	push @allhosts, @hosts;
     }
-
-    my $tool = $family == F_IPV4 ? '$IPTABLES' : '$IP6TABLES';
 
     for my $host ( @allhosts ) {
 	my ( $interface, $h, $seq ) = split /\|/, $host;
@@ -489,24 +441,24 @@ sub process_routestopped() {
 	my $desti   = match_dest_dev $interface;
 	my $rule    = shift @rule;
 
-	emit "$tool -A INPUT $sourcei $source $rule -j ACCEPT";
-	emit "$tool -A OUTPUT $desti $dest $rule -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT";
+	add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 
 	if ( $source{$host} ) {
-	    emit "$tool -A FORWARD $sourcei $source $rule -j ACCEPT";
+	    add_rule $filter_table->{FORWARD}, "$sourcei $source $rule -j ACCEPT";
 	    $matched = 1;
 	}
 
 	if ( $dest{$host} ) {
-	    emit "$tool -A FORWARD $desti $dest $rule -j ACCEPT";
+	    add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT";
 	    $matched = 1;
 	}
 
 	if ( $notrack{$host} ) {
-	    emit "$tool -t raw -A PREROUTING $sourcei $source $rule -j NOTRACK";
-	    emit "$tool -t raw -A OUTPUT $desti $dest $rule -j NOTRACK";
+	    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK";
+	    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK";
 	}
 
 	unless ( $matched ) {
@@ -515,7 +467,7 @@ sub process_routestopped() {
 		    my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    my $desti1 = match_dest_dev $interface1;
-		    emit "$tool -A FORWARD $sourcei $desti1 $source $dest1 $rule -j ACCEPT";
+		    add_rule $filter_table->{FORWARD}, "$sourcei $desti1 $source $dest1 $rule -j ACCEPT";
 		    clearrule;
 		}
 	    }
@@ -2117,7 +2069,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall() {
+sub compile_stop_firewall( $ ) {
+    my $test = shift;
 
     emit <<'EOF';
 #
@@ -2125,6 +2078,14 @@ sub compile_stop_firewall() {
 #
 stop_firewall() {
 EOF
+
+    Shorewall::Chains::initialize( $family );
+
+    initialize_chain_table;
+
+    if ( $config{ADMINISABSENTMINDED} ) {
+	$filter_table->{OUTPUT}{policy} = 'ACCEPT';
+    }
 
     if ( $family == F_IPV4 ) {
 	emit( '    deletechain() {',
@@ -2135,24 +2096,6 @@ EOF
     }
 
     emit <<'EOF';
-    }
-
-    deleteallchains() {
-	do_iptables -F
-	do_iptables -X
-    }
-
-    delete_nat() {
-	do_iptables -t nat -F
-	do_iptables -t nat -X
-
-	if [ -f ${VARDIR}/nat ]; then
-	    while read external interface; do
-		del_ip_addr $external $interface
-	    done < ${VARDIR}/nat
-
-	    rm -f ${VARDIR}/nat
-	fi
     }
 
     case $COMMAND in
@@ -2211,42 +2154,15 @@ EOF
     run_stop_exit
 EOF
 
-    if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
-	emit <<'EOF';
-    run_iptables -t mangle -F
-    run_iptables -t mangle -X
-    for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	qt1 $IPTABLES -t mangle -P $chain ACCEPT
-    done
-EOF
-    }
-
-    if ( $capabilities{RAW_TABLE} ) {
-	if ( $family == F_IPV4 ) {
-	    emit <<'EOF';
-    run_iptables -t raw -F
-    run_iptables -t raw -X
-    for chain in PREROUTING OUTPUT; do
-        qt1 $IPTABLES -t raw -P $chain ACCEPT
-    done
-EOF
-	} else {
-	    emit <<'EOF';
-    run_iptables -t raw -F
-    run_iptables -t raw -X
-    for chain in PREROUTING OUTPUT; do
-        qt1 $IP6TABLES -t raw -P $chain ACCEPT
-    done
-EOF
-	}
-    }
-
     if ( $capabilities{NAT_ENABLED} ) {
-	emit <<'EOF';
-    delete_nat
-    for chain in PREROUTING POSTROUTING OUTPUT; do
-        qt1 $IPTABLES -t nat -P $chain ACCEPT
-    done
+	emit<<'EOF';
+    if [ -f ${VARDIR}/nat ]; then
+        while read external interface; do
+      	    del_ip_addr $external $interface
+	done < ${VARDIR}/nat
+
+	rm -f ${VARDIR}/nat
+    fi
 EOF
     }
 
@@ -2259,9 +2175,10 @@ EOF
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
+
+         rm -f ${VARDIR}/proxyarp
     fi
 
-    rm -f ${VARDIR}/proxyarp
 EOF
     }
 
@@ -2273,109 +2190,27 @@ EOF
 	  'restore_default_route'
 	  );
 
-    my $criticalhosts = process_criticalhosts;
-
-    if ( @$criticalhosts ) {
-	if ( $config{ADMINISABSENTMINDED} ) {
-	    emit ( 'for chain in INPUT OUTPUT; do',
-		    '    setpolicy $chain ACCEPT',
-		    'done',
-		    '',
-		    'setpolicy FORWARD DROP',
-		    '',
-		    'deleteallchains',
-		    ''
-		    );
-
-	    for my $hosts ( @$criticalhosts ) {
-                my ( $interface, $host, $seq ) = ( split /\|/, $hosts );
-                my $source = match_source_net $host;
-		my $dest   = match_dest_net $host;
-
-		emit( "do_iptables -A INPUT  -i $interface $source -j ACCEPT",
-		      "do_iptables -A OUTPUT -o $interface $dest   -j ACCEPT"
-		      );
-	    }
-
-	    emit( '',
-		  'for chain in INPUT OUTPUT; do',
-		  '    setpolicy $chain DROP',
-		  "done\n"
-		  );
-	  } else {
-	    emit( '',
-		  'for chain in INPUT OUTPUT; do',
-		  '    setpolicy $chain ACCEPT',
-		  'done',
-		  '',
-		  'setpolicy FORWARD DROP',
-		  '',
-		  "deleteallchains\n"
-		  );
-
-	    for my $hosts ( @$criticalhosts ) {
-                my ( $interface, $host , $seq ) = ( split /|/, $hosts );
-                my $source = match_source_net $host;
-		my $dest   = match_dest_net $host;
-
-		emit(  "do_iptables -A INPUT  -i $interface $source -j ACCEPT",
-		       "do_iptables -A OUTPUT -o $interface $dest   -j ACCEPT"
-		       );
-	    }
-
-	    emit( "\nsetpolicy INPUT DROP",
-		  '',
-		  'for chain in INPUT FORWARD; do',
-		  '    setcontinue $chain',
-		  "done\n"
-		  );
-	}
-    } elsif ( $config{ADMINISABSENTMINDED} ) {
-	emit( 'for chain in INPUT FORWARD; do',
-	      '    setpolicy $chain DROP',
-	      'done',
-	      '',
-	      'setpolicy OUTPUT ACCEPT',
-	      '',
-	      'deleteallchains',
-	      '',
-	      'for chain in INPUT FORWARD; do',
-	      '    setcontinue $chain',
-	      "done\n",
-	      );
-    } else {
-	emit( 'for chain in INPUT OUTPUT FORWARD; do',
-	      '    setpolicy $chain DROP',
-	      'done',
-	      '',
-	      "deleteallchains\n"
-	      );
-    }
+    my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;
+    
+    add_rule $filter_table->{$_}, '-m state --state ESTABLISHED,RELATED -j ACCEPT' for @chains;
 
     if ( $family == F_IPV6 ) {
-	emit <<'EOF';
-    #
-    # Enable link local and multi-cast
-    #
-    run_iptables -A INPUT -s ff80::/10 -j ACCEPT
-    run_iptables -A INPUT -d ff80::/10 -j ACCEPT
-    run_iptables -A INPUT -d ff00::/10 -j ACCEPT
-EOF
+	add_rule $filter_table->{INPUT}, '-s ff80::/10 -j ACCEPT';
+	add_rule $filter_table->{INPUT}, '-d ff80::/10 -j ACCEPT';
+	add_rule $filter_table->{INPUT}, '-d ff00::/10 -j ACCEPT';
 
-	emit <<'EOF' unless $config{ADMINISABSENTMINDED};
-    run_iptables -A OUTPUT -d ff80::/10 -j ACCEPT
-    run_iptables -A OUTPUT -d ff00::/10 -j ACCEPT
-
-EOF
+	unless ( $config{ADMINISABSENTMINDED} ) {
+	    add_rule $filter_table->{OUTPUT}, '-d ff80::/10 -j ACCEPT';
+	    add_rule $filter_table->{OUTPUT}, '-d ff00::/10 -j ACCEPT';
+	}
     }
 
     process_routestopped;
 
-    emit( 'do_iptables -A INPUT  -i lo -j ACCEPT',
-	  'do_iptables -A OUTPUT -o lo -j ACCEPT'
-	  );
+    add_rule $filter_table->{INPUT}, '-i lo -j ACCEPT';
+    add_rule $filter_table->{INPUT}, '-i lo -j ACCEPT';
 
-    emit 'do_iptables -A OUTPUT -o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
+    add_rule $filter_table->{OUTPUT}, '-o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 
@@ -2383,16 +2218,18 @@ EOF
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
 
 	for my $interface ( @$interfaces ) {
-	    emit "do_iptables -A INPUT  -p udp -i $interface --dport $ports -j ACCEPT";
-	    emit "do_iptables -A OUTPUT -p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	    add_rule $filter_table->{INPUT},  "-p udp -i $interface --dport $ports -j ACCEPT";
+	    add_rule $filter_table->{OUTPUT}, "-p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 	    #
 	    # This might be a bridge
 	    #
-	    emit "do_iptables -A FORWARD -p udp -i $interface -o $interface --dport $ports -j ACCEPT";
+	    add_rule $filter_table->{FORWARD}, "-p udp -i $interface -o $interface --dport $ports -j ACCEPT";
 	}
     }
 
     emit '';
+
+    create_stop_load $test;
 
     if ( $family == F_IPV4 ) {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
@@ -2426,7 +2263,7 @@ EOF
     my @ipsets = all_ipsets; 
 
     if ( @ipsets ) {
-	emit <<'EOF'
+	emit <<'EOF';
 
     if [ -n "$(mywhich ipset)" ]; then
         if ipset -S > ${VARDIR}/ipsets.tmp; then
@@ -2435,8 +2272,10 @@ EOF
             #
             grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
 	fi
-    fi
 EOF
+
+	emit "    ipset -X $_" for @ipsets;
+	emit "fi\n";
     }
     
     emit ' 

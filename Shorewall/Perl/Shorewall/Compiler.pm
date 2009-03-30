@@ -798,7 +798,12 @@ sub compiler {
 	#                               S T O P _ F I R E W A L L
 	#             (Writes the stop_firewall() function to the compiled script)
 	#
-	compile_stop_firewall( $test );
+	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
+	# for stopping the firewall
+	#
+	Shorewall::Chains::initialize( $family );
+	initialize_chain_table;
+	compile_stop_firewall( $test ); 
 	#
 	# Copy the footer to the object
 	#

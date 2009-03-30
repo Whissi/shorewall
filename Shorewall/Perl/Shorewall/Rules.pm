@@ -39,7 +39,6 @@ our @EXPORT = qw( process_tos
 		  setup_ecn
 		  add_common_rules
 		  setup_mac_lists
-		  process_routestopped
 		  process_rules
 		  generate_matrix
 		  setup_mss
@@ -2079,10 +2078,6 @@ sub compile_stop_firewall( $ ) {
 stop_firewall() {
 EOF
 
-    Shorewall::Chains::initialize( $family );
-
-    initialize_chain_table;
-
     if ( $config{ADMINISABSENTMINDED} ) {
 	$filter_table->{OUTPUT}{policy} = 'ACCEPT';
     }
@@ -2272,10 +2267,8 @@ EOF
             #
             grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
 	fi
+    fi
 EOF
-
-	emit "    ipset -X $_" for @ipsets;
-	emit "fi\n";
     }
     
     emit ' 

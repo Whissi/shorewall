@@ -2746,6 +2746,17 @@ sub emitr( $$ ) {
 }
 
 #
+# Simple version that only handles rules
+#
+sub emitr1( $$ ) {
+    my ( $name, $rule ) = @_;
+
+    assert( substr( $rule, 0, 2 ) eq '-A' );
+
+    emit_unindented join( ' ', '-A', $name, substr( $rule, 3 ) );
+}
+
+#
 # Generate the netfilter input
 #
 sub create_netfilter_load( $ ) {
@@ -2999,9 +3010,7 @@ sub create_stop_load( $ ) {
 	   '',
 	   'progress_message2 "Running $command..."',
 	   '',
-	   '$command <<EOF' );
-
-    $mode = CAT_MODE;
+	   '$command <<__EOF__' );
 
     unless ( $test ) {
 	my $date = localtime;
@@ -3040,16 +3049,15 @@ sub create_stop_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr $chainref->{name}, $_ for @{$chainref->{rules}};
+	    emitr1 $chainref->{name}, $_ for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
 	#
-	assert( $mode == CAT_MODE );
 	emit_unindented 'COMMIT';
     }
 
-    emit_unindented 'EOF';
+    emit_unindented '__EOF__';
     #
     # Test result
     #

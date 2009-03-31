@@ -1346,7 +1346,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $origdest = $interfaces ? "detect:$interfaces" : ALLIP;
 	}
 
-	expand_rule( ensure_chain ('nat' , $sourceref->{type} == 'FIREWALL' ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	expand_rule( ensure_chain ('nat' , $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone) ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
 		     $source ,

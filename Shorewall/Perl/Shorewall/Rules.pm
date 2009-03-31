@@ -2071,6 +2071,10 @@ sub setup_mss( ) {
 sub compile_stop_firewall( $ ) {
     my $test = shift;
 
+    my $input   = $filter_table->{INPUT};
+    my $output  = $filter_table->{OUTPUT};
+    my $forward = $filter_table->{FORWARD};
+
     emit <<'EOF';
 #
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
@@ -2078,9 +2082,7 @@ sub compile_stop_firewall( $ ) {
 stop_firewall() {
 EOF
 
-    if ( $config{ADMINISABSENTMINDED} ) {
-	$filter_table->{OUTPUT}{policy} = 'ACCEPT';
-    }
+    $output->{policy} = 'ACCEPT' if $config{ADMINISABSENTMINDED};
 
     if ( $family == F_IPV4 ) {
 	emit( '    deletechain() {',
@@ -2190,22 +2192,22 @@ EOF
     add_rule $filter_table->{$_}, '-m state --state ESTABLISHED,RELATED -j ACCEPT' for @chains;
 
     if ( $family == F_IPV6 ) {
-	add_rule $filter_table->{INPUT}, '-s ff80::/10 -j ACCEPT';
-	add_rule $filter_table->{INPUT}, '-d ff80::/10 -j ACCEPT';
-	add_rule $filter_table->{INPUT}, '-d ff00::/10 -j ACCEPT';
+	add_rule $input, '-s ff80::/10 -j ACCEPT';
+	add_rule $input, '-d ff80::/10 -j ACCEPT';
+	add_rule $input, '-d ff00::/10 -j ACCEPT';
 
 	unless ( $config{ADMINISABSENTMINDED} ) {
-	    add_rule $filter_table->{OUTPUT}, '-d ff80::/10 -j ACCEPT';
-	    add_rule $filter_table->{OUTPUT}, '-d ff00::/10 -j ACCEPT';
+	    add_rule $output, '-d ff80::/10 -j ACCEPT';
+	    add_rule $output, '-d ff00::/10 -j ACCEPT';
 	}
     }
 
     process_routestopped;
 
-    add_rule $filter_table->{INPUT}, '-i lo -j ACCEPT';
-    add_rule $filter_table->{INPUT}, '-i lo -j ACCEPT';
+    add_rule $input, '-i lo -j ACCEPT';
+    add_rule $input, '-i lo -j ACCEPT';
 
-    add_rule $filter_table->{OUTPUT}, '-o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
+    add_rule $output, '-o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 
@@ -2213,12 +2215,12 @@ EOF
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
 
 	for my $interface ( @$interfaces ) {
-	    add_rule $filter_table->{INPUT},  "-p udp -i $interface --dport $ports -j ACCEPT";
-	    add_rule $filter_table->{OUTPUT}, "-p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	    add_rule $input,  "-p udp -i $interface --dport $ports -j ACCEPT";
+	    add_rule $output, "-p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 	    #
 	    # This might be a bridge
 	    #
-	    add_rule $filter_table->{FORWARD}, "-p udp -i $interface -o $interface --dport $ports -j ACCEPT";
+	    add_rule $forward, "-p udp -i $interface -o $interface --dport $ports -j ACCEPT";
 	}
     }
 

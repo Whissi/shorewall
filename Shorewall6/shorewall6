@@ -390,6 +390,7 @@ compiler() {
 start_command() {
     local finished
     finished=0
+    local restorefile
 
     do_it() {
 	local rc
@@ -489,6 +490,7 @@ start_command() {
 
     if [ -n "${FAST}${AUTOMAKE}" ]; then
 	if qt mywhich make; then
+	    restorefile=$RESTOREFILE
 	    #
 	    # RESTOREFILE is exported by get_config()
 	    #
@@ -503,6 +505,8 @@ start_command() {
 		FAST= 
 		AUTOMAKE=
 	    fi
+
+	    RESTOREFILE=$restorefile
 	else
 	    FAST=
 	    AUTOMAKE=
@@ -693,6 +697,7 @@ restart_command() {
     finished=0
     local rc
     rc=0
+    local restorefile
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -764,27 +769,39 @@ restart_command() {
     export NOROUTES
     export PURGE
 
-   if [ -z "$FAST" ]; then  
-       progress_message3 "Compiling..."
+    if [ -z "$FAST" -a -n "$AUTOMAKE" ]; then
+	if qt mywhich make; then
+	    #
+	    # RESTOREFILE is exported by get_config()
+	    #
+	    restorefile=$RESTOREFILE
+	    RESTOREFILE=firewall
+	    make -qf ${CONFDIR}/Makefile && FAST=Yes
+	    RESTOREFILE=$restorefile
+	fi
+    fi
 
-       if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
-	   [ -n "$nolock" ] || mutex_on
-	   $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
-	   rc=$?
-	   [ -n "$nolock" ] || mutex_off
-       else
-	   rc=$?
-	   logger -p kern.err "ERROR:Shorewall6 restart failed"
-       fi
-   else
-       [ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
-       [ -n "$nolock" ] || mutex_on
-       $SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
-       rc=$?
-       [ -n "$nolock" ] || mutex_off
-   fi
+    if [ -z "$FAST" ]; then  
+	progress_message3 "Compiling..."
 
-   return $rc
+	if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
+	    [ -n "$nolock" ] || mutex_on
+	    $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+	    rc=$?
+	    [ -n "$nolock" ] || mutex_off
+	else
+	    rc=$?
+	    logger -p kern.err "ERROR:Shorewall6 restart failed"
+	fi
+    else
+	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
+	[ -n "$nolock" ] || mutex_on
+	$SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
+	rc=$?
+	[ -n "$nolock" ] || mutex_off
+    fi
+
+    return $rc
 }
 
 #

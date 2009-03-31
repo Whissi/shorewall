@@ -88,6 +88,17 @@ None.
     consequence, the 'critical' option in /etc/shorewall/route_stopped
     is no longer needed and will result in a warning.
 
+5)  A new AUTOMAKE option has been added to shorewall.conf and
+    shorewall6.conf. When set to 'Yes', this option causes new behavior
+    during processing of the 'start' command; if no files in
+    /etc/shorewall/ (/etc/shorewall6) have changed since the last
+    'start' or 'restart', then the compilation step is skipped and the
+    script used during the last 'start' or 'restart' is used to start
+    the firewall.
+
+    Note that the 'make' utility must be installed on the firewall
+    system in order for AUTOMAKE=Yes to work correctly.
+
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

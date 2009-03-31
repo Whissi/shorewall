@@ -248,10 +248,25 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.1.5. If set, if there is not a
-          current comment when a macro is invoked, the behavior is as if the
-          first line of the macro file was "COMMENT &lt;macro name&gt;". The
-          AUTO_COMMENT option has a default value of 'Yes'.</para>
+          <para>If set, if there is not a current comment when a macro is
+          invoked, the behavior is as if the first line of the macro file was
+          "COMMENT &lt;macro name&gt;". The AUTO_COMMENT option has a default
+          value of 'Yes'.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">AUTOMAKE=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>If set, the behavior of the 'start' command is change; if no
+          files in /etc/shorewall have been changed since the last successful
+          <command>start</command> or <command>restart</command> command, then
+          the compilation step is skipped and the compiled script that
+          executed the last <command>start</command> or
+          <command>restart</command> command is used. The default is
+          AUTOMAKE=No.</para>
         </listitem>
       </varlistentry>
 

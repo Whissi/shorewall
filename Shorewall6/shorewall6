@@ -296,6 +296,20 @@ get_config() {
 	    fi
 	    ;;
     esac
+
+    case $AUTOMAKE in
+	Yes|yes)
+	    ;;
+	No|no)
+	    AUTOMAKE=
+	    ;;
+	*)
+	    if [ -n "$AUTOMAKE" ]; then
+		echo "   ERROR: Invalid AUTOMAKE setting ($AUTOMAKE)" >&2
+		exit 1
+	    fi
+	    ;;
+    esac
 }
 
 #
@@ -381,16 +395,23 @@ start_command() {
 	local rc
 	rc=0
 
-	progress_message3 "Compiling..."
-
-	if compiler run $debugging $nolock compile ${VARDIR}/.start; then
+	if [ -n "$AUTOMAKE" ]; then
 	    [ -n "$nolock" ] || mutex_on
-	    ${VARDIR}/.start $debugging start
+	    ${VARDIR}/firewall $debugging start
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    rc=$?
-	    logger -p kern.err "ERROR:Shorewall6 start failed"
+	    progress_message3 "Compiling..."
+
+	    if compiler run $debugging $nolock compile ${VARDIR}/.start; then
+		[ -n "$nolock" ] || mutex_on
+		${VARDIR}/.start $debugging start
+		rc=$?
+		[ -n "$nolock" ] || mutex_off
+	    else
+		rc=$?
+		logger -p kern.err "ERROR:Shorewall6 start failed"
+	    fi
 	fi
 
 	exit $rc
@@ -466,16 +487,28 @@ start_command() {
     export NOROUTES
     export PURGE
 
-    if [ -n "$FAST" ]; then
+    if [ -n "${FAST}${AUTOMAKE}" ]; then
 	if qt mywhich make; then
 	    #
 	    # RESTOREFILE is exported by get_config()
 	    #
-	    make -qf ${CONFDIR}/Makefile || FAST=
+	    if [ -z "$FAST" ]; then
+		#
+		# Autofast -- use the last compiled script
+		#
+		RESTOREFILE=firewall
+	    fi
+
+	    if ! make -qf ${CONFDIR}/Makefile; then
+		FAST= 
+		AUTOMAKE=
+	    fi
+	else
+	    FAST=
+	    AUTOMAKE=
 	fi
 
 	if [ -n "$FAST" ]; then
-
 	    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then

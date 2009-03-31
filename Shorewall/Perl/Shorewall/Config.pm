@@ -426,6 +426,7 @@ sub initialize( $ ) {
 	      USE_DEFAULT_RT => undef ,
 	      RESTORE_DEFAULT_ROUTE => undef ,
 	      FAST_STOP => undef ,
+	      AUTOMAKE => undef ,
 	      #
 	      # Packet Disposition
 	      #
@@ -526,6 +527,7 @@ sub initialize( $ ) {
 	      DONT_LOAD => '',
 	      AUTO_COMMENT => undef,
 	      MANGLE_ENABLED => undef ,
+	      AUTOMAKE => undef ,
 	      #
 	      # Packet Disposition
 	      #
@@ -2259,6 +2261,7 @@ sub get_configuration( $ ) {
     default_yes_no 'NULL_ROUTE_RFC1918'         , '';
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
+    default_yes_no 'AUTOMAKE'                   , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 

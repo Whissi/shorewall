@@ -639,8 +639,6 @@ sub compiler {
     #
     setup_notrack;
 
-    enable_object;
-
     unless ( $command eq 'check' ) {
 	#
 	# Place Header in the object
@@ -713,7 +711,6 @@ sub compiler {
 	emit "}\n";
     }
 
-    disable_object;
     #
     #                                       N E T F I L T E R
     #       (Produces no output to the compiled script -- rules are stored in the chain table)
@@ -784,7 +781,6 @@ sub compiler {
 	    progress_message3 "Shorewall6 configuration verified";
 	}
     } else {
-	enable_object;
 	#
 	#                                    I N I T I A L I Z E
 	#                  (Writes the initialize() function to the compiled script)

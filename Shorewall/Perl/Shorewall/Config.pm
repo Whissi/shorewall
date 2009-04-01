@@ -55,8 +55,6 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shorewall);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
-				       disable_object
-				       enable_object
 				       finalize_object
 		                       numeric_value
 		                       numeric_value1
@@ -146,8 +144,6 @@ our $timestamp;
 # Object file handle
 #
 our $object;
-
-our $object_enabled;
 #
 # True, if last line emitted is blank
 #
@@ -300,7 +296,6 @@ sub initialize( $ ) {
     $log_verbose = -1;         # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message
     $object = 0;               # Object (script) file Handle Reference
-    $object_enabled = 0;       # Write to object file is disabled.
     $lastlineblank = 0;        # Avoid extra blank lines in the output
     $indent1       = '';       # Current indentation tabs
     $indent2       = '';       # Current indentation spaces
@@ -762,8 +757,6 @@ sub in_hex8( $ ) {
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit {
-    assert ( $object_enabled );
-
     if ( $object ) {
 	#
 	# 'compile' as opposed to 'check'
@@ -788,7 +781,6 @@ sub emit {
 # Write passed message to the object with newline but no indentation.
 #
 sub emit_unindented( $ ) {
-    assert( $object_enabled );
     print $object "$_[0]\n" if $object;
 }
 
@@ -980,8 +972,6 @@ sub pop_indent() {
 # Functions for copying files into the object
 #
 sub copy( $ ) {
-    assert( $object_enabled );
-
     if ( $object ) {
 	my $file = $_[0];
 
@@ -1012,8 +1002,6 @@ sub copy( $ ) {
 # This one handles line continuation and 'here documents'
 
 sub copy1( $ ) {
-    assert( $object_enabled );
-
     if ( $object ) {
 	my $file = $_[0];
 
@@ -1089,20 +1077,6 @@ sub create_temp_object( $$ ) {
     $dir .= '/' unless substr( $dir, -1, 1 ) eq '/';
     $file = $dir . $file;
 
-}
-
-#
-# Enable writing to object
-#
-sub enable_object() {
-    $object_enabled = 1;
-}
-
-#
-# Disable writing to object
-#
-sub disable_object() {
-    $object_enabled = 0;
 }
 
 #

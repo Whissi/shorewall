@@ -219,7 +219,9 @@ sub setup_one_masq($$$$$$$)
 	    } else {
 		$addresses =~ s/:random$// and $randomize = '--random ';
 
-		if ( $addresses eq 'detect' ) {
+		if ( $addresses =~ /^SAME/ ) {
+		    fatal_error "The SAME target is no longer supported";
+		} elsif ( $addresses eq 'detect' ) {
 		    my $variable = get_interface_address $interface;
 		    $target = "-j SNAT --to-source $variable";
 
@@ -238,6 +240,8 @@ sub setup_one_masq($$$$$$$)
 		    for my $addr ( split_list $addresses , 'address' ) {
 			if ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = '-j SNAT ';
+			    my ($ipaddr, $rest) = split ':', $addr;
+			    validate_address $ipaddr, 0;
 			    $addrlist .= "--to-source $addr ";
 			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {

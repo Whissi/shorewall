@@ -501,7 +501,7 @@ sub add_addresses () {
 	    $arg = "$arg $addr $interface";
 	}
 
-	emit "add_ip_aliases $arg";
+	emit "\nadd_ip_aliases $arg";
     }
 }
 

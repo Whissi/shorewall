@@ -1342,8 +1342,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	if ( $origdest eq 'detect' ) {
 	    my $interfacesref = $sourceref->{interfaces};
-	    my $interfaces = "@$interfacesref";
-	    $origdest = $interfaces ? "detect:$interfaces" : ALLIP;
+	    my $interfaces = [ ( keys %$interfacesref ) ];
+	    $origdest = $interfaces ? "detect:@$interfaces" : ALLIP;
 	}
 
 	expand_rule( ensure_chain ('nat' , $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone) ,

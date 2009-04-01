@@ -286,7 +286,12 @@
             <para><emphasis role="bold">Hint:</emphasis> <emphasis
             role="bold">"detect"</emphasis> is appropriate for use in cases
             where the interface named in the INTERFACE column is dynamically
-            configured via DHCP etc.</para>
+            configured via DHCP etc. Be sure, however, that you don't have
+            stale dhcp client state files in <filename
+            class="directory">/var/lib/dhcpcd </filename>or
+            <filename>/var/lib/dhclient-*.lease</filename> because Shorewall
+            may try to use those stale files to determine the gateway
+            address.</para>
 
             <para>The GATEWAY may be omitted (enter '-') for point-to-point
             links.</para>
@@ -320,27 +325,8 @@
                   iptables include CONNMARK target and connmark match support
                   (<emphasis role="bold">Warning</emphasis>: Standard
                   <trademark>Debian</trademark> and
-                  <trademark>Ubuntu</trademark> kernels are lacking that
+                  <trademark>Ubuntu</trademark> kernels may lack that
                   support!).</para>
-
-                  <warning>
-                    <para>A <emphasis role="bold">bug</emphasis> in Shorewall
-                    versions 3.2.0-3.2.10, 3.4.0-3.4.6 and 4.0.0-4.0.2
-                    prevents proper handling of PREROUTING marks when
-                    HIGH_ROUTE_MARKS=No and the <emphasis
-                    role="bold">track</emphasis> option is specified. Patches
-                    are available to correct this problem:</para>
-
-                    <para>Shorewall version 3.2.0-3.4.3: <ulink
-                    url="http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/patches/Shorewall/patch-3.2.10-2.diff">http://www1.shorewall.net/pub/shorewall/3.2/shorewall-3.2.10/errata/patches/Shorewall/patch-3.2.10-2.diff
-                    </ulink></para>
-
-                    <para>Shorewall version 3.4.4-3.4.6: <ulink
-                    url="http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches/Shorewall/patch-3.4.6-1.diff">http://www1.shorewall.net/pub/shorewall/3.4/shorewall-3.4.6/errata/patches/Shorewall/patch-3.4.6-1.diff</ulink></para>
-
-                    <para>Shorewall-shell version 4.0.0-4.0.2: <ulink
-                    url="http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff">http://www1.shorewall.net/pub/shorewall/4.0/shorewall-4.0.2/errata/patches/Shorewall-shell/patch-shell-4.0.2-2.diff</ulink></para>
-                  </warning>
 
                   <important>
                     <para>If you are using
@@ -379,8 +365,9 @@
                     have multiple Internet connections, we recommend that you
                     specify <emphasis role="bold">balance</emphasis> even if
                     you don't need it. You can still use entries in
-                    <filename>/etc/shorewall/tcrules</filename> to force all
-                    traffic to one provider or another.<note>
+                    <filename>/etc/shorewall/tcrules</filename> and
+                    <filename>/etc/shorewall/route_rules</filename> to force
+                    all traffic to one provider or another.<note>
                         <para>If you don't heed this advice then please read
                         and follow the advice in <ulink
                         url="FAQ.htm#faq57">FAQ 57</ulink> and <ulink
@@ -418,9 +405,8 @@
                   <para>Do not include routing rules that force traffic whose
                   source IP is an address of the INTERFACE to be routed to
                   this provider. Useful for defining providers that are to be
-                  used only when the appropriate packet mark is applied.
-                  Should not be specified together with <emphasis
-                  role="bold">balance</emphasis>.</para>
+                  used only when the appropriate packet mark is
+                  applied.</para>
                 </listitem>
               </varlistentry>
 
@@ -429,7 +415,7 @@
 
                 <listitem>
                   <para>Shorewall will determine if this interface is up and
-                  has a configured IPv4 address. If it is not, a warning is
+                  has a configured IP address. If it is not, a warning is
                   issued and this provider is not configured.</para>
 
                   <note>
@@ -444,7 +430,9 @@
                     <para>You can supply an 'isusable' <ulink
                     url="shorewall_extension_scripts.htm">extension
                     script</ulink> to extend Shorewall's interface state
-                    detection.</para>
+                    detection. See also the <link
+                    linkend="LinkMonitor">Gateway Monitoring and
+                    Failover</link> section below.</para>
                   </note>
                 </listitem>
               </varlistentry>
@@ -479,11 +467,12 @@
 
                 <listitem>
                   <para>Indicates that a default route through the provider
-                  should be added to the default routing table (table 253). If
-                  a <replaceable>weight</replaceable> is given, a balanced
-                  route is added with the weight of this provider equal to the
+                  should be added to the <firstterm>default</firstterm>
+                  routing table (table 253). If a
+                  <replaceable>weight</replaceable> is given, a balanced route
+                  is added with the weight of this provider equal to the
                   specified <replaceable>weight</replaceable>. If the option
-                  is given without a <replaceable>weight</replaceable>, an
+                  is given without a <replaceable>weight</replaceable>, a
                   separate default route is added through the provider's
                   gateway; the route has a metric equal to the provider's
                   NUMBER. The option is ignored with a warning message if
@@ -500,7 +489,8 @@
             <itemizedlist>
               <listitem>
                 <para><emphasis role="bold">track</emphasis> governs incoming
-                connections.</para>
+                connections (but is also useful for binding long-running
+                connections to the same interface).</para>
               </listitem>
 
               <listitem>
@@ -534,8 +524,9 @@
       <title>What an entry in the Providers File Does</title>
 
       <para>Adding another entry in the providers file simply creates an
-      alternate routing table for you. The table will usually contain two
-      routes:</para>
+      alternate routing table for you (see the<ulink
+      url="http://www.lartc.org"> LARTC Howto</ulink>). The table will usually
+      contain two routes:</para>
 
       <orderedlist>
         <listitem>
@@ -558,12 +549,13 @@
       be restricted using the COPY column which lists the interfaces whose
       routes you want copied. You will generally want to include all local
       interfaces in this list. You should exclude the loopback interface (lo)
-      and any interfaces that do not have an IPv4 configuration. You should
-      also omit interfaces like <emphasis role="bold">tun</emphasis>
-      interfaces that are created dynamically. Traffic to networks handled by
-      those interfaces should be routed through the main table using entries
-      in <filename>/etc/shorewall/route_rules</filename> (see Example 2 <link
-      linkend="Examples">below</link>).</para>
+      and any interfaces that do not have an IP configuration. You should also
+      omit interfaces like <emphasis role="bold">tun</emphasis> interfaces
+      that are created dynamically. Traffic to networks handled by those
+      interfaces should be routed through the main table using entries in
+      <filename>/etc/shorewall/route_rules</filename> (see Example 2 <link
+      linkend="Examples">below</link>) or by using <link
+      linkend="USE_DEFAULT_RT">USE_DEFAULT_RT=Yes</link>.</para>
 
       <para>In addition:</para>
 
@@ -622,6 +614,42 @@
       <filename>/etc/shorewall/tcrules</filename> and you must do that marking
       in the PREROUTING chain; or, you must provide the appropriate rules in
       <filename>/etc/shorewall/route_rules</filename>.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/masq and Multi-ISP</title>
+
+      <para>If you masquerade a local network, you will need to add masquerade
+      rules for both external interfaces. Referring to the diagram above, if
+      each of the interfaces has only a single IP address and you have no
+      systems with public IP addresses behind your firewall, then I suggest
+      the following simple entries:</para>
+
+      <programlisting>#INTERFACE       SOURCE            ADDRESS
+eth0             0.0.0.0/0         206.124.146.176
+eth1             0.0.0.0/0         130.252.99.27</programlisting>
+
+      <para>If you have a public subnet (for example 206.124.146.176/30)
+      behind your firewall, then use exclusion:</para>
+
+      <programlisting>#INTERFACE       SOURCE               ADDRESS
+eth0             !206.124.146.176/29  206.124.146.176
+eth1             0.0.0.0/0            130.252.99.27</programlisting>
+
+      <para>Note that exclusion is only used on the interface corresponding to
+      internal subnetwork.</para>
+
+      <para>If you have multiple IP addresses on one of your interfaces, you
+      can use a similar technique -- simple exclude the smallest network that
+      contains all of those addresses from being masqueraded.</para>
+
+      <warning>
+        <para>Entries in <filename>/etc/shorewall/masq</filename> have no
+        effect on which ISP a particular connection will be sent through. That
+        is rather the purpose of entries in
+        <filename>/etc/shorewall/tcrules</filename> and
+        <filename>/etc/shorewall/route_rules</filename>.</para>
+      </warning>
     </section>
 
     <section id="Martians">
@@ -714,66 +742,36 @@ net      eth1         detect          …</programlisting>
       <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
 net        net            DROP</programlisting>
 
-      <para>Regardless of whether you have masqueraded hosts or not, the
-      following entries are required in
-      <filename>/etc/shorewall/masq</filename> if you plan to redirect
-      connections from the firewall using entries in
-      <filename>/etc/shorewall/tcrules</filename> or if you specify <emphasis
-      role="bold">balance</emphasis> on your providers.</para>
+      <para><filename>/etc/shorewall/masq</filename>:</para>
 
-      <programlisting>#INTERFACE       SUBNET            ADDRESS
-eth0             130.252.99.27     206.124.146.176
-eth1             206.124.146.176   130.252.99.27</programlisting>
+      <programlisting>#INTERFACE       SOURCE            ADDRESS
+eth0             0.0.0.0/0         206.124.146.176
+eth1             0.0.0.0/0         130.252.99.27</programlisting>
+    </section>
 
-      <para>Those entries ensure that traffic originating on the firewall and
-      redirected via packet marks always has the source IP address
-      corresponding to the interface that it is routed out of.</para>
+    <section id="Applications">
+      <title>Routing a Particular Application Through a Specific
+      Interface</title>
 
-      <note>
-        <para>If you have a Dynamic IP address on either of the interfaces,
-        you can use shell variables to construct the above rules. For example,
-        if <filename class="devicefile">eth0</filename> had a dynamic IP
-        address, then:</para>
-
-        <para><filename>/etc/shorewall/params</filename>:</para>
-
-        <programlisting>ETH0_IP=$(find_first_interface_address eth0)</programlisting>
-
-        <para>For optional interfaces, use
-        <emphasis>find_first_interface_address_if_any</emphasis> in place of
-        <emphasis>find_first_interface_address</emphasis>.</para>
-
-        <para>/etc/shorewall/masq:</para>
-
-        <programlisting>#INTERFACE       SUBNET            ADDRESS
-eth0             130.252.99.27     $ETH0_IP
-eth1             $ETH0_IP          130.252.99.27</programlisting>
-      </note>
-
-      <para>If you have masqueraded hosts, be sure to update
-      <filename>/etc/shorewall/masq</filename> to masquerade to both ISPs. For
-      example, if you masquerade all hosts connected to <filename
-      class="devicefile">eth2</filename> then:</para>
-
-      <programlisting>#INTERFACE       SUBNET            ADDRESS
-eth0             eth2              206.124.146.176
-eth1             eth2              130.252.99.27</programlisting>
-
-      <warning>
-        <para>Entries in <filename>/etc/shorewall/masq</filename> have no
-        effect on which ISP a particular connection will be sent through. That
-        is rather the purpose of entries in
-        <filename>/etc/shorewall/tcrules</filename> or
-        <filename>/etc/shorewall/route_rules</filename>.</para>
-      </warning>
+      <para>This continues the example in the preceding section.</para>
 
       <para>Now suppose that you want to route all outgoing SMTP traffic from
       your local network through ISP 2. You would make this entry in <ulink
-      url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink></para>
+      url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink> (and if you are
+      running a version of Shorewall earlier than 3.0.0, you would set
+      TC_ENABLED=Yes in <ulink
+      url="???">/etc/shorewall/shorewall.conf</ulink>).</para>
 
       <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
+
+      <para>Note that traffic from the firewall itself must be handled in a
+      different rule:</para>
+
+      <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                               PORT(S)
+2               $FW             0.0.0.0/0       tcp     25</programlisting>
     </section>
 
     <section id="morethan2">
@@ -793,9 +791,7 @@ eth1             eth2              130.252.99.27</programlisting>
 
         <listitem>
           <para>For each external interface, you need to add an entry to
-          <filename>/etc/shorewall/masq</filename> for each internal network
-          that needs to be masqueraded (or use SNAT) through that
-          interface.</para>
+          <filename>/etc/shorewall/masq</filename>.</para>
         </listitem>
       </orderedlist>
 
@@ -808,19 +804,17 @@ ISP2    2       2       main            eth1            130.252.99.254  track,ba
 ISP3    3       3       main            eth3            16.105.78.254   track,balance    eth2</programlisting></para>
 
       <para><filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE       SUBNET            ADDRESS
-eth0             130.252.99.27     206.124.146.176
-eth3             130.252.99.27     16.105.78.4
-eth1             206.124.146.176   130.252.99.27
-eth3             206.124.146.176   16.105.78.4
-eth0             16.106.78.4       206.124.146.176
-eth1             16.106.78.4       130.252.99.27
-eth0             eth2              206.124.146.176
-eth1             eth2              130.252.99.27
-eth3             eth2              16.105.78.4</programlisting></para>
+eth0             0.0.0.0/0         206.124.146.176
+eth1             0.0.0.0/0         130.252.99.27
+eth3             0.0.0.0/0         16.105.78.4</programlisting></para>
     </section>
 
     <section id="Local">
       <title>Applications running on the Firewall</title>
+
+      <para>As <link linkend="Applications">noted above</link>, separate
+      entries in <filename>/etc/shorewall/tcrules</filename> are required for
+      traffic originating from the firewall.</para>
 
       <para>Experience has shown that in some cases, problems occur with
       applications running on the firewall itself. This is especially true

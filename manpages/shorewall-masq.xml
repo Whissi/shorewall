@@ -147,9 +147,7 @@
       <varlistentry>
         <term><emphasis role="bold">ADDRESS</emphasis> (Optional) - [<emphasis
         role="bold">-</emphasis>|<emphasis
-        role="bold">NONAT</emphasis>|[<emphasis
-        role="bold">SAME:</emphasis>[<emphasis
-        role="bold">nodst:</emphasis>]][<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
+        role="bold">NONAT</emphasis>|[<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
         role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
         role="bold">:random</emphasis>]|<emphasis
         role="bold">detect</emphasis>|<emphasis
@@ -196,20 +194,6 @@
 
           <programlisting>        192.0.2.4:5000-6000
         :4000-5000</programlisting>
-
-          <para>You can invoke the SAME target rather than the SNAT target by
-          prefixing the column contents with <option>SAME:</option>.</para>
-
-          <para>SAME works like SNAT with the exception that the same local IP
-          address is assigned to each connection from a local address to a
-          given remote address.</para>
-
-          <para>If the <option>nodst:</option> option is included, then the
-          same source address is used for a given internal system regardless
-          of which remote system is involved.<warning>
-              <para>Support for the SAME target is scheduled for removal from
-              the Linux kernel in 2008.</para>
-            </warning></para>
 
           <para>If you simply place <emphasis role="bold">NONAT</emphasis> in
           this column, no rewriting of the source IP address or port number

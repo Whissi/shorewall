@@ -219,21 +219,7 @@ sub setup_one_masq($$$$$$$)
 	    } else {
 		$addresses =~ s/:random$// and $randomize = '--random ';
 
-		if ( $addresses =~ /^SAME:nodst:/ ) {
-		    fatal_error "':random' is not supported by the SAME target" if $randomize;
-		    $target = '-j SAME --nodst ';
-		    $addresses =~ s/.*://;
-		    for my $addr ( split_list $addresses, 'address' ) {
-			$target .= "--to $addr ";
-		    }
-		} elsif ( $addresses =~ /^SAME:/ ) {
-		    fatal_error "':random' is not supported by the SAME target" if $randomize;
-		    $target = '-j SAME ';
-		    $addresses =~ s/.*://;
-		    for my $addr ( split_list $addresses, 'address' ) {
-			$target .= "--to $addr ";
-		    }
-		} elsif ( $addresses eq 'detect' ) {
+		if ( $addresses eq 'detect' ) {
 		    my $variable = get_interface_address $interface;
 		    $target = "-j SNAT --to-source $variable";
 

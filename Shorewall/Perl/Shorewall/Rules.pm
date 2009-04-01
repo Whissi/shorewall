@@ -1275,16 +1275,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		$server = join ',', @servers;
 	    }
 
-	    if ( $action eq 'SAME' ) {
-		fatal_error 'Port mapping not allowed in SAME rules' if $serverport;
-		fatal_error 'SAME not allowed with SOURCE=$FW'       if $sourcezone eq firewall_zone;
-		fatal_error "':random' is not supported by the SAME target" if $randomize;
-		warning_message 'Netfilter support for SAME is being dropped in early 2008';
-		$target = '-j SAME ';
-		for my $serv ( split /,/, $server ) {
-		    $target .= "--to $serv ";
-		}
-	    } elsif ( $action eq 'DNAT' ) {
+	    if ( $action eq 'DNAT' ) {
 		$target = '-j DNAT ';
 		$serverport = ":$serverport" if $serverport;
 		for my $serv ( split /,/, $server ) {

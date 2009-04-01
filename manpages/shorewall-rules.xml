@@ -138,8 +138,6 @@
         role="bold">REJECT</emphasis>[<option>!</option>]|<emphasis
         role="bold">DNAT</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
-        role="bold">SAME</emphasis>[<emphasis
-        role="bold">-</emphasis>]|<emphasis
         role="bold">REDIRECT</emphasis>[<emphasis
         role="bold">-</emphasis>]|<emphasis
         role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
@@ -259,32 +257,6 @@
                 generates the <emphasis role="bold">DNAT</emphasis> iptables
                 rule and not the companion <emphasis
                 role="bold">ACCEPT</emphasis> rule.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">SAME</emphasis></term>
-
-              <listitem>
-                <para>Similar to <emphasis role="bold">DNAT</emphasis> except
-                that the port may not be remapped and when multiple server
-                addresses are listed, all requests from a given remote system
-                go to the same server.<warning>
-                    <para>Support for SAME is scheduled for removal from the
-                    Linux kernel in 2008.</para>
-                  </warning></para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">SAME-</emphasis></term>
-
-              <listitem>
-                <para>Advanced users only.</para>
-
-                <para>Like SAME but only generates the nat iptables rule and
-                not the companion <emphasis role="bold">ACCEPT</emphasis>
-                rule.</para>
               </listitem>
             </varlistentry>
 
@@ -449,9 +421,9 @@
                 REJECT:info or DNAT:debug). This causes the packet to be
                 logged at the specified level. Note that if the <emphasis
                 role="bold">ACTION</emphasis> involves destination network
-                address translation (DNAT, REDIRECT, SAME, etc.) then the
-                packet is logged <emphasis role="bold">before</emphasis> the
-                destination address is rewritten.</para>
+                address translation (DNAT, REDIRECT, etc.) then the packet is
+                logged <emphasis role="bold">before</emphasis> the destination
+                address is rewritten.</para>
 
                 <para>If the <emphasis role="bold">ACTION</emphasis> names an
                 <emphasis>action</emphasis> declared in <ulink

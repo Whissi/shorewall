@@ -479,6 +479,7 @@ start_command() {
 
 	    SHOREWALL_DIR=$(resolve_file $1)
 	    export SHOREWALL_DIR
+	    AUTOMAKE=
 	    ;;
 	*)
 	    usage 1
@@ -761,6 +762,7 @@ restart_command() {
 	    SHOREWALL_DIR=$(resolve_file $1)
 	    [ -n "$FAST" ] && fatal_error "Directory may not be specified with the -f option"
 	    export SHOREWALL_DIR
+	    AUTOMAKE=
 	    ;;
 	*)
 	    usage 1

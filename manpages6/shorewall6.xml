@@ -75,7 +75,7 @@
 
       <arg><replaceable>directory</replaceable></arg>
 
-      <arg choice="plain"><replaceable>pathname</replaceable></arg>
+      <arg choice="opt"><replaceable>pathname</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -573,7 +573,9 @@
           <para>Compiles the current configuration into the executable file
           <emphasis>pathname</emphasis>. If a directory is supplied,
           Shorewall6 will look in that directory first for configuration
-          files.</para>
+          files. If the <emphasis>pathname</emphasis> is omitted, the file
+          firewall in the VARDIR (normally <filename
+          class="directory">/var/lib/shorewall/</filename>) is assumed.</para>
 
           <para>When -e is specified, the compilation is being performed on a
           system other than where the compiled script will run. This option

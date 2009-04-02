@@ -21,6 +21,11 @@ released late in 2009.
 4) Dynamic Zone support is once again available for IPv4; ipset support is
    required in your kernel and in iptables.
 
+5)  A new AUTOMAKE option has been added to shorewall.conf and
+    shorewall6.conf. Setting this option will allow Shorewall to skip
+    the compilation phase during start/restart if no configuration
+    changes have occurred since the last start/restart.
+
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
@@ -102,6 +107,26 @@ None.
 
     Note that the 'make' utility must be installed on the firewall
     system in order for AUTOMAKE=Yes to work correctly.
+
+6)  The 'compile' command now allows you to omit the <pathname>. When
+    you do that, the <pathname> defaults to /var/lib/shorewall/firewall
+    (/var/lib/shorewall6/firewall) unless you have overridden VARDIR
+    using /etc/shorewall/vardir (/etc/shorewall6/vardir).
+
+    When combined with AUTOMAKE=Yes, it allows the following:
+
+    	 gateway:~ # shorewall compile
+    	 Compiling...
+    	 Shorewall configuration compiled to /root/shorewall/firewall
+    	 gateway:~ #
+	 ...
+    	 gateway:~ # shorewall restart
+    	 Restarting Shorewall....
+    	 done.
+    	 gateway:~ # 
+
+    In other words, you can compile the current configuration then
+    install it at a later time.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

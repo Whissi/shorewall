@@ -145,7 +145,9 @@ sub setup_martian_logging() {
 
 	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',
 		   "    [ -f \$file/log_martians ] && echo $val > \$file/log_martians",
-		   'done' );
+		   'done',
+		   '' ,
+		   'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians' );
 	}
 
 	for my $interface ( @$interfaces ) {
@@ -158,14 +160,6 @@ sub setup_martian_logging() {
 	    emit ( 'else' ,
 		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface);
 	    emit   "fi\n";
-	}
-
-	if ( $config{LOG_MARTIANS} eq 'on' ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/log_martians';
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/log_martians';
-	} elsif ( $config{LOG_MARTIANS} eq 'off' ) {
-	    emit 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians';
-	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/log_martians';
 	}
     }
 }

@@ -769,20 +769,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         <listitem>
           <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, sets
-          /proc/sys/net/ipv4/conf/all/log_martians and
-          /proc/sys/net/ipv4/conf/default/log_martians to 1. In Shorewall
-          versions prior to 4.1.5, the default is <emphasis
-          role="bold">No</emphasis> which sets both of the above to zero. In
-          Shorewall 4.1.5, the default value was chaned to <emphasis
+          <filename>/proc/sys/net/ipv4/conf/*/log_martians</filename> to 1
+          with the exception of
+          <filename>/proc/sys/net/ipv4/conf/all/log_martians which is set to
+          0</filename>. The default value is <emphasis
           role="bold">Yes</emphasis> which sets both of the above to one. If
           you do not enable martian logging for all interfaces, you may still
           enable it for individual interfaces using the <emphasis
           role="bold">logmartians</emphasis> interface option in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
 
-          <para>The value <emphasis role="bold">Keep</emphasis> is only
-          allowed under Shorewall-perl. It causes Shorewall to ignore the
-          option. If the option is set to <emphasis
+          <para>The value <emphasis role="bold">Keep</emphasis> causes
+          Shorewall to ignore the option. If the option is set to <emphasis
           role="bold">Yes</emphasis>, then martians are logged on all
           interfaces. If the option is set to <emphasis
           role="bold">No</emphasis>, then martian logging is disabled on all

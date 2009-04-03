@@ -146,8 +146,9 @@ sub setup_martian_logging() {
 	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',
 		   "    [ -f \$file/log_martians ] && echo $val > \$file/log_martians",
 		   'done',
-		   '' ,
-		   'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians' );
+		   '' );
+
+	    emit( 'echo 0 > /proc/sys/net/ipv4/conf/all/log_martians','' ) if $val == 1;
 	}
 
 	for my $interface ( @$interfaces ) {
@@ -170,14 +171,12 @@ sub setup_martian_logging() {
 sub setup_source_routing( $ ) {
     my $family = shift;
 
-    save_progress_message 'Setting up Accept Source Routing...';
-
     my $interfaces = find_interfaces_by_option 'sourceroute';
 
     if ( @$interfaces ) {
 	progress_message2 "$doing Accept Source Routing...";
 
-	save_progress_message 'Setting up Source Routing...';
+	save_progress_message 'Setting up Accept Source Routing...';
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv$family/conf/$interface/accept_source_route";

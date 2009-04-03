@@ -47,13 +47,13 @@ our $VERSION = '4.3_7';
 # ARP Filtering
 #
 sub setup_arp_filtering() {
-    save_progress_message "Setting up ARP filtering...";
-
     my $interfaces  = find_interfaces_by_option 'arp_filter';
     my $interfaces1 = find_interfaces_by_option 'arp_ignore';
 
     if ( @$interfaces || @$interfaces1 ) {
 	progress_message2 "$doing ARP Filtering...";
+
+	save_progress_message "Setting up ARP filtering...";
 
 	for my $interface ( @$interfaces ) {
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
@@ -101,7 +101,8 @@ sub setup_route_filtering() {
 
 	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',
 		   "    [ -f \$file/rp_filter ] && echo $val > \$file/rp_filter",
-		   'done' );
+		   'done',
+		   '' );
 	}
 
 	for my $interface ( @$interfaces ) {

@@ -623,22 +623,20 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     do_export $MANPAGETAG manpages
     mv manpages manpages.save
 
-    if [ -n "$MANPAGE6TAG" ]; then
-	do_export $MANPAGE6TAG manpages
-	do_or_die mv manpages/* manpages.save/
-    fi
+    do_export $MANPAGE6TAG manpages
+    do_or_die mv manpages manpages6.save/
 
     do_export $LITEMANPAGETAG manpages
     do_or_die mv manpages/* manpages.save/
 
-    if [ -n "$LITE6MANPAGETAG" ]; then
-	do_export $LITE6MANPAGETAG manpages
-	do_or_die mv manpages/* manpages.save/
-    fi
+    do_export $LITE6MANPAGETAG manpages
+    do_or_die mv manpages/* manpages6.save/
 
     do_or_die rm -rf manpages
+    do_or_die rm -rf manpages6
 
-    do_or_die mv manpages.save manpages
+    do_or_die mv manpages.save  manpages
+    do_or_die mv manpages6.save manpages6
 
     cd $DIR
 
@@ -738,12 +736,15 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC -param toc.section.depth 3 $STYLESHEET $file
 	done
 
-	for f in shorewall-docs-xml-$VERSION/manpages/*.xml; do
-	    if [ $f != shorewall-template.xml ]; then
-		progress_message "Generating HTML from $f..."
-		do_or_die xsltproc --output ${f%.xml}.html --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $f
-
-	    fi
+	for f in shorewall-docs-xml-$VERSION/manpages/*.xml shorewall-docs-xml-$VERSION/manpages6/*.xml; do
+	    case $f in
+		*template.xml)
+		    ;;
+		*)
+		    progress_message "Generating HTML from $f..."
+		    do_or_die xsltproc --output ${f%.xml}.html --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $f
+		    ;;
+	    esac
 	done
 
 	progress_message "Copying manpages to $DIR/$HTMLDIR/images ..."
@@ -751,6 +752,10 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	do_or_die mkdir $HTMLDIR/manpages
 	do_or_die cp -a shorewall-docs-xml-$VERSION/manpages/*.html $HTMLDIR/manpages/
 	do_or_die rm -f shorewall-docs-xml-$VERSION/manpages/*.html
+
+	do_or_die mkdir $HTMLDIR/manpages6
+	do_or_die cp -a shorewall-docs-xml-$VERSION/manpages6/*.html $HTMLDIR/manpages6/
+	do_or_die rm -f shorewall-docs-xml-$VERSION/manpages6/*.html
 
 	progress_message "Copying images to $DIR/$HTMLDIR/images ..."
 

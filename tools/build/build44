@@ -222,6 +222,38 @@ do_signit()
     done
 }
 
+do_manpages()
+{
+    do_export ${1} manpages
+    cd manpages
+
+    pattern="*.conf.*|shorewall${2}.xml"
+
+    for f in *.xml; do
+	case $f in
+	    *template.xml)
+		;;
+	    *)
+		progress_message "Generating Man Page from $f..."
+		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages${3}/ man $f >> $LOGFILE 2>&1"
+		case $f in
+		    $pattern)
+                        ;;
+		    *)
+			g=${f#shorewall${2}-}
+			h=$(ls ${g%.xml}.[58])
+			f=shorewall${2}-$h
+			mv $h $f
+			;;
+		esac
+	    
+		eval perl -p -w -i -e "'s|/manpages${3}/manpages${3}?|/manpages${3}|'" $f
+		;;
+	esac
+    done
+    rm *.xml
+}
+
 ################################################################################
 #                E X E C U T I O N   S T A R T S   H E R E
 ################################################################################
@@ -501,106 +533,26 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$BUILDCOMMON" ]; then
 	cd $SHOREWALLDIR
 	do_export $SAMPLESTAG Samples
-	do_export $MANPAGETAG manpages
-	cd manpages
-	for f in *.xml; do
-	    if [ $f != shorewall-template.xml ]; then
-		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages/ man $f >> $LOGFILE 2>&1"
-		case $f in
-		    *.conf.*|shorewall.xml)
-			;;
-		    *)
-			g=${f#shorewall-}
-			h=$(ls ${g%.xml}.[58])
-			f=shorewall-$h
-			mv $h $f
-			;;
-		esac
-
-		perl -p -w -i -e 's|/(4\.0/)?manpages/\.\.||' $f
-	    fi
-	done
-	rm *.xml
+	do_manpages $MANPAGETAG '' ''
 	cd $DIR
     fi
 
     if [ -n "$BUILD6" ]; then
 	cd $SHOREWALL6DIR
 	do_export $SAMPLES6TAG Samples6
-	do_export $MANPAGE6TAG manpages
-	cd manpages
-	for f in *.xml; do
-	    if [ $f != shorewall6-template.xml ]; then
-		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages6/ man $f >> $LOGFILE 2>&1"
-		case $f in
-		    *.conf.*|shorewall6.xml)
-			;;
-		    *)
-			g=${f#shorewall6-}
-			h=$(ls ${g%.xml}.[58])
-			f=shorewall6-$h
-			mv $h $f
-			;;
-		esac
-
-		perl -p -w -i -e 's|/manpages6/\.\.||' $f
-	    fi
-	done
-	rm *.xml
+	do_manpages $MANPAGE6TAG 6 6
 	cd $DIR
     fi
 
     if [ -n "$BUILDLITE" ]; then
 	cd $SHOREWALLLITEDIR
-	do_export $LITEMANPAGETAG manpages
-	cd manpages
-	for f in *.xml; do
-	    if [ $f != shorewall-template.xml ]; then
-		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages/ man $f >> $LOGFILE 2>&1"
-		case $f in
-		    *.conf.*|shorewall-lite.xml)
-			;;
-		    *)
-			g=${f#shorewall-lite-}
-			h=$(ls ${g%.xml}.[58])
-			f=shorewall-lite-$h
-			mv $h $f
-			;;
-		esac
-
-		perl -p -w -i -e 's|/(4\.0/)?manpages/\.\.||' $f
-	    fi
-	done
-	rm *.xml
+	do_manpages $LITEMANPAGETAG -lite ''
 	cd $DIR 
     fi	
 
     if [ -n "$BUILD6LITE" ]; then
 	cd $LITE6DIR
-	do_export $LITE6MANPAGETAG manpages
-	cd manpages
-	for f in *.xml; do
-	    if [ $f != shorewall6-template.xml ]; then
-		progress_message "Generating Man Page from $f..."
-		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages6/ man $f >> $LOGFILE 2>&1"
-		case $f in
-		    *.conf.*|shorewall6-lite.xml)
-			;;
-		    *)
-			g=${f#shorewall6-lite-}
-			h=$(ls ${g%.xml}.[58])
-			f=shorewall6-lite-$h
-			mv $h $f
-			;;
-		esac
-
-		perl -p -w -i -e 's|/manpages6/\.\.||' $f
-	    fi
-	done
-	rm *.xml
+	do_manpages $LITE6MANPAGETAG 6-lite 6
 	cd $DIR 
     fi	
 

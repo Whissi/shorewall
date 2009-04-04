@@ -1350,7 +1350,7 @@ sub do_proto( $$$ )
 	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol
 	    #
 	    unless ( $synonly ) {
-		$output  = "-p ${invert}${proto} ";
+		$output  = "${invert}-p ${proto} ";
 	    } else {
 		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;
 		$output = "-p $proto --syn ";
@@ -1369,11 +1369,11 @@ sub do_proto( $$$ )
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless $capabilities{MULTIPORT};
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 			    $ports = validate_port_list $pname , $ports;
-			    $output .= "-m multiport --dports ${invert}${ports} ";
+			    $output .= "-m multiport ${invert}--dports ${ports} ";
 			    $multiport = 1;
 			}  else {
 			    $ports   = validate_portpair $pname , $ports;
-			    $output .= "--dport ${invert}${ports} ";
+			    $output .= "${invert}--dport ${ports} ";
 			}
 		    } else {
 			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 );
@@ -1384,10 +1384,10 @@ sub do_proto( $$$ )
 			if ( $multiport ) {
 			    fatal_error "Too many entries in SOURCE PORT(S) list" if port_count( $sports ) > 15;
 			    $sports = validate_port_list $pname , $sports;
-			    $output .= "-m multiport --sports ${invert}${sports} ";
+			    $output .= "-m multiport ${invert}--sports ${sports} ";
 			}  else {
 			    $sports  = validate_portpair $pname , $sports;
-			    $output .= "--sport ${invert}${sports} ";
+			    $output .= "${invert}--sport ${sports} ";
 			}
 		    }
 
@@ -1412,7 +1412,7 @@ sub do_proto( $$$ )
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
 			$ports = validate_icmp6 $ports;
-			$output .= "--icmpv6-type ${invert}${ports} ";
+			$output .= "${invert}--icmpv6-type ${ports} ";
 		    }
 
 		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
@@ -1464,7 +1464,7 @@ sub mac_match( $ ) {
 
     fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 
-    "--match mac --mac-source ${invert}$mac ";
+    "--match mac ${invert}--mac-source $mac ";
 }
 
 #
@@ -1679,7 +1679,7 @@ sub do_connbytes( $ ) {
     $dir  =~ s/://;
     $mode =~ s/://;
 
-    "${invert}-m connbytes --connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
+    "-m connbytes ${invert}--connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
 }
 
 #
@@ -1797,7 +1797,7 @@ sub match_source_net( $;$ ) {
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ s/^!// ) {
 	validate_net $net, 1;
-	"-s ! $net ";
+	"! -s $net ";
     } else {
 	validate_net $net, 1;
 	$net eq ALLIP ? '' : "-s $net ";
@@ -1822,7 +1822,7 @@ sub match_dest_net( $ ) {
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	validate_net $net, 1;
-	"-d ! $net ";
+	"! -d $net ";
     } else {
 	validate_net $net, 1;
 	$net eq ALLIP ? '' : "-d $net ";

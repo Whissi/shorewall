@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Building Shorewall from SVN</title>
+    <title>Building Shorewall from Git</title>
 
     <authorgroup>
       <author>
@@ -37,37 +37,17 @@
   <note>
     <para>This information is provided primarily for Shorewall developers.
     Users are expected to install from pre-built tarballs or packages.</para>
-
-    <para>Beginning with Shorewall 4.4, the Shorewall project will use Git as
-    it's SCM system rather than SVN. This document will be updated prior to
-    the release of 4.4 to refect the move to Git.</para>
   </note>
 
   <section>
-    <title>SVN Taxonomy</title>
+    <title>Git Taxonomy</title>
 
-    <para>The Shorewall SVN tree at Sourceforge has a number of branches which
-    are described in the following sections. It is not possible to simply
-    export a directory from SVN and run the <command>install.sh</command>
-    script in that directory. A build step is required to produce a directory
-    that is suitable for the <command>install.sh</command> script to run
-    in.</para>
-
-    <section>
-      <title>tags</title>
-
-      <para>As new stable releases are made, they are copied into this branch.
-      Each release has it's own directory which is named with the minor
-      release number (e.g., 4.2.6).</para>
-    </section>
-
-    <section>
-      <title>branches</title>
-
-      <para>The latest copy of each stable major release is kept in this
-      branch. Each major release has its own directory which is named with the
-      major release number (e.g., 4.2).</para>
-    </section>
+    <para>The Shorewall Git tree at Sourceforge serves as the master
+    repository for Shorewall 4.4 and later versions. It is not possible to
+    simply export a directory from SVN and run the
+    <command>install.sh</command> script in that directory. A build step is
+    required to produce a directory that is suitable for the
+    <command>install.sh</command> script to run in.</para>
 
     <section>
       <title>trunk</title>
@@ -169,48 +149,17 @@
       </blockquote>
 
       <para>The <replaceable>version</replaceable> may either be a minor
-      version or a patch version. The sub-directores that are updates are
-      those which match the specified version:</para>
-
-      <variablelist>
-        <varlistentry>
-          <term>Minor Version (e.g., 4.2.7)</term>
-
-          <listitem>
-            <para>Updates Shorewall, Shorewall-common, Shorewall-perl,
-            Shorewall-shell, Shorewall-lite, Shorewall6 and Shorewall6-lite.
-            Only those directories that are present are updated.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>Patch Version (e.g., 4.2.7.1)</term>
-
-          <listitem>
-            <para>Update those directories matching the patch version
-            <replaceable>n</replaceable> (last digit):
-            Shorewall-<replaceable>n</replaceable>
-            ,Shorewall-common-<replaceable>n</replaceable>,
-            Shorewall-shell-<replaceable>n</replaceable>,
-            Shorewall-lite-<replaceable>n</replaceable>,
-            Shorewall6-<replaceable>n</replaceable>, and
-            Shorewall6-lite-<replaceable>n</replaceable>.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
+      version or a patch version.</para>
     </section>
 
     <section>
-      <title>buildshorewall and build44</title>
+      <title>build44</title>
 
-      <para>These are the scripts that build Shorewall packages from SVN. The
-      <command>buildshorewall</command> script builds Shorewall 4.0 and
-      Shorewall 4.2 packages; the <command>build44</command> script builds
-      Shorewall 4.3 and 4.4 packages. Because the scripts work similarly, they
-      will be described together.</para>
+      <para>This is the script that builds Shorewall packages from Git.
+      </para>
 
-      <para>The build scripts copy content from SVN using the <command>svn
-      export</command> command. They then use that content to build the
+      <para>The script copies content from Git using the <command>svn
+      archive</command> command. It then uses that content to build the
       packages. In addition to the usual Gnu utilities, the following software
       is required:</para>
 
@@ -311,10 +260,10 @@
         </varlistentry>
 
         <varlistentry>
-          <term>SVN</term>
+          <term>GIT</term>
 
           <listitem>
-            <para>Shorewall SVN repository</para>
+            <para>Shorewall GIT repository</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -326,24 +275,14 @@
       <para>The general form of the build command is:</para>
 
       <blockquote>
-        <para><replaceable>buildscript</replaceable> [
-        -<replaceable>options</replaceable> ]
-        <replaceable>release</replaceable> [ <replaceable>prior
+        <para><command>build44</command> [ -<replaceable>options</replaceable>
+        ] <replaceable>release</replaceable> [ <replaceable>prior
         release</replaceable> ]</para>
       </blockquote>
 
       <para>where</para>
 
       <variablelist>
-        <varlistentry>
-          <term><emphasis>buildscript</emphasis></term>
-
-          <listitem>
-            <para>is either <command>buildshorewall</command> or
-            <command>build44</command></para>
-          </listitem>
-        </varlistentry>
-
         <varlistentry>
           <term>opt<emphasis>i</emphasis>ons</term>
 
@@ -380,9 +319,7 @@
                 <term>c</term>
 
                 <listitem>
-                  <para>Build the <firstterm>common</firstterm> package
-                  (shorewall-common on versions 4.0 and 4.2 and shorewall on
-                  4.3 and later)</para>
+                  <para>Build the shorewall package.</para>
                 </listitem>
               </varlistentry>
 
@@ -436,7 +373,7 @@
 
           <listitem>
             <para>The release version to build. Must match the version in the
-            associated SVN path.</para>
+            associated Git path.</para>
           </listitem>
         </varlistentry>
 
@@ -564,62 +501,5 @@
         <para><command>upload -p 4.2.7.3</command></para>
       </blockquote>
     </section>
-  </section>
-
-  <section>
-    <title>Patch Releases</title>
-
-    <para>Patch releases are created when a defect is found in the current
-    stable release of one of the products and the nature of the problem
-    warrents releasing a fix before the next minor release. The basic steps in
-    creating a patch release <replaceable>n</replaceable> are as
-    follows:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>Create
-        tags/<replaceable>minor-version</replaceable>/Shorewall-common-<replaceable>n</replaceable>
-        or Shorewall-<replaceable>n</replaceable> depending on which release.
-        If that product is being changed, the <command>svn cp</command>
-        command can be used. Otherwise, use <command>svn mkdir</command> and
-        then <command>svn cp</command> the <filename>changelog.txt</filename>
-        and <filename>releasenotes.txt</filename> files from the last release
-        (either the minor release itself or the preceding patch
-        release.</para>
-      </listitem>
-
-      <listitem>
-        <para>For each of the other products, create a
-        <replaceable>product-n</replaceable> directory (e.g.,
-        Shorewall-perl-<replaceable>n</replaceable>) using <command>svn
-        cp</command>. Again the last released version of the minor version of
-        the product should be the source.</para>
-      </listitem>
-
-      <listitem>
-        <para>Apply the changes necessary to fix the bug, including updating
-        the change log and release notes.</para>
-      </listitem>
-
-      <listitem>
-        <para>Run <command>setversion</command> to set the version of the
-        updated product(s).</para>
-      </listitem>
-
-      <listitem>
-        <para>Create
-        <filename>tags/<replaceable>minor-version</replaceable>/known_problems.txt</filename>
-        if it doesn already exist and add a description of the defect and
-        indicate the patch release in which it was corrected.</para>
-      </listitem>
-
-      <listitem>
-        <para>Commit the fix to SVN.</para>
-      </listitem>
-
-      <listitem>
-        <para>Build the product(s).</para>
-      </listitem>
-    </orderedlist>
   </section>
 </article>

@@ -530,17 +530,6 @@ start_command() {
 	    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then
-		if [ -x ${RESTOREPATH}-ipsets ]; then
-		    echo Restoring Ipsets...
-		    #
-		    # We must purge iptables to be sure that there are no
-		    # references to ipsets
-		    #
-		    iptables -F
-		    iptables -X
-		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
-		fi
-
 		echo Restoring Shorewall...
 		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > ${VARDIR}/restarted
@@ -1867,12 +1856,6 @@ case "$COMMAND" in
 	RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	if [ -x $RESTOREPATH ]; then
-
-	    if [ -x ${RESTOREPATH}-ipsets ]; then
-		rm -f ${RESTOREPATH}-ipsets
-		echo "    ${RESTOREPATH}-ipsets removed"
-	    fi
-
 	    rm -f $RESTOREPATH
 	    rm -f ${RESTOREPATH}-iptables
 	    echo "    $RESTOREPATH removed"

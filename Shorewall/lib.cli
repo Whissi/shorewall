@@ -295,45 +295,6 @@ save_config() {
 				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
 				chmod +x $RESTOREPATH
 				echo "   Currently-running Configuration Saved to $RESTOREPATH"
-
-				rm -f ${RESTOREPATH}-ipsets
-
-				case ${SAVE_IPSETS:-No} in
-				    [Yy][Ee][Ss])
-					RESTOREPATH=${RESTOREPATH}-ipsets
-
-					f=${VARDIR}/restore-$$
-
-					echo "#!/bin/sh" > $f
-					echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
-					echo  >> $f
-					echo ". ${SHAREDIR}/lib.base" >> $f
-					echo  >> $f
-					cat ${VARDIR}/.modulesdir >> $f
-					echo  >> $f
-					echo "reload_kernel_modules << __EOF__" >> $f
-					grep 'loadmodule ip_set' ${VARDIR}/.modules >> $f
-					echo "__EOF__" >> $f
-					echo  >> $f
-					echo "ipset -U :all: :all:" >> $f
-					echo "ipset -U :all: :default:" >> $f
-					echo "ipset -F" >> $f
-					echo "ipset -X" >> $f
-					echo "ipset -R << __EOF__" >> $f
-					ipset -S >> $f
-					echo "__EOF__" >> $f
-					mv -f $f $RESTOREPATH
-					chmod +x $RESTOREPATH
-					echo "   Current Ipset Contents Saved to $RESTOREPATH"
-					result=0
-					;;
-				    [Nn][Oo])
-					;;
-				    *)
-					echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved" >&2
-					;;
-				esac
-
 				run_user_exit save
 			    else
 			        rm -f ${VARDIR}/restore-$$

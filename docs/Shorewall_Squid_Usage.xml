@@ -166,8 +166,9 @@ httpd_accel_uses_host_header on</programlisting>
 
       <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
+ACCEPT    $FW        net      tcp      www
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177
-ACCEPT    $FW        net      tcp      www</programlisting>
+</programlisting>
 
       <para>There may be a requirement to exclude additional destination hosts
       or networks from being redirected. For example, you might also want
@@ -189,11 +190,12 @@ REDIRECT  loc        3128     tcp      www              -          !206.124.146.
 
       <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
+ACCEPT    $FW        net      tcp      www
 REDIRECT  loc:!192.168.1.5,192.168.1.33\
                      3128     tcp      www              -          !206.124.146.177,130.252.100.0/24
 ACCEPT    loc        net      tcp      www</programlisting>
 
-      <para>The second rule may be omitted if your loc-&gt;net policy is
+      <para>The last rule may be omitted if your loc-&gt;net policy is
       ACCEPT.</para>
     </section>
 

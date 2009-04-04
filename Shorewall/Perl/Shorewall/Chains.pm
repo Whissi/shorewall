@@ -1399,7 +1399,7 @@ sub do_proto( $$$ )
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
 			$ports = validate_icmp $ports;
-			$output .= "--icmp-type ${invert}${ports} ";
+			$output .= "${invert}--icmp-type ${ports} ";
 		    }
 
 		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';

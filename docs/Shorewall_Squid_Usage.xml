@@ -179,6 +179,22 @@ ACCEPT    $FW        net      tcp      www</programlisting>
       <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
+
+      <para>People frequently ask <emphasis>How can I exclude certain internal
+      systems from using the proxy? I want to allow those systems to go
+      directly to the net</emphasis>.</para>
+
+      <para>Suppose that you want to exclude 192.168.1.5 and 192.168.1.33 from
+      the proxy. Your rules would then be:</para>
+
+      <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
+#                                                       PORT(S)    DEST
+REDIRECT  loc:!192.168.1.5,192.168.1.33\
+                     3128     tcp      www              -          !206.124.146.177,130.252.100.0/24
+ACCEPT    loc        net      tcp      www</programlisting>
+
+      <para>The second rule may be omitted if your loc-&gt;net policy is
+      ACCEPT.</para>
     </section>
 
     <section id="Local">

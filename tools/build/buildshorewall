@@ -879,6 +879,9 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 
     cd shorewall-docs-xml-$VERSION
 
+    rm -rf manpages.save
+    rm -rf manpages6.save
+
     progress_message "Exporting $MANPAGETAG from SVN..."
     do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
     mv manpages manpages.save
@@ -886,7 +889,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     if [ -n "$MANPAGE6TAG" ]; then
 	progress_message "Exporting $MANPAGE6TAG from SVN..."
 	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGE6TAG manpages >> $LOGFILE 2>&1"
-	do_or_die mv manpages/* manpages.save/
+	do_or_die mv manpages/* manpages6.save/
     fi
 
     progress_message "Exporting $LITEMANPAGETAG from SVN..."	
@@ -896,12 +899,14 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     if [ -n "$LITE6MANPAGETAG" ]; then
 	progress_message "Exporting $LITE6MANPAGETAG from SVN..."
 	do_or_die "svn export --non-interactive --force ${SVN}/$LITE6MANPAGETAG manpages >> $LOGFILE 2>&1"    
-	do_or_die mv manpages/* manpages.save/
+	do_or_die mv manpages/* manpages6.save/
     fi
 
     do_or_die rm -rf manpages
+    do_or_die rm -rf manpages6
 
     do_or_die mv manpages.save manpages
+    do_or_die mv manpages6.save manpages6
 
     cd $DIR
 
@@ -1008,12 +1013,15 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC -param toc.section.depth 3 $STYLESHEET $file
 	done
 
-	for f in shorewall-docs-xml-$VERSION/manpages/*.xml; do
-	    if [ $f != shorewall-template.xml ]; then
-		progress_message "Generating HTML from $f..."
-		do_or_die xsltproc --output ${f%.xml}.html --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $f
-
-	    fi
+	for f in shorewall-docs-xml-$VERSION/manpages/*.xml shorewall-docs-xml-$VERSION/manpages6/*.xml; do
+	    case $f in
+		*template.xml)
+		    ;;
+		*)
+		    progress_message "Generating HTML from $f..."
+		    do_or_die xsltproc --output ${f%.xml}.html --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $f
+		    ;;
+	    esac
 	done
 
 	progress_message "Copying manpages to $DIR/$HTMLDIR/images ..."
@@ -1021,6 +1029,10 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	do_or_die mkdir $HTMLDIR/manpages
 	do_or_die cp -a shorewall-docs-xml-$VERSION/manpages/*.html $HTMLDIR/manpages/
 	do_or_die rm -f shorewall-docs-xml-$VERSION/manpages/*.html
+
+	do_or_die mkdir $HTMLDIR/manpages6
+	do_or_die cp -a shorewall-docs-xml-$VERSION/manpages6/*.html $HTMLDIR/manpages6/
+	do_or_die rm -f shorewall-docs-xml-$VERSION/manpages6/*.html
 
 	progress_message "Copying images to $DIR/$HTMLDIR/images ..."
 

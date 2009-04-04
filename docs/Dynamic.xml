@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Dynamic Zones</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2009</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Overview</title>
+
+    <para>There is sometimes a need to be able to define a zone whose members
+    are unknown at compile-time. For example, you may wish to require
+    authentication of internal users before allowing them access to the
+    internet. When a user is authenticated, the user's IP address is added to
+    the zone of users permitted web access.</para>
+
+    <para>Shorewall provides basic support for defining such zones. This
+    support is based on <ulink
+    url="http://ipset.netfilter.org/">ipset</ulink>, so to use dynamic zones,
+    you must have installed the <ulink
+    url="http://xtables-addons.sourceforge.net/">xtables-addons</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Defining a Dynamic Zone</title>
+
+    <para>A dynamic zone is defined by using the keyword dynamic in the zones
+    host list.</para>
+
+    <para>Example:</para>
+
+    <blockquote>
+      <para><filename>/etc/shorewall/zones</filename>:<programlisting>#NAME        TYPE             OPTIONS
+loc          ipv4
+webok:loc    ipv4</programlisting><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE       INTERFACE      BROADCAST        OPTIONS
+webok       eth0           -                hosts=dynamic</programlisting>
+    </blockquote>
+
+    <para>Once the above definition is added, Shorewall will automatically
+    create an ipset named <emphasis>webok_eth0</emphasis> the next time that
+    Shorewall is started or restarted. Shorewall will create an ipset of type
+    <firstterm>iphash</firstterm>. If you want to use a different type of
+    ipset, such as <firstterm>macipmap</firstterm>, then you will want to
+    manually create that ipset yourself before the next Shorewall
+    start/restart.</para>
+  </section>
+
+  <section>
+    <title>Adding a Host to a Dynamic Zone</title>
+
+    <para>Adding a host to a dynamic zone is accomplished by adding the host's
+    IP address to the appropriate ipset. Shorewall provldes a command for
+    doing that:</para>
+
+    <blockquote>
+      <para><command>shorewall add</command> <replaceable>interface:address
+      ...</replaceable> <replaceable>zone</replaceable></para>
+    </blockquote>
+
+    <para>Example:</para>
+
+    <blockquote>
+      <para><command>shorewall add eth0:192.168.3.4 webok</command></para>
+    </blockquote>
+  </section>
+
+  <section>
+    <title>Deleting a Host from a Dynamic Zone</title>
+
+    <para>Deleting a host from a dynamic zone is accomplished by removing the
+    host's IP address from the appropriate ipset. Shorewall provldes a command
+    for doing that:</para>
+
+    <blockquote>
+      <para><command>shorewall delete</command> <replaceable>interface:address
+      ...</replaceable> <replaceable>zone</replaceable></para>
+    </blockquote>
+
+    <para>Example:</para>
+
+    <blockquote>
+      <para><command>shorewall delete eth0:192.168.3.4 webok</command></para>
+    </blockquote>
+  </section>
+
+  <section>
+    <title>Listing the Contents of a Dynamic Zone</title>
+
+    <para>The shorewall show command may be used to list the current contents
+    of a dynamic zone.</para>
+
+    <blockquote>
+      <para><command>shorewall show dynamic</command>
+      <replaceable>zone</replaceable></para>
+    </blockquote>
+
+    <para>Example:</para>
+
+    <blockquote>
+      <programlisting><command>shorewall show dynamic webok</command>
+eth0:
+   192.168.3.4
+   192.168.3.9</programlisting>
+    </blockquote>
+  </section>
+</article>

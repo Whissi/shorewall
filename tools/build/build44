@@ -183,6 +183,19 @@ do_rpmbuild() {
     return 0
 }
 
+do_buildanrpm() {
+    progress_message "Building ${1}..."
+
+    cd /tmp
+    rm -rf ${1}-${BASEVERSION}
+    do_or_die "cp -a $DIR/$SHOREWALLDIR ${1}-${BASEVERSION}"
+    do_or_die "tar -zcf $RPMDIR/SOURCES/${2}-${BASEVERSION}.tgz ${2}-${BASEVERSION}"
+    cd $DIR
+    do_or_die "cp ${3}/${2}.spec $RPMDIR/SPECS/"
+    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/${2}.spec"
+    do_or_die cp -a $RPMDIR/RPMS/noarch/${1} .
+}
+
 usage()
 {
     echo "usage: $(basename $0) [ -trhxlcpsS] <version> [ <old-version> ]"
@@ -633,57 +646,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$BUILDRPM" ]; then
 	test -n "$SIGN" && SIGN="--sign"
 	
-	if [ -n "$BUILDCOMMON" ]; then	
-	    progress_message "Building $RPMNAME..."
-
-	    cd /tmp
-	    rm -rf shorewall-${BASEVERSION}
-	    do_or_die "cp -a $DIR/$SHOREWALLDIR shorewall-${BASEVERSION}"
-	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-${BASEVERSION}.tgz shorewall-${BASEVERSION}"
-	    cd $DIR
-	    do_or_die "cp $SHOREWALLDIR/shorewall.spec $RPMDIR/SPECS/"
-	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall.spec"
-	    do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
-	fi
-
-	if [ -n "$BUILD6" ]; then	
-	    progress_message "Building $RPM6NAME..."
-
-	    cd /tmp
-	    rm -rf shorewall6-${BASEVERSION}
-	    do_or_die "cp -a $DIR/$SHOREWALL6DIR shorewall6-${BASEVERSION}"
-	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall6-${BASEVERSION}.tgz shorewall6-${BASEVERSION}"
-	    cd $DIR
-	    do_or_die "cp $SHOREWALL6DIR/shorewall6.spec $RPMDIR/SPECS/"
-	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall6.spec"
-	    do_or_die cp -a $RPMDIR/RPMS/noarch/$RPM6NAME .
-	fi
-
-	if [ -n "$BUILDLITE" ]; then	
-	    progress_message "Building $LITERPMNAME..."
-
-	    cd /tmp
-	    rm -rf shorewall-lite-${BASEVERSION}
-	    do_or_die "cp -a $DIR/$SHOREWALLLITEDIR shorewall-lite-${BASEVERSION}" 
-	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall-lite-${BASEVERSION}.tgz shorewall-lite-${BASEVERSION}"
-	    cd $DIR
-	    do_or_die "cp $SHOREWALLLITEDIR/shorewall-lite.spec $RPMDIR/SPECS/"
-	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec"
-	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
-	fi
-
-	if [ -n "$BUILD6LITE" ]; then	
-	    progress_message "Building $LITE6RPMNAME..."
-
-	    cd /tmp
-	    rm -rf shorewall6-lite-${BASEVERSION}
-	    do_or_die "cp -a $DIR/$LITE6DIR shorewall6-lite-${BASEVERSION}" 
-	    do_or_die "tar -zcf $RPMDIR/SOURCES/shorewall6-lite-${BASEVERSION}.tgz shorewall6-lite-${BASEVERSION}"
-	    cd $DIR
-	    do_or_die "cp $LITE6DIR/shorewall6-lite.spec $RPMDIR/SPECS/"
-	    do_or_die "do_rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall6-lite.spec"
-	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITE6RPMNAME .
-	fi
+	[ -n "$BUILDCOMMON" ] && do_buildanrpm $RPMNAME      shorewall       $SHOREWALLDIR
+	[ -n "$BUILD6" ]      && do_buildanrpm $RPM6NAME     shorewall6	     $SHOREWALL6DIR
+	[ -n "$BUILDLITE" ]   && do_buildanrpm $LITERPMNAME  shorewall-lite  $SHOREWALLLITEDIR
+	[ -n "$BUILD6LITE" ]  && do_buildanrpm $LITE6RPMNAME shorewall6-lite $LITE6DIR
     fi
 fi
 

@@ -1534,14 +1534,16 @@ sub do_ratelimit( $$ ) {
     # "-m hashlimit" match for the passed LIMIT/BURST 
     #
     if ( $rate =~ /^[sd]:{1,2}/ ) {
+	require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
+
 	my $limit = "-m hashlimit ";
 	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
+	    $limit .= "--hashlimit-upto $3 --hashlimit-burst $6 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
 	    if ( $rate =~ /^s:/ ) { $limit .= "srcip "; } else { $limit .= "dstip "; }
 	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {
-	    $limit .= "--hashlimit $3 --hashlimit-name ";
+	    $limit .= "--hashlimit-upto $3 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
 	    if ( $rate =~ /^s:/ ) { $limit .= "srcip "; } else { $limit .= "dstip "; }

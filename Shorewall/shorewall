@@ -216,11 +216,11 @@ get_config() {
 	    perl|Perl)
 		;;
 	    shell|Shell)
-		echo "   ERROR: SHOREWALL_COMPILER=shell is no longer supported"
+		echo "   ERROR: SHOREWALL_COMPILER=shell is no longer supported" >&2
 		exit 2
 		;;
 	    *)
-		echo "   ERROR: Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER"
+		echo "   ERROR: Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER" >&2
 		exit 2
 		;;
 	esac

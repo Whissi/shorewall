@@ -56,6 +56,8 @@ our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shor
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
 				       finalize_object
+				       enable_object
+				       disable_object
 		                       numeric_value
 		                       numeric_value1
 		                       in_hex
@@ -144,6 +146,10 @@ our $timestamp;
 # Object file handle
 #
 our $object;
+#
+# When 'true', writes to the object are enabled. Used to catch code emission between functions
+#
+our $object_enabled;
 #
 # True, if last line emitted is blank
 #
@@ -296,6 +302,7 @@ sub initialize( $ ) {
     $log_verbose = -1;         # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message
     $object = 0;               # Object (script) file Handle Reference
+    $object_enabled = 0;       # Object (script) file Handle Reference
     $lastlineblank = 0;        # Avoid extra blank lines in the output
     $indent1       = '';       # Current indentation tabs
     $indent2       = '';       # Current indentation spaces
@@ -757,6 +764,8 @@ sub in_hex8( $ ) {
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit {
+    assert( $object_enabled );
+
     if ( $object ) {
 	#
 	# 'compile' as opposed to 'check'
@@ -781,6 +790,8 @@ sub emit {
 # Write passed message to the object with newline but no indentation.
 #
 sub emit_unindented( $ ) {
+    assert( $object_enabled );
+
     print $object "$_[0]\n" if $object;
 }
 
@@ -972,6 +983,8 @@ sub pop_indent() {
 # Functions for copying files into the object
 #
 sub copy( $ ) {
+    assert( $object_enabled );
+
     if ( $object ) {
 	my $file = $_[0];
 
@@ -1002,6 +1015,8 @@ sub copy( $ ) {
 # This one handles line continuation and 'here documents'
 
 sub copy1( $ ) {
+    assert( $object_enabled );
+
     if ( $object ) {
 	my $file = $_[0];
 
@@ -1110,6 +1125,20 @@ sub finalize_aux_config() {
     $object = 0;
     rename $tempfile, "$file.conf" or fatal_error "Cannot Rename $tempfile to $file.conf: $!";
     progress_message3 "Shorewall configuration compiled to $file";
+}
+
+#
+# Enable writes to the object file
+#
+sub enable_object() {
+    $object_enabled = 1;
+}
+
+#
+# Diusable writes to the object file
+#
+sub disable_object() {
+    $object_enabled = 0;
 }
 
 #

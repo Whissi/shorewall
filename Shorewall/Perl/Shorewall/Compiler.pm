@@ -640,6 +640,7 @@ sub compiler {
     setup_notrack;
 
     unless ( $command eq 'check' ) {
+	enable_object;
 	#
 	# Place Header in the object
 	#
@@ -682,6 +683,7 @@ sub compiler {
     unless ( $command eq 'check' ) {
 	pop_indent;
 	emit '}';
+	disable_object;
     }
 
     #
@@ -689,6 +691,8 @@ sub compiler {
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
     unless ( $command eq 'check' ) {
+	enable_object;
+
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
 	       '#',
@@ -709,6 +713,7 @@ sub compiler {
     unless ( $command eq 'check' ) {
 	pop_indent;
 	emit "}\n";
+	disable_object;
     }
 
     #
@@ -781,6 +786,7 @@ sub compiler {
 	    progress_message3 "Shorewall6 configuration verified";
 	}
     } else {
+	enable_object;
 	#
 	#                                    I N I T I A L I Z E
 	#                  (Writes the initialize() function to the compiled script)
@@ -810,6 +816,8 @@ sub compiler {
 		copy $globals{SHAREDIRPL} . 'prog.footer6';
 	    }
 	}
+	
+	disable_object;
 	#
 	# Close, rename and secure the object
 	#

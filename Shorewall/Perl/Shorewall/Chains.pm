@@ -1541,17 +1541,15 @@ sub do_ratelimit( $$ ) {
 	    $limit .= "--hashlimit-upto $3 --hashlimit-burst $6 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
-	    if ( $rate =~ /^s:/ ) { $limit .= "srcip "; } else { $limit .= "dstip "; }
 	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {
 	    $limit .= "--hashlimit-upto $3 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
-	    if ( $rate =~ /^s:/ ) { $limit .= "srcip "; } else { $limit .= "dstip "; }
 	} else {
 	    fatal_error "Invalid rate ($rate)";
 	}
 
-	$limit;     
+	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
     } elsif ( $rate =~ /^(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	"-m limit --limit $1 --limit-burst $4 ";
     } elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {

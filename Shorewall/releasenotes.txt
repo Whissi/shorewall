@@ -30,6 +30,11 @@ released late in 2009.
     the compilation phase during start/restart if no configuration
     changes have occurred since the last start/restart.
 
+7)  The LIMIT:BURST column in /etc/shorewall/policy
+    (/etc/shorewall6/policy) and the RATE LIMIT column in
+    /etc/shorewall/rules (/etc/shorewall6/rules) may now be used to
+    limit on a per source IP or per destination IP basis.
+
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
@@ -139,6 +144,35 @@ None.
 
     In other words, you can compile the current configuration then
     install it at a later time.
+
+7)  Thanks to I. Buijs, it is now possible to rate-limit connections by
+    source IP or destination IP. The LIMIT:BURST column in
+    /etc/shorewall/policy (/etc/shorewall6/policy) and the RATE LIMIT
+    column /etc/shorewall/rules (/etc/shorewall6/rules) have been
+    extended as follows:
+
+    	[{s|d}:[[<name>]:]]<rate>/{sec|min}[:<burst>]
+
+    When s: is specified, the rate is per source IP address.
+    When d: is specified, the rate is per destination IP address.
+    The <name> specifies the name of a hash table -- you get to choose
+    the name. If you don't specify a name, the name 'shorewall' is
+    assumed. Rules with the same name have their connection counts
+    aggregated and the individual rates are applied to the aggregate.
+
+    Example:
+
+	ACCEPT	net   fw    tcp    22  - - s:ssh:3/min
+
+    This will limit SSH connections from net->fw to 3 per minute.
+
+    	ACCEPT	net   fw    tcp    25   - - s:mail:3/min
+    	ACCEPT	net   fw    tcp    587  - - s:mail:3/min
+
+    Since the same hash table name is used in both rules, the above is
+    equivalent to this single rule:
+
+    	ACCEPT	net   fw    tcp    25,587  - - s:mail:3/min
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

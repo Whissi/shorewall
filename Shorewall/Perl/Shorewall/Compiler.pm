@@ -639,8 +639,9 @@ sub compiler {
     #
     setup_notrack;
 
+    enable_object;
+    
     unless ( $command eq 'check' ) {
-	enable_object;
 	#
 	# Place Header in the object
 	#
@@ -683,15 +684,16 @@ sub compiler {
     unless ( $command eq 'check' ) {
 	pop_indent;
 	emit '}';
-	disable_object;
     }
 
+    disable_object;
     #
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
+    enable_object;
+    
     unless ( $command eq 'check' ) {
-	enable_object;
 
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',

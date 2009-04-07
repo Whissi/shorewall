@@ -388,11 +388,7 @@ sub do_one_nat( $$$$$ )
     fatal_error "Invalid nat file entry" unless defined $interface && defined $internal;
 
     if ( $add_ip_aliases ) {
-	if ( defined( $alias ) && $alias eq '' ) {
-	    $add_ip_aliases = '';
-	} else {
-	    emit "del_ip_addr $external $interface" unless $config{RETAIN_ALIASES};
-	}
+	$add_ip_aliases = '' if defined( $alias ) && $alias eq '';
     }
 
     validate_nat_column 'ALL INTERFACES', \$allints;
@@ -494,11 +490,17 @@ sub setup_netmap() {
 sub add_addresses () {
     if ( @addresses_to_add ) {
 	my $arg = '';
+	my $addresses = 0;
 
 	while ( @addresses_to_add ) {
 	    my $addr      = shift @addresses_to_add;
 	    my $interface = shift @addresses_to_add;
 	    $arg = "$arg $addr $interface";
+	    unless ( $config{RETAIN_ALIASES} ) {
+		emit '' unless $addresses++;
+		$interface =~ s/:.*//;
+		emit "del_ip_addr $addr $interface";
+	    }
 	}
 
 	emit "\nadd_ip_aliases $arg";

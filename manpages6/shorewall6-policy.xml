@@ -230,13 +230,14 @@
         role="bold">d</emphasis>}:[[<replaceable>name</replaceable>]:]]]<emphasis>rate</emphasis><emphasis
         role="bold">/</emphasis>{<emphasis
         role="bold">second</emphasis>|<emphasis
-        role="bold">minute</emphasis>}:<emphasis>burst</emphasis></term>
+        role="bold">minute</emphasis>}[:<emphasis>burst</emphasis>]</term>
 
         <listitem>
           <para>If passed, specifies the maximum TCP connection
           <emphasis>rate</emphasis> and the size of an acceptable
           <emphasis>burst</emphasis>. If not specified, TCP connections are
-          not limited.</para>
+          not limited. If the <replaceable>burst</replaceable> parameter is
+          omitted, a value of 5 is assumed.</para>
 
           <para>When <option>s:</option> or <option>d:</option> is specified,
           the rate applies per source IP address or per destination IP address

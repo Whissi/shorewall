@@ -2488,7 +2488,7 @@ sub expand_rule( $$$$$$$$$$$ )
 	    # Dest interface -- must use routing table
 	    #
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
-	    push_command( $chainref , 'for dest in ' . interface_nets( $diface) . '; do', 'done' );
+	    push_command( $chainref , 'for dest in ' . get_interface_nets( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
 	} else {
 	    

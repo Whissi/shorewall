@@ -152,7 +152,6 @@ sub process_tos() {
 		$src ,
 		$dst ,
 		'' ,
-		'' ,
 		"-j TOS --set-tos $tos" ,
 		'' ,
 		'' ,
@@ -328,7 +327,6 @@ sub setup_blacklist() {
 			    NO_RESTRICT ,
 			    do_proto( $protocol , $ports, '' ) ,
 			    $networks ,
-			    '' ,
 			    '' ,
 			    '' ,
 			    "-j $target" ,
@@ -1307,7 +1305,6 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		      $source ,
 		      $origdest ,
 		      '' ,
-		      '' ,
 		      $target ,
 		      $loglevel ,
 		      $log_action ,
@@ -1345,7 +1342,6 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     '',
 		     '-j RETURN ' ,
 		     $loglevel ,
 		     $log_action ,
@@ -1368,13 +1364,14 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $origdest = '';
 	}
 
+	$rule .= "-m conntrack --ctorigdstport $origdstports " if $capabilities{NEW_CONNTRACK_MATCH} && $origdstports;
+
 	expand_rule( ensure_chain( 'filter', $chain ) ,
 		     $restriction ,
 		     $rule ,
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     $origdstports ,
 		     $action ? "-j $action " : '' ,
 		     $loglevel ,
 		     $log_action ,

@@ -333,6 +333,10 @@ sub initialize( $ ) {
     #
     $exclseq = 0;
     #
+    # Used to sequence 'log' chains with names 'log0', 'log1', etc.
+    #
+    $chainseq = 0;
+    #
     # Used to suppress duplicate match specifications.
     #
     $iprangematch = 0;
@@ -1260,6 +1264,11 @@ sub setup_zone_mss() {
 sub newexclusionchain() {
     my $seq = $exclseq++;
     "excl${seq}";
+}
+
+sub newlogchain() {
+    my $seq = $chainseq++;
+    "log${seq}";
 }
 
 #
@@ -2675,32 +2684,58 @@ sub expand_rule( $$$$$$$$$$$ )
 	add_rule( $echainref, $exceptionrule . $target, 1 ) unless $disposition eq 'LOG';
     } else {
 	#
-	# No exclusions
+	# No exclusions -- save original chain
 	#
+	my $savechainref = $chainref;
+	
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
 	    for my $inet ( mysplit $inets ) {
-		#
-		# We defer evaluating the source net match to accomodate system without $capabilities{KLUDGEFREE}
-		#
+		my $source_match;
+
+		$source_match = match_source_net( $inet, $restriction ) if $capabilities{KLUDGEFREE};
+
 		for my $dnet ( mysplit $dnets ) {
+		    #
+		    # Restore original Chain
+		    #
+		    $chainref = $savechainref;
+
+		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
+		    my $dest_match = match_dest_net( $dnet );
+		    my $rule = join( '', $rule, $source_match, $dest_match, $onet );
+		    
 		    if ( $loglevel ne '' ) {
-			log_rule_limit
-			    $loglevel ,
-			    $chainref ,
-			    $chain,
-			    $disposition ,
-			    '' ,
-			    $logtag ,
-			    'add' ,
-			    join( '', $rule, match_source_net( $inet , $restriction ) , match_dest_net( $dnet ), $onet );
+			if ( $disposition ne 'LOG' ) {
+			    my $logchainref = new_chain $chainref->{table}, newlogchain;
+
+			    add_jump( $chainref, $logchainref, 1,  $rule );
+
+			    log_rule_limit( 
+					   $loglevel ,
+					   $chainref = $logchainref ,
+					   $chain ,
+					   $disposition ,
+					   '',
+					   $logtag,
+					   'add',
+					   '' );
+			} else {
+			    log_rule_limit(
+					   $loglevel ,
+					   $chainref ,
+					   $chain,
+					   $disposition ,
+					   '' ,
+					   $logtag ,
+					   'add' ,
+					   $rule
+					  );
+			}
 		    }
 
 		    unless ( $disposition eq 'LOG' ) {
-			add_rule( 
-				 $chainref,
-				 join( '', $rule, match_source_net ($inet , $restriction ), match_dest_net( $dnet ), $onet, $target  ) ,
-				 1 );
+			add_rule( $chainref, $rule . $target , 1 );
 		    }
 		}
 	    }

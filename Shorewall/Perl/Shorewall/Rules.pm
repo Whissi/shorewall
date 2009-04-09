@@ -1064,6 +1064,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # Take care of irregular syntax and targets
     #
+    my $log_action = $action;
+
     if ( $actiontype & REDIRECT ) {
 	my $z = $actiontype & NATONLY ? '' : firewall_zone;
 	if ( $dest eq '-' ) {
@@ -1308,7 +1310,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		      '' ,
 		      $target ,
 		      $loglevel ,
-		      $action ,
+		      $log_action ,
 		      $serverport ? do_proto( $proto, '', '' ) : '' );
 	#
 	# After NAT:
@@ -1346,7 +1348,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     '',
 		     '-j RETURN ' ,
 		     $loglevel ,
-		     $action ,
+		     $log_action ,
 		     '' );
     }
 
@@ -1375,7 +1377,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $origdstports ,
 		     $action ? "-j $action " : '' ,
 		     $loglevel ,
-		     $action ,
+		     $log_action ,
 		     '' );
     }
 }

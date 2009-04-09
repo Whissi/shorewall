@@ -1,4 +1,4 @@
-Shorewall 4.3.8
+Shorewall 4.3.9
 
 Shorewall 4.3 is the development thread for Shorewall 4.4 which will be
 released late in 2009.
@@ -54,19 +54,11 @@ released late in 2009.
     underlying support in the Linux kernel. 
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 8
+          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 9
 ----------------------------------------------------------------------------
 
-1)  Tuomo Soini provided a workaround patch for a problem seen in some
-    kernel's (see FAQ 82) that caused 'shorewall start' to fail when
-    USE_DEFAULT_RT=Yes .
-
-2)  The swping program was not purging the interface status files when
-    it first started.
-
-3)  When LOG_MARTIANS=Yes with Shorewall-perl, setting logmartians=0 in
-    an entry in /etc/shorewall/interface failed to suppress martian
-    logging on the interface. 
+1)  If an interface name was specified in a PREROUTING rule (tcrules or
+    notrack) then an invalid iptables rule would be generated.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -75,104 +67,44 @@ released late in 2009.
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 3 . 8
+                N E W   F E A T U R E S   I N   4 . 3 . 9
 ----------------------------------------------------------------------------
 
-1)  The generated program now attempts to detect all dynamic
-    information when it first starts. If any of those steps fail, an
-    error message is generated and the state of the firewall is not
-    changed.
-
-2)  Shorewall will now attempt to detect a dynamic gateway by reading
-    the dhclient lease file for the interface
-    (/var/run/dhcp/dhclient-<if>.lease).
-
-3)  To improve readability of the configuration files, Shorewall now
-    allows leading white space in continuation lines when the continued
-    line ends in ":" or ",".
-
-    Example (/etc/shorewall/rules):
-
-    #ACTION	SOURCE		DEST		PROTO		DEST
-    #                                                           PORT(S)
-    ACCEPT	net:\
-    		206.124.146.177,\
-		206.124.146.178,\
-		206.124.146.180\
-				dmz		tcp		873
-
-    The leading white space on the lines that contain just an IP
-    address is ignored so the SOURCE column effectively contains
-    "net:206.124.146.177,206.124.147.178,206.124.146.180".
-
-4)  The generated script now uses iptables[6]-restore to instantiate
-    the Netfilter ruleset during processing of the 'stop' command. As a
-    consequence, the 'critical' option in /etc/shorewall/route_stopped
-    is no longer needed and will result in a warning.
-
-5)  A new AUTOMAKE option has been added to shorewall.conf and
-    shorewall6.conf. When set to 'Yes', this option causes new behavior
-    during processing of the 'start' and 'restart' commands; if no
-    files in /etc/shorewall/ (/etc/shorewall6) have changed since the last
-    'start' or 'restart', then the compilation step is skipped and the
-    script used during the last 'start' or 'restart' is used to
-    start/restart the firewall.
-
-    Note that if a <directory> is specified in the start/restart
-    command (e.g., "shorewall restart /etc/shorewall.new") then the
-    setting of AUTOMAKE is ignored.
-
-    Note that the 'make' utility must be installed on the firewall
-    system in order for AUTOMAKE=Yes to work correctly.
-
-6)  The 'compile' command now allows you to omit the <pathname>. When
-    you do that, the <pathname> defaults to /var/lib/shorewall/firewall
-    (/var/lib/shorewall6/firewall) unless you have overridden VARDIR
-    using /etc/shorewall/vardir (/etc/shorewall6/vardir).
-
-    When combined with AUTOMAKE=Yes, it allows the following:
-
-    	 gateway:~ # shorewall compile
-    	 Compiling...
-    	 Shorewall configuration compiled to /root/shorewall/firewall
-    	 gateway:~ #
-	 ...
-    	 gateway:~ # shorewall restart
-    	 Restarting Shorewall....
-    	 done.
-    	 gateway:~ # 
-
-    In other words, you can compile the current configuration then
-    install it at a later time.
-
-7)  Thanks to I. Buijs, it is now possible to rate-limit connections by
-    source IP or destination IP. The LIMIT:BURST column in
-    /etc/shorewall/policy (/etc/shorewall6/policy) and the RATE LIMIT
-    column /etc/shorewall/rules (/etc/shorewall6/rules) have been
-    extended as follows:
-
-    	[{s|d}:[[<name>]:]]<rate>/{sec|min}[:<burst>]
-
-    When s: is specified, the rate is per source IP address.
-    When d: is specified, the rate is per destination IP address.
-    The <name> specifies the name of a hash table -- you get to choose
-    the name. If you don't specify a name, the name 'shorewall' is
-    assumed. Rules with the same name have their connection counts
-    aggregated and the individual rates are applied to the aggregate.
+1)  Rules that specify a log level with a target other than LOG or NFLOG
+    are now implemented through a separate chain. While this may increase
+    the processing cost slightly for packets that match these rules, it
+    is expected to reduce the overall cost of such rules because each
+    packet that doesn't match the rules only has to be processed once
+    per rule rather than twice.
 
     Example:
 
-	ACCEPT	net   fw    tcp    22  - - s:ssh:3/min
+    /etc/shorewall/rules:
 
-    This will limit SSH connections from net->fw to 3 per minute.
+	REJECT:info   loc       net      tcp    25
 
-    	ACCEPT	net   fw    tcp    25   - - s:mail:3/min
-    	ACCEPT	net   fw    tcp    587  - - s:mail:3/min
+    This previously generated these two rules (long rules folded):
 
-    Since the same hash table name is used in both rules, the above is
-    equivalent to this single rule:
+	 -A loc2net -p 6 --dport 25 -j LOG --log-level 6
+	    --log-prefix "Shorewall:loc2net:reject:" 
+	 -A loc2net -p 6 --dport 25 -j reject 
 
-    	ACCEPT	net   fw    tcp    25,587  - - s:mail:3/min
+    It now generates these rules:
+
+       	 :log0 - [0:0]
+	 ...
+	 -A loc2net -p 6 --dport 25 -g log0
+	 ...
+	 -A log0 -j LOG --log-level 6
+	    --log-prefix "Shorewall:loc2net:REJECT:" 
+	 -A log0 -p 6 --dport 25 -j reject 
+
+    Notice that now there is only a single rule generated in the
+    'loc2net' chain where before there were two. Packets for other than
+    TCP port 25 had to be processed by both rules.
+
+    Notice also that the new LOG rule reflects the original action
+    ("REJECT") rather than what Shorewall maps that to ("reject").
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
@@ -340,3 +272,99 @@ None.
     	    show dynamic <zone>
 
     These commands are supported by shorewall-lite as well.
+
+6)  The generated program now attempts to detect all dynamic
+    information when it first starts. If any of those steps fail, an
+    error message is generated and the state of the firewall is not
+    changed.
+
+7)  Shorewall will now attempt to detect a dynamic gateway by reading
+    the dhclient lease file for the interface
+    (/var/run/dhcp/dhclient-<if>.lease).
+
+8)  To improve readability of the configuration files, Shorewall now
+    allows leading white space in continuation lines when the continued
+    line ends in ":" or ",".
+
+    Example (/etc/shorewall/rules):
+
+    #ACTION	SOURCE		DEST		PROTO		DEST
+    #                                                           PORT(S)
+    ACCEPT	net:\
+    		206.124.146.177,\
+		206.124.146.178,\
+		206.124.146.180\
+				dmz		tcp		873
+
+    The leading white space on the lines that contain just an IP
+    address is ignored so the SOURCE column effectively contains
+    "net:206.124.146.177,206.124.147.178,206.124.146.180".
+
+9)  The generated script now uses iptables[6]-restore to instantiate
+    the Netfilter ruleset during processing of the 'stop' command. As a
+    consequence, the 'critical' option in /etc/shorewall/route_stopped
+    is no longer needed and will result in a warning.
+
+10) A new AUTOMAKE option has been added to shorewall.conf and
+    shorewall6.conf. When set to 'Yes', this option causes new behavior
+    during processing of the 'start' and 'restart' commands; if no
+    files in /etc/shorewall/ (/etc/shorewall6) have changed since the last
+    'start' or 'restart', then the compilation step is skipped and the
+    script used during the last 'start' or 'restart' is used to
+    start/restart the firewall.
+
+    Note that if a <directory> is specified in the start/restart
+    command (e.g., "shorewall restart /etc/shorewall.new") then the
+    setting of AUTOMAKE is ignored.
+
+    Note that the 'make' utility must be installed on the firewall
+    system in order for AUTOMAKE=Yes to work correctly.
+
+11) The 'compile' command now allows you to omit the <pathname>. When
+    you do that, the <pathname> defaults to /var/lib/shorewall/firewall
+    (/var/lib/shorewall6/firewall) unless you have overridden VARDIR
+    using /etc/shorewall/vardir (/etc/shorewall6/vardir).
+
+    When combined with AUTOMAKE=Yes, it allows the following:
+
+    	 gateway:~ # shorewall compile
+    	 Compiling...
+    	 Shorewall configuration compiled to /root/shorewall/firewall
+    	 gateway:~ #
+	 ...
+    	 gateway:~ # shorewall restart
+    	 Restarting Shorewall....
+    	 done.
+    	 gateway:~ # 
+
+    In other words, you can compile the current configuration then
+    install it at a later time.
+
+12) Thanks to I. Buijs, it is now possible to rate-limit connections by
+    source IP or destination IP. The LIMIT:BURST column in
+    /etc/shorewall/policy (/etc/shorewall6/policy) and the RATE LIMIT
+    column /etc/shorewall/rules (/etc/shorewall6/rules) have been
+    extended as follows:
+
+    	[{s|d}:[[<name>]:]]<rate>/{sec|min}[:<burst>]
+
+    When s: is specified, the rate is per source IP address.
+    When d: is specified, the rate is per destination IP address.
+    The <name> specifies the name of a hash table -- you get to choose
+    the name. If you don't specify a name, the name 'shorewall' is
+    assumed. Rules with the same name have their connection counts
+    aggregated and the individual rates are applied to the aggregate.
+
+    Example:
+
+	ACCEPT	net   fw    tcp    22  - - s:ssh:3/min
+
+    This will limit SSH connections from net->fw to 3 per minute.
+
+    	ACCEPT	net   fw    tcp    25   - - s:mail:3/min
+    	ACCEPT	net   fw    tcp    587  - - s:mail:3/min
+
+    Since the same hash table name is used in both rules, the above is
+    equivalent to this single rule:
+
+    	ACCEPT	net   fw    tcp    25,587  - - s:mail:3/min

@@ -2340,6 +2340,10 @@ sub expand_rule( $$$$$$$$$$$ )
 	push @ends, $end;
     }
     #
+    # Trim disposition
+    #
+    $disposition =~ s/\s+.*//;
+    #
     # Handle Log Level
     #
     my $logtag;
@@ -2709,7 +2713,7 @@ sub expand_rule( $$$$$$$$$$$ )
 			if ( $disposition ne 'LOG' ) {
 			    my $logchainref = new_chain $chainref->{table}, newlogchain;
 
-			    add_jump( $chainref, $logchainref, 1,  $rule );
+			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $rule );
 
 			    log_rule_limit( 
 					   $loglevel ,

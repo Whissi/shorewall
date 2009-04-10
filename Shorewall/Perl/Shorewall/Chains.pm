@@ -583,11 +583,12 @@ sub add_rule($$;$)
 # Add a jump from the chain represented by the reference in the first argument to
 # the target in the second argument. The third argument determines if a GOTO may be
 # used rather than a jump. The optional fourth argument specifies any matches to be
-# included in the rule and must end with a space character if it is non-null.
+# included in the rule and must end with a space character if it is non-null. The
+# optional 5th argument causes long port lists to be split.
 #
 
-sub add_jump( $$$;$ ) {
-    my ( $fromref, $to, $goto_ok, $predicate ) = @_;
+sub add_jump( $$$;$$ ) {
+    my ( $fromref, $to, $goto_ok, $predicate, $expandports ) = @_;
 
     $predicate |= '';
 
@@ -612,7 +613,7 @@ sub add_jump( $$$;$ ) {
 
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
-    add_rule ($fromref, join( '', $predicate, "-$param $to" ) );
+    add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
 }
 
 #
@@ -2702,7 +2703,7 @@ sub expand_rule( $$$$$$$$$$ )
 			if ( $disposition ne 'LOG' ) {
 			    my $logchainref = new_chain $chainref->{table}, newlogchain;
 
-			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $rule );
+			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $rule, 1 );
 
 			    log_rule_limit( 
 					   $loglevel ,

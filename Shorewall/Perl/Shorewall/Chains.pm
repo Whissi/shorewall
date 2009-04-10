@@ -2681,7 +2681,7 @@ sub expand_rule( $$$$$$$$$$ )
 	# No exclusions -- save original chain
 	#
 	my $savechainref = $chainref;
-	
+
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
 	    for my $inet ( mysplit $inets ) {
@@ -2709,9 +2709,9 @@ sub expand_rule( $$$$$$$$$$ )
 			    # Jump to the log chain if all of the rule's conditions are met
 			    #
 			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $predicates, 1 );
-
-			    $predicates = '';
-
+			    #
+			    # Now add the log rule and target rule without predicates to the log chain.
+			    #
 			    log_rule_limit( 
 					   $loglevel ,
 					   $chainref = $logchainref ,
@@ -2721,7 +2721,12 @@ sub expand_rule( $$$$$$$$$$ )
 					   $logtag,
 					   'add',
 					   '' );
+
+			    add_rule( $chainref, $target, 1 );
 			} else {
+			    #
+			    # The log rule must be added with predicates to the rule chain
+			    #
 			    log_rule_limit(
 					   $loglevel ,
 					   $chainref ,
@@ -2733,9 +2738,10 @@ sub expand_rule( $$$$$$$$$$ )
 					   $predicates
 					  );
 			}
-		    }
-
-		    unless ( $disposition eq 'LOG' ) {
+		    } else {
+			#
+			# No logging -- add the target rule with predicates to the rule chain
+			#
 			add_rule( $chainref, $predicates . $target , 1 );
 		    }
 		}

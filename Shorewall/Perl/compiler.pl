@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-#     The Shoreline Firewall4 (Shorewall-perl) Packet Filtering Firewall Compiler - V4.4
+#     The Shoreline Firewall Packet Filtering Firewall Compiler - V4.4
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -56,7 +56,7 @@ sub usage( $ ) {
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
     [ --test ]
-    [ --family={1|2} ]
+    [ --family={4|6} ]
 ';
     exit shift @_;
 }

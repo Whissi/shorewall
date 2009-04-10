@@ -2697,7 +2697,7 @@ sub expand_rule( $$$$$$$$$$ )
 
 		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet );
-		    my $rule = join( '', $rule, $source_match, $dest_match, $onet );
+		    my $predicates = join( '', $rule, $source_match, $dest_match, $onet );
 		    
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
@@ -2708,9 +2708,9 @@ sub expand_rule( $$$$$$$$$$ )
 			    #
 			    # Jump to the log chain if all of the rule's conditions are met
 			    #
-			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $rule, 1 );
+			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $predicates, 1 );
 
-			    $rule = '';
+			    $predicates = '';
 
 			    log_rule_limit( 
 					   $loglevel ,
@@ -2730,13 +2730,13 @@ sub expand_rule( $$$$$$$$$$ )
 					   '' ,
 					   $logtag ,
 					   'add' ,
-					   $rule
+					   $predicates
 					  );
 			}
 		    }
 
 		    unless ( $disposition eq 'LOG' ) {
-			add_rule( $chainref, $rule . $target , 1 );
+			add_rule( $chainref, $predicates . $target , 1 );
 		    }
 		}
 	    }

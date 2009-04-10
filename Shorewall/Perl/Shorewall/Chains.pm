@@ -2341,7 +2341,7 @@ sub expand_rule( $$$$$$$$$$ )
     #
     # Trim disposition
     #
-    $disposition =~ s/\s+.*//;
+    $disposition =~ s/\s.*//;
     #
     # Handle Log Level
     #
@@ -2415,9 +2415,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    #
 	    fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
 
-	    my $networks = get_interface_nets ( $iiface );
-
-	    push_command $chainref, join( '', 'for source in ', $networks, '; do' ), 'done';
+	    push_command $chainref, join( '', 'for source in ', get_interface_nets( $iiface) , '; do' ), 'done';
 
 	    $rule .= '-s $source ';
 	} else {

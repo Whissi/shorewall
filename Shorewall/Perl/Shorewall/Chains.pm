@@ -2632,7 +2632,7 @@ sub expand_rule( $$$$$$$$$$ )
     $onets = ALLIP unless $onets;
 
     fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && ( $inets ne ALLIP || $iexcl || $trivialiexcl);
-    fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && ( $dnets ne ALLIP || $iexcl || $trivialdexcl);
+    fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && ( $dnets ne ALLIP || $dexcl || $trivialdexcl);
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#
@@ -2643,7 +2643,7 @@ sub expand_rule( $$$$$$$$$$ )
 	my $echain = newexclusionchain;
 
 	#
-	# Use the current rule and sent all possible matches to the exclusion chain
+	# Use the current rule and send all possible matches to the exclusion chain
 	#
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
@@ -2701,9 +2701,16 @@ sub expand_rule( $$$$$$$$$$ )
 		    
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
+			    #
+			    # Create a chain that both logs and applies the target action
+			    #
 			    my $logchainref = new_chain $chainref->{table}, newlogchain;
-
+			    #
+			    # Jump to the log chain if all of the rule's conditions are met
+			    #
 			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $rule, 1 );
+
+			    $rule = '';
 
 			    log_rule_limit( 
 					   $loglevel ,

@@ -2722,7 +2722,7 @@ sub expand_rule( $$$$$$$$$$ )
 					   'add',
 					   '' );
 
-			    add_rule( $chainref, $target, 1 );
+			    add_rule( $chainref, $target );
 			} else {
 			    #
 			    # The log rule must be added with predicates to the rule chain

@@ -116,7 +116,7 @@ sub setup_route_marking() {
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
-	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "-i ! $interface -m mark --mark  $mark/$mask ";
+	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "! -i $interface -m mark --mark  $mark/$mask ";
 	    add_jump $mangle_table->{OUTPUT}     , $chainref2, 0, "-m mark --mark  $mark/$mask ";
 	    $marked_interfaces{$interface} = 1;
 	}

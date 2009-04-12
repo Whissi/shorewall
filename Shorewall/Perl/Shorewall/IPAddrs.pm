@@ -121,7 +121,7 @@ INIT {
 sub vlsm_to_mask( $ ) {
     my $vlsm = $_[0];
 
-    in_hex8 ( ( 0xFFFFFFFF << ( 32 - $vlsm ) ) && 0xFFFFFFFF );
+    in_hex8 ( ( 0xFFFFFFFF << ( 32 - $vlsm ) ) & 0xFFFFFFFF );
 }
 
 sub valid_4address( $ ) {

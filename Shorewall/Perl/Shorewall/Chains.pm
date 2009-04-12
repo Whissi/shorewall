@@ -1968,6 +1968,9 @@ sub log_rule_limit( $$$$$$$$ ) {
 	    $prefix = "-j $level --ulog-prefix \"$prefix\" ";
 	} elsif  ( $level =~ /^NFLOG/ ) {
 	    $prefix = "-j $level --nflog-prefix \"$prefix\" ";
+	} elsif ( $level =~ '^LOGMARK' ) {
+	    $prefix = join( '', substr( $prefix, 0, 12 ) , ':' ) if length $prefix > 13;
+	    $prefix = "-j LOGMARK --log-level $level --log-prefix \"$prefix\" ";
 	} else {
 	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
 	}

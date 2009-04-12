@@ -235,6 +235,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CONNLIMIT_MATCH => 'Connlimit Match',
 		 TIME_MATCH      => 'Time Match',
 		 GOTO_TARGET     => 'Goto Support',
+		 LOGMARK_TARGET  => 'LOGMARK Target',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -322,7 +323,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.3.9",
-		    CAPVERSION => 40205 ,
+		    CAPVERSION => 40309 ,
 		  );
 
     #
@@ -450,7 +451,8 @@ sub initialize( $ ) {
 			 PANIC   => 0,
 			 NONE    => '',
 			 ULOG    => 'ULOG',
-			 NFLOG   => 'NFLOG');
+			 NFLOG   => 'NFLOG',
+		         LOGMARK => 'LOGMARK' );
     } else {
 	$globals{SHAREDIR} = '/usr/share/shorewall6';
 	$globals{CONFDIR}  = '/etc/shorewall6';	
@@ -549,7 +551,8 @@ sub initialize( $ ) {
 			 EMERG   => 0,
 			 PANIC   => 0,
 			 NONE    => '',
-			 NFLOG   => 'NFLOG');
+			 NFLOG   => 'NFLOG',
+		         LOGMARK => 'LOGMARK' );
 	}
     #
     # From parsing the capabilities file
@@ -594,6 +597,7 @@ sub initialize( $ ) {
 	       CONNLIMIT_MATCH => undef,
 	       TIME_MATCH => undef,
 	       GOTO_TARGET => undef,
+	       LOGMARK_TARGET => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1684,6 +1688,11 @@ sub validate_level( $ ) {
 	    return $rawlevel;
 	}
 
+	if ( $level eq 'LOGMARK' ) {
+	    require_capability( 'LOGMARK_TARGET' , 'LOGMARK', 's' );
+	    return 'LOGMARK';
+	}
+
 	level_error( $rawlevel );
     }
 
@@ -1960,6 +1969,7 @@ sub determine_capabilities( $ ) {
     $capabilities{CONNLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
     $capabilities{TIME_MATCH}      = qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
     $capabilities{GOTO_TARGET}     = qt1( "$iptables -A $sillyname -g $sillyname1" );
+    $capabilities{LOGMARK_TARGET}  = qt1( "$iptables -A $sillyname -j LOGMARK" );
 
     qt1( "$iptables -F $sillyname" );
     qt1( "$iptables -X $sillyname" );

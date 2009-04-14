@@ -1043,21 +1043,19 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         </listitem>
 
         <listitem>
-          <para>All provider gateways must be specified explicitly in the
-          GATEWAY column. 'detect' may not be specified. Note that for ppp
-          interfaces, the GATEWAY may remain unspecified ("-").<note>
-              <para>'detect' may be specified for interfaces whose
-              configuration is managed by dhcpcd. Shorewall will use dhcpcd's
-              database to determine the gateway IP address.</para>
-            </note></para>
-        </listitem>
-
-        <listitem>
           <para>You should disable all default route management outside of
           Shorewall. If a default route is inadvertently added to the main
           table while Shorewall is started, then all policy routing will stop
           working except for those routing rules in the priority range
           1-998.</para>
+        </listitem>
+
+        <listitem>
+          <para>For ppp interfaces, the GATEWAY may remain unspecified ("-").
+          For those interfaces managed by dhcpcd or dhclient, you may specify
+          'detect' in the GATEWAY column; Shorewall will use the dhcp client's
+          database to determine the gateway IP address. All other interfaces
+          must have a GATEWAY specified explicitly.</para>
         </listitem>
       </orderedlist>
 

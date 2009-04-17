@@ -33,7 +33,7 @@ Users of Shorewall's Multi-ISP Feature</a><br>
     </tr>
   </tbody>
 </table>
-<hr><span style="font-weight: bold;">2009-03-29<br>
+<hr><span style="font-weight: bold;">2009-04-17<br>
 </span>
 <h2><a name="Shell-EOL"></a>End-of-life for Shorewall-shell in
 Shorewall 4.4<br>
@@ -52,6 +52,18 @@ with Shorewall-perl installed on an administrative system (may be a
 Windows[tm] system running <a href="http://www.cygwin.com">Cygwin</a>[tm]).<br>
 <h2><span style="font-weight: bold;"><a name="Perl"></a>Attention
 Shorewall-perl 4.2 Users</span></h2>
+<h3>Shorewall-perl 4.2.8</h3>
+Shorewall-perl 4.2.8 was dead on arrival. The compiler did not rename
+the generated script file with the result that it was removed when the
+compiler terminated. This lead to:<br>
+<ol>
+  <li>It was not possible to start Shorewall or Shorewall6 for the
+first time after installing 4.2.8</li>
+  <li>Changes to the configuration were apparently ignored.</li>
+</ol>
+This problem was corrected in Shorewall-perl-4.2.8.1.<br>
+<h3>Shorewall-perl 4.2.6 and Earlier<br>
+</h3>
 On February 28, Klemens Rutz reported a problem that affects all<span
  style="font-family: monospace;"><span style="font-family: sans-serif;">
 </span></span>Shorewall-perl 4.2 versions prior to 4.2.6.1.<br>

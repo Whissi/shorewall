@@ -2176,7 +2176,7 @@ We have an error talking to the kernel
       later.</para>
 
       <section id="faq80a">
-        <title>(FAQ 80a) Why does Shorewall lPv6 Support Require Kernel 2.6.25
+        <title>(FAQ 80a) Why does Shorewall lPv6 Support Require Kernel 2.6.24
         or later?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Shorewall implements a
@@ -2187,16 +2187,17 @@ We have an error talking to the kernel
         problems with the facility until at least kernel 2.6.23. When
         distributions began offering IPv6 connection tracking support, it was
         with kernel 2.6.25. So that is what we developed IPv6 support on and
-        that's all that it has been tested on. If you are running 2.6.20 or
-        later, you can <emphasis role="bold">try</emphasis> to run Shorewall6
-        by hacking<filename> /usr/share/shorewall/prog.footer6</filename> and
-        changing the kernel version test to check for your kernel version
-        rather than 2.6.25 (20625). But after that, you are on your
-        own.</para>
+        that's all that we initially tested on. Subsequently, we have tested
+        Shorewall6 on Ubuntu Hardy with kernel 2.6.24. If you are running
+        2.6.20 or later, you can <emphasis role="bold">try</emphasis> to run
+        Shorewall6 by hacking<filename>
+        /usr/share/shorewall/prog.footer6</filename> and changing the kernel
+        version test to check for your kernel version rather than 2.6.24
+        (20624). But after that, you are on your own.</para>
 
         <programlisting>kernel=$(printf "%2d%02d%02d\n" $(echo $(uname -r) 2&gt; /dev/null | sed 's/-.*//' | tr '.' ' ' ) | head -n1)
-if [ $kernel -lt <emphasis role="bold">20625</emphasis> ]; then
-    error_message "ERROR: $PRODUCT requires Linux kernel <emphasis role="bold">2.6.25</emphasis> or later"
+if [ $kernel -lt <emphasis role="bold">20624</emphasis> ]; then
+    error_message "ERROR: $PRODUCT requires Linux kernel <emphasis role="bold">2.6.24</emphasis> or later"
     status=2
 else 
  </programlisting>

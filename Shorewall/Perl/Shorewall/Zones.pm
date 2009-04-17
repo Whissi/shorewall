@@ -735,7 +735,7 @@ sub validate_interfaces_file( $ )
 	my $broadcasts;
 
 	unless ( $networks eq '' || $networks eq 'detect' ) {
-	    my @broadcasts = split $networks, 'address';
+	    my @broadcasts = split_list $networks, 'address';
 
 	    for my $address ( @broadcasts ) {
 		fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;

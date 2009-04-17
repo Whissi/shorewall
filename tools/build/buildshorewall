@@ -889,7 +889,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     if [ -n "$MANPAGE6TAG" ]; then
 	progress_message "Exporting $MANPAGE6TAG from SVN..."
 	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGE6TAG manpages >> $LOGFILE 2>&1"
-	do_or_die mv manpages/* manpages6.save/
+	do_or_die mv manpages manpages6.save/
     fi
 
     progress_message "Exporting $LITEMANPAGETAG from SVN..."	

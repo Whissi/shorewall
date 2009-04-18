@@ -358,7 +358,7 @@ sub initialize( $ ) {
 	      IPTABLES => undef,
 	      IP => undef,
 	      TC => undef,
-	      IPSEC => undef,
+	      IPSET => undef,
 	      #
 	      #PATH is inherited
 	      #

@@ -349,7 +349,7 @@ sub generate_script_3($) {
 		   '        [ -x "$IPSET" ] || fatal_error "IPSET=$IPSET does not exist or is not executable"',
 		   '        ;;',
 		   '    *)',
-		   '        IPSET="$(which ipset)"',
+		   '        IPSET="$(which $IPSET)"',
 		   '        [ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"' ,
 		   '        ;;',
 		   'esac',

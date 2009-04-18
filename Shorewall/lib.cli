@@ -1062,8 +1062,13 @@ add_command() {
 	exit 2;
     fi
 
-    [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
-
+    case "$IPSET" in
+	*/*)
+	    ;;
+	*)
+	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
+	    ;;
+    esac
     #
     # Normalize host list
     #
@@ -1090,13 +1095,13 @@ add_command() {
 
 	ipset=${zone}_${interface};
 
-	if ! qt ipset -L $ipset -n; then
+	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
 	fi
 	
 	host=${host#*:}
 
-	if ipset -A $ipset $host; then
+	if $IPSET -A $ipset $host; then
 	    echo "Host $interface:$host added to zone $zone"
 	else
 	    fatal_error "Unable to add $interface:$host to zone $zone"
@@ -1115,7 +1120,13 @@ delete_command() {
 	exit 2;
     fi
 
-    [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
+    case "$IPSET" in
+	*/*)
+	    ;;
+	*)
+	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
+	    ;;
+    esac
 
     #
     # Normalize host list
@@ -1143,13 +1154,13 @@ delete_command() {
 
 	ipset=${zone}_${interface};
 
-	if ! qt ipset -L $ipset -n; then
+	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
 	fi
 	
 	host=${hostent#*:}
 
-	if ipset -D $ipset $host; then
+	if $IPSET -D $ipset $host; then
 	    echo "Host $hostend deleted from zone $zone"
 	else
 	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2

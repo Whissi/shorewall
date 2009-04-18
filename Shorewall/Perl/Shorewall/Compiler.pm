@@ -343,7 +343,8 @@ sub generate_script_3($) {
 	my @ipsets = all_ipsets;
 
 	if ( @ipsets ) {
-	    emit ( 'case $IPSET in',
+	    emit ( '',
+		   'case $IPSET in',
 		   '    */*)',
 		   '        [ -x "$IPSET" ] || fatal_error "IPSET=$IPSET does not exist or is not executable"',
 		   '        ;;',

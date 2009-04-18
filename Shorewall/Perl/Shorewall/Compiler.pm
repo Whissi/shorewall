@@ -682,6 +682,7 @@ sub compiler {
     setup_zone_mss;
 
     unless ( $command eq 'check' ) {
+	emit 'return 0';
 	pop_indent;
 	emit '}';
     }

@@ -515,6 +515,17 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">IP</emphasis>=[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>If specified, gives the pathname of the 'ip' executable. If
+          not specified, 'ip' is assumed and the utility will be located using
+          the current PATH setting.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">IP_FORWARDING=</emphasis>[<emphasis
         role="bold">On</emphasis>|<emphasis
         role="bold">Off</emphasis>|<emphasis
@@ -550,12 +561,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
               <listitem>
                 <para>Shorewall6 will neither enable nor disable packet
-                forwarding.</para>
+                forwarding</para>
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <para></para>
 
           <blockquote>
             <para>If this variable is not set or is given an empty value
@@ -578,6 +587,17 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           via IP6TABLES= or located via PATH), Shorewall6 uses the
           ip6tables-restore and ip6tables-save utilities from that same
           directory.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">IPSET</emphasis>=[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>If specified, gives the pathname of the 'ipset' executable. If
+          not specified, 'ipset' is assumed and the utility will be located
+          using the current PATH setting.</para>
         </listitem>
       </varlistentry>
 
@@ -1053,6 +1073,17 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           with your distribution's initscripts. For RedHat, this should be set
           to /var/lock/subsys/shorewall6. For Debian, the value is
           /var/lock/shorewall6 and in LEAF it is /var/run/shorwall.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">TC</emphasis>=[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>If specified, gives the pathname of the 'tc' executable. If
+          not specified, 'tc' is assumed and the utility will be located using
+          the current PATH setting.</para>
         </listitem>
       </varlistentry>
 

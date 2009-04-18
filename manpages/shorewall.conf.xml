@@ -662,6 +662,17 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">IP</emphasis>=[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>If specified, gives the pathname of the 'ip' executable. If
+          not specified, 'ip' is assumed and the utility will be located using
+          the current PATH setting.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">IP_FORWARDING=</emphasis>[<emphasis
         role="bold">On</emphasis>|<emphasis
         role="bold">Off</emphasis>|<emphasis
@@ -712,14 +723,13 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">IPSECFILE=</emphasis>{<emphasis
-        role="bold">zones</emphasis>|<emphasis
-        role="bold">ipsec</emphasis>}</term>
+        <term><emphasis
+        role="bold">IPSET</emphasis>=[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>This should be set to <emphasis role="bold">zones</emphasis>
-          for all new Shorewall installations. IPSECFILE=ipsec is only used
-          for compatibility with pre-Shorewall-3.0 configurations.</para>
+          <para>If specified, gives the pathname of the 'ipset' executable. If
+          not specified, 'ipset' is assumed and the utility will be located
+          using the current PATH setting.</para>
         </listitem>
       </varlistentry>
 
@@ -1501,6 +1511,17 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           your distribution's initscripts. For RedHat and OpenSuSE, this
           should be set to /var/lock/subsys/shorewall. For Debian, the value
           is /var/lock/shorewall and in LEAF it is /var/run/shorwall.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">TC</emphasis>=[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>If specified, gives the pathname of the 'tc' executable. If
+          not specified, 'tc' is assumed and the utility will be located using
+          the current PATH setting.</para>
         </listitem>
       </varlistentry>
 

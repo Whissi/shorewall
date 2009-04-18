@@ -137,9 +137,9 @@ sub copy_table( $$$ ) {
     my ( $duplicate, $number, $realm ) = @_;
 
     if ( $realm ) {
-	emit  ( "ip -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
     } else {
-	emit  ( "ip -$family route show table $duplicate | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | while read net route; do" )
     }
 
     emit ( '    case $net in',
@@ -157,9 +157,9 @@ sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
 
     if ( $realm ) {
-	emit  ( "ip -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
     } else {
-	emit  ( "ip -$family route show table $duplicate | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | while read net route; do" )
     }
 
     emit (  '    case $net in',
@@ -233,7 +233,7 @@ sub start_provider( $$$ ) {
     emit "#\n# Add Provider $table ($number)\n#";
 
     emit "qt ip -$family route flush table $number";
-    emit "echo \"qt ip -$family route flush table $number\" >> \${VARDIR}/undo_routing";
+    emit "echo \"qt \$IP -$family route flush table $number\" >> \${VARDIR}/undo_routing";
 }
 
 sub add_a_provider( $$$$$$$$ ) {
@@ -305,10 +305,10 @@ sub add_a_provider( $$$$$$$$ ) {
 
 	my $pref = 10000 + $number - 1;
 
-	emit ( "qt ip -$family rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
+	emit ( "qt \$IP -$family rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
 
 	emit ( "run_ip rule add fwmark $mark pref $pref table $number",
-	       "echo \"qt ip -$family rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
+	       "echo \"qt \$IP -$family rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
 	     );
     }
 
@@ -421,33 +421,33 @@ sub add_a_provider( $$$$$$$$ ) {
 	emit '';
 	if ( $gateway ) {
 	    emit qq(run_ip route replace default via $gateway src $address dev $interface table ) . DEFAULT_TABLE . qq( dev $interface metric $number);
-	    emit qq(echo "qt ip route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
+	    emit qq(echo "qt \$IP route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
 	} else {
 	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $interface metric $number);
-	    emit qq(echo "qt ip route del default dev $interface table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
+	    emit qq(echo "qt \$IP route del default dev $interface table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
 	}
     }
 
     if ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
 	    emit ( "\nfind_interface_addresses $interface | while read address; do",
-		   "    qt ip -$family rule del from \$address",
+		   "    qt \$IP -$family rule del from \$address",
 		   'done'
 		 );
 	}
     } elsif ( $shared ) {
-	emit  "qt ip -$family rule del from $address" if $config{DELETE_THEN_ADD};
+	emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
 	emit( "run_ip rule add from $address pref 20000 table $number" ,
-	      "echo \"qt ip -$family rule del from $address\" >> \${VARDIR}/undo_routing" );
+	      "echo \"qt \$IP -$family rule del from $address\" >> \${VARDIR}/undo_routing" );
     } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
 
 	emit "\nrulenum=0\n";
 
 	emit  ( "find_interface_addresses $interface | while read address; do" );
-	emit  (	"    qt ip -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
+	emit  (	"    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
 	emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
-		"    echo \"qt ip -$family rule del from \$address\" >> \${VARDIR}/undo_routing",
+		"    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_routing",
 		'    rulenum=$(($rulenum + 1))',
 		'done'
 	      );
@@ -529,7 +529,7 @@ sub add_an_rtrule( $$$$ ) {
 
     $priority = "priority $priority";
 
-    emit ( "qt ip -$family rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
+    emit ( "qt \$IP -$family rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
 
     my ( $optional, $number ) = ( $providers{$provider}{optional} , $providers{$provider}{number} );
 
@@ -540,7 +540,7 @@ sub add_an_rtrule( $$$$ ) {
     }
 
     emit ( "run_ip rule add $source $dest $priority table $number",
-	   "echo \"qt ip -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
+	   "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
 
     pop_indent, emit ( "fi\n" ) if $optional;
 
@@ -555,7 +555,7 @@ sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
     for ( rfc1918_networks ) {
 	emit( "run_ip route replace unreachable $_" );
-	emit( "echo \"qt ip -$family route del unreachable $_\" >> \${VARDIR}/undo_routing" );
+	emit( "echo \"qt \$IP -$family route del unreachable $_\" >> \${VARDIR}/undo_routing" );
     } 
 }
 
@@ -593,7 +593,7 @@ sub setup_providers() {
 	    emit  ( '#',
 		    '# Capture the default route(s) if we don\'t have it (them) already.',
 		    '#',
-		    '[ -f ${VARDIR}/default_route ] || ip -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+		    '[ -f ${VARDIR}/default_route ] || $IP -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
 		    '#',
 		    '# Initialize the file that holds \'undo\' commands',
 		    '#',
@@ -624,16 +624,16 @@ sub setup_providers() {
 
 	    if ( $config{USE_DEFAULT_RT} ) {
 		emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE . ' pref 999',
-		       "ip -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
-		       qq(echo "qt ip -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
-		       qq(echo "qt ip -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
+		       "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
+		       qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
+		       qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
 		       '' );
 		$table = DEFAULT_TABLE;
 	    }
 
 	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
 	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
-	    emit  ( "    qt ip -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
+	    emit  ( "    qt \$IP -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
 	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		    'else',
 		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
@@ -641,7 +641,7 @@ sub setup_providers() {
 	    if ( $config{RESTORE_DEFAULT_ROUTE} ) {
 		emit '    restore_default_route && error_message "NOTICE: Default route restored"'
 	    } else {
-		emit qq(    qt ip -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
+		emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
 	    }
 
 	    emit(   'fi',

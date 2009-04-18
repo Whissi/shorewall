@@ -388,14 +388,14 @@ find_peer() {
 
 find_nexthop() # $1 = interface
 {
-    echo $(find_gateway `ip -6 route list | grep "[[:space:]]nexthop.* $1"`)
+    echo $(find_gateway `$IP -6 route list | grep "[[:space:]]nexthop.* $1"`)
 }
 
 #
 # Find the default route's interface
 #
 find_default_interface() {
-    ip -6 route list | while read first rest; do
+    $IP -6 route list | while read first rest; do
 	[ "$first" = default ] && echo $(find_device $rest) && return
     done
 }
@@ -412,7 +412,7 @@ find_interface_by_mac() {
     local rest
     local dev
 
-    ip link list | while read first second rest; do
+    $IP link list | while read first second rest; do
 	case $first in
 	    *:)
                 dev=$second
@@ -430,7 +430,7 @@ find_interface_by_mac() {
 # Determine if Interface is up
 #
 interface_is_up() {
-    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
+    [ -n "$($IP link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
 }
 
 #
@@ -442,7 +442,7 @@ find_first_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
+    addr=$($IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 .* global' | head -n1)
     #
     # If there wasn't one, bail out now
     #
@@ -459,7 +459,7 @@ find_first_interface_address_if_any() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 2.* global' | head -n1)
+    addr=$($IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 2.* global' | head -n1)
     #
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
@@ -481,7 +481,7 @@ interface_is_usable() # $1 = interface
 #
 find_interface_addresses() # $1 = interface
 {
-    ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 2' | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
+    $IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 2' | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
 }
 
 #
@@ -490,7 +490,7 @@ find_interface_addresses() # $1 = interface
 
 find_interface_full_addresses() # $1 = interface
 {
-    ip -f inet6 addr show $1 2> /dev/null | grep 'inet6 ' | sed 's/\s*inet6 //;s/ scope.*//;s/ peer.*//'
+    $IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 ' | sed 's/\s*inet6 //;s/ scope.*//;s/ peer.*//'
 }
 
 #
@@ -501,7 +501,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
     local address
     local rest
 
-    ip -6 route show dev $1 2> /dev/null |
+    $IP -6 route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in
 		default)
@@ -756,11 +756,11 @@ detect_gateway() # $1 = interface
     #
     # First assume that this is some sort of point-to-point interface
     #
-    gateway=$( find_peer $(ip -6 addr list $interface ) )
+    gateway=$( find_peer $($IP -6 addr list $interface ) )
     #
     # Maybe there's a default route through this gateway already
     #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -6 route list dev $interface | grep '^default'))
+    [ -n "$gateway" ] || gateway=$(find_gateway $($IP -6 route list dev $interface | grep '^default'))
     #
     # Last hope -- is there a load-balancing route through the interface?
     #
@@ -788,8 +788,8 @@ truncate() # $1 = length
 delete_tc1()
 {
     clear_one_tc() {
-        tc qdisc del dev $1 root 2> /dev/null
-        tc qdisc del dev $1 ingress 2> /dev/null
+        $TC qdisc del dev $1 root 2> /dev/null
+        $TC qdisc del dev $1 ingress 2> /dev/null
 
     }
 
@@ -813,7 +813,7 @@ delete_tc1()
 get_device_mtu() # $1 = device
 {
     local output
-    output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+    output="$($IP link list dev $1 2> /dev/null)" # quotes required for /bin/ash
 
     if [ -n "$output" ]; then
 	echo $(find_mtu $output)
@@ -829,7 +829,7 @@ get_device_mtu() # $1 = device
 get_device_mtu1() # $1 = device
 {
     local output
-    output="$(ip link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+    output="$($IP link list dev $1 2> /dev/null)" # quotes required for /bin/ash
     local mtu
 
     if [ -n "$output" ]; then
@@ -886,11 +886,11 @@ restore_default_route() {
 		                #
 		                # Don't restore a route with a metric -- we only replace the one with metric == 0
 		                #
-				qt ip -6 route delete default metric 0 && \
+				qt $IP -6 route delete default metric 0 && \
 				    progress_message "Default Route with metric 0 deleted"
 				;;
 			    *)
-				qt ip -6 route replace $default_route && \
+				qt $IP -6 route replace $default_route && \
 				    result=0 && \
 				    progress_message "Default Route (${default_route# }) restored"
 				;;
@@ -930,27 +930,6 @@ find_echo() {
     [ -n "$result" ] && { echo "$result -e"; return; }
 
     echo echo
-}
-
-#
-# Determine the MAC address of the passed IP through the passed interface
-#
-find_mac() # $1 = IP address, $2 = interface
-{
-    if interface_is_usable $2 ; then
-	qt ping -nc 1 -t 2 -I $2 $1
-
-	local result
-	result=$(ip neigh list |  awk "/^$1 / {print \$5}")
-
-	case $result in
-	    \<*\>)
-		;;
-	    *)
-		[ -n "$result" ] && echo $result
-		;;
-	esac
-    fi
 }
 
 #

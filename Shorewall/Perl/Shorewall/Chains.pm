@@ -2064,6 +2064,30 @@ sub set_chain_variables() {
 	emit( 'IP6TABLES_RESTORE=${IP6TABLES}-restore',
 	      '[ -x "$IP6TABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
     }
+
+    if ( $config{IP} ) {
+	emit( qq(IP="$config{IP}") ,
+	      '[ -x "$IP" ] || startup_error "IP=$IP does not exist or is not executable"'
+	    );
+    } else {
+	emit 'IP=ip';
+    }
+    
+    if ( $config{TC} ) {
+	emit( qq(TC="$config{TC}") ,
+	      '[ -x "$TC" ] || startup_error "TC=$TC does not exist or is not executable"'
+	    );
+    } else {
+	emit 'TC=tc';
+    }
+
+    if ( $config{IPSET} ) {
+	emit( qq(IPSET="$config{IPSET}") ,
+	      '[ -x "$IPSET" ] || startup_error "IPSET=$IPSET does not exist or is not executable"'
+	    );
+    } else {
+	emit 'IPSET=ipset';
+    }
 }
 
 #

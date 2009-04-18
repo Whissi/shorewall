@@ -356,6 +356,9 @@ sub initialize( $ ) {
 	      # Location of Files
 	      #
 	      IPTABLES => undef,
+	      IP => undef,
+	      TC => undef,
+	      IPSEC => undef,
 	      #
 	      #PATH is inherited
 	      #
@@ -1946,16 +1949,20 @@ sub determine_capabilities( $ ) {
 
     $capabilities{RAW_TABLE} = qt1( "$iptables -t raw -L -n" );
 
-    if ( which 'ipset' ) {
-	qt( "ipset -X $sillyname" );
+    my $ipset = $config{IPSET} || 'tc';
 
-	if ( qt( "ipset -N $sillyname iphash" ) ) {
+    $ipset = which 'ipset' unless $ipset =~ '//';
+
+    if ( $ipset && -x $ipset ) {
+	qt( "$ipset -X $sillyname" );
+
+	if ( qt( "$ipset -N $sillyname iphash" ) ) {
 	    if ( qt1( "$iptables -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
 		qt1( "$iptables -D $sillyname -m set --set $sillyname src -j ACCEPT" );
 		$capabilities{IPSET_MATCH} = 1;
 	    }
 
-	    qt( "ipset -X $sillyname" );
+	    qt( "$ipset -X $sillyname" );
 	}
     }
 
@@ -2544,7 +2551,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version $globals{VERSION} - $date\n#";
 
-    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE SAVE_IPSETS) {
+    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE SAVE_IPSETS) {
 	conditionally_add_option $option;
     }
 

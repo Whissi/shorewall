@@ -116,8 +116,8 @@ do_iptables()
 #
 run_ip()
 {
-    if ! ip -6 $@; then
-	error_message "ERROR: Command \"ip -6 $@\" Failed"
+    if ! $IP -6 $@; then
+	error_message "ERROR: Command \"$IP -6 $@\" Failed"
 	stop_firewall
 	exit 2
     fi
@@ -127,8 +127,8 @@ run_ip()
 # Run tc and if an error occurs, stop/restore the firewall
 #
 run_tc() {
-    if ! tc $@ ; then
-	error_message "ERROR: Command \"tc $@\" Failed"
+    if ! $TC $@ ; then
+	error_message "ERROR: Command \"$TC $@\" Failed"
 	stop_firewall
 	exit 2
     fi

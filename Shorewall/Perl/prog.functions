@@ -8,7 +8,7 @@ delete_proxyarp() {
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt ip -4 route del $address dev $interface
+	    [ -z "${haveroute}${NOROUTES}" ] && qt $IP -4 route del $address dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -140,8 +140,8 @@ do_iptables()
 #
 run_ip()
 {
-    if ! ip -4 $@; then
-	error_message "ERROR: Command \"ip -4 $@\" Failed"
+    if ! $IP -4 $@; then
+	error_message "ERROR: Command \"$IP -4 $@\" Failed"
 	stop_firewall
 	exit 2
     fi
@@ -151,8 +151,8 @@ run_ip()
 # Run tc and if an error occurs, stop/restore the firewall
 #
 run_tc() {
-    if ! tc $@ ; then
-	error_message "ERROR: Command \"tc $@\" Failed"
+    if ! $TC $@ ; then
+	error_message "ERROR: Command \"$TC $@\" Failed"
 	stop_firewall
 	exit 2
     fi
@@ -191,7 +191,7 @@ restore_dynamic_rules() {
 #
 get_all_bcasts()
 {
-    ip -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+    $IP -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 }
 
 #

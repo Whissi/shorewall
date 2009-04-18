@@ -125,6 +125,7 @@
 #     
 #
 get_config() {
+    local prog
 
     ensure_config_path
 
@@ -185,6 +186,75 @@ get_config() {
 	fi
 
 	export IPTABLES
+
+	if [ -n "$IP" ]; then
+	    case "$IP" in
+		*/*)
+		    if [ ! -x "$IP" ] ; then
+			echo "   ERROR: The program specified in IP ($IP) does not exist or is not executable" >&2
+			exit 2
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $IP 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			echo "   ERROR: Can't find $IP executable" >&2
+			exit 2
+		    fi
+		    IP=$prog
+		    ;;
+	    esac
+	else 
+	    IP='ip'
+	fi
+
+	export IP
+
+	if [ -n "$IPSET" ]; then
+	    case "$IPSET" in
+		*/*)
+		    if [ ! -x "$IPSET" ] ; then
+			echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
+			exit 2
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $IPSET 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			echo "   ERROR: Can't find $IPSET executable" >&2
+			exit 2
+		    fi
+		    IPSET=$prog
+		    ;;
+	    esac
+	else 
+	    IPSET='ipset'
+	fi
+
+	export IPSET
+
+	if [ -n "$TC" ]; then
+	    case "$TC" in
+		*/*)
+		    if [ ! -x "$TC" ] ; then
+			echo "   ERROR: The program specified in TC ($TC) does not exist or is not executable" >&2
+			exit 2
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $IP 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			echo "   ERROR: Can't find $IP executable" >&2
+			exit 2
+		    fi
+		    TC=$prog
+		    ;;
+	    esac
+	else 
+	    TC='tc'
+	fi
+
+	export TC
 
 	#
 	# Compile by non-root needs no restore file
@@ -1808,7 +1878,7 @@ case "$COMMAND" in
     delete)
 	get_config
 	shift
-	add_command $@
+	delete_command $@
 	;;
     save)
 	get_config

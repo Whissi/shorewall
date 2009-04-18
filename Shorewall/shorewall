@@ -242,9 +242,9 @@ get_config() {
 		    fi
 		    ;;
 		*)
-		    prog="$(mywhich $IP 2> /dev/null)"
+		    prog="$(mywhich $TC 2> /dev/null)"
 		    if [ -z "$prog" ] ; then
-			echo "   ERROR: Can't find $IP executable" >&2
+			echo "   ERROR: Can't find $TC executable" >&2
 			exit 2
 		    fi
 		    TC=$prog

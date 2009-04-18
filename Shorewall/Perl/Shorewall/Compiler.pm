@@ -329,7 +329,7 @@ sub generate_script_3($) {
 
     if ( $family == F_IPV4 ) {
 	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-	    emit ( "addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
+	    emit ( "addr=\$(\$IP -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
 		   'if [ -n "$addr" ]; then',
 		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
 		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
@@ -343,28 +343,36 @@ sub generate_script_3($) {
 	my @ipsets = all_ipsets;
 
 	if ( @ipsets ) {
-	    emit ( '[ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"' ,    
+	    emit ( 'case $IPSET in',
+		   '    */*)',
+		   '        [ -x "$IPSET" ] || fatal_error "IPSET=$IPSET does not exist or is not executable"',
+		   '        ;;',
+		   '    *)',
+		   '        IPSET="$(which ipset)"',
+		   '        [ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"' ,
+		   '        ;;',
+		   'esac',
 		   '',
 		   'if [ "$COMMAND" = start ]; then' ,
 		   '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		   '        ipset -U :all: :all:' ,
-		   '        ipset -U :all: :default:' ,
-		   '        ipset -F' ,
-		   '        ipset -X' ,
-		   '        ipset -R < ${VARDIR}/ipsets.save' ,
+		   '        $IPSET -U :all: :all:' ,
+		   '        $IPSET -U :all: :default:' ,
+		   '        $IPSET -F' ,
+		   '        $IPSET -X' ,
+		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
 		   '    fi' ,
 		   '' );
 
-	    emit ( "    qt ipset -L $_ -n || ipset -N $_ iphash" ) for @ipsets;
+	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
 	    emit ( '' ,
 		   'elif [ "$COMMAND" = restart ]; then' ,
 		   '' );
 
-	    emit ( "    qt ipset -L $_ -n || ipset -N $_ iphash" ) for @ipsets;
+	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
 	    emit ( '' , 
-		   '    if ipset -S > ${VARDIR}/ipsets.tmp; then' ,
+		   '    if $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
 		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
 		   '    fi' );
 	    emit ( 'fi',
@@ -374,7 +382,7 @@ sub generate_script_3($) {
 	emit ( 'if [ "$COMMAND" = refresh ]; then' ,
 	       '   run_refresh_exit' );
 
-	emit ( "   qt ipset -L $_ -n || ipset -N $_ iphash" ) for @ipsets;
+	emit ( "   qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
 	emit ( 'else' ,
 	       '    run_init_exit',

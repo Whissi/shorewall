@@ -813,8 +813,8 @@ sub setup_traffic_shaping() {
 	push_indent;
 
 	emit ( "${dev}_exists=Yes",
-	       "qt tc qdisc del dev $device root",
-	       "qt tc qdisc del dev $device ingress",
+	       "qt \$TC qdisc del dev $device root",
+	       "qt \$TC qdisc del dev $device ingress",
 	       "run_tc qdisc add dev $device root handle $devnum: htb default $defmark",
 	       "${dev}_mtu=\$(get_device_mtu $device)",
 	       "${dev}_mtu1=\$(get_device_mtu1 $device)",

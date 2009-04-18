@@ -2158,7 +2158,7 @@ EOF
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	    [ -z "${haveroute}${NOROUTES}" ] && qt $IP -4 route del $address dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -2253,7 +2253,7 @@ EOF
 	emit <<'EOF';
 
     if [ -n "$(mywhich ipset)" ]; then
-        if ipset -S > ${VARDIR}/ipsets.tmp; then
+        if $IPSET -S > ${VARDIR}/ipsets.tmp; then
             #
             # Don't save an 'empty' file
             #

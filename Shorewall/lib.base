@@ -758,6 +758,7 @@ determine_capabilities() {
     TIME_MATCH=
     GOTO_TARGET=
     LOGMARK_TARGET=
+    IPMARK_TARGET=
 
     chain=fooX$$
 
@@ -851,6 +852,7 @@ determine_capabilities() {
 	fi
 
 	qt $IPTABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IPTABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
 	qt $IPTABLES -t mangle -F $chain
 	qt $IPTABLES -t mangle -X $chain
 	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
@@ -945,6 +947,7 @@ report_capabilities() {
 	report_capability "Time Match" $TIME_MATCH
 	report_capability "Goto Support" $GOTO_TARGET
 	report_capability "LOGMARK Target" $LOGMARK_TARGET
+	report_capability "IPMARK Target" $IPMARK_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1000,6 +1003,7 @@ report_capabilities1() {
     report_capability1 TIME_MATCH
     report_capability1 GOTO_TARGET
     report_capability1 LOGMARK_TARGET
+    report_capability1 IPMARK_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

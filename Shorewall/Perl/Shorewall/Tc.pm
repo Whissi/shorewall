@@ -103,6 +103,12 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		mask      => '' ,
 		connmark  => 0
 		} ,
+	      { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
+		target    => 'IPMARK' ,
+		mark      => NOMARK,
+		mask      => '',
+		connmark  => 0
+	        } ,
 	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
 		target    => 'MARK --or-mark' ,
 		mark      => HIGHMARK ,
@@ -293,6 +299,43 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 			}
 
 			$sticky++;
+		    } elsif ( $target eq 'IPMARK ' ) {
+			my ( $srcdst, $mask1, $mask2, $shift ) = ('src', 255, 0, 0 );
+
+			require_capability 'IPMARK_TARGET', 'IPMARK', 's';
+
+			if ( $cmd =~ /^IPMARK\((.+?)\)$/ ) {
+			    my $params = $1;
+			    my $val;
+
+			    my ( $sd, $m1, $m2, $s , $bad ) = split ',', $params;
+
+			    fatal_error "Invalid IPMARK parameters ($params)" if $bad;
+			    fatal_error "Invalid IPMARK parameter ($sd)" unless ( $sd eq 'src' || $sd eq 'dst' );
+			    $srcdst = $sd;
+
+			    if ( defined $m1 && $m1 ne '' ) {
+				$val = numeric_value ($m1);
+				fatal_error "Invalid Mask ($m1)" unless defined $val;
+				$mask1 = $m1;
+			    }
+
+			    if ( defined $m2 && $m2 ne '' ) {
+				$val = numeric_value ($m2);
+				fatal_error "Invalid Mask ($m2)" unless defined $val;
+				$mask2 = $m2;
+			    }
+				
+			    if ( defined $s ) {
+				$val = numeric_value ($s);
+				fatal_error "Invalid Shift Bits ($s)" unless defined $val;
+				$shift = $s;
+			    }
+			} else {
+			    fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless $cmd eq 'IPMARK';
+			}
+			    
+			$target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 		    }
 
 		    if ( $rest ) {

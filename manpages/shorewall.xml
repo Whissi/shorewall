@@ -101,6 +101,18 @@
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>decode</option><arg
+      choice="plain"><replaceable>classnum</replaceable></arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
       <arg rep="norepeat">-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>delete</option></arg>
@@ -136,6 +148,19 @@
       <arg><option>-x</option></arg>
 
       <arg><option>-m</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>encode</option><arg
+      choice="plain"><replaceable>devnum</replaceable><replaceable>
+      mark</replaceable></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -719,6 +744,15 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">decode</emphasis></term>
+
+        <listitem>
+          <para>Decomposes the <replaceable>classnum</replaceable> into its
+          component device number and mark value.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">delete</emphasis></term>
 
         <listitem>
@@ -754,6 +788,16 @@
           counts are abbreviated. The <emphasis role="bold">-m</emphasis>
           option causes any MAC addresses included in Shorewall log messages
           to be displayed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">encode</emphasis></term>
+
+        <listitem>
+          <para>Displays the class number derived from the
+          <replaceable>devnum</replaceable> and
+          <replaceable>mark</replaceable>.</para>
         </listitem>
       </varlistentry>
 

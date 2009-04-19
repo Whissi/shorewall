@@ -212,6 +212,25 @@ None.
         The above defines 32 classes with MARK values 100-131. Each
         class has a guaranteed rate of 1kbit/second.
 
+    As part of this change, the generation of class ids from mark
+    values has been changed. The class number is now
+
+	   ( <devnum> << 10 ) | <mask>
+
+    /sbin/shorewall has an 'encode' and 'decode' command to translate a
+    device number, mark pair to/from a classid:
+
+	   encode <devnum> <mark>
+	   decode <classnum>
+
+    Example:
+
+	$ shorewall decode 3172
+	Device = 3 Mark = 100
+        $ shorewall encode 3 100
+	Class number = 3172
+	$
+
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

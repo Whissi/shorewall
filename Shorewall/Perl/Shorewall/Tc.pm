@@ -559,6 +559,7 @@ sub validate_tc_class( $$$$$$ ) {
     my $classnumber = 0;
     my $devref;
     my $device = $devclass;
+    my $occurs = 1;
 
     if ( $devclass =~ /:/ ) {
 	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
@@ -611,7 +612,8 @@ sub validate_tc_class( $$$$$$ ) {
 			       priority => $prio eq '-' ? 1 : $prio ,
 			       mark     => $markval ,
 			       flow     => '' ,
-			       pfifo    => 0
+			       pfifo    => 0,
+			       occurs   => 1,
 			     };
 
     $tcref = $tcref->{$classnumber};
@@ -626,13 +628,17 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    if ( $option eq 'default' ) {
 		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		$devref->{default} = $classnumber;
 	    } elsif ( $option eq 'tcp-ack' ) {
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		$tcref->{tcp_ack} = 1;
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		( undef, $option ) = split /=/, $option;
 		push @{$tcref->{tos}}, "$option/0xff";
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		( undef, $option ) = split /=/, $option;
 		push @{$tcref->{tos}}, $option;
 	    } elsif ( $option =~ /^flow=(.*)$/ ) {
@@ -641,6 +647,16 @@ sub validate_tc_class( $$$$$$ ) {
 	    } elsif ( $option eq 'pfifo' ) {
 		fatal_error "The 'pfifo'' option is not allowed with 'flow='" if $tcref->{flow};
 		$tcref->{pfifo} = 1;
+	    } elsif ( $option =~ /^occurs=(.+)$/ ) {
+		my $val = $1;
+		$occurs = numeric_value($val);
+		fatal_error "Invalid 'occurs' ($val)" unless defined $occurs && $occurs;
+		fatal_error "Duplicate 'occurs'" if $tcref->{occurs} > 1;
+		if ( $occurs > 1 ) {
+		    fatal_error "The 'occurs' option is not valid with 'classify'" if $devref->{classify};
+		    fatal_error "The 'occurs' option is not valid with 'default'"  if $devref->{default} == $classnumber;
+		    fatal_error "The 'occurs' option is not valid with 'tos'"      if @{$tcref->{tos}};
+		}
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
@@ -651,6 +667,21 @@ sub validate_tc_class( $$$$$$ ) {
     $tcref->{pfifo} = $devref->{pfifo} unless $tcref->{flow} || $tcref->{pfifo};
 
     push @tcclasses, "$device:$classnumber";
+	
+    while ( --$occurs ) {
+	fatal_error "Duplicate class number ($classnumber)" if $tcclasses{$device}{++$classnumber};
+
+	$tcclasses{$device}{$classnumber} =  { tos      => [] ,
+					       rate     => $tcref->{rate} ,
+					       ceiling  => $tcref->{ceiling} ,
+					       priority => $tcref->{priority} ,
+					       mark     => ++$markval ,
+					       flow     => $tcref->{flow} ,
+					       pfifo    => $tcref->{pfifo},
+					     };
+	push @tcclasses, "$device:$classnumber";
+    };
+
     progress_message "  Tcclass \"$currentline\" $done.";
 }
 

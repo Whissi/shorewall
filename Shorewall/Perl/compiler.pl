@@ -44,6 +44,8 @@ use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage( $ ) {
+    my $returnval = shift @_;
+
     print STDERR 'usage: compiler.pl [ <option> ... ] [ <filename> ]
 
   options are:
@@ -58,7 +60,8 @@ sub usage( $ ) {
     [ --test ]
     [ --family={4|6} ]
 ';
-    exit shift @_;
+
+    $returnval;
 }
 
 #

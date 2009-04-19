@@ -34,8 +34,11 @@ DIRECTORIES="$*"
 
 for directory in $DIRECTORIES; do
     if [ -d $directory ]; then
+	existing=$(ls -l $directory/firewall 2> /dev/null);
 	if /sbin/shorewall -${OPTIONS} compile -t $directory $directory/firewall > $directory/compileroutput 2> $directory/compilererrors; then
-	    if [ -f $directory/firewall.last ]; then
+	    if [ "$existing" = "$(ls -l $directory/firewall)" ]; then
+		echo "Test $directory FAILED ******** No object produced"
+	    elif [ -f $directory/firewall.last ]; then
 		if diff -au $directory/firewall.last $directory/firewall > $directory/compare; then
 		    echo "Test $directory PASSED"
 		else

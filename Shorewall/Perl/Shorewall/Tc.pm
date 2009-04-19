@@ -598,8 +598,8 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
+	    $classnumber = ( $devref->{number} << 10 ) | $mark;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
-	    $classnumber = $devnum . $mark;
 	}
     } else {
 	fatal_error "Missing MARK" unless $devref->{classify};
@@ -667,7 +667,7 @@ sub validate_tc_class( $$$$$$ ) {
     $tcref->{pfifo} = $devref->{pfifo} unless $tcref->{flow} || $tcref->{pfifo};
 
     push @tcclasses, "$device:$classnumber";
-	
+
     while ( --$occurs ) {
 	fatal_error "Duplicate class number ($classnumber)" if $tcclasses{$device}{++$classnumber};
 

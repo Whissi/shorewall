@@ -49,8 +49,10 @@
         role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
         role="bold">SAVE</emphasis>[<emphasis
         role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>|SAME|<emphasis
-        role="bold">COMMENT</emphasis>|IPMARK[([(<emphasis
+        role="bold">CONTINUE</emphasis>|<emphasis
+        role="bold">SAME</emphasis>|<emphasis
+        role="bold">COMMENT</emphasis>|<emphasis
+        role="bold">IPMARK</emphasis>[([(<emphasis
         role="bold">src</emphasis>|<emphasis
         role="bold">dst</emphasis>}][,[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][,[<emphasis>shift</emphasis>]]]]])]}[<emphasis
         role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
@@ -283,7 +285,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               to each matching packet based on the either the source or
               destination IP address. By default, it assigns a mark value
               equal to the low-order 8 bits of the source address. Default
-              values are: </para>
+              values are:</para>
 
               <simplelist>
                 <member>src</member>
@@ -319,7 +321,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
                   <member>0x8400 &gt;&gt; 8 = 0x84</member>
 
-                  <member>Mark = 0x84 = 132 </member>
+                  <member>Mark = 0x84 = 132</member>
                 </simplelist>
               </blockquote>
             </listitem>

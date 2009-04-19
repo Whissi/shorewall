@@ -236,6 +236,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 TIME_MATCH      => 'Time Match',
 		 GOTO_TARGET     => 'Goto Support',
 		 LOGMARK_TARGET  => 'LOGMARK Target',
+		 IPMARK_TARGET   => 'IPMARK Target',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -601,6 +602,7 @@ sub initialize( $ ) {
 	       TIME_MATCH => undef,
 	       GOTO_TARGET => undef,
 	       LOGMARK_TARGET => undef,
+	       IPMARK_TARGET => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1941,6 +1943,8 @@ sub determine_capabilities( $ ) {
 	}
 
 	$capabilities{CLASSIFY_TARGET} = qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
+	$capabilities{IPMARK_TARGET}   = qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
+	
 	qt1( "$iptables -t mangle -F $sillyname" );
 	qt1( "$iptables -t mangle -X $sillyname" );
 

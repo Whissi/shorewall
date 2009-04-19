@@ -35,6 +35,8 @@ released late in 2009.
     /etc/shorewall/rules (/etc/shorewall6/rules) may now be used to
     limit on a per source IP or per destination IP basis.
 
+8)  Support for per-IP traffic shaping classes has been added.
+
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
@@ -130,6 +132,85 @@ None.
 
     In other words, the utilities will be located via the current PATH
     setting.
+
+4)  There has been a desire in the user community to limit traffic by
+    IP address using Shorewall traffic shaping. Heretofore, that has
+    required a very inefficient process:
+
+    a) Define a tcclass for each internal host (two, if shaping both in
+       and out).
+    b) Define a tcrule for each host to mark to classify the packets
+       accordingly.
+
+    Beginning with Shorewall 4.3.9, this process is made easier IF YOU
+    ARE WILLING TO INSTALL xtables-addons. The feature requires IPMARK
+    support in iptables[6] and your kernel. That support is available
+    in xtables-addons. 
+
+    The new facility has two components:
+
+    a) A new IPMARK MARKing command in /etc/shorewall/tcrules.
+    b) A new 'occurs' OPTION in /etc/shorewall/tcclasses.
+
+    The IPMARK target assigns a mark to each matching packet based on
+    the either the source or destination IP address. By default, it
+    assigns a mark value equal to the low-order 8 bits of the source
+    address.
+
+    The syntax is as follows:
+
+	IPMARK[([{src|dst}][,[<mask1>][,[<mask2>][,[<shift>]]]])]
+
+    Default values are:
+
+	    src
+	    <mask1> = 0xFF
+	    <mask2> = 0x00
+	    <shift> = 0
+
+     'src' and 'dst' specify whether the mark is to be based on the
+     source or destination address respectively.
+
+     The selected address is first LANDed with <mask1> then LORed with
+     <mask2>.
+
+     The result is then shifted <shift> bits to the right.
+
+     Example:
+
+	IPMASK(dst, 0XFF00, 0x8000,8)
+
+        Destination IP address is 192.168.4.3 = 0xc0a80103
+
+	0xc0a80403 LAND 0xFF00  = 0x0400
+	0x0400     LOR  0x80    = 0x8400
+        0x8400     >>   8       = 0x84
+
+	Mark = 0x84 = 132
+
+    The 'occurs' option causes the class definition to be replicated
+    many times. The synax is:
+
+	 occurs=<number>
+
+    When 'occurs' is used:
+
+	 a) The associated device may not have the 'classify' option.
+	 b) The class may not be the default class.
+	 c) The class may not have any 'tos=' options (including
+	    'tcp-ack').
+
+    The 'RATE' and 'CEIL' parameters apply to each instance of the
+    class. So the total RATE represented by an entry with 'occurs' will
+    be the listed RATE multiplied by the 'occurs' number.
+
+    Example:
+
+	#DEVICE MARK    RATE    CEIL    PRIORITY	OPTIONS
+	eth0	100	1kbit	230kbit	       4	occurs=32
+
+        The above defines 32 classes with MARK values 100-131. Each
+        class has a guaranteed rate of 1kbit/second.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

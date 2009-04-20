@@ -599,7 +599,7 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-	    $classnumber = $config{WIDE_TC_MARKS} ? ( $devref->{number} << 10 ) | $mark : $devref->{number} . $mark;
+	    $classnumber = $config{WIDE_TC_MARKS} ? ( $devref->{number} << 10 ) | $mark : 1 . $mark;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	}
     } else {

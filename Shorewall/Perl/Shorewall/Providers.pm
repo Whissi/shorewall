@@ -293,12 +293,12 @@ sub add_a_provider( $$$$$$$$ ) {
 	verify_mark $mark;
 
 	if ( $val < 65535 ) {
-	    fatal_error "Invalid Mark Value ($mark) with WIDE_TC_MARKS=No" unless $config{WIDE_TC_MARKS};
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" unless $config{HIGH_ROUTE_MARKS};
-	} elsif ( $val < 256) {
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
+	    if ( $config{HIGH_ROUTE_MARKS} ) {
+		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=Yes" if $config{WIDE_TC_MARKS};
+		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $val < 256;
+	    }
 	} else {
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" unless $config{HIGH_ROUTE_MARKS};
+	    fatal_error "Invalid Mark Value ($mark)" unless $config{HIGH_ROUTE_MARKS} && $config{WIDE_TC_MARKS};
 	}
 
 	for my $providerref ( values %providers  ) {

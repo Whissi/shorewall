@@ -50,7 +50,10 @@
         role="bold">SAVE</emphasis>[<emphasis
         role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
         role="bold">CONTINUE</emphasis>|<emphasis
-        role="bold">COMMENT</emphasis>}[<emphasis
+        role="bold">COMMENT</emphasis>|<emphasis
+        role="bold">IPMARK</emphasis>[([(<emphasis
+        role="bold">src</emphasis>|<emphasis
+        role="bold">dst</emphasis>}][,[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][,[<emphasis>shift</emphasis>]]]]])]}[<emphasis
         role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
         role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
         role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
@@ -240,6 +243,52 @@
 
               <para>To stop the comment from being attached to further rules,
               simply include COMMENT on a line by itself.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">IPMARK</emphasis> ‒ Assigns a mark
+              to each matching packet based on the either the source or
+              destination IP address. By default, it assigns a mark value
+              equal to the low-order 8 bits of the source address. Default
+              values are:</para>
+
+              <simplelist>
+                <member>src</member>
+
+                <member><emphasis>mask1</emphasis> = 0xFF</member>
+
+                <member><emphasis>mask2</emphasis> = 0x00</member>
+
+                <member><emphasis>shift</emphasis> = 0</member>
+              </simplelist>
+
+              <para>'src' and 'dst' specify whether the mark is to be based on
+              the source or destination address respectively. The selected
+              address is first LANDed with <emphasis>mask1</emphasis> then
+              LORed with <emphasis>ma<emphasis>s</emphasis>k2</emphasis>. The
+              result is then shifted <emphasis>shift</emphasis> bits to the
+              right.</para>
+
+              <para>Example:</para>
+
+              <blockquote>
+                <para><simplelist>
+                    <member>IPMARK(dst, 0XFF00, 0x8000,8)</member>
+
+                    <member>Destination IP address is 192.168.4.3 =
+                    0xc0a80103</member>
+                  </simplelist>Meaning:</para>
+
+                <simplelist>
+                  <member>0xc0a80403 LAND 0xFF00 = 0x0400</member>
+
+                  <member>0x0400 LOR 0x80 = 0x8400</member>
+
+                  <member>0x8400 &gt;&gt; 8 = 0x84</member>
+
+                  <member>Mark = 0x84 = 132</member>
+                </simplelist>
+              </blockquote>
             </listitem>
           </orderedlist>
         </listitem>

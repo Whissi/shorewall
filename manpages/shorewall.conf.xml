@@ -598,14 +598,15 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         <listitem>
           <para>Prior to version 3.2.0, it was not possible to use connection
           marking in <ulink
-          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) if you
-          have a multi-ISP configuration that uses the track option.</para>
+          url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) if you had
+          a multi-ISP configuration that uses the track option.</para>
 
-          <para>Beginning with release 3.2.0, you may now set
-          HIGH_ROUTE_MARKS=Yes in to effectively divide the packet mark and
-          connection mark into two 8-byte mark fields.</para>
+          <para>Beginning with release 3.2.0, you may set HIGH_ROUTE_MARKS=Yes
+          in to effectively divide the packet mark and connection mark into
+          two mark fields.</para>
 
-          <para>When you do this:</para>
+          <para>The width of the fields are determined by the setting of
+          WIDE_TC_MARKS. If WIDE_TC_MARKS=No (the default):</para>
 
           <orderedlist numeration="loweralpha">
             <listitem>
@@ -625,13 +626,33 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               of 1-255 and may still not be set in the PREROUTING
               chain.</para>
             </listitem>
+          </orderedlist>
+
+          <para>When WIDE_TC_MARKS=Yes:</para>
+
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>The MARK field in the providers file must have a value
+              that is a multiple of 65536 (using hex representation, the
+              values are 0x010000-0xFF0000 with the low-order 16 bits being
+              zero).</para>
+            </listitem>
 
             <listitem>
-              <para>When you SAVE or RESTORE in tcrules, only the TC mark
-              value is saved or restored. Shorewall handles saving and
-              restoring the routing (provider) marks.</para>
+              <para>You may only set those mark values in the PREROUTING
+              chain.</para>
+            </listitem>
+
+            <listitem>
+              <para>Marks used for traffic shaping must be in the range of
+              1-1023 and may still not be set in the PREROUTING chain.</para>
             </listitem>
           </orderedlist>
+
+          <para>Regardless of the setting of WIDE_TC_MARKS, when you SAVE or
+          RESTORE in tcrules, only the TC mark value is saved or restored.
+          Shorewall handles saving and restoring the routing (provider)
+          marks.</para>
         </listitem>
       </varlistentry>
 
@@ -1698,6 +1719,19 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           </simplelist>
 
           <para>If not specified, then 2 is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">WIDE_ROUTE_MARKS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>When set to No (the default), traffic shaping marks are 8
+          bytes wide (possible values are 1-255). When WIDE_ROUTE_MARKS=Yes,
+          traffic shaping marks are 10 bytes wide (values 1-1023). The setting
+          of WIDE_ROUTE_MARKS also has an effect on the HIGH_ROUTE_MARKS
+          option (see above).</para>
         </listitem>
       </varlistentry>
     </variablelist>

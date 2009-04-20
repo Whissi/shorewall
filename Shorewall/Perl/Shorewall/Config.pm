@@ -434,6 +434,7 @@ sub initialize( $ ) {
 	      RESTORE_DEFAULT_ROUTE => undef ,
 	      FAST_STOP => undef ,
 	      AUTOMAKE => undef ,
+	      WIDE_TC_MARKS => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -536,6 +537,7 @@ sub initialize( $ ) {
 	      AUTO_COMMENT => undef,
 	      MANGLE_ENABLED => undef ,
 	      AUTOMAKE => undef ,
+	      WIDE_TC_MARKS => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -733,15 +735,19 @@ sub assert( $ ) {
 # Convert value to decimal number
 #
 sub numeric_value ( $ ) {
+    no warnings;
     my $mark = lc $_[0];
     return undef unless $mark =~ /^-?(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
     $mark =~ /^0/ ? oct $mark : $mark;
+    use warnings;
 }
 
 sub numeric_value1 ( $ ) {
+    no warnings;
     my $val = numeric_value $_[0];
     fatal_error "Invalid Number ($_[0])" unless defined $val;
     $val;
+    use warnings;
 }
 
 #
@@ -2286,6 +2292,7 @@ sub get_configuration( $ ) {
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
+    default_yes_no 'WIDE_TC_MARKS'              , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 

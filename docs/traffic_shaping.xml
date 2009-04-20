@@ -173,8 +173,10 @@
       <listitem>
         <para>MARK - Netfilter has a facility for
         <firstterm>marking</firstterm> packets. Packet marks have a numeric
-        value which is limited in Shorewall to the values 1-255. You assign
-        packet marks to different types of traffic using entries in the
+        value which is limited in Shorewall to the values 1-255 (1-1023 if you
+        set WIDE_TC_MARKS=Yes in <ulink
+        url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
+        assign packet marks to different types of traffic using entries in the
         <filename>/etc/shorewall/tcrules</filename> file.</para>
       </listitem>
     </orderedlist>
@@ -431,12 +433,14 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>MARK - The mark value which is an integer in the range 1-255.
-          You define these marks in the tcrules file, marking the traffic you
-          want to go into the queuing classes defined in here. You can use the
-          same marks for different Interfaces. You must specify "-' in this
-          column if the device specified in the INTERFACE column has the
-          <emphasis role="bold">classify</emphasis> option in
+          <para>MARK - The mark value which is an integer in the range 1-255
+          (1-1023 if you set WIDE_TC_MARKS=Yes in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
+          define these marks in the tcrules file, marking the traffic you want
+          to go into the queuing classes defined in here. You can use the same
+          marks for different Interfaces. You must specify "-' in this column
+          if the device specified in the INTERFACE column has the <emphasis
+          role="bold">classify</emphasis> option in
           <filename>/etc/shorewall/tcdevices</filename>.</para>
         </listitem>
 
@@ -610,7 +614,9 @@ ppp0           6000kbit         500kbit</programlisting>
       <itemizedlist>
         <listitem>
           <para>MARK or CLASSIFY - MARK specifies the mark value is to be
-          assigned in case of a match. This is an integer in the range 1-255.
+          assigned in case of a match. This is an integer in the range 1-255
+          (1-1023 if you set WIDE_TC_MARKS=Yes in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ).
           This value may be optionally followed by <quote>:</quote> and either
           <quote>F</quote>, <quote>P</quote> or "T" to designate that the
           marking will occur in the FORWARD, PREROUTING or POSTROUTING chains
@@ -716,12 +722,54 @@ ppp0           6000kbit         500kbit</programlisting>
           $FW[:&lt;<emphasis>address</emphasis>&gt;] in which case, the
           classify action takes place in the OUTPUT chain. When used with the
           builtin traffic shaper, the &lt;major&gt; class is the interface
-          number and the &lt;minor&gt; class is either a) the MARK value of
-          the class preceded by the number "1" (MARK value 1 is &lt;minor&gt;
-          class 11, MARK value 22 is &lt;minor&gt; class 122, and so on) or b)
-          The class number (if the <emphasis role="bold">classify</emphasis>
-          option was specified in for the interface
-          <filename>/etc/shorewall/interfaces</filename>)</para>
+          number and the &lt;minor&gt; class is either:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Constructed from the mark. The method of construction
+              depends on the setting of WIDE_TC_MARKS (<ulink
+              url="manpages/shorewall.conf.html">shorewall.conf</ulink>
+              (5)).</para>
+
+              <para>When WIDE_TC_MARKS=No (the default), the &lt;minor&gt;
+              class is:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>the MARK value of the class preceded by the number "1"
+                  (MARK value 1 is &lt;minor&gt; class 11, MARK value 22 is
+                  &lt;minor&gt; class 122, and so on)</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>When SIDE_TC_MARKS=Yes, the &lt;minor&gt; class is:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>The number shifted 10 bits to the left (multiplied by
+                  1024) and logically ORed with the MARK value. The
+                  <command>shorewall encode</command> and <command>shorewall
+                  decode</command> commands (<ulink
+                  url="manpages/shorewall.html">shorewall</ulink> (8)) may be
+                  used to translate a device number/mark pair to/from a
+                  &lt;minor&gt; class.</para>
+
+                  <para>Examples:</para>
+
+                  <programlisting>$ <command>shorewall encode 1 100</command>
+Class Number = 1124
+$ <command>shorewall decode 1124</command>
+Device = 1 Mark = 100</programlisting>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para>The class number (if the <emphasis
+              role="bold">classify</emphasis> option was specified in for the
+              interface <filename>/etc/shorewall/interfaces</filename>)</para>
+            </listitem>
+          </orderedlist>
         </listitem>
 
         <listitem>

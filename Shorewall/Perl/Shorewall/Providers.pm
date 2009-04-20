@@ -93,7 +93,7 @@ INIT {
 # Set up marking for 'tracked' interfaces.
 #
 sub setup_route_marking() {
-    my $mask = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
+    my $mask = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
 
     require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' , 's' );
     require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
@@ -264,26 +264,25 @@ sub add_a_provider( $$$$$$$$ ) {
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
 
-    my $provider = chain_base $table;
-    my $base     = uc chain_base $interface;
+    my $provider    = chain_base $table;
+    my $base        = uc chain_base $interface;
+    my $gatewaycase = '';
 
     if ( $gateway eq 'detect' ) {
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
-	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) );
+	$gatewaycase = 'detect';
+    } elsif ( $gateway && $gateway ne '-' ) {
+	validate_address $gateway, 0;
+	$gatewaycase = 'specified';
     } else {
-	start_provider( $table, $number, "if interface_is_usable $interface; then" );
-
-	if ( $gateway && $gateway ne '-' ) {
-	    validate_address $gateway, 0;
-	} else {
-	    fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
-	    $gateway = '';
-	    emit "run_ip route add default dev $interface table $number";
-	}
+	$gatewaycase = 'none';
+	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
+	$gateway = '';
     }
 
     my $val = 0;
+    my $pref;
 
     if ( $mark ne '-' ) {
 
@@ -293,23 +292,21 @@ sub add_a_provider( $$$$$$$$ ) {
 
 	verify_mark $mark;
 
-	if ( $val < 256) {
+	if ( $val < 65535 ) {
+	    fatal_error "Invalid Mark Value ($mark) with WIDE_TC_MARKS=No" unless $config{WIDE_TC_MARKS};
+	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" unless $config{HIGH_ROUTE_MARKS};
+	} elsif ( $val < 256) {
 	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
 	} else {
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
+	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" unless $config{HIGH_ROUTE_MARKS};
 	}
 
 	for my $providerref ( values %providers  ) {
-	    fatal_error "Duplicate mark value ($mark)" if $providerref->{mark} == $val;
+	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
 	}
 
-	my $pref = 10000 + $number - 1;
+	$pref = 10000 + $number - 1;
 
-	emit ( "qt \$IP -$family rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
-
-	emit ( "run_ip rule add fwmark $mark pref $pref table $number",
-	       "echo \"qt \$IP -$family rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
-	     );
     }
 
     my ( $loose, $track, $balance , $default, $default_balance, $optional, $mtu ) = (0,0,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
@@ -360,7 +357,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     $providers{$table} = { provider  => $table,
 			   number    => $number ,
-			   mark      => $val ,
+			   mark      => $val ? in_hex($val) : $val ,
 			   interface => $interface ,
 			   optional  => $optional ,
 			   gateway   => $gateway ,
@@ -384,8 +381,22 @@ sub add_a_provider( $$$$$$$$ ) {
     my $realm = '';
 
     if ( $shared ) {
-	$providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
+	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
+	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$variable" ]; then) );
+    } elsif ( $gatewaycase eq 'detect' ) {
+	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) );
+    } else {
+	start_provider( $table, $number, "if interface_is_usable $interface; then" );
+	emit "run_ip route add default dev $interface table $number" if $gatewaycase eq 'none';
+    }	
+
+    if ( $mark ne '-' ) {
+	emit ( "qt \$IP -$family rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
+
+	emit ( "run_ip rule add fwmark $mark pref $pref table $number",
+	       "echo \"qt \$IP -$family rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
+	     );
     }
 
     if ( $duplicate ne '-' ) {
@@ -461,10 +472,19 @@ sub add_a_provider( $$$$$$$$ ) {
     emit 'else';
 
     if ( $optional ) {
-	emit ( "    error_message \"WARNING: Interface $interface is not usable -- Provider $table ($number) not Added\"",
-	       "    ${base}_IS_UP=" );
+	if ( $shared ) {
+	    emit ( "    error_message \"WARNING: Interface $interface is not usable -- Provider $table ($number) not Added\"" );
+	} else {
+	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );
+	}
+
+	emit( "    ${base}_IS_UP=" );
     } else {
-	emit( "    fatal_error \"Interface $interface is not usable -- Provider $table ($number) Cannot be Added\"" );
+	if ( $shared ) {
+	    emit( "    fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Added\"" );
+	} else {
+	    emit( "    fatal_error \"Interface $interface is not usable -- Provider $table ($number) Cannot be Added\"" );
+	}
     }
 
     emit "fi\n";
@@ -765,7 +785,7 @@ sub lookup_provider( $ ) {
 #
 sub handle_stickiness( $ ) {
     my $havesticky   = shift;
-    my $mask         = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
+    my $mask         = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
     my $setstickyref = $mangle_table->{setsticky};
     my $setstickoref = $mangle_table->{setsticko};
     my $tcpreref     = $mangle_table->{tcpre};

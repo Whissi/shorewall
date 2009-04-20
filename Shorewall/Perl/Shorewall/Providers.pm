@@ -272,16 +272,13 @@ sub add_a_provider( $$$$$$$$ ) {
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
 	$gatewaycase = 'detect';
+    } elsif ( $gateway && $gateway ne '-' ) {
+	validate_address $gateway, 0;
+	$gatewaycase = 'specified';
     } else {
-
-	if ( $gateway && $gateway ne '-' ) {
-	    validate_address $gateway, 0;
-	    $gatewaycase = 'specified';
-	} else {
-	    $gatewaycase = 'none';
-	    fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
-	    $gateway = '';
-	}
+	$gatewaycase = 'none';
+	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
+	$gateway = '';
     }
 
     my $val = 0;

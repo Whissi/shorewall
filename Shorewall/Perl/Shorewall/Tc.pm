@@ -316,19 +316,19 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 
 			    if ( defined $m1 && $m1 ne '' ) {
 				$val = numeric_value ($m1);
-				fatal_error "Invalid Mask ($m1)" unless defined $val;
+				fatal_error "Invalid Mask ($m1)" unless defined $val && $val && $val <= 0xffffffff;
 				$mask1 = $m1;
 			    }
 
 			    if ( defined $m2 && $m2 ne '' ) {
 				$val = numeric_value ($m2);
-				fatal_error "Invalid Mask ($m2)" unless defined $val;
+				fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
 				$mask2 = $m2;
 			    }
 				
 			    if ( defined $s ) {
 				$val = numeric_value ($s);
-				fatal_error "Invalid Shift Bits ($s)" unless defined $val;
+				fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val < 128;
 				$shift = $s;
 			    }
 			} else {
@@ -361,8 +361,9 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 	    if ( $config{HIGH_ROUTE_MARKS} ) {
 		my $val = numeric_value( $cmd );
 		fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
-		fatal_error 'Marks < 256 may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes'
-		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= 0xFF;
+		my $limit = $config{WIDE_TC_MARKS} ? 65535 : 255;
+		fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
+		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
 	    }
 	}
     }
@@ -598,7 +599,7 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-	    $classnumber = ( $devref->{number} << 10 ) | $mark;
+	    $classnumber = $config{WIDE_TC_MARKS} ? ( $devref->{number} << 10 ) | $mark : $devref->{number} . $mark;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	}
     } else {
@@ -1007,7 +1008,7 @@ sub setup_tc() {
 	my $mark_part = '';
 
 	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = $config{HIGH_ROUTE_MARKS} ? '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
+	    $mark_part = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFF0000' : '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
 
 	    for my $interface ( @routemarked_interfaces ) {
 		add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
@@ -1024,7 +1025,7 @@ sub setup_tc() {
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD POSTROUTING) {
-		insert_rule1 $mangle_table->{$chain}, 0, '-j MARK --and-mark 0xFF';
+		insert_rule1 $mangle_table->{$chain}, 0, $config{WIDE_TC_MARKS} ? '-j MARK --and-mark 0x03FF' : '-j MARK --and-mark 0xFF';
 	    }
 	}
     }

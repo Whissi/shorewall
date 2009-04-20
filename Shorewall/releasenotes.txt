@@ -59,7 +59,12 @@ released late in 2009.
           P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 10
 ----------------------------------------------------------------------------
 
-None.
+1.  When Shorewall could not determine the MAC address of of a gateway
+    router where multiple providers are configured through the same
+    interface, invalid iptables-restore input was generated. This
+    resulted in an error message similar to the following:
+
+        iptables-restore v1.3.5: Bad mac address `-j'
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -71,7 +76,29 @@ None.
                 N E W   F E A T U R E S   I N   4 . 3 . 10
 ----------------------------------------------------------------------------
 
-None.
+1.  The change that implemented IPMARK support in 4.3.9 resulted in a
+    lack of upward compatibility which could break some
+    configurations. The incompatibility stems from the way in which
+    Shorewall generates a TC class Id from a mark value. 
+
+    - Prior to 4.3.9, the class number was constructed by concatinating
+      the device number with the mark value.
+
+    - Beginning with 4.3.9, the class number is constructed by shifting
+      the device number left by 10 bits and logically ORing the result
+      with the mark value.
+
+    The WIDE_TC_MARKS option in shorewall.conf selects which
+    construction to use. WIDE_TC_MARKS=No (the default) produces
+    pre-4.3.9 behavior. WIDE_TC_MARKS=Yes produces the new behavior.
+
+    In addition to determining the method of constructing class Ids,
+    WIDE_TC_MARKS=Yes provides for larger mark values for traffic
+    shaping. Traffic shaping marks may have values up to 1023 with
+    WIDE_TC_MARKS=Yes. This means that when both WIDE_TC_MARKS=Yes and
+    HIGH_ROUTE_MARKS=Yes, routing marks (/etc/shorewall/providers MARK
+    column) must be >= 65536 (0x10000) and must be a multiple of 65536
+    (0x1000, 0x20000, 0x30000, ...).
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
@@ -436,7 +463,7 @@ None.
 
 	IPMARK(dst, 0XFF00, 0x8000,8)
 
-        Destination IP address is 192.168.4.3 = 0xc0a80103
+        Destination IP address is 192.168.4.3 = 0xc0a80403
 
 	0xc0a80403 LAND 0xFF00  = 0x0400
 	0x0400     LOR  0x80    = 0x8400

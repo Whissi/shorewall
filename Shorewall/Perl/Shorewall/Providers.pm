@@ -93,7 +93,7 @@ INIT {
 # Set up marking for 'tracked' interfaces.
 #
 sub setup_route_marking() {
-    my $mask = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
+    my $mask = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
 
     require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' , 's' );
     require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
@@ -292,14 +292,17 @@ sub add_a_provider( $$$$$$$$ ) {
 
 	verify_mark $mark;
 
-	if ( $val < 256) {
+	if ( $val < 65535 ) {
+	    fatal_error "Invalid Mark Value ($mark) with WIDE_TC_MARKS=No" unless $config{WIDE_TC_MARKS};
+	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" unless $config{HIGH_ROUTE_MARKS};
+	} elsif ( $val < 256) {
 	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $config{HIGH_ROUTE_MARKS};
 	} else {
-	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" if ! $config{HIGH_ROUTE_MARKS};
+	    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No" unless $config{HIGH_ROUTE_MARKS};
 	}
 
 	for my $providerref ( values %providers  ) {
-	    fatal_error "Duplicate mark value ($mark)" if $providerref->{mark} == $val;
+	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
 	}
 
 	$pref = 10000 + $number - 1;
@@ -354,7 +357,7 @@ sub add_a_provider( $$$$$$$$ ) {
 
     $providers{$table} = { provider  => $table,
 			   number    => $number ,
-			   mark      => $val ,
+			   mark      => $val ? in_hex($val) : $val ,
 			   interface => $interface ,
 			   optional  => $optional ,
 			   gateway   => $gateway ,
@@ -782,7 +785,7 @@ sub lookup_provider( $ ) {
 #
 sub handle_stickiness( $ ) {
     my $havesticky   = shift;
-    my $mask         = $config{HIGH_ROUTE_MARKS} ? '0xFF00' : '0xFF';
+    my $mask         = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
     my $setstickyref = $mangle_table->{setsticky};
     my $setstickoref = $mangle_table->{setsticko};
     my $tcpreref     = $mangle_table->{tcpre};

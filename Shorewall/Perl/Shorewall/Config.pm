@@ -735,11 +735,13 @@ sub assert( $ ) {
 # Convert value to decimal number
 #
 sub numeric_value ( $ ) {
-    no warnings;
     my $mark = lc $_[0];
-    return undef unless $mark =~ /^-?(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
-    $mark =~ /^0/ ? oct $mark : $mark;
+    my $negative = ( $mark =~ s/^-// );
+    return undef unless $mark =~ /^(0x[a-f0-9]+|0[0-7]*|[1-9]\d*)$/;
+    no warnings;
+    $mark = ( $mark =~ /^0/ ? oct $mark : $mark );
     use warnings;
+    $negative ? - $mark : $mark;
 }
 
 sub numeric_value1 ( $ ) {

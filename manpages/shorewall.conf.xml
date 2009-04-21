@@ -645,7 +645,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
             <listitem>
               <para>Marks used for traffic shaping must be in the range of
-              1-1023 and may still not be set in the PREROUTING chain.</para>
+              1-16383 and may still not be set in the PREROUTING chain.</para>
             </listitem>
           </orderedlist>
 
@@ -1723,14 +1723,14 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">WIDE_ROUTE_MARKS=</emphasis>{<emphasis
+        <term><emphasis role="bold">WIDE_TC_MARKS=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
           <para>When set to No (the default), traffic shaping marks are 8
-          bytes wide (possible values are 1-255). When WIDE_ROUTE_MARKS=Yes,
-          traffic shaping marks are 10 bytes wide (values 1-1023). The setting
-          of WIDE_ROUTE_MARKS also has an effect on the HIGH_ROUTE_MARKS
+          bytes wide (possible values are 1-255). When WIDE_TC_MARKS=Yes,
+          traffic shaping marks are 14 bytes wide (values 1-16383). The
+          setting of WIDE_TC_MARKS also has an effect on the HIGH_ROUTE_MARKS
           option (see above).</para>
         </listitem>
       </varlistentry>

@@ -1509,7 +1509,7 @@ sub verify_mark( $ ) {
 
 sub verify_small_mark( $ ) {
     verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > ( $config{WIDE_TC_MARKS} ? 0x03FF : 0xFF ); 
+    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > ( $config{WIDE_TC_MARKS} ? 0x3FFF : 0xFF ); 
 }
 
 sub validate_mark( $ ) {

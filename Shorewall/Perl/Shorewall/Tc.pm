@@ -599,7 +599,7 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-	    $classnumber = $config{WIDE_TC_MARKS} ? ( $devref->{number} << 10 ) | $mark : 1 . $mark;
+	    $classnumber = $config{WIDE_TC_MARKS} ? ( $devref->{number} << 10 ) | $markval : $devnum . $markval;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	}
     } else {
@@ -651,7 +651,8 @@ sub validate_tc_class( $$$$$$ ) {
 	    } elsif ( $option =~ /^occurs=(.+)$/ ) {
 		my $val = $1;
 		$occurs = numeric_value($val);
-		fatal_error "Invalid 'occurs' ($val)" unless defined $occurs && $occurs;
+		fatal_error "Invalid 'occurs' ($val)" unless defined $occurs && $occurs > 0;
+		fatal_error "Invalid 'occurs' ($val)" if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
 		fatal_error "Duplicate 'occurs'" if $tcref->{occurs} > 1;
 		if ( $occurs > 1 ) {
 		    fatal_error "The 'occurs' option is not valid with 'classify'" if $devref->{classify};
@@ -1025,7 +1026,7 @@ sub setup_tc() {
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD POSTROUTING) {
-		insert_rule1 $mangle_table->{$chain}, 0, $config{WIDE_TC_MARKS} ? '-j MARK --and-mark 0x03FF' : '-j MARK --and-mark 0xFF';
+		insert_rule1 $mangle_table->{$chain}, 0, $config{WIDE_TC_MARKS} ? '-j MARK --and-mark 0x3FFF' : '-j MARK --and-mark 0xFF';
 	    }
 	}
     }

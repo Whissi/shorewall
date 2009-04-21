@@ -434,7 +434,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
         <listitem>
           <para>MARK - The mark value which is an integer in the range 1-255
-          (1-1023 if you set WIDE_TC_MARKS=Yes in <ulink
+          (1-16383 if you set WIDE_TC_MARKS=Yes in <ulink
           url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
           define these marks in the tcrules file, marking the traffic you want
           to go into the queuing classes defined in here. You can use the same
@@ -615,7 +615,7 @@ ppp0           6000kbit         500kbit</programlisting>
         <listitem>
           <para>MARK or CLASSIFY - MARK specifies the mark value is to be
           assigned in case of a match. This is an integer in the range 1-255
-          (1-1023 if you set WIDE_TC_MARKS=Yes in <ulink
+          (1-16383 if you set WIDE_TC_MARKS=Yes in <ulink
           url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ).
           This value may be optionally followed by <quote>:</quote> and either
           <quote>F</quote>, <quote>P</quote> or "T" to designate that the
@@ -737,8 +737,10 @@ ppp0           6000kbit         500kbit</programlisting>
               <itemizedlist>
                 <listitem>
                   <para>the MARK value of the class preceded by the number "1"
-                  (MARK value 1 is &lt;minor&gt; class 11, MARK value 22 is
-                  &lt;minor&gt; class 122, and so on)</para>
+                  or "10" (MARK value 1 is &lt;minor&gt; class 11, MARK value
+                  22 is &lt;minor&gt; class 122, and so on). "10" is used
+                  where there are more than 10 devices defined in <link
+                  linkend="tcdevices">/etc/shorewall/tcdevices</link>.</para>
                 </listitem>
               </itemizedlist>
 
@@ -751,15 +753,15 @@ ppp0           6000kbit         500kbit</programlisting>
                   <command>shorewall encode</command> and <command>shorewall
                   decode</command> commands (<ulink
                   url="manpages/shorewall.html">shorewall</ulink> (8)) may be
-                  used to translate a device number/mark pair to/from a
-                  &lt;minor&gt; class.</para>
+                  used to translate a mark to/from a &lt;minor&gt;
+                  class.</para>
 
                   <para>Examples:</para>
 
-                  <programlisting>$ <command>shorewall encode 1 100</command>
-Class Number = 1124
-$ <command>shorewall decode 1124</command>
-Device = 1 Mark = 100</programlisting>
+                  <programlisting>$ <command>shorewall encode 100</command>
+Class Number = 16484
+$ <command>shorewall decode 16484</command>
+Mark = 100</programlisting>
                 </listitem>
               </itemizedlist>
             </listitem>

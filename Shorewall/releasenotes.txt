@@ -82,11 +82,15 @@ None.
     Shorewall generates a TC class Id from a mark value. 
 
     - Prior to 4.3.9, the class number was constructed by concatinating
-      the device number with the mark value.
+      the either '1' or '10' with the mark value. '10' is used when
+      there are more than 10 devices defined in /etc/shorewall/tcdevices.
 
-    - Beginning with 4.3.9, the class number is constructed by shifting
+    - In 4.3.9, the class number is constructed by shifting
       the device number left by 10 bits and logically ORing the result
       with the mark value.
+
+    - In 4.3.10, a new method is added; the mark value is logically
+      ORed with 0x40000000;
 
     The WIDE_TC_MARKS option in shorewall.conf selects which
     construction to use. WIDE_TC_MARKS=No (the default) produces
@@ -94,8 +98,8 @@ None.
 
     In addition to determining the method of constructing class Ids,
     WIDE_TC_MARKS=Yes provides for larger mark values for traffic
-    shaping. Traffic shaping marks may have values up to 1023 with
-    WIDE_TC_MARKS=Yes. This means that when both WIDE_TC_MARKS=Yes and
+    shaping. Traffic shaping marks may have values up to 16383 (0x3fff)
+    with WIDE_TC_MARKS=Yes. This means that when both WIDE_TC_MARKS=Yes and
     HIGH_ROUTE_MARKS=Yes, routing marks (/etc/shorewall/providers MARK
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).

@@ -1448,7 +1448,7 @@ usage() # $1 = exit status
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
-    echo "   encode <devnum> <mark>"
+    echo "   encode <mark>"
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
@@ -1996,11 +1996,11 @@ case "$COMMAND" in
         ;;
     decode)
 	[ $# -eq 2 ] || usage 1
-	echo "Device = $(($2 >> 10)) Mark = $(($2 & 0x3ff))"
+	echo "Mark = $(($2 & 0x3fff))"
 	;;
     encode)
-	[ $# -eq 3 ] || usage 1
-	echo "Class Number = $((($2 << 10) | $3))"
+	[ $# -eq 2 ] || usage 1
+	echo "Class Number = $((0x4000 | $2))"
 	;;
     call)
 	get_config

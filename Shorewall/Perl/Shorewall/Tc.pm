@@ -709,7 +709,7 @@ sub process_tc_filter( $$$$$$ ) {
 
     fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
 
-    my $rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32";
+    my $rule = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32";
 
     my ( $net , $mask ) = decompose_net( $source );
 
@@ -756,7 +756,7 @@ sub process_tc_filter( $$$$$$ ) {
 	    $lasttnum = $tnum;
 	    $lastrule = $rule;
 
-	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor 1" );
 	}
 	#
 	# And link to it using the current contents of $rule
@@ -766,7 +766,7 @@ sub process_tc_filter( $$$$$$ ) {
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule     = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32 ht $tnum:0";
+	$rule     = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
@@ -901,7 +901,7 @@ sub setup_traffic_shaping() {
 
 	if ( $inband ) {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol ip pref 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   "run_tc filter add dev $device parent ffff: protocol ip prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
 	}
 
@@ -930,12 +930,16 @@ sub setup_traffic_shaping() {
 	my $tcref   = $tcclasses{$device}{$classnum};
 	my $mark    = $tcref->{mark};
 	my $devicenumber  = $devref->{number};
-	my $classid = join( '', $devicenumber, ':', $classnum);
+	my $classid = join( ':', $devicenumber, $classnum);
 	my $rate    = "$tcref->{rate}kbit";
 	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev     = chain_base $device;
 
 	$classids{$classid}=$device;
+
+	$classid = join( ':', in_hex $devicenumber, in_hex4 $classnum );
+
+	$classid =~ s/0x//g;
 
 	if ( $lastdevice ne $device ) {
 	    if ( $lastdevice ) {
@@ -956,7 +960,7 @@ sub setup_traffic_shaping() {
 	# add filters
 	#
 	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
-	emit "run_tc filter add dev $device protocol ip pref 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	emit "run_tc filter add dev $device protocol ip prio 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	#options
 	#

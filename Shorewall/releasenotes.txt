@@ -104,6 +104,17 @@ None.
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).
 
+2.  In the 'shorewall compile' command, the filename '-' is now causes
+    the compiled script to be written to Standard Out. As a side
+    effect, the effective VERBOSITY is set to -1 (silent).
+
+    Examples:
+
+	shorewall compile -- -  # Compile /etc/shorewall and send the
+	                        # output to STDOUT
+	shorewall compile . -   # Compile the current working directory
+		  	    	# and send the output to STDOUT
+
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

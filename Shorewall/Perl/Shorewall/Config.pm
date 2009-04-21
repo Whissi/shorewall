@@ -1084,6 +1084,14 @@ sub create_temp_object( $$ ) {
     my ( $objectfile, $export ) = @_;
     my $suffix;
 
+    if ( $objectfile eq '-' ) {
+	$verbose = -1;
+	$object = undef;
+	open( $object, '>&STDOUT' ) or fatal_error "Open of STDOUT failed";
+	$file = '-';
+	return 1;
+    }
+
     eval {
 	( $file, $dir, $suffix ) = fileparse( $objectfile );
     };
@@ -1118,9 +1126,12 @@ sub finalize_object( $ ) {
     my $export = $_[0];
     close $object;
     $object = 0;
-    rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
-    chmod 0700, $file or fatal_error "Cannot secure $file for execute access";
-    progress_message3 "Shorewall configuration compiled to $file" unless $export;
+
+    if ( $file ne '-' ) {
+	rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
+	chmod 0700, $file or fatal_error "Cannot secure $file for execute access";
+	progress_message3 "Shorewall configuration compiled to $file" unless $export;
+    }
 }
 
 #

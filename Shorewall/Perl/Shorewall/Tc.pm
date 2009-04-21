@@ -316,12 +316,14 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 
 			    if ( defined $m1 && $m1 ne '' ) {
 				$val = numeric_value ($m1);
+				fatal_error "Invalid Mask ($m1)" if $m1 =~ /^-0x/;
 				fatal_error "Invalid Mask ($m1)" unless defined $val && $val && $val <= 0xffffffff;
 				$mask1 = $m1;
 			    }
 
 			    if ( defined $m2 && $m2 ne '' ) {
 				$val = numeric_value ($m2);
+				fatal_error "Invalid Mask ($m2)" if $m2 =~ /^-0x/;
 				fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
 				$mask2 = $m2;
 			    }

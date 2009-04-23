@@ -60,11 +60,13 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       disable_object
 		                       numeric_value
 		                       numeric_value1
+		                       hex_value
 		                       in_hex
 		                       in_hex2
 		                       in_hex3
 		                       in_hex4
 		                       in_hex8
+		                       in_hexp
 				       emit
 				       emit_unindented
 				       save_progress_message
@@ -752,6 +754,14 @@ sub numeric_value1 ( $ ) {
     use warnings;
 }
 
+sub hex_value( $ ) {
+    my $val = lc $_[0];
+    return undef unless $val =~ /^[a-f0-9]+$/;
+    no warnings;
+    oct '0x' . $val;
+    use warnings;
+}
+
 #
 # Return the argument expressed in Hex
 #
@@ -773,6 +783,10 @@ sub in_hex4( $ ) {
 
 sub in_hex8( $ ) {
     sprintf '0x%08x', $_[0];
+}
+
+sub in_hexp( $ ) {
+    sprintf '%x', $_[0];
 }
 
 #

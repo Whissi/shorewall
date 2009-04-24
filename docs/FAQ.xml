@@ -763,6 +763,18 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
       that address that is part of an established connection (such as ping
       replies) is allowed.</para>
     </section>
+
+    <section id="faq84">
+      <title>(FAQ 84) I put some IPs in the blacklist file in /etc/shorewall
+      to block the ips but i'm still getting reports from PSAD from those ips
+      saying they're port scanning. Shouldn't being on the blacklist drop all
+      packets from those ips?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: You probably forgot to
+      specify the <emphasis role="bold">blacklist</emphasis> option for your
+      external interface(s) in
+      <filename>/etc/shorewall/interfaces</filename>.</para>
+    </section>
   </section>
 
   <section id="MSN">

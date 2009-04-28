@@ -444,7 +444,7 @@ sub validate_tc_device( $$$$$ ) {
 	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
 
 	if ( defined $number ) {
-	    $devnumber = numeric_value( $number );
+	    $devnumber = hex_value( $number );
 	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
 	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
 	    $devnum = $devnumber if $devnumber > $devnum;
@@ -531,10 +531,10 @@ sub convert_rate( $$$ ) {
 
 sub dev_by_number( $ ) {
     my $dev = $_[0];
-    my $devnum = numeric_value( $dev );
+    my $devnum = uc $dev;
     my $devref;
 
-    if ( defined $devnum ) {
+    if ( $devnum =~ /^\d+$/ ) {
 	$dev = $devnums[ $devnum ];
 	fatal_error "Undefined INTERFACE number ($_[0])" unless defined $dev;
 	$devref = $tcdevices{$dev};
@@ -566,13 +566,14 @@ sub validate_tc_class( $$$$$$ ) {
 	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
+	( $device , $classnumber ) = ( hex_value $device, hex_value $number );
+
 	( $device , $devref) = dev_by_number( $device );
 
 	if ( defined $number ) {
 	    if ( $devref->{classify} ) {
-		$classnumber = numeric_value( $number );
-		fatal_error "Invalid interface NUMBER ($number)" unless defined $classnumber && $classnumber;
-		fatal_error "Duplicate interface/class number ($number)" if defined $devnums[ $classnumber ];
+		fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
+		fatal_error "Duplicate interface/class number ($devclass)" if defined $devnums[ $classnumber ];
 	    } else {
 		warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option";
 	    }
@@ -599,7 +600,7 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-	    $classnumber = $config{WIDE_TC_MARKS} ? ( $devref->{number} << 10 ) | $markval : $devnum . $markval;
+	    $classnumber = $config{WIDE_TC_MARKS} ? 0x4000 | $markval : $devnum . $markval;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	}
     } else {
@@ -709,7 +710,7 @@ sub process_tc_filter( $$$$$$ ) {
 
     fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
 
-    my $rule = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32";
+    my $rule = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32";
 
     my ( $net , $mask ) = decompose_net( $source );
 
@@ -756,7 +757,7 @@ sub process_tc_filter( $$$$$$ ) {
 	    $lasttnum = $tnum;
 	    $lastrule = $rule;
 
-	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip pref 10 handle $tnum: u32 divisor 1" );
+	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor 1" );
 	}
 	#
 	# And link to it using the current contents of $rule
@@ -766,7 +767,7 @@ sub process_tc_filter( $$$$$$ ) {
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule     = "filter add dev $device protocol ip parent $devnum:0 pref 10 u32 ht $tnum:0";
+	$rule     = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
@@ -881,7 +882,7 @@ sub setup_traffic_shaping() {
     for my $device ( @tcdevices ) {
 	my $dev     = chain_base( $device );
 	my $devref  = $tcdevices{$device};
-	my $defmark = $devref->{default} || 0;
+	my $defmark = in_hexp ( $devref->{default} || 0 );
 	my $devnum  = $devref->{number};
 
 	emit "if interface_is_up $device; then";
@@ -901,7 +902,7 @@ sub setup_traffic_shaping() {
 
 	if ( $inband ) {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol ip pref 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   "run_tc filter add dev $device parent ffff: protocol ip prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
 	}
 
@@ -926,16 +927,21 @@ sub setup_traffic_shaping() {
 
     for my $class ( @tcclasses ) {
 	my ( $device, $classnum ) = split /:/, $class;
-	my $devref  = $tcdevices{$device};
-	my $tcref   = $tcclasses{$device}{$classnum};
-	my $mark    = $tcref->{mark};
+	my $devref   = $tcdevices{$device};
+	my $tcref    = $tcclasses{$device}{$classnum};
+	my $mark     = $tcref->{mark};
 	my $devicenumber  = $devref->{number};
-	my $classid = join( '', $devicenumber, ':', $classnum);
-	my $rate    = "$tcref->{rate}kbit";
-	my $quantum = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
-	my $dev     = chain_base $device;
+	my $classid  = join( ':', in_hexp $devicenumber, in_hexp $classnum);
+	my $rate     = "$tcref->{rate}kbit";
+	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
+	my $dev      = chain_base $device;
+	my $priority = $tcref->{priority} << 8;
 
 	$classids{$classid}=$device;
+
+	$classnum = in_hexp $classnum;
+
+	$classid = join( ':', in_hexp $devicenumber, $classnum );
 
 	if ( $lastdevice ne $device ) {
 	    if ( $lastdevice ) {
@@ -955,16 +961,16 @@ sub setup_traffic_shaping() {
 	#
 	# add filters
 	#
-	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio 1 handle $mark fw classid $classid" unless $devref->{classify};
-	emit "run_tc filter add dev $device protocol ip pref 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" unless $devref->{classify};
+	emit "run_tc filter add dev $device protocol ip prio 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	#options
 	#
-	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
 	for my $tospair ( @{$tcref->{tos}} ) {
 	    my ( $tos, $mask ) = split q(/), $tospair;
-	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio 10 u32 match ip tos $tos $mask flowid $classid";
+	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
 	}
 
 	save_progress_message_short qq("   TC Class $class defined.");

@@ -4,7 +4,7 @@
 <!-- $Id$ -->
 <article id="upgrade_issues">
   <articleinfo>
-    <title>Upgrade Issues</title>
+    <title>ss rUpgrade Issues</title>
 
     <author>
       <firstname>Tom</firstname>
@@ -171,7 +171,11 @@
 
       <listitem>
         <para>The value of IMPLICIT_CONTINUE in shorewall.conf (and samples)
-        has been changed from Yes to No.</para>
+        has been changed from Yes to No. If you are a Debian or Ubuntu user
+        and you select replacement of shorewall.conf during upgrade to
+        Shorewall 4.2, you will want to change IMPLICIT_CONTINUE back to 'Yes'
+        if you have nested zones that rely on IMPLICIT_CONTINUE=Yes for proper
+        operation. </para>
       </listitem>
 
       <listitem>

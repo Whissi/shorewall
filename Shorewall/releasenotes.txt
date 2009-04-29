@@ -53,7 +53,11 @@ released late in 2009.
 
 3)  Support for the SAME target in /etc/shorewall/masq and
     /etc/shorewall/rules has been removed, following the removal of the
-    underlying support in the Linux kernel. 
+    underlying support in the Linux kernel.
+
+4)  Supplying an interface name in the SOURCE column of
+    /etc/shorewall/masq is now deprecated. Entering the name of an
+    interface there will result in a compile-time warning.
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 10
@@ -84,7 +88,7 @@ None.
                 N E W   F E A T U R E S   I N   4 . 3 . 10
 ----------------------------------------------------------------------------
 
-1.  The change that implemented IPMARK support in 4.3.9 resulted in a
+1)  The change that implemented IPMARK support in 4.3.9 resulted in a
     lack of upward compatibility which could break some
     configurations. The incompatibility stems from the way in which
     Shorewall generates a TC class Id from a mark value. 
@@ -112,7 +116,7 @@ None.
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).
 
-2.  In the 'shorewall compile' command, the filename '-' is now causes
+2)  In the 'shorewall compile' command, the filename '-' is now causes
     the compiled script to be written to Standard Out. As a side
     effect, the effective VERBOSITY is set to -1 (silent).
 
@@ -124,6 +128,10 @@ None.
 	shorewall compile . -   # Compile the configuration in the
 		  	  	# current working directory
 		  	    	# and send the output to STDOUT
+
+3)  Supplying an interface name in the SOURCE column of
+    /etc/shorewall/masq is now deprecated. Entering the name of an
+    interface there will result in a compile-time warning.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

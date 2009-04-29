@@ -671,16 +671,15 @@ root@lists:~# </programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>If your external firewall interface is <filename
-    class="devicefile">eth0</filename>, your local interface <filename
-    class="devicefile">eth1</filename> and your DMZ interface is <filename
-    class="devicefile">eth2</filename> then you do not need to modify the file
+    class="devicefile">eth0</filename> then you do not need to modify the file
     provided with the sample. Otherwise, edit <filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename> and
     change it to match your configuration.</para>
 
     <para>If, in spite of all advice to the contrary, you are using this guide
-    and want to use one-to-one NAT or Proxy ARP for your DMZ, remove the entry
-    for eth2 from <filename>/etc/shorewall/masq</filename>.</para>
+    and want to use one-to-one NAT or Proxy ARP for your DMZ, you will need to
+    modify the SOURCE column to list just your local interface (10.10.10.0/24
+    in the above example).</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 

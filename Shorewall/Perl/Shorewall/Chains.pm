@@ -246,6 +246,7 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 our $exclseq;
 our $iprangematch;
 our $chainseq;
+our $idiotcount;
 
 our $global_variables;
 
@@ -352,6 +353,7 @@ sub initialize( $ ) {
     %interfacegateways  = ();
 
     $global_variables   = 0;
+    $idiotcount         = 0;
 
 }
 
@@ -2457,6 +2459,7 @@ sub expand_rule( $$$$$$$$$$ )
 	    # An interface in the SOURCE column of a masq file
 	    #
 	    fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
+	    warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
 
 	    push_command $chainref, join( '', 'for source in ', get_interface_nets( $iiface) , '; do' ), 'done';
 

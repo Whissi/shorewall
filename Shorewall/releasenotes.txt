@@ -129,12 +129,16 @@ None.
 
     Examples:
 
-	shorewall compile -- -  # Compile the configuration in
-                        	# /etc/shorewall and send the
-	                        # output to STDOUT
-	shorewall compile . -   # Compile the configuration in the
-		  	  	# current working directory
-		  	    	# and send the output to STDOUT
+	shorewall compile -v-1 -- -  # Compile the configuration in
+                        	     # /etc/shorewall and send the
+	                             # output to STDOUT
+	shorewall compile -v-1 . -   # Compile the configuration in the
+		  	  	     # current working directory
+		  	    	     # and send the output to STDOUT
+
+    Note that the '-v-1' suppresses the 'Compiling...' message normally
+    issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
+    begins.
 
 3)  Supplying an interface name in the SOURCE column of
     /etc/shorewall/masq is now deprecated. Entering the name of an

@@ -22,6 +22,8 @@
 
       <year>2005</year>
 
+      <year>2009</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -45,7 +47,7 @@
     Overview</ulink> handy to refer to.</para>
 
     <para>The discussion that follows assumes that you are running a current
-    kernel (2.4.2n or 2.6.m) with the <ulink url="kernel.htm">recommended
+    kernel (2.6.20 or later) with the <ulink url="kernel.htm">recommended
     options </ulink>included. Otherwise processing may be somewhat different
     from described below depending on the features supported by your
     kernel.</para>
@@ -155,7 +157,10 @@
         <para>then the packet is ACCEPTed in the <emphasis>filter</emphasis>
         table's <emphasis
         role="bold"><emphasis>interface</emphasis>_in</emphasis> chain (for
-        example, eth0_in).</para>
+        example, eth0_in). Note that if the interface is its associated zones
+        only interface, then the <emphasis
+        role="bold"><emphasis>interface</emphasis>_in</emphasis> chain is
+        optimized away and its rules are transferred to another chain.</para>
       </listitem>
 
       <listitem>

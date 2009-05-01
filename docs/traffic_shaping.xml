@@ -173,8 +173,8 @@
       <listitem>
         <para>MARK - Netfilter has a facility for
         <firstterm>marking</firstterm> packets. Packet marks have a numeric
-        value which is limited in Shorewall to the values 1-255 (1-1023 if you
-        set WIDE_TC_MARKS=Yes in <ulink
+        value which is limited in Shorewall to the values 1-255 (1-16383 if
+        you set WIDE_TC_MARKS=Yes in <ulink
         url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
         assign packet marks to different types of traffic using entries in the
         <filename>/etc/shorewall/tcrules</filename> file.</para>
@@ -748,10 +748,9 @@ ppp0           6000kbit         500kbit</programlisting>
 
               <itemizedlist>
                 <listitem>
-                  <para>The number shifted 10 bits to the left (multiplied by
-                  1024) and logically ORed with the MARK value. The
-                  <command>shorewall encode</command> and <command>shorewall
-                  decode</command> commands (<ulink
+                  <para>The number 0x40000000 logically ORed with the MARK
+                  value. The <command>shorewall encode</command> and
+                  <command>shorewall decode</command> commands (<ulink
                   url="manpages/shorewall.html">shorewall</ulink> (8)) may be
                   used to translate a mark to/from a &lt;minor&gt;
                   class.</para>

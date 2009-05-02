@@ -263,11 +263,8 @@ sub ip_range_explicit( $ ) {
 sub decompose_net( $ ) {
     my $net = $_[0];
 
-    return ( qw/0x00000000 0x00000000/ ) if $net eq '-';
-
     ( $net, my $vlsm ) = validate_net( $net , 0 );
-
-    ( in_hex8( $net ) , vlsm_to_mask( $vlsm ) );
+    ( encodeaddr( $net) , $vlsm );
 
 }
 

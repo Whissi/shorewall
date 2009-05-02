@@ -706,19 +706,25 @@ sub process_tc_filter( $$$$$$ ) {
 
     fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
 
-    $tcref = $tcref->{$class};
+    my $classnum = hex_value $class;
+
+    fatal_error "Invalid CLASS ($class)" unless defined $classnum;
+
+    $tcref = $tcref->{$classnum};
 
     fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
 
     my $rule = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32";
 
-    my ( $net , $mask ) = decompose_net( $source );
+    if ( $source ne '-' ) {
+	my ( $net , $mask ) = decompose_net( $source );
+	$rule .= "\\\n   match ip src $net/$mask";
+    }
 
-    $rule .= "\\\n   match u32 $net $mask at 12" unless $mask eq '0x00000000';
-
-    ( $net , $mask ) = decompose_net( $dest );
-
-    $rule .= "\\\n   match u32 $net $mask at 16" unless $mask eq '0x00000000';
+    if ( $dest ne '-' ) {
+	my ( $net , $mask ) = decompose_net( $dest );
+	$rule .= "\\\n   match ip dst $net/$mask";
+    }
 
     my $protonumber = 0;
 
@@ -726,10 +732,7 @@ sub process_tc_filter( $$$$$$ ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
 
-	if ( $protonumber ) {
-	    my $pnumber = in_hex2 $protonumber;
-	    $rule .= "\\\n   match u8 $pnumber 0xff at 9";
-	}
+	$rule .= "\\\n   match ip protocol $protonumber 0xff" if $protonumber;
     }
 
     if ( $portlist eq '-' && $sportlist eq '-' ) {

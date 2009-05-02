@@ -781,8 +781,18 @@ sub process_tc_filter( $$$$$$ ) {
 
 		while ( @sportlist ) {
 		    my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
+		    my $rule1;
+
+		    if ( $protonumber == TCP ) {
+			$rule1 = join( ' ', 'match tcp src', hex_value( $sport ), "0x$smask" );
+		    } elsif ( $protonumber == UDP ) {
+			$rule1 = join( ' ', 'match udp src', hex_value( $sport ), "0x$smask" );
+		    } else {
+			$rule1 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+		    }
+
 		    emit( "\nrun_tc $rule\\" ,
-			  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+			  "   $rule1\\" ,
 			  "   flowid $devref->{number}:$class" );
 		}
 	    }
@@ -796,11 +806,8 @@ sub process_tc_filter( $$$$$$ ) {
 
 		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
 
-		    $icmptype = in_hex2 numeric_value1 $icmptype;
-		    $icmpcode = in_hex2 numeric_value1 $icmpcode if defined $icmpcode;
-
-		    my $rule1 = "   match u8 $icmptype 0xff at nexthdr+0";
-		    $rule1   .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
+		    my $rule1 = "   match icmp type $icmptype 0xff";
+		    $rule1   .= "\\\n   match icmp code $icmpcode 0xff" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
 			  "$rule1\\" ,
 			  "   flowid $devref->{number}:$class" );
@@ -810,7 +817,15 @@ sub process_tc_filter( $$$$$$ ) {
 		    while ( @portlist ) {
 			my ( $port, $mask ) = ( shift @portlist, shift @portlist );
 
-			my $rule1 = "match u32 0x0000${port} 0x0000${mask} at nexthdr+0";
+			my $rule1;
+			
+			if ( $protonumber == TCP ) {
+			    $rule1 = join( ' ', 'match tcp dst', hex_value( $port ), "0x$mask" );
+			} elsif ( $protonumber == UDP ) {
+			    $rule1 = join( ' ', 'match udp dst', hex_value( $port ), "0x$mask" );
+			} else {
+			    $rule1 = "match u32 0x0000${port} 0x0000${mask} at nexthdr+0";
+			}
 
 			if ( $sportlist eq '-' ) {
 			    emit( "\nrun_tc ${rule}\\" ,
@@ -823,9 +838,19 @@ sub process_tc_filter( $$$$$$ ) {
 				while ( @sportlist ) {
 				    my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
 
+				    my $rule2;
+
+				    if ( $protonumber == TCP ) {
+					$rule2 = join( ' ', 'match tcp src', hex_value( $sport ), "0x$smask" );
+				    } elsif ( $protonumber == UDP ) {
+					$rule2 = join( ' ', 'match udp src', hex_value( $sport ), "0x$smask" );
+				    } else {
+					$rule2 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+				    }
+
 				    emit( "\nrun_tc ${rule}\\",
 					  "   $rule1\\" ,
-					  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+					  "   $rule2\\" ,
 					  "   flowid $devref->{number}:$class" );
 				}
 			    }

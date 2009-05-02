@@ -706,25 +706,19 @@ sub process_tc_filter( $$$$$$ ) {
 
     fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
 
-    my $classnum = hex_value $class;
-
-    fatal_error "Invalid CLASS ($class)" unless defined $classnum;
-
-    $tcref = $tcref->{$classnum};
+    $tcref = $tcref->{$class};
 
     fatal_error "Unknown CLASS ($devclass)" unless $tcref; 
 
     my $rule = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32";
 
-    if ( $source ne '-' ) {
-	my ( $net , $mask ) = decompose_net( $source );
-	$rule .= "\\\n   match ip src $net/$mask";
-    }
+    my ( $net , $mask ) = decompose_net( $source );
 
-    if ( $dest ne '-' ) {
-	my ( $net , $mask ) = decompose_net( $dest );
-	$rule .= "\\\n   match ip dst $net/$mask";
-    }
+    $rule .= "\\\n   match u32 $net $mask at 12" unless $mask eq '0x00000000';
+
+    ( $net , $mask ) = decompose_net( $dest );
+
+    $rule .= "\\\n   match u32 $net $mask at 16" unless $mask eq '0x00000000';
 
     my $protonumber = 0;
 
@@ -733,7 +727,8 @@ sub process_tc_filter( $$$$$$ ) {
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
 
 	if ( $protonumber ) {
-	    $rule .= "\\\n   match ip protocol $protonumber 0xff";
+	    my $pnumber = in_hex2 $protonumber;
+	    $rule .= "\\\n   match u8 $pnumber 0xff at 9";
 	}
     }
 
@@ -742,8 +737,40 @@ sub process_tc_filter( $$$$$$ ) {
 	      "   flowid $devref->{number}:$class" ,
 	      '' );
     } else {
+	our $lastrule;
+	our $lasttnum;
+	#
+	# In order to be able to access the protocol header, we must create another hash table and link to it.
+	#
+	# Create the Table.
+	#
+	my $tnum;
+
+	if ( $lastrule eq $rule ) {
+	    #
+	    # The source, dest and protocol are the same as the last rule that specified a port
+	    # Use the same table
+	    #
+	    $tnum = $lasttnum
+	} else {
+	    $tnum     = in_hex3 $devref->{tablenumber}++;
+	    $lasttnum = $tnum;
+	    $lastrule = $rule;
+
+	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor 1" );
+	}
+	#
+	# And link to it using the current contents of $rule
+	#
+	emit( "\nrun_tc $rule\\" ,
+	      "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	#
+	# The rule to match the port(s) will be inserted into the new table
+	#
+	$rule     = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
+
 	if ( $portlist eq '-' ) {
-	    fatal_error "Only TCPUDP and SCTP may specify SOURCE PORT" 
+	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
 
 	    for my $sportrange ( split_list $sportlist , 'port list' ) {
@@ -752,7 +779,7 @@ sub process_tc_filter( $$$$$$ ) {
 		while ( @sportlist ) {
 		    my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
 		    emit( "\nrun_tc $rule\\" ,
-			  "   match ip sport 0x$sport 0x$smask\\",
+			  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
 			  "   flowid $devref->{number}:$class" );
 		}
 	    }
@@ -769,8 +796,8 @@ sub process_tc_filter( $$$$$$ ) {
 		    $icmptype = in_hex2 numeric_value1 $icmptype;
 		    $icmpcode = in_hex2 numeric_value1 $icmpcode if defined $icmpcode;
 
-		    my $rule1 = "   match icmp type $icmptype 0xff";
-		    $rule1   .= "\\\n   match icmp code $icmpcode 0xff" if defined $icmpcode;
+		    my $rule1 = "   match u8 $icmptype 0xff at nexthdr+0";
+		    $rule1   .= "\\\n   match u8 $icmpcode 0xff at nexthdr+1" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
 			  "$rule1\\" ,
 			  "   flowid $devref->{number}:$class" );
@@ -780,7 +807,7 @@ sub process_tc_filter( $$$$$$ ) {
 		    while ( @portlist ) {
 			my ( $port, $mask ) = ( shift @portlist, shift @portlist );
 
-			my $rule1 = "match ip dport 0x${port} 0x${mask}";
+			my $rule1 = "match u32 0x0000${port} 0x0000${mask} at nexthdr+0";
 
 			if ( $sportlist eq '-' ) {
 			    emit( "\nrun_tc ${rule}\\" ,
@@ -795,7 +822,7 @@ sub process_tc_filter( $$$$$$ ) {
 
 				    emit( "\nrun_tc ${rule}\\",
 					  "   $rule1\\" ,
-					  "   match ip sport 0x$sport 0x$smask\\",
+					  "   match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
 					  "   flowid $devref->{number}:$class" );
 				}
 			    }

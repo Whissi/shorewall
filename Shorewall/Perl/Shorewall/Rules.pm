@@ -1453,7 +1453,7 @@ sub process_rule ( $$$$$$$$$$$$ ) {
 		    }
 		} else {
 		    my $destzone = (split( /:/, $dest, 2 ) )[0];
-		    $destzone = firewall_zone unless defined_zone( $destzone ); # We do this to allow 'REDIRECT all ...'; process_rule1 will catch the case where the dest zone is invalid
+		    $destzone = $action =~ /^REDIRECT/ ? firewall_zone : '' unless defined_zone $destzone;
 		    if ( $intrazone || ( $zone ne $destzone ) ) {
 			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
 		    }

@@ -650,10 +650,10 @@ sub validate_tc_class( $$$$$$ ) {
 	    } elsif ( $option eq 'pfifo' ) {
 		fatal_error "The 'pfifo'' option is not allowed with 'flow='" if $tcref->{flow};
 		$tcref->{pfifo} = 1;
-	    } elsif ( $option =~ /^occurs=(\d+([ds]?))$/ ) {
-		my $val = $1;
+	    } elsif ( $option =~ /^occurs=((\d+)([ds]?))$/ ) {
+		my $val = $2;
 		$occurs = numeric_value($val);
-		$tcref->{src} = 0 if $2 eq 'd';
+		$tcref->{src} = 0 if $3 eq 'd';
 		fatal_error "Invalid 'occurs' ($val)" unless defined $occurs && $occurs > 0 && $occurs <= 256;
 		fatal_error "Invalid 'occurs' ($val)" if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
 		fatal_error "Duplicate 'occurs'" if $tcref->{occurs} > 1;

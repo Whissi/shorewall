@@ -77,7 +77,15 @@ released late in 2009.
 
         iptables-restore v1.3.5: Bad mac address `-j'
 
-2.  Previously, when 'all' appeared in the SOURCE column of a DNAT-
+2.  Previously, Shorewall has treated traffic shaping class IDs as
+    decimal numbers (or pairs of decimal numbers). That worked fine
+    until IPMARK was implemented. IPMARK requires Shorewall to generate
+    class Ids in numeric sequence. In 4.3.9, that didn't work correctly
+    because Shorewall was generating the sequence "..8,9,10,11..." when
+    the correct sequence was "...8,9,a,b,...". Shorewall now treats
+    class IDs as hex, like 'tc' and 'iptables' do.
+
+3.  Previously, when 'all' appeared in the SOURCE column of a DNAT-
     rule, no rule was generated to redirect output from the firewall
     itself.
 
@@ -119,75 +127,7 @@ None.
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).
 
-2)  The IPMARK implementation in 4.3.9 has been replaced with a
-    different facility that is much more efficient. A feature similar
-    to IPMARK will be re-introduced once there is a useable IPCLASSIFY
-    implementation (Like IPMARK but sets the classid directly).
-
-16) There has been a desire in the user community to limit traffic by
-    IP address using Shorewall traffic shaping. Heretofore, that has
-    required a very inefficient process:
-
-    a) Define a tcclass for each internal host (two, if shaping both in
-       and out).
-    b) Define a tcrule for each host to mark to classify the packets
-       accordingly.
-
-    Beginning with Shorewall 4.3.10, this process is made easier, at
-    least for download traffic where shaping occurs on the firewall's
-    internal interface(s). 
-
-    The new facility has two components:
-
-    a) A new 'occurs' OPTION in /etc/shorewall/tcclasses.
-    b) New semantic behavior for entries in /etc/shorewall/tcrules that
-       refer to a class defined with 'occurs'.
-
-    The 'occurs' option causes the class definition to be replicated
-    many times. The synax is:
-
-	 occurs=<number>[d|s]
-
-    The 'd' and 's' specify whether the occuring class should have one
-    occurrance for each destination IP address (d) or each source IP
-    address (s). The default is 'd'.
-
-    When 'occurs' is used:
-
-	 a) The associated device must have the 'classify' option.
-	 b) The class may not be the default class.
-	 c) The class may not have any 'tos=' options (including
-	    'tcp-ack').
-
-    The 'RATE' and 'CEIL' parameters apply to each instance of the
-    class. So the total RATE represented by an entry with 'occurs' will
-    be the listed RATE multiplied by the 'occurs' number.
-
-    Example:
-
-	#DEVICE MARK    RATE    CEIL    PRIORITY	OPTIONS
-	1:100	-	1kbit	230kbit	       4	occurs=32d
-
-        The above defines 32 classes. Each class has a guaranteed rate
-        of 1kbit/second.
-
-    An example of a tcfilter that refers to this class is:
-
-        #INTERFACE:	SOURCE	DEST		PROTO	DEST	SOURCE
-        #CLASS					        PORT(S)	PORT(S)
-        1:100		-	192.168.1.0/27
-
-    	Traffic destined for each of the 32 addresses in 192.168.1.0/27
-    	will be directed to a separate class.
-
-    Filters that refer to  an occuring class may not specify a PROTO or
-    PORT(S).
-
-    Note that this feature is not applicable to output traffic where
-    SNAT is being used because all outgoing packets have the same
-    SOURCE IP address. 
-
-3)  In the 'shorewall compile' command, the filename '-' now causes
+2)  In the 'shorewall compile' command, the filename '-' is now causes
     the compiled script to be written to Standard Out. As a side
     effect, the effective VERBOSITY is set to -1 (silent).
 
@@ -204,7 +144,7 @@ None.
     issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
     begins.
 
-4)  Supplying an interface name in the SOURCE column of
+3)  Supplying an interface name in the SOURCE column of
     /etc/shorewall/masq is now deprecated. Entering the name of an
     interface there will result in a compile-time warning.
 
@@ -526,4 +466,102 @@ None.
 
     In other words, the utilities will be located via the current PATH
     setting.
+
+16) There has been a desire in the user community to limit traffic by
+    IP address using Shorewall traffic shaping. Heretofore, that has
+    required a very inefficient process:
+
+    a) Define a tcclass for each internal host (two, if shaping both in
+       and out).
+    b) Define a tcrule for each host to mark to classify the packets
+       accordingly.
+
+    Beginning with Shorewall 4.3.9, this process is made easier IF YOU
+    ARE WILLING TO INSTALL xtables-addons. The feature requires IPMARK
+    support in iptables[6] and your kernel. That support is available
+    in xtables-addons. 
+
+    The new facility has two components:
+
+    a) A new IPMARK MARKing command in /etc/shorewall/tcrules.
+    b) A new 'occurs' OPTION in /etc/shorewall/tcclasses.
+
+    The IPMARK target assigns a mark to each matching packet based on
+    the either the source or destination IP address. By default, it
+    assigns a mark value equal to the low-order 8 bits of the source
+    address.
+
+    The syntax is as follows:
+
+	IPMARK[([{src|dst}][,[<mask1>][,[<mask2>][,[<shift>]]]])]
+
+    Default values are:
+
+	    src
+	    <mask1> = 0xFF
+	    <mask2> = 0x00
+	    <shift> = 0
+
+     'src' and 'dst' specify whether the mark is to be based on the
+     source or destination address respectively.
+
+     The selected address is first LANDed with <mask1> then LORed with
+     <mask2>.
+
+     The result is then shifted <shift> bits to the right.
+
+     Example:
+
+	IPMARK(dst, 0XFF00, 0x8000,8)
+
+        Destination IP address is 192.168.4.3 = 0xc0a80403
+
+	0xc0a80403 LAND 0xFF00  = 0x0400
+	0x0400     LOR  0x80    = 0x8400
+        0x8400     >>   8       = 0x84
+
+	Mark = 0x84 = 132
+
+    The 'occurs' option causes the class definition to be replicated
+    many times. The synax is:
+
+	 occurs=<number>
+
+    When 'occurs' is used:
+
+	 a) The associated device may not have the 'classify' option.
+	 b) The class may not be the default class.
+	 c) The class may not have any 'tos=' options (including
+	    'tcp-ack').
+
+    The 'RATE' and 'CEIL' parameters apply to each instance of the
+    class. So the total RATE represented by an entry with 'occurs' will
+    be the listed RATE multiplied by the 'occurs' number.
+
+    Example:
+
+	#DEVICE MARK    RATE    CEIL    PRIORITY	OPTIONS
+	eth0	100	1kbit	230kbit	       4	occurs=32
+
+        The above defines 32 classes with MARK values 100-131. Each
+        class has a guaranteed rate of 1kbit/second.
+
+    As part of this change, the generation of class ids from mark
+    values has been changed. The class number is now
+
+	   ( <devnum> << 10 ) | <mask>
+
+    /sbin/shorewall has an 'encode' and 'decode' command to translate a
+    device number, mark pair to/from a classid:
+
+	   encode <devnum> <mark>
+	   decode <classnum>
+
+    Example:
+
+	$ shorewall decode 3172
+	Device = 3 Mark = 100
+        $ shorewall encode 3 100
+	Class number = 3172
+	$
 

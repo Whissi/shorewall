@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
     <refentrytitle>shorewall-tcfilters</refentrytitle>
@@ -40,11 +38,7 @@
           url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
           followed by a <replaceable>class</replaceable> number defined for
           that interface in <ulink
-          url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5). If
-          the class is defined with the <option>occurs</option> option then
-          the filter will use the low-order byte of the SOURCE or DESTINATION
-          IP address to assign traffic to individual occurances of the
-          class.</para>
+          url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -85,8 +79,7 @@
         role="bold">all}</emphasis></term>
 
         <listitem>
-          <para>Protocol. May not be specified in CLASS has the
-          <option>occurs</option> option.</para>
+          <para>Protocol.</para>
         </listitem>
       </varlistentry>
 
@@ -99,8 +92,7 @@
           <para>Destination Ports. A Port name (from services(5)) or a
           <emphasis>port number</emphasis>; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
-          destination icmp-type(s). Requires that the PROTO be tcp, udp or
-          sctp.</para>
+          destination icmp-type(s).</para>
         </listitem>
       </varlistentry>
 
@@ -110,8 +102,7 @@
         role="bold">-</emphasis>|<emphasis>port-name-or-number</emphasis>]</term>
 
         <listitem>
-          <para>Source port. Requires that the PROTO be tcp, udp or
-          sctp.</para>
+          <para>Source port.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -147,6 +138,12 @@
 
     <para><ulink
     url="http://shorewall.net/traffic_shaping.htm">http://shorewall.net/traffic_shaping.htm</ulink></para>
+
+    <para><ulink
+    url="http://shorewall.net/MultiISP.html">http://shorewall.net/MultiISP.html</ulink></para>
+
+    <para><ulink
+    url="http://shorewall.net/PacketMarking.html">http://shorewall.net/PacketMarking.html</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-ecn(5), shorewall-exclusion(5),

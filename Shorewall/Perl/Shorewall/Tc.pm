@@ -103,6 +103,12 @@ our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 		mask      => '' ,
 		connmark  => 0
 		} ,
+	      { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
+		target    => 'IPMARK' ,
+		mark      => NOMARK,
+		mask      => '',
+		connmark  => 0
+	        } ,
 	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
 		target    => 'MARK --or-mark' ,
 		mark      => HIGHMARK ,
@@ -293,6 +299,43 @@ sub process_tc_rule( $$$$$$$$$$$$ ) {
 			}
 
 			$sticky++;
+		    } elsif ( $target eq 'IPMARK ' ) {
+			my ( $srcdst, $mask1, $mask2, $shift ) = ('src', 255, 0, 0 );
+
+			require_capability 'IPMARK_TARGET', 'IPMARK', 's';
+
+			if ( $cmd =~ /^IPMARK\((.+?)\)$/ ) {
+			    my $params = $1;
+			    my $val;
+
+			    my ( $sd, $m1, $m2, $s , $bad ) = split ',', $params;
+
+			    fatal_error "Invalid IPMARK parameters ($params)" if $bad;
+			    fatal_error "Invalid IPMARK parameter ($sd)" unless ( $sd eq 'src' || $sd eq 'dst' );
+			    $srcdst = $sd;
+
+			    if ( defined $m1 && $m1 ne '' ) {
+				$val = numeric_value ($m1);
+				fatal_error "Invalid Mask ($m1)" unless defined $val && $val && $val <= 0xffffffff;
+				$mask1 = $m1;
+			    }
+
+			    if ( defined $m2 && $m2 ne '' ) {
+				$val = numeric_value ($m2);
+				fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
+				$mask2 = $m2;
+			    }
+				
+			    if ( defined $s ) {
+				$val = numeric_value ($s);
+				fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val < 128;
+				$shift = $s;
+			    }
+			} else {
+			    fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless $cmd eq 'IPMARK';
+			}
+			    
+			$target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 		    }
 
 		    if ( $rest ) {
@@ -573,7 +616,7 @@ sub validate_tc_class( $$$$$$ ) {
 			       flow     => '' ,
 			       pfifo    => 0,
 			       occurs   => 1,
-			       src      => 0,
+			       src      => 1,
 			     };
 
     $tcref = $tcref->{$classnumber};
@@ -588,24 +631,24 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    if ( $option eq 'default' ) {
 		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
-		fatal_error q(The 'default' option is not valid with 'occurs') if $tcref->{occurs} > 1;
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		$devref->{default} = $classnumber;
 	    } elsif ( $option eq 'tcp-ack' ) {
-		fatal_error q(The 'tcp-ack' option is not valid with 'occurs') if $tcref->{occurs} > 1;
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		$tcref->{tcp_ack} = 1;
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
-		fatal_error q(The 'tos' option is not valid with 'occurs') if $tcref->{occurs} > 1;
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		( undef, $option ) = split /=/, $option;
 		push @{$tcref->{tos}}, "$option/0xff";
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
-		fatal_error q(The 'tos' option is not valid with 'occurs') if $tcref->{occurs} > 1;
+		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		( undef, $option ) = split /=/, $option;
 		push @{$tcref->{tos}}, $option;
 	    } elsif ( $option =~ /^flow=(.*)$/ ) {
-		fatal_error q(The 'flow' option is not allowed with 'pfifo') if $tcref->{pfifo};
+		fatal_error "The 'flow' option is not allowed with 'pfifo'" if $tcref->{pfifo};
 		$tcref->{flow} = process_flow $1;
 	    } elsif ( $option eq 'pfifo' ) {
-		fatal_error q(The 'pfifo'' option is not allowed with 'flow=') if $tcref->{flow};
+		fatal_error "The 'pfifo'' option is not allowed with 'flow='" if $tcref->{flow};
 		$tcref->{pfifo} = 1;
 	    } elsif ( $option =~ /^occurs=((\d+)([ds]?))$/ ) {
 		my $val = $2;
@@ -616,10 +659,8 @@ sub validate_tc_class( $$$$$$ ) {
 		fatal_error "Invalid 'occurs' ($val)"                            unless defined $occurs && $occurs > 1 && $occurs <= 256;
 		fatal_error "Invalid 'occurs' ($val)"                            if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
 		fatal_error q(Duplicate 'occurs')                                if $tcref->{occurs} > 1;
-		fatal_error q(The 'occurs' option is only valid with 'classify') unless $devref->{classify};
 		fatal_error q(The 'occurs' option is not valid with 'default')   if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')       if @{$tcref->{tos}};
-
 		$tcref->{occurs} = $occurs;
 	    } else {
 		fatal_error "Unknown option ($option)";

@@ -653,6 +653,7 @@ sub validate_tc_class( $$$$$$ ) {
 	    } elsif ( $option =~ /^occurs=((\d+)([ds]?))$/ ) {
 		my $val = $2;
 		$occurs = numeric_value($val);
+		fatal_error "Invalid 'occurs'" if $3 && ! $devref->{classify};
 		$tcref->{src} = 0 if $3 eq 'd';
 		fatal_error "Invalid 'occurs' ($val)" unless defined $occurs && $occurs > 0 && $occurs <= 256;
 		fatal_error "Invalid 'occurs' ($val)" if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );

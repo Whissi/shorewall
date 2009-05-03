@@ -837,7 +837,7 @@ sub compiler {
 	#
 	# And generate the auxilary config file
 	#
-	generate_aux_config if $export;
+	enable_object, generate_aux_config if $export;
     }
 
     close_log if $log;

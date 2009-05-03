@@ -522,6 +522,44 @@ ppp0           6000kbit         500kbit</programlisting>
                 role="bold">class</emphasis> per interface.</para>
               </note>
             </listitem>
+
+            <listitem>
+              <para>occurs=&lt;number&gt;[d|s] - Causes the class definition
+              to be replicated for a total of <emphasis>number</emphasis>
+              rules. Each occurance has a successively higher class
+              number.</para>
+
+              <para>When 'occurs' is used:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>The associated device must have the 'classify'
+                  option.</para>
+                </listitem>
+
+                <listitem>
+                  <para>The class may not be the default class.</para>
+                </listitem>
+
+                <listitem>
+                  <para>The class may not have any 'tos=' options (including
+                  'tcp-ack').</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>The 'RATE' and 'CEIL' parameters apply to each instance of
+              the class. So the total RATE represented by an entry with
+              'occurs' will be the listed RATE multiplied by
+              <emphasis>number</emphasis>.</para>
+
+              <para>The <emphasis role="bold">d</emphasis> and <emphasis
+              role="bold">s</emphasis> options are used to specify whether the
+              instances of the class will be assigned by DESTINATION IP
+              address (<emphasis role="bold">d</emphasis>) or SOURCE IP
+              address (<emphasis role="bold">s</emphasis>). The default is
+              <emphasis role="bold">d</emphasis>. See the <ulink
+              url="shorewall-tcfilters.html">tcfilters</ulink> (5).</para>
+            </listitem>
           </itemizedlist>
         </listitem>
       </itemizedlist>

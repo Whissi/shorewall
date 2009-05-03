@@ -612,10 +612,10 @@ sub validate_tc_class( $$$$$$ ) {
 		$occurs = numeric_value($val);
 		$tcref->{src} = 1 if $3 eq 's';
 
-		fatal_error q(The 'occurs' option is only valid for IPv4) if $family == F_IPV6;
-		fatal_error "Invalid 'occurs' ($val)" unless defined $occurs && $occurs > 1 && $occurs <= 256;
-		fatal_error "Invalid 'occurs' ($val)" if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
-		fatal_error q(Duplicate 'occurs') if $tcref->{occurs} > 1;
+		fatal_error q(The 'occurs' option is only valid for IPv4)        if $family == F_IPV6;
+		fatal_error "Invalid 'occurs' ($val)"                            unless defined $occurs && $occurs > 1 && $occurs <= 256;
+		fatal_error "Invalid 'occurs' ($val)"                            if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
+		fatal_error q(Duplicate 'occurs')                                if $tcref->{occurs} > 1;
 		fatal_error q(The 'occurs' option is only valid with 'classify') unless $devref->{classify};
 		fatal_error q(The 'occurs' option is not valid with 'default')   if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')       if @{$tcref->{tos}};
@@ -639,9 +639,10 @@ sub validate_tc_class( $$$$$$ ) {
 					       rate     => $tcref->{rate} ,
 					       ceiling  => $tcref->{ceiling} ,
 					       priority => $tcref->{priority} ,
-					       mark     => $tcref->{classify} ? 0 : ++$markval ,
+					       mark     => 0 ,
 					       flow     => $tcref->{flow} ,
 					       pfifo    => $tcref->{pfifo},
+					       occurs   => 0,
 					     };
 	push @tcclasses, "$device:$classnumber";
     };

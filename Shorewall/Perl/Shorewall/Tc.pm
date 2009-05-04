@@ -502,9 +502,12 @@ sub validate_tc_device( $$$$$ ) {
 			    pfifo         => $pfifo ,
 			    tablenumber   => 1 ,
 			    redirected    => \@redirected ,
+			    default       => 0,
 			  } ,
 
     push @tcdevices, $device;
+
+    $tcclasses{$device} = {};
 
     progress_message "  Tcdevice \"$currentline\" $done.";
 }
@@ -566,17 +569,13 @@ sub validate_tc_class( $$$$$$ ) {
 	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
-	( $device , $classnumber ) = ( hex_value $device, hex_value $number );
+	( $number , $classnumber ) = ( hex_value $device, hex_value $number );
 
-	( $device , $devref) = dev_by_number( $device );
+	( $device , $devref) = dev_by_number( $number );
 
 	if ( defined $number ) {
-	    if ( $devref->{classify} ) {
-		fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
-		fatal_error "Duplicate interface/class number ($devclass)" if defined $devnums[ $classnumber ];
-	    } else {
-		warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option";
-	    }
+	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
+	    fatal_error "Duplicate interface/class number ($devclass)" if defined $devnums[ $classnumber ];
 	} else {
 	    fatal_error "Missing interface NUMBER";
 	}
@@ -587,7 +586,6 @@ sub validate_tc_class( $$$$$$ ) {
 
     my $full  = rate_to_kbit $devref->{out_bandwidth};
 
-    $tcclasses{$device} = {} unless $tcclasses{$device};
     my $tcref = $tcclasses{$device};
 
     my $markval = 0;
@@ -600,11 +598,10 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-	    $classnumber = $config{WIDE_TC_MARKS} ? 0x4000 | $markval : $devnum . $markval;
+	    $classnumber = $config{WIDE_TC_MARKS} ? $markval < 0x100 ? 0x4000 | $markval : $markval : $devnum . $markval;
 	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	}
     } else {
-	fatal_error "Missing MARK" unless $devref->{classify};
 	fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
     }
 
@@ -661,11 +658,21 @@ sub validate_tc_class( $$$$$$ ) {
 		fatal_error q(Duplicate 'occurs')                                if $tcref->{occurs} > 1;
 		fatal_error q(The 'occurs' option is not valid with 'default')   if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')       if @{$tcref->{tos}};
+
+		unless ( $devref->{classify} ) {
+		    warning_message "MARK ($mark) is ignored on an occurring class"                                  if $mark ne '-'; 
+		}
+
 		$tcref->{occurs} = $occurs;
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
 	}
+    }
+
+    unless ( $devref->{classify} || $occurs > 1 ) {
+	fatal_error "Missing MARK" if $mark eq '-';
+	warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option"	if $devclass =~ /:/; 
     }
 
     $tcref->{flow}  = $devref->{flow}  unless $tcref->{flow};
@@ -1012,7 +1019,20 @@ sub setup_traffic_shaping() {
 	#
 	# add filters
 	#
-	emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" unless $devref->{classify};
+	unless ( $devref->{classify} ) {
+	    if ( $tcref->{occurs} == 1 ) {
+		emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid";
+	    } elsif ( $tcref->{occurs} ) {
+		emit( qq(if ! qt \$TC filter add dev $device parent $devicenumber:0 prio 65535 protocol ip fw; then) ,
+		      qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
+		      qq(        error_message "ERROR: Command '\$TC add dev $device parent $devicenumber:0 prio 65535 protocol ip fw' failed"),
+		      qq(        stop_firewall),
+		      qq(        exit 1),
+		      qq(    fi),
+		      qq(fi) );
+	    }
+	}
+
 	emit "run_tc filter add dev $device protocol ip prio 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	#options

@@ -564,9 +564,10 @@ sub validate_tc_class( $$$$$$ ) {
     my $devref;
     my $device = $devclass;
     my $occurs = 1;
+    my $parentclass = 1;
 
     if ( $devclass =~ /:/ ) {
-	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
+	( $device, my ($number, $subnumber, $rest ) )  = split /:/, $device, 4;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
 	if ( $device =~ /^(\d+|0x[\da-fA-F]+)$/ ) {
@@ -579,6 +580,12 @@ sub validate_tc_class( $$$$$$ ) {
 	}
 
 	if ( defined $number ) {
+	    if ( defined $subnumber ) {
+		fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
+		$parentclass = $classnumber;
+		$classnumber = hex_value $subnumber;
+	    } 
+
 	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
 	    fatal_error "Duplicate interface/class number ($devclass)" if defined $devnums[ $classnumber ];
 	} else {
@@ -603,11 +610,24 @@ sub validate_tc_class( $$$$$$ ) {
 
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-	    $classnumber = $config{WIDE_TC_MARKS} ? $markval < 0x100 ? 0x4000 | $markval : $markval : $devnum . $markval;
-	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
+
+	    if ( $classnumber ) {
+		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
+	    } else {
+		$classnumber = $config{WIDE_TC_MARKS} ? $markval < 0x100 ? 0x4000 | $markval : $markval : $devnum . $markval;
+		fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
+	    }
 	}
     } else {
 	fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
+    }
+
+    if ( $parrentclass != 1 ) {
+	#
+	# Nested Class
+	#
+	my $parentref = $tcref->{parentclass};
+	fatal_error "Unknown Parent class ($parentclass)" unless $parentref && $parentref->{occurs} == 1;
     }
 
     $tcref->{$classnumber} = { tos      => [] ,
@@ -619,6 +639,7 @@ sub validate_tc_class( $$$$$$ ) {
 			       pfifo    => 0,
 			       occurs   => 1,
 			       src      => 1,
+			       parent   => $parentclass,
 			     };
 
     $tcref = $tcref->{$classnumber};
@@ -694,6 +715,7 @@ sub validate_tc_class( $$$$$$ ) {
 					       flow     => $tcref->{flow} ,
 					       pfifo    => $tcref->{pfifo},
 					       occurs   => 0,
+					       parent   => $parentclass,
 					     };
 	push @tcclasses, "$device:$classnumber";
     };
@@ -997,7 +1019,7 @@ sub setup_traffic_shaping() {
 	}
 
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum",
-	       "run_tc class add dev $device parent $devref->{number}:1 classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
+	       "run_tc class add dev $device parent $devref->{number}:$tcref->{parent} classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 
 	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit 127 perturb 10" ) unless $tcref->{pfifo};
 	#

@@ -569,9 +569,14 @@ sub validate_tc_class( $$$$$$ ) {
 	( $device, my ($number, $rest ) )  = split /:/, $device, 3;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
-	( $number , $classnumber ) = ( hex_value $device, hex_value $number );
-
-	( $device , $devref) = dev_by_number( $number );
+	if ( $device =~ /^(\d+|0x[\da-fA-F]+)$/ ) {
+	    ( $number , $classnumber ) = ( hex_value $device, hex_value $number );
+	    ( $device , $devref) = dev_by_number( $number );
+	} else {
+	    $classnumber = hex_value $number;
+	    ($device, $devref ) = dev_by_number( $device);
+	    $number = $devref->{number};
+	}
 
 	if ( defined $number ) {
 	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
@@ -652,15 +657,16 @@ sub validate_tc_class( $$$$$$ ) {
 		$occurs = numeric_value($val);
 		$tcref->{src} = 1 if $3 eq 's';
 
-		fatal_error q(The 'occurs' option is only valid for IPv4)        if $family == F_IPV6;
-		fatal_error "Invalid 'occurs' ($val)"                            unless defined $occurs && $occurs > 1 && $occurs <= 256;
-		fatal_error "Invalid 'occurs' ($val)"                            if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
-		fatal_error q(Duplicate 'occurs')                                if $tcref->{occurs} > 1;
-		fatal_error q(The 'occurs' option is not valid with 'default')   if $devref->{default} == $classnumber;
-		fatal_error q(The 'occurs' option is not valid with 'tos')       if @{$tcref->{tos}};
+		fatal_error q(The 'occurs' option is only valid for IPv4)           if $family == F_IPV6;
+		fatal_error q(The 'occurs' option may not be used with 'classify')  if $devref->{classify};
+		fatal_error "Invalid 'occurs' ($val)"                               unless defined $occurs && $occurs > 1 && $occurs <= 256;
+		fatal_error "Invalid 'occurs' ($val)"                               if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
+		fatal_error q(Duplicate 'occurs')                                   if $tcref->{occurs} > 1;
+		fatal_error q(The 'occurs' option is not valid with 'default')      if $devref->{default} == $classnumber;
+		fatal_error q(The 'occurs' option is not valid with 'tos')          if @{$tcref->{tos}};
 
 		unless ( $devref->{classify} ) {
-		    warning_message "MARK ($mark) is ignored on an occurring class"                                  if $mark ne '-'; 
+		    warning_message "MARK ($mark) is ignored on an occurring class" if $mark ne '-'; 
 		}
 
 		$tcref->{occurs} = $occurs;
@@ -722,9 +728,8 @@ sub process_tc_filter( $$$$$$ ) {
 
     $tcref = $tcref->{$classnum};
 
-    fatal_error "Unknown CLASS ($devclass)" unless $tcref && $tcref->{occurs};
-
-    my $occurs = $tcref->{occurs};
+    fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
+    fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
 
     my $rule = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32";
 
@@ -743,31 +748,13 @@ sub process_tc_filter( $$$$$$ ) {
     unless ( $proto eq '-' ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
-	fatal_error "PROTO not permitted in this rule" unless $occurs == 1;
 	$rule .= "\\\n   match ip protocol $protonumber 0xff" if $protonumber;
     }
 
     if ( $portlist eq '-' && $sportlist eq '-' ) {
-	if ( $occurs == 1 ) {
-	    emit( "\nrun_tc $rule\\" ,
-		  "   flowid $devref->{number}:$class" ,
-		  '' );
-	} else {
-	    my $offset = $tcref->{src} ? 12 : 16;
-	    my $tnum   = $devref->{tablenumber}++;
-	    my $bucket;
-
-	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor $occurs" );
-
-	    for ( my $i = 0; $i < $occurs; $i++ ) {
-		$class  = in_hexp $classnum++;
-		$bucket = in_hexp $i;
-		emit( "run_tc filter add dev $device protocol ip parent $devnum:0 prio 10 u32 ht $tnum:$bucket match u32 0x00000000 0x000000 at 12 flowid $devref->{number}:$class" );
-	    }
-
-	    emit( "\nrun_tc $rule\\",
-		  "   link $tnum: hashkey mask ff at $offset\\" );
-	}
+	emit( "\nrun_tc $rule\\" ,
+	      "   flowid $devref->{number}:$class" ,
+	      '' );
     } else {
 	fatal_error "Ports may not be specified without a PROTO" unless $protonumber;
 	our $lastrule;

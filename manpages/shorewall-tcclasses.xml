@@ -113,7 +113,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> -
-        <emphasis>interface</emphasis>[:<emphasis>class</emphasis>]</term>
+        <emphasis>interface</emphasis>[:<emphasis>parent</emphasis>][:<emphasis>class</emphasis>]</term>
 
         <listitem>
           <para>Name of <emphasis>interface</emphasis>. Each interface may be
@@ -121,13 +121,16 @@
           alias (e.g., eth0:0) here; see <ulink
           url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
 
-          <para>If you are running Shorewall-perl 4.1.6 or later, you may
-          specify the interface number rather than the interface name. If the
-          <emphasis role="bold">classify</emphasis> option is given for the
-          interface in <ulink
+          <para>You may specify the interface number rather than the interface
+          name. If the <emphasis role="bold">classify</emphasis> option is
+          given for the interface in <ulink
           url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5), then
           you must also specify an interface class (an integer that must be
-          unique within classes associated with this interface).</para>
+          unique within classes associated with this interface). If the
+          classify option is not given, you may still specify a
+          <emphasis>class</emphasis> or you may have Shorewall generate a
+          class number from the MARK value. Interface numbers and class
+          numbers are always assumed to be specified in hex.</para>
 
           <para>You may NOT specify wildcards here, e.g. if you have multiple
           ppp interfaces, you need to put them all in here!</para>
@@ -135,7 +138,15 @@
           <para>Please note that you can only use interface names in here that
           have a bandwidth defined in the <ulink
           url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
-          file</para>
+          file.</para>
+
+          <para>Normally, all classes defined here are sub-classes of a root
+          class that is implicitly defined from the entry in <ulink
+          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5). You
+          can establish a class hierarchy by specifying a
+          <emphasis>parent</emphasis> class -- the number of a class that you
+          have previously defined. The sub-class may borrow unused bandwidth
+          from its parent.</para>
         </listitem>
       </varlistentry>
 
@@ -165,7 +176,9 @@
           <para>The minimum bandwidth this class should get, when the traffic
           load rises. If the sum of the rates in this column exceeds the
           INTERFACE's OUT-BANDWIDTH, then the OUT-BANDWIDTH limit may not be
-          honored.</para>
+          honored. Similarly, if the sum of the rates of sub-classes of a
+          class exceed the CEIL of the parent class, things don't work
+          well.</para>
         </listitem>
       </varlistentry>
 

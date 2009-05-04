@@ -165,6 +165,45 @@ None.
 5)  Compile for export (such as in the 'shorewall reload' command)
     caused the compiler to fail with an internal error.
 
+6)  Shorewall now supports nested HTB traffic shaping classes.  The
+    nested classes within a class can borrow from their parent class in
+    the same way as the first level classes can borrow from the root
+    class.
+
+    To use nested classes, you must explicitly number your classes.
+
+    Example:
+
+    /etc/shorewall/tcdevices
+
+    #INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
+    eth2	-		100mbps		classify
+
+    /etc/shorewall/tcclasses
+
+    #INTERFACE	MARK	RATE		CEIL	 PRIORITY	OPTIONS
+    1:10	-	full/2		full		1
+    1:100	-	16mbit		20mbit		2
+    1:100:101	-	 8mbit		20mbit		3	default
+    1:100:102	-	 8mbit		20mbit		3
+     
+    /etc/shorewall/tcrules
+
+    #MARK	SOURCE		DEST
+    1:102	0.0.0.0/0	eth2:172.20.1.107
+    1:10	206.124.146.177	eth2
+    1:10	172.20.1.254	eth2
+
+    The above controls download for internal interface eth2. The
+    external interface has a download rate of 20mbit so we guarantee
+    that to class 1:100. 1:100 has two subclasses, each of which is
+    guaranteed half of their parent's bandwidth.
+
+    Local traffic (that coming from the firewall and from the DMZ
+    server) is placed in the effectively unrestricted class 1:10. The
+    default class is guaranteed have of the download capacity and my
+    work system (172.20.1.107) is guarandeed the other half.
+   
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------
@@ -549,19 +588,17 @@ None.
 	1:103.
 
     It is important to realize that, while class IDs are composed of a
-    <major> and a <minor> value, the set of values must be unique. That
-    is, the same numeric value cannot be used as both a <major> and a
-    <minor> number for the same interface unless class nesting occurs
-    (which is not currently possible with Shorewall). You should keep
-    this in mind when deciding how to map IP addresses to class IDs. 
+    <major> and a <minor> value, the set of <minor> values must be
+    unique. You must keep this in mind when deciding how to map IP
+    addresses to class IDs. 
 
     For example, suppose that your internal network is 192.168.1.0/29
     (host IP addresses 192.168.1.1 - 192.168.1.6). Your first notion
     might be to use IPMARK(src,0xFF,0x10000) so as to produce class IDs
-    1:1 through 1:6. But 1:1 is an invalid class ID since the <major>
-    and <minor> classes are equal. So you might chose instent to use
-    IPMARK(src,0xFF,0x10100) as shown in the example above so that all
-    of your <minor> classes will have a value > 256.
+    1:1 through 1:6. But 1:1 is the class ID if the base HTB class on
+    interface 1. So you might chose instent to use
+    IPMARK(src,0xFF,0x10100) as shown in the example above so as to
+    avoid minor class 1.
 
     The 'occurs' option in /etc/shorewall/tcclasses causes the class
     definition to be replicated many times. The synax is:

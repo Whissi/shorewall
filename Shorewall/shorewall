@@ -1996,11 +1996,11 @@ case "$COMMAND" in
         ;;
     decode)
 	[ $# -eq 2 ] || usage 1
-	echo "Mark = $((0x$2 & 0x3fff))"
+	echo "Mark =" $((0x$2 & 0x3fff))
 	;;
     encode)
 	[ $# -eq 2 ] || usage 1
-	echo "Class Number = 4$(printf '0%x', $2)"
+	echo "Class Number = 4$(printf '0%x' $2)"
 	;;
     call)
 	get_config

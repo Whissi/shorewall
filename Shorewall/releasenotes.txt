@@ -127,7 +127,21 @@ None.
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).
 
-2)  In the 'shorewall compile' command, the filename '-' is now causes
+    /sbin/shorewall supports an 'encode' and a 'decode' command for
+    mapping back and forth using the new  method:
+
+    Example:
+
+	$ shorewall encode 100 #Maps a MARK value to a class number
+	Class Number = 4064
+	$ shorewall decode 4064 #Maks a class number (hex) to a MARK value
+	Mark = 100
+	$
+
+2)  The implementation of IPMARK has changed. Please see item 16) in
+    the  'New Features in 4.3' section below.
+
+3)  In the 'shorewall compile' command, the filename '-' is now causes
     the compiled script to be written to Standard Out. As a side
     effect, the effective VERBOSITY is set to -1 (silent).
 
@@ -144,7 +158,7 @@ None.
     issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
     begins.
 
-3)  Supplying an interface name in the SOURCE column of
+4)  Supplying an interface name in the SOURCE column of
     /etc/shorewall/masq is now deprecated. Entering the name of an
     interface there will result in a compile-time warning.
 
@@ -479,12 +493,24 @@ None.
     Beginning with Shorewall 4.3.9, this process is made easier IF YOU
     ARE WILLING TO INSTALL xtables-addons. The feature requires IPMARK
     support in iptables[6] and your kernel. That support is available
-    in xtables-addons. 
+    in xtables-addons.
 
     The new facility has two components:
 
     a) A new IPMARK MARKing command in /etc/shorewall/tcrules.
     b) A new 'occurs' OPTION in /etc/shorewall/tcclasses.
+
+    The facility is currently only available with IPv4.
+
+    In a sense, the IPMARK target is more like an IPCLASSIFY target in
+    that the mark value is later interpreted as a class ID. A packet
+    mark is 32 bits wide; so is a class ID. The <major> class occupies
+    the high-order 16 bits and the <minor> class occupies the low-order
+    16 bits. So the class ID 1:4ff (remember that class IDs are always
+    in hex) is equivalent to a mark value of 0x104ff. Remember that
+    Shorewall uses the interface number as the <major> number where the
+    first interface in tcdevices has <major> number 1, the second has
+    <major> number 2, and so on.
 
     The IPMARK target assigns a mark to each matching packet based on
     the either the source or destination IP address. By default, it
@@ -505,10 +531,9 @@ None.
      'src' and 'dst' specify whether the mark is to be based on the
      source or destination address respectively.
 
-     The selected address is first LANDed with <mask1> then LORed with
-     <mask2>.
-
-     The result is then shifted <shift> bits to the right.
+     The selected address is first shifted right by <shift>, then
+     LANDed with <mask1> and then LORed with <mask2>. The <shift>
+     argument is intended to be used primarily with IPv6 addresses.
 
      Example:
 
@@ -522,8 +547,23 @@ None.
 
 	Mark = 0x84 = 132
 
-    The 'occurs' option causes the class definition to be replicated
-    many times. The synax is:
+    It is important to realize that, while class IDs are composed of a
+    <major> and a <minor> value, the set of values must be unique. That
+    is, the same numeric value cannot be used as both a <major> and a
+    <minor> number for the same interface unless class nesting occurs
+    (which is not currently possible with Shorewall). You should keep
+    this in mind when deciding how to map IP addresses to class IDs. 
+
+    For example, suppose that your internal network is 192.168.1.0/29
+    (host IP addresses 192.168.1.1 - 192.168.1.6). Your first notion
+    might be to use IPMARK(src,0xFF,0x10000) so as to produce class IDs
+    1:1 through 1:6. But 1:1 is an invalid class ID since the <major>
+    and <minor> classes are equal. So you might chose instent to use
+    IPMARK(src,0xFF,0x10100) so that all of your <minor> classes will
+    have a value > 256.
+
+    The 'occurs' option in /etc/shorewall/tcclasses causes the class
+    definition to be replicated many times. The synax is:
 
 	 occurs=<number>
 
@@ -533,6 +573,8 @@ None.
 	 b) The class may not be the default class.
 	 c) The class may not have any 'tos=' options (including
 	    'tcp-ack').
+	 d) The class should not specify a MARK value. Any MARK value
+	    given is ignored with a warning.
 
     The 'RATE' and 'CEIL' parameters apply to each instance of the
     class. So the total RATE represented by an entry with 'occurs' will
@@ -540,28 +582,23 @@ None.
 
     Example:
 
-	#DEVICE MARK    RATE    CEIL    PRIORITY	OPTIONS
-	eth0	100	1kbit	230kbit	       4	occurs=32
+	/etc/shorewall/tcdevices:
 
-        The above defines 32 classes with MARK values 100-131. Each
-        class has a guaranteed rate of 1kbit/second.
+	#INTERFACE     IN-BANDWIDTH     OUT-BANDWIDTH
+	eth0	       100mbit		100mbit
 
-    As part of this change, the generation of class ids from mark
-    values has been changed. The class number is now
+	/etc/shorewall/tcclasses:
 
-	   ( <devnum> << 10 ) | <mask>
+	#DEVICE   MARK  RATE    CEIL    PRIORITY	OPTIONS
+	eth0:101  -	1kbit	230kbit	       4	occurs=6
 
-    /sbin/shorewall has an 'encode' and 'decode' command to translate a
-    device number, mark pair to/from a classid:
+        The above defines 6 classes with class IDs 0x101-0x106. Each
+        class has a guaranteed rate of 1kbit/second and a ceiling of
+        230kbit.
 
-	   encode <devnum> <mark>
-	   decode <classnum>
+	/etc/shoreall/tcrules:
 
-    Example:
+	#MARK                      SOURCE              DEST
+	IPMARK(src,0xff,0x10100):F 192.168.1.0/29      eth0
 
-	$ shorewall decode 3172
-	Device = 3 Mark = 100
-        $ shorewall encode 3 100
-	Class number = 3172
-	$
-
+	

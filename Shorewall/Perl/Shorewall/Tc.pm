@@ -664,10 +664,7 @@ sub validate_tc_class( $$$$$$ ) {
 		fatal_error q(Duplicate 'occurs')                                   if $tcref->{occurs} > 1;
 		fatal_error q(The 'occurs' option is not valid with 'default')      if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')          if @{$tcref->{tos}};
-
-		unless ( $devref->{classify} ) {
-		    warning_message "MARK ($mark) is ignored on an occurring class" if $mark ne '-'; 
-		}
+		warning_message "MARK ($mark) is ignored on an occurring class"     if $mark ne '-'; 
 
 		$tcref->{occurs} = $occurs;
 	    } else {

@@ -537,15 +537,16 @@ None.
 
      Example:
 
-	IPMARK(dst, 0XFF00, 0x8000,8)
+	IPMARK(src,0xff,0x10100)
 
         Destination IP address is 192.168.4.3 = 0xc0a80403
 
-	0xc0a80403 LAND 0xFF00  = 0x0400
-	0x0400     LOR  0x80    = 0x8400
-        0x8400     >>   8       = 0x84
+	0xc0a80403 >> 0         = 0xc0a80403
+	0xc0a80403 LAND 0xFF    = 0x03
+	0x03       LOR  0x10100 = 0x10103
 
-	Mark = 0x84 = 132
+	So the mark value is 0x10103 which corresponds to class id
+	1:103.
 
     It is important to realize that, while class IDs are composed of a
     <major> and a <minor> value, the set of values must be unique. That
@@ -559,8 +560,8 @@ None.
     might be to use IPMARK(src,0xFF,0x10000) so as to produce class IDs
     1:1 through 1:6. But 1:1 is an invalid class ID since the <major>
     and <minor> classes are equal. So you might chose instent to use
-    IPMARK(src,0xFF,0x10100) so that all of your <minor> classes will
-    have a value > 256.
+    IPMARK(src,0xFF,0x10100) as shown in the example above so that all
+    of your <minor> classes will have a value > 256.
 
     The 'occurs' option in /etc/shorewall/tcclasses causes the class
     definition to be replicated many times. The synax is:

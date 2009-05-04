@@ -299,7 +299,7 @@
                 <emphasis>number</emphasis> rules. Each rule has a
                 successively class number and mark value.</para>
 
-                <para> When 'occurs' is used:</para>
+                <para>When 'occurs' is used:</para>
 
                 <itemizedlist>
                   <listitem>
@@ -315,12 +315,20 @@
                     <para>The class may not have any 'tos=' options (including
                     'tcp-ack').</para>
                   </listitem>
+
+                  <listitem>
+                    <para>The class should not specify a MARK value. If one is
+                    specified, it will be ignored with a warning
+                    message.</para>
+                  </listitem>
                 </itemizedlist>
 
                 <para>The 'RATE' and 'CEIL' parameters apply to each instance
                 of the class. So the total RATE represented by an entry with
                 'occurs' will be the listed RATE multiplied by
-                <emphasis>number</emphasis>. </para>
+                <emphasis>number</emphasis>. For additional information, see
+                <ulink url="shorewall-tcrules.html">tcrules</ulink>
+                (5).</para>
               </listitem>
             </varlistentry>
           </variablelist>

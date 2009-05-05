@@ -236,9 +236,9 @@ sub start_provider( $$$ ) {
     emit "echo \"qt \$IP -$family route flush table $number\" >> \${VARDIR}/undo_routing";
 }
 
-sub add_a_provider( $$$$$$$$ ) {
+sub add_a_provider( ) {
 
-    my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy) = @_;
+    my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
@@ -488,10 +488,12 @@ sub add_a_provider( $$$$$$$$ ) {
     }
 
     emit "fi\n";
+
+    push @providers, $table;
 }
 
-sub add_an_rtrule( $$$$ ) {
-    my ( $source, $dest, $provider, $priority ) = @_;
+sub add_an_rtrule( ) {
+    my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
 
     unless ( $providers{$provider} ) {
 	my $found = 0;
@@ -626,11 +628,7 @@ sub setup_providers() {
 	    emit '';
 	}
 
-	my ( $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
-
-	add_a_provider(  $table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy );
-
-	push @providers, $table;
+	add_a_provider;
 
 	$providers++;
 
@@ -720,12 +718,7 @@ sub setup_providers() {
 
 	    emit '';
 
-	    while ( read_a_line ) {
-
-		my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
-
-		add_an_rtrule( $source, $dest, $provider , $priority );
-	    }
+	    add_an_rtrule while read_a_line;
 	}
 
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};

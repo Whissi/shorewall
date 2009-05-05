@@ -113,9 +113,14 @@ sub do_ipsec_options($)
 #
 # Process a single rule from the the masq file
 #
-sub setup_one_masq($$$$$$$)
+sub process_one_masq( )
 {
-    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark) = @_;
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line1 2, 7, 'masq file';
+
+    if ( $interfacelist eq 'COMMENT' ) {
+	process_comment;
+	return 1;
+    }
 
     my $pre_nat;
     my $add_snat_aliases = $config{ADD_SNAT_ALIASES};
@@ -314,16 +319,7 @@ sub setup_masq()
 
     first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
 
-    while ( read_a_line ) {
-
-	my ($fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line1 2, 7, 'masq file';
-
-	if ( $fullinterface eq 'COMMENT' ) {
-	    process_comment;
-	} else {
-	    setup_one_masq $fullinterface, $networks, $addresses, $proto, $ports, $ipsec, $mark;
-	}
-    }
+    process_one_masq while read_a_line;
 
     clear_comment;
 

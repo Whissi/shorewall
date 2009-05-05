@@ -619,7 +619,7 @@ sub validate_tc_class( $$$$$$ ) {
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
 	    } else {
-		$classnumber = $config{WIDE_TC_MARKS} ? $tcref->{nextclass}++ : $devnum . $markval;
+		$classnumber = $config{WIDE_TC_MARKS} ? $tcref->{nextclass}++ : hex_value( $devnum . $markval );
 		fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	    }
 	}
@@ -1056,7 +1056,7 @@ sub setup_traffic_shaping() {
 	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
 	}
 
-	save_progress_message_short qq("   TC Class $class defined.");
+	save_progress_message_short qq("   TC Class $classid defined.");
 	emit '';
     }
 

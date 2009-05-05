@@ -1384,8 +1384,40 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 #
 #     Deals with the ugliness of wildcard zones ('all' in SOURCE and/or DEST column).
 #
-sub process_rule ( $$$$$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit , $time ) = @_;
+sub process_rule ( ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time ) = split_line1 1, 12, 'rules file', \%rules_commands;
+
+    if ( $target eq 'COMMENT' ) {
+	process_comment;
+	return 1;
+    }
+    
+    if ( $target eq 'SECTION' ) {
+	#
+	# read_a_line has already verified that there are exactly two tokens on the line
+	#
+	fatal_error "Invalid SECTION ($source)" unless defined $sections{$source};
+	fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
+	$sectioned = 1;
+	$sections{$source} = 1;
+	
+	if ( $source eq 'RELATED' ) {
+	    $sections{ESTABLISHED} = 1;
+	    finish_section 'ESTABLISHED';
+	} elsif ( $source eq 'NEW' ) {
+	    @sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
+	    finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
+	}
+	
+	$section = $source;
+	return 1;
+    }
+
+    if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
+	progress_message "Rule \"$currentline\" ignored.";
+	return 1;
+    }
+
     my $intrazone = 0;
     my $includesrcfw = 1;
     my $includedstfw = 1;
@@ -1483,38 +1515,7 @@ sub process_rules() {
 
     first_entry "$doing $fn...";
 
-    while ( read_a_line ) {
-
-	my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time ) = split_line1 1, 12, 'rules file', \%rules_commands;
-
-	if ( $target eq 'COMMENT' ) {
-	    process_comment;
-	} elsif ( $target eq 'SECTION' ) {
-	    #
-	    # read_a_line has already verified that there are exactly two tokens on the line
-	    #
-	    fatal_error "Invalid SECTION ($source)" unless defined $sections{$source};
-	    fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
-	    $sectioned = 1;
-	    $sections{$source} = 1;
-
-	    if ( $source eq 'RELATED' ) {
-		$sections{ESTABLISHED} = 1;
-		finish_section 'ESTABLISHED';
-	    } elsif ( $source eq 'NEW' ) {
-		@sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
-		finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
-	    }
-
-	    $section = $source;
-	} else {
-	    if ( "\L$source" =~ /^none(:.*)?$/ || "\L$dest" =~ /^none(:.*)?$/ ) {
-		progress_message "Rule \"$currentline\" ignored."
-	    } else {
-		process_rule $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time;
-	    }
-	}
-    }
+    process_rule while read_a_line;
 
     clear_comment;
     $section = 'DONE';

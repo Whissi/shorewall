@@ -59,11 +59,16 @@ INIT {
 #
 # Accounting
 #
-sub process_accounting_rule( $$$$$$$$$ ) {
+sub process_accounting_rule( ) {
 
     our $jumpchainref;
 
-    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = @_;
+    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line1 1, 9, 'Accounting File';
+
+    if ( $action eq 'COMMENT' ) {
+	process_comment;
+	return 0;
+    }
 
     our $disposition = '';
 
@@ -170,6 +175,8 @@ sub process_accounting_rule( $$$$$$$$$ ) {
 	    '' ,
 	    '' ;
     }
+
+    return 1;
 }
 
 sub setup_accounting() {
@@ -180,17 +187,7 @@ sub setup_accounting() {
 
     my $nonEmpty = 0;
 
-    while ( read_a_line ) {
-
-	my ( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark ) = split_line1 1, 9, 'Accounting File';
-
-	if ( $action eq 'COMMENT' ) {
-	    process_comment;
-	} else {
-	    $nonEmpty = 1;
-	    process_accounting_rule $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark;
-	}
-    }
+    $nonEmpty |= process_accounting_rule while read_a_line;
 
     fatal_error "Accounring rules are isolated" if $nonEmpty && ! $filter_table->{accounting};
 

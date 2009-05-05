@@ -218,8 +218,13 @@ INIT {
     initialize( F_IPV4 );
 }
 
-sub process_tc_rule( $$$$$$$$$$$$ ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes , $helper ) = @_;
+sub process_tc_rule( ) {
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
+
+    if ( $originalmark eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
@@ -437,8 +442,10 @@ sub process_flow($) {
     $flow;
 }
 
-sub validate_tc_device( $$$$$ ) {
-    my ( $device, $inband, $outband , $options , $redirected ) = @_;
+sub validate_tc_device( ) {
+    my ( $device, $inband, $outband , $options , $redirected ) = split_line 3, 5, 'tcdevices';
+
+    fatal_error "Invalid tcdevices entry" if $outband eq '-';
 
     my $devnumber;
 
@@ -556,8 +563,8 @@ sub dev_by_number( $ ) {
 
 }
 
-sub validate_tc_class( $$$$$$ ) {
-    my ( $devclass, $mark, $rate, $ceil, $prio, $options ) = @_;
+sub validate_tc_class( ) {
+    my ( $devclass, $mark, $rate, $ceil, $prio, $options ) = split_line 4, 6, 'tcclasses file';
 
     my %tosoptions = ( 'tos-minimize-delay'       => 'tos=0x10/0x10' ,
 		       'tos-maximize-throughput'  => 'tos=0x08/0x08' ,
@@ -731,9 +738,9 @@ sub validate_tc_class( $$$$$$ ) {
 #
 # Process a record from the tcfilters file
 #
-sub process_tc_filter( $$$$$$ ) {
-    my ($devclass , $source, $dest , $proto, $portlist , $sportlist ) = @_;
-
+sub process_tc_filter( ) {
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist ) = split_line 2, 6, 'tcfilters file';
+    
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
@@ -924,13 +931,7 @@ sub setup_traffic_shaping() {
     if ( $fn ) {
 	first_entry "$doing $fn...";
 
-	while ( read_a_line ) {
-
-	    my ( $device, $inband, $outband, $options , $redirected ) = split_line 3, 5, 'tcdevices';
-
-	    fatal_error "Invalid tcdevices entry" if $outband eq '-';
-	    validate_tc_device( $device, $inband, $outband , $options , $redirected );
-	}
+	validate_tc_device while read_a_line;
     }
 
     $devnum = $devnum > 10 ? 10 : 1;
@@ -940,12 +941,7 @@ sub setup_traffic_shaping() {
     if ( $fn ) {
 	first_entry "$doing $fn...";
 
-	while ( read_a_line ) {
-
-	    my ( $device, $mark, $rate, $ceil, $prio, $options ) = split_line 4, 6, 'tcclasses file';
-
-	    validate_tc_class( $device, $mark, $rate, $ceil, $prio, $options );
-	}
+	validate_tc_class while read_a_line;
     }
 
     for my $device ( @tcdevices ) {
@@ -1071,12 +1067,7 @@ sub setup_traffic_shaping() {
 	if ( $fn ) {
 	    first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message "Adding TC Filters"; } );
 
-	    while ( read_a_line ) {
-
-		my ( $devclass, $source, $dest, $proto, $port, $sport ) = split_line 2, 6, 'tcfilters file';
-
-		process_tc_filter( $devclass, $source, $dest, $proto, $port, $sport );
-	    }
+	    process_tc_filter while read_a_line;
 	}
     }
 }
@@ -1136,17 +1127,7 @@ sub setup_tc() {
 
 	    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );
 
-	    while ( read_a_line ) {
-
-		my ( $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
-
-		if ( $mark eq 'COMMENT' ) {
-		    process_comment;
-		} else {
-		    process_tc_rule $mark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos, $connbytes, $helper;
-		}
-
-	    }
+	    process_tc_rule while read_a_line;
 
 	    clear_comment;
 	}

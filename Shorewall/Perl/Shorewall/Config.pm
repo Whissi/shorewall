@@ -756,7 +756,7 @@ sub numeric_value1 ( $ ) {
 
 sub hex_value( $ ) {
     my $val = lc $_[0];
-    return undef unless $val =~ /^[a-f0-9]+$/;
+    return undef unless $val =~ /^[a-fA-F0-9]+$/;
     no warnings;
     oct '0x' . $val;
     use warnings;

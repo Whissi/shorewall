@@ -154,6 +154,25 @@ use constant { FIREWALL => 1,
 	       BPORT    => 3,
 	       IPSEC    => 4 };
 
+use constant { SIMPLE_IF_OPTION   => 1,
+	       BINARY_IF_OPTION   => 2,
+	       ENUM_IF_OPTION     => 3,
+	       NUMERIC_IF_OPTION  => 4,
+	       OBSOLETE_IF_OPTION => 5,
+	       IPLIST_IF_OPTION   => 6,
+	       MASK_IF_OPTION     => 7,
+	       
+	       IF_OPTION_ZONEONLY => 8,
+	       IF_OPTION_HOST     => 16,
+	   };
+
+our %validinterfaceoptions;
+
+our  %validhostoptions;
+
+our $num;
+
+
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
 #                       the compiler to run multiple times in the same process. The
@@ -169,11 +188,67 @@ sub initialize( $ ) {
     @zones = ();
     %zones = ();
     $firewall_zone = '';
+    $num = 0;
 
     @interfaces = ();
     %interfaces = ();
     @bport_zones = ();
     %ipsets = ();
+
+    if ( $family == F_IPV4 ) {
+	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
+				  arp_ignore  => ENUM_IF_OPTION,
+				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  bridge      => SIMPLE_IF_OPTION,
+				  detectnets  => OBSOLETE_IF_OPTION,
+				  dhcp        => SIMPLE_IF_OPTION,
+				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  logmartians => BINARY_IF_OPTION,
+				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
+				  norfc1918   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  optional    => SIMPLE_IF_OPTION,
+				  proxyarp    => BINARY_IF_OPTION,
+				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
+				  routefilter => BINARY_IF_OPTION ,
+				  sourceroute => BINARY_IF_OPTION,
+				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  upnp        => SIMPLE_IF_OPTION,
+				  mss         => NUMERIC_IF_OPTION,
+				 );
+	%validhostoptions = (
+			     blacklist => 1,
+			     maclist => 1,
+			     norfc1918 => 1,
+			     nosmurfs => 1,
+			     routeback => 1,
+			     tcpflags => 1,
+			     broadcast => 1,
+			     destonly => 1,
+			     sourceonly => 1,
+			    );
+    } else {
+	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				    bridge      => SIMPLE_IF_OPTION,
+				    dhcp        => SIMPLE_IF_OPTION,
+				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
+				    nosmurfs    => SIMPLE_IF_OPTION,
+				    optional    => SIMPLE_IF_OPTION,
+				    proxyndp    => BINARY_IF_OPTION,
+				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
+				    sourceroute => BINARY_IF_OPTION,
+				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				    mss         => NUMERIC_IF_OPTION,
+				    forward     => NUMERIC_IF_OPTION,
+				 );
+	%validhostoptions = (
+			     blacklist => 1,
+			     maclist => 1,
+			     routeback => 1,
+			     tcpflags => 1,
+			    );
+    }
 }
 
 INIT {
@@ -250,88 +325,93 @@ sub parse_zone_option_list($$)
 }
 
 #
+# Process a record in the zones file
+#
+sub process_zone( \$ ) {
+    my $ip = $_[0];
+
+    my @parents;
+
+    my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
+
+    if ( $zone =~ /(\w+):([\w,]+)/ ) {
+	$zone = $1;
+	@parents = split_list $2, 'zone';
+
+	for my $p ( @parents ) {
+	    fatal_error "Invalid Parent List ($2)" unless $p;
+	    fatal_error "Unknown parent zone ($p)" unless $zones{$p};
+	    fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} == FIREWALL;
+	    push @{$zones{$p}{children}}, $zone;
+	}
+    }
+
+    fatal_error "Invalid zone name ($zone)" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $globals{MAXZONENAMELENGTH};
+    fatal_error "Invalid zone name ($zone)"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
+    fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
+    
+    if ( $type =~ /ipv4/i ) {
+	fatal_error "Invalid zone type ($type)" if $family == F_IPV6;
+	$type = IP;
+	$$ip = 1;
+    } elsif ( $type =~ /ipv6/i ) {
+	fatal_error "Invalid zone type ($type)" if $family == F_IPV4;
+	$type = IP;
+	$$ip = 1;
+    } elsif ( $type =~ /^ipsec([46])?$/i ) {
+	fatal_error "Invalid zone type ($type)" if $1 && (($1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
+	$type = IPSEC;
+    } elsif ( $type =~ /^bport([46])?$/i ) {
+	fatal_error "Invalid zone type ($type)" if $1 && (( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
+	warning_message "Bridge Port zones should have a parent zone" unless @parents;
+	$type = BPORT;
+	push @bport_zones, $zone;
+    } elsif ( $type eq 'firewall' ) {
+	fatal_error 'Firewall zone may not be nested' if @parents;
+	fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
+	$firewall_zone = $zone;
+	$ENV{FW} = $zone;
+	$type = FIREWALL;
+    } elsif ( $type eq '-' ) {
+	$type = IP;
+	$$ip = 1;
+    } else {
+	fatal_error "Invalid zone type ($type)" ;
+    }
+    
+    for ( $options, $in_options, $out_options ) {
+	$_ = '' if $_ eq '-';
+    }
+    
+    $zones{$zone} = { type       => $type,
+		      parents    => \@parents,
+		      bridge     => '',
+		      options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
+				      in      => parse_zone_option_list( $in_options || '', $type ) ,
+				      out     => parse_zone_option_list( $out_options || '', $type ) ,
+				      complex => ($type == IPSEC || $options || $in_options || $out_options ? 1 : 0) ,
+				      nested  => @parents > 0 } ,
+		      interfaces => {} ,
+		      children   => [] ,
+		      hosts      => {}
+		    };
+    
+    return $zone;
+    
+}
+#
 # Parse the zones file.
 #
 sub determine_zones()
 {
     my @z;
-
     my $ip = 0;
 
     my $fn = open_file 'zones';
 
     first_entry "$doing $fn...";
 
-    while ( read_a_line ) {
-
-	my @parents;
-
-	my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
-
-	if ( $zone =~ /(\w+):([\w,]+)/ ) {
-	    $zone = $1;
-	    @parents = split_list $2, 'zone';
-
-	    for my $p ( @parents ) {
-		fatal_error "Invalid Parent List ($2)" unless $p;
-		fatal_error "Unknown parent zone ($p)" unless $zones{$p};
-		fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} == FIREWALL;
-		push @{$zones{$p}{children}}, $zone;
-	    }
-	}
-
-	fatal_error "Invalid zone name ($zone)" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $globals{MAXZONENAMELENGTH};
-	fatal_error "Invalid zone name ($zone)"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
-	fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
-
-	if ( $type =~ /ipv4/i ) {
-	    fatal_error "Invalid zone type ($type)" if $family == F_IPV6;
-	    $type = IP;
-	    $ip = 1;
-	} elsif ( $type =~ /ipv6/i ) {
-	    fatal_error "Invalid zone type ($type)" if $family == F_IPV4;
-	    $type = IP;
-	    $ip = 1;
-	} elsif ( $type =~ /^ipsec([46])?$/i ) {
-	    fatal_error "Invalid zone type ($type)" if $1 && (($1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
-	    $type = IPSEC;
-	} elsif ( $type =~ /^bport([46])?$/i ) {
-	    fatal_error "Invalid zone type ($type)" if $1 && (( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
-	    warning_message "Bridge Port zones should have a parent zone" unless @parents;
-	    $type = BPORT;
-	    push @bport_zones, $zone;
-	} elsif ( $type eq 'firewall' ) {
-	    fatal_error 'Firewall zone may not be nested' if @parents;
-	    fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
-	    $firewall_zone = $zone;
-	    $ENV{FW} = $zone;
-	    $type = FIREWALL;
-	} elsif ( $type eq '-' ) {
-	    $type = IP;
-	    $ip = 1;
-	} else {
-	    fatal_error "Invalid zone type ($type)" ;
-	}
-
-	for ( $options, $in_options, $out_options ) {
-	    $_ = '' if $_ eq '-';
-	}
-
-	$zones{$zone} = { type       => $type,
-			  parents    => \@parents,
-			  bridge     => '',
-			  options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
-					  in      => parse_zone_option_list( $in_options || '', $type ) ,
-					  out     => parse_zone_option_list( $out_options || '', $type ) ,
-					  complex => ($type == IPSEC || $options || $in_options || $out_options ? 1 : 0) ,
-					  nested  => @parents > 0 } ,
-			  interfaces => {} ,
-			  children   => [] ,
-			  hosts      => {}
-			};
-	push @z, $zone;
-
-    }
+    push @z, process_zone( $ip ) while read_a_line;
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
     fatal_error "No IP zones defined" unless $ip;
@@ -599,272 +679,214 @@ sub firewall_zone() {
 }
 
 #
+# Process a record in the interfaces file
+#
+sub process_interface() {
+    my $nets;
+    my ($zone, $originalinterface, $networks, $options ) = split_line 2, 4, 'interfaces file';
+    my $zoneref;
+    my $bridge = '';
+
+    if ( $zone eq '-' ) {
+	$zone = '';
+    } else {
+	$zoneref = $zones{$zone};
+
+	fatal_error "Unknown zone ($zone)" unless $zoneref;
+	fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == FIREWALL;
+    }
+
+    $networks = '' if $networks eq '-';
+    $options  = '' if $options  eq '-';
+
+    my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
+
+    fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
+
+    if ( defined $port ) {
+	fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
+	require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
+	fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
+	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
+	fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
+	fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} != BPORT;
+
+	if ( $zone ) {
+	    if ( $zoneref->{bridge} ) {
+		fatal_error "Bridge Port zones may only be associated with a single bridge" if $zoneref->{bridge} ne $interface;
+	    } else {
+		$zoneref->{bridge} = $interface;
+	    }
+	}
+
+	next if $port eq '';
+
+	fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
+
+	$bridge = $interface;
+	$interface = $port;
+    } else {
+	fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
+	fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} == BPORT;
+	$bridge = $interface;
+    }
+
+    my $wildcard = 0;
+    my $root;
+
+    if ( $interface =~ /\+$/ ) {
+	$wildcard = 1;
+	$root = substr( $interface, 0, -1 );
+    } else {
+	$root = $interface;
+    }
+
+    my $broadcasts;
+
+    unless ( $networks eq '' || $networks eq 'detect' ) {
+	my @broadcasts = split_list $networks, 'address';
+	
+	for my $address ( @broadcasts ) {
+	    fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+	}
+
+	if ( $capabilities{ADDRTYPE} ) {
+	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation when Address Type Match is available';
+	} else {
+	    $broadcasts = \@broadcasts;
+	}
+    }
+
+    my %options;
+
+    $options{port} = 1 if $port;
+
+    my $hostoptionsref = {};
+
+    if ( $options ) {
+
+	my %hostoptions = ( dynamic => 0 );
+	    
+	for my $option (split_list1 $options, 'option' ) {
+	    next if $option eq '-';
+
+	    ( $option, my $value ) = split /=/, $option;
+
+	    fatal_error "Invalid Interface option ($option)" unless my $type = $validinterfaceoptions{$option};
+
+	    fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
+
+	    my $hostopt = $type & IF_OPTION_HOST;
+
+	    fatal_error "The \"$option\" option is not allowed on a bridge port" if $port && ! $hostopt;
+
+	    $type &= MASK_IF_OPTION;
+
+	    if ( $type == SIMPLE_IF_OPTION ) {
+		fatal_error "Option $option does not take a value" if defined $value;
+		$options{$option} = 1;
+		$hostoptions{$option} = 1 if $hostopt;
+	    } elsif ( $type == BINARY_IF_OPTION ) {
+		$value = 1 unless defined $value;
+		fatal_error "Option value for $option must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
+		fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
+		$options{$option} = $value;
+		$hostoptions{$option} = $value if $hostopt;
+	    } elsif ( $type == ENUM_IF_OPTION ) {
+		fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
+		if ( $option eq 'arp_ignore' ) {
+		    if ( defined $value ) {
+			if ( $value =~ /^[1-3,8]$/ ) {
+			    $options{arp_ignore} = $value;
+			} else {
+			    fatal_error "Invalid value ($value) for arp_ignore";
+			}
+		    } else {
+			$options{arp_ignore} = 1;
+		    }
+		} else {
+		    assert( 0 );
+		}
+	    } elsif ( $type == NUMERIC_IF_OPTION ) {
+		fatal_error "The $option option requires a value" unless defined $value;
+		my $numval = numeric_value $value;
+		fatal_error "Invalid value ($value) for option $option" unless defined $numval;
+		$options{$option} = $numval;
+		$hostoptions{$option} = $numval if $hostopt;
+	    } elsif ( $type == IPLIST_IF_OPTION ) {
+		fatal_error "The $option option requires a value" unless defined $value;
+		fatal_error "Duplicate $option option" if $nets;
+		#
+		# Remove parentheses from address list if present
+		#
+		$value =~ s/\)$// if $value =~ s/^\(//;
+		#
+		# Add all IP to the front of a list if the list begins with '!'
+		#
+		$value = join ',' , ALLIP , $value if $value =~ /^!/;
+		
+		if ( $value eq 'dynamic' ) {
+		    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
+		    $value = "+${zone}_${interface}";
+		    $hostoptions{dynamic} = 1;
+		    $ipsets{"${zone}_${interface}"} = 1;
+		}   
+		#
+		# Convert into a Perl array reference
+		#
+		$nets = [ split_list $value, 'address' ];
+		#
+		# Assume 'broadcast'
+		#
+		$hostoptions{broadcast} = 1;
+	    } else {
+		warning_message "Support for the $option interface option has been removed from Shorewall-perl";
+	    }
+	}
+
+	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
+
+	if ( $options{bridge} ) {
+	    require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
+	    fatal_error "Bridges may not have wildcard names" if $wildcard;
+	}
+
+	$hostoptionsref = \%hostoptions;
+
+    }
+
+    $interfaces{$interface} = { name       => $interface ,
+				bridge     => $bridge ,
+				nets       => 0 ,
+				number     => ++$num ,
+				root       => $root ,
+				broadcasts => $broadcasts ,
+				options    => \%options };
+
+    $nets = [ allip ] unless $nets; 
+
+    add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref ) if $zone;
+
+    $interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
+
+    progress_message "  Interface \"$currentline\" Validated";
+
+    return $interface;
+}
+
+#
 # Parse the interfaces file.
 #
-
-sub validate_interfaces_file( $ )
-{
+sub validate_interfaces_file( $ ) {
     my $export = shift;
-    my $num    = 0;
-
-    use constant { SIMPLE_IF_OPTION   => 1,
-		   BINARY_IF_OPTION   => 2,
-		   ENUM_IF_OPTION     => 3,
-		   NUMERIC_IF_OPTION  => 4,
-		   OBSOLETE_IF_OPTION => 5,
-		   IPLIST_IF_OPTION   => 6,
-	           MASK_IF_OPTION     => 7,
-		       
-	           IF_OPTION_ZONEONLY => 8,
-	           IF_OPTION_HOST     => 16,
-	       };
-
-    my %validoptions;
-
-    if ( $family == F_IPV4 ) {
-	%validoptions = (arp_filter  => BINARY_IF_OPTION,
-			 arp_ignore  => ENUM_IF_OPTION,
-			 blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			 bridge      => SIMPLE_IF_OPTION,
-			 detectnets  => OBSOLETE_IF_OPTION,
-			 dhcp        => SIMPLE_IF_OPTION,
-			 maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			 logmartians => BINARY_IF_OPTION,
-			 nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
-			 norfc1918   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			 nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			 optional    => SIMPLE_IF_OPTION,
-			 proxyarp    => BINARY_IF_OPTION,
-			 routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
-			 routefilter => BINARY_IF_OPTION ,
-			 sourceroute => BINARY_IF_OPTION,
-			 tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			 upnp        => SIMPLE_IF_OPTION,
-			 mss         => NUMERIC_IF_OPTION,
-			);
-    } else {
-	%validoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			   bridge      => SIMPLE_IF_OPTION,
-			   dhcp        => SIMPLE_IF_OPTION,
-			   maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			   nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
-			   nosmurfs    => SIMPLE_IF_OPTION,
-			   optional    => SIMPLE_IF_OPTION,
-			   proxyndp    => BINARY_IF_OPTION,
- 			   routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
-			   sourceroute => BINARY_IF_OPTION,
-			   tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-			   mss         => NUMERIC_IF_OPTION,
-			   forward     => NUMERIC_IF_OPTION,
-			  );
-    }
 
     my $fn = open_file 'interfaces';
 
-    my $first_entry = 1;
-
     my @ifaces;
 
-    while ( read_a_line ) {
+    first_entry "$doing $fn...";
 
-	my $nets;
-
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
-
-	my ($zone, $originalinterface, $networks, $options ) = split_line 2, 4, 'interfaces file';
-	my $zoneref;
-	my $bridge = '';
-
-	if ( $zone eq '-' ) {
-	    $zone = '';
-	} else {
-	    $zoneref = $zones{$zone};
-
-	    fatal_error "Unknown zone ($zone)" unless $zoneref;
-	    fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == FIREWALL;
-	}
-
-	$networks = '' if $networks eq '-';
-	$options  = '' if $options  eq '-';
-
-	my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
-
-	fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
-
-	if ( defined $port ) {
-	    fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
-	    require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
-	    fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
-	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
-	    fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	    fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} != BPORT;
-
-	    if ( $zone ) {
-		if ( $zoneref->{bridge} ) {
-		    fatal_error "Bridge Port zones may only be associated with a single bridge" if $zoneref->{bridge} ne $interface;
-		} else {
-		    $zoneref->{bridge} = $interface;
-		}
-	    }
-
-	    next if $port eq '';
-
-	    fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
-
-	    $bridge = $interface;
-	    $interface = $port;
-	} else {
-	    fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
-	    fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} == BPORT;
-	    $bridge = $interface;
-	}
-
-	my $wildcard = 0;
-	my $root;
-
-	if ( $interface =~ /\+$/ ) {
-	    $wildcard = 1;
-	    $root = substr( $interface, 0, -1 );
-	} else {
-	    $root = $interface;
-	}
-
-	my $broadcasts;
-
-	unless ( $networks eq '' || $networks eq 'detect' ) {
-	    my @broadcasts = split_list $networks, 'address';
-
-	    for my $address ( @broadcasts ) {
-		fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
-	    }
-
-	    if ( $capabilities{ADDRTYPE} ) {
-		warning_message 'Shorewall no longer uses broadcast addresses in rule generation when Address Type Match is available';
-	    } else {
-		$broadcasts = \@broadcasts;
-	    }
-	}
-
-	my %options;
-
-	$options{port} = 1 if $port;
-
-	my $hostoptionsref = {};
-
-	if ( $options ) {
-
-	    my %hostoptions = ( dynamic => 0 );
-	    
-	    for my $option (split_list1 $options, 'option' ) {
-		next if $option eq '-';
-
-		( $option, my $value ) = split /=/, $option;
-
-		fatal_error "Invalid Interface option ($option)" unless my $type = $validoptions{$option};
-
-		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
-
-		my $hostopt = $type & IF_OPTION_HOST;
-
-		fatal_error "The \"$option\" option is not allowed on a bridge port" if $port && ! $hostopt;
-
-		$type &= MASK_IF_OPTION;
-
-		if ( $type == SIMPLE_IF_OPTION ) {
-		    fatal_error "Option $option does not take a value" if defined $value;
-		    $options{$option} = 1;
-		    $hostoptions{$option} = 1 if $hostopt;
-		} elsif ( $type == BINARY_IF_OPTION ) {
-		    $value = 1 unless defined $value;
-		    fatal_error "Option value for $option must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
-		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
-		    $options{$option} = $value;
-		    $hostoptions{$option} = $value if $hostopt;
-		} elsif ( $type == ENUM_IF_OPTION ) {
-		    fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
-		    if ( $option eq 'arp_ignore' ) {
-			if ( defined $value ) {
-			    if ( $value =~ /^[1-3,8]$/ ) {
-				$options{arp_ignore} = $value;
-			    } else {
-				fatal_error "Invalid value ($value) for arp_ignore";
-			    }
-			} else {
-			    $options{arp_ignore} = 1;
-			}
-		    } else {
-			assert( 0 );
-		    }
-		} elsif ( $type == NUMERIC_IF_OPTION ) {
-		    fatal_error "The $option option requires a value" unless defined $value;
-		    my $numval = numeric_value $value;
-		    fatal_error "Invalid value ($value) for option $option" unless defined $numval;
-		    $options{$option} = $numval;
-		    $hostoptions{$option} = $numval if $hostopt;
-		} elsif ( $type == IPLIST_IF_OPTION ) {
-		    fatal_error "The $option option requires a value" unless defined $value;
-		    fatal_error "Duplicate $option option" if $nets;
-		    #
-		    # Remove parentheses from address list if present
-		    #
-		    $value =~ s/\)$// if $value =~ s/^\(//;
-		    #
-		    # Add all IP to the front of a list if the list begins with '!'
-		    #
-		    $value = join ',' , ALLIP , $value if $value =~ /^!/;
-
-		    if ( $value eq 'dynamic' ) {
-			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-			$value = "+${zone}_${interface}";
-			$hostoptions{dynamic} = 1;
-			$ipsets{"${zone}_${interface}"} = 1;
-		    }   
-		    #
-		    # Convert into a Perl array reference
-		    #
-		    $nets = [ split_list $value, 'address' ];
-		    #
-		    # Assume 'broadcast'
-		    #
-		    $hostoptions{broadcast} = 1;
-		} else {
-		    warning_message "Support for the $option interface option has been removed from Shorewall-perl";
-		}
-	    }
-
-	    $zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
-
-	    if ( $options{bridge} ) {
-		require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
-		fatal_error "Bridges may not have wildcard names" if $wildcard;
-	    }
-
-	    $hostoptionsref = \%hostoptions;
-
-	}
-
-	$interfaces{$interface} = { name       => $interface ,
-				    bridge     => $bridge ,
-				    nets       => 0 ,
-				    number     => ++$num ,
-				    root       => $root ,
-				    broadcasts => $broadcasts ,
-				    options    => \%options };
-
-	push @ifaces, $interface;
-
-	$nets = [ allip ] unless $nets; 
-
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref ) if $zone;
-
-    	$interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
-
-	progress_message "  Interface \"$currentline\" Validated";
-
-    }
+    push @ifaces, process_interface while read_a_line;
 
     #
     # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge
@@ -1018,133 +1040,112 @@ sub set_interface_option( $$$ ) {
 }
 
 #
+# Process a record in the hosts file
+#
+sub process_host( ) {
+    my $ipsec = 0;
+    my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file';
+
+    my $zoneref = $zones{$zone};
+    my $type    = $zoneref->{type};
+
+    fatal_error "Unknown ZONE ($zone)" unless $type;
+    fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type == FIREWALL;
+
+    my $interface;
+
+    if ( $family == F_IPV4 ) {
+	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
+	    $interface = $1;
+	    $hosts = $2;
+	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	} else {
+	    fatal_error "Invalid HOST(S) column contents: $hosts";
+	}
+    } else {
+	if ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>\s*$/ ) {
+	    $interface = $1;
+	    $hosts = $2;
+	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	} else {
+	    fatal_error "Invalid HOST(S) column contents: $hosts";
+	}
+    }
+
+    if ( $type == BPORT ) {
+	if ( $zoneref->{bridge} eq '' ) {
+	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
+	    $zoneref->{bridge} = $interfaces{$interface}{bridge};
+	} elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
+	    fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
+	}
+    }
+
+    my $optionsref = { dynamic => 0 };
+
+    if ( $options ne '-' ) {
+	my @options = split_list $options, 'option';
+	my %options = ( dynamic => 0 );
+
+	for my $option ( @options ) {
+	    if ( $option eq 'ipsec' ) {
+		$type = IPSEC;
+		$zoneref->{options}{complex} = 1;
+		$ipsec = 1;
+	    } elsif ( $validhostoptions{$option}) {
+		$options{$option} = 1;
+	    } else {
+		fatal_error "Invalid option ($option)";
+	    }
+	}
+
+	$optionsref = \%options;
+    }
+
+    #
+    # Looking for the '!' at the beginning of a list element is more straight-foward than looking for it in the middle.
+    #
+    # Be sure we don't have a ',!' in the original
+    #
+    fatal_error "Invalid hosts list" if $hosts =~ /,!/;
+    #
+    # Now add a comma before '!'. Do it globally - add_group_to_zone() correctly checks for multiple exclusions
+    #
+    $hosts =~ s/!/,!/g;
+    #
+    # Take care of case where the hosts list begins with '!'
+    #
+    $hosts = join( '', ALLIP , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
+
+    if ( $hosts eq 'dynamic' ) {
+	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
+	$hosts = "+${zone}_${interface}";
+	$optionsref->{dynamic} = 1;
+	$ipsets{"${zone}_${interface}"} = 1;
+	
+    }
+   
+    add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
+
+    progress_message "   Host \"$currentline\" validated";
+
+    return $ipsec;
+}
+
+#
 # Validates the hosts file. Generates entries in %zone{..}{hosts}
 #
 sub validate_hosts_file()
 {
-    my %validoptions;
-
-    if ( $family == F_IPV4 ) {
-	%validoptions = (
-			 blacklist => 1,
-			 maclist => 1,
-			 norfc1918 => 1,
-			 nosmurfs => 1,
-			 routeback => 1,
-			 tcpflags => 1,
-			 broadcast => 1,
-			 destonly => 1,
-			 sourceonly => 1,
-			);
-    } else {
-	%validoptions = (
-			 blacklist => 1,
-			 maclist => 1,
-			 routeback => 1,
-			 tcpflags => 1,
-			);
-    }
-
     my $ipsec = 0;
-    my $first_entry = 1;
 
     my $fn = open_file 'hosts';
 
-    while ( read_a_line ) {
+    first_entry "doing $fn...";
 
-	if ( $first_entry ) {
-	    progress_message2 "$doing $fn...";
-	    $first_entry = 0;
-	}
-
-	my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file';
-
-	my $zoneref = $zones{$zone};
-	my $type    = $zoneref->{type};
-
-	fatal_error "Unknown ZONE ($zone)" unless $type;
-	fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type == FIREWALL;
-
-	my $interface;
-
-	if ( $family == F_IPV4 ) {
-	    if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
-		$interface = $1;
-		$hosts = $2;
-		$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-		fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
-	    } else {
-		fatal_error "Invalid HOST(S) column contents: $hosts";
-	    }
-	} else {
-	    if ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>\s*$/ ) {
-		$interface = $1;
-		$hosts = $2;
-		$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-		fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
-	    } else {
-		fatal_error "Invalid HOST(S) column contents: $hosts";
-	    }
-	}
-
-	if ( $type == BPORT ) {
-	    if ( $zoneref->{bridge} eq '' ) {
-		fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
-		$zoneref->{bridge} = $interfaces{$interface}{bridge};
-	    } elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
-		fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
-	    }
-	}
-
-	my $optionsref = { dynamic => 0 };
-
-	if ( $options ne '-' ) {
-	    my @options = split_list $options, 'option';
-	    my %options = ( dynamic => 0 );
-
-	    for my $option ( @options )
-	    {
-		if ( $option eq 'ipsec' ) {
-		    $type = IPSEC;
-		    $zoneref->{options}{complex} = 1;
-		    $ipsec = 1;
-		} elsif ( $validoptions{$option}) {
-		    $options{$option} = 1;
-		} else {
-		    fatal_error "Invalid option ($option)";
-		}
-	    }
-
-	    $optionsref = \%options;
-	}
-
-	#
-	# Looking for the '!' at the beginning of a list element is more straight-foward than looking for it in the middle.
-	#
-	# Be sure we don't have a ',!' in the original
-	#
-	fatal_error "Invalid hosts list" if $hosts =~ /,!/;
-	#
-	# Now add a comma before '!'. Do it globally - add_group_to_zone() correctly checks for multiple exclusions
-	#
-	$hosts =~ s/!/,!/g;
-	#
-	# Take care of case where the hosts list begins with '!'
-	#
-	$hosts = join( '', ALLIP , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
-
-	if ( $hosts eq 'dynamic' ) {
-	    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-	    $hosts = "+${zone}_${interface}";
-	    $optionsref->{dynamic} = 1;
-	    $ipsets{"${zone}_${interface}"} = 1;
-
-	}
-   
-	add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
-
-	progress_message "   Host \"$currentline\" validated";
-    }
+    $ipsec |= process_host while read_a_line;
 
     $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
 }

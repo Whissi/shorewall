@@ -836,7 +836,7 @@ sub process_tc_filter( ) {
 		    } elsif ( $protonumber == UDP ) {
 			$rule1 = join( ' ', 'match udp src', hex_value( $sport ), "0x$smask" );
 		    } else {
-			$rule1 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+			$rule1 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0" ,
 		    }
 
 		    emit( "\nrun_tc $rule\\" ,
@@ -893,7 +893,7 @@ sub process_tc_filter( ) {
 				    } elsif ( $protonumber == UDP ) {
 					$rule2 = join( ' ', 'match udp src', hex_value( $sport ), "0x$smask" );
 				    } else {
-					$rule2 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0\\" ,
+					$rule2 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0" ,
 				    }
 
 				    emit( "\nrun_tc ${rule}\\",

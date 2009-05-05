@@ -1444,11 +1444,9 @@ usage() # $1 = exit status
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear [ -f ]"
     echo "   compile [ -e ] [ -d ] [ <directory name> ] [ <path name> ]"
-    echo "   decode <classnum>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
-    echo "   encode <mark>"
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
@@ -1994,14 +1992,6 @@ case "$COMMAND" in
 	shift
 	restore_command $@
         ;;
-    decode)
-	[ $# -eq 2 ] || usage 1
-	echo "Mark =" $((0x$2 & 0x3fff))
-	;;
-    encode)
-	[ $# -eq 2 ] || usage 1
-	echo "Class Number = 4$(printf '0%x' $2)"
-	;;
     call)
 	get_config
 	[ -n "$debugging" ] && set -x

@@ -155,6 +155,7 @@ our @deferred_rules;
 #                              tablenumber   => <next u32 table to be allocated for this device>
 #                              default       => <default class mark value>
 #                              redirected    => [ <dev1>, <dev2>, ... ]
+#                              nextclass     => <number>
 #                                               }
 #
 our @tcdevices;
@@ -506,6 +507,7 @@ sub validate_tc_device( $$$$$ ) {
 			    tablenumber   => 1 ,
 			    redirected    => \@redirected ,
 			    default       => 0,
+			    nextclass     => 2,
 			  } ,
 
     push @tcdevices, $device;
@@ -617,7 +619,7 @@ sub validate_tc_class( $$$$$$ ) {
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
 	    } else {
-		$classnumber = $config{WIDE_TC_MARKS} ? $markval < 0x100 ? 0x4000 | $markval : $markval : $devnum . $markval;
+		$classnumber = $config{WIDE_TC_MARKS} ? $tcref->{nextclass}++ : $devnum . $markval;
 		fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	    }
 	}

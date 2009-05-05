@@ -726,7 +726,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
           <orderedlist>
             <listitem>
-              <para>Constructed from the mark. The method of construction
+              <para>Constructed by Shorewall. The method of construction
               depends on the setting of WIDE_TC_MARKS (<ulink
               url="manpages/shorewall.conf.html">shorewall.conf</ulink>
               (5)).</para>
@@ -744,25 +744,8 @@ ppp0           6000kbit         500kbit</programlisting>
                 </listitem>
               </itemizedlist>
 
-              <para>When SIDE_TC_MARKS=Yes, the &lt;minor&gt; class is:</para>
-
-              <itemizedlist>
-                <listitem>
-                  <para>The number 0x4000 logically ORed with the MARK value.
-                  The <command>shorewall encode</command> and
-                  <command>shorewall decode</command> commands (<ulink
-                  url="manpages/shorewall.html">shorewall</ulink> (8)) may be
-                  used to translate a mark to/from a &lt;minor&gt;
-                  class.</para>
-
-                  <para>Examples:</para>
-
-                  <programlisting>$ <command>shorewall encode 100</command>
-Class Number = 16484
-$ <command>shorewall decode 16484</command>
-Mark = 100</programlisting>
-                </listitem>
-              </itemizedlist>
+              <para>When WIDE_TC_MARKS=Yes, the &lt;minor&gt; class is
+              assigned sequentially beginning with 2.</para>
             </listitem>
 
             <listitem>

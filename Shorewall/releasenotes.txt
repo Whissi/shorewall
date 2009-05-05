@@ -66,6 +66,19 @@ released late in 2009.
     To avoid this warning, replace interface names by the corresponding
     network addresses (e.g., 192.168.144.0/24).
 
+5)  Previously, Shorewall has treated traffic shaping class IDs as
+    decimal numbers (or pairs of decimal numbers). That worked fine
+    until IPMARK was implemented. IPMARK requires Shorewall to generate
+    class Ids in numeric sequence. In 4.3.9, that didn't work correctly
+    because Shorewall was generating the sequence "..8,9,10,11..." when
+    the correct sequence was "...8,9,a,b,...". Shorewall now treats
+    class IDs as hex, like 'tc' and 'iptables' do.
+
+    This should only be an issue if you have more than 9 interfaces
+    defined in /etc/shorewall/tcdevices and if you use class IDs in
+    /etc/shorewall/tcrules. You will need to renumber the class IDs for
+    devices 10 and greater.
+
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 10
 ----------------------------------------------------------------------------
@@ -105,19 +118,20 @@ None.
     Shorewall generates a TC class Id from a mark value. 
 
     - Prior to 4.3.9, the class number was constructed by concatinating
-      the either '1' or '10' with the mark value. '10' is used when
+      the mark value with the either '1' or '10'. '10' is used when
       there are more than 10 devices defined in /etc/shorewall/tcdevices.
 
     - In 4.3.9, the class number is constructed by shifting
       the device number left by 10 bits and logically ORing the result
       with the mark value.
 
-    - In 4.3.10, a new method is added; the mark value is logically
-      ORed with 0x4000.
+    - In 4.3.10, a new method is added; class numbers are assigned
+      sequentially beginning with 2.
 
     The WIDE_TC_MARKS option in shorewall.conf selects which
     construction to use. WIDE_TC_MARKS=No (the default) produces
-    pre-4.3.9 behavior. WIDE_TC_MARKS=Yes produces the new behavior.
+    pre-4.3.9 behavior. WIDE_TC_MARKS=Yes produces the new 4.3.10
+    behavior.
 
     In addition to determining the method of constructing class Ids,
     WIDE_TC_MARKS=Yes provides for larger mark values for traffic
@@ -126,17 +140,6 @@ None.
     HIGH_ROUTE_MARKS=Yes, routing marks (/etc/shorewall/providers MARK
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).
-
-    /sbin/shorewall supports an 'encode' and a 'decode' command for
-    mapping back and forth using the new  method:
-
-    Example:
-
-	$ shorewall encode 100 #Maps a MARK value to a class number
-	Class Number = 4064
-	$ shorewall decode 4064 #Maks a class number (hex) to a MARK value
-	Mark = 100
-	$
 
 2)  The implementation of IPMARK has changed. Please see item 16) in
     the  'New Features in 4.3' section below.
@@ -170,7 +173,9 @@ None.
     the same way as the first level classes can borrow from the root
     class.
 
-    To use nested classes, you must explicitly number your classes.
+    To use nested classes, you must explicitly number your
+    classes. That does not imply that you must use the 'classify'
+    option.
 
     Example:
 

@@ -1,4 +1,4 @@
-Shorewall 4.3.10
+Shorewall 4.3.11
 
 Shorewall 4.3 is the development thread for Shorewall 4.4 which will be
 released late in 2009.
@@ -80,28 +80,11 @@ released late in 2009.
     devices 10 and greater.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 10
+          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 11
 ----------------------------------------------------------------------------
 
-1.  When Shorewall could not determine the MAC address of of a gateway
-    router where multiple providers are configured through the same
-    interface, invalid iptables-restore input was generated. This
-    resulted in an error message similar to the following:
-
-        iptables-restore v1.3.5: Bad mac address `-j'
-
-2.  Previously, Shorewall has treated traffic shaping class IDs as
-    decimal numbers (or pairs of decimal numbers). That worked fine
-    until IPMARK was implemented. IPMARK requires Shorewall to generate
-    class Ids in numeric sequence. In 4.3.9, that didn't work correctly
-    because Shorewall was generating the sequence "..8,9,10,11..." when
-    the correct sequence was "...8,9,a,b,...". Shorewall now treats
-    class IDs as hex, like 'tc' and 'iptables' do.
-
-3.  Previously, when 'all' appeared in the SOURCE column of a DNAT-
-    rule, no rule was generated to redirect output from the firewall
-    itself.
-
+1.  Previously, specifying a source port for SCTP in
+    /etc/shorewall/tcfilters would cause an invalid rule to be generated.
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -109,105 +92,10 @@ released late in 2009.
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 3 . 10
+                N E W   F E A T U R E S   I N   4 . 3 . 11
 ----------------------------------------------------------------------------
 
-1)  The change that implemented IPMARK support in 4.3.9 resulted in a
-    lack of upward compatibility which could break some
-    configurations. The incompatibility stems from the way in which
-    Shorewall generates a TC class Id from a mark value. 
-
-    - Prior to 4.3.9, the class number was constructed by concatinating
-      the mark value with the either '1' or '10'. '10' is used when
-      there are more than 10 devices defined in /etc/shorewall/tcdevices.
-
-    - In 4.3.9, the class number is constructed by shifting
-      the device number left by 10 bits and logically ORing the result
-      with the mark value.
-
-    - In 4.3.10, a new method is added; class numbers are assigned
-      sequentially beginning with 2.
-
-    The WIDE_TC_MARKS option in shorewall.conf selects which
-    construction to use. WIDE_TC_MARKS=No (the default) produces
-    pre-4.3.9 behavior. WIDE_TC_MARKS=Yes produces the new 4.3.10
-    behavior.
-
-    In addition to determining the method of constructing class Ids,
-    WIDE_TC_MARKS=Yes provides for larger mark values for traffic
-    shaping. Traffic shaping marks may have values up to 16383 (0x3fff)
-    with WIDE_TC_MARKS=Yes. This means that when both WIDE_TC_MARKS=Yes and
-    HIGH_ROUTE_MARKS=Yes, routing marks (/etc/shorewall/providers MARK
-    column) must be >= 65536 (0x10000) and must be a multiple of 65536
-    (0x1000, 0x20000, 0x30000, ...).
-
-2)  The implementation of IPMARK has changed. Please see item 16) in
-    the  'New Features in 4.3' section below.
-
-3)  In the 'shorewall compile' command, the filename '-' is now causes
-    the compiled script to be written to Standard Out. As a side
-    effect, the effective VERBOSITY is set to -1 (silent).
-
-    Examples:
-
-	shorewall compile -v-1 -- -  # Compile the configuration in
-                        	     # /etc/shorewall and send the
-	                             # output to STDOUT
-	shorewall compile -v-1 . -   # Compile the configuration in the
-		  	  	     # current working directory
-		  	    	     # and send the output to STDOUT
-
-    Note that the '-v-1' suppresses the 'Compiling...' message normally
-    issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
-    begins.
-
-4)  Supplying an interface name in the SOURCE column of
-    /etc/shorewall/masq is now deprecated. Entering the name of an
-    interface there will result in a compile-time warning.
-
-5)  Compile for export (such as in the 'shorewall reload' command)
-    caused the compiler to fail with an internal error.
-
-6)  Shorewall now supports nested HTB traffic shaping classes.  The
-    nested classes within a class can borrow from their parent class in
-    the same way as the first level classes can borrow from the root
-    class.
-
-    To use nested classes, you must explicitly number your
-    classes. That does not imply that you must use the 'classify'
-    option.
-
-    Example:
-
-    /etc/shorewall/tcdevices
-
-    #INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
-    eth2	-		100mbps		classify
-
-    /etc/shorewall/tcclasses
-
-    #INTERFACE	MARK	RATE		CEIL	 PRIORITY	OPTIONS
-    1:10	-	full/2		full		1
-    1:100	-	16mbit		20mbit		2
-    1:100:101	-	 8mbit		20mbit		3	default
-    1:100:102	-	 8mbit		20mbit		3
-     
-    /etc/shorewall/tcrules
-
-    #MARK	SOURCE		DEST
-    1:102	0.0.0.0/0	eth2:172.20.1.107
-    1:10	206.124.146.177	eth2
-    1:10	172.20.1.254	eth2
-
-    The above controls download for internal interface eth2. The
-    external interface has a download rate of 20mbit so we guarantee
-    that to class 1:100. 1:100 has two subclasses, each of which is
-    guaranteed half of their parent's bandwidth.
-
-    Local traffic (that coming from the firewall and from the DMZ
-    server) is placed in the effectively unrestricted class 1:10. The
-    default class is guaranteed half of the download capacity and my
-    work system (172.20.1.107) is guarandeed the other half.
+None.
    
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
@@ -644,4 +532,87 @@ None.
 	#MARK                      SOURCE              DEST
 	IPMARK(src,0xff,0x10100):F 192.168.1.0/29      eth0
 
+    This change also altered the way in which Shorewall generates a
+    class number when none is given.
+
+    - Prior to this change, the class number was constructed by concatinating
+      the mark value with the either '1' or '10'. '10' is used when
+      there are more than 10 devices defined in /etc/shorewall/tcdevices.
+
+    - Beginning with this change, a new method is added; class numbers
+      are assigned sequentially beginning with 2.
+
+    The WIDE_TC_MARKS option in shorewall.conf selects which
+    construction to use. WIDE_TC_MARKS=No (the default) produces
+    pre-4.3.9 behavior. WIDE_TC_MARKS=Yes produces the new behavior.
+
+    In addition to determining the method of constructing class Ids,
+    WIDE_TC_MARKS=Yes provides for larger mark values for traffic
+    shaping. Traffic shaping marks may have values up to 16383 (0x3fff)
+    with WIDE_TC_MARKS=Yes. This means that when both WIDE_TC_MARKS=Yes and
+    HIGH_ROUTE_MARKS=Yes, routing marks (/etc/shorewall/providers MARK
+    column) must be >= 65536 (0x10000) and must be a multiple of 65536
+    (0x1000, 0x20000, 0x30000, ...).
+
+17) In the 'shorewall compile' command, the filename '-' is now causes
+    the compiled script to be written to Standard Out. As a side
+    effect, the effective VERBOSITY is set to -1 (silent).
+
+    Examples:
+
+	shorewall compile -v-1 -- -  # Compile the configuration in
+                        	     # /etc/shorewall and send the
+	                             # output to STDOUT
+	shorewall compile -v-1 . -   # Compile the configuration in the
+		  	  	     # current working directory
+		  	    	     # and send the output to STDOUT
+
+    Note that the '-v-1' suppresses the 'Compiling...' message normally
+    issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
+    begins.
+
+18) Supplying an interface name in the SOURCE column of
+    /etc/shorewall/masq is now deprecated. Entering the name of an
+    interface there will result in a compile-time warning.
+
+19) Shorewall now supports nested HTB traffic shaping classes.  The
+    nested classes within a class can borrow from their parent class in
+    the same way as the first level classes can borrow from the root
+    class.
+
+    To use nested classes, you must explicitly number your
+    classes. That does not imply that you must use the 'classify'
+    option.
+
+    Example:
+
+    /etc/shorewall/tcdevices
+
+    #INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
+    eth2	-		100mbps		classify
+
+    /etc/shorewall/tcclasses
+
+    #INTERFACE	MARK	RATE		CEIL	 PRIORITY	OPTIONS
+    1:10	-	full/2		full		1
+    1:100	-	16mbit		20mbit		2
+    1:100:101	-	 8mbit		20mbit		3	default
+    1:100:102	-	 8mbit		20mbit		3
+     
+    /etc/shorewall/tcrules
+
+    #MARK	SOURCE		DEST
+    1:102	0.0.0.0/0	eth2:172.20.1.107
+    1:10	206.124.146.177	eth2
+    1:10	172.20.1.254	eth2
+
+    The above controls download for internal interface eth2. The
+    external interface has a download rate of 20mbit so we guarantee
+    that to class 1:100. 1:100 has two subclasses, each of which is
+    guaranteed half of their parent's bandwidth.
+
+    Local traffic (that coming from the firewall and from the DMZ
+    server) is placed in the effectively unrestricted class 1:10. The
+    default class is guaranteed half of the download capacity and my
+    work system (172.20.1.107) is guarandeed the other half.
 	

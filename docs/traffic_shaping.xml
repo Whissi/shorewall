@@ -522,6 +522,43 @@ ppp0           6000kbit         500kbit</programlisting>
                 role="bold">class</emphasis> per interface.</para>
               </note>
             </listitem>
+
+            <listitem>
+              <para>occurs=<emphasis>number</emphasis> - Typically used with
+              an IPMARK entry in tcrules. Causes the rule to be replicated for
+              a total of <emphasis>number</emphasis> rules. Each rule has a
+              successively class number and mark value.</para>
+
+              <para>When 'occurs' is used:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>The associated device may not have the 'classify'
+                  option.</para>
+                </listitem>
+
+                <listitem>
+                  <para>The class may not be the default class.</para>
+                </listitem>
+
+                <listitem>
+                  <para>The class may not have any 'tos=' options (including
+                  'tcp-ack').</para>
+                </listitem>
+
+                <listitem>
+                  <para>The class should not specify a MARK value. If one is
+                  specified, it will be ignored with a warning message.</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>The 'RATE' and 'CEIL' parameters apply to each instance of
+              the class. So the total RATE represented by an entry with
+              'occurs' will be the listed RATE multiplied by
+              <emphasis>number</emphasis>. For additional information, see
+              <ulink url="manpages/shorewall-tcrules.html">tcrules</ulink>
+              (5).</para>
+            </listitem>
           </itemizedlist>
         </listitem>
       </itemizedlist>

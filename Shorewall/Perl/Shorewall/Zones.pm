@@ -346,8 +346,8 @@ sub process_zone( \$ ) {
 	}
     }
 
-    fatal_error "Invalid zone name ($zone)" unless "\L$zone" =~ /^[a-z]\w*$/ && length $zone <= $globals{MAXZONENAMELENGTH};
-    fatal_error "Invalid zone name ($zone)"        if $reservedName{$zone} || $zone =~ /^all2|2all$/;
+    fatal_error "Invalid zone name ($zone)"      unless $zone =~ /^[a-z]\w*$/i && length $zone <= $globals{MAXZONENAMELENGTH};
+    fatal_error "Invalid zone name ($zone)"      if $reservedName{$zone} || $zone =~ /^all2|2all$/;
     fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
     
     if ( $type =~ /ipv4/i ) {
@@ -415,7 +415,9 @@ sub determine_zones()
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
     fatal_error "No IP zones defined" unless $ip;
-
+    #
+    # Topological sort to place sub-zones before all of their parents
+    #
     my %ordered;
 
   PUSHED:

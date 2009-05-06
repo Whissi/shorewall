@@ -156,6 +156,7 @@ our @deferred_rules;
 #                              default       => <default class mark value>
 #                              redirected    => [ <dev1>, <dev2>, ... ]
 #                              nextclass     => <number>
+#                              occurs        => Has one or more occurring classes
 #                                               }
 #
 our @tcdevices;
@@ -700,6 +701,7 @@ sub validate_tc_class( ) {
 		warning_message "MARK ($mark) is ignored on an occurring class"     if $mark ne '-'; 
 
 		$tcref->{occurs} = $occurs;
+		$devref->{occurs} = 1;
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
@@ -948,7 +950,7 @@ sub setup_traffic_shaping() {
 	my $dev     = chain_base( $device );
 	my $devref  = $tcdevices{$device};
 	my $defmark = in_hexp ( $devref->{default} || 0 );
-	my $devnum  = $devref->{number};
+	my $devnum  = in_hexp $devref->{number};
 
 	emit "if interface_is_up $device; then";
 
@@ -969,6 +971,20 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
 		   "run_tc filter add dev $device parent ffff: protocol ip prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
+	}
+
+	if ( $devref->{occurs} ) {
+	    #
+	    # The following command succeeds yet generates an error message and non-zero exit status :-(. We thus run it silently and check
+	    # the result. Note that since this is normally the first filter added after the root qdisc was added, the 'ls|grep' test is fairly robust
+	    #
+	    emit( qq(if ! qt \$TC filter add dev $device parent $devnum:0 prio 65535 protocol ip fw; then) ,
+		  qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
+		  qq(        error_message "ERROR: Command '\$TC add dev $device parent $devnum:0 prio 65535 protocol ip fw' failed"),
+		  qq(        stop_firewall),
+		  qq(        exit 1),
+		  qq(    fi),
+		  qq(fi) );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {

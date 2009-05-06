@@ -1007,12 +1007,22 @@ sub setup_traffic_shaping() {
     my $lastdevice = '';
 
     for my $class ( @tcclasses ) {
-	my ( $device, $classnum ) = split /:/, $class;
+	#
+	# The class number in the tcclasses array is expressed in decimal.
+	#
+	my ( $device, $decimalclassnum ) = split /:/, $class;
+	#
+	# For inclusion in 'tc' commands, we also need the hex representation
+	#
+	my $classnum = in_hexp $decimalclassnum;
 	my $devref   = $tcdevices{$device};
-	my $tcref    = $tcclasses{$device}{$classnum};
+	#
+	# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
+	#
+	my $tcref    = $tcclasses{$device}{$decimalclassnum};
 	my $mark     = $tcref->{mark};
-	my $devicenumber  = $devref->{number};
-	my $classid  = join( ':', in_hexp $devicenumber, in_hexp $classnum);
+	my $devicenumber  = in_hexp $devref->{number};
+	my $classid  = join( ':', in_hexp $devicenumber, $classnum);
 	my $rate     = "$tcref->{rate}kbit";
 	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 	my $dev      = chain_base $device;
@@ -1020,10 +1030,6 @@ sub setup_traffic_shaping() {
 	my $parent   = in_hexp $tcref->{parent};
 
 	$classids{$classid}=$device;
-
-	$classnum = in_hexp $classnum;
-
-	$classid = join( ':', in_hexp $devicenumber, $classnum );
 
 	if ( $lastdevice ne $device ) {
 	    if ( $lastdevice ) {
@@ -1046,14 +1052,6 @@ sub setup_traffic_shaping() {
 	unless ( $devref->{classify} ) {
 	    if ( $tcref->{occurs} == 1 ) {
 		emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid";
-	    } elsif ( $tcref->{occurs} ) {
-		emit( qq(if ! qt \$TC filter add dev $device parent $devicenumber:0 prio 65535 protocol ip fw; then) ,
-		      qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
-		      qq(        error_message "ERROR: Command '\$TC add dev $device parent $devicenumber:0 prio 65535 protocol ip fw' failed"),
-		      qq(        stop_firewall),
-		      qq(        exit 1),
-		      qq(    fi),
-		      qq(fi) );
 	    }
 	}
 

@@ -168,10 +168,7 @@ use constant { SIMPLE_IF_OPTION   => 1,
 
 our %validinterfaceoptions;
 
-our  %validhostoptions;
-
-our $num;
-
+our %validhostoptions;
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -188,7 +185,6 @@ sub initialize( $ ) {
     @zones = ();
     %zones = ();
     $firewall_zone = '';
-    $num = 0;
 
     @interfaces = ();
     %interfaces = ();
@@ -683,7 +679,8 @@ sub firewall_zone() {
 #
 # Process a record in the interfaces file
 #
-sub process_interface() {
+sub process_interface( $ ) {
+    my $nextinum = $_[0];
     my $nets;
     my ($zone, $originalinterface, $networks, $options ) = split_line 2, 4, 'interfaces file';
     my $zoneref;
@@ -860,7 +857,7 @@ sub process_interface() {
     $interfaces{$interface} = { name       => $interface ,
 				bridge     => $bridge ,
 				nets       => 0 ,
-				number     => ++$num ,
+				number     => $nextinum ,
 				root       => $root ,
 				broadcasts => $broadcasts ,
 				options    => \%options };
@@ -886,9 +883,11 @@ sub validate_interfaces_file( $ ) {
 
     my @ifaces;
 
+    my $nextinum = 1;
+
     first_entry "$doing $fn...";
 
-    push @ifaces, process_interface while read_a_line;
+    push @ifaces, process_interface( $nextinum++) while read_a_line;
 
     #
     # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge

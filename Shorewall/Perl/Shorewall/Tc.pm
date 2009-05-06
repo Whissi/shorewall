@@ -965,14 +965,6 @@ sub setup_traffic_shaping() {
 	       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1"
 	       );
 
-	my $inband = rate_to_kbit $devref->{in_bandwidth};
-
-	if ( $inband ) {
-	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol ip prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
-		   );
-	}
-
 	if ( $devref->{occurs} ) {
 	    #
 	    # The following command succeeds yet generates an error message and non-zero exit status :-(. We thus run it silently and check
@@ -985,6 +977,14 @@ sub setup_traffic_shaping() {
 		  qq(        exit 1),
 		  qq(    fi),
 		  qq(fi) );
+	}
+
+	my $inband = rate_to_kbit $devref->{in_bandwidth};
+
+	if ( $inband ) {
+	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
+		   "run_tc filter add dev $device parent ffff: protocol ip prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {
@@ -1057,7 +1057,7 @@ sub setup_traffic_shaping() {
 
 	emit "run_tc filter add dev $device protocol ip prio 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
-	#options
+	# options
 	#
 	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
@@ -1147,9 +1147,7 @@ sub setup_tc() {
 	}
     }
 
-    for ( @deferred_rules ) {
-	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_;
-    }
+    add_rule ensure_chain( 'mangle' , 'tcpost' ), $_ for @deferred_rules;
 
     handle_stickiness( $sticky );
 }

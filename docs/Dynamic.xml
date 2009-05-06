@@ -139,8 +139,14 @@ eth0:
     <title>Dynamic Zone Contents and Shorewall stop/start/restart</title>
 
     <para>The contents of a dynamic zone survive <command>shorewall
-    stop/shorewall start</command> and <command>shorewall
-    restart</command>.</para>
+    stop/shorewall start</command> and <command>shorewall restart</command>.
+    During <command>shorewall stop</command>, the contents of the ipsets are
+    saved in the file <filename>${VARDIR}/ipsets.save</filename> (usually
+    <filename>/var/lib/shorewall/ipsets.save</filename>). During
+    <command>shorewall start</command>, the contents of that file are restored
+    to the sets. During both <command>shorewall start</command> and
+    <command>shorewall restart</command>, any new ipsets required as a result
+    of a configuration change are added.</para>
   </section>
 
   <section>

@@ -970,9 +970,13 @@ sub setup_traffic_shaping() {
 	    # The following command succeeds yet generates an error message and non-zero exit status :-(. We thus run it silently and check
 	    # the result. Note that since this is normally the first filter added after the root qdisc was added, the 'ls|grep' test is fairly robust
 	    #
-	    emit( qq(if ! qt \$TC filter add dev $device parent $devnum:0 prio 65535 protocol ip fw; then) ,
-		  qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
-		  qq(        error_message "ERROR: Command '\$TC add dev $device parent $devnum:0 prio 65535 protocol ip fw' failed"),
+	    my $command = "\$TC filter add dev $device parent $devnum:0 prio 65535 protocol ip fw";
+
+	    emit( qq(if ! qt $command ; then) ,
+		  qq(    if \$TC filter list dev $device | grep -q 65535; then) ,
+		  qq(        error_message "WARNING: Command '$command' succeeded but returned non-zero exit status") ,
+		  qq(    else),
+		  qq(        error_message "ERROR: Command '$command' failed"),
 		  qq(        stop_firewall),
 		  qq(        exit 1),
 		  qq(    fi),

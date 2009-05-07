@@ -469,7 +469,7 @@ ip_range() {
 	y=2
 	z=1
 
-	while [ $(( $first % $y )) -eq 0 ] && addr_comp $l $(( $first + $y )) ; do
+	while [ $(( $first % $y )) -eq 0 ] && ! addr_comp $(( $first + $y )) $l; do
 	    vlsm=/$x
 	    x=$(( $x - 1 ))
 	    z=$y

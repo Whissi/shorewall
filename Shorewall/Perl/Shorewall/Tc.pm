@@ -971,7 +971,7 @@ sub setup_traffic_shaping() {
 	    # and check the result. Note that since this is the first filter added after the root qdisc was added, the 'ls | grep' test
 	    # is fairly robust
 	    #
-	    my $command = "\$TC filter add dev $device parent $devnum:0 prio 65535 protocol ip fw";
+	    my $command = "\$TC filter add dev $device parent $devnum:0 prio 65535 protocol all fw";
 
 	    emit( qq(if ! qt $command ; then) ,
 		  qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
@@ -986,13 +986,13 @@ sub setup_traffic_shaping() {
 
 	if ( $inband ) {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol ip prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
 		   );
 	}
 
 	for my $rdev ( @{$devref->{redirected}} ) {
 	    emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
-	    emit( "run_tc filter add dev $rdev parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
+	    emit( "run_tc filter add dev $rdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
 	}
 
 	save_progress_message_short "   TC Device $device defined.";
@@ -1054,11 +1054,11 @@ sub setup_traffic_shaping() {
 	#
 	unless ( $devref->{classify} ) {
 	    if ( $tcref->{occurs} == 1 ) {
-		emit "run_tc filter add dev $device protocol ip parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid";
+		emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid";
 	    }
 	}
 
-	emit "run_tc filter add dev $device protocol ip prio 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	emit "run_tc filter add dev $device protocol all prio 1 parent $classnum: protocol ip handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	# options
 	#

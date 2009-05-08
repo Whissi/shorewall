@@ -967,8 +967,14 @@ sub setup_traffic_shaping() {
 
 	if ( $devref->{occurs} ) {
 	    #
-	    # The following command succeeds yet generates an error message and non-zero exit status :-(. We thus run it silently and check
-	    # the result. Note that since this is normally the first filter added after the root qdisc was added, the 'ls|grep' test is fairly robust
+	    # Depending on the installed networking kit, the following command may succeed yet generate an error message and non-zero exit
+	    # status :-(. We thus run it silently and check the result. Note that since this is the first filter added after the root
+	    # qdisc was added, the 'ls | grep' test is fairly robust
+	    #
+	    # Additional notes:
+	    #
+	    #  - The command returns non-zero exit status on OpenSuSE 11.0 and 11.1 and on Debian Lenny
+	    #  - The command returns zero exit status on Ubuntu Jaunty
 	    #
 	    my $command = "\$TC filter add dev $device parent $devnum:0 prio 65535 protocol ip fw";
 

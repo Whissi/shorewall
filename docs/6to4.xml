@@ -65,7 +65,7 @@
     Shorewall6 4.2.4 or later.</para>
 
     <section>
-      <title>Configuring IPv6</title>
+      <title>Configuring IPv6 using my script</title>
 
       <para>I have created an init <ulink
       url="/pub/shorewall/contrib/IPv6/ipv6">script</ulink> to make the job of
@@ -272,6 +272,126 @@ ursa:~ #</programlisting>
       <para>Here is the resulting simple IPv6 Network:</para>
 
       <graphic align="center" fileref="images/Network2008c.png" />
+    </section>
+
+    <section>
+      <title>Configuring IPv6 the Debian Way</title>
+
+      <para>I rebuilt the firewall using Debian and decided to configure IPv6
+      using <filename>/etc/network/interfaces</filename>.</para>
+
+      <para>When I installed Debian Lenny, the network interfaces were
+      reunmbered as follows:</para>
+
+      <para>eth1 is the interface to my local network (both wired and
+      wireless). eth2 goes to my DMZ which holds a single server. Here is a
+      diagram of the IPv4 network:</para>
+
+      <table>
+        <title>Interface Renaming</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Old
+              Configuration</emphasis></entry>
+
+              <entry><emphasis role="bold">New
+              Configuration</emphasis></entry>
+            </row>
+
+            <row>
+              <entry>eth0 (Avvanta Interface)</entry>
+
+              <entry>eth3</entry>
+            </row>
+
+            <row>
+              <entry>eth3 (Comcast Interface)</entry>
+
+              <entry>eth0</entry>
+            </row>
+
+            <row>
+              <entry>eth2 (Local Interface)</entry>
+
+              <entry>eth1</entry>
+            </row>
+
+            <row>
+              <entry>eth4 (DMZ Interface)</entry>
+
+              <entry>eth2</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Here is the /etc/shorewall/interfaces file:</para>
+
+      <programlisting>auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+        hwaddress ether 00:11:85:89:da:9b
+
+auto eth1
+iface eth1 inet static
+        address 172.20.1.254
+        netmask 255.255.255.0
+        network 172.20.1.0
+        broadcast 172.20.1.255
+
+iface eth1 inet6 static
+        address 2002:ce7c:92b4:1::1
+        netmask 64 
+
+auto eth2
+iface eth2 inet static
+        address 206.124.146.176
+        netmask 255.255.255.255
+        up ip route add 206.124.146.177/32 dev eth2
+
+iface eth2 inet6 static
+        address 2002:ce7c:92b4:2::1
+        netmask 64
+
+auto eth3 eth3:0 eth3:1 eth3:2
+iface eth3 inet static
+        address 206.124.146.176
+        netmask 255.255.255.0
+        network 206.124.146.0
+        broadcast 206.124.146.255
+
+iface eth3:0 inet static
+        address 206.124.146.178
+        netmask 255.255.255.0
+        broadcast 206.124.146.255
+
+iface eth3:1 inet static
+        address 206.124.146.179
+        netmask 255.255.255.0
+        broadcast 206.124.146.255
+
+iface eth3:2 inet static
+        address 206.124.146.180
+        netmask 255.255.255.0
+        broadcast 206.124.146.255
+
+iface sit1 inet6 v4tunnel
+      address 2002:ce7c:92b4::1
+      netmask 64
+      endpoint 192.88.99.1
+      local 206.124.146.180
+      gateway ::192.88.99.1
+      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</programlisting>
+
+      <para>This produces the following IPv6 network.</para>
+
+      <graphic align="center" fileref="images/Network2009a.png" />
+
+      <graphic align="center" fileref="images/Network2009b.png" />
     </section>
 
     <section>

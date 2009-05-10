@@ -188,7 +188,7 @@ do_buildanrpm() {
 
     cd /tmp
     rm -rf ${1}-${BASEVERSION}
-    do_or_die "cp -a $DIR/$SHOREWALLDIR ${1}-${BASEVERSION}"
+    do_or_die "cp -a $DIR/$SHOREWALLDIR ${2}-${BASEVERSION}"
     do_or_die "tar -zcf $RPMDIR/SOURCES/${2}-${BASEVERSION}.tgz ${2}-${BASEVERSION}"
     cd $DIR
     do_or_die "cp ${3}/${2}.spec $RPMDIR/SPECS/"
@@ -244,6 +244,7 @@ do_manpages()
 			h=$(ls ${g%.xml}.[58])
 			f=shorewall${2}-$h
 			mv $h $f
+			progress_message "Moved $h to $f"
 			;;
 		esac
 	    

@@ -480,7 +480,7 @@ start_command() {
 
 	if [ -n "$AUTOMAKE" ]; then
 	    [ -n "$nolock" ] || mutex_on
-	    ${VARDIR}/.start $debugging start
+	    ${VARDIR}/firewall $debugging start
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else

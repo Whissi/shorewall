@@ -824,6 +824,10 @@ detect_dynamic_gateway() { # $1 = interface
 	gateway=$(grep 'option routers' /var/lib/dhcp/dhclient-${1}.lease | tail -n 1 | while read j1 j2 gateway; do echo $gateway; return 0; done)
     fi
 
+    if [ -z "$gateway" -a -f /var/lib/dhcp3/dhclient-${1}.leases ]; then
+	gateway=$(grep 'option routers' /var/lib/dhcp3/dhclient-${1}.leases | tail -n 1 | while read j1 j2 gateway; do echo $gateway; return 0; done)
+    fi
+
     [ -n "$gateway" ] && echo $gateway
 }
 

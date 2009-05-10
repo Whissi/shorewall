@@ -325,7 +325,7 @@ sub initialize( $ ) {
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
 		    UNTRACKED => 0,
-		    VERSION => "4.3.10",
+		    VERSION => "4.3.11",
 		    CAPVERSION => 40309 ,
 		  );
 

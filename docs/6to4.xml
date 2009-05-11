@@ -277,11 +277,12 @@ ursa:~ #</programlisting>
     <section>
       <title>Configuring IPv6 the Debian Way</title>
 
-      <para>I rebuilt the firewall using Debian and decided to configure IPv6
-      using <filename>/etc/network/interfaces</filename>.</para>
+      <para>In May 2009, I rebuilt the above firewall using Debian GNU/Linux
+      and decided to configure IPv6 using the
+      <filename>/etc/network/interfaces</filename> file.</para>
 
-      <para>When I installed Debian Lenny, the network interfaces were
-      reunmbered as follows:</para>
+      <para>When I installed Debian Lenny on the system, the network
+      interfaces were reunmbered as follows:</para>
 
       <table>
         <title>Interface Renaming</title>
@@ -323,7 +324,12 @@ ursa:~ #</programlisting>
         </tgroup>
       </table>
 
-      <para>Here is the /etc/shorewall/interfaces file:</para>
+      <para>So the IPv4 network was transformed to this:</para>
+
+      <graphic align="center" fileref="images/Network2009a.png" />
+
+      <para>To implement the same IPv6 network as described above, I used this
+      /etc/shorewall/interfaces file:</para>
 
       <programlisting>auto lo
 iface lo inet loopback
@@ -384,9 +390,7 @@ iface sit1 inet6 v4tunnel
       gateway ::192.88.99.1
       post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</programlisting>
 
-      <para>This produces the following IPv6 network.</para>
-
-      <graphic align="center" fileref="images/Network2009a.png" />
+      <para> That file produces the following IPv6 network.</para>
 
       <graphic align="center" fileref="images/Network2009b.png" />
     </section>

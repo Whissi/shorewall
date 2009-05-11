@@ -345,9 +345,9 @@ iface eth1 inet static
         network 172.20.1.0
         broadcast 172.20.1.255
 
-iface eth1 inet6 static
+<emphasis role="bold">iface eth1 inet6 static
         address 2002:ce7c:92b4:1::1
-        netmask 64 
+        netmask 64 </emphasis>
 
 auto eth2
 iface eth2 inet static
@@ -355,10 +355,10 @@ iface eth2 inet static
         netmask 255.255.255.255
         up ip route add 206.124.146.177/32 dev eth2
 
-iface eth2 inet6 static
+<emphasis role="bold">iface eth2 inet6 static
         address 2002:ce7c:92b4:2::1
         netmask 64
-
+</emphasis>
 auto eth3 eth3:0 eth3:1 eth3:2
 iface eth3 inet static
         address 206.124.146.176
@@ -381,16 +381,16 @@ iface eth3:2 inet static
         netmask 255.255.255.0
         broadcast 206.124.146.255
 
-auto sit1
+<emphasis role="bold">auto sit1
 iface sit1 inet6 v4tunnel
       address 2002:ce7c:92b4::1
       netmask 64
       endpoint 192.88.99.1
       local 206.124.146.180
       gateway ::192.88.99.1
-      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</programlisting>
+      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</emphasis></programlisting>
 
-      <para> That file produces the following IPv6 network.</para>
+      <para>That file produces the following IPv6 network.</para>
 
       <graphic align="center" fileref="images/Network2009b.png" />
     </section>

@@ -187,8 +187,8 @@ do_buildanrpm() {
     progress_message "Building ${1}..."
 
     cd /tmp
-    rm -rf ${1}-${BASEVERSION}
-    do_or_die "cp -a $DIR/$SHOREWALLDIR ${2}-${BASEVERSION}"
+    rm -rf ${2}-${BASEVERSION}
+    do_or_die "cp -a $DIR/${3} ${2}-${BASEVERSION}"
     do_or_die "tar -zcf $RPMDIR/SOURCES/${2}-${BASEVERSION}.tgz ${2}-${BASEVERSION}"
     cd $DIR
     do_or_die "cp ${3}/${2}.spec $RPMDIR/SPECS/"
@@ -227,8 +227,6 @@ do_manpages()
     do_export ${1} manpages
     cd manpages
 
-    pattern="*.conf.*|shorewall${2}.xml"
-
     for f in *.xml; do
 	case $f in
 	    *template.xml)
@@ -237,14 +235,13 @@ do_manpages()
 		progress_message "Generating Man Page from $f..."
 		do_or_die "xmlto --skip-validation --xsltopts "--stringparam" --xsltopts "man.base.url.for.relative.links" --xsltopts $BASEURL/manpages${3}/ man $f >> $LOGFILE 2>&1"
 		case $f in
-		    $pattern)
+		    *.conf.*|shorewall.xml|shorewall6.xml|shorewall-lite.xml|shorewall6-lite.xml)
                         ;;
 		    *)
 			g=${f#shorewall${2}-}
 			h=$(ls ${g%.xml}.[58])
 			f=shorewall${2}-$h
 			mv $h $f
-			progress_message "Moved $h to $f"
 			;;
 		esac
 	    

@@ -4,7 +4,7 @@
 <!-- $Id$ -->
 <article id="upgrade_issues">
   <articleinfo>
-    <title>ss rUpgrade Issues</title>
+    <title>Upgrade Issues</title>
 
     <author>
       <firstname>Tom</firstname>
@@ -77,11 +77,67 @@
   <section>
     <title>Versions &gt;= 4.3.5</title>
 
-    <para>If you are using Shorewall-perl, there are no additional upgrade
-    issues. If you are using Shorewall-shell or are upgrading from a Shorewall
-    version earlier than 4.0.0 then you will need to <ulink
-    url="Shorewall-perl.html">migrate to Shorewall-perl</ulink>.
-    Shorewall-4.3.5 and later only use the perl-based compiler.</para>
+    <orderedlist>
+      <listitem>
+        <para>If you are using Shorewall-perl, there are no additional upgrade
+        issues. If you are using Shorewall-shell or are upgrading from a
+        Shorewall version earlier than 4.0.0 then you will need to <ulink
+        url="Shorewall-perl.html">migrate to Shorewall-perl</ulink>.
+        Shorewall-4.3.5 and later only use the perl-based compiler.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <command>shorewall stop</command>, <command>shorewall
+        clear</command>, <command>shorewall6 stop</command> and
+        <command>shorewall6 clear</command> commands no longer read the
+        <filename>routestopped</filename> file. The
+        <filename>routestopped</filename> file used is the one that was
+        present at the last <command>start</command>,
+        <command>restart</command> or <command>restore</command> command.
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>The old macro parameter syntax (e.g., SSH/ACCEPT) is now
+        deprecated in favor of the new syntax (e.g., SSH(ACCEPT)). The 4.3
+        documentation uses the new syntax exclusively, although the old syntax
+        continues to be supported. </para>
+      </listitem>
+
+      <listitem>
+        <para>Support for the SAME target in /etc/shorewall/masq and
+        /etc/shorewall/rules has been removed, following the removal of the
+        underlying support in the Linux kernel. </para>
+      </listitem>
+
+      <listitem>
+        <para>Supplying an interface name in the SOURCE column of
+        /etc/shorewall/masq is now deprecated. Entering the name of an
+        interface there will result in a compile-time warning:</para>
+
+        <para>WARNING: Using an interface as the masq SOURCE requires the
+        interface to be up and configured when Shorewall
+        starts/restarts</para>
+
+        <para>To avoid this warning, replace interface names by the
+        corresponding network addresses (e.g., 192.168.144.0/24). </para>
+      </listitem>
+
+      <listitem>
+        <para> Previously, Shorewall has treated traffic shaping class IDs as
+        decimal numbers (or pairs of decimal numbers). That worked fine until
+        IPMARK was implemented. IPMARK requires Shorewall to generate class
+        Ids in numeric sequence. In 4.3.9, that didn't work correctly because
+        Shorewall was generating the sequence "..8,9,10,11..." when the
+        correct sequence was "...8,9,a,b,...". Shorewall now treats class IDs
+        as hex, like 'tc' and 'iptables' do.</para>
+
+        <para>This should only be an issue if you have more than 9 interfaces
+        defined in <filename>/etc/shorewall/tcdevices</filename> and if you
+        use class IDs in <filename>/etc/shorewall/tcrules</filename>. You will
+        need to renumber the class IDs for devices 10 and greater. </para>
+      </listitem>
+    </orderedlist>
   </section>
 
   <section>
@@ -175,7 +231,7 @@
         and you select replacement of shorewall.conf during upgrade to
         Shorewall 4.2, you will want to change IMPLICIT_CONTINUE back to 'Yes'
         if you have nested zones that rely on IMPLICIT_CONTINUE=Yes for proper
-        operation. </para>
+        operation.</para>
       </listitem>
 
       <listitem>
@@ -265,6 +321,13 @@ shorewall restart</command></programlisting> The RPMs are set up so that if
         <para>The <option>:noah</option> option is now the default for ipsec
         tunnels. Tunnels that use AH (protocol 51) must specify
         <option>ipsec:ah</option> in the TYPE column.</para>
+      </listitem>
+
+      <listitem>
+        <para>Users upgrading from Debian Etch (Shorewall 3.2.6) to Debian
+        Lenny (Shoreall 4.0.15) report finding an issue with VOIP (Asterisk)
+        traffic. See <ulink url="FAQ.htm#faq77">Shorewall FAQ 77</ulink> for
+        details.</para>
       </listitem>
     </orderedlist>
   </section>

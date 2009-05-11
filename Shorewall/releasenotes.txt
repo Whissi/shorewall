@@ -125,7 +125,29 @@ None.
 	local net			   flow=dst
 
     These will cause a 'flow' to consists of the traffic to/from each
-    internal system. 
+    internal system.
+
+2)  In order to generalize support for learning the gateway for dynamic
+    interfaces, a new 'findgw' extension script (user exit) has been
+    added.
+
+    The exit will be invoked in a function that has a single argument:
+
+    	$1 = <name of an interface>
+
+    If the function can determine the gateway for the passed interface,
+    it should write the gateway to standard out. Here is a sample
+    /etc/shorewall/findgw that works with dhclient (dhcp3) in Debian
+    Lenny:
+
+    if [ -f /var/lib/dhcp3/dhclient-${1}.leases ]; then
+       grep 'option routers' /var/lib/dhcp3/dhclient-${1}.leases |\
+          tail -n 1 |\
+	  while read j1 j2 gateway; do echo $gateway; return 0; done
+    fi
+
+    The same code works on Ubuntu Jaunty if you replace '.leases' with
+    '.lease' (don't you just love the consistency between distributions?).
    
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

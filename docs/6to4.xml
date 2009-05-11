@@ -113,11 +113,13 @@
 
       <para>Here is the file from my firewall:</para>
 
-      <programlisting>SIT="sit1"
+      <blockquote>
+        <para><programlisting>SIT="sit1"
 ADDRESS4=206.124.146.180
 INTERFACES="eth2 eth4"
 SLA=1
-GATEWAY=::192.88.99.1</programlisting>
+GATEWAY=::192.88.99.1</programlisting></para>
+      </blockquote>
 
       <para>eth2 is the interface to my local network (both wired and
       wireless). eth4 goes to my DMZ which holds a single server. Here is a
@@ -128,7 +130,8 @@ GATEWAY=::192.88.99.1</programlisting>
       <para>Here is the configuration after IPv6 is configured; the part in
       bold font is configured by the /etc/init.d/ipv6 script.</para>
 
-      <programlisting>gateway:~ # ip -6 addr ls
+      <blockquote>
+        <para><programlisting>gateway:~ # ip -6 addr ls
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
@@ -160,7 +163,8 @@ fe80::/64 dev eth1  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimi
 fe80::/64 dev eth2  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimit 4294967295
 fe80::/64 dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295
 <emphasis role="bold">default via ::192.88.99.1 dev sit1  metric 1  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295</emphasis>
-gateway:~ # </programlisting>
+gateway:~ # </programlisting></para>
+      </blockquote>
 
       <para>You will notice that sit1, eth0 and eth2 each have an IPv6 address
       beginning with 2002: -- All 6to4 IPv6 addresses have that in their most
@@ -176,7 +180,8 @@ gateway:~ # </programlisting>
       perform their own IPv6 configuration. Here is my
       <filename>/etc/radvd.conf</filename> file:</para>
 
-      <programlisting>interface eth2 { 
+      <blockquote>
+        <para><programlisting>interface eth2 { 
         AdvSendAdvert on;
         MinRtrAdvInterval 3; 
         MaxRtrAdvInterval 10;
@@ -206,7 +211,8 @@ interface eth4 {
                 AdvRDNSSOpen on;
                 AdvRDNSSPreference 2;
         };                              
-};</programlisting>
+};</programlisting></para>
+      </blockquote>
 
       <note>
         <para>radvd terminates immediately if IPv6 forwarding is not enabled.
@@ -228,7 +234,8 @@ interface eth4 {
       <para>Here is the automatic IPv6 configuration on my server attached to
       eth2:</para>
 
-      <programlisting>webadmin@lists:~/ftpsite/contrib/IPv6&gt; /sbin/ip -6 addr ls
+      <blockquote>
+        <para><programlisting>webadmin@lists:~/ftpsite/contrib/IPv6&gt; /sbin/ip -6 addr ls
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
@@ -242,7 +249,8 @@ webadmin@lists:~/ftpsite/contrib/IPv6&gt; /sbin/ip -6 route ls
 fe80::/64 dev eth2  metric 256  expires 20746963sec mtu 1500 advmss 1440 hoplimit 4294967295
 fe80::/64 dev ifb0  metric 256  expires 20746985sec mtu 1500 advmss 1440 hoplimit 4294967295
 <emphasis role="bold">default via fe80::2a0:ccff:fed2:353a dev eth2  proto kernel  metric 1024  expires 29sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
-webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
+webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting></para>
+      </blockquote>
 
       <para>You will note that the public IPv6 address of eth2
       (2002:ce7c:92b4:2:2a0:ccff:fedb:31c4) was formed by concatenating the
@@ -257,7 +265,8 @@ webadmin@lists:~/ftpsite/contrib/IPv6&gt; </programlisting>
 
       <para>On my laptop, ursa:</para>
 
-      <programlisting>ursa:~ # ip -6 addr ls dev eth0
+      <blockquote>
+        <para><programlisting>ursa:~ # ip -6 addr ls dev eth0
 3: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
  <emphasis role="bold">   inet6 2002:ce7c:92b4:1:21a:24ff:fecb:2bcc/64 scope global dynamic 
        valid_lft 2591996sec preferred_lft 604796sec</emphasis>
@@ -267,7 +276,8 @@ ursa:~ # ip -6 route ls dev eth0
 <emphasis role="bold">2002:ce7c:92b4:1::/64  proto kernel  metric 256  expires 2592160sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
 fe80::/64  metric 256  expires 21314573sec mtu 1500 advmss 1440 hoplimit 4294967295
 <emphasis role="bold">default via fe80::202:e3ff:fe08:55fa  proto kernel  metric 1024  expires 28sec mtu 1500 advmss 1440 hoplimit 64</emphasis>
-ursa:~ #</programlisting>
+ursa:~ #</programlisting></para>
+      </blockquote>
 
       <para>Here is the resulting simple IPv6 Network:</para>
 
@@ -284,7 +294,7 @@ ursa:~ #</programlisting>
       <para>When I installed Debian Lenny on the system, the network
       interfaces were reunmbered as follows:</para>
 
-      <table>
+      <table frame="void">
         <title>Interface Renaming</title>
 
         <tgroup cols="2">
@@ -331,7 +341,8 @@ ursa:~ #</programlisting>
       <para>To implement the same IPv6 network as described above, I used this
       /etc/shorewall/interfaces file:</para>
 
-      <programlisting>auto lo
+      <blockquote>
+        <para><programlisting>auto lo
 iface lo inet loopback
 
 auto eth0
@@ -388,7 +399,8 @@ iface sit1 inet6 v4tunnel
       endpoint 192.88.99.1
       local 206.124.146.180
       gateway ::192.88.99.1
-      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</emphasis></programlisting>
+      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</emphasis></programlisting></para>
+      </blockquote>
 
       <para>That file produces the following IPv6 network.</para>
 
@@ -401,11 +413,13 @@ iface sit1 inet6 v4tunnel
       <para>We need to add an entry in /etc/shorewall/tunnels and restart
       Shorewall:</para>
 
-      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+      <blockquote>
+        <para><programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 6to4                    net
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+</programlisting></para>
+      </blockquote>
     </section>
 
     <section>
@@ -415,7 +429,7 @@ iface sit1 inet6 v4tunnel
       instructions above, you should have a completely functional IPv6
       network. Try:</para>
 
-      <programlisting>ping6 2001:19f0:feee::dead:beef:cafe
+      <programlisting><emphasis role="bold">ping6 2001:19f0:feee::dead:beef:cafe</emphasis>
 </programlisting>
 
       <para>If that doesn't work from your firewall and from any local IPv6
@@ -430,38 +444,47 @@ iface sit1 inet6 v4tunnel
       <para>Key entry in
       <filename>/etc/shorewall6/shorewall6.conf</filename>:</para>
 
-      <programlisting>IP_FORWARDING=On</programlisting>
+      <blockquote>
+        <para><programlisting>IP_FORWARDING=On</programlisting></para>
+      </blockquote>
 
       <para><filename>/etc/shorewall6/zones</filename>:</para>
 
-      <programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
+      <blockquote>
+        <para><programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
 #					OPTIONS			OPTIONS
 fw	firewall
 net	ipv6
 loc	ipv6
 dmz	ipv6
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
+      </blockquote>
 
       <para><filename>/etc/shorewall6/interfaces</filename>:</para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+      <blockquote>
+        <para><programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 net     sit1            detect          tcpflags,forward=1,nosmurfs
 loc     eth0            detect          tcpflags,forward=1
 dmz     eth2            detect          tcpflags,forward=1
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+</programlisting></para>
+      </blockquote>
 
       <para><filename>/etc/shorewall6/policy</filename>:</para>
 
-      <programlisting>#SOURCE    DEST    POLICY    LOG LEVEL    LIMIT:BURST
+      <blockquote>
+        <para><programlisting>#SOURCE    DEST    POLICY    LOG LEVEL    LIMIT:BURST
 net        all     DROP      info
 loc        net     ACCEPT
 dmz        net     ACCEPT
-all        all     REJECT    info</programlisting>
+all        all     REJECT    info</programlisting></para>
+      </blockquote>
 
       <para><filename>/etc/shorewall6/rules</filename>:</para>
 
-      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK
+      <blockquote>
+        <para><programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK
 #                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
 #
 #       Accept DNS connections from the firewall to the network
@@ -478,7 +501,8 @@ Ping(ACCEPT)     all             all
 
 #
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+</programlisting></para>
+      </blockquote>
     </section>
   </section>
 

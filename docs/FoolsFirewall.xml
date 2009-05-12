@@ -39,7 +39,7 @@
 
     <para>Occasionally, we hear from someone who has cabled his firewall's
     external and internal firewall interfaces to the same switch. I call this
-    configuration <firstterm>The Fool's Firewall</firstterm>. </para>
+    configuration <firstterm>The Fool's Firewall</firstterm>.</para>
 
     <para>When the external interface supports broadcast, this configuration
     has two very bad drawbacks:</para>
@@ -50,8 +50,8 @@
       </listitem>
 
       <listitem>
-        <para>The up-stream router can send incoming packets to the wrong
-        interface.</para>
+        <para>Both the up-stream router and the local systems can send
+        incoming packets to the wrong interface.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -65,7 +65,7 @@
     running Windows) send broadcasts, those systems can be easily detected by
     using a packet sniffer. Once the systems have been spotted, it is child's
     play to add an IP address in Fool's internal IP network and bypass his
-    "Firewall". </para>
+    "Firewall".</para>
 
     <graphic align="center" fileref="images/Fools.png" />
   </section>
@@ -83,5 +83,9 @@
     the firewall's internal interface.</para>
 
     <graphic fileref="images/Foolsa.png" />
+
+    <para>A similar problem can occur when a local system sends to the
+    "Firewall" or to the Net. The packets may arrive on the firewall through
+    the <emphasis>external</emphasis> interface.</para>
   </section>
 </article>

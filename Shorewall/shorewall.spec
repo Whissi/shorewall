@@ -74,45 +74,7 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall
 %attr(0755,root,root) %dir /usr/share/shorewall/configfiles
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0644,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/interfaces
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/rules
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/netmap
-%attr(0644,root,root) %config(noreplace) /etc/shorewall/params
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/maclist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/masq
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcrules
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tos
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tunnels
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/init
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/initdone
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/clear
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/isusable
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/refresh
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/refreshed
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclear
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/start
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/started
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/restored
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/route_rules
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcfilters
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/notrack
+%attr(0644,root,root) %config(noreplace) /etc/shorewall/*
 %attr(0600,root,root) /etc/shorewall/Makefile
 
 %attr(0755,root,root) /sbin/shorewall
@@ -135,41 +97,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/prog.*
 %attr(0644,root,root) /usr/share/shorewall/Shorewall/*.pm
 
-%attr(0644,root,root) /usr/share/shorewall/configfiles/shorewall.conf
-%attr(0644,root,root) /usr/share/shorewall/configfiles/zones
-%attr(0644,root,root) /usr/share/shorewall/configfiles/policy
-%attr(0644,root,root) /usr/share/shorewall/configfiles/interfaces
-%attr(0644,root,root) /usr/share/shorewall/configfiles/rules
-%attr(0644,root,root) /usr/share/shorewall/configfiles/nat
-%attr(0644,root,root) /usr/share/shorewall/configfiles/netmap
-%attr(0644,root,root) /usr/share/shorewall/configfiles/params
-%attr(0644,root,root) /usr/share/shorewall/configfiles/proxyarp
-%attr(0644,root,root) /usr/share/shorewall/configfiles/routestopped
-%attr(0644,root,root) /usr/share/shorewall/configfiles/maclist
-%attr(0644,root,root) /usr/share/shorewall/configfiles/masq
-%attr(0644,root,root) /usr/share/shorewall/configfiles/tcrules
-%attr(0644,root,root) /usr/share/shorewall/configfiles/tos
-%attr(0644,root,root) /usr/share/shorewall/configfiles/tunnels
-%attr(0644,root,root) /usr/share/shorewall/configfiles/hosts
-%attr(0644,root,root) /usr/share/shorewall/configfiles/blacklist
-%attr(0644,root,root) /usr/share/shorewall/configfiles/init
-%attr(0644,root,root) /usr/share/shorewall/configfiles/initdone
-%attr(0644,root,root) /usr/share/shorewall/configfiles/start
-%attr(0644,root,root) /usr/share/shorewall/configfiles/stop
-%attr(0644,root,root) /usr/share/shorewall/configfiles/stopped
-%attr(0644,root,root) /usr/share/shorewall/configfiles/ecn
-%attr(0644,root,root) /usr/share/shorewall/configfiles/accounting
-%attr(0644,root,root) /usr/share/shorewall/configfiles/actions
-%attr(0644,root,root) /usr/share/shorewall/configfiles/continue
-%attr(0644,root,root) /usr/share/shorewall/configfiles/started
-%attr(0644,root,root) /usr/share/shorewall/configfiles/restored
-%attr(0644,root,root) /usr/share/shorewall/configfiles/providers
-%attr(0644,root,root) /usr/share/shorewall/configfiles/route_rules
-%attr(0644,root,root) /usr/share/shorewall/configfiles/tcclasses
-%attr(0644,root,root) /usr/share/shorewall/configfiles/tcdevices
-%attr(0644,root,root) /usr/share/shorewall/configfiles/tcfilters
-%attr(0644,root,root) /usr/share/shorewall/configfiles/notrack
-%attr(0644,root,root) /usr/share/shorewall/configfiles/Makefile
+%attr(0644,root,root) /usr/share/shorewall/configfiles/*
 
 %attr(0644,root,root) %{_mandir}/man5/*
 %attr(0644,root,root) %{_mandir}/man8/shorewall.8.gz

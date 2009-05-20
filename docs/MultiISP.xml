@@ -1089,7 +1089,7 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
         <filename>swping</filename>. The <filename>swping</filename> file is
         available in the main directory contained in the Shorewall-common
         tarball and is included in the Shorewall-common documentation
-        directory on the Shorewall-common RPM. The script is inspired by
+        directory in the Shorewall-common RPM. The script is inspired by
         Angsuman Chakraborty's <ulink
         url="http://blog.taragana.com/index.php/archive/how-to-load-balancing-failover-with-dual-multi-wan-adsl-cable-connections-on-linux/">gwping</ulink>
         script.</para>
@@ -1167,9 +1167,9 @@ DOWN_COUNT=2</programlisting>
 
         <itemizedlist>
           <listitem>
-            <para>For each interface, a file is placed in /etc/shorewall to
-            record the status of the interface: either 0 (UP) or 1 (DOWN). The
-            name of the file is
+            <para>For each interface, a file is placed in ${VARDIR} (normally
+            /var/lib/shorewall) to record the status of the interface: either
+            0 (UP) or 1 (DOWN). The name of the file is
             <filename><replaceable>interface</replaceable>.status</filename>
             where <replaceable>interface</replaceable> is the interface (e.g.,
             <filename>eth0.status</filename>).</para>
@@ -1189,16 +1189,13 @@ DOWN_COUNT=2</programlisting>
         <para>The .status files are intended to be used with the following
         <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
 
-case $1 in
-    <emphasis role="bold">eth0|eth1</emphasis>)
-        [ -f /etc/shorewall/${1}.status ] &amp;&amp; status=$(cat /etc/shorewall/${1}.status)
-        ;;
-esac
+[ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
 
 return $status</programlisting></para>
 
-        <para>Be sure that you modify the interface names to match your
-        configuration.</para>
+        <para>The above script is installed in <filename
+        class="directory">/etc/shorewall</filename>, beginning with Shorewall
+        4.3.11.</para>
 
         <para>Also included is a sample init script
         (<filename>swping.init</filename>) to start the monitoring daemon.
@@ -1266,20 +1263,26 @@ fi</programlisting></para>
         more sophisticated monitoring than the simple swping script described
         in the preceding section.</para>
 
+        <para>Like many Open Source products, LSM is poorly documented. It's
+        main configuration file is normally kept in /etc/lsm/lsm.conf, but the
+        file's name is passed as an argument to the lsm program so you can
+        name it anything you want.</para>
+
+        <para>The sample <filename>lsm.conf</filename> included with the
+        product shows some of the possibilities for configuration. One feature
+        that is not mentioned in the sample is that an "include" directive is
+        supported. This allows additional files to be sourced in from the main
+        configuration file.</para>
+
         <para>I personally use LSM here at shorewall.net (configuration is
         described <link linkend="Complete">below</link>). Here are my relevant
         configuration files:</para>
 
         <para><filename>/etc/shorewall/isusable</filename>:</para>
 
-        <programlisting>local status
-status=0
+        <programlisting>local status=0
 
-case $1 in
-    eth0|eth3)
-        [ -f /etc/shorewall/${1}.status ] &amp;&amp; status=$(cat /etc/shorewall/${1}.status)
-        ;;
-esac
+[ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
 
 return $status</programlisting>
 
@@ -1289,7 +1292,7 @@ return $status</programlisting>
 # My 'restored' script calls this one if there is no lsm process running
 ###############################################################################
 if [ "$COMMAND" = start -o "$COMMAND" = restore ]; then
-   killproc lsm 2&gt; /dev/null
+   killall lsm 2&gt; /dev/null
    cat &lt;&lt;EOF &gt; /etc/lsm/shorewall.conf
 connection {
     name=Avvanta
@@ -1305,7 +1308,7 @@ connection {
     ttl=1
 }
 EOF
-   rm -f /etc/shorewall/*.status
+   rm -f ${VARDIR}/*.status
    /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
 fi</programlisting>
 
@@ -1363,6 +1366,16 @@ CONS_WAIT=${11}
 CONS_MISS=${12}
 AVG_RTT=${13}
 
+if [ -f /usr/share/shorewall-lite/lib.base ]; then
+    VARDIR=/var/lib/shorewall-lite
+    STATEDIR=/etc/shorewall-lite
+else
+    VARDIR=/var/lib/shorewall
+    STATEDIR=/etc/shorewall
+fi
+
+[ -f ${STATEDIR}/vardir ] &amp;&amp; . ${STATEDIR}/vardir
+
 cat &lt;&lt;EOM | mail -s "${NAME} ${STATE}, DEV ${DEVICE}" ${WARN_EMAIL}
 
 Hi,
@@ -1392,7 +1405,7 @@ EOM
 
 [ ${STATE} = up ] &amp;&amp; state=0 || state=1
 
-echo $state &gt; /etc/shorewall/${DEVICE}.status
+echo $state &gt; ${VARDIR}/${DEVICE}.status
 
 /sbin/shorewall -f restart &gt;&gt; /var/log/lsm 2&gt;&amp;1
 
@@ -1407,7 +1420,7 @@ exit 0;
     <section id="Shared">
       <title>Two Providers Sharing an Interface</title>
 
-      <para>Shared interface support has the following characteristics"</para>
+      <para>Shared interface support has the following characteristics:</para>
 
       <orderedlist numeration="loweralpha">
         <listitem>

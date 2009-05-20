@@ -39,26 +39,33 @@ if [ $FAMILY -eq 4 ]; then
 	. /usr/share/shorewall-lite/lib.base
 	[ -f /etc/shorewall-lite/params ] && . /etc/shorewall-lite/params
 	[ -n "${COMMAND:="/sbin/shorewall-lite restart; /sbin/ip -4 route ls"}" ]
-	STATEDIR=/etc/shorewall-lite
+	CONFDIR=/etc/shorewall-lite
+	VARDIR=/var/lib/shorewall-lite
     elif [ -f /usr/share/shorewall/lib.base ]; then
 	. /usr/share/shorewall/lib.base
 	[ -f /etc/shorewall/params ] && . /etc/shorewall/params
 	[ -n "${COMMAND:="/sbin/shorewall restart -f; /sbin/ip -4 route ls"}" ]
-	STATEDIR=/etc/shorewall
+	CONFDIR=/etc/shorewall
+	VARDIR=/var/lib/shorewall
     fi
 else
     if [ -f /usr/share/shorewall6-lite/lib.base ]; then
 	. /usr/share/shorewall6-lite/lib.base
 	[ -f /etc/shorewall6-lite/params ] && . /etc/shorewall6-lite/params
 	[ -n "${COMMAND:="/sbin/shorewall6-lite restart; /sbin/ip -4 route ls"}" ]
-	STATEDIR=/etc/shorewall6-lite
+	CONFDIR=/etc/shorewall6-lite
+	VARDIR=/var/lib/shorewall6-lite
     elif [ -f /usr/share/shorewall6/lib.base ]; then
 	. /usr/share/shorewal6l/lib.base
 	[ -f /etc/shorewall6/params ] && . /etc/shorewall6/params
 	[ -n "${COMMAND:="/sbin/shorewall6 restart -f; /sbin/ip -4 route ls"}" ]
-	STATEDIR=/etc/shorewall6
+	CONFDIR=/etc/shorewall6
+	VARDIR=/var/lib/shorewall6
     fi
 fi
+
+[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
+
 #
 # Interfaces to monitor -- you may use shell variables from your params file
 #
@@ -124,8 +131,8 @@ get_target() {
 #
 # Script starts here
 #
-rm -f $STATEDIR/${IF1}.status
-rm -f $STATEDIR/${IF2}.status
+rm -f $VARDIR/${IF1}.status
+rm -f $VARDIR/${IF2}.status
 
 while : ; do
     target=$TARGET1
@@ -216,8 +223,8 @@ while : ; do
 	#
 	# One of the interfaces changed state -- restart Shorewall
 	#
-	echo $if1_state > $STATEDIR/${IF1}.status
-	echo $if2_state > $STATEDIR/${IF2}.status 
+	echo $if1_state > $VARDIR/${IF1}.status
+	echo $if2_state > $VARDIR/${IF2}.status 
 	eval $COMMAND
 	state_changed=
     fi

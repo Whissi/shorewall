@@ -16,7 +16,7 @@
 ###############################################################################
 local status=0
 
-[ -f /etc/shorewall/${1}.status ] && status=$(cat /etc/shorewall/${1}.status)
+[ -f ${VARDIR}/${1}.status ] && status=$(cat ${VARDIR}/${1}.status)
 
 return $status
 

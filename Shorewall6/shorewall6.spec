@@ -66,32 +66,7 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall6
 %attr(0755,root,root) %dir /usr/share/shorewall6/configfiles
 %attr(0700,root,root) %dir /var/lib/shorewall6
-%attr(0644,root,root) %config(noreplace) /etc/shorewall6/shorewall6.conf
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/zones
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/policy
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/interfaces
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/rules
-%attr(0644,root,root) %config(noreplace) /etc/shorewall6/params
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/routestopped
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/maclist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcrules
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/tos
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/tunnels
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/hosts
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/blacklist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/init
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/start
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/stop
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/stopped
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/accounting
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/actions
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/started
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/restored
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/providers
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/route_rules
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcclasses
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/tcdevices
-%attr(0600,root,root) %config(noreplace) /etc/shorewall6/notrack
+%attr(0644,root,root) %config(noreplace) /etc/shorewall6/*
 %attr(0600,root,root) /etc/shorewall6/Makefile
 
 %attr(0755,root,root) /sbin/shorewall6
@@ -110,33 +85,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/configpath
 %attr(0755,root,root) /usr/share/shorewall6/wait4ifup
 
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/shorewall6.conf
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/zones
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/policy
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/interfaces
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/rules
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/params
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/routestopped
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/maclist
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/tcrules
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/tos
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/tunnels
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/hosts
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/blacklist
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/init
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/start
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/stop
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/stopped
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/accounting
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/actions
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/started
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/restored
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/providers
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/route_rules
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/tcclasses
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/tcdevices
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/notrack
-%attr(0644,root,root) /usr/share/shorewall6/configfiles/Makefile
+%attr(0644,root,root) /usr/share/shorewall6/configfiles/*
 
 %attr(0644,root,root) %{_mandir}/man5/*
 %attr(0644,root,root) %{_mandir}/man8/shorewall6.8.gz

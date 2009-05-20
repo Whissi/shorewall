@@ -88,20 +88,15 @@
   <section id="Intro">
     <title>Introduction</title>
 
-    <para>Shorewall has builtin support for traffic shaping and control.
-    Before this version, the support was quite limited. You were able to use
-    your own tcstart script (and you still are), but besides the tcrules file
-    it was not possible to define classes or queuing disciplines inside the
-    Shorewall config files.</para>
-
-    <para>The support for traffic shaping and control still does not cover all
-    options available (and especially all algorithms that can be used to queue
-    traffic) in the Linux kernel but it should fit most needs. If you are
-    using your own script for traffic control and you still want to use it in
-    the future, you will find information on how to do this, <link
-    linkend="owntcstart"> later in this document</link>. But for this to work,
-    you will also need to enable traffic shaping in the kernel and Shorewall
-    as covered by the next sections.</para>
+    <para>Shorewall has builtin support for traffic shaping and control. This
+    support does not cover all options available (and especially all
+    algorithms that can be used to queue traffic) in the Linux kernel but it
+    should fit most needs. If you are using your own script for traffic
+    control and you still want to use it in the future, you will find
+    information on how to do this, <link linkend="owntcstart">later in this
+    document</link>. But for this to work, you will also need to enable
+    traffic shaping in the kernel and Shorewall as covered by the next
+    sections.</para>
   </section>
 
   <section id="LinuxTC">
@@ -114,7 +109,7 @@
     Advanced Routing and Shaping HOWTO</ulink>. At the time of writing this,
     the current version is 1.0.0.</para>
 
-    <para>Since kernel 2.2 Linux has extensive support for controlling
+    <para>Since kernel 2.2, Linux has extensive support for controlling
     traffic. You can define different algorithms that are used to queue the
     traffic before it leaves an interface. The standard one is called pfifo
     and is (as the name suggests) of the type First In First out. This means,
@@ -132,7 +127,10 @@
     prioritized classes only get bandwidth if the more important have what
     they need). Shorewall builtin traffic shaping allows you to define these
     classes (and their bandwidth limits), and it uses SFQ inside these classes
-    to make sure, that different data streams are handled equally.</para>
+    to make sure, that different data streams are handled equally. If SFQ's
+    default notion of a 'stream' doesn't work well for you, you can change it
+    using the <emphasis role="bold">flow</emphasis> option described <link
+    linkend="tcclasses">below</link>.</para>
 
     <para>You can shape incoming traffic through use of an
     <firstterm>Intermediate Frame Block</firstterm> (IFB) device. <link
@@ -280,11 +278,6 @@
       </listitem>
     </itemizedlist>
 
-    <warning>
-      <para>Shorewall's builtin traffic shaping feature is limited to ten (10)
-      devices.</para>
-    </warning>
-
     <para>Those few features are really all that builtin traffic
     shaping/control provides; consequently, you need to understand HTB and
     Linux traffic shaping as well as Netfilter packet marking in order to use
@@ -307,7 +300,7 @@
     tools that help you find out; search for "dsl speed test" on google (For
     Germany you can use <ulink
     url="http://www.speedcheck.arcor.de/cgi-bin/speedcheck.cgi">arcor speed
-    check</ulink>). Be sure to choose a test located near you.</para>
+    check</ulink>). Be sure to choose a test site located near you.</para>
 
     <section id="tcdevices">
       <title>/etc/shorewall/tcdevices</title>

@@ -601,6 +601,51 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/restored ]; then
     echo "Restored file installed as ${PREFIX}/etc/shorewall/restored"
 fi
 #
+# Install the Clear file
+#
+run_install $OWNERSHIP -m 0644 configfiles/clear ${PREFIX}/usr/share/shorewall/configfiles/clear
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/clear ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/clear ${PREFIX}/etc/shorewall/clear
+    echo "Restored file installed as ${PREFIX}/etc/shorewall/clear"
+fi
+#
+# Install the Isusable file
+#
+run_install $OWNERSHIP -m 0644 configfiles/isusable ${PREFIX}/usr/share/shorewall/configfiles/isusable
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/isusable ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/isusable ${PREFIX}/etc/shorewall/isusable
+    echo "Restored file installed as ${PREFIX}/etc/shorewall/isusable"
+fi
+#
+# Install the Refresh file
+#
+run_install $OWNERSHIP -m 0644 configfiles/refresh ${PREFIX}/usr/share/shorewall/configfiles/refresh
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/refresh ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/refresh ${PREFIX}/etc/shorewall/refresh
+    echo "Restored file installed as ${PREFIX}/etc/shorewall/refresh"
+fi
+#
+# Install the Refreshed file
+#
+run_install $OWNERSHIP -m 0644 configfiles/refreshed ${PREFIX}/usr/share/shorewall/configfiles/refreshed
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/refreshed ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/refreshed ${PREFIX}/etc/shorewall/refreshed
+    echo "Restored file installed as ${PREFIX}/etc/shorewall/refreshed"
+fi
+#
+# Install the Tcclear file
+#
+run_install $OWNERSHIP -m 0644 configfiles/tcclear ${PREFIX}/usr/share/shorewall/configfiles/tcclear
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcclear ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/tcclear ${PREFIX}/etc/shorewall/tcclear
+    echo "Restored file installed as ${PREFIX}/etc/shorewall/tcclear"
+fi
+#
 # Install the Standard Actions file
 #
 install_file actions.std ${PREFIX}/usr/share/shorewall/actions.std 0644

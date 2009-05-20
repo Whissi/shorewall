@@ -93,6 +93,11 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/init
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/initdone
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/clear
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/isusable
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/refresh
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/refreshed
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclear
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped

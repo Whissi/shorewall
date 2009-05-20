@@ -153,9 +153,139 @@ sub print_policy($$$$) {
     }
 }
 
+sub process_a_policy() {
+
+    our %validpolicies;
+    our @zonelist;
+
+    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) = split_line 3, 6, 'policy file';
+
+    $loglevel  = '' if $loglevel  eq '-';
+    $synparams = '' if $synparams eq '-';
+    $connlimit = '' if $connlimit eq '-';
+
+    my $clientwild = ( "\L$client" eq 'all' );
+
+    fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
+
+    my $serverwild = ( "\L$server" eq 'all' );
+    
+    fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
+
+    my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
+
+    fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
+
+    fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
+
+    ( $policy , my $queue ) = get_target_param $policy;
+
+    if ( $default ) {
+	if ( "\L$default" eq 'none' ) {
+	    $default = 'none';
+	} else {
+	    my $defaulttype = $targets{$default} || 0;
+
+	    if ( $defaulttype & ACTION ) {
+		unless ( $usedactions{$default} ) {
+		    $usedactions{$default} = 1;
+		    createactionchain $default;
+		}
+	    } else {
+		fatal_error "Unknown Default Action ($default)";
+	    }
+	}
+    } else {
+	$default = $default_actions{$policy} || '';
+    }
+
+    fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
+
+    if ( defined $queue ) {
+	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
+	require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
+	my $queuenum = numeric_value( $queue );
+	fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;
+	$policy = "NFQUEUE --queue-num $queuenum";
+    } elsif ( $policy eq 'NONE' ) {
+	fatal_error "NONE policy not allowed with \"all\""
+	    if $clientwild || $serverwild;
+	fatal_error "NONE policy not allowed to/from firewall zone"
+	    if ( zone_type( $client ) == FIREWALL ) || ( zone_type( $server ) == FIREWALL );
+    }
+
+    unless ( $clientwild || $serverwild ) {
+	if ( zone_type( $server ) == BPORT ) {
+	    fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
+		unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
+	}
+    }
+
+    my $chain = "${client}2${server}";
+    my $chainref;
+
+    if ( defined $filter_table->{$chain} ) {
+	$chainref = $filter_table->{$chain};
+
+	if ( $chainref->{is_policy} ) {
+	    if ( $chainref->{provisional} ) {
+		$chainref->{provisional} = 0;
+		$chainref->{policy} = $policy;
+	    } else {
+		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
+	    }
+	} elsif ( $chainref->{policy} ) {
+	    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
+	} else {
+	    convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
+	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
+	}
+    } else {
+	$chainref = new_policy_chain $client, $server, $policy, 0;
+	push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
+    }
+    
+    $chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
+
+    if ( $synparams ne '' || $connlimit ne '' ) {
+	my $value = '';
+	fatal_error "Invalid CONNLIMIT ($connlimit)" if $connlimit =~ /^!/;
+	$value  = do_ratelimit $synparams, 'ACCEPT'  if $synparams ne '';
+	$value .= do_connlimit $connlimit            if $connlimit ne '';
+	$chainref->{synparams} = $value;
+	$chainref->{synchain}  = $chain
+    }
+
+    $chainref->{default}   = $default if $default;
+
+    if ( $clientwild ) {
+	if ( $serverwild ) {
+	    for my $zone ( @zonelist ) {
+		for my $zone1 ( @zonelist ) {
+		    set_policy_chain $client, $server, "${zone}2${zone1}", $chainref, $policy;
+		    print_policy $zone, $zone1, $policy, $chain;
+		}
+	    }
+	} else {
+	    for my $zone ( all_zones ) {
+		set_policy_chain $client, $server, "${zone}2${server}", $chainref, $policy;
+		print_policy $zone, $server, $policy, $chain;
+	    }
+	}
+    } elsif ( $serverwild ) {
+	for my $zone ( @zonelist ) {
+	    set_policy_chain $client, $server, "${client}2${zone}", $chainref, $policy;
+	    print_policy $client, $zone, $policy, $chain;
+	}
+	
+    } else {
+	print_policy $client, $server, $policy, $chain;
+    }
+}
+
 sub validate_policy()
 {
-    my %validpolicies = (
+    our %validpolicies = (
 			  ACCEPT => undef,
 			  REJECT => undef,
 			  DROP   => undef,
@@ -165,14 +295,14 @@ sub validate_policy()
 			  NONE => undef
 			  );
 
-    my %map = ( DROP_DEFAULT    => 'DROP' ,
-		REJECT_DEFAULT  => 'REJECT' ,
-		ACCEPT_DEFAULT  => 'ACCEPT' ,
-		QUEUE_DEFAULT   => 'QUEUE' ,
-	        NFQUEUE_DEFAULT => 'NFQUEUE' );
+    our %map = ( DROP_DEFAULT    => 'DROP' ,
+		 REJECT_DEFAULT  => 'REJECT' ,
+		 ACCEPT_DEFAULT  => 'ACCEPT' ,
+		 QUEUE_DEFAULT   => 'QUEUE' ,
+		 NFQUEUE_DEFAULT => 'NFQUEUE' );
 
     my $zone;
-    my @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
+    our @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
 
     for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
 	my $action = $config{$option};
@@ -210,132 +340,7 @@ sub validate_policy()
 
     first_entry "$doing $fn...";
 
-    while ( read_a_line ) {
-
-	my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) = split_line 3, 6, 'policy file';
-
-	$loglevel  = '' if $loglevel  eq '-';
-	$synparams = '' if $synparams eq '-';
-	$connlimit = '' if $connlimit eq '-';
-
-	my $clientwild = ( "\L$client" eq 'all' );
-
-	fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
-
-	my $serverwild = ( "\L$server" eq 'all' );
-
-	fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
-
-	my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
-
-	fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
-
-	fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
-
-	( $policy , my $queue ) = get_target_param $policy;
-
-	if ( $default ) {
-	    if ( "\L$default" eq 'none' ) {
-		$default = 'none';
-	    } else {
-		my $defaulttype = $targets{$default} || 0;
-
-		if ( $defaulttype & ACTION ) {
-		    unless ( $usedactions{$default} ) {
-			$usedactions{$default} = 1;
-			createactionchain $default;
-		    }
-		} else {
-		    fatal_error "Unknown Default Action ($default)";
-		}
-	    }
-	} else {
-	    $default = $default_actions{$policy} || '';
-	}
-
-	fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
-
-	if ( defined $queue ) {
-	    fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
-	    require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
-	    my $queuenum = numeric_value( $queue );
-	    fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;
-	    $policy = "NFQUEUE --queue-num $queuenum";
-	} elsif ( $policy eq 'NONE' ) {
-	    fatal_error "NONE policy not allowed with \"all\""
-		if $clientwild || $serverwild;
-	    fatal_error "NONE policy not allowed to/from firewall zone"
-		if ( zone_type( $client ) == FIREWALL ) || ( zone_type( $server ) == FIREWALL );
-	}
-
-	unless ( $clientwild || $serverwild ) {
-	    if ( zone_type( $server ) == BPORT ) {
-		fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
-		    unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
-	    }
-	}
-
-	my $chain = "${client}2${server}";
-	my $chainref;
-
-	if ( defined $filter_table->{$chain} ) {
-	    $chainref = $filter_table->{$chain};
-
-	    if ( $chainref->{is_policy} ) {
-		if ( $chainref->{provisional} ) {
-		    $chainref->{provisional} = 0;
-		    $chainref->{policy} = $policy;
-		} else {
-		    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
-		}
-	    } elsif ( $chainref->{policy} ) {
-		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
-	    } else {
-		convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
-		push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
-	    }
-	} else {
-	    $chainref = new_policy_chain $client, $server, $policy, 0;
-	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
-	}
-
-	$chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
-
-	if ( $synparams ne '' || $connlimit ne '' ) {
-	    my $value = '';
-	    fatal_error "Invalid CONNLIMIT ($connlimit)" if $connlimit =~ /^!/;
-	    $value  = do_ratelimit $synparams, 'ACCEPT'  if $synparams ne '';
-	    $value .= do_connlimit $connlimit            if $connlimit ne '';
-	    $chainref->{synparams} = $value;
-	    $chainref->{synchain}  = $chain
-	}
-
-	$chainref->{default}   = $default if $default;
-
-	if ( $clientwild ) {
-	    if ( $serverwild ) {
-		for my $zone ( @zonelist ) {
-		    for my $zone1 ( @zonelist ) {
-			set_policy_chain $client, $server, "${zone}2${zone1}", $chainref, $policy;
-			print_policy $zone, $zone1, $policy, $chain;
-		    }
-		}
-	    } else {
-		for my $zone ( all_zones ) {
-		    set_policy_chain $client, $server, "${zone}2${server}", $chainref, $policy;
-		    print_policy $zone, $server, $policy, $chain;
-		}
-	    }
-	} elsif ( $serverwild ) {
-	    for my $zone ( @zonelist ) {
-		set_policy_chain $client, $server, "${client}2${zone}", $chainref, $policy;
-		print_policy $client, $zone, $policy, $chain;
-	    }
-
-	} else {
-	    print_policy $client, $server, $policy, $chain;
-	}
-    }
+    process_a_policy while read_a_line;
 
     for $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {

@@ -353,6 +353,11 @@ sub add_a_provider( ) {
 	}
     }
 
+    unless ( $loose ) {
+	warning_message q(The 'proxyarp' option is dangerous when specified on a Provider interface) if get_interface_option( $interface, 'proxyarp' );
+	warning_message q(The 'proxyndp' option is dangerous when specified on a Provider interface) if get_interface_option( $interface, 'proxyndp' );
+    }
+
     $balance = $default_balance unless $balance;
 
     $providers{$table} = { provider  => $table,

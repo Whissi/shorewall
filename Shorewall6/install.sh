@@ -508,46 +508,46 @@ fi
 #
 # Install the Clear file
 #
-run_install $OWNERSHIP -m 0644 configfiles/clear ${PREFIX}/usr/share/shorewall6/configfiles/clear
+run_install $OWNERSHIP -m 0644 clear ${PREFIX}/usr/share/shorewall6/configfiles/clear
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/clear ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/clear ${PREFIX}/etc/shorewall6/clear
+    run_install $OWNERSHIP -m 0600 clear ${PREFIX}/etc/shorewall6/clear
     echo "Clear file installed as ${PREFIX}/etc/shorewall6/clear"
 fi
 #
 # Install the Isusable file
 #
-run_install $OWNERSHIP -m 0644 configfiles/isusable ${PREFIX}/usr/share/shorewall6/configfiles/isusable
+run_install $OWNERSHIP -m 0644 isusable ${PREFIX}/usr/share/shorewall6/configfiles/isusable
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/isusable ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/isusable ${PREFIX}/etc/shorewall6/isusable
+    run_install $OWNERSHIP -m 0600 isusable ${PREFIX}/etc/shorewall6/isusable
     echo "Isusable file installed as ${PREFIX}/etc/shorewall/isusable"
 fi
 #
 # Install the Refresh file
 #
-run_install $OWNERSHIP -m 0644 configfiles/refresh ${PREFIX}/usr/share/shorewall6/configfiles/refresh
+run_install $OWNERSHIP -m 0644 refresh ${PREFIX}/usr/share/shorewall6/configfiles/refresh
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/refresh ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/refresh ${PREFIX}/etc/shorewall6/refresh
+    run_install $OWNERSHIP -m 0600 refresh ${PREFIX}/etc/shorewall6/refresh
     echo "Refresh file installed as ${PREFIX}/etc/shorewall6/refresh"
 fi
 #
 # Install the Refreshed file
 #
-run_install $OWNERSHIP -m 0644 configfiles/refreshed ${PREFIX}/usr/share/shorewall6/configfiles/refreshed
+run_install $OWNERSHIP -m 0644 refreshed ${PREFIX}/usr/share/shorewall6/configfiles/refreshed
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/refreshed ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/refreshed ${PREFIX}/etc/shorewall6/refreshed
+    run_install $OWNERSHIP -m 0600 refreshed ${PREFIX}/etc/shorewall6/refreshed
     echo "Refreshed file installed as ${PREFIX}/etc/shorewall6/refreshed"
 fi
 #
 # Install the Tcclear file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcclear ${PREFIX}/usr/share/shorewall6/configfiles/tcclear
+run_install $OWNERSHIP -m 0644 tcclear ${PREFIX}/usr/share/shorewall6/configfiles/tcclear
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcclear ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcclear ${PREFIX}/etc/shorewall6/tcclear
+    run_install $OWNERSHIP -m 0600 tcclear ${PREFIX}/etc/shorewall6/tcclear
     echo "Tcclear file installed as ${PREFIX}/etc/shorewall6/tcclear"
 fi
 #

@@ -495,6 +495,8 @@ sub add_a_provider( ) {
     emit "fi\n";
 
     push @providers, $table;
+
+    progress_message "   Provider \"$currentline\" $done";
 }
 
 sub add_an_rtrule( ) {
@@ -586,134 +588,131 @@ sub setup_null_routing() {
     } 
 }
 
+sub start_providers() {
+    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
+    
+    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
+
+    emit "\nif [ -z \"\$NOROUTES\" ]; then";
+
+    push_indent;
+
+    emit  ( '#',
+	    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
+	    '#',
+	    'undo_routing' );
+
+    unless ( $config{KEEP_RT_TABLES} ) {
+	emit  (
+	       '#',
+	       '# Save current routing table database so that it can be restored later',
+	       '#',
+	       'cp /etc/iproute2/rt_tables ${VARDIR}/' );
+	
+    }
+
+    emit  ( '#',
+	    '# Capture the default route(s) if we don\'t have it (them) already.',
+	    '#',
+	    '[ -f ${VARDIR}/default_route ] || $IP -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+	    '#',
+	    '# Initialize the file that holds \'undo\' commands',
+	    '#',
+	    '> ${VARDIR}/undo_routing' );
+    
+    save_progress_message 'Adding Providers...';
+    
+    emit 'DEFAULT_ROUTE=';
+    emit 'FALLBACK_ROUTE=';
+    emit '';
+}
+
+sub finish_providers() {
+    if ( $balancing ) {
+	my $table = MAIN_TABLE;
+
+	if ( $config{USE_DEFAULT_RT} ) {
+	    emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE . ' pref 999',
+		   "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
+		   qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
+		   qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
+		   '' );
+	    $table = DEFAULT_TABLE;
+	}
+
+	emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
+	emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
+	emit  ( "    qt \$IP -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
+	emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
+		'else',
+		'    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
+
+	if ( $config{RESTORE_DEFAULT_ROUTE} ) {
+	    emit '    restore_default_route && error_message "NOTICE: Default route restored"'
+	} else {
+	    emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
+	}
+	
+	emit(   'fi',
+		'' );
+    } else {
+	emit ( '#',
+	       '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
+	       '#',
+	       'restore_default_route' ,
+	       '' );
+    }
+
+    if ( $fallback ) {
+	emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' ,
+		"    run_ip route replace default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" ,
+		"    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
+		'fi',
+		'' );
+    }
+
+    unless ( $config{KEEP_RT_TABLES} ) {
+	emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
+	      '    cat > /etc/iproute2/rt_tables <<EOF' );
+
+	push_indent;
+
+	emit_unindented join( "\n",
+			      '#',
+			      '# reserved values',
+			      '#',
+			      LOCAL_TABLE   . "\tlocal",
+			      MAIN_TABLE    . "\tmain",
+			      DEFAULT_TABLE . "\tdefault",
+			      "0\tunspec",
+			      '#',
+			      '# local',
+			      '#',
+			      "EOF\n" );
+
+	emit "echocommand=\$(find_echo)\n";
+
+	for my $table ( @providers ) {
+	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
+	}
+
+	pop_indent;
+
+	emit "fi\n";
+    }
+}
+
 sub setup_providers() {
     my $providers = 0;
 
     my $fn = open_file 'providers';
 
-    while ( read_a_line ) {
-	unless ( $providers ) {
-	    progress_message2 "$doing $fn ...";
+    first_entry sub() { progress_message2 "$doing $fn..."; start_providers; };
 
-	    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
-
-	    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
-
-	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
-
-	    push_indent;
-
-	    emit  ( '#',
-		    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
-		    '#',
-		    'undo_routing' );
-
-	    unless ( $config{KEEP_RT_TABLES} ) {
-		emit  (
-		       '#',
-		       '# Save current routing table database so that it can be restored later',
-		       '#',
-		       'cp /etc/iproute2/rt_tables ${VARDIR}/' );
-
-	    }
-
-	    emit  ( '#',
-		    '# Capture the default route(s) if we don\'t have it (them) already.',
-		    '#',
-		    '[ -f ${VARDIR}/default_route ] || $IP -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
-		    '#',
-		    '# Initialize the file that holds \'undo\' commands',
-		    '#',
-		    '> ${VARDIR}/undo_routing' );
-
-	    save_progress_message 'Adding Providers...';
-
-	    emit 'DEFAULT_ROUTE=';
-	    emit 'FALLBACK_ROUTE=';
-	    emit '';
-	}
-
-	add_a_provider;
-
-	$providers++;
-
-	progress_message "   Provider \"$currentline\" $done";
-
-    }
+    add_a_provider, $providers++ while read_a_line;
 
     if ( $providers ) {
-	if ( $balancing ) {
-	    my $table = MAIN_TABLE;
-
-	    if ( $config{USE_DEFAULT_RT} ) {
-		emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE . ' pref 999',
-		       "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
-		       qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
-		       qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
-		       '' );
-		$table = DEFAULT_TABLE;
-	    }
-
-	    emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
-	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
-	    emit  ( "    qt \$IP -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
-	    emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
-		    'else',
-		    '    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
-
-	    if ( $config{RESTORE_DEFAULT_ROUTE} ) {
-		emit '    restore_default_route && error_message "NOTICE: Default route restored"'
-	    } else {
-		emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
-	    }
-
-	    emit(   'fi',
-		    '' );
-	} else {
-	    emit ( '#',
-		   '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
-		   '#',
-		   'restore_default_route' ,
-		   '' );
-	}
-
-	if ( $fallback ) {
-	    emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' ,
-		    "    run_ip route replace default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" ,
-		    "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
-		    'fi',
-		    '' );
-	}
-
-	unless ( $config{KEEP_RT_TABLES} ) {
-	    emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
-		  '    cat > /etc/iproute2/rt_tables <<EOF' );
-
-	    push_indent;
-
-	    emit_unindented join( "\n",
-				  '#',
-				  '# reserved values',
-				  '#',
-				  LOCAL_TABLE   . "\tlocal",
-				  MAIN_TABLE    . "\tmain",
-				  DEFAULT_TABLE . "\tdefault",
-				  "0\tunspec",
-				  '#',
-				  '# local',
-				  '#',
-				  "EOF\n" );
-
-	    emit "echocommand=\$(find_echo)\n";
-
-	    for my $table ( @providers ) {
-		emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
-	    }
-
-	    pop_indent;
-
-	    emit "fi\n";
-	}
+	finish_providers;
 
 	my $fn = open_file 'route_rules';
 
@@ -722,7 +721,7 @@ sub setup_providers() {
 	    first_entry "$doing $fn...";
 
 	    emit '';
-
+	    
 	    add_an_rtrule while read_a_line;
 	}
 
@@ -752,6 +751,7 @@ sub setup_providers() {
 	    emit "fi\n";
 	}
     }
+
 }
 
 sub lookup_provider( $ ) {

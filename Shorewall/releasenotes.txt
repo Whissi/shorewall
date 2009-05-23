@@ -1,4 +1,4 @@
-Shorewall 4.3.11
+Shorewall 4.3.12
 
 Shorewall 4.3 is the development thread for Shorewall 4.4 which will be
 released late in 2009.
@@ -80,18 +80,13 @@ released late in 2009.
     devices 10 and greater.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 11
+          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 12
 ----------------------------------------------------------------------------
 
-1.  Previously, specifying a source port for SCTP in
-    /etc/shorewall/tcfilters would cause an invalid rule to be
-    generated.
+1)  A 'large quantum' warning log message during restart has been
+    eliminated. The log message occurred when an interface with a large
+    OUT-BANDWIDTH was defined in /etc/shorewall/tcdevices.
 
-2.  The list of networks returned by the 'shorewall iprange' command
-    was not minimal.
-
-3.  When AUTOMAKE=Yes, the 'shorewall start' ('shorewall6 start')
-    command used the wrong compiled script to start the firewall.
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -99,59 +94,11 @@ released late in 2009.
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 3 . 11
+                N E W   F E A T U R E S   I N   4 . 3 . 12
 ----------------------------------------------------------------------------
 
-1)  Shorewall attaches an SFQ queuing discipline to each leaf HTB
-    class. SFQ ensures that each 'flow' gets equal access to the
-    interface. 
+None.
 
-    The default definition of a 'flow' corresponds to a TCP
-    connection. So if one internal system is running BitTorrent, for
-    example, it can have lots of 'flows' and can thus take up a larger
-    share of the bandwidth than a system having only a single active
-    connection.
-
-    The 'flow' classifier (module cls_flow) works around this by
-    letting you define what a 'flow' is. The clasifier must be used
-    carefully or it can block off all traffic on an interface!
-
-    To use the 'flow' classifier, you specify 'flow=<keys>' in the
-    OPTIONS column of an HTB leaf class (one that has no
-    sub-classes). I recommend that you use the following:
-
-    	Shaping internet-bound traffic 	   flow=nfct-src
-	Shaping traffic bound for your
-	local net			   flow=dst
-
-    These will cause a 'flow' to consists of the traffic to/from each
-    internal system.
-
-2)  In order to generalize support for learning the gateway for dynamic
-    interfaces, a new 'findgw' extension script (user exit) has been
-    added.
-
-    The exit will be invoked in a function that has a single argument:
-
-    	$1 = <name of an interface>
-
-    If the function can determine the gateway for the passed interface,
-    it should write the gateway to standard out. Here is a sample
-    /etc/shorewall/findgw that works with dhclient (dhcp3) in Debian
-    Lenny:
-
-    if [ -f /var/lib/dhcp3/dhclient-${1}.leases ]; then
-       grep 'option routers' /var/lib/dhcp3/dhclient-${1}.leases |\
-          tail -n 1 |\
-	  while read j1 j2 gateway; do echo $gateway; return 0; done
-    fi
-
-    The same code works on Ubuntu Jaunty if you replace '.leases' with
-    '.lease' (don't you just love the consistency between
-    distributions?).
-
-3)  An IPV6 'Trcrt' macro has been added.
-   
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

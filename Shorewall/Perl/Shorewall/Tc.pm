@@ -951,6 +951,7 @@ sub setup_traffic_shaping() {
 	my $devref  = $tcdevices{$device};
 	my $defmark = in_hexp ( $devref->{default} || 0 );
 	my $devnum  = in_hexp $devref->{number};
+	my $r2q     = calculate_r2q $devref->{out_bandwidth};
 
 	emit "if interface_is_up $device; then";
 
@@ -959,7 +960,7 @@ sub setup_traffic_shaping() {
 	emit ( "${dev}_exists=Yes",
 	       "qt \$TC qdisc del dev $device root",
 	       "qt \$TC qdisc del dev $device ingress",
-	       "run_tc qdisc add dev $device root handle $devnum: htb default $defmark",
+	       "run_tc qdisc add dev $device root handle $devnum: htb default $defmark r2q $r2q",
 	       "${dev}_mtu=\$(get_device_mtu $device)",
 	       "${dev}_mtu1=\$(get_device_mtu1 $device)",
 	       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1"

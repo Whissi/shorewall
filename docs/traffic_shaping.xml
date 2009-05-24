@@ -1367,6 +1367,73 @@ eth0          -                1000kbit               hfsc</programlisting>
 1:20                 2         500kbit            full     1
 1:10:11              3         400kbit:53ms:1500b full     2
 1:10:12              4         100kbit:30ms:1500b full     2</programlisting>
+
+    <para>The following sub-section offers some notes about the
+    article.</para>
+
+    <section>
+      <title>Where Did all of those Magic Numbers come from?</title>
+
+      <para>As you read the article, numbers seem to be introduced out of thin
+      air. I'll try to shed some light on those.</para>
+
+      <para>There is very clear development of these numbers:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>12ms to transfer a 1500b packet at 1000kbits/second.</para>
+        </listitem>
+
+        <listitem>
+          <para>100kbits per second with 1500b packets, requires 8 packets per
+          second.</para>
+        </listitem>
+
+        <listitem>
+          <para>A packet from class 1:12 must be sent every 120ms.</para>
+        </listitem>
+
+        <listitem>
+          <para>Total transmit delay can be no more than 132ms (120 +
+          12).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>We then learn that the queuing latency can be reduced to 30ms if
+      we use a two-part service curve whose first part is 400kbits/second.
+      Where did those come from?</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The latency is calculated from the rate. If it takes 12ms to
+          transmit a 1500 byte packet at 1000kbits/second, it takes 30ms to
+          transmit a 1500b at 400kbits/second.</para>
+        </listitem>
+
+        <listitem>
+          <para>For the slope of the first part of the service curve, in
+          theory we can pick any number between 100 and 500 (the parent
+          class's ceiling) with higher numbers providing lower latency.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The final curious number is the latency for class 1:11 - 52.5ms.
+      It is a consequence of everything that has gone before.</para>
+
+      <para>To acheive 400kbits/second with 1500-byte packets, 33.33 packets
+      per second are required. So a packet from class 1:11 must be sent every
+      30 ms. As the article says, "...the maximum transmission delay of this
+      class increases from 30ms to a total of 52.5 ms.". So we are looking for
+      an additional 22.5 ms.</para>
+
+      <para>Assume that both class 1:11 and 1:12 transmit for 30 ms at
+      400kbits/second. That is a total of 800kbits/second for 30ms. So Class
+      1:11 is punished for the excess. How long is the punishment? The two
+      classes sent 24,000 bits in 30ms; they are only allowed 0.030 * 500,000
+      = 15,000. So they are 9,000 bits over their quota. The amount of time
+      required to transmit 9,000 bits at 400,000 bits/second is
+      22.5ms!.</para>
+    </section>
   </section>
 
   <section id="Downloads">

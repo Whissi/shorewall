@@ -1008,7 +1008,7 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device root handle $devnum: htb default $defmark r2q $r2q" ,
 		   "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1" );
 	} else {
-	    emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmark" ,
+	    emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmar r2q $r2qk" ,
 		   "run_tc class add dev $device parent $devnum: classid $devnum:1 hfsc sc rate $devref->{out_bandwidth} ul rate $devref->{out_bandwidth}" );
 	}
 

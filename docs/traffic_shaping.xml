@@ -64,13 +64,18 @@
 
     <itemizedlist>
       <listitem>
-        <para>The LARTC HOWTO: <ulink
+        <para><emphasis>The LARTC HOWTO</emphasis>: <ulink
         url="http://www.lartc.org">http://www.lartc.org</ulink></para>
       </listitem>
 
       <listitem>
-        <para>The HTB User's Guide: <ulink
+        <para>T<emphasis>he HTB User's Guide</emphasis>: <ulink
         url="http://luxik.cdi.cz/~devik/qos/htb/manual/userg.htm">http://luxik.cdi.cz/~devik/qos/htb/manual/userg.htm</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>HFSC Scheduling with Linux</emphasis>: <ulink
+        url="http://linux-ip.net/articles/hfsc.en/">http://linux-ip.net/articles/hfsc.en/</ulink></para>
       </listitem>
 
       <listitem>
@@ -117,15 +122,17 @@
     your bandwidth, this queuing algorithm will not stop it from doing
     so.</para>
 
-    <para>For Shorewall traffic shaping we use two algorithms, one is called
-    HTB (Hierarchical Token Bucket) and SFQ (Stochastic Fairness Queuing). SFQ
-    is easy to explain: it just tries to track your connections (tcp or udp
-    streams) and balances the traffic between them. This normally works well.
-    HTB allows you to define a set of classes, and you can put the traffic you
-    want into these classes. You can define minimum and maximum bandwidth
-    settings for those classes and order them hierarchically (the less
-    prioritized classes only get bandwidth if the more important have what
-    they need). Shorewall builtin traffic shaping allows you to define these
+    <para>For Shorewall traffic shaping we use three algorithms: HTB
+    (Hierarchical Token Bucket), HFSC (Hierarchical Fair Service Curves) and
+    SFQ (Stochastic Fairness Queuing). SFQ is easy to explain: it just tries
+    to track your connections (tcp or udp streams) and balances the traffic
+    between them. This normally works well. HTB and HFSC allow you to define a
+    set of classes, and you can put the traffic you want into these classes.
+    You can define minimum and maximum bandwidth settings for those classes
+    and order them hierarchically (the less prioritized classes only get
+    bandwidth if the more important have what they need). Additionally, HFSC
+    allows you to specify the maximum queuing delay that a packet may
+    experience. Shorewall builtin traffic shaping allows you to define these
     classes (and their bandwidth limits), and it uses SFQ inside these classes
     to make sure, that different data streams are handled equally. If SFQ's
     default notion of a 'stream' doesn't work well for you, you can change it
@@ -308,7 +315,9 @@
       <para>This file allows you to define the incoming and outgoing bandwidth
       for the devices you want traffic shaping to be enabled. That means, if
       you want to use traffic shaping for a device, you have to define it
-      here.</para>
+      here. For additional information, see <ulink
+      url="manpages/shorewall-tcdevices.html">shorewall-tcdevices</ulink>
+      (5).</para>
 
       <para>Columns in the file are as follows:</para>
 
@@ -378,6 +387,18 @@
                 will be associated with classes on this interface.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>hfsc</term>
+
+              <listitem>
+                <para>Shorewall normally uses the <firstterm>Hierarchical
+                Token Bucket</firstterm> queuing discipline. When
+                <option>hfsc</option> is specified, the
+                <firstterm>Hierarchical Fair Service Curves</firstterm>
+                discipline is used instead.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </listitem>
 
@@ -411,7 +432,9 @@ ppp0           6000kbit         500kbit</programlisting>
       <title>/etc/shorewall/tcclasses</title>
 
       <para>This file allows you to define the actual classes that are used to
-      split the outgoing traffic.</para>
+      split the outgoing traffic. For additional information, see <ulink
+      url="manpages/shorewall-tcclasses.html">shorewall-tcclasses</ulink>
+      (5).</para>
 
       <itemizedlist>
         <listitem>
@@ -453,6 +476,12 @@ ppp0           6000kbit         500kbit</programlisting>
           role="bold">If the sum of the RATEs for all classes assigned to an
           INTERFACE exceed that interfaces's OUT-BANDWIDTH, then the
           OUT-BANDWIDTH limit will not be honored.</emphasis></para>
+
+          <para>When using HFSC, this column may contain 1, 2 or 3 pieces of
+          information separated by colons (":"). In addition to the minimum
+          bandwidth, leaf classes must specify DMAX (maximum delay in
+          milliseconds) and may optionally specify UMAX (the largest packet
+          expected in the class).</para>
         </listitem>
 
         <listitem>
@@ -1313,6 +1342,31 @@ ppp0            4       90kbit          200kbit         3           default</pro
     your domU(s) using the <command>ethtool</command> utility. See the <ulink
     url="XenMyWay-Routed.html">one of the Xen articles</ulink> for
     instructions.</para>
+  </section>
+
+  <section>
+    <title>An HFSC Example</title>
+
+    <para>As mentioned at the top of this article, there is an excellent
+    introduction to HFSC at <ulink
+    url="http://linux-ip.net/articles/hfsc.en/">http://linux-ip.net/articles/hfsc.en/</ulink>.
+    At the end of that article are 'tc' commands that implement the
+    configuration in the article. Those tc commands correspond to the
+    following Shorewall traffic shaping configuration.</para>
+
+    <para><filename>/etc/shorewall/tcdevices</filename>:</para>
+
+    <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH          OPTIONS
+eth0          -                1000kbit               hfsc</programlisting>
+
+    <para><filename>/etc/shorewall/tcclasses</filename>:</para>
+
+    <programlisting>#INTERFACE:CLASS     MARK      RATE:              CEIL     PRIORITY      OPTIONS
+#                              DMAX:UMAX
+1:10                 1         500kbit            full     1
+1:20                 2         500kbit            full     1
+1:10:11              3         400kbit:53ms:1500b full     2
+1:10:12              4         100kbit:30ms:1500b full     2</programlisting>
   </section>
 
   <section id="Downloads">

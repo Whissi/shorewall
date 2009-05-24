@@ -664,6 +664,7 @@ sub validate_tc_class( ) {
 	#
 	my $parentref = $tcref->{$parentclass};
 	fatal_error "Unknown Parent class ($parentclass)" unless $parentref && $parentref->{occurs} == 1;
+	fatal_error "The parent class ($parentclass) specifies UMAX and/or DMAX; it cannot serve as a parent" if $parentref->{dmax};
 	$parentref->{leaf} = 0;
     }
 
@@ -677,7 +678,7 @@ sub validate_tc_class( ) {
 	$rate = convert_rate ( $full, $trate, 'RATE' );
 	$dmax = convert_delay( $dmax );
 	$umax = convert_size( $umax );
-	fatal_error "A umax or dmax value must be specified for an hfsc class" unless $umax || $dmax;
+	fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax; 
     } else {
 	$rate = convert_rate ( $full, $rate, 'RATE' );
     }
@@ -1008,7 +1009,7 @@ sub setup_traffic_shaping() {
 	    emit ( "run_tc qdisc add dev $device root handle $devnum: htb default $defmark r2q $r2q" ,
 		   "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1" );
 	} else {
-	    emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmar r2q $r2qk" ,
+	    emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmark" ,
 		   "run_tc class add dev $device parent $devnum: classid $devnum:1 hfsc sc rate $devref->{out_bandwidth} ul rate $devref->{out_bandwidth}" );
 	}
 
@@ -1097,29 +1098,15 @@ sub setup_traffic_shaping() {
 	if ( $devref->{qdisc} eq 'htb' ) {
 	    emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 	} else {
-	    my $umax = $tcref->{umax};
 	    my $dmax = $tcref->{dmax};
 
-	    unless ( $dmax ) {
-		#
-		# We must calculate the dmax but we know that umax has been specified
-		#
-		my $packetbits        = 8 * $umax;
-		my $rateinbits        = 1000 * $tcref->{rate};
-		my $fullinbytes       = $devref->{out_bandwidth};
-		$fullinbytes =~ s/kbit//;
-		my $fullinbits        = 1000 * $fullinbytes;
-		my $packetspersecond  = $rateinbits / $packetbits;
-		my $totaldelayinms    = 1000 * ( 1 - ( $rateinbits / $fullinbits ) );
-		#
-		# In this calculation, '3' is a magic number. We can adjust it as necessary as we learn about this QDISC
-		#
-		$dmax = int( 3 * $totaldelayinms / $packetspersecond );
+	    if ( $dmax ) {
+		my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
+		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
+	    } else {
+		warning_message "Leaf HFSC class $classid does not specify UMAX or DMAX" if $tcref->{leaf};
+		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
 	    }
-		
-	    $umax = $umax ? "${umax}b" : "\$${dev}_mtu";
-
-	    emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
 	}
 	    
 	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit 127 perturb 10" ) if $tcref->{leaf} && ! $tcref->{pfifo};

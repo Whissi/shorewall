@@ -170,7 +170,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">RATE</emphasis> -
-        <emphasis>rate</emphasis></term>
+        <emphasis>rate</emphasis>[:<emphasis>dmax</emphasis>[:<emphasis>umax</emphasis>]]</term>
 
         <listitem>
           <para>The minimum bandwidth this class should get, when the traffic
@@ -179,6 +179,19 @@
           honored. Similarly, if the sum of the rates of sub-classes of a
           class exceed the CEIL of the parent class, things don't work
           well.</para>
+
+          <para>When using the HFSC queuing discipline, leaf classes should
+          specify <replaceable>dmax</replaceable>, the maximum delay in
+          milliseconds that the first queued packet for this class should
+          experience. May be expressed as an integer, optionally followed by
+          'ms' with no intervening white space (e.g., 10ms).</para>
+
+          <para>HFSC leaf classes may also specify
+          <replaceable>umax</replaceable>, the largest packet expected in this
+          class. May be expressed as an integer. The unit of measure is
+          <emphasis>bytes</emphasis> and the integer may be optionally
+          followed by 'b' with no intervening white space (e.g., 800b).
+          </para>
         </listitem>
       </varlistentry>
 
@@ -388,7 +401,7 @@
                 <para>Those that begin with "nfct-" are Netfilter connection
                 tracking fields. As shown above, we recommend flow=nfct-src;
                 that means that we want to use the source IP address
-                <emphasis>before NAT</emphasis> as the key. </para>
+                <emphasis>before NAT</emphasis> as the key.</para>
               </listitem>
             </varlistentry>
           </variablelist>

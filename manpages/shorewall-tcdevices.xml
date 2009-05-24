@@ -156,13 +156,18 @@
       <varlistentry>
         <term><emphasis role="bold">OPTIONS</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
-        role="bold">classify</emphasis>}</term>
+        role="bold">{classify</emphasis>|hfsc} ,...}</term>
 
         <listitem>
-          <para>classify ― When specified, Shorewall will not generate tc or
-          Netfilter rules to classify traffic based on packet marks. You must
-          do all classification using CLASSIFY rules in <ulink
+          <para><option>classify</option> ― When specified, Shorewall will not
+          generate tc or Netfilter rules to classify traffic based on packet
+          marks. You must do all classification using CLASSIFY rules in <ulink
           url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5).</para>
+
+          <para><option>hfsc</option> - Shorewall normally uses the
+          <firstterm>Hierarchical Token Bucket</firstterm> queuing discipline.
+          When <option>hfsc</option> is specified, the <firstterm>Hierarchical
+          Fair Service Curves</firstterm> discipline is used instead.</para>
         </listitem>
       </varlistentry>
 

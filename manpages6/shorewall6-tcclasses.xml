@@ -176,7 +176,7 @@
           class exceed the CEIL of the parent class, things don't work
           well.</para>
 
-          <para>When using the HFSC queuing discipline, leaf classes should
+          <para>When using the HFSC queuing discipline, leaf classes may
           specify <replaceable>dmax</replaceable>, the maximum delay in
           milliseconds that the first queued packet for this class should
           experience. May be expressed as an integer, optionally followed by
@@ -186,7 +186,9 @@
           <replaceable>umax</replaceable>, the largest packet expected in this
           class. May be expressed as an integer. The unit of measure is
           <emphasis>bytes</emphasis> and the integer may be optionally
-          followed by 'b' with no intervening white space (e.g., 800b).</para>
+          followed by 'b' with no intervening white space (e.g., 800b).
+          <replaceable>umax</replaceable> may only be given if
+          <replaceable>dmax</replaceable> is also given.</para>
         </listitem>
       </varlistentry>
 
@@ -240,8 +242,6 @@
               <listitem>
                 <para>This is the default class for that interface where all
                 traffic should go, that is not classified otherwise.</para>
-
-                <para></para>
 
                 <note>
                   <para>You must define <emphasis

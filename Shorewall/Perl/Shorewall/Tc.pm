@@ -1104,7 +1104,6 @@ sub setup_traffic_shaping() {
 		my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
 		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
 	    } else {
-		warning_message "Leaf HFSC class $classid does not specify UMAX or DMAX" if $tcref->{leaf};
 		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
 	    }
 	}

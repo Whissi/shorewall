@@ -1986,9 +1986,9 @@ sub determine_capabilities( $ ) {
 
     $capabilities{RAW_TABLE} = qt1( "$iptables -t raw -L -n" );
 
-    my $ipset = $config{IPSET} || 'tc';
+    my $ipset = $config{IPSET} || 'ipset';
 
-    $ipset = which 'ipset' unless $ipset =~ '//';
+    $ipset = which $ipset unless $ipset =~ '//';
 
     if ( $ipset && -x $ipset ) {
 	qt( "$ipset -X $sillyname" );

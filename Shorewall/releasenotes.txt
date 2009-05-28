@@ -156,10 +156,24 @@ None.
 2)  Support for ipset bindings has been removed. Jozsef Kadlecsik has
     already removed such support from ipset itself.
 
-3)  A LENGTH field has been added to the tcfilters file. The value must
-    be a numeric power of two between 32 and 8192 inclusive. Packets
-    with a total length that is strictly less that the specified value
-    will match the rule. 
+3)  Optional TOS and LENGTH fields have been added to the tcfilters
+    file.
+
+    The TOS field may contain any of the following:
+
+    	tos-minimize-delay
+	tos-maximuze-throughput
+	tos-maximize-reliability
+	tos-minimize-cost
+	tos-normal-service
+	Hex-number
+	Hex-number/Hex-number
+
+    The hex numbers must have exactly two digits.
+
+    The LENGTH value must be a numeric power of two between 32 and 8192
+    inclusive. Packets with a total length that is strictly less that
+    the specified value will match the rule. 
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

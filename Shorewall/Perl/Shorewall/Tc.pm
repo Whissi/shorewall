@@ -139,6 +139,11 @@ our %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
+our %tosoptions = ( 'tos-minimize-delay'       => 'tos=0x10/0x10' ,
+		    'tos-maximize-throughput'  => 'tos=0x08/0x08' ,
+		    'tos-maximize-reliability' => 'tos=0x04/0x04' ,
+		    'tos-minimize-cost'        => 'tos=0x02/0x02' ,
+		    'tos-normal-service'       => 'tos=0x00/0x1e' );
 our %classids;
 
 our @deferred_rules;
@@ -589,13 +594,6 @@ sub dev_by_number( $ ) {
 
 sub validate_tc_class( ) {
     my ( $devclass, $mark, $rate, $ceil, $prio, $options ) = split_line 4, 6, 'tcclasses file';
-
-    my %tosoptions = ( 'tos-minimize-delay'       => 'tos=0x10/0x10' ,
-		       'tos-maximize-throughput'  => 'tos=0x08/0x08' ,
-		       'tos-maximize-reliability' => 'tos=0x04/0x04' ,
-		       'tos-minimize-cost'        => 'tos=0x02/0x02' ,
-		       'tos-normal-service'       => 'tos=0x00/0x1e' );
-
     my $classnumber = 0;
     my $devref;
     my $device = $devclass;
@@ -784,7 +782,7 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 # Process a record from the tcfilters file
 #
 sub process_tc_filter( ) {
-    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $length ) = split_line 2, 7, 'tcfilters file';
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 2, 8, 'tcfilters file';
     
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
@@ -819,6 +817,23 @@ sub process_tc_filter( ) {
 	$rule .= "\\\n   match ip dst $net/$mask";
     }
 
+    if ( $tos ne '-' ) {
+	my $tosval = $tosoptions{$tos};
+	my $mask;
+	$tos = $tosval if $tosval;
+
+	if ( $tos =~ /^0x[0-9a-f]{2}$/ ) {
+	    $mask = '0xff';
+	} elsif ( $tos =~ /^(0x[0-9a-f]{2})\/(0x[0-9a-f]{2})$/ ) {
+	    $tos = $1;
+	    $mask = $2;
+	} else {
+	    fatal_error "Invalid TOS ($tos)";
+	}
+
+	$rule .= "\\\n  match ip tos $tos $mask";
+    }
+	
     if ( $length ne '-' ) {
 	my $len = numeric_value( $length ) || 0;
 	my $mask = $validlengths{$len};

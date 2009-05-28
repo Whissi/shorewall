@@ -119,6 +119,12 @@ ACCEPT       +sshok      $FW      tcp      22</programlisting></para>
         <filename>/etc/shorewall/init (it works for me; your mileage may
         vary)</filename>:</para>
 
+        <programlisting>if [ "$COMMAND" = start ]; then
+    ipset -F
+    ipset -X
+    ipset -R &lt; /etc/shorewall/ipsets
+fi</programlisting>
+
         <para>The file <filename>/etc/shorewall/ipsets</filename> will
         normally be produced using the <command>ipset -S</command>
         command.</para>

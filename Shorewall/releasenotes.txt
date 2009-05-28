@@ -81,12 +81,15 @@ released late in 2009.
     class Ids in numeric sequence. In 4.3.9, that didn't work correctly
     because Shorewall was generating the sequence "..8,9,10,11..." when
     the correct sequence was "...8,9,a,b,...". Shorewall now treats
-    class IDs as hex, like 'tc' and 'iptables' do.
+    class IDs as hex, as do 'tc' and 'iptables'.
 
     This should only be an issue if you have more than 9 interfaces
     defined in /etc/shorewall/tcdevices and if you use class IDs in
-    /etc/shorewall/tcrules. You will need to renumber the class IDs for
-    devices 10 and greater.
+    /etc/shorewall/tcrules or /etc/shorewall/tcfilters. You will need
+    to renumber the class IDs for devices 10 and greater.
+
+6)  Jozsef Kadlecsik has removed the set binding capability from ipset
+    3.1. As a consequence, Shorewall 4.3 no longer supports set binding.
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 12

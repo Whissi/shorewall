@@ -356,8 +356,6 @@ sub generate_script_3($) {
 		   '',
 		   'if [ "$COMMAND" = start ]; then' ,
 		   '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		   '        $IPSET -U :all: :all:' ,
-		   '        $IPSET -U :all: :default:' ,
 		   '        $IPSET -F' ,
 		   '        $IPSET -X' ,
 		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,

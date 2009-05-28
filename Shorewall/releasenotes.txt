@@ -153,6 +153,14 @@ None.
                  OUT-BANDWIDTH. Maximum delay is 10ms. Maximum packet
                  size is 1500 bytes.
 
+2)  Support for ipset bindings has been removed. Jozsef Kadlecsik has
+    already removed such support from ipset itself.
+
+3)  A LENGTH field has been added to the tcfilters file. The value must
+    be a numeric power of two between 32 and 8192 inclusive. Packets
+    with a total length that is strictly less that the specified value
+    will match the rule. 
+
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
 ----------------------------------------------------------------------------

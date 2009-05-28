@@ -778,11 +778,13 @@ sub validate_tc_class( ) {
     progress_message "  Tcclass \"$currentline\" $done.";
 }
 
+my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0xff00', 512 => '0xfe00', 1024 => '0xfc00', 2048 => '0xf800', 4096 => '0xf000', 8192 => '0xe000' );
+
 #
 # Process a record from the tcfilters file
 #
 sub process_tc_filter( ) {
-    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist ) = split_line 2, 6, 'tcfilters file';
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $length ) = split_line 2, 7, 'tcfilters file';
     
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
@@ -816,6 +818,13 @@ sub process_tc_filter( ) {
 	my ( $net , $mask ) = decompose_net( $dest );
 	$rule .= "\\\n   match ip dst $net/$mask";
     }
+
+    if ( $length ne '-' ) {
+	my $len = numeric_value( $length ) || 0;
+	my $mask = $validlengths{$len};
+	fatal_error "Invalid LENGTH ($length)" unless $mask;
+	$rule .="\\\n   match u16 0x0000 $mask at 2";
+    }      
 
     my $protonumber = 0;
 

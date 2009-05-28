@@ -315,9 +315,9 @@ sub generate_script_3($) {
 	    emit 'echo MODULESDIR="$MODULESDIR" > ${VARDIR}/.modulesdir';
 	    emit 'cat > ${VARDIR}/.modules << EOF';
 	    open_file $fn;
-	    while ( read_a_line ) {
-		emit_unindented $currentline;
-	    }
+
+	    emit_unindented $currentline while read_a_line;
+
 	    emit_unindented 'EOF';
 	    emit 'reload_kernel_modules < ${VARDIR}/.modules';
 	} else {

@@ -471,7 +471,7 @@ sub generate_script_3($) {
     fi
 EOF
     pop_indent;
-    setup_forwarding( $family );
+    setup_forwarding( $family , 1 );
     push_indent;
     emit<<'EOF';
     set_state "Started"
@@ -480,7 +480,7 @@ else
     if [ $COMMAND = refresh ]; then
         chainlist_reload
 EOF
-    setup_forwarding( $family );
+    setup_forwarding( $family , 0 );
     emit<<'EOF';
         run_refreshed_exit
         do_iptables -N shorewall
@@ -490,7 +490,7 @@ EOF
         restore_dynamic_rules
         conditionally_flush_conntrack
 EOF
-    setup_forwarding( $family );
+    setup_forwarding( $family , 0 );
     emit<<'EOF';
         run_start_exit
         do_iptables -N shorewall

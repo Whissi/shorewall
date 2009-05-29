@@ -219,11 +219,12 @@ sub setup_forwarding( $$ ) {
 	my $interfaces = find_interfaces_by_option 'forward';
 
 	if ( @$interfaces ) {
+	    progress_message2 "$doing Interface forwarding..." if $first;
 
 	    push_indent;
 	    push_indent;
 
-	    save_progress_message 'Setting up IPv6 Interface Forwarding...' if $first;
+	    save_progress_message 'Setting up IPv6 Interface Forwarding...';
 
 	    for my $interface ( @$interfaces ) {
 		my $file = "/proc/sys/net/ipv6/conf/$interface/forwarding";

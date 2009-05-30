@@ -12,7 +12,7 @@
     <refname>routestopped</refname>
 
     <refpurpose>The Shorewall file that governs what traffic flows through the
-    firewall while it is in 'stopped' state.</refpurpose>
+    firewall while it is in the 'stopped' state.</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
@@ -28,6 +28,12 @@
     firewall is stopped or is being stopped. When shorewall-shell is being
     used, the file also determines those hosts that are accessible when the
     firewall is in the process of being [re]started.</para>
+
+    <warning>
+      <para>Changes to this file do not take effect until after the next
+      <command>shorewall start</command> or <command>shorewall
+      restart</command> command.</para>
+    </warning>
 
     <para>The columns in the file are as follows.</para>
 
@@ -99,34 +105,6 @@
                 the firewall) is allowed. If <emphasis
                 role="bold">dest</emphasis> is specified then <emphasis
                 role="bold">routeback</emphasis> is redundant.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">critical</emphasis></term>
-
-              <listitem>
-                <para>Allow traffic between the firewall and these hosts
-                throughout '[re]start', 'stop' and 'clear'. Specifying
-                <emphasis role="bold">critical</emphasis> on one or more
-                entries will cause your firewall to be "totally open" for a
-                brief window during each of those operations. Examples of
-                where you might want to use this are:</para>
-
-                <itemizedlist>
-                  <listitem>
-                    <para>'Ping' nodes with heartbeat.</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>LDAP server(s) if you use LDAP Authentication</para>
-                  </listitem>
-
-                  <listitem>
-                    <para>NFS Server if you have an NFS-mounted root
-                    filesystem.</para>
-                  </listitem>
-                </itemizedlist>
               </listitem>
             </varlistentry>
 

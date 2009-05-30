@@ -59,11 +59,6 @@
 
       <orderedlist>
         <listitem>
-          <para>The <emphasis role="bold">detectnets</emphasis> interface
-          option is not supported.</para>
-        </listitem>
-
-        <listitem>
           <para>All extension scripts used are copied into the program (with
           the exception of <ulink url="shorewall_extension_scripts.htm">those
           executed at compile-time by the compiler</ulink>). The ramifications
@@ -115,8 +110,8 @@
     command:</para>
 
     <blockquote>
-      <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ]
-      &lt;path name&gt;</command></para>
+      <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ] [
+      &lt;path name&gt; ]</command></para>
     </blockquote>
 
     <para>where</para>
@@ -162,7 +157,9 @@
           <term>&lt;path name&gt;</term>
 
           <listitem>
-            <para>specifies the name of the script to be created.</para>
+            <para>specifies the name of the script to be created. If not
+            given, ${VARDIR}/firewall is assumed (by default, ${VARDIR} is
+            <filename>/var/lib/shorewall/</filename>)</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -239,8 +236,9 @@
           <listitem>
             <para>modify the files in the corresponding export directory
             appropriately. It's a good idea to include the IP address of the
-            administrative system in the <filename>routestopped</filename>
-            file.</para>
+            administrative system in the <ulink
+            url="manpages/shorewall-routestopped.html"><filename>routestopped</filename>
+            file</ulink>.</para>
 
             <para>It is important to understand that with Shorewall Lite, the
             firewall's export directory on the administrative system acts as
@@ -288,8 +286,9 @@
             -e</command>), copies that file to the remote system via scp and
             starts Shorewall Lite on the remote system via ssh. The -c option
             causes the capabilities of the remote system to be generated and
-            copied to a file named capabilities in the export directory. See
-            <link linkend="Shorecap">below</link>.</para>
+            copied to a file named <filename>capabilities</filename> in the
+            export directory. See <link
+            linkend="Shorecap">below</link>.</para>
 
             <para>Example (firewall's DNS name is 'gateway'):</para>
 
@@ -538,8 +537,9 @@ clean:
           <para>On the administrative system:</para>
 
           <para>It's a good idea to include the IP address of the
-          administrative system in the firewall system's
-          <filename>routestopped</filename> file.</para>
+          administrative system in the firewall system's <ulink
+          url="manpages/shorewall-routestopped.html"><filename>routestopped</filename>
+          file</ulink>.</para>
 
           <para>Also, edit the <filename>shorewall.conf</filename> file in the
           firewall's export directory and change the CONFIG_PATH setting to
@@ -727,8 +727,8 @@ CAPVERSION=40190</programlisting>
   <section id="Running">
     <title>Running compiled programs directly</title>
 
-    <para>Compiled firewall programs are complete programs that support the
-    following command line forms:</para>
+    <para>Compiled firewall programs are complete shell programs that support
+    the following command line forms:</para>
 
     <blockquote>
       <simplelist>

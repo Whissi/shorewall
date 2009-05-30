@@ -64,6 +64,9 @@
     which each packet/rule match within the action causes a log message to be
     generated.</para>
 
+    <para>For readers familiar with iptables, actions are the way in which you
+    can create your own filter-table chains.</para>
+
     <para>There are three types of Shorewall actions:</para>
 
     <orderedlist>
@@ -158,7 +161,7 @@ ACCEPT   -              -               tcp     135,139,445
 
     <para>In addition, the default specified in
     <filename>/etc/shorewall/shorewall.conf</filename> may be overridden by
-    specifying a different default in the POLICY column of <filename><ulink
+    specifying a different action in the POLICY column of <filename><ulink
     url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink></filename>.</para>
 
     <warning>
@@ -167,107 +170,6 @@ ACCEPT   -              -               tcp     135,139,445
       Remember — default actions are only invoked immediately before the
       packet is going to be dropped or rejected anyway!!!</para>
     </warning>
-  </section>
-
-  <section id="Limit">
-    <title>Limiting Per-IP Connection Rate</title>
-
-    <para>Shorewall supports a <quote>Limit</quote> <ulink
-    url="Actions.html">action</ulink>. Limit is invoked with a comma-separated
-    list in place of a logging tag. The list has three elements:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>The name of a <quote>recent</quote> list. You select the list
-        name which must conform to the rules for a valid chain name. Different
-        rules that specify the same list name will use the same set of
-        counters.</para>
-      </listitem>
-
-      <listitem>
-        <para>The number of connections permitted in a specified time
-        period.</para>
-      </listitem>
-
-      <listitem>
-        <para>The time period, expressed in seconds.</para>
-      </listitem>
-    </orderedlist>
-
-    <para>Connections that exceed the specified rate are dropped.</para>
-
-    <para>For example, to use a recent list name of <emphasis
-    role="bold">SSHA</emphasis>, and to limit SSH connections to 3 per minute,
-    use this entry in <filename>/etc/shorewall/rules</filename>:</para>
-
-    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
-Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
-
-    <para>If you want dropped connections to be logged at the info level, use
-    this rule instead:</para>
-
-    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
-Limit:info:SSHA,3,60   net               $FW            tcp         22</programlisting>
-
-    <para>To summarize, you pass four pieces of information to the Limit
-    action:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>The log level. If you don't want to log, specify
-        <quote>none</quote>.</para>
-      </listitem>
-
-      <listitem>
-        <para>The name of the recent list that you want to use
-        (<quote>SSHA</quote> in this example).</para>
-      </listitem>
-
-      <listitem>
-        <para>The maximum number of connections to accept (3 in this
-        example).</para>
-      </listitem>
-
-      <listitem>
-        <para>The number of seconds over which you are willing to accept that
-        many connections (60 in this example).</para>
-      </listitem>
-    </itemizedlist>
-
-    <section id="LimitImp">
-      <title>How Limit is Implemented</title>
-
-      <para>For those who are curious, the Limit action is implemented as
-      follows:</para>
-
-      <programlisting>my @tag = split /,/, $tag;
-
-fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
-    unless @tag == 3;
-
-my $list = $tag[0];
-
-for ( @tag[1,2] ) {
-    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
-}
-
-my $count = $tag[1] + 1;
-
-add_rule $chainref, "-m recent --name $list --set";
-
-if ( $level ) {
-    my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
-    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
-    add_rule $xchainref, '-j DROP';
-    add_rule $chainref,  "-m recent --name $list --update --seconds $tag[2] --hitcount $count -j $xchainref-&gt;{name}";
-} else {
-    add_rule $chainref, "-m recent --update --name $list --seconds $tag[2] --hitcount $count -j DROP";
-}
-
-add_rule $chainref, '-j ACCEPT';
-
-1; </programlisting>
-    </section>
   </section>
 
   <section id="Defining">
@@ -699,7 +601,107 @@ add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );
 1;</programlisting></para>
     </example>
 
-    <para>For a richer example, see <ulink url="PortKnocking.html">this
-    article</ulink>.</para>
+    <para>For a richer example, see the next section.</para>
+  </section>
+
+  <section id="Limit">
+    <title>Limiting Per-IP Connection Rate using the Limit Action</title>
+
+    <para>Shorewall supports a <quote>Limit</quote> built-in action. Limit is
+    invoked with a comma-separated list in place of a logging tag. The list
+    has three elements:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The name of a <quote>recent</quote> list. You select the list
+        name which must conform to the rules for a valid chain name. Different
+        rules that specify the same list name will use the same set of
+        counters.</para>
+      </listitem>
+
+      <listitem>
+        <para>The number of connections permitted in a specified time
+        period.</para>
+      </listitem>
+
+      <listitem>
+        <para>The time period, expressed in seconds.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Connections that exceed the specified rate are dropped.</para>
+
+    <para>For example, to use a recent list name of <emphasis
+    role="bold">SSHA</emphasis>, and to limit SSH connections to 3 per minute,
+    use this entry in <filename>/etc/shorewall/rules</filename>:</para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>If you want dropped connections to be logged at the info level, use
+    this rule instead:</para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit:info:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>To summarize, you pass four pieces of information to the Limit
+    action:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The log level. If you don't want to log, specify
+        <quote>none</quote>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The name of the recent list that you want to use
+        (<quote>SSHA</quote> in this example).</para>
+      </listitem>
+
+      <listitem>
+        <para>The maximum number of connections to accept (3 in this
+        example).</para>
+      </listitem>
+
+      <listitem>
+        <para>The number of seconds over which you are willing to accept that
+        many connections (60 in this example).</para>
+      </listitem>
+    </itemizedlist>
+
+    <section id="LimitImp">
+      <title>How Limit is Implemented</title>
+
+      <para>For those who are curious, the Limit action is implemented as
+      follows:</para>
+
+      <programlisting>my @tag = split /,/, $tag;
+
+fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
+    unless @tag == 3;
+
+my $list = $tag[0];
+
+for ( @tag[1,2] ) {
+    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
+}
+
+my $count = $tag[1] + 1;
+
+add_rule $chainref, "-m recent --name $list --set";
+
+if ( $level ) {
+    my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
+    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
+    add_rule $xchainref, '-j DROP';
+    add_rule $chainref,  "-m recent --name $list --update --seconds $tag[2] --hitcount $count -j $xchainref-&gt;{name}";
+} else {
+    add_rule $chainref, "-m recent --update --name $list --seconds $tag[2] --hitcount $count -j DROP";
+}
+
+add_rule $chainref, '-j ACCEPT';
+
+1; </programlisting>
+    </section>
   </section>
 </article>

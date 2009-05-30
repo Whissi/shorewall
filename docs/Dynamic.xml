@@ -45,9 +45,142 @@
 
     <para>Shorewall provides basic support for defining such zones. This
     support is based on <ulink
-    url="http://ipset.netfilter.org/">ipset</ulink>, so to use dynamic zones,
-    you must have installed the <ulink
+    url="http://ipset.netfilter.org/">ipset</ulink>. As of this writing, ipset
+    is not included in the standard kernel distribution; so to use dynamic
+    zones, you must be running kernel 2.6.20 or later and have installed the
+    <ulink
     url="http://xtables-addons.sourceforge.net/">xtables-addons</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Installing xtables-addons</title>
+
+    <para>The xtables-addons are fairly easy to install. You do not need to
+    recompile your kernel. Basic steps are as follows:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Install gcc and make</para>
+      </listitem>
+
+      <listitem>
+        <para>Install the headers for the kernel you are running. In some
+        distributions, such as <trademark>Debian</trademark> and
+        <trademark>Ubuntu</trademark>, the packet is called kernel-headers.
+        For other distrubutions, such as OpenSuSE, you must install the
+        kernel-source package.</para>
+      </listitem>
+
+      <listitem>
+        <para>At a shell prompt, type 'locate libxtables'. If no output is
+        produced, then you must download and install the latest iptables.
+        </para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>download the iptables source tarball</para>
+          </listitem>
+
+          <listitem>
+            <para>untar the source</para>
+          </listitem>
+
+          <listitem>
+            <para>cd to the iptables source directory</para>
+          </listitem>
+
+          <listitem>
+            <para>run './configure'</para>
+          </listitem>
+
+          <listitem>
+            <para>run 'make'</para>
+          </listitem>
+
+          <listitem>
+            <para>As root, cd to the iptables source directory and run 'make
+            install'.</para>
+          </listitem>
+
+          <listitem>
+            <para>Your new iptables binary will now be installed in
+            /usr/local/sbin. Modify shorewall.conf to specify
+            IPTABLES=/usr/local/sbin/iptables</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>Download the latest xtables-addons source tarball</para>
+      </listitem>
+
+      <listitem>
+        <para>Untar the xtables-addons source</para>
+      </listitem>
+
+      <listitem>
+        <para>cd to the xtables-addons source directory</para>
+      </listitem>
+
+      <listitem>
+        <para>run './configure'</para>
+      </listitem>
+
+      <listitem>
+        <para>run 'make'</para>
+      </listitem>
+
+      <listitem>
+        <para>As root, cd to the xtables-addons directory and run 'make
+        install'.</para>
+      </listitem>
+
+      <listitem>
+        <para>Restart shorewall</para>
+      </listitem>
+
+      <listitem>
+        <para>'shorewall show capabilities' should now indicate<emphasis
+        role="bold"> Ipset Match: Available</emphasis></para>
+      </listitem>
+    </orderedlist>
+
+    <para>You will have to repeat steps 6-9 each time that you receive a
+    kernel upgrade from your distribution venrundor. You can install
+    xtables-addons before booting to the new kernel as follows
+    (<emphasis>new-kernel-version</emphasis> is the version of the
+    newly-installed kernel - example <emphasis
+    role="bold">2.6.28.11-generic</emphasis>. Look in the /lib/modules
+    directory to get the full version name)</para>
+
+    <orderedlist>
+      <listitem>
+        <para>cd to the xtables-addons source directory</para>
+      </listitem>
+
+      <listitem>
+        <para>run 'make clean'</para>
+      </listitem>
+
+      <listitem>
+        <para>run './configure --with-kbuild
+        /lib/modules/<emphasis>new-kernel-version</emphasis>/build'</para>
+      </listitem>
+
+      <listitem>
+        <para>run 'make'</para>
+      </listitem>
+
+      <listitem>
+        <para>As root, cd to the xtables-addons source directory and run 'make
+        install'.</para>
+      </listitem>
+
+      <listitem>
+        <para>As root, run 'depmod -a
+        <emphasis>new-kernel-version'</emphasis></para>
+      </listitem>
+    </orderedlist>
   </section>
 
   <section>
@@ -93,6 +226,10 @@ webok       eth0           -                hosts=dynamic</programlisting>
     <blockquote>
       <para><command>shorewall add eth0:192.168.3.4 webok</command></para>
     </blockquote>
+
+    <para>The command can only be used when the ipset involved is of type
+    iphash. For other ipset types, the <command>ipset</command> command must
+    be used directly.</para>
   </section>
 
   <section>
@@ -112,6 +249,10 @@ webok       eth0           -                hosts=dynamic</programlisting>
     <blockquote>
       <para><command>shorewall delete eth0:192.168.3.4 webok</command></para>
     </blockquote>
+
+    <para>The command can only be used when the ipset involved is of type
+    iphash. For other ipset types, the <command>ipset</command> command must
+    be used directly.</para>
   </section>
 
   <section>
@@ -152,7 +293,8 @@ eth0:
   <section>
     <title>Restrictions</title>
 
-    <para>When using dynamic zones, you may not use ipsets in your
-    <filename>/etc/shorewall/routestopped</filename> file.</para>
+    <para>When using dynamic zones, you may not use ipsets in your <ulink
+    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>
+    file.</para>
   </section>
 </article>

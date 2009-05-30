@@ -227,6 +227,14 @@
           <filename>/etc/shorewall</filename> and modify the
           copy</emphasis>.</para>
         </listitem>
+
+        <listitem>
+          <para><filename>/usr/share/modules</filename> — Specifies the kernel
+          modules to be loaded during shorewall start/restart . <emphasis
+          role="bold">If you need to change this file, copy it to
+          <filename>/etc/shorewall</filename> and modify the
+          copy</emphasis>.</para>
+        </listitem>
       </itemizedlist></para>
   </section>
 
@@ -424,7 +432,7 @@ ACCEPT      net:\
             206.124.146.180\
                             dmz             tcp             873</programlisting>
 
-      <para> The leading white space on the first through third continuation
+      <para>The leading white space on the first through third continuation
       lines is ignored so the SOURCE column effectively contains
       "net:206.124.146.177,206.124.147.178,206.124.146.180". Because the third
       continuation line does not end with a comma or colon, the leading white
@@ -600,8 +608,8 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
       <listitem>
         <para>The <filename>/etc/shorewall/params</filename> file is processed
         by the compiler at compile-time and by the compiled script at
-        run-time. Beginning with Shorewall 3.2.9 and 3.4.0 RC2, if you have
-        set EXPORTPARAMS=No in <filename>shorewall.conf</filename>, then the
+        run-time. If you have set EXPORTPARAMS=No in
+        <filename>shorewall.conf</filename>, then the
         <filename><filename>params</filename></filename> file is only
         processed by the compiler; it is not run by the compiled
         script.</para>
@@ -865,8 +873,8 @@ POP(ACCEPT)     loc                  net:pop.gmail.com</programlisting>
 
       <listitem>
         <para>If you use line continuation to break a comma-separated list,
-        the continuation line(s) must begin in column 1 (or there would be
-        embedded white space)</para>
+        the comma must be the last thing on the continued line before '\'
+        unless the continuation line has no leading white space.</para>
       </listitem>
 
       <listitem>

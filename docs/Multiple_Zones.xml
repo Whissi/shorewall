@@ -209,13 +209,13 @@ loc1:loc    ipv4</programlisting>
 
         <para><filename>/etc/shorewall/interfaces</filename></para>
 
-        <programlisting>#ZONE               INTERFACE           BROADCAST
-loc                 eth1                192.168.1.255</programlisting>
+        <programlisting>#ZONE               INTERFACE           BROADCAST               OPTIONS
+loc                 eth1                -</programlisting>
 
         <para><filename>/etc/shorewall/hosts</filename></para>
 
-        <programlisting>#ZONE               HOSTS
-loc1                eth1:192.168.2.0/24</programlisting>
+        <programlisting>#ZONE               HOSTS                        OPTIONS
+loc1                eth1:192.168.2.0/24          -</programlisting>
 
         <para>If you don't need Shorewall to set up infrastructure to route
         traffic between <quote>loc</quote> and <quote>loc1</quote>, add these
@@ -248,13 +248,14 @@ loc2        ipv4</programlisting>
         <para><filename>/etc/shorewall/interfaces</filename></para>
 
         <programlisting>#ZONE               INTERFACE           BROADCAST
--                   eth1                192.168.1.255</programlisting>
+-                   eth1                192.168.1.255
+</programlisting>
 
         <para><filename>/etc/shorewall/hosts</filename></para>
 
-        <programlisting>#ZONE               HOSTS
-loc1                eth1:192.168.1.0/24
-loc2                eth1:192.168.2.0/24</programlisting>
+        <programlisting>#ZONE               HOSTS                    OPTIONS
+loc1                eth1:192.168.1.0/24      -
+loc2                eth1:192.168.2.0/24      -</programlisting>
 
         <para>You don't need Shorewall to set up infrastructure to route
         traffic between <quote>loc</quote> and <quote>loc1</quote>, so add
@@ -287,10 +288,18 @@ loc1:loc    ipv4</programlisting>
     <para><filename>/etc/shorewall/interfaces</filename></para>
 
     <programlisting>#ZONE               INTERFACE           BROADCAST
-loc                 eth1                192.168.1.255</programlisting>
+loc                 eth1                -</programlisting>
 
-    <para><filename>/etc/shorewall/hosts</filename><programlisting>#ZONE               HOSTS
-loc1                eth1:192.168.1.8/29</programlisting></para>
+    <para><filename>/etc/shorewall/hosts</filename><programlisting>#ZONE               HOSTS                  OPTIONS
+loc1                eth1:192.168.1.8/29    broadcast</programlisting></para>
+
+    <para>The <option>broadcast</option> option causes limited broadcasts
+    (destination IP address 255.255.255.255) to be checked against the loc1
+    zone. If that zone allows the packet, then of course it will be seen by
+    the mempers of loc that are outside of loc1 as well. If the broadcast is
+    not specifically DROPped by the fw-&gt;loc1 rules then it will also be
+    checked against the fw-&gt;loc rules, even if there is a DROP or REJECT
+    fw-&gt;loc1 policy.</para>
 
     <para>You probably don't want Shorewall to set up infrastructure to route
     traffic between <quote>loc</quote> and <quote>loc1</quote> so you should

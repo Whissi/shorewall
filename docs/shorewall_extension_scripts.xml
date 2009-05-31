@@ -500,7 +500,7 @@ esac</programlisting><caution>
           the table name</member>
         </simplelist></para>
 
-      <para>To add a rule to the chain:<programlisting>add_rule( $chainref, &lt;<emphasis>the rule</emphasis>&gt; );</programlisting>Where<simplelist>
+      <para>To add a rule to the chain:<programlisting>add_rule( $chainref, &lt;<emphasis>the rule</emphasis>&gt; [ , &lt;<emphasis>break lists</emphasis>&gt; ] );</programlisting>Where<simplelist>
           <member>&lt;<emphasis>the rule</emphasis>&gt; is a scalar argument
           holding the rule text. Do not include "-A &lt;<emphasis>chain
           name</emphasis>&gt;"</member>
@@ -508,14 +508,16 @@ esac</programlisting><caution>
 
       <para>The add_rule() function accepts an optional third argument; If
       that argument evaluates to true and the passed rule contains a <emphasis
-      role="bold">--dports</emphasis> list with more than 15 ports (a port
+      role="bold">--dports</emphasis> or <emphasis
+      role="bold">--sports</emphasis> list with more than 15 ports (a port
       range counts as two ports), the rule will be split into multiple rules
       where each resulting rule has 15 or fewer ports in its <emphasis
-      role="bold">--dports</emphasis> list.</para>
+      role="bold">--dports</emphasis> and <emphasis
+      role="bold">--sports</emphasis> lists.</para>
 
       <para>To insert a rule into the chain:<programlisting> insert_rule( $chainref, &lt;<emphasis>rulenum</emphasis>&gt;, &lt;<emphasis>the rule</emphasis>&gt; );</programlisting>The
       <emphasis role="bold">log_rule_limit()</emphasis> function works like it
-      does in the shell compiler with three exceptions:<itemizedlist>
+      did in the shell compiler with three exceptions:<itemizedlist>
           <listitem>
             <para>You pass the chain reference rather than the name of the
             chain.</para>
@@ -531,14 +533,14 @@ esac</programlisting><caution>
             you must quote that part).</para>
           </listitem>
         </itemizedlist>Example:<programlisting>log_rule_limit(
-               'info' , 
-               $chainref ,            
-               $chainref-&gt;{name},
-               'DROP' , 
-               '',      #Limit
-               '' ,     #Log tag
-               'add',   #Command
-               '-p tcp' #Pass as-is
+               'info' ,             #Log Level
+               $chainref ,          #Chain to add the rule to
+               $chainref-&gt;{name},   #Name of the chain as it will appear in the log prefix
+               'DROP' ,             #Disposition of the packet
+               '',                  #Limit
+               '' ,                 #Log tag
+               'add',               #Command
+               '-p tcp'             #Added to the rule as-is
                );</programlisting>Note that in the 'initdone' script, there is
       no default chain (<emphasis role="bold">$chainref</emphasis>). You can
       obtain a reference to a standard chain by:<programlisting>my $chainref = $chain_table{&lt;<emphasis>table</emphasis>&gt;}{&lt;<emphasis>chain name</emphasis>&gt;};</programlisting>Example:<programlisting>my $chainref = $chain_table{filter}{INPUT};</programlisting></para>

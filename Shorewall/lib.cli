@@ -836,39 +836,6 @@ restore_command() {
 }
 
 #
-# Reset command executor
-#
-reset_command() {
-    if ! shorewall_is_started ; then
-	echo "Shorewall Not Started"
-	exit 2;
-    fi
-
-    if [ $# -eq 0 ]; then
-	$IPTABLES -Z
-	$IPTABLES -t nat -Z
-	$IPTABLES -t raw -Z
-	$IPTABLES -t mangle -Z
-	report "Shorewall Counters Reset"
-	date > ${VARDIR}/restarted
-    else
-	for chain in $@; do
-	    if chain_exists $chain; then
-		if qt $IPTABLES -Z $chain; then
-		    progress_message3 "Filter table $chain Counters Reset"
-		else
-		    error_message "ERROR: Reset of chain $chain failed"
-		    status=2
-		    break
-		fi
-	    else
-		error_message "WARNING: Filter Chain $chain does not exist"
-	    fi
-	done
-    fi
-}
-
-#
 # Display the time that the counters were last reset
 #
 show_reset() {

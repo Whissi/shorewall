@@ -1738,9 +1738,11 @@ case "$COMMAND" in
 	;;
     reset)
 	get_config
+	export NOROUTES
 	shift
 	mutex_on
-	reset_command $@
+	[ -x $FIREWALL ] || fatal_error "Shorewall has never been started"
+	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@
 	mutex_off
 	;;
     compile)

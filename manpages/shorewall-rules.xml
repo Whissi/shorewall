@@ -1071,18 +1071,17 @@
         role="bold">!</emphasis>]<emphasis>limit</emphasis>[:<emphasis>mask</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.1. May be used to limit the number
-          of simultaneous connections from each individual host to
-          <replaceable>limit</replaceable> connections. Requires connlimit
-          match in your kernel and iptables. While the limit is only checked
-          on rules specifying CONNLIMIT, the number of current connections is
-          calculated over all current connections from the SOURCE host. By
-          default, the limit is applied to each host but can be made to apply
-          to networks of hosts by specifying a
-          <replaceable>mask</replaceable>. The <replaceable>mask</replaceable>
-          specifies the width of a VLSM mask to be applied to the source
-          address; the number of current connections is then taken over all
-          hosts in the subnet
+          <para>May be used to limit the number of simultaneous connections
+          from each individual host to <replaceable>limit</replaceable>
+          connections. Requires connlimit match in your kernel and iptables.
+          While the limit is only checked on rules specifying CONNLIMIT, the
+          number of current connections is calculated over all current
+          connections from the SOURCE host. By default, the limit is applied
+          to each host but can be made to apply to networks of hosts by
+          specifying a <replaceable>mask</replaceable>. The
+          <replaceable>mask</replaceable> specifies the width of a VLSM mask
+          to be applied to the source address; the number of current
+          connections is then taken over all hosts in the subnet
           <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.
           When<option> !</option> is specified, the rule matches when the
           number of connection exceeds the
@@ -1095,10 +1094,10 @@
         <emphasis>timeelement</emphasis>[,<emphasis>timelement</emphasis>...]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.1. May be used to limit the rule
-          to a particular time period each day, to particular days of the week
-          or month, or to a range defined by dates and times. Requires time
-          match support in your kernel and iptables.</para>
+          <para>May be used to limit the rule to a particular time period each
+          day, to particular days of the week or month, or to a range defined
+          by dates and times. Requires time match support in your kernel and
+          iptables.</para>
 
           <para><replaceable>timeelement</replaceable> may be:</para>
 

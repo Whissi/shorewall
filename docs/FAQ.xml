@@ -20,7 +20,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2008</year>
+      <year>2001-2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -496,6 +496,24 @@ REDIRECT        net           22          tcp          9022</programlisting>
       you use ACCEPT unless you need to hijack connections as they go through
       your firewall and handle them on the firewall box itself; in that case,
       you use a REDIRECT rule.</para>
+    </section>
+
+    <section id="faq8">
+      <title>(FAQ 8) I have several external IP addresses and use
+      /etc/shorewall/nat to associate them with systems in my DMZ. When I add
+      a DNAT rule, say for ports 80 and 443, Shorewall redirects connections
+      on those ports for all of my addresses. How can I restrict DNAT to only
+      a single address?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: Specify the external
+      address that you want to redirect in the ORIGINAL DEST column.</para>
+
+      <para>Example:</para>
+
+      <programlisting>#ACTION    SOURCE        DEST                   PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                    PORT      DEST.
+DNAT       net           net:192.168.4.22       tcp      80,443      -         <emphasis
+          role="bold">206.124.146.178</emphasis></programlisting>
     </section>
 
     <section id="faq38">

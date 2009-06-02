@@ -30,7 +30,7 @@
 
       <year>2006</year>
 
-      <holder>Thomas M. Eastep</holder>
+      <holder>2009 Thomas M. Eastep</holder>
     </copyright>
 
     <copyright>
@@ -62,22 +62,19 @@
     have IPSEC end-points on the same system where Shorewall is used.</para>
   </important>
 
-  <warning>
-    <para>To use the features described in this article, your kernel must be
-    2.6.16 or later <emphasis role="bold">or</emphasis> your kernel and
-    iptables must include the Netfilter+ipsec patches and policy match
-    support. The Netfilter patches are available from Netfilter
-    Patch-O-Matic-NG and are also included in some commercial distributions
-    (most notably <trademark>SUSE</trademark> 9.1 through 10.0).</para>
-  </warning>
+  <important>
+    <para>While this article shows configuration of IPSEC using ipsec-tools,
+    Shorewall configuration is exactly the same when using OpenSwan or
+    FreeSwan.</para>
+  </important>
 
   <warning>
-    <para>As of this writing, the Netfilter+ipsec and policy match support are
-    broken when used with a bridge device. The problem has been reported to
-    the responsible Netfilter developer who has confirmed the problem. The
-    problem was presumably corrected in Kernel 2.6.20 as a result of the
-    removal of deferred FORWARD/OUTPUT processing of traffic destined for a
-    bridge. See the <ulink
+    <para>When running a Linux kernel prior to 2.6.20, the Netfilter+ipsec and
+    policy match support are broken when used with a bridge device. The
+    problem has been reported to the responsible Netfilter developer who has
+    confirmed the problem. The problem was corrected in Kernel 2.6.20 as a
+    result of the removal of deferred FORWARD/OUTPUT processing of traffic
+    destined for a bridge. See the <ulink
     url="bridge-Shorewall-perl.html">"<emphasis>Shorewall-perl and Bridged
     Firewalls</emphasis>"</ulink> article.</para>
   </warning>
@@ -247,7 +244,7 @@
     <orderedlist numeration="loweralpha">
       <listitem>
         <para>Open the firewall so that the IPSEC tunnel can be established
-        (allow the ESP and AH protocols and UDP Port 500).</para>
+        (allow the ESP protocol and UDP Port 500).</para>
       </listitem>
 
       <listitem>
@@ -895,7 +892,7 @@ net     eth0            detect          routefilter,dhcp,tcpflags
 
       <programlisting>#TYPE          ZONE             GATEWAY         GATEWAY
 #                                               ZONE
-ipsec:noah     net              192.168.20.0/24 loc</programlisting>
+ipsec          net              192.168.20.0/24 loc</programlisting>
 
       <para><filename>/etc/shorewall/zones</filename>:</para>
 

@@ -254,7 +254,7 @@ SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
               If a host in 192.168.1.0/24 attempts a connection on TCP port 80
               or 443 and it has sent a packet on either of those ports in the
               last five minutes then the new connection will use the same
-              provider as the connection over which that ‒‒last packet was
+              provider as the connection over which that last packet was
               sent.</para>
 
               <para>When used in the OUTPUT chain, it causes all matching
@@ -336,7 +336,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
                 <member><replaceable>shift</replaceable> = 0</member>
               </simplelist>
 
-              <para> <option>src</option> and <option>dst</option> specify
+              <para><option>src</option> and <option>dst</option> specify
               whether the mark is to be based on the source or destination
               address respectively. The selected address is first shifted
               right by <replaceable>shift</replaceable>, then LANDed with
@@ -348,7 +348,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <para>Example:</para>
 
               <blockquote>
-                <para> IPMARK(src,0xff,0x10100)</para>
+                <para>IPMARK(src,0xff,0x10100)</para>
 
                 <simplelist>
                   <member>Suppose that the source IP address is 192.168.4.3 =

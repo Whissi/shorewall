@@ -155,57 +155,15 @@
   <section id="maclist">
     <title>/etc/shorewall/maclist</title>
 
-    <para>The columns in /etc/shorewall/maclist are:</para>
-
-    <variablelist>
-      <varlistentry>
-        <term>DISPOSITION</term>
-
-        <listitem>
-          <para>Must be ACCEPT, DROP or REJECT (REJECT may not be specified if
-          <emphasis role="bold">MACLIST_TABLE</emphasis>=mangle). May be
-          optionally followed by ":" and a log level to cause packets matching
-          the rule to be logged.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>INTERFACE</term>
-
-        <listitem>
-          <para>The name of an Ethernet interface on the Shorewall
-          system.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>MAC</term>
-
-        <listitem>
-          <para>The MAC address of a device on the Ethernet segment connected
-          by INTERFACE. It is not necessary to use the Shorewall MAC format in
-          this column although you may use that format if you so choose. You
-          may specify "-" here if you enter an IP address in the next
-          column.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>IP Address</term>
-
-        <listitem>
-          <para>An optional comma-separated list of IP addresses for the
-          device whose MAC is listed in the MAC column.</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
+    <para>See <ulink
+    url="manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5).</para>
   </section>
 
   <section id="Examples">
     <title>Examples</title>
 
     <example id="Example1">
-      <title>Here are my files</title>
+      <title>My MAC Validation configuration at a point in the past</title>
 
       <para>/etc/shorewall/shorewall.conf:</para>
 
@@ -224,20 +182,21 @@ Wifi    $WIFI_IF        -               maclist,dhcp
 
       <para>/etc/shorewall/maclist:</para>
 
-      <programlisting>#INTERFACE              MAC                     IP ADDRESSES (Optional)
-$WIFI_IF                00:04:5e:3f:85:b9                       #WAP11
-$WIFI_IF                00:06:25:95:33:3c                       #WET11
-$WIFI_IF                00:0b:4d:53:cc:97       192.168.3.8     #TIPPER
-$WIFI_IF                00:1f:79:cd:fe:2e       192.168.3.6     #Work Laptop
+      <programlisting>#DISPOSITION            INTERFACE               MAC                     IP ADDRESSES (Optional)
+ACCEPT                  $WIFI_IF                00:04:5e:3f:85:b9                       #WAP11
+ACCEPT                  $WIFI_IF                00:06:25:95:33:3c                       #WET11
+ACCEPT                  $WIFI_IF                00:0b:4d:53:cc:97       192.168.3.8     #TIPPER
+ACCEPT                  $WIFI_IF                00:1f:79:cd:fe:2e       192.168.3.6     #Work Laptop
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-      <para>As shown above, I use MAC Verification on my wireless zone.</para>
+      <para>As shown above, I used MAC Verification on my wireless zone that
+      was served by a Linksys WET11 wireless bridge.</para>
 
       <para><note>
           <para>While marketed as a wireless bridge, the WET11 behaves like a
           wireless router with DHCP relay. When forwarding DHCP traffic, it
           uses the MAC address of the host (TIPPER) but for other forwarded
-          traffic it uses its own MAC address. Consequently, I list the IP
+          traffic it uses its own MAC address. Consequently, I listd the IP
           addresses of both devices in /etc/shorewall/maclist.</para>
         </note></para>
     </example>
@@ -245,15 +204,15 @@ $WIFI_IF                00:1f:79:cd:fe:2e       192.168.3.6     #Work Laptop
     <example id="Example2">
       <title>Router in Wireless Zone</title>
 
-      <para>Suppose now that I add a second wireless segment to my wireless
-      zone and gateway that segment via a router with MAC address
+      <para>Suppose now that I had added a second wireless segment to my
+      wireless zone and gateway that segment via a router with MAC address
       00:06:43:45:C6:15 and IP address 192.168.3.253. Hosts in the second
-      segment have IP addresses in the subnet 192.168.4.0/24. I would add the
-      following entry to my /etc/shorewall/maclist file:</para>
+      segment have IP addresses in the subnet 192.168.4.0/24. I would have
+      added the following entry to my /etc/shorewall/maclist file:</para>
 
-      <programlisting> $WIFI_IF                    00:06:43:45:C6:15       192.168.3.253,192.168.4.0/24</programlisting>
+      <programlisting>ACCEPT                  $WIFI_IF                    00:06:43:45:C6:15       192.168.3.253,192.168.4.0/24</programlisting>
 
-      <para>This entry accommodates traffic from the router itself
+      <para>This entry would accommodate traffic from the router itself
       (192.168.3.253) and from the second wireless segment (192.168.4.0/24).
       Remember that all traffic being sent to my firewall from the
       192.168.4.0/24 segment will be forwarded by the router so that traffic's

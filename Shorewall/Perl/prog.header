@@ -811,7 +811,7 @@ detect_dynamic_gateway() { # $1 = interface
 
     gateway=$(run_findgw_exit $1);
 
-    if [ -n "$gateway" ]; then
+    if [ -z "$gateway" ]; then
 	gateway=$( find_peer $($IP addr list $interface ) )
     fi
 

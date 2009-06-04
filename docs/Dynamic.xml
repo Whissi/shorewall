@@ -189,7 +189,13 @@ loc          ipv4
 webok:loc    ipv4</programlisting><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>#ZONE       INTERFACE      BROADCAST        OPTIONS
-webok       eth0           -                hosts=dynamic</programlisting>
+loc         eth0           -                …
+</programlisting>
+
+      <para><filename>/etc/shorewall/hosts</filename>:</para>
+
+      <programlisting>#ZONE       HOSTS          OPTIONS
+webok       eth0:dynamic</programlisting>
     </blockquote>
 
     <para>Once the above definition is added, Shorewall will automatically

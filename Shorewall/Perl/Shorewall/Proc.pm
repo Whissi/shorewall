@@ -41,7 +41,7 @@ our @EXPORT = qw(
 		 setup_forwarding
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.3_7';
+our $VERSION = '4.3_12';
 
 #
 # ARP Filtering

@@ -40,7 +40,7 @@ if [ -n "$STARTUP_LOG" ]; then
 	#
 	# We're not tracing or debugging -- tee STDOUT to the log
 	#
-	exec 2>| tee $STARTUP_LOG
+	exec 2>| tee -a $STARTUP_LOG
     fi
 fi
 

@@ -13,7 +13,7 @@
 
 
 SRWL=/sbin/shorewall
-SRWL_OPTS=""
+SRWL_OPTS="-tvv"
 WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
 # Note, set INITLOG to /dev/null if you want to
 # use Shorewall's STARTUP_LOG feature.

@@ -243,9 +243,7 @@ if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
        #
        # Make a Debian-like shorewall.conf
        #
-       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|; 
-                         s|^STARTUP_LOG=.*|STARTUP_LOG=/var/lib/shorewall-init.log|;
-                         s|^LOG_VERBOSITY=.*|LOG_VERBOSITY=2|;' ${PREFIX}/etc/shorewall.conf
+       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${PREFIX}/etc/shorewall.conf
    fi
 
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"

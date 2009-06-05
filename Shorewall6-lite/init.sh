@@ -67,6 +67,8 @@ elif [ -f /etc/default/shorewall6-lite ] ; then
     . /etc/default/shorewall6-lite
 fi
 
+export SHOREWALL_INIT_SCRIPT=1
+
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################

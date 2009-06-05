@@ -67,6 +67,8 @@ elif [ -f /etc/default/shorewall ] ; then
     . /etc/default/shorewall
 fi
 
+SHOREWALL_INIT_SCRIPT=1
+
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################

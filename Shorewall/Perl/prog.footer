@@ -14,10 +14,13 @@ usage() {
 #
 # Start trace if first arg is "debug" or "trace"
 #
+tracing=
+
 if [ $# -gt 1 ]; then 
     if [ "x$1" = "xtrace" ]; then
 	set -x
 	shift
+	tracing=1
     elif [ "x$1" = "xdebug" ]; then
 	DEBUG=Yes
 	shift
@@ -25,6 +28,21 @@ if [ $# -gt 1 ]; then
 fi
 
 initialize
+
+if [ -n "$STARTUP_LOG" ]; then
+    if [ -a ${SHOREWALL_INIT_SCRIPT:-0} -eq 1 ]; then
+	#
+	# We're being run by a startup script that isn't redirecting STDOUT
+	# Redirect it to the log
+	#
+	exec 2> $STARTUP_LOG
+    elif [ -z "${SHOREWALL_INIT_SCRIPT}${DEBUG}${tracing}" ]; then
+	#
+	# We're not tracing or debugging -- tee STDOUT to the log
+	#
+	exec 2>| tee $STARTUP_LOG
+    fi
+fi
 
 finished=0
 

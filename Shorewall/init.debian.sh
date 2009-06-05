@@ -15,9 +15,13 @@
 SRWL=/sbin/shorewall
 SRWL_OPTS=""
 WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
-# Note, set INITLOG to /dev/null if you do not want to
-# keep logs of the firewall (not recommended)
-INITLOG=/dev/null
+# Note, set INITLOG to /dev/null if you want to
+# use Shorewall's STARTUP_LOG feature.
+INITLOG=/var/log/shorewall-init.log
+
+[ "$INITLOG" eq "/dev/null" && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
+
+export SHOREWALL_INIT_SCRIPT
 
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0

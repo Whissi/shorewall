@@ -350,7 +350,6 @@ sub initialize( $ ) {
 	      BLACKLIST_LOGLEVEL => undef,
 	      MACLIST_LOG_LEVEL => undef,
 	      TCP_FLAGS_LOG_LEVEL => undef,
-	      RFC1918_LOG_LEVEL => undef,
 	      SMURF_LOG_LEVEL => undef,
 	      LOG_MARTIANS => undef,
 	      LOG_VERBOSITY => undef,
@@ -412,7 +411,6 @@ sub initialize( $ ) {
 	      DISABLE_IPV6 => undef,
 	      DYNAMIC_ZONES => undef,
 	      PKTTYPE=> undef,
-	      RFC1918_STRICT => undef,
 	      MACLIST_TABLE => undef,
 	      MACLIST_TTL => undef,
 	      SAVE_IPSETS => undef,
@@ -2296,6 +2294,9 @@ sub get_configuration( $ ) {
 
     default_yes_no 'LOGTAGONLY'                 , ''; $globals{LOGTAGONLY} = $config{LOGTAGONLY};
     default_yes_no 'RFC1918_STRICT'             , '';
+
+    warning_message 'RFC1918_STRICT=Yes ignored. The "norfc1918" interface/host option is no longer supported' if $config{RFC1918_STRICT};
+
     default_yes_no 'FASTACCEPT'                 , '';
 
     fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
@@ -2328,7 +2329,10 @@ sub get_configuration( $ ) {
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
     default_log_level 'MACLIST_LOG_LEVEL',   '';
     default_log_level 'TCP_FLAGS_LOG_LEVEL', '';
-    default_log_level 'RFC1918_LOG_LEVEL',    6;
+    default_log_level 'RFC1918_LOG_LEVEL',   '';
+
+    warning_message "RFC1918_LOG_LEVEL=$config{RFC1918_LOG_LEVEL} ignored. The 'norfc1918' interface/host option is no longer supported" if $config{RFC1918_LOG_LEVEL};
+
     default_log_level 'SMURF_LOG_LEVEL',     '';
     default_log_level 'LOGALLNEW',           '';
 

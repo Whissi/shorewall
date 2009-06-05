@@ -89,7 +89,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
 %attr(0644,root,root) /usr/share/shorewall/macro.*
 %attr(0644,root,root) /usr/share/shorewall/modules
-%attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0755,root,root) /usr/share/shorewall/wait4ifup
 
@@ -105,6 +104,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples 
 
 %changelog
+* Fri Jun 05 2009 Tom Eastep tom@shorewall.net
+- Remove 'rfc1918' file
 * Sun May 10 2009 Tom Eastep tom@shorewall.net
 - Updated to 4.3.11-0base
 * Sun Apr 19 2009 Tom Eastep tom@shorewall.net

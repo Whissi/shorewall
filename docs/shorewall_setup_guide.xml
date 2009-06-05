@@ -116,9 +116,9 @@
 
         <para>Note that you must copy <filename
         class="directory">/usr/share/doc/shorewall-common/default-config/shorewall.conf</filename>
-        and /usr/share/doc/shorewall-common/default-config/modules to <filename
-        class="directory">/etc/shorewall</filename> even if you do not modify
-        those files.</para>
+        and /usr/share/doc/shorewall-common/default-config/modules to
+        <filename class="directory">/etc/shorewall</filename> even if you do
+        not modify those files.</para>
       </warning></para>
 
     <para>As each file is introduced, I suggest that you look through the
@@ -343,8 +343,8 @@ all              all                 REJECT     info</programlisting>
     <para>The simplest way to define zones is to associate the zone name
     (previously defined in /etc/shorewall/zones) with a network interface.
     This is done in the <ulink
-    url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink> file.
-    The firewall illustrated above has three network interfaces. Where
+    url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>
+    file. The firewall illustrated above has three network interfaces. Where
     Internet connectivity is through a cable or DSL <quote>Modem</quote>, the
     <emphasis>External Interface</emphasis> will be the Ethernet adapter that
     is connected to that <quote>Modem</quote> (e.g., <filename
@@ -413,11 +413,11 @@ all              all                 REJECT     info</programlisting>
 
     <para>The Shorewall default configuration does not define the contents of
     any zone. To define the above configuration using the <ulink
-    url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces </ulink>file,
-    that file would might contain:</para>
+    url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces
+    </ulink>file, that file would might contain:</para>
 
     <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           detect        norfc1918
+net      eth0           detect
 loc      eth1           detect
 dmz      eth2           detect</programlisting>
 
@@ -436,7 +436,7 @@ dmz      eth2           detect</programlisting>
       <title>Multiple Interfaces to a Zone</title>
 
       <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           detect        norfc1918
+net      eth0           detect
 loc      eth1           detect
 loc      eth2           detect</programlisting>
     </example>
@@ -444,8 +444,8 @@ loc      eth2           detect</programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
     <para>You may define more complicated zones using the<filename> <ulink
-    url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink></filename> file
-    but in most cases, that isn't necessary. See <ulink
+    url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink></filename>
+    file but in most cases, that isn't necessary. See <ulink
     url="Shorewall_and_Aliased_Interfaces.html">Shorewall_and_Aliased_Interfaces.html</ulink>
     and <ulink url="Multiple_Zones.html">Multiple_Zones.html</ulink> for
     examples.</para>
@@ -1817,7 +1817,7 @@ ACCEPT   net             $FW                tcp    ssh     #SSH to the
       <quote>options</quote> will be very site-specific).</para>
 
       <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           detect        norfc1918,routefilter
+net      eth0           detect        routefilter
 loc      eth1           detect
 dmz      eth2           detect</programlisting>
 
@@ -1829,7 +1829,7 @@ dmz      eth2           detect</programlisting>
       interfaces.</para>
 
       <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           192.0.2.255   norfc1918
+net      eth0           192.0.2.255
 loc      eth1           192.168.201.7
 dmz      eth2           192.168.202.7</programlisting>
 
@@ -2423,8 +2423,7 @@ foobar.net.      86400   IN A    192.0.2.177
       Also, I don't recommend using <quote>shorewall restart</quote>; it is
       better to create an <ulink
       url="starting_and_stopping_shorewall.htm"><emphasis>an alternate
-      configuration</emphasis></ulink> and test it using the
-      <quote><ulink
+      configuration</emphasis></ulink> and test it using the <quote><ulink
       url="starting_and_stopping_shorewall.htm"><command>shorewall
       try</command></ulink></quote> command.</para>
     </caution>

@@ -328,18 +328,6 @@ sub generate_script_3($) {
     }
 
     if ( $family == F_IPV4 ) {
-	for my $interface ( @{find_interfaces_by_option 'norfc1918'} ) {
-	    emit ( "addr=\$(\$IP -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)",
-		   'if [ -n "$addr" ]; then',
-		   '    addr=$(echo $addr | sed \'s/inet //;s/\/.*//;s/ peer.*//\')',
-		   '    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do',
-		   '        if in_network $addr $network; then',
-		   "            error_message \"WARNING: The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface\"",
-		   '        fi',
-		   '    done',
-		   "fi\n" );
-	}
-
 	my @ipsets = all_ipsets;
 
 	if ( @ipsets ) {
@@ -600,7 +588,6 @@ sub compiler {
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{HIGH_ROUTE_MARKS};
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
-    require_capability( 'CONNTRACK_MATCH' , 'RFC1918_STRICT=Yes' , 's'   )  if $config{RFC1918_STRICT};
 
     set_command( 'check', 'Checking', 'Checked' ) unless $objectfile;
 

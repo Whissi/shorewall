@@ -511,11 +511,6 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcfilters ]; then
 fi
 
 #
-# Install the rfc1918 file
-#
-install_file rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0644
-echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
-#
 # Install the default config path file
 #
 install_file configpath ${PREFIX}/usr/share/shorewall/configpath 0644

@@ -459,38 +459,10 @@ root@lists:~# </programlisting>
     1918</emphasis> reserves several <emphasis>Private</emphasis>
     <acronym>IP</acronym> address ranges for this purpose: <programlisting>10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
-192.168.0.0 - 192.168.255.255</programlisting> <inlinegraphic
-    fileref="images/BD21298_.gif" format="GIF" /></para>
-
-    <para>Before starting Shorewall, <emphasis role="bold">you should look at
-    the IP address of your external interface and if it is one of the above
-    ranges, you should remove the 'norfc1918' option from the external
-    interface's entry in <filename
-    class="directory">/etc/shorewall/</filename><filename>interfaces</filename>.</emphasis><tip>
-        <para>To determine the IP address of your external interface, as root
-        type <command>ip addr ls dev &lt;interface&gt;</command> at the
-        command line where &lt;<emphasis>interface</emphasis>&gt; is your
-        external interface. The line beginning with <emphasis>inet</emphasis>
-        identifies your IP address.</para>
-
-        <para>Example:</para>
-
-        <programlisting>root@lists:~# ip addr ls dev eth0
-2: eth0: &lt;BROADCAST,MULTICAST,UP,10000&gt; mtu 1500 qdisc htb qlen 1000
-    link/ether 00:02:e3:08:48:4c brd ff:ff:ff:ff:ff:ff
-    inet <emphasis role="bold">206.124.146.176</emphasis>/24 brd 206.124.146.255 scope global eth0
-    inet6 fe80::202:e3ff:fe08:484c/64 scope link 
-       valid_lft forever preferred_lft forever
-root@lists:~# </programlisting>
-
-        <para>In this example, the IP address of the external interface is
-        206.124.146.176</para>
-      </tip></para>
-
-    <para>You will want to assign your addresses from the same sub-network
-    (subnet). For our purposes, we can consider a subnet to consists of a
-    range of addresses <varname>x.y.z.0 - x.y.z.255</varname>. Such a subnet
-    will have a Subnet Mask of <systemitem
+192.168.0.0 - 192.168.255.255</programlisting>You will want to assign your
+    addresses from the same sub-network (subnet). For our purposes, we can
+    consider a subnet to consists of a range of addresses <varname>x.y.z.0 -
+    x.y.z.255</varname>. Such a subnet will have a Subnet Mask of <systemitem
     class="netmask">255.255.255.0</systemitem>. The address
     <varname>x.y.z.0</varname> is reserved as the <emphasis>Subnet
     Address</emphasis> and <varname>x.y.z.255</varname> is reserved as the

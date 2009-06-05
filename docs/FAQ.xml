@@ -1279,47 +1279,6 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       in the log message) in Shorewall:</para>
 
       <variablelist>
-        <varlistentry>
-          <term>man1918 or logdrop</term>
-
-          <listitem>
-            <para>The destination address is listed in
-            <filename>/usr/share/shorewall/rfc1918</filename> with a <emphasis
-            role="bold">logdrop</emphasis> target -- see <filename> <ulink
-            url="manpages/shorewall-rfc1918.html">/usr/share/shorewall/rfc1918</ulink>
-            </filename>.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>rfc1918 or logdrop</term>
-
-          <listitem>
-            <para>The source or destination address is listed in
-            <filename>/usr/share/shorewall/rfc1918</filename> with a <emphasis
-            role="bold">logdrop</emphasis> target -- see <filename> <ulink
-            url="manpages/shorewall-rfc1918.html">/usr/share/shorewall/rfc1918</ulink>
-            </filename>.</para>
-
-            <note>
-              <para>If you see packets being dropped in the rfc1918 chain and
-              neither the source nor the destination IP address is reserved by
-              RFC 1918, that usually means that you have a old
-              <filename>rfc1918</filename> file in <filename
-              class="directory">/etc/shorewall</filename> (this problem most
-              frequently occurs if you are running Debian or one if its
-              derivatives). The <filename>rfc1918</filename> file used to
-              include bogons as well as the three ranges reserved by RFC 1918
-              and it resided in <filename
-              class="directory">/etc/shorewall</filename>. The file now only
-              includes the three RFC 1918 ranges and it resides in <filename
-              class="directory">/usr/share/shorewall</filename>. Remove the
-              stale <filename>rfc1918</filename> file in <filename
-              class="directory">/etc/shorewall</filename>.</para>
-            </note>
-          </listitem>
-        </varlistentry>
-
         <varlistentry id="all2all">
           <term>all2<emphasis>zone</emphasis>, <emphasis>zone</emphasis>2all
           or all2all</term>
@@ -1591,10 +1550,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       your firewall has no record of having sent a DNS reply to 172.16.1.10 so
       this ICMP doesn't appear to be related to anything that was sent. The
       final result is that the packet gets logged and dropped in the all2all
-      chain. I have also seen cases where the source IP in the ICMP itself
-      isn't set back to the external IP of the remote NAT gateway; that causes
-      your firewall to log and drop the packet out of the rfc1918 chain
-      because the source IP is reserved by RFC 1918.</para>
+      chain.</para>
     </section>
 
     <section id="faq52">
@@ -2057,7 +2013,8 @@ We have an error talking to the kernel
 
       <para><emphasis role="bold">Answer:</emphasis> Yes! Shorewall support is
       available in Webmin. See <ulink
-      url="http://www.webmin.com">http://www.webmin.com</ulink></para>
+      url="http://www.webmin.com">http://www.webmin.com</ulink>. But beware of
+      the issue described in <link linkend="faq36">FAQ 36</link>.</para>
     </section>
 
     <section id="faq13">
@@ -2170,9 +2127,9 @@ We have an error talking to the kernel
 
         <para><emphasis role="bold">Answer:</emphasis> Shorewall implements a
         stateful firewall which requires connection tracking be present in
-        ip6tables and in the kernel. Linux kernel's before 2.6.20 didn't have
-        connection tracking for IPv6. So we could not even start to develop
-        IPv6 support until 2.6.20. We understand that there were significant
+        ip6tables and in the kernel. Linux kernel's before 2.6.20 didn't
+        support connection tracking for IPv6. So we could not even start to
+        develop Shorewall IPv6 support until 2.6.20 and there were significant
         problems with the facility until at least kernel 2.6.23. When
         distributions began offering IPv6 connection tracking support, it was
         with kernel 2.6.25. So that is what we developed IPv6 support on and
@@ -2190,123 +2147,6 @@ if [ $kernel -lt <emphasis role="bold">20624</emphasis> ]; then
     status=2
 else 
  </programlisting>
-      </section>
-    </section>
-  </section>
-
-  <section id="RFC1918">
-    <title>RFC 1918</title>
-
-    <section id="faq14">
-      <title>(FAQ 14) I'm connected via a cable modem and it has an internal
-      web server that allows me to configure/monitor it but as expected if I
-      enable rfc1918 blocking for my eth0 interface (the Internet one), it
-      also blocks the cable modems web server.</title>
-
-      <para>Is there any way it can add a rule before the rfc1918 blocking
-      that will let all traffic to and from the 192.168.100.1 address of the
-      modem in/out but still block all other rfc1918 addresses?</para>
-
-      <para><emphasis role="bold">Answer:</emphasis> Use of the norfc1918
-      interface is currently deprecated and support for the option will be
-      removed entirely in a future version. So deleting the option from <ulink
-      url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
-      (5) is the preferred solution.</para>
-
-      <para>Otherwise, add the following to <filename><ulink
-      url="manpages/shorewall-rfc1918.html">/etc/shorewall/rfc1918</ulink></filename>
-      (Note: If you are running Shorewall 2.0.0 or later, you may need to
-      first copy <filename>/usr/share/shorewall/rfc1918</filename> to
-      <filename>/etc/shorewall/rfc1918</filename>):</para>
-
-      <para>Be sure that you add the entry ABOVE the entry for
-      192.168.0.0/16.</para>
-
-      <programlisting>#SUBNET        TARGET
-192.168.100.1  RETURN</programlisting>
-
-      <note>
-        <para>If you add a second IP address to your external firewall
-        interface to correspond to the modem address, you must also make an
-        entry in <filename>/etc/shorewall/rfc1918</filename> for that address.
-        For example, if you configure the address 192.168.100.2 on your
-        firewall, then you would add two entries to
-        <filename>/etc/shorewall/rfc1918</filename>:</para>
-
-        <programlisting>#SUBNET        TARGET
-192.168.100.1  RETURN
-192.168.100.2  RETURN</programlisting>
-      </note>
-
-      <section id="faq14a">
-        <title>(FAQ 14a) Even though it assigns public IP addresses, my ISP's
-        DHCP server has an RFC 1918 address. If I enable RFC 1918 filtering on
-        my external interface, my DHCP client cannot renew its lease.</title>
-
-        <para><emphasis role="bold">Answer:</emphasis> The solution is the
-        same as <xref linkend="faq14" /> above.</para>
-      </section>
-
-      <section id="faq14b">
-        <title>(FAQ 14b) I connect to the Internet with PPPoE. When I try to
-        access the built-in web server in my DSL Modem, I get connection
-        Refused.</title>
-
-        <para>I see the following in my log:</para>
-
-        <programlisting>Mar  1 18:20:07 Mail kernel: Shorewall:OUTPUT:REJECT:IN= OUT=eth0 SRC=192.168.1.2 DST=192.168.1.1 LEN=60
-TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES=0x00 SYN URGP=0 </programlisting>
-
-        <para><emphasis role="bold">Answer:</emphasis> The fact that the
-        message is being logged from the OUTPUT chain means that the
-        destination IP address is not in any defined zone (see <link
-        linkend="faq17">FAQ 17</link>). You need to:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>Add a zone for the modem in
-            <filename>/etc/shorewall/zones</filename>:</para>
-
-            <programlisting>#ZONE    TYPE          OPTIONS
-modem    ipv4</programlisting>
-          </listitem>
-
-          <listitem>
-            <para>Define the zone to be associated with <filename
-            class="devicefile">eth0</filename> (or whatever interface connects
-            to your modem) in
-            <filename>/etc/shorewall/interfaces</filename>:</para>
-
-            <programlisting>#ZONE      INTERFACE   BROADCAST    OPTIONS
-modem      eth0        detect</programlisting>
-          </listitem>
-
-          <listitem>
-            <para>Allow web traffic to the modem in
-            <filename>/etc/shorewall/rules</filename>:</para>
-
-            <programlisting>#ACTION    SOURCE      DEST      PROTO     DEST PORT(S)
-ACCEPT     fw          modem     tcp       80
-ACCEPT     loc         modem     tcp       80</programlisting>
-          </listitem>
-        </orderedlist>
-
-        <para>Note that many of these ADSL/Cable Modems have no default
-        gateway or their default gateway is at a fixed IP address that is
-        different from the IP address you have assigned to your external
-        interface. In either case, you may have problems browsing the modem
-        from your local network even if you have the correct routes
-        established on your firewall. This is usually solved by masquerading
-        traffic from your local network to the modem.</para>
-
-        <para><filename>/etc/shorewall/masq</filename>:</para>
-
-        <programlisting>#INTERFACE         SOURCE          ADDRESS
-eth0               eth1                        # eth1 = interface to local network</programlisting>
-
-        <para>For an example of this when the ADSL/Cable modem is bridged, see
-        <ulink url="XenMyWay-Routed.html">my configuration</ulink>. In that
-        case, I masquerade using the IP address of my local interface!</para>
       </section>
     </section>
   </section>

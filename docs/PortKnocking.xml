@@ -148,8 +148,10 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
         <note>
           <para>You can use SSHKnock with DNAT on earlier releases provided
           that you omit the ORIGINAL DEST entry on the second SSHKnock rule.
-          This rule will be quite secure provided that you specify 'norfc1918'
-          on your external interface.</para>
+          This rule will be quite secure provided that you specify
+          'routefilter' on your external interface and have
+          NULL_ROUTE_RFC1918=Yes in
+          <filename>shorewall.conf</filename>.</para>
         </note>
       </listitem>
     </orderedlist>

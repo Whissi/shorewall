@@ -219,66 +219,6 @@ sub add_rule_pair( $$$$ ) {
     add_rule $chainref , "${predicate}-j $target";
 }
 
-sub setup_rfc1918_filteration( $ ) {
-
-    my $listref      = $_[0];
-    my $norfc1918ref = new_standard_chain 'norfc1918';
-    my $rfc1918ref   = new_standard_chain 'rfc1918';
-    my $chainref     = $norfc1918ref;
-
-    warning_message q(The 'norfc1918' option is deprecated);
-
-    log_rule $config{RFC1918_LOG_LEVEL} , $rfc1918ref , 'DROP' , '';
-
-    add_rule $rfc1918ref , '-j DROP';
-
-    $chainref = new_standard_chain 'rfc1918d' if $config{RFC1918_STRICT};
-
-    my $fn = open_file 'rfc1918';
-
-    first_entry "$doing $fn...";
-
-    while ( read_a_line ) {
-
-	require_capability 'CONNTRACK_MATCH', "The norfc1918 option" , 's';
-
-	my ( $networks, $target ) = split_line 2, 2, 'rfc1918 file';
-
-	my $s_target;
-
-	if ( $target eq 'logdrop' ) {
-	    $target   = 'rfc1918';
-	    $s_target = 'rfc1918';
-	} elsif ( $target eq 'DROP' ) {
-	    $s_target = 'DROP';
-	} elsif ( $target eq 'RETURN' ) {
-	    $s_target = $config{RFC1918_STRICT} ? 'rfc1918d' : 'RETURN';
-	} else {
-	    fatal_error "Invalid target ($target) for $networks";
-	}
-
-	for my $network ( split_list $networks, 'network' ) {
-	    add_rule $norfc1918ref , match_source_net( $network ) . "-j $s_target";
-	    add_rule $chainref , match_orig_dest( $network ) . "-j $target" ;
-	}
-    }
-
-    add_rule $norfc1918ref , '-j rfc1918d' if $config{RFC1918_STRICT};
-
-    my $state = $globals{UNTRACKED} ? 'NEW,UNTRACKED' : 'NEW';
-
-    for my $hostref  ( @$listref ) {
-	my $interface = $hostref->[0];
-	my $ipsec     = $hostref->[1];
-	my $policy = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in "  : '';
-	for my $chain ( first_chains $interface ) {
-	    add_rule $filter_table->{$chain} , join( '', "-m state --state $state ", match_source_net( $hostref->[2]) , "${policy}-j norfc1918" );
-	}
-	set_interface_option $interface, 'use_input_chain', 1;
-	set_interface_option $interface, 'use_forward_chain', 1;
-    }
-}
-
 sub setup_blacklist() {
 
     my $hosts = find_hosts_by_option 'blacklist';
@@ -612,11 +552,6 @@ sub add_common_rules() {
 
 	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport $ports -j ACCEPT" if get_interface_option( $interface, 'bridge' );
 	}
-    }
-
-    if ( $family == F_IPV4 ) {
-	$list = find_hosts_by_option 'norfc1918';
-	setup_rfc1918_filteration $list if @$list;
     }
 
     $list = find_hosts_by_option 'tcpflags';

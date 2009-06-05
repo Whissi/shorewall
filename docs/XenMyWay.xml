@@ -504,7 +504,6 @@ LOGALLNEW=
 BLACKLIST_LOGLEVEL=
 MACLIST_LOG_LEVEL=$LOG
 TCP_FLAGS_LOG_LEVEL=$LOG
-RFC1918_LOG_LEVEL=$LOG
 SMURF_LOG_LEVEL=$LOG
 LOG_MARTIANS=No
 IPTABLES=/usr/sbin/iptables
@@ -534,7 +533,6 @@ DISABLE_IPV6=Yes
 BRIDGING=No
 DYNAMIC_ZONES=No
 PKTTYPE=No
-RFC1918_STRICT=Yes
 MACLIST_TTL=60
 SAVE_IPSETS=No
 MAPOLDACTIONS=No
@@ -604,7 +602,7 @@ OMAK=&lt;IP address at our second home&gt;
         <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
         <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
-net     $EXT_IF         206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs
+net     $EXT_IF         206.124.146.255         dhcp,logmartians,blacklist,tcpflags,nosmurfs
 dmz     $DMZ_IF         192.168.0.255           logmartians
 loc     $INT_IF         192.168.1.255           dhcp,routeback,logmartians
 wifi    $WIFI_IF        192.168.3.255           dhcp,maclist

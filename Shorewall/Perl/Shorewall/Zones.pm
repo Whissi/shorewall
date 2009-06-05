@@ -201,7 +201,7 @@ sub initialize( $ ) {
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
-				  norfc1918   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  norfc1918   => OBSOLETE_IF_OPTION,
 				  nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  optional    => SIMPLE_IF_OPTION,
 				  proxyarp    => BINARY_IF_OPTION,
@@ -215,7 +215,6 @@ sub initialize( $ ) {
 	%validhostoptions = (
 			     blacklist => 1,
 			     maclist => 1,
-			     norfc1918 => 1,
 			     nosmurfs => 1,
 			     routeback => 1,
 			     tcpflags => 1,
@@ -1095,6 +1094,8 @@ sub process_host( ) {
 		$type = IPSEC;
 		$zoneref->{options}{complex} = 1;
 		$ipsec = 1;
+	    } elseif ( $option eq 'norfc1918' ) {
+		warning_message "The 'norfc1918' option is no longer supported"
 	    } elsif ( $validhostoptions{$option}) {
 		$options{$option} = 1;
 	    } else {

@@ -1178,6 +1178,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">NULL_ROUTE_RFC1918=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>When set to Yes, causes Shorewall to null-route the IPv4
+          address ranges reserved by RFC1918. The default value is
+          'No'.</para>
+
+          <para>When combined with route filtering (ROUTE_FILTER=Yes or
+          <option>routefilter</option> in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)),
+          this option ensures that packets with an RFC1918 source address are
+          only accepted from interfaces having known routes to networks using
+          such addresses.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">OPTIMIZE=</emphasis>[<emphasis
         role="bold">0</emphasis>|<emphasis role="bold">1</emphasis>]</term>
 
@@ -1350,55 +1368,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           still deleted at a subsequent <emphasis role="bold">shorewall
           stop</emphasis> or <emphasis role="bold">shorewall
           restart</emphasis>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis
-        role="bold">RFC1918_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
-
-        <listitem>
-          <para>This parameter determines the level at which packets logged
-          under the <emphasis role="bold">norfc1918</emphasis> mechanism are
-          logged. The value must be a valid syslog level and if no level is
-          given, then info is assumed.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">RFC1918_STRICT=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
-
-        <listitem>
-          <para>Traditionally, the RETURN target in the 'rfc1918' file has
-          caused norfc1918 processing to cease for a packet if the packet's
-          source IP address matches the rule. Thus, if you have this entry in
-          <ulink
-          url="shorewall-rfc1918.html">shorewall-rfc1918</ulink>(5):</para>
-
-          <programlisting>    #SUBNETS                 TARGET
-    192.168.1.0/24           RETURN</programlisting>
-
-          <para>then traffic from 192.168.1.4 to 10.0.3.9 will be accepted
-          even though you also have:</para>
-
-          <programlisting>    #SUBNETS                 TARGET
-    10.0.0.0/8               logdrop</programlisting>
-
-          <para>Setting RFC1918_STRICT=Yes in shorewall.conf will cause such
-          traffic to be logged and dropped since while the packet's source
-          matches the RETURN rule, the packet's destination matches the
-          'logdrop' rule.</para>
-
-          <para>If not specified or specified as empty (e.g.,
-          RFC1918_STRICT="") then RFC1918_STRICT=No is assumed.</para>
-
-          <para></para>
-
-          <warning>
-            <para>RFC1918_STRICT=Yes requires that your kernel and iptables
-            support 'Connection Tracking' match.</para>
-          </warning>
         </listitem>
       </varlistentry>
 

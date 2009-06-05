@@ -220,15 +220,6 @@
         </listitem>
 
         <listitem>
-          <para><filename>/usr/share/rfc1918</filename> — Defines the behavior
-          of the 'norfc1918' interface option in
-          <filename>/etc/shorewall/interfaces</filename>. <emphasis
-          role="bold">If you need to change this file, copy it to
-          <filename>/etc/shorewall</filename> and modify the
-          copy</emphasis>.</para>
-        </listitem>
-
-        <listitem>
           <para><filename>/usr/share/modules</filename> — Specifies the kernel
           modules to be loaded during shorewall start/restart . <emphasis
           role="bold">If you need to change this file, copy it to
@@ -545,7 +536,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
  
         NET_IF=eth0
         NET_BCAST=130.252.100.255
-        NET_OPTIONS=routefilter,norfc1918
+        NET_OPTIONS=routefilter,routefilter
  
     /etc/shorewall/interfaces record:
 
@@ -553,7 +544,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
  
     The result will be the same as if the record had been written
  
-        net eth0 130.252.100.255 routefilter,norfc1918
+        net eth0 130.252.100.255 routefilter,routefilter
  </programlisting>
     </blockquote>
 
@@ -867,8 +858,8 @@ POP(ACCEPT)     loc                  net:pop.gmail.com</programlisting>
 
     <itemizedlist>
       <listitem>
-        <para>Must not have any embedded white space.<programlisting>     Valid:   routefilter,dhcp,norfc1918
-     Invalid: routefilter,     dhcp,     norfc1818</programlisting></para>
+        <para>Must not have any embedded white space.<programlisting>     Valid:   routefilter,dhcp,arpfilter
+     Invalid: routefilter,     dhcp,     arpfilter</programlisting></para>
       </listitem>
 
       <listitem>

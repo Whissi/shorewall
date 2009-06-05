@@ -89,7 +89,20 @@ released late in 2009.
     to renumber the class IDs for devices 10 and greater.
 
 6)  Jozsef Kadlecsik has removed the set binding capability from ipset
-    3.1. As a consequence, Shorewall 4.3 no longer supports set binding.
+    3.1. As a consequence, Shorewall 4.3 no longer supports set
+    binding.
+
+9)  Support for the 'norfc1918' interface and host option has been
+    removed. If 'norfc1918' is specified for an entry in either the
+    interfaces or the hosts file, a warning is issued and the option is
+    ignored.
+
+    Similarly, if RFC1918_STRICT=Yes or a non-empty RFC1918_LOG_LEVEL
+    is given in shorewall.conf, a warning will be issued and the option
+    will be ignored.
+
+    Users who currently use 'norfc1918' are encouraged to consider
+    using NULL_ROUTE_RFC1918=Yes instead. 
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 12
@@ -180,7 +193,10 @@ None.
 
     The LENGTH value must be a numeric power of two between 32 and 8192
     inclusive. Packets with a total length that is strictly less that
-    the specified value will match the rule. 
+    the specified value will match the rule.
+
+4)  Support for 'norfc1918' has been removed. See the Migration
+    Considerations above.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3

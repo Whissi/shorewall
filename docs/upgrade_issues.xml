@@ -93,21 +93,21 @@
         <filename>routestopped</filename> file. The
         <filename>routestopped</filename> file used is the one that was
         present at the last <command>start</command>,
-        <command>restart</command> or <command>restore</command> command.
-        </para>
+        <command>restart</command> or <command>restore</command>
+        command.</para>
       </listitem>
 
       <listitem>
         <para>The old macro parameter syntax (e.g., SSH/ACCEPT) is now
         deprecated in favor of the new syntax (e.g., SSH(ACCEPT)). The 4.3
         documentation uses the new syntax exclusively, although the old syntax
-        continues to be supported. </para>
+        continues to be supported.</para>
       </listitem>
 
       <listitem>
         <para>Support for the SAME target in /etc/shorewall/masq and
         /etc/shorewall/rules has been removed, following the removal of the
-        underlying support in the Linux kernel. </para>
+        underlying support in the Linux kernel.</para>
       </listitem>
 
       <listitem>
@@ -120,11 +120,11 @@
         starts/restarts</para>
 
         <para>To avoid this warning, replace interface names by the
-        corresponding network addresses (e.g., 192.168.144.0/24). </para>
+        corresponding network addresses (e.g., 192.168.144.0/24).</para>
       </listitem>
 
       <listitem>
-        <para> Previously, Shorewall has treated traffic shaping class IDs as
+        <para>Previously, Shorewall has treated traffic shaping class IDs as
         decimal numbers (or pairs of decimal numbers). That worked fine until
         IPMARK was implemented. IPMARK requires Shorewall to generate class
         Ids in numeric sequence. In 4.3.9, that didn't work correctly because
@@ -135,7 +135,27 @@
         <para>This should only be an issue if you have more than 9 interfaces
         defined in <filename>/etc/shorewall/tcdevices</filename> and if you
         use class IDs in <filename>/etc/shorewall/tcrules</filename>. You will
-        need to renumber the class IDs for devices 10 and greater. </para>
+        need to renumber the class IDs for devices 10 and greater.</para>
+      </listitem>
+
+      <listitem>
+        <para>Jozsef Kadlecsik has removed the set binding capability from
+        ipset 3.1. As a consequence, Shorewall 4.3 no longer supports set
+        binding. </para>
+      </listitem>
+
+      <listitem>
+        <para>Support for the 'norfc1918' interface and host option has been
+        removed. If 'norfc1918' is specified for an entry in either the
+        interfaces or the hosts file, a warning is issued and the option is
+        ignored.</para>
+
+        <para>Similarly, if RFC1918_STRICT=Yes or a non-empty
+        RFC1918_LOG_LEVEL is given in shorewall.conf, a warning will be issued
+        and the option will be ignored.</para>
+
+        <para>Users who currently use 'norfc1918' are encouraged to consider
+        using NULL_ROUTE_RFC1918=Yes instead. </para>
       </listitem>
     </orderedlist>
   </section>

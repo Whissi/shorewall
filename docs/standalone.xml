@@ -413,32 +413,6 @@ root@lists:~# </programlisting>
     <emphasis>Network Address Translation</emphasis> <emphasis>-
     </emphasis><acronym>NAT</acronym>) to rewrite packet headers when
     forwarding to/from the Internet.</para>
-
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
-
-    <para>Before starting Shorewall, <emphasis role="bold">you should look at
-    the IP address of your external interface and if it is in one of the above
-    ranges, you should remove the <quote>norfc1918</quote> option from the
-    entry in <filename>/etc/shorewall/interfaces</filename>.</emphasis><tip>
-        <para>To determine the IP address of your external interface, as root
-        type <command>ip addr ls dev &lt;interface&gt;</command> at the
-        command line where &lt;<emphasis>interface</emphasis>&gt; is your
-        external interface. The line beginning with <emphasis>inet</emphasis>
-        identifies your IP address.</para>
-
-        <para>Example:</para>
-
-        <programlisting>root@lists:~# ip addr ls dev eth0
-2: eth0: &lt;BROADCAST,MULTICAST,UP,10000&gt; mtu 1500 qdisc htb qlen 1000
-    link/ether 00:02:e3:08:48:4c brd ff:ff:ff:ff:ff:ff
-    inet <emphasis role="bold">206.124.146.176</emphasis>/24 brd 206.124.146.255 scope global eth0
-    inet6 fe80::202:e3ff:fe08:484c/64 scope link 
-       valid_lft forever preferred_lft forever
-root@lists:~# </programlisting>
-
-        <para>In this example, the IP address of the external interface is
-        206.124.146.176</para>
-      </tip></para>
   </section>
 
   <section id="Logging">

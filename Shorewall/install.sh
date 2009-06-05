@@ -238,6 +238,16 @@ qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/sh
 
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+
+   if [ -n "$DEBIAN" ] && mywhich perl; then
+       #
+       # Make a Debian-like shorewall.conf
+       #
+       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|; 
+                         s|^STARTUP_LOG=.*|STARTUP_LOG=/var/lib/shorewall-init.log|;
+                         s|^LOG_VERBOSITY=.*|LOG_VERBOSITY=2|;' ${PREFIX}/etc/shorewall.conf
+   fi
+
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
 

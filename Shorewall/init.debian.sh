@@ -13,18 +13,11 @@
 
 
 SRWL=/sbin/shorewall
-SRWL_OPTS="-tvv"
+SRWL_OPTS="-v-1"
 WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
-# Note, set INITLOG to /dev/null if you do not want to
-# keep logs of the firewall (not recommended)
-INITLOG=/var/log/shorewall-init.log
 
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0
-test -n $INITLOG || {
-	echo "INITLOG cannot be empty, please configure $0" ; 
-	exit 1;
-}
 
 if [ "$(id -u)" != "0" ]
 then
@@ -33,13 +26,7 @@ then
 fi
 
 echo_notdone () {
-
-  if [ "$INITLOG" = "/dev/null" ] ; then 
-	  echo "not done."
-  else 
-	  echo "not done (check $INITLOG)."
-  fi
-
+    echo "not done."
 }
 
 not_configured () {
@@ -83,28 +70,28 @@ wait_for_pppd () {
 shorewall_start () {
   echo -n "Starting \"Shorewall firewall\": "
   wait_for_pppd
-  $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS start && echo "done." || echo_notdone
   return 0
 }
 
 # stop the firewall
 shorewall_stop () {
   echo -n "Stopping \"Shorewall firewall\": "
-  $SRWL $SRWL_OPTS clear >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS clear && echo "done." || echo_notdone
   return 0
 }
 
 # restart the firewall
 shorewall_restart () {
   echo -n "Restarting \"Shorewall firewall\": "
-  $SRWL $SRWL_OPTS restart >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS restart && echo "done." || echo_notdone
   return 0
 }
 
 # refresh the firewall
 shorewall_refresh () {
   echo -n "Refreshing \"Shorewall firewall\": "
-  $SRWL $SRWL_OPTS refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS refresh && echo "done." || echo_notdone
   return 0
 }
 

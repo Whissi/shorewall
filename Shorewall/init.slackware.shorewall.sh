@@ -16,7 +16,6 @@ if [ -f /etc/default/shorewall ] ; then
     . /etc/default/shorewall
 fi
 
-
 start() {
 	echo "Starting IPv4 shorewall rules..."
 	exec /sbin/shorewall $OPTIONS start

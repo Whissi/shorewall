@@ -1094,7 +1094,7 @@ sub process_host( ) {
 		$type = IPSEC;
 		$zoneref->{options}{complex} = 1;
 		$ipsec = 1;
-	    } elseif ( $option eq 'norfc1918' ) {
+	    } elsif ( $option eq 'norfc1918' ) {
 		warning_message "The 'norfc1918' option is no longer supported"
 	    } elsif ( $validhostoptions{$option}) {
 		$options{$option} = 1;

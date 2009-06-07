@@ -17,6 +17,8 @@ fi
 
 DAEMON_NAME="shorewall" # of course shorewall is NOT a deamon.
 
+export SHOREWALL_INIT_SCRIPT=1
+
 case "$1" in
 	start)
 		stat_busy "Starting $DAEMON_NAME"

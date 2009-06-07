@@ -19,10 +19,6 @@ WAIT_FOR_IFUP=/usr/share/shorewall6/wait4ifup
 # keep logs of the firewall (not recommended)
 INITLOG=/var/log/shorewall6-init.log
 
-[ "$INITLOG" eq "/dev/null" && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
-
-export SHOREWALL_INIT_SCRIPT
-
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0
 test -n $INITLOG || {
@@ -71,6 +67,10 @@ then
 else
 	not_configured
 fi
+
+[ "$INITLOG" eq "/dev/null" && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
+
+export SHOREWALL_INIT_SCRIPT
 
 # wait for an unconfigured interface 
 wait_for_pppd () {

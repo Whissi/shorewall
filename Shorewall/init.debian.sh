@@ -68,7 +68,7 @@ else
 	not_configured
 fi
 
-[ "$INITLOG" eq "/dev/null" && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
+[ "$INITLOG" = "/dev/null" ] && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
 
 export SHOREWALL_INIT_SCRIPT
 

@@ -1,4 +1,4 @@
-Shorewall 4.3.12
+Shorewall 4.3.13
 
 Shorewall 4.3 is the development thread for Shorewall 4.4 which will be
 released late in 2009.
@@ -105,19 +105,10 @@ released late in 2009.
     using NULL_ROUTE_RFC1918=Yes instead. 
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 12
+          P R O B L E M S   C O R R E C T E D   I N   4 . 3 . 13
 ----------------------------------------------------------------------------
 
-1)  A 'large quantum' warning log message during restart has been
-    eliminated. The log message occurred when an interface with a large
-    OUT-BANDWIDTH was defined in /etc/shorewall/tcdevices.
-
-2)  The 'shorewall reset' command no longer generates this error:
-
-    	/sbin/shorewall: 885: report: not found
-
-3)  A mis-coded test after the 'findgw' script was executed caused the
-    value returned by that script to be ignored.
+None.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -126,77 +117,10 @@ released late in 2009.
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 3 . 12
+                N E W   F E A T U R E S   I N   4 . 3 . 13
 ----------------------------------------------------------------------------
 
-1)  Support for the "Hierarchical Fair Service Curve" (HFSC) queuing
-    discipline has been added. HFSC is superior to the "Hierarchical
-    Token Bucket" queuing discipline where realtime traffic such as
-    VOIP is being used.
-
-    An excellent overview of HFSC on Linux may be found at
-    http://linux-ip.net/articles/hfsc.en/.
-
-    To use HFSC, several changes need to be made to your traffic
-    shaping configuration:
-
-    	    - To use HFSC on an interface rather than HTB, specify the
-              'hfsc' option in the OPTIONS column in the interfaces's
-              entry in /etc/shorewall/tcdevices.
-
-	    - Modify the RATE colum  for each 'leaf' class (class with no
-              parent class specified) defined for the interface.
-
-	      When using HFSC, the RATE column may specify 1, 2 or 3
-	      pieces of information separated by colons (":").
-
-	      1. The Guaranteed bandwidth (as always).
-	      2. The Maximum delay (DMAX) that the first queued packet
-	         in the class should experience. The delay is expressed
-	         in milliseconds and may be followed by 'ms' (e.g.,
-	      	 10ms. Note that there may be no white space between the
-	      	 number and 'ms'). 
-              3. The maximum transmission unit (UMAX) for this class of
-	         traffic. If not specified, the MTU of the interface is
-		 used. The length is specified in bytes and may be
-	         followed by 'b' (e.g., 800b. Note that there may be no
-	         white space between the number and 'b').
-
-              DMAX should be specified for each leaf class. The Shorewall
-              compiler will issue a warning if DMAX is omitted.
-
-	      Example:
-
-		 full/2:10ms:1500b
-
-                 Guaranteed bandwidth is 1/2 of the devices
-                 OUT-BANDWIDTH. Maximum delay is 10ms. Maximum packet
-                 size is 1500 bytes.
-
-2)  Support for ipset bindings has been removed. Jozsef Kadlecsik has
-    already removed such support from ipset itself.
-
-3)  Optional TOS and LENGTH fields have been added to the tcfilters
-    file.
-
-    The TOS field may contain any of the following:
-
-    	tos-minimize-delay
-	tos-maximuze-throughput
-	tos-maximize-reliability
-	tos-minimize-cost
-	tos-normal-service
-	Hex-number
-	Hex-number/Hex-number
-
-    The hex numbers must have exactly two digits.
-
-    The LENGTH value must be a numeric power of two between 32 and 8192
-    inclusive. Packets with a total length that is strictly less that
-    the specified value will match the rule.
-
-4)  Support for 'norfc1918' has been removed. See the Migration
-    Considerations above.
+None.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 3
@@ -717,3 +641,73 @@ None.
     default class is guaranteed half of the download capacity and my
     work system (172.20.1.107) is guarandeed the other half.
 	
+
+20) Support for the "Hierarchical Fair Service Curve" (HFSC) queuing
+    discipline has been added. HFSC is superior to the "Hierarchical
+    Token Bucket" queuing discipline where realtime traffic such as
+    VOIP is being used.
+
+    An excellent overview of HFSC on Linux may be found at
+    http://linux-ip.net/articles/hfsc.en/.
+
+    To use HFSC, several changes need to be made to your traffic
+    shaping configuration:
+
+    	    - To use HFSC on an interface rather than HTB, specify the
+              'hfsc' option in the OPTIONS column in the interfaces's
+              entry in /etc/shorewall/tcdevices.
+
+	    - Modify the RATE colum  for each 'leaf' class (class with no
+              parent class specified) defined for the interface.
+
+	      When using HFSC, the RATE column may specify 1, 2 or 3
+	      pieces of information separated by colons (":").
+
+	      1. The Guaranteed bandwidth (as always).
+	      2. The Maximum delay (DMAX) that the first queued packet
+	         in the class should experience. The delay is expressed
+	         in milliseconds and may be followed by 'ms' (e.g.,
+	      	 10ms. Note that there may be no white space between the
+	      	 number and 'ms'). 
+              3. The maximum transmission unit (UMAX) for this class of
+	         traffic. If not specified, the MTU of the interface is
+		 used. The length is specified in bytes and may be
+	         followed by 'b' (e.g., 800b. Note that there may be no
+	         white space between the number and 'b').
+
+              DMAX should be specified for each leaf class. The Shorewall
+              compiler will issue a warning if DMAX is omitted.
+
+	      Example:
+
+		 full/2:10ms:1500b
+
+                 Guaranteed bandwidth is 1/2 of the devices
+                 OUT-BANDWIDTH. Maximum delay is 10ms. Maximum packet
+                 size is 1500 bytes.
+
+21) Support for ipset bindings has been removed. Jozsef Kadlecsik has
+    already removed such support from ipset itself.
+
+22) Optional TOS and LENGTH fields have been added to the tcfilters
+    file.
+
+    The TOS field may contain any of the following:
+
+    	tos-minimize-delay
+	tos-maximuze-throughput
+	tos-maximize-reliability
+	tos-minimize-cost
+	tos-normal-service
+	Hex-number
+	Hex-number/Hex-number
+
+    The hex numbers must have exactly two digits.
+
+    The LENGTH value must be a numeric power of two between 32 and 8192
+    inclusive. Packets with a total length that is strictly less that
+    the specified value will match the rule.
+
+23) Support for 'norfc1918' has been removed. See the Migration
+    Considerations above.
+

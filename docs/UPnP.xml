@@ -74,8 +74,6 @@
       include files from libupnp (which is required to build and/or run
       linux-igd).</para>
     </warning>
-
-    <para></para>
   </section>
 
   <section id="linux-igd">
@@ -83,7 +81,7 @@
 
     <para>In /etc/upnpd.conf, you will want:</para>
 
-    <programlisting>insert_forward_rules = yes
+    <programlisting>create_forward_rules = yes
 prerouting_chain_name = UPnP
 forward_chain_name = forwardUPnP</programlisting>
   </section>
@@ -133,5 +131,11 @@ forwardUPnP        net     loc</programlisting>
     <para>You must also ensure that you have a route to 224.0.0.0/4 on your
     internal (local) interface as described in the linux-igd
     documentation.</para>
+
+    <note>
+      <para>The init script included with the Debian linux-idg package adds
+      this route during <command>start</command> and deletes it during
+      <command>stop</command>.</para>
+    </note>
   </section>
 </article>

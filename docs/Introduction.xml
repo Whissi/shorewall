@@ -311,10 +311,22 @@ $FW        net         ACCEPT</programlisting> The above policies will:
         </listitem>
       </itemizedlist></para>
 
+    <para>A word about Shorewall logging is in order. Shorewall does not have
+    direct control over where its messages are logged; that is determined by
+    the configuration of the logging daemon (syslog, rsyslog, syslog-ng,
+    ulogd, etc.). The LOGFILE setting in <ulink
+    url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>
+    tells Shorewall <emphasis>where to find the log</emphasis>; it doesn't
+    determine where messages are logged. See the <ulink
+    url="shorewall_logging.html">Shorewall logging article</ulink> for more
+    information.</para>
+
     <para>To illustrate how rules provide exceptions to policies, suppose that
     you have the polices listed above but you want to be able to connect to
     your firewall from the Internet using Secure Shell (SSH). Recall that SSH
-    connects uses TCP port 22.</para>
+    connects uses TCP port 22. You would add the following rule to <ulink
+    url="manpages/shorewall-rules.html"><filename
+    class="directory">/etc/shorewall/</filename><filename>rules</filename>:</ulink></para>
 
     <programlisting>#ACTION    SOURCE        DEST      PROTO      DEST
 #                                             PORT(S)
@@ -338,7 +350,7 @@ ACCEPT     net           $FW       tcp        22</programlisting>
       </listitem>
 
       <listitem>
-        <para>To keep your <ulink url="shorewall_logging.html">firewall
+        <para>Again, to keep your <ulink url="shorewall_logging.html">firewall
         log</ulink> from filling up with useless noise, Shorewall provides
         <ulink url="Actions.html">common actions</ulink> that silently discard
         or reject such noise before it can be logged. As with everything in
@@ -360,9 +372,15 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     <para>The 'compiled' scripts are placed in the directory <filename
     class="directory">/var/lib/shorewall</filename> and are named to
     correspond to the command being executed. For example, the command
-    "/sbin/shorewall start" will generate a script named
+    <command>/sbin/shorewall start</command> will generate a script named
     <filename>/var/lib/shorewall/.start</filename> and, if the compilation is
-    error free, that script will then be executed.</para>
+    error free, that script will then be executed. If the script executes
+    successfully, it then copies itself to
+    <filename>/var/lib/shorewall/firewall</filename>. When an
+    <command>/sbin/shorewall stop</command> or <command>/sbin/shorewall
+    clear</command> command is subsequently executed,
+    <filename>/var/lib/shorewall/firewall</filename> is run to perform the
+    requested operation.</para>
   </section>
 
   <section id="Packages">

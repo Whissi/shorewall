@@ -725,152 +725,152 @@ sub process_action3( $$$$$ ) {
     clear_comment;
 }
 
-sub process_actions3 () {
-    #
-    # The following small functions generate rules for the builtin actions of the same name
-    #
-    sub dropBcast( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
+#
+# The following small functions generate rules for the builtin actions of the same name
+#
+sub dropBcast( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
 
-	if ( $capabilities{ADDRTYPE} ) {
-	    if ( $level ne '' ) {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
-	    }
-
-	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
-	} else {
-	    if ( $family == F_IPV4 ) {
-		add_command $chainref, 'for address in $ALL_BCASTS; do';
-	    } else {
-		add_command $chainref, 'for address in $ALL_ACASTS; do';
-	    }
-
-	    incr_cmd_level $chainref;
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
-	    add_rule $chainref, '-d $address -j DROP';
-	    decr_cmd_level $chainref;
-	    add_command $chainref, 'done';
-
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+    if ( $capabilities{ADDRTYPE} ) {
+	if ( $level ne '' ) {
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	}
 
+	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
+    } else {
+	if ( $family == F_IPV4 ) {
+	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	} else {
+	    add_command $chainref, 'for address in $ALL_ACASTS; do';
+	}
+
+	incr_cmd_level $chainref;
+	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
+	add_rule $chainref, '-d $address -j DROP';
+	decr_cmd_level $chainref;
+	add_command $chainref, 'done';
+
+	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+    }
+
+
+    if ( $family == F_IPV4 ) {
+	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
+    } else {
+	add_rule $chainref, '-d ff00::/10 -j DROP';
+    }
+}
+
+sub allowBcast( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    if ( $family == F_IPV4 && $capabilities{ADDRTYPE} ) {
+	if ( $level ne '' ) {
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
+	}
+
+	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
+	add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
+    } else {
+	if ( $family == F_IPV4 ) {
+	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	} else {
+	    add_command $chainref, 'for address in $ALL_MACASTS; do';
+	}
+
+	incr_cmd_level $chainref;
+	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
+	add_rule $chainref, '-d $address -j ACCEPT';
+	decr_cmd_level $chainref;
+	add_command $chainref, 'done';
 
 	if ( $family == F_IPV4 ) {
-	    add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
-	} else {
-	    add_rule $chainref, '-d ff00::/10 -j DROP';
-	}
-    }
-
-    sub allowBcast( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	if ( $family == F_IPV4 && $capabilities{ADDRTYPE} ) {
-	    if ( $level ne '' ) {
-		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
-	    }
-
-	    add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
 	} else {
-	    if ( $family == F_IPV4 ) {
-		add_command $chainref, 'for address in $ALL_BCASTS; do';
-	    } else {
-		add_command $chainref, 'for address in $ALL_MACASTS; do';
-	    }
-
-	    incr_cmd_level $chainref;
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
-	    add_rule $chainref, '-d $address -j ACCEPT';
-	    decr_cmd_level $chainref;
-	    add_command $chainref, 'done';
-
-	    if ( $family == F_IPV4 ) {
-		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
-		add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
-	    } else {
-		log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/10 ' if $level ne '';
-		add_rule $chainref, '-d ff00:/10 -j ACCEPT';
-	    }
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/10 ' if $level ne '';
+	    add_rule $chainref, '-d ff00:/10 -j ACCEPT';
 	}
     }
+}
 
-    sub dropNotSyn ( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
+sub dropNotSyn ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
 
-	log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
-	add_rule $chainref , '-p tcp ! --syn -j DROP';
+    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
+    add_rule $chainref , '-p tcp ! --syn -j DROP';
+}
+
+sub rejNotSyn ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
+    add_rule $chainref , '-p tcp ! --syn -j REJECT --reject-with tcp-reset';
+}
+
+sub dropInvalid ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level ne '';
+    add_rule $chainref , '-m state --state INVALID -j DROP';
+}
+
+sub allowInvalid ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level ne '';
+    add_rule $chainref , '-m state --state INVALID -j ACCEPT';
+}
+
+sub forwardUPnP ( $$$ ) {
+}
+
+sub allowinUPnP ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    if ( $level ne '' ) {
+	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
+	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
     }
 
-    sub rejNotSyn ( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
+    add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
+    add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
+}
 
-	log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
-	add_rule $chainref , '-p tcp ! --syn -j REJECT --reject-with tcp-reset';
+sub Limit( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    my @tag = split /,/, $tag;
+
+    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')' unless @tag == 3;
+
+    my $set   = $tag[0];
+
+    for ( @tag[1,2] ) {
+	fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
     }
 
-    sub dropInvalid ( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
+    my $count = $tag[1] + 1;
 
-	log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', '-m state --state INVALID ' if $level ne '';
-	add_rule $chainref , '-m state --state INVALID -j DROP';
+    require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
+
+    add_rule $chainref, "-m recent --name $set --set";
+
+    if ( $level ne '' ) {
+	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
+	log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
+	add_rule $xchainref, '-j DROP';
+	add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref->{name}";
+    } else {
+	add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
     }
 
-    sub allowInvalid ( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
+    add_rule $chainref, '-j ACCEPT';
+}
 
-	log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', '-m state --state INVALID ' if $level ne '';
-	add_rule $chainref , '-m state --state INVALID -j ACCEPT';
-    }
-
-    sub forwardUPnP ( $$$ ) {
-    }
-
-    sub allowinUPnP ( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
-	    log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
-	}
-
-	add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
-	add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
-    }
-
-    sub Limit( $$$ ) {
-	my ($chainref, $level, $tag) = @_;
-
-	my @tag = split /,/, $tag;
-
-	fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')' unless @tag == 3;
-
-	my $set   = $tag[0];
-
-	for ( @tag[1,2] ) {
-	    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
-	}
-
-	my $count = $tag[1] + 1;
-
-	require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
-
-	add_rule $chainref, "-m recent --name $set --set";
-
-	if ( $level ne '' ) {
-	    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
-	    add_rule $xchainref, '-j DROP';
-	    add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref->{name}";
-	} else {
-	    add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
-	}
-
-	add_rule $chainref, '-j ACCEPT';
-    }
-
+sub process_actions3 () {
     my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		       'allowBcast'     => \&allowBcast,
 		       'dropNotSyn'     => \&dropNotSyn,

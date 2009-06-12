@@ -139,11 +139,11 @@ our %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
-our %tosoptions = ( 'tos-minimize-delay'       => 'tos=0x10/0x10' ,
-		    'tos-maximize-throughput'  => 'tos=0x08/0x08' ,
-		    'tos-maximize-reliability' => 'tos=0x04/0x04' ,
-		    'tos-minimize-cost'        => 'tos=0x02/0x02' ,
-		    'tos-normal-service'       => 'tos=0x00/0x1e' );
+our %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
+		    'tos-maximize-throughput'  => '0x08/0x08' ,
+		    'tos-maximize-reliability' => '0x04/0x04' ,
+		    'tos-minimize-cost'        => '0x02/0x02' ,
+		    'tos-normal-service'       => '0x00/0x1e' );
 our %classids;
 
 our @deferred_rules;
@@ -703,7 +703,7 @@ sub validate_tc_class( ) {
 	for my $option ( split_list1 "\L$options", 'option' ) {
 	    my $optval = $tosoptions{$option};
 
-	    $option = $optval if $optval;
+	    $option = "tos=$optval" if $optval;
 
 	    if ( $option eq 'default' ) {
 		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
@@ -821,11 +821,7 @@ sub process_tc_filter( ) {
 	my $tosval = $tosoptions{$tos};
 	my $mask;
 
-	if ( $tosval ) {
-	    $tosval =~ s/^tos=//;
-	} else {
-	    $tosval = $tos;
-	}
+	$tosval = $tos unless $tosval;
 
 	if ( $tosval =~ /^0x[0-9a-f]{2}$/ ) {
 	    $mask = '0xff';

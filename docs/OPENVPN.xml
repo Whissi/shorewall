@@ -463,7 +463,7 @@ secret /etc/openvpn/bridgekey</programlisting>
 dev tap0
 secret /etc/openvpn/bridgekey</programlisting>
 
-    <para>The bridges can be created by manually makeing the tap device tap0
+    <para>The bridges can be created by manually making the tap device tap0
     and bridgeing it with the local ethernet interface. Assuming that the
     local interface on both sides is eth1, the following stanzas in
     /etc/network/interfaces (Debian and derivatives) will create the bridged
@@ -502,5 +502,8 @@ secret /etc/openvpn/bridgekey</programlisting>
       post-down /usr/sbin/brctl delbr br0
       post-down /usr/sbin/tunctl -d tap0
       post-down /sbin/ip link set eth1 down      </programlisting>
+
+    <para>The Shorewall configuration is just a <ulink
+    url="SimpleBridge.html">Simple Bridge</ulink>.</para>
   </section>
 </article>

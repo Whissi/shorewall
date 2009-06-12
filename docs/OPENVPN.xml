@@ -436,315 +436,71 @@ verb 3</programlisting>
     article</ulink> by Marc Zonzon</para>
   </section>
 
-  <section id="Bridge">
-    <title>Securing a Home Wireless Network with OpenVPN (OpenVPN
-    Bridge)</title>
-
-    <para>This section will describe how we once secured our home wireless
-    network using OpenVPN. Our network as it was then<footnote>
-        <para>Our current network uses a similar technique -- see the <ulink
-        url="XenMyWay.html">Xen My Way</ulink> article.</para>
-      </footnote> is as shown in the following diagram.</para>
-
-    <graphic fileref="images/network3.png" />
-
-    <para>The Wireless network is in the lower right of the diagram and
-    consists of two laptops: Eastepnc6000 (Dual Boot Windows XP - SP1, SUSE
-    10.0) and Tipper (SUSE 10.0). We used OpenVPN to bridge those two laptops
-    with the local LAN shown in the lower left hand corner. The laptops were
-    configured with addresses in the 192.168.3.0/24 network connected to the
-    firewall's <filename class="devicefile">eth0</filename> interface which
-    places them in the firewall's <emphasis role="bold">Wifi</emphasis> zone.
-    OpenVPN bridging allowed them to be assigned an additional IP address from
-    the 192.168.1.0/24 network and to be securely bridged to the LAN on the
-    lower left.</para>
-
-    <note>
-      <para>Eastepnc6000 is shown in both the local LAN and in the Wifi zone
-      with IP address 192.168.1.6 -- clearly, the computer could only be in
-      one place or the other. Tipper could also be in either place and would
-      have the IP address 192.168.1.8 regardless.</para>
-    </note>
-
-    <section id="bridge">
-      <title>Configuring the Bridge</title>
-
-      <para>The firewall ran Debian Sarge so the bridge was defined in
-      <filename>/etc/network/interfaces</filename>.</para>
-
-      <programlisting># LAN interface
-auto br0
-iface br0 inet static
-        address 192.168.1.254
-        netmask 255.255.255.0
-        pre-up /usr/sbin/openvpn --mktun --dev tap0
-        pre-up /sbin/ip link set tap0 up
-        pre-up /sbin/ip link set eth3 up
-        pre-up /usr/sbin/brctl addbr br0
-        pre-up /usr/sbin/brctl addif br0 eth3
-        pre-up /usr/sbin/brctl addif br0 tap0
-        pre-down /usr/sbin/brctl delif br0 eth3
-        pre-down /sbin/ip link set eth3 down
-        pre-down /usr/sbin/brctl delif br0 tap0
-        pre-down /sbin/ip link set tap0 down
-        post-down /usr/sbin/brctl delbr br0
-        post-down /usr/sbin/openvpn --rmtun --dev tap0</programlisting>
-
-      <para>Note that the IP address assigned to the bridge is 192.168.1.254
-      -- that was the default gateway address for hosts in the local
-      zone.</para>
-    </section>
-
-    <section id="openvpn">
-      <title>Configuring OpenVPN</title>
-
-      <para>We used X.509 certificates for authentication.</para>
-
-      <section id="server">
-        <title>Firewall (Server) configuration.</title>
-
-        <para>/etc/openvpn/server-bridge.conf defined a bridge and reserved IP
-        addresses 192.168.1.64-192.168.1.71 for VPN clients. Note that the
-        bridge server only used local IP address 192.168.3.254. We ran two
-        instances of OpenVPN; this one and a second tunnel-mode instance for
-        remote access.</para>
-
-        <programlisting>dev tap0
-
-local 192.168.3.254
-
-server-bridge 192.168.1.254 255.255.255.0 192.168.1.64 192.168.1.71
-
-client-to-client
-
-dh dh1024.pem
-
-ca /etc/certs/cacert.pem
-
-crl-verify /etc/certs/crl.pem
-
-cert /etc/certs/gateway.pem
-key /etc/certs/gateway_key.pem
-
-port 1194
-
-comp-lzo
-
-user nobody
-group nogroup
-
-keepalive 15 45
-ping-timer-rem
-persist-tun
-persist-key
-
-client-config-dir /etc/openvpn/bridge-clients
-ccd-exclusive
-
-verb 3</programlisting>
-
-        <para>The files in <filename>/etc/openvpn/bridge-clients</filename>
-        were used to assign a fixed IP address to each laptop. For example,
-        tipper.shorewall.net:</para>
-
-        <programlisting>ifconfig-push 192.168.1.8 255.255.255.0</programlisting>
-      </section>
-
-      <section id="tipper">
-        <title>Tipper Configuration</title>
-
-        <para>/etc/openvpn/wireless.conf:</para>
-
-        <programlisting>dev tap
-
-remote 192.168.3.254
-tls-remote gateway.shorewall.net
-
-client
-
-redirect-gateway
-
-ca /etc/certs/cacert.pem
-
-cert /etc/certs/tipper.pem
-key /etc/certs/tipper_key.pem
-
-port 1194
-
-comp-lzo
-
-ping 15
-ping-restart 45
-ping-timer-rem
-persist-tun
-persist-key
-
-mute-replay-warnings
-
-verb 3</programlisting>
-      </section>
-
-      <section id="XP">
-        <title>Eastepnc6000 (Windows XP) Configuration</title>
-
-        <para>C:\Program Files\Openvpn\config\homewireless.ovpn:</para>
-
-        <programlisting>dev tap
-remote 192.168.3.254
-tls-remote gateway.shorewall.net
-
-tls-client
-pull
-
-ca "/Program Files/OpenVPN/certs/cacert.pem"
-
-cert "/Program Files/OpenVPN/certs/eastepnc6000.pem"
-key "/Program Files/OpenVPN/certs/eastepnc6000_key.pem"
-
-redirect-gateway
-
-port 1194
-
-comp-lzo
-
-ping 15
-ping-restart 45
-ping-timer-rem
-persist-tun
-persist-key
-
-verb 3</programlisting>
-      </section>
-
-      <section id="Linux">
-        <title>Eastepnc6000 (SUSE 10.0) Configuration</title>
-
-        <para>The configuration was the same as shown above only with
-        "/Program Files/OpenVPN" replaced with "/etc/openvpn" (I love
-        OpenVPN).</para>
-      </section>
-
-      <section>
-        <title>Ursa (Windows Vista) Configuration</title>
-
-        <para>In December 2007, I acquired a new laptop that runs Windows
-        Vista. After a frustrating effort, I managed to get it working. The
-        keys to getting it working were:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>You must run a version of OpenVPN that is "Vista Ready" -- I
-            used Matias Sundman's combined OpenVPN 2.1_rc4/OpenVPN GUI 1.0.3
-            installer (see <ulink
-            url="http://openvpn.se/">http://openvpn.se/</ulink>).</para>
-          </listitem>
-
-          <listitem>
-            <para>OpenVPN GUI must be run as the Administrator. In the
-            Explorer, right click on the OpenVPN GUI binary and select
-            Properties-&gt;Compatibility and select "Run this program as an
-            administrator".</para>
-          </listitem>
-
-          <listitem>
-            <para>If you encounter problems where everything looks correct but
-            it doesn't work, reboot and try it again.</para>
-          </listitem>
-        </orderedlist>
-      </section>
-    </section>
-
-    <section id="Shorewall">
-      <title>Configuring Shorewall</title>
-
-      <para>In this configuration, we didn't need any firewalling between the
-      laptops and the local LAN so we set BRIDGING=No in shorewall.conf. The
-      configuration of the bridge then became as described in the <ulink
-      url="SimpleBridge.html">Simple Bridge documentation</ulink>. If you need
-      to control the traffic allowed through the VPN bridge then you will want
-      to configure Shorewall as shown in the <ulink
-      url="bridge-Shorewall-perl.html">Bridge/Firewall
-      documentation</ulink>.</para>
-
-      <section id="FW">
-        <title>Firewall</title>
-
-        <section id="interfaces">
-          <title>/etc/shorewall/interfaces</title>
-
-          <para>Note that the bridge (br0) is defined as the interface to the
-          local zone and has the <emphasis role="bold">routeback</emphasis>
-          option.</para>
-
-          <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
-net     eth2            206.124.146.255         dhcp,logmartians,blacklist,tcpflags,nosmurfs
-loc     br0             192.168.1.255           dhcp,<emphasis role="bold">routeback</emphasis>
-dmz     eth1            -                       logmartians
-Wifi    eth0            192.168.3.255           dhcp,maclist
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-        </section>
-
-        <section id="tunnels">
-          <title>/etc/shorewall/tunnels</title>
-
-          <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
-#                                               ZONE
-openvpnserver:1194      Wifi    192.168.3.0/24
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-        </section>
-      </section>
-
-      <section id="Tipper">
-        <title>Tipper</title>
-
-        <para>Wireless networks pose a threat to all systems that are
-        connected to them and we therefore ran Firewalls on the two Laptops.
-        Eastepnc6000 ran <trademark>Sygate</trademark> Security Agent and
-        Tipper ran a Shorewall-based Netfilter firewall.</para>
-
-        <section id="zones">
-          <title>/etc/shorewall/zones</title>
-
-          <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
-#                                       OPTIONS                 OPTIONS
-<emphasis role="bold">lan     ipv4</emphasis>    #Wired LAN at our home
-net     ipv4
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
-        </section>
-
-        <section id="interfaces1">
-          <title>/etc/shorewall/interfaces</title>
-
-          <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
-#
-net      eth0           detect          routefilter,dhcp,tcpflags
-<emphasis role="bold">lan      tap0           192.168.1.255</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-        </section>
-
-        <section id="policy">
-          <title>/etc/shorewall/policy</title>
-
-          <para>Since we didn't expect any traffic between the <emphasis
-          role="bold">net</emphasis> zone and the <emphasis
-          role="bold">lan</emphasis> zone, we used NONE policies for that
-          traffic. If any such traffic would have occurred, it would have been
-          handled according to the all-&gt;all policy.</para>
-
-          <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
-#                                               LEVEL
-fw              net             ACCEPT
-<emphasis role="bold">fw              lan             ACCEPT
-lan             fw              ACCEPT
-net             lan             NONE
-lan             net             NONE</emphasis>
-net             all             DROP            info
-# The FOLLOWING POLICY MUST BE LAST
-all             all             REJECT          info
-#LAST LINE -- DO NOT REMOVE</programlisting>
-        </section>
-      </section>
-    </section>
+  <section>
+    <title>Bridging Two Networks</title>
+
+    <para>Occasionally, the need arises to have a single LAN span two
+    different geographical locations. OpenVPN allows that to be done
+    easily.</para>
+
+    <para>Consider the following case:</para>
+
+    <graphic align="center" fileref="images/bridge4.png" />
+
+    <para>Part of the 192.168.1.0/24 network is in one location and part in
+    another. The two LANs can be bridged with OpenVPN as described in this
+    section. This example uses a fixed shared key for encryption.</para>
+
+    <para>OpenVPN configuration on left-hand firewall:</para>
+
+    <programlisting>remote 130.252.100.109
+dev tap0
+secret /etc/openvpn/bridgekey</programlisting>
+
+    <para>OpenVPN configuration on right-hand firewall:</para>
+
+    <programlisting>remote 206.124.146.176
+dev tap0
+secret /etc/openvpn/bridgekey</programlisting>
+
+    <para>The bridges can be created by manually makeing the tap device tap0
+    and bridgeing it with the local ethernet interface. Assuming that the
+    local interface on both sides is eth1, the following stanzas in
+    /etc/network/interfaces (Debian and derivatives) will create the bridged
+    interfaces.</para>
+
+    <para>/etc/network/interfaces on the left-hand firewall:</para>
+
+    <programlisting>iface br0 inet static
+      pre-up /usr/sbin/openvpn --mktun --dev tap0
+      pre-up /usr/sbin/brctl addbr br1
+      address 192.168.1.254
+      network 192.168.1.0
+      broadcast 192.168.1.255
+      netmask 255.255.255.0
+      post-up /sbin/ip link set tap0 up
+      post-up /usr/sbin/brctl addif br0 tap0
+      post-up /sbin/ip link set eth1 up
+      post-up /usr/sbin/brctl addif br0 eth1
+      post-down /usr/sbin/brctl delbr br0
+      post-down /usr/sbin/tunctl -d tap0
+      post-down /sbin/ip link set eth1 down      </programlisting>
+
+    <para>/etc/network/interfaces on the right-hand firewall:</para>
+
+    <programlisting>iface br0 inet static
+      pre-up /usr/sbin/openvpn --mktun --dev tap0
+      pre-up /usr/sbin/brctl addbr br1
+      address 192.168.1.253
+      network 192.168.1.0
+      broadcast 192.168.1.255
+      netmask 255.255.255.0
+      post-up /sbin/ip link set tap0 up
+      post-up /usr/sbin/brctl addif br0 tap0
+      post-up /sbin/ip link set eth1 up
+      post-up /usr/sbin/brctl addif br0 eth1
+      post-down /usr/sbin/brctl delbr br0
+      post-down /usr/sbin/tunctl -d tap0
+      post-down /sbin/ip link set eth1 down      </programlisting>
   </section>
 </article>

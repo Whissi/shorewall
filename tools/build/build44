@@ -124,7 +124,6 @@ LITE6RPMNAME=
 TARBALL6=
 LITE6TARBALL=
 
-USEGIT=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -204,12 +203,8 @@ usage()
 
 do_export()
 {
-    if [ -n "$USEGIT" ]; then
-	progress_message "Exporting $1 from Git..." && do_or_die "git --git-dir=$GIT/.git archive --format=tar HEAD $1 | tar -xf - >> $LOGFILE 2>&1"
-	[ $1 = $2 ] || do_or_die "mv -f $1 $2 >> $LOGFILE 2>&1"
-    else
-	progress_message "Exporting $1 from SVN..." && do_or_die "svn export --non-interactive --force ${SVN}/$1  $2 >> $LOGFILE 2>&1"
-    fi
+    progress_message "Exporting $1 from Git..." && do_or_die "git --git-dir=$GIT/.git archive --format=tar HEAD $1 | tar -xf - >> $LOGFILE 2>&1"
+    [ $1 = $2 ] || do_or_die "mv -f $1 $2 >> $LOGFILE 2>&1"
 }
 
 do_signit()
@@ -366,35 +361,20 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
-     4.3.*)
-	USEGIT=Yes
+     4.4.*)
 	XMLPROJ="docs-4.3"
 
-	if [ -n "$USEGIT" ]; then
-	    SVNBRANCH="Shorewall"
-	    SVN6BRANCH="Shorewall6"
-	    LITESVNBRANCH="Shorewall-lite"
-	    LITE6SVNBRANCH="Shorewall6-lite"
-	    DOCTAG="docs"
-	    SAMPLESTAG="Samples"
-	    SAMPLES6TAG="Samples6"
-	    MANPAGETAG=manpages
-	    MANPAGE6TAG=manpages6
-	    LITEMANPAGETAG=manpages-lite
-	    LITE6MANPAGETAG=manpages6-lite
-	else
-	    SVNBRANCH="trunk/Shorewall"
-	    SVN6BRANCH="trunk/Shorewall6"
-	    LITESVNBRANCH="trunk/Shorewall-lite"
-	    LITE6SVNBRANCH="trunk/Shorewall6-lite"
-	    DOCTAG="trunk/docs"
-	    SAMPLESTAG="trunk/Samples"
-	    SAMPLES6TAG="trunk/Samples6"
-	    MANPAGETAG=trunk/manpages
-	    MANPAGE6TAG=trunk/manpages6
-	    LITEMANPAGETAG=trunk/manpages-lite
-	    LITE6MANPAGETAG=trunk/manpages6-lite
-	fi
+	SVNBRANCH="Shorewall"
+	SVN6BRANCH="Shorewall6"
+	LITESVNBRANCH="Shorewall-lite"
+	LITE6SVNBRANCH="Shorewall6-lite"
+	DOCTAG="docs"
+	SAMPLESTAG="Samples"
+	SAMPLES6TAG="Samples6"
+	MANPAGETAG=manpages
+	MANPAGE6TAG=manpages6
+	LITEMANPAGETAG=manpages-lite
+	LITE6MANPAGETAG=manpages6-lite
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -418,6 +398,12 @@ LITETARBALL=shorewall-lite-${VERSION}.tgz
 LITE6TARBALL=shorewall6-lite-${VERSION}.tgz
 
 case $VERSION in
+    *Beta*|*RC*)
+    	BASEVERSION=${VERSION%-*}
+	RPMNAME=shorewall-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
+	RPM6NAME=shorewall6-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
+	LITERPMNAME=shorewall-lite-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
+	LITE6RPMNAME=shorewall6-lite-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
      *)
 	#
 	# Normal Release

@@ -820,18 +820,23 @@ sub process_tc_filter( ) {
     if ( $tos ne '-' ) {
 	my $tosval = $tosoptions{$tos};
 	my $mask;
-	$tos = $tosval if $tosval;
 
-	if ( $tos =~ /^0x[0-9a-f]{2}$/ ) {
+	if ( $tosval ) {
+	    $tosval =~ s/^tos=//;
+	} else {
+	    $tosval = $tos;
+	}
+
+	if ( $tosval =~ /^0x[0-9a-f]{2}$/ ) {
 	    $mask = '0xff';
-	} elsif ( $tos =~ /^(0x[0-9a-f]{2})\/(0x[0-9a-f]{2})$/ ) {
-	    $tos = $1;
-	    $mask = $2;
+	} elsif ( $tosval =~ /^(0x[0-9a-f]{2})\/(0x[0-9a-f]{2})$/ ) {
+	    $tosval = $1;
+	    $mask   = $2;
 	} else {
 	    fatal_error "Invalid TOS ($tos)";
 	}
 
-	$rule .= "\\\n  match ip tos $tos $mask";
+	$rule .= "\\\n  match ip tos $tosval $mask";
     }
 	
     if ( $length ne '-' ) {

@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Config.pm
+# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -348,6 +348,7 @@ sub initialize( $ ) {
 	      LOGBURST => undef,
 	      LOGALLNEW => undef,
 	      BLACKLIST_LOGLEVEL => undef,
+	      RFC1918_LOG_LEVEL => undef,
 	      MACLIST_LOG_LEVEL => undef,
 	      TCP_FLAGS_LOG_LEVEL => undef,
 	      SMURF_LOG_LEVEL => undef,
@@ -429,6 +430,7 @@ sub initialize( $ ) {
 	      DONT_LOAD => '',
 	      AUTO_COMMENT => undef ,
 	      MANGLE_ENABLED => undef ,
+	      RFC1918_STRICT => undef ,
 	      NULL_ROUTE_RFC1918 => undef ,
 	      USE_DEFAULT_RT => undef ,
 	      RESTORE_DEFAULT_ROUTE => undef ,
@@ -2180,7 +2182,7 @@ sub unsupported_yes_no( $ ) {
 
     default_yes_no $option, '';
 
-    fatal_error "$option=Yes is not supported by Shorewall-perl $globals{VERSION}" if $config{$option};
+    fatal_error "$option=Yes is not supported by Shorewall $globals{VERSION}" if $config{$option};
 }
 
 #
@@ -2286,16 +2288,14 @@ sub get_configuration( $ ) {
     unsupported_yes_no 'BRIDGING';
     unsupported_yes_no 'SAVE_IPSETS';
     unsupported_yes_no 'MAPOLDACTIONS';
+    unsupported_yes_no 'RFC1918_STRICT';
 
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
 
-    warning_message 'DELAYBLACKLISTLOAD=Yes is not supported by Shorewall-perl ' . $globals{VERSION} if $config{DELAYBLACKLISTLOAD};
+    warning_message 'DELAYBLACKLISTLOAD=Yes is not supported by Shorewall ' . $globals{VERSION} if $config{DELAYBLACKLISTLOAD};
 
     default_yes_no 'LOGTAGONLY'                 , ''; $globals{LOGTAGONLY} = $config{LOGTAGONLY};
-    default_yes_no 'RFC1918_STRICT'             , '';
-
-    warning_message 'RFC1918_STRICT=Yes ignored. The "norfc1918" interface/host option is no longer supported' if $config{RFC1918_STRICT};
 
     default_yes_no 'FASTACCEPT'                 , '';
 
@@ -2306,7 +2306,7 @@ sub get_configuration( $ ) {
     default_yes_no 'TC_EXPERT'                  , '';
     default_yes_no 'USE_ACTIONS'                , 'Yes';
 
-    warning_message 'USE_ACTIONS=No is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{USE_ACTIONS};
+    warning_message 'USE_ACTIONS=No is not supported by Shorewall ' . $globals{VERSION} unless $config{USE_ACTIONS};
 
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'EXPAND_POLICIES'            , '';
@@ -2396,7 +2396,7 @@ sub get_configuration( $ ) {
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
 
-    fatal_error 'IPSECFILE=ipsec is not supported by Shorewall-perl ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
+    fatal_error 'IPSECFILE=ipsec is not supported by Shorewall ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
 
     for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
@@ -2591,7 +2591,7 @@ sub generate_aux_config() {
 
     my $date = localtime;
 
-    emit "#\n# Shorewall auxiliary configuration file created by Shorewall-perl version $globals{VERSION} - $date\n#";
+    emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
     for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE) {
 	conditionally_add_option $option;

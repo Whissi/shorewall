@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Accounting.pm
+# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Accounting.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #

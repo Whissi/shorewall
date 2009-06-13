@@ -1,5 +1,5 @@
 #
-# Shorewall-perl 4.4 -- /usr/share/shorewall-perl/Shorewall/Nat.pm
+# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Nat.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #

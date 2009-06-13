@@ -38,7 +38,7 @@
   </tbody>
 </table>
 <p> </p>
-<hr><span style="font-weight: bold;">2009-06-01</span>
+<hr><span style="font-weight: bold;">2009-06-14</span>
 <h2><a name="Which"></a>Package Information</h2>
 <p><b>Before trying to install, we strongly urge you to read and print
 a
@@ -58,16 +58,15 @@ Choose this release if you value stability and good documentation. </li>
   <li>The prior STABLE release series is 4.0. We release updates to
 this series to correct problems but usually don't make enhancements to
 it.&nbsp;</li>
-  <li>The DEVELOPMENT release series is 4.3
+  <li>The DEVELOPMENT release series is 4.4 Beta
 (found in the
-'development' directory). Choose this release if you are <strong>very
-experienced</strong> <strong>user</strong> and you are willing to help
-test the code and report bugs. <span style="font-weight: bold;"></span>
-    <strong></strong></li>
+'development' directory). Choose this release if you&nbsp; want to help
+shake out the bugs in the next stable release. <span
+ style="font-weight: bold;"></span> <strong></strong></li>
 </ul>
 For additional information, see this article about the <a
  href="ReleaseModel.html">Shorewall Release Model</a>.
-<p>Beginning with Shorewall version 4.0.0 RC1, there are four related
+<p>In Shorewall version 4.0.*, there are four related
 packages:</p>
 <ul>
   <li><span style="font-weight: bold;">Shorewall-shell</span> -- the
@@ -83,12 +82,12 @@ installations.</li>
   <li><span style="font-weight: bold;">Shorewall-common</span> -- A
 base package required by both
 Shorewall-shell and Shorewall-perl.</li>
-  <li><span style="font-weight: bold;">Shorewall Lite</span> -- a
+  <li><span style="font-weight: bold;">Shorewall-lite</span> -- a
 light-weight Shorewall version that will run
 compiled firewall scripts generated on a system with one of the
 compiler packages installed.</li>
 </ul>
-Beginning with Shorewall version 4.2.4, there are two additional
+In Shorewall version 4.2.*, there are two additional
 packages that provide IPv6 support:<br>
 <ul>
   <li><span style="font-weight: bold;">Shorewall6</span> -- Provides
@@ -102,18 +101,57 @@ run compiled firewall scripts generated on a system with Shorewall6
 installed.<br>
   </li>
 </ul>
+In Shorewall version 4.4.*, the Shorewall-common, Shorewall-shell and
+Shorewall-perl packages are discontinued and replaced with a single <span
+ style="font-weight: bold;">Shorewall</span> package which combined the
+functions of Shorewall-common and Shorewall-perl. The shell-based
+compiler is retired. So with Shorewall 4.4 onward, there are four
+packages:<br>
+<ul>
+  <li><span style="font-weight: bold;">Shorewall </span>-- Includes
+everything needed to create an IPv4 firewall.</li>
+  <li><span style="font-weight: bold;">Shorewall6 </span>-- Requires
+the Shorewall package and adds the capability to create an IPv6
+firewall.</li>
+  <li><span style="font-weight: bold;">Shorewall-lite</span> -- a
+light-weight Shorewall version that will run
+compiled firewall scripts generated on a system with one of the
+compiler packages installed.</li>
+  <li><span style="font-weight: bold;">Shorewall6-lite</span> -- a
+light-weight Shorewall6 version that will
+run compiled firewall scripts generated on a system with Shorewall6
+installed.</li>
+</ul>
 To summarize:
 <ul>
-  <li>On at least one system in your network, you must install one or
+  <li>If you are installing Shorewall 4.2 or earlier:<br>
+  </li>
+  <ul>
+    <li>On at least one system in your network, you must install one or
 both of the compilers (Shorewall-shell and/or Shorewall-perl), the
-Shorewall-common package and possibly the Shorewall6 package..</li>
-  <li>If you only have a single firewall, then that system should be
+Shorewall-common package and possibly the Shorewall6 package.</li>
+    <li>If you only have a single firewall, then that system should be
 your firewall system.</li>
-  <li>If you have more than one firewall, you may wish to install one
+    <li>If you have more than one firewall, you may wish to install one
 or both of the compilers on a single <em>administrative</em> system
 and install Shorewall-lite and/or Shorewall6-lite on the firewalls.
 Doing so will allow for
 centralized administration and configuration of the firewalls.</li>
+  </ul>
+  <li>If you are installing Shorewall 4.4 or later:</li>
+  <ul>
+    <li>On at least one system in your network, you must install the
+Shorewall package. If you need IPv6 firewalls then you must also
+install the Shoreall6 package.</li>
+    <li>If you have a single firewall, then that system should be your
+firewall system.</li>
+    <li>If you have more than one firewall, you may wish to install
+Shorewall on a single <span style="font-style: italic;">administrative</span>
+system and install Shorewall-lite and/or Shorewall6-lite on the
+firewalls. Doing so will allow for centralized administration and
+configuration of the firewalls.<br>
+    </li>
+  </ul>
 </ul>
 <p>When RPM is used to install Shorewall, the compiler (shorewall-shell
 and/or shorewall-perl) and shorewall-common must be installed in a

@@ -82,7 +82,7 @@ my $family        = 4; # F_IPV4
 Getopt::Long::Configure ('bundling');
 
 my $result = GetOptions('h'               => \$help,
-                        '--help'          => \$help,
+                        'help'          => \$help,
                         'export'          => \$export,
 			'e'               => \$export,
 			'directory=s'     => \$shorewall_dir,

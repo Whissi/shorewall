@@ -1017,7 +1017,7 @@ sub setup_traffic_shaping() {
 	my $devref  = $tcdevices{$device};
 	my $defmark = in_hexp ( $devref->{default} || 0 );
 	my $devnum  = in_hexp $devref->{number};
-	my $r2q     = calculate_r2q $devref->{out_bandwidth};
+	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
 	emit "if interface_is_up $device; then";
 

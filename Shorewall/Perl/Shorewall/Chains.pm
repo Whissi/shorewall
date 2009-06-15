@@ -770,7 +770,7 @@ sub use_input_chain($) {
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #    
-    return 1 if $nets > 1;
+    return 1 if $nets > 1 || $interfaceref->{options}{upnpclient};
     #
     # Don't need it if it isn't associated with any zone
     #

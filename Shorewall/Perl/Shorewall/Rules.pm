@@ -605,6 +605,8 @@ sub add_common_rules() {
     }
 
     if ( $family == F_IPV4 ) {
+	my $announced = 0;
+
 	$list = find_interfaces_by_option 'upnp';
 
 	if ( @$list ) {
@@ -612,8 +614,26 @@ sub add_common_rules() {
 
 	    new_nat_chain( 'UPnP' );
 
+	    $announced = 1;
+
 	    for $interface ( @$list ) {
 		add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
+	    }
+	}
+
+	$list = find_interfaces_by_option 'upnpclient';
+
+	if ( @$list ) {
+	    progress_message2 "$doing UPnP" unless $announced;
+
+	    for $interface ( @$list ) {
+		my $chainref = $filter_table->{input_chain $interface};
+		my $base     = uc chain_base $interface;
+		my $variable = get_interface_gateway $interface;
+
+		add_command $chainref, qq(if [ -n "\$${base}_IS_UP" -a -n "$variable" ]; then);
+		add_command $chainref, qq(    echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3);
+		add_command $chainref, qq(fi);
 	    }
 	}
     }

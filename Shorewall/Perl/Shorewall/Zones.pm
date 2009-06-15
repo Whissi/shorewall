@@ -210,6 +210,7 @@ sub initialize( $ ) {
 				  sourceroute => BINARY_IF_OPTION,
 				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  upnp        => SIMPLE_IF_OPTION,
+				  upnpclient  => SIMPLE_IF_OPTION,
 				  mss         => NUMERIC_IF_OPTION,
 				 );
 	%validhostoptions = (

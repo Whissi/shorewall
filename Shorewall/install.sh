@@ -30,7 +30,6 @@ usage() # $1 = exit status
     echo "usage: $ME"
     echo "       $ME -v"
     echo "       $ME -h"
-    echo "       $ME -n"
     exit $1
 }
 

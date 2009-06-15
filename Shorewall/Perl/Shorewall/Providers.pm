@@ -33,7 +33,7 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness );
+our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness $providers );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = '4.3_7';
 
@@ -55,6 +55,8 @@ our $first_fallback_route;
 our %providers;
 
 our @providers;
+
+our $providers;
 
 our $family;
 
@@ -746,7 +748,7 @@ sub test_optional_providers() {
 }
 
 sub setup_providers() {
-    my $providers = 0;
+    $providers = 0;
 
     my $fn = open_file 'providers';
 
@@ -793,30 +795,6 @@ sub setup_providers() {
 	    pop_indent;
 
 	    emit "fi\n";
-	}
-
-	my $interfaces = find_interfaces_by_option 'optional';
-
-	if ( $interfaces ) {
-	    emit '';
-
-	    my $first = 1;
-
-	    for my $interface ( @$interfaces ) {
-		my $base = uc chain_base( $interface );
-
-		if ( $first ) {
-		    $first = 0;
-		} else {
-		    emit '';
-		}
-
-		emit ( "if interface_is_usable $interface; then" ,
-		       "    ${base}_IS_UP=Yes" ,
-		       'else' ,
-		       "    ${base}_IS_UP=" ,
-		       'fi' );
-	    }
 	}
     }
 

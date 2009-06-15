@@ -262,6 +262,32 @@ sub generate_script_2() {
 	emit ( 'esac' ) ,
     }
 
+    unless ( $providers ) {
+	my $interfaces = find_interfaces_by_option 'optional';
+
+	if ( $interfaces ) {
+	    emit '';
+
+	    my $first = 1;
+
+	    for my $interface ( @$interfaces ) {
+		my $base = uc chain_base( $interface );
+
+		if ( $first ) {
+		    $first = 0;
+		} else {
+		    emit '';
+		}
+
+		emit ( "if interface_is_usable $interface; then" ,
+		       "    ${base}_IS_UP=Yes" ,
+		       'else' ,
+		       "    ${base}_IS_UP=" ,
+		       'fi' );
+	    }
+	}
+    }
+
     pop_indent;
 
     emit "\n}\n"; # End of initialize()

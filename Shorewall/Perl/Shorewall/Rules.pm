@@ -1293,10 +1293,12 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $loglevel = '';
 	}
 
-	unless ( $origdest eq '-' ) {
-	    require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in a non-NAT rule', 's' ) unless $actiontype & NATRULE;
-	} else {
-	    $origdest = '';
+	if ( $origdest ) {
+	    unless ( $origdest eq '-' ) {
+		require_capability( 'CONNTRACK_MATCH', 'ORIGINAL DEST in a non-NAT rule', 's' ) unless $actiontype & NATRULE;
+	    } else {
+		$origdest = '';
+	    }
 	}
 
 	$rule .= "-m conntrack --ctorigdstport $origdstports " if $capabilities{NEW_CONNTRACK_MATCH} && $origdstports;

@@ -576,15 +576,6 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/accounting ]; then
     echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
 fi
 #
-# Install the Continue file
-#
-run_install $OWNERSHIP -m 0644 configfiles/continue ${PREFIX}/usr/share/shorewall/configfiles/continue
-
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/continue ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/continue ${PREFIX}/etc/shorewall/continue
-    echo "Continue file installed as ${PREFIX}/etc/shorewall/continue"
-fi
-#
 # Install the Started file
 #
 run_install $OWNERSHIP -m 0644 configfiles/started ${PREFIX}/usr/share/shorewall/configfiles/started

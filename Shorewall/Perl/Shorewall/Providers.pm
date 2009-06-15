@@ -360,14 +360,15 @@ sub add_a_provider( ) {
 
     $balance = $default_balance unless $balance;
 
-    $providers{$table} = { provider  => $table,
-			   number    => $number ,
-			   mark      => $val ? in_hex($val) : $val ,
-			   interface => $interface ,
-			   optional  => $optional ,
-			   gateway   => $gateway ,
-			   shared    => $shared ,
-			   default   => $default };
+    $providers{$table} = { provider    => $table,
+			   number      => $number ,
+			   mark        => $val ? in_hex($val) : $val ,
+			   interface   => $interface ,
+			   optional    => $optional ,
+			   gateway     => $gateway ,
+			   gatewaycase => $gatewaycase ,
+			   shared      => $shared ,
+			   default     => $default };
 
     if ( $track ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
@@ -702,6 +703,48 @@ sub finish_providers() {
     }
 }
 
+sub test_optional_providers() {
+    my $first = 1;
+    for my $table ( @providers ) {
+	my $tableref = $providers{$table};
+
+	if ( $tableref->{optional} ) {
+	    my $interface = $tableref->{interface};
+	    my $base = uc chain_base( $interface );
+	    my $variable;
+
+	    if ( $first ) {
+		emit 'else';
+		push_indent;
+		$first = 0;
+	    } else {
+		emit '';
+	    }
+
+	    if ( $tableref->{shared} ) {
+		$variable = $tableref->{mac};
+	    } elsif ( $tableref->{gatewaycase} eq 'detect' ) {
+		$variable = $tableref->{gateway};
+	    } else {
+		$variable = '';
+	    }
+
+	    if ( $variable ) {
+		emit qq(if interface_is_usable $interface && [ -n "$variable" ]; then);
+	    } else {
+		emit qq(if interface_is_usable $interface; then);
+	    }
+
+	    emit( "    ${base}_IS_UP=Yes" ,
+		  'else',
+		  "    ${base}_IS_UP=" ,
+		  'fi' );
+	}
+    }
+
+    pop_indent unless $first;
+}
+
 sub setup_providers() {
     my $providers = 0;
 
@@ -728,6 +771,7 @@ sub setup_providers() {
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
 	pop_indent;
+	test_optional_providers;
 	emit "fi\n";
 
 	setup_route_marking if @routemarked_interfaces;

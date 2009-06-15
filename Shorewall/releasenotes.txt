@@ -89,7 +89,7 @@ Shorewall 4.4.0 Beta 2
     3.1. As a consequence, Shorewall 4.4 no longer supports set
     binding.
 
-9)  Support for the 'norfc1918' interface and host option has been
+7)  Support for the 'norfc1918' interface and host option has been
     removed. If 'norfc1918' is specified for an entry in either the
     interfaces or the hosts file, a warning is issued and the option is
     ignored.
@@ -99,7 +99,12 @@ Shorewall 4.4.0 Beta 2
     will be ignored.
 
     Users who currently use 'norfc1918' are encouraged to consider
-    using NULL_ROUTE_RFC1918=Yes instead. 
+    using NULL_ROUTE_RFC1918=Yes instead.
+
+ 8) The install.sh scripts in the Shorewall and Shorewall6 packages no
+    longer create a backup copy of the existing configuration. If you
+    want your configuration backed up prior to upgradeing, you will
+    need to do that yourself. 
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0  Beta 2

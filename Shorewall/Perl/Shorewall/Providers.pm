@@ -785,31 +785,32 @@ sub lookup_provider( $ ) {
 
 #
 # This function is called by the compiler when it is generating the initialize() function.
-# It sets the ..._IS_USABLE interface variables appropriately for the optional interfaces
+# The function emits code to set the ..._IS_USABLE interface variables appropriately for the
+# optional interfaces
 #
 sub handle_optional_interfaces() {
 
     my $interfaces = find_interfaces_by_option 'optional';
 
-    if ( $interfaces ) {
+    if ( @$interfaces ) {
 	my $variable;
 
 	for my $interface ( @$interfaces ) {
 	    my $base  = uc chain_base( $interface );
-	    my $table = $provider_interfaces{$interface};
+	    my $provider = $provider_interfaces{$interface};
 
 	    emit '';
 	    
-	    if ( $table ) {
+	    if ( $provider ) {
 		#
 		# This is a provider -- get the provider table entry
 		#
-		my $tableref = $providers{$table};
+		my $providerref = $providers{$provider};
 
-		if ( $tableref->{shared} ) {
-		    $variable = $tableref->{mac};
-		} elsif ( $tableref->{gatewaycase} eq 'detect' ) {
-		    $variable = $tableref->{gateway};
+		if ( $providerref->{shared} ) {
+		    $variable = $providerref->{mac};
+		} elsif ( $providerref->{gatewaycase} eq 'detect' ) {
+		    $variable = $providerref->{gateway};
 		} else {
 		    $variable = '';
 		}
@@ -832,10 +833,6 @@ sub handle_optional_interfaces() {
 		  'fi' );
 	}
     }
-}
-
-sub is_provider_interface( $ ) {
-    return $provider_interfaces{$_[0]} || 0;
 }
 
 #

@@ -1030,7 +1030,7 @@ find_echo() {
     result=$(echo -e "a\tb")
     [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
 
-    result=$(which echo)
+    result=$(mywhich echo)
     [ -n "$result" ] && { echo "$result -e"; return; }
 
     echo echo
@@ -1063,7 +1063,7 @@ find_mac() # $1 = IP address, $2 = interface
 conditionally_flush_conntrack() {
 
     if [ -n "$PURGE" ]; then
-	if [ -n $(which conntrack) ]; then
+	if [ -n $(mywhich conntrack) ]; then
             conntrack -F
 	else
             error_message "WARNING: The '-p' option requires the conntrack utility which does not appear to be installed on this system"

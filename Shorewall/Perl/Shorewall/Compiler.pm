@@ -242,6 +242,8 @@ sub generate_script_2() {
 
 	set_global_variables(1);
 
+	handle_optional_interfaces;
+
 	emit ';;';
     
 	if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
@@ -253,6 +255,8 @@ sub generate_script_2() {
 
 	    set_global_variables(0);
 
+	    handle_optional_interfaces;
+
 	    emit ';;';
 	}
 
@@ -261,8 +265,6 @@ sub generate_script_2() {
 
 	emit ( 'esac' ) ,
     }
-
-    handle_optional_interfaces;
 
     pop_indent;
 
@@ -339,7 +341,7 @@ sub generate_script_3($) {
 		   '        [ -x "$IPSET" ] || fatal_error "IPSET=$IPSET does not exist or is not executable"',
 		   '        ;;',
 		   '    *)',
-		   '        IPSET="$(which $IPSET)"',
+		   '        IPSET="$(mywhich $IPSET)"',
 		   '        [ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"' ,
 		   '        ;;',
 		   'esac',

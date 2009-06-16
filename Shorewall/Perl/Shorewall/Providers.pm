@@ -769,11 +769,8 @@ sub lookup_provider( $ ) {
 
 	my $provider_number = numeric_value $provider;
 
-	for ( keys %providers ) {
-	    if ( $providers{$_}{number} == $provider_number ) {
-		$providerref = $providers{$_};
-		last;
-	    }
+	for ( values %providers ) {
+	    $providerref = $_, last if $_->{number} == $provider_number;
 	}
 
 	fatal_error "Unknown provider ($provider)" unless $providerref;

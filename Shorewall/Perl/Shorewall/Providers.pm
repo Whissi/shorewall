@@ -115,7 +115,7 @@ sub setup_route_marking() {
 	my $mark      = $providerref->{mark};
 	my $base      = uc chain_base $interface;
 
-	add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+	add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
@@ -393,7 +393,7 @@ sub add_a_provider( ) {
 
     my $realm = '';
 
-    start_provider( $table, $number, qq(if [ -n "\$${base}_IS_UP" ]; then) ) if $optional;
+    start_provider( $table, $number, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ) if $optional;
 
     if ( $shared ) {
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
@@ -570,7 +570,7 @@ sub add_an_rtrule( ) {
 
     if ( $optional ) {
 	my $base = uc chain_base( $providers{$provider}{interface} );
-	emit ( '', "if [ -n \$${base}_IS_UP ]; then" );
+	emit ( '', "if [ -n \$${base}_IS_USABLE ]; then" );
 	push_indent;
     }
 
@@ -785,7 +785,7 @@ sub lookup_provider( $ ) {
 
 #
 # This function is called by the compiler when it is generating the initialize() function.
-# It sets the ..._IS_UP interface variables appropriately for the optional interfaces
+# It sets the ..._IS_USABLE interface variables appropriately for the optional interfaces
 #
 sub handle_optional_interfaces() {
 
@@ -820,12 +820,15 @@ sub handle_optional_interfaces() {
 		    emit qq(if interface_is_usable $interface; then);
 		}
 	    } else {
+		#
+		# Not a provider
+		#
 		emit qq(if interface_is_usable $interface; then);
 	    }
 
-	    emit( "    ${base}_IS_UP=Yes" ,
+	    emit( "    ${base}_IS_USABLE=Yes" ,
 		  'else' ,
-		  "    ${base}_IS_UP=" ,
+		  "    ${base}_IS_USABLE=" ,
 		  'fi' );
 	}
     }
@@ -865,7 +868,7 @@ sub handle_stickiness( $ ) {
 		
 		for my $chainref ( $stickyref, $setstickyref ) {
 
-		    add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+		    add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 		    if ( $chainref->{name} eq 'sticky' ) {
 			$rule1 = $_;
@@ -897,7 +900,7 @@ sub handle_stickiness( $ ) {
 		my $stickoref = ensure_mangle_chain 'sticko';
 
 		for my $chainref ( $stickoref, $setstickoref ) {
-		    add_command( $chainref, qq(if [ -n "\$${base}_IS_UP" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+		    add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 		    if ( $chainref->{name} eq 'sticko' ) {
 			$rule1 = $_;

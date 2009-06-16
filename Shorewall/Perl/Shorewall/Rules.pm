@@ -631,7 +631,7 @@ sub add_common_rules() {
 		my $base     = uc chain_base $interface;
 		my $variable = get_interface_gateway $interface;
 
-		add_command $chainref, qq(if [ -n "\$${base}_IS_UP" -a -n "$variable" ]; then);
+		add_command $chainref, qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then);
 		add_command $chainref, qq(    echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3);
 		add_command $chainref, qq(fi);
 	    }

@@ -768,7 +768,9 @@ sub use_input_chain($) {
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
     #
-    # We must use the interfaces's chain if the interface is associated with multiple zone nets
+    # We must use the interfaces's chain if the interface is associated with multiple zone nets or
+    # if the interface has the 'upnpclient' option. In the latter case, the chain's rules will contain
+    # run-time code which currently cannot be transferred to a zone-oriented chain by move_rules().
     #    
     return 1 if $nets > 1 || $interfaceref->{options}{upnpclient};
     #

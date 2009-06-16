@@ -33,7 +33,7 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness $providers );
+our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness is_provider_interface );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = '4.3_7';
 
@@ -56,7 +56,7 @@ our %providers;
 
 our @providers;
 
-our $providers;
+our %provider_interfaces;
 
 our $family;
 
@@ -75,6 +75,7 @@ sub initialize( $ ) {
     @routemarked_providers = ();
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
+    %provider_interfaces = ();
     $balancing           = 0;
     $fallback            = 0;
     $first_default_route  = 1;
@@ -265,6 +266,9 @@ sub add_a_provider( ) {
     }
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
+    fatal_error "Duplicate Provider Interface ($interface)" if $provider_interfaces{$interface};
+    
+    $provider_interfaces{$interface} = 1;
 
     my $provider    = chain_base $table;
     my $base        = uc chain_base $interface;
@@ -748,7 +752,7 @@ sub test_optional_providers() {
 }
 
 sub setup_providers() {
-    $providers = 0;
+    my $providers = 0;
 
     my $fn = open_file 'providers';
 
@@ -821,6 +825,10 @@ sub lookup_provider( $ ) {
 
 
     $providerref->{shared} ? $providerref->{number} : 0;
+}
+
+sub is_provider_interface( $ ) {
+    return $provider_interfaces{$_[0]} || 0;
 }
 
 #

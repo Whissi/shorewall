@@ -262,8 +262,8 @@
 
     <itemizedlist>
       <listitem>
-        <para>Define HTB classes using Shorewall-style column-oriented
-        configuration files.</para>
+        <para>Define HTB and/or HFSC classes using Shorewall-style
+        column-oriented configuration files.</para>
       </listitem>
 
       <listitem>
@@ -273,22 +273,24 @@
       </listitem>
 
       <listitem>
-        <para>Assign traffic to HTB classes by TOS value.</para>
+        <para>Assign traffic to HTB or HFSC classes by TOS value.</para>
       </listitem>
 
       <listitem>
-        <para>Assign outgoing TCP ACK packets to an HTB class.</para>
+        <para>Assign outgoing TCP ACK packets to an HTB or HFSC class.</para>
       </listitem>
 
       <listitem>
-        <para>Assign traffic to HTB classes based on packet mark value.</para>
+        <para>Assign traffic to HTB and/or HFSC classes based on packet mark
+        value or based on packet contents.</para>
       </listitem>
     </itemizedlist>
 
     <para>Those few features are really all that builtin traffic
-    shaping/control provides; consequently, you need to understand HTB and
-    Linux traffic shaping as well as Netfilter packet marking in order to use
-    the facility. Again, please see the links at top of this article.</para>
+    shaping/control provides; consequently, you need to understand HTB and/or
+    HFSC and Linux traffic shaping as well as Netfilter packet marking in
+    order to use the facility. Again, please see the links at top of this
+    article.</para>
 
     <para>For defining bandwidths (for either devices or classes) please use
     kbit or kbps (for Kilobytes per second) and make sure there is <emphasis
@@ -329,11 +331,12 @@
           You man NOT specify wildcards here, e.g. if you have multiple ppp
           interfaces, you need to put them all in here! Shorewall will
           determine if the device exists and will only configure the device if
-          it does exist. If it doesn't exist, the following warning is
-          issued:</para>
+          it does exist. If it doesn't exist or it is DOWN, the following
+          warning is issued:</para>
 
-          <para><emphasis role="bold">WARNING: Device &lt;device name&gt; not
-          found -- traffic-shaping configuration skipped</emphasis></para>
+          <para><emphasis role="bold">WARNING: Device &lt;device name&gt; is
+          not in the UP state -- traffic-shaping configuration
+          skipped</emphasis></para>
 
           <para>Shorewall assigns a sequential <firstterm>interface
           number</firstterm> to each interface (the first entry in
@@ -341,6 +344,11 @@
           second is interface 2 and so on) You can also explicitly specify the
           interface number by prefixing the interface name with the number and
           a colon (":"). Example: 1:eth0.</para>
+
+          <warning>
+            <para>Device numbers are expressed in hexidecimal. So the device
+            following 9 is A, not 10.</para>
+          </warning>
         </listitem>
 
         <listitem>
@@ -393,9 +401,9 @@
 
               <listitem>
                 <para>Shorewall normally uses the <firstterm>Hierarchical
-                Token Bucket</firstterm> queuing discipline. When
+                Token Bucket</firstterm> (HTB) queuing discipline. When
                 <option>hfsc</option> is specified, the
-                <firstterm>Hierarchical Fair Service Curves</firstterm>
+                <firstterm>Hierarchical Fair Service Curves</firstterm> (HFSC)
                 discipline is used instead.</para>
               </listitem>
             </varlistentry>
@@ -454,6 +462,11 @@ ppp0           6000kbit         500kbit</programlisting>
           <emphasis>interface</emphasis>:<emphasis>parent-class</emphasis>:<emphasis>class</emphasis>)
           -- the number of a class that you have previously defined. The
           sub-class may borrow unused bandwidth from its parent.</para>
+
+          <warning>
+            <para>Class numbers are expressed in hexidecimal. So the class
+            following class 9 is A, not 10.</para>
+          </warning>
         </listitem>
 
         <listitem>
@@ -481,7 +494,8 @@ ppp0           6000kbit         500kbit</programlisting>
           information separated by colons (":"). In addition to the minimum
           bandwidth, leaf classes may specify realtime criteria: DMAX (maximum
           delay in milliseconds) and optionally UMAX (the largest packet
-          expected in the class).</para>
+          expected in the class). See <link linkend="HFSC">below</link> for
+          details.</para>
         </listitem>
 
         <listitem>
@@ -629,7 +643,7 @@ ppp0           6000kbit         500kbit</programlisting>
               <para>Those that begin with "nfct-" are Netfilter connection
               tracking fields. As shown above, we recommend flow=nfct-src;
               that means that we want to use the source IP address
-              <emphasis>before NAT</emphasis> as the key.</para>
+              <emphasis>before SNAT</emphasis> as the key.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -716,7 +730,8 @@ ppp0           6000kbit         500kbit</programlisting>
       address rewriting takes place. This makes it impossible to mark inbound
       packets based on their destination address when SNAT or Masquerading are
       being used. You can cause packet marking to occur in the FORWARD chain
-      by using the MARK_IN_FORWARD_CHAIN option in shorewall.conf.</para>
+      by using the MARK_IN_FORWARD_CHAIN option in shorewall.conf or by using
+      the :F qualifier (see below).</para>
 
       <para>Columns in the file are as follows:</para>
 

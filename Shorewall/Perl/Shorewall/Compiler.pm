@@ -262,27 +262,7 @@ sub generate_script_2() {
 	emit ( 'esac' ) ,
     }
 
-    my $interfaces = find_interfaces_by_option 'optional';
-
-    if ( $interfaces ) {
-	emit '';
-
-	my $first = 1;
-	
-	for my $interface ( @$interfaces ) {
-	    unless ( is_provider_interface $interface ) {
-		my $base = uc chain_base( $interface );
-
-		$first and $first = 0 or emit '';
-
-		emit ( "if interface_is_usable $interface; then" ,
-		       "    ${base}_IS_UP=Yes" ,
-		       'else' ,
-		       "    ${base}_IS_UP=" ,
-		       'fi' );
-	    }
-	}
-    }
+    handle_optional_interfaces;
 
     pop_indent;
 

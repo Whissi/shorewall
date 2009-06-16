@@ -33,7 +33,7 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness is_provider_interface );
+our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = '4.3_7';
 
@@ -268,7 +268,7 @@ sub add_a_provider( ) {
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
     fatal_error "Duplicate Provider Interface ($interface)" if $provider_interfaces{$interface};
     
-    $provider_interfaces{$interface} = 1;
+    $provider_interfaces{$interface} = $table;
 
     my $provider    = chain_base $table;
     my $base        = uc chain_base $interface;
@@ -331,6 +331,7 @@ sub add_a_provider( ) {
 		$loose   = 1;
 		$default_balance = 0;
 	    } elsif ( $option eq 'optional' ) {
+		warning_message q(The 'optional' provider option is deprecated - use the 'optional' interface option instead);
 		set_interface_option $interface, 'optional', 1;
 		$optional = 1;
 	    } elsif ( $option =~ /^src=(.*)$/ ) {
@@ -392,14 +393,16 @@ sub add_a_provider( ) {
 
     my $realm = '';
 
+    start_provider( $table, $number, qq(if [ -n "\$${base}_IS_UP" ]; then) ) if $optional;
+
     if ( $shared ) {
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
-	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$variable" ]; then) );
+	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$variable" ]; then) ) unless $optional;
     } elsif ( $gatewaycase eq 'detect' ) {
-	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) );
+	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) ) unless $optional;
     } else {
-	start_provider( $table, $number, "if interface_is_usable $interface; then" );
+	start_provider( $table, $number, "if interface_is_usable $interface; then" ) unless $optional;
 	emit "run_ip route add default dev $interface table $number" if $gatewaycase eq 'none';
     }	
 
@@ -478,8 +481,6 @@ sub add_a_provider( ) {
 
     emit qq(\nprogress_message "   Provider $table ($number) Added"\n);
 
-    emit ( "${base}_IS_UP=Yes" ) if $optional;
-
     pop_indent;
     emit 'else';
 
@@ -489,8 +490,6 @@ sub add_a_provider( ) {
 	} else {
 	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );
 	}
-
-	emit( "    ${base}_IS_UP=" );
     } else {
 	if ( $shared ) {
 	    emit( "    fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Added\"" );
@@ -709,48 +708,6 @@ sub finish_providers() {
     }
 }
 
-sub test_optional_providers() {
-    my $first = 1;
-    for my $table ( @providers ) {
-	my $tableref = $providers{$table};
-
-	if ( $tableref->{optional} ) {
-	    my $interface = $tableref->{interface};
-	    my $base = uc chain_base( $interface );
-	    my $variable;
-
-	    if ( $first ) {
-		emit 'else';
-		push_indent;
-		$first = 0;
-	    } else {
-		emit '';
-	    }
-
-	    if ( $tableref->{shared} ) {
-		$variable = $tableref->{mac};
-	    } elsif ( $tableref->{gatewaycase} eq 'detect' ) {
-		$variable = $tableref->{gateway};
-	    } else {
-		$variable = '';
-	    }
-
-	    if ( $variable ) {
-		emit qq(if interface_is_usable $interface && [ -n "$variable" ]; then);
-	    } else {
-		emit qq(if interface_is_usable $interface; then);
-	    }
-
-	    emit( "    ${base}_IS_UP=Yes" ,
-		  'else',
-		  "    ${base}_IS_UP=" ,
-		  'fi' );
-	}
-    }
-
-    pop_indent unless $first;
-}
-
 sub setup_providers() {
     my $providers = 0;
 
@@ -777,7 +734,6 @@ sub setup_providers() {
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
 	pop_indent;
-	test_optional_providers;
 	emit "fi\n";
 
 	setup_route_marking if @routemarked_interfaces;
@@ -825,6 +781,54 @@ sub lookup_provider( $ ) {
 
 
     $providerref->{shared} ? $providerref->{number} : 0;
+}
+
+#
+# This function is called by the compiler when it is generating the initialize() function.
+# It sets the ..._IS_UP interface variables appropriately for the optional interfaces
+#
+sub handle_optional_interfaces() {
+
+    my $interfaces = find_interfaces_by_option 'optional';
+
+    if ( $interfaces ) {
+	my $variable;
+
+	for my $interface ( @$interfaces ) {
+	    my $base  = uc chain_base( $interface );
+	    my $table = $provider_interfaces{$interface};
+
+	    emit '';
+	    
+	    if ( $table ) {
+		#
+		# This is a provider -- get the provider table entry
+		#
+		my $tableref = $providers{$table};
+
+		if ( $tableref->{shared} ) {
+		    $variable = $tableref->{mac};
+		} elsif ( $tableref->{gatewaycase} eq 'detect' ) {
+		    $variable = $tableref->{gateway};
+		} else {
+		    $variable = '';
+		}
+
+		if ( $variable ) {
+		    emit qq(if interface_is_usable $interface && [ -n "$variable" ]; then);
+		} else {
+		    emit qq(if interface_is_usable $interface; then);
+		}
+	    } else {
+		emit qq(if interface_is_usable $interface; then);
+	    }
+
+	    emit( "    ${base}_IS_UP=Yes" ,
+		  'else' ,
+		  "    ${base}_IS_UP=" ,
+		  'fi' );
+	}
+    }
 }
 
 sub is_provider_interface( $ ) {

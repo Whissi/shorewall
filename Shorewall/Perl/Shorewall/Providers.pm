@@ -46,6 +46,7 @@ use constant { LOCAL_TABLE   => 255,
 our @routemarked_providers;
 our %routemarked_interfaces;
 our @routemarked_interfaces;
+our %provider_interfaces;
 
 our $balancing;
 our $fallback;
@@ -56,9 +57,9 @@ our %providers;
 
 our @providers;
 
-our %provider_interfaces;
-
 our $family;
+
+use constant { ROUTEMARKED_SHARED => 1, ROUTEMARKED_UNSHARED => 2 };
 
 #
 # Initialize globals -- we take this novel approach to globals initialization to allow
@@ -75,7 +76,7 @@ sub initialize( $ ) {
     @routemarked_providers = ();
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
-    %provider_interfaces = ();
+    %provider_interfaces    = ();
     $balancing           = 0;
     $fallback            = 0;
     $first_default_route  = 1;
@@ -266,10 +267,7 @@ sub add_a_provider( ) {
     }
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
-    fatal_error "Duplicate Provider Interface ($interface)" if $provider_interfaces{$interface};
     
-    $provider_interfaces{$interface} = $table;
-
     my $provider    = chain_base $table;
     my $base        = uc chain_base $interface;
     my $gatewaycase = '';
@@ -381,10 +379,10 @@ sub add_a_provider( ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
 
 	if ( $routemarked_interfaces{$interface} ) {
-	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} > 1;
+	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} == ROUTEMARKED_UNSHARED;
 	    fatal_error "Multiple providers through the same interface must their IP address specified in the INTERFACES" unless $shared;
 	} else {
-	    $routemarked_interfaces{$interface} = $shared ? 1 : 2;
+	    $routemarked_interfaces{$interface} = $shared ? ROUTEMARKED_SHARED : ROUTEMARKED_UNSHARED;
 	    push @routemarked_interfaces, $interface;
 	}
 
@@ -393,12 +391,16 @@ sub add_a_provider( ) {
 
     my $realm = '';
 
-    start_provider( $table, $number, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ) if $optional;
+    if ( $optional && ! $shared ) {
+	start_provider( $table, $number, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
+	$provider_interfaces{$interface} = $table;
+    }
 
     if ( $shared ) {
+	fatal_error "Interface $interface is associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
-	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$variable" ]; then) ) unless $optional;
+	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$variable" ]; then) );
     } elsif ( $gatewaycase eq 'detect' ) {
 	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) ) unless $optional;
     } else {
@@ -790,30 +792,20 @@ sub handle_optional_interfaces() {
     my $interfaces = find_interfaces_by_option 'optional';
 
     if ( @$interfaces ) {
-	my $variable;
-
 	for my $interface ( @$interfaces ) {
 	    my $base  = uc chain_base( $interface );
 	    my $provider = $provider_interfaces{$interface};
 
 	    emit '';
-	    
+
 	    if ( $provider ) {
 		#
 		# This is a provider -- get the provider table entry
 		#
 		my $providerref = $providers{$provider};
 
-		if ( $providerref->{shared} ) {
-		    $variable = $providerref->{mac};
-		} elsif ( $providerref->{gatewaycase} eq 'detect' ) {
-		    $variable = $providerref->{gateway};
-		} else {
-		    $variable = '';
-		}
-
-		if ( $variable ) {
-		    emit qq(if interface_is_usable $interface && [ -n "$variable" ]; then);
+		if ( $providerref->{gatewaycase} eq 'detect' ) {
+		    emit qq(if interface_is_usable $interface && [ -n "$providerref->{gateway}" ]; then);
 		} else {
 		    emit qq(if interface_is_usable $interface; then);
 		}

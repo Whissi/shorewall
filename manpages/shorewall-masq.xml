@@ -119,10 +119,11 @@
         <listitem>
           <para>Set of hosts that you wish to masquerade. You can specify this
           as an <emphasis>address</emphasis> (net or host) or as an
-          <emphasis>interface</emphasis>. If you give the name of an
-          interface, the interface must be up before you start the firewall
-          (Shorewall will use your main routing table to determine the
-          appropriate addresses to masquerade).</para>
+          <emphasis>interface</emphasis> (use of an interface is deprecated).
+          If you give the name of an interface, the interface must be up
+          before you start the firewall and the Shorewall rules compiler will
+          warn you of that fact. (Shorewall will use your main routing table
+          to determine the appropriate addresses to masquerade).</para>
 
           <para>In order to exclude a address of the specified SOURCE, you may
           append an <emphasis>exclusion</emphasis> ("!" and a comma-separated

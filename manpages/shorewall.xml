@@ -871,6 +871,12 @@
           <para>The <replaceable>iptables match expression</replaceable> must
           be one or more matches that may appear in both the raw table OUTPUT
           and raw table PREROUTING chains.</para>
+
+          <para>The trace records are written to the kernel's log buffer with
+          faciility = kernel and priority = warning, and they are routed from
+          there by your logging daemon (syslogd, rsyslog, syslog-ng, ...) --
+          Shorewall has no control over where the messages go; consult your
+          logging daemon's documentation.</para>
         </listitem>
       </varlistentry>
 

@@ -226,6 +226,19 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>iptrace</option></arg>
+
+      <arg choice="plain"><replaceable>iptables match
+      expression</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>load</option></arg>
 
       <arg><option>-s</option></arg>
@@ -277,6 +290,19 @@
       <arg choice="plain"><option>logreject</option></arg>
 
       <arg choice="plain"><replaceable>address</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>noiptrace</option></arg>
+
+      <arg choice="plain"><replaceable>iptables match
+      expression</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -836,6 +862,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">iptrace</emphasis></term>
+
+        <listitem>
+          <para>This is a low-level debugging command that causes iptables
+          TRACE log records to be created. See iptables(8) for details.</para>
+
+          <para>The <replaceable>iptables match expression</replaceable> must
+          be one or more matches that may appear in both the raw table OUTPUT
+          and raw table PREROUTING chains.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">load</emphasis></term>
 
         <listitem>
@@ -916,6 +955,19 @@
           to be logged then rejected. Logging occurs at the log level
           specified by the BLACKLIST_LOGLEVEL setting in <ulink
           url="shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">noiptrace</emphasis></term>
+
+        <listitem>
+          <para>This is a low-level debugging command that cancels a trace
+          started by a preceding <command>iptrace</command> command.</para>
+
+          <para>The <replaceable>iptables match expression</replaceable> must
+          be one given in the <command>iptrace</command> command being
+          cancelled.</para>
         </listitem>
       </varlistentry>
 

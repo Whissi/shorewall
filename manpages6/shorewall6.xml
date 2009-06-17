@@ -151,6 +151,19 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>iptrace</option></arg>
+
+      <arg choice="plain"><replaceable>iptables match
+      expression</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>load</option></arg>
 
       <arg><option>-s</option></arg>
@@ -202,6 +215,19 @@
       <arg choice="plain"><option>logreject</option></arg>
 
       <arg choice="plain"><replaceable>address</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>noiptrace</option></arg>
+
+      <arg choice="plain"><replaceable>iptables match
+      expression</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -670,12 +696,16 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">hits</emphasis></term>
+        <term><emphasis role="bold">iptrace</emphasis></term>
 
         <listitem>
-          <para>Generates several reports from Shorewall6 log messages in the
-          current log file. If the <option>-t</option> option is included, the
-          reports are restricted to log messages generated today.</para>
+          <para>This is a low-level debugging command that causes iptables
+          TRACE log records to be created. See ip6tables(8) for
+          details.</para>
+
+          <para>The <replaceable>iptables match expression</replaceable> must
+          be one or more matches that may appear in both the raw table OUTPUT
+          and raw table PREROUTING chains.</para>
         </listitem>
       </varlistentry>
 
@@ -760,6 +790,19 @@
           to be logged then rejected. Logging occurs at the log level
           specified by the BLACKLIST_LOGLEVEL setting in <ulink
           url="shorewall6.conf.html">shorewall6.conf</ulink> (5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">noiptrace</emphasis></term>
+
+        <listitem>
+          <para>This is a low-level debugging command that cancels a trace
+          started by a preceding <command>iptrace</command> command.</para>
+
+          <para>The <replaceable>iptables match expression</replaceable> must
+          be one given in the <command>iptrace</command> command being
+          cancelled.</para>
         </listitem>
       </varlistentry>
 

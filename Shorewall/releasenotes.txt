@@ -149,6 +149,33 @@ None.
     that, like all aspects of UPnP, this is a security hole so use this
     option at your own risk.
 
+2)  'iptrace' and 'noiptrace' commands have been added to both
+    /sbin/shorewall and /sbin/shorewall6.
+
+    These are low-level debugging commands that cause
+    iptables/ip6tables TRACE log messages to be generated. See 'man
+    iptables' and 'man ip6tables' for details.
+
+    The syntax for the commands is:
+
+    	iptrace <iptables/ip6tables match expression>
+    	noiptrace <iptables/ip6tables match expression>
+
+    iptrace starts the trace; noiptrace turns it off.
+
+    The  match expression must be an expression that is legal in both
+    the raw table OUTPUT and PREROUTING chains.
+
+    Examaple:
+
+	To trace all packets desinted for IP address 206.124.146.176:
+
+	   shorewall iptrace -d 206.124.146.176
+
+	To turn that trace off:
+
+	   shorewall noiptrace -d 206.124.146.176
+	
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 4
 ----------------------------------------------------------------------------

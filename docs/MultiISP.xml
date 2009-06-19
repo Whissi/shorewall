@@ -1321,9 +1321,10 @@ fi</programlisting></para>
         in the preceding section.</para>
 
         <para>Like many Open Source products, LSM is poorly documented. It's
-        main configuration file is normally kept in /etc/lsm/lsm.conf, but the
-        file's name is passed as an argument to the lsm program so you can
-        name it anything you want.</para>
+        main configuration file is normally kept in
+        <filename>/etc/lsm/lsm.conf</filename>, but the file's name is passed
+        as an argument to the lsm program so you can name it anything you
+        want.</para>
 
         <para>The sample <filename>lsm.conf</filename> included with the
         product shows some of the possibilities for configuration. One feature
@@ -1332,8 +1333,20 @@ fi</programlisting></para>
         configuration file.</para>
 
         <para>I personally use LSM here at shorewall.net (configuration is
-        described <link linkend="Complete">below</link>). Here are my relevant
-        configuration files:</para>
+        described <link linkend="Complete">below</link>). I have set things up
+        so that Shorewall [re]starts lsm during processing of the
+        <command>start</command> and <command>restore</command> commands. I
+        don't have Shorewall restart lsm during Shorewall
+        <command>restart</command> because I restart Shorewall much more often
+        than the average user is likely to do. I have Shorewall start lsm
+        because I have a dynamic IP address from one of my providers
+        (Comcast); Shorewall detects the default gateway to that provider and
+        creates a secondary configuration file
+        (<filename>/etc/lsm/shorewall.conf</filename>) that contains the link
+        configurations. That file is included by
+        <filename>/etc/lsm/lsm.conf</filename>.</para>
+
+        <para>Here are my relevant configuration files:</para>
 
         <para><filename>/etc/shorewall/isusable</filename>:</para>
 

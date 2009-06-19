@@ -115,7 +115,7 @@ sub do_ipsec_options($)
 #
 sub process_one_masq( )
 {
-    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark ) = split_line1 2, 7, 'masq file';
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user ) = split_line1 2, 8, 'masq file';
 
     if ( $interfacelist eq 'COMMENT' ) {
 	process_comment;
@@ -183,6 +183,7 @@ sub process_one_masq( )
     # Handle Mark
     #
     $baserule .= do_test( $mark, 0xFF) if $mark ne '-';
+    $baserule .= do_user( $user )      if $user ne '-';
 
     for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';

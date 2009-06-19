@@ -97,6 +97,9 @@ sub generate_script_1() {
 # Functions to execute the various user exits (extension scripts)
 ################################################################################
 EOF
+    my $lib = find_file 'lib.user';
+
+    copy1 $lib, emit "\n" if -f $lib;
 
     for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed restored findgw/ {
 	emit "\nrun_${exit}_exit() {";

@@ -1355,6 +1355,10 @@ fi</programlisting></para>
 
         <para><filename>/etc/shorewall/isusable</filename>:</para>
 
+        <para>Note that <filename>/etc/lsm/script </filename>writes
+        a<filename> ${VARDIR}/xxx.status</filename> file when the status of an
+        interface changes. </para>
+
         <programlisting>local status=0
 
 [ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
@@ -1378,7 +1382,7 @@ connection {
 
 connection {
     name=Comcast
-    checkip=$ETH3_GATEWAY
+    checkip=${ETH3_GATEWAY:-71.227.156.1}
     device=eth3
     ttl=1
 }
@@ -1388,7 +1392,8 @@ EOF
 fi</programlisting>
 
         <para>eth3 has a dynamic IP address so I need to use the
-        Shorewall-detected gateway address ($ETH3_GATEWAY).</para>
+        Shorewall-detected gateway address ($ETH3_GATEWAY). I supply a default
+        value in the event that detection fails.</para>
 
         <para><filename>/etc/shorewall/restored</filename>:</para>
 

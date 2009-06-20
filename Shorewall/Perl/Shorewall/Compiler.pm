@@ -97,7 +97,7 @@ sub generate_script_1() {
 # Functions to execute the various user exits (extension scripts)
 ################################################################################
 EOF
-    my $lib = find_file 'lib.user';
+    my $lib = find_file 'lib.private';
 
     copy1 $lib, emit "\n" if -f $lib;
 

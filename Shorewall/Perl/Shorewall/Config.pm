@@ -79,6 +79,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       push_indent
 				       pop_indent
 				       copy
+				       copy1
 				       create_temp_aux_config
 				       finalize_aux_config
 				       set_shorewall_dir
@@ -1088,6 +1089,8 @@ sub copy1( $ ) {
 
 	close IF;
     }
+
+    $lastlineblank = 0;
 }
 
 #

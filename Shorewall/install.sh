@@ -576,6 +576,15 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/accounting ]; then
     echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
 fi
 #
+# Install the private library file
+#
+run_install $OWNERSHIP -m 0644 configfiles/lib.private ${PREFIX}/usr/share/shorewall/configfiles/lib.private
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/lib.private ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/lib.private ${PREFIX}/etc/shorewall/lib.private
+    echo "Private library file installed as ${PREFIX}/etc/shorewall/lib.private"
+fi
+#
 # Install the Started file
 #
 run_install $OWNERSHIP -m 0644 configfiles/started ${PREFIX}/usr/share/shorewall/configfiles/started

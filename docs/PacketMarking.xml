@@ -51,7 +51,18 @@
     stored in the <emphasis>skb</emphasis> (socket buffer) structure used by
     the Linux kernel to track packets; the mark value is not part of the
     packet itself and cannot be seen with <command>tcpdump</command>,
-    <command>ethereal</command> or any other packet sniffing program.</para>
+    <command>ethereal</command> or any other packet sniffing program. They can
+    be seen in an iptables/ip6tables trace -- see the
+    <command>iptrace</command> command in <ulink
+    url="manpages/shorewall.html">shorewal</ulink>(8) and <ulink
+    url="manpages6/shorewall6.html">shorewall6</ulink>(8).</para>
+
+    <para>Example (output has been folded for display ):</para>
+
+    <programlisting>[11692.096077] TRACE: mangle:tcout:return:3 IN= OUT=eth0 SRC=172.20.1.130
+                                            DST=206.124.146.254 LEN=84 TOS=0x00 PREC=0x00 TTL=64
+                                            ID=0 DF PROTO=ICMP TYPE=8 CODE=0 ID=7212 SEQ=3 UID=0 
+                                            GID=1000 <emphasis role="bold">MARK=0x10082</emphasis></programlisting>
 
     <para>Each active connection (even those that are not yet in ESTABLISHED
     state) has a mark value that is distinct from the packet marks. Connection

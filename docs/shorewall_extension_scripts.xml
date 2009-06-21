@@ -70,6 +70,13 @@
 
     <itemizedlist>
       <listitem>
+        <para><filename>lib.private</filename> -- Intended to contain
+        declarations of shell functions to be called by other run-time
+        extension scripts. See<ulink url="MultiISP.html#lsm"> this
+        article</ulink> for an example of its use.</para>
+      </listitem>
+
+      <listitem>
         <para><filename>compile</filename> -- Invoked by the rules compiler
         early in the compilation process. Must be written in Perl.</para>
       </listitem>
@@ -183,6 +190,15 @@ esac</programlisting><caution>
         <para><filename>restored</filename> -- This script is invoked at the
         completion of a successful <command>shorewall restore</command> and
         <command>shorewall-lite restore</command>.</para>
+      </listitem>
+
+      <listitem>
+        <para>findgw -- This script is invoked when Shorewall is attempting to
+        discover the gateway through a dynamic interface. The script is most
+        often used when the interface is managed by dhclient which has no
+        standardized location/name for its lease database. Scripts for use
+        with dhclient on several distributions are available at <ulink
+        url="http://www.shorewall.net/pub/shorewall/contrib/findgw/">http://www.shorewall.net/pub/shorewall/contrib/findgw/</ulink></para>
       </listitem>
     </itemizedlist>
 

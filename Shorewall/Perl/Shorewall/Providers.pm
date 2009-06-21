@@ -116,7 +116,15 @@ sub setup_route_marking() {
 	my $mark      = $providerref->{mark};
 	my $base      = uc chain_base $interface;
 
-	add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+	if ( $providerref->{optional} ) {
+	    if ( $providerref->{shared} ) {
+		add_command( $chainref, qq(if [ interface_is_usable $interface -a -n "$providerref->{mac}" ]; then) );
+	    } else {
+		add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
+	    }
+		
+	    incr_cmd_level( $chainref );
+	}
 
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $interface -m mark --mark 0/$mask -j routemark";
@@ -391,22 +399,25 @@ sub add_a_provider( ) {
 
     my $realm = '';
 
-    if ( $optional && ! $shared ) {
-	start_provider( $table, $number, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
-	$provider_interfaces{$interface} = $table;
-    }
-
+    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
+    
     if ( $shared ) {
-	fatal_error "Interface $interface is associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
 	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$variable" ]; then) );
-    } elsif ( $gatewaycase eq 'detect' ) {
-	start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) ) unless $optional;
     } else {
-	start_provider( $table, $number, "if interface_is_usable $interface; then" ) unless $optional;
+	if ( $optional ) {
+	    start_provider( $table, $number, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
+	} elsif ( $gatewaycase eq 'detect' ) {
+	    start_provider( $table, $number, qq(if interface_is_usable $interface && [ -n "$gateway" ]; then) );
+	} else {
+	    start_provider( $table, $number, "if interface_is_usable $interface; then" );
+	}
+	
+	$provider_interfaces{$interface} = $table;
+
 	emit "run_ip route add default dev $interface table $number" if $gatewaycase eq 'none';
-    }	
+    }
 
     if ( $mark ne '-' ) {
 	emit ( "qt \$IP -$family rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
@@ -800,7 +811,7 @@ sub handle_optional_interfaces() {
 
 	    if ( $provider ) {
 		#
-		# This is a provider -- get the provider table entry
+		# This interface is associated with a non-shared provider -- get the provider table entry
 		#
 		my $providerref = $providers{$provider};
 
@@ -811,7 +822,7 @@ sub handle_optional_interfaces() {
 		}
 	    } else {
 		#
-		# Not a provider
+		# Not a provider interface
 		#
 		emit qq(if interface_is_usable $interface; then);
 	    }

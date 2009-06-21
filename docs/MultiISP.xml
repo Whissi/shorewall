@@ -1321,9 +1321,10 @@ fi</programlisting></para>
         in the preceding section.</para>
 
         <para>Like many Open Source products, LSM is poorly documented. It's
-        main configuration file is normally kept in /etc/lsm/lsm.conf, but the
-        file's name is passed as an argument to the lsm program so you can
-        name it anything you want.</para>
+        main configuration file is normally kept in
+        <filename>/etc/lsm/lsm.conf</filename>, but the file's name is passed
+        as an argument to the lsm program so you can name it anything you
+        want.</para>
 
         <para>The sample <filename>lsm.conf</filename> included with the
         product shows some of the possibilities for configuration. One feature
@@ -1332,10 +1333,31 @@ fi</programlisting></para>
         configuration file.</para>
 
         <para>I personally use LSM here at shorewall.net (configuration is
-        described <link linkend="Complete">below</link>). Here are my relevant
-        configuration files:</para>
+        described <link linkend="Complete">below</link>). I have set things up
+        so that Shorewall [re]starts lsm during processing of the
+        <command>start</command> and <command>restore</command> commands. I
+        don't have Shorewall restart lsm during Shorewall
+        <command>restart</command> because I restart Shorewall much more often
+        than the average user is likely to do. I have Shorewall start lsm
+        because I have a dynamic IP address from one of my providers
+        (Comcast); Shorewall detects the default gateway to that provider and
+        creates a secondary configuration file
+        (<filename>/etc/lsm/shorewall.conf</filename>) that contains the link
+        configurations. That file is included by
+        <filename>/etc/lsm/lsm.conf</filename>.B</para>
+
+        <para>Below are my relevant configuration files.</para>
+
+        <warning>
+          <para>These files only work with Shorewall-perl 4.4 Beta 2 and
+          later.</para>
+        </warning>
 
         <para><filename>/etc/shorewall/isusable</filename>:</para>
+
+        <para>Note that <filename>/etc/lsm/script </filename>writes
+        a<filename> ${VARDIR}/xxx.status</filename> file when the status of an
+        interface changes.</para>
 
         <programlisting>local status=0
 
@@ -1343,39 +1365,54 @@ fi</programlisting></para>
 
 return $status</programlisting>
 
-        <para><filename>/etc/shorewall/started</filename>:</para>
+        <para><filename>/etc/shorewall/lib.private</filename>:</para>
 
         <programlisting>###############################################################################
-# My 'restored' script calls this one if there is no lsm process running
+# Create /etc/lsm/shorewall.conf
+# Remove the current interface status files
+# Start lsm
 ###############################################################################
-if [ "$COMMAND" = start -o "$COMMAND" = restore ]; then
+start_lsm() {
    killall lsm 2&gt; /dev/null
    cat &lt;&lt;EOF &gt; /etc/lsm/shorewall.conf
 connection {
     name=Avvanta
     checkip=206.124.146.254
-    device=eth0
+    device=$EXT_IF
     ttl=2
 }
 
 connection {
     name=Comcast
-    checkip=$ETH3_GATEWAY
-    device=eth3
+    checkip=${ETH0_GATEWAY:-71.231.152.1}
+    device=$COM_IF
     ttl=1
 }
 EOF
-   rm -f ${VARDIR}/*.status
+   rm -f /etc/shorewall/*.status
    /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
-fi</programlisting>
+}</programlisting>
 
         <para>eth3 has a dynamic IP address so I need to use the
-        Shorewall-detected gateway address ($ETH3_GATEWAY).</para>
+        Shorewall-detected gateway address ($ETH3_GATEWAY). I supply a default
+        value in the event that detection fails.</para>
+
+        <para><filename>/etc/shorewall/started</filename>:</para>
+
+        <programlisting>##################################################################################
+# [re]start lsm if this is a 'start' command or if lsm isn't running
+##################################################################################
+if [ "$COMMAND" = start -o -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
+    start_lsm
+fi</programlisting>
 
         <para><filename>/etc/shorewall/restored</filename>:</para>
 
-        <programlisting>if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
-   run_started_exit
+        <programlisting>##################################################################################
+# Start lsm if it isn't running
+##################################################################################
+if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
+   start_lsm
 fi</programlisting>
 
         <para><filename>/etc/lsm/lsm.conf</filename>:</para>

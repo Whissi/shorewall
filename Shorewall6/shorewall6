@@ -1371,10 +1371,12 @@ usage() # $1 = exit status
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
+    echo "   iptrace <ip6tables match expression>"
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
+    echo "   noiptrace <ip6tables match expression>"
     echo "   refresh [ <chain>... ]"
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
@@ -1857,7 +1859,26 @@ case "$COMMAND" in
 	shift
 	safe_commands $@
 	;;
-    *)
+    iptrace)
+	get_config
+	shift
+	if shorewall_is_started ; then
+	    $IP6TABLES -t raw -A PREROUTING $@ -j TRACE
+	    $IP6TABLES -t raw -A OUTPUT $@ -j TRACE
+	else
+	    fatal_error "Shorewall6 is not started"
+	fi
+	;;	
+     noiptrace)
+	get_config
+	shift
+	if shorewall_is_started ; then
+	    $IP6TABLES -t raw -D PREROUTING $@ -j TRACE
+	    $IP6TABLES -t raw -D OUTPUT $@ -j TRACE
+	else
+	    fatal_error "Shorewall6 is not started"
+	fi
+	;;	    *)
 	usage 1
 	;;
 

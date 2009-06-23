@@ -1139,6 +1139,13 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       <para>There are a couple of options available for monitoring the status
       of provider links and taking action when a failure occurs.</para>
 
+      <para>You specify the <option>optional</option> option in
+      <filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+net      eth0         detect          <emphasis role="bold">optional</emphasis>         
+net      eth1         detect          <emphasis role="bold">optional</emphasis></programlisting>
+
       <section id="swping">
         <title>SWPING</title>
 

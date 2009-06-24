@@ -191,7 +191,7 @@ restore_dynamic_rules() {
 #
 get_all_bcasts()
 {
-    $IP -f inet addr show 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+    $IP -f inet addr show 2> /dev/null | grep 'inet.*brd' | grep -v '/32 ' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 }
 
 #

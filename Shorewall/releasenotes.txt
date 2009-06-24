@@ -1,4 +1,4 @@
-Shorewall 4.4.0 Beta 2
+Shorewall 4.4.0 Beta 3
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -110,24 +110,20 @@ Shorewall 4.4.0 Beta 2
     released.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0  Beta 2
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0  Beta 3
 ----------------------------------------------------------------------------
 
-1)  The find_first_interface_address() and
-    find_first_interface_addresss_if_any() functions were not in scope when
-    /etc/shorewall/params was processed.
+1)  Previously, if Address Type Match was not available and an
+    interface on the firewall was (mis-)configured as follows, then
+    REJECT policies in Shorewall-perl would drop packets addressed to
+    the interface rather than reject them.
 
-2)  The compiled script could fail with an error such as the following
-    when the internal traffic shaper was enabled:
+    3: venet0: <BROADCAST,POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1500 ...
+       inet 127.0.0.1/32 scope host venet0
+       inet 206.124.146.176/32 brd 206.124.146.176 ...
 
-    ERROR: Command "tc qdisc add dev dsl0 root handle 1: htb
-    	   default 0 r2q 5.5" Failed
-
-3)  The help output from the install.sh scripts mentioned the '-n'
-    option but support for that option has been removed.
-
-4)  The 'continue' script is no longer used in Shorewall 4.4 but it was
-    still being released.
+    Note that a /32 should never be configured with a broadcast
+    address.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -136,54 +132,15 @@ Shorewall 4.4.0 Beta 2
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 0 Beta 2
+                N E W   F E A T U R E S   I N   4 . 4 . 0 Beta 3
 ----------------------------------------------------------------------------
 
-1)  A 'upnpclient' option has been added to
-    /etc/shorewall/interfaces. This option is intended for laptop users
-    who always run Shorewall on their system yet need to run
-    UPnP-enabled client apps such as Transmission (BitTorrent client).
+1)  Three new macros have been contributed by Alex Wilms.
 
-    The option causes Shorewall to detect the default gateway through
-    the interface and to accept UDP packets from that gateway. Note
-    that, like all aspects of UPnP, this is a security hole so use this
-    option at your own risk.
+    	  macro.BGP	
+	  macro.Citrix
+	  macro.Razor
 
-2)  'iptrace' and 'noiptrace' commands have been added to both
-    /sbin/shorewall and /sbin/shorewall6.
-
-    These are low-level debugging commands that cause
-    iptables/ip6tables TRACE log messages to be generated. See 'man
-    iptables' and 'man ip6tables' for details.
-
-    The syntax for the commands is:
-
-    	iptrace <iptables/ip6tables match expression>
-    	noiptrace <iptables/ip6tables match expression>
-
-    iptrace starts the trace; noiptrace turns it off.
-
-    The  match expression must be an expression that is legal in both
-    the raw table OUTPUT and PREROUTING chains.
-
-    Examaple:
-
-	To trace all packets desinted for IP address 206.124.146.176:
-
-	   shorewall iptrace -d 206.124.146.176
-
-	To turn that trace off:
-
-	   shorewall noiptrace -d 206.124.146.176
-
-3)  A USER/GROUP column has been added to /etc/shorewall/masq. The
-    column works similarly to USER/GROUP columns in other Shorewall
-    configuration files. Only locally-generated traffic is matched.
-
-4)  A new extension script, 'lib.private' has been added. This file is
-    intended to include declarations of shell functions that will be
-    called by the other run-time extension scripts. 
-	
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 4
 ----------------------------------------------------------------------------
@@ -773,3 +730,47 @@ None.
 23) Support for 'norfc1918' has been removed. See the Migration
     Considerations above.
 
+22) A 'upnpclient' option has been added to
+    /etc/shorewall/interfaces. This option is intended for laptop users
+    who always run Shorewall on their system yet need to run
+    UPnP-enabled client apps such as Transmission (BitTorrent client).
+
+    The option causes Shorewall to detect the default gateway through
+    the interface and to accept UDP packets from that gateway. Note
+    that, like all aspects of UPnP, this is a security hole so use this
+    option at your own risk.
+
+23) 'iptrace' and 'noiptrace' commands have been added to both
+    /sbin/shorewall and /sbin/shorewall6.
+
+    These are low-level debugging commands that cause
+    iptables/ip6tables TRACE log messages to be generated. See 'man
+    iptables' and 'man ip6tables' for details.
+
+    The syntax for the commands is:
+
+    	iptrace <iptables/ip6tables match expression>
+    	noiptrace <iptables/ip6tables match expression>
+
+    iptrace starts the trace; noiptrace turns it off.
+
+    The  match expression must be an expression that is legal in both
+    the raw table OUTPUT and PREROUTING chains.
+
+    Examaple:
+
+	To trace all packets desinted for IP address 206.124.146.176:
+
+	   shorewall iptrace -d 206.124.146.176
+
+	To turn that trace off:
+
+	   shorewall noiptrace -d 206.124.146.176
+
+24) A USER/GROUP column has been added to /etc/shorewall/masq. The
+    column works similarly to USER/GROUP columns in other Shorewall
+    configuration files. Only locally-generated traffic is matched.
+
+25) A new extension script, 'lib.private' has been added. This file is
+    intended to include declarations of shell functions that will be
+    called by the other run-time extension scripts. 

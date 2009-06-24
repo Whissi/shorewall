@@ -553,6 +553,7 @@ show_command() {
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
 		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
+		    echo
 		done
 	    else
 		$IPTABLES -t $table -L $IPT_OPTIONS
@@ -625,7 +626,7 @@ show_command() {
 
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IPTABLES -t $table -L $chain $IPT_OPTIONS; then
-			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2
+			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|dynamic <zone>|filters|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2
 			exit 1
 		    fi
 		done
@@ -635,6 +636,7 @@ show_command() {
 		show_reset
 		for chain in $*; do
 		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
+		    echo
 		done
 	    else
 		echo "$PRODUCT $version $table Table at $HOSTNAME - $(date)"

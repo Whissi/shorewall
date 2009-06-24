@@ -494,10 +494,6 @@ show_command() {
 	    echo
 	    show_classifiers
 	    ;;
-	dynamic)
-	    [ $# -gt 2 ] && usage 1
-	    list_zone $2
-	    ;;
 	zones)
 	    [ $# -gt 1 ] && usage 1
 	    if [ -f ${VARDIR}/zones ]; then
@@ -617,8 +613,16 @@ show_command() {
 			;;
 		esac
 	    fi
+	    
 
 	    if [ $# -gt 0 ]; then
+		if [ $1 = dynamic -a $# -gt 1 ]; then
+		    shift
+		    [ $# -eq 1 ] || usage 1
+		    list_zone $2
+		    return;
+                fi
+
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IPTABLES -t $table -L $chain $IPT_OPTIONS; then
 			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2

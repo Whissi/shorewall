@@ -238,6 +238,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CONNLIMIT_MATCH => 'Connlimit Match',
 		 TIME_MATCH      => 'Time Match',
 		 GOTO_TARGET     => 'Goto Support',
+		 LOG_TARGET      => 'LOG Target',
 		 LOGMARK_TARGET  => 'LOGMARK Target',
 		 IPMARK_TARGET   => 'IPMARK Target',
 		 CAPVERSION      => 'Capability Version',
@@ -327,7 +328,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.0-Beta2",
-		    CAPVERSION => 40309 ,
+		    CAPVERSION => 40310 ,
 		  );
 
     #
@@ -608,6 +609,7 @@ sub initialize( $ ) {
 	       GOTO_TARGET => undef,
 	       LOGMARK_TARGET => undef,
 	       IPMARK_TARGET => undef,
+	       LOG_TARGET => 1,         # Assume that we have it.
 	       CAPVERSION => undef,
 	       );
     #
@@ -1702,8 +1704,16 @@ sub validate_level( $ ) {
     if ( defined $level && $level ne '' ) {
 	$level =~ s/!$//;
 	my $value = $validlevels{$level};
-	return $value if defined $value;
-	return $level if $level =~ /^[0-7]$/;
+
+	if ( defined $value ) {
+	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' ) unless $value eq '';
+	    return $value;
+	}
+
+	if ( $level =~ /^[0-7]$/ ) {
+	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
+	    return $level;
+	}
 
 	if ( $level =~ /^(NFLOG|ULOG)[(](.*)[)]$/ ) {
 	    my $olevel  = $1;
@@ -1722,14 +1732,17 @@ sub validate_level( $ ) {
 		$index++;
 	    }
 
+	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
 	    return $olevel;
 	}
 
 	if ( $level =~ /^NFLOG --/ or $level =~ /^ULOG --/ ) {
+	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
 	    return $rawlevel;
 	}
 
 	if ( $level eq 'LOGMARK' ) {
+	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
 	    require_capability( 'LOGMARK_TARGET' , 'LOGMARK', 's' );
 	    return 'LOGMARK';
 	}
@@ -2016,6 +2029,7 @@ sub determine_capabilities( $ ) {
     $capabilities{CONNLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
     $capabilities{TIME_MATCH}      = qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
     $capabilities{GOTO_TARGET}     = qt1( "$iptables -A $sillyname -g $sillyname1" );
+    $capabilities{LOG_TARGET}      = qt1( "$iptables -A $sillyname -j LOG" );
     $capabilities{LOGMARK_TARGET}  = qt1( "$iptables -A $sillyname -j LOGMARK" );
 
     qt1( "$iptables -F $sillyname" );

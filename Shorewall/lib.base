@@ -30,7 +30,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40309
+SHOREWALL_CAPVERSION=40310
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -819,6 +819,7 @@ determine_capabilities() {
     GOTO_TARGET=
     LOGMARK_TARGET=
     IPMARK_TARGET=
+    LOG_TARGET=Yes
 
     chain=fooX$$
 
@@ -943,6 +944,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
     qt $IPTABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
     qt $IPTABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
+    qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1008,6 +1010,7 @@ report_capabilities() {
 	report_capability "Goto Support" $GOTO_TARGET
 	report_capability "LOGMARK Target" $LOGMARK_TARGET
 	report_capability "IPMARK Target" $IPMARK_TARGET
+	report_capability "LOG Target" $LOG_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1064,6 +1067,7 @@ report_capabilities1() {
     report_capability1 GOTO_TARGET
     report_capability1 LOGMARK_TARGET
     report_capability1 IPMARK_TARGET
+    report_capability1 LOG_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

@@ -421,11 +421,11 @@ sub add_command($$)
     $chainref->{referenced} = 1;
 }
 
-sub add_commands {
+sub add_commands ( $$;@ ) {
     my $chainref = shift @_;
 
-    for my $command ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdlevel} , $command );
+    for ( @_ ) {
+	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdlevel} , $_ );
     }
 
     $chainref->{referenced} = 1;
@@ -546,7 +546,7 @@ sub handle_dport_list( $$$$$ ) {
 #
 # Add a rule to a chain. Arguments are:
 #
-#    Chain reference , Rule [, Expand-long-dest-port-lists ]
+#    Chain reference , Rule [, Expand-long-port-lists ]
 #
 sub add_rule($$;$)
 {
@@ -627,7 +627,7 @@ sub purge_jump ( $$ ) {
     my $to = $toref->{name};
 
     for ( @{$fromref->{rules}} ) {
-	$_ = undef if / -j ${to}\b/;
+	$_ = undef if / -[gj] ${to}\b/;
     }
 	
     $toref->{referenced} = 0 unless @{$toref->{rules}};
@@ -770,7 +770,7 @@ sub use_input_chain($) {
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets or
     # if the interface has the 'upnpclient' option. In the latter case, the chain's rules will contain
-    # run-time code which currently cannot be transferred to a zone-oriented chain by move_rules().
+    # run-time code which cannot currently be transferred to a zone-oriented chain by move_rules().
     #    
     return 1 if $nets > 1 || $interfaceref->{options}{upnpclient};
     #
@@ -1167,6 +1167,7 @@ sub initialize_chain_table()
 	}
     }
 }
+
 #
 # Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
 #

@@ -457,7 +457,7 @@ sub push_rule( $$ ) {
 sub handle_sport_list( $$$$$ ) {
     my ($chainref, $rule, $first, $ports, $rest) = @_;
 
-    if ( ( $ports =~ tr/:,/:,/ ) > 14 ) {
+    if ( port_count( $ports ) > 15 ) {
 	#
 	# More than 15 ports specified
 	#
@@ -500,7 +500,7 @@ sub handle_sport_list( $$$$$ ) {
 sub handle_dport_list( $$$$$ ) {
     my ($chainref, $rule, $first, $ports, $rest) = @_;
 
-    if ( ( $ports =~ tr/:,/:,/ ) > 14 ) {
+    if ( port_count( $ports ) > 15 ) {
 	#
 	# More than 15 ports specified
 	#
@@ -1397,7 +1397,6 @@ sub do_proto( $$$ )
 		    if ( $sports ne '' ) {
 			$invert = $sports =~ s/^!// ? '! ' : '';
 			if ( $multiport ) {
-			    fatal_error "Too many entries in SOURCE PORT(S) list" if port_count( $sports ) > 15;
 			    $sports = validate_port_list $pname , $sports;
 			    $output .= "-m multiport ${invert}--sports ${sports} ";
 			}  else {

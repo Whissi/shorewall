@@ -921,7 +921,7 @@ sub new_chain($$)
 {
     my ($table, $chain) = @_;
 
-    assert( ! $chain_table{$table}{$chain} && ! $builtin_target{ $chain } );
+    assert( $chain_table{$table} && ! ( $chain_table{$table}{$chain} || $builtin_target{ $chain } ) );
 
     $chain_table{$table}{$chain} = { name      => $chain,
 				     rules     => [],
@@ -938,7 +938,7 @@ sub ensure_chain($$)
 {
     my ($table, $chain) = @_;
 
-    assert( $table && $chain );
+    assert( $table && $chain && $chain_table{$table} );
 
     my $ref =  $chain_table{$table}{$chain};
 
@@ -981,7 +981,7 @@ sub ensure_accounting_chain( $  )
     my $chainref = $filter_table->{$chain};
 
     if ( $chainref ) {
-	fatal_error "Non-accounting chain ($chain) used in accounting rule"  if ! $chainref->{accounting};
+	fatal_error "Non-accounting chain ($chain) used in accounting rule" unless $chainref->{accounting};
     } else {
 	$chainref = new_chain 'filter' , $chain unless $chainref;
 	$chainref->{accounting} = 1;
@@ -1015,9 +1015,7 @@ sub ensure_raw_chain($) {
     my $chain = $_[0];
 
     my $chainref = ensure_chain 'raw', $chain;
-
     $chainref->{referenced} = 1;
-
     $chainref;
 }
 
@@ -1032,6 +1030,7 @@ sub new_builtin_chain($$$)
     $chainref->{referenced} = 1;
     $chainref->{policy}     = $policy;
     $chainref->{builtin}    = 1;
+    $chainref;
 }
 
 sub new_standard_chain($) {
@@ -1340,9 +1339,9 @@ sub port_count( $ ) {
 #
 # Handle parsing of PROTO, DEST PORT(S) , SOURCE PORTS(S). Returns the appropriate match string.
 #
-sub do_proto( $$$ )
+sub do_proto( $$$;$ )
 {
-    my ($proto, $ports, $sports ) = @_;
+    my ($proto, $ports, $sports, $restricted ) = @_;
 
     my $output = '';
 
@@ -1383,6 +1382,7 @@ sub do_proto( $$$ )
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless $capabilities{MULTIPORT};
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
+			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $ports ) > 15;
 			    $ports = validate_port_list $pname , $ports;
 			    $output .= "-m multiport ${invert}--dports ${ports} ";
 			    $multiport = 1;
@@ -1397,6 +1397,7 @@ sub do_proto( $$$ )
 		    if ( $sports ne '' ) {
 			$invert = $sports =~ s/^!// ? '! ' : '';
 			if ( $multiport ) {
+			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $sports ) > 15;
 			    $sports = validate_port_list $pname , $sports;
 			    $output .= "-m multiport ${invert}--sports ${sports} ";
 			}  else {
@@ -1815,7 +1816,7 @@ sub get_set_flags( $$ ) {
 }
 
 #
-# Match a Source. Handles IP addresses and ranges and MAC addresses
+# Match a Source.
 #
 sub match_source_net( $;$ ) {
     my ( $net, $restriction) = @_;
@@ -1844,7 +1845,7 @@ sub match_source_net( $;$ ) {
 }
 
 #
-# Match a Source. Currently only handles IP addresses and ranges
+# Match a Desgination. 
 #
 sub match_dest_net( $ ) {
     my $net = $_[0];

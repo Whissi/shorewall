@@ -324,7 +324,7 @@ sub process_routestopped() {
 
 	$seq++;
 
-	my $rule = do_proto( $proto, $ports, $sports );
+	my $rule = do_proto( $proto, $ports, $sports, 1 );
 
 	for my $host ( split /,/, $hosts ) {
 	    validate_host $host, 1;

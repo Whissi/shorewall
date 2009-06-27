@@ -103,7 +103,7 @@ Shorewall 4.4.0 Beta 3
 
  8) The install.sh scripts in the Shorewall and Shorewall6 packages no
     longer create a backup copy of the existing configuration. If you
-    want your configuration backed up prior to upgradeing, you will
+    want your configuration backed up prior to upgrading, you will
     need to do that yourself. 
 
     As part of this change, the fallback.sh scripts are no longer
@@ -114,7 +114,7 @@ Shorewall 4.4.0 Beta 3
 ----------------------------------------------------------------------------
 
 1)  Previously, if Address Type Match was not available and an
-    interface on the firewall was (mis-)configured as follows, then
+    interface on the firewall was (mis-)configured as shown below, then
     REJECT policies in Shorewall-perl would drop packets addressed to
     the interface rather than reject them.
 
@@ -265,7 +265,7 @@ None.
     Note that the dynamic zone support built into Shorewall provides no
     additional functionality over what is provided by simply defining a
     zone in terms of an ipset (see
-    http://www1.shorewall.net/ipsets.html#Dynamic). 
+    http://www.shorewall.net/ipsets.html#Dynamic). 
 
     You define a zone as having dynamic content in one of two ways:
 
@@ -279,7 +279,7 @@ None.
     Shorewall (Shorewall-lite) will:
 
     a) Execute the following commands during 'shorewall start' or
-    'shorewall-lite start'.
+       'shorewall-lite start'.
 
            ipset -U :all: :all:
 	   ipset -U :all: :default:
@@ -290,7 +290,6 @@ None.
        where $VARDIR normally contains /var/lib/shorewall
        (/var/lib/shorewall-lite) but may be modified by
        /etc/shorewall/vardir (/etc/shorewall-lite/vardir).
-
 
     b) During 'start', 'restart' and 'restore' processing, Shorewall
        will then attempt to create an ipset named <zone>_<interface>
@@ -324,11 +323,7 @@ None.
     error message is generated and the state of the firewall is not
     changed.
 
-7)  Shorewall will now attempt to detect a dynamic gateway by reading
-    the dhclient lease file for the interface
-    (/var/run/dhcp/dhclient-<if>.lease).
-
-8)  To improve readability of the configuration files, Shorewall now
+7)  To improve readability of the configuration files, Shorewall now
     allows leading white space in continuation lines when the continued
     line ends in ":" or ",".
 
@@ -346,12 +341,12 @@ None.
     address is ignored so the SOURCE column effectively contains
     "net:206.124.146.177,206.124.147.178,206.124.146.180".
 
-9)  The generated script now uses iptables[6]-restore to instantiate
+8)  The generated script now uses iptables[6]-restore to instantiate
     the Netfilter ruleset during processing of the 'stop' command. As a
     consequence, the 'critical' option in /etc/shorewall/route_stopped
     is no longer needed and will result in a warning.
 
-10) A new AUTOMAKE option has been added to shorewall.conf and
+9)  A new AUTOMAKE option has been added to shorewall.conf and
     shorewall6.conf. When set to 'Yes', this option causes new behavior
     during processing of the 'start' and 'restart' commands; if no
     files in /etc/shorewall/ (/etc/shorewall6) have changed since the last
@@ -366,7 +361,7 @@ None.
     Note that the 'make' utility must be installed on the firewall
     system in order for AUTOMAKE=Yes to work correctly.
 
-11) The 'compile' command now allows you to omit the <pathname>. When
+10) The 'compile' command now allows you to omit the <pathname>. When
     you do that, the <pathname> defaults to /var/lib/shorewall/firewall
     (/var/lib/shorewall6/firewall) unless you have overridden VARDIR
     using /etc/shorewall/vardir (/etc/shorewall6/vardir).
@@ -386,7 +381,7 @@ None.
     In other words, you can compile the current configuration then
     install it at a later time.
 
-12) Thanks to I. Buijs, it is now possible to rate-limit connections by
+11) Thanks to I. Buijs, it is now possible to rate-limit connections by
     source IP or destination IP. The LIMIT:BURST column in
     /etc/shorewall/policy (/etc/shorewall6/policy) and the RATE LIMIT
     column /etc/shorewall/rules (/etc/shorewall6/rules) have been
@@ -415,7 +410,7 @@ None.
 
     	ACCEPT	net   fw    tcp    25,587  - - s:mail:3/min
 
-13) Rules that specify a log level with a target other than LOG or NFLOG
+12) Rules that specify a log level with a target other than LOG or NFLOG
     are now implemented through a separate chain. While this may increase
     the processing cost slightly for packets that match these rules, it
     is expected to reduce the overall cost of such rules because each
@@ -446,15 +441,16 @@ None.
 
     Notice that now there is only a single rule generated in the
     'loc2net' chain where before there were two. Packets for other than
+
     TCP port 25 had to be processed by both rules.
 
     Notice also that the new LOG rule reflects the original action
     ("REJECT") rather than what Shorewall maps that to ("reject").
 
-14) Shorewall6 has now been tested on kernel 2.6.24 (Ubuntu Hardy) and
+13) Shorewall6 has now been tested on kernel 2.6.24 (Ubuntu Hardy) and
     hence will now start successfully when running on that kernel.
 
-15) Three new options (IP, TC and IPSET) have been added to
+14) Three new options (IP, TC and IPSET) have been added to
     shorewall.conf and shorwall6.conf. These options specify the name
     of the executable for the 'ip', 'tc' and 'ipset' utilities
     respectively.
@@ -468,7 +464,7 @@ None.
     In other words, the utilities will be located via the current PATH
     setting.
 
-16) There has been a desire in the user community to limit traffic by
+15) There has been a desire in the user community to limit traffic by
     IP address using Shorewall traffic shaping. Heretofore, that has
     required a very inefficient process:
 
@@ -609,7 +605,7 @@ None.
     column) must be >= 65536 (0x10000) and must be a multiple of 65536
     (0x1000, 0x20000, 0x30000, ...).
 
-17) In the 'shorewall compile' command, the filename '-' now causes
+16) In the 'shorewall compile' command, the filename '-' now causes
     the compiled script to be written to Standard Out. As a side
     effect, the effective VERBOSITY is set to -1 (silent).
 
@@ -626,11 +622,11 @@ None.
     issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
     begins.
 
-18) Supplying an interface name in the SOURCE column of
+17) Supplying an interface name in the SOURCE column of
     /etc/shorewall/masq is now deprecated. Entering the name of an
     interface there will result in a compile-time warning.
 
-19) Shorewall now supports nested HTB traffic shaping classes.  The
+18) Shorewall now supports nested HTB traffic shaping classes.  The
     nested classes within a class can borrow from their parent class in
     the same way as the first level classes can borrow from the root
     class.
@@ -672,7 +668,7 @@ None.
     work system (172.20.1.107) is guarandeed the other half.
 	
 
-20) Support for the "Hierarchical Fair Service Curve" (HFSC) queuing
+19) Support for the "Hierarchical Fair Service Curve" (HFSC) queuing
     discipline has been added. HFSC is superior to the "Hierarchical
     Token Bucket" queuing discipline where realtime traffic such as
     VOIP is being used.
@@ -716,10 +712,10 @@ None.
                  OUT-BANDWIDTH. Maximum delay is 10ms. Maximum packet
                  size is 1500 bytes.
 
-21) Support for ipset bindings has been removed. Jozsef Kadlecsik has
+20) Support for ipset bindings has been removed. Jozsef Kadlecsik has
     already removed such support from ipset itself.
 
-22) Optional TOS and LENGTH fields have been added to the tcfilters
+21) Optional TOS and LENGTH fields have been added to the tcfilters
     file.
 
     The TOS field may contain any of the following:
@@ -738,10 +734,10 @@ None.
     inclusive. Packets with a total length that is strictly less that
     the specified value will match the rule.
 
-23) Support for 'norfc1918' has been removed. See the Migration
+22) Support for 'norfc1918' has been removed. See the Migration
     Considerations above.
 
-22) A 'upnpclient' option has been added to
+23) A 'upnpclient' option has been added to
     /etc/shorewall/interfaces. This option is intended for laptop users
     who always run Shorewall on their system yet need to run
     UPnP-enabled client apps such as Transmission (BitTorrent client).
@@ -751,7 +747,7 @@ None.
     that, like all aspects of UPnP, this is a security hole so use this
     option at your own risk.
 
-23) 'iptrace' and 'noiptrace' commands have been added to both
+24) 'iptrace' and 'noiptrace' commands have been added to both
     /sbin/shorewall and /sbin/shorewall6.
 
     These are low-level debugging commands that cause
@@ -778,10 +774,10 @@ None.
 
 	   shorewall noiptrace -d 206.124.146.176
 
-24) A USER/GROUP column has been added to /etc/shorewall/masq. The
+25) A USER/GROUP column has been added to /etc/shorewall/masq. The
     column works similarly to USER/GROUP columns in other Shorewall
     configuration files. Only locally-generated traffic is matched.
 
-25) A new extension script, 'lib.private' has been added. This file is
+26) A new extension script, 'lib.private' has been added. This file is
     intended to include declarations of shell functions that will be
     called by the other run-time extension scripts. 

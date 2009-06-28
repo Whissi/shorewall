@@ -89,11 +89,6 @@
         </listitem>
 
         <listitem>
-          <para><filename>/etc/shorewall/modules</filename> - directs the
-          firewall to load kernel modules.</para>
-        </listitem>
-
-        <listitem>
           <para><filename>/etc/shorewall/rules</filename> - defines rules that
           are exceptions to the overall policies established in
           /etc/shorewall/policy.</para>
@@ -220,13 +215,19 @@
         </listitem>
 
         <listitem>
+          <para><filename>/usr/share/shorewall/modules</filename> - directs
+          the firewall to load kernel modules. </para>
+        </listitem>
+
+        <listitem>
           <para><filename>/usr/share/modules</filename> — Specifies the kernel
-          modules to be loaded during shorewall start/restart . <emphasis
-          role="bold">If you need to change this file, copy it to
-          <filename>/etc/shorewall</filename> and modify the
-          copy</emphasis>.</para>
+          modules to be loaded during shorewall start/restart . .</para>
         </listitem>
       </itemizedlist></para>
+
+    <para><emphasis role="bold">If you need to change a file in
+    /usr/share/shorewall/, copy it to <filename>/etc/shorewall</filename> and
+    modify the copy</emphasis></para>
   </section>
 
   <section id="Manpages">
@@ -976,30 +977,18 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
 
     <para>In most cases where a port or port range may appear, a
     comma-separated list of ports or port ranges may also be entered.
-    Shorewall will use the Netfilter <emphasis
-    role="bold">multiport</emphasis> match capability if it is available (see
-    the output of "<emphasis role="bold">shorewall show
-    capabilities</emphasis>") and if its use is appropriate.</para>
-
-    <para>Shorewall can use multiport match if:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>The list contains 15 or fewer port number; and</para>
-      </listitem>
-
-      <listitem>
-        <para>There are no port ranges listed OR your iptables/kernel support
-        the Extended <emphasis role="bold">multiport</emphasis> match (again
-        see the output of "<command>shorewall show capabilities</command>").
-        Where the Extended <emphasis role="bold">multiport</emphasis> match is
-        available, each port range counts as two ports toward the maximum of
-        15.</para>
-      </listitem>
-    </orderedlist>
+    Shorewall requires the Netfilter <emphasis
+    role="bold">multiport</emphasis> match capability if ports lists are used
+    (see the output of "<emphasis role="bold">shorewall show
+    capabilities</emphasis>").</para>
 
     <para>Also, unless otherwise documented, a port list can be preceded by
     '!' to specify "All ports except these" (e.g., "!80,443").</para>
+
+    <para>Port lists appearing in the <ulink
+    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>
+    file may specify no more than 15 ports; port ranges appearing in a list
+    count as two ports each.</para>
   </section>
 
   <section id="MAC">

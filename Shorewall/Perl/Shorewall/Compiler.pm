@@ -101,10 +101,18 @@ EOF
 
     copy1 $lib, emit "\n" if -f $lib;
 
-    for my $exit qw/init isusable start tcclear started stop stopped clear refresh refreshed restored findgw/ {
+    for my $exit qw/init start tcclear started stop stopped clear refresh refreshed restored/ {
 	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
+	pop_indent;
+	emit '}';
+    }
+
+    for my $exit qw/isusable findgw/ {
+	emit "\nrun_${exit}_exit() {";
+	push_indent;
+	append_file($exit, 1) or emit 'true';
 	pop_indent;
 	emit '}';
     }

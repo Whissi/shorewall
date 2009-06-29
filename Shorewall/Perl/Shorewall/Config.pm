@@ -1051,6 +1051,8 @@ sub copy( $ ) {
 sub copy1( $ ) {
     assert( $object_enabled );
 
+    my $result = 0;
+
     if ( $object ) {
 	my $file = $_[0];
 
@@ -1076,6 +1078,7 @@ sub copy1( $ ) {
 		$do_indent = 0;
 		print $object $_;
 		print $object "\n";
+		$result = 1;
 		next;
 	    }
 
@@ -1087,12 +1090,16 @@ sub copy1( $ ) {
 	    print $object $_;
 	    print $object "\n";
 	    $do_indent = ! ( $here_documents || /\\$/ );
+
+	    $result = 1 unless $result || /^\s*$/ || /^\s*#/;
 	}
 
 	close IF;
     }
 
     $lastlineblank = 0;
+
+    $result;
 }
 
 #
@@ -2481,17 +2488,27 @@ sub propagateconfig() {
 
 #
 # Add a shell script file to the output script -- Return true if the
-# file exists and is not in /usr/share/shorewall/.
+# file exists and is not in /usr/share/shorewall/ and is non-empty.
 #
-sub append_file( $ ) {
+sub append_file( $;$ ) {
     my $user_exit = find_file $_[0];
     my $result = 0;
 
     unless ( $user_exit =~ /^($globals{SHAREDIR})/ ) {
 	if ( -f $user_exit ) {
-	    $result = 1;
-	    save_progress_message "Processing $user_exit ...";
-	    copy1 $user_exit;
+	    if ( $_[1] ) {
+		#
+		# Suppress progress message
+		#
+		$result = copy1 $user_exit;
+	    } else {
+		#
+		# Include progress message -- Pretend progress_message call was in the file
+		#                             
+		$result = 1;
+		save_progress_message "Processing $user_exit ...";
+		copy1 $user_exit;
+	    }
 	}
     }
 

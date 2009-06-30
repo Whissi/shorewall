@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and OpenVZ</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2008</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para><ulink url="http://wiki.openvz.org/">Open Virtuoso (OpenVZ)</ulink>
+    is an open source kernel-based virtualization solution from
+    <trademark>SWSoft</trademark>. Virtual servers take the form of
+    <firstterm>containers</firstterm> which are created via
+    <firstterm>templates</firstterm>. Templates are available for a wide
+    variety of distributions and architectures.</para>
+
+    <para>OpenVZ requires a patched kernel. Beginning with Lenny,
+    <trademark>Debian</trademark> supplies OpenVZ kernels through the standard
+    stable repository.</para>
+  </section>
+
+  <section>
+    <title>Shorewall on an OpenVZ Host</title>
+
+    <para>As with any Shorewall installation involving other software, we
+    suggest that you first install OpenVZ and get it working before attempting
+    to add Shorewall. Alternatively, execute <command>shorewall
+    clear</command> while <ulink
+    url="http://wiki.openvz.org/Installation_on_Debian">installing and
+    configuring OpenVZ</ulink>.</para>
+
+    <section>
+      <title>Networking</title>
+
+      <para>The default OpenVZ networking configuration uses Proxy ARP. You
+      assign containers IP addresses in the IP network from one of your
+      interfaces and you are expected to set the proxy_arp flag on that
+      interface
+      (<filename>/proc/sys/net/ipv4/conf/<replaceable>interface</replaceable>/proxy_arp</filename>).</para>
+
+      <para>OpenVZ creates virtual interfaces in the host with very odd
+      configurations.</para>
+
+      <para>Example:</para>
+
+      <programlisting>gateway:~# <command>ip addr ls dev venet0</command>
+10: venet0: &lt;BROADCAST,POINTOPOINT,NOARP,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UNKNOWN 
+    link/void 
+gateway:~# <command>ip route ls dev venet0</command>
+206.124.146.178  scope link 
+gateway:~# </programlisting>
+
+      <para>The interface has no IP configuration yet it has a route to
+      206.124.146.178!</para>
+
+      <para>From within the container with IP address 206.124.146.178, we have
+      the following:</para>
+
+      <programlisting>server:~ # <command>ip addr ls</command>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 brd 127.255.255.255 scope host lo
+    inet 127.0.0.2/8 brd 127.255.255.255 scope host secondary lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: venet0: &lt;BROADCAST,POINTOPOINT,NOARP,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UNKNOWN 
+    link/void 
+    inet 127.0.0.1/32 scope host venet0
+    inet 206.124.146.178/32 scope global venet0:0
+server:~ # <command>ip route ls</command>
+192.0.2.0/24 dev venet0  scope link 
+127.0.0.0/8 dev lo  scope link 
+default via 192.0.2.1 dev venet0 
+server:~ # </programlisting>
+
+      <para>There are a couple of unique features of this
+      configuration:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>127.0.0.1/32 is configured on venet0 although the main routing
+          table routes loopback traffic through the <filename
+          class="devicefile">lo</filename> interface as normal.</para>
+        </listitem>
+
+        <listitem>
+          <para>There is a route to 192.0.2.0/24 through venet0 even though
+          the interface has no IP address in that network. Note: 192.0.2.0/24
+          is reserved for use in documentation and for testing.</para>
+        </listitem>
+
+        <listitem>
+          <para>The default route is via 192.0.2.1 yet there is no interface
+          on the host with that IP address.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>All of this doesn't really affect the Shorewall configuration but
+      it is interesting none the less.</para>
+    </section>
+
+    <section>
+      <title>Shorewall Configuration</title>
+
+      <para>We recommend handlintg the strange OpenVZ configuration in
+      Shorewall as follows:</para>
+
+      <para><filename>/etc/shorewall/zones</filename>:</para>
+
+      <programlisting>###############################################################################
+#ZONE    TYPE       OPTIONS                IN                       OUT
+#                                          OPTIONS                  OPTIONS
+vz       ipv4</programlisting>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>###############################################################################
+#ZONE    INTERFACE          BROADCAST      OPTIONS
+vz       venet0             -              </programlisting>
+
+      <para><filename>/etc/shorewall/proxyarp</filename> (assumes that
+      external interface is eth0):</para>
+
+      <programlisting>###############################################################################
+#ADDRESS         INTERFACE  EXTERNAL  HAVEROUTE   PERSISTENT
+206.124.146.178  venet0     eth0      Yes</programlisting>
+    </section>
+
+    <section>
+      <title>Multi-ISP</title>
+
+      <para>If you run Shorewall Multi-ISP support on the host, you should
+      arrange for traffic to your containers to use the main routing table. In
+      the configuration shown here, this entry in /etc/shorewall/route_rules
+      is appropriate:</para>
+
+      <programlisting>#SOURCE            DEST              PROVIDER          PRIORITY
+-                  206.124.146.178   main              1000</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Shorewall in an OpenVZ Container</title>
+
+    <para>If you have optained an OpenVZ container from a service provider,
+    you may find it difficult to configure any type of firewall within the
+    container. There are two container parameters that control iptables
+    behavior within the container:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>--iptables <replaceable>name </replaceable></term>
+
+        <listitem>
+          <para>Restrict access to iptables modules inside a container (by
+          default all iptables modules that are loaded in the host system are
+          accessible inside a container).</para>
+
+          <para>You can use the following values for name: iptable_filter,
+          iptable_mangle, ipt_limit, ipt_multiport, ipt_tos, ipt_TOS,
+          ipt_REJECT, ipt_TCPMSS, ipt_tcpmss, ipt_ttl, ipt_LOG, ipt_length,
+          ip_conntrack, ip_conntrack_ftp, ip_conntrack_irc, ipt_conntrack,
+          ipt_state, ipt_helper, iptable_nat, ip_nat_ftp, ip_nat_irc,
+          ipt_REDIRECT, xt_mac, ipt_owner.</para>
+
+          <para>If your provider is using this option, you may be in deep
+          trouble using Shorewall. Look at the output of <command>shorewall
+          show capabilities</command> and weep. Then try to get your provider
+          to remove this restriction on your container.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>--numiptent <replaceable>num</replaceable></term>
+
+        <listitem>
+          <para>This parameter limits the number of iptables rules that are
+          allowed within the container. The default is 100 which is too small
+          for a Shorewall configuration. We recommend setting this to at least
+          200.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>To cut down on the amount of useless error messages during shorewall
+    start/restart, we suggest that you create a capabilities file as
+    follows:</para>
+
+    <programlisting><command>shorewall show -f capabilities &gt; /etc/shorewall/capabilities</command></programlisting>
+
+    <para>You may still see annoying error messages during
+    start/restart:</para>
+
+    <programlisting>server:/etc/shorewall # shorewall restart
+Compiling...
+Compiling /etc/shorewall/zones...
+Compiling /etc/shorewall/interfaces...
+Determining Hosts in Zones...
+Preprocessing Action Files...
+   Pre-processing /usr/share/shorewall/action.Drop...
+   Pre-processing /usr/share/shorewall/action.Reject...
+Compiling /etc/shorewall/policy...
+Adding Anti-smurf Rules
+Adding rules for DHCP
+Compiling TCP Flags filtering...
+Compiling Kernel Route Filtering...
+Compiling Martian Logging...
+Compiling MAC Filtration -- Phase 1...
+Compiling /etc/shorewall/rules...
+Generating Transitive Closure of Used-action List...
+Processing /usr/share/shorewall/action.Reject for chain Reject...
+Processing /usr/share/shorewall/action.Drop for chain Drop...
+Compiling MAC Filtration -- Phase 2...
+Applying Policies...
+Generating Rule Matrix...
+Creating iptables-restore input...
+Compiling iptables-restore input for chain mangle:...
+Compiling /etc/shorewall/routestopped...
+Shorewall configuration compiled to /var/lib/shorewall/.restart
+Restarting Shorewall....
+Initializing...
+Processing /etc/shorewall/init ...
+Processing /etc/shorewall/tcclear ...
+Setting up Route Filtering...
+Setting up Martian Logging...
+Setting up Proxy ARP...
+Setting up Traffic Control...
+Preparing iptables-restore input...
+Running /usr/sbin/iptables-restore...
+<emphasis role="bold">FATAL: Could not load /lib/modules/2.6.26-2-openvz-amd64/modules.dep: No such file or directory
+FATAL: Could not load /lib/modules/2.6.26-2-openvz-amd64/modules.dep: No such file or directory
+FATAL: Could not load /lib/modules/2.6.26-2-openvz-amd64/modules.dep: No such file or directory
+FATAL: Could not load /lib/modules/2.6.26-2-openvz-amd64/modules.dep: No such file or directory</emphasis>
+IPv4 Forwarding Enabled
+Processing /etc/shorewall/start ...
+Processing /etc/shorewall/started ...
+done.
+</programlisting>
+
+    <para>Those may be safely ignored.</para>
+  </section>
+</article>

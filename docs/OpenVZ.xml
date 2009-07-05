@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2008</year>
+      <year>2009</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -42,9 +42,10 @@
     <trademark><ulink
     url="http://www.parallels.com">Parallels</ulink></trademark> (formerly
     <trademark>SWSoft</trademark>). Virtual servers take the form of
-    <firstterm>containers</firstterm> which are created via
-    <firstterm>templates</firstterm>. Templates are available for a wide
-    variety of distributions and architectures.</para>
+    <firstterm>containers</firstterm> (the OpenVZ documentation calls these
+    <firstterm>Virtual Environments</firstterm> or <firstterm>VEs</firstterm>)
+    which are created via <firstterm>templates</firstterm>. Templates are
+    available for a wide variety of distributions and architectures.</para>
 
     <para>OpenVZ requires a patched kernel. Beginning with Lenny,
     <trademark>Debian</trademark> supplies OpenVZ kernels through the standard
@@ -70,10 +71,10 @@
       interface
       (<filename>/proc/sys/net/ipv4/conf/<replaceable>interface</replaceable>/proxy_arp</filename>).</para>
 
-      <para>OpenVZ creates virtual interfaces in the host with very odd
-      configurations.</para>
+      <para>OpenVZ creates a point-to-point virtual interface in the host with
+      a rather odd configuration.</para>
 
-      <para>Example:</para>
+      <para>Example (Single VE with IP address 206.124.146.178):</para>
 
       <programlisting>gateway:~# <command>ip addr ls dev venet0</command>
 10: venet0: &lt;BROADCAST,POINTOPOINT,NOARP,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UNKNOWN 
@@ -85,8 +86,8 @@ gateway:~# </programlisting>
       <para>The interface has no IP configuration yet it has a route to
       206.124.146.178!</para>
 
-      <para>From within the container with IP address 206.124.146.178, we have
-      the following:</para>
+      <para>From within the VE with IP address 206.124.146.178, we have the
+      following:</para>
 
       <programlisting>server:~ # <command>ip addr ls</command>
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 qdisc noqueue state UNKNOWN 
@@ -169,36 +170,57 @@ vz       venet0             -              </programlisting>
       <programlisting>#SOURCE            DEST              PROVIDER          PRIORITY
 -                  206.124.146.178   main              1000</programlisting>
     </section>
+
+    <section>
+      <title>RFC 1918 Addresses in a Container</title>
+
+      <para>You can assign an RFC 1918 address to a VE and use masquerade/SNAT
+      to provide Internet access to the container. This is just a normal
+      simple Shorewall configuration as shown in the <ulink
+      url="two-interface.htm">Two-interface Quick Start Guide</ulink>. In this
+      configuration the firewall's internal interface is <filename
+      class="devicefile">venet0</filename>.</para>
+    </section>
   </section>
 
   <section>
-    <title>Shorewall in an OpenVZ Container</title>
+    <title>Shorewall in an OpenVZ Virtual Environment</title>
 
-    <para>If you have optained an OpenVZ container from a service provider,
-    you may find it difficult to configure any type of firewall within the
-    container. There are two container parameters that control iptables
-    behavior within the container:</para>
+    <para>If you have obtained an OpenVZ VE from a service provider, you may
+    find it difficult to configure any type of firewall within your VE. There
+    are two VE parameters that control iptables behavior within the
+    container:</para>
 
     <variablelist>
       <varlistentry>
         <term>--iptables <replaceable>name </replaceable></term>
 
         <listitem>
-          <para>Restrict access to iptables modules inside a container (by
-          default all iptables modules that are loaded in the host system are
-          accessible inside a container).</para>
+          <para>Restrict access to iptables modules inside a container (The
+          OpenVZ claims that by default all iptables modules that are loaded
+          in the host system are accessible inside a container; I haven't
+          tried that).</para>
 
-          <para>You can use the following values for name: iptable_filter,
-          iptable_mangle, ipt_limit, ipt_multiport, ipt_tos, ipt_TOS,
-          ipt_REJECT, ipt_TCPMSS, ipt_tcpmss, ipt_ttl, ipt_LOG, ipt_length,
-          ip_conntrack, ip_conntrack_ftp, ip_conntrack_irc, ipt_conntrack,
-          ipt_state, ipt_helper, iptable_nat, ip_nat_ftp, ip_nat_irc,
-          ipt_REDIRECT, xt_mac, ipt_owner.</para>
+          <para>You can use the following values for
+          <replaceable>name</replaceable>: <option>iptable_filter</option>,
+          <option>iptable_mangle</option>, <option>ipt_limit</option>,
+          <option>ipt_multiport</option>, <option>ipt_tos</option>,
+          <option>ipt_TOS</option>, <option>ipt_REJECT</option>,
+          <option>ipt_TCPMSS</option>, <option>ipt_tcpmss</option>,
+          <option>ipt_ttl</option>, <option>ipt_LOG</option>,
+          <option>ipt_length</option>, <option>ip_conntrack</option>,
+          <option>ip_conntrack_ftp</option>,
+          <option>ip_conntrack_irc</option>, <option>ipt_conntrack</option>,
+          <option>ipt_state</option>, <option>ipt_helper</option>,
+          <option>iptable_nat</option>, <option>ip_nat_ftp</option>,
+          <option>ip_nat_irc</option>, <option>ipt_REDIRECT</option>,
+          <option>xt_mac</option>, <option>ipt_owner</option>.</para>
 
           <para>If your provider is using this option, you may be in deep
-          trouble using Shorewall. Look at the output of <command>shorewall
-          show capabilities</command> and weep. Then try to get your provider
-          to remove this restriction on your container.</para>
+          trouble trying to use Shorewall in your container. Look at the
+          output of <command>shorewall show capabilities</command> and weep.
+          Then try to get your provider to remove this restriction on your
+          container.</para>
         </listitem>
       </varlistentry>
 

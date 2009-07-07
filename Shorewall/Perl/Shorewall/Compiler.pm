@@ -407,6 +407,9 @@ sub generate_script_3($) {
 		   '    rm -f ${VARDIR}/nat',
 		   "fi\n" );
 	}
+
+	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
+
     } else {
 	emit ( '#',
 	       '# Recent kernels are difficult to configure -- we see state match omitted a lot so we check for it here',

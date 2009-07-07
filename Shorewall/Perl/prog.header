@@ -853,6 +853,28 @@ detect_gateway() # $1 = interface
     [ -n "$gateway" ] && echo $gateway
 }
 
+#
+# Disable IPV6
+#
+disable_ipv6() {
+    local foo
+    foo="$($IP -f inet6 addr list 2> /dev/null)"
+
+    if [ -n "$foo" ]; then
+	if qt mywhich ip6tables; then
+	    ip6tables -P FORWARD DROP
+	    ip6tables -P INPUT DROP
+	    ip6tables -P OUTPUT DROP
+	    ip6tables -F
+	    ip6tables -X
+	    ip6tables -A OUTPUT -o lo -j ACCEPT
+	    ip6tables -A INPUT -i lo -j ACCEPT
+	else
+	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
+	fi
+    fi
+}
+
 # Function to truncate a string -- It uses 'cut -b -<n>'
 # rather than ${v:first:last} because light-weight shells like ash and
 # dash do not support that form of expansion.

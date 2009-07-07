@@ -188,7 +188,7 @@ our %config;
 #
 # Config options and global settings that are to be copied to object script
 #
-our @propagateconfig = qw/ MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
 our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
 #
 # From parsing the capabilities file or detecting capabilities
@@ -2306,8 +2306,7 @@ sub get_configuration( $ ) {
 
     default_yes_no 'ADMINISABSENTMINDED'        , '';
     default_yes_no 'BLACKLISTNEWONLY'           , '';
-
-    warning_message 'DISABLE_IPV6=Yes is not supported by Shorewall ' . $globals{VERSION} if $config{DISABLE_IPV6};
+    default_yes_no 'DISABLE_IPV6'               , '';
 
     unsupported_yes_no 'DYNAMIC_ZONES';
     unsupported_yes_no 'BRIDGING';

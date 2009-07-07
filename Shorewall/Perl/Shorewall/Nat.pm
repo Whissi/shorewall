@@ -281,7 +281,7 @@ sub process_one_masq( )
 
 	if ( $detectaddress ) {
 	    decr_cmd_level( $chainref );
-	    add_command( $chainref , 'fi' );
+	    add_commands( $chainref , 'fi' );
 	}
 
 	if ( $add_snat_aliases ) {

@@ -459,16 +459,16 @@ sub add_common_rules() {
 	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     } else {
 	if ( $family == F_IPV4 ) {
-	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
 	} else {
-	    add_command $chainref, 'for address in $ALL_ACASTS; do';
+	    add_commands $chainref, 'for address in $ALL_ACASTS; do';
 	}
 
 	incr_cmd_level $chainref;
 	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
 	add_rule $chainref, '-s $address -j DROP';
 	decr_cmd_level $chainref;
-	add_command $chainref, 'done';
+	add_commands $chainref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
@@ -481,15 +481,15 @@ sub add_common_rules() {
 	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
     } else {
 	if ( $family == F_IPV4 ) {
-	    add_command $rejectref, 'for address in $ALL_BCASTS; do';
+	    add_commands $rejectref, 'for address in $ALL_BCASTS; do';
 	} else {
-	    add_command $rejectref, 'for address in $ALL_ACASTS; do';
+	    add_commands $rejectref, 'for address in $ALL_ACASTS; do';
 	}
 
 	incr_cmd_level $rejectref;
 	add_rule $rejectref, '-d $address -j DROP';
 	decr_cmd_level $rejectref;
-	add_command $rejectref, 'done';
+	add_commands $rejectref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
@@ -631,9 +631,10 @@ sub add_common_rules() {
 		my $base     = uc chain_base $interface;
 		my $variable = get_interface_gateway $interface;
 
-		add_command $chainref, qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then);
-		add_command $chainref, qq(    echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3);
-		add_command $chainref, qq(fi);
+		add_commands( $chainref, 
+			      qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
+			      qq(    echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3) ,
+			      qq(fi) );
 	    }
 	}
     }
@@ -810,9 +811,9 @@ sub setup_mac_lists( $ ) {
 					  "    done" );
 			}
 
-			add_commands( $chainref, "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" );
-
-			add_command( $chainref, 'done' );
+			add_commands( $chainref
+				      , "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" ,
+				      , 'done' );
 		    }
 		}
 	    }

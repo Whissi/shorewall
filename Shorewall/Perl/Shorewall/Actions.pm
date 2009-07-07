@@ -740,16 +740,16 @@ sub dropBcast( $$$ ) {
 	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
     } else {
 	if ( $family == F_IPV4 ) {
-	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
 	} else {
-	    add_command $chainref, 'for address in $ALL_ACASTS; do';
+	    add_commands $chainref, 'for address in $ALL_ACASTS; do';
 	}
 
 	incr_cmd_level $chainref;
 	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
 	add_rule $chainref, '-d $address -j DROP';
 	decr_cmd_level $chainref;
-	add_command $chainref, 'done';
+	add_commands $chainref, 'done';
 
 	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
     }
@@ -775,16 +775,16 @@ sub allowBcast( $$$ ) {
 	add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
     } else {
 	if ( $family == F_IPV4 ) {
-	    add_command $chainref, 'for address in $ALL_BCASTS; do';
+	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
 	} else {
-	    add_command $chainref, 'for address in $ALL_MACASTS; do';
+	    add_commands $chainref, 'for address in $ALL_MACASTS; do';
 	}
 
 	incr_cmd_level $chainref;
 	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
 	add_rule $chainref, '-d $address -j ACCEPT';
 	decr_cmd_level $chainref;
-	add_command $chainref, 'done';
+	add_commands $chainref, 'done';
 
 	if ( $family == F_IPV4 ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';

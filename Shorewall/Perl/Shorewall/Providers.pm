@@ -118,9 +118,9 @@ sub setup_route_marking() {
 
 	if ( $providerref->{optional} ) {
 	    if ( $providerref->{shared} ) {
-		add_command( $chainref, qq(if [ interface_is_usable $interface -a -n "$providerref->{mac}" ]; then) );
+		add_commands( $chainref, qq(if [ interface_is_usable $interface -a -n "$providerref->{mac}" ]; then) );
 	    } else {
-		add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
+		add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
 	    }
 		
 	    incr_cmd_level( $chainref );
@@ -139,7 +139,7 @@ sub setup_route_marking() {
 	    add_rule $chainref, " -i $interface -j MARK --set-mark $providerref->{mark}";
 	}
 
-	decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
+	decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
     }
 
     add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
@@ -865,7 +865,7 @@ sub handle_stickiness( $ ) {
 		
 		for my $chainref ( $stickyref, $setstickyref ) {
 
-		    add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+		    add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 		    if ( $chainref->{name} eq 'sticky' ) {
 			$rule1 = $_;
@@ -886,7 +886,7 @@ sub handle_stickiness( $ ) {
 			add_rule $chainref, $rule2;
 		    }
 
-		    decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
+		    decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
 		    
 		}
 	    }
@@ -897,7 +897,7 @@ sub handle_stickiness( $ ) {
 		my $stickoref = ensure_mangle_chain 'sticko';
 
 		for my $chainref ( $stickoref, $setstickoref ) {
-		    add_command( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+		    add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 
 		    if ( $chainref->{name} eq 'sticko' ) {
 			$rule1 = $_;
@@ -918,7 +918,7 @@ sub handle_stickiness( $ ) {
 			add_rule $chainref, $rule2;
 		    }
 
-		    decr_cmd_level( $chainref), add_command( $chainref, "fi" ) if $providerref->{optional};
+		    decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
 		}
 	    }
 	}

@@ -71,7 +71,6 @@ our %EXPORT_TAGS = (
 				       ALL_COMMANDS
 				       NOT_RESTORE
 
-				       add_command
 				       add_commands
 				       move_rules
 				       insert_rule1
@@ -408,18 +407,10 @@ sub decr_cmd_level( $ ) {
 }
 
 #
-# Add a run-time command to a chain. Arguments are:
+# Add run-time commands to a chain. Arguments are:
 #
-#    Chain reference , Command
+#    Chain reference , Command, ...
 #
-sub add_command($$)
-{
-    my ($chainref, $command) = @_;
-
-    push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdlevel} , $command );
-
-    $chainref->{referenced} = 1;
-}
 
 sub add_commands ( $$;@ ) {
     my $chainref = shift @_;
@@ -438,7 +429,7 @@ sub push_rule( $$ ) {
 
     if ( $chainref->{cmdlevel} ) {
 	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
-	add_command $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
+	add_commands $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
 	#
 	# We omit the chain name for now -- this makes it easier to move rules from one 
@@ -2373,7 +2364,7 @@ sub expand_rule( $$$$$$$$$$ )
     sub push_command( $$$ ) {
 	my ( $chainref, $command, $end ) = @_;
 
-	add_command $chainref, $command;
+	add_commands $chainref, $command;
 	incr_cmd_level $chainref;
 	push @ends, $end;
     }
@@ -2790,7 +2781,7 @@ sub expand_rule( $$$$$$$$$$ )
 
     while ( @ends ) {
 	decr_cmd_level $chainref;
-	add_command $chainref, pop @ends;
+	add_commands $chainref, pop @ends;
     }
 
     $diface;

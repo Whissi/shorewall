@@ -2040,14 +2040,36 @@ sub mysplit( $ ) {
 #
 sub set_chain_variables() {
     if ( $family == F_IPV4 ) {
-	if ( $config{IPTABLES} ) {
-	    emit( qq(IPTABLES="$config{IPTABLES}"),
+	my $checkname = 0;
+	my $iptables  = $config{IPTABLES};
+
+	if ( $iptables ) {
+	    emit( qq(IPTABLES="$iptables"),
 		  '[ -x "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"',
 		);
+	    $checkname = 1 unless $iptables =~ '/';
 	} else {
 	    emit( '[ -z "$IPTABLES" ] && IPTABLES=$(mywhich iptables) # /sbin/shorewall exports IPTABLES',
 		  '[ -n "$IPTABLES" -a -x "$IPTABLES" ] || startup_error "Can\'t find iptables executable"'
 		);
+	    $checkname = 1;
+	}
+
+	if ( $checkname ) {
+	    emit ( '',
+		   'case $IPTABLES in',
+		   '    */*)',
+		   '        ;;',
+		   '    *)',
+		   '        IPTABLES=./$IPTABLES',
+		   '        ;;',
+		   'esac',
+		   '',
+		   'IP6TABLES=${IPTABLES%/*}/ip6tables'
+		 );
+	} else {
+	    $iptables =~ s|/[^/]*$|/ip6tables|;
+	    emit ( "IP6TABLES=$iptables" );
 	}
 
 	emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',

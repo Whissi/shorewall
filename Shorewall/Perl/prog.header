@@ -861,14 +861,14 @@ disable_ipv6() {
     foo="$($IP -f inet6 addr list 2> /dev/null)"
 
     if [ -n "$foo" ]; then
-	if qt mywhich ip6tables; then
-	    ip6tables -P FORWARD DROP
-	    ip6tables -P INPUT DROP
-	    ip6tables -P OUTPUT DROP
-	    ip6tables -F
-	    ip6tables -X
-	    ip6tables -A OUTPUT -o lo -j ACCEPT
-	    ip6tables -A INPUT -i lo -j ACCEPT
+	if [ -x "$IP6TABLES" ]; then
+	    $IP6TABLES -P FORWARD DROP
+	    $IP6TABLES -P INPUT DROP
+	    $IP6TABLES -P OUTPUT DROP
+	    $IP6TABLES -F
+	    $IP6TABLES -X
+	    $IP6TABLES -A OUTPUT -o lo -j ACCEPT
+	    $IP6TABLES -A INPUT -i lo -j ACCEPT
 	else
 	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
 	fi

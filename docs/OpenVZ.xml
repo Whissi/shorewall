@@ -286,4 +286,225 @@ Processing /etc/shorewall/started ...
 done.
 </programlisting>
   </section>
+
+  <section>
+    <title>Working Example</title>
+
+    <para>This section presents a working example. This is the configuration
+    at shorewall.net during the summer of 2009.</para>
+
+    <para>The network diagram is shown below.</para>
+
+    <graphic fileref="images/Network2009c.png" />
+
+    <para>The two systems shown in the green box are OpenVZ Virtual
+    Environments (containers).</para>
+
+    <section>
+      <title>OpenVZ Configuration</title>
+
+      <para>In the files below, items in <emphasis role="bold">bold
+      font</emphasis> are relevant to the networking/Shorewall
+      configuration.</para>
+
+      <para><filename>/etc/vz/conf</filename> (long lines folded for
+      clarity).</para>
+
+      <programlisting>## Global parameters
+VIRTUOZZO=yes
+LOCKDIR=/var/lib/vz/lock
+DUMPDIR=/var/lib/vz/dump
+VE0CPUUNITS=1000
+
+## Logging parameters
+LOGGING=yes
+LOGFILE=/var/log/vzctl.log
+LOG_LEVEL=0
+VERBOSE=0
+
+## Disk quota parameters
+DISK_QUOTA=no
+VZFASTBOOT=no
+
+# The name of the device whose ip address will be used as source ip for VE.
+# By default automatically assigned.
+<emphasis role="bold">VE_ROUTE_SRC_DEV="eth3"</emphasis>
+
+# Controls which interfaces to send ARP requests and modify APR tables on.
+NEIGHBOUR_DEVS=detect
+
+## Template parameters
+TEMPLATE=/var/lib/vz/template
+
+## Defaults for VEs
+VE_ROOT=/home/vz/root/$VEID
+VE_PRIVATE=/home/vz/private/$VEID
+CONFIGFILE="vps.basic"
+#DEF_OSTEMPLATE="fedora-core-4"
+DEF_OSTEMPLATE="debian"
+
+## Load vzwdog module
+VZWDOG="no"
+
+## IPv4 iptables kernel modules
+<emphasis role="bold">IPTABLES="iptable_filter iptable_mangle ipt_limit ipt_multiport ipt_tos
+          ipt_TOS ipt_REJECT ipt_TCPMSS ipt_tcpmss ipt_ttl ipt_LOG ipt_length
+          ip_conntrack ip_conntrack_ftp ip_conntrack_irc ipt_conntrack
+          ipt_state ipt_helper iptable_nat  ip_nat_ftp  ip_nat_irc ipt_REDIRECT
+          xt_mac ipt_owner"
+</emphasis>
+## Enable IPv6
+IPV6="no"</programlisting>
+
+      <para><filename>/etc/vz/conf/101.conf</filename>:</para>
+
+      <programlisting>ONBOOT="yes"
+
+# UBC parameters (in form of barrier:limit)
+KMEMSIZE="574890800:589781600"
+LOCKEDPAGES="256:256"
+PRIVVMPAGES="1073741824:2137483648"
+SHMPAGES="21504:21504"
+NUMPROC="240:240"
+PHYSPAGES="0:9223372036854775807"
+VMGUARPAGES="262144:9223372036854775807"
+OOMGUARPAGES="26112:9223372036854775807"
+NUMTCPSOCK="360:360"
+NUMFLOCK="188:206"
+NUMPTY="16:16"
+NUMSIGINFO="256:256"
+TCPSNDBUF="1720320:2703360"
+TCPRCVBUF="1720320:2703360"
+OTHERSOCKBUF="1126080:2097152"
+DGRAMRCVBUF="262144:262144"
+NUMOTHERSOCK="360:360"
+DCACHESIZE="3409920:3624960"
+NUMFILE="9312:9312"
+AVNUMPROC="180:180"
+<emphasis role="bold">NUMIPTENT="200:200"</emphasis>
+
+# Disk quota parameters (in form of softlimit:hardlimit)
+DISKSPACE="1048576:1153024"
+DISKINODES="200000:220000"
+QUOTATIME="0"
+
+# CPU fair sheduler parameter
+CPUUNITS="1000"
+
+VE_ROOT="/home/vz/root/$VEID"
+VE_PRIVATE="/home/vz/private/$VEID"
+OSTEMPLATE="suse-11.1-x86_64"
+ORIGIN_SAMPLE="vps.basic"
+<emphasis role="bold">HOSTNAME="lists.shorewall.net"
+IP_ADDRESS="206.124.146.177"
+NAMESERVER="127.0.0.1"
+NAME="lists"
+SEARCHDOMAIN="shorewall.net"</emphasis></programlisting>
+
+      <para>This VE is the main server at shorewall.net. Note that some of the
+      memory parameters are set ridiculously large -- I got tired of
+      out-of-memory issues.</para>
+
+      <para><filename>/etc/vz/conf/102.conf</filename> (nearly default
+      configuration on Debian):</para>
+
+      <programlisting>ONBOOT="yes"
+
+# UBC parameters (in form of barrier:limit)
+KMEMSIZE="14372700:14790164"
+LOCKEDPAGES="256:256"
+PRIVVMPAGES="65536:69632"
+SHMPAGES="21504:21504"
+NUMPROC="240:240"
+PHYSPAGES="0:9223372036854775807"
+VMGUARPAGES="33792:9223372036854775807"
+OOMGUARPAGES="26112:9223372036854775807"
+NUMTCPSOCK="360:360"
+NUMFLOCK="188:206"
+NUMPTY="16:16"
+NUMSIGINFO="256:256"
+TCPSNDBUF="1720320:2703360"
+TCPRCVBUF="1720320:2703360"
+OTHERSOCKBUF="1126080:2097152"
+DGRAMRCVBUF="262144:262144"
+NUMOTHERSOCK="360:360"
+DCACHESIZE="3409920:3624960"
+NUMFILE="9312:9312"
+AVNUMPROC="180:180"
+<emphasis role="bold">NUMIPTENT="200:200"</emphasis>
+
+# Disk quota parameters (in form of softlimit:hardlimit)
+DISKSPACE="1048576:1153024"
+DISKINODES="200000:220000"
+QUOTATIME="0"
+
+# CPU fair sheduler parameter
+CPUUNITS="1000"
+
+VE_ROOT="/home/vz/root/$VEID"
+VE_PRIVATE="/home/vz/private/$VEID"
+OSTEMPLATE="debian-5.0-amd64-minimal"
+ORIGIN_SAMPLE="vps.basic"
+<emphasis role="bold">HOSTNAME="server.shorewall.net"
+IP_ADDRESS="206.124.146.178"
+NAMESERVER="206.124.146.177"
+NAME="server"</emphasis></programlisting>
+
+      <para>I really don't use this server for anything currently but I'm
+      planning to eventually splt the services between the two VEs.</para>
+    </section>
+
+    <section>
+      <title>Shorewall Configuration on the Host</title>
+
+      <para>Below are exerpts from the configuration files as they pertain to
+      the OpenVZ environment.</para>
+
+      <para><filename>/etc/shorewall/zones</filename>:</para>
+
+      <programlisting>#ZONE           TYPE            OPTIONS         IN                      OUT
+#                                               OPTIONS                 OPTIONS
+fw              firewall
+loc             ipv4            #Local wired Zone
+<emphasis role="bold">dmz             ipv4            #DMZ</emphasis>
+...</programlisting>
+
+      <para><filename>/etc/shorewall/params</filename>:</para>
+
+      <programlisting>INT_IF=eth1
+<emphasis role="bold">VPS_IF=venet0</emphasis>
+...</programlisting>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
+loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
+<emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=1,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
+...</programlisting>This is a multi-ISP configuration so entries are required
+      in <filename>/etc/shorewall/route_rules</filename>:</para>
+
+      <programlisting>#SOURCE   DEST                 PROVIDER  PRIORITY
+-         172.20.0.0/24        main      1000
+<emphasis role="bold">-         206.124.146.177      main      1001
+-         206.124.146.178      main      1001</emphasis></programlisting>
+    </section>
+
+    <section>
+      <title>Shorewall Configuration on Server</title>
+
+      <para>I have set up Shorewall on Server (206.124.146.178) just to have
+      an environment to test with. It is a quite vanilla one-interface
+      configuration.</para>
+
+      <para>/etc/shorewall/zones:</para>
+
+      <programlisting>#ZONE       TYPE         OPTIONS           IN                OUT
+#                                          OPTIONS           OPTIONS
+fw          firewall
+net         ipv4</programlisting>
+
+      <para>/etc/shorewall/interfaces:</para>
+
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     <emphasis role="bold">venet0 </emphasis>         detect          dhcp,tcpflags,logmartians,nosmurfs</programlisting>
+    </section>
+  </section>
 </article>

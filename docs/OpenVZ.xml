@@ -143,20 +143,15 @@ server:~ # </programlisting>
       <programlisting>###############################################################################
 #ZONE    TYPE       OPTIONS                IN                       OUT
 #                                          OPTIONS                  OPTIONS
+net      ipv4
 vz       ipv4</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>###############################################################################
 #ZONE    INTERFACE          BROADCAST      OPTIONS
+net      eth0               -              proxyarp=1
 vz       venet0             -              routeback,rp_filter=0</programlisting>
-
-      <para><filename>/etc/shorewall/proxyarp</filename> (assumes that
-      external interface is eth0):</para>
-
-      <programlisting>###############################################################################
-#ADDRESS         INTERFACE  EXTERNAL  HAVEROUTE   PERSISTENT
-206.124.146.178  venet0     eth0      Yes</programlisting>
     </section>
 
     <section>
@@ -465,17 +460,21 @@ NAME="server"</emphasis></programlisting>
       <programlisting>#ZONE           TYPE            OPTIONS         IN                      OUT
 #                                               OPTIONS                 OPTIONS
 fw              firewall
+net             ipv4            #Internet
 loc             ipv4            #Local wired Zone
 <emphasis role="bold">dmz             ipv4            #DMZ</emphasis>
 ...</programlisting>
 
       <para><filename>/etc/shorewall/params</filename>:</para>
 
-      <programlisting>INT_IF=eth1
+      <programlisting>NET_IF=eth3
+INT_IF=eth1
 <emphasis role="bold">VPS_IF=venet0</emphasis>
 ...</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
+net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0,<emphasis
+            role="bold">proxyarp=1</emphasis>
 loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
 <emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=1,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
 ...</programlisting>This is a multi-ISP configuration so entries are required

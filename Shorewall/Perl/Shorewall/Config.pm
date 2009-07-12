@@ -301,7 +301,7 @@ sub initialize( $ ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall6 Shorewall6 ip6tables IP6TABLES );
     }	
 
-    ( $command, $doing, $done ) = qw/ compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
+    ( $command, $doing, $done ) = qw/compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
     $verbose = 0;              # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
     $log = undef;              # File reference for log file
@@ -1189,7 +1189,7 @@ sub enable_object() {
 }
 
 #
-# Diusable writes to the object file
+# Disable writes to the object file
 #
 sub disable_object() {
     $object_enabled = 0;

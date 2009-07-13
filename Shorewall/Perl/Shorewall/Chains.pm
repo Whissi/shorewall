@@ -226,7 +226,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       REDIRECT => 32,             #'REDIRECT'
 	       ACTION   => 64,             #An action (may be built-in)
 	       MACRO    => 128,            #A Macro
-	       LOGRULE  => 256,            #'LOG'
+	       LOGRULE  => 256,            #'LOG','NFLOG'
 	       NFQ      => 512,            #'NFQUEUE'
 	       CHAIN    => 1024,           #Manual Chain
 	   };
@@ -249,15 +249,21 @@ our $idiotcount;
 
 our $global_variables;
 
+#
+# Determines the commands for which a particular interface-oriented shell variable needs to be set
+#
 use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
 
-our %interfaceaddr;
-our %interfaceaddrs;
-our %interfacenets;
-our %interfacemacs;
-our %interfacebcasts;
-our %interfaceacasts;
-our %interfacegateways;
+#
+# These hashes hold the shell code to set shell variables
+#
+our %interfaceaddr;         # First interface address
+our %interfaceaddrs;        # All interface addresses
+our %interfacenets;         # Networks routed out of the interface
+our %interfacemacs;         # Interface MAC
+our %interfacebcasts;       # Broadcast addresses associated with the interface (IPv4)
+our %interfaceacasts;       # Anycast addresses associated with the interface (IPv6)
+our %interfacegateways;     # Gateway of default route out of the interface
 
 #
 # Built-in Chains
@@ -945,9 +951,7 @@ sub ensure_filter_chain( $$ )
 {
     my ($chain, $populate) = @_;
 
-    my $chainref = $filter_table->{$chain};
-
-    $chainref = new_chain 'filter' , $chain unless $chainref;
+    my $chainref = ensure_chain 'filter', $chain;
 
     if ( $populate and ! $chainref->{referenced} ) {
 	if ( $section eq 'NEW' or $section eq 'DONE' ) {
@@ -1041,7 +1045,6 @@ sub new_manual_chain($) {
     fatal_error "Duplicate Chain Name ($chain)" if $targets{$chain} || $filter_table->{$chain};
     $targets{$chain} = CHAIN;
     ( my $chainref = ensure_filter_chain( $chain, 0) )->{manual} = 1;
-    $chainref->{referenced} = 1;
     $chainref;
 }
 
@@ -1734,7 +1737,7 @@ sub do_helper( $ ) {
 }
 
 #
-# Create a "-m length" match for the passed TOS
+# Create a "-m length" match for the passed LENGTH
 #
 sub do_length( $ ) {
     my $length = $_[0];
@@ -1836,7 +1839,7 @@ sub match_source_net( $;$ ) {
 }
 
 #
-# Match a Desgination. 
+# Match a Destination. 
 #
 sub match_dest_net( $ ) {
     my $net = $_[0];
@@ -2818,7 +2821,7 @@ sub expand_rule( $$$$$$$$$$ )
 #
 # We may have to generate part of the input at run-time. The rules array in each chain
 # table entry may contain rules (begin with '-A') or shell source. We alternate between
-# writing the rules ('-A') into the temporary file to be bassed to iptables-restore
+# writing the rules ('-A') into the temporary file to be passed to iptables-restore
 # (CAT_MODE) and and writing shell source into the generated script (CMD_MODE).
 #
 # The following two functions are responsible for the mode transitions.
@@ -2997,13 +3000,10 @@ sub create_chainlist_reload($) {
     push_indent;
 
     if ( @chains ) {
-	if ( @chains == 1 ) {
-	    progress_message2 "Compiling iptables-restore input for chain @chains...";
-	    save_progress_message "Preparing iptables-restore input for chain @chains...";
-	} else {
-	    progress_message2 "Compiling iptables-restore input for chains $chains...";
-	    save_progress_message "Preparing iptables-restore input for chains $chains...";
-	}
+	my $word = @chains == 1 ? 'chain' : 'chains';
+
+	progress_message2 "Compiling iptables-restore input for $word @chains...";
+	save_progress_message "Preparing iptables-restore input for $word @chains...";
 
 	emit '';
 
@@ -3014,7 +3014,7 @@ sub create_chainlist_reload($) {
 	for my $chain ( @chains ) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 
-	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter)$/;
+	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw)$/;
 
 	    $chains{$table} = [] unless $chains{$table};
 
@@ -3033,7 +3033,7 @@ sub create_chainlist_reload($) {
 
 	enter_cat_mode;
 
-	for $table qw(nat mangle filter) {
+	for $table qw(raw nat mangle filter) {
 	    next unless $chains{$table};
 
 	    emit_unindented "*$table";
@@ -3068,23 +3068,28 @@ sub create_chainlist_reload($) {
 	enter_cmd_mode;
 
 	#
-	# Now generate the actual iptables-restore command
+	# Now generate the actual ip[6]tables-restore command
 	#
 	emit(  'exec 3>&-',
-	       '',
-	       'progress_message2 "Running iptables-restore..."',
 	       '' );
 
 	if ( $family == F_IPV4 ) {
-	    emit ( 'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux' );
+	    emit ( 'progress_message2 "Running iptables-restore..."',
+		   '',
+		   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
+		   'if [ $? != 0 ]; then',
+		   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
+		   "fi\n"
+		 );
 	} else {
-	    emit ( 'cat ${VARDIR}/.iptables-restore-input | $IP6TABLES_RESTORE -n # Use this nonsensical form to appease SELinux' );
+	    emit ( 'progress_message2 "Running ip6tables-restore..."',
+		   '',
+		   'cat ${VARDIR}/.iptables-restore-input | $IP6TABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
+		   'if [ $? != 0 ]; then',
+		   '    fatal_error "ip6tables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
+		   "fi\n"
+		 );
 	}
-
-	emit ( 'if [ $? != 0 ]; then',
-	       '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
-	       "fi\n"
-	     );
     } else {
 	emit('true');
     }
@@ -3173,7 +3178,7 @@ sub create_stop_load( $ ) {
     #
     emit ('', 
 	  'if [ $? != 0 ]; then',
-	   '    error_message "ERROR: \$command Failed."',
+	   '    error_message "ERROR: $command Failed."',
 	   "fi\n"
 	 );
 

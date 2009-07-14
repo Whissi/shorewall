@@ -99,11 +99,9 @@ INIT {
 sub setup_route_marking() {
     my $mask = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
 
-    require_capability( 'CONNMARK_MATCH' , 'the provider \'track\' option' , 's' );
-    require_capability( 'CONNMARK' ,       'the provider \'track\' option' , 's' );
+    require_capability( $_ , 'the provider \'track\' option' , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
-    add_rule $mangle_table->{PREROUTING} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
-    add_rule $mangle_table->{OUTPUT} ,     "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask";
+    add_rule $mangle_table->{$_} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask" for qw/PREROUTING OUTPUT/;
 
     my $chainref  = new_chain 'mangle', 'routemark';
     my $chainref1 = new_chain 'mangle', 'setsticky';
@@ -602,16 +600,14 @@ sub add_an_rtrule( ) {
 sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
     for ( rfc1918_networks ) {
-	emit( "run_ip route replace unreachable $_" );
-	emit( "echo \"qt \$IP -$family route del unreachable $_\" >> \${VARDIR}/undo_routing" );
+	emit( qq(run_ip route replace unreachable $_) );
+	emit( qq(echo "qt \$IP -$family route del unreachable $_" >> \${VARDIR}/undo_routing) );
     } 
 }
 
 sub start_providers() {
     require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
     
-    fatal_error "A non-empty providers file is not permitted with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
-
     emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
     push_indent;

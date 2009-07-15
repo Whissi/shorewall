@@ -50,6 +50,7 @@ our @EXPORT = qw( NOTHING
 		  zone_type
 		  zone_interfaces
 		  all_zones
+		  all_parent_zones
 		  complex_zones
 		  non_firewall_zones
 		  single_interface
@@ -72,7 +73,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.3_11';
+our $VERSION = '4.4_0';
 
 #
 # IPSEC Option types
@@ -666,6 +667,10 @@ sub all_zones() {
 
 sub non_firewall_zones() {
    grep ( $zones{$_}{type} != FIREWALL ,  @zones );
+}
+
+sub all_parent_zones() {
+   grep ( ! @{$zones{$_}{parents}} ,  @zones );
 }
 
 sub complex_zones() {

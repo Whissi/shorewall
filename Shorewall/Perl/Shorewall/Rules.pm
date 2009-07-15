@@ -45,7 +45,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.3_11';
+our $VERSION = '4.4_0';
 
 #
 # Set to one if we find a SECTION
@@ -1292,13 +1292,44 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $origdest = $interfaces ? "detect:@$interfaces" : ALLIP;
 	}
 
-	expand_rule( ensure_chain ('nat' , $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone) ,
+	my $tgt = 'RETURN';
+
+	my $nonat_chain;
+
+	if ( $sourceref->{type} == FIREWALL ) {
+	    $nonat_chain = $nat_table->{OUTPUT};
+	} else {
+	    $nonat_chain = ensure_chain 'nat', dnat_chain $sourcezone;
+
+	    my $chn;
+
+	    for ( zone_interfaces $sourcezone ) {
+		my $ichain = input_chain $_;
+
+		if ( $nat_table->{$ichain} ) {
+		    #
+		    # Static NAT is defined on this interface
+		    #
+		    $chn = new_chain( 'nat', newexclusionchain ) unless $chn;
+		    add_jump $chn, $nat_table->{$ichain}, 0, "-i $_ ";
+		}
+	    }
+
+	    if ( $chn ) {
+		add_rule $chn, '-j ACCEPT';
+		$tgt = $chn->{name};
+	    } else {
+		$tgt = 'ACCEPT';
+	    }
+	}
+	    
+	expand_rule( $nonat_chain ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     '-j RETURN ' ,
+		     " -j $tgt ",
 		     $loglevel ,
 		     $log_action ,
 		     '' );
@@ -1380,6 +1411,8 @@ sub process_rule ( ) {
     my $includesrcfw = 1;
     my $includedstfw = 1;
     my $thisline = $currentline;
+    my $anysource = ( $source =~ s/^any/all/ );
+    my $anydest   = ( $dest   =~ s/^any/all/ );
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
@@ -1393,6 +1426,7 @@ sub process_rule ( ) {
     #
     # Handle Wildcards
     #
+    
     if ( $source =~ /^all[-+]/ ) {
 	if ( $source eq 'all+' ) {
 	    $source = 'all';
@@ -1428,32 +1462,51 @@ sub process_rule ( ) {
 
     my $action = isolate_basic_target $target;
 
+    my @source;
+    my @dest;
+
+    if ( $source eq 'all' ) {
+	if ( $anysource ) {
+	    @source = ( all_parent_zones );
+	} else {
+	    @source = ( non_firewall_zones )
+	}
+
+	unshift @source, firewall_zone if $includesrcfw;
+    }	
+
+    if ( $dest eq 'all' ) {
+	if ( $anydest ) {
+	    @dest = ( all_parent_zones );
+	} else {
+	    @dest = ( non_firewall_zones )
+	}
+
+	unshift @dest, firewall_zone if $includedstfw;
+    }	
+
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
     if ( $source eq 'all' ) {
-	for my $zone ( all_zones ) {
-	    if ( $includesrcfw || ( zone_type( $zone ) != FIREWALL ) ) {
-		if ( $dest eq 'all' ) {
-		    for my $zone1 ( all_zones ) {
-			if ( $includedstfw || ( zone_type( $zone1 ) != FIREWALL ) ) {
-			    if ( $intrazone || ( $zone ne $zone1 ) ) {
-				process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
-			    }
-			}
+	for my $zone ( @source ) {
+	    if ( $dest eq 'all' ) {
+		for my $zone1 ( @dest ) {
+		    if ( $intrazone || ( $zone ne $zone1 ) ) {
+			process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
 		    }
-		} else {
-		    my $destzone = (split( /:/, $dest, 2 ) )[0];
-		    $destzone = $action =~ /^REDIRECT/ ? firewall_zone : '' unless defined_zone $destzone;
-		    if ( $intrazone || ( $zone ne $destzone ) ) {
-			process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
-		    }
+		}
+	    } else {
+		my $destzone = (split( /:/, $dest, 2 ) )[0];
+		$destzone = $action =~ /^REDIRECT/ ? firewall_zone : '' unless defined_zone $destzone;
+		if ( $intrazone || ( $zone ne $destzone ) ) {
+		    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
 		}
 	    }
 	}
     } elsif ( $dest eq 'all' ) {
-	for my $zone ( all_zones ) {
+	for my $zone ( @dest ) {
 	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
-	    if ( ( $includedstfw || ( zone_type( $zone ) != FIREWALL ) ) && ( ( $sourcezone ne $zone ) || $intrazone) ) {
+	    if ( ( $sourcezone ne $zone ) || $intrazone ) {
 		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
 	    }
 	}

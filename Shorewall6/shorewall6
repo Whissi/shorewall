@@ -445,11 +445,6 @@ start_command() {
 			    FAST=Yes
 			    option=${option#f}
 			    ;;
-			p*)
-			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
-			    PURGE=Yes
-			    option=${option%p}
-			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1381,11 +1376,11 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
+    echo "   restart [ -n ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|nat|raw|routing|tc|vardir|zones} ]"
-    echo "   start [ -f ] [ -n ] [ -p ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop [ -f ]"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"

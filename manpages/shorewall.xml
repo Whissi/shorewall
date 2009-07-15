@@ -683,13 +683,12 @@
           -f capabilities &gt; capabilities</emphasis> on a system with
           Shorewall Lite installed.</para>
 
-          <para>The <option>-d</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be run under control of
-          the Perl debugger.</para>
+          <para>The <option>-d</option> option causes the compiler to be run
+          under control of the Perl debugger.</para>
 
-          <para>The <option>-p</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be profiled via the Perl
-          <option>-wd:DProf</option> command-line option.</para>
+          <para>The <option>-p</option> option causes the compiler to be
+          profiled via the Perl <option>-wd:DProf</option> command-line
+          option.</para>
         </listitem>
       </varlistentry>
 
@@ -741,9 +740,9 @@
           Shorewall-perl. It causes the compiler to be run under control of
           the Perl debugger.</para>
 
-          <para>The <option>-p</option> option only works when the compiler is
-          Shorewall-perl. It causes the compiler to be profiled via the Perl
-          <option>-wd:DProf</option> command-line option.</para>
+          <para>The <option>-p</option> option causes the compiler to be
+          profiled via the Perl <option>-wd:DProf</option> command-line
+          option.</para>
         </listitem>
       </varlistentry>
 
@@ -979,23 +978,13 @@
         <term><emphasis role="bold">refresh</emphasis></term>
 
         <listitem>
-          <para>Shorewall-shell: The rules involving the the black list, ECN
-          control rules, and traffic shaping are recreated to reflect any
-          changes made to your configuration files. Existing connections are
-          untouched.</para>
-
-          <para>Shorewall-perl: All steps performed by
-          <command>restart</command> are performed by
-          <command>refresh</command> with the exception that
+          <para>All steps performed by <command>restart</command> are
+          performed by <command>refresh</command> with the exception that
           <command>refresh</command> only recreates the chains specified in
           the command while <command>restart</command> recreates the entire
           Netfilter ruleset. If no <replaceable>chain</replaceable> is given,
           the static blacklisting chain <emphasis
           role="bold">blacklst</emphasis> is assumed.</para>
-
-          <para><emphasis role="bold">Note</emphasis>: Specifying chains in
-          the command requires Shorewall-perl 4.0.3 or later. Earlier versions
-          only refresh the blacklst chain</para>
 
           <para>The listed chains are assumed to be in the filter table. You
           can refresh chains in other tables by prefixing the chain name with

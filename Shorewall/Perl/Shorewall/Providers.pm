@@ -608,10 +608,6 @@ sub setup_null_routing() {
 sub start_providers() {
     require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
     
-    emit "\nif [ -z \"\$NOROUTES\" ]; then";
-
-    push_indent;
-
     emit  ( '#',
 	    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
 	    '#',
@@ -713,7 +709,11 @@ sub setup_providers() {
 
     my $fn = open_file 'providers';
 
-    first_entry sub() { progress_message2 "$doing $fn..."; start_providers; };
+    first_entry sub() {
+	emit "\nif [ -z \"\$NOROUTES\" ]; then";
+	push_indent;
+	progress_message2 "$doing $fn...";
+	start_providers; };
 
     add_a_provider, $providers++ while read_a_line;
 
@@ -733,29 +733,33 @@ sub setup_providers() {
 
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
+	#
+	# This completes the if block begun in the first_entry closure
+	#
 	pop_indent;
 	emit "fi\n";
 
 	setup_route_marking if @routemarked_interfaces;
     } else {
+	emit "\nif [ -z \"\$NOROUTES\" ]; then";
+
+	push_indent;
+	
 	emit "\nundo_routing";
 	emit 'restore_default_route';
+	
 	if ( $config{NULL_ROUTE_RFC1918} ) {
-	    emit "\nif [ -z \"\$NOROUTES\" ]; then";
-
-	    push_indent;
-
 	    emit  ( '#',
 		    '# Initialize the file that holds \'undo\' commands',
 		    '#',
 		    '> ${VARDIR}/undo_routing' );
 	    setup_null_routing;
 	    emit "\nrun_ip route flush cache";
-
-	    pop_indent;
-
-	    emit "fi\n";
 	}
+
+	pop_indent;
+
+	emit "fi\n";
     }
 
 }

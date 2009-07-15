@@ -690,8 +690,6 @@ sub finish_providers() {
 	emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
 	      '    cat > /etc/iproute2/rt_tables <<EOF' );
 
-	push_indent;
-
 	emit_unindented join( "\n",
 			      '#',
 			      '# reserved values',
@@ -702,16 +700,9 @@ sub finish_providers() {
 			      "0\tunspec",
 			      '#',
 			      '# local',
-			      '#',
-			      "EOF\n" );
-
-	emit "echocommand=\$(find_echo)\n";
-
-	for my $table ( @providers ) {
-	    emit "\$echocommand \"$providers{$table}{number}\\t$table\" >>  /etc/iproute2/rt_tables";
-	}
-
-	pop_indent;
+			      '#' );
+	emit_unindented "$providers{$_}{number}\t$_" for @providers;
+	emit_unindented "EOF\n";
 
 	emit "fi\n";
     }

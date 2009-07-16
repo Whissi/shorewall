@@ -119,10 +119,6 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para>In earlier Shorewall6 versions, a "default action" for DROP
-          and REJECT policies was specified in the file
-          /usr/share/shorewall6/actions.std.</para>
-
           <para>To allow for default rules to be applied when USE_ACTIONS=No,
           the DROP_DEFAULT, REJECT_DEFAULT, ACCEPT_DEFAULT, QUEUE_DEFAULT and
           NFQUEUE_DEFAULT options have been added.</para>
@@ -891,11 +887,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         <listitem>
           <para>This parameter specifies the directory/directories where your
           kernel netfilter modules may be found. If you leave the variable
-          empty, Shorewall6 will supply the value "/lib/modules/`uname
-          -r`/kernel/net/ipv4/netfilter" in versions of Shorewall6 prior to
-          3.2.4 and "/lib/modules/`uname
+          empty, Shorewall6 will supply "/lib/modules/`uname
           -r`/kernel/net/ipv4/netfilter:/lib/modules/`uname
-          -r`/kernel/net/ipv4/netfilter" in later versions.</para>
+          -r`/kernel/net/ipv4/netfilter".</para>
         </listitem>
       </varlistentry>
 

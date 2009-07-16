@@ -118,6 +118,9 @@ Shorewall 4.4.0 RC1
 2)  Previously, Shorewall might alter the routing when there were no
     providers, even if the "-n" option was given.
 
+3)  Previously, NONAT rules on a sub-zone were not exempted from
+    DNAT/REDIRECT rules of a parent zone.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -128,7 +131,11 @@ None.
                 N E W   F E A T U R E S   I N   4 . 4 . 0 RC1
 ----------------------------------------------------------------------------
 
-None.
+1)  A new keyword 'any' may be used in the SOURCE and DEST columns of
+    the rules file. In the absense of nested zones, 'any' works the
+    same as 'all'. When there are nested zones, 'any' only selects the
+    top-level zones. 'any' is intended to be used with
+    IMPLICIT_CONTINUE=Yes in shorewall.conf.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 4

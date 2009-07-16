@@ -117,7 +117,7 @@
       <varlistentry>
         <term><emphasis
         role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
-        role="bold">none</emphasis>} (Shorewall-perl 4.0.3 and later)</term>
+        role="bold">none</emphasis>}</term>
 
         <listitem>
           <para>In earlier Shorewall versions, a "default action" for DROP and
@@ -140,10 +140,7 @@
             <member>a) The name of an
             <replaceable>action</replaceable>.</member>
 
-            <member>b) The name of a <replaceable>macro</replaceable>
-            (Shorewall-shell only)</member>
-
-            <member>c) <emphasis role="bold">None</emphasis> or <emphasis
+            <member>b) <emphasis role="bold">None</emphasis> or <emphasis
             role="bold">none</emphasis></member>
           </simplelist>
 
@@ -335,22 +332,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">BRIDGING=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
-          role="bold">yes</emphasis>, enables Shorewall Bridging
-          support.</para>
-
-          <para><note>
-              <para>BRIDGING=Yes may not work properly with Linux kernel
-              2.6.20 or later and is not supported by Shorewall-perl.</para>
-            </note></para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">CLAMPMSS=[</emphasis><emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis>value</emphasis>]</term>
@@ -434,39 +415,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DELAYBLACKLISTLOAD=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>Users with a large static black list (<ulink
-          url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)) may
-          want to set the DELAYBLACKLISTLOAD option to <emphasis
-          role="bold">Yes</emphasis>. When DELAYBLACKLISTLOAD=Yes, Shorewall
-          will enable new connections before loading the blacklist rules.
-          While this may allow connections from blacklisted hosts to slip by
-          during construction of the blacklist, it can substantially reduce
-          the time that all new connections are disabled during <emphasis
-          role="bold">shorewall</emphasis> [<emphasis
-          role="bold">re</emphasis>]<emphasis
-          role="bold">start</emphasis>.</para>
-
-          <note>
-            <para>DELAYBLACKLISTLOAD=Yes is not supported by
-            Shorewall-perl.</para>
-          </note>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">DELETE_THEN_ADD=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>Added in Shorewall 4.0.4. If set to Yes (the default value),
-          entries in the /etc/shorewall/route_stopped files cause an 'ip rule
-          del' command to be generated in addition to an 'ip rule add'
-          command. Setting this option to No, causes the 'ip rule del' command
-          to be omitted.</para>
+          <para>If set to Yes (the default value), entries in the
+          /etc/shorewall/route_stopped files cause an 'ip rule del' command to
+          be generated in addition to an 'ip rule add' command. Setting this
+          option to No, causes the 'ip rule del' command to be omitted.</para>
         </listitem>
       </varlistentry>
 
@@ -520,9 +476,6 @@
           role="bold">yes</emphasis>, enables dynamic zones. DYNAMIC_ZONES=Yes
           is not allowed in configurations that will run under Shorewall
           Lite.</para>
-
-          <para>DYNAMIC_ZONES=Yes is not supported by Shorewall-perl 4.2.0 and
-          later.</para>
         </listitem>
       </varlistentry>
 
@@ -538,8 +491,8 @@
 #                   LEVEL
 net     all  DROP   info</programlisting>then the chain name is 'net2all'
           which is also the chain named in Shorewall log messages generated as
-          a result of the policy. If EXPAND_POLICIES=Yes, then Shorewall-perl
-          will create a separate chain for each pair of zones covered by the
+          a result of the policy. If EXPAND_POLICIES=Yes, then Shorewall will
+          create a separate chain for each pair of zones covered by the
           policy. This makes the resulting log messages easier to interpret
           since the chain in the messages will have a name of the form 'a2b'
           where 'a' is the SOURCE zone and 'b' is the DEST zone.</para>
@@ -776,10 +729,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>Added in Shorewall 4.0.3. When set to <option>Yes</option>,
-          this option prevents scripts generated by Shorewall-perl from
-          altering the /etc/iproute2/rt_tables database when there are entries
-          in <filename>/etc/shorewall/providers</filename>. If you set this
+          <para>When set to <option>Yes</option>, this option prevents
+          generated scripts from altering the /etc/iproute2/rt_tables database
+          when there are entries in
+          <filename>/etc/shorewall/providers</filename>. If you set this
           option to <option>Yes</option> while Shorewall (Shorewall-lite) is
           running, you should remove the file
           <filename>/var/lib/shorewall/rt_tables</filename>
@@ -1060,28 +1013,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">MAPOLDACTIONS=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
-
-        <listitem>
-          <para>Previously, Shorewall included a large number of standard
-          actions (AllowPing, AllowFTP, ...). These have been replaced with
-          parameterized macros. For compatibility, Shorewall can map the old
-          names into invocations of the new macros if you set
-          MAPOLDACTIONS=Yes. If this option is not set or is set to the empty
-          value (MAPOLDACTIONS="") then MAPOLDACTIONS=Yes is assumed.</para>
-
-          <para></para>
-
-          <note>
-            <para>MAPOLDACTIONS=Yes is not supported by Shorewall-perl. With
-            Shorewall-perl, if MAPOLDACTIONS is not set or is set to the ampty
-            value then MAPOLDACTIONS=No is assumed.</para>
-          </note>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis
         role="bold">MARK_IN_FORWARD_CHAIN=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
@@ -1151,9 +1082,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>In such cases, you will configure a <option>destonly</option>
           network on each zone receiving multicasts.</para>
-
-          <para>The MULTICAST option is only recognized by Shorewall-perl and
-          is ignored by Shorewall-shell.</para>
         </listitem>
       </varlistentry>
 
@@ -1320,9 +1248,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.2.6, this option determines whether to
-          restore the default route saved when here are 'balance' providers
-          defined but all of them are down.</para>
+          <para>This option determines whether to restore the default route
+          saved when here are 'balance' providers defined but all of them are
+          down.</para>
 
           <para>The default is RESTORE_DEFAULT_ROUTE=Yes which preserves the
           pre-4.2.6 behavior.</para>
@@ -1384,9 +1312,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           state. The default value is <emphasis
           role="bold">no</emphasis>.</para>
 
-          <para>The value <emphasis role="bold">Keep</emphasis> is only
-          allowed under Shorewall-perl. It causes Shorewall to ignore the
-          option. If the option is set to <emphasis
+          <para>The value <emphasis role="bold">Keep</emphasis> causes
+          Shorewall to ignore the option. If the option is set to <emphasis
           role="bold">Yes</emphasis>, then route filtering occurs on all
           interfaces. If the option is set to <emphasis
           role="bold">No</emphasis>, then route filtering is disabled on all
@@ -1405,35 +1332,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           command. Regardless of the setting of SAVE_IPSETS, if saved ipset
           contents are available then they will be restored by <emphasis
           role="bold">shorewall restore</emphasis>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">SHOREWALL_COMPILER=</emphasis>{<emphasis
-        role="bold">perl</emphasis>|<emphasis
-        role="bold">shell</emphasis>}</term>
-
-        <listitem>
-          <para>Specifies the compiler to use to generate firewall scripts
-          when both compilers are installed. The value of this option can be
-          either <option>perl</option> or <option>shell</option>. If both
-          compilers are installed and SHOREWALL_SHELL is not set, then
-          SHOREWALL_SHELL=shell is assumed.</para>
-
-          <para>If you add 'SHOREWALL_COMPILER=perl' to
-          <filename>/etc/shorewall/shorewall.conf</filename> then by default,
-          the Shorewall-perl compiler will be used on the system. If you add
-          it to <filename>shorewall.conf</filename> in a separate directory
-          (such as a Shorewall-lite export directory) then the Shorewall-perl
-          compiler will only be used when you compile from that
-          directory.</para>
-
-          <para>If you only install one compiler, it is suggested that you do
-          not set SHOREWALL_COMPILER.</para>
-
-          <para>This setting may be overriden in those commands that invoke
-          the compiler by using the -C command option (see <ulink
-          url="shorewall.html">shorewall</ulink>(8)).</para>
         </listitem>
       </varlistentry>
 
@@ -1585,22 +1483,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USE_ACTIONS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>While Shorewall Actions can be very useful, they also require
-          a sizable amount of code to implement. By setting USE_ACTIONS=No,
-          embedded Shorewall installations can omit the large library
-          /usr/share/shorewall-shell/lib.actions.</para>
-
-          <note>
-            <para>USE_ACTIONS=No is not supported by Shorewall-perl.</para>
-          </note>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">USE_DEFAULT_RT=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -1644,10 +1526,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               <para>All provider gateways must be specified explicitly in the
               GATEWAY column. <emphasis role="bold">detect</emphasis> may not
               be specified.<note>
-                  <para>Beginning with Shorewall 4.2.6, <emphasis
-                  role="bold">detect</emphasis> may be specified for
-                  interfaces whose configuration is managed by dhcpcd.
-                  Shorewall will use dhcpcd's database to find the
+                  <para><emphasis role="bold">detect</emphasis> may be
+                  specified for interfaces whose configuration is managed by
+                  dhcpcd. Shorewall will use dhcpcd's database to find the
                   interfaces's gateway.</para>
                 </note></para>
             </listitem>

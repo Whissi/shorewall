@@ -79,16 +79,15 @@ loc     eth2            -</programlisting>
           url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for a
           discussion of this problem.</para>
 
-          <para>Beginning with Shorewall 4.2.3, Shorewall-perl allows '+' as
-          an interface name.</para>
+          <para>Shorewall allows '+' as an interface name.</para>
 
           <para>There is no need to define the loopback interface (lo) in this
           file.</para>
 
-          <para>(Shorewall-perl only) If a <replaceable>port</replaceable> is
-          given, then the <replaceable>interface</replaceable> must have been
-          defined previously with the <option>bridge</option> option. The
-          OPTIONS column may not contain the following options when a
+          <para>If a <replaceable>port</replaceable> is given, then the
+          <replaceable>interface</replaceable> must have been defined
+          previously with the <option>bridge</option> option. The OPTIONS
+          column may not contain the following options when a
           <replaceable>port</replaceable> is given.</para>
 
           <simplelist>
@@ -134,12 +133,6 @@ loc     eth2            -</programlisting>
           <para>If you don't want to give a value for this column but you want
           to enter a value in the OPTIONS column, enter <emphasis
           role="bold">-</emphasis> in this column.</para>
-
-          <para><emphasis role="bold">Note to Shorewall-perl users:</emphasis>
-          Shorewall-perl only supports <option>detect</option> or <emphasis
-          role="bold">-</emphasis> in this column. If you specify
-          <replaceable>address</replaceable>es, a compilation warning will be
-          issued.</para>
         </listitem>
       </varlistentry>
 
@@ -164,12 +157,10 @@ loc     eth2            -</programlisting>
                 requests for IP addresses on any of the firewall's interface.
                 The interface must be up when Shorewall is started.</para>
 
-                <para>The option value (0 or 1) may only be specified if you
-                are using Shorewall-perl. With Shorewall-perl, only those
-                interfaces with the <option>arp_filter</option> option will
-                have their setting changes; the value assigned to the setting
-                will be the value specified (if any) or 1 if no value is
-                given.</para>
+                <para>Only those interfaces with the
+                <option>arp_filter</option> option will have their setting
+                changes; the value assigned to the setting will be the value
+                specified (if any) or 1 if no value is given.</para>
 
                 <para></para>
 
@@ -237,8 +228,7 @@ loc     eth2            -</programlisting>
               <term><emphasis role="bold">bridge</emphasis></term>
 
               <listitem>
-                <para>(Shorewall-perl only) Designates the interface as a
-                bridge.</para>
+                <para>Designates the interface as a bridge.</para>
               </listitem>
             </varlistentry>
 
@@ -300,12 +290,10 @@ loc     eth2            -</programlisting>
                 specify <option>logmartians</option> because your distribution
                 may be enabling route filtering without you knowing it.</para>
 
-                <para>The option value (0 or 1) may only be specified if you
-                are using Shorewall-perl. With Shorewall-perl, only those
-                interfaces with the <option>logmartians</option> option will
-                have their setting changes; the value assigned to the setting
-                will be the value specified (if any) or 1 if no value is
-                given.</para>
+                <para>Only those interfaces with the
+                <option>logmartians</option> option will have their setting
+                changes; the value assigned to the setting will be the value
+                specified (if any) or 1 if no value is given.</para>
 
                 <para>To find out if route filtering is set on a given
                 <replaceable>interface</replaceable>, check the contents of
@@ -377,9 +365,8 @@ loc     eth2            -</programlisting>
               <term><emphasis role="bold">optional</emphasis></term>
 
               <listitem>
-                <para>Only supported by Shorewall-perl. When
-                <option>optional</option> is specified for an interface,
-                Shorewall will be silent when:</para>
+                <para>When <option>optional</option> is specified for an
+                interface, Shorewall will be silent when:</para>
 
                 <itemizedlist>
                   <listitem>
@@ -436,12 +423,10 @@ loc     eth2            -</programlisting>
                 not work with a wild-card <replaceable>interface</replaceable>
                 name (e.g., eth0.+) in the INTERFACE column.</para>
 
-                <para>The option value (0 or 1) may only be specified if you
-                are using Shorewall-perl. With Shorewall-perl, only those
-                interfaces with the <option>proxyarp</option> option will have
-                their setting changed; the value assigned to the setting will
-                be the value specified (if any) or 1 if no value is
-                given.</para>
+                <para>Only those interfaces with the <option>proxyarp</option>
+                option will have their setting changed; the value assigned to
+                the setting will be the value specified (if any) or 1 if no
+                value is given.</para>
               </listitem>
             </varlistentry>
 
@@ -466,12 +451,10 @@ loc     eth2            -</programlisting>
                 <para>Turn on kernel route filtering for this interface
                 (anti-spoofing measure).</para>
 
-                <para>The option value (0 or 1) may only be specified if you
-                are using Shorewall-perl. With Shorewall-perl, only those
-                interfaces with the <option>routefilter</option> option will
-                have their setting changes; the value assigned to the setting
-                will be the value specified (if any) or 1 if no value is
-                given.</para>
+                <para>Only those interfaces with the
+                <option>routefilter</option> option will have their setting
+                changes; the value assigned to the setting will be the value
+                specified (if any) or 1 if no value is given.</para>
 
                 <para></para>
 
@@ -502,12 +485,10 @@ loc     eth2            -</programlisting>
                 This might represent a security risk and is not usually
                 needed.</para>
 
-                <para>The option value (0 or 1) may only be specified if you
-                are using Shorewall-perl. With Shorewall-perl, only those
-                interfaces with the <option>sourceroute</option> option will
-                have their setting changes; the value assigned to the setting
-                will be the value specified (if any) or 1 if no value is
-                given.</para>
+                <para>Only those interfaces with the
+                <option>sourceroute</option> option will have their setting
+                changes; the value assigned to the setting will be the value
+                specified (if any) or 1 if no value is given.</para>
 
                 <para></para>
 
@@ -551,7 +532,7 @@ loc     eth2            -</programlisting>
                 causes Shorewall to detect the default gateway through the
                 interface and to accept UDP packets from that gateway. Note
                 that, like all aspects of UPnP, this is a security hole so use
-                this option at your own risk. </para>
+                this option at your own risk.</para>
               </listitem>
             </varlistentry>
           </variablelist>

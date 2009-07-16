@@ -93,14 +93,11 @@
               <para>- If the SOURCE is <emphasis
               role="bold">$FW</emphasis>[<emphasis
               role="bold">:</emphasis><emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...],
-              then the rule is inserted into the OUTPUT chain. The behavior
-              changed in Shorewall-perl 4.1. Previously, when
-              HIGH_ROUTE_MARKS=Yes, Shorewall allowed non-zero mark values
-              &lt; 256 to be assigned in the OUTPUT chain. This has been
-              changed so that only high mark values may be assigned there.
-              Packet marking rules for traffic shaping of packets originating
-              on the firewall must be coded in the POSTROUTING chain (see
-              below).</para>
+              then the rule is inserted into the OUTPUT chain. When
+              HIGH_ROUTE_MARKS=Yes, only high mark values may be assigned
+              there. Packet marking rules for traffic shaping of packets
+              originating on the firewall must be coded in the POSTROUTING
+              chain (see below).</para>
 
               <para>- Otherwise, the chain is determined by the setting of
               MARK_IN_FORWARD_CHAIN in <ulink
@@ -162,12 +159,12 @@
               followed the value with <option>:F</option>) or the OUTPUT chain
               (SOURCE is <emphasis role="bold">$FW</emphasis>). With
               HIGH_ROUTE_MARKS=Yes, non-zero mark values less that 256 are not
-              permitted. Shorewall 4.1 and later versions prohibit non-zero
-              mark values less that 256 in the OUTPUT chain when
-              HIGH_ROUTE_MARKS=Yes. While earlier versions allow such values
-              in the OUTPUT chain, it is strongly recommended that with
-              HIGH_ROUTE_MARKS=Yes, you use the POSTROUTING chain to apply
-              traffic shaping marks/classification.</para>
+              permitted. Shorewall prohibits non-zero mark values less that
+              256 in the OUTPUT chain when HIGH_ROUTE_MARKS=Yes. While earlier
+              versions allow such values in the OUTPUT chain, it is strongly
+              recommended that with HIGH_ROUTE_MARKS=Yes, you use the
+              POSTROUTING chain to apply traffic shaping
+              marks/classification.</para>
             </listitem>
 
             <listitem>
@@ -239,16 +236,15 @@
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">SAME</emphasis> (Added in Shorewall
-              4.3.5) -- Some websites run applications that require multiple
-              connections from a client browser. Where multiple 'balanced'
-              providers are configured, this can lead to problems when some of
-              the connections are routed through one provider and some through
-              another. The SAME target allows you to work around that problem.
-              SAME may be used in the PREROUTING and OUTPUT chains. When used
-              in PREROUTING, it causes matching connections from an individual
-              local system to all use the same provider. For example:
-              <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
+              <para><emphasis role="bold">SAME</emphasis> Some websites run
+              applications that require multiple connections from a client
+              browser. Where multiple 'balanced' providers are configured,
+              this can lead to problems when some of the connections are
+              routed through one provider and some through another. The SAME
+              target allows you to work around that problem. SAME may be used
+              in the PREROUTING and OUTPUT chains. When used in PREROUTING, it
+              causes matching connections from an individual local system to
+              all use the same provider. For example: <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
 #CLASSIFY                                                PORT(S)
 SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
               If a host in 192.168.1.0/24 attempts a connection on TCP port 80
@@ -682,8 +678,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
         <listitem>
           <para>Connection Bytes; defines a byte or packet range that the
-          connection must fall within in order for the rule to match. Added in
-          Shorewall-perl 4.2.0.</para>
+          connection must fall within in order for the rule to match.</para>
 
           <para>A packet matches if the the packet/byte count is within the
           range defined by <emphasis>min</emphasis> and
@@ -697,8 +692,8 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <para><emphasis role="bold">O</emphasis> - The original
               direction of the connection.</para>
 
-              <para><emphasis role="bold">R</emphasis> - The opposite
-              direction from the original connection.</para>
+              <para>- The opposite direction from the original
+              connection.</para>
 
               <para><emphasis role="bold">B</emphasis> - The total of both
               directions.</para>
@@ -725,13 +720,13 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
         </emphasis><emphasis>helper</emphasis></term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.0. Names a Netfiler protocol
-          <firstterm>helper</firstterm> module such as <option>ftp</option>,
-          <option>sip</option>, <option>amanda</option>, etc. A packet will
-          match if it was accepted by the named helper module. You can also
-          append "-" and a port number to the helper module name (e.g.,
-          <emphasis role="bold">ftp-21</emphasis>) to specify the port number
-          that the original connection was made on.</para>
+          <para>Names a Netfiler protocol <firstterm>helper</firstterm> module
+          such as <option>ftp</option>, <option>sip</option>,
+          <option>amanda</option>, etc. A packet will match if it was accepted
+          by the named helper module. You can also append "-" and a port
+          number to the helper module name (e.g., <emphasis
+          role="bold">ftp-21</emphasis>) to specify the port number that the
+          original connection was made on.</para>
 
           <para>Example: Mark all FTP data connections with mark
           4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER

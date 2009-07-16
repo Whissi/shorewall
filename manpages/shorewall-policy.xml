@@ -165,9 +165,9 @@
               <term><emphasis role="bold">NFQUEUE</emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall-perl 4.0.3. Queue the request for a
-                user-space application using the nfnetlink_queue mechanism. If
-                a <replaceable>queuenumber</replaceable> is not given, queue
+                <para>Queue the request for a user-space application using the
+                nfnetlink_queue mechanism. If a
+                <replaceable>queuenumber</replaceable> is not given, queue
                 zero (0) is assumed.</para>
               </listitem>
             </varlistentry>
@@ -256,17 +256,17 @@
         <emphasis>limit</emphasis>[:<emphasis>mask</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall-perl 4.2.1. May be used to limit the number
-          of simultaneous connections from each individual host to
-          <replaceable>limit</replaceable> connections. While the limit is
-          only checked on connections to which this policy could apply, the
-          number of current connections is calculated over all current
-          connections from the SOURCE host. By default, the limit is applied
-          to each host individually but can be made to apply to networks of
-          hosts by specifying a <replaceable>mask</replaceable>. The
-          <replaceable>mask</replaceable> specifies the width of a VLSM mask
-          to be applied to the source address; the number of current
-          connections is then taken over all hosts in the subnet
+          <para>May be used to limit the number of simultaneous connections
+          from each individual host to <replaceable>limit</replaceable>
+          connections. While the limit is only checked on connections to which
+          this policy could apply, the number of current connections is
+          calculated over all current connections from the SOURCE host. By
+          default, the limit is applied to each host individually but can be
+          made to apply to networks of hosts by specifying a
+          <replaceable>mask</replaceable>. The <replaceable>mask</replaceable>
+          specifies the width of a VLSM mask to be applied to the source
+          address; the number of current connections is then taken over all
+          hosts in the subnet
           <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.</para>
         </listitem>
       </varlistentry>

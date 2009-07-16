@@ -1303,7 +1303,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	    my $chn;
 
-	    for ( zone_interfaces $sourcezone ) {
+	    for ( keys %{zone_interfaces $sourcezone} ) {
 		my $ichain = input_chain $_;
 
 		if ( $nat_table->{$ichain} ) {

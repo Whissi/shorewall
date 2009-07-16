@@ -50,22 +50,19 @@
         role="bold">,</emphasis><emphasis>address</emphasis>]...[<emphasis>exclusion</emphasis>]]|COMMENT}</term>
 
         <listitem>
-          <para>Outgoing <emphasis>interfacelist</emphasis>. Prior to
-          Shorewall 4.1.4, this must be a single interface name; in 4.1.4 and
-          later, this may be a comma-separated list of interface names. This
-          is usually your internet interface. If ADD_SNAT_ALIASES=Yes in
-          <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5), you may
-          add ":" and a <emphasis>digit</emphasis> to indicate that you want
-          the alias added with that name (e.g., eth0:0). This will allow the
-          alias to be displayed with ifconfig. <emphasis role="bold">That is
-          the only use for the alias name; it may not appear in any other
-          place in your Shorewall configuratio</emphasis>n.</para>
+          <para>Outgoing <emphasis>interfacelist</emphasis>. This may be a
+          comma-separated list of interface names. This is usually your
+          internet interface. If ADD_SNAT_ALIASES=Yes in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5), you may add ":"
+          and a <emphasis>digit</emphasis> to indicate that you want the alias
+          added with that name (e.g., eth0:0). This will allow the alias to be
+          displayed with ifconfig. <emphasis role="bold">That is the only use
+          for the alias name; it may not appear in any other place in your
+          Shorewall configuratio</emphasis>n.</para>
 
           <para>Each interface must match an entry in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).
-          Prior to Shorewall 4.1.4, this must be an exact match.
-          Shorewall-perl 4.1.4 and later allow loose matches to wildcard
-          entries in <ulink
+          Shorewall allows loose matches to wildcard entries in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5). For
           example, <filename class="devicefile">ppp0</filename> in this file
           will match a <ulink
@@ -113,7 +110,7 @@
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> (Formerly called SUBNET)
         -
-        {<emphasis>interface</emphasis>[[:]<emphasis>exclusion</emphasis>]|<emphasis>address</emphasis>[<emphasis
+        {<emphasis>interface</emphasis>[:<emphasis>exclusion</emphasis>]|<emphasis>address</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>address</emphasis>][<emphasis>exclusion</emphasis>]}</term>
 
         <listitem>
@@ -131,15 +128,11 @@
           list of IP addresses (host or net) that you wish to exclude (see
           <ulink
           url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5))).
-          Note that with Shorewall-perl, a colon (":") must appear between an
+          Note that a colon (":") must appear between an
           <replaceable>interface</replaceable> name and the
           <replaceable>exclusion</replaceable>;</para>
 
-          <para>Example (shorewall-shell):
-          eth1!192.168.1.4,192.168.32.0/27</para>
-
-          <para>Example (shorewall-perl):
-          eth1:!192.168.1.4,192.168.32.0/27</para>
+          <para>Example: eth1:!192.168.1.4,192.168.32.0/27</para>
 
           <para>In that example traffic from eth1 would be masqueraded unless
           it came from 192.168.1.4 or 196.168.32.0/27</para>
@@ -166,12 +159,11 @@
           want the SNAT address to be assigned from that range in a
           round-robin fashion by connection. The range is specified by
           <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.
-          Beginning with Shorewall 4.0.6, you may follow the port range
-          with<emphasis role="bold"> :random</emphasis> in which case
-          assignment of ports from the list will be random. <emphasis
-          role="bold">random</emphasis> may also be specified by itself in
-          this column in which case random local port assignments are made for
-          the outgoing connections.</para>
+          You may follow the port range with<emphasis role="bold">
+          :random</emphasis> in which case assignment of ports from the list
+          will be random. <emphasis role="bold">random</emphasis> may also be
+          specified by itself in this column in which case random local port
+          assignments are made for the outgoing connections.</para>
 
           <para>Example: 206.124.146.177-206.124.146.180</para>
 
@@ -379,8 +371,7 @@
 
               <listitem>
                 <para>Designates a connection mark. If omitted, the packet
-                mark's value is tested. This option is only supported by
-                Shorewall-perl.</para>
+                mark's value is tested.</para>
               </listitem>
             </varlistentry>
           </variablelist>

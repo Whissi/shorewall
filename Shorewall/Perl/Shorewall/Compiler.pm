@@ -743,6 +743,14 @@ sub compiler {
 	# Setup Masquerading/SNAT
 	#
 	setup_masq; 
+	#
+	# Setup Nat
+	#
+	setup_nat;
+	#
+	# Setup NETMAP
+	#
+	setup_netmap;
     }
 
     #
@@ -770,17 +778,6 @@ sub compiler {
     # Apply Policies
     #
     apply_policy_rules;
-
-    if ( $family == F_IPV4 ) {
-	#
-	# Setup Nat
-	#
-	setup_nat;
-	#
-	# Setup NETMAP
-	#
-	setup_netmap;
-    }
     #
     # Accounting.
     #

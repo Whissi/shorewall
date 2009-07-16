@@ -343,8 +343,6 @@
               <term>NFQUEUE</term>
 
               <listitem>
-                <para>Only supported by Shorewall-perl &gt;= 4.0.3.</para>
-
                 <para>Queues the packet to a user-space application using the
                 nfnetlink_queue mechanism. If a
                 <replaceable>queuenumber</replaceable> is not specified, queue
@@ -471,8 +469,9 @@
 
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> -
-        {<emphasis>zone</emphasis>|<emphasis
-        role="bold">all</emphasis>[<emphasis
+        {<emphasis>zone</emphasis>|{<emphasis
+        role="bold">all</emphasis>|<emphasis
+        role="bold">any</emphasis>}[<emphasis
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
@@ -508,6 +507,11 @@
           and/or host addresses. Hosts may be specified by IP or MAC address;
           mac addresses must begin with "~" and must use "-" as a
           separator.</para>
+
+          <para><emphasis role="bold">any</emphasis> is equivalent to
+          <emphasis role="bold">all</emphasis> when there are no nested zones.
+          When there are nested zones, <emphasis role="bold">any</emphasis>
+          only refers to top-level zones (those with no parent zones).</para>
 
           <para>Hosts may also be specified as an IP address range using the
           syntax
@@ -586,60 +590,14 @@
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <blockquote>
-            <para>Alternatively, clients may be specified by interface by
-            appending ":" to the zone name followed by the interface name. For
-            example, <emphasis role="bold">loc:eth1</emphasis> specifies a
-            client that communicates with the firewall system through eth1.
-            This may be optionally followed by another colon (":") and an
-            IP/MAC/subnet address as described above (e.g., <emphasis
-            role="bold">loc:eth1:192.168.1.5</emphasis>).</para>
-
-            <para>It is important to note that when <emphasis
-            role="bold">using Shorewall-shell</emphasis> and specifying an
-            address list that will be split (i.e., a comma separated list),
-            there is a subtle behavior which has the potential to cause
-            confusion. Consider the two examples below:</para>
-          </blockquote>
-
-          <para>Examples:</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>loc:eth1:192.168.1.3,192.168.1.5</term>
-
-              <listitem>
-                <para>Hosts 192.168.1.3 and 192.168.1.5 in the Local zone,
-                with 192.168.1.3 coming from eth1 and 192.168.1.5 originating
-                from any interface in the zone.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>loc:eth1:192.168.1.3,eth1:192.168.1.5</term>
-
-              <listitem>
-                <para>Hosts 192.168.1.3 and 192.168.1.5 in the Local zone,
-                with <emphasis role="bold">both</emphasis> originating from
-                eth1.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-
-          <blockquote>
-            <para>That is, the interface name must be explicitly stated for
-            each member of the comma separated list. Again, this distinction
-            in behavior only occurs when <emphasis role="bold">using
-            Shorewall-shell</emphasis>.</para>
-          </blockquote>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> -
-        {<emphasis>zone</emphasis>|<emphasis
-        role="bold">all</emphasis>[<emphasis
+        {<emphasis>zone</emphasis>|{<emphasis
+        role="bold">all</emphasis>|<emphasis
+        role="bold">any</emphasis>}[<emphasis
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:{</emphasis><emphasis>interface</emphasis>|<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
@@ -663,9 +621,13 @@
           affected. When <emphasis role="bold">all+</emphasis> is used,
           intra-zone traffic is affected.</para>
 
-          <para>Beginning with Shorewall 4.1.4, the
-          <replaceable>zone</replaceable> should be omitted in DNAT-,
-          REDIRECT- and NONAT rules.</para>
+          <para><emphasis role="bold">any</emphasis> is equivalent to
+          <emphasis role="bold">all</emphasis> when there are no nested zones.
+          When there are nested zones, <emphasis role="bold">any</emphasis>
+          only refers to top-level zones (those with no parent zones).</para>
+
+          <para>The <replaceable>zone</replaceable> should be omitted in
+          DNAT-, REDIRECT- and NONAT rules.</para>
 
           <para>If the DEST <replaceable>zone</replaceable> is a bport zone,
           then either:<orderedlist numeration="loweralpha">
@@ -702,12 +664,7 @@
             <para>1. MAC addresses are not allowed (this is a Netfilter
             restriction).</para>
 
-            <para>2.Prior to Shorewall 4.1.4, only IP addresses are allowed in
-            <emphasis role="bold">DNAT</emphasis> rules; no DNS names are
-            permitted. In no case may a network be specified as the
-            server.</para>
-
-            <para>3. You may not specify both an interface and an
+            <para>2. You may not specify both an interface and an
             address.</para>
 
             <para>Like in the <emphasis role="bold">SOURCE</emphasis> column,
@@ -747,20 +704,15 @@
               </varlistentry>
             </variablelist>
 
-            <para>If you are using Shorewall-shell or Shorewall-perl before
-            version 4.0.5, then the port number MUST be specified as an
-            integer and not as a name from services(5). Shorewall-perl 4.0.5
-            and later permit the <emphasis>port</emphasis> to be specified as
-            a service name. Additionally, Shorewall-perl 4.0.5 and later
-            permit specifying a port range in the form
+            <para>The <emphasis>port</emphasis> may be specified as a service
+            name. You may specify a port range in the form
             <emphasis>lowport-highport</emphasis> to cause connections to be
             assigned to ports in the range in round-robin fashion. When a port
             range is specified, <emphasis>lowport</emphasis> and
             <emphasis>highport</emphasis> must be given as integers; service
-            names are not permitted. Beginning with Shorewall 4.0.6, the port
-            range may be optionally followed by <emphasis
-            role="bold">:random</emphasis> which causes assignment to ports in
-            the list to be random.</para>
+            names are not permitted. Additionally, the port range may be
+            optionally followed by <emphasis role="bold">:random</emphasis>
+            which causes assignment to ports in the list to be random.</para>
 
             <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
             role="bold">REDIRECT</emphasis> or <emphasis
@@ -825,11 +777,6 @@
 
           <para>2. No port ranges are included or your kernel and iptables
           contain extended multiport match support.</para>
-
-          <para>Otherwise, unless you are using <ulink
-          url="../Shorewall-perl.html">Shorewall-perl</ulink>, a separate rule
-          will be generated for each port. Shorewall-perl does not
-          automatically break up lists into individual rules.</para>
         </listitem>
       </varlistentry>
 
@@ -864,11 +811,6 @@
 
             <para>2. No port ranges are included or your kernel and iptables
             contain extended multiport match support.</para>
-
-            <para>Otherwise, unless you are using <ulink
-            url="../Shorewall-perl.html">Shorewall-perl</ulink>, a separate
-            rule will be generated for each port. Shorewall-perl does not
-            automatically break up lists into individual rules.</para>
           </blockquote>
         </listitem>
       </varlistentry>
@@ -1058,8 +1000,7 @@
 
               <listitem>
                 <para>Designates a connection mark. If omitted, the packet
-                mark's value is tested. This option is only supported by
-                Shorewall-perl.</para>
+                mark's value is tested.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1178,18 +1119,7 @@
   </refsect1>
 
   <refsect1>
-    <title>Restrictions</title>
-
-    <para>Unless you are using <ulink
-    url="../Shorewall-perl.html">Shorewall-perl</ulink> and your
-    iptables/kernel have <firstterm>Repeat Match</firstterm> support (see the
-    output of <command>shorewall show capabilities</command>), if you specify
-    a list of DEST PORT(S), then you may not specify SOURCE PORT(S) and vice
-    versa.</para>
-  </refsect1>
-
-  <refsect1>
-    <title>Example</title>
+    <title>Examples</title>
 
     <variablelist>
       <varlistentry>

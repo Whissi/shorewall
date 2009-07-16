@@ -1296,43 +1296,76 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	my $nonat_chain;
 
+	my $chn;
+	
 	if ( $sourceref->{type} == FIREWALL ) {
 	    $nonat_chain = $nat_table->{OUTPUT};
 	} else {
 	    $nonat_chain = ensure_chain 'nat', dnat_chain $sourcezone;
 
-	    my $chn;
+	    my @interfaces = keys %{zone_interfaces $sourcezone};
 
-	    for ( keys %{zone_interfaces $sourcezone} ) {
+	    for ( @interfaces ) {
 		my $ichain = input_chain $_;
 
 		if ( $nat_table->{$ichain} ) {
 		    #
 		    # Static NAT is defined on this interface
 		    #
-		    $chn = new_chain( 'nat', newexclusionchain ) unless $chn;
-		    add_jump $chn, $nat_table->{$ichain}, 0, "-i $_ ";
+		    $chn = new_chain( 'nat', newnonatchain ) unless $chn;
+		    add_jump $chn, $nat_table->{$ichain}, 0, @interfaces > 1 ? "-i $_ " : '';
 		}
 	    }
 
 	    if ( $chn ) {
-		add_rule $chn, '-j ACCEPT';
+		#
+		# Call expand_rule() to correctly handle logging. Because
+		# the 'logname' argument is passed, expand_rule() will
+		# not create a separate logging chain but will rather emit
+		# any logging rule in-line.
+		#
+		expand_rule( $chn,
+			     PREROUTE_RESTRICT,
+			     '', # Rule
+			     '', # Source
+			     '', # Dest
+			     '', # Original dest
+			     '-j ACCEPT',
+			     $loglevel,
+			     $log_action,
+			     '',
+			     dnat_chain( $sourcezone  ) );
+		$loglevel = '';
 		$tgt = $chn->{name};
 	    } else {
 		$tgt = 'ACCEPT';
 	    }
 	}
-	    
+
 	expand_rule( $nonat_chain ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     " -j $tgt ",
+		     "-j $tgt",
 		     $loglevel ,
 		     $log_action ,
-		     '' );
+		     ''
+		   );
+	#
+	# Possible optimization if the rule just generated was a simple jump to the nonat chain
+	#
+	if ( $chn && ${$nonat_chain->{rules}}[-1] eq "-A -j $tgt" ) {
+	    #
+	    # It was -- delete that rule
+	    #
+	    pop @{$nonat_chain->{rules}};
+	    #
+	    # And move the rules from the nonat chain to the zone dnat chain
+	    #
+	    move_rules ( $chn, $nonat_chain );
+	}
     }
 
     #

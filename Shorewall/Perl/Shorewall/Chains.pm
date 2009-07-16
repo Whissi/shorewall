@@ -114,6 +114,7 @@ our %EXPORT_TAGS = (
 				       finish_section
 				       setup_zone_mss
 				       newexclusionchain
+				       newnonatchain
 				       source_exclusion
 				       dest_exclusion
 				       clearrule
@@ -242,7 +243,6 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
 	       ALL_RESTRICT       => 12   # fw->fw rule            - neither -i nor -o allowed
 	       };
-our $exclseq;
 our $iprangematch;
 our $chainseq;
 our $idiotcount;
@@ -335,11 +335,7 @@ sub initialize( $ ) {
     #
     $comment = '';
     #
-    # Used to sequence 'exclusion' chains with names 'excl0', 'excl1', ...
-    #
-    $exclseq = 0;
-    #
-    # Used to sequence 'log' chains with names 'log0', 'log1', etc.
+    # Used to sequence chains names.
     #
     $chainseq = 0;
     #
@@ -1261,13 +1257,18 @@ sub setup_zone_mss() {
 }
 
 sub newexclusionchain() {
-    my $seq = $exclseq++;
+    my $seq = $chainseq++;
     "excl${seq}";
 }
 
 sub newlogchain() {
     my $seq = $chainseq++;
     "log${seq}";
+}
+
+sub newnonatchain() {
+    my $seq = $chainseq++;
+    "nonat${seq}";
 }
 
 #
@@ -2358,7 +2359,7 @@ sub set_global_variables( $ ) {
 #
 # Returns the destination interface specified in the rule, if any.
 #
-sub expand_rule( $$$$$$$$$$ )
+sub expand_rule( $$$$$$$$$$;$ )
 {
     my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
@@ -2369,7 +2370,8 @@ sub expand_rule( $$$$$$$$$$ )
 	$target,       # Target ('-j' part of the rule)
 	$loglevel ,    # Log level (and tag)
 	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...)
-	$exceptionrule # Caller's matches used in exclusion case
+	$exceptionrule,# Caller's matches used in exclusion case
+	$logname,      # Name of chain to name in log messages
        ) = @_;
 
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl );
@@ -2756,28 +2758,42 @@ sub expand_rule( $$$$$$$$$$ )
 		    
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
-			    #
-			    # Create a chain that both logs and applies the target action
-			    #
-			    my $logchainref = new_chain $chainref->{table}, newlogchain;
-			    #
-			    # Jump to the log chain if all of the rule's conditions are met
-			    #
-			    add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $predicates, 1 );
-			    #
-			    # Now add the log rule and target rule without predicates to the log chain.
-			    #
-			    log_rule_limit( 
-					   $loglevel ,
-					   $chainref = $logchainref ,
-					   $chain ,
-					   $disposition ,
-					   '',
-					   $logtag,
-					   'add',
-					   '' );
+			    unless ( $logname ) {
+				#
+				# Create a chain that both logs and applies the target action
+				#
+				my $logchainref = new_chain $chainref->{table}, newlogchain;
+				#
+				# Jump to the log chain if all of the rule's conditions are met
+				#
+				add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $predicates, 1 );
+				#
+				# Now add the log rule and target rule without predicates to the log chain.
+				#
+				log_rule_limit( 
+					       $loglevel ,
+					       $chainref = $logchainref ,
+					       $chain ,
+					       $disposition ,
+					       '',
+					       $logtag,
+					       'add',
+					       '' );
 
-			    add_rule( $chainref, $target );
+				add_rule( $chainref, $target );
+			    } else {
+				log_rule_limit( 
+					       $loglevel ,
+					       $chainref ,
+					       $logname ,
+					       $disposition ,
+					       '',
+					       $logtag,
+					       'add',
+					       $predicates );
+
+				add_rule( $chainref, $predicates . $target, 1 );
+			    }
 			} else {
 			    #
 			    # The log rule must be added with predicates to the rule chain

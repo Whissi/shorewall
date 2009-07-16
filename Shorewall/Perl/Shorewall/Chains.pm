@@ -73,6 +73,7 @@ our %EXPORT_TAGS = (
 
 				       add_commands
 				       move_rules
+				       move_rules1
 				       insert_rule1
 				       purge_jump
 				       add_tunnel_rule
@@ -688,6 +689,29 @@ sub move_rules( $$ ) {
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
     }
+}
+
+#
+# Like above except it returns 0 if it can't move the rules
+#
+sub move_rules1( $$ ) {
+    my ($chain1, $chain2 ) = @_;
+
+    if ( $chain1->{referenced} ) {
+	my @rules = @{$chain1->{rules}};
+
+	for ( @rules ) {
+	    return 0 unless /^-A/;
+	}
+
+	splice @{$chain2->{rules}}, 0, 0, @rules;
+
+	$chain2->{referenced} = 1;
+	$chain1->{referenced} = 0;
+	$chain1->{rules}      = [];
+    }
+
+    1;
 }
 
 #

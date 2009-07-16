@@ -1358,13 +1358,13 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	if ( $chn && ${$nonat_chain->{rules}}[-1] eq "-A -j $tgt" ) {
 	    #
-	    # It was -- delete that rule
+	    # It was -- delete that rule 
 	    #
 	    pop @{$nonat_chain->{rules}};
 	    #
 	    # And move the rules from the nonat chain to the zone dnat chain
 	    #
-	    move_rules ( $chn, $nonat_chain );
+	    add_rule( $nonat_chain, "-j $tgt" ) unless move_rules ( $chn, $nonat_chain );
 	}
     }
 

@@ -625,6 +625,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
+	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
 	echo "Shorewall Lite $version Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started ; then

@@ -8,13 +8,15 @@
 #
 #	The script is invoked inside a function that accepts an interface
 #	name as a single argument. The file below is designed to work with
-#	both swping and lsm as described at http://www.shorewall.net/MultiISP.html
+#	both swping and lsm as described at
+#	http://www.shorewall.net/MultiISP.html
 #
 # See http://shorewall.net/shorewall_extension_scripts.htm for additional
 # information.
 #
 ###############################################################################
-local status=0
+local status
+status=0
 
 [ -f ${VARDIR}/${1}.status ] && status=$(cat ${VARDIR}/${1}.status)
 

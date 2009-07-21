@@ -43,7 +43,7 @@ use Shorewall::Raw;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.3_12';
+our $VERSION = '4.4_0';
 
 our $export;
 
@@ -725,9 +725,9 @@ sub compiler {
     unless ( $command eq 'check' ) {
 	pop_indent;
 	emit "}\n";
-	disable_object;
     }
 
+    disable_object;
     #
     #                                       N E T F I L T E R
     #       (Produces no output to the compiled script -- rules are stored in the chain table)
@@ -782,11 +782,6 @@ sub compiler {
     # Accounting.
     #
     setup_accounting;
-    #
-    # We generate the matrix even though we don't write out the rules. That way, we insure that
-    # a compile of the script won't blow up during that step.
-    #
-    generate_matrix;
 
     if ( $command eq 'check' ) {
 	if ( $family == F_IPV4 ) {
@@ -795,6 +790,11 @@ sub compiler {
 	    progress_message3 "Shorewall6 configuration verified";
 	}
     } else {
+	#
+	# Generate the zone x zone matrix
+	#
+	generate_matrix;
+
 	enable_object;
 	#
 	#                                    I N I T I A L I Z E

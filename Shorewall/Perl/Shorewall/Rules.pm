@@ -1634,8 +1634,8 @@ sub generate_matrix() {
 
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $filter_table->{$chainref->{policychain}};
-	    return $policyref->{name} if $policyref;
-	    fatal_error "No policy defined for zone $zone to zone $zone1";
+	    assert( $policyref );
+	    return $policyref->{name} if 
 	}
 
 	''; # CONTINUE policy

@@ -59,7 +59,7 @@ if [ $1 = 0 ]; then
 
 fi
 
-%triggerpostun  -- shorewall < 4.0.0
+%triggerpostun  -- shorewall-common < 4.4.0
 
 if [ -x /sbin/insserv ]; then
     /sbin/insserv /etc/rc.d/shorewall

@@ -541,31 +541,31 @@ sub compiler {
     $export = 0;
     $test   = 0;
 
-    sub edit_boolean( $ ) {
+    sub validate_boolean( $ ) {
 	 my $val = numeric_value( shift ); 
 	 defined($val) && ($val >= 0) && ($val < 2);
      }
 
-    sub edit_verbosity( $ ) {
+    sub validate_verbosity( $ ) {
 	 my $val = numeric_value( shift );
 	 defined($val) && ($val >= MIN_VERBOSITY) && ($val <= MAX_VERBOSITY);
      }
 
-    sub edit_family( $ ) {
+    sub validate_family( $ ) {
 	my $val = numeric_value( shift );
 	defined($val) && ($val == F_IPV4 || $val == F_IPV6);
     }
 
     my %parms = ( object        => { store => \$objectfile },
 		  directory     => { store => \$directory  },
-		  family        => { store => \$family    ,    edit => \&edit_family    } ,
-		  verbosity     => { store => \$verbosity ,    edit => \&edit_verbosity } ,
-		  timestamp     => { store => \$timestamp,     edit => \&edit_boolean   } ,
-		  debug         => { store => \$debug,         edit => \&edit_boolean   } ,
-		  export        => { store => \$export ,       edit => \&edit_boolean   } ,
+		  family        => { store => \$family    ,    validate => \&validate_family    } ,
+		  verbosity     => { store => \$verbosity ,    validate => \&validate_verbosity } ,
+		  timestamp     => { store => \$timestamp,     validate => \&validate_boolean   } ,
+		  debug         => { store => \$debug,         validate => \&validate_boolean   } ,
+		  export        => { store => \$export ,       validate => \&validate_boolean   } ,
 		  chains        => { store => \$chains },
 		  log           => { store => \$log },
-		  log_verbosity => { store => \$log_verbosity, edit => \&edit_verbosity } ,
+		  log_verbosity => { store => \$log_verbosity, validate => \&validate_verbosity } ,
 		  test          => { store => \$test },
 		);
     #
@@ -574,8 +574,8 @@ sub compiler {
     while ( defined ( my $name = shift ) ) {
 	fatal_error "Unknown parameter ($name)" unless my $ref = $parms{$name};
 	fatal_error "Undefined value supplied for parameter $name" unless defined ( my $val = shift ) ;
-	if ( $ref->{edit} ) {
-	    fatal_error "Invalid value ( $val ) supplied for parameter $name" unless $ref->{edit}->($val);
+	if ( $ref->{validate} ) {
+	    fatal_error "Invalid value ( $val ) supplied for parameter $name" unless $ref->{validate}->($val);
 	}
 
 	${$ref->{store}} = $val;

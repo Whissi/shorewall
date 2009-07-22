@@ -1635,7 +1635,7 @@ sub generate_matrix() {
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $filter_table->{$chainref->{policychain}};
 	    assert( $policyref );
-	    return $policyref->{name} if 
+	    return $policyref->{name};
 	}
 
 	''; # CONTINUE policy
@@ -1725,7 +1725,6 @@ sub generate_matrix() {
 	my $nested           = $zoneref->{options}{nested};
 	my $parenthasnat     = 0;
 	my $parenthasnotrack = 0;
-
 
 	if ( $nested ) {
 	    #

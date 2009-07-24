@@ -286,7 +286,6 @@ sub generate_script_2() {
 #
 # Final stage of script generation.
 #
-#    Copy prog.functions to the object file.
 #    Generate code for loading the various files in /var/lib/shorewall[6][-lite]
 #    Generate code to add IP addresses under ADD_IP_ALIASES and ADD_SNAT_ALIASES
 #
@@ -297,14 +296,6 @@ sub generate_script_2() {
 #          than those related to writing to the object file.
 #
 sub generate_script_3($) {
-
-    unless ( $test ) {
-	if ( $family == F_IPV4 ) {
-	    copy $globals{SHAREDIRPL} . 'prog.functions';
-	} else {
-	    copy $globals{SHAREDIRPL} . 'prog.functions6';
-	}
-    }
 
     if ( $family == F_IPV4 ) {
 	progress_message2 "Creating iptables-restore input...";

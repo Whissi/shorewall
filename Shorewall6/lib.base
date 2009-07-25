@@ -33,7 +33,7 @@
 #
 
 SHOREWALL_LIBVERSION=40300
-SHOREWALL_CAPVERSION=40309
+SHOREWALL_CAPVERSION=40310
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
@@ -736,6 +736,7 @@ determine_capabilities() {
     TIME_MATCH=
     GOTO_TARGET=
     IPMARK_TARGET=
+    LOG_TARGET=Yes
 
     chain=fooX$$
 
@@ -859,6 +860,7 @@ determine_capabilities() {
     qt $IP6TABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
     qt $IP6TABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
     qt $IP6TABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
+    qt $IP6TABLES -A $chain -j LOG || LOG_TARGET=
 
     qt $IP6TABLES -F $chain
     qt $IP6TABLES -X $chain
@@ -922,6 +924,7 @@ report_capabilities() {
 	report_capability "Time Match" $TIME_MATCH
 	report_capability "Goto Support" $GOTO_TARGET
 	report_capability "IPMARK Target" $IPMARK_TARGET
+	report_capability "LOG Target" $LOG_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -976,6 +979,7 @@ report_capabilities1() {
     report_capability1 TIME_MATCH
     report_capability1 GOTO_TARGET
     report_capability1 IPMARK_TARGET
+    report_capability1 LOG_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

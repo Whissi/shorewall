@@ -156,10 +156,12 @@ if [ -n "$PREFIX" ]; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
 	fi
-
-	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
-	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
     fi
+
+    install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
+    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    
+    CYGWIN=
 else
     if [ -z "$CYGWIN" ]; then
 	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
@@ -732,6 +734,7 @@ for f in prog.* ; do
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 
+pwd
 cd ..
 #
 # Create the version file
@@ -751,6 +754,7 @@ fi
 # Install the Man Pages
 #
 
+pwd
 cd manpages
 
 for f in *.5; do

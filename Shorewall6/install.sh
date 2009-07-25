@@ -156,10 +156,12 @@ if [ -n "$PREFIX" ]; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
 	fi    
-
-	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
-	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
     fi
+	
+    install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
+    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+   
+    CYGWIN=
 else
     [ -x /usr/share/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }

@@ -107,14 +107,6 @@ if [ -z "$RUNLEVELS" ] ; then
 	RUNLEVELS=""
 fi
 
-if [ -z "$OWNER" ] ; then
-	OWNER=root
-fi
-
-if [ -z "$GROUP" ] ; then
-	GROUP=root
-fi
-
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
@@ -139,16 +131,29 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 #
 DEBIAN=
 
+case $(uname) in
+    CYGWIN*)
+	DEST=
+	INIT=
+	OWNER=$(id -un)
+	GROUP=$(id -gn)
+	;;
+    *)
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=root
+	;;
+esac
+
 OWNERSHIP="-o $OWNER -g $GROUP"
 
 if [ -n "$PREFIX" ]; then
-	if [ `id -u` != 0 ] ; then
-	    echo "Not setting file owner/group permissions, not running as root."
-	    OWNERSHIP=""
-	fi
-
-	install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
-	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    if [ `id -u` != 0 ] ; then
+	echo "Not setting file owner/group permissions, not running as root."
+	OWNERSHIP=""
+    fi
+    
+    install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
+    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
 elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
 elif [ -f /etc/slackware-version ] ; then

@@ -32,9 +32,11 @@ clear_firewall() {
     echo 1 > /proc/sys/net/ipv4/ip_forward
 
     if [ -n "$DISABLE_IPV6" ]; then
-    	$IP6TABLES -P INPUT   ACCEPT 2> /dev/null
-	$IP6TABLES -P OUTPUT  ACCEPT 2> /dev/null
-	$IP6TABLES -P FORWARD ACCEPT 2> /dev/null
+	if [ -x $IPTABLES ]; then
+    	    $IP6TABLES -P INPUT   ACCEPT 2> /dev/null
+	    $IP6TABLES -P OUTPUT  ACCEPT 2> /dev/null
+	    $IP6TABLES -P FORWARD ACCEPT 2> /dev/null
+	fi
     fi
 
     run_clear_exit

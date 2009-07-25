@@ -181,4 +181,15 @@ base=
 
 [ -n "$BASE" ] && $COMMAND $base $DEST/base
 
+rpms=$(
+    for f in $files; do
+	case $f in
+	    *.rpm)
+		echo $f
+		;;
+	esac
+    done)
+
+[ -n "$rpms" ] && rpm --resign $files
+
 $COMMAND -r $files $DEST

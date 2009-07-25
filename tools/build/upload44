@@ -176,10 +176,8 @@ base=
 [ -n "$UPLOADCOMMON" ] && base="$base shorewall-${1}.tar.*"           && files="$files shorewall-${1}.*           $rpm"
 [ -n "$UPLOADLITE" ]   && base="$base shorewall-lite-${1}.tar.*"      && files="$files shorewall-lite-${1}.*      $literpm"
 [ -n "$UPLOAD6LITE" ]  && base="$base shorewall6-lite-${1}.tar.*"     && files="$files shorewall6-lite-${1}.*     $lite6rpm"
-[ -n "$UPLOADXML" ]    && base="$base shorewall-docs-xml-${1}.tar.*"  && files="$files shorewall-docs-xml-${1}.*  $literpm"
-[ -n "$UPLOADHTML" ]   && base="$base shorewall-docs-html-${1}.tar.*" && files="$files shorewall-docs-html-${1}.* $literpm"
-
-[ -n "$BASE" ] && $COMMAND $base $DEST/base
+[ -n "$UPLOADXML" ]    && base="$base shorewall-docs-xml-${1}.tar.*"  && files="$files shorewall-docs-xml-${1}.*"
+[ -n "$UPLOADHTML" ]   && base="$base shorewall-docs-html-${1}.tar.*" && files="$files shorewall-docs-html-${1}.*"
 
 rpms=$(
     for f in $files; do
@@ -190,6 +188,8 @@ rpms=$(
 	esac
     done)
 
-[ -n "$rpms" ] && rpm --resign $files
+[ -n "$rpms" ] && echo "RPMS=\"$rpms\"" && rpm --resign $rpms
+
+[ -n "$BASE" ] && $COMMAND $base $DEST/base
 
 $COMMAND -r $files $DEST

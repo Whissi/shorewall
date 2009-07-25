@@ -113,8 +113,11 @@ MANDIR=${MANDIR:-"/usr/share/man"}
 
 case $(uname) in
     CYGWIN*)
-	DEST=
-	INIT=
+	if [ -z "$PREFIX" ]; then
+	    DEST=
+	    INIT=
+	fi
+
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	CYGWIN=Yes

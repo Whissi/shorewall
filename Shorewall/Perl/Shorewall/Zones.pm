@@ -122,6 +122,7 @@ our %zones;
 our $firewall_zone;
 
 our %reservedName = ( all => 1,
+		      any => 1,
 		      none => 1,
 		      SOURCE => 1,
 		      DEST => 1 );

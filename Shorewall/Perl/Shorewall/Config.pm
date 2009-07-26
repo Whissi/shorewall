@@ -488,6 +488,9 @@ sub initialize( $ ) {
 	      # Location of Files
 	      #
 	      IP6TABLES => undef,
+	      IP => undef,
+	      TC => undef,
+	      IPSET => undef,
 	      #
 	      #PATH is inherited
 	      #

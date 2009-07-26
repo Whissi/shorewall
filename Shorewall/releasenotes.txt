@@ -1,4 +1,4 @@
-Shorewall 4.4.0 RC1
+Shorewall 4.4.0 RC2
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -110,25 +110,13 @@ Shorewall 4.4.0 RC1
     released.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0  RC1
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0  RC2
 ----------------------------------------------------------------------------
 
-1)  The duplicate macro GIT has been deleted.
+1)  In RC1, Shorewall6 reported that the capabilities file did not
+    contain the latest additions.
 
-2)  Previously, Shorewall might alter the routing when there were no
-    providers, even if the "-n" option was given.
-
-3)  Previously, NONAT rules on a sub-zone were not exempted from
-    DNAT/REDIRECT rules of a parent zone.
-
-4)  Previously if the 'status' command was run by someone other than
-    root, the response always show that the firewall was stopped and
-    the state was 'Unknown'. Now an error message is generated to
-    indicate that the command may only be run by root.
-
-5)  Previously, if 'rpm -U' was used to upgrade from a version of
-    Shorewall earlier than 4.3.5, then Shorewall would not start
-    automatically at boot time.
+2)  Shorewall6 did not recognize the TC, IP and IPSET options.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -137,14 +125,10 @@ Shorewall 4.4.0 RC1
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 0 RC1
+                N E W   F E A T U R E S   I N   4 . 4 . 0 RC2
 ----------------------------------------------------------------------------
 
-1)  A new keyword 'any' may be used in the SOURCE and DEST columns of
-    the rules file. In the absense of nested zones, 'any' works the
-    same as 'all'. When there are nested zones, 'any' only selects the
-    top-level zones. 'any' is intended to be used with
-    IMPLICIT_CONTINUE=Yes in shorewall.conf.
+None.
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 4

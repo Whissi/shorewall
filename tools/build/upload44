@@ -172,6 +172,10 @@ fi
 files="errata known_problems.txt releasenotes.txt patch-*-$1 ${1}.*"
 base=
 
+for f in *-${1}.tar.bz2 *-${1}.tgz; do
+    /usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key' $f
+done
+
 [ -n "$UPLOAD6" ]      && base="shorewall6-${1}.tar.*"                && files="$files shorewall6-${1}.*          $rpm6"
 [ -n "$UPLOADCOMMON" ] && base="$base shorewall-${1}.tar.*"           && files="$files shorewall-${1}.*           $rpm"
 [ -n "$UPLOADLITE" ]   && base="$base shorewall-lite-${1}.tar.*"      && files="$files shorewall-lite-${1}.*      $literpm"

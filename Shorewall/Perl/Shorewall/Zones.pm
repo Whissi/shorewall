@@ -324,6 +324,20 @@ sub parse_zone_option_list($$)
 }
 
 #
+# Set the super option on the passed zoneref and propagate to its parents
+#
+sub set_super( $ );
+
+sub set_super( $ ) {
+    my $zoneref = shift;
+    
+    unless ( $zoneref->{options}{super} ) {
+	$zoneref->{options}{super} = 1;
+	set_super( $zones{$_} ) for @{$zoneref->{parents}};
+    }
+}
+
+#
 # Process a record in the zones file
 #
 sub process_zone( \$ ) {
@@ -349,19 +363,15 @@ sub process_zone( \$ ) {
     fatal_error "Invalid zone name ($zone)"      if $reservedName{$zone} || $zone =~ /^all2|2all$/;
     fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
     
-    if ( $type =~ /ipv4/i ) {
-	fatal_error "Invalid zone type ($type)" if $family == F_IPV6;
-	$type = IP;
-	$$ip = 1;
-    } elsif ( $type =~ /ipv6/i ) {
-	fatal_error "Invalid zone type ($type)" if $family == F_IPV4;
+    if ( $type =~ /ipv([46])?/i ) {
+	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
 	$type = IP;
 	$$ip = 1;
     } elsif ( $type =~ /^ipsec([46])?$/i ) {
-	fatal_error "Invalid zone type ($type)" if $1 && (($1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
+	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
 	$type = IPSEC;
     } elsif ( $type =~ /^bport([46])?$/i ) {
-	fatal_error "Invalid zone type ($type)" if $1 && (( $1 == 4 && $family == F_IPV6 ) || ( $1 == 6 && $family == F_IPV4 ));
+	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
 	warning_message "Bridge Port zones should have a parent zone" unless @parents;
 	$type = BPORT;
 	push @bport_zones, $zone;
@@ -380,7 +390,9 @@ sub process_zone( \$ ) {
 
     if ( $type eq IPSEC ) {
 	for ( @parents ) {
-	    $zones{$_}{options}{super} = 1 unless $zones{$_}{type} eq IPSEC;
+	    unless ( $zones{$_}{type} == IPSEC ) {
+		set_super( $zones{$_} );
+	    }
 	}
     }
     

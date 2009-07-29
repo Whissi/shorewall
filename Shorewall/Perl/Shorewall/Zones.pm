@@ -93,6 +93,7 @@ use constant { NOTHING    => 'NOTHING',
 #     %zones{<zone1> => {type = >      <zone type>       FIREWALL, IP, IPSEC, BPORT;
 #                        options =>    { complex => 0|1
 #                                        nested  => 0|1
+#                                        super   => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
 #                                        out     => < policy match string >
@@ -379,7 +380,7 @@ sub process_zone( \$ ) {
 
     if ( $type eq IPSEC ) {
 	for ( @parents ) {
-	    fatal_error "Parent zone $_ is not an IPSEC Zone" unless $zones{$_}{type} eq IPSEC;
+	    $zones{$_}{options}{super} = 1 unless $zones{$_}{type} eq IPSEC;
 	}
     }
     
@@ -394,7 +395,9 @@ sub process_zone( \$ ) {
 				      in      => parse_zone_option_list( $in_options || '', $type ) ,
 				      out     => parse_zone_option_list( $out_options || '', $type ) ,
 				      complex => ($type == IPSEC || $options || $in_options || $out_options ? 1 : 0) ,
-				      nested  => @parents > 0 } ,
+				      nested  => @parents > 0 ,
+				      super   => 0 ,
+				    } ,
 		      interfaces => {} ,
 		      children   => [] ,
 		      hosts      => {}

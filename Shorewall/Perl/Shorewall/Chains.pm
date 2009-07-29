@@ -1911,17 +1911,23 @@ sub match_orig_dest ( $ ) {
 #
 sub match_ipsec_in( $$ ) {
     my ( $zone , $hostref ) = @_;
-    my $match = '-m policy --dir in --pol ';
+    my $match = '';
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} eq 'ipsec' ) {
-	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
-    } elsif ( $capabilities{POLICY_MATCH} ) {
-	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
-    } else {
-	'';
+    unless ( $optionsref->{super} ) {
+	$match = '-m policy --dir in --pol ';
+
+	if ( $zoneref->{type} eq 'ipsec' ) {
+	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
+	} elsif ( $capabilities{POLICY_MATCH} ) {
+	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
+	} else {
+	    return '';
+	}
     }
+
+    $match;
 }
 
 #
@@ -1929,17 +1935,23 @@ sub match_ipsec_in( $$ ) {
 #
 sub match_ipsec_out( $$ ) {
     my ( $zone , $hostref ) = @_;
-    my $match = '-m policy --dir out --pol ';
+    my $match = '';
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
-    if ( $zoneref->{type} eq 'ipsec' ) {
-	$match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
-    } elsif ( $capabilities{POLICY_MATCH} ) {
-	$match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
-    } else {
-	'';
+    unless ( $optionsref->{super} ) {
+	$match = '-m policy --dir out --pol ';
+	
+	if ( $zoneref->{type} eq 'ipsec' ) {
+	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
+	} elsif ( $capabilities{POLICY_MATCH} ) {
+	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
+	} else {
+	    return '';
+	}
     }
+
+    $match;
 }
 
 #

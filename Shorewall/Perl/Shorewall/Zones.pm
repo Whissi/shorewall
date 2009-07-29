@@ -376,6 +376,12 @@ sub process_zone( \$ ) {
     } else {
 	fatal_error "Invalid zone type ($type)" ;
     }
+
+    if ( $type eq IPSEC ) {
+	for ( @parents ) {
+	    fatal_error "Parent zone $_ is not an IPSEC Zone" unless $zones{$_}{type} eq IPSEC;
+	}
+    }
     
     for ( $options, $in_options, $out_options ) {
 	$_ = '' if $_ eq '-';

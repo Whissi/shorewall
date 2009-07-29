@@ -109,6 +109,13 @@ Shorewall 4.4.0 RC2
     As part of this change, the fallback.sh scripts are no longer
     released.
 
+9)  Previously, if an ipsec zone was defined as a sub-zone of an ipv4
+    or ipv6 zone using the special <child>:<parent>,... syntax,
+    CONTINUE policies for the sub-zone did not work as
+    expected. Traffic that was not matched by a sub-zone rule was not
+    compared against the parent zone(s) rules.
+
+    In 4.4.0, such traffic IS compared against the parent zone rules.
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0  RC2
 ----------------------------------------------------------------------------

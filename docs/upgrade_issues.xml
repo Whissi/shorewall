@@ -141,7 +141,7 @@
       <listitem>
         <para>Jozsef Kadlecsik has removed the set binding capability from
         ipset 3.1. As a consequence, Shorewall 4.3 no longer supports set
-        binding. </para>
+        binding.</para>
       </listitem>
 
       <listitem>
@@ -155,7 +155,24 @@
         and the option will be ignored.</para>
 
         <para>Users who currently use 'norfc1918' are encouraged to consider
-        using NULL_ROUTE_RFC1918=Yes instead. </para>
+        using NULL_ROUTE_RFC1918=Yes instead.</para>
+      </listitem>
+
+      <listitem>
+        <para>The install.sh scripts in the Shorewall and Shorewall6 packages
+        no longer create a backup copy of the existing configuration. If you
+        want your configuration backed up prior to upgrading, you will need to
+        do that yourself. As part of this change, the fallback.sh scripts are
+        no longer released.</para>
+      </listitem>
+
+      <listitem>
+        <para>Previously, if an ipsec zone was defined as a sub-zone of an
+        ipv4 or ipv6 zone using the special &lt;child&gt;:&lt;parent&gt;,...
+        syntax, CONTINUE policies for the sub-zone did not work as expected.
+        Traffic that was not matched by a sub-zone rule was not compared
+        against the parent zone(s) rules. In 4.4.0, such traffic IS compared
+        against the parent zone rules.</para>
       </listitem>
     </orderedlist>
   </section>

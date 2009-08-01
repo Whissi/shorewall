@@ -54,10 +54,6 @@
       </listitem>
 
       <listitem>
-        <para><ulink url="traffic_shaping.htm">Traffic Shaping</ulink></para>
-      </listitem>
-
-      <listitem>
         <para><ulink url="6to4.htm">IPv6 Access through a 6to4
         Tunnel</ulink></para>
       </listitem>
@@ -735,26 +731,16 @@ chmod 744 ${VARDIR}/state</programlisting>Kill lsm if the command is stop or
     </section>
 
     <section>
-      <title>/etc/shorewall/tcclasses</title>
+      <title>/etc/shorewall/tunnels</title>
 
-      <para><programlisting>#INTERFACE	MARK	RATE			CEIL		PRIORITY	OPTIONS
-1:110		-	full			full		1		tcp-ack,tos-minimize-delay
-1:120		-	192kbit			384kbit		2		flow=nfct-src
-1:130		-	77kbit			230kbit		3		default,flow=nfct-src
-1:140		-	144kbit			230kbit		4		flow=nfct-src
-
-#
-# 
-2:10		-	full/2			full		1		flow=dst
-2:100		-	14mbit			20mbit		2
-2:100:101	-	 7mbit			20mbit		3		default,flow=dst
-2:100:102	-	 7mbit			20mbit		3		flow=dst
-
-3:10		-	 2mbit:4ms		full		1	        flow=nfct-src
-3:100		-	 2mbit			full		2
-3:100:101	-	 1mbit			full		3		default,flow=nfct-src
-3:100:102	-	 1mbit			full		3		flow=nfct-src
-</programlisting></para>
+      <para><programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+openvpnserver:udp       net
+6to4                    net
+ipsec                   net
+ipsec                   loc
+ipip                    vpn     0.0.0.0/0</programlisting>The ipip tunnel from
+      the vpn zone handles IP compression on IPSEC connections.</para>
     </section>
   </section>
 </article>

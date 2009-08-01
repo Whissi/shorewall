@@ -165,7 +165,7 @@
     show correct usage, they don't necessarily provide any useful benefit. I
     have tried to point those out in the sub-sections that follow.</para>
 
-    <section>
+    <section id="params">
       <title>/etc/shorewall/params</title>
 
       <para><programlisting>MIRRORS=62.216.169.37,\
@@ -186,7 +186,7 @@ VPS_IF=venet0</programlisting>As shown, this file defines variables to hold
       and the network interfaces.</para>
     </section>
 
-    <section>
+    <section id="conf">
       <title>/etc/shorewall/shorewall.conf</title>
 
       <para><programlisting>###############################################################################
@@ -300,7 +300,7 @@ TCP_FLAGS_DISPOSITION=DROP
       there</para>
     </section>
 
-    <section>
+    <section id="zones">
       <title>/etc/shorewall/zones</title>
 
       <para><programlisting>fw              firewall
@@ -318,7 +318,7 @@ drct:loc        ipv4            #Direct internet access</programlisting>The
       registration) don't work through the proxy.</para>
     </section>
 
-    <section>
+    <section id="interfaces">
       <title>/etc/shorewall/interfaces</title>
 
       <para><programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
@@ -328,9 +328,24 @@ net    $EXT_IF    detect    dhcp,blacklist,tcpflags,optional,routefilter=0,nosmu
 net    $COM_IF    detect    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0
 loc    tun+       detect</programlisting>Notice that VPN clients are treated
       the same as local hosts.</para>
+
+      <para>I set the <emphasis role="bold">proxyarp</emphasis> option on
+      $EXT_IF so that </para>
+
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>The firewall will respond to ARP who-has requests for the
+          servers in the DMZ.</para>
+        </listitem>
+
+        <listitem>
+          <para>To keep OpenVZ happy (it issues dire warnings if the option is
+          not set on the associated external interface).</para>
+        </listitem>
+      </orderedlist>
     </section>
 
-    <section>
+    <section id="hosts">
       <title>/etc/shorewall/hosts</title>
 
       <para><programlisting>#ZONE   HOST(S)                                 OPTIONS
@@ -345,7 +360,7 @@ drct    $INT_IF:dynamic</programlisting>The <emphasis
       role="bold">loc</emphasis>).</para>
     </section>
 
-    <section>
+    <section id="policy">
       <title>/etc/shorewall/policy</title>
 
       <para><programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
@@ -366,7 +381,7 @@ all             all             REJECT          $LOG</programlisting>I'm a bit
       someday...</para>
     </section>
 
-    <section>
+    <section id="accounting">
       <title>/etc/shorewall/accounting</title>
 
       <para><programlisting>#ACTION         CHAIN           SOURCE                          DESTINATION                     PROTO   DEST            SOURCE  USER/
@@ -411,7 +426,7 @@ COUNT           web             $VPS_IF:206.124.146.0/24        $EXT_IF
       </orderedlist>
     </section>
 
-    <section>
+    <section id="blacklist">
       <title>/etc/shorewall/blacklist</title>
 
       <para><programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
@@ -421,7 +436,7 @@ COUNT           web             $VPS_IF:206.124.146.0/24        $EXT_IF
       traffic.</para>
     </section>
 
-    <section>
+    <section id="compile">
       <title>/etc/shorewall/compile</title>
 
       <para><programlisting>use strict;
@@ -438,7 +453,7 @@ add_rule $chainref, q(-j ACCEPT);
       created.</para>
     </section>
 
-    <section>
+    <section id="findgw">
       <title>/etc/shorewall/findgw</title>
 
       <para><programlisting>if [ -f /var/lib/dhcp3/dhclient.${1}.leases ]; then
@@ -447,7 +462,7 @@ fi</programlisting>The Comcast line has a dynamic IP address assigned with the
       help of dhclient.</para>
     </section>
 
-    <section>
+    <section id="isusable">
       <title>/etc/shorewall/isusable</title>
 
       <para><programlisting>local status
@@ -459,7 +474,7 @@ return $status</programlisting>For use with <ulink
       url="MultiISP.html#lsm">lsm</ulink>.</para>
     </section>
 
-    <section>
+    <section id="libprivate">
       <title>/etc/shorewall/lib.private</title>
 
       <para><programlisting>start_lsm() {
@@ -486,7 +501,7 @@ EOF
       url="MultiISP.html#lsm">lsm</ulink>.</para>
     </section>
 
-    <section>
+    <section id="masq">
       <title>/etc/shorewall/masq</title>
 
       <para><programlisting>#INTERFACE SOURCE            ADDRESS
@@ -527,14 +542,15 @@ Comcast 2        0x20000 main       $COM_IF    detect          track,balance    
       the multi-ISP aspects of this configuration.</para>
     </section>
 
-    <section>
+    <section id="proxyarp">
       <title>/etc/shorewall/proxyarp</title>
 
-      <para><programlisting>&lt;empty&gt;</programlisting>I let OpenVZ
-      configure the Proxy ARP for my servers.</para>
+      <para><programlisting>&lt;empty&gt;</programlisting>As mentioned <link
+      linkend="interfaces">above</link>, I set the proxyarp on the associated
+      external interface instead of defining proxy ARP in this file.</para>
     </section>
 
-    <section>
+    <section id="restored">
       <title>/etc/shorewall/restored</title>
 
       <para><programlisting>if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
@@ -545,7 +561,7 @@ chmod 744 ${VARDIR}/state</programlisting>If lsm isn't running then start it.
       Make the state file world-readable.</para>
     </section>
 
-    <section>
+    <section id="route_rules">
       <title>/etc/shorewall/route_rules</title>
 
       <para><programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
@@ -560,7 +576,7 @@ chmod 744 ${VARDIR}/state</programlisting>If lsm isn't running then start it.
       interface.</para>
     </section>
 
-    <section>
+    <section id="routestopped">
       <title>/etc/shorewall/routestopped</title>
 
       <para><programlisting>#INTERFACE      HOST(S)                           OPTIONS      PROTO
@@ -570,7 +586,7 @@ $EXT_IF         -                                 notrack      41</programlistin
       the lights on while Shorewall is stopped.</para>
     </section>
 
-    <section>
+    <section id="rules">
       <title>/etc/shorewall/rules</title>
 
       <para><programlisting>###############################################################################################################################################################################
@@ -708,7 +724,7 @@ COMMENT
 ACCEPT          any                             any                     icmp    8</programlisting></para>
     </section>
 
-    <section>
+    <section id="started">
       <title>/etc/shorewall/started</title>
 
       <para><programlisting>if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
@@ -719,7 +735,7 @@ chmod 744 ${VARDIR}/state</programlisting>If lsm isn't running then start it.
       Make the state file world-readable.</para>
     </section>
 
-    <section>
+    <section id="stopped">
       <title>/etc/shorewall/stopped</title>
 
       <para><programlisting>if [ "$COMMAND" = stop -o "$COMMAND" = clear ]; then
@@ -730,7 +746,7 @@ chmod 744 ${VARDIR}/state</programlisting>Kill lsm if the command is stop or
       clear. Make the state file world-readable.</para>
     </section>
 
-    <section>
+    <section id="tunnels">
       <title>/etc/shorewall/tunnels</title>
 
       <para><programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY

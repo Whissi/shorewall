@@ -34,6 +34,11 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para>The ruleset shown in this article uses Shorewall features that are
+    not available in Shorewall versions prior to 4.4.0.</para>
+  </caution>
+
   <section>
     <title>Introduction</title>
 
@@ -302,6 +307,26 @@ MACLIST_DISPOSITION=ACCEPT
 TCP_FLAGS_DISPOSITION=DROP
 </programlisting>I don't believe that there is anything remarkable
       there</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/actions</title>
+
+      <para><programlisting>#ACTION
+Mirrors	   	    # Accept traffic from Shorewall Mirrors
+</programlisting>I make this into an action so the rather long list of rules
+      go into their own chain.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/action.Mirrors</title>
+
+      <para><programlisting>#TARGET SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
+#                       	        	PORT    PORT(S)    DEST		LIMIT
+COMMENT Accept traffic from Mirrors
+ACCEPT	$MIRRORS
+</programlisting>See the <link linkend="rules">rules</link> file -- this
+      action is used for rsync traffic.</para>
     </section>
 
     <section id="zones">
@@ -617,7 +642,6 @@ COMMENT
 ###############################################################################################################################################################################
 # Local Network to Firewall 
 #
-DNAT-           $FW                             :127.0.0.1:3128         tcp     80                                      -               -              -       !proxy
 NONAT           drct                            -
 REDIRECT-       loc                             3128                    tcp     80                                      -               !66.199.187.46,172.20.1.108,206.124.146.177,155.98.64.80,81.19.16.0/21
 ###############################################################################################################################################################################
@@ -679,9 +703,9 @@ ACCEPT:$LOG     dmz                             net                     tcp     
 #
 ACCEPT          dmz                             loc                     tcp     22                                      -               -        s:ssh:3/min:3
 ###############################################################################################################################################################################
-# DMZ to Firewall -- ntp &amp; snmp,apcupsd, Silently reject Auth
+# DMZ to Firewall -- ntp &amp; snmp Silently reject Auth
 #
-ACCEPT          dmz                             fw                      tcp     161,ssh,3551 #3551 is the apcupsd NIS server on the firewall
+ACCEPT          dmz                             fw                      tcp     161,ssh
 ACCEPT          dmz                             fw                      udp     161,ntp
 REJECT          dmz                             fw                      tcp     auth
 ###############################################################################################################################################################################
@@ -699,25 +723,6 @@ ACCEPT          fw                              dmz                     tcp     
 ACCEPT          fw                              dmz                     udp     domain
 REJECT          fw                              dmz                     udp     137:139
 ##############################################################################################################################################################################
-ACCEPT          dmz                             fw                      tcp     161,ssh,3551 #3551 is the apcupsd NIS server on the firewall
-ACCEPT          dmz                             fw                      udp     161,ntp
-REJECT          dmz                             fw                      tcp     auth
-###############################################################################################################################################################################
-# Internet to Firewall
-#
-REJECT          net                             fw                      tcp     www,ftp,https
-DROP            net                             fw                      icmp    8
-ACCEPT          net                             fw                      udp     33434:33454
-ACCEPT          net                             fw                      tcp     22                                      -               -        s:ssh:3/min:3
-ACCEPT          net                             fw                      udp     33434:33524 
-###############################################################################################################################################################################
-# Firewall to DMZ
-#
-ACCEPT          fw                              dmz                     tcp     domain,www,ftp,ssh,smtp,https,993,465,587,5901
-ACCEPT          fw                              dmz                     udp     domain
-REJECT          fw                              dmz                     udp     137:139
-##############################################################################################################################################################################
-# Avoid logging Freenode.net probes
 #
 COMMENT Freenode Probes
 DROP            net:82.96.96.3,85.190.0.3       any

@@ -172,6 +172,8 @@ fi
 files="errata known_problems.txt releasenotes.txt patch-*-$1 ${1}.*"
 base=
 
+rm -f *-${1}*.asc
+
 for f in *-${1}.tar.bz2 *-${1}.tgz; do
     /usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key' $f
 done

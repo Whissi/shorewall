@@ -80,6 +80,10 @@
       <listitem>
         <para><ulink url="ManualChains.html">Manual Chains</ulink></para>
       </listitem>
+
+      <listitem>
+        <para><ulink url="traffic_shaping.htm">Traffic Shaping</ulink></para>
+      </listitem>
     </itemizedlist>
 
     <para>Linux runs the firewall and the servers (although they run in OpenVZ
@@ -330,7 +334,7 @@ loc    tun+       detect</programlisting>Notice that VPN clients are treated
       the same as local hosts.</para>
 
       <para>I set the <emphasis role="bold">proxyarp</emphasis> option on
-      $EXT_IF so that </para>
+      $EXT_IF so that</para>
 
       <orderedlist numeration="loweralpha">
         <listitem>
@@ -744,6 +748,98 @@ fi
 
 chmod 744 ${VARDIR}/state</programlisting>Kill lsm if the command is stop or
       clear. Make the state file world-readable.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcdevices</title>
+
+      <para><programlisting>#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
+$EXT_IF		-		300kbit		classify
+$INT_IF		-		80mbit		classify
+$COM_IF		-		4mbit		classify,hfsc
+</programlisting>The use of HFSC on the Comcast link is largely to provide a
+      test bed for that qdisc; I really don't have any real-time requirement
+      such as VOIP.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcclasses</title>
+
+      <para><programlisting>INTERFACE	MARK	RATE			CEIL		PRIORITY	OPTIONS
+1:110		-	full/4			full		1		tcp-ack,tos-minimize-delay
+1:120		-	full/4			full		2		flow=nfct-src
+1:130		-	full/4			230kbit		3		default,flow=nfct-src
+1:140		-	full/4			230kbit		4		flow=nfct-src
+
+2:10		-  95*full/100			full		1		flow=dst
+2:100		-	14mbit			20mbit		2
+2:100:101	-	 7mbit			20mbit		3		default,flow=dst
+2:100:102	-	 7mbit			20mbit		3		flow=dst
+
+3:10		-	 2mbit:4ms		full		1	        flow=nfct-src
+3:100		-	 2mbit			full		2
+3:100:101	-	 1mbit			full		3		default,flow=nfct-src
+3:100:102	-	 1mbit			full		3		flow=nfct-src
+</programlisting>Note that most of the outgoing bandwidth on the local
+      interface is allocated to one class. That class is used for local
+      traffic.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcfilters</title>
+
+      <para><programlisting>#INTERFACE:	SOURCE			DEST		PROTO	DEST	SOURCE	TOS	LENGTH
+#CLASS								PORT(S)	PORT(S)
+
+# =============================== AVVANTA ====================================
+#
+# Give Highest priority to LSM's pings to the gateway and to DNS queries
+#
+1:110		206.124.146.176	  	206.124.146.254	icmp
+1:110		206.124.146.177		-		udp	53
+#
+# Second Highest priority to IPv6 Tunnel
+#
+1:120		206.124.146.180
+#
+# Lowest priority to bulk traffic
+#
+1:140		206.124.146.177	-		tcp	-	873	-	2048
+1:140		206.124.146.177 -		-	-	-	tos-minimize-cost
+</programlisting>The tcfilters file is only used for the Avvanta provider
+      because it has static public IP addresses.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcrules</title>
+
+      <para><programlisting>#MARK		SOURCE			DEST		PROTO	PORT(S)	CLIENT	USER	TEST	LENGTH	TOS
+#									PORT(S)
+
+COMMENT Shape incoming traffic
+
+#
+# Most of the bandwidth is reserved for local traffic since the downlinks aren't that fast
+#
+2:10		206.124.146.176/30	$INT_IF
+2:10		206.124.146.177		$INT_IF
+2:10		172.20.1.254		$INT_IF
+#
+# Guarantee 1/2 of the incoming bandwidth for my work system
+#
+2:102		0.0.0.0/0		$INT_IF:172.20.1.107
+
+COMMENT Shape outgoing traffic to Comcast
+#
+# Give 1/2 to my work system and add a latency guarantee
+#
+3:10		172.20.1.107		$COM_IF
+#
+# Restrict Torrent uploads
+#
+3:102		172.20.1.0/24		$COM_IF		tcp	-	6881:6889
+</programlisting>The tcrules file is used to classify traffic that deals with
+      the local network and/or with Comcast.</para>
     </section>
 
     <section id="tunnels">

@@ -698,9 +698,7 @@ compile_command() {
 
     export EXPORT
 
-    if [ x$file != x- ]; then
-	progress_message3 "Compiling..."
-    fi
+    [ "x$file" = x- ] || progress_message3 "Compiling..."
 
     compiler $debugging compile $file
 }

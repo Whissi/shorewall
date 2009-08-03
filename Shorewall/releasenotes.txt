@@ -120,7 +120,8 @@ Shorewall 4.4.0
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0
 ----------------------------------------------------------------------------
 
-None.
+1)  When compiling to standard out, it is no longer necessary to
+    specify '-v-1' to suppress the 'Compiling...' progress message 
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -522,7 +523,7 @@ None.
     (host IP addresses 192.168.1.1 - 192.168.1.6). Your first notion
     might be to use IPMARK(src,0xFF,0x10000) so as to produce class IDs
     1:1 through 1:6. But 1:1 is the class ID if the base HTB class on
-    interface 1. So you might chose instent to use
+    interface 1. So you might chose instead to use
     IPMARK(src,0xFF,0x10100) as shown in the example above so as to
     avoid minor class 1.
 
@@ -593,16 +594,12 @@ None.
 
     Examples:
 
-	shorewall compile -v-1 -- -  # Compile the configuration in
-                        	     # /etc/shorewall and send the
-	                             # output to STDOUT
-	shorewall compile -v-1 . -   # Compile the configuration in the
-		  	  	     # current working directory
-		  	    	     # and send the output to STDOUT
-
-    Note that the '-v-1' suppresses the 'Compiling...' message normally
-    issued by /sbin/shorewall (/sbin/shorewall6) when a compilation
-    begins.
+	shorewall compile -- -  # Compile the configuration in
+                        	# /etc/shorewall and send the
+	                        # output to STDOUT
+	shorewall compile . -   # Compile the configuration in the
+		  	        # current working directory
+		  	    	# and send the output to STDOUT
 
 17) Supplying an interface name in the SOURCE column of
     /etc/shorewall/masq is now deprecated. Entering the name of an

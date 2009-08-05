@@ -2282,6 +2282,24 @@ rmmod nf_conntrack_sip</programlisting>Then change the DONT_LOAD specification
     </section>
   </section>
 
+  <section id="faq40">
+    <title>IPv6</title>
+
+    <section>
+      <title>(FAQ 40) I have an interface that gets its IPv6 configuration
+      from radvd. When I start Shorewall6, I immediately loose my default
+      route. Why?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: You have configured
+      forwarding on the interface which disables autoconfiguration of the
+      interface. To retain autoconfiguration on the interface when Shorewall6
+      starts, specify <emphasis role="bold">forwarding=0</emphasis> in the
+      OPTIONS column on the interface's entry in <ulink
+      url="manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>
+      (5).</para>
+    </section>
+  </section>
+
   <section id="Misc">
     <title>Miscellaneous</title>
 

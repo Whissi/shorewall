@@ -2816,7 +2816,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 					       'add',
 					       '' );
 
-				add_rule( $chainref, $target );
+				add_rule( $chainref, $exceptionrule . $target );
 			    } else {
 				log_rule_limit( 
 					       $loglevel ,

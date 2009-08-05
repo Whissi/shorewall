@@ -133,12 +133,20 @@ None.
                 N E W   F E A T U R E S   I N   4 . 4 . 0
 ----------------------------------------------------------------------------
 
-1)  Perviously, a nat rule (DNAT, REDIRECT, etc.) with logging
-    specified could cause invalid iptables input to be generated.
+1)  Perviously, a nat rule (DNAT, REDIRECT, etc.) which changed the
+    destination port number and that had logging specified could cause
+    invalid iptables input to be generated.
 
     Example of rule:
 
     	    REDIRECT:ULOG   wall    82      tcp     80
+
+    Example of error message:
+
+       iptables v1.3.5: Need TCP or UDP with port specification
+        Try `iptables -h' or 'iptables --help' for more information.
+	ERROR: Command "/sbin/iptables -A log0 -j REDIRECT --to-port
+        82" Failed 
 
 ----------------------------------------------------------------------------
                  N E W   F E A T U R E S   IN   4 . 4

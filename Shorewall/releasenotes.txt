@@ -92,11 +92,14 @@ Shorewall 4.4.0
 7)  Support for the 'norfc1918' interface and host option has been
     removed. If 'norfc1918' is specified for an entry in either the
     interfaces or the hosts file, a warning is issued and the option is
-    ignored.
+    ignored. Simply remove the option to avoid the warning.
 
     Similarly, if RFC1918_STRICT=Yes or a non-empty RFC1918_LOG_LEVEL
     is given in shorewall.conf, a warning will be issued and the option
     will be ignored.
+
+    You may simply delete the RFC1918-related options from your
+    shorewall.conf file if you are seeing warnings regarding them.
 
     Users who currently use 'norfc1918' are encouraged to consider
     using NULL_ROUTE_RFC1918=Yes instead.

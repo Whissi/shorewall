@@ -123,9 +123,13 @@ Shorewall 4.4.0
 1)  When compiling to standard out, it is no longer necessary to
     specify '-v-1' to suppress the 'Compiling...' progress message 
 
-2)  Perviously, a nat rule (DNAT, REDIRECT, etc.) which changed the
-    destination port number and that had logging specified could cause
-    invalid iptables input to be generated.
+2)  Perviously, Shorewall would generate invalid iptables-restore input
+    if all of these conditions were met:
+
+    - a nat rule (DNAT, REDIRECT, DNAT-, etc.)
+    - the rule changed the destination port number
+    - logging specified
+    - either trivial exclusion (one address) or no exclusions
 
     Example of rule:
 
@@ -160,7 +164,7 @@ None.
     The new packages are:
 
     - Shorewall.   Includes the former Shorewall-common and
-                   Shorewall-perl packages. Includes everything needed
+                   Shorewall-perl packages. Has everything needed
                    to create an IPv4 firewall.
 
     - Shorewall6.  Requires Shorewall. Adds the components necessary to

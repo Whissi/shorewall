@@ -129,7 +129,8 @@ Shorewall 4.4.0
     - a nat rule (DNAT, REDIRECT, DNAT-, etc.)
     - the rule changed the destination port number
     - logging specified
-    - either trivial exclusion (one address) or no exclusions
+    - no non-trivial exclusions (a non-trivial exclusion is one whose
+      exclusion list has more than one element)
 
     Example of rule:
 
@@ -263,11 +264,6 @@ None.
     installed on the firewall system.
 
     Dynamic zones are available when Shorewall-lite is used as well.
-
-    Note that the dynamic zone support built into Shorewall provides no
-    additional functionality over what is provided by simply defining a
-    zone in terms of an ipset (see
-    http://www.shorewall.net/ipsets.html#Dynamic). 
 
     You define a zone as having dynamic content in one of two ways:
 

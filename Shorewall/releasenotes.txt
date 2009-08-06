@@ -119,6 +119,7 @@ Shorewall 4.4.0
     compared against the parent zone(s) rules.
 
     In 4.4.0, such traffic IS compared against the parent zone rules.
+
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0
 ----------------------------------------------------------------------------
@@ -129,11 +130,11 @@ Shorewall 4.4.0
 2)  Perviously, Shorewall would generate invalid iptables-restore input
     if all of these conditions were met:
 
-    - a nat rule (DNAT, REDIRECT, DNAT-, etc.)
-    - the rule changed the destination port number
-    - logging specified
-    - no non-trivial exclusions (a non-trivial exclusion is one whose
-      exclusion list has more than one element)
+    - a nat rule (DNAT, REDIRECT, DNAT-, etc.) changed the destination
+      port number
+    - logging was specified on the rule
+    - no non-trivial exclusions in the rule (a non-trivial exclusion is
+      one whose exclusion list has more than one element)
 
     Example of rule:
 

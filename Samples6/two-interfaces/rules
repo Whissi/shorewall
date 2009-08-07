@@ -16,21 +16,21 @@
 #
 #	Accept DNS connections from the firewall to the network
 #
-DNS/ACCEPT	$FW		net
+DNS(ACCEPT)	$FW		net
 #
 #	Accept SSH connections from the local network for administration
 #
-SSH/ACCEPT	loc		$FW
+SSH(ACCEPT)	loc		$FW
 #
 #	Allow Ping from the local network
 #
-Ping/ACCEPT	loc		$FW
+Ping(ACCEPT)	loc		$FW
 
 #
 # Drop Ping from the "bad" net zone.. and prevent your log from being flooded..
 #
 
-Ping/DROP	net		$FW
+Ping(DROP)	net		$FW
 
 ACCEPT		$FW		loc		ipv6-icmp
 ACCEPT		$FW		net		ipv6-icmp

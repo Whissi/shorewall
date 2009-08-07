@@ -132,8 +132,6 @@ syslog_circular_buffer() {
 #
 packet_log() # $1 = number of messages
 {
-    local options
-
     if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
 	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
     else

@@ -218,9 +218,9 @@ get_config() {
 		;;
 	esac
 
-	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
+	[ -n "$LOGFORMAT" ] || LOGFORMAT='Shorewall6:%s.%s'
 
-	[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall6:"
+	[ -n "$LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
 
 	export LOGFORMAT
 

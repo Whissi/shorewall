@@ -301,9 +301,9 @@ get_config() {
 		;;
 	esac
 
-	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
+	[ -z "$LOGFORMAT" ] && LOGFORMAT='Shorewall:%s.%s' 
 
-	[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
+	[ -n "$LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
 
 	export LOGFORMAT
 

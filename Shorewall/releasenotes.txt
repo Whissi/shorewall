@@ -46,22 +46,39 @@ Shorewall 4.4.0
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
+1)  If you are currently using Shorewall-shell:
 
-1)  The 'shorewall stop', 'shorewall clear', 'shorewall6 stop' and
+    a) In shorewall.conf, if you have specified
+       "SHOREWALL_COMPILER=shell" then you must either:
+
+       -  change that specification "SHOREWALL_COMPILER=perl"; or
+       -  change that specification to "SHOREWALL_COMPILER="; or
+       -  delete the specification altogether.
+
+       Failure to do so will result in the fatal compilation error:
+
+       ERROR: SHOREWALL_COMPILER=shell is no longer supported
+
+    b) Review the incompatibilities between Shorewall-shell and
+       Shorewall-perl at
+       http://www.shorewall.net/Shorewall-perl.html#Incompatibilities
+       and make changes to your configuration as necessary.
+
+2)  The 'shorewall stop', 'shorewall clear', 'shorewall6 stop' and
     'shorewall6 clear' commands no longer read the 'routestopped'
     file. The 'routestopped' file used is the one that was present at
     the last 'start', 'restart' or 'restore' command.
 
-2)  The old macro parameter syntax (e.g., SSH/ACCEPT) is now deprecated
+3)  The old macro parameter syntax (e.g., SSH/ACCEPT) is now deprecated
     in favor of the new syntax (e.g., SSH(ACCEPT)). The 4.4 documentation
     uses the new syntax exclusively, although the old syntax
     continues to be supported.
 
-3)  Support for the SAME target in /etc/shorewall/masq and
+4)  Support for the SAME target in /etc/shorewall/masq and
     /etc/shorewall/rules has been removed, following the removal of the
     underlying support in the Linux kernel.
 
-4)  Supplying an interface name in the SOURCE column of
+5)  Supplying an interface name in the SOURCE column of
     /etc/shorewall/masq is now deprecated. Entering the name of an
     interface there will result in a compile-time warning:
 
@@ -72,7 +89,7 @@ Shorewall 4.4.0
     To avoid this warning, replace interface names by the corresponding
     network addresses (e.g., 192.168.144.0/24).
 
-5)  Previously, Shorewall has treated traffic shaping class IDs as
+6)  Previously, Shorewall has treated traffic shaping class IDs as
     decimal numbers (or pairs of decimal numbers). That worked fine
     until IPMARK was implemented. IPMARK requires Shorewall to generate
     class Ids in numeric sequence. In 4.3.9, that didn't work correctly
@@ -85,11 +102,11 @@ Shorewall 4.4.0
     /etc/shorewall/tcrules or /etc/shorewall/tcfilters. You will need
     to renumber the class IDs for devices 10 and greater.
 
-6)  Jozsef Kadlecsik has removed the set binding capability from ipset
+7)  Jozsef Kadlecsik has removed the set binding capability from ipset
     3.1. As a consequence, Shorewall 4.4 no longer supports set
     binding.
 
-7)  Support for the 'norfc1918' interface and host option has been
+8)  Support for the 'norfc1918' interface and host option has been
     removed. If 'norfc1918' is specified for an entry in either the
     interfaces or the hosts file, a warning is issued and the option is
     ignored. Simply remove the option to avoid the warning.
@@ -104,7 +121,7 @@ Shorewall 4.4.0
     Users who currently use 'norfc1918' are encouraged to consider
     using NULL_ROUTE_RFC1918=Yes instead.
 
- 8) The install.sh scripts in the Shorewall and Shorewall6 packages no
+ 9) The install.sh scripts in the Shorewall and Shorewall6 packages no
     longer create a backup copy of the existing configuration. If you
     want your configuration backed up prior to upgrading, you will
     need to do that yourself. 
@@ -112,7 +129,7 @@ Shorewall 4.4.0
     As part of this change, the fallback.sh scripts are no longer
     released.
 
-9)  Previously, if an ipsec zone was defined as a sub-zone of an ipv4
+10) Previously, if an ipsec zone was defined as a sub-zone of an ipv4
     or ipv6 zone using the special <child>:<parent>,... syntax,
     CONTINUE policies for the sub-zone did not work as
     expected. Traffic that was not matched by a sub-zone rule was not

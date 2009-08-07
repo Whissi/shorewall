@@ -75,7 +75,7 @@
   </section>
 
   <section>
-    <title>Versions &gt;= 4.3.5</title>
+    <title>Versions &gt;= 4.4.0</title>
 
     <orderedlist>
       <listitem>
@@ -84,6 +84,30 @@
         Shorewall version earlier than 4.0.0 then you will need to <ulink
         url="Shorewall-perl.html">migrate to Shorewall-perl</ulink>.
         Shorewall-4.3.5 and later only use the perl-based compiler.</para>
+
+        <para>If you have specified "SHOREWALL_COMPILER=shell" in
+        shorewall.conf, then you must either:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>change that specification to "SHOREWALL_COMPILER=perl";
+            or</para>
+          </listitem>
+
+          <listitem>
+            <para>change that specification to "SHOREWALL_COMPILER=";
+            or</para>
+          </listitem>
+
+          <listitem>
+            <para>delete the specification altogether.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>Failure to do so will result in the following fatal compilation
+        error:</para>
+
+        <para>ERROR: SHOREWALL_COMPILER=shell is no longer supported.</para>
       </listitem>
 
       <listitem>
@@ -94,7 +118,10 @@
         <filename>routestopped</filename> file used is the one that was
         present at the last <command>start</command>,
         <command>restart</command> or <command>restore</command>
-        command.</para>
+        command.<important>
+            <para>If you modify the routestopped file, you must restart
+            Shorewall before the changes to that file will take effect.</para>
+          </important></para>
       </listitem>
 
       <listitem>
@@ -148,11 +175,14 @@
         <para>Support for the 'norfc1918' interface and host option has been
         removed. If 'norfc1918' is specified for an entry in either the
         interfaces or the hosts file, a warning is issued and the option is
-        ignored.</para>
+        ignored. Simply remove the option to avoid the warning.</para>
 
         <para>Similarly, if RFC1918_STRICT=Yes or a non-empty
         RFC1918_LOG_LEVEL is given in shorewall.conf, a warning will be issued
         and the option will be ignored.</para>
+
+        <para>You may simply delete the RFC1918-related options from your
+        shorewall.conf file if you are seeing warnings regarding them.</para>
 
         <para>Users who currently use 'norfc1918' are encouraged to consider
         using NULL_ROUTE_RFC1918=Yes instead.</para>

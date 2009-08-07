@@ -69,10 +69,15 @@ Shorewall 4.4.0
     file. The 'routestopped' file used is the one that was present at
     the last 'start', 'restart' or 'restore' command.
 
+    IMPORTANT: If you modify the routestopped file, you must restart
+    Shorewall before the changes to that file take effect.
+
 3)  The old macro parameter syntax (e.g., SSH/ACCEPT) is now deprecated
     in favor of the new syntax (e.g., SSH(ACCEPT)). The 4.4 documentation
     uses the new syntax exclusively, although the old syntax
     continues to be supported.
+
+    The sample configuration also use the new syntax.
 
 4)  Support for the SAME target in /etc/shorewall/masq and
     /etc/shorewall/rules has been removed, following the removal of the

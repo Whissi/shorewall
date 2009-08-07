@@ -134,8 +134,8 @@ Shorewall 4.4.0
     As part of this change, the fallback.sh scripts are no longer
     released.
 
-10) Previously, if an ipsec zone was defined as a sub-zone of an ipv4
-    or ipv6 zone using the special <child>:<parent>,... syntax,
+10) In earlier releases, if an ipsec zone was defined as a sub-zone of
+    an ipv4 or ipv6 zone using the special <child>:<parent>,... syntax,
     CONTINUE policies for the sub-zone did not work as
     expected. Traffic that was not matched by a sub-zone rule was not
     compared against the parent zone(s) rules.
@@ -149,7 +149,7 @@ Shorewall 4.4.0
 1)  When compiling to standard out, it is no longer necessary to
     specify '-v-1' to suppress the 'Compiling...' progress message 
 
-2)  Perviously, Shorewall would generate invalid iptables-restore input
+2)  Previously, Shorewall would generate invalid iptables-restore input
     if all of these conditions were met:
 
     - a nat rule (DNAT, REDIRECT, DNAT-, etc.) changed the destination

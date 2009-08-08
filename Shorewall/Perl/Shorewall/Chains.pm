@@ -1819,19 +1819,28 @@ sub iprange_match() {
 }
 
 #
-# Get set flags (ipsets) -- Given that ipset no longer supports binding,
-#                           This function simply constructs the proper
-#                           --set specification.
+# Get set flags (ipsets).
 #
 sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
+    my $options = $option;
 
     $setname =~ s/^!//; # Caller has already taken care of leading !
+
+    if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
+	$setname  = $1;
+	my $count = $2;
+	$options .= ",$option" while --$count > 0;
+    } elsif ( $setname =~ /^(.*)\[(.*)\]$/ ) {
+	$setname = $1;
+	$options = $2;
+    }
+
     $setname =~ s/^\+//;
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
 
-    "--set $setname $option "
+    "--set $setname $options "
 }
 
 #

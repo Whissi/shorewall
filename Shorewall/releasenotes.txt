@@ -107,11 +107,7 @@ Shorewall 4.4.0
     /etc/shorewall/tcrules or /etc/shorewall/tcfilters. You will need
     to renumber the class IDs for devices 10 and greater.
 
-7)  Jozsef Kadlecsik has removed the set binding capability from ipset
-    3.1. As a consequence, Shorewall 4.4 no longer supports set
-    binding.
-
-8)  Support for the 'norfc1918' interface and host option has been
+7)  Support for the 'norfc1918' interface and host option has been
     removed. If 'norfc1918' is specified for an entry in either the
     interfaces or the hosts file, a warning is issued and the option is
     ignored. Simply remove the option to avoid the warning.
@@ -126,7 +122,7 @@ Shorewall 4.4.0
     Users who currently use 'norfc1918' are encouraged to consider
     using NULL_ROUTE_RFC1918=Yes instead.
 
- 9) The install.sh scripts in the Shorewall and Shorewall6 packages no
+8)  The install.sh scripts in the Shorewall and Shorewall6 packages no
     longer create a backup copy of the existing configuration. If you
     want your configuration backed up prior to upgrading, you will
     need to do that yourself. 
@@ -134,7 +130,7 @@ Shorewall 4.4.0
     As part of this change, the fallback.sh scripts are no longer
     released.
 
-10) In earlier releases, if an ipsec zone was defined as a sub-zone of
+9)  In earlier releases, if an ipsec zone was defined as a sub-zone of
     an ipv4 or ipv6 zone using the special <child>:<parent>,... syntax,
     CONTINUE policies for the sub-zone did not work as
     expected. Traffic that was not matched by a sub-zone rule was not
@@ -142,7 +138,7 @@ Shorewall 4.4.0
 
     In 4.4.0, such traffic IS compared against the parent zone rules.
 
-11) The name 'any' is now reserved and may not be used as a zone name.
+10) The name 'any' is now reserved and may not be used as a zone name.
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 0
@@ -174,6 +170,9 @@ Shorewall 4.4.0
 3)  Previously, log displays from the 'dump', 'show log' and 'logwatch'
     commands did not properly suppress redundant fields in the records
     (host name, and leading constant part of the LOGPREFIX).
+
+4)  Given that Jozsef Kadlecsik has not yet released ipset 3.1, ipset
+    bindings are once again supported.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -735,10 +734,7 @@ None.
                  OUT-BANDWIDTH. Maximum delay is 10ms. Maximum packet
                  size is 1500 bytes.
 
-20) Support for ipset bindings has been removed. Jozsef Kadlecsik has
-    already removed such support from ipset itself.
-
-21) Optional TOS and LENGTH fields have been added to the tcfilters
+20) Optional TOS and LENGTH fields have been added to the tcfilters
     file.
 
     The TOS field may contain any of the following:
@@ -757,10 +753,10 @@ None.
     inclusive. Packets with a total length that is strictly less that
     the specified value will match the rule.
 
-22) Support for 'norfc1918' has been removed. See the Migration
+21) Support for 'norfc1918' has been removed. See the Migration
     Considerations above.
 
-23) A 'upnpclient' option has been added to
+22) A 'upnpclient' option has been added to
     /etc/shorewall/interfaces. This option is intended for laptop users
     who always run Shorewall on their system yet need to run
     UPnP-enabled client apps such as Transmission (BitTorrent client).
@@ -770,7 +766,7 @@ None.
     that, like all aspects of UPnP, this is a security hole so use this
     option at your own risk.
 
-24) 'iptrace' and 'noiptrace' commands have been added to both
+23) 'iptrace' and 'noiptrace' commands have been added to both
     /sbin/shorewall and /sbin/shorewall6.
 
     These are low-level debugging commands that cause
@@ -797,15 +793,15 @@ None.
 
 	   shorewall noiptrace -d 206.124.146.176
 
-25) A USER/GROUP column has been added to /etc/shorewall/masq. The
+24) A USER/GROUP column has been added to /etc/shorewall/masq. The
     column works similarly to USER/GROUP columns in other Shorewall
     configuration files. Only locally-generated traffic is matched.
 
-26) A new extension script, 'lib.private' has been added. This file is
+25) A new extension script, 'lib.private' has been added. This file is
     intended to include declarations of shell functions that will be
     called by the other run-time extension scripts. 
 
-27) Paul Gear has contributed the following macros:
+26) Paul Gear has contributed the following macros:
 
     	 macro.Webcache (originally named macro.DG)
  	 macro.IPPbrd
@@ -813,7 +809,7 @@ None.
  	 macro.RIPbi
 	 macro.mDNS
 
-28) The default value of DISABLE_IPV6 has been changed from 'Yes' to
+27) The default value of DISABLE_IPV6 has been changed from 'Yes' to
     'No' in all sample shorewall.conf files. Shorewall6 should be
     installed to restrict IPv6 traffic.
 

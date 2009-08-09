@@ -286,8 +286,7 @@ get_config() {
 	    perl|Perl)
 		;;
 	    shell|Shell)
-		echo "   ERROR: SHOREWALL_COMPILER=shell is no longer supported" >&2
-		exit 2
+		echo "   WARNING: SHOREWALL_COMPILER=shell ignored. Shorewall-shell support has been removed in this release" >&2
 		;;
 	    *)
 		echo "   ERROR: Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER" >&2

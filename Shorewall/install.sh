@@ -166,6 +166,15 @@ if [ -n "$PREFIX" ]; then
     
     CYGWIN=
 else
+    #
+    # Verify that Perl is installed
+    #
+    if ! perl -c Perl/compiler.pl; then
+	echo "ERROR: Shorewall $VERSION requires Perl which either is not installed or is not able to compile the Shorewall perl code" >&2
+	echo "       Try perl -c $PWD/Perl/compiler.pl" >&2
+	exit 1
+    fi
+
     if [ -z "$CYGWIN" ]; then
 	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
 	    DEBIAN=yes
@@ -238,7 +247,7 @@ chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
 #
 run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
-qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
+perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
@@ -737,7 +746,6 @@ for f in prog.* ; do
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 
-pwd
 cd ..
 #
 # Create the version file
@@ -757,7 +765,6 @@ fi
 # Install the Man Pages
 #
 
-pwd
 cd manpages
 
 for f in *.5; do

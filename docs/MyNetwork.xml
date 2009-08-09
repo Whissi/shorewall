@@ -600,7 +600,7 @@ chmod 744 ${VARDIR}/state</programlisting>If lsm isn't running then start it.
 
       <para><programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
 
--                   72.20.0.0/24     main      1000       #OpenVPN clients
+-                   172.20.0.0/24    main      1000       #OpenVPN clients
 -                   206.124.146.177  main      1001       #Servers -- Routes configured by OpenVZ
 -                   206.124.146.178  main      1001       #
 -                   216.168.3.44     Avvanta   1001       #NNTP -- Does source IP verification
@@ -775,7 +775,7 @@ $COM_IF		-		4mbit		classify,hfsc
     <section>
       <title>/etc/shorewall/tcclasses</title>
 
-      <para><programlisting>INTERFACE	MARK	RATE			CEIL		PRIORITY	OPTIONS
+      <para><programlisting>#INTERFACE	MARK	RATE			CEIL		PRIORITY	OPTIONS
 1:110		-	full/4			full		1		tcp-ack,tos-minimize-delay
 1:120		-	full/4			full		2		flow=nfct-src
 1:130		-	full/4			230kbit		3		default,flow=nfct-src

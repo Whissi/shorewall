@@ -104,6 +104,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples 
 
 %changelog
+* Sun Aug 09 2009 Tom Eastep tom@shorewall.net
+- Made Perl a dependency
 * Mon Aug 03 2009 Tom Eastep tom@shorewall.net
 - Updated to 4.4.0-0base
 * Tue Jul 28 2009 Tom Eastep tom@shorewall.net

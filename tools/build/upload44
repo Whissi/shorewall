@@ -194,7 +194,7 @@ rpms=$(
 	esac
     done)
 
-[ -n "$rpms" ] && echo "RPMS=\"$rpms\"" && rpm --resign $rpms
+[ -n "$rpms" ] && rpm --resign $rpms
 
 [ -n "$BASE" ] && $COMMAND $base $DEST/base
 

@@ -121,63 +121,6 @@ SLA=1
 GATEWAY=::192.88.99.1</programlisting></para>
       </blockquote>
 
-      <para>When I rebased my configuration to <trademark>Debian</trademark>,
-      I was able to eliminate the script and integrate everything into
-      <filename>/etc/network/interfaces</filename>:</para>
-
-      <blockquote>
-        <para><programlisting>auto lo
-iface lo inet loopback
-
-auto eth3
-iface eth0 inet dhcp
-        hwaddress ether 00:11:85:89:da:9b
-        hostname tnteastep
-
-auto eth1
-iface eth1 inet static
-        address 172.20.1.254
-        netmask 255.255.255.0
-        network 172.20.1.0
-        broadcast 172.20.1.255
-
-iface eth1 inet6 static
-        address 2002:ce7c:92b4:1::1
-        netmask 64 
-
-auto eth0 eth0:1 eth0:2
-iface eth0 inet static
-        address 206.124.146.176
-        netmask 255.255.255.0
-        network 206.124.146.0
-        broadcast 206.124.146.255
-
-iface eth0:0 inet static
-        address 206.124.146.178
-        netmask 255.255.255.0
-        broadcast 206.124.146.255
-
-iface eth0:1 inet static
-        address 206.124.146.179
-        netmask 255.255.255.0
-        broadcast 206.124.146.255
-
-iface eth0:2 inet static
-        address 206.124.146.180
-        netmask 255.255.255.0
-        broadcast 206.124.146.255
-
-auto sit1
-iface sit1 inet6 v4tunnel
-      address 2002:ce7c:92b4::1
-      netmask 64
-      endpoint 192.88.99.1
-      local 206.124.146.180
-      gateway ::192.88.99.1
-      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding
-</programlisting></para>
-      </blockquote>
-
       <para>eth2 is the interface to my local network (both wired and
       wireless). eth4 goes to my DMZ which holds a single server. Here is a
       diagram of the IPv4 network:</para>

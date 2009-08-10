@@ -138,4 +138,20 @@ forwardUPnP        net     loc</programlisting>
       <command>stop</command>.</para>
     </note>
   </section>
+
+  <section>
+    <title>Shorewall on a UPnP Client</title>
+
+    <para>It is sometimes desirable to run UPnP-enabled client programs like
+    Transmission (BitTorrent client) on a Shorewall-protected system.
+    Shorewall provides support for UPnP client access in the form of the
+    <emphasis role="bold">upnpclient</emphasis> option in <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
+    (5).</para>
+
+    <para>The <emphasis role="bold">upnpclient</emphasis> option causes
+    Shorewall to detect the default gateway through the interface and to
+    accept UDP packets from that gateway. Note that, like all aspects of UPnP,
+    this is a security hole so use this option at your own risk. </para>
+  </section>
 </article>

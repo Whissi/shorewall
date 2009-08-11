@@ -185,14 +185,7 @@ done
 [ -n "$STAGEXML" ]    && base="$base shorewall-docs-xml-${1}.tar.*"  && files="$files shorewall-docs-xml-${1}.*"
 [ -n "$STAGEHTML" ]   && base="$base shorewall-docs-html-${1}.tar.*" && files="$files shorewall-docs-html-${1}.*"
 
-rpms=$(
-    for f in $files; do
-	case $f in
-	    *.rpm)
-		echo $f
-		;;
-	esac
-    done)
+rpms=`for f in $files; do case $f in *.rpm) echo $f;; *);; esac done`
 
 [ -n "$rpms" ] && rpm --resign $rpms
 

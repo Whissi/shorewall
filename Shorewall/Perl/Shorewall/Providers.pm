@@ -780,7 +780,6 @@ sub lookup_provider( $ ) {
 	fatal_error "Unknown provider ($provider)" unless $providerref;
     }
 
-
     $providerref->{shared} ? $providerref->{number} : 0;
 }
 

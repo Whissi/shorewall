@@ -188,6 +188,15 @@ Shorewall 4.4.0
 5)  The 'upnpclient' option only worked correctly if 'optional' was
     also specified for the interface.
 
+6)  Where more than one internet provider shares the same external
+    interface, specifying the provider by number in /etc/shorewall/masq
+    (e.g., eth1(2)) resulted in the fatal compilation error:
+
+    	   ERROR: 2 is not a shared-interface provider
+
+    Also, the shorewall-masq (5) man page did not describe the syntax
+    for specifying the provider.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

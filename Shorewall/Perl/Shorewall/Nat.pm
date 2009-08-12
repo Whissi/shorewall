@@ -197,7 +197,7 @@ sub process_one_masq( )
 	    $interface = $1;
 	    my $provider  = $2;
 	    $fullinterface =~ s/[(]\w*[)]//;
-	    my $realm = lookup_provider( $provider ) unless $provider =~ /^\d+$/;
+	    my $realm = lookup_provider( $provider );
 
 	    fatal_error "$provider is not a shared-interface provider" unless $realm;
 

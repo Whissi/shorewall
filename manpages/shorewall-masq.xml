@@ -70,6 +70,16 @@
           entry that defines <filename
           class="devicefile">ppp+</filename>.</para>
 
+          <para>Where <ulink url="MultiISP.html#Shared">more that one internet
+          providers shares a single interface</ulink>, the provider is
+          specified by including the provider name or number in
+          parentheses:</para>
+
+          <programlisting>        eth0(Avvanta)</programlisting>
+
+          <para>In that case, you will want to specify the interfaces's
+          address for that provider in the ADDRESS column.</para>
+
           <para>The interface may be qualified by adding the character ":"
           followed by a comma-separated list of destination host or subnet
           addresses to indicate that you only want to change the source IP
@@ -80,7 +90,7 @@
           <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
           entry then include the ":" but omit the digit:</para>
 
-          <programlisting>        eth0:
+          <programlisting>        eth0(Avvanta):
         eth2::192.0.2.32/27</programlisting>
 
           <para>Normally Masq/SNAT rules are evaluated after those for

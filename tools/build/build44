@@ -409,6 +409,15 @@ case $VERSION in
 	LITERPMNAME=shorewall-lite-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
 	LITE6RPMNAME=shorewall6-lite-${BASEVERSION}-0${VERSION#*-}.noarch.rpm
 	;;
+    *.*.*.*)
+        #
+        # Patch Release
+        #
+        RPMNAME=shorewall-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        RPM6NAME=shorewall6-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        LITERPMNAME=shorewall-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        LITE6RPMNAME=shorewall6-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+        ;;
      *)
 	#
 	# Normal Release

@@ -129,7 +129,17 @@ case $1 in
 	lite6rpm=shorewall6-lite-${1%-*}-0${1#*-}.noarch.rpm
 	BASE=Yes
 	;;
-    4.3.*)
+    4.4.*.*)
+	BASEVERSION=${1%.*}
+	PATCHNUM=${1##*.}
+	DEST="/srv/ftp/pub/shorewall/${BASEVERSION%.*}/shorewall-${BASEVERSION}"
+	SHOREWALL=shorewall
+	rpm=shorewall-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	rpm6=shorewall6-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	literpm=shorewall-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	lite6rpm=shorewall6-lite-${BASEVERSION}-${PATCHNUM}.noarch.rpm
+	;;
+    4.4.*)
 	DEST="/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	SHOREWALL=shorewall
 	rpm=shorewall-${1}-0base.noarch.rpm
@@ -155,9 +165,7 @@ fi
 
 [ -f known_problems.txt ] || echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
-[ -n "$PARTIAL" -a -z "$UPLOADCOMMON" ]  && SHOREWALLDIR=shorewall || SHOREWALLDIR=$SHOREWALL-${1}
-
-cp $SHOREWALLDIR/releasenotes.txt releasenotes.txt
+cp $SHOREWALLDIR-${1}/releasenotes.txt releasenotes.txt
 
 if [ "$HOSTNAME" = lists ]; then
 	mkdir -p $DEST

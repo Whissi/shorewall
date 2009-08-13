@@ -346,8 +346,27 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
+     4.4.*.*)
+	XMLPROJ="docs-4.4"
+
+	PATCHRELEASE=Yes
+	PATCHNUM=${VERSION##*.}
+	BASEVERSION=${VERSION%.*}
+	SVNBRANCH="Shorewall"
+	SVN6BRANCH="Shorewall6"
+	LITESVNBRANCH="Shorewall-lite"
+	LITE6SVNBRANCH="Shorewall6-lite"
+	DOCTAG="docs"
+	SAMPLESTAG="Samples"
+	SAMPLES6TAG="Samples6"
+	MANPAGETAG=manpages
+	MANPAGE6TAG=manpages6
+	LITEMANPAGETAG=manpages-lite
+	LITE6MANPAGETAG=manpages6-lite
+	;;
+case $VERSION in
      4.4.*)
-	XMLPROJ="docs-4.3"
+	XMLPROJ="docs-4.4"
 
 	SVNBRANCH="Shorewall"
 	SVN6BRANCH="Shorewall6"

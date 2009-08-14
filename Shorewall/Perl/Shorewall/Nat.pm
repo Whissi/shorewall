@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
-our $VERSION = '4.3_7';
+our $VERSION = '4.4_1';
 
 our @addresses_to_add;
 our %addresses_to_add;
@@ -177,7 +177,6 @@ sub process_one_masq( )
     # Handle Protocol and Ports
     #
     $baserule .= do_proto $proto, $ports, '';
-
     #
     # Handle Mark
     #

@@ -41,7 +41,6 @@ our @EXPORT = qw( process_tos
 		  setup_mac_lists
 		  process_rules
 		  generate_matrix
-		  setup_mss
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );

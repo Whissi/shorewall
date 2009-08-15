@@ -214,6 +214,7 @@ sub process_one_masq( )
 	my $detectaddress = 0;
 	my $exceptionrule = '';
 	my $randomize     = '';
+	my $persistent    = '';
 	#
 	# Parse the ADDRESSES column
 	#
@@ -221,7 +222,8 @@ sub process_one_masq( )
 	    if ( $addresses eq 'random' ) {
 		$randomize = '--random ';
 	    } else {
-		$addresses =~ s/:random$// and $randomize = '--random ';
+		$addresses =~ s/:persistent$// and $persistent = '--persistent ';
+		$addresses =~ s/:random$//     and $randomize  = '--random ';
 
 		if ( $addresses =~ /^SAME/ ) {
 		    fatal_error "The SAME target is no longer supported";
@@ -260,6 +262,7 @@ sub process_one_masq( )
 	    }
 
 	    $target .= $randomize;
+	    $target .= $persistent;
 	} else {
 	    $add_snat_aliases = 0;
 	}

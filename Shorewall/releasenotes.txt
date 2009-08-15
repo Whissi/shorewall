@@ -164,6 +164,24 @@ None.
 None.
 
 ----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 1
+----------------------------------------------------------------------------
+
+1)  To replace the SAME keyword in /etc/shorewall/masq, support has
+    been added for 'persistent' SNAT. Persistent SNAT is required when
+    an address range is specified in the ADDRESS column and when you
+    want a client to always receive the same source/destination IP
+    pair. It replaces SAME: which was removed in Shorewall 4.4.0.
+
+    To spacify persistence, follow the address range with
+    ":persistent".
+
+    Example:
+
+    #INTERFACE	SOURCE	   ADDRESS
+    eth0	0.0.0.0/0  206.124.146.177-206.124.146.179:persistent	
+
+----------------------------------------------------------------------------
                  N E W   F E A T U R E S   I N   4 . 4
 ----------------------------------------------------------------------------
 

@@ -155,7 +155,7 @@
         role="bold">-</emphasis>|<emphasis
         role="bold">NONAT</emphasis>|[<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
         role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
-        role="bold">:random</emphasis>]|<emphasis
+        role="bold">:random</emphasis>][:persistent]|<emphasis
         role="bold">detect</emphasis>|<emphasis
         role="bold">random</emphasis>]</term>
 
@@ -177,6 +177,15 @@
           assignments are made for the outgoing connections.</para>
 
           <para>Example: 206.124.146.177-206.124.146.180</para>
+
+          <para>You may follow the port range (or <emphasis
+          role="bold">:random</emphasis>) with <emphasis
+          role="bold">:persistent</emphasis>. This is only useful when an
+          address range is specified and causes a client to be given the same
+          source/destination IP pair. This feature replaces the SAME modifier
+          which was removed from Shorewall in version 4.4.0. Unlike <emphasis
+          role="bold">random</emphasis>, <emphasis
+          role="bold">persistent</emphasis> may not be used by itself.</para>
 
           <para>You may also use the special value "detect" which causes
           Shorewall to determine the IP addresses configured on the interface

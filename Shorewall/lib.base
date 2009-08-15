@@ -30,7 +30,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40310
+SHOREWALL_CAPVERSION=40401
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -777,6 +777,13 @@ set_state () # $1 = state
 # Determine which optional facilities are supported by iptables/netfilter
 #
 determine_capabilities() {
+    [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
+
+    if [ -z "$IPTABLES" ]; then
+	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
+	exit 1
+    fi
+
     qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
     qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
@@ -820,14 +827,16 @@ determine_capabilities() {
     LOGMARK_TARGET=
     IPMARK_TARGET=
     LOG_TARGET=Yes
+    PERSISTENT_SNAT=
 
     chain=fooX$$
 
-    [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
-
-    if [ -z "$IPTABLES" ]; then
-	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
-	exit 1
+    if [ -n "$NAT_ENABLED" ]; then
+	if qt $IPTABLES -t nat -N $chain; then
+	    qt $IPTABLES -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
+	    $IPTABLES -t nat -F $chain
+	    $IPTABLES -t nat -X $chain
+	fi
     fi
 
     qt $IPTABLES -F $chain
@@ -1011,6 +1020,7 @@ report_capabilities() {
 	report_capability "LOGMARK Target" $LOGMARK_TARGET
 	report_capability "IPMARK Target" $IPMARK_TARGET
 	report_capability "LOG Target" $LOG_TARGET
+	report_capability "Persistent SNAT" $PERSISTENT_SNAT
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1068,6 +1078,7 @@ report_capabilities1() {
     report_capability1 LOGMARK_TARGET
     report_capability1 IPMARK_TARGET
     report_capability1 LOG_TARGET
+    report_capability1 PERSISTENT_SNAT
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

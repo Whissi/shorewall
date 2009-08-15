@@ -241,6 +241,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 LOG_TARGET      => 'LOG Target',
 		 LOGMARK_TARGET  => 'LOGMARK Target',
 		 IPMARK_TARGET   => 'IPMARK Target',
+		 PERSISTENT_SNAT => 'Persistent SNAT',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -328,7 +329,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.1",
-		    CAPVERSION => 40310 ,
+		    CAPVERSION => 40401 ,
 		  );
 
     #
@@ -613,6 +614,7 @@ sub initialize( $ ) {
 	       LOGMARK_TARGET => undef,
 	       IPMARK_TARGET => undef,
 	       LOG_TARGET => 1,         # Assume that we have it.
+	       PERSISTENT_SNAT => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -1922,6 +1924,14 @@ sub determine_capabilities( $ ) {
     my $sillyname1 = "foo1X$pid";
 
     $capabilities{NAT_ENABLED}    = qt1( "$iptables -t nat -L -n" ) if $family == F_IPV4;
+
+    if ( $capabilities{NAT_ENABLED} ) {
+	if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
+	    $capabilities{PERSISTENT_SNAT} = qt1( "$iptables -t nat -A $sillyname -j SNAT --to source 1.2.3.4 --persistent" );
+	    qt1( "$iptables -t NAT -F $sillyname" );
+	    qt1( "$iptables -t NAT -X $sillyname" );
+	}
+    }
 
     $capabilities{MANGLE_ENABLED} = qt1( "$iptables -t mangle -L -n" );
 

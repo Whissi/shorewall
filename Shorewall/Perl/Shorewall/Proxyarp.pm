@@ -42,21 +42,18 @@ our @proxyarp;
 our $family;
 
 #
-# Initialize globals -- we take this novel approach to globals initialization to allow
-#                       the compiler to run multiple times in the same process. The
-#                       initialize() function does globals initialization for this
-#                       module and is called from an INIT block below. The function is
-#                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function.
+# Rather than initializing globals in an INIT block or during declaration, 
+# we initialize them in a function. This is done for two reasons:
 #
-
+#   1. Proper initialization usually depends on the address family which isn't
+#      known until the compiler has started.
+#
+#   2. The compiler can run multiple times in the same process so it has to be
+#      able to re-initialize all of its dependent modules.
+#
 sub initialize( $ ) {
     $family = shift;
     @proxyarp = ();
-}
-
-INIT {
-    initialize( F_IPV4 );
 }
 
 sub setup_one_proxy_arp( $$$$$ ) {

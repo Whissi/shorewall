@@ -38,22 +38,11 @@ our @EXPORT_OK = qw( );
 our $VERSION = '4.3_7';
 
 #
-# Initialize globals -- we take this novel approach to globals initialization to allow
-#                       the compiler to run multiple times in the same process. The
-#                       initialize() function does globals initialization for this
-#                       module and is called from an INIT block below. The function is
-#                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function or when compiling
-#                       for IPv6.
+# Called by the compiler
 #
-
 sub initialize() {
     our $jumpchainref;
     $jumpchainref = undef;
-}
-
-INIT {
-    initialize;
 }
 
 #

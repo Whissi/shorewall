@@ -49,14 +49,12 @@ our $export;
 
 our $test;
 
-our $reused = 0;
-
 our $family = F_IPV4;
 
 #
-# Reinitilize the package-globals in the other modules
+# Initilize the package-globals in the other modules
 #
-sub reinitialize() {
+sub initialize_package_globals() {
     Shorewall::Config::initialize($family);
     Shorewall::Chains::initialize ($family);
     Shorewall::Zones::initialize ($family);
@@ -572,7 +570,10 @@ sub compiler {
 	${$ref->{store}} = $val;
     }
 
-    reinitialize if $reused++ || $family == F_IPV6;
+    #
+    # Now that we know the address family that we are dealing with (IPv4/IPv6), we can initialize the other modules' globals
+    #
+    initialize_package_globals;
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;
@@ -596,8 +597,6 @@ sub compiler {
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
 
     set_command( 'check', 'Checking', 'Checked' ) unless $objectfile;
-
-    initialize_chain_table;
 
     unless ( $command eq 'check' ) {
 	create_temp_object( $objectfile , $export );
@@ -804,7 +803,6 @@ sub compiler {
 	# for stopping the firewall
 	#
 	Shorewall::Chains::initialize( $family );
-	initialize_chain_table;
 	compile_stop_firewall( $test ); 
 	#
 	# Copy the footer to the object

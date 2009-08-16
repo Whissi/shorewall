@@ -111,7 +111,6 @@ our %EXPORT_TAGS = (
 				       new_builtin_chain
 				       new_nat_chain
 				       ensure_filter_chain
-				       initialize_chain_table
 				       finish_section
 				       setup_zone_mss
 				       newexclusionchain
@@ -297,16 +296,17 @@ our %builtin_target = ( ACCEPT   => 1,
 			NFQUEUE  => 1,
 			REDIRECT => 1 );
 
+sub initialize_chain_table();
 #
-# Initialize globals -- we take this novel approach to globals initialization to allow
-#                       the compiler to run multiple times in the same process. The
-#                       initialize() function does globals initialization for this
-#                       module and is called from an INIT block below. The function is
-#                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function or when compiling
-#                       for IPv6.
+# Rather than initializing globals in an INIT block or during declaration, 
+# we initialize them in a function. This is done for two reasons:
 #
-
+#   1. Proper initialization usually depends on the address family which isn't
+#      known until the compiler has started.
+#
+#   2. The compiler can run multiple times in the same process so it has to be
+#      able to re-initialize all of its dependent modules.
+#
 sub initialize( $ ) {
     $family = shift;
 
@@ -357,10 +357,8 @@ sub initialize( $ ) {
     $global_variables   = 0;
     $idiotcount         = 0;
 
-}
+    initialize_chain_table;
 
-INIT {
-    initialize( F_IPV4 );
 }
 
 #

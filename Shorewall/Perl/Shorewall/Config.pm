@@ -285,13 +285,14 @@ use constant { MIN_VERBOSITY => -1,
 our %validlevels;             # Valid log levels.
 
 #
-# Initialize globals -- we take this novel approach to globals initialization to allow
-#                       the compiler to run multiple times in the same process. The
-#                       initialize() function does globals initialization for this
-#                       module and is called from an INIT block below. The function is
-#                       also called by Shorewall::Compiler::compiler at the beginning of
-#                       the second and subsequent calls to that function and when compiling
-#                       for IPv6.
+# Rather than initializing globals in an INIT block or during declaration, 
+# we initialize them in a function. This is done for two reasons:
+#
+#   1. Proper initialization usually depends on the address family which isn't
+#      known until the compiler has started.
+#
+#   2. The compiler can run multiple times in the same process so it has to be
+#      able to re-initialize all of its dependent modules.
 #
 sub initialize( $ ) {
     $family = shift;
@@ -642,7 +643,6 @@ sub initialize( $ ) {
 }
 
 INIT {
-    initialize( F_IPV4 );
     #
     # These variables appear within single quotes in shorewall.conf -- add them to ENV
     # so that read_a_line doesn't have to be smart enough to parse that usage.

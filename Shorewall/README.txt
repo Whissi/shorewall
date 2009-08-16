@@ -1,1 +1,1 @@
-This is the Shorewall 4.3 development branch of SVN.
+This is the Shorewall 4.4 stable branch of Git.

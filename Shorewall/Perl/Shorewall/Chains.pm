@@ -414,10 +414,11 @@ sub decr_cmd_level( $ ) {
 #
 
 sub add_commands ( $$;@ ) {
-    my $chainref = shift @_;
+    my $chainref    = shift @_;
+    my $indentation = '    ' x $chainref->{cmdlevel};
 
     for ( @_ ) {
-	push @{$chainref->{rules}}, join ('', '    ' x $chainref->{cmdlevel} , $_ );
+	push @{$chainref->{rules}}, join ('', $indentation , $_ );
     }
 
     $chainref->{referenced} = 1;

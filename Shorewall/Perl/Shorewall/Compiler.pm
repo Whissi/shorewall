@@ -571,7 +571,7 @@ sub compiler {
     }
 
     #
-    # Now that we know the address family that we are dealing with (IPv4/IPv6), we can initialize the other modules' globals
+    # Now that we know the address family (IPv4/IPv6), we can initialize the other modules' globals
     #
     initialize_package_globals;
 

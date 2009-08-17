@@ -38,7 +38,7 @@ our @EXPORT_OK = qw( );
 our $VERSION = '4.3_7';
 
 #
-# Called by the compiler
+# Called by the compiler to [re-]initialize this module's state
 #
 sub initialize() {
     our $jumpchainref;

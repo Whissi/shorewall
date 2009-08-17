@@ -504,10 +504,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
 	fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
 	if [ -d $SHOREWALLDIR/Perl ]; then
-	    [ $(eval perl -e "'use lib \"$SHOREWALLDIR/Perl\"; use Shorewall::Config qw(:internal); print \"\$globals{VERSION}\n\"'") = $VERSION ] || \
+	    [ $(eval perl -e "'use lib \"$SHOREWALLDIR/Perl\"; use Shorewall::Config qw(:internal); Shorewall::Config::initialize(4); print \"\$globals{VERSION}\n\"'") = $VERSION ] || \
 		fatal_error "Perl Config.pm has wrong version"
 	else
-	    [ $(eval perl -e "'use lib \"$SHOREWALLDIR\"; use Shorewall::Config qw(:internal); print \"\$globals{VERSION}\n\"'") = $VERSION ] || \
+	    [ $(eval perl -e "'use lib \"$SHOREWALLDIR\"; use Shorewall::Config qw(:internal); Shorewall::Config::initialize(4); print \"\$globals{VERSION}\n\"'") = $VERSION ] || \
 		fatal_error "Perl Config.pm has wrong version"
 	fi
     fi

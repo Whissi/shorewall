@@ -105,11 +105,11 @@ our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 # Rather than initializing globals in an INIT block or during declaration, 
 # we initialize them in a function. This is done for two reasons:
 #
-#   1. Proper initialization usually depends on the address family which isn't
+#   1. Proper initialization depends on the address family which isn't
 #      known until the compiler has started.
 #
 #   2. The compiler can run multiple times in the same process so it has to be
-#      able to re-initialize all of its dependent modules.
+#      able to re-initialize its dependent modules' state.
 #
 sub initialize( $ ) {
     $family = shift;

@@ -153,6 +153,18 @@ Shorewall 4.4.1
 
 10) The name 'any' is now reserved and may not be used as a zone name.
 
+11) Perl module initialization has changed in Shorewall
+    4.4.1. Previously, each Shorewall Perl package would initialize its
+    global variables for IPv4 in an INIT block. Then, if the
+    compilation turned out to be for IPv6,
+    Shorewall::Compiler::compiler() would reinitialize them for IPv6.
+
+    Beginning in Shorewall 4.4.1, the modules do not initialize
+    themselves in an INIT block. So if you use Shorewall modules
+    outside of the Shorewall compilation environment, then you must
+    explicitly call the module's 'initialize' function after the module
+    has been loaded.
+
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
 ----------------------------------------------------------------------------

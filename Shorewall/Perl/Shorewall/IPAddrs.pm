@@ -80,6 +80,12 @@ our $VERSION = '4.3_7';
 our @allipv4 = ( '0.0.0.0/0' );
 our @allipv6 = ( '::/0' );
 our $family;
+our $allip;
+our $valid_address;
+our $validate_address;
+our $validate_net;
+our $validate_range;
+our $validate_host;
 
 use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       ALLIPv6             => '::/0' ,
@@ -101,20 +107,10 @@ use constant { ALLIPv4             => '0.0.0.0/0' ,
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
-#
-# Rather than initializing globals in an INIT block or during declaration, 
-# we initialize them in a function. This is done for two reasons:
-#
-#   1. Proper initialization depends on the address family which isn't
-#      known until the compiler has started.
-#
-#   2. The compiler can run multiple times in the same process so it has to be
-#      able to re-initialize its dependent modules' state.
-#
-sub initialize( $ ) {
-    $family = shift;
-}
 
+#
+# Note: initialize() is declared at the bottom of the file
+#
 sub vlsm_to_mask( $ ) {
     my $vlsm = $_[0];
 
@@ -626,31 +622,61 @@ sub validate_icmp6( $ ) {
 }
 
 sub ALLIP() {
-    $family == F_IPV4 ? ALLIPv4 : ALLIPv6;
+    $allip;
 }
 
 sub allip() {
-    $family == F_IPV4 ? ALLIPv4 : ALLIPv6;
+    $allip;
 }    
 
 sub valid_address ( $ ) {
-    $family == F_IPV4 ? valid_4address( $_[0] ) :  valid_6address( $_[0] );
+    $valid_address->(@_);
 }
 
 sub validate_address ( $$ ) {
-    $family == F_IPV4 ? validate_4address( $_[0], $_[1] ) :  validate_6address( $_[0], $_[1] );
+    $validate_address->(@_);
 }
 
 sub validate_net ( $$ ) {
-    $family == F_IPV4 ? validate_4net( $_[0], $_[1] ) :  validate_6net( $_[0], $_[1] );
+    $validate_net->(@_);
 }
 
 sub validate_range ($$ ) { 
-    $family == F_IPV4 ? validate_4range( $_[0], $_[1] ) :  validate_6range( $_[0], $_[1] );
+    $validate_range->(@_);
 }
 
 sub validate_host ($$ ) { 
-    $family == F_IPV4 ? validate_4host( $_[0], $_[1] ) :  validate_6host( $_[0], $_[1] );
+    $validate_host->(@_);
+}
+
+#
+# Rather than initializing globals in an INIT block or during declaration, 
+# we initialize them in a function. This is done for two reasons:
+#
+#   1. Proper initialization depends on the address family which isn't
+#      known until the compiler has started.
+#
+#   2. The compiler can run multiple times in the same process so it has to be
+#      able to re-initialize its dependent modules' state.
+#
+sub initialize( $ ) {
+    $family = shift;
+
+    if ( $family == F_IPV4 ) {
+	$allip            = ALLIPv4;
+	$valid_address    = \&valid_4address;
+	$validate_address = \&validate_4address;
+	$validate_net     = \&validate_4net;
+	$validate_range   = \&validate_4range;
+	$validate_host    = \&validate_4host;
+    } else {
+	$allip            = ALLIPv6;
+	$valid_address    = \&valid_6address;
+	$validate_address = \&validate_6address;
+	$validate_net     = \&validate_6net;
+	$validate_range   = \&validate_6range;
+	$validate_host    = \&validate_6host;
+    }	
 }
 
 1;

@@ -784,9 +784,12 @@ sub use_input_chain($) {
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
     #
-    # We must use the interfaces's chain if the interface is associated with multiple zone nets or
-    # if the interface has the 'upnpclient' option. In the latter case, the chain's rules will contain
-    # run-time code which cannot currently be transferred to a zone-oriented chain by move_rules().
+    # We must use the interfaces's chain if:
+    # 
+    # - the interface is associated with multiple zone nets; or
+    # - the interface has the 'upnpclient' option.
+    #
+    # In the latter case, the chain's rules will contain run-time code which cannot currently be transferred to a zone-oriented chain by move_rules().
     #    
     return 1 if $nets > 1 || $interfaceref->{options}{upnpclient};
     #
@@ -1009,9 +1012,7 @@ sub ensure_mangle_chain($) {
     my $chain = $_[0];
 
     my $chainref = ensure_chain 'mangle', $chain;
-
     $chainref->{referenced} = 1;
-
     $chainref;
 }
 
@@ -1019,9 +1020,7 @@ sub ensure_nat_chain($) {
     my $chain = $_[0];
 
     my $chainref = ensure_chain 'nat', $chain;
-
     $chainref->{referenced} = 1;
-
     $chainref;
 }
 
@@ -1075,7 +1074,7 @@ sub ensure_manual_chain($) {
 }
 
 #
-# Add all builtin chains to the chain table
+# Add all builtin chains to the chain table -- it is separate from initialize() for purely historical reasons.
 #
 #
 sub initialize_chain_table()
@@ -1356,6 +1355,8 @@ sub port_count( $ ) {
 
 #
 # Handle parsing of PROTO, DEST PORT(S) , SOURCE PORTS(S). Returns the appropriate match string.
+#
+# If the optional argument is true, port lists > 15 result in a fatal error.
 #
 sub do_proto( $$$;$ )
 {

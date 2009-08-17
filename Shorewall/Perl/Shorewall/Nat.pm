@@ -215,7 +215,7 @@ sub process_one_masq( )
 		$addresses =~ s/:persistent$// and $persistent = '--persistent ';
 		$addresses =~ s/:random$//     and $randomize  = '--random ';
 
-		require_capability 'PERSISTENT_SNAT', ':random', 's' if $randomize;
+		require_capability 'PERSISTENT_SNAT', ':persistent', 's' if $persistent;
 
 		if ( $addresses =~ /^SAME/ ) {
 		    fatal_error "The SAME target is no longer supported";

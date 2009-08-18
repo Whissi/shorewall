@@ -1851,8 +1851,8 @@ sub match_source_net( $;$ ) {
 
     $restriction |= NO_RESTRICT;
 
-    if ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ||
-	 $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) {
+    if ( ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) ||
+	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
@@ -1878,8 +1878,8 @@ sub match_source_net( $;$ ) {
 sub match_dest_net( $ ) {
     my $net = $_[0];
 
-    if ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ||
-	 $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) {
+    if ( ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) ||
+	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
@@ -2938,14 +2938,10 @@ sub create_netfilter_load( $ ) {
 
     my @table_list;
 
-    if ( $family == F_IPV4 ) {
-	push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-	push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-	push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
-	push @table_list, 'filter';
-    } else {
-	@table_list = qw( raw mangle filter );
-    }
+    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
+    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
+    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+    push @table_list, 'filter';
 
     $mode = NULL_MODE;
 
@@ -3168,14 +3164,10 @@ sub create_stop_load( $ ) {
 
     my @table_list;
 
-    if ( $family == F_IPV4 ) {
-	push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-	push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-	push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
-	push @table_list, 'filter';
-    } else {
-	@table_list = qw( raw mangle filter );
-    }
+    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
+    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
+    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+    push @table_list, 'filter';
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
     my $UTILITY = $family == F_IPV4 ? 'IPTABLES_RESTORE' : 'IP6TABLES_RESTORE';

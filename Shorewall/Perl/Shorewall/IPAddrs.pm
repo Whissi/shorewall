@@ -79,8 +79,8 @@ our $VERSION = '4.3_7';
 #
 our @allipv4 = ( '0.0.0.0/0' );
 our @allipv6 = ( '::/0' );
-our $family;
 our $allip;
+our @allip;
 our $valid_address;
 our $validate_address;
 our $validate_net;
@@ -391,7 +391,6 @@ my %icmp_types = ( any                          => 'any',
 		   'address-mask-reply'         => 18 );
 
 sub validate_icmp( $ ) {
-    fatal_error "IPv4 ICMP not allowed in an IPv6 Rule" unless $family == F_IPV4;
 
     my $type = $_[0];
 
@@ -607,7 +606,6 @@ my %ipv6_icmp_types = ( any                          => 'any',
 
 
 sub validate_icmp6( $ ) {
-    fatal_error "IPv6 ICMP not allowed in an IPv4 Rule" unless $family == F_IPV6;
     my $type = $_[0];
 
     my $value = $ipv6_icmp_types{$type};
@@ -626,7 +624,7 @@ sub ALLIP() {
 }
 
 sub allip() {
-    $allip;
+    @allip;
 }    
 
 sub valid_address ( $ ) {
@@ -660,10 +658,11 @@ sub validate_host ($$ ) {
 #      able to re-initialize its dependent modules' state.
 #
 sub initialize( $ ) {
-    $family = shift;
+    my $family = shift;
 
     if ( $family == F_IPV4 ) {
 	$allip            = ALLIPv4;
+	@allip            = @allipv4;
 	$valid_address    = \&valid_4address;
 	$validate_address = \&validate_4address;
 	$validate_net     = \&validate_4net;
@@ -671,6 +670,7 @@ sub initialize( $ ) {
 	$validate_host    = \&validate_4host;
     } else {
 	$allip            = ALLIPv6;
+	@allip            = @allipv6;
 	$valid_address    = \&valid_6address;
 	$validate_address = \&validate_6address;
 	$validate_net     = \&validate_6net;

@@ -834,8 +834,8 @@ determine_capabilities() {
     if [ -n "$NAT_ENABLED" ]; then
 	if qt $IPTABLES -t nat -N $chain; then
 	    qt $IPTABLES -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
-	    $IPTABLES -t nat -F $chain
-	    $IPTABLES -t nat -X $chain
+	    qt $IPTABLES -t nat -F $chain
+	    qt $IPTABLES -t nat -X $chain
 	fi
     fi
 

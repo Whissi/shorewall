@@ -56,7 +56,7 @@ our @EXPORT = qw( merge_levels
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.3_7';
+our $VERSION = '4.4_1';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.

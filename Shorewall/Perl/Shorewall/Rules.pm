@@ -63,7 +63,7 @@ my %rules_commands = ( COMMENT => 0,
 		       SECTION => 2 );
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -525,7 +525,7 @@ sub add_common_rules() {
 	    add_rule $rejectref, '-j REJECT --reject-with icmp-host-prohibited';
 	} else {
 	    add_rule $rejectref, '-p 58 -j REJECT --reject-with icmp6-addr-unreachable';
-	    add_rule $rejectref, '-j REJECT --reject-with icmp6-adm-prohibited'; 
+	    add_rule $rejectref, '-j REJECT --reject-with icmp6-adm-prohibited';
 	}
     } else {
 	add_rule $rejectref , '-j REJECT';
@@ -628,7 +628,7 @@ sub add_common_rules() {
 		my $variable = get_interface_gateway $interface;
 
 		if ( interface_is_optional $interface ) {
-		    add_commands( $chainref, 
+		    add_commands( $chainref,
 				  qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
 				  qq(    echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3) ,
 				  qq(fi) );
@@ -676,7 +676,7 @@ sub setup_mac_lists( $ ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 
 	    if ( $family == F_IPV4 ) {
-		add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN' 
+		add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
 		    if $table eq 'mangle'  && get_interface_option( $interface, 'dhcp');
 	    } else {
 		#
@@ -805,7 +805,7 @@ sub setup_mac_lists( $ ) {
 			} else {
 			    my $variable1 = get_interface_bcasts $bridge;
 
-			    add_commands( $chainref, 
+			    add_commands( $chainref,
 					  "    for address1 in $variable1; do" ,
 					  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
 					  "    done" );
@@ -888,7 +888,7 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 	    if ( $msource eq '-' ) {
 		$msource = $source || '';
 	    } elsif ( $msource =~ s/^DEST:?// ) {
-		$msource = merge_macro_source_dest $msource, $dest; 
+		$msource = merge_macro_source_dest $msource, $dest;
 	    } else {
 		$msource =~ s/^SOURCE:?//;
 		$msource = merge_macro_source_dest $msource, $source;
@@ -910,17 +910,17 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 	    $mdest = '';
 	}
 
-	process_rule1( 
-		      $mtarget, 
-		      $msource, 
-		      $mdest, 
-		      merge_macro_column( $mproto,    $proto ) , 
+	process_rule1(
+		      $mtarget,
+		      $msource,
+		      $mdest,
+		      merge_macro_column( $mproto,    $proto ) ,
 		      merge_macro_column( $mports,    $ports ) ,
 		      merge_macro_column( $msports,   $sports ) ,
-		      merge_macro_column( $morigdest, $origdest ) , 
+		      merge_macro_column( $morigdest, $origdest ) ,
 		      merge_macro_column( $mrate,     $rate ) ,
 		      merge_macro_column( $muser,     $user ) ,
-		      $mark, 
+		      $mark,
 		      $connlimit,
 		      $time,
 		      $wildcard
@@ -995,7 +995,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	return;
 
     } elsif ( $actiontype & NFQ ) {
-	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' ); 
+	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
 	my $paramval = $param eq '' ? 0 : numeric_value( $param );
 	fatal_error "Invalid value ($param) for NFQUEUE queue number" unless defined($paramval) && $paramval <= 65535;
 	$action = "NFQUEUE --queue-num $paramval";
@@ -1074,7 +1074,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     if ( $actiontype & NATONLY ) {
 	unless ( $destzone eq '-' || $destzone eq '' ) {
 	    $destref = defined_zone( $destzone );
-	    
+
 	    if ( $destref ) {
 		warning_message "Destination zone ($destzone) ignored";
 	    } else {
@@ -1161,14 +1161,14 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	require_capability( 'NAT_ENABLED' , "$basictarget rules", '' );
 	#
-	# Isolate server port 
+	# Isolate server port
 	#
 	if ( $dest =~ /^(.*)(:(.+))$/ ) {
 	    #
 	    # Server IP and Port
 	    #
 	    $server = $1;      # May be empty
-	    $serverport = $3;  # Not Empty due to RE 
+	    $serverport = $3;  # Not Empty due to RE
 	    $origdstports = $ports;
 
 	    if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
@@ -1297,7 +1297,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	my $nonat_chain;
 
 	my $chn;
-	
+
 	if ( $sourceref->{type} == FIREWALL ) {
 	    $nonat_chain = $nat_table->{OUTPUT};
 	} else {
@@ -1358,7 +1358,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	if ( $chn && ${$nonat_chain->{rules}}[-1] eq "-A -j $tgt" ) {
 	    #
-	    # It was -- delete that rule 
+	    # It was -- delete that rule
 	    #
 	    pop @{$nonat_chain->{rules}};
 	    #
@@ -1413,7 +1413,7 @@ sub process_rule ( ) {
 	process_comment;
 	return 1;
     }
-    
+
     if ( $target eq 'SECTION' ) {
 	#
 	# read_a_line has already verified that there are exactly two tokens on the line
@@ -1422,7 +1422,7 @@ sub process_rule ( ) {
 	fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
 	$sectioned = 1;
 	$sections{$source} = 1;
-	
+
 	if ( $source eq 'RELATED' ) {
 	    $sections{ESTABLISHED} = 1;
 	    finish_section 'ESTABLISHED';
@@ -1430,7 +1430,7 @@ sub process_rule ( ) {
 	    @sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
 	    finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
 	}
-	
+
 	$section = $source;
 	return 1;
     }
@@ -1459,7 +1459,7 @@ sub process_rule ( ) {
     #
     # Handle Wildcards
     #
-    
+
     if ( $source =~ /^all[-+]/ ) {
 	if ( $source eq 'all+' ) {
 	    $source = 'all';
@@ -1506,7 +1506,7 @@ sub process_rule ( ) {
 	}
 
 	unshift @source, firewall_zone if $includesrcfw;
-    }	
+    }
 
     if ( $dest eq 'all' ) {
 	if ( $anydest ) {
@@ -1516,7 +1516,7 @@ sub process_rule ( ) {
 	}
 
 	unshift @dest, firewall_zone if $includedstfw;
-    }	
+    }
 
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
@@ -1806,7 +1806,7 @@ sub generate_matrix() {
 
 			clearrule;
 
-			next if $hostref->{options}{destonly}; 
+			next if $hostref->{options}{destonly};
 
 			my $source = match_source_net $net;
 
@@ -1996,11 +1996,11 @@ sub generate_matrix() {
 							     $excl3ref ,
 							     dest_exclusion( $host1ref->{exclusions}, $chain ),
 							     0,
-							     join( '', 
-								   $match_source_dev, 
-								   match_dest_dev($interface1), 
-								   match_source_net($net), 
-								   match_dest_net($net1), 
+							     join( '',
+								   $match_source_dev,
+								   match_dest_dev($interface1),
+								   match_source_net($net),
+								   match_dest_net($net1),
 								   $ipsec_out_match )
 							    );
 						}
@@ -2084,11 +2084,11 @@ sub setup_mss( ) {
 	if ( $capabilities{POLICY_MATCH} ) {
 	    $in_match  = '-m policy --pol none --dir in ';
 	    $out_match = '-m policy --pol none --dir out ';
-	} 
+	}
 
 	for ( @$interfaces ) {
 	    my $mss      = get_interface_option( $_, 'mss' );
-	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : ''; 
+	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
 	    add_rule $chainref, "-o $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
 	    add_rule $chainref, "-o $_ -j RETURN" if $clampmss;
 	    add_rule $chainref, "-i $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${in_match}-j TCPMSS --set-mss $mss";
@@ -2222,7 +2222,7 @@ EOF
 	  );
 
     my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;
-    
+
     add_rule $filter_table->{$_}, '-m state --state ESTABLISHED,RELATED -j ACCEPT' for @chains;
 
     if ( $family == F_IPV6 ) {
@@ -2274,7 +2274,7 @@ EOF
     } else {
 	for my $interface ( all_bridges ) {
 	    emit "do_iptables -A FORWARD -p 58 -i $interface -o $interface -j ACCEPT";
-	}	    
+	}
 
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit( 'echo 1 > /proc/sys/net/ipv6/conf/all/forwarding',
@@ -2291,7 +2291,7 @@ EOF
     emit '
     run_stopped_exit';
 
-    my @ipsets = all_ipsets; 
+    my @ipsets = all_ipsets;
 
     if ( @ipsets ) {
 	emit <<'EOF';
@@ -2306,8 +2306,8 @@ EOF
     fi
 EOF
     }
-    
-    emit ' 
+
+    emit '
     set_state "Stopped"
 
     logger -p kern.info "$PRODUCT Stopped"

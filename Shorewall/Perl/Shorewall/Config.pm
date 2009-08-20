@@ -54,7 +54,7 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shorewall);
 
-our %EXPORT_TAGS = ( internal => [ qw( create_temp_object 
+our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       finalize_object
 				       enable_object
 				       disable_object
@@ -123,7 +123,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 				       MIN_VERBOSITY
 				       MAX_VERBOSITY
-				     ) ] );	       
+				     ) ] );
 
 Exporter::export_ok_tags('internal');
 
@@ -202,9 +202,9 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MULTIPORT       => 'Multi-port Match' ,
 		 XMULTIPORT      => 'Extended Multi-port Match',
 		 CONNTRACK_MATCH => 'Connection Tracking Match',
-		 OLD_CONNTRACK_MATCH => 
+		 OLD_CONNTRACK_MATCH =>
 		                    'Old conntrack match syntax',
-		 NEW_CONNTRACK_MATCH => 
+		 NEW_CONNTRACK_MATCH =>
 		                    'Extended Connection Tracking Match',
 		 USEPKTTYPE      => 'Packet Type Match',
 		 POLICY_MATCH    => 'Policy Match',
@@ -285,7 +285,7 @@ use constant { MIN_VERBOSITY => -1,
 our %validlevels;             # Valid log levels.
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -301,7 +301,7 @@ sub initialize( $ ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall  Shorewall iptables  IPTABLES );
     } else {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall6 Shorewall6 ip6tables IP6TABLES );
-    }	
+    }
 
     ( $command, $doing, $done ) = qw/compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
@@ -466,7 +466,7 @@ sub initialize( $ ) {
 		         LOGMARK => 'LOGMARK' );
     } else {
 	$globals{SHAREDIR} = '/usr/share/shorewall6';
-	$globals{CONFDIR}  = '/etc/shorewall6';	
+	$globals{CONFDIR}  = '/etc/shorewall6';
 	$globals{PRODUCT}  = 'shorewall6';
 
 	%config =
@@ -874,9 +874,9 @@ sub set_log ( $$ ) {
 	$log_verbose = $value;
     }
 
-    if ( $l && $log_verbose >= 0 ) {	
+    if ( $l && $log_verbose >= 0 ) {
 	unless ( open $log , '>>' , $l ) {
-	    $log = undef; 
+	    $log = undef;
 	    fatal_error "Unable to open STARTUP_LOG ($l) for writing: $!";
 	}
     } else {
@@ -926,7 +926,7 @@ sub progress_message {
 	if ( $log_verbose > 1 ) {
 	    our @localtime;
 
-	    @localtime = localtime unless $havelocaltime; 
+	    @localtime = localtime unless $havelocaltime;
 
 	    printf $log '%s %2d %2d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	    print $log "${leading}${line}\n";
@@ -945,7 +945,7 @@ sub progress_message_nocompress {
     if ( $log_verbose > 1 ) {
 	our @localtime;
 
-	@localtime = localtime unless $havelocaltime; 
+	@localtime = localtime unless $havelocaltime;
 
 	printf $log '%s %2d %2d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	print $log "@_\n";
@@ -966,7 +966,7 @@ sub progress_message2 {
     if ( $log_verbose > 0 ) {
 	our @localtime;
 
-	@localtime = localtime unless $havelocaltime; 
+	@localtime = localtime unless $havelocaltime;
 
 	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 	print $log "@_\n";
@@ -1036,7 +1036,7 @@ sub copy( $ ) {
 		$lastlineblank = 1;
 	    } else {
 		if  ( $indent ) {
-		    s/^(\s*)/$indent1$1$indent2/; 
+		    s/^(\s*)/$indent1$1$indent2/;
 		    s/        /\t/ if $indent2;
 		}
 
@@ -1368,7 +1368,7 @@ sub pop_include() {
     } else {
 	$currentfile = undef;
     }
-}    
+}
 
 #
 # This function is normally called below in read_a_line() when EOF is reached. Clients of the
@@ -1425,18 +1425,18 @@ sub shorewall {
 }
 
 #
-# We don't announce that we are checking/compiling a file until we determine that the file contains 
+# We don't announce that we are checking/compiling a file until we determine that the file contains
 # at least one non-blank, non-commentary line.
 #
 # The argument to this function may be either a scalar or a function reference. When the first
-# non-blank/non-commentary line is reached: 
+# non-blank/non-commentary line is reached:
 #
 # - if a function reference was passed to first_entry(), that function is called
 # - otherwise, the argument to first_entry() is passed to progress_message2().
 #
 # We do this processing in read_a_line() rather than in the higher-level routines because
 # Embedded Shell/Perl scripts are processed out of read_a_line(). If we were to defer announcement
-# until we get back to the caller of read_a_line(), we could issue error messages about parsing and 
+# until we get back to the caller of read_a_line(), we could issue error messages about parsing and
 # running scripts in the file before we'd even indicated that we are processing it.
 #
 sub first_entry( $ ) {
@@ -1445,7 +1445,7 @@ sub first_entry( $ ) {
     if ( $reftype ) {
 	fatal_error "Invalid argument to first_entry()" unless $reftype eq 'CODE';
     }
-}   
+}
 
 sub embedded_shell( $ ) {
     my $multiline = shift;
@@ -1485,7 +1485,7 @@ sub embedded_shell( $ ) {
 sub embedded_perl( $ ) {
     my $multiline = shift;
 
-    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config qw/shorewall/;\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );		
+    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config qw/shorewall/;\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
 
     if ( $multiline ) {
 	#
@@ -1516,9 +1516,9 @@ sub embedded_perl( $ ) {
 	}
 
 	unless ( defined $return ) {
-	    fatal_error "Perl Script failed: $!" if $!; 
+	    fatal_error "Perl Script failed: $!" if $!;
 	    fatal_error "Perl Script failed";
-	} 
+	}
 
 	fatal_error "Perl Script Returned False";
     }
@@ -2013,7 +2013,7 @@ sub determine_capabilities( $ ) {
 
 	$capabilities{CLASSIFY_TARGET} = qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
 	$capabilities{IPMARK_TARGET}   = qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
-	
+
 	qt1( "$iptables -t mangle -F $sillyname" );
 	qt1( "$iptables -t mangle -X $sillyname" );
 
@@ -2272,7 +2272,7 @@ sub get_configuration( $ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
-    check_trivalue ( 'ROUTE_FILTER',  '' );    fatal_error "ROUTE_FILTER=On is not supported in IPv6" if $config{ROUTE_FILTER} eq 'on' && $family == F_IPV6; 
+    check_trivalue ( 'ROUTE_FILTER',  '' );    fatal_error "ROUTE_FILTER=On is not supported in IPv6" if $config{ROUTE_FILTER} eq 'on' && $family == F_IPV6;
 
     if ( $family == F_IPV4 ) {
 	check_trivalue ( 'LOG_MARTIANS',  'on' );
@@ -2517,7 +2517,7 @@ sub append_file( $;$ ) {
 	    } else {
 		#
 		# Include progress message -- Pretend progress_message call was in the file
-		#                             
+		#
 		$result = 1;
 		save_progress_message "Processing $user_exit ...";
 		copy1 $user_exit;
@@ -2544,9 +2544,9 @@ sub run_user_exit( $ ) {
 	    fatal_error "Couldn't parse $file: $@" if $@;
 
 	    unless ( defined $return ) {
-		fatal_error "Couldn't do $file: $!" if $!;    
+		fatal_error "Couldn't do $file: $!" if $!;
 		fatal_error "Couldn't do $file";
-	    }    
+	    }
 
 	    fatal_error "$file returned a false value";
 	}
@@ -2662,7 +2662,7 @@ END {
     #
     unlink $tempfile       if $tempfile;
     unlink $scriptfilename if $scriptfilename;
-    unlink $_ for @tempfiles; 
+    unlink $_ for @tempfiles;
 }
 
 1;

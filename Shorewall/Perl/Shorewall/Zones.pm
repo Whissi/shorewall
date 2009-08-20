@@ -164,7 +164,7 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       OBSOLETE_IF_OPTION => 5,
 	       IPLIST_IF_OPTION   => 6,
 	       MASK_IF_OPTION     => 7,
-	       
+
 	       IF_OPTION_ZONEONLY => 8,
 	       IF_OPTION_HOST     => 16,
 	   };
@@ -174,7 +174,7 @@ our %validinterfaceoptions;
 our %validhostoptions;
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -326,7 +326,7 @@ sub set_super( $ );
 
 sub set_super( $ ) {
     my $zoneref = shift;
-    
+
     unless ( $zoneref->{options}{super} ) {
 	$zoneref->{options}{super} = 1;
 	set_super( $zones{$_} ) for @{$zoneref->{parents}};
@@ -358,7 +358,7 @@ sub process_zone( \$ ) {
     fatal_error "Invalid zone name ($zone)"      unless $zone =~ /^[a-z]\w*$/i && length $zone <= $globals{MAXZONENAMELENGTH};
     fatal_error "Invalid zone name ($zone)"      if $reservedName{$zone} || $zone =~ /^all2|2all$/;
     fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
-    
+
     if ( $type =~ /ipv([46])?/i ) {
 	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
 	$type = IP;
@@ -391,11 +391,11 @@ sub process_zone( \$ ) {
 	    }
 	}
     }
-    
+
     for ( $options, $in_options, $out_options ) {
 	$_ = '' if $_ eq '-';
     }
-    
+
     $zones{$zone} = { type       => $type,
 		      parents    => \@parents,
 		      bridge     => '',
@@ -410,9 +410,9 @@ sub process_zone( \$ ) {
 		      children   => [] ,
 		      hosts      => {}
 		    };
-    
+
     return $zone;
-    
+
 }
 #
 # Parse the zones file.
@@ -476,7 +476,7 @@ sub zone_report()
 
     if ( $family == F_IPV4 ) {
 	@translate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4' );
-    } else { 
+    } else {
 	@translate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6' );
     }
 
@@ -530,7 +530,7 @@ sub dump_zone_contents()
 
     if ( $family == F_IPV4 ) {
 	@xlate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4' );
-    } else { 
+    } else {
 	@xlate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6' );
     }
 
@@ -629,7 +629,7 @@ sub add_group_to_zone($$$$$)
 
 	if ( substr( $host, 0, 1 ) eq '+' ) {
 	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+[a-zA-Z]\w*$/;
-	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', ''); 
+	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', '');
 	} else {
 	    validate_host $host, 0;
 	}
@@ -767,7 +767,7 @@ sub process_interface( $ ) {
 
     unless ( $networks eq '' || $networks eq 'detect' ) {
 	my @broadcasts = split_list $networks, 'address';
-	
+
 	for my $address ( @broadcasts ) {
 	    fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
 	}
@@ -788,7 +788,7 @@ sub process_interface( $ ) {
     if ( $options ) {
 
 	my %hostoptions = ( dynamic => 0 );
-	    
+
 	for my $option (split_list1 $options, 'option' ) {
 	    next if $option eq '-';
 
@@ -846,13 +846,13 @@ sub process_interface( $ ) {
 		# Add all IP to the front of a list if the list begins with '!'
 		#
 		$value = join ',' , ALLIP , $value if $value =~ /^!/;
-		
+
 		if ( $value eq 'dynamic' ) {
 		    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
 		    $value = "+${zone}_${interface}";
 		    $hostoptions{dynamic} = 1;
 		    $ipsets{"${zone}_${interface}"} = 1;
-		}   
+		}
 		#
 		# Convert into a Perl array reference
 		#
@@ -885,7 +885,7 @@ sub process_interface( $ ) {
 				broadcasts => $broadcasts ,
 				options    => \%options };
 
-    $nets = [ allip ] unless $nets; 
+    $nets = [ allip ] unless $nets;
 
     add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref ) if $zone;
 
@@ -1150,9 +1150,9 @@ sub process_host( ) {
 	$hosts = "+${zone}_${interface}";
 	$optionsref->{dynamic} = 1;
 	$ipsets{"${zone}_${interface}"} = 1;
-	
+
     }
-   
+
     add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 
     progress_message "   Host \"$currentline\" validated";

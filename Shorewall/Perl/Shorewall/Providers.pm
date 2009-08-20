@@ -62,7 +62,7 @@ our $family;
 use constant { ROUTEMARKED_SHARED => 1, ROUTEMARKED_UNSHARED => 2 };
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -117,7 +117,7 @@ sub setup_route_marking() {
 	    } else {
 		add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
 	    }
-		
+
 	    incr_cmd_level( $chainref );
 	}
 
@@ -270,7 +270,7 @@ sub add_a_provider( ) {
     }
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
-    
+
     my $provider    = chain_base $table;
     my $base        = uc chain_base $interface;
     my $gatewaycase = '';
@@ -395,7 +395,7 @@ sub add_a_provider( ) {
     my $realm = '';
 
     fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
-    
+
     if ( $shared ) {
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
@@ -408,7 +408,7 @@ sub add_a_provider( ) {
 	} else {
 	    start_provider( $table, $number, "if interface_is_usable $interface; then" );
 	}
-	
+
 	$provider_interfaces{$interface} = $table;
 
 	emit "run_ip route add default dev $interface table $number" if $gatewaycase eq 'none';
@@ -537,7 +537,7 @@ sub add_an_rtrule( ) {
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
     if ( $dest eq '-' ) {
-	$dest = 'to ' . ALLIP; 
+	$dest = 'to ' . ALLIP;
     } else {
 	validate_net( $dest, 0 );
 	$dest = "to $dest";
@@ -599,12 +599,12 @@ sub setup_null_routing() {
     for ( rfc1918_networks ) {
 	emit( qq(run_ip route replace unreachable $_) );
 	emit( qq(echo "qt \$IP -$family route del unreachable $_" >> \${VARDIR}/undo_routing) );
-    } 
+    }
 }
 
 sub start_providers() {
     require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
-    
+
     emit  ( '#',
 	    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
 	    '#',
@@ -616,7 +616,7 @@ sub start_providers() {
 	       '# Save current routing table database so that it can be restored later',
 	       '#',
 	       'cp /etc/iproute2/rt_tables ${VARDIR}/' );
-	
+
     }
 
     emit  ( '#',
@@ -627,9 +627,9 @@ sub start_providers() {
 	    '# Initialize the file that holds \'undo\' commands',
 	    '#',
 	    '> ${VARDIR}/undo_routing' );
-    
+
     save_progress_message 'Adding Providers...';
-    
+
     emit 'DEFAULT_ROUTE=';
     emit 'FALLBACK_ROUTE=';
     emit '';
@@ -660,7 +660,7 @@ sub finish_providers() {
 	} else {
 	    emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
 	}
-	
+
 	emit(   'fi',
 		'' );
     } else {
@@ -724,7 +724,7 @@ sub setup_providers() {
 	    first_entry "$doing $fn...";
 
 	    emit '';
-	    
+
 	    add_an_rtrule while read_a_line;
 	}
 
@@ -741,10 +741,10 @@ sub setup_providers() {
 	emit "\nif [ -z \"\$NOROUTES\" ]; then";
 
 	push_indent;
-	
+
 	emit "\nundo_routing";
 	emit 'restore_default_route';
-	
+
 	if ( $config{NULL_ROUTE_RFC1918} ) {
 	    emit  ( '#',
 		    '# Initialize the file that holds \'undo\' commands',
@@ -838,18 +838,18 @@ sub handle_stickiness( $ ) {
 
     if ( $havesticky ) {
 	fatal_error "There are SAME tcrules but no 'track' providers" unless @routemarked_providers;
-	
+
 
 	for my $providerref ( @routemarked_providers ) {
 	    my $interface = $providerref->{interface};
 	    my $base      = uc chain_base $interface;
 	    my $mark      = $providerref->{mark};
-	
+
 	    for ( grep /-j sticky/, @{$tcpreref->{rules}} ) {
 		my $stickyref = ensure_mangle_chain 'sticky';
 		my ( $rule1, $rule2 );
 		my $list = sprintf "sticky%03d" , $sticky++;
-		
+
 		for my $chainref ( $stickyref, $setstickyref ) {
 
 		    add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
@@ -863,7 +863,7 @@ sub handle_stickiness( $ ) {
 			$rule1 = $_;
 			$rule1 =~ s/-j sticky/-m mark --mark $mark\/$mask -m recent --name $list --set/;
 		    }
-		
+
 		    $rule1 =~ s/-A //;
 
 		    add_rule $chainref, $rule1;
@@ -874,7 +874,7 @@ sub handle_stickiness( $ ) {
 		    }
 
 		    decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
-		    
+
 		}
 	    }
 
@@ -895,7 +895,7 @@ sub handle_stickiness( $ ) {
 			$rule1 = $_;
 			$rule1 =~ s/-j sticko/-m mark --mark $mark -m recent --name $list --rdest --set/;
 		    }
-		
+
 		    $rule1 =~ s/-A //;
 
 		    add_rule $chainref, $rule1;
@@ -913,7 +913,7 @@ sub handle_stickiness( $ ) {
 
     if ( @routemarked_providers ) {
 	purge_jump $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
-	purge_jump $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};	
+	purge_jump $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
     }
 }
 1;

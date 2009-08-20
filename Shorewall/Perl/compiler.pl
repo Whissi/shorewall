@@ -105,11 +105,11 @@ my $result = GetOptions('h'               => \$help,
 usage(1) unless $result && @ARGV < 2;
 usage(0) if $help;
 
-compiler( object          => defined $ARGV[0] ? $ARGV[0] : '', 
-	  directory       => $shorewall_dir, 
-	  verbosity       => $verbose, 
+compiler( object          => defined $ARGV[0] ? $ARGV[0] : '',
+	  directory       => $shorewall_dir,
+	  verbosity       => $verbose,
 	  timestamp       => $timestamp,
-	  debug           => $debug, 
+	  debug           => $debug,
 	  export          => $export,
 	  chains          => $chains,
 	  log             => $log,

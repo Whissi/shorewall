@@ -202,7 +202,7 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 our $family;
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -340,7 +340,7 @@ sub process_tc_rule( ) {
 				fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
 				$mask2 = $m2;
 			    }
-				
+
 			    if ( defined $s ) {
 				$val = numeric_value ($s);
 				fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val < 128;
@@ -349,7 +349,7 @@ sub process_tc_rule( ) {
 			} else {
 			    fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless $cmd eq 'IPMARK';
 			}
-			    
+
 			$target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 		    }
 
@@ -385,12 +385,12 @@ sub process_tc_rule( ) {
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} ,
-				     do_proto( $proto, $ports, $sports) . 
-				     do_user( $user ) . 
-				     do_test( $testval, $mask ) . 
-				     do_length( $length ) . 
-				     do_tos( $tos ) . 
-				     do_connbytes( $connbytes ) . 
+				     do_proto( $proto, $ports, $sports) .
+				     do_user( $user ) .
+				     do_test( $testval, $mask ) .
+				     do_length( $length ) .
+				     do_tos( $tos ) .
+				     do_connbytes( $connbytes ) .
 				     do_helper( $helper ),
 				     $source ,
 				     $dest ,
@@ -506,7 +506,7 @@ sub validate_tc_device( ) {
     if ( @redirected ) {
 	fatal_error "IFB devices may not have IN-BANDWIDTH" if $inband ne '-' && $inband;
 	$classify = 1;
-    }	
+    }
 
     for my $rdevice ( @redirected ) {
 	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
@@ -557,7 +557,7 @@ sub convert_rate( $$$ ) {
 
 sub convert_delay( $ ) {
     my $delay = shift;
-    
+
     return 0 unless $delay;
     return $1 if $delay =~ /^(\d+)(ms)?$/;
     fatal_error "Invalid Delay ($delay)";
@@ -615,7 +615,7 @@ sub validate_tc_class( ) {
 		fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
 		$parentclass = $classnumber;
 		$classnumber = hex_value $subnumber;
-	    } 
+	    }
 
 	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
 	    fatal_error "Duplicate interface/class number ($devclass)" if defined $devnums[ $classnumber ];
@@ -667,13 +667,13 @@ sub validate_tc_class( ) {
 
     if ( $devref->{qdisc} eq 'hfsc' ) {
 	( my $trate , $dmax, $umax , my $rest ) = split ':', $rate , 4;
-	
+
 	fatal_error "Invalid RATE ($rate)" if defined $rest;
 
 	$rate = convert_rate ( $full, $trate, 'RATE' );
 	$dmax = convert_delay( $dmax );
 	$umax = convert_size( $umax );
-	fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax; 
+	fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax;
     } else {
 	$rate = convert_rate ( $full, $rate, 'RATE' );
     }
@@ -734,7 +734,7 @@ sub validate_tc_class( ) {
 		fatal_error q(Duplicate 'occurs')                                   if $tcref->{occurs} > 1;
 		fatal_error q(The 'occurs' option is not valid with 'default')      if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')          if @{$tcref->{tos}};
-		warning_message "MARK ($mark) is ignored on an occurring class"     if $mark ne '-'; 
+		warning_message "MARK ($mark) is ignored on an occurring class"     if $mark ne '-';
 
 		$tcref->{occurs} = $occurs;
 		$devref->{occurs} = 1;
@@ -746,7 +746,7 @@ sub validate_tc_class( ) {
 
     unless ( $devref->{classify} || $occurs > 1 ) {
 	fatal_error "Missing MARK" if $mark eq '-';
-	warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option"	if $devclass =~ /:/; 
+	warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option"	if $devclass =~ /:/;
     }
 
     $tcref->{flow}  = $devref->{flow}  unless $tcref->{flow};
@@ -780,7 +780,7 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 #
 sub process_tc_filter( ) {
     my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 2, 8, 'tcfilters file';
-    
+
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
@@ -831,13 +831,13 @@ sub process_tc_filter( ) {
 
 	$rule .= "\\\n  match ip tos $tosval $mask";
     }
-	
+
     if ( $length ne '-' ) {
 	my $len = numeric_value( $length ) || 0;
 	my $mask = $validlengths{$len};
 	fatal_error "Invalid LENGTH ($length)" unless $mask;
 	$rule .="\\\n   match u16 0x0000 $mask at 2";
-    }      
+    }
 
     my $protonumber = 0;
 
@@ -886,7 +886,7 @@ sub process_tc_filter( ) {
 	$rule     = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
-	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT" 
+	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT"
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
 
 	    for my $sportrange ( split_list $sportlist , 'port list' ) {
@@ -910,7 +910,7 @@ sub process_tc_filter( ) {
 		}
 	    }
 	} else {
-	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT" 
+	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT"
 		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
 
 	    for my $portrange ( split_list $portlist, 'port list' ) {
@@ -931,7 +931,7 @@ sub process_tc_filter( ) {
 			my ( $port, $mask ) = ( shift @portlist, shift @portlist );
 
 			my $rule1;
-			
+
 			if ( $protonumber == TCP ) {
 			    $rule1 = join( ' ', 'match tcp dst', hex_value( $port ), "0x$mask" );
 			} elsif ( $protonumber == UDP ) {
@@ -967,9 +967,9 @@ sub process_tc_filter( ) {
 					  "   flowid $devref->{number}:$class" );
 				}
 			    }
-			}   
+			}
 		    }
-		}    
+		}
 	    }
 	}
     }
@@ -984,7 +984,7 @@ sub process_tc_filter( ) {
 
     emit '';
 
-}   
+}
 
 sub setup_traffic_shaping() {
     our $lastrule = '';
@@ -1116,7 +1116,7 @@ sub setup_traffic_shaping() {
 	}
 
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
-	
+
 	if ( $devref->{qdisc} eq 'htb' ) {
 	    emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 	} else {
@@ -1129,7 +1129,7 @@ sub setup_traffic_shaping() {
 		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
 	    }
 	}
-	    
+
 	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit 127 perturb 10" ) if $tcref->{leaf} && ! $tcref->{pfifo};
 	#
 	# add filters

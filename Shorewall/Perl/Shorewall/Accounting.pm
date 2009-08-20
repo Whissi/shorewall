@@ -98,7 +98,7 @@ sub process_accounting_rule( ) {
 		} elsif ( $cmd ne 'JUMP' ) {
 		    accounting_error;
 		}
-	    } 
+	    }
 
 	    $target = jump_to_chain $action;
 	}

@@ -47,7 +47,7 @@ sub process_notrack_rule( $$$$$$ ) {
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
-    ( my $zone, $source) = split /:/, $source, 2;  
+    ( my $zone, $source) = split /:/, $source, 2;
     my $zoneref  = find_zone $zone;
     my $chainref = ensure_raw_chain( notrack_chain $zone );
     my $restriction = $zone eq firewall_zone ? OUTPUT_RESTRICT : PREROUTE_RESTRICT;

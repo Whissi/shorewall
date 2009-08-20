@@ -246,7 +246,7 @@ sub generate_script_2() {
 	} else {
 	    emit( 'start|restart|refresh|restore)' );
 	}
-	 
+
 	push_indent;
 
 	set_global_variables(1);
@@ -254,10 +254,10 @@ sub generate_script_2() {
 	handle_optional_interfaces;
 
 	emit ';;';
-    
+
 	if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
 	    pop_indent;
-	
+
 	    emit 'restore)';
 
 	    push_indent;
@@ -362,7 +362,7 @@ sub generate_script_3($) {
 
 	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
-	    emit ( '' , 
+	    emit ( '' ,
 		   '    if $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
 		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
 		   '    fi' );
@@ -381,7 +381,7 @@ sub generate_script_3($) {
 	       '' );
 
 	mark_firewall_not_started;
-		       	       
+
 	emit ('',
 	       'delete_proxyarp',
 	       ''
@@ -524,14 +524,14 @@ EOF
 #
 sub compiler {
 
-    my ( $objectfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) = 
+    my ( $objectfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) =
        ( '',          '',         -1,          '',          0,      '',       '',   -1 );
 
     $export = 0;
     $test   = 0;
 
     sub validate_boolean( $ ) {
-	 my $val = numeric_value( shift ); 
+	 my $val = numeric_value( shift );
 	 defined($val) && ($val >= 0) && ($val < 2);
      }
 
@@ -639,7 +639,7 @@ sub compiler {
     setup_notrack;
 
     enable_object;
-    
+
     if ( $objectfile ) {
 	#
 	# Place Header in the object
@@ -656,7 +656,7 @@ sub compiler {
 	    );
 
 	push_indent;
-    } 
+    }
     #
     # Do all of the zone-independent stuff
     #
@@ -692,7 +692,7 @@ sub compiler {
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
     enable_object;
-    
+
     if ( $objectfile ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
@@ -731,7 +731,7 @@ sub compiler {
 	#
 	# Setup Masquerading/SNAT
 	#
-	setup_masq; 
+	setup_masq;
 	#
 	# Setup Nat
 	#
@@ -796,7 +796,7 @@ sub compiler {
 	# for stopping the firewall
 	#
 	Shorewall::Chains::initialize( $family );
-	compile_stop_firewall( $test ); 
+	compile_stop_firewall( $test );
 	#
 	# Copy the footer to the object
 	#
@@ -807,7 +807,7 @@ sub compiler {
 		copy $globals{SHAREDIRPL} . 'prog.footer6';
 	    }
 	}
-	
+
 	disable_object;
 	#
 	# Close, rename and secure the object

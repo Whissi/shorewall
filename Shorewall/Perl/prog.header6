@@ -578,7 +578,7 @@ convert_to_anycast() {
     local l
 
     while read address; do
-	case $address in 
+	case $address in
 	    2*|3*)
 		vlsm=${address#*/}
 		vlsm=${vlsm:=128}
@@ -626,7 +626,7 @@ convert_to_anycast() {
 			badress=$address
 		    fi
 		    #
-		    # Note: at this point $address and $badress are the same except possibly for 
+		    # Note: at this point $address and $badress are the same except possibly for
 		    #       the contents of the last half-word
 		    #
 		    list_count $(split $address)
@@ -663,7 +663,7 @@ convert_to_anycast() {
 
 #
 # Generate a list of anycast addresses for a given interface
-# 
+#
 
 get_interface_acasts() # $1 = interface
 {

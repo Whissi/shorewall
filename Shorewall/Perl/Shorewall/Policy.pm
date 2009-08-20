@@ -130,7 +130,7 @@ sub add_or_modify_policy_chain( $$ ) {
     } else {
 	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
     }
-}    
+}
 
 sub print_policy($$$$) {
     my ( $source, $dest, $policy , $chain ) = @_;
@@ -159,7 +159,7 @@ sub process_a_policy() {
     fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
 
     my $serverwild = ( "\L$server" eq 'all' );
-    
+
     fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
 
     my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
@@ -193,7 +193,7 @@ sub process_a_policy() {
 
     if ( defined $queue ) {
 	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
-	require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' ); 
+	require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' );
 	my $queuenum = numeric_value( $queue );
 	fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;
 	$policy = "NFQUEUE --queue-num $queuenum";
@@ -234,7 +234,7 @@ sub process_a_policy() {
 	$chainref = new_policy_chain $client, $server, $policy, 0;
 	push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
     }
-    
+
     $chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
 
     if ( $synparams ne '' || $connlimit ne '' ) {
@@ -267,7 +267,7 @@ sub process_a_policy() {
 	    set_policy_chain $client, $server, "${client}2${zone}", $chainref, $policy;
 	    print_policy $client, $zone, $policy, $chain;
 	}
-	
+
     } else {
 	print_policy $client, $server, $policy, $chain;
     }

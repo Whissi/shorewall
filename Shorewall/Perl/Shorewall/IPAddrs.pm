@@ -21,7 +21,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #   This module provides interfaces for dealing with IPv4 addresses, protocol names, and
-#   port names. It also exports functions for validating protocol- and port- (service) 
+#   port names. It also exports functions for validating protocol- and port- (service)
 #   related constructs.
 #
 package Shorewall::IPAddrs;
@@ -98,8 +98,8 @@ use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       IPv6_LINK_ALLRTRS   => 'FF01::2' ,
 	       IPv6_SITE_ALLNODES  => 'FF02::1' ,
 	       IPv6_SITE_ALLRTRS   => 'FF02::2' ,
-	       ICMP                => 1, 
-	       TCP                 => 6, 
+	       ICMP                => 1,
+	       TCP                 => 6,
 	       UDP                 => 17,
 	       DCCP                => 33,
 	       IPv6_ICMP           => 58,
@@ -200,7 +200,7 @@ sub validate_4net( $$ ) {
 	    ( decodeaddr( $net ) , $vlsm );
 	} else {
 	    "$net/$vlsm";
-	}	    
+	}
     }
 }
 
@@ -437,7 +437,7 @@ sub expand_port_range( $$ ) {
 	# Break the range into groups:
 	#
 	#      - If the first port in the remaining range is odd, then the next group is ( <first>, ffff ).
-	#      - Otherwise, find the largest power of two P that divides the first address such that 
+	#      - Otherwise, find the largest power of two P that divides the first address such that
 	#        the remaining range has less than or equal to P ports. The next group is
 	#        ( <first> , ~( P-1 ) ).
 	#
@@ -463,8 +463,8 @@ sub expand_port_range( $$ ) {
 
     } else {
 	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
-    } 
-}   
+    }
+}
 
 sub valid_6address( $ ) {
     my $address = $_[0];
@@ -625,7 +625,7 @@ sub ALLIP() {
 
 sub allip() {
     @allip;
-}    
+}
 
 sub valid_address ( $ ) {
     $valid_address->(@_);
@@ -639,16 +639,16 @@ sub validate_net ( $$ ) {
     $validate_net->(@_);
 }
 
-sub validate_range ($$ ) { 
+sub validate_range ($$ ) {
     $validate_range->(@_);
 }
 
-sub validate_host ($$ ) { 
+sub validate_host ($$ ) {
     $validate_host->(@_);
 }
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -676,7 +676,7 @@ sub initialize( $ ) {
 	$validate_net     = \&validate_6net;
 	$validate_range   = \&validate_6range;
 	$validate_host    = \&validate_6host;
-    }	
+    }
 }
 
 1;

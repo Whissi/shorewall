@@ -91,7 +91,7 @@ our $family;
 our $macro_commands = { COMMENT => 0, FORMAT => 2 };
 
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -228,7 +228,7 @@ sub merge_macro_column( $$ ) {
 # Get Macro Name -- strips away trailing /*, :* and (*) from the first column in a rule, macro or action.
 #
 sub isolate_basic_target( $ ) {
-    my $target = ( split '[/:]', $_[0])[0]; 
+    my $target = ( split '[/:]', $_[0])[0];
 
     $target =~ /^(\w+)[(].*[)]$/ ? $1 : $target;
 }
@@ -701,7 +701,7 @@ sub process_action3( $$$$$ ) {
 
 	( $action2 , my $param ) = get_target_param $action2;
 
-	my $action2type = $targets{$action2} || 0; 
+	my $action2type = $targets{$action2} || 0;
 
 	unless ( $action2type == STANDARD ) {
 	    if ( $action2type & ACTION ) {
@@ -871,10 +871,10 @@ sub process_actions3 () {
 		       'allowBcast'     => \&allowBcast,
 		       'dropNotSyn'     => \&dropNotSyn,
 		       'rejNotSyn'      => \&rejNotSyn,
-		       'dropInvalid'    => \&dropInvalid, 
+		       'dropInvalid'    => \&dropInvalid,
 		       'allowInvalid'   => \&allowInvalid,
-		       'allowinUPnP'    => \&allowinUPnP, 
-		       'forwardUPnP'    => \&forwardUPnP, 
+		       'allowinUPnP'    => \&allowinUPnP,
+		       'forwardUPnP'    => \&forwardUPnP,
 		       'Limit'          => \&Limit, );
 
     for my $wholeaction ( keys %usedactions ) {

@@ -50,7 +50,7 @@ our @EXPORT = qw(
 		  $filter_table
 		  );
 
-our %EXPORT_TAGS = ( 
+our %EXPORT_TAGS = (
 		    internal => [  qw( STANDARD
 				       NATRULE
 				       BUILTIN
@@ -83,7 +83,7 @@ our %EXPORT_TAGS = (
 				       clear_comment
 				       incr_cmd_level
 				       decr_cmd_level
-				       chain_base 
+				       chain_base
 				       forward_chain
 				       zone_forward_chain
 				       use_forward_chain
@@ -298,7 +298,7 @@ our %builtin_target = ( ACCEPT   => 1,
 
 sub initialize_chain_table();
 #
-# Rather than initializing globals in an INIT block or during declaration, 
+# Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
 #   1. Proper initialization depends on the address family which isn't
@@ -434,7 +434,7 @@ sub push_rule( $$ ) {
 	add_commands $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
 	#
-	# We omit the chain name for now -- this makes it easier to move rules from one 
+	# We omit the chain name for now -- this makes it easier to move rules from one
 	# chain to another
 	#
 	push @{$chainref->{rules}}, join( ' ', '-A' , $rule );
@@ -472,7 +472,7 @@ sub handle_sport_list( $$$$$ ) {
 			last;
 		    } else {
 			$newports .= $port;
-		    }	
+		    }
 		} else {
 		    $newports .= "${port}${separator}";
 		}
@@ -515,7 +515,7 @@ sub handle_dport_list( $$$$$ ) {
 			last;
 		    } else {
 			$newports .= $port;
-		    }	
+		    }
 		} else {
 		    $newports .= "${port}${separator}";
 		}
@@ -612,7 +612,7 @@ sub add_jump( $$$;$$ ) {
 }
 
 #
-# Purge jumps previously added via add_jump. If the target chain is empty, reset its 
+# Purge jumps previously added via add_jump. If the target chain is empty, reset its
 # referenced flag
 #
 sub purge_jump ( $$ ) {
@@ -622,7 +622,7 @@ sub purge_jump ( $$ ) {
     for ( @{$fromref->{rules}} ) {
 	$_ = undef if / -[gj] ${to}\b/;
     }
-	
+
     $toref->{referenced} = 0 unless @{$toref->{rules}};
 }
 
@@ -672,7 +672,7 @@ sub add_tunnel_rule( $$ ) {
 # forward chain. Shorewall::Rules::generate_matrix() may decide to move those rules to
 # a zone-oriented chain, hence this function.
 #
-# The source chain must not have any run-time code included in its rules. 
+# The source chain must not have any run-time code included in its rules.
 #
 sub move_rules( $$ ) {
     my ($chain1, $chain2 ) = @_;
@@ -785,12 +785,12 @@ sub use_input_chain($) {
     my $nets = $interfaceref->{nets};
     #
     # We must use the interfaces's chain if:
-    # 
+    #
     # - the interface is associated with multiple zone nets; or
     # - the interface has the 'upnpclient' option.
     #
     # In the latter case, the chain's rules will contain run-time code which cannot currently be transferred to a zone-oriented chain by move_rules().
-    #    
+    #
     return 1 if $nets > 1 || $interfaceref->{options}{upnpclient};
     #
     # Don't need it if it isn't associated with any zone
@@ -817,7 +817,7 @@ sub use_input_chain($) {
     $chainref = $filter_table->{join( '' , $zone , '2' , firewall_zone )};
 
     ! ( $chainref->{referenced} || $chainref->{is_policy} )
-}   
+}
 
 #
 # Output Chain for an interface
@@ -843,7 +843,7 @@ sub use_output_chain($) {
     my $nets = $interfaceref->{nets};
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
-    #    
+    #
     return 1 if $nets > 1;
     #
     # Don't need it if it isn't associated with any zone
@@ -851,7 +851,7 @@ sub use_output_chain($) {
     return 0 unless $nets;
     #
     # Interface associated with a single zone -- use the zone's output chain if it has one
-    #    
+    #
     my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone}};
 
     return 0 if $chainref;
@@ -902,7 +902,7 @@ sub dnat_chain( $ )
 #
 # Notrack Chain from a zone
 #
-sub notrack_chain( $ ) 
+sub notrack_chain( $ )
 {
     $_[0] . '_notrk';
 }
@@ -989,7 +989,7 @@ sub ensure_filter_chain( $$ )
 }
 
 #
-# Create an accounting chain if necessary. 
+# Create an accounting chain if necessary.
 #
 sub ensure_accounting_chain( $  )
 {
@@ -1266,7 +1266,7 @@ sub set_mss( $$$ ) {
 }
 
 #
-# Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate. 
+# Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate.
 #
 sub setup_zone_mss() {
     for my $zone ( all_zones ) {
@@ -1305,7 +1305,7 @@ sub newnonatchain() {
 #
 #       Add a jump to the passed chain
 #
-#       Return the exclusion chain. The type of the returned value 
+#       Return the exclusion chain. The type of the returned value
 #                                   matches what was passed (reference
 #                                   or name).
 #
@@ -1374,7 +1374,7 @@ sub do_proto( $$$;$ )
 	my $invert   = ( $proto =~ s/^!// ? '! ' : '' );
 	my $protonum = resolve_proto $proto;
 
-	if ( defined $protonum ) {	    
+	if ( defined $protonum ) {
 	    #
 	    # Protocol is numeric and <= 65535 or is defined in /etc/protocols or NSS equivalent
 	    #
@@ -1533,7 +1533,7 @@ sub verify_mark( $ ) {
 
 sub verify_small_mark( $ ) {
     verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > ( $config{WIDE_TC_MARKS} ? 0x3FFF : 0xFF ); 
+    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > ( $config{WIDE_TC_MARKS} ? 0x3FFF : 0xFF );
 }
 
 sub validate_mark( $ ) {
@@ -1580,7 +1580,7 @@ sub do_ratelimit( $$ ) {
 
     fatal_error "Rate Limiting not available with $action" if $norate{$action};
     #
-    # "-m hashlimit" match for the passed LIMIT/BURST 
+    # "-m hashlimit" match for the passed LIMIT/BURST
     #
     if ( $rate =~ /^[sd]:{1,2}/ ) {
 	require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
@@ -1616,7 +1616,7 @@ sub do_connlimit( $ ) {
 
     return '' unless $limit and $limit ne '-';
 
-    require_capability 'CONNLIMIT_MATCH', 'A non-empty CONNLIMIT', 's';  
+    require_capability 'CONNLIMIT_MATCH', 'A non-empty CONNLIMIT', 's';
 
     my $invert =  $limit =~ s/^!// ? '' : '! '; # Note Carefully -- we actually do 'connlimit-at-or-below'
 
@@ -1741,8 +1741,8 @@ sub do_connbytes( $ ) {
     my $invert = $1 || ''; $invert = '! ' if $invert;
     my $min    = $2;       $min    = 0  unless defined $min;
     my $max    = $3;       $max    = '' unless defined $max; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
-    my $dir    = $5 || 'B'; 
-    my $mode   = $6 || 'B'; 
+    my $dir    = $5 || 'B';
+    my $mode   = $6 || 'B';
 
     $dir  =~ s/://;
     $mode =~ s/://;
@@ -1858,7 +1858,7 @@ sub match_source_net( $;$ ) {
 	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^!?~/ ) {
-	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;	
+	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
 	mac_match $net;
     } elsif ( $net =~ /^(!?)\+/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
@@ -1873,7 +1873,7 @@ sub match_source_net( $;$ ) {
 }
 
 #
-# Match a Destination. 
+# Match a Destination.
 #
 sub match_dest_net( $ ) {
     my $net = $_[0];
@@ -1950,7 +1950,7 @@ sub match_ipsec_out( $$ ) {
 
     unless ( $optionsref->{super} ) {
 	$match = '-m policy --dir out --pol ';
-	
+
 	if ( $zoneref->{type} eq 'ipsec' ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
 	} elsif ( $capabilities{POLICY_MATCH} ) {
@@ -2145,7 +2145,7 @@ sub set_chain_variables() {
     } else {
 	emit 'IP=ip';
     }
-    
+
     if ( $config{TC} ) {
 	emit( qq(TC="$config{TC}") ,
 	      '[ -x "$TC" ] || startup_error "TC=$TC does not exist or is not executable"'
@@ -2373,21 +2373,21 @@ sub have_global_variables() {
 #
 
 sub set_global_variables( $ ) {
-    
+
     my $setall = shift;
 
     emit $_ for values %interfaceaddr;
     emit $_ for values %interfacegateways;
     emit $_ for values %interfacemacs;
-	
-    if ( $setall ) {    
+
+    if ( $setall ) {
 	emit $_ for values %interfaceaddrs;
 	emit $_ for values %interfacenets;
 
 	unless ( $capabilities{ADDRTYPE} ) {
 
 	    if ( $family == F_IPV4 ) {
-		emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';		
+		emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
 		emit $_ for values %interfacebcasts;
 	    } else {
 		emit 'ALL_ACASTS="$(get_all_acasts)"';
@@ -2563,7 +2563,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    }
 
 	    $dest = '';
-	} elsif ( $family == F_IPV4 ) { 
+	} elsif ( $family == F_IPV4 ) {
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
@@ -2604,7 +2604,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    push_command( $chainref , 'for dest in ' . get_interface_nets( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
 	} else {
-	    
+
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
 
@@ -2800,7 +2800,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet );
 		    my $predicates = join( '', $rule, $source_match, $dest_match, $onet );
-		    
+
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
 			    unless ( $logname ) {
@@ -2815,7 +2815,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 				#
 				# Now add the log rule and target rule without predicates to the log chain.
 				#
-				log_rule_limit( 
+				log_rule_limit(
 					       $loglevel ,
 					       $chainref = $logchainref ,
 					       $chain ,
@@ -2827,7 +2827,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 				add_rule( $chainref, $exceptionrule . $target );
 			    } else {
-				log_rule_limit( 
+				log_rule_limit(
 					       $loglevel ,
 					       $chainref ,
 					       $logname ,
@@ -3229,7 +3229,7 @@ sub create_stop_load( $ ) {
     #
     # Test result
     #
-    emit ('', 
+    emit ('',
 	  'if [ $? != 0 ]; then',
 	   '    error_message "ERROR: $command Failed."',
 	   "fi\n"

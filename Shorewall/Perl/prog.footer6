@@ -168,7 +168,7 @@ restore_dynamic_rules() {
 debug_restore_input() {
     local first second rest table chain
     #
-    # Clear the ruleset 
+    # Clear the ruleset
     #
     qt1 $IP6TABLES -t mangle -F
     qt1 $IP6TABLES -t mangle -X
@@ -252,7 +252,7 @@ usage() {
 #
 # Start trace if first arg is "debug" or "trace"
 #
-if [ $# -gt 1 ]; then 
+if [ $# -gt 1 ]; then
     if [ "x$1" = "xtrace" ]; then
 	set -x
 	shift
@@ -319,7 +319,7 @@ kernel=$(printf "%2d%02d%02d\n" $(echo $(uname -r) 2> /dev/null | sed 's/-.*//' 
 if [ $kernel -lt 20624 ]; then
     error_message "ERROR: $PRODUCT requires Linux kernel 2.6.24 or later"
     status=2
-else 
+else
     case "$COMMAND" in
 	start)
 	    [ $# -ne 1 ] && usage 2

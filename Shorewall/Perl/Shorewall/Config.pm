@@ -72,7 +72,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 				       save_progress_message
 				       save_progress_message_short
 				       set_timestamp
-				       set_verbose
+				       set_verbosity
 				       set_log
 				       close_log
 				       set_command
@@ -136,11 +136,11 @@ our ($command, $doing, $done );
 #
 # VERBOSITY
 #
-our $verbose;
+our $verbosity;
 #
 # Logging
 #
-our ( $log, $log_verbose );
+our ( $log, $log_verbosity );
 #
 # Timestamp each progress message, if true.
 #
@@ -305,9 +305,9 @@ sub initialize( $ ) {
 
     ( $command, $doing, $done ) = qw/compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
 
-    $verbose = 0;              # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
+    $verbosity = 0;            # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
     $log = undef;              # File reference for log file
-    $log_verbose = -1;         # Verbosity of log.
+    $log_verbosity = -1;       # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message
     $object = 0;               # Object (script) file Handle Reference
     $object_enabled = 0;       # Object (script) file Handle Reference
@@ -856,14 +856,14 @@ sub set_timestamp( $ ) {
 }
 
 #
-# Set $verbose
+# Set $verbosity
 #
-sub set_verbose( $ ) {
-    $verbose = shift;
+sub set_verbosity( $ ) {
+    $verbosity = shift;
 }
 
 #
-# Set $log and $log_verbose
+# Set $log and $log_verbosity
 #
 sub set_log ( $$ ) {
     my ( $l, $v ) = @_;
@@ -871,16 +871,16 @@ sub set_log ( $$ ) {
     if ( defined $v ) {
 	my $value = numeric_value( $v );
 	fatal_error "Invalid Log Verbosity ( $v )" unless defined($value) && ( $value >= -1 ) && ( $value <= 2);
-	$log_verbose = $value;
+	$log_verbosity = $value;
     }
 
-    if ( $l && $log_verbose >= 0 ) {
+    if ( $l && $log_verbosity >= 0 ) {
 	unless ( open $log , '>>' , $l ) {
 	    $log = undef;
 	    fatal_error "Unable to open STARTUP_LOG ($l) for writing: $!";
 	}
     } else {
-	$log_verbose = -1;
+	$log_verbosity = -1;
     }
 }
 
@@ -904,17 +904,17 @@ sub timestamp() {
 }
 
 #
-# Write a message if $verbose >= 2
+# Write a message if $verbosity >= 2
 #
 sub progress_message {
     my $havelocaltime = 0;
 
-    if ( $verbose > 1 || $log_verbose > 1 ) {
+    if ( $verbosity > 1 || $log_verbosity > 1 ) {
 	my $line = "@_";
 	my $leading = $line =~ /^(\s+)/ ? $1 : '';
 	$line =~ s/\s+/ /g;
 
-	if ( $verbose > 1 ) {
+	if ( $verbosity > 1 ) {
 	    timestamp, $havelocaltime = 1 if $timestamp;
 	    #
 	    # We use this function to display messages containing raw config file images which may contains tabs (including multiple tabs in succession).
@@ -923,7 +923,7 @@ sub progress_message {
 	    print "${leading}${line}\n";
 	}
 
-	if ( $log_verbose > 1 ) {
+	if ( $log_verbosity > 1 ) {
 	    our @localtime;
 
 	    @localtime = localtime unless $havelocaltime;
@@ -937,12 +937,12 @@ sub progress_message {
 sub progress_message_nocompress {
     my $havelocaltime = 0;
 
-    if ( $verbose > 1 ) {
+    if ( $verbosity > 1 ) {
 	timestamp, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
-    if ( $log_verbose > 1 ) {
+    if ( $log_verbosity > 1 ) {
 	our @localtime;
 
 	@localtime = localtime unless $havelocaltime;
@@ -953,17 +953,17 @@ sub progress_message_nocompress {
 }
 
 #
-# Write a message if $verbose >= 1
+# Write a message if $verbosity >= 1
 #
 sub progress_message2 {
     my $havelocaltime = 0;
 
-    if ( $verbose > 0 ) {
+    if ( $verbosity > 0 ) {
 	timestamp, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
-    if ( $log_verbose > 0 ) {
+    if ( $log_verbosity > 0 ) {
 	our @localtime;
 
 	@localtime = localtime unless $havelocaltime;
@@ -974,17 +974,17 @@ sub progress_message2 {
 }
 
 #
-# Write a message if $verbose >= 0
+# Write a message if $verbosity >= 0
 #
 sub progress_message3 {
     my $havelocaltime = 0;
 
-    if ( $verbose >= 0 ) {
+    if ( $verbosity >= 0 ) {
 	timestamp, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
-    if ( $log_verbose >= 0 ) {
+    if ( $log_verbosity >= 0 ) {
 	our @localtime;
 
 	@localtime = localtime unless $havelocaltime;
@@ -1116,7 +1116,7 @@ sub create_temp_object( $$ ) {
     my $suffix;
 
     if ( $objectfile eq '-' ) {
-	$verbose = -1;
+	$verbosity = -1;
 	$object = undef;
 	open( $object, '>&STDOUT' ) or fatal_error "Open of STDOUT failed";
 	$file = '-';
@@ -1819,7 +1819,7 @@ sub report_capability( $ ) {
 }
 
 sub report_capabilities() {
-    if ( $verbose > 1 ) {
+    if ( $verbosity > 1 ) {
 	print "Shorewall has detected the following capabilities:\n";
 
 	for my $cap ( sort { $capdesc{$a} cmp $capdesc{$b} } keys %capabilities ) {

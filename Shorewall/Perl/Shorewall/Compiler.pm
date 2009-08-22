@@ -580,7 +580,7 @@ sub compiler {
 	set_shorewall_dir( $directory );
     }
 
-    set_verbose( $verbosity );
+    set_verbosity( $verbosity );
     set_log($log, $log_verbosity) if $log;
     set_timestamp( $timestamp );
     set_debug( $debug );

@@ -597,6 +597,7 @@ sub compiler {
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
 
     if ( $objectfile ) {
+	set_command( 'compile', 'Compiling', 'Compiled' );
 	create_temp_object( $objectfile , $export );
     } else {
 	set_command( 'check', 'Checking', 'Checked' );

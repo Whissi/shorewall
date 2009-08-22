@@ -303,9 +303,7 @@ sub initialize( $ ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall6 Shorewall6 ip6tables IP6TABLES );
     }
 
-    ( $command, $doing, $done ) = qw/compile Compiling Compiled/; #describe the current command, it's present progressive, and it's completion.
-
-    $verbosity = 0;            # Verbosity setting. 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
+    $verbosity = 0;            # Verbosity setting. -1 = silent, 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
     $log = undef;              # File reference for log file
     $log_verbosity = -1;       # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message

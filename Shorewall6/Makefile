@@ -15,7 +15,7 @@ $(VARDIR)/${RESTOREFILE}: $(CONFDIR)/*
 	fi
 
 clean:
-	@rm -f $(CONFDIR)/*~
+	@rm -f $(CONFDIR)/*~ $(CONFDIR)/.*~
 .PHONY: clean
 
 # EOF

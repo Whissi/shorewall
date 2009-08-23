@@ -1406,6 +1406,11 @@ sub pop_open() {
     pop_include;
 }
 
+#
+# This function is called by in-line PERL to generate a line of input for the current file.
+# If the in-line PERL returns an indication of success, then the generated lines will be
+# processed as regular file input.
+#
 sub shorewall {
     unless ( $scriptfile ) {
 	fatal_error "shorewall() may not be called in this context" unless $currentfile;
@@ -1585,6 +1590,10 @@ sub read_a_line() {
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
 	    if ( $first_entry ) {
+		#
+		# $first_entry can contain either a function reference or a message. If it
+		# contains a reference, call the function -- otherwise issue the message
+		#
 		reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
 		$first_entry = 0;
 	    }

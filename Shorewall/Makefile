@@ -14,4 +14,8 @@ $(VARDIR)/${RESTOREFILE}: $(CONFDIR)/*
 	    /sbin/shorewall -q restart 2>&1 | tail >&2; \
 	fi
 
+clean:
+	@rm -f $(CONFDIR)/*~
+.PHONY: clean
+
 # EOF

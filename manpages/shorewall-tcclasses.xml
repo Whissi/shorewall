@@ -104,6 +104,10 @@
           </varlistentry>
         </variablelist>
 
+        <para>Note that in a sub-class (a class that has a specified parent
+        class), full refers to the RATE or CEIL of the parent class rather
+        than to the OUT-BANDWIDTH of the device.</para>
+
         <para>DO NOT add a unit to the rate if it is calculated !</para>
       </listitem>
     </itemizedlist>
@@ -113,7 +117,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">INTERFACE</emphasis> -
-        <emphasis>interface</emphasis>[:<emphasis>parent</emphasis>][:<emphasis>class</emphasis>]</term>
+        <emphasis>interface</emphasis>[[:<emphasis>parent</emphasis>]:<emphasis>class</emphasis>]</term>
 
         <listitem>
           <para>Name of <emphasis>interface</emphasis>. Each interface may be
@@ -206,8 +210,9 @@
           when more needed services (e.g. ssh) are not used.</para>
 
           <para>You can use the value <emphasis role="bold">full</emphasis> in
-          here for setting the maximum bandwidth to the defined output
-          bandwidth of that interface.</para>
+          here for setting the maximum bandwidth to the RATE of the parent
+          class, or the OUT-BANDWIDTH of the device if there is no parent
+          class.</para>
         </listitem>
       </varlistentry>
 

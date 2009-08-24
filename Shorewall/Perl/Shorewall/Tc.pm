@@ -163,6 +163,8 @@ our @deferred_rules;
 #                              nextclass     => <number>
 #                              occurs        => Has one or more occurring classes
 #                              qdisc         => htb|hfsc
+#                              guarantee     => <total RATE of classes seen so far>
+#                              name          => <interface>
 #                                               }
 #
 our @tcdevices;
@@ -526,6 +528,8 @@ sub validate_tc_device( ) {
 			    default       => 0,
 			    nextclass     => 2,
 			    qdisc         => $qdisc,
+			    guarantee     => 0,
+			    name          => $device,
 			  } ,
 
     push @tcdevices, $device;
@@ -535,8 +539,8 @@ sub validate_tc_device( ) {
     progress_message "  Tcdevice \"$currentline\" $done.";
 }
 
-sub convert_rate( $$$ ) {
-    my ($full, $rate, $column) = @_;
+sub convert_rate( $$$$ ) {
+    my ($full, $rate, $column, $max) = @_;
 
     if ( $rate =~ /\bfull\b/ ) {
 	$rate =~ s/\bfull\b/$full/g;
@@ -550,7 +554,7 @@ sub convert_rate( $$$ ) {
     }
 
     fatal_error "$column may not be zero" unless $rate;
-    fatal_error "$column ($_[1]) exceeds OUT-BANDWIDTH" if $rate > $full;
+    fatal_error "$column ($_[1]) exceeds $max (${full}kbit)" if $rate > $full;
 
     $rate;
 }
@@ -596,6 +600,7 @@ sub validate_tc_class( ) {
     my $device = $devclass;
     my $occurs = 1;
     my $parentclass = 1;
+    my $parentref;
 
     if ( $devclass =~ /:/ ) {
 	( $device, my ($number, $subnumber, $rest ) )  = split /:/, $device, 4;
@@ -627,7 +632,11 @@ sub validate_tc_class( ) {
 	fatal_error "Missing class NUMBER" if $devref->{classify};
     }
 
-    my $full  = rate_to_kbit $devref->{out_bandwidth};
+    my $full    = rate_to_kbit $devref->{out_bandwidth};
+    my $ratemax = $full;
+    my $ceilmax = $full;
+    my $ratename = 'OUT-BANDWIDTH';
+    my $ceilname = 'OUT-BANDWIDTH';
 
     my $tcref = $tcclasses{$device};
 
@@ -657,10 +666,14 @@ sub validate_tc_class( ) {
 	#
 	# Nested Class
 	#
-	my $parentref = $tcref->{$parentclass};
+	$parentref = $tcref->{$parentclass};
 	fatal_error "Unknown Parent class ($parentclass)" unless $parentref && $parentref->{occurs} == 1;
 	fatal_error "The parent class ($parentclass) specifies UMAX and/or DMAX; it cannot serve as a parent" if $parentref->{dmax};
 	$parentref->{leaf} = 0;
+	$ratemax  = $parentref->{rate};
+	$ratename = q(the parent class's RATE);
+	$ceilmax = $parentref->{ceiling};
+	$ceilname = q(the parent class's CEIL);
     }
 
     my ( $umax, $dmax ) = ( '', '' );
@@ -670,28 +683,35 @@ sub validate_tc_class( ) {
 
 	fatal_error "Invalid RATE ($rate)" if defined $rest;
 
-	$rate = convert_rate ( $full, $trate, 'RATE' );
+	$rate = convert_rate ( $ratemax, $trate, 'RATE', $ratename );
 	$dmax = convert_delay( $dmax );
 	$umax = convert_size( $umax );
 	fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax;
     } else {
-	$rate = convert_rate ( $full, $rate, 'RATE' );
+	$rate = convert_rate ( $ratemax, $rate, 'RATE' , $ratename );
+    }
+
+    if ( $parentref ) {
+	warning_message "Total RATE of sub classes ($parentref->{guarantee}kbits) exceeds RATE of parent class ($parentref->{rate}kbits)" if ( $parentref->{guarantee} += $rate ) > $parentref->{rate};
+    } else {
+	warning_message "Total RATE of classes ($devref->{guarantee}kbits) exceeds OUT-BANDWIDTH (${full}kbits)" if ( $devref->{guarantee} += $rate ) > $full;
     }
 
     fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;
 
-    $tcref->{$classnumber} = { tos      => [] ,
-			       rate     => $rate ,
-			       umax     => $umax ,
-			       dmax     => $dmax ,
-			       ceiling  => convert_rate( $full, $ceil, 'CEIL' ) ,
-			       priority => $prio eq '-' ? 1 : $prio ,
-			       mark     => $markval ,
-			       flow     => '' ,
-			       pfifo    => 0,
-			       occurs   => 1,
-			       parent   => $parentclass,
-			       leaf     => 1,
+    $tcref->{$classnumber} = { tos       => [] ,
+			       rate      => $rate ,
+			       umax      => $umax ,
+			       dmax      => $dmax ,
+			       ceiling   => convert_rate( $ceilmax, $ceil, 'CEIL' , $ceilname ) ,
+			       priority  => $prio eq '-' ? 1 : $prio ,
+			       mark      => $markval ,
+			       flow      => '' ,
+			       pfifo     => 0,
+			       occurs    => 1,
+			       parent    => $parentclass,
+			       leaf      => 1,
+			       guarantee => 0,
 			     };
 
     $tcref = $tcref->{$classnumber};

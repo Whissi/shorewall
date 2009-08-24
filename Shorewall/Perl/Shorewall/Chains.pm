@@ -1075,6 +1075,7 @@ sub ensure_manual_chain($) {
 
 #
 # Add all builtin chains to the chain table -- it is separate from initialize() for purely historical reasons.
+# The function also initializes the target table with the pre-defined targets available for the specfied address family.
 #
 #
 sub initialize_chain_table()
@@ -1212,7 +1213,6 @@ sub finish_chain_section ($$) {
 	}
 
 	$chainref->{new} = @{$chainref->{rules}};
-
     }
 
     $comment = $savecomment;

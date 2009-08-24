@@ -678,7 +678,7 @@ sub validate_tc_class( ) {
 	$rate = convert_rate ( $full, $rate, 'RATE' );
     }
 
-    fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;;
+    fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;
 
     $tcref->{$classnumber} = { tos      => [] ,
 			       rate     => $rate ,

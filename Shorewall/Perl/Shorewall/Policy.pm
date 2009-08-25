@@ -454,7 +454,7 @@ sub complete_standard_chain ( $$$$ ) {
 
     run_user_exit $stdchainref;
 
-    my $ruleschainref = $filter_table->{"${zone}2${zone2}"};
+    my $ruleschainref = $filter_table->{"${zone}2${zone2}"} || $filter_table->{all2all};
     my ( $policy, $loglevel, $defaultaction ) = ( $default , 6, $config{$default . '_DEFAULT'} );
     my $policychainref;
 

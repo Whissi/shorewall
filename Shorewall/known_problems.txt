@@ -1,1 +1,9 @@
-There are no known problems in Shorewall version 4.4.0.1
+1)  If ULOG is specified as the LOG LEVEL in the all->all policy, the
+    rules at the end of the INPUT and OUTPUT chains still use the
+    LOG target rather than ULOG.
+
+    You can work around this problem by adding two additional policies
+    before the all->all one:
+
+    	   all 		$FW	DROP	ULOG
+	   $FW		all	REJECT	ULOG

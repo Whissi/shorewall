@@ -679,6 +679,21 @@ sub warning_message
     $| = 0;
 }
 
+sub cleanup() {
+    #
+    # Close files first in case we're running under Cygwin
+    #
+    close  $object         if $object;
+    close  $scriptfile     if $scriptfile;
+    close  $log            if $log;
+    #
+    # Unlink temporary files
+    #
+    unlink $tempfile       if $tempfile;
+    unlink $scriptfilename if $scriptfilename;
+    unlink $_ for @tempfiles;
+}
+
 #
 # Issue fatal error message and die
 #
@@ -702,6 +717,7 @@ sub fatal_error	{
 	$log = undef;
     }
 
+    cleanup;
     confess "   ERROR: @_$currentlineinfo" if $debug;
     die "   ERROR: @_$currentlineinfo\n";
 }
@@ -723,6 +739,7 @@ sub fatal_error1	{
 	$log = undef;
     }
 
+    cleanup;
     confess "   ERROR: @_" if $debug;
     die "   ERROR: @_\n";
 }
@@ -1125,7 +1142,7 @@ sub create_temp_object( $$ ) {
 	( $file, $dir, $suffix ) = fileparse( $objectfile );
     };
 
-    die if $@;
+    cleanup, die if $@;
 
     fatal_error "$dir is a Symbolic Link"        if -l $dir;
     fatal_error "Directory $dir does not exist"  unless -d _;
@@ -1171,7 +1188,7 @@ sub create_temp_aux_config() {
 	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
-    die if $@;
+    cleanup, die if $@;
 }
 
 #
@@ -2440,7 +2457,8 @@ sub get_configuration( $ ) {
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
 
-    fatal_error 'IPSECFILE=ipsec is not supported by Shorewall ' . $globals{VERSION} unless $config{IPSECFILE} eq 'zones';
+    fatal_error 'IPSECFILE=ipsec is not supported by Shorewall ' . $globals{VERSION} if $config{IPSECFILE} eq 'ipsec';
+    fatal_error "Invalid IPSECFILE value ($config{IPSECFILE}"                    unless $config{IPSECFILE} eq 'zones';
 
     for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
@@ -2450,7 +2468,6 @@ sub get_configuration( $ ) {
 
     fatal_error "Invalid OPTIMIZE value ($val)" unless ( $val eq '0' ) || ( $val eq '1' );
 
-    fatal_error "Invalid IPSECFILE value ($config{IPSECFILE}" unless $config{IPSECFILE} eq 'zones';
 
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 
@@ -2483,7 +2500,7 @@ sub get_configuration( $ ) {
 	    ( $file, $dir, $suffix ) = fileparse( $config{LOCKFILE} );
 	};
 
-	die $@ if $@;
+	cleanup, die $@ if $@;
 
 	fatal_error "LOCKFILE=$config{LOCKFILE}: Directory $dir does not exist" unless $export or -d $dir;
     } else {
@@ -2658,18 +2675,7 @@ sub generate_aux_config() {
 }
 
 END {
-    #
-    # Close files first in case we're running under Cygwin
-    #
-    close  $object         if $object;
-    close  $scriptfile     if $scriptfile;
-    close  $log            if $log;
-    #
-    # Unlink temporary files
-    #
-    unlink $tempfile       if $tempfile;
-    unlink $scriptfilename if $scriptfilename;
-    unlink $_ for @tempfiles;
+    cleanup;
 }
 
 1;

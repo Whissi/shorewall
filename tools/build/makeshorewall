@@ -1,0 +1,715 @@
+#!/bin/sh
+#
+# Shorewall Release Processing -- (C) 2003,2004,2005 -- Tom Eastep (teastep@shorewall.net)
+#                              -- (C) 2005,2006 -- Cristian Rodriguez (webmaster@shorewall.net)
+# Version : $Id$
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# I install this script in /usr/local/bin/makeshorewall.
+#
+# Usage:
+#
+#   makeshorewall [ -trhxl ] <version> [ <previous version> ]
+#
+#      -t      Build tarball
+#      -r      Build RPM
+#      -h      Build HTML documentation
+#      -x      Build XML documentation
+#      -s      Sign with GPG
+#      -p      Build shorewall-perl
+#
+# If no options are given, all options are assumed.
+#
+# If <previous version> is given, a patch file reflecting the differences
+# between that version and the current version ( <version> ) is
+# generated. The directory ./shorewall-<previous version> must exist and
+# contain the version against which the patch is generated.
+################################################################################
+#                          C O N F I G U R A T I O N
+################################################################################
+#
+# XSL Stylesheet to use for XML->HTML conversion
+#
+STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
+#
+# Directory where the build log will be placed. The log has the name
+# shorewall_build_<version>.log
+#
+LOGDIR=$PWD
+#
+# Your RPM build directory
+#
+RPMDIR=~/rpm/
+#
+# Directory where you want the release to be built
+#
+DIR=$PWD
+#
+# location and options for GnuPG
+#
+GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
+#
+# SVN Repository
+#
+SVN=https://shorewall.svn.sourceforge.net/svnroot/shorewall
+#
+# Program that generates man pages from Docbook XML
+#
+DOCBOOK2MAN="docbook-to-man -C /usr/share/docbook2X/xslt/catalog.xml --utf8trans-map /usr/share/docbook2X/charmaps/roff.charmap"
+################################################################################
+#                               V A R I A B L E S
+################################################################################
+VERSION=
+OLDVERSION=
+SHOREWALLDIR=
+SHOREWALLLITEDIR=
+SOURCEDIR=
+SVNBRANCH=
+LITESVNBRANCH=
+XMLPROJ=
+RPMNAME=
+LITERPMNAME=
+TARBALL=
+LITETARBALL=
+LOGFILE=
+HTMLDIR=
+BUILDTARBALL=
+BUILDRPM=
+BUILDXML=
+BUILDHTML=
+SAMPLESTAG=
+HASLITE=
+SIGN=
+MANPAGETAG=
+LITEMANPAGETAG=
+BUILDPERL=
+PERLDIR=
+PERLBRANCH=
+PERLRPMNAME=
+PERLTARBALL=
+################################################################################
+#                               F U N C T I O N S
+################################################################################
+progress_message()
+{
+    echo         >>    $LOGFILE
+    echo "$@" | tee -a $LOGFILE
+    echo         >>    $LOGFILE
+}
+
+report()
+{
+    echo "$@" | tee -a $LOGFILE
+}
+
+do_or_die()
+{
+    eval $@ || { progress_message "Step \"$*\" FAILED" ; exit 2; }
+}
+
+fatal_error() {
+    progress_message "$*"
+    exit 2
+}
+
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e
+    e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+usage()
+{
+    echo "usage: $(basename $0) [ -trhxl] <version> [ <old-version> ]"
+    exit 2
+}
+################################################################################
+#                E X E C U T I O N   S T A R T S   H E R E
+################################################################################
+
+set -e
+set -u
+
+
+done=
+
+[ $# -eq 0 ] && usage
+
+case $1 in
+    -*)
+	;;
+    *)
+	BUILDTARBALL=Yes
+	BUILDRPM=Yes
+	BUILDHTML=Yes
+	BUILDXML=Yes
+	BUILDRPM=Yes
+	done=Yes
+	SIGN=Yes
+	;;
+esac
+
+while [ -z "$done" ]; do
+    [ $# -eq 0 ] && break
+
+    option=$1
+    case $option in
+	-*)
+	    option=${option#-}
+
+	    [ -z "$option" ] && break
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    t*)
+			BUILDTARBALL=Yes
+			option=${option#t}
+			;;
+		    r*)
+			BUILDTARBALL=Yes
+			BUILDRPM=Yes
+			option=${option#r}
+			;;
+		    h*)
+			BUILDHTML=Yes
+			option=${option#h}
+			;;
+		    x*)
+			BUILDXML=Yes
+			option=${option#x}
+			;;
+		    s*)
+			SIGN=Yes
+			option=${option#s}
+			;;
+		    p*)
+			BUILDPERL=Yes
+			option=${option#p}
+			;;
+	    	    *)
+			usage
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    done=Yes
+	    ;;
+    esac
+done
+
+case $# in
+    1)
+	;;
+    2)
+	OLDVERSION=$2
+	;;
+    *)
+	usage
+	;;
+esac
+
+VERSION=$1
+LOGFILE=$LOGDIR/shorewall_build_${VERSION}.log
+touch $LOGFILE
+progress_message "Build of Shorewall $VERSION on $(date)"
+
+case $VERSION in
+    3.2.*)
+	SVNBRANCH="branches/3.2/Shorewall"
+	LITESVNBRANCH="branches/3.2/Shorewall-lite"
+	DOCTAG="branches/3.4/docs"
+	XMLPROJ="docs-3.2"
+	SAMPLESTAG="branches/3.2/Samples"
+	HASLITE=Yes
+	;;
+     3.4.*)
+	SVNBRANCH="branches/3.4/Shorewall"
+	LITESVNBRANCH="branches/3.4/Shorewall-lite"
+	DOCTAG="branches/3.4/docs"
+	XMLPROJ="docs-3.4"
+	SAMPLESTAG="branches/3.4/Samples"
+	HASLITE=Yes
+	MANPAGETAG=branches/3.4/manpages
+	LITEMANPAGETAG=branches/3.4/manpages-lite
+	;;
+   *)
+	echo "Unsupported Version: $VERSION"
+	exit 2
+	;;
+esac
+
+[ -d $DIR ] || { echo "Directory $DIR does not exist or is unaccessible" ; exit 2 ; }
+
+progress_message "Distribution directory is $DIR"
+
+cd $DIR
+
+case $VERSION in
+    *Beta*|*RC*)
+	#
+	# Beta or Release Candidate
+	#
+	SHOREWALLDIR=shorewall-${VERSION%-*}
+	SHOREWALLLITEDIR=shorewall-lite-${VERSION%-*}
+	TARBALL=shorewall-${VERSION%-*}.tgz
+	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
+	RPMNAME=shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	LITERPMNAME=shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	PERLRPMNAME=shorewall-perl-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	PERLTARBALL=shorewall-perl-${VERSION%-*}.tgz
+	PERLDIR=shorewall-perl-${VERSION%-*}
+	;;
+    *)
+	#
+	# Normal Release
+	#
+	SHOREWALLDIR=shorewall-$VERSION
+	SHOREWALLLITEDIR=shorewall-lite-$VERSION
+	TARBALL=shorewall-$VERSION.tgz
+	LITETARBALL=shorewall-lite-$VERSION.tgz
+	RPMNAME=shorewall-${VERSION}-1.noarch.rpm
+	LITERPMNAME=shorewall-lite-${VERSION}-1.noarch.rpm
+	PERLRPMNAME=shorewall-perl-${VERSION}-1.noarch.rpm
+	PERLDIR=shorewall-perl-$VERSION
+	PERLTARBALL=shorewall-perl-$VERSION.tgz
+	;;
+esac
+
+HTMLDIR=shorewall-docs-html-$VERSION
+
+if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
+    report "Shorewall directory is $DIR/$SHOREWALLDIR"
+    report "Shorewall Lite directory is $DIR/$SHOREWALLLITEDIR"
+    report "SVN tag is $SVNBRANCH"
+    report "Lite SVN tag is $LITESVNBRANCH"
+    [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL" && report "LITETARBALL is $LITETARBALL"
+    [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME" && report "LITERPM is $LITERPMNAME"
+fi
+
+[ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
+
+if [ -n "$BUILDPERL" ]; then
+    report "shorewall-perl directory is $DIR/$PERLDIR"
+    report "Perl SVN tag is $PERLBRANCH"
+    report "Perl RPM is $PERLRPMNAME"
+
+    rm -rf $PERLDIR
+    	
+    progress_message "Exporting $PERLBRANCH from SVN..."
+    do_or_die "svn export --non-interactive --force ${SVN}/$PERLBRANCH  $PERLDIR >> $LOGFILE 2>&1"
+
+    progress_message "Creating $DIR/$PERLTARBALL..."
+    do_or_die "tar -zcvf $PERLTARBALL $PERLDIR >> $LOGFILE 2>&1"
+    do_or_die "tar -jcvf shorewall-perl-${VERSION%-*}.tar.bz2 $PERLDIR >> $LOGFILE 2>&1"
+
+    if [ -n "$SIGN" ]; then
+	for shoresuffix in tgz tar.bz2; do
+	    shoreball=shorewall-perl-${VERSION%-*}.${shoresuffix}
+	    report "GPG signing $DIR/$shoreball"
+	    rm -f ${shoreball}.asc
+	    do_or_die "$GPG $shoreball"
+	done
+    fi
+
+    progress_message "Building $PERLRPMNAME..."
+
+    test -n "$SIGN" && SIGN="--sign"
+    rm -rf $RPMDIR/BUILD/shorewall-perl-${VERSION%-*}*
+    do_or_die "cp shorewall-perl-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+    do_or_die "cp $PERLDIR/shorewall-perl.spec $RPMDIR/SPECS/"
+    do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-perl.spec >> $LOGFILE 2>&1"
+    do_or_die cp -a $RPMDIR/RPMS/noarch/$PERLRPMNAME  .
+
+    > $VERSION.md5sums
+    > $VERSION.sha1sums
+
+    for file in *; do
+	case $file in
+	    *-perl-$VERSION[-.]*tgz|*-perl-$VERSION[-.]*rpm|*perl-$VERSION[-.]*bz2)
+	    do_or_die "md5sum $file >> $VERSION.md5sums"
+	    do_or_die "sha1sum $file >> $VERSION.sha1sums"
+	    ;;
+    esac
+done
+fi
+
+if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
+    progress_message "Exporting $SVNBRANCH from SVN..."
+
+    rm -rf $SHOREWALLDIR
+    rm -rf $SHOREWALLLITEDIR
+
+    do_or_die "svn export --non-interactive --force ${SVN}/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+ 
+    if [ -n "$HASLITE" ]; then
+	progress_message "Exporting $LITESVNBRANCH from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALLDIR/modules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	if [ -f $SHOREWALLDIR/lib.base ]; then
+	    do_or_die "cp $SHOREWALLDIR/lib.base $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    if [ -f $SHOREWALLDIR/lib.cli ]; then
+		do_or_die "cp $SHOREWALLDIR/lib.cli $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    fi
+	    if [ -f $SHOREWALLDIR/wait4ifup ]; then
+		do_or_die "cp $SHOREWALLDIR/wait4ifup $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    fi
+	else
+	    do_or_die "cp $SHOREWALLDIR/functions $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	fi
+	do_or_die "cp $SHOREWALLDIR/changelog.txt  $SHOREWALLDIR/releasenotes.txt $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    fi
+
+    fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
+    fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
+    fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1    || fatal_error "fallback.sh has wrong version"
+    if [ -n "$HASLITE" ]; then
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/install.sh > /dev/null 2>&1     || fatal_error "Lite install.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "Lite uninstall.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite fallback.sh has wrong version"
+    fi
+
+    if [ -n "$SAMPLESTAG" ]; then
+	cd $SHOREWALLDIR
+	do_or_die "svn export --non-interactive --force ${SVN}/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
+	cd $DIR
+    fi
+
+    if [ -n "$MANPAGETAG" ]; then
+	cd $SHOREWALLDIR
+	progress_message "Exporting $MANPAGETAG from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$MANPAGETAG manpages >> $LOGFILE 2>&1"
+	cd manpages
+	for f in *.xml; do
+	    if [ $f != shorewall-template.xml ]; then
+		progress_message "Generating Man Page from $f..."
+		$DOCBOOK2MAN $f
+	    fi
+	done
+	rm *.xml
+	perl -p -i'' -e 's/ \[.*?html\]//g' *.5 *.8
+	cd $DIR
+
+	cd $SHOREWALLLITEDIR
+
+	progress_message "Exporting $LITEMANPAGETAG from SVN..."
+	do_or_die "svn export --non-interactive --force ${SVN}/$LITEMANPAGETAG manpages >> $LOGFILE 2>&1"
+	cd manpages
+	for f in *.xml; do
+	    if [ $f != shorewall-template.xml ]; then
+		progress_message "Generating Man Page from $f..."
+		$DOCBOOK2MAN $f
+	    fi
+	done
+	rm *.xml
+	perl -p -i'' -e 's/ \[.*?html\]//g' *.5 *.8
+	cd $DIR 
+    fi	
+
+    do_or_die "rm -rf $SHOREWALLDIR/debian"
+
+    if [ -n "$BUILDTARBALL" ]; then
+	
+	progress_message "Creating $DIR/$TARBALL..."
+	
+	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		shoreball=shorewall-${VERSION%-*}.${shoresuffix}
+		report "GPG signing $DIR/$shoreball"
+		rm -f ${shoreball}.asc
+		do_or_die "$GPG $shoreball"
+	    done
+	fi
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Creating $DIR/$LITETARBALL..."
+	    do_or_die "tar -zcvf $LITETARBALL $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall-lite-${VERSION%-*}.tar.bz2 $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    if [ -n "$SIGN" ]; then
+		for shoresuffix in tgz tar.bz2; do
+		    shoreball=shorewall-lite-${VERSION%-*}.${shoresuffix}
+		    report "GPG signing $DIR/$shoreball"
+		    rm -f ${shoreball}.asc
+		    do_or_die "$GPG $shoreball"
+		done
+	    fi
+	fi
+    fi
+
+    if [ -n "$BUILDRPM" ]; then
+	progress_message "Building $RPMNAME..."
+
+	test -n "$SIGN" && SIGN="--sign"
+	rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
+	do_or_die "cp shorewall-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+	do_or_die "cp $SHOREWALLDIR/shorewall.spec $RPMDIR/SPECS/"
+	do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall.spec >> $LOGFILE 2>&1"
+	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
+
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Building $LITERPMNAME..."
+
+	    rm -rf $RPMDIR/BUILD/shorewall-${VERSION%-*}
+	    do_or_die "cp shorewall-lite-${VERSION%-*}.tgz $RPMDIR/SOURCES/"
+	    do_or_die "cp $SHOREWALLLITEDIR/shorewall-lite.spec $RPMDIR/SPECS/"
+	    do_or_die "rpmbuild -ba $SIGN $RPMDIR/SPECS/shorewall-lite.spec >> $LOGFILE 2>&1"
+	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
+	fi
+    fi
+fi
+
+if [ -n "${BUILDXML}${BUILDHTML}" ]; then
+    progress_message "Exporting $XMLPROJ from SVN..."
+
+    rm -rf $XMLPROJ
+    rm -rf shorewall-docs-xml-$VERSION
+
+    do_or_die "svn export --non-interactive --force ${SVN}/$DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
+
+    rm -f shorewall-docs-xml-$VERSION/images/*.vsd
+    rm -f shorewall-docs-xml-$VERSION/images/~*
+    rm -f shorewall-docs-xml-$VERSION/images/*.JPG
+    rm -f shorewall-docs-xml-$VERSION/images/publish
+    rm -f shorewall-docs-xml-$VERSION/images/Thumbs.db
+
+    if [ -n "$BUILDXML" ]; then
+	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION tarballs"
+        do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		xmlball=shorewall-docs-xml-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$xmlball tarball"
+		rm -f ${xmlball}.asc
+		do_or_die "$GPG $xmlball"
+	    done
+	fi
+    fi
+
+    if [ -n "$BUILDHTML" ]; then
+	progress_message "Building $HTMLDIR ..."
+
+	rm -rf $HTMLDIR
+
+	do_or_die mkdir $HTMLDIR
+	do_or_die mkdir $HTMLDIR/images
+	#
+	# The original HTML documents were created using MS FrontPage and used
+	# the .htm suffix. The remainder use the .html suffix.
+	#
+	HTMFILES="
+	    6to4.htm
+	    blacklisting_support.htm
+	    configuration_file_basics.htm
+	    CorpNetwork.htm
+	    dhcp.htm
+	    Documentation.htm
+	    errata.htm
+	    fallback.htm
+	    FAQ.htm
+	    GnuCopyright.htm
+	    Install.htm
+	    IPIP.htm
+	    IPSEC.htm
+	    kernel.htm
+	    myfiles.htm
+	    NAT.htm
+	    ports.htm
+	    PPTP.htm
+	    ProxyARP.htm
+	    quotes.htm
+	    samba.htm
+	    shorewall_extension_scripts.htm
+	    shorewall_features.htm
+	    shorewall_mirrors.htm
+	    shorewall_prerequisites.htm
+	    shorewall_quickstart_guide.htm
+	    shorewall_setup_guide_fr.htm
+	    shorewall_setup_guide.htm
+	    Shorewall_sfindex_frame.htm
+	    standalone.htm
+	    starting_and_stopping_shorewall.htm
+	    support.htm
+	    three-interface.htm
+	    traffic_shaping.htm
+	    troubleshoot.htm
+	    two-interface.htm
+	    upgrade_issues.htm
+	    VPN.htm
+	    whitelisting_under_shorewall.htm"
+
+	NOTOC="
+            Documentation_Index.xml
+            ECN.xml
+            fallback.xml
+            GettingStarted.xml
+            IPP2P.xml
+            ping.xml
+            ProxyARP.xml
+            Shorewall_Doesnt.xml
+            shorewall_features.xml
+            shorewall_prerequisites.xml
+            SimpleBridge.xml"
+
+	for file in shorewall-docs-xml-$VERSION/*.xml; do
+	    a=$(basename $file)
+	    b=${a%.*}
+	    list_search $b.htm $HTMFILES && b=$b.htm || b=$b.html
+	    f="shorewall-docs-html-$VERSION/$b"
+	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''" || GENTOC=
+
+	    case $file in
+		*_ru.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language ru"
+		    ;;
+		*_fr.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language fr"
+		    ;;
+		*)
+		    LANGUAGE=
+		    ;;
+	    esac
+
+	    report "Converting $DIR/$file from XML to HTML ($DIR/$f) ..."
+
+	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC -param toc.section.depth 3 $STYLESHEET $file
+	done
+
+	progress_message "Copying images to $DIR/$HTMLDIR/images ..."
+
+	do_or_die cp -a shorewall-docs-xml-$VERSION/images/*.png $HTMLDIR/images
+	do_or_die cp -a shorewall-docs-xml-$VERSION/images/*.gif $HTMLDIR/images
+	do_or_die cp -a shorewall-docs-xml-$VERSION/images/*.jpg $HTMLDIR/images
+	do_or_die cp -a shorewall-docs-xml-$VERSION/*.css $HTMLDIR
+
+	do_or_die ln -s Documentation_Index.html shorewall-docs-html-$VERSION/index.html
+
+	progress_message "Creating $DIR/shorewall-docs-html-$VERSION tarballs ..."
+
+	do_or_die "tar -zcvf shorewall-docs-html-$VERSION.tgz shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
+	do_or_die "tar -jcvf shorewall-docs-html-$VERSION.tar.bz2 shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		htmlball=shorewall-docs-html-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$htmlball tarball"
+		rm -f ${htmlball}.asc
+		do_or_die "$GPG $htmlball"
+	    done
+	fi
+    fi
+fi
+
+[ -n "$BUILDTARBALL" ] && case $VERSION in
+    *Beta*|*RC*)
+	#
+	# The original tarball created above didn't include the -Beta or -RC portion of the
+	# name in either the tarball name or the directory name. Create it here
+	#
+	progress_message "Creating $DIR/shorewall-$VERSION..."
+
+	rm -rf shorewall-$VERSION
+
+	do_or_die mv $SHOREWALLDIR shorewall-$VERSION
+
+	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
+
+        do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
+
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		betaball=shorewall-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$betaball tarball"
+		rm -f ${betaball}.asc
+		do_or_die "$GPG $betaball"
+	    done
+	fi
+
+
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Creating $DIR/shorewall-lite-$VERSION..."
+
+	    rm -rf shorewall-lite-$VERSION
+
+	    do_or_die mv $SHOREWALLLITEDIR shorewall-lite-$VERSION
+
+
+	    progress_message "Creating $DIR/shorewall-lite-${VERSION}.tgz ..."
+
+	    do_or_die "tar -zcvf shorewall-lite-${VERSION}.tgz shorewall-lite-$VERSION >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall-lite-$VERSION.tar.bz2 shorewall-lite-$VERSION >> $LOGFILE 2>&1"
+
+	    if [ -n "$SIGN" ]; then
+		for shoresuffix in tgz tar.bz2; do
+		    betaball=shorewall-lite-$VERSION.${shoresuffix}
+		    report "GPG signing $DIR/$betaball tarball"
+		    rm -f ${betaball}.asc
+		    do_or_die "$GPG $betaball"
+		done
+	    fi
+	fi
+	;;
+esac
+
+progress_message "Creating md5sums and sha1sums"
+
+rm -f $VERSION.md5sums $VERSION.sha1sums
+
+#
+# The following rather awkward algorithm gets around the problem of builds that don't
+# include the RPM
+#
+case $VERSION in
+    *Beta*|*RC*)
+	do_or_die "md5sum shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.md5sums"
+	do_or_die "sha1sum shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
+	if [ -n "$HASLITE" ]; then
+	    do_or_die "md5sum shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.md5sums"
+	    do_or_die "sha1sum shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
+	fi
+	;;
+esac
+
+for file in *; do
+    case $file in
+	*$VERSION[-.]*tgz|*$VERSION[-.]*rpm|*$VERSION[-.]*bz2)
+	    do_or_die "md5sum $file >> $VERSION.md5sums"
+	    do_or_die "sha1sum $file >> $VERSION.sha1sums"
+	    ;;
+    esac
+done
+
+if [ -n "$OLDVERSION" ]; then
+    progress_message "Creating patch-$VERSION ..."
+
+    diff -Naur -X $(dirname $0)/exclude.txt shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
+    if [ -n "$HASLITE" ]; then
+	diff -Naur -X $(dirname $0)/exclude.txt shorewall-lite-$OLDVERSION shorewall-lite-$VERSION >> patch-$VERSION || true
+    fi
+fi
+
+progress_message "Shorewall $VERSION Build complete - $(date)"

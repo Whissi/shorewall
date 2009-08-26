@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <meta name="generator" content=
+    "HTML Tidy for Linux (vers 1st April 2002), see www.w3.org">
+
+    <title>Shorewall Certificate Authority</title>
+    <meta http-equiv="content-type" content=
+    "text/html; charset=ISO-8859-1">
+    <meta name="author" content="Tom Eastep">
+  </head>
+
+  <body>
+    <h1 style="text-align: left;">Shorewall Certificate Authority
+    (CA) Certificate</h1>
+    <span style="font-weight: bold;">Tom Eastep<br>
+    <br>
+    </span>Copyright © 2001-2003 Thomas M. Eastep<br>
+    <br>
+    Permission is granted to copy, distribute and/or modify this
+    document under the terms of the GNU Free Documentation License,
+    Version 1.2 or any later version published by the Free Software
+    Foundation; with no Invariant Sections, with no Front-Cover,
+    and with no Back-Cover Texts. A copy of the license is included
+    in the section entitled “<a href=
+    "http://shorewall.net/GnuCopyright.htm">GNU Free Documentation
+    License</a>”.<br>
+    <br>
+    2003-12-31<br>
+    <hr style="width: 100%; height: 2px;">
+    Given that I develop and support Shorewall without asking for
+    any renumeration, I can hardly justify paying $200US+ a year to
+    a Certificate Authority such as Thawte (A Division of VeriSign)
+    for an X.509 certificate to prove that I am who I am. I have
+    therefore established my own Certificate Authority (CA) and
+    sign my own X.509 certificates. I use these certificates on my
+    list server (<a href=
+    "https://lists.shorewall.net">https://lists.shorewall.net</a>)
+    which hosts parts of this web site.<br>
+    <br>
+    X.509 certificates are the basis for the Secure Socket Layer
+    (SSL). As part of establishing an SSL session (URL
+    https://...), your browser verifies the X.509 certificate
+    supplied by the HTTPS server against the set of Certificate
+    Authority Certificates that were shipped with your browser. It
+    is expected that the server's certificate was issued by one of
+    the authorities whose identities are known to your browser.
+    <br>
+    <br>
+    This mechanism, while supposedly guaranteeing that when you
+    connect to https://www.foo.bar you are REALLY connecting to
+    www.foo.bar, means that the CAs literally have a license to
+    print money -- they are selling a string of bits (an X.509
+    certificate) for $200US+ per year!!!I <br>
+    <br>
+    I wish that I had decided to become a CA rather that designing
+    and writing Shorewall.<br>
+    <br>
+    What does this mean to you? It means that the X.509 certificate
+    that my server will present to your browser will not have been
+    signed by one of the authorities known to your browser. If you
+    try to connect to my server using SSL, your browser will frown
+    and give you a dialog box asking if you want to accept the
+    sleezy X.509 certificate being presented by my server. <br>
+    <br>
+    There are two things that you can do:<br>
+
+    <ol>
+      <li>You can accept the mail.shorewall.net certificate when
+      your browser asks -- your acceptence of the certificate can
+      be temporary (for that access only) or perminent.</li>
+
+      <li>You can download and install <a href="ca.crt">my
+      (self-signed) CA certificate.</a> This will make my
+      Certificate Authority known to your browser so that it will
+      accept any certificate signed by me.<br>
+      </li>
+    </ol>
+    What are the risks?<br>
+
+    <ol>
+      <li>If you install my CA certificate then you assume that I
+      am trustworthy and that Shorewall running on your firewall
+      won't redirect HTTPS requests intented to go to your bank's
+      server to one of my systems that will present your browser
+      with a bogus certificate claiming that my server is that of
+      your bank.</li>
+
+      <li>If you only accept my server's certificate when prompted
+      then the most that you have to loose is that when you connect
+      to https://mail.shorewall.net, the server you are connecting
+      to might not be mine.</li>
+    </ol>
+    I have my CA certificate loaded into all of my browsers but I
+    certainly won't be offended if you decline to load it into
+    yours... :-)<br>
+    <br>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>
+

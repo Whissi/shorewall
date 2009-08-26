@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <meta name="generator" content=
+    "HTML Tidy for Linux (vers 1st April 2002), see www.w3.org">
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+    <meta name="ProgId" content="FrontPage.Editor.Document">
+    <meta http-equiv="Content-Type" content=
+    "text/html; charset=windows-1252">
+
+    <title>GNU Mailman</title>
+  </head>
+
+  <body>
+    <h1 style="text-align: left;">GNU Mailman/Postfix the Easy
+    Way&nbsp;</h1>
+    <span style="font-weight: bold;">Tom Eastep</span><br>
+
+    <h4><span style="font-weight: normal;">Copyright � 2001-2003
+    Thomas M. Eastep</span><br>
+    <br>
+    <span style="font-weight: normal;">Permission is granted to
+    copy, distribute and/or modify this document under the terms of
+    the GNU Free Documentation License, Version 1.2 or any later
+    version published by the Free Software Foundation; with no
+    Invariant Sections, with no Front-Cover, and with no Back-Cover
+    Texts. A copy of the license is included in the section
+    entitled �</span><a href=
+    "http://shorewall.net/GnuCopyright.htm" style=
+    "font-weight: normal;">GNU Free Documentation License</a><span
+    style="font-weight: normal;">�.</span><br style=
+    "font-weight: normal;">
+    <br style="font-weight: normal;">
+    <span style="font-weight: normal;">2003-12-31</span></h4>
+    <hr style="width: 100%; height: 2px;">
+
+    <h4>The following was posted on the Postfix mailing list on
+    5/4/2002 by Michael Tokarev as a suggested addition to the
+    Postfix FAQ.</h4>
+
+    <p>Q: Mailman does not work with Postfix, complaining about GID
+    mismatch<br>
+    <br>
+    A: Mailman uses a setgid wrapper that is designed to be used in
+    system-wide aliases file so that rest of mailman's mail
+    handling processes will run with proper uid/gid. Postfix has an
+    ability to run a command specified in an alias as owner of that
+    alias, thus mailman's wrapper is not needed here. The best
+    method to invoke mailman's mail handling via aliases is to use
+    separate alias file especially for mailman, and made it owned
+    by mailman and group mailman. Like:<br>
+    <br>
+    alias_maps = hash:/etc/postfix/aliases,
+    hash:/var/mailman/aliases<br>
+    <br>
+    Make sure that /var/mailman/aliases.db is owned by mailman user
+    (this may be done by executing postalias as mailman
+    userid).<br>
+    <br>
+    Next, instead of using mailman-suggested aliases entries with
+    wrapper, use the following:<br>
+    <br>
+    instead of<br>
+    mailinglist: /var/mailman/mail/wrapper post mailinglist<br>
+    mailinglist-admin: /var/mailman/mail/wrapper mailowner
+    mailinglist<br>
+    mailinglist-request: /var/mailman/mail/wrapper mailcmd
+    mailinglist<br>
+    ...<br>
+    <br>
+    use<br>
+    mailinglist: /var/mailman/scripts/post mailinglist<br>
+    mailinglist-admin: /var/mailman/scripts/mailowner
+    mailinglist<br>
+    mailinglist-request: /var/mailman/scripts/mailcmd
+    mailinglist<br>
+    ...</p>
+
+    <h4>The above tip works with Mailman 2.0; Mailman 2.1 has
+    adopted something very similar so that no workaround is
+    necessary. See the README.POSTFIX file included with
+    Mailman-2.1.<br>
+    </h4>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>
+

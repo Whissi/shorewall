@@ -472,6 +472,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     do_export $SVNBRANCH $SHOREWALLDIR
 
+    do_or_die cp $SHOREWALLDIR/changelog.txt $SHOREWALLDIR/releasenotes.txt $SHOREWALLDIR/known_problems.txt .
+
     [ -n "$BUILD6" ]      && do_export $SVN6BRANCH $SHOREWALL6DIR
  
     [ -n "$BUILDLITE" ]   && do_export $LITESVNBRANCH  $SHOREWALLLITEDIR

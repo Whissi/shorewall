@@ -1694,7 +1694,7 @@ sub generate_matrix() {
 			add_jump(
 				 $sourcechainref,
 				 source_exclusion( $hostref->{exclusions}, $frwd_ref ),
-				 1,
+				 ! @{$zoneref->{parents}},
 				 join( '', $interfacematch , match_source_net( $net ), $ipsec_match )
 				);
 		    }

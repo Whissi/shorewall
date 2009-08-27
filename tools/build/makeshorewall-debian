@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# Basic script to build a Debian package - should be executed from the
+# main Shorewall source directory (containing the debian/ subdirectory).
+
+set -e
+set -u
+set -x
+
+PROGNAME=`basename $0`
+MODULE=Shorewall
+PACKAGE=shorewall
+DATE=`date +%Y%m%d`
+VERSION="2.5-cvs$DATE.1"
+# This uses developer CVS - until SF.net fix the 5-hour delay between
+# developer and anonymous CVS, this is the preferred mechanism.
+ROOT=":ext:cvs.sourceforge.net:/cvsroot/shorewall"
+#ROOT=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall"
+TAG=HEAD
+DIR="/tmp/$PACKAGE-$VERSION"
+# Adjust this to the location of a local repository.
+REPOSITORY=/share/src/shorewall/apt
+
+# Email address for Debian changelog entry - the email address is also
+# used by dpkg-buildpackage to look up the GPG key.
+export DEBEMAIL='Shorewall Autobuilder <autobuild@gear.dyndns.org>'
+
+# clean up first
+rm -rf $DIR
+mkdir -p $DIR
+cd $DIR
+
+# Export the source
+cvs -d "$ROOT" -q export -r HEAD $MODULE
+cd $MODULE
+
+# Create a dummy changelog entry
+debchange --newversion $VERSION "Autobuild by $PROGNAME"
+
+# Build the package
+dpkg-buildpackage -rfakeroot
+
+# move to repository
+cd ..
+mkdir -p $REPOSITORY/incoming
+mv *.dsc *.tar.gz *.changes *.deb $REPOSITORY/incoming/

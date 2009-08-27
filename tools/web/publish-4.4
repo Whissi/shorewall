@@ -1,0 +1,143 @@
+#!/bin/sh
+
+#STYLESHEET=/home/teastep/Shorewall/docbook-xsl-1.62.4//xhtml/docbook.xsl
+STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
+WEBSITE=/home/teastep/Shorewall/Website
+HTMFILES="
+    6to4.htm
+    blacklisting_support.htm
+    configuration_file_basics.htm
+    CorpNetwork.htm
+    dhcp.htm
+    Documentation.htm
+    errata.htm
+    fallback.htm
+    FAQ.htm
+    GnuCopyright.htm
+    Install.htm
+    IPIP.htm
+    IPSEC.htm
+    kernel.htm
+    myfiles.htm
+    NAT.htm
+    ports.htm
+    PPTP.htm
+    ProxyARP.htm
+    quotes.htm
+    samba.htm
+    shorewall_extension_scripts.htm
+    shorewall_features.htm
+    shorewall_mirrors.htm
+    shorewall_prerequisites.htm
+    shorewall_quickstart_guide.htm
+    shorewall_setup_guide_fr.htm
+    shorewall_setup_guide.htm
+    Shorewall_sfindex_frame.htm
+    standalone.htm
+    starting_and_stopping_shorewall.htm
+    support.htm
+    three-interface.htm
+    traffic_shaping.htm
+    troubleshoot.htm
+    two-interface.htm
+    upgrade_issues.htm
+    VPN.htm
+    whitelisting_under_shorewall.htm"
+#
+# Suppress the table of contents in these short articles
+#
+NOTOC="
+    Documentation_Index.xml
+    ECN.xml
+    fallback.xml
+    GettingStarted.xml
+    IPP2P.xml
+    ping.xml
+    ProxyARP.xml
+    Shorewall_Doesnt.xml
+    shorewall_features.xml
+    shorewall_prerequisites.xml
+    SimpleBridge.xml"
+
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e
+    e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+if [ $# -eq 0 ]; then
+    echo "Usage: $(basename $0) <XML file> ..."
+    exit 2
+fi
+
+while [ $# -gt 0 ]; do
+
+    case $1 in
+	*.xml)
+	    b=${1%.*}
+            #
+	    # The original HTML documents were created using MS FrontPage and
+	    # used the .htm suffix. The remainder use the .html suffix.
+	    #
+	    if list_search $b.htm $HTMFILES ; then
+		b=$b.htm
+		f="$WEBSITE/$b"
+	    else
+		b=$b.html
+		f="$WEBSITE/$b"
+	    fi
+
+	    list_search $1 $NOTOC && GENTOC="--stringparam generate.toc ''" || GENTOC=
+
+	    case $1 in
+		*_ru.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language ru"
+		    ;;
+		*_fr.xml)
+		    LANGUAGE="--stringparam l10n.gentext.default.language fr"
+		    ;;
+		*)
+		    LANGUAGE=
+		    ;;
+	    esac
+
+	    echo "Converting $1 from XML to HTML ($b) ..."
+
+	    if xmllint --valid --noout $1 && xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self $GENTOC $LANGUAGE --param toc.section.depth 3 $STYLESHEET $1 ; then
+		filestocopy="$filestocopy $f"
+	    fi
+	    ;;
+
+	*)
+	    filestocopy="$filestocopy $1"
+	    ;;
+    esac
+
+    shift
+
+done
+
+DESTS="
+webadmin@mail.shorewall.net:/srv/www/html/4.4
+"
+
+if [ -n "$filestocopy" ]; then
+    for f in $filestocopy; do
+	filestoreport="$filestoreport $(basename $f)"
+    done
+
+    chmod 664 $filestocopy
+    for d in $DESTS; do
+	echo "$filestoreport -> $d"
+	scp -qp $filestocopy $d
+    done
+fi
+
+

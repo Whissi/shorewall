@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+#  Update the version in a set of Shorewall product directories
+#
+#  (C) 2007 -- Tom Eastep (teastep@shorewall.net)
+#
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Usage:
+#
+#       setversion <version>
+#
+[ $# -eq 1 ] || { echo "usage: setversion <version>" >&2; exit 1; }
+
+VERSION=$1
+SUFFIX=
+
+case $VERSION in
+    *.*.*.*)
+	RPMVERSION=${VERSION%.*}
+	RELEASE=${VERSION##*.}
+	SUFFIX="-$RELEASE"
+	;;
+    *-*)
+	RPMVERSION=${VERSION%-*}
+	RELEASE=0${VERSION##*-}
+	;;
+    *)
+	RPMVERSION=${VERSION}
+	RELEASE=0base
+	;;
+esac
+
+for product in "" -common 6 -lite 6-lite -shell -perl; do
+    dir=Shorewall${product}${SUFFIX}
+
+    for file in $dir/install.sh $dir/uninstall.sh $dir/fallback.sh; do
+	[ -f $file ] && eval perl -p -i -e "'s/^VERSION=.*/VERSION=${VERSION}/'" $file
+    done
+
+    file=$dir/shorewall${product}.spec
+    [ -f $file ] && eval perl -n -i -e "'s/^%define version .*/%define version ${RPMVERSION}/; \
+                                         s/^%define release .*/%define release ${RELEASE}/; \
+                                         print \$_; \
+                                         if ( /%changelog/ ) {\
+                                             print \"\* $(date +'%a %b %d %Y') Tom Eastep tom\\@shorewall.net\\n\"; \
+                                             print \"- Updated to ${RPMVERSION}-${RELEASE}\\n\"; \
+                                         }'" $file
+done
+
+file=Shorewall-perl${SUFFIX}/Shorewall/Config.pm
+[ -f $file ] && eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"${VERSION}\",/'" $file
+
+file=Shorewall${SUFFIX}/Shorewall/Config.pm
+[ -f $file ] && eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"${VERSION}\",/'" $file
+
+file=Shorewall${SUFFIX}/Perl/Shorewall/Config.pm
+[ -f $file ] && eval perl -p -i -e "'s/^(\s+)VERSION => .*/\$1VERSION => \"${VERSION}\",/'" $file
+
+[ -d Shorewall${SUFFIX} ] && echo "There are no known problems in Shorewall version ${VERSION}" > Shorewall${SUFFIX}/known_problems.txt
+

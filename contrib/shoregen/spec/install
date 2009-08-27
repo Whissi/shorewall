@@ -1,9 +1,0 @@
-# $Id: install,v 1.6 2004/04/24 13:15:14 paulgear Exp $
-
-install -d -m 0700 $RPM_BUILD_ROOT/usr/bin/
-install -m 0555 install_%{name} %{name} $RPM_BUILD_ROOT/usr/bin/
-
-install -d -m 0755 $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/
-install -m 0444 AUTHORS BUGS COPYING README TODO $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/
-cp -r samples $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/
-chmod -R go=u-w $RPM_BUILD_ROOT/usr/share/doc/%{name}-%{version}/

@@ -1,1 +1,22 @@
-There are no known problems in Shorewall version 4.4.0.2
+1)  If ULOG is specified as the LOG LEVEL in the all->all policy, the
+    rules at the end of the INPUT and OUTPUT chains still use the
+    LOG target rather than ULOG.
+
+    You can work around this problem by adding two additional policies
+    before the all->all one:
+
+    	   all 		$FW	DROP	ULOG
+	   $FW		all	REJECT	ULOG
+
+    This problem was corrected in Shorewall 4.4.0.1.
+
+2)  Use of CONTINUE policies with a nested IPSEC zone was broken in
+    some cases.
+
+    This problem was corrected in Shorewall 4.4.0.1.
+
+3)  If MULTICAST=Yes in shorewall.conf, multicast traffic is
+    incorrectly exempted from ACCEPT policies.
+
+    This problem was corrected in Shorewall 4.4.0.2.
+

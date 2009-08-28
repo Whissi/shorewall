@@ -120,15 +120,17 @@ loc     eth2            -</programlisting>
         role="bold">detect</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...}</term>
 
         <listitem>
-          <para>The broadcast address(es) for the network(s) to which the
-          interface belongs. For P-T-P interfaces, this column is left blank.
-          If the interface has multiple addresses on multiple subnets then
-          list the broadcast addresses as a comma-separated list.</para>
-
           <para>If you use the special value <emphasis
           role="bold">detect</emphasis>, Shorewall will detect the broadcast
-          address(es) for you. If you select this option, the interface must
-          be up before the firewall is started.</para>
+          address(es) for you if your iptables and kernel include Address Type
+          Match support. </para>
+
+          <para>If your iptables and/or kernel lack Address Type Match support
+          then you may list the broadcast address(es) for the network(s) to
+          which the interface belongs. For P-T-P interfaces, this column is
+          left blank. If the interface has multiple addresses on multiple
+          subnets then list the broadcast addresses as a comma-separated
+          list.</para>
 
           <para>If you don't want to give a value for this column but you want
           to enter a value in the OPTIONS column, enter <emphasis
@@ -344,6 +346,19 @@ loc     eth2            -</programlisting>
                 packets entering or leaving on this interface to have their
                 MSS field set to the specified
                 <replaceable>number</replaceable>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">nets=(<emphasis>net</emphasis>[,...])</emphasis></term>
+
+              <listitem>
+                <para>Limit the zone named in the ZONE column to only the
+                listed networks. The parentheses may be omitted if only a
+                single <replaceable>net</replaceable> is given (e.g.,
+                nets=192.168.1.0/24). Limited broadcast is supported on the
+                interface.</para>
               </listitem>
             </varlistentry>
 

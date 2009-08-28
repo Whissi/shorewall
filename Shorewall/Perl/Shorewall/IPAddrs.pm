@@ -34,10 +34,10 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( ALLIPv4
                   ALLIPv6
+	          IPv4_MULTICAST
 	          IPv6_MULTICAST
 	          IPv6_LINKLOCAL
 	          IPv6_SITELOCAL
-	          IPv6_LINKLOCAL
 	          IPv6_LOOPBACK
 	          IPv6_LINK_ALLNODES
 	          IPv6_LINK_ALLRTRS
@@ -89,10 +89,10 @@ our $validate_host;
 
 use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       ALLIPv6             => '::/0' ,
+	       IPv4_MULTICAST      => '224.0.0.0/4' ,
 	       IPv6_MULTICAST      => 'FF00::/10' ,
 	       IPv6_LINKLOCAL      => 'FF80::/10' ,
 	       IPv6_SITELOCAL      => 'FFC0::/10' ,
-	       IPv6_LINKLOCAL      => 'FF80::/10' ,
 	       IPv6_LOOPBACK       => '::1' ,
 	       IPv6_LINK_ALLNODES  => 'FF01::1' ,
 	       IPv6_LINK_ALLRTRS   => 'FF01::2' ,

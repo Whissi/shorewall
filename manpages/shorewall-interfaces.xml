@@ -357,8 +357,21 @@ loc     eth2            -</programlisting>
                 <para>Limit the zone named in the ZONE column to only the
                 listed networks. The parentheses may be omitted if only a
                 single <replaceable>net</replaceable> is given (e.g.,
-                nets=192.168.1.0/24). Limited broadcast is supported on the
-                interface.</para>
+                nets=192.168.1.0/24). Limited broadcast to the zone is
+                supported. Beginning with Shorewall 4.4.1, multicast traffic
+                to the zone is also supported.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">nets=dynamic</emphasis></term>
+
+              <listitem>
+                <para>Defines the zone as <firstterm>dynamic</firstterm>.
+                Requires ipset match support in your iptables and kernel. See
+                <ulink
+                url="http://www.shorewall.net/Dynamic.html">http://www.shorewall.net/Dynamic.html</ulink>
+                for further information.</para>
               </listitem>
             </varlistentry>
 

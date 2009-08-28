@@ -852,6 +852,8 @@ sub process_interface( $ ) {
 		    $value = "+${zone}_${interface}";
 		    $hostoptions{dynamic} = 1;
 		    $ipsets{"${zone}_${interface}"} = 1;
+		} else {
+		    $hostoptions{multicast} = 1;
 		}
 		#
 		# Convert into a Perl array reference
@@ -887,7 +889,10 @@ sub process_interface( $ ) {
 
     $nets = [ allip ] unless $nets;
 
-    add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref ) if $zone;
+    if ( $zone ) {
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref );
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, [ IPv4_MULTICAST ], { destonly => 1 } ) if $hostoptionsref->{multicast};
+    } 
 
     $interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 

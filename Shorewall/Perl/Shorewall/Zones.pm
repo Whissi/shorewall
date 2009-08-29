@@ -838,6 +838,7 @@ sub process_interface( $ ) {
 		$hostoptions{$option} = $numval if $hostopt;
 	    } elsif ( $type == IPLIST_IF_OPTION ) {
 		fatal_error "The $option option requires a value" unless defined $value;
+		fatal_error q("nets=" may not be specified for a multi-zone interface) unless $zone;
 		fatal_error "Duplicate $option option" if $nets;
 		#
 		# Remove parentheses from address list if present

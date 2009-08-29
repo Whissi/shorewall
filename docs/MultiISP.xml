@@ -235,9 +235,22 @@
 
               <listitem>
                 <para>Use mark values &gt; 255 for provider marks in this
-                column. These mark values must be a multiple of 256 in the
-                range 256-65280 (hex equivalent 0x100 - 0xFF00 with the
-                low-order 8 bits being zero).</para>
+                column. </para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>These mark values must be a multiple of 256 in the
+                    range 256-65280 (hex equivalent 0x100 - 0xFF00 with the
+                    low-order 8 bits being zero); or</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Set WIDE_TC_MARKS=Yes in <ulink
+                    url="manpages/shorewall.conf.html">shorewall.conf
+                    </ulink>(5) and use mark values in the range 0x10000 -
+                    0xFF0000 with the low-order 16 bits being zero.</para>
+                  </listitem>
+                </itemizedlist>
               </listitem>
             </itemizedlist>
 
@@ -265,10 +278,10 @@
 
           <listitem>
             <para>The name of the interface to the provider. Where multiple
-            providers share the same interface (which is not recommended), you
-            must follow the name of the interface by a colon (":") and the IP
-            address assigned by this provider (e.g., eth0:206.124.146.176).
-            See <link linkend="Shared">below</link> for additional
+            providers share the same interface, you must follow the name of
+            the interface by a colon (":") and the IP address assigned by this
+            provider (e.g., eth0:206.124.146.176). See <link
+            linkend="Shared">below</link> for additional
             considerations.</para>
 
             <para>The interface must have been previously defined in <ulink
@@ -618,8 +631,9 @@
 
         <listitem>
           <para>Once routing determines where the packet is to go, the
-          firewall (Shorewall) determines if the packet is allowed to go
-          there.</para>
+          firewall (Shorewall) determines if the packet is allowed to go there
+          and controls rewriting of the SOURCE IP address
+          (SNAT/MASQUERADE).</para>
         </listitem>
       </orderedlist>
 
@@ -655,7 +669,7 @@ eth1             0.0.0.0/0            130.252.99.27</programlisting>
       internal subnetwork.</para>
 
       <para>If you have multiple IP addresses on one of your interfaces, you
-      can use a similar technique -- simple exclude the smallest network that
+      can use a similar technique -- simplY exclude the smallest network that
       contains all of those addresses from being masqueraded.</para>
 
       <warning>
@@ -1351,7 +1365,7 @@ fi</programlisting></para>
         creates a secondary configuration file
         (<filename>/etc/lsm/shorewall.conf</filename>) that contains the link
         configurations. That file is included by
-        <filename>/etc/lsm/lsm.conf</filename>.</para>
+        <filename>/etc/lsm/lsm.conf</filename>.B</para>
 
         <para>Below are my relevant configuration files.</para>
 

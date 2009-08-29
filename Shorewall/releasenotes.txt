@@ -180,9 +180,13 @@ Shorewall 4.4.1
     one-interface sample configuration since forwarding is typically
     not required with only a single interface.
 
-4)  Previously, the definition of a zone that specified nets= in
+4)  Previously, the definition of a zone that specified "nets=" in
     /etc/shorewall/interfaces could not be extended by entries in
     /etc/shorewall/hosts.
+
+5)  Previously, "nets=" could be specified in a multi-zone interface
+    definition ("-" in the ZONES column) in /etc/shorewall/zones. This
+    now raises a fatal compilation error.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

@@ -135,20 +135,20 @@ GATEWAY=::192.88.99.1</programlisting></para>
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
-2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+1: eth1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+    inet6 fe80::202:e3ff:fe08:484c/64 scope link 
+       valid_lft forever preferred_lft forever
+2: eth2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
 <emphasis role="bold">    inet6 2002:ce7c:92b4:1::1/64 scope global 
        valid_lft forever preferred_lft forever</emphasis>
     inet6 fe80::202:e3ff:fe08:55fa/64 scope link 
        valid_lft forever preferred_lft forever
-3: eth1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
-    inet6 fe80::202:e3ff:fe08:484c/64 scope link 
-       valid_lft forever preferred_lft forever
-4: eth2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
+3: eth4: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qlen 1000
 <emphasis role="bold">    inet6 2002:ce7c:92b4:2::1/64 scope global 
        valid_lft forever preferred_lft forever</emphasis>
     inet6 fe80::2a0:ccff:fed2:353a/64 scope link 
        valid_lft forever preferred_lft forever
-24: sit1@NONE: &lt;NOARP,UP,LOWER_UP&gt; mtu 1480 
+4: sit1@NONE: &lt;NOARP,UP,LOWER_UP&gt; mtu 1480 
 <emphasis role="bold">    inet6 ::206.124.146.180/128 scope global 
        valid_lft forever preferred_lft forever
     inet6 2002:ce7c:92b4::1/128 scope global 
@@ -156,24 +156,24 @@ GATEWAY=::192.88.99.1</programlisting></para>
 gateway:~ # ip -6 route ls
 <emphasis role="bold">::/96 via :: dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295</emphasis>
 <emphasis role="bold">2002:ce7c:92b4::1 dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295
-2002:ce7c:92b4:1::/64 dev eth0  metric 256  expires 21333315sec mtu 1500 advmss 1440 hoplimit 4294967295
-2002:ce7c:92b4:2::/64 dev eth2  metric 256  expires 21333315sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
-fe80::/64 dev eth0  metric 256  expires 20748424sec mtu 1500 advmss 1440 hoplimit 4294967295
-fe80::/64 dev eth1  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimit 4294967295
+2002:ce7c:92b4:1::/64 dev eth2  metric 256  expires 21333315sec mtu 1500 advmss 1440 hoplimit 4294967295
+2002:ce7c:92b4:2::/64 dev eth4  metric 256  expires 21333315sec mtu 1500 advmss 1440 hoplimit 4294967295</emphasis>
+fe80::/64 dev eth1  metric 256  expires 20748424sec mtu 1500 advmss 1440 hoplimit 4294967295
 fe80::/64 dev eth2  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimit 4294967295
+fe80::/64 dev eth4  metric 256  expires 20748431sec mtu 1500 advmss 1440 hoplimit 4294967295
 fe80::/64 dev sit1  metric 256  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295
 <emphasis role="bold">default via ::192.88.99.1 dev sit1  metric 1  expires 21333315sec mtu 1480 advmss 1420 hoplimit 4294967295</emphasis>
 gateway:~ # </programlisting></para>
       </blockquote>
 
-      <para>You will notice that sit1, eth0 and eth2 each have an IPv6 address
+      <para>You will notice that sit1, eth2 and eth4 each have an IPv6 address
       beginning with 2002: -- All 6to4 IPv6 addresses have that in their most
       significant 16 bits. The next 32-bits (ce7c:92b4) encode the IPv4
       ADDRESS (206.124.146.180). So once you start the 6to4 tunnel, you are
       the proud owner of 2<superscript>80</superscript> IPv6 addresses! In the
       case shown here, 2002:ce7c:92b4::/48. The SLA is used to assign each
       interface in INTERFACES, a subnet of 2<superscript>64</superscript>
-      addresses; in the case of eth0, 2002:ce7c:92b4:1::/64.</para>
+      addresses; in the case of eth2, 2002:ce7c:92b4:1::/64.</para>
 
       <para>I run <ulink url="http://www.litech.org/radvd/">radvd</ulink> on
       the firewall to allow hosts conntected to eth2 and eth4 to automatically

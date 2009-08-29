@@ -597,7 +597,6 @@ sub add_group_to_zone($$$$$)
     my $interfaceref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    my $ifacezone = $interfaces{$interface}{zone};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -605,8 +604,6 @@ sub add_group_to_zone($$$$$)
     my @exclusions = ();
     my $new = \@newnetworks;
     my $switched = 0;
-
-    $ifacezone = '' unless defined $ifacezone;
 
     for my $host ( @$networks ) {
 	$interfaces{$interface}{nets}++;
@@ -622,8 +619,8 @@ sub add_group_to_zone($$$$$)
 
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {
-		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $ifacezone eq $zone;
-		$ifacezone = $zone if $host eq ALLIP;
+		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $interfaces{$interface}{zone} eq $zone;
+		$interfaces{$interface}{zone} = $zone if $host eq ALLIP;
 	    }
 	}
 
@@ -885,7 +882,9 @@ sub process_interface( $ ) {
 				number     => $nextinum ,
 				root       => $root ,
 				broadcasts => $broadcasts ,
-				options    => \%options };
+				options    => \%options ,
+			        zone       => ''
+			      };
 
     $nets = [ allip ] unless $nets;
 
@@ -893,8 +892,6 @@ sub process_interface( $ ) {
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref );
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, [ IPv4_MULTICAST ], { destonly => 1 } ) if $hostoptionsref->{multicast};
     } 
-
-    $interfaces{$interface}{zone} = $zone; #Must follow the call to add_group_to_zone()
 
     progress_message "  Interface \"$currentline\" Validated";
 

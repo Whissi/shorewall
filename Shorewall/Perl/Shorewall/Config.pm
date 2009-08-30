@@ -683,15 +683,16 @@ sub cleanup() {
     #
     # Close files first in case we're running under Cygwin
     #
-    close  $object         if $object;
-    close  $scriptfile     if $scriptfile;
-    close  $log            if $log;
+    close  $object, $object = undef         if $object;
+    close  $scriptfile, $scriptfile = undef if $scriptfile;
+    close  $log, $log = undef               if $log;
     #
     # Unlink temporary files
     #
-    unlink $tempfile       if $tempfile;
-    unlink $scriptfilename if $scriptfilename;
+    unlink $tempfile, $tempfile = undef             if $tempfile;
+    unlink $scriptfilename, $scriptfilename = undef if $scriptfilename;
     unlink $_ for @tempfiles;
+    @tempfiles = ();
 }
 
 #

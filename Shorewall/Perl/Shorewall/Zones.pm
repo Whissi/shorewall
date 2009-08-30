@@ -359,8 +359,8 @@ sub process_zone( \$ ) {
     fatal_error "Invalid zone name ($zone)"      if $reservedName{$zone} || $zone =~ /^all2|2all$/;
     fatal_error( "Duplicate zone name ($zone)" ) if $zones{$zone};
 
-    if ( $type =~ /ipv([46])?/i ) {
-	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
+    if ( $type =~ /^ip(v([46]))?$/i ) {
+	fatal_error "Invalid zone type ($type)" if $1 && $2 != $family;
 	$type = IP;
 	$$ip = 1;
     } elsif ( $type =~ /^ipsec([46])?$/i ) {

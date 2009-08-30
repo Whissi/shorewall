@@ -49,7 +49,7 @@ our $export;
 
 our $test;
 
-our $family = F_IPV4;
+our $family;
 
 #
 # Initilize the package-globals in the other modules

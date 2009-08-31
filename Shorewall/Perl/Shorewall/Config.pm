@@ -661,7 +661,7 @@ sub warning_message
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
     our @localtime;
 
-    $| = 1;
+    $| = 1; #Reset output buffering (flush any partially filled buffers).
 
     if ( $log ) {
 	@localtime = localtime;
@@ -676,7 +676,7 @@ sub warning_message
 	print $log   "   WARNING: @_$currentlineinfo\n" if $log;
     }
 
-    $| = 0;
+    $| = 0; #Re-allow output buffering
 }
 
 sub cleanup() {
@@ -701,7 +701,7 @@ sub fatal_error	{
     my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
 
-    $| = 1;
+    $| = 1; #Reset output buffering (flush any partially filled buffers).
 
     if ( $log ) {
 	our @localtime = localtime;

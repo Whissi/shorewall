@@ -604,6 +604,7 @@ sub add_group_to_zone($$$$$)
     my @exclusions = ();
     my $new = \@newnetworks;
     my $switched = 0;
+    my $allip    = 0;
 
     for my $host ( @$networks ) {
 	$interfaces{$interface}{nets}++;
@@ -620,7 +621,11 @@ sub add_group_to_zone($$$$$)
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $interfaces{$interface}{zone} eq $zone;
-		$interfaces{$interface}{zone} = $zone if $host eq ALLIP;
+		if ( $host eq ALLIP ) {
+		    fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if @newnetworks;
+		    $interfaces{$interface}{zone} = $zone;
+		    $allip = 1;
+		}
 	    }
 	}
 
@@ -641,6 +646,8 @@ sub add_group_to_zone($$$$$)
     $hostsref     = ( $zoneref->{hosts}           || ( $zoneref->{hosts} = {} ) );
     $typeref      = ( $hostsref->{$gtype}         || ( $hostsref->{$gtype} = {} ) );
     $interfaceref = ( $typeref->{$interface}      || ( $typeref->{$interface} = [] ) );
+
+    fatal_error "Duplicate Host Group ($interface:" . ALLIP . ") in zone $zone" if $allip && @$interfaceref;
 
     $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions );
 

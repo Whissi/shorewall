@@ -165,6 +165,11 @@ Shorewall 4.4.1
     explicitly call the module's 'initialize' function after the module
     has been loaded.
 
+12) Checking for zone membership has been tighened up. Previously, 
+    a zone could contain <interface>:0.0.0.0/0 along with other hosts;
+    now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
+    then it may have no additional members in /etc/shorewall/hosts.
+
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
 ----------------------------------------------------------------------------
@@ -193,6 +198,11 @@ Shorewall 4.4.1
 
 7)  MULTICAST=Yes generates an incorrect rule that limits its
     effectiveness to a small part of the multicast address space.
+
+8)  Checking for zone membership has been tighened up. Previously, 
+    a zone could contain <interface>:0.0.0.0/0 along with other hosts;
+    now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
+    then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

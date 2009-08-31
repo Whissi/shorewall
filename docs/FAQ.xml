@@ -91,8 +91,8 @@
     </section>
 
     <section id="faq75">
-      <title>(FAQ 75) I can't find the Shorewall 4.x shorewall-common RPM.
-      Where is it?</title>
+      <title>(FAQ 75) I can't find the Shorewall 4.0 (or 4.2) shorewall-common
+      RPM. Where is it?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> If you use Simon Matter's
       Redhat/Fedora/CentOS rpms, be aware that Simon calls the
@@ -118,15 +118,15 @@
     <title>Upgrading Shorewall</title>
 
     <section id="faq66">
-      <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.x; where is the
-      'shorewall' package?</title>
+      <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.0 (or 4.2); where
+      is the 'shorewall' package?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
       url="upgrade_issues.htm">upgrade issues.</ulink></para>
 
       <section id="faq66a">
-        <title>(FAQ 66a) I'm trying to upgrade to Shorewall 4.x; do I have to
-        uninstall the 'shorewall' package?</title>
+        <title>(FAQ 66a) I'm trying to upgrade to Shorewall 4.0 (or 4.2); do I
+        have to uninstall the 'shorewall' package?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
         url="upgrade_issues.htm">upgrade issues.</ulink></para>
@@ -539,6 +539,13 @@ REDIRECT        net           22          tcp          9022</programlisting>
       you use ACCEPT unless you need to hijack connections as they go through
       your firewall and handle them on the firewall box itself; in that case,
       you use a REDIRECT rule.</para>
+
+      <note>
+        <para>The preceding answer should <emphasis>not</emphasis> be
+        interpreted to mean that DNAT can only be used in conjunction with
+        SNAT. But in common configurations using private local addresses, that
+        is the most common usage.</para>
+      </note>
     </section>
 
     <section id="faq8">

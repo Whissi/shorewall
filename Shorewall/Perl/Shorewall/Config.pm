@@ -689,10 +689,9 @@ sub cleanup() {
     #
     # Unlink temporary files
     #
-    unlink $tempfile, $tempfile = undef             if $tempfile;
-    unlink $scriptfilename, $scriptfilename = undef if $scriptfilename;
-    unlink $_ for @tempfiles;
-    @tempfiles = ();
+    unlink ( $tempfile ), $tempfile = undef             if $tempfile;
+    unlink ( $scriptfilename ), $scriptfilename = undef if $scriptfilename;
+    unlink ( @tempfiles ), @tempfiles = ()              if @tempfiles;
 }
 
 #

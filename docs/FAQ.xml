@@ -1107,6 +1107,25 @@ to debug/develop the newnat interface.</programlisting></para>
           will not prevent the above message from being issued.</para>
         </note></para>
     </section>
+
+    <section id="faq85">
+      <title>(FAQ 85) Shorewall is rejecting connections from my local lan
+      because it thinks they are coming from the 'net' zone.</title>
+
+      <para>I'm seeing this in my log:</para>
+
+      <programlisting>Aug 31 16:51:24 fw22 kernel: Shorewall:net2fw:DROP:IN=eth5 OUT= MAC=00:0c:29:74:9c:0c:08:00:20:b2:5f:db:08:00
+                                       SRC=10.1.50.14 DST=10.1.50.7 LEN=57 TOS=0x00 PREC=0x00 TTL=255 ID=32302 DF
+                                       PROTO=UDP SPT=53289 DPT=53 LEN=37</programlisting>
+
+      <para><emphasis role="bold">Answer</emphasis>: This occurs when the
+      external interface and an internal interface are connected to the same
+      switch or hub. See <ulink url="FoolsFirewall.html">this article</ulink>
+      for details. The solution is to never connect more than one firewall
+      interface to the same hub or switch (an obvious exception is that when
+      you have a switch that supports VLAN tagging and the interfaces are
+      associated with different VLANs).</para>
+    </section>
   </section>
 
   <section id="Logging">

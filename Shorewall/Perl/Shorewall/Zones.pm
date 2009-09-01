@@ -624,7 +624,6 @@ sub add_group_to_zone($$$$$)
 		if ( $host eq ALLIP ) {
 		    fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if @newnetworks;
 		    $interfaces{$interface}{zone} = $zone;
-		    $options->{multicast} = 0;
 		    $allip = 1;
 		}
 	    }
@@ -895,11 +894,15 @@ sub process_interface( $ ) {
 			        zone       => ''
 			      };
 
-    $nets = [ allip ] unless $nets;
 
     if ( $zone ) {
+	$nets ||= [ allip ];
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref );
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, [ IPv4_MULTICAST ], { destonly => 1 } ) if $hostoptionsref->{multicast};
+	add_group_to_zone( $zone, 
+			   $zoneref->{type}, 
+			   $interface, 
+			   [ IPv4_MULTICAST ], 
+			   { destonly => 1 } ) if $hostoptionsref->{multicast} && $interfaces{$interface}{zone} ne $zone;
     } 
 
     progress_message "  Interface \"$currentline\" Validated";

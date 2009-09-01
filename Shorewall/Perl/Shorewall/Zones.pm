@@ -894,7 +894,6 @@ sub process_interface( $ ) {
 			        zone       => ''
 			      };
 
-
     if ( $zone ) {
 	$nets ||= [ allip ];
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref );

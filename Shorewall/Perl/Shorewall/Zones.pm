@@ -624,6 +624,7 @@ sub add_group_to_zone($$$$$)
 		if ( $host eq ALLIP ) {
 		    fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if @newnetworks;
 		    $interfaces{$interface}{zone} = $zone;
+		    $options->{multicast} = 0;
 		    $allip = 1;
 		}
 	    }

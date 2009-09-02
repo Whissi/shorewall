@@ -443,8 +443,17 @@ sub push_rule( $$ ) {
 }
 
 #
-# Post-process a rule having an port list. Split the rule into multiple rules if necessary
+# Post-process a rule having a port list. Split the rule into multiple rules if necessary
 # to work within the 15-element limit imposed by iptables/Netfilter.
+#
+# The third argument ($dport) indicates what type of list we are spltting:
+#
+#      $dport == 1     Destination port list
+#      $dport == 0     Source port list
+#
+# When expanding a Destination port list, each resulting rule is checked for the presence
+# of a Source port list; if one is present, the function calls itself recursively with
+# $dport == 0.
 #
 sub handle_port_list( $$$$$$ );
 

@@ -443,55 +443,13 @@ sub push_rule( $$ ) {
 }
 
 #
-# Post-process a rule having an sport list. Split the rule into multiple rules if necessary
+# Post-process a rule having an port list. Split the rule into multiple rules if necessary
 # to work within the 15-element limit imposed by iptables/Netfilter.
 #
+sub handle_port_list( $$$$$$ );
 
-sub handle_sport_list( $$$$$ ) {
-    my ($chainref, $rule, $first, $ports, $rest) = @_;
-
-    if ( port_count( $ports ) > 15 ) {
-	#
-	# More than 15 ports specified
-	#
-	my @ports = split '([,:])', $ports;
-
-	while ( @ports ) {
-	    my $count = 0;
-	    my $newports = '';
-
-	    while ( @ports && $count < 15 ) {
-		my ($port, $separator) = ( shift @ports, shift @ports );
-
-		$separator ||= '';
-
-		if ( ++$count == 15 ) {
-		    if ( $separator eq ':' ) {
-			unshift @ports, $port, ':';
-			chop $newports;
-			last;
-		    } else {
-			$newports .= $port;
-		    }
-		} else {
-		    $newports .= "${port}${separator}";
-		}
-	    }
-
-	    push_rule ( $chainref, join( '', $first, $newports, $rest ) );
-	}
-    } else {
-	push_rule ( $chainref, $rule );
-    }
-}
-
-#
-# Post-process a rule having an dport list. Split the rule into multiple rules if necessary
-# to work within the 15-element limit imposed by iptables/Netfilter.
-#
-
-sub handle_dport_list( $$$$$ ) {
-    my ($chainref, $rule, $first, $ports, $rest) = @_;
+sub handle_port_list( $$$$$$ ) {
+    my ($chainref, $rule, $dport, $first, $ports, $rest) = @_;
 
     if ( port_count( $ports ) > 15 ) {
 	#
@@ -523,14 +481,14 @@ sub handle_dport_list( $$$$$ ) {
 
 	    my $newrule = join( '', $first, $newports, $rest );
 
-	    if ( $newrule =~  /^(.* --sports\s+)([^ ]+)(.*)$/ ) {
-		handle_sport_list( $chainref, $newrule, $1, $2, $3 );
+	    if ( $dport && $newrule =~  /^(.* --sports\s+)([^ ]+)(.*)$/ ) {
+		handle_port_list( $chainref, $newrule, 0, $1, $2, $3 );
 	    } else {
 		push_rule ( $chainref, $newrule );
 	    }
 	}
-    } elsif ( $rule =~  /^(.* --sports\s+)([^ ]+)(.*)$/ ) {
-	handle_sport_list( $chainref, $rule, $1, $2, $3 );
+    } elsif ( $dport && $rule =~  /^(.* --sports\s+)([^ ]+)(.*)$/ ) {
+	handle_port_list( $chainref, $rule, 0, $1, $2, $3 );
     } else {
 	push_rule ( $chainref, $rule );
     }
@@ -560,12 +518,12 @@ sub add_rule($$;$)
 	    #
 	    # Rule has a --dports specification
 	    #
-	    handle_dport_list( $chainref, $rule, $1, $2, $3 )
+	    handle_port_list( $chainref, $rule, 1, $1, $2, $3 )
 	} elsif ( $rule =~  /^(.* --sports\s+)([^ ]+)(.*)$/ ) {
 	    #
 	    # Rule has a --sports specification
 	    #
-	    handle_sport_list( $chainref, $rule, $1, $2, $3 )
+	    handle_port_list( $chainref, $rule, 0, $1, $2, $3 )
 	} else {
 	    push_rule ( $chainref, $rule );
 	}

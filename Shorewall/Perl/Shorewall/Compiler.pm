@@ -591,8 +591,6 @@ sub compiler {
 
     report_capabilities;
 
-    initialize_chain_table;
-
     require_capability( 'MULTIPORT'       , "Shorewall $globals{VERSION}" , 's' );
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{HIGH_ROUTE_MARKS};
@@ -604,6 +602,11 @@ sub compiler {
     } else {
 	set_command( 'check', 'Checking', 'Checked' );
     }
+    #
+    # Chain table initialization depends on shorewall.conf and capabilities. So it must be deferred until
+    # shorewall.conf has been processed and the capabilities have been determined.
+    #
+    initialize_chain_table;
 
     #
     # Allow user to load Perl modules

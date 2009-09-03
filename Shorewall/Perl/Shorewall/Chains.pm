@@ -73,7 +73,6 @@ our %EXPORT_TAGS = (
 
 				       add_commands
 				       move_rules
-				       move_rules1
 				       insert_rule1
 				       purge_jump
 				       add_tunnel_rule
@@ -433,11 +432,7 @@ sub push_rule( $$ ) {
 	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
 	add_commands $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
     } else {
-	#
-	# We omit the chain name for now -- this makes it easier to move rules from one
-	# chain to another
-	#
-	push @{$chainref->{rules}}, join( ' ', '-A' , $rule );
+	push @{$chainref->{rules}}, join( ' ', '-A' , $chainref->{name}, $rule );
 	$chainref->{referenced} = 1;
     }
 }
@@ -609,7 +604,7 @@ sub insert_rule1($$$)
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
 
-    splice( @{$chainref->{rules}}, $number, 0,  join( ' ', '-A', $rule ) );
+    splice( @{$chainref->{rules}}, $number, 0,  join( ' ', '-A', $chainref->{name}, $rule ) );
 
     $iprangematch = 0;
 
@@ -639,36 +634,18 @@ sub add_tunnel_rule( $$ ) {
 # forward chain. Shorewall::Rules::generate_matrix() may decide to move those rules to
 # a zone-oriented chain, hence this function.
 #
-# The source chain must not have any run-time code included in its rules.
-#
 sub move_rules( $$ ) {
     my ($chain1, $chain2 ) = @_;
 
     if ( $chain1->{referenced} ) {
 	my @rules = @{$chain1->{rules}};
+	my $name  = $chain1->{name};
+	#
+	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
+	#
+	$name =~ s/\+/\\+/;
 
-	assert( /^-A/ ) for @rules;
-
-	splice @{$chain2->{rules}}, 0, 0, @rules;
-
-	$chain2->{referenced} = 1;
-	$chain1->{referenced} = 0;
-	$chain1->{rules}      = [];
-    }
-}
-
-#
-# Like above except it returns 0 if it can't move the rules
-#
-sub move_rules1( $$ ) {
-    my ($chain1, $chain2 ) = @_;
-
-    if ( $chain1->{referenced} ) {
-	my @rules = @{$chain1->{rules}};
-
-	for ( @rules ) {
-	    return 0 unless /^-A/;
-	}
+	( s/\-([AI]) $name /-$1 $chain2->{name} / ) for @rules;
 
 	splice @{$chain2->{rules}}, 0, 0, @rules;
 
@@ -676,8 +653,6 @@ sub move_rules1( $$ ) {
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
     }
-
-    1;
 }
 
 #
@@ -2868,15 +2843,15 @@ sub enter_cmd_mode() {
 #
 # Emits the passed rule (input to iptables-restore) or command
 #
-sub emitr( $$ ) {
-    my ( $name, $rule ) = @_;
+sub emitr( $ ) {
+    my $rule = $_[0];
 
     if ( $rule && substr( $rule, 0, 2 ) eq '-A' ) {
 	#
 	# A rule
 	#
 	enter_cat_mode unless $mode == CAT_MODE;
-	emit_unindented join( ' ', '-A', $name, substr( $rule, 3 ) );
+	emit_unindented $rule;
     } else {
 	#
 	# A command
@@ -2889,12 +2864,10 @@ sub emitr( $$ ) {
 #
 # Simple version that only handles rules
 #
-sub emitr1( $$ ) {
-    my ( $name, $rule ) = @_;
+sub emitr1( $ ) {
+    my $rule = $_[0];
 
-    assert( substr( $rule, 0, 2 ) eq '-A' );
-
-    emit_unindented join( ' ', '-A', $name, substr( $rule, 3 ) );
+    emit_unindented $rule;
 }
 
 #
@@ -2970,7 +2943,7 @@ sub create_netfilter_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr $chainref->{name}, $_ for ( grep defined $_, @{$chainref->{rules}} );
+	    emitr $_ for ( grep defined $_, @{$chainref->{rules}} );
 	}
 	#
 	# Commit the changes to the table
@@ -3079,7 +3052,7 @@ sub create_chainlist_reload($) {
 		#
 		# Emit the chain rules
 		#
-		emitr $chain, $_ for ( grep defined $_, @rules );
+		emitr $_ for ( grep defined $_, @rules );
 	    }
 	    #
 	    # Commit the changes to the table
@@ -3184,7 +3157,7 @@ sub create_stop_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr1 $chainref->{name}, $_ for @{$chainref->{rules}};
+	    emitr1 $_ for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table

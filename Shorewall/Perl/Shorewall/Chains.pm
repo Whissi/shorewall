@@ -71,6 +71,7 @@ our %EXPORT_TAGS = (
 				       ALL_COMMANDS
 				       NOT_RESTORE
 
+				       initialize_chain_table
 				       add_commands
 				       move_rules
 				       move_rules1
@@ -296,7 +297,6 @@ our %builtin_target = ( ACCEPT   => 1,
 			NFQUEUE  => 1,
 			REDIRECT => 1 );
 
-sub initialize_chain_table();
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -356,8 +356,6 @@ sub initialize( $ ) {
 
     $global_variables   = 0;
     $idiotcount         = 0;
-
-    initialize_chain_table;
 
 }
 
@@ -1041,7 +1039,7 @@ sub ensure_manual_chain($) {
 }
 
 #
-# Add all builtin chains to the chain table -- it is separate from initialize() for purely historical reasons.
+# Add all builtin chains to the chain table -- it is separate from initialize() because it depends on capabilities and configuration.
 # The function also initializes the target table with the pre-defined targets available for the specfied address family.
 #
 #

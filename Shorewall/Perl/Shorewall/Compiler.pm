@@ -589,6 +589,8 @@ sub compiler {
     #
     get_configuration( $export );
 
+    initialize_chain_table;
+
     report_capabilities;
 
     require_capability( 'MULTIPORT'       , "Shorewall $globals{VERSION}" , 's' );

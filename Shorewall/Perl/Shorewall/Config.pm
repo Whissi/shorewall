@@ -1951,7 +1951,7 @@ sub determine_capabilities( $ ) {
 
     if ( $capabilities{NAT_ENABLED} ) {
 	if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	    $capabilities{PERSISTENT_SNAT} = qt1( "$iptables -t nat -A $sillyname -j SNAT --to source 1.2.3.4 --persistent" );
+	    $capabilities{PERSISTENT_SNAT} = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
 	    qt1( "$iptables -t NAT -F $sillyname" );
 	    qt1( "$iptables -t NAT -X $sillyname" );
 	}

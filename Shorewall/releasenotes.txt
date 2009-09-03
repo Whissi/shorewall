@@ -1,4 +1,4 @@
-Shorewall 4.4.1
+Shorewall 4.4.2
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -171,38 +171,14 @@ Shorewall 4.4.1
     then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2
 ----------------------------------------------------------------------------
 
-1)  If ULOG was specified as the LOG LEVEL in the all->all policy, the
-    rules at the end of the INPUT and OUTPUT chains would still use the
-    LOG target rather than ULOG.
+1)  Detection of Persistent SNAT was broken in the rules compiler. 
 
-2)  Using CONTINUE policies with a nested IPSEC zone was still broken
-    in some cases.
-
-3)  The setting of IP_FORWARDING has been change to Off in the
-    one-interface sample configuration since forwarding is typically
-    not required with only a single interface.
-
-4)  If MULTICAST=Yes in shorewall.conf, multicast traffic was
-    incorrectly exempted from ACCEPT policies.
-
-5)  Previously, the definition of a zone that specified "nets=" in
-    /etc/shorewall/interfaces could not be extended by entries in
-    /etc/shorewall/hosts.
-
-6)  Previously, "nets=" could be specified in a multi-zone interface
-    definition ("-" in the ZONES column) in /etc/shorewall/zones. This
-    now raises a fatal compilation error.
-
-7)  MULTICAST=Yes generates an incorrect rule that limits its
-    effectiveness to a small part of the multicast address space.
-
-8)  Checking for zone membership has been tighened up. Previously, 
-    a zone could contain <interface>:0.0.0.0/0 along with other hosts;
-    now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
-    then it may have no additional members in /etc/shorewall/hosts.
+2)  Initialization of the compiler's chain table was occurring before 
+    shorewall.conf had been read and before the capabilities had been
+    determined. This could lead to incorrect rules and Perl runtime errors.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -211,66 +187,13 @@ Shorewall 4.4.1
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 1
+                N E W   F E A T U R E S   I N   4 . 4 . 2
 ----------------------------------------------------------------------------
 
-1)  To replace the SAME keyword in /etc/shorewall/masq, support has
-    been added for 'persistent' SNAT. Persistent SNAT is required when
-    an address range is specified in the ADDRESS column and when you
-    want a client to always receive the same source/destination IP
-    pair. It replaces SAME: which was removed in Shorewall 4.4.0.
-
-    To specify persistence, follow the address range with
-    ":persistent".
-
-    Example:
-
-    #INTERFACE	SOURCE	   ADDRESS
-    eth0	0.0.0.0/0  206.124.146.177-206.124.146.179:persistent
-
-    This feature requires Persistent SNAT support in your kernel and
-    iptables. 
-
-    If you use a capabilities file, you will need to create a new one
-    as a result of this feature.
-
-    WARNING: Linux kernels beginning with 2.6.29 include persistent
-    SNAT support. If your iptables supports persistent SNAT but your
-    kernel does not, there is no way for Shorewall to determine that
-    persistent SNAT isn't going to work. The kernel SNAT code blindly
-    accepts all SNAT flags without verifying them and returns them to
-    iptables when asked.
-
-2)  A 'clean' target has been added to the Makefiles. It removes backup
-    files (*~ and .*~). 
-
-3)  The meaning of 'full' has been redefined when used in the context
-    of a traffic shaping sub-class. Previously, 'full' always meant the
-    OUT-BANDWIDTH of the device. In the case of a sub-class, however,
-    that definition is awkward to use because the sub-class is limited
-    by the parent class.
-
-    Beginning with this release, 'full' in a sub-class definition
-    refers to the specified rate defined for the parent class. So
-    'full' used in the RATE column refers to the parent class's RATE;
-    when used in the CEIL column, 'full' refers to the parent class's
-    CEIL.
-
-    As part of this change, the compiler now issues a warning if the
-    sum of the top-level classes' RATEs exceeds the OUT-BANDWIDTH of
-    the device. Similarly, a warning is issued if the sum of the RATEs
-    of a class's sub-classes exceeds the rate of the CLASS.
-
-4)  When 'nets=<network>' or 'nets=(<net1>,<net2>,...) is specified in
-    /etc/shorewall/interfaces, multicast traffic will now be sent to
-    the zone along with limited broadcasts.
-
-5)  A flaw in the parsing logic for the zones file allowed most zone
-    types containing the character string 'ip' to be accepted as a
-    synonym for 'ipv4' (or ipv6 if compiling an IPv6 configuration).
+None.
 
 ----------------------------------------------------------------------------
-                 N E W   F E A T U R E S   I N   4 . 4
+                N E W   F E A T U R E S   I N   4 . 4 . 0
 ----------------------------------------------------------------------------
 
 1)  The Shorewall packaging has been completely revamped in Shorewall
@@ -918,3 +841,96 @@ None.
     the iptables utility is discovered using the PATH setting, then
     ip6tables in the same directory as the discovered iptables will be
     used.
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
+----------------------------------------------------------------------------
+
+1)  If ULOG was specified as the LOG LEVEL in the all->all policy, the
+    rules at the end of the INPUT and OUTPUT chains would still use the
+    LOG target rather than ULOG.
+
+2)  Using CONTINUE policies with a nested IPSEC zone was still broken
+    in some cases.
+
+3)  The setting of IP_FORWARDING has been change to Off in the
+    one-interface sample configuration since forwarding is typically
+    not required with only a single interface.
+
+4)  If MULTICAST=Yes in shorewall.conf, multicast traffic was
+    incorrectly exempted from ACCEPT policies.
+
+5)  Previously, the definition of a zone that specified "nets=" in
+    /etc/shorewall/interfaces could not be extended by entries in
+    /etc/shorewall/hosts.
+
+6)  Previously, "nets=" could be specified in a multi-zone interface
+    definition ("-" in the ZONES column) in /etc/shorewall/zones. This
+    now raises a fatal compilation error.
+
+7)  MULTICAST=Yes generates an incorrect rule that limits its
+    effectiveness to a small part of the multicast address space.
+
+8)  Checking for zone membership has been tighened up. Previously, 
+    a zone could contain <interface>:0.0.0.0/0 along with other hosts;
+    now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
+    then it may have no additional members in /etc/shorewall/hosts.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 1
+----------------------------------------------------------------------------
+
+1)  To replace the SAME keyword in /etc/shorewall/masq, support has
+    been added for 'persistent' SNAT. Persistent SNAT is required when
+    an address range is specified in the ADDRESS column and when you
+    want a client to always receive the same source/destination IP
+    pair. It replaces SAME: which was removed in Shorewall 4.4.0.
+
+    To specify persistence, follow the address range with
+    ":persistent".
+
+    Example:
+
+    #INTERFACE	SOURCE	   ADDRESS
+    eth0	0.0.0.0/0  206.124.146.177-206.124.146.179:persistent
+
+    This feature requires Persistent SNAT support in your kernel and
+    iptables. 
+
+    If you use a capabilities file, you will need to create a new one
+    as a result of this feature.
+
+    WARNING: Linux kernels beginning with 2.6.29 include persistent
+    SNAT support. If your iptables supports persistent SNAT but your
+    kernel does not, there is no way for Shorewall to determine that
+    persistent SNAT isn't going to work. The kernel SNAT code blindly
+    accepts all SNAT flags without verifying them and returns them to
+    iptables when asked.
+
+2)  A 'clean' target has been added to the Makefiles. It removes backup
+    files (*~ and .*~). 
+
+3)  The meaning of 'full' has been redefined when used in the context
+    of a traffic shaping sub-class. Previously, 'full' always meant the
+    OUT-BANDWIDTH of the device. In the case of a sub-class, however,
+    that definition is awkward to use because the sub-class is limited
+    by the parent class.
+
+    Beginning with this release, 'full' in a sub-class definition
+    refers to the specified rate defined for the parent class. So
+    'full' used in the RATE column refers to the parent class's RATE;
+    when used in the CEIL column, 'full' refers to the parent class's
+    CEIL.
+
+    As part of this change, the compiler now issues a warning if the
+    sum of the top-level classes' RATEs exceeds the OUT-BANDWIDTH of
+    the device. Similarly, a warning is issued if the sum of the RATEs
+    of a class's sub-classes exceeds the rate of the CLASS.
+
+4)  When 'nets=<network>' or 'nets=(<net1>,<net2>,...) is specified in
+    /etc/shorewall/interfaces, multicast traffic will now be sent to
+    the zone along with limited broadcasts.
+
+5)  A flaw in the parsing logic for the zones file allowed most zone
+    types containing the character string 'ip' to be accepted as a
+    synonym for 'ipv4' (or ipv6 if compiling an IPv6 configuration).

@@ -171,12 +171,18 @@ Shorewall 4.4.1 patch release 1
     then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 . 2
+----------------------------------------------------------------------------
+1)  The compiler's chain table was not being re-initialized prior to
+    creating the stop_firewall() function, resulting in Perl run-time
+    errors.
+----------------------------------------------------------------------------
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 . 1
 ----------------------------------------------------------------------------
 1)  Detection of Persistent SNAT support was broken in the compiler.
 
-2)  Initialization of the compiler was broken in ways that made some
-    features not work.
+2)  Initialization of the compiler's chain table was broken in ways
+    that made some features not work and that caused Perl runtime errors.
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1

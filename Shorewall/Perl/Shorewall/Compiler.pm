@@ -802,6 +802,7 @@ sub compiler {
 	# for stopping the firewall
 	#
 	Shorewall::Chains::initialize( $family );
+	initialize_chain_table;
 	compile_stop_firewall( $test );
 	#
 	# Copy the footer to the object

@@ -795,15 +795,20 @@ sub compiler {
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
 	generate_script_3( $chains );
-	#                               S T O P _ F I R E W A L L
-	#             (Writes the stop_firewall() function to the compiled script)
-	#
-	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
-	# for stopping the firewall
-	#
-	Shorewall::Chains::initialize( $family );
-	initialize_chain_table;
-	compile_stop_firewall( $test );
+    } else {
+	enable_object;
+    }
+    #                               S T O P _ F I R E W A L L
+    #             (Writes the stop_firewall() function to the compiled script)
+    #
+    # We must reinitialize Shorewall::Chains before generating the iptables-restore input
+    # for stopping the firewall
+    #
+    Shorewall::Chains::initialize( $family );
+    initialize_chain_table;
+    compile_stop_firewall( $test );
+    
+    if ( $objectfile ) {
 	#
 	# Copy the footer to the object
 	#

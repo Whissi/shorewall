@@ -422,15 +422,16 @@ sub add_commands ( $$;@ ) {
 }
 
 sub push_rule( $$ ) {
-    my ($chainref, $rule) = @_;
+    my $chainref = $_[0];
+    my $rule     = join( ' ',  '-A',  $chainref->{name} , $_[1]);
 
     $rule .= qq( -m comment --comment "$comment") if $comment;
 
     if ( $chainref->{cmdlevel} ) {
 	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
-	add_commands $chainref , qq(echo "-A $chainref->{name} $rule" >&3);
+	add_commands $chainref , qq(echo "$rule" >&3);
     } else {
-	push @{$chainref->{rules}}, join( ' ', '-A' , $chainref->{name}, $rule );
+	push @{$chainref->{rules}}, $rule;
 	$chainref->{referenced} = 1;
     }
 }

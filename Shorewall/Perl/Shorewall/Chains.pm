@@ -165,7 +165,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_2';
 
 #
 # Chain Table
@@ -916,15 +916,17 @@ sub ensure_filter_chain( $$ )
 
     my $chainref = ensure_chain 'filter', $chain;
 
-    if ( $populate and ! $chainref->{referenced} ) {
-	if ( $section eq 'NEW' or $section eq 'DONE' ) {
-	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
-	} elsif ( $section eq 'RELATED' ) {
-	    finish_chain_section $chainref , 'ESTABLISHED';
+    unless ( $chainref->{referenced} ) {
+	if ( $populate ) {
+	    if ( $section eq 'NEW' or $section eq 'DONE' ) {
+		finish_chain_section $chainref , 'ESTABLISHED,RELATED';
+	    } elsif ( $section eq 'RELATED' ) {
+		finish_chain_section $chainref , 'ESTABLISHED';
+	    }
 	}
-    }
 
-    $chainref->{referenced} = 1;
+	$chainref->{referenced} = 1;
+    }
 
     $chainref;
 }
@@ -1018,7 +1020,6 @@ sub ensure_manual_chain($) {
 # Add all builtin chains to the chain table -- it is separate from initialize() because it depends on capabilities and configuration.
 # The function also initializes the target table with the pre-defined targets available for the specfied address family.
 #
-#
 sub initialize_chain_table()
 {
     if ( $family == F_IPV4 ) {
@@ -1045,15 +1046,6 @@ sub initialize_chain_table()
 		    'QUEUE!'          => STANDARD,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
-		    'dropBcast'       => BUILTIN  + ACTION,
-		    'allowBcast'      => BUILTIN  + ACTION,
-		    'dropNotSyn'      => BUILTIN  + ACTION,
-		    'rejNotSyn'       => BUILTIN  + ACTION,
-		    'dropInvalid'     => BUILTIN  + ACTION,
-		    'allowInvalid'    => BUILTIN  + ACTION,
-		    'allowinUPnP'     => BUILTIN  + ACTION,
-		    'forwardUPnP'     => BUILTIN  + ACTION,
-		    'Limit'           => BUILTIN  + ACTION,
 		   );
 
 	for my $chain qw(OUTPUT PREROUTING) {
@@ -1095,12 +1087,6 @@ sub initialize_chain_table()
 		    'QUEUE!'          => STANDARD,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
-		    'dropBcast'       => BUILTIN  + ACTION,
-		    'allowBcast'      => BUILTIN  + ACTION,
-		    'dropNotSyn'      => BUILTIN  + ACTION,
-		    'rejNotSyn'       => BUILTIN  + ACTION,
-		    'dropInvalid'     => BUILTIN  + ACTION,
-		    'allowInvalid'    => BUILTIN  + ACTION,
 		   );
 
 	for my $chain qw(OUTPUT PREROUTING) {

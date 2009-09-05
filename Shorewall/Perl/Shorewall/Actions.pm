@@ -413,8 +413,9 @@ sub process_macro1 ( $$ ) {
 #
 # The functions process_actions1-3() implement the three phases of action processing.
 #
-# The first phase (process_actions1) occurs before the rules file is processed. ${SHAREDIR}/actions.std
-# and ${CONFDIR}/actions are scanned (in that order) and for each action:
+# The first phase (process_actions1) occurs before the rules file is processed. The builtin-actions are added
+# to the target table (%Shorewall::Chains::targets) and actions table, then ${SHAREDIR}/actions.std and
+# ${CONFDIR}/actions are scanned (in that order). For each action:
 #
 #      a) The related action definition file is located and scanned.
 #      b) Forward and unresolved action references are trapped as errors.
@@ -476,9 +477,13 @@ sub process_action1 ( $$ ) {
 sub process_actions1() {
 
     progress_message2 "Preprocessing Action Files...";
-
-    for my $act ( grep $targets{$_} & ACTION , keys %targets ) {
-	new_action $act;
+    #
+    # Add built-in actions to the target table and create those actions
+    #
+    if ( $family == F_IPV4 ) {
+	$targets{$_} = ACTION + BUILTIN, new_action $_ for qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
+    } else {
+	$targets{$_} = ACTION + BUILTIN, new_action $_ for qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
     }
 
     for my $file ( qw/actions.std actions/ ) {

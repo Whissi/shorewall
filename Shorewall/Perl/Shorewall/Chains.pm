@@ -246,6 +246,7 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 our $iprangematch;
 our $chainseq;
 our $idiotcount;
+our $idiotcount1;
 
 our $global_variables;
 
@@ -355,6 +356,7 @@ sub initialize( $ ) {
 
     $global_variables   = 0;
     $idiotcount         = 0;
+    $idiotcount1        = 0;
 
 }
 
@@ -2443,7 +2445,12 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # An interface in the SOURCE column of a masq file
 	    #
 	    fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
-	    warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
+
+	    if ( $chainref->{table} eq 'nat' ) {
+		warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
+	    } else {
+		warning_message qq(Using an interface as the SOURCE in a T: rule requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount1++;
+	    }
 
 	    push_command $chainref, join( '', 'for source in ', get_interface_nets( $iiface) , '; do' ), 'done';
 

@@ -683,6 +683,15 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
           time that you get a new IP address.</para>
+
+          <note>
+            <para>For optional interfaces, use the function <emphasis
+            role="bold">find_first_interface_address_if_any()</emphasis>
+            rather than <emphasis
+            role="bold">find_first_interface_address()</emphasis>. The former
+            will return 0.0.0.0 if the interface has no configured IP address;
+            the latter terminates the calling program.</para>
+          </note>
         </listitem>
       </itemizedlist>
 
@@ -802,6 +811,15 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
           save</command> and <command>shorewall[-lite]
           restore</command></ulink>.</para>
         </warning>
+
+        <note>
+          <para>For optional interfaces, use the function <emphasis
+          role="bold">find_first_interface_address_if_any()</emphasis> rather
+          than <emphasis
+          role="bold">find_first_interface_address()</emphasis>. The former
+          will return 0.0.0.0 if the interface has no configured IP address;
+          the latter terminates the calling program.</para>
+        </note>
       </section>
 
       <section id="faq2c">

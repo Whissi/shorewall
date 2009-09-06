@@ -98,6 +98,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Sun Sep 06 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.4.2-0base
 * Fri Sep 04 2009 Tom Eastep tom@shorewall.net
 - Updated to 4.4.2-0base
 * Fri Aug 14 2009 Tom Eastep tom@shorewall.net

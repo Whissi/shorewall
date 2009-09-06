@@ -1592,11 +1592,16 @@ sub read_a_line() {
 	    #
 	    s/^\s*// if $currentline =~ /[,:]$/;
 	    #
+	    # If this isn't a continued line, remove trailing comments. Note that
+	    # the result may now end in '\'.
+	    #
+	    s/\s*#.*$// unless /\\$/;
+	    #
 	    # Continuation
 	    #
 	    chop $currentline, next if substr( ( $currentline .= $_ ), -1, 1 ) eq '\\';
 	    #
-	    # Remove Trailing Comments -- result might be a blank line
+	    # Now remove contatinated comments
 	    #
 	    $currentline =~ s/#.*$//;
 	    #

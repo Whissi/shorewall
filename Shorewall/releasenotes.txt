@@ -194,7 +194,17 @@ None.
                 N E W   F E A T U R E S   I N   4 . 4 . 2
 ----------------------------------------------------------------------------
 
-None.
+1)  Prior to this release, line continuation has taken precedence over 
+    #-style comments. This prevents one from doing the following:
+
+    	    ACCEPT    net:206.124.146.176,\   #Gateway
+	    	          206.124.146.177,\   #Mail
+			  206.124.146.178\    #Server
+			  		      ...
+    
+    Now, unless a line ends with '\', any trailing comment is stripped
+    off (including any white-space preceding the '#'). Then if the line
+    ends with '\', it is treated as a continuation line as normal. 
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0

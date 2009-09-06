@@ -47,6 +47,7 @@ our @EXPORT = qw( merge_levels
 		  substitute_param
 		  merge_macro_source_dest
 		  merge_macro_column
+		  map_old_actions
 
 		  %usedactions
 		  %default_actions

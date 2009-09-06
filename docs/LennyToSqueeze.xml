@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall Issues when Upgrading from Debian Lenny to
+    Squeeze</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2009</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Debian Lenny includes Shorewall version 4.0.15 while Squeeze will
+    include Shorewall 4.4. Because there are significant differences between
+    the two product versions, some users may experience upgrade issues. This
+    article outlines those issues along with the means for dealing with
+    them.</para>
+  </section>
+
+  <section>
+    <title>Packaging Differences</title>
+
+    <para>The first key difference between Shorewall 4.0 and Shorewall 4.4 is
+    in the packaging. In Lenny, there are six Shorewall packages:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>shorewall-common — Contains the basic components needed to
+        create an IPv4 firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-shell — The legacy Shorewall configuration compiler
+        written in Bourne shell.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall — A transitional package that depends on
+        shorewall-common and shorewall-shell. Installing this package installs
+        both shorewall-common and shorewall-shell.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-perl — A re-implementation of the Shorewall
+        configuration compiler in Perl. This compiler has many advantages over
+        the shell-based compiler:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>The compiler is very much faster</para>
+          </listitem>
+
+          <listitem>
+            <para>The compiler does a much better job of validating the
+            configuration, thus avoiding run-time errors.</para>
+          </listitem>
+
+          <listitem>
+            <para>The compiler produces a script that runs much faster and
+            that does not reject/drop connections during start/restart.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-lite — A small package that can run scripts generated
+        by shorewall-shell or shorewall-perl. Allows centralized firewall
+        administration.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-doc — Documentation.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>In Squeeze, there are five packages:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>shorewall — Contains everything needed to create an IPv4
+        firewall. It combines the former shorewall-common and shorewall-perl
+        packages.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall6 — Depends on shorewall. Adds those components needed
+        to create an IPv6 firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-lite — Same as in Lenny; only runs IPv4 firewall
+        scripts.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall6-lite — Similar to shorewall-lite, except that it only
+        runs IPv6 firewall scripts.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-doc — Documentation.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>The key change in Squeeze that may produce upgrade issues is that
+    Squeeze does not include the shell-based configuration compiler. As a
+    consequence, unless you have migrated to using Shorewall-perl on Lenny, an
+    upgrade from Lenny to Squeeze will mean that you will be switching from
+    the old shell-based compiler to the new Perl-based compiler. While the two
+    compilers are highly-compatible, there are some differences. Those are
+    detailed in the following sections.</para>
+  </section>
+
+  <section>
+    <title>Issues Most Likely to Cause Problems or Concerns</title>
+
+    <section>
+      <title>shorewall.conf</title>
+
+      <para>As always, when upgrading from one major release of Shorewall to
+      another, the installer will prompt you about replacing your existing
+      <filename>shorewall.conf</filename> with the updated one from the
+      package. Shorewall is designed with the assumption that users will never
+      replace shorewall.conf and retaining your existing file will always
+      produce upward-compatible behavior.</para>
+
+      <para>That having been said, there are a few settings in shorewall.conf
+      that cause compilation warning or error messages after the
+      upgrade.</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>BRIDGING</term>
+
+          <listitem>
+            <para>If you have set this option to Yes, you will receive the
+            following error:</para>
+
+            <para><emphasis role="bold">ERROR: BRIDGING=Yes is not supported
+            by Shorewall 4.4.x</emphasis></para>
+
+            <para>You should not be receiving this error if you are upgrading
+            from Lenny since BRIDGING=Yes did not work in that release.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>DELAYBLACKLISTLOAD</term>
+
+          <listitem>
+            <para>If you have set this option to Yes, you will receive the
+            following warning:</para>
+
+            <para><emphasis role="bold">WARNING: DELAYBLACKLIST=Yes is not
+            supported by Shorewall 4.4.x</emphasis></para>
+
+            <para>To eliminate the warning, set DELAYBLACKLISTLOAD=No or
+            remove the setting altogether.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="FW">
+          <term>FW</term>
+
+          <listitem>
+            <para>If a setting for FW appears in your shorewall.conf file, you
+            will receive this warning:</para>
+
+            <para><emphasis role="bold">WARNING: Unknown configuration option
+            (FW) ignored.</emphasis></para>
+
+            <para>Remove the setting from the file and modify your
+            <filename>/etc/shorewall/zones</filename> file as described <link
+            linkend="zones">below</link>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>IPSECFILE</term>
+
+          <listitem>
+            <para>If you have specified IPSECFILE=ipsec, then you will receive
+            the following error:</para>
+
+            <para><emphasis role="bold">ERROR: IPSECFILE=ipsec is not
+            supported by Shorewall 4.4.x</emphasis></para>
+
+            <para>To eliminate the warning, you will need to:</para>
+
+            <orderedlist>
+              <listitem>
+                <para>Set IPSECFILE=zones</para>
+              </listitem>
+
+              <listitem>
+                <para>Modify your <filename>/etc/shorewall/zones</filename>
+                file as described <link linkend="zones">below</link>.</para>
+              </listitem>
+            </orderedlist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>MAPOLDACTIONS</term>
+
+          <listitem>
+            <para>If you have set this option to Yes, you will receive the
+            following error.</para>
+
+            <para><emphasis role="bold">ERROR: MAPOLDACTIONS=Yes is not
+            supported by Shorewall 4.4.x</emphasis></para>
+
+            <para>Only the very oldest of configurations should receive this
+            error. If your configuration is that old, this might be a good
+            time to reconfigure from scratch.</para>
+
+            <para>The alternative is to change your
+            <filename>/etc/shorewall/rules</filename> file as described in the
+            Shorewall 3.0.0 upgrade issues from 2005.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>RFC1918_LOG_LEVEL</term>
+
+          <listitem>
+            <para>If you have specified any setting for this option, you will
+            receive the following warning:</para>
+
+            <para><emphasis role="bold">WARNING: RFC1918_LOG_LEVEL=value
+            ignored. The 'norfc1918' interface/host option is no longer
+            supported.</emphasis></para>
+
+            <para>To eliminate the warning, set RFC1918_LOG_LEVEL= or simply
+            remove the setting altogether.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>RFC1918_STRICT</term>
+
+          <listitem>
+            <para>If you have set this option to Yes, you will receive the
+            following warning:</para>
+
+            <para><emphasis role="bold">WARNING: RFC1918_STRICT=Yes is not
+            supported by Shorewall 4.4.x</emphasis></para>
+
+            <para>To eliminate the warning, set RFC1918_STRICT=No or remove
+            the setting altogether.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>SAVE_IPSETS</term>
+
+          <listitem>
+            <para>If you have SAVE_IPSETS=Yes, you will receive the following
+            warning:</para>
+
+            <para><emphasis role="bold">WARNING SAVE_IPSETS=Yes is not
+            supported by Shorewall 4.4.x</emphasis></para>
+
+            <para>To eliminate this message, you will need to set
+            SAVE_IPSETS=No or remove the setting altogether.</para>
+
+            <para>For more information, see <ulink
+            url="Shorewall-perl.html#SAVE_IPSETS">this article</ulink>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>SHOREWALL_COMPILER</term>
+
+          <listitem>
+            <para>If you have specified SHOREWALL_COMPILER=shell, you will
+            receive the following warning message:</para>
+
+            <para><emphasis role="bold">WARNING: SHOREWALL_COMPILER=shell
+            ignored. Shorewall-shell support has been removed in this
+            release</emphasis></para>
+
+            <para>To eliminate the warning, set SHOREWALL_COMPILER=perl or
+            simply remove the setting altogether.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>USE_ACTIONS</term>
+
+          <listitem>
+            <para>If you have set this option to No, you will receive the
+            following warning:</para>
+
+            <para><emphasis role="bold">WARNING: USE_ACTIONS=No is not
+            supported by Shorewall 4.4.x</emphasis></para>
+
+            <para>To eliminate the warning, set USE_ACTIONS=Yes or remove the
+            setting altogether.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="zones">
+      <title>/etc/shorewall/zones</title>
+
+      <para>If the column headings in your /etc/shorewall/zones file look like
+      this:</para>
+
+      <programlisting>#ZONE   DISPLAY         COMMENTS
+net     Net             The big bad net
+loc     Local           The local LAN</programlisting>
+
+      <para>then you are using the original zones file format that has been
+      deprecated since Shorewall 3.0. </para>
+
+      <para>You will need to convert to the new file which has the following
+      headings:</para>
+
+      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+#                                       OPTIONS                 OPTIONS</programlisting>
+
+      <para>You will need to add an entry for your firewall zone. The default
+      name for the firewall zone is 'fw' but may have been overriden using
+      <link linkend="FW">the FW option in
+      <filename>shorewall.conf</filename></link>.</para>
+
+      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+#                                       OPTIONS                 OPTIONS
+fw      firewall</programlisting>
+
+      <para>The remainder of your zones will have type 'ipv4' unless they are
+      mentioned in your /etc/shorewall/ipsec file (see below).</para>
+
+      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+#                                       OPTIONS                 OPTIONS
+fw      firewall
+net     ipv4            # The big bad net
+loc     ipv4            # The local LAN</programlisting>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/ipsec</title>
+
+      <para>This file is no longer used -- its specifications are now included
+      in <filename>/etc/shorewall/zones</filename>.</para>
+
+      <para>Take this example:</para>
+
+      <programlisting>#ZONE   IPSEC    OPTIONS         IN              OUT
+#       ONLY                     OPTIONS         OPTIONS
+ipsec1  Yes
+ipsec2  No</programlisting>
+
+      <para>This would translate to the following entries in
+      <filename>/etc/shorewall/zones</filename>:</para>
+
+      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+#                                       OPTIONS                 OPTIONS
+ipsec1  ipsec4
+ipsec2  ipv4</programlisting>
+
+      <para>Any OPTIONS, IN OPTIONS and OUT OPTIONS should simply be copied
+      from <filename>/etc/shorewall/ipsec</filename> to
+      <filename>/etc/shorewall/zones</filename>.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/interfaces</title>
+
+      <para>The 'norfc1918' option has been removed. If you specify the
+      option, you will receive the following warning:</para>
+
+      <para><emphasis role="bold">WARNING: Support for the norfc1918 interface
+      option has been removed from Shorewall</emphasis></para>
+
+      <para>To suppress the warning, remove 'norfc1918' from the OPTIONS list.
+      As a replacement, consider setting NULL_ROUTE_RFC1919=Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/hosts</title>
+
+      <para>The 'norfc1918' option has been removed. If you specify the
+      option, you will receive the following warning:</para>
+
+      <para><emphasis role="bold">WARNING: The 'norfc1918' option is no longer
+      supported</emphasis></para>
+
+      <para>To suppress the warning, remove 'norfc1918' from the OPTIONS list.
+      As a replacement, consider setting NULL_ROUTE_RFC1919=Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/masq</title>
+
+      <para>There is a long tradition of specifying an interface name in the
+      SOURCE column of this file. Given that masquerading/SNAT occurs in the
+      Netfilter POSTROUTING chain where an incoming interface may not be
+      specified, Shorewall must examine the main routing table to determine
+      those networks routed out of the named interface and add MASQUERADE/SNAT
+      rules for traffic from those networks. This requires that the named
+      interface be up and configured when Shorewall starts or restarts.
+      </para>
+
+      <para>This continues to be an issue with VPN configurations where the
+      named interface isn't configured during boot.</para>
+
+      <para>To emphasize this restriction, if an interface is named in the
+      SOURCE column of one or more entries, a single warning as follows is
+      issued:</para>
+
+      <para><emphasis role="bold">WARNING: Using an interface as the masq
+      SOURCE requires the interface to be up and configured when Shorewall
+      starts/restarts</emphasis></para>
+
+      <para>To suppress this warning, replace the interface name with the list
+      of networks that are routed out of the interface.</para>
+
+      <para>Example.</para>
+
+      <para>Existing entry:</para>
+
+      <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S) IPSEC   MARK    USER/
+#                                                                                       GROUP
+eth0                    eth1</programlisting>
+
+      <para>Current routing configuration:</para>
+
+      <programlisting>gateway:~# ip route ls dev eth1
+172.20.1.0/24  proto kernel  scope link  src 172.20.1.254 
+224.0.0.0/4  scope link 
+gateway:~# 
+</programlisting>
+
+      <para>Replacement entry:</para>
+
+      <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S) IPSEC   MARK    USER/
+#                                                                                       GROUP
+eth0                    172.20.1.0/24</programlisting>
+
+      <para>Note that no entry is included for 224.0.0.0/4 since that is the
+      multicast IP range and there should never be any packets with a SOURCE
+      IP address in that network.</para>
+    </section>
+  </section>
+</article>

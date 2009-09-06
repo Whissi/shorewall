@@ -2246,6 +2246,14 @@ sub unsupported_yes_no( $ ) {
     fatal_error "$option=Yes is not supported by Shorewall $globals{VERSION}" if $config{$option};
 }
 
+sub unsupported_yes_no_warning( $ ) {
+    my $option = shift;
+
+    default_yes_no $option, '';
+
+    warning_message "$option=Yes is not supported by Shorewall $globals{VERSION}" if $config{$option};
+}
+
 #
 # - Read the shorewall.conf file
 # - Read the capabilities file, if any
@@ -2345,11 +2353,11 @@ sub get_configuration( $ ) {
     default_yes_no 'BLACKLISTNEWONLY'           , '';
     default_yes_no 'DISABLE_IPV6'               , '';
 
-    unsupported_yes_no 'DYNAMIC_ZONES';
-    unsupported_yes_no 'BRIDGING';
-    unsupported_yes_no 'SAVE_IPSETS';
-    unsupported_yes_no 'MAPOLDACTIONS';
-    unsupported_yes_no 'RFC1918_STRICT';
+    unsupported_yes_no_warning 'DYNAMIC_ZONES';
+    unsupported_yes_no         'BRIDGING';
+    unsupported_yes_no_warning 'SAVE_IPSETS';
+    unsupported_yes_no         'MAPOLDACTIONS';
+    unsupported_yes_no_warning 'RFC1918_STRICT';
 
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';

@@ -158,6 +158,27 @@
 
       <variablelist>
         <varlistentry>
+          <term>BLACKLISTNEWONLY</term>
+
+          <listitem>
+            <para>If you have BLACKLISTNEWONLY=No together with
+            FASTACCEPT=Yes, you will receive this error:</para>
+
+            <para><emphasis role="bold">ERROR: BLACKLISTNEWONLY=No may not be
+            specified with FASTACCEPT=Yes</emphasis></para>
+
+            <para>To eliminate the error, reverse the setting of one of the
+            options.</para>
+
+            <note>
+              <para>This combination never worked correctly in earlier
+              versions -- to duplicate the earlier behavior, you will want to
+              set BLACKLISTNEWONLY=Yes.</para>
+            </note>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
           <term>BRIDGING</term>
 
           <listitem>
@@ -341,7 +362,7 @@ net     Net             The big bad net
 loc     Local           The local LAN</programlisting>
 
       <para>then you are using the original zones file format that has been
-      deprecated since Shorewall 3.0. </para>
+      deprecated since Shorewall 3.0.</para>
 
       <para>You will need to convert to the new file which has the following
       headings:</para>
@@ -397,6 +418,17 @@ ipsec2  ipv4</programlisting>
     <section>
       <title>/etc/shorewall/interfaces</title>
 
+      <para>The BROADCAST column is essentially unused in Squeeze. If it
+      contains anything except 'detect' or '-', then you will receive this
+      warning:</para>
+
+      <para><emphasis role="bold">WARNING: Shorewall no longer uses broadcast
+      addresses in rule generation when Address Type Match is
+      available</emphasis></para>
+
+      <para>To eliminate the warning, replace the contents of the BROADCAST
+      column with '-' or 'detect'.</para>
+
       <para>The 'norfc1918' option has been removed. If you specify the
       option, you will receive the following warning:</para>
 
@@ -431,8 +463,7 @@ ipsec2  ipv4</programlisting>
       specified, Shorewall must examine the main routing table to determine
       those networks routed out of the named interface and add MASQUERADE/SNAT
       rules for traffic from those networks. This requires that the named
-      interface be up and configured when Shorewall starts or restarts.
-      </para>
+      interface be up and configured when Shorewall starts or restarts.</para>
 
       <para>This continues to be an issue with VPN configurations where the
       named interface isn't configured during boot.</para>
@@ -473,6 +504,28 @@ eth0                    172.20.1.0/24</programlisting>
       <para>Note that no entry is included for 224.0.0.0/4 since that is the
       multicast IP range and there should never be any packets with a SOURCE
       IP address in that network.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/rules</title>
+
+      <para>If you include a destination zone in a 'nonat' rule, Shorewall
+      issues the following warning:</para>
+
+      <para><emphasis role="bold">WARNING: Destination zone
+      (<firstterm>zonename</firstterm>) ignored.</emphasis></para>
+
+      <para>Nonat rules include:</para>
+
+      <simplelist>
+        <member>DNAT-</member>
+
+        <member>REDIRECT-</member>
+
+        <member>NONAT</member>
+      </simplelist>
+
+      <para>To eliminate the warning, remove the DEST zone.</para>
     </section>
   </section>
 </article>

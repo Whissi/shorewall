@@ -2356,11 +2356,11 @@ sub get_configuration( $ ) {
     unsupported_yes_no_warning 'DYNAMIC_ZONES';
     unsupported_yes_no         'BRIDGING';
     unsupported_yes_no_warning 'SAVE_IPSETS';
-    unsupported_yes_no         'MAPOLDACTIONS';
     unsupported_yes_no_warning 'RFC1918_STRICT';
 
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
+    default_yes_no 'MAPOLDACTIONS'              , 'Yes';
 
     warning_message 'DELAYBLACKLISTLOAD=Yes is not supported by Shorewall ' . $globals{VERSION} if $config{DELAYBLACKLISTLOAD};
 

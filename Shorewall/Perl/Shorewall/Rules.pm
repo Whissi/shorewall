@@ -959,6 +959,10 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
 
+    if ( $config{ MAPOLDACTIONS } ) {
+	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless ( $actiontype || $param );
+    }
+
     fatal_error "Unknown action ($action)" unless $actiontype;
 
     if ( $actiontype == MACRO ) {

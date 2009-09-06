@@ -266,6 +266,30 @@ sub add_requiredby ( $$ ) {
 }
 
 #
+# Map pre-3.0 actions to the corresponding Macro invocation
+#
+sub map_old_actions( $ ) {
+    my $target = shift;
+    my $macro;
+    my $param;
+
+    if ( $target =~ /^Allow(.*)$/ ) {
+	$macro = $1;
+	$param = 'ACCEPT';
+    } elsif ( $target =~ /^Drop(.*)$/ ) { 
+	$macro = $1;
+	$param = 'DROP';
+    } elsif ( $target = /^Reject(.*)$/ ) {
+	$macro = $1;
+	$param = 'REJECT';
+    } else {
+	return ( $target, 0, '' );
+    }
+
+    ( $macro, find_macro( $macro ) , $param );
+}
+
+#
 # Create and record a log action chain -- Log action chains have names
 # that are formed from the action name by prepending a "%" and appending
 # a 1- or 2-digit sequence number. In the functions that follow,

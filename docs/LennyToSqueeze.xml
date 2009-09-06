@@ -75,12 +75,17 @@
 
         <itemizedlist>
           <listitem>
-            <para>The compiler is very much faster</para>
+            <para>The compiler is much faster</para>
           </listitem>
 
           <listitem>
             <para>The compiler does a much better job of validating the
             configuration, thus avoiding run-time errors.</para>
+          </listitem>
+
+          <listitem>
+            <para>The compiler produces better and more consistent diagnostic
+            messages.</para>
           </listitem>
 
           <listitem>
@@ -506,11 +511,25 @@ eth0                    172.20.1.0/24</programlisting>
       </simplelist>
 
       <para>To eliminate the warning, remove the DEST zone.</para>
+
+      <para>Example.</para>
+
+      <para>Before:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME
+#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+NONAT           loc             net             tcp     80</programlisting>
+
+      <para>After:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME
+#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+NONAT           loc             -               tcp     80</programlisting>
     </section>
   </section>
 
   <section>
-    <title>Additional Sources of Information</title>
+    <title> Additional Sources of Information</title>
 
     <para>The following articles provide additional information.</para>
 

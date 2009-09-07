@@ -194,7 +194,10 @@
             by Shorewall 4.4.x</emphasis></para>
 
             <para>You should not be receiving this error if you are upgrading
-            from Lenny since BRIDGING=Yes did not work in that release.</para>
+            from Lenny since BRIDGING=Yes did not work in that release. If you
+            have a bridge configuration where you want to control connections
+            through the bridge, you will want to visit <ulink
+            url="http://www.shorewall.net/bridge-Shorewall-perl.html">http://www.shorewall.net/bridge-Shorewall-perl.html</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -526,10 +529,36 @@ NONAT           loc             net             tcp     80</programlisting>
 #                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
 NONAT           loc             -               tcp     80</programlisting>
     </section>
+
+    <section>
+      <title>/etc/shorewall/routestopped</title>
+
+      <para>The 'critical' option is no longer needed and hence is no longer
+      supported. If you have critical hosts defined, you will receive this
+      warning:</para>
+
+      <para><emphasis role="bold">WARNING: The 'critical' option is no longer
+      supported (or needed)</emphasis></para>
+
+      <para>To suppress the warning, simply remove the option.</para>
+
+      <para>Shorewall 4.4 also treats the <filename>routestopped</filename>
+      file differently from earlier releases. Previously, the
+      <filename>routestopped</filename> file was parsed during
+      <command>shorewall stop</command> processing so that changes made to the
+      file while Shorewall was running would be applied at the next
+      <command>stop</command>. This is no longer the case -- the
+      <filename>routestopped</filename> file is processed during compilation
+      just like the rest of the configuration files so that when
+      <command>shorewall stop</command> is issued, the firewall will pass
+      traffic based on the contents of the <filename>routestopped</filename>
+      file at the last <command>start</command> or
+      <command>restart</command>.</para>
+    </section>
   </section>
 
   <section>
-    <title> Additional Sources of Information</title>
+    <title>Additional Sources of Information</title>
 
     <para>The following articles provide additional information.</para>
 

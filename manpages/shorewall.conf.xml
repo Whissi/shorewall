@@ -1162,30 +1162,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>Normally Shorewall attempts to use the iptables packet type
-          match extension to determine broadcast and multicast packets.</para>
-
-          <orderedlist>
-            <listitem>
-              <para>This can cause a message to appear during shorewall start
-              (modprobe: cant locate module ipt_pkttype).</para>
-            </listitem>
-
-            <listitem>
-              <para>Some users have found problems with the packet match
-              extension with the result that their firewall log is flooded
-              with messages relating to broadcast packets.</para>
-            </listitem>
-          </orderedlist>
-
-          <para></para>
-
-          <blockquote>
-            <para>If you are experiencing either of these problems, setting
-            PKTTYPE=No will prevent Shorewall from trying to use the packet
-            type match extension and to use IP address matching to determine
-            which packets are broadcasts or multicasts.</para>
-          </blockquote>
+          <para>This option is included for compatibility with older Shorewall
+          releases. Its setting has no effect.</para>
         </listitem>
       </varlistentry>
 

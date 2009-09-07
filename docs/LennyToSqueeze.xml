@@ -448,13 +448,15 @@ ipsec2  ipv4</programlisting>
       <para>There is a long tradition of specifying an interface name in the
       SOURCE column of this file. Given that masquerading/SNAT occurs in the
       Netfilter POSTROUTING chain where an incoming interface may not be
-      specified, Shorewall must examine the main routing table to determine
-      those networks routed out of the named interface and add MASQUERADE/SNAT
-      rules for traffic from those networks. This requires that the named
-      interface be up and configured when Shorewall starts or restarts.</para>
+      specified, Shorewall must examine the main routing table during
+      <command>shorewall start</command> and <command>shorewall
+      restart</command> processing to determine those networks routed out of
+      the named interface and add MASQUERADE/SNAT rules for traffic from those
+      networks. This requires that the named interface be up and configured
+      when Shorewall starts or restarts.</para>
 
-      <para>This continues to be an issue with VPN configurations where the
-      named interface isn't configured during boot.</para>
+      <para>This continues to be a frequent issue with VPN configurations
+      where the named interface isn't configured during boot.</para>
 
       <para>To emphasize this restriction, if an interface is named in the
       SOURCE column of one or more entries, a single warning as follows is
@@ -477,7 +479,7 @@ eth0                    eth1</programlisting>
 
       <para>Current routing configuration:</para>
 
-      <programlisting>gateway:~# ip route ls dev eth1
+      <programlisting>gateway:~# <command>ip route ls dev eth1</command>
 172.20.1.0/24  proto kernel  scope link  src 172.20.1.254 
 224.0.0.0/4  scope link 
 gateway:~# 

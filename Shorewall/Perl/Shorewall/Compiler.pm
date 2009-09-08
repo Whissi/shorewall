@@ -623,7 +623,9 @@ sub compiler {
     validate_interfaces_file ( $export );
     #
     # Process the hosts file.
-    #
+    #	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
+	# for stopping the firewall
+
     validate_hosts_file;
     #
     # Report zone contents
@@ -795,15 +797,13 @@ sub compiler {
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
 	generate_script_3( $chains );
-    }
- 
-    # We must reinitialize Shorewall::Chains before generating the iptables-restore input
-    # for stopping the firewall
-    #
-    Shorewall::Chains::initialize( $family );
-    initialize_chain_table;
-    
-    if ( $objectfile ) {
+	#
+	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
+	# for stopping the firewall
+	#
+	Shorewall::Chains::initialize( $family );
+	initialize_chain_table;
+	#
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
 	#
@@ -829,6 +829,12 @@ sub compiler {
 	#
 	enable_object, generate_aux_config if $export;
     } else {
+	#
+	# Re-initialize the chain table so that process_routestopped() has the same
+	# environment that it would when called by compile_stop_firewall().
+	#
+	Shorewall::Chains::initialize( $family );
+	initialize_chain_table;
 	#
 	# compile_stop_firewall() also validates the routestopped file. Since we don't
 	# call that function during 'check', we must validate routestopped here.

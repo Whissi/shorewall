@@ -786,8 +786,8 @@ sub compiler {
 
 	enable_object;
 	#
-	#                                    I N I T I A L I Z E
-	#                  (Writes the initialize() function to the compiled script)
+	#                             I N I T I A L I Z E
+	#           (Writes the initialize() function to the compiled script)
 	#
 	generate_script_2;
 	#
@@ -795,10 +795,8 @@ sub compiler {
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
 	generate_script_3( $chains );
-    } 
-    #                               S T O P _ F I R E W A L L
-    #             (Writes the stop_firewall() function to the compiled script)
-    #
+    }
+ 
     # We must reinitialize Shorewall::Chains before generating the iptables-restore input
     # for stopping the firewall
     #
@@ -806,6 +804,9 @@ sub compiler {
     initialize_chain_table;
     
     if ( $objectfile ) {
+	#                           S T O P _ F I R E W A L L
+	#         (Writes the stop_firewall() function to the compiled script)
+	#
 	compile_stop_firewall( $test );
 	#
 	# Copy the footer to the object
@@ -828,6 +829,10 @@ sub compiler {
 	#
 	enable_object, generate_aux_config if $export;
     } else {
+	#
+	# compile_stop_firewall() also validates the routestopped file. Since we don't
+	# call that function during 'check', we must validate routestopped here.
+	#
 	process_routestopped;
 
 	if ( $family == F_IPV4 ) {

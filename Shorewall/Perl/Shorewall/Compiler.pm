@@ -795,9 +795,7 @@ sub compiler {
 	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
 	#
 	generate_script_3( $chains );
-    } else {
-	enable_object;
-    }
+    } 
     #                               S T O P _ F I R E W A L L
     #             (Writes the stop_firewall() function to the compiled script)
     #
@@ -806,9 +804,9 @@ sub compiler {
     #
     Shorewall::Chains::initialize( $family );
     initialize_chain_table;
-    compile_stop_firewall( $test );
     
     if ( $objectfile ) {
+	compile_stop_firewall( $test );
 	#
 	# Copy the footer to the object
 	#
@@ -830,6 +828,8 @@ sub compiler {
 	#
 	enable_object, generate_aux_config if $export;
     } else {
+	process_routestopped;
+
 	if ( $family == F_IPV4 ) {
 	    progress_message3 "Shorewall configuration verified";
 	} else {

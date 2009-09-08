@@ -40,6 +40,7 @@ our @EXPORT = qw( process_tos
 		  add_common_rules
 		  setup_mac_lists
 		  process_rules
+		  process_routestopped
 		  generate_matrix
 		  compile_stop_firewall
 		  );

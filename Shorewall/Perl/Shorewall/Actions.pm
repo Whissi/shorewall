@@ -268,25 +268,29 @@ sub add_requiredby ( $$ ) {
 #
 # Map pre-3.0 actions to the corresponding Macro invocation
 #
+
+sub find_old_action ( $$$ ) {
+    my ( $target, $macro, $param ) = @_;
+
+    if ( my $actiontype = find_macro( $macro ) ) {
+	( $macro, $actiontype , $param );
+    } else {
+	( $target, 0, '' );
+    }
+}
+
 sub map_old_actions( $ ) {
     my $target = shift;
-    my $macro;
-    my $param;
 
     if ( $target =~ /^Allow(.*)$/ ) {
-	$macro = $1;
-	$param = 'ACCEPT';
-    } elsif ( $target =~ /^Drop(.*)$/ ) { 
-	$macro = $1;
-	$param = 'DROP';
+	find_old_action( $target, $1, 'ACCEPT' );
+    } elsif ( $target =~ /^Drop(.*)$/ ) {
+	find_old_action( $target, $1, 'DROP' );
     } elsif ( $target = /^Reject(.*)$/ ) {
-	$macro = $1;
-	$param = 'REJECT';
+	find_old_action( $target, $1, 'REJECT' );
     } else {
-	return ( $target, 0, '' );
+	( $target, 0, '' );
     }
-
-    ( $macro, find_macro( $macro ) , $param );
 }
 
 #

@@ -327,7 +327,7 @@ sub createlogactionchain( $$ ) {
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
 
-    unless ( $targets{$action} & STANDARD ) {
+    unless ( $targets{$action} & BUILTIN ) {
 
 	my $file = find_file $chain;
 
@@ -353,7 +353,7 @@ sub createsimpleactionchain( $ ) {
 
     $logactionchains{"$action:none"} = $chainref;
 
-    unless ( $targets{$action} & STANDARD ) {
+    unless ( $targets{$action} & BUILTIN ) {
 
 	my $file = find_file $action;
 

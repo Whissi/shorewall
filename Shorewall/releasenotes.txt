@@ -184,6 +184,29 @@ Shorewall 4.4.2
 3)  The 'shorewall check' command previously did not detect errors in
     /etc/shorewall/routestopped.
 
+4)  In earlier versions, if a file with the same name as a built-in
+    action were present in the CONFIG_PATH, then the compiler would
+    process that file like it was an extension script.
+
+    The compiler now ignores the presence of such files.
+
+5)  Several configuration issues which previously produced an error or
+    warning are now handled differently.
+
+    a)  MAPOLDACTIONS=Yes and MAPOLDACTIOSN= in shorewall.conf are now
+        handled as they were by the old shell-based compiler. That is,
+        they cause pre-3.0 built-in actions to be mapped automatically
+        to the corresponding macro invocation.
+
+    b)  SAVE_IPSETS=Yes no longer produces a fatal error -- it is now a
+        warning.
+
+    c)  DYNAMIC_ZONES=Yes no longer produces a fatal error -- it is now
+        a warning.
+
+    d)  RFC1918_STRICT=Yes no loger produces a fatal error -- it is now
+        a warning.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -195,7 +218,7 @@ None.
 ----------------------------------------------------------------------------
 
 1)  Prior to this release, line continuation has taken precedence over 
-    #-style comments. This prevents one from doing the following:
+    #-style comments. This prevented us from doing the following:
 
     	    ACCEPT    net:206.124.146.176,\   #Gateway
 	    	          206.124.146.177,\   #Mail
@@ -204,7 +227,7 @@ None.
     
     Now, unless a line ends with '\', any trailing comment is stripped
     off (including any white-space preceding the '#'). Then if the line
-    ends with '\', it is treated as a continuation line as normal. 
+    ends with '\', it is treated as a continuation line as normal.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0

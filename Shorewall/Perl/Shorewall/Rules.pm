@@ -45,7 +45,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_2';
 
 #
 # Set to one if we find a SECTION
@@ -777,6 +777,9 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
     } else {
+	#
+	# Phase II
+	#
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = $chainref->{name};

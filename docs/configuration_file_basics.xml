@@ -216,7 +216,7 @@
 
         <listitem>
           <para><filename>/usr/share/shorewall/modules</filename> - directs
-          the firewall to load kernel modules. </para>
+          the firewall to load kernel modules.</para>
         </listitem>
 
         <listitem>
@@ -430,6 +430,79 @@ ACCEPT      net:\
       continuation line does not end with a comma or colon, the leading white
       space in the last line is not ignored.</para>
     </example>
+  </section>
+
+  <section id="SOURCE-DEST">
+    <title>Specifying SOURCE and DEST</title>
+
+    <para>Entries in Shorewall configuration files often deal with the source
+    (SOURCE) and destination (DEST) of connections and Shorewall implements a
+    uniform way for specifying them.</para>
+
+    <para>A SOURCE or DEST consists of one to three parts separated by colons
+    (":"):</para>
+
+    <orderedlist>
+      <listitem>
+        <para>ZONE — The name of a zone declared in
+        <filename>/etc/shorewall/zones</filename> or
+        <filename>/etc/shorewall6/zones</filename>. This part is only
+        available in the rules file (<filename>/etc/shorewall/rules</filename>
+        and <filename>/etc/shorewall6/rules</filename>).</para>
+      </listitem>
+
+      <listitem>
+        <para>INTERFACE — The name of an interface that matches an entry in
+        <filename>/etc/shorewall/interfaces</filename>
+        (<filename>/etc/shorewall6/interfaces</filename>).</para>
+      </listitem>
+
+      <listitem>
+        <para>ADDRESS LIST — A list of one or more addresses (host or network)
+        or address ranges, separated by commas. In an IPv6 configuration, this
+        list must be includes in angled brackets ("&lt;...&gt;"). The list may
+        have <link linkend="Exclusion">exclusion</link>.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Examples.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>All hosts in the <emphasis role="bold">net</emphasis> zone —
+        <emphasis role="bold">net</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>Subnet 192.168.1.0/29 in the <emphasis
+        role="bold">loc</emphasis> zone — <emphasis
+        role="bold">loc:192.168.1.0/29</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>All hosts in the net zone connecting through <filename
+        class="devicefile">ppp0</filename> — <emphasis
+        role="bold">net:ppp0</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>All hosts interfaced by <filename
+        class="devicefile">eth3</filename> — <emphasis
+        role="bold">eth3</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>Subnet 10.0.1.0/24 interfacing through <filename><filename
+        class="devicefile">eth2</filename></filename> — <emphasis
+        role="bold">eth2:10.0.1.0/24</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>Host 2002:ce7c:92b4:1:a00:27ff:feb1:46a9 in the <emphasis
+        role="bold">loc</emphasis> zone — <emphasis
+        role="bold">loc:&lt;2002:ce7c:92b4:1:a00:27ff:feb1:46a9&gt;</emphasis></para>
+      </listitem>
+    </orderedlist>
   </section>
 
   <section id="INCLUDE">

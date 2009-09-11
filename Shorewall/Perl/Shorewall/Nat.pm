@@ -239,7 +239,11 @@ sub process_one_masq( )
 			if ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = '-j SNAT ';
 			    my ($ipaddr, $rest) = split ':', $addr;
-			    validate_address $ipaddr, 0;
+			    if ( $addr =~ /^(.+)-(.+)$/ ) {
+				validate_range( $1, $2 );
+			    } else {
+				validate_address $ipaddr, 0;
+			    }
 			    $addrlist .= "--to-source $addr ";
 			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {

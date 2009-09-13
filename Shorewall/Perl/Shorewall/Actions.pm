@@ -638,7 +638,8 @@ sub process_macro3( $$$$$$$$$$$ ) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser );
 
 	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $morigdest ) = split_line1 1, 9, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 'macro file', $macro_commands;
+	    $morigdest = '-';
 	} else {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', $macro_commands;
 	}
@@ -653,8 +654,6 @@ sub process_macro3( $$$$$$$$$$$ ) {
 	    $format = $msource;
 	    next;
 	}
-
-	fatal_error "Invalid macro file entry (too many columns)" if $morigdest ne '-' && $format == 1;
 
 	if ( $mtarget =~ /^PARAM:?/ ) {
 	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;

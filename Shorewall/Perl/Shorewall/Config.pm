@@ -1601,7 +1601,7 @@ sub read_a_line() {
 	    #
 	    chop $currentline, next if substr( ( $currentline .= $_ ), -1, 1 ) eq '\\';
 	    #
-	    # Now remove contatinated comments
+	    # Now remove concatinated comments
 	    #
 	    $currentline =~ s/#.*$//;
 	    #

@@ -623,9 +623,7 @@ sub compiler {
     validate_interfaces_file ( $export );
     #
     # Process the hosts file.
-    #	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
-	# for stopping the firewall
-
+    #
     validate_hosts_file;
     #
     # Report zone contents

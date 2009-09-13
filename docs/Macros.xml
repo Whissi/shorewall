@@ -554,6 +554,151 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
           2.6.14).</member>
         </simplelist>
       </listitem>
+
+      <listitem>
+        <para>MARK - (Added in Shorewall-4.4.2) Defines a test on the existing
+        packet or connection mark. The rule will match only if the test
+        returns true. Must be empty or '-' if the macro is to be used within
+        an action.</para>
+
+        <programlisting>     [!]<replaceable>value</replaceable>[/<replaceable>mask</replaceable>][:C]</programlisting>
+
+        <variablelist>
+          <varlistentry>
+            <term>!</term>
+
+            <listitem>
+              <para>Inverts the test (not equal)</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><replaceable>value</replaceable></term>
+
+            <listitem>
+              <para>Value of the packet or connection mark.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><replaceable>mask</replaceable></term>
+
+            <listitem>
+              <para>A mask to be applied to the mark before testing.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>:C</term>
+
+            <listitem>
+              <para>Designates a connection mark. If omitted, the # packet
+              mark's value is tested.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </listitem>
+
+      <listitem>
+        <para>CONNLIMIT - (Added in Shorewall-4.4.2) Must be empty or '-' if
+        the macro is to be used within an action.</para>
+
+        <programlisting>     [!]<replaceable>limit</replaceable>[:<replaceable>mask</replaceable>]</programlisting>
+
+        <para>May be used to limit the number of simultaneous connections from
+        each individual host to limit connections. Requires connlimit match in
+        your kernel and iptables. While the limit is only checked on rules
+        specifying CONNLIMIT, the number of current connections is calculated
+        over all current connections from the SOURCE host. By default, the
+        <replaceable>limit</replaceable> is applied to each host but can be
+        made to apply to networks of hosts by specifying a
+        <replaceable>mask</replaceable>. The mask specifies the width of a
+        VLSM mask to be applied to the source address; the number of current
+        connections is then taken over all hosts in the subnet
+        <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.
+        When ! is specified, the rule matches when the number of connection
+        exceeds the limit. </para>
+      </listitem>
+
+      <listitem>
+        <para>TIME - (Added in Shorewall-4.4.2) Must be empty or '-' if the
+        macro is to be used within an action.</para>
+
+        <programlisting>     &lt;timeelement&gt;[&amp;...]</programlisting>
+
+        <para><replaceable>timeelement</replaceable> may be:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>timestart=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+            <listitem>
+              <para>Defines the starting time of day.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>timestop=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+            <listitem>
+              <para>Defines the ending time of day.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>utc</term>
+
+            <listitem>
+              <para>Times are expressed in Greenwich Mean Time.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>localtz</term>
+
+            <listitem>
+              <para>Times are expressed in Local Civil Time (default).</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>weekdays=ddd[,ddd]...</term>
+
+            <listitem>
+              <para>where <replaceable>ddd</replaceable> is one of
+              <option>Mon</option>, <option>Tue</option>,
+              <option>Wed</option>, <option>Thu</option>,
+              <option>Fri</option>, <option>Sat</option> or
+              <option>Sun</option></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>monthdays=dd[,dd],...</term>
+
+            <listitem>
+              <para>where <replaceable>dd</replaceable> is an ordinal day of
+              the month</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>datestart=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+            <listitem>
+              <para>Defines the starting date and time.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>datestop=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+            <listitem>
+              <para>Defines the ending date and time.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </listitem>
     </itemizedlist>
 
     <para>Omitted column entries should be entered using a dash ("-:).</para>

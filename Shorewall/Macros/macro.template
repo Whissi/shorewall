@@ -269,7 +269,7 @@
 #                       an action. See 'man shorewall-rules'.
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in
-#			this colume:
+#			this column:
 #
 #				<rate>/<interval>[:<burst>]
 #
@@ -303,6 +303,100 @@
 #				+upnpd	#program named upnpd (This feature was
 #					#removed from Netfilter in kernel
 #					#version 2.6.14).
+#
+#	MARK		Specifies a MARK value to match. Must be empty or 
+#			'-' if the macro is to be used within an action.
+#			
+#				[!]value[/mask][:C]
+#
+#    			Defines a test on the existing packet or connection
+#			mark. The rule will match only if the test returns
+#			true.
+#
+#    			If you don't want to define a test but need to
+#			specify anything in the following columns,
+#			place a "-" in this field.
+#
+#    			!
+#
+#				Inverts the test (not equal)
+#
+#    			value
+#
+#				Value of the packet or connection mark.
+#
+#  			mask
+#
+#				A mask to be applied to the mark before
+#				testing.
+#
+#    			:C
+#
+#				Designates a connection mark. If omitted, the
+#				packet mark's value is tested.
+#
+#	CONNLIMIT	Must be empty or '-' if the macro is to be used within
+#			an action.
+#
+#				[!]limit[:mask]
+#
+#			May be used to limit the number of simultaneous
+#			connections from each individual host to limit 
+#			connections. Requires connlimit match in your kernel
+#			and iptables. While the limit is only checked on rules
+#			specifying CONNLIMIT, the number of current connections
+#			is calculated over all current connections from the
+#			SOURCE host. By default, the limit is applied to each
+#			host but can be made to apply to networks of hosts by
+#			specifying a mask. The mask specifies the width of a
+#			VLSM mask to be applied to the source address; the
+#			number of current connections is then taken over all
+#			hosts in the subnet source-address/mask. When ! is
+#			specified, the rule matches when the number of
+#			connection exceeds the limit.
+#
+#	TIME		Must be empty or '-' if the macro is to be used within
+#			an action.
+#
+#
+#				<timeelement>[&...]
+#
+#			timeelement may be:
+#
+#    				timestart=hh:mm[:ss]
+#
+#					Defines the starting time of day.
+#
+#    				timestop=hh:mm[:ss]
+#
+#					Defines the ending time of day.
+#
+#    				utc
+#
+#					Times are expressed in Greenwich Mean
+#					Time.
+#
+#    				localtz
+#
+#					Times are expressed in Local Civil Time
+#					(default).
+#
+#    				weekdays=ddd[,ddd]...
+#
+#					where ddd is one of Mon, Tue, Wed, Thu,
+#					Fri, Sat or Sun
+#
+#    				monthdays=dd[,dd],...
+#
+#					where dd is an ordinal day of the month#
+#
+#    				datestart=yyyy[-mm[-dd[Thh[:mm[:ss]]]]]
+#
+#					Defines the starting date and time.
+#
+#    				datestop=yyyy[-mm[-dd[Thh[:mm[:ss]]]]]
+#
+#					Defines the ending date and time.
 #
 # A few examples should help show how Macros work.
 #

@@ -149,11 +149,11 @@
 
     <para>The key change in Squeeze that may produce upgrade issues is that
     Squeeze does not include the shell-based configuration compiler. As a
-    consequence, unless you have migrated to using Shorewall-perl on Lenny, an
+    consequence, unless you are already using Shorewall-perl on Lenny, an
     upgrade from Lenny to Squeeze will mean that you will be switching from
     the old shell-based compiler to the new Perl-based compiler. While the two
-    compilers are highly-compatible, there are some differences. Those are
-    detailed in the following sections.</para>
+    compilers are highly compatible, there are some differences. Those
+    differences are detailed in the following sections.</para>
   </section>
 
   <section>
@@ -591,7 +591,8 @@ NONAT           loc             -               tcp     80</programlisting>
 
       <para>If you have entries in Shorewall extension scripts
       (<filename>/etc/shorewall/init</filename>,
-      <filename>/etc/shorewall/start</filename>, etc.), you should review
+      <filename>/etc/shorewall/start</filename>, etc.) or if you have
+      implemented an Action that uses an extension script, you should review
       <ulink url="Shorewall-perl.html#Extensions">this article</ulink>.</para>
     </section>
   </section>

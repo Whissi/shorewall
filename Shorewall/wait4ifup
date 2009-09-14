@@ -33,7 +33,7 @@
 #
 
 interface_is_up() {
-    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ] 
+    [ -n "$(/sbin/ip link list dev $1 2> /dev/null | /bin/grep -e '[<,]UP[,>]')" ] 
 }
 
 case $# in
@@ -51,7 +51,7 @@ esac
 
 while [ $timeout -gt 0 ]; do
     interface_is_up $1 && exit 0
-    sleep 1
+    /bin/sleep 1
     timeout=$(( $timeout - 1 ))
 done
 

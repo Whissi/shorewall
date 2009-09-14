@@ -453,6 +453,15 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/blacklist ]; then
     echo "Blacklist file installed as ${PREFIX}/etc/shorewall/blacklist"
 fi
 #
+# Install the findgw file
+#
+run_install $OWNERSHIP -m 0644 configfiles/findgw ${PREFIX}/usr/share/shorewall/configfiles/findgw
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/findgw ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/findgw ${PREFIX}/etc/shorewall/findgw
+    echo "Find GW file installed as ${PREFIX}/etc/shorewall/findgw"
+fi
+#
 # Delete the Routes file
 #
 delete_file ${PREFIX}/etc/shorewall/routes

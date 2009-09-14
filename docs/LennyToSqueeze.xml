@@ -47,7 +47,8 @@
     <note>
       <para>Although this article is targeted specifically at Lenny -&gt;
       Squeeze upgrades, it should be useful to any Shorewall-shell user
-      upgrading to Shorewall 4.4.x.</para>
+      upgrading to Shorewall 4.4.x. Footnotes are used to flag areas where
+      non-Debian users may experience different results.</para>
     </note>
   </section>
 
@@ -55,7 +56,12 @@
     <title>Packaging Differences</title>
 
     <para>The first key difference between Shorewall 4.0 and Shorewall 4.4 is
-    in the packaging. In Lenny, there are six Shorewall packages:</para>
+    in the packaging<footnote>
+        <para>Most distributions use a similar packaging structure. Note,
+        however, that the 'shorewall' package in Simon Mater's RPMs for
+        RedHat/Fedora/CentOS is like the Debian shorewall-common
+        package.</para>
+      </footnote>. In Lenny, there are six Shorewall packages:</para>
 
     <orderedlist>
       <listitem>
@@ -151,9 +157,17 @@
     Squeeze does not include the shell-based configuration compiler. As a
     consequence, unless you are already using Shorewall-perl on Lenny, an
     upgrade from Lenny to Squeeze will mean that you will be switching from
-    the old shell-based compiler to the new Perl-based compiler. While the two
-    compilers are highly compatible, there are some differences. Those
-    differences are detailed in the following sections.</para>
+    the old shell-based compiler to the new Perl-based compiler<footnote>
+        <para>Note that Perl is a required package on Debian. If you are
+        running an embedded distribution which does not include Perl and it is
+        not feasible to install Perl on your firewall, then you should
+        consider installing Shorewall on another system in your network (may
+        be a <trademark>Windows</trademark> system running
+        <trademark>Cygwin</trademark>) and installing Shorewall-lite on your
+        firewall.</para>
+      </footnote>. While the two compilers are highly compatible, there are
+    some differences. Those differences are detailed in the following
+    sections.</para>
   </section>
 
   <section>
@@ -206,10 +220,17 @@
             by Shorewall 4.4.x</emphasis></para>
 
             <para>You should not be receiving this error if you are upgrading
-            from Lenny since BRIDGING=Yes did not work in that release. If you
-            have a bridge configuration where you want to control connections
-            through the bridge, you will want to visit <ulink
-            url="http://www.shorewall.net/bridge-Shorewall-perl.html">http://www.shorewall.net/bridge-Shorewall-perl.html</ulink>.</para>
+            from Lenny since BRIDGING=Yes did not work in that
+            release<footnote>
+                <para>If you are upgrading from a release using a kernel
+                earlier than 2.6.20, then BRIDGING=Yes did work correctly with
+                Shorewall-shell.</para>
+              </footnote>. If you have a bridge configuration where you want
+            to control connections through the bridge, you will want to visit
+            <ulink
+            url="http://www.shorewall.net/bridge-Shorewall-perl.html">http://www.shorewall.net/bridge-Shorewall-perl.html</ulink><footnote>
+                <para>Kernel 2.6.20 or later is required.</para>
+              </footnote>.</para>
           </listitem>
         </varlistentry>
 
@@ -450,7 +471,11 @@ ipsec2  ipv4</programlisting>
 
       <para>The BROADCAST column is essentially unused in Squeeze. If it
       contains anything except 'detect' or '-', then you will receive this
-      warning:</para>
+      warning<footnote>
+          <para>Users whose kernel and/or iptables do not include Address Type
+          Match Support can continue to list broadcast addresses in this
+          column; no warning will be issued.</para>
+        </footnote>:</para>
 
       <blockquote>
         <para><emphasis role="bold">WARNING: Shorewall no longer uses

@@ -52,7 +52,7 @@
     </note>
   </section>
 
-  <section>
+  <section id="Packages">
     <title>Packaging Differences</title>
 
     <para>The first key difference between Shorewall 4.0 and Shorewall 4.4 is
@@ -170,10 +170,10 @@
     sections.</para>
   </section>
 
-  <section>
+  <section id="Issues">
     <title>Issues Most Likely to Cause Problems or Concerns</title>
 
-    <section>
+    <section id="conf">
       <title>shorewall.conf</title>
 
       <para>As always, when upgrading from one major release of Shorewall to
@@ -466,7 +466,7 @@ ipsec2  ipv4</programlisting>
       <filename>/etc/shorewall/zones</filename>.</para>
     </section>
 
-    <section>
+    <section id="interfaces">
       <title>/etc/shorewall/interfaces</title>
 
       <para>The BROADCAST column is essentially unused in Squeeze. If it
@@ -500,7 +500,7 @@ ipsec2  ipv4</programlisting>
       url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).</para>
     </section>
 
-    <section>
+    <section id="hosts">
       <title>/etc/shorewall/hosts</title>
 
       <para>The 'norfc1918' option has been removed. If you specify the
@@ -517,7 +517,7 @@ ipsec2  ipv4</programlisting>
       url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).</para>
     </section>
 
-    <section>
+    <section id="policy">
       <title>/etc/shorewall/policy</title>
 
       <para>Shorewall 4.4 detects dead policy file entries that result when an
@@ -539,25 +539,29 @@ loc     net      ACCEPT</programlisting>
       </blockquote>
     </section>
 
-    <section>
+    <section id="masq">
       <title>/etc/shorewall/masq</title>
 
       <para>There is a long tradition of specifying an interface name in the
-      SOURCE column of this file. Given that masquerading/SNAT occurs in the
-      Netfilter POSTROUTING chain where an incoming interface may not be
-      specified, Shorewall must examine the main routing table during
-      <command>shorewall start</command> and <command>shorewall
-      restart</command> processing to determine those networks routed out of
-      the named interface and then add MASQUERADE/SNAT rules for traffic from
-      those networks. This requires that the named interface be up and
+      SOURCE column of this file.</para>
+
+      <para>Masquerading/SNAT occurs in the Netfilter POSTROUTING chain where
+      an incoming interface may not be specified in iptables rules.
+      Consequently, while processing the <command>shorewall start</command>
+      and <command>shorewall restart</command> commands, the generated script
+      must examine the firewall's main routing table to determine those
+      networks that are routed out of the interface; the script then adds a
+      MASQUERADE/SNAT rule for connections from each of those networks. This
+      additional processing requires the named interface to be up and
       configured when Shorewall starts or restarts.</para>
 
-      <para>This continues to be a frequent issue with VPN configurations
-      where the named interface isn't configured during boot.</para>
+      <para>Users often complain that Shorewall fails to start at boot time
+      because a VPN interface that is named as a masq SOURCE isn't up and
+      configured during boot.</para>
 
       <para>To emphasize this restriction, if an interface is named in the
-      SOURCE column of one or more entries, a single warning as follows is
-      issued:</para>
+      SOURCE column of one or more entries, a single warning is issued as
+      follows:</para>
 
       <blockquote>
         <para><emphasis role="bold">WARNING: Using an interface as the masq
@@ -595,7 +599,7 @@ eth0                    172.20.1.0/24</programlisting>
       IP address in that network.</para>
     </section>
 
-    <section>
+    <section id="rules">
       <title>/etc/shorewall/rules</title>
 
       <para>If you include a destination zone in a 'nonat' rule, Shorewall
@@ -663,7 +667,7 @@ NONAT           loc             -               tcp     80</programlisting>
       <command>restart</command>.</para>
     </section>
 
-    <section>
+    <section id="tos">
       <title>/etc/shorewall/tos</title>
 
       <para>The <filename>/etc/shorewall/tos</filename> file now has
@@ -696,7 +700,7 @@ NONAT           loc             -               tcp     80</programlisting>
       earlier.</para>
     </section>
 
-    <section>
+    <section id="extension">
       <title>Extension Scripts</title>
 
       <para>With the shell-based compiler, all extension scripts were copied
@@ -940,7 +944,7 @@ fi</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="Additional">
     <title>Additional Sources of Information</title>
 
     <para>The following articles provide additional information.</para>

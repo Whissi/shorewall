@@ -288,6 +288,17 @@
         </varlistentry>
 
         <varlistentry>
+          <term>PKTTYPE</term>
+
+          <listitem>
+            <para>The PKTTYPE option is ignored by Shorewall-perl.
+            Shorewall-perl will use Address type match if it is available;
+            otherwise, it will behave as if PKTTYPE=No had been
+            specified.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
           <term>RFC1918_LOG_LEVEL</term>
 
           <listitem>
@@ -322,8 +333,8 @@
           <term>SAVE_IPSETS</term>
 
           <listitem>
-            <para>If you have SAVE_IPSETS=Yes, you will receive the following
-            warning:</para>
+            <para>Shorewall 4.4 will issue a warning if you set
+            SAVE_IPSETS=Yes in <filename>shorewall.conf</filename>:</para>
 
             <para><emphasis role="bold">WARNING SAVE_IPSETS=Yes is not
             supported by Shorewall 4.4.x</emphasis></para>
@@ -331,8 +342,8 @@
             <para>To eliminate this message, you will need to set
             SAVE_IPSETS=No or remove the setting altogether.</para>
 
-            <para>For more information, see <ulink
-            url="Shorewall-perl.html#SAVE_IPSETS">this article</ulink>.</para>
+            <para>See below for additional information regarding ipsets in
+            Shorewall 4.4.</para>
           </listitem>
         </varlistentry>
 
@@ -482,6 +493,28 @@ ipsec2  ipv4</programlisting>
     </section>
 
     <section>
+      <title>/etc/shorewall/policy</title>
+
+      <para>Shorewall 4.4 detects dead policy file entries that result when an
+      entry is masked by an earlier more general entry.</para>
+
+      <para>Example:</para>
+
+      <programlisting>#SOURCE DEST     POLICY    LOG LEVEL
+all     all      REJECT    info
+loc     net      ACCEPT</programlisting>
+
+      <para>Shorewall-shell silently accepted the above even though the
+      loc-&gt;net policy is useless. Shorewall-perl generates a fatal
+      compilation error:</para>
+
+      <blockquote>
+        <para><emphasis role="bold">ERROR: Policy "loc net ACCEPT" duplicates
+        earlier policy "all all REJECT"</emphasis></para>
+      </blockquote>
+    </section>
+
+    <section>
       <title>/etc/shorewall/masq</title>
 
       <para>There is a long tradition of specifying an interface name in the
@@ -577,7 +610,7 @@ NONAT           loc             net             tcp     80</programlisting>
 NONAT           loc             -               tcp     80</programlisting>
     </section>
 
-    <section>
+    <section id="routestopped">
       <title>/etc/shorewall/routestopped</title>
 
       <para>The 'critical' option is no longer needed and hence is no longer
@@ -606,13 +639,279 @@ NONAT           loc             -               tcp     80</programlisting>
     </section>
 
     <section>
+      <title>/etc/shorewall/tos</title>
+
+      <para>The <filename>/etc/shorewall/tos</filename> file now has
+      zone-independent SOURCE and DEST columns as do all other files except
+      the rules and policy files.</para>
+
+      <para>The SOURCE column may be one of the following:</para>
+
+      <simplelist>
+        <member>[<command>all</command>:]&lt;<replaceable>address</replaceable>&gt;[,...]</member>
+
+        <member>[<command>all</command>:]&lt;<replaceable>interface</replaceable>&gt;[:&lt;<replaceable>address</replaceable>&gt;[,...]]</member>
+
+        <member><command>$FW</command>[:&lt;<replaceable>address</replaceable>&gt;[,...]]</member>
+      </simplelist>
+
+      <para>The DEST column may be one of the following:</para>
+
+      <simplelist>
+        <member>[<command>all</command>:]&lt;<replaceable>address</replaceable>&gt;[,...]</member>
+
+        <member>[<command>all</command>:]&lt;<replaceable>interface</replaceable>&gt;[:&lt;<replaceable>address</replaceable>&gt;[,...]]</member>
+      </simplelist>
+
+      <para>This is a permanent change. The old zone-based rules have never
+      worked right and this is a good time to replace them. We have tried to
+      make the new syntax cover the most common cases without requiring change
+      to existing files. In particular, it will handle the
+      <filename>tos</filename> file released with Shorewall 1.4 and
+      earlier.</para>
+    </section>
+
+    <section>
       <title>Extension Scripts</title>
 
-      <para>If you have entries in Shorewall extension scripts
-      (<filename>/etc/shorewall/init</filename>,
-      <filename>/etc/shorewall/start</filename>, etc.) or if you have
-      implemented an Action that uses an extension script, you should review
-      <ulink url="Shorewall-perl.html#Extensions">this article</ulink>.</para>
+      <para>With the shell-based compiler, all extension scripts were copied
+      into the compiled script and executed at run-time. In some cases, this
+      approach doesn't work with Shorewall Perl because (almost) the entire
+      rule set is built by the compiler. As a result, Shorewall-perl runs some
+      extension scripts at compile-time rather than at run-time. Because the
+      compiler is written in Perl, these extension scripts from earlier
+      versions will no longer work.</para>
+
+      <para>The following table summarizes when the various extension scripts
+      are run:<informaltable align="left" frame="none">
+          <tgroup cols="3">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">Compile-time (Must be written in
+                Perl)</emphasis></entry>
+
+                <entry><emphasis role="bold">Run-time</emphasis></entry>
+
+                <entry><emphasis role="bold">Eliminated</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>initdone</entry>
+
+                <entry>clear</entry>
+
+                <entry>continue</entry>
+              </row>
+
+              <row>
+                <entry>maclog</entry>
+
+                <entry>init</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry>Per-chain (including those associated with
+                actions)</entry>
+
+                <entry>start</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>started</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>stop</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>stopped</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry></entry>
+
+                <entry>tcclear</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable></para>
+
+      <para>Compile-time extension scripts are executed using the Perl 'eval
+      `cat &lt;file&gt;`' mechanism. Be sure that each script returns a 'true'
+      value; otherwise, the Shorewall-perl compiler will assume that the
+      script failed and will abort the compilation.</para>
+
+      <para>When a script is invoked, the <emphasis
+      role="bold">$chainref</emphasis> scalar variable will usually hold a
+      reference to a chain table entry.</para>
+
+      <simplelist>
+        <member><emphasis role="bold">$chainref-&gt;{name}</emphasis> contains
+        the name of the chain</member>
+
+        <member><emphasis role="bold">$chainref-&gt;{table}</emphasis> holds
+        the table name</member>
+      </simplelist>
+
+      <para>To add a rule to the chain:</para>
+
+      <simplelist>
+        <member>add_rule $chainref,
+        <replaceable>the-rule</replaceable></member>
+      </simplelist>
+
+      <para>Where</para>
+
+      <simplelist>
+        <member><replaceable>the rule</replaceable> is a scalar argument
+        holding the rule text. Do not include "-A
+        <replaceable>chain-name</replaceable>"</member>
+      </simplelist>
+
+      <para>Example:</para>
+
+      <simplelist>
+        <member>add_rule $chainref, '-j ACCEPT';</member>
+      </simplelist>
+
+      <para>To insert a rule into the chain:</para>
+
+      <simplelist>
+        <member>insert_rule $chainref, <replaceable>rulenum</replaceable>,
+        <replaceable>the-rule</replaceable></member>
+      </simplelist>
+
+      <para>The log_rule_limit function works like it does in the shell
+      compiler with three exceptions:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>You pass the chain reference rather than the name of the
+          chain.</para>
+        </listitem>
+
+        <listitem>
+          <para>The commands are 'add' and 'insert' rather than '-A' and
+          '-I'.</para>
+        </listitem>
+
+        <listitem>
+          <para>There is only a single "pass as-is to iptables" argument (so
+          you must quote that part</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Example:</para>
+
+      <programlisting>    log_rule_limit
+              'info' , 
+              $chainref , 
+              $chainref-&gt;{name},
+              'DROP' , 
+              '',    #Limit
+              '' ,   #Log tag
+              'add'
+              '-p tcp ';         </programlisting>
+
+      <para>Here is an example of an actual initdone script used with
+      Shorewall 3.4:<programlisting>run_iptables -t mangle -I PREROUTING -p esp -j MARK --set-mark 0x50
+run_iptables -t filter -I INPUT -p udp --dport 1701 -m mark --mark 0x50 -j ACCEPT
+run_iptables -t filter -I OUTPUT -p udp --sport 1701 -j ACCEPT
+</programlisting></para>
+
+      <para>Here is the corresponding script used with Shorewall
+      4.4:<programlisting>use Shorewall::Chains;
+
+insert_rule $mangle_table-&gt;{PREROUTING}, 1, "-p esp -j MARK --set-mark 0x50";
+insert_rule $filter_table-&gt;{INPUT},      1, "-p udp --dport 1701 -m mark --mark 0x50 -j ACCEPT";
+insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
+
+1;</programlisting></para>
+
+      <para>The initdone script is unique because the $chainref variable is
+      not set before the script is called. The above script illustrates how
+      the $mangle_table, $filter_table, and $nat_table references can be used
+      to add or insert rules in arbitrary chains.</para>
+    </section>
+
+    <section>
+      <title>Ipsets</title>
+
+      <para>Shorewall 4.4 insists that ipset names begin with a letter and be
+      composed of alphanumeric characters and underscores (_). When used in a
+      Shorewall configuration file, the name must be preceded by a plus sign
+      (+) as with the shell-based compiler.</para>
+
+      <para>Shorewall 4.4 is out of the ipset load/reload business with the
+      exception of ipsets used for dynamic zones. With scripts generated by
+      Shorwall 4.4, the Netfilter rule set is never cleared. That means that
+      there is no opportunity for Shorewall to load/reload your ipsets since
+      that cannot be done while there are any current rules using
+      ipsets.</para>
+
+      <para>So:</para>
+
+      <orderedlist numeration="upperroman">
+        <listitem>
+          <para>Your ipsets must be loaded before Shorewall starts. You are
+          free to try to do that with the following code in
+          <filename>/etc/shorewall/init (it works for me; your mileage may
+          vary)</filename>:</para>
+
+          <programlisting>if [ "$COMMAND" = start ]; then
+    ipset -U :all: :all:
+    ipset -U :all: :default:
+    ipset -F
+    ipset -X
+    ipset -R &lt; /etc/shorewall/ipsets
+fi</programlisting>
+
+          <para>The file <filename>/etc/shorewall/ipsets</filename> will
+          normally be produced using the <command>ipset -S</command> command.
+          I have this in my<filename> /etc/shorewall/stop</filename>
+          file:</para>
+
+          <programlisting>if ipset -S &gt; /etc/shorewall/ipsets.tmp; then
+    mv -f /etc/shorewall/ipsets /etc/shorewall/ipsets.bak
+    mv /etc/shorewall/ipsets.tmp /etc/shorewall/ipsets
+fi</programlisting>
+
+          <para>The above extension scripts will work most of the time but
+          will fail in a <command>shorewall stop</command> -
+          <command>shorewall start</command> sequence if you use ipsets in
+          your routestopped file (see <link
+          linkend="routestopped">below</link>).</para>
+        </listitem>
+
+        <listitem>
+          <para>Your ipsets may not be reloaded until Shorewall is stopped or
+          cleared.</para>
+        </listitem>
+
+        <listitem>
+          <para>If you specify ipsets in your routestopped file then Shorewall
+          must be cleared in order to reload your ipsets.</para>
+        </listitem>
+      </orderedlist>
     </section>
   </section>
 

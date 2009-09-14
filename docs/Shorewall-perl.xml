@@ -153,67 +153,79 @@
           extension scripts from earlier versions will no longer work.</para>
 
           <para>The following table summarizes when the various extension
-          scripts are run:<informaltable align="left" frame="none">
-              <tgroup cols="3">
-                <tbody>
-                  <row>
-                    <entry><emphasis role="bold">Compile-time (Must be written
-                    in Perl)</emphasis></entry>
+          scripts are run:</para>
 
-                    <entry><emphasis role="bold">Run-time</emphasis></entry>
+          <informaltable align="left" frame="none">
+            <tgroup cols="3">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">Compile-time (Must be written
+                  in Perl)</emphasis></entry>
 
-                    <entry><emphasis role="bold">Eliminated</emphasis></entry>
-                  </row>
+                  <entry><emphasis role="bold">Run-time</emphasis></entry>
 
-                  <row>
-                    <entry>initdone</entry>
+                  <entry><emphasis role="bold">Eliminated</emphasis></entry>
+                </row>
 
-                    <entry>clear</entry>
+                <row>
+                  <entry>initdone</entry>
 
-                    <entry>continue</entry>
-                  </row>
+                  <entry>clear</entry>
 
-                  <row>
-                    <entry>maclog</entry>
+                  <entry>continue</entry>
+                </row>
 
-                    <entry>start</entry>
-                  </row>
+                <row>
+                  <entry>maclog</entry>
 
-                  <row>
-                    <entry>Per-chain (including those associated with
-                    actions)</entry>
+                  <entry>init</entry>
 
-                    <entry>started</entry>
+                  <entry></entry>
+                </row>
 
-                    <entry></entry>
-                  </row>
+                <row>
+                  <entry>Per-chain (including those associated with
+                  actions)</entry>
 
-                  <row>
-                    <entry></entry>
+                  <entry>start</entry>
 
-                    <entry>stop</entry>
+                  <entry></entry>
+                </row>
 
-                    <entry></entry>
-                  </row>
+                <row>
+                  <entry></entry>
 
-                  <row>
-                    <entry></entry>
+                  <entry>started</entry>
 
-                    <entry>stopped</entry>
+                  <entry></entry>
+                </row>
 
-                    <entry></entry>
-                  </row>
+                <row>
+                  <entry></entry>
 
-                  <row>
-                    <entry></entry>
+                  <entry>stop</entry>
 
-                    <entry>tcclear</entry>
+                  <entry></entry>
+                </row>
 
-                    <entry></entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </informaltable></para>
+                <row>
+                  <entry></entry>
+
+                  <entry>stopped</entry>
+
+                  <entry></entry>
+                </row>
+
+                <row>
+                  <entry></entry>
+
+                  <entry>tcclear</entry>
+
+                  <entry></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
 
           <para>Compile-time extension scripts are executed using the Perl
           'eval `cat &lt;file&gt;`' mechanism. Be sure that each script

@@ -1990,6 +1990,35 @@ iptables: Invalid argument
       <filename><ulink
       url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>.</para>
     </section>
+
+    <section id="faq86">
+      <title>(FAQ 86) My distribution (Ubuntu) uses NetworkManager to manage
+      my interfaces. I want to specify the upnpclient option for my interfaces
+      which requires them to be up and configured when Shorewall starts but
+      Shorewall is being started before NetworkManager.</title>
+
+      <para>Answer: I faced a similar problem which I solved as
+      follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Don't start Shorewall at boot time (Debian and Ubuntu users
+          may simply set startup=0 in
+          <filename>/etc/default/shorewall</filename>).</para>
+        </listitem>
+
+        <listitem>
+          <para>In <filename>/etc/network/ip-up.d</filename>, I added a
+          <filename>shorewall</filename> script as follows:</para>
+
+          <programlisting>#!/bin/sh
+
+shorewall status &gt; /dev/null 2&gt;&amp;1 || shorewall start # Start Shorewall if it isn't already running</programlisting>
+
+          <para>Be sure to secure the script for execute access.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </section>
 
   <section id="MultiISP">

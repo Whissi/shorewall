@@ -248,8 +248,9 @@
           <term>IPSECFILE</term>
 
           <listitem>
-            <para>If you have specified IPSECFILE=ipsec, then you will receive
-            the following error:</para>
+            <para>If you have specified IPSECFILE=ipsec or IPSECFILE= or if
+            you do not have a setting for IPSECFILE, then you will receive the
+            following error:</para>
 
             <para><emphasis role="bold">ERROR: IPSECFILE=ipsec is not
             supported by Shorewall 4.4.x</emphasis></para>
@@ -364,8 +365,8 @@ loc     Local           The local LAN</programlisting>
       <para>then you are using the original zones file format that has been
       deprecated since Shorewall 3.0.</para>
 
-      <para>You will need to convert to the new file which has the following
-      headings:</para>
+      <para>You will need to convert to the new file format which has the
+      following headings:</para>
 
       <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
 #                                       OPTIONS                 OPTIONS</programlisting>
@@ -380,7 +381,8 @@ loc     Local           The local LAN</programlisting>
 fw      firewall</programlisting>
 
       <para>The remainder of your zones will have type 'ipv4' unless they are
-      mentioned in your /etc/shorewall/ipsec file (see below).</para>
+      mentioned in your /etc/shorewall/ipsec file (see <link
+      linkend="ipsec">below</link>).</para>
 
       <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
 #                                       OPTIONS                 OPTIONS
@@ -389,7 +391,7 @@ net     ipv4            # The big bad net
 loc     ipv4            # The local LAN</programlisting>
     </section>
 
-    <section>
+    <section id="ipsec">
       <title>/etc/shorewall/ipsec</title>
 
       <para>This file is no longer used -- its specifications are now included
@@ -471,9 +473,9 @@ ipsec2  ipv4</programlisting>
       specified, Shorewall must examine the main routing table during
       <command>shorewall start</command> and <command>shorewall
       restart</command> processing to determine those networks routed out of
-      the named interface and add MASQUERADE/SNAT rules for traffic from those
-      networks. This requires that the named interface be up and configured
-      when Shorewall starts or restarts.</para>
+      the named interface and then add MASQUERADE/SNAT rules for traffic from
+      those networks. This requires that the named interface be up and
+      configured when Shorewall starts or restarts.</para>
 
       <para>This continues to be a frequent issue with VPN configurations
       where the named interface isn't configured during boot.</para>

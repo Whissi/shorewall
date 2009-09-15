@@ -193,17 +193,6 @@ ACCEPT   -              -               tcp     135,139,445
         action begins with a capital letter; that way, the name won't conflict
         with a Shorewall-defined chain name.</para>
 
-        <para>The name of the action may be optionally followed by a colon
-        (<quote>:</quote>) and ACCEPT, DROP or REJECT. When this is done, the
-        named action will become the <emphasis>default action</emphasis> for
-        policies of type ACCEPT, DROP or REJECT, respectively. The default
-        action is applied immediately before the policy is enforced (before
-        any logging is done under that policy) and is used mainly to suppress
-        logging of uninteresting traffic which would otherwise clog your logs.
-        The same policy name can appear in multiple actions; the last such
-        action for each policy name is the one which Shorewall will
-        use.</para>
-
         <para>Shorewall includes pre-defined actions for DROP and REJECT --
         see above.</para>
       </listitem>
@@ -506,74 +495,6 @@ ACCEPT:debug -          -        tcp      22
 bar:debug</programlisting>
       </listitem>
     </orderedlist>
-
-    <para>If you define an action <quote>acton</quote> and you have an
-    <filename>/etc/shorewall/acton</filename> script, when that script is
-    invoked, the following three variables will be set for use by the
-    script:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>$CHAIN = the name of the chain where your rules are to be
-        placed. When logging is used on an action invocation, Shorewall
-        creates a chain with a slightly different name from the action
-        itself.</para>
-      </listitem>
-
-      <listitem>
-        <para>$LEVEL = Log level. If empty, no logging was specified.</para>
-      </listitem>
-
-      <listitem>
-        <para>$TAG = Log Tag.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Example:</para>
-
-    <para><filename>/etc/shorewall/rules</filename>:</para>
-
-    <programlisting>#ACTION          SOURCE           DEST
-acton:info:test  $FW              net</programlisting>
-
-    <para>Your <filename>/etc/shorewall/acton</filename> file will be run
-    with:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>$CHAIN=<quote>%acton1</quote></para>
-      </listitem>
-
-      <listitem>
-        <para>$LEVEL=<quote>info</quote></para>
-      </listitem>
-
-      <listitem>
-        <para>$TAG=<quote>test</quote></para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Shorewall-perl sets lexical variables as follows:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para><emphasis role="bold">$chainref</emphasis> is a reference to the
-        chain-table entry for the chain where your rules are to be
-        placed.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">$level</emphasis> is the log level. If
-        false, no logging was specified.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">$tag</emphasis> is the log tag.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>For an example of how to use these variablesl, see <ulink
-    url="PortKnocking.html">this article</ulink>.</para>
   </section>
 
   <section id="Extension">
@@ -590,6 +511,29 @@ acton:info:test  $FW              net</programlisting>
 
     <example id="Example">
       <title>An action to drop all broadcast packets</title>
+
+      <para>If you define an action <quote>acton</quote> and you have an
+      <filename>/etc/shorewall/acton</filename> script, the rules compiler
+      sets lexical variables as follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">$chainref</emphasis> is a reference to
+          the chain-table entry for the chain where your rules are to be
+          placed.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">$level</emphasis> is the log level. If
+          false, no logging was specified.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">$tag</emphasis> is the log tag.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Example:</para>
 
       <para>/etc/shorewall/actions<programlisting>DropBcasts</programlisting></para>
 

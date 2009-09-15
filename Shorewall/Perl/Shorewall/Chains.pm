@@ -945,9 +945,23 @@ sub ensure_accounting_chain( $  )
     if ( $chainref ) {
 	fatal_error "Non-accounting chain ($chain) used in accounting rule" unless $chainref->{accounting};
     } else {
-	$chainref = new_chain 'filter' , $chain unless $chainref;
+	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
+
+	my $file = find_file $chain;
+
+	if ( -f $file ) {
+	    progress_message "Processing $file...";
+
+	    my ( $level, $tag ) = ( '', '' );
+
+	    unless ( my $return = eval `cat $file` ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+		fatal_error "Couldn't do $file: $!"    unless defined $return;
+		fatal_error "Couldn't run $file"       unless $return;
+	    }
+	}
     }
 
     $chainref;

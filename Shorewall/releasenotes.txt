@@ -246,6 +246,14 @@ None.
     /etc/shorewall/rules and must be empty in macros invoked from an
     action.
 
+3)  Accounting chains may now have extension scripts. Simply place your
+    Perl script in the file /etc/shorewall/<chain> and when the
+    accounting chain named <chain> is created, your script will be
+    invoked.
+
+    As usual, the variable $chainref will contain a reference to the
+    chain's table entry.
+
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0
 ----------------------------------------------------------------------------

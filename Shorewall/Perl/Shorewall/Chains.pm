@@ -1532,7 +1532,7 @@ sub do_ratelimit( $$ ) {
 
 	my $limit = "-m hashlimit ";
 	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	    $limit .= "--hashlimit-upto $3 --hashlimit-burst $6 --hashlimit-name ";
+	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
 	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {

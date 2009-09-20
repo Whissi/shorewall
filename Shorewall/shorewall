@@ -23,99 +23,9 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#	If an error occurs while starting or restarting the firewall, the
-#	firewall is automatically stopped.
+#       For a list of supported commands, type 'shorewall help'
 #
-#	The firewall uses configuration files in /etc/shorewall/ - skeleton
-#	files are included with the firewall.
-#
-#	Commands are:
-#
-#          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
-#          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
-#          shorewall dump                          Dumps all Shorewall-related information
-#                                                  for problem analysis
-#	   shorewall start 			   Starts the firewall
-#	   shorewall restart			   Restarts the firewall
-#	   shorewall stop			   Stops the firewall
-#	   shorewall status			   Displays firewall status
-#	   shorewall reset			   Resets iptables packet and
-#						   byte counts
-#	   shorewall clear			   Open the floodgates by
-#						   removing all iptables rules
-#						   and setting the three permanent
-#						   chain policies to ACCEPT
-#	   shorewall refresh			   Rebuild the common chain to
-#						   compensate for a change of
-#						   broadcast address on any "detect"
-#						   interface.
-#	   shorewall [re]load [ <directory> ] <system>
-#						   Compile a script and install it on a
-#						   remote Shorewall Lite system.
-#	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
-#          shorewall show actions                  Displays the available actions
-#	   shorewall show log			   Print the last 20 log messages
-#	   shorewall show connections		   Show the kernel's connection
-#						   tracking table
-#	   shorewall show nat			   Display the rules in the nat table
-#	   shorewall show {mangle|tos}		   Display the rules in the mangle table
-#	   shorewall show tc			   Display traffic control info
-#	   shorewall show classifiers		   Display classifiers
-#          shorewall show capabilities             Display iptables/kernel capabilities
-#          shorewall show vardir                   Display the VARDIR setting.
-#	   shorewall version			   Display the installed version id
-#	   shorewall check [ -e ] [ <directory> ]  Dry-run compilation.
-#	   shorewall try <directory> [ <timeout> ] Try a new configuration and if
-#						   it doesn't work, revert to the
-#						   standard one. If a timeout is supplied
-#						   the command reverts back to the
-#						   standard configuration after that many
-#						   seconds have elapsed after successfully
-#						   starting the new configuration.
-#	   shorewall logwatch [ refresh-interval ] Monitor the local log for Shorewall
-#						   messages.
-#	   shorewall drop <address> ...		   Temporarily drop all packets from the
-#						   listed address(es)
-#	   shorewall reject <address> ...	   Temporarily reject all packets from the
-#						   listed address(es)
-#	   shorewall allow <address> ...	   Reenable address(es) previously
-#						   disabled with "drop" or "reject"
-#	   shorewall save [ <file> ]		   Save the list of "rejected" and
-#						   "dropped" addresses so that it will
-#						   be automatically reinstated the
-#						   next time that Shorewall starts.
-#                                                  Save the current state so that 'shorewall
-#                                                  restore' can be used.
-#
-#          shorewall forget [ <file> ]             Discard the data saved by 'shorewall save'
-#
-#          shorewall restore [ <file> ]            Restore the state of the firewall from
-#                                                  previously saved information.
-#
-#          shorewall ipaddr { <address>/<cidr> | <address> <netmask> }
-#
-#                                                  Displays information about the network
-#                                                  defined by the argument[s]
-#
-#          shorewall iprange <address>-<address>   Decomposes a range of IP addresses into
-#                                                  a list of network/host addresses.
-#
-#          shorewall ipdecimal { <address> | <integer> }
-#
-#                                                  Displays the decimal equivalent of an IP
-#                                                  address and vice versa.
-#
-#          shorewall safe-start [ <directory> ]    Starts the firewall and promtp for a c
-#                                                  confirmation to accept or reject the new
-#                                                  configuration
-#
-#          shorewall safe-restart [ <directory> ]  Restarts the firewall and prompt for a
-#                                                  confirmation to accept or reject the new
-#                                                  configuration
-#
-#          shorewall compile [ -e ] [ <directory> ] <filename>
-#                                                  Compile a firewall program file.
-
+#####################################################################################################
 #
 # Set the configuration variables from shorewall.conf
 #
@@ -123,7 +33,6 @@
 #     $2 = Yes: check for STARTUP_ENABLED
 #     $3 = Yes: Check for LOGFILE
 #     
-#
 get_config() {
     local prog
 

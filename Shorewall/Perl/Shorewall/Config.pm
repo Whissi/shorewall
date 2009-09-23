@@ -242,6 +242,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 LOGMARK_TARGET  => 'LOGMARK Target',
 		 IPMARK_TARGET   => 'IPMARK Target',
 		 PERSISTENT_SNAT => 'Persistent SNAT',
+		 OLD_HL_MATCH    => 'Old Hash Limit Match',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -328,7 +329,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.2",
-		    CAPVERSION => 40401 ,
+		    CAPVERSION => 40402 ,
 		  );
 
     #
@@ -566,7 +567,7 @@ sub initialize( $ ) {
 			 NONE    => '',
 			 NFLOG   => 'NFLOG',
 		         LOGMARK => 'LOGMARK' );
-	}
+    }
     #
     # From parsing the capabilities file
     #
@@ -614,6 +615,7 @@ sub initialize( $ ) {
 	       IPMARK_TARGET => undef,
 	       LOG_TARGET => 1,         # Assume that we have it.
 	       PERSISTENT_SNAT => undef,
+	       OLD_HL_MATCH => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -2027,6 +2029,15 @@ sub determine_capabilities( $ ) {
     $capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-admt-prohibited" );
     $capabilities{COMMENTS}        = qt1( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );
 
+    $capabilities{HASHLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+
+    if ( $capabilities{HASHLIMIT_MATCH} ) {
+	$capabilities{OLD_HL_MATCH} = '';
+    } else {
+	$capabilities{OLD_HL_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+	$capabilities{HASHLIMIT_MATCH} = $capabilities{OLD_HL_MATCH};
+    }
+
     if  ( $capabilities{MANGLE_ENABLED} ) {
 	qt1( "$iptables -t mangle -N $sillyname" );
 
@@ -2071,7 +2082,6 @@ sub determine_capabilities( $ ) {
     $capabilities{USEPKTTYPE}      = qt1( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
     $capabilities{ADDRTYPE}        = qt1( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
     $capabilities{TCPMSS_MATCH}    = qt1( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
-    $capabilities{HASHLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name fooX1234 --hashlimit-mode dstip -j ACCEPT" );
     $capabilities{NFQUEUE_TARGET}  = qt1( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
     $capabilities{REALM_MATCH}     = qt1( "$iptables -A $sillyname -m realm --realm 1" );
     $capabilities{HELPER_MATCH}    = qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );

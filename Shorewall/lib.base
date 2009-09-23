@@ -30,7 +30,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40401
+SHOREWALL_CAPVERSION=40402
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -945,7 +945,11 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
     qt $IPTABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
     qt $IPTABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
-    qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    qt $IPTABLES -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    if [ -z "$HASHLIMIT_MATCH" ]; then
+	qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && NEW_HL_MATCH=Yes
+	HASHLIMIT_MATCH=$OLD_HL_MATCH
+    fi	
     qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
     qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
     qt $IPTABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
@@ -1011,6 +1015,7 @@ report_capabilities() {
 	report_capability "Address Type Match" $ADDRTYPE
 	report_capability "TCPMSS Match" $TCPMSS_MATCH
 	report_capability "Hashlimit Match" $HASHLIMIT_MATCH
+	report_capability "Old Hashlimit Match" $OLD_HL_MATCH
 	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
 	report_capability "Realm Match" $REALM_MATCH
 	report_capability "Helper Match" $HELPER_MATCH
@@ -1069,6 +1074,7 @@ report_capabilities1() {
     report_capability1 ADDRTYPE
     report_capability1 TCPMSS_MATCH
     report_capability1 HASHLIMIT_MATCH
+    report_capability1 OLD_HL_MATCH
     report_capability1 NFQUEUE_TARGET
     report_capability1 REALM_MATCH
     report_capability1 HELPER_MATCH

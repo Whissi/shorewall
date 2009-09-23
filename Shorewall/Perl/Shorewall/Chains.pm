@@ -1531,12 +1531,14 @@ sub do_ratelimit( $$ ) {
 	require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
 
 	my $limit = "-m hashlimit ";
+	my $match = $capabilities{OLD_HL_MATCH} ? 'hashlimit' : 'hashlimit-upto';
+
 	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
 	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {
-	    $limit .= "--hashlimit-upto $3 --hashlimit-name ";
+	    $limit .= "--$match $3 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
 	} else {

@@ -586,7 +586,7 @@ sub process_actions2 () {
 #
 # This function is called to process each rule generated from an action file.
 #
-sub process_action( $$$$$$$$$$ ) {
+sub process_action( $$$$$$$$$$$ ) {
     my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = @_;
 
     my ( $action , $level ) = split_action $target;
@@ -638,7 +638,7 @@ sub process_macro3( $$$$$$$$$$$$ ) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark );
 
 	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $macro_commands;
 	    $morigdest = '-';
 	    $mmark     = '-';
 	} else {
@@ -698,7 +698,7 @@ sub process_macro3( $$$$$$$$$$$$ ) {
 	$muser   = merge_macro_column $muser,   $user;
 	$mmark   = merge_macro_column $mmark,   $mark;
 
-	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser;
+	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $mark;
     }
 
     pop_open;
@@ -749,7 +749,7 @@ sub process_action3( $$$$$ ) {
 	if ( $action2type == MACRO ) {
 	    process_macro3( $action2, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark );
 	} else {
-	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user;
+	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark;
 	}
     }
 

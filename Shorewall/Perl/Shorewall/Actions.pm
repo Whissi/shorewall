@@ -549,7 +549,7 @@ sub process_actions1() {
 
 	    while ( read_a_line ) {
 
-		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users ) = split_line 1, 8, 'action file';
+		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users, $mark ) = split_line 1, 9, 'action file';
 
 		process_action1( $action, $wholetarget );
 
@@ -587,7 +587,7 @@ sub process_actions2 () {
 # This function is called to process each rule generated from an action file.
 #
 sub process_action( $$$$$$$$$$ ) {
-    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
+    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = @_;
 
     my ( $action , $level ) = split_action $target;
 
@@ -605,7 +605,7 @@ sub process_action( $$$$$$$$$$ ) {
 
     expand_rule ( $chainref ,
 		  NO_RESTRICT ,
-		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user ,
+		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user . do_test( $mark, 0xFF ) ,
 		  $source ,
 		  $dest ,
 		  '', #Original Dest
@@ -618,8 +618,8 @@ sub process_action( $$$$$$$$$$ ) {
 #
 # Expand Macro in action files.
 #
-sub process_macro3( $$$$$$$$$$$ ) {
-    my ( $macro, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user ) = @_;
+sub process_macro3( $$$$$$$$$$$$ ) {
+    my ( $macro, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = @_;
 
     my $nocomment = no_comment;
 
@@ -635,13 +635,14 @@ sub process_macro3( $$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser );
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark );
 
 	if ( $format == 1 ) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 'macro file', $macro_commands;
 	    $morigdest = '-';
+	    $mmark     = '-';
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark ) = split_line1 1, 10, 'macro file', $macro_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {
@@ -695,6 +696,7 @@ sub process_macro3( $$$$$$$$$$$ ) {
 	$msports = merge_macro_column $msports, $sports;
 	$mrate   = merge_macro_column $mrate,   $rate;
 	$muser   = merge_macro_column $muser,   $user;
+	$mmark   = merge_macro_column $mmark,   $mark;
 
 	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser;
     }
@@ -721,7 +723,7 @@ sub process_action3( $$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user ) = split_line1 1, 8, 'action file';
+	my ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file';
 
 	if ( $target eq 'COMMENT' ) {
 	    process_comment;
@@ -745,7 +747,7 @@ sub process_action3( $$$$$ ) {
 	}
 
 	if ( $action2type == MACRO ) {
-	    process_macro3( $action2, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user );
+	    process_macro3( $action2, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark );
 	} else {
 	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user;
 	}

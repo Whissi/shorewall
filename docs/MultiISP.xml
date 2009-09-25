@@ -235,7 +235,7 @@
 
               <listitem>
                 <para>Use mark values &gt; 255 for provider marks in this
-                column. </para>
+                column.</para>
 
                 <itemizedlist>
                   <listitem>
@@ -428,6 +428,16 @@
                   this provider. Useful for defining providers that are to be
                   used only when the appropriate packet mark is
                   applied.</para>
+
+                  <para>Shorewall makes no attempt to consolidate the routing
+                  rules added when <emphasis role="bold">loose</emphasis> is
+                  not specified. So, if you have multiple IP addresses on a
+                  provider interface, you may be able to replace the rules
+                  that Shorewall generates with one or two rules in
+                  <filename>/etc/shorewall/route_rules</filename>. In that
+                  case, you can specify <emphasis role="bold">loose</emphasis>
+                  to suppress Shorewall's rule generation. See the <link
+                  linkend="Complete">example</link> below.</para>
                 </listitem>
               </varlistentry>
 

@@ -272,11 +272,11 @@ our %interfacegateways;     # Gateway of default route out of the interface
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
 #
-# Mode of the generator.
+# Mode of the emitter.
 #
-use constant { NULL_MODE => 0 ,   # Generating neither shell commands nor iptables-restore input
-	       CAT_MODE  => 1 ,   # Generating iptables-restore input
-	       CMD_MODE  => 2 };  # Generating shell commands.
+use constant { NULL_MODE => 0 ,   # Emitting neither shell commands nor iptables-restore input
+	       CAT_MODE  => 1 ,   # Emitting iptables-restore input
+	       CMD_MODE  => 2 };  # Emitting shell commands.
 
 our $mode;
 
@@ -2826,14 +2826,15 @@ sub expand_rule( $$$$$$$$$$;$ )
 }
 
 #
-# The following code generates the input to iptables-restore
+# The following code generates the input to iptables-restore from the contents of the
+# @rules arrays in the chain table entries.
 #
 # We always write the iptables-restore input into a file then pass the
 # file to iptables-restore. That way, if things go wrong, the user (and Shorewall support)
 # has (have) something to look at to determine the error
 #
 # We may have to generate part of the input at run-time. The rules array in each chain
-# table entry may contain rules (begin with '-A') or shell source. We alternate between
+# table entry may contain both rules (begin with '-A') or shell source. We alternate between
 # writing the rules ('-A') into the temporary file to be passed to iptables-restore
 # (CAT_MODE) and and writing shell source into the generated script (CMD_MODE).
 #
@@ -2854,20 +2855,20 @@ sub enter_cmd_mode() {
 # Emits the passed rule (input to iptables-restore) or command
 #
 sub emitr( $ ) {
-    my $rule = $_[0];
-
-    if ( $rule && substr( $rule, 0, 2 ) eq '-A' ) {
-	#
-	# A rule
-	#
-	enter_cat_mode unless $mode == CAT_MODE;
-	emit_unindented $rule;
-    } else {
-	#
-	# A command
-	#
-	enter_cmd_mode unless $mode == CMD_MODE;
-	emit $rule;
+    if ( my $rule = $_[0] ) {
+	if ( substr( $rule, 0, 2 ) eq '-A' ) {
+	    #
+	    # A rule
+	    #
+	    enter_cat_mode unless $mode == CAT_MODE;
+	    emit_unindented $rule;
+	} else {
+	    #
+	    # A command
+	    #
+	    enter_cmd_mode unless $mode == CMD_MODE;
+	    emit $rule;
+	}
     }
 }
 

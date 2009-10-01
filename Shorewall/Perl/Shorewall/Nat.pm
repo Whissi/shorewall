@@ -239,7 +239,7 @@ sub process_one_masq( )
 			if ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = '-j SNAT ';
 			    my ($ipaddr, $rest) = split ':', $addr;
-			    if ( $addr =~ /^(.+)-(.+)$/ ) {
+			    if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
 				validate_range( $1, $2 );
 			    } else {
 				validate_address $ipaddr, 0;

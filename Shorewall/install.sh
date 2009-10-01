@@ -792,6 +792,11 @@ cd ..
 
 echo "Man Pages Installed"
 
+if [ -z "$PREFIX" ]; then
+    rm -rf /usr/share/shorewall-perl
+    rm -rf /usr/share/shorewall-shell
+fi
+
 if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
     if [ -n "$DEBIAN" ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall

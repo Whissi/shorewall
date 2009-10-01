@@ -86,6 +86,8 @@ our %macros;
 
 our $family;
 
+our @builtins;
+
 #
 # Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
 #
@@ -112,6 +114,12 @@ sub initialize( $ ) {
     %actions         = ();
     %logactionchains = ();
     %macros          = ();
+
+    if ( $family == F_IPV4 ) {
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
+    } else {
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
+    }
 }
 
 #
@@ -509,11 +517,7 @@ sub process_actions1() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    if ( $family == F_IPV4 ) {
-	$targets{$_} = ACTION + BUILTIN, new_action $_ for qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
-    } else {
-	$targets{$_} = ACTION + BUILTIN, new_action $_ for qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
-    }
+    $targets{$_} = ACTION + BUILTIN, new_action( $_ ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file $file;

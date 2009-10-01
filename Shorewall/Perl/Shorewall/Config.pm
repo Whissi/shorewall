@@ -127,7 +127,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_2';
 
 #
 # describe the current command, it's present progressive, and it's completion.

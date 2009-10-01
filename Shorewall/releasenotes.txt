@@ -1,8 +1,4 @@
-<<<<<<< HEAD:Shorewall/releasenotes.txt
 Shorewall 4.4.2
-=======
-Shorewall 4.4.1 patch release 3
->>>>>>> 4f9987d831538189c9a9dea8729c92bb1deb5a9c:Shorewall/releasenotes.txt
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -70,9 +66,9 @@ Shorewall 4.4.1 patch release 3
        WARNING: SHOREWALL_COMPILER=shell ignored. Shorewall-shell
                 support has been removed in this release.
 
-    b) Review the shell->perl migration information at
+    b) Review the migration issues at
        http://www.shorewall.net/LennyToSqueeze.html and make changes as
-       necessary.
+       required.
 
     We strongly recommend that you migrate to Shorewall-perl on your
     current Shorewall version before upgrading to Shorewall 4.4.0. That
@@ -174,35 +170,7 @@ Shorewall 4.4.1 patch release 3
     then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
-<<<<<<< HEAD:Shorewall/releasenotes.txt
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2
-=======
-        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 . 3
-----------------------------------------------------------------------------
-1)  The routestopped file wasn't verified during 'shorewall check' and
-    'shorewall6 check'.
-
-2)  Previously, it was not possible to specify an IP address range in
-    ADDRESS column of /etc/shorewall/masq. Thanks go to Jessee Shrieve
-    for the patch.
-
-----------------------------------------------------------------------------
-        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 . 2
-----------------------------------------------------------------------------
-1)  The compiler's chain table was not being re-initialized prior to
-    creating the stop_firewall() function, resulting in Perl run-time
-    errors.
-----------------------------------------------------------------------------
-        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 . 1
-----------------------------------------------------------------------------
-1)  Detection of Persistent SNAT support was broken in the compiler.
-
-2)  Initialization of the compiler's chain table was broken in ways
-    that made some features not work and that caused Perl runtime errors.
-
-----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
->>>>>>> 4f9987d831538189c9a9dea8729c92bb1deb5a9c:Shorewall/releasenotes.txt
 ----------------------------------------------------------------------------
 
 1)  Detection of Persistent SNAT was broken in the rules compiler. 

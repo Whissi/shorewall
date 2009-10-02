@@ -49,7 +49,7 @@ not_configured () {
 	then
 		echo ""
 		echo "Please read about Debian specific customization in"
-		echo "/usr/share/doc/shorewall-common/README.Debian.gz."
+		echo "/usr/share/doc/shorewall/README.Debian.gz."
 	fi
 	echo "#################"
 	exit 0

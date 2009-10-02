@@ -185,7 +185,23 @@ None.
                 N E W   F E A T U R E S   I N   4 . 4 . 3
 ----------------------------------------------------------------------------
 
-None.
+1)  On Debian systems, a default installation will now set
+    INITLOG=/dev/null in /etc/default/shorewall. In all configurations,
+    the default values for the log variables are changed to:
+
+    	STARTUP_LOG=/var/log/shorewall-init.log
+	LOG_VERBOSITY=2
+
+    The effect is much the same as the old defaults, with the exception 
+    that:
+
+	a) Start, stop, etc. commands issued through /sbin/shorewall
+	   will be logged.
+	b) Logging will occur at maximum verbosity.
+	c) Log entries will be date/time stamped.
+
+    On non-Debian systems, new installs will now log all Shorewall 
+    commands to /var/log/shorewall-init.log.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0

@@ -534,7 +534,13 @@ REDIRECT        net           22          tcp          9022</programlisting>
       to go the opposite direction from SNAT/MASQUERADE. So if you masquerade
       or use SNAT from your local network to the Internet then you will need
       to use DNAT rules to allow connections from the Internet to your local
-      network. You also want to use DNAT rules when you intentionally want to
+      network.<note>
+          <para>If you use both 1:1 NAT and SNAT/MASQUERADE, those connections
+          that are subject to 1:1 NAT should use ACCEPT rather than DNAT.
+          Note, however, that DNAT can be used to override 1:1 NAT so as to
+          redirect a connection to a different internal system or port than
+          would be the case using 1:1 NAT.</para>
+        </note> You also want to use DNAT rules when you intentionally want to
       rewrite the destination IP address or port number. In all other cases,
       you use ACCEPT unless you need to hijack connections as they go through
       your firewall and handle them on the firewall box itself; in that case,

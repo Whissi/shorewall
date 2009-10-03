@@ -15,9 +15,7 @@
 
 SRWL=/sbin/shorewall-lite
 SRWL_OPTS="-tvv"
-# Note, set INITLOG to /dev/null if you do not want to
-# keep logs of the firewall (not recommended)
-INITLOG=/var/log/shorewall-lite-init.log
+test -n ${INITLOG:=/var/log/shorewall-lite-init.log}
 
 [ "$INITLOG" eq "/dev/null" && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
 

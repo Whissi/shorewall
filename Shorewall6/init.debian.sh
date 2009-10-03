@@ -15,9 +15,7 @@
 SRWL=/sbin/shorewall6
 SRWL_OPTS="-tvv"
 WAIT_FOR_IFUP=/usr/share/shorewall6/wait4ifup
-# Note, set INITLOG to /dev/null if you do not want to
-# keep logs of the firewall (not recommended)
-INITLOG=/var/log/shorewall6-init.log
+test -n ${INITLOG:=/var/log/shorewall6-init.log}
 
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0

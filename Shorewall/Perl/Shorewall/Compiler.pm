@@ -837,6 +837,7 @@ sub compiler {
 	# compile_stop_firewall() also validates the routestopped file. Since we don't
 	# call that function during 'check', we must validate routestopped here.
 	#
+	enable_object;
 	process_routestopped;
 
 	if ( $family == F_IPV4 ) {

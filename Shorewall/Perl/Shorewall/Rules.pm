@@ -330,6 +330,8 @@ sub process_routestopped() {
 	}
 
 	unless ( $options eq '-' ) {
+	    my $chainref = $filter_table->{FORWARD};
+
 	    for my $option (split /,/, $options ) {
 		if ( $option eq 'routeback' ) {
 		    if ( $routeback ) {
@@ -341,7 +343,7 @@ sub process_routestopped() {
 			    my $source = match_source_net $host;
 			    my $dest   = match_dest_net   $host;
 
-			    emit "run_iptables -A FORWARD -i $interface -o $interface $source $dest -j ACCEPT";
+			    add_rule $chainref , "-i $interface -o $interface $source $dest -j ACCEPT";
 			    clearrule;
 			}
 		    }

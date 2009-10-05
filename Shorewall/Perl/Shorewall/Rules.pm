@@ -330,13 +330,14 @@ sub process_routestopped() {
 	}
 
 	unless ( $options eq '-' ) {
-	    my $chainref = $filter_table->{FORWARD};
 
 	    for my $option (split /,/, $options ) {
 		if ( $option eq 'routeback' ) {
 		    if ( $routeback ) {
 			warning_message "Duplicate 'routeback' option ignored";
 		    } else {
+			my $chainref = $filter_table->{FORWARD};
+
 			$routeback = 1;
 
 			for my $host ( split /,/, $hosts ) {

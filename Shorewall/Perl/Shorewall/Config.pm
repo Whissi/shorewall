@@ -24,7 +24,7 @@
 #   It also exports functions for generating warning and error messages.
 #   The get_configuration function parses the shorewall.conf, capabilities and
 #   modules files during compiler startup. The module also provides the basic
-#   output file services such as creation of temporary 'object' files, writing
+#   output file services such as creation of temporary 'script' files, writing
 #   into those files (emitters) and finalizing those files (renaming
 #   them to their final name and setting their mode appropriately).
 #
@@ -54,10 +54,10 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shorewall);
 
-our %EXPORT_TAGS = ( internal => [ qw( create_temp_object
-				       finalize_object
-				       enable_object
-				       disable_object
+our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
+				       finalize_script
+				       enable_script
+				       disable_script
 		                       numeric_value
 		                       numeric_value1
 		                       hex_value
@@ -146,13 +146,13 @@ our ( $log, $log_verbosity );
 #
 our $timestamp;
 #
-# Object file handle
+# Script (output) file handle
 #
-our $object;
+our $script;
 #
-# When 'true', writes to the object are enabled. Used to catch code emission between functions
+# When 'true', writes to the script are enabled. Used to catch code emission between functions
 #
-our $object_enabled;
+our $script_enabled;
 #
 # True, if last line emitted is blank
 #
@@ -170,7 +170,7 @@ our $indent2;
 #
 our $indent;
 #
-# Object's Directory and File
+# Script's Directory and File
 #
 our ( $dir, $file );
 #
@@ -186,7 +186,7 @@ our %globals;
 #
 our %config;
 #
-# Config options and global settings that are to be copied to object script
+# Config options and global settings that are to be copied to output script
 #
 our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
 our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
@@ -262,8 +262,8 @@ our $currentline;             # Current config file line image
 our $currentfile;             # File handle reference
 our $currentfilename;         # File NAME
 our $currentlinenumber;       # Line number
-our $scriptfile;              # File Handle Reference to current temporary file being written by an in-line Perl script
-our $scriptfilename;          # Name of that file.
+our $perlscript;              # File Handle Reference to current temporary file being written by an in-line Perl script
+our $perlscriptname;          # Name of that file.
 our @tempfiles;               # Files that need unlinking at END
 our $first_entry;             # Message to output or function to call on first non-blank line of a file
 
@@ -308,13 +308,13 @@ sub initialize( $ ) {
     $log = undef;              # File reference for log file
     $log_verbosity = -1;       # Verbosity of log.
     $timestamp = '';           # If true, we are to timestamp each progress message
-    $object = 0;               # Object (script) file Handle Reference
-    $object_enabled = 0;       # Object (script) file Handle Reference
+    $script = 0;               # Script (output) file Handle Reference
+    $script_enabled = 0;       # Writing to output file is disabled initially
     $lastlineblank = 0;        # Avoid extra blank lines in the output
     $indent1       = '';       # Current indentation tabs
     $indent2       = '';       # Current indentation spaces
     $indent        = '';       # Current total indentation
-    ( $dir, $file ) = ('',''); # Object's Directory and File
+    ( $dir, $file ) = ('',''); # Script's Directory and Filename
     $tempfile = '';            # Temporary File Name
 
     #
@@ -685,14 +685,14 @@ sub cleanup() {
     #
     # Close files first in case we're running under Cygwin
     #
-    close  $object, $object = undef         if $object;
-    close  $scriptfile, $scriptfile = undef if $scriptfile;
+    close  $script, $script = undef         if $script;
+    close  $perlscript, $perlscript = undef if $perlscript;
     close  $log, $log = undef               if $log;
     #
     # Unlink temporary files
     #
     unlink ( $tempfile ), $tempfile = undef             if $tempfile;
-    unlink ( $scriptfilename ), $scriptfilename = undef if $scriptfilename;
+    unlink ( $perlscriptname ), $perlscriptname = undef if $perlscriptname;
     unlink ( @tempfiles ), @tempfiles = ()              if @tempfiles;
 }
 
@@ -815,14 +815,14 @@ sub in_hexp( $ ) {
 }
 
 #
-# Write the arguments to the object file (if any) with the current indentation.
+# Write the arguments to the script file (if any) with the current indentation.
 #
 # Replaces leading spaces with tabs as appropriate and suppresses consecutive blank lines.
 #
 sub emit {
-    assert( $object_enabled );
+    assert( $script_enabled );
 
-    if ( $object ) {
+    if ( $script ) {
 	#
 	# 'compile' as opposed to 'check'
 	#
@@ -832,10 +832,10 @@ sub emit {
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/gm;
-		print $object "$line\n";
+		print $script "$line\n";
 		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	    } else {
-		print $object "\n" unless $lastlineblank;
+		print $script "\n" unless $lastlineblank;
 		$lastlineblank = 1;
 	    }
 	}
@@ -843,26 +843,26 @@ sub emit {
 }
 
 #
-# Write passed message to the object with newline but no indentation.
+# Write passed message to the script with newline but no indentation.
 #
 sub emit_unindented( $ ) {
-    assert( $object_enabled );
+    assert( $script_enabled );
 
-    print $object "$_[0]\n" if $object;
+    print $script "$_[0]\n" if $script;
 }
 
 #
 # Write a progress_message2 command with surrounding blank lines to the output file.
 #
 sub save_progress_message( $ ) {
-    emit "\nprogress_message2 @_\n" if $object;
+    emit "\nprogress_message2 @_\n" if $script;
 }
 
 #
 # Write a progress_message command to the output file.
 #
 sub save_progress_message_short( $ ) {
-    emit "progress_message $_[0]" if $object;
+    emit "progress_message $_[0]" if $script;
 }
 
 #
@@ -1036,12 +1036,12 @@ sub pop_indent() {
 }
 
 #
-# Functions for copying files into the object
+# Functions for copying files into the script
 #
 sub copy( $ ) {
-    assert( $object_enabled );
+    assert( $script_enabled );
 
-    if ( $object ) {
+    if ( $script ) {
 	my $file = $_[0];
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
@@ -1049,7 +1049,7 @@ sub copy( $ ) {
 	while ( <IF> ) {
 	    chomp;
 	    if ( /^\s*$/ ) {
-		print $object "\n" unless $lastlineblank;
+		print $script "\n" unless $lastlineblank;
 		$lastlineblank = 1;
 	    } else {
 		if  ( $indent ) {
@@ -1057,8 +1057,8 @@ sub copy( $ ) {
 		    s/        /\t/ if $indent2;
 		}
 
-		print $object $_;
-		print $object "\n";
+		print $script $_;
+		print $script "\n";
 		$lastlineblank = 0;
 	    }
 	}
@@ -1071,11 +1071,11 @@ sub copy( $ ) {
 # This one handles line continuation and 'here documents'
 
 sub copy1( $ ) {
-    assert( $object_enabled );
+    assert( $script_enabled );
 
     my $result = 0;
 
-    if ( $object ) {
+    if ( $script ) {
 	my $file = $_[0];
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
@@ -1086,8 +1086,8 @@ sub copy1( $ ) {
 	    chomp;
 
 	    if ( /^${here_documents}\s*$/ ) {
-		print $object $here_documents if $here_documents;
-		print $object "\n";
+		print $script $here_documents if $here_documents;
+		print $script "\n";
 		$do_indent = 1;
 		$here_documents = '';
 		next;
@@ -1098,8 +1098,8 @@ sub copy1( $ ) {
 		s/^(\s*)/$indent1$1$indent2/;
 		s/        /\t/ if $indent2;
 		$do_indent = 0;
-		print $object $_;
-		print $object "\n";
+		print $script $_;
+		print $script "\n";
 		$result = 1;
 		next;
 	    }
@@ -1109,8 +1109,8 @@ sub copy1( $ ) {
 		s/        /\t/ if $indent2;
 	    }
 
-	    print $object $_;
-	    print $object "\n";
+	    print $script $_;
+	    print $script "\n";
 	    $do_indent = ! ( $here_documents || /\\$/ );
 
 	    $result = 1 unless $result || /^\s*$/ || /^\s*#/;
@@ -1125,23 +1125,23 @@ sub copy1( $ ) {
 }
 
 #
-# Create the temporary object file -- the passed file name is the name of the final file.
+# Create the temporary script file -- the passed file name is the name of the final file.
 # We create a temporary file in the same directory so that we can use rename to finalize it.
 #
-sub create_temp_object( $$ ) {
-    my ( $objectfile, $export ) = @_;
+sub create_temp_script( $$ ) {
+    my ( $scriptfile, $export ) = @_;
     my $suffix;
 
-    if ( $objectfile eq '-' ) {
+    if ( $scriptfile eq '-' ) {
 	$verbosity = -1;
-	$object = undef;
-	open( $object, '>&STDOUT' ) or fatal_error "Open of STDOUT failed";
+	$script = undef;
+	open( $script, '>&STDOUT' ) or fatal_error "Open of STDOUT failed";
 	$file = '-';
 	return 1;
     }
 
     eval {
-	( $file, $dir, $suffix ) = fileparse( $objectfile );
+	( $file, $dir, $suffix ) = fileparse( $scriptfile );
     };
 
     cleanup, die if $@;
@@ -1149,14 +1149,14 @@ sub create_temp_object( $$ ) {
     fatal_error "$dir is a Symbolic Link"        if -l $dir;
     fatal_error "Directory $dir does not exist"  unless -d _;
     fatal_error "Directory $dir is not writable" unless -w _;
-    fatal_error "$objectfile is a Symbolic Link" if -l $objectfile;
-    fatal_error "$objectfile is a Directory"     if -d _;
-    fatal_error "$objectfile exists and is not a compiled script" if -e _ && ! -x _;
+    fatal_error "$scriptfile is a Symbolic Link" if -l $scriptfile;
+    fatal_error "$scriptfile is a Directory"     if -d _;
+    fatal_error "$scriptfile exists and is not a compiled script" if -e _ && ! -x _;
     fatal_error "An exported \u$globals{PRODUCT} compiled script may not be named '$globals{PRODUCT}'" if $export && "$file" eq $globals{PRODUCT} && $suffix eq '';
 
     eval {
 	$dir = abs_path $dir unless $dir =~ m|^/|; # Work around http://rt.cpan.org/Public/Bug/Display.html?id=13851
-	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
+	( $script, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
     fatal_error "Unable to create temporary file in directory $dir" if $@;
@@ -1168,12 +1168,12 @@ sub create_temp_object( $$ ) {
 }
 
 #
-# Finalize the object file
+# Finalize the script file
 #
-sub finalize_object( $ ) {
+sub finalize_script( $ ) {
     my $export = $_[0];
-    close $object;
-    $object = 0;
+    close $script;
+    $script = 0;
 
     if ( $file ne '-' ) {
 	rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
@@ -1187,7 +1187,7 @@ sub finalize_object( $ ) {
 #
 sub create_temp_aux_config() {
     eval {
-	( $object, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
+	( $script, $tempfile ) = tempfile ( 'tempfileXXXX' , DIR => $dir );
     };
 
     cleanup, die if $@;
@@ -1197,24 +1197,24 @@ sub create_temp_aux_config() {
 # Finalize the aux config file.
 #
 sub finalize_aux_config() {
-    close $object;
-    $object = 0;
+    close $script;
+    $script = 0;
     rename $tempfile, "$file.conf" or fatal_error "Cannot Rename $tempfile to $file.conf: $!";
     progress_message3 "Shorewall configuration compiled to $file";
 }
 
 #
-# Enable writes to the object file
+# Enable writes to the script file
 #
-sub enable_object() {
-    $object_enabled = 1;
+sub enable_script() {
+    $script_enabled = 1;
 }
 
 #
-# Disable writes to the object file
+# Disable writes to the script file
 #
-sub disable_object() {
-    $object_enabled = 0;
+sub disable_script() {
+    $script_enabled = 0;
 }
 
 #
@@ -1431,19 +1431,19 @@ sub pop_open() {
 # processed as regular file input.
 #
 sub shorewall {
-    unless ( $scriptfile ) {
+    unless ( $perlscript ) {
 	fatal_error "shorewall() may not be called in this context" unless $currentfile;
 
 	$dir ||= '/tmp/';
 
 	eval {
-	    ( $scriptfile, $scriptfilename ) = tempfile ( 'scriptfileXXXX' , DIR => $dir );
+	    ( $perlscript, $perlscriptname ) = tempfile ( 'perlscriptXXXX' , DIR => $dir );
 	};
 
 	fatal_error "Unable to create temporary file in directory $dir" if $@;
     }
 
-    print $scriptfile "@_\n";
+    print $perlscript "@_\n";
 }
 
 #
@@ -1545,21 +1545,21 @@ sub embedded_perl( $ ) {
 	fatal_error "Perl Script Returned False";
     }
 
-    if ( $scriptfile ) {
+    if ( $perlscript ) {
 	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
 
-	close $scriptfile or assert(0);
+	close $perlscript or assert(0);
 
-	$scriptfile = undef;
+	$perlscript = undef;
 
 	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
 	$currentfile = undef;
 
-	open $currentfile, '<', $scriptfilename or fatal_error "Unable to open Perl Script $scriptfilename";
+	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
 
-	push @tempfiles, $scriptfilename unless unlink $scriptfilename; #unlink fails on Cygwin
+	push @tempfiles, $perlscriptname unless unlink $perlscriptname; #unlink fails on Cygwin
 
-	$scriptfilename = '';
+	$perlscriptname = '';
 
 	$currentfilename = "PERL\@$currentfilename:$linenumber";
 	$currentline = '';
@@ -2532,7 +2532,7 @@ sub get_configuration( $ ) {
 }
 
 #
-# The values of the options in @propagateconfig are copied to the object file in OPTION=<value> format.
+# The values of the options in @propagateconfig are copied to the script file in OPTION=<value> format.
 #
 sub propagateconfig() {
     for my $option ( @propagateconfig ) {

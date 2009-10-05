@@ -129,7 +129,7 @@ EOF
 #    Generate the 'initialize()' function.
 #
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
-#          than those related to writing to the object file.
+#          than those related to writing to the output script file.
 
 sub generate_script_2() {
 
@@ -291,7 +291,7 @@ sub generate_script_2() {
 #    Generate the 'define_firewall()' function.
 #
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
-#          than those related to writing to the object file.
+#          than those related to writing to the output script file.
 #
 sub generate_script_3($) {
 
@@ -524,7 +524,7 @@ EOF
 #
 sub compiler {
 
-    my ( $objectfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) =
+    my ( $scriptfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) =
        ( '',          '',         -1,          '',          0,      '',       '',   -1 );
 
     $export = 0;
@@ -545,7 +545,7 @@ sub compiler {
 	defined($val) && ($val == F_IPV4 || $val == F_IPV6);
     }
 
-    my %parms = ( object        => { store => \$objectfile },
+    my %parms = ( object        => { store => \$scriptfile },
 		  directory     => { store => \$directory  },
 		  family        => { store => \$family    ,    validate => \&validate_family    } ,
 		  verbosity     => { store => \$verbosity ,    validate => \&validate_verbosity } ,
@@ -596,9 +596,9 @@ sub compiler {
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{HIGH_ROUTE_MARKS};
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
 
-    if ( $objectfile ) {
+    if ( $scriptfile ) {
 	set_command( 'compile', 'Compiling', 'Compiled' );
-	create_temp_object( $objectfile , $export );
+	create_temp_script( $scriptfile , $export );
     } else {
 	set_command( 'check', 'Checking', 'Checked' );
     }
@@ -644,11 +644,11 @@ sub compiler {
     #
     setup_notrack;
 
-    enable_object;
+    enable_script;
 
-    if ( $objectfile ) {
+    if ( $scriptfile ) {
 	#
-	# Place Header in the object
+	# Place Header in the script
 	#
 	generate_script_1;
 	#
@@ -686,20 +686,20 @@ sub compiler {
     #
     setup_zone_mss;
 
-    if ( $objectfile ) {
+    if ( $scriptfile ) {
 	emit 'return 0';
 	pop_indent;
 	emit '}';
     }
 
-    disable_object;
+    disable_script;
     #
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
-    enable_object;
+    enable_script;
 
-    if ( $objectfile ) {
+    if ( $scriptfile ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
 	       '#',
@@ -717,12 +717,12 @@ sub compiler {
     #
     setup_tc;
 
-    if ( $objectfile ) {
+    if ( $scriptfile ) {
 	pop_indent;
 	emit "}\n";
     }
 
-    disable_object;
+    disable_script;
     #
     #                                       N E T F I L T E R
     #       (Produces no output to the compiled script -- rules are stored in the chain table)
@@ -778,13 +778,13 @@ sub compiler {
     #
     setup_accounting;
 
-    if ( $objectfile ) {
+    if ( $scriptfile ) {
 	#
 	# Generate the zone by zone matrix
 	#
 	generate_matrix;
 
-	enable_object;
+	enable_script;
 	#
 	#                             I N I T I A L I Z E
 	#           (Writes the initialize() function to the compiled script)
@@ -807,7 +807,7 @@ sub compiler {
 	#
 	compile_stop_firewall( $test );
 	#
-	# Copy the footer to the object
+	# Copy the footer to the script
 	#
 	unless ( $test ) {
 	    if ( $family == F_IPV4 ) {
@@ -817,15 +817,15 @@ sub compiler {
 	    }
 	}
 
-	disable_object;
+	disable_script;
 	#
-	# Close, rename and secure the object
+	# Close, rename and secure the script
 	#
-	finalize_object ( $export );
+	finalize_script ( $export );
 	#
 	# And generate the auxilary config file
 	#
-	enable_object, generate_aux_config if $export;
+	enable_script, generate_aux_config if $export;
     } else {
 	#
 	# Re-initialize the chain table so that process_routestopped() has the same

@@ -1363,19 +1363,85 @@ fi</programlisting></para>
         supported. This allows additional files to be sourced in from the main
         configuration file.</para>
 
+        <para>LSM monitors the status of the links defined in its
+        configuration file and runs a user-provided script when the status of
+        a link changes. The script name is specified in the
+        <firstterm>eventscript</firstterm> option in the configuration file.
+        Key arguments to the script are as follows:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>$1</term>
+
+            <listitem>
+              <para>The state of the link ('up' or 'down')</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>$2</term>
+
+            <listitem>
+              <para>The name of the connection as specified in the
+              configuration file.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>$4</term>
+
+            <listitem>
+              <para>The name of the network interface associated with the
+              connection.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>$5</term>
+
+            <listitem>
+              <para>The email address of the person specified to receive
+              notifications. Specified in the
+              <firstterm>warn_email</firstterm> option in the configuration
+              file.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>It is the responsibility of the script to perform any action
+        needed in reaction to the connection state change. The default script
+        supplied with LSM composes an email and sends it to $5. </para>
+
         <para>I personally use LSM here at shorewall.net (configuration is
         described <link linkend="Complete">below</link>). I have set things up
-        so that Shorewall [re]starts lsm during processing of the
-        <command>start</command> and <command>restore</command> commands. I
-        don't have Shorewall restart lsm during Shorewall
-        <command>restart</command> because I restart Shorewall much more often
-        than the average user is likely to do. I have Shorewall start lsm
-        because I have a dynamic IP address from one of my providers
-        (Comcast); Shorewall detects the default gateway to that provider and
-        creates a secondary configuration file
-        (<filename>/etc/lsm/shorewall.conf</filename>) that contains the link
-        configurations. That file is included by
-        <filename>/etc/lsm/lsm.conf</filename>.B</para>
+        so that:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Shorewall [re]starts lsm during processing of the
+            <command>start</command> and <command>restore</command> commands.
+            I don't have Shorewall restart lsm during Shorewall
+            <command>restart</command> because I restart Shorewall much more
+            often than the average user is likely to do.</para>
+          </listitem>
+
+          <listitem>
+            <para>Shorewall starts lsm because I have a dynamic IP address
+            from one of my providers (Comcast); Shorewall detects the default
+            gateway to that provider and creates a secondary configuration
+            file (<filename>/etc/lsm/shorewall.conf</filename>) that contains
+            the link configurations. That file is included by
+            <filename>/etc/lsm/lsm.conf</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para>The script run by LSM during state change
+            (<filename>/etc/lsm/script) </filename>writes a<filename>
+            ${VARDIR}/xxx.status</filename> file when the status of an
+            interface changes. Those files are read by the
+            <filename>isusable</filename> extension script (see below).</para>
+          </listitem>
+        </itemizedlist>
 
         <para>Below are my relevant configuration files.</para>
 
@@ -1386,12 +1452,10 @@ fi</programlisting></para>
 
         <para><filename>/etc/shorewall/isusable</filename>:</para>
 
-        <para>Note that <filename>/etc/lsm/script </filename>writes
-        a<filename> ${VARDIR}/xxx.status</filename> file when the status of an
-        interface changes.</para>
-
         <programlisting>local status=0
-
+#
+# Read the status file (if any) created by /etc/lsm/script
+#
 [ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
 
 return $status</programlisting>
@@ -1404,7 +1468,16 @@ return $status</programlisting>
 # Start lsm
 ###############################################################################
 start_lsm() {
+   #
+   # Kill any existing lsm process(es)
+   #
    killall lsm 2&gt; /dev/null
+   #
+   # Create the Shorewall-specific part of the LSM configuration. This file is
+   # included by /etc/lsm/lsm.conf
+   #
+   # Avvanta has a static gateway while Comcast's is dynamic
+   #
    cat &lt;&lt;EOF &gt; /etc/lsm/shorewall.conf
 connection {
     name=Avvanta
@@ -1420,13 +1493,20 @@ connection {
     ttl=1
 }
 EOF
+   #
+   # Since LSM assumes that interfaces start in the 'up' state, remove any
+   # existing status files that might have an interface in the down state
+   #
    rm -f /etc/shorewall/*.status
+   #
+   # Run LSM -- by default, it forks into the background
+   #
    /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
 }</programlisting>
 
         <para>eth3 has a dynamic IP address so I need to use the
         Shorewall-detected gateway address ($ETH3_GATEWAY). I supply a default
-        value in the event that detection fails.</para>
+        value to be used in the event that detection fails.</para>
 
         <para><filename>/etc/shorewall/started</filename>:</para>
 
@@ -1532,11 +1612,11 @@ EOM
 
 echo $state &gt; ${VARDIR}/${DEVICE}.status
 
-/sbin/shorewall -f restart &gt;&gt; /var/log/lsm 2&gt;&amp;1
+/sbin/shorewall restart -f &gt;&gt; /var/log/lsm 2&gt;&amp;1
 
 /sbin/shorewall show routing &gt;&gt; /var/log/lsm
 
-exit 0;
+exit 0
 
 #EOF</programlisting>:</para>
       </section>

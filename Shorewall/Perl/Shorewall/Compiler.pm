@@ -524,8 +524,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfile, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) =
-       ( '',          '',         -1,          '',          0,      '',       '',   -1 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1 );
 
     $export = 0;
     $test   = 0;
@@ -545,7 +545,7 @@ sub compiler {
 	defined($val) && ($val == F_IPV4 || $val == F_IPV6);
     }
 
-    my %parms = ( object        => { store => \$scriptfile },
+    my %parms = ( object        => { store => \$scriptfilename },
 		  directory     => { store => \$directory  },
 		  family        => { store => \$family    ,    validate => \&validate_family    } ,
 		  verbosity     => { store => \$verbosity ,    validate => \&validate_verbosity } ,
@@ -596,9 +596,9 @@ sub compiler {
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{HIGH_ROUTE_MARKS};
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
 
-    if ( $scriptfile ) {
+    if ( $scriptfilename ) {
 	set_command( 'compile', 'Compiling', 'Compiled' );
-	create_temp_script( $scriptfile , $export );
+	create_temp_script( $scriptfilename , $export );
     } else {
 	set_command( 'check', 'Checking', 'Checked' );
     }
@@ -646,7 +646,7 @@ sub compiler {
 
     enable_script;
 
-    if ( $scriptfile ) {
+    if ( $scriptfilename ) {
 	#
 	# Place Header in the script
 	#
@@ -686,7 +686,7 @@ sub compiler {
     #
     setup_zone_mss;
 
-    if ( $scriptfile ) {
+    if ( $scriptfilename ) {
 	emit 'return 0';
 	pop_indent;
 	emit '}';
@@ -699,7 +699,7 @@ sub compiler {
     #
     enable_script;
 
-    if ( $scriptfile ) {
+    if ( $scriptfilename ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
 	       '#',
@@ -717,7 +717,7 @@ sub compiler {
     #
     setup_tc;
 
-    if ( $scriptfile ) {
+    if ( $scriptfilename ) {
 	pop_indent;
 	emit "}\n";
     }
@@ -778,7 +778,7 @@ sub compiler {
     #
     setup_accounting;
 
-    if ( $scriptfile ) {
+    if ( $scriptfilename ) {
 	#
 	# Generate the zone by zone matrix
 	#

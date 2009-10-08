@@ -19,7 +19,7 @@ test -n ${INITLOG:=/var/log/shorewall6-init.log}
 
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0
-test -n $INITLOG || {
+test -n "$INITLOG" || {
 	echo "INITLOG cannot be empty, please configure $0" ; 
 	exit 1;
 }

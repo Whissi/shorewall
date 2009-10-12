@@ -545,7 +545,8 @@ sub compiler {
 	defined($val) && ($val == F_IPV4 || $val == F_IPV6);
     }
 
-    my %parms = ( object        => { store => \$scriptfilename },
+    my %parms = ( object        => { store => \$scriptfilename },    #Deprecated
+		  script        => { store => \$scriptfilename },
 		  directory     => { store => \$directory  },
 		  family        => { store => \$family    ,    validate => \&validate_family    } ,
 		  verbosity     => { store => \$verbosity ,    validate => \&validate_verbosity } ,

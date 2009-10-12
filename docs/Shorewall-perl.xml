@@ -670,15 +670,15 @@ DNAT-              net                192.168.1.3      tcp          21</programl
   <section id="Modules">
     <title>The Shorewall Perl Modules</title>
 
-    <para>Shorewall's Perl modules are installed in
-    /usr/share/shorewall-perl/Shorewall and the names of the packages are of
-    the form Shorewall::<firstterm>name</firstterm>. So by using this
-    directive<programlisting>use lib '/usr/share/shorewall-perl';</programlisting></para>
+    <para>In Shorewall 4.4 and later, Shorewall's Perl modules are installed
+    in /usr/share/shorewall/Shorewall and the names of the packages are of the
+    form Shorewall::<firstterm>name</firstterm>. So by using this
+    directive<programlisting>use lib '/usr/share/shorewall';</programlisting></para>
 
     <para>You can then load the modules via normal Perl use statements.</para>
 
     <section id="compiler.pl">
-      <title>/usr/share/shorewall-perl/compiler.pl</title>
+      <title>/usr/share/shorewall/compiler.pl</title>
 
       <para>While the compiler is normally run indirectly using
       /sbin/shorewall, it can be run directly as well.<programlisting><command>compiler.pl</command> [ <emphasis>option</emphasis> ... ] [ <emphasis>filename</emphasis> ]</programlisting></para>
@@ -734,25 +734,25 @@ DNAT-              net                192.168.1.3      tcp          21</programl
           role="bold">--log</emphasis>=&lt;logfile&gt;</member>
         </simplelist></para>
 
-      <para>Added in Shorewall 4.2. If given, compiler will log to this file
-      provider that --log_verbosity is &gt; -1.<simplelist>
+      <para>If given, compiler will log to this file provider that
+      --log_verbosity is &gt; -1.<simplelist>
           <member><emphasis
           role="bold">--log_verbosity</emphasis>=-1|0|1|2</member>
         </simplelist></para>
 
-      <para>Added in Shorewall 4.1. If given, controls the verbosity of
-      logging to the log specified by the --log parameter.</para>
+      <para>If given, controls the verbosity of logging to the log specified
+      by the --log parameter.</para>
 
       <simplelist>
         <member><emphasis role="bold">--family=</emphasis>4|6</member>
       </simplelist>
 
-      <para>Added in Shorewall 4.2.4. Specifies whether an IPv4 or an IPv6
-      firewall is to be created.</para>
+      <para>Specifies whether an IPv4 or an IPv6 firewall is to be
+      created.</para>
 
       <para>Example (compiles the configuration in the current directory
       generating a script named 'firewall' and using VERBOSITY
-      2).<programlisting><emphasis role="bold">/usr/share/shorewall-perl/compiler.pl -v 2 -d . firewall</emphasis></programlisting><note>
+      2).<programlisting><emphasis role="bold">/usr/share/shorewall/compiler.pl -v 2 -d . firewall</emphasis></programlisting><note>
           <para>The Perl-based compiler does not process
           <filename>/etc/shorewall/params</filename>. To include definitions
           in that file, you would need to do something like the
@@ -760,216 +760,135 @@ DNAT-              net                192.168.1.3      tcp          21</programl
 set -a                           # Export all variables set in /etc/shorewall/params
 . /etc/shorewall/params
 set +a
-/usr/share/shorewall-perl/compiler.pl ...</command></programlisting></para>
+/usr/share/compiler.pl ...</command></programlisting></para>
         </note></para>
     </section>
 
     <section id="Compiler">
       <title>Shorewall::Compiler</title>
 
-      <section id="Compiler-4.0">
-        <title>Shorewall 4.0</title>
+      <para>To avoid a proliferation of parameters to
+      Shorewall::Compiler::compile(), that function uses named parameters.
+      Parameter names are:</para>
 
-        <para><programlisting> use lib '/usr/share/shorewall-perl';
- use Shorewall::Compiler;
-        
- compiler $filename, $directory, $verbose, $options $chains</programlisting>Arguments
-        to the compiler are:</para>
+      <variablelist>
+        <varlistentry>
+          <term>script ('object' is also accepted but deprecated)</term>
 
-        <variablelist>
-          <varlistentry>
-            <term>$filename</term>
+          <listitem>
+            <para>Output script file. If omitted or '', the configuration is
+            syntax checked.</para>
+          </listitem>
+        </varlistentry>
 
-            <listitem>
-              <para>Name of the compiled script to be created. If the
-              arguments evaluates to false, the configuration is syntax
-              checked.</para>
-            </listitem>
-          </varlistentry>
+        <varlistentry>
+          <term>directory</term>
 
-          <varlistentry>
-            <term>$directory</term>
+          <listitem>
+            <para>Directory. If omitted or '', configuration files are located
+            using CONFIG_PATH. Otherwise, the directory named by this
+            parameter is searched first.</para>
+          </listitem>
+        </varlistentry>
 
-            <listitem>
-              <para>The directory containing the configuration. If passed as
-              '', then <filename class="directory">/etc/shorewall/</filename>
-              is assumed.</para>
-            </listitem>
-          </varlistentry>
+        <varlistentry>
+          <term>verbosity</term>
 
-          <varlistentry>
-            <term>$verbose</term>
+          <listitem>
+            <para>Verbosity; range -1 to 2</para>
+          </listitem>
+        </varlistentry>
 
-            <listitem>
-              <para>The verbosity level that the compiler will run with
-              (0-2).<note>
-                  <para>The VERBOSITY setting in the
-                  <filename>shorewall.conf</filename> file read by the
-                  compiler will determine the default verbosity for the
-                  compiled program.</para>
-                </note></para>
-            </listitem>
-          </varlistentry>
+        <varlistentry>
+          <term>timestamp</term>
 
-          <varlistentry>
-            <term>$options</term>
+          <listitem>
+            <para>0|1 -- timestamp messages.</para>
+          </listitem>
+        </varlistentry>
 
-            <listitem>
-              <para>A bitmap of options. Shorewall::Compiler exports three
-              constants to help building this argument:<simplelist>
-                  <member>EXPORT = 0x01</member>
+        <varlistentry>
+          <term>debug</term>
 
-                  <member>TIMESTAMP = 0x02</member>
+          <listitem>
+            <para>0|1 -- include stack trace in warning/error messages.</para>
+          </listitem>
+        </varlistentry>
 
-                  <member>DEBUG = 0x04</member>
-                </simplelist></para>
-            </listitem>
-          </varlistentry>
+        <varlistentry>
+          <term>export</term>
 
-          <varlistentry>
-            <term>$chains</term>
+          <listitem>
+            <para>0|1 -- compile for export.</para>
+          </listitem>
+        </varlistentry>
 
-            <listitem>
-              <para>A comma-separated list of chains that the generated
-              script's 'refresh' command will reload. If passed as an empty
-              string, then 'blacklist' is assumed.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
+        <varlistentry>
+          <term>chains</term>
 
-        <para>The compiler raises an exception with 'die' if it encounters an
-        error; $@ contains the 'ERROR' messages describing the problem. The
-        compiler function can be called repeatedly with different
-        inputs.</para>
-      </section>
+          <listitem>
+            <para>List of chains to be reloaded by 'refresh'</para>
+          </listitem>
+        </varlistentry>
 
-      <section>
-        <title>Shorewall 4.2 and Later</title>
+        <varlistentry>
+          <term>log</term>
 
-        <para>To avoid a proliferation of parameters to
-        Shorewall::Compiler::compile(), that function has been changed to use
-        named parameters. Parameter names are:</para>
+          <listitem>
+            <para>File to log compiler messages to.</para>
+          </listitem>
+        </varlistentry>
 
-        <variablelist>
-          <varlistentry>
-            <term>object</term>
+        <varlistentry>
+          <term>log_verbosity</term>
 
-            <listitem>
-              <para>Object file. If omitted or '', the configuration is syntax
-              checked.</para>
-            </listitem>
-          </varlistentry>
+          <listitem>
+            <para>Log Verbosity; range -1 to 2.</para>
+          </listitem>
+        </varlistentry>
 
-          <varlistentry>
-            <term>directory</term>
+        <varlistentry>
+          <term>family</term>
 
-            <listitem>
-              <para>Directory. If omitted or '', configuration files are
-              located using CONFIG_PATH. Otherwise, the directory named by
-              this parameter is searched first.</para>
-            </listitem>
-          </varlistentry>
+          <listitem>
+            <para>Address family: 4 or 6</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
 
-          <varlistentry>
-            <term>verbosity</term>
+      <para>Those parameters that are supplied must have defined values.
+      Defaults are: <simplelist>
+          <member>script '' ('check' command)</member>
 
-            <listitem>
-              <para>Verbosity; range -1 to 2</para>
-            </listitem>
-          </varlistentry>
+          <member>directory ''</member>
 
-          <varlistentry>
-            <term>timestamp</term>
+          <member>verbosity 1</member>
 
-            <listitem>
-              <para>0|1 -- timestamp messages.</para>
-            </listitem>
-          </varlistentry>
+          <member>timestamp 0</member>
 
-          <varlistentry>
-            <term>debug</term>
+          <member>debug 0</member>
 
-            <listitem>
-              <para>0|1 -- include stack trace in warning/error
-              messages.</para>
-            </listitem>
-          </varlistentry>
+          <member>export 0</member>
 
-          <varlistentry>
-            <term>export</term>
+          <member>chains ''</member>
 
-            <listitem>
-              <para>0|1 -- compile for export.</para>
-            </listitem>
-          </varlistentry>
+          <member>log ''</member>
 
-          <varlistentry>
-            <term>chains</term>
+          <member>log_verbosity -1</member>
 
-            <listitem>
-              <para>List of chains to be reloaded by 'refresh'</para>
-            </listitem>
-          </varlistentry>
+          <member>family 4</member>
+        </simplelist></para>
 
-          <varlistentry>
-            <term>log</term>
-
-            <listitem>
-              <para>File to log compiler messages to.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>log_verbosity</term>
-
-            <listitem>
-              <para>Log Verbosity; range -1 to 2.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>family</term>
-
-            <listitem>
-              <para>Address family: 4 or 6</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-
-        <para>Those parameters that are supplied must have defined values.
-        Defaults are: <simplelist>
-            <member>object '' ('check' command)</member>
-
-            <member>directory ''</member>
-
-            <member>verbosity 1</member>
-
-            <member>timestamp 0</member>
-
-            <member>debug 0</member>
-
-            <member>export 0</member>
-
-            <member>chains ''</member>
-
-            <member>log ''</member>
-
-            <member>log_verbosity -1</member>
-
-            <member>family 4</member>
-          </simplelist></para>
-
-        <para>Example: <programlisting>use lib '/usr/share/shorewall-perl/';
+      <para>Example: <programlisting>use lib '/usr/share/shorewall/';
 use Shorewall::Compiler;
 
-compiler( object =&gt; '/root/firewall', log =&gt; '/root/compile.log', log_verbosity =&gt; 2 ); </programlisting></para>
-      </section>
+compiler( script =&gt; '/root/firewall', log =&gt; '/root/compile.log', log_verbosity =&gt; 2 ); </programlisting></para>
     </section>
 
     <section id="Chains">
       <title>Shorewall::Chains</title>
 
-      <para><programlisting>use lib '/usr/share/shorewall-perl';
+      <para><programlisting>use lib '/usr/share/shorewall';
 use Shorewall::Chains;
 
 my $chainref1 = chain_new $table, $name1;
@@ -1208,7 +1127,7 @@ my $chainref7 = $filter_table{$name};</programlisting>Shorewall::Chains is
     <section id="Config">
       <title>Shorewall::Config</title>
 
-      <para><programlisting>use lib '/usr/share/shorewall-perl';
+      <para><programlisting>use lib '/usr/share/shorewall';
 use Shorewall::Config;
 
 warning message "This entry is bogus";
@@ -1218,7 +1137,7 @@ progress_message  "This will only be seen if VERBOSITY &gt;= 2";
 progress_message2 "This will only be seen if VERBOSITY &gt;= 1";
 progress_message3 "This will be seen unless VERBOSITY &lt; 0";
 </programlisting>The <emphasis role="bold">shorewall()</emphasis> function may
-      be optionally included:<programlisting>use lib '/usr/share/shorewall-perl';
+      be optionally included:<programlisting>use lib '/usr/share/shorewall';
 use Shorewall::Config qw/shorewall/;
 
 shorewall $config_file_entry;</programlisting>The Shorewall::Config module

@@ -290,7 +290,6 @@ sub process_one_masq( )
 		next if $addrs eq 'detect';
 		for my $addr ( ip_range_explicit $addrs ) {
 		    unless ( $addresses_to_add{$addr} ) {
-			emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
 			$addresses_to_add{$addr} = 1;
 			if ( defined $alias ) {
 			    push @addresses_to_add, $addr, "$interface:$alias";

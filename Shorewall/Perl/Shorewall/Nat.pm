@@ -35,8 +35,8 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
-our @EXPORT_OK = ();
-our $VERSION = '4.4_2';
+our @EXPORT_OK = qw(delete_addresses);
+our $VERSION = '4.4_3';
 
 our @addresses_to_add;
 our %addresses_to_add;
@@ -290,7 +290,6 @@ sub process_one_masq( )
 		next if $addrs eq 'detect';
 		for my $addr ( ip_range_explicit $addrs ) {
 		    unless ( $addresses_to_add{$addr} ) {
-			emit "del_ip_addr $addr $interface" unless $config{RETAIN_ALIASES};
 			$addresses_to_add{$addr} = 1;
 			if ( defined $alias ) {
 			    push @addresses_to_add, $addr, "$interface:$alias";
@@ -482,12 +481,13 @@ sub setup_netmap() {
 
 sub add_addresses () {
     if ( @addresses_to_add ) {
+	my @addrs = @addresses_to_add;
 	my $arg = '';
 	my $addresses = 0;
 
-	while ( @addresses_to_add ) {
-	    my $addr      = shift @addresses_to_add;
-	    my $interface = shift @addresses_to_add;
+	while ( @addrs ) {
+	    my $addr      = shift @addrs;
+	    my $interface = shift @addrs;
 	    $arg = "$arg $addr $interface";
 	    unless ( $config{RETAIN_ALIASES} ) {
 		emit '' unless $addresses++;
@@ -497,6 +497,27 @@ sub add_addresses () {
 	}
 
 	emit "\nadd_ip_aliases $arg";
+    }
+}
+
+sub delete_addresses () {
+    if ( @addresses_to_add ) {
+	unless ( $config{RETAIN_ALIASES} ) {
+	    my @addrs = @addresses_to_add;
+
+	    emit '';
+
+	    while ( @addrs ) {
+		my $addr      = shift @addrs;
+		my $interface = shift @addrs;
+
+		$interface =~ s/:.*//;
+
+		emit "del_ip_addr $addr $interface";
+	    }
+
+	    emit '';
+	}
     }
 }
 

@@ -41,7 +41,7 @@
 
       <para>For $FW and for all of the zones defined in /etc/shorewall/zones,
       the POLICY for connections from the zone to itself is ACCEPT (with no
-      logging or TCP connection rate limiting but may be overridden by an
+      logging or TCP connection rate limiting) but may be overridden by an
       entry in this file. The overriding entry must be explicit (cannot use
       "all" in the SOURCE or DEST).</para>
 
@@ -95,7 +95,7 @@
         <listitem>
           <para>Policy if no match from the rules file is found.</para>
 
-          <para>If the policy is other than CONTINUE or NONE then the policy
+          <para>If the policy is neither CONTINUE nor NONE then the policy
           may be followed by ":" and one of the following:</para>
 
           <orderedlist numeration="loweralpha">

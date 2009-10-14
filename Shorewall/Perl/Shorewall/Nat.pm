@@ -35,7 +35,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
-our @EXPORT_OK = qw(delete_addresses);
+our @EXPORT_OK = ();
 our $VERSION = '4.4_3';
 
 our @addresses_to_add;
@@ -497,27 +497,6 @@ sub add_addresses () {
 	}
 
 	emit "\nadd_ip_aliases $arg";
-    }
-}
-
-sub delete_addresses () {
-    if ( @addresses_to_add ) {
-	unless ( $config{RETAIN_ALIASES} ) {
-	    my @addrs = @addresses_to_add;
-
-	    emit '';
-
-	    while ( @addrs ) {
-		my $addr      = shift @addrs;
-		my $interface = shift @addrs;
-
-		$interface =~ s/:.*//;
-
-		emit "del_ip_addr $addr $interface";
-	    }
-
-	    emit '';
-	}
     }
 }
 

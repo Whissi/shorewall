@@ -31,7 +31,6 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Actions;
 use Shorewall::Policy;
 use Shorewall::Proc;
-use Shorewall::Nat qw(delete_addresses);
 
 use strict;
 
@@ -2227,8 +2226,6 @@ EOF
     push_indent;
 
     emit 'delete_tc1' if $config{CLEAR_TC};
-
-    delete_addresses;
 
     emit( 'undo_routing',
 	  'restore_default_route'

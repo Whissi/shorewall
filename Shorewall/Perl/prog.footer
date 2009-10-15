@@ -362,6 +362,7 @@ case "$COMMAND" in
 	    status=0
 	else
 	    progress_message3 "Starting $PRODUCT...."
+	    detect_configuration
 	    define_firewall
 	    status=$?
 	    [ -n "$SUBSYSLOCK" -a $status -eq 0 ] && touch $SUBSYSLOCK
@@ -371,6 +372,7 @@ case "$COMMAND" in
     stop)
 	[ $# -ne 1 ] && usage 2
 	progress_message3 "Stopping $PRODUCT...."
+	detect_configuration
 	stop_firewall
 	status=0
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
@@ -414,6 +416,7 @@ case "$COMMAND" in
 	    progress_message3 "Starting $PRODUCT...."
 	fi
 
+	detect_configuration
 	define_firewall
 	status=$?
 	if [ -n "$SUBSYSLOCK" ]; then
@@ -425,6 +428,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
 	    progress_message3 "Refreshing $PRODUCT...."
+	    detect_configuration
 	    define_firewall
 	    status=$?
 	    progress_message3 "done."
@@ -435,6 +439,7 @@ case "$COMMAND" in
 	;;
     restore)
 	[ $# -ne 1 ] && usage 2
+	detect_configuration
 	define_firewall
 	status=$?
 	if [ -n "$SUBSYSLOCK" ]; then

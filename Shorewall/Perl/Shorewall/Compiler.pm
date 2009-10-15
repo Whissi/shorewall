@@ -230,14 +230,24 @@ sub generate_script_2() {
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
 	   );
 
+    pop_indent;
+
+    emit "\n}\n"; # End of initialize()
+
+    emit( '' ,
+	  '#' ,
+	  '# Set global variables holding detected IP information' ,
+	  '#' ,
+	  'detect_configuration()',
+	  '{' );
+
     my $global_variables = have_global_variables;
 
     if ( $global_variables ) {
-	emit( '' ,
-	      '#' ,
-	      '# Set global variables holding detected IP information' ,
-	      '#' ,
-	      'case $COMMAND in' );
+	
+	push_indent;
+
+	emit( 'case $COMMAND in' );
 
 	push_indent;
 
@@ -273,12 +283,14 @@ sub generate_script_2() {
 	pop_indent;
 
 	emit ( 'esac' ) ,
+    } else {
+	emit( 'true' );
     }
 
     pop_indent;
 
-    emit "\n}\n"; # End of initialize()
-
+    emit "\n}\n"; # End of detect_configuration()
+    
 }
 
 #

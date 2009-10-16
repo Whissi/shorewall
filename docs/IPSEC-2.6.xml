@@ -58,25 +58,30 @@
   </caution>
 
   <important>
+    <para><emphasis role="bold">Shorewall does not configure IPSEC for
+    you</emphasis> -- it rather configures netfilter to accomodate your IPSEC
+    configuration.</para>
+  </important>
+
+  <important>
     <para>The information in this article is only applicable if you plan to
     have IPSEC end-points on the same system where Shorewall is used.</para>
   </important>
 
   <important>
-    <para>While this article shows configuration of IPSEC using ipsec-tools,
-    Shorewall configuration is exactly the same when using OpenSwan or
+    <para>While this <emphasis role="bold">article shows configuration of
+    IPSEC using ipsec-tools</emphasis>, <emphasis role="bold">Shorewall
+    configuration is exactly the same when using OpenSwan</emphasis> or
     FreeSwan.</para>
   </important>
 
   <warning>
     <para>When running a Linux kernel prior to 2.6.20, the Netfilter+ipsec and
     policy match support are broken when used with a bridge device. The
-    problem has been reported to the responsible Netfilter developer who has
-    confirmed the problem. The problem was corrected in Kernel 2.6.20 as a
-    result of the removal of deferred FORWARD/OUTPUT processing of traffic
-    destined for a bridge. See the <ulink
-    url="bridge-Shorewall-perl.html">"<emphasis>Shorewall-perl and Bridged
-    Firewalls</emphasis>"</ulink> article.</para>
+    problem was corrected in Kernel 2.6.20 as a result of the removal of
+    deferred FORWARD/OUTPUT processing of traffic destined for a bridge. See
+    the <ulink url="bridge-Shorewall-perl.html">"<emphasis>Shorewall-perl and
+    Bridged Firewalls</emphasis>"</ulink> article.</para>
   </warning>
 
   <section id="Overview">
@@ -132,12 +137,12 @@
 
     <para>Under the 2.4 Linux Kernel, the association of unencrypted traffic
     and zones was made easy by the presence of IPSEC pseudo-interfaces with
-    names of the form <filename class="devicefile">ipsecn</filename> (e.g.
+    names of the form <filename class="devicefile">ipsecN</filename> (e.g.
     <filename class="devicefile">ipsec0</filename>). Outgoing unencrypted
     traffic (case 1.) was send through an <filename
-    class="devicefile">ipsecn</filename> device while incoming unencrypted
+    class="devicefile">ipsecN</filename> device while incoming unencrypted
     traffic (case 2) arrived from an <filename
-    class="devicefile">ipsecn</filename> device. The 2.6 kernel-based
+    class="devicefile">ipsecN</filename> device. The 2.6 kernel-based
     implementation does away with these pseudo-interfaces. Outgoing traffic
     that is going to be encrypted and incoming traffic that has been decrypted
     must be matched against policies in the SPD and/or the appropriate

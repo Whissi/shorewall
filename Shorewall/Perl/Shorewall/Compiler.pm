@@ -243,10 +243,10 @@ sub generate_script_2() {
 
     my $global_variables = have_global_variables;
 
+    push_indent;
+
     if ( $global_variables ) {
 	
-	push_indent;
-
 	emit( 'case $COMMAND in' );
 
 	push_indent;

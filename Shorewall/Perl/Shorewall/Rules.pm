@@ -1578,6 +1578,9 @@ sub process_rules() {
 # Add jumps from the builtin chains to the interface-chains that are used by this configuration
 #
 sub add_interface_jumps {
+    our %input_jump_added;
+    our %output_jump_added;
+    our %forward_jump_added;
     #
     # Add Nat jumps
     #
@@ -1598,10 +1601,10 @@ sub add_interface_jumps {
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
     #
     for my $interface ( @_ ) {
-	add_jump( $filter_table->{FORWARD} , forward_chain $interface , 0, match_source_dev( $interface ) ) if use_forward_chain $interface;
-	add_jump( $filter_table->{INPUT}   , input_chain $interface ,   0, match_source_dev( $interface ) ) if use_input_chain $interface;
+	add_jump( $filter_table->{FORWARD} , forward_chain $interface , 0, match_source_dev( $interface ) ) unless $forward_jump_added{$interface} || ! use_forward_chain $interface;
+	add_jump( $filter_table->{INPUT}   , input_chain $interface ,   0, match_source_dev( $interface ) ) unless $input_jump_added{$interface}   || ! use_input_chain $interface;
 
-	if ( use_output_chain $interface ) {
+	unless ( $output_jump_added{$interface} || ! use_output_chain $interface ) {
 	    add_jump $filter_table->{OUTPUT} , output_chain $interface , 0, match_dest_dev( $interface ) unless get_interface_option( $interface, 'port' );
 	}
     }
@@ -1668,6 +1671,9 @@ sub generate_matrix() {
     my $notrackref = $raw_table->{notrack_chain $fw};
     my @zones = non_firewall_zones;
     my $interface_jumps_added = 0;
+    our %input_jump_added   = ();
+    our %output_jump_added  = ();
+    our %forward_jump_added = ();
 
     #
     # Special processing for complex configurations
@@ -1689,6 +1695,7 @@ sub generate_matrix() {
 
 		if ( use_forward_chain( $interface ) ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
+		    add_jump $filter_table->{FORWARD} , $sourcechainref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 		} else {
 		    $sourcechainref = $filter_table->{FORWARD};
 		    $interfacematch = match_source_dev $interface;
@@ -1800,6 +1807,7 @@ sub generate_matrix() {
 
 			    if ( use_output_chain $interface ) {
 				$outputref = $filter_table->{output_chain $interface};
+				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;
@@ -1848,6 +1856,7 @@ sub generate_matrix() {
 
 			if ( use_input_chain $interface ) {
 			    $inputchainref = $filter_table->{input_chain $interface};
+			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			} else {
 			    $inputchainref = $filter_table->{INPUT};
 			    $interfacematch = match_source_dev $interface;
@@ -1861,7 +1870,9 @@ sub generate_matrix() {
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
 			    my $ref = source_exclusion( $exclusions, $frwd_ref );
 			    if ( use_forward_chain $interface ) {
-				add_jump $filter_table->{forward_chain $interface} , $ref, 0, join( '', $source, $ipsec_in_match );
+				my $forwardref = $filter_table->{forward_chain $interface};
+				add_jump $forwardref , $ref, 0, join( '', $source, $ipsec_in_match );
+				add_jump $filter_table->{FORWARD} , $forwardref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 			    } else {
 				add_jump $filter_table->{FORWARD} , $ref, 0, join( '', match_source_dev( $interface ) , $source, $ipsec_in_match );
 				move_rules ( $filter_table->{forward_chain $interface} , $frwd_ref );
@@ -1980,6 +1991,7 @@ sub generate_matrix() {
 
 			if ( use_forward_chain $interface ) {
 			    $chain3ref = $filter_table->{forward_chain $interface};
+			    add_jump $filter_table->{FORWARD} , $chain3ref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 			} else {
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;

@@ -1182,7 +1182,7 @@ sub validate_hosts_file()
 
     my $fn = open_file 'hosts';
 
-    first_entry "doing $fn...";
+    first_entry "$doing $fn...";
 
     $ipsec |= process_host while read_a_line;
 

@@ -971,7 +971,7 @@ safe_commands() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if ${VARDIR}/.$command $command; then
+    if ${VARDIR}/.$command $debugging $command; then
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 

@@ -1,4 +1,4 @@
-Shorewall 4.4.2 Patch Release 1.
+Shorewall 4.4.2 Patch Release 3.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -175,6 +175,13 @@ Shorewall 4.4.2 Patch Release 1.
 
 1)  If aliases were added and RETAIN_ALIASES=No in shorewall.conf, then
     an internal error was generated.
+
+2)  Previously, the generated script set its global IP configuration
+    variables, even when those variables were not required to execute the
+    requested command.  If detection of an IP address, route,
+    etc. failed, the command could needlessly fail. Now, these
+    variables are only set when their values are needed to correctly
+    execute the specified command.
 
 ----------------------------------------------------------------------------
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2 . 2

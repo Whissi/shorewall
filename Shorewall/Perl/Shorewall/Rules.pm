@@ -1680,7 +1680,7 @@ sub generate_matrix() {
     # Special processing for complex configurations
     #
     for my $zone ( @zones ) {
-	my $zoneref    = find_zone( $zone );
+	my $zoneref = find_zone( $zone );
 
 	next if @zones <= 2 && ! $zoneref->{options}{complex};
 
@@ -1893,7 +1893,6 @@ sub generate_matrix() {
 	if ( $config{OPTIMIZE} > 0 ) {
 	    my @temp_zones;
 
-	  ZONE1:
 	    for my $zone1 ( @zones )  {
 		my $zone1ref = find_zone( $zone1 );
 		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
@@ -1943,7 +1942,6 @@ sub generate_matrix() {
 	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
 	# @dest_zones is the list of destination zones that we need to handle from this source zone
 	#
-      ZONE1:
 	for my $zone1 ( @dest_zones ) {
 	    my $zone1ref = find_zone( $zone1 );
 	    my $policy   = $filter_table->{"${zone}2${zone1}"}->{policy};
@@ -1957,11 +1955,11 @@ sub generate_matrix() {
 	    my $num_ifaces = 0;
 
 	    if ( $zone eq $zone1 ) {
-		next ZONE1 if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
+		next if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
 	    }
 
 	    if ( $zone1ref->{type} == BPORT ) {
-		next ZONE1 unless $zoneref->{bridge} eq $zone1ref->{bridge};
+		next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 	    }
 
 	    my $chainref    = $filter_table->{$chain};

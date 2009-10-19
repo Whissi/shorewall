@@ -213,8 +213,7 @@ sub generate_script_2() {
 
     emit ( '[ -n "${COMMAND:=restart}" ]',
 	   '[ -n "${VERBOSE:=0}" ]',
-	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]),
-	   '[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%s:"' );
+	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]) );
 
     emit ( qq(VERSION="$globals{VERSION}") ) unless $test;
 

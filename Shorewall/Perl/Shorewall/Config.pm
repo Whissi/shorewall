@@ -188,8 +188,7 @@ our %config;
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOGFORMAT SUBSYSLOCK LOCKFILE /;
-our @propagateenv    = qw/ LOGLIMIT LOGTAGONLY LOGRULENUMBERS /;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX SUBSYSLOCK /;
 #
 # From parsing the capabilities file or detecting capabilities
 #
@@ -2537,11 +2536,6 @@ sub get_configuration( $ ) {
 sub propagateconfig() {
     for my $option ( @propagateconfig ) {
 	my $value = $config{$option} || '';
-	emit "$option=\"$value\"";
-    }
-
-    for my $option ( @propagateenv ) {
-	my $value = $globals{$option} || '';
 	emit "$option=\"$value\"";
     }
 }

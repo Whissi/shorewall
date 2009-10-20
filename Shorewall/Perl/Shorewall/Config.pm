@@ -439,6 +439,7 @@ sub initialize( $ ) {
 	      FAST_STOP => undef ,
 	      AUTOMAKE => undef ,
 	      WIDE_TC_MARKS => undef,
+	      TRACK_PROVIDERS => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -545,6 +546,7 @@ sub initialize( $ ) {
 	      MANGLE_ENABLED => undef ,
 	      AUTOMAKE => undef ,
 	      WIDE_TC_MARKS => undef,
+	      TRACK_PROVIDERS => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -2404,6 +2406,7 @@ sub get_configuration( $ ) {
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';
+    default_yes_no 'TRACK_PROVIDERS'            , '';
 
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 

@@ -316,7 +316,8 @@ sub add_a_provider( ) {
 
     }
 
-    my ( $loose, $track, $balance , $default, $default_balance, $optional, $mtu ) = (0,1,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu ) = 
+	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), '' );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {

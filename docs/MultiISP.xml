@@ -143,12 +143,11 @@
       Shorewall can set up the correct marking rules for you.</para>
 
       <para>When you use the <emphasis role="bold">track</emphasis> option in
-      <filename>/etc/shorewall/providers</filename> (which is the default,
-      beginning with Shorewall 4.4.3), connections from the Internet are
-      automatically routed back out of the correct interface and through the
-      correct ISP gateway. This works whether the connection is handled by the
-      firewall itself or if it is routed or port-forwarded to a system behind
-      the firewall.</para>
+      <filename>/etc/shorewall/providers</filename>, connections from the
+      Internet are automatically routed back out of the correct interface and
+      through the correct ISP gateway. This works whether the connection is
+      handled by the firewall itself or if it is routed or port-forwarded to a
+      system behind the firewall.</para>
 
       <para>Shorewall will set up the routing and will update the
       <filename>/etc/iproute2/rt_tables</filename> to include the table names
@@ -164,8 +163,7 @@
           <listitem>
             <para>Packet marking for traffic control purposes may not be done
             in the PREROUTING table for connections involving providers with
-            'track' specified (see below -- note that 'track' defaults to on
-            beginning with Shorewall 4.4.3).</para>
+            'track' specified (see below).</para>
           </listitem>
 
           <listitem>
@@ -333,9 +331,13 @@
                 <listitem>
                   <para><important>
                       <para>Beginning with Shorwall 4.3.3, <emphasis
-                      role="bold">track</emphasis> is the default. To disable
-                      this option, you must specify <emphasis
-                      role="bold">notrack</emphasis> (see below).</para>
+                      role="bold">track</emphasis> defaults to the setting of
+                      the <option>TRACK_PROVIDERS</option> option in <ulink
+                      url="manpages/shorewall.conf">shorewall.conf
+                      </ulink>(5). To disable this option when you have
+                      specified TRACK_PROVIDERS=Yes, you must specify
+                      <emphasis role="bold">notrack</emphasis> (see
+                      below).</para>
                     </important>If specified, connections FROM this interface
                   are to be tracked so that responses may be routed back out
                   this same interface.</para>
@@ -454,8 +456,7 @@
 
                 <listitem>
                   <para>Added in Shorewall 4.4.3. This option turns off the
-                  <emphasis role="bold">track</emphasis> option which is now
-                  the default.</para>
+                  <emphasis role="bold">track</emphasis> option.</para>
                 </listitem>
               </varlistentry>
 

@@ -143,11 +143,12 @@
       Shorewall can set up the correct marking rules for you.</para>
 
       <para>When you use the <emphasis role="bold">track</emphasis> option in
-      <filename>/etc/shorewall/providers</filename>, connections from the
-      Internet are automatically routed back out of the correct interface and
-      through the correct ISP gateway. This works whether the connection is
-      handled by the firewall itself or if it is routed or port-forwarded to a
-      system behind the firewall.</para>
+      <filename>/etc/shorewall/providers</filename> (which is the default,
+      beginning with Shorewall 4.4.3), connections from the Internet are
+      automatically routed back out of the correct interface and through the
+      correct ISP gateway. This works whether the connection is handled by the
+      firewall itself or if it is routed or port-forwarded to a system behind
+      the firewall.</para>
 
       <para>Shorewall will set up the routing and will update the
       <filename>/etc/iproute2/rt_tables</filename> to include the table names
@@ -163,7 +164,8 @@
           <listitem>
             <para>Packet marking for traffic control purposes may not be done
             in the PREROUTING table for connections involving providers with
-            'track' specified (see below).</para>
+            'track' specified (see below -- note that 'track' defaults to on
+            beginning with Shorewall 4.4.3).</para>
           </listitem>
 
           <listitem>
@@ -329,9 +331,14 @@
                 <term>track</term>
 
                 <listitem>
-                  <para>If specified, connections FROM this interface are to
-                  be tracked so that responses may be routed back out this
-                  same interface.</para>
+                  <para><important>
+                      <para>Beginning with Shorwall 4.3.3, <emphasis
+                      role="bold">track</emphasis> is the default. To disable
+                      this option, you must specify <emphasis
+                      role="bold">notrack</emphasis> (see below).</para>
+                    </important>If specified, connections FROM this interface
+                  are to be tracked so that responses may be routed back out
+                  this same interface.</para>
 
                   <para>You want to specify 'track' if Internet hosts will be
                   connecting to local servers through this provider. Any time
@@ -350,7 +357,8 @@
                   support</emphasis>).</para>
 
                   <important>
-                    <para>If you are using
+                    <para>If you are running a version of Shorewall earlier
+                    than 4.4.3 and are using
                     <filename>/etc/shorewall/providers</filename> because you
                     have multiple Internet connections, we recommend that you
                     specify <emphasis role="bold">track</emphasis> even if you
@@ -438,6 +446,16 @@
                   case, you can specify <emphasis role="bold">loose</emphasis>
                   to suppress Shorewall's rule generation. See the <link
                   linkend="Complete">example</link> below.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>notrack</term>
+
+                <listitem>
+                  <para>Added in Shorewall 4.4.3. This option turns off the
+                  <emphasis role="bold">track</emphasis> option which is now
+                  the default.</para>
                 </listitem>
               </varlistentry>
 
@@ -1410,7 +1428,7 @@ fi</programlisting></para>
 
         <para>It is the responsibility of the script to perform any action
         needed in reaction to the connection state change. The default script
-        supplied with LSM composes an email and sends it to $5. </para>
+        supplied with LSM composes an email and sends it to $5.</para>
 
         <para>I personally use LSM here at shorewall.net (configuration is
         described <link linkend="Complete">below</link>). I have set things up

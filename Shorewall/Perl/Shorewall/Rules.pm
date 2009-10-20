@@ -1621,7 +1621,7 @@ sub add_interface_jumps {
 
 # Generate the rules matrix.
 #
-# Stealing a comment from the Burroughs B6700 MCP Operating System source, generate_matrix makes a sow's ear out of a silk purse.
+# Stealing a comment from the Burroughs B6700 MCP Operating System source, "generate_matrix makes a sow's ear out of a silk purse".
 #
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this function and the rules that it generates.
@@ -1683,10 +1683,17 @@ sub generate_matrix() {
 	my $zoneref = find_zone( $zone );
 
 	next if @zones <= 2 && ! $zoneref->{options}{complex};
-
+	#
+	# Complex zone and we have more than one non-firewall zone -- create a zone forwarding chain
+	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
 	if ( $capabilities{POLICY_MATCH} ) {
+	    #
+	    # Because policy match only matches an 'in' or an 'out' policy (but not both), we have to place the
+	    # '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
+	    # can match '--pol none --dir out' rules and send the packets down the wrong rules chain.
+	    #
 	    my $type       = $zoneref->{type};
 	    my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
 

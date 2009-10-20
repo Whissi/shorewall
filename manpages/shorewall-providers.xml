@@ -163,6 +163,11 @@
                 <para>You want to specify <option>track</option> if internet
                 hosts will be connecting to local servers through this
                 provider.</para>
+
+                <para>Beginning with Shorewall 4.4.3, <option>track</option>
+                is the default. If, for some reason, you don't want
+                <option>track</option> then specify <option>notrack</option>
+                (see below).</para>
               </listitem>
             </varlistentry>
 
@@ -191,6 +196,15 @@
                 that IP address to be sent using the routing table for that
                 interface. Setting <option>loose</option> prevents creation of
                 such rules on this interface.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">notrack</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.3. When specified, turns off
+                <option>track</option> which is now the default.</para>
               </listitem>
             </varlistentry>
 

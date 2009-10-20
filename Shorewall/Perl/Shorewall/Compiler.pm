@@ -100,6 +100,7 @@ sub generate_script_1() {
 EOF
 
 	copy1 $lib;
+	emit "/n";
     }
 
     emit <<'EOF';

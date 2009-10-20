@@ -316,12 +316,14 @@ sub add_a_provider( ) {
 
     }
 
-    my ( $loose, $track, $balance , $default, $default_balance, $optional, $mtu ) = (0,0,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
+    my ( $loose, $track, $balance , $default, $default_balance, $optional, $mtu ) = (0,1,0,0,$config{USE_DEFAULT_RT} ? 1 : 0,interface_is_optional( $interface ), '' );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
 	    if ( $option eq 'track' ) {
 		$track = 1;
+	    } elsif ( $option eq 'notrack' ) {
+		$track = 0;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
 		fatal_error q('balance' is not available in IPv6) if $family == F_IPV6;
 		$balance = $1;

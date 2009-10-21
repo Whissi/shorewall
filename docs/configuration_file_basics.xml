@@ -713,8 +713,8 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
     Perl-based compiler, <firstterm>Embedded scripts</firstterm> offer a
     richer and more flexible extension capability.</para>
 
-    <para>While inline scripts scripts may be written in either Shell or Perl,
-    those written in Perl have a lot more power.</para>
+    <para>While inline scripts may be written in either Shell or Perl, those
+    written in Perl have a lot more power.</para>
 
     <para>Embedded scripts can be either single-line or multi-line. Single
     line scripts take one of the following forms:</para>
@@ -740,17 +740,18 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
 ACCEPT loc fw tcp 22
 ACCEPT dmz fw tcp 22</programlisting></para>
 
-    <para>Perl scripts run in the context of of the compiler process. To
-    produce output that will be processed by the compiler as if it were
-    embedded in the file at the point of the script, pass that output to the
-    shorewall() function. The Perl equivalent of the above SHELL script would
-    be:<programlisting>PERL for ( qw/net loc dmz/ ) { shorewall "ACCEPT $_ fw tcp 22"; }</programlisting>Perl
-    scripts are implicitly prefixed by the following:</para>
+    <para>Perl scripts run in the context of of the compiler process using
+    Perl's eval() function. Perl scripts are implicitly prefixed by the
+    following:</para>
 
     <programlisting>package Shorewall::User;
 use Shorewall::Config qw/shorewall/;</programlisting>
 
-    <para>A couple of more points should be mentioned:</para>
+    <para>To produce output that will be processed by the compiler as if it
+    were embedded in the file at the point of the script, pass that output to
+    the Shorewall::Config::shorewall() function. The Perl equivalent of the
+    above SHELL script would be:<programlisting>PERL for ( qw/net loc dmz/ ) { shorewall "ACCEPT $_ fw tcp 22"; }</programlisting>A
+    couple of more points should be mentioned:</para>
 
     <orderedlist>
       <listitem>

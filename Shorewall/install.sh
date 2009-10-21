@@ -176,7 +176,7 @@ else
     fi
 
     if [ -z "$CYGWIN" ]; then
-	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
+	if [ -f /etc/debian_version ]; then
 	    DEBIAN=yes
 	elif [ -f /etc/slackware-version ] ; then
 	    echo "installing Slackware specific configuration..."

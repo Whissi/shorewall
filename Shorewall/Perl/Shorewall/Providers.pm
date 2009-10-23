@@ -143,10 +143,12 @@ sub setup_route_marking() {
 sub copy_table( $$$ ) {
     my ( $duplicate, $number, $realm ) = @_;
 
+    my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
+
     if ( $realm ) {
 	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family route show table $duplicate | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | ${filter}while read net route; do" )
     }
 
     emit ( '    case $net in',
@@ -162,11 +164,13 @@ sub copy_table( $$$ ) {
 
 sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
+    
+    my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
 
     if ( $realm ) {
 	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family route show table $duplicate | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | ${filter}while read net route; do" )
     }
 
     emit (  '    case $net in',

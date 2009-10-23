@@ -476,6 +476,7 @@ sub valid_6address( $ ) {
 	return 0 unless valid_4address pop @address;
 	$max = 6;
 	$address = join ':', @address;
+	return 1 if @address eq ':';
     } else {
 	$max = 8;
     }

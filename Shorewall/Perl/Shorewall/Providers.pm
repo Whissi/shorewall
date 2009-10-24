@@ -792,6 +792,8 @@ sub lookup_provider( $ ) {
 # The function emits code to set the ..._IS_USABLE interface variables appropriately for the
 # optional interfaces
 #
+# Returns true if there were optional interfaces
+#
 sub handle_optional_interfaces() {
 
     my $interfaces = find_interfaces_by_option 'optional';

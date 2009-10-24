@@ -501,9 +501,9 @@ sub add_a_provider( ) {
 
     if ( $optional ) {
 	if ( $shared ) {
-	    emit ( "    error_message \"WARNING: Interface $interface is not usable -- Provider $table ($number) not Added\"" );
-	} else {
 	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );
+	} else {
+	    emit ( "    error_message \"WARNING: Interface $interface is not usable -- Provider $table ($number) not Added\"" );
 	}
     } else {
 	if ( $shared ) {
@@ -788,7 +788,7 @@ sub lookup_provider( $ ) {
 }
 
 #
-# This function is called by the compiler when it is generating the initialize() function.
+# This function is called by the compiler when it is generating the detect_configuration() function.
 # The function emits code to set the ..._IS_USABLE interface variables appropriately for the
 # optional interfaces
 #

@@ -826,6 +826,8 @@ sub handle_optional_interfaces() {
 		  "    ${base}_IS_USABLE=" ,
 		  'fi' );
 	}
+
+	1;
     }
 }
 

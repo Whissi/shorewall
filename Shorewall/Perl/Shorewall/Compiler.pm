@@ -293,7 +293,7 @@ sub generate_script_2() {
 
 	emit ( 'esac' ) ,
     } else {
-	emit( 'true' );
+	emit( 'true' ) unless handle_optional_interfaces;
     }
 
     pop_indent;

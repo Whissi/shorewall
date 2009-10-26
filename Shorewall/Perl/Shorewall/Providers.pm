@@ -142,7 +142,9 @@ sub setup_route_marking() {
 
 sub copy_table( $$$ ) {
     my ( $duplicate, $number, $realm ) = @_;
-
+    #
+    # Hack to work around problem in iproute
+    #
     my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
 
     if ( $realm ) {
@@ -164,7 +166,9 @@ sub copy_table( $$$ ) {
 
 sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
-    
+    #
+    # Hack to work around problem in iproute
+    #    
     my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
 
     if ( $realm ) {

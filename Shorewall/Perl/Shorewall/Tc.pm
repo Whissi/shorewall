@@ -764,7 +764,7 @@ sub validate_tc_class( ) {
 		$devref->{occurs} = 1;
 	    } elsif ( $option =~ /^limit=(\d+)$/ ) {
 		warning_message "limit ignore with pfifo queuing" if $tcref->{pfifo};
-		fatal_error "Invalid limit ($1)" if $1 < 3 || $1 > 127;
+		fatal_error "Invalid limit ($1)" if $1 < 3 || $1 > 128;
 		$tcref->{limit} = $1;
 	    } else {
 		fatal_error "Unknown option ($option)";

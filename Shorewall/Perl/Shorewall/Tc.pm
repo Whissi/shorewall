@@ -713,6 +713,7 @@ sub validate_tc_class( ) {
 			       parent    => $parentclass,
 			       leaf      => 1,
 			       guarantee => 0,
+			       limit     => 127,
 			     };
 
     $tcref = $tcref->{$classnumber};
@@ -761,6 +762,10 @@ sub validate_tc_class( ) {
 
 		$tcref->{occurs} = $occurs;
 		$devref->{occurs} = 1;
+	    } elsif ( $option =~ /^limit=(\d+)$/ ) {
+		warning_message "limit ignore with pfifo queuing" if $tcref->{pfifo};
+		fatal_error "Invalid limit ($1)" if $1 < 3 || $1 > 127;
+		$tcref->{limit} = $1;
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
@@ -1153,7 +1158,7 @@ sub setup_traffic_shaping() {
 	    }
 	}
 
-	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit 127 perturb 10" ) if $tcref->{leaf} && ! $tcref->{pfifo};
+	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit $tcref->{limit} perturb 10" ) if $tcref->{leaf} && ! $tcref->{pfifo};
 	#
 	# add filters
 	#

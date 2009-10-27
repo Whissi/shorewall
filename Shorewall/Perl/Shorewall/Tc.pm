@@ -763,7 +763,7 @@ sub validate_tc_class( ) {
 		$tcref->{occurs} = $occurs;
 		$devref->{occurs} = 1;
 	    } elsif ( $option =~ /^limit=(\d+)$/ ) {
-		warning_message "limit ignore with pfifo queuing" if $tcref->{pfifo};
+		warning_message "limit ignored with pfifo queuing" if $tcref->{pfifo};
 		fatal_error "Invalid limit ($1)" if $1 < 3 || $1 > 128;
 		$tcref->{limit} = $1;
 	    } else {
@@ -794,6 +794,7 @@ sub validate_tc_class( ) {
 					       pfifo    => $tcref->{pfifo},
 					       occurs   => 0,
 					       parent   => $parentclass,
+					       limit    => $tcref->{limit},
 					     };
 	push @tcclasses, "$device:$classnumber";
     };

@@ -1995,7 +1995,7 @@ sub generate_matrix() {
 			my $chain3ref;
 			my $match_source_dev = '';
 
-			if ( use_forward_chain $interface ) {
+			if ( use_forward_chain $interface || ! $chainref ) {
 			    $chain3ref = $filter_table->{forward_chain $interface};
 			    add_jump $filter_table->{FORWARD} , $chain3ref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 			} else {

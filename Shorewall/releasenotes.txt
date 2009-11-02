@@ -1,4 +1,4 @@
-Shorewall 4.4.3
+Shorewall 4.4.4
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -174,41 +174,18 @@ Shorewall 4.4.3
     'notrack' for the provider.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 3
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 4
 ----------------------------------------------------------------------------
 
-1.  Previously, if 'routeback' was specified in /etc/shorewall/routestopped:
+1)  In some simple one-interface configurations, the following Perl
+    run-time error messages were issued:
 
-    a) 'shorewall check' produced an internal error
-    b) The 'routeback' option didn't work
-
-2)  If an alias IP address was added and RETAIN_ALIASES=No in
-    shorewall.conf, then a compiler internal error resulted.
-
-3)  Previously, the generated script would try to detect the values
-    for all run-time variables (such as IP addresses), regardless of
-    what command was being executed. Now, this information is only
-    detected when it is needed.
-
-4)  Nested zones where the parent zone was defined by a wildcard
-    interface (name ends with +) in /etc/shorewall/interfaces did
-    not work correctly in some cases.
-
-5)  IPv4 addresses embedded in IPv6 (e.g., ::192.168.1.5) were
-    incorrectly reported as invalid.
-
-6)  Under certain circumstances, optional providers were not detected
-    as being usable.
-
-    Additionally, the messages issued when an optional provider was not
-    usable were confusing; the message intended to be issued when the
-    provider shared an interface ("WARNING: Gateway <gateway> is not
-    reachable -- Provider <name> (<number>) not Added") was being
-    issued when the provider did not share an interface. Similarly, the
-    message intended to be issued when the provider did not share an
-    interface ("WARNING: Interface <interface> is not usable --
-    Provider <name> (<number>) not Added") was being issued when the
-    provider did share an interface.
+      Generating Rule Matrix...
+      Use of uninitialized value in concatenation (.) or string at
+      /usr/share/shorewall/Shorewall/Chains.pm line 649.
+      Use of uninitialized value in concatenation (.) or string at
+      /usr/share/shorewall/Shorewall/Chains.pm line 649.
+      Creating iptables-restore input...
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -1079,3 +1056,73 @@ None.
 
     As usual, the variable $chainref will contain a reference to the
     chain's table entry.
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 3
+----------------------------------------------------------------------------
+
+1.  Previously, if 'routeback' was specified in /etc/shorewall/routestopped:
+
+    a) 'shorewall check' produced an internal error
+    b) The 'routeback' option didn't work
+
+2)  If an alias IP address was added and RETAIN_ALIASES=No in
+    shorewall.conf, then a compiler internal error resulted.
+
+3)  Previously, the generated script would try to detect the values
+    for all run-time variables (such as IP addresses), regardless of
+    what command was being executed. Now, this information is only
+    detected when it is needed.
+
+4)  Nested zones where the parent zone was defined by a wildcard
+    interface (name ends with +) in /etc/shorewall/interfaces did
+    not work correctly in some cases.
+
+5)  IPv4 addresses embedded in IPv6 (e.g., ::192.168.1.5) were
+    incorrectly reported as invalid.
+
+6)  Under certain circumstances, optional providers were not detected
+    as being usable.
+
+    Additionally, the messages issued when an optional provider was not
+    usable were confusing; the message intended to be issued when the
+    provider shared an interface ("WARNING: Gateway <gateway> is not
+    reachable -- Provider <name> (<number>) not Added") was being
+    issued when the provider did not share an interface. Similarly, the
+    message intended to be issued when the provider did not share an
+    interface ("WARNING: Interface <interface> is not usable --
+    Provider <name> (<number>) not Added") was being issued when the
+    provider did share an interface.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 3
+----------------------------------------------------------------------------
+
+1)  On Debian systems, a default installation will now set
+    INITLOG=/dev/null in /etc/default/shorewall. In all configurations,
+    the default values for the log variables are changed to:
+
+    	STARTUP_LOG=/var/log/shorewall-init.log
+	LOG_VERBOSITY=2
+
+    The effect is much the same as the old defaults, with the exception 
+    that:
+
+	a) Start, stop, etc. commands issued through /sbin/shorewall
+	   will be logged.
+	b) Logging will occur at maximum verbosity.
+	c) Log entries will be date/time stamped.
+
+    On non-Debian systems, new installs will now log all Shorewall 
+    commands to /var/log/shorewall-init.log.
+
+2)  A new TRACK_PROVIDERS option has been added in shorewall.conf.
+    The value of this option becomes the default for the 'track'
+    provider option in /etc/shorewall/providers.
+
+3)  A new 'limit' option has been added to
+    /etc/shorewall/tcclasses. This option specifies the number of
+    packets that are allowed to be queued within the class. Packets
+    exceeding this limit are dropped. The default value is 127 which is
+    the value that earlier versions of Shorewall used.  The option is
+    ignored with a warning if the 'pfifo' option has been specified.

@@ -24,6 +24,8 @@
 #
 package Shorewall::Rules;
 require Exporter;
+
+use Scalar::Util 'reftype';
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
@@ -1994,9 +1996,13 @@ sub generate_matrix() {
 			my $arrayref = $typeref->{$interface};
 			my $chain3ref;
 			my $match_source_dev = '';
+			my $forwardchainref = $filter_table->{forward_chain $interface};
 
-			if ( use_forward_chain $interface || ! $chainref ) {
-			    $chain3ref = $filter_table->{forward_chain $interface};
+			if ( use_forward_chain $interface || ( @{$forwardchainref->{rules} } && ! reftype $chainref ) ) {
+			    #
+			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
+			    #
+			    $chain3ref = $forwardchainref;
 			    add_jump $filter_table->{FORWARD} , $chain3ref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 			} else {
 			    $chain3ref  = $filter_table->{FORWARD};

@@ -1376,7 +1376,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    #
 	    # And move the rules from the nonat chain to the zone dnat chain
 	    #
-	    add_rule( $nonat_chain, "-j $tgt" ) unless move_rules ( $chn, $nonat_chain );
+	    move_rules ( $chn, $nonat_chain );
 	}
     }
 
@@ -2007,7 +2007,7 @@ sub generate_matrix() {
 			} else {
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;
-			    move_rules $filter_table->{forward_chain $interface}, $chainref;
+			    move_rules $forwardchainref, $chainref;
 			}
 
 			for my $hostref ( @$arrayref ) {

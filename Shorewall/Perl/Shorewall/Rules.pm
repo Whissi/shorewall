@@ -379,24 +379,24 @@ sub process_routestopped() {
 	my $desti   = match_dest_dev $interface;
 	my $rule    = shift @rule;
 
-	add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT";
-	add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
+	add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
 
 	my $matched = 0;
 
 	if ( $source{$host} ) {
-	    add_rule $filter_table->{FORWARD}, "$sourcei $source $rule -j ACCEPT";
+	    add_rule $filter_table->{FORWARD}, "$sourcei $source $rule -j ACCEPT", 1;
 	    $matched = 1;
 	}
 
 	if ( $dest{$host} ) {
-	    add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT";
+	    add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
 	    $matched = 1;
 	}
 
 	if ( $notrack{$host} ) {
-	    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK";
-	    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK";
+	    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
+	    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
 	}
 
 	unless ( $matched ) {
@@ -405,7 +405,7 @@ sub process_routestopped() {
 		    my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
 		    my $dest1 = match_dest_net $h1;
 		    my $desti1 = match_dest_dev $interface1;
-		    add_rule $filter_table->{FORWARD}, "$sourcei $desti1 $source $dest1 $rule -j ACCEPT";
+		    add_rule $filter_table->{FORWARD}, "$sourcei $desti1 $source $dest1 $rule -j ACCEPT", 1;
 		    clearrule;
 		}
 	    }

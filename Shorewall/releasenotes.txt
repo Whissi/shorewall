@@ -187,6 +187,9 @@ Shorewall 4.4.4
       /usr/share/shorewall/Shorewall/Chains.pm line 649.
       Creating iptables-restore input...
 
+2)  The Shorewall operations log (specified by STARTUP_LOG) is now
+    secured 0600.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -194,37 +197,12 @@ Shorewall 4.4.4
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 3
+                N E W   F E A T U R E S   I N   4 . 4 . 4
 ----------------------------------------------------------------------------
 
-1)  On Debian systems, a default installation will now set
-    INITLOG=/dev/null in /etc/default/shorewall. In all configurations,
-    the default values for the log variables are changed to:
-
-    	STARTUP_LOG=/var/log/shorewall-init.log
-	LOG_VERBOSITY=2
-
-    The effect is much the same as the old defaults, with the exception 
-    that:
-
-	a) Start, stop, etc. commands issued through /sbin/shorewall
-	   will be logged.
-	b) Logging will occur at maximum verbosity.
-	c) Log entries will be date/time stamped.
-
-    On non-Debian systems, new installs will now log all Shorewall 
-    commands to /var/log/shorewall-init.log.
-
-2)  A new TRACK_PROVIDERS option has been added in shorewall.conf.
-    The value of this option becomes the default for the 'track'
-    provider option in /etc/shorewall/providers.
-
-3)  A new 'limit' option has been added to
-    /etc/shorewall/tcclasses. This option specifies the number of
-    packets that are allowed to be queued within the class. Packets
-    exceeding this limit are dropped. The default value is 127 which is
-    the value that earlier versions of Shorewall used.  The option is
-    ignored with a warning if the 'pfifo' option has been specified.
+1)  The Shorewall packages now include a logrotate script. Note that
+    while the RPMs do not depend on the logrotate package, RPM installation
+    will produce an error message if that package is not installed.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0

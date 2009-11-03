@@ -70,7 +70,7 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall6-lite
 %attr(0700,root,root) %dir /var/lib/shorewall6-lite
 
-%attr(0755,root,root) /sbin/shorewall6-lite
+%attr(0644,root,root) /etc/logrotate.d/shorewall6-lite
 
 %attr(0755,root,root) /sbin/shorewall6-lite
 

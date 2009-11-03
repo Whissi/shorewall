@@ -79,6 +79,8 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall-lite
 %attr(0700,root,root) %dir /var/lib/shorewall-lite
 
+%attr(0644,root,root) /etc/logrotate.d/shorewall-lite
+
 %attr(0755,root,root) /sbin/shorewall-lite
 
 %attr(0644,root,root) /usr/share/shorewall-lite/version

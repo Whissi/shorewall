@@ -234,6 +234,12 @@ mkdir -p ${PREFIX}/var/lib/shorewall6
 chmod 755 ${PREFIX}/etc/shorewall6
 chmod 755 ${PREFIX}/usr/share/shorewall6
 chmod 755 ${PREFIX}/usr/share/shorewall6/configfiles
+
+if [ -n "$PREFIX" ]; then
+    mkdir -p ${PREFIX}/etc/logrotate.d
+    chmod 755 ${PREFIX}/etc/logrotate.d
+fi
+
 #
 # Install the config file
 #
@@ -641,6 +647,11 @@ done
 cd ..
 
 echo "Man Pages Installed"
+
+if [ -d ${PREFIX}/etc/logrotate.d ]; then
+    run_install $OWNERSHIP -m 0644 logrotate ${PREFIX}/etc/logrotate.d/shorewall6
+    echo "Logrotate file installed as ${PREFIX}/etc/logrotate.d/shorewall6"
+fi
 
 if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
     if [ -n "$DEBIAN" ]; then

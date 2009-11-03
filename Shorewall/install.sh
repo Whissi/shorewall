@@ -242,6 +242,12 @@ mkdir -p ${PREFIX}/var/lib/shorewall
 chmod 755 ${PREFIX}/etc/shorewall
 chmod 755 ${PREFIX}/usr/share/shorewall
 chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
+
+if [ -n "$PREFIX" ]; then
+    mkdir -p ${PREFIX}/etc/logrotate.d
+    chmod 755 ${PREFIX}/etc/logrotate.d
+fi
+    
 #
 # Install the config file
 #
@@ -791,6 +797,11 @@ done
 cd ..
 
 echo "Man Pages Installed"
+
+if [ -d ${PREFIX}/etc/logrotate.d ]; then
+    run_install $OWNERSHIP -m 0644 logrotate ${PREFIX}/etc/logrotate.d/shorewall
+    echo "Logrotate file installed as ${PREFIX}/etc/logrotate.d/shorewall"
+fi
 
 if [ -z "$PREFIX" ]; then
     rm -rf /usr/share/shorewall-perl

@@ -69,6 +69,8 @@ fi
 %attr(0644,root,root) %config(noreplace) /etc/shorewall6/*
 %attr(0600,root,root) /etc/shorewall6/Makefile
 
+%attr(0644,root,root) /etc/logrotate.d/shorewall6
+
 %attr(0755,root,root) /sbin/shorewall6
 
 %attr(0644,root,root) /usr/share/shorewall6/version

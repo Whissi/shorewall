@@ -72,6 +72,8 @@ fi
 
 %attr(0755,root,root) /sbin/shorewall6-lite
 
+%attr(0755,root,root) /sbin/shorewall6-lite
+
 %attr(0644,root,root) /usr/share/shorewall6-lite/version
 %attr(0644,root,root) /usr/share/shorewall6-lite/configpath
 %attr(-   ,root,root) /usr/share/shorewall6-lite/functions

@@ -27,6 +27,8 @@ fi
 initialize
 
 if [ -n "$STARTUP_LOG" ]; then
+    touch $STARTUP_LOG
+    chmod 0600 $STARTUP_LOG
     if [ ${SHOREWALL_INIT_SCRIPT:-0} -eq 1 ]; then
 	#
 	# We're being run by a startup script that isn't redirecting STDOUT

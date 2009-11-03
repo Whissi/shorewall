@@ -1905,7 +1905,7 @@ sub generate_matrix() {
 		my $zone1ref = find_zone( $zone1 );
 		my $policy = $filter_table->{"${zone}2${zone1}"}->{policy};
 
-		next if $policy  eq 'NONE';
+		next if $policy eq 'NONE';
 
 		my $chain = rules_target $zone, $zone1;
 
@@ -1952,9 +1952,8 @@ sub generate_matrix() {
 	#
 	for my $zone1 ( @dest_zones ) {
 	    my $zone1ref = find_zone( $zone1 );
-	    my $policy   = $filter_table->{"${zone}2${zone1}"}->{policy};
 
-	    next if $policy  eq 'NONE';
+	    next if $filter_table->{"${zone}2${zone1}"}->{policy}  eq 'NONE';
 
 	    my $chain = rules_target $zone, $zone1;
 
@@ -1970,15 +1969,15 @@ sub generate_matrix() {
 		next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 	    }
 
-	    my $chainref    = $filter_table->{$chain};
-
-	    my $dest_hosts_ref = $zone1ref->{hosts};
+	    my $chainref = $filter_table->{$chain}; #Will be null if $chain is a Netfilter Built-in target like ACCEPT
 
 	    if ( $frwd_ref ) {
-		for my $typeref ( values %$dest_hosts_ref ) {
+		#
+		# Simple case -- the source zone has it's own forwarding chain
+		#
+		for my $typeref ( values %{$zone1ref->{hosts}} ) {
 		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
-			my $arrayref = $typeref->{$interface};
-			for my $hostref ( @$arrayref ) {
+			for my $hostref ( @{$typeref->{$interface}} ) {
 			    next if $hostref->{options}{sourceonly};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
@@ -1990,9 +1989,11 @@ sub generate_matrix() {
 		    }
 		}
 	    } else {
+		#
+		# More compilcated case. If the interface is associated with a single simple zone, we try to combine the interface's forwarding chain with the rules chain
+		#
 		for my $typeref ( values %$source_hosts_ref ) {
 		    for my $interface ( keys %$typeref ) {
-			my $arrayref = $typeref->{$interface};
 			my $chain3ref;
 			my $match_source_dev = '';
 			my $forwardchainref = $filter_table->{forward_chain $interface};
@@ -2004,16 +2005,19 @@ sub generate_matrix() {
 			    $chain3ref = $forwardchainref;
 			    add_jump $filter_table->{FORWARD} , $chain3ref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 			} else {
+			    #
+			    # Don't use the interface's forward chain -- move any rules in that chain to this rules chain
+			    #
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;
 			    move_rules $forwardchainref, $chainref;
 			}
 
-			for my $hostref ( @$arrayref ) {
+			for my $hostref ( @{$typeref->{$interface}} ) {
 			    next if $hostref->{options}{destonly};
 			    my $excl3ref = source_exclusion( $hostref->{exclusions}, $chain3ref );
 			    for my $net ( @{$hostref->{hosts}} ) {
-				for my $type1ref ( values %$dest_hosts_ref ) {
+				for my $type1ref ( values %{$zone1ref->{hosts}} ) {
 				    for my $interface1 ( keys %$type1ref ) {
 					my $array1ref = $type1ref->{$interface1};
 					for my $host1ref ( @$array1ref ) {
@@ -2045,13 +2049,13 @@ sub generate_matrix() {
 		    }
 		}
 	    }
-	    #
-	    #                                      E N D   F O R W A R D I N G
-	    #
-	    # Now add an unconditional jump to the last unique policy-only chain determined above, if any
-	    #
-	    add_jump $frwd_ref , $last_chain, 1 if $last_chain;
 	}
+	#
+	#                                      E N D   F O R W A R D I N G
+	#
+	# Now add an unconditional jump to the last unique policy-only chain determined above, if any
+	#
+	add_jump $frwd_ref , $last_chain, 1 if $frwd_ref && $last_chain;
     }
 
     add_interface_jumps @interfaces unless $interface_jumps_added;

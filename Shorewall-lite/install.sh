@@ -1,4 +1,4 @@
-\#!/bin/sh
+#!/bin/sh
 #
 # Script to install Shoreline Firewall Lite
 #

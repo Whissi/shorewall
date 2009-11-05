@@ -2125,10 +2125,12 @@ sub setup_mss( ) {
 	for ( @$interfaces ) {
 	    my $mss      = get_interface_option( $_, 'mss' );
 	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
-	    add_rule $chainref, "-o $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
-	    add_rule $chainref, "-o $_ -j RETURN" if $clampmss;
-	    add_rule $chainref, "-i $_ -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${in_match}-j TCPMSS --set-mss $mss";
-	    add_rule $chainref, "-i $_ -j RETURN" if $clampmss;
+	    my $source   = match_source_dev $_;
+	    my $dest     = match_dest_dev $_;
+	    add_rule $chainref, "$dest -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
+	    add_rule $chainref, "$dest -j RETURN" if $clampmss;
+	    add_rule $chainref, "$source -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${in_match}-j TCPMSS --set-mss $mss";
+	    add_rule $chainref, "$source -j RETURN" if $clampmss;
 	}
     }
 

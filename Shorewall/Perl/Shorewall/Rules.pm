@@ -1324,7 +1324,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		    # Static NAT is defined on this interface
 		    #
 		    $chn = new_chain( 'nat', newnonatchain ) unless $chn;
-		    add_jump $chn, $nat_table->{$ichain}, 0, @interfaces > 1 ? "-i $_ " : '';
+		    add_jump $chn, $nat_table->{$ichain}, 0, @interfaces > 1 ? match_source_dev( $_ )  : '';
 		}
 	    }
 
@@ -2127,10 +2127,10 @@ sub setup_mss( ) {
 	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
 	    my $source   = match_source_dev $_;
 	    my $dest     = match_dest_dev $_;
-	    add_rule $chainref, "$dest -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
-	    add_rule $chainref, "$dest -j RETURN" if $clampmss;
-	    add_rule $chainref, "$source -p tcp --tcp-flags SYN,RST SYN ${mssmatch}${in_match}-j TCPMSS --set-mss $mss";
-	    add_rule $chainref, "$source -j RETURN" if $clampmss;
+	    add_rule $chainref, "${dest}-p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
+	    add_rule $chainref, "${dest}-j RETURN" if $clampmss;
+	    add_rule $chainref, "${source}-p tcp --tcp-flags SYN,RST SYN ${mssmatch}${in_match}-j TCPMSS --set-mss $mss";
+	    add_rule $chainref, "${source}-j RETURN" if $clampmss;
 	}
     }
 

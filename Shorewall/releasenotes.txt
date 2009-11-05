@@ -190,6 +190,25 @@ Shorewall 4.4.4
 2)  The Shorewall operations log (specified by STARTUP_LOG) is now
     secured 0600.
 
+3)  Previously, the following valid configuration would produce a fatal
+    error reporting "Duplicate interface name (p+)"
+
+    /etc/shorewall/zones:
+
+    #ZONE		TYPE	
+    fw			firewall
+    world		ipv4
+    z1:world		bport4
+    z2:world		bport4
+
+    /etc/shorewall/interfaces:
+
+    #ZONE		INTERFACE	BROADCAST	OPTIONS
+    world		br0		-		bridge
+    world		br1		-		bridge
+    z1			br0:p+
+    z2			br1:p+
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

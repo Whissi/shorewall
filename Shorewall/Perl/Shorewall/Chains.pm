@@ -1726,6 +1726,7 @@ sub match_source_dev( $ ) {
     return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
     if ( $interfaceref && $interfaceref->{options}{port} ) {
+	$interface =~ s/\++/+/;
 	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
     } else {
 	"-i $interface ";
@@ -1741,6 +1742,7 @@ sub match_dest_dev( $ ) {
     my $interfaceref =  known_interface( $interface );
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	if ( $capabilities{PHYSDEV_BRIDGE} ) {
+	    $interface =~ s/\++/+/;
 	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";
 	} else {
 	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";

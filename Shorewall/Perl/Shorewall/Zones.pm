@@ -855,8 +855,6 @@ sub process_interface( $ ) {
 		$hostoptions{$option} = $numval if $hostopt;
 	    } elsif ( $type == IPLIST_IF_OPTION ) {
 		fatal_error "The $option option requires a value" unless defined $value;
-		fatal_error q("nets=" may not be specified for a multi-zone interface) unless $zone;
-		fatal_error "Duplicate $option option" if $nets;
 		#
 		# Remove parentheses from address list if present
 		#
@@ -866,27 +864,40 @@ sub process_interface( $ ) {
 		#
 		$value = join ',' , ALLIP , $value if $value =~ /^!/;
 
-		if ( $value eq 'dynamic' ) {
-		    require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-		    $value = "+${zone}_${interface}";
-		    $hostoptions{dynamic} = 1;
-		    $ipsets{"${zone}_${interface}"} = 1;
+		if ( $option eq 'nets' ) {
+		    fatal_error q("nets=" may not be specified for a multi-zone interface) unless $zone;
+		    fatal_error "Duplicate $option option" if $nets;
+		    if ( $value eq 'dynamic' ) {
+			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
+			$value = "+${zone}_${interface}";
+			$hostoptions{dynamic} = 1;
+			$ipsets{"${zone}_${interface}"} = 1;
+		    } else {
+			$hostoptions{multicast} = 1;
+		    }
+		    #
+		    # Convert into a Perl array reference
+		    #
+		    $nets = [ split_list $value, 'address' ];
+		    #
+		    # Assume 'broadcast'
+		    #
+		    $hostoptions{broadcast} = 1;
 		} else {
-		    $hostoptions{multicast} = 1;
+		    assert(0);
 		}
-		#
-		# Convert into a Perl array reference
-		#
-		$nets = [ split_list $value, 'address' ];
-		#
-		# Assume 'broadcast'
-		#
-		$hostoptions{broadcast} = 1;
 	    } elsif ( $type == STRING_IF_OPTION ) {
 		fatal_error "The $option option requires a value" unless defined $value;
-		fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
-		fatal_error "The $option option is only allowed on bridge ports" unless $port;
-		$physical = $value;
+
+		if ( $option == 'physical' ) {
+		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
+		    fatal_error "The 'physical' option is only allowed on bridge ports" unless $port;
+		    my $wildphy = $value =~ /\+$/;
+		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy eq $wildcard;
+		    $physical = $value;
+		} else {
+		    assert(0);
+		}
 	    } else {
 		warning_message "Support for the $option interface option has been removed from Shorewall";
 	    }

@@ -190,25 +190,6 @@ Shorewall 4.4.4
 2)  The Shorewall operations log (specified by STARTUP_LOG) is now
     secured 0600.
 
-3)  Previously, the following valid configuration would produce a fatal
-    error reporting "Duplicate interface name (p+)"
-
-    /etc/shorewall/zones:
-
-    #ZONE		TYPE	
-    fw			firewall
-    world		ipv4
-    z1:world		bport4
-    z2:world		bport4
-
-    /etc/shorewall/interfaces:
-
-    #ZONE		INTERFACE	BROADCAST	OPTIONS
-    world		br0		-		bridge
-    world		br1		-		bridge
-    z1			br0:p+
-    z2			br1:p+
-
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -226,6 +207,46 @@ None.
 2)  The limit of 15 entries in a port list has been relaxed in
     /etc/shorewall/routestopped.
 
+3)  The following seemingly valid configuration produces a fatal
+    error reporting "Duplicate interface name (p+)"
+
+    /etc/shorewall/zones:
+
+       #ZONE		TYPE	
+       fw		firewall
+       world		ipv4
+       z1:world		bport4
+       z2:world		bport4
+
+    /etc/shorewall/interfaces:
+
+       #ZONE		INTERFACE	BROADCAST	OPTIONS
+       world		br0		-		bridge
+       world		br1		-		bridge
+       z1		br0:p+
+       z2		br1:p+
+
+    That is because the Shorewall implementation requires each bridge
+    port to have a unique name.
+
+    To work around this problem, a new 'physical' interface option has
+    been created. The above configuration may be defined using the
+    following in /etc/shorewall/interfaces:
+
+       #ZONE		INTERFACE	BROADCAST	OPTIONS
+       world		br0		-		bridge
+       world		br1		-		bridge
+       z1		br0:x+		-		physical=p+
+       z2		br1:y+		-		physical=p+
+
+    In this configuration, 'x+' is the logical name for ports p+ on
+    bridge br0 while 'y+' is the logical name for ports p+ on bridge
+    br1.
+
+    If you need to refer to a particular port on br1 (for example
+    p1023), you write it as y1023; Shorewall will translate that name
+    to p1023 when needed.
+  
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0
 ----------------------------------------------------------------------------

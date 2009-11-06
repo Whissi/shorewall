@@ -165,7 +165,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_2';
+our $VERSION = '4.4_4';
 
 #
 # Chain Table
@@ -1725,11 +1725,12 @@ sub match_source_dev( $ ) {
     my $interface = shift;
     return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
+    my $physical     = $interfaceref->{physical};
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	$interface =~ s/\++/+/;
-	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
+	"-i $interfaceref->{bridge} -m physdev --physdev-in $physical ";
     } else {
-	"-i $interface ";
+	"-i $physical ";
     }
 }
 
@@ -1740,15 +1741,16 @@ sub match_dest_dev( $ ) {
     my $interface = shift;
     return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
+    my $physical     = $interfaceref->{physical};
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	if ( $capabilities{PHYSDEV_BRIDGE} ) {
 	    $interface =~ s/\++/+/;
-	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";
+	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $physical ";
 	} else {
-	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
+	    "-o $interfaceref->{bridge} -m physdev --physdev-out $physical ";
 	}
     } else {
-	"-o $interface ";
+	"-o $physical ";
     }
 }
 

@@ -60,6 +60,7 @@ our @EXPORT = qw( NOTHING
 		  interface_number
 		  find_interface
 		  known_interface
+		  get_physical
 		  have_bridges
 		  port_to_bridge
 		  source_port_to_bridge
@@ -73,7 +74,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_4';
 
 #
 # IPSEC Option types
@@ -163,6 +164,8 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       NUMERIC_IF_OPTION  => 4,
 	       OBSOLETE_IF_OPTION => 5,
 	       IPLIST_IF_OPTION   => 6,
+	       STRING_IF_OPTION   => 7,
+
 	       MASK_IF_OPTION     => 7,
 
 	       IF_OPTION_ZONEONLY => 8,
@@ -215,6 +218,7 @@ sub initialize( $ ) {
 				  upnp        => SIMPLE_IF_OPTION,
 				  upnpclient  => SIMPLE_IF_OPTION,
 				  mss         => NUMERIC_IF_OPTION,
+				  physical    => STRING_IF_OPTION + IF_OPTION_HOST,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -240,6 +244,7 @@ sub initialize( $ ) {
 				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    mss         => NUMERIC_IF_OPTION,
 				    forward     => NUMERIC_IF_OPTION,
+				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -769,6 +774,7 @@ sub process_interface( $ ) {
 	$root = $interface;
     }
 
+    my $physical = $interface;
     my $broadcasts;
 
     unless ( $networks eq '' || $networks eq 'detect' ) {
@@ -870,6 +876,11 @@ sub process_interface( $ ) {
 		# Assume 'broadcast'
 		#
 		$hostoptions{broadcast} = 1;
+	    } elsif ( $type == STRING_IF_OPTION ) {
+		fatal_error "The $option option requires a value" unless defined $value;
+		fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
+		fatal_error "The $option option is only allowed on bridge ports" unless $port;
+		$physical = $value;
 	    } else {
 		warning_message "Support for the $option interface option has been removed from Shorewall";
 	    }
@@ -893,7 +904,8 @@ sub process_interface( $ ) {
 				root       => $root ,
 				broadcasts => $broadcasts ,
 				options    => \%options ,
-			        zone       => ''
+			        zone       => '',
+				physical   => $physical
 			      };
 
     if ( $zone ) {
@@ -952,6 +964,20 @@ sub validate_interfaces_file( $ ) {
 }
 
 #
+# Map the passed name to the corresponding physical name in the passed interface
+#
+sub map_physical( $$ ) {
+    my ( $name, $interfaceref ) = @_;
+    my $physical = $interfaceref->{physical};
+    
+    return $physical if $name eq $interfaceref->{name};
+
+    $physical =~ s/\+$//;
+
+    $physical . substr( $name, length  $interfaceref->{root} );
+}  
+
+#
 # Returns true if passed interface matches an entry in /etc/shorewall/interfaces
 #
 # If the passed name matches a wildcard, a entry for the name is added in %interfaces to speed up validation of other references to that name.
@@ -971,7 +997,12 @@ sub known_interface($)
 	    #
 	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces.
 	    #
-	    return $interfaces{$interface} = { options => $interfaceref->{options}, bridge => $interfaceref->{bridge} , name => $i , number => $interfaceref->{number} };
+	    return $interfaces{$interface} = { options  => $interfaceref->{options}, 
+					       bridge   => $interfaceref->{bridge} , 
+					       name     => $i , 
+					       number   => $interfaceref->{number} ,
+					       physical => map_physical( $interface, $interfaceref )
+					     };
 	}
     }
 
@@ -1009,6 +1040,13 @@ sub find_interface( $ ) {
     fatal_error "Unknown Interface ($interface)" unless $interfaceref;
 
     $interfaceref;
+}
+
+#
+# Returns the physical interface associated with the passed logical name
+#
+sub get_physical( $ ) {
+    known_interface( $_[0] )->{physical};
 }
 
 #

@@ -502,18 +502,19 @@ sub zone_report()
 		my $interfaceref = $hostref->{$type};
 
 		for my $interface ( sort keys %$interfaceref ) {
+		    my $iref     = $interfaces{$interface};
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
 			my $hosts      = $groupref->{hosts};
-			my $exclusions = join ',', @{$groupref->{exclusions}};
 			if ( $hosts ) {
-			    my $grouplist = join ',', ( @$hosts );
+			    my $grouplist  = join ',', ( @$hosts );
+			    my $exclusions = join ',', @{$groupref->{exclusions}};
 			    $grouplist = join '!', ( $grouplist, $exclusions) if $exclusions;
 		
 			    if ( $family == F_IPV4 ) {
-				progress_message_nocompress "      $interface:$grouplist";
+				progress_message_nocompress "      $iref->{physical}:$grouplist";
 			    } else {
-				progress_message_nocompress "      $interface:<$grouplist>";
+				progress_message_nocompress "      $iref->{physical}:<$grouplist>";
 			    }
 			    $printed = 1;
 			}
@@ -560,20 +561,21 @@ sub dump_zone_contents()
 		my $interfaceref = $hostref->{$type};
 
 		for my $interface ( sort keys %$interfaceref ) {
+		    my $iref     = $interfaces{$interface};
 		    my $arrayref = $interfaceref->{$interface};
 		    for my $groupref ( @$arrayref ) {
 			my $hosts     = $groupref->{hosts};
-			my $exclusions = join ',', @{$groupref->{exclusions}};
 
 			if ( $hosts ) {
-			    my $grouplist = join ',', ( @$hosts );
+			    my $grouplist  = join ',', ( @$hosts );
+			    my $exclusions = join ',', @{$groupref->{exclusions}};
 
 			    $grouplist = join '!', ( $grouplist, $exclusions ) if $exclusions;
 
 			    if ( $family == F_IPV4 ) {
-				$entry .= " $interface:$grouplist";
+				$entry .= " $iref->{physical}:$grouplist";
 			    } else {
-				$entry .= " $interface:<$grouplist>";
+				$entry .= " $iref->{physical}:<$grouplist>";
 			    }
 			}
 		    }

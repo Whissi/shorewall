@@ -531,6 +531,9 @@ sub zone_report()
     }
 }
 
+#
+# This function is called to create the contents of the ${VARDIR}/zones file
+#
 sub dump_zone_contents()
 {
     my @xlate;

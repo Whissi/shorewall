@@ -997,11 +997,10 @@ sub known_interface($)
 
     for my $i ( @interfaces ) {
 	$interfaceref = $interfaces{$i};
-	my $val = $interfaceref->{root};
-	next if $val eq $i;
-	if ( substr( $interface, 0, length $val ) eq $val ) {
+	my $root = $interfaceref->{root};
+	if ( $i ne $root && substr( $interface, 0, length $root ) eq $root ) {
 	    #
-	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces.
+	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces and we do not set the root;
 	    #
 	    return $interfaces{$interface} = { options  => $interfaceref->{options}, 
 					       bridge   => $interfaceref->{bridge} , 
@@ -1095,7 +1094,11 @@ sub find_interfaces_by_option( $ ) {
     my @ints = ();
 
     for my $interface ( @interfaces ) {
-	my $optionsref = $interfaces{$interface}{options};
+	my $interfaceref = $interfaces{$interface};
+	
+	next unless $interfaceref->{root};
+
+	my $optionsref = $interfaceref->{options};
 	if ( $optionsref && defined $optionsref->{$option} ) {
 	    push @ints , $interface
 	}

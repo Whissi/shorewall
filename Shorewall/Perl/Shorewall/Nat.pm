@@ -195,7 +195,7 @@ sub process_one_masq( )
 	fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 	unless ( $interfaceref->{root} ) {
-	    $rule .= "-o $interface ";
+	    $rule .= match_dest_dev( $interface );
 	    $interface = $interfaceref->{name};
 	}
 
@@ -220,7 +220,7 @@ sub process_one_masq( )
 		if ( $addresses =~ /^SAME/ ) {
 		    fatal_error "The SAME target is no longer supported";
 		} elsif ( $addresses eq 'detect' ) {
-		    my $variable = get_interface_address $interface;
+		    my $variable = get_interface_address $interfaceref->{physical};
 		    $target = "-j SNAT --to-source $variable";
 
 		    if ( interface_is_optional $interface ) {
@@ -367,8 +367,8 @@ sub do_one_nat( $$$$$ )
     fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
     unless ( $interfaceref->{root} ) {
-	$rulein  = "-i $interface ";
-	$ruleout = "-o $interface ";
+	$rulein  = match_source_dev $interface;
+	$ruleout = match_dest_dev $interface;
 	$interface = $interfaceref->{name};
     }
 
@@ -460,8 +460,8 @@ sub setup_netmap() {
 	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = find_interface( $interface );
 
 	    unless ( $interfaceref->{root} ) {
-		$rulein  = "-i $interface ";
-		$ruleout = "-o $interface ";
+		$rulein  = match_source_dev $interface;
+		$ruleout = match_dest_dev $interface;
 		$interface = $interfaceref->{name};
 	    }
 

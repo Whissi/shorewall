@@ -199,8 +199,8 @@ sub setup_ecn()
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
 
-		add_jump $mangle_table->{POSTROUTING} , $chainref, 0, "-p tcp -o $interface ";
-		add_jump $mangle_table->{OUTPUT},       $chainref, 0, "-p tcp -o $interface ";
+		add_jump $mangle_table->{POSTROUTING} , $chainref, 0, "-p tcp " . match_dest_dev( $interface );
+		add_jump $mangle_table->{OUTPUT},       $chainref, 0, "-p tcp " . match_dest_dev( $interface );
 	    }
 
 	    for my $host ( @hosts ) {
@@ -342,10 +342,11 @@ sub process_routestopped() {
 			$routeback = 1;
 
 			for my $host ( split /,/, $hosts ) {
-			    my $source = match_source_net $host;
-			    my $dest   = match_dest_net   $host;
-
-			    add_rule $chainref , "-i $interface -o $interface $source $dest -j ACCEPT";
+			    add_rule( $chainref , 
+				      match_source_dev( $interface ) . 
+				      match_dest_dev( $interface ) .
+				      match_source_net( $host ) .
+				      match_dest_net( $host ) );
 			    clearrule;
 			}
 		    }
@@ -551,7 +552,11 @@ sub add_common_rules() {
 		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
 	    }
 
-	    add_rule $filter_table->{forward_chain $interface} , "-p udp -o $interface --dport $ports -j ACCEPT" if get_interface_option( $interface, 'bridge' );
+	    add_rule( $filter_table->{forward_chain $interface} , 
+		      "-p udp " .
+		      match_dest_dev( $interface ) .
+		      "--dport $ports -j ACCEPT" )
+		if get_interface_option( $interface, 'bridge' );
 	}
     }
 
@@ -635,10 +640,10 @@ sub add_common_rules() {
 		if ( interface_is_optional $interface ) {
 		    add_commands( $chainref,
 				  qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
-				  qq(    echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3) ,
+				  qq(    echo -A $chainref->{name} ) . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) ,
 				  qq(fi) );
 		} else {
-		    add_commands( $chainref, qq(echo -A $chainref->{name} -i $interface -s $variable -p udp -j ACCEPT >&3) );
+		    add_commands( $chainref, qq(echo -A $chainref->{name} ) . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) );
 		}
 	    }
 	}
@@ -2287,12 +2292,12 @@ EOF
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
 
 	for my $interface ( @$interfaces ) {
-	    add_rule $input,  "-p udp -i $interface --dport $ports -j ACCEPT";
-	    add_rule $output, "-p udp -o $interface --dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
+	    add_rule $input,  "-p udp " . match_source_dev( $interface ) . "--dport $ports -j ACCEPT";
+	    add_rule $output, "-p udp " . match_dest_dev( $interface )   . "--dport $ports -j ACCEPT" unless $config{ADMINISABSENTMINDED};
 	    #
 	    # This might be a bridge
 	    #
-	    add_rule $forward, "-p udp -i $interface -o $interface --dport $ports -j ACCEPT";
+	    add_rule $forward, "-p udp " . match_source_dev( $interface ) . match_dest_dev( $interface ) . "--dport $ports -j ACCEPT";
 	}
     }
 
@@ -2311,7 +2316,7 @@ EOF
 	}
     } else {
 	for my $interface ( all_bridges ) {
-	    emit "do_iptables -A FORWARD -p 58 -i $interface -o $interface -j ACCEPT";
+	    emit "do_iptables -A FORWARD -p 58 " . match_source_interface( $interface ) . match_dest_interface( $interface ) . "-j ACCEPT";
 	}
 
 	if ( $config{IP_FORWARDING} eq 'on' ) {

@@ -278,6 +278,7 @@ sub add_a_provider( ) {
     }
 
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
+    fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
     my $provider    = chain_base $table;
     my $base        = uc chain_base $interface;

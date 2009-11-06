@@ -619,6 +619,60 @@ br0             192.168.1.0/24  routeback
     firewall rules.</para>
   </section>
 
+  <section id="Multiple">
+    <title>Multiple Bridges with Wildcard Ports</title>
+
+    <para>It is sometimes required to configure multiple bridges on a single
+    firewall/gateway. The following seemingly valid configuration results in a
+    compile-time error</para>
+
+    <simplelist>
+      <member>ERROR: Duplicate Interface Name (p+)</member>
+    </simplelist>
+
+    <para><filename>/etc/shorewall/zones</filename>:</para>
+
+    <programlisting>       #ZONE            TYPE    
+       fw               firewall
+       world            ipv4
+       z1:world         bport4
+       z2:world         bport4</programlisting>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>       #ZONE            INTERFACE       BROADCAST       OPTIONS
+       world            br0             -               bridge
+       world            br1             -               bridge
+       z1               br0:p+
+       z2               br1:p+</programlisting>
+
+    <para>The reason is that the Shorewall implementation requires each bridge
+    port to have a unique name. The <option>physical</option> interface option
+    was added in Shorewall 4.4.4 to work around this problem. The above
+    configuration may be defined using the following in
+    <filename>/etc/shorewall/interfaces</filename>: </para>
+
+    <programlisting>       #ZONE            INTERFACE       BROADCAST       OPTIONS
+       world            br0             -               bridge
+       world            br1             -               bridge
+       z1               br0:x+          -               physical=p+
+       z2               br1:y+          -               physical=p+</programlisting>
+
+    <para>In this configuration, 'x+' is the logical name for ports p+ on
+    bridge br0 while 'y+' is the logical name for ports p+ on bridge
+    br1.</para>
+
+    <para>If you need to refer to a particular port on br1 (for example
+    p1023), you write it as y1023; Shorewall will translate that name to p1023
+    when needed.</para>
+
+    <para>Example from /etc/shorewall/rules:</para>
+
+    <programlisting>       #ACTION    SOURCE    DEST       PROTO    DEST
+       #                                        PORT(S)
+       REJECT     z1:x1023  z1:x1024   tcp      1234</programlisting>
+  </section>
+
   <section id="bridge-router">
     <title>Combination Router/Bridge</title>
 

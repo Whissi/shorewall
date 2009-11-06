@@ -123,7 +123,7 @@ loc     eth2            -</programlisting>
           <para>If you use the special value <emphasis
           role="bold">detect</emphasis>, Shorewall will detect the broadcast
           address(es) for you if your iptables and kernel include Address Type
-          Match support. </para>
+          Match support.</para>
 
           <para>If your iptables and/or kernel lack Address Type Match support
           then you may list the broadcast address(es) for the network(s) to
@@ -188,7 +188,8 @@ loc     eth2            -</programlisting>
 
                 <para>2 - reply only if the target IP address is local address
                 configured on the incoming interface and the sender's IP
-                address is part from same subnet on this interface's address</para>
+                address is part from same subnet on this interface's
+                address</para>
 
                 <para>3 - do not reply for local addresses configured with
                 scope host, only resolutions for global and link</para>
@@ -290,7 +291,8 @@ loc     eth2            -</programlisting>
                 role="bold">logmartians</emphasis>. Even if you do not specify
                 the <option>routefilter</option> option, it is a good idea to
                 specify <option>logmartians</option> because your distribution
-                may have enabled route filtering without you knowing it.</para>
+                may have enabled route filtering without you knowing
+                it.</para>
 
                 <para>Only those interfaces with the
                 <option>logmartians</option> option will have their setting
@@ -430,6 +432,21 @@ loc     eth2            -</programlisting>
                     at the time of the restore/start.</para>
                   </caution>
                 </blockquote>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>physical=<emphasis
+              role="bold"><emphasis>name</emphasis></emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.4. This option may only be used
+                when defining a bridge port (:port appeared in the INTERFACE
+                column). When specified, the port name in the INTERFACE column
+                is a logical name that refers to the name given in this
+                option. It is useful when you want to specify the same
+                wildcard port name on two or more bridges. See <ulink
+                url="http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple">http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple</ulink>.</para>
               </listitem>
             </varlistentry>
 

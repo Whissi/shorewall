@@ -144,6 +144,7 @@ our %reservedName = ( all => 1,
 #                                     bridge      => <bridge>
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                     number      => <ordinal position in the interfaces file>
+#                                     physical    => <physical interface name>
 #                                   }
 #                 }
 #

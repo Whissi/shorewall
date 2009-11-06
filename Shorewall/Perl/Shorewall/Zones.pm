@@ -504,8 +504,6 @@ sub zone_report()
 			    my $grouplist = join ',', ( @$hosts );
 			    $grouplist = join '!', ( $grouplist, $exclusions) if $exclusions;
 		
-			    $interface =~ s/\++/+/;
-
 			    if ( $family == F_IPV4 ) {
 				progress_message_nocompress "      $interface:$grouplist";
 			    } else {
@@ -562,8 +560,6 @@ sub dump_zone_contents()
 			    my $grouplist = join ',', ( @$hosts );
 
 			    $grouplist = join '!', ( $grouplist, $exclusions ) if $exclusions;
-
-			    $interface =~ s/\++/+/;
 
 			    if ( $family == F_IPV4 ) {
 				$entry .= " $interface:$grouplist";
@@ -740,15 +736,7 @@ sub process_interface( $ ) {
 	fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
 
 	fatal_error "Invalid Interface Name ($interface:$port)" unless $port eq '' || $port =~ /^[\w.@%-]+\+?$/;
-
-	if ( $port =~ /\+$/ ) {
-	    while ( $interfaces{$port} ) {
-		fatal_error "Duplicate Interface ($interface:$port)" if $interfaces{$port}{bridge} eq $interface;
-		$port .= '+';
-	    }
-	} else {
-	    fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
-	}
+	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 
 	fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
 	fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} != BPORT;

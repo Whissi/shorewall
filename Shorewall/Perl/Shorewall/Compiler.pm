@@ -704,7 +704,7 @@ sub compiler {
     #
     setup_proxy_arp;
     #
-    # Handle MSS setings in the zones file
+    # Handle MSS settings in the zones file
     #
     setup_zone_mss;
 

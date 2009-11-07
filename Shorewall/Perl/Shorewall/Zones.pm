@@ -136,7 +136,8 @@ our %reservedName = ( all => 1,
 #
 #     %interfaces { <interface1> => { name        => <name of interface>
 #                                     root        => <name without trailing '+'>
-#                                     options     => { <option1> = <val1> ,
+#                                     options     => { port => undef|1
+#                                                      <option1> = <val1> ,          #See %validinterfaceoptions
 #                                                      ...
 #                                                    }
 #                                     zone        => <zone name>
@@ -892,8 +893,8 @@ sub process_interface( $ ) {
 		if ( $option == 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
 		    fatal_error "The 'physical' option is only allowed on bridge ports" unless $port;
-		    my $wildphy = $value =~ /\+$/;
-		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy eq $wildcard;
+		    my $wildphy = $value =~ /\+$/ ? 1 : 0;
+		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy == $wildcard;
 		    $physical = $value;
 		} else {
 		    assert(0);

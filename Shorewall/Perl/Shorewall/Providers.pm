@@ -96,7 +96,7 @@ sub initialize( $ ) {
 sub setup_route_marking() {
     my $mask = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
 
-    require_capability( $_ , 'the provider \'track\' option' , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
+    require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
     add_rule $mangle_table->{$_} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask" for qw/PREROUTING OUTPUT/;
 
@@ -280,7 +280,6 @@ sub add_a_provider( ) {
     fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
-    my $provider    = chain_base $table;
     my $base        = uc chain_base $interface;
     my $gatewaycase = '';
 

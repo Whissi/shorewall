@@ -2136,7 +2136,7 @@ sub interface_address( $ ) {
 # Record that the ruleset requires the first IP address on the passed interface
 #
 sub get_interface_address ( $ ) {
-    my ( $interface ) = $_[0];
+    my ( $interface ) = physical_name $_[0];
 
     my $variable = interface_address( $interface );
     my $function = interface_is_optional( $interface ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
@@ -2160,7 +2160,7 @@ sub interface_bcasts( $ ) {
 # Record that the ruleset requires the broadcast addresses on the passed interface
 #
 sub get_interface_bcasts ( $ ) {
-    my ( $interface ) = $_[0];
+    my ( $interface ) = physical_name $_[0];
 
     my $variable = interface_bcasts( $interface );
 
@@ -2183,7 +2183,7 @@ sub interface_acasts( $ ) {
 # Record that the ruleset requires the anycast addresses on the passed interface
 #
 sub get_interface_acasts ( $ ) {
-    my ( $interface ) = $_[0];
+    my ( $interface ) = physical_name $_[0];
 
     $global_variables |= NOT_RESTORE;
 
@@ -2206,15 +2206,16 @@ sub interface_gateway( $ ) {
 # Record that the ruleset requires the gateway address on the passed interface
 #
 sub get_interface_gateway ( $ ) {
-    my ( $interface ) = $_[0];
+    my ( $logical ) = $_[0];
 
+    my $interface = physical_name $logical;
     my $variable = interface_gateway( $interface );
 
     my $routine = $config{USE_DEFAULT_RT} ? 'detect_dynamic_gateway' : 'detect_gateway';
 
     $global_variables |= ALL_COMMANDS;
 
-    if ( interface_is_optional $interface ) {
+    if ( interface_is_optional $logical ) {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)\n);
     } else {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)
@@ -2237,13 +2238,14 @@ sub interface_addresses( $ ) {
 # Record that the ruleset requires the IP addresses on the passed interface
 #
 sub get_interface_addresses ( $ ) {
-    my ( $interface ) = $_[0];
+    my ( $logical ) = $_[0];
 
+    my $interface = physical_name( $logical );
     my $variable = interface_addresses( $interface );
 
     $global_variables |= NOT_RESTORE;
 
-    if ( interface_is_optional $interface ) {
+    if ( interface_is_optional $logical ) {
 	$interfaceaddrs{$interface} = qq($variable=\$(find_interface_addresses $interface)\n);
     } else {
 	$interfaceaddrs{$interface} = qq($variable=\$(find_interface_addresses $interface)
@@ -2266,13 +2268,14 @@ sub interface_nets( $ ) {
 # Record that the ruleset requires the networks routed out of the passed interface
 #
 sub get_interface_nets ( $ ) {
-    my ( $interface ) = $_[0];
+    my ( $logical ) = $_[0];
 
+    my $interface = physical_name( $logical );
     my $variable = interface_nets( $interface );
 
     $global_variables |= ALL_COMMANDS;
 
-    if ( interface_is_optional $interface ) {
+    if ( interface_is_optional $logical ) {
 	$interfacenets{$interface} = qq($variable=\$(get_routed_networks $interface)\n);
     } else {
 	$interfacenets{$interface} = qq($variable=\$(get_routed_networks $interface)
@@ -2296,13 +2299,14 @@ sub interface_mac( $$ ) {
 # Record the fact that the ruleset requires MAC address of the passed gateway IP routed out of the passed interface for the passed provider number
 #
 sub get_interface_mac( $$$ ) {
-    my ( $ipaddr, $interface , $table ) = @_;
+    my ( $ipaddr, $logical , $table ) = @_;
 
+    my $interface = physical_name( $logical );
     my $variable = interface_mac( $interface , $table );
 
     $global_variables |= NOT_RESTORE;
 
-    if ( interface_is_optional $interface ) {
+    if ( interface_is_optional $logical ) {
 	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)\n);
     } else {
 	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)

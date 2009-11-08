@@ -227,6 +227,13 @@ sub initialize( $ ) {
     $sticky = 0;
 }
 
+sub physical_name( $ ) {
+    my $device = shift;
+    my $devref = known_interface $device;
+
+    $devref ? $devref->{physical} : $device;
+}
+
 sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
 
@@ -531,6 +538,7 @@ sub validate_tc_device( ) {
 			    qdisc         => $qdisc,
 			    guarantee     => 0,
 			    name          => $device,
+			    physical      => physical_name $device
 			  } ,
 
     push @tcdevices, $device;
@@ -831,7 +839,7 @@ sub process_tc_filter( ) {
     fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
     fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
 
-    my $rule = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32";
+    my $rule = "filter add dev $devref->{physical} protocol ip parent $devnum:0 prio 10 u32";
 
     if ( $source ne '-' ) {
 	my ( $net , $mask ) = decompose_net( $source );
@@ -902,7 +910,7 @@ sub process_tc_filter( ) {
 	    $lasttnum = $tnum;
 	    $lastrule = $rule;
 
-	    emit( "\nrun_tc filter add dev $device parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor 1" );
+	    emit( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor 1" );
 	}
 	#
 	# And link to it using the current contents of $rule
@@ -912,7 +920,7 @@ sub process_tc_filter( ) {
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule     = "filter add dev $device protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
+	$rule     = "filter add dev $devref->{physical} protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT"
@@ -1045,6 +1053,8 @@ sub setup_traffic_shaping() {
 	my $devnum  = in_hexp $devref->{number};
 	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
+	$device = physical_name $device;
+
 	emit "if interface_is_up $device; then";
 
 	push_indent;
@@ -1127,11 +1137,13 @@ sub setup_traffic_shaping() {
 	my $classid  = join( ':', in_hexp $devicenumber, $classnum);
 	my $rate     = "$tcref->{rate}kbit";
 	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
+
+	$classids{$classid}=$device;
+	$device = physical_name $device;
+
 	my $dev      = chain_base $device;
 	my $priority = $tcref->{priority} << 8;
 	my $parent   = in_hexp $tcref->{parent};
-
-	$classids{$classid}=$device;
 
 	if ( $lastdevice ne $device ) {
 	    if ( $lastdevice ) {

@@ -513,13 +513,13 @@ sub add_a_provider( ) {
 	if ( $shared ) {
 	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );
 	} else {
-	    emit ( "    error_message \"WARNING: Interface $interface is not usable -- Provider $table ($number) not Added\"" );
+	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Added\"" );
 	}
     } else {
 	if ( $shared ) {
 	    emit( "    fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Added\"" );
 	} else {
-	    emit( "    fatal_error \"Interface $interface is not usable -- Provider $table ($number) Cannot be Added\"" );
+	    emit( "    fatal_error \"Interface $physical is not usable -- Provider $table ($number) Cannot be Added\"" );
 	}
     }
 

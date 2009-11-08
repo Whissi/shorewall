@@ -673,7 +673,7 @@ sub chain_base($) {
 #
 sub forward_chain($)
 {
-    $_[0] . '_fwd';
+    physical_name( $_[0] ) . '_fwd';
 }
 
 #
@@ -709,7 +709,7 @@ sub use_forward_chain($) {
 #
 sub input_chain($)
 {
-    $_[0] . '_in';
+    physical_name( $_[0] ) . '_in';
 }
 
 #
@@ -767,7 +767,7 @@ sub use_input_chain($) {
 #
 sub output_chain($)
 {
-    $_[0] . '_out';
+    physical_name( $_[0] ) . '_out';
 }
 
 #
@@ -811,7 +811,7 @@ sub use_output_chain($) {
 #
 sub masq_chain($)
 {
-     $_[0] . '_masq';
+     physical_name( $_[0] ) . '_masq';
 }
 
 #
@@ -826,7 +826,7 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    $_[0] . '_mac';
+    physical_name( $_[0] ) . '_mac';
 }
 
 sub macrecent_target($)
@@ -855,7 +855,7 @@ sub notrack_chain( $ )
 #
 sub snat_chain( $ )
 {
-    $_[0] . '_snat';
+    physical_name( $_[0] ) . '_snat';
 }
 
 #
@@ -863,7 +863,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    $_[0] . '_ecn';
+    physical_name( $_[0] ) . '_ecn';
 }
 
 #
@@ -871,7 +871,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = $_[0];
+    my $c = physical_name $_[0];
 
     ( $c . '_fwd', $c . '_in' );
 }
@@ -2136,10 +2136,11 @@ sub interface_address( $ ) {
 # Record that the ruleset requires the first IP address on the passed interface
 #
 sub get_interface_address ( $ ) {
-    my ( $interface ) = physical_name $_[0];
+    my ( $logical ) = $_[0];
 
+    my $interface = physical_name( $logical );
     my $variable = interface_address( $interface );
-    my $function = interface_is_optional( $interface ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
+    my $function = interface_is_optional( $logical ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
 
     $global_variables |= ALL_COMMANDS;
 
@@ -2209,7 +2210,7 @@ sub get_interface_gateway ( $ ) {
     my ( $logical ) = $_[0];
 
     my $interface = physical_name $logical;
-    my $variable = interface_gateway( $interface );
+    my $variable  = interface_gateway( $interface );
 
     my $routine = $config{USE_DEFAULT_RT} ? 'detect_dynamic_gateway' : 'detect_gateway';
 
@@ -2241,7 +2242,7 @@ sub get_interface_addresses ( $ ) {
     my ( $logical ) = $_[0];
 
     my $interface = physical_name( $logical );
-    my $variable = interface_addresses( $interface );
+    my $variable  = interface_addresses( $interface );
 
     $global_variables |= NOT_RESTORE;
 
@@ -2271,7 +2272,7 @@ sub get_interface_nets ( $ ) {
     my ( $logical ) = $_[0];
 
     my $interface = physical_name( $logical );
-    my $variable = interface_nets( $interface );
+    my $variable  = interface_nets( $interface );
 
     $global_variables |= ALL_COMMANDS;
 
@@ -2302,7 +2303,7 @@ sub get_interface_mac( $$$ ) {
     my ( $ipaddr, $logical , $table ) = @_;
 
     my $interface = physical_name( $logical );
-    my $variable = interface_mac( $interface , $table );
+    my $variable  = interface_mac( $interface , $table );
 
     $global_variables |= NOT_RESTORE;
 

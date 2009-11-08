@@ -871,9 +871,9 @@ sub process_interface( $ ) {
 		    fatal_error "Duplicate $option option" if $nets;
 		    if ( $value eq 'dynamic' ) {
 			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-			$value = "+${zone}_${interface}";
+			$value = "+${zone}_${physical}";
 			$hostoptions{dynamic} = 1;
-			$ipsets{"${zone}_${interface}"} = 1;
+			$ipsets{"${zone}_${physical}"} = 1;
 		    } else {
 			$hostoptions{multicast} = 1;
 		    }
@@ -891,9 +891,9 @@ sub process_interface( $ ) {
 	    } elsif ( $type == STRING_IF_OPTION ) {
 		fatal_error "The $option option requires a value" unless defined $value;
 
-		if ( $option == 'physical' ) {
+		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
-		    fatal_error "The 'physical' option is only allowed on bridge ports" unless $port;
+		    # fatal_error "The 'physical' option is only allowed on bridge ports" unless $port;
 		    my $wildphy = $value =~ /\+$/ ? 1 : 0;
 		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy == $wildcard;
 		    $physical = $value;
@@ -1232,9 +1232,10 @@ sub process_host( ) {
 
     if ( $hosts eq 'dynamic' ) {
 	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-	$hosts = "+${zone}_${interface}";
+	my $physical = physical_name $interface;
+	$hosts = "+${zone}_${physical}";
 	$optionsref->{dynamic} = 1;
-	$ipsets{"${zone}_${interface}"} = 1;
+	$ipsets{"${zone}_${physical}"} = 1;
 
     }
 

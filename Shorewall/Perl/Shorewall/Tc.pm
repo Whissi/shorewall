@@ -1040,13 +1040,14 @@ sub setup_traffic_shaping() {
     }
 
     for my $device ( @tcdevices ) {
-	my $dev     = chain_base( $device );
 	my $devref  = $tcdevices{$device};
 	my $defmark = in_hexp ( $devref->{default} || 0 );
 	my $devnum  = in_hexp $devref->{number};
 	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
 	$device = physical_name $device;
+
+	my $dev = chain_base( $device );
 
 	emit "if interface_is_up $device; then";
 
@@ -1225,7 +1226,7 @@ sub setup_tc() {
 	    $mark_part = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFF0000' : '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
 
 	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{PREROUTING} , "-i $interface -j tcpre";
+		add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
 	    }
 	}
 

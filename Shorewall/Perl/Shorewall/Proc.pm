@@ -56,27 +56,35 @@ sub setup_arp_filtering() {
 	save_progress_message "Setting up ARP filtering...";
 
 	for my $interface ( @$interfaces ) {
-	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
 	    my $value = get_interface_option $interface, 'arp_filter';
+	    my $optional = interface_is_optional $interface;
+                           
+	    $interface = get_physical $interface;
+
+	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
 
 	    emit ( '',
 		   "if [ -f $file ]; then",
 		   "    echo $value > $file");
 	    emit ( 'else',
-		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
+		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless $optional;
 	    emit   "fi\n";
 	}
 
 	for my $interface ( @$interfaces1 ) {
-	    my $file  = "/proc/sys/net/ipv4/conf/$interface/arp_ignore";
 	    my $value = get_interface_option $interface, 'arp_ignore';
+	    my $optional = interface_is_optional $interface;
+                           
+	    $interface = get_physical $interface;
+
+	    my $file  = "/proc/sys/net/ipv4/conf/$interface/arp_ignore";
 
 	    assert( defined $value );
 
 	    emit ( "if [ -f $file ]; then",
 		   "    echo $value > $file");
 	    emit ( 'else',
-		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless interface_is_optional( $interface );
+		   "    error_message \"WARNING: Cannot set ARP filtering on $interface\"" ) unless $optional;
 	    emit   "fi\n";
 	}
     }
@@ -106,13 +114,17 @@ sub setup_route_filtering() {
 	}
 
 	for my $interface ( @$interfaces ) {
-	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
 	    my $value = get_interface_option $interface, 'routefilter';
+	    my $optional = interface_is_optional $interface;
+                           
+	    $interface = get_physical $interface;
+
+	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
 
 	    emit ( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );
 	    emit ( 'else' ,
-		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless interface_is_optional( $interface);
+		   "    error_message \"WARNING: Cannot set route filtering on $interface\"" ) unless $optional;
 	    emit   "fi\n";
 	}
 
@@ -153,14 +165,18 @@ sub setup_martian_logging() {
 	}
 
 	for my $interface ( @$interfaces ) {
-	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
 	    my $value = get_interface_option $interface, 'logmartians';
+	    my $optional = interface_is_optional $interface;
+                           
+	    $interface = get_physical $interface;
+
+	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";
 
 	    emit ( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );
 
 	    emit ( 'else' ,
-		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless interface_is_optional( $interface);
+		   "    error_message \"WARNING: Cannot set Martian logging on $interface\"") unless $optional;
 	    emit   "fi\n";
 	}
     }
@@ -180,13 +196,17 @@ sub setup_source_routing( $ ) {
 	save_progress_message 'Setting up Accept Source Routing...';
 
 	for my $interface ( @$interfaces ) {
-	    my $file = "/proc/sys/net/ipv$family/conf/$interface/accept_source_route";
 	    my $value = get_interface_option $interface, 'sourceroute';
+	    my $optional = interface_is_optional $interface;
+
+	    $interface = get_physical $interface;
+
+	    my $file = "/proc/sys/net/ipv$family/conf/$interface/accept_source_route";
 
 	    emit ( "if [ -f $file ]; then" ,
 		   "    echo $value > $file" );
 	    emit ( 'else' ,
-		   "    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"" ) unless interface_is_optional( $interface);
+		   "    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"" ) unless $optional;
 	    emit   "fi\n";
 	}
     }
@@ -227,13 +247,17 @@ sub setup_forwarding( $$ ) {
 	    save_progress_message 'Setting up IPv6 Interface Forwarding...';
 
 	    for my $interface ( @$interfaces ) {
-		my $file = "/proc/sys/net/ipv6/conf/$interface/forwarding";
 		my $value = get_interface_option $interface, 'forward';
+		my $optional = interface_is_optional $interface;
+
+		$interface = get_physical $interface;
+
+		my $file = "/proc/sys/net/ipv6/conf/$interface/forwarding";
 
 		emit ( "if [ -f $file ]; then" ,
 		       "    echo $value > $file" );
 		emit ( 'else' ,
-		       "    error_message \"WARNING: Cannot set IPv6 forwarding on $interface\"" ) unless interface_is_optional( $interface);
+		       "    error_message \"WARNING: Cannot set IPv6 forwarding on $interface\"" ) unless $optional;
 		emit   "fi\n";
 	    }
 

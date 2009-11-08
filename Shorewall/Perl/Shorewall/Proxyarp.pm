@@ -117,6 +117,8 @@ sub setup_proxy_arp() {
 		    $first_entry = 0;
 		}
 
+		$interface = get_physical $interface;
+
 		$set{$interface}  = 1;
 		$reset{$external} = 1 unless $set{$external};
 
@@ -143,10 +145,14 @@ sub setup_proxy_arp() {
 
 	    for my $interface ( @$interfaces ) {
 		my $value = get_interface_option $interface, 'proxyarp';
+		my $optional = interface_is_optional $interface;
+
+		$interface = get_physical $interface;
+
 		emit ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then" ,
 		       "    echo $value > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
 		emit ( 'else' ,
-		       "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless interface_is_optional( $interface );
+		       "    error_message \"WARNING: Unable to set/reset proxy ARP on $interface\"" ) unless $optional;
 		emit   "fi\n";
 	    }
 	}
@@ -158,10 +164,14 @@ sub setup_proxy_arp() {
 
 	    for my $interface ( @$interfaces ) {
 		my $value = get_interface_option $interface, 'proxyndp';
+		my $optional = interface_is_optional $interface;
+
+		$interface = get_physical $interface;
+
 		emit ( "if [ -f /proc/sys/net/ipv6/conf/$interface/proxy_ndp ] ; then" ,
 		   "    echo $value > /proc/sys/net/ipv6/conf/$interface/proxy_ndp" );
 		emit ( 'else' ,
-		       "    error_message \"WARNING: Unable to set/reset Proxy NDP on $interface\"" ) unless interface_is_optional( $interface );
+		       "    error_message \"WARNING: Unable to set/reset Proxy NDP on $interface\"" ) unless $optional;
 		emit   "fi\n";
 	    }
 	}

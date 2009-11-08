@@ -61,6 +61,7 @@ our @EXPORT = qw( NOTHING
 		  find_interface
 		  known_interface
 		  get_physical
+		  physical_name
 		  have_bridges
 		  port_to_bridge
 		  source_port_to_bridge
@@ -1064,6 +1065,16 @@ sub find_interface( $ ) {
 #
 sub get_physical( $ ) {
     known_interface( $_[0] )->{physical};
+}
+
+#
+# This one doesn't insist that the passed name be the name of a configured interface
+#
+sub physical_name( $ ) {
+    my $device = shift;
+    my $devref = known_interface $device;
+
+    $devref ? $devref->{physical} : $device;
 }
 
 #

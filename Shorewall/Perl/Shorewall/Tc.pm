@@ -227,13 +227,6 @@ sub initialize( $ ) {
     $sticky = 0;
 }
 
-sub physical_name( $ ) {
-    my $device = shift;
-    my $devref = known_interface $device;
-
-    $devref ? $devref->{physical} : $device;
-}
-
 sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
 

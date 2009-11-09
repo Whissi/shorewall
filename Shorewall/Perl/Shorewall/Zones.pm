@@ -722,7 +722,7 @@ sub firewall_zone() {
 #
 sub process_interface( $ ) {
     my $nextinum = $_[0];
-    my $nets;
+    my $netsref = '';
     my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file';
     my $zoneref;
     my $bridge = '';
@@ -830,12 +830,12 @@ sub process_interface( $ ) {
 		$hostoptions{$option} = 1 if $hostopt;
 	    } elsif ( $type == BINARY_IF_OPTION ) {
 		$value = 1 unless defined $value;
-		fatal_error "Option value for $option must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
-		fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
+		fatal_error "Option value for '$option' must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
+		fatal_error "The '$option' option may not be used with a wild-card interface name" if $wildcard;
 		$options{$option} = $value;
 		$hostoptions{$option} = $value if $hostopt;
 	    } elsif ( $type == ENUM_IF_OPTION ) {
-		fatal_error "The $option option may not be used with a wild-card interface name" if $wildcard;
+		fatal_error "The '$option' option may not be used with a wild-card interface name" if $wildcard;
 		if ( $option eq 'arp_ignore' ) {
 		    if ( defined $value ) {
 			if ( $value =~ /^[1-3,8]$/ ) {
@@ -850,13 +850,13 @@ sub process_interface( $ ) {
 		    assert( 0 );
 		}
 	    } elsif ( $type == NUMERIC_IF_OPTION ) {
-		fatal_error "The $option option requires a value" unless defined $value;
+		fatal_error "The '$option' option requires a value" unless defined $value;
 		my $numval = numeric_value $value;
 		fatal_error "Invalid value ($value) for option $option" unless defined $numval;
 		$options{$option} = $numval;
 		$hostoptions{$option} = $numval if $hostopt;
 	    } elsif ( $type == IPLIST_IF_OPTION ) {
-		fatal_error "The $option option requires a value" unless defined $value;
+		fatal_error "The '$option' option requires a value" unless defined $value;
 		#
 		# Remove parentheses from address list if present
 		#
@@ -868,19 +868,21 @@ sub process_interface( $ ) {
 
 		if ( $option eq 'nets' ) {
 		    fatal_error q("nets=" may not be specified for a multi-zone interface) unless $zone;
-		    fatal_error "Duplicate $option option" if $nets;
+		    fatal_error "Duplicate $option option" if $netsref;
 		    if ( $value eq 'dynamic' ) {
 			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-			$value = "+${zone}_${physical}";
 			$hostoptions{dynamic} = 1;
-			$ipsets{"${zone}_${physical}"} = 1;
+			#
+			# Defer remaining processing until we have the final physical interface name
+			#
+			$netsref = 'dynamic';
 		    } else {
 			$hostoptions{multicast} = 1;
+			#
+			# Convert into a Perl array reference
+			#
+			$netsref = [ split_list $value, 'address' ];
 		    }
-		    #
-		    # Convert into a Perl array reference
-		    #
-		    $nets = [ split_list $value, 'address' ];
 		    #
 		    # Assume 'broadcast'
 		    #
@@ -889,7 +891,7 @@ sub process_interface( $ ) {
 		    assert(0);
 		}
 	    } elsif ( $type == STRING_IF_OPTION ) {
-		fatal_error "The $option option requires a value" unless defined $value;
+		fatal_error "The '$option' option requires a value" unless defined $value;
 
 		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
@@ -903,6 +905,12 @@ sub process_interface( $ ) {
 	    } else {
 		warning_message "Support for the $option interface option has been removed from Shorewall";
 	    }
+	}
+
+	if ( $netsref eq 'dynamic' ) {
+	    my $ipset = "${zone}_" . chain_base $physical;
+	    $nets = [ "+$ipset" ];
+	    $ipsets{$ipset} = 1;
 	}
 
 	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};

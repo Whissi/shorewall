@@ -813,7 +813,7 @@ sub handle_optional_interfaces() {
     if ( @$interfaces ) {
 	for my $interface ( @$interfaces ) {
 	    my $provider = $provider_interfaces{$interface};
-	    my $physical = physical_name $interface;
+	    my $physical = get_physical $interface;
 	    my $base     = uc chain_base( $physical );
 
 	    emit '';

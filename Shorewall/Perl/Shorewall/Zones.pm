@@ -723,7 +723,7 @@ sub firewall_zone() {
 sub process_interface( $ ) {
     my $nextinum = $_[0];
     my $nets;
-    my ($zone, $originalinterface, $networks, $options ) = split_line 2, 4, 'interfaces file';
+    my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file';
     my $zoneref;
     my $bridge = '';
 
@@ -736,7 +736,7 @@ sub process_interface( $ ) {
 	fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == FIREWALL;
     }
 
-    $networks = '' if $networks eq '-';
+    $bcasts = '' if $bcasts eq '-';
     $options  = '' if $options  eq '-';
 
     my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
@@ -785,8 +785,8 @@ sub process_interface( $ ) {
     my $physical = $interface;
     my $broadcasts;
 
-    unless ( $networks eq '' || $networks eq 'detect' ) {
-	my @broadcasts = split_list $networks, 'address';
+    unless ( $bcasts eq '' || $bcasts eq 'detect' ) {
+	my @broadcasts = split_list $bcasts, 'address';
 
 	for my $address ( @broadcasts ) {
 	    fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
@@ -1064,7 +1064,7 @@ sub find_interface( $ ) {
 # Returns the physical interface associated with the passed logical name
 #
 sub get_physical( $ ) {
-    known_interface( $_[0] )->{physical};
+    $interfaces{ $_[0] }->{physical};
 }
 
 #

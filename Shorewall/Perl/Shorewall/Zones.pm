@@ -893,7 +893,7 @@ sub process_interface( $ ) {
 
 		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
-		    # fatal_error "The 'physical' option is only allowed on bridge ports" unless $port;
+		    fatal_error "The 'physical' option is only allowed on bridge ports" unless $port || $config{LOGICAL_NAMES};
 		    my $wildphy = $value =~ /\+$/ ? 1 : 0;
 		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy == $wildcard;
 		    $physical = $value;

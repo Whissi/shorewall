@@ -909,7 +909,7 @@ sub process_interface( $ ) {
 
 	if ( $netsref eq 'dynamic' ) {
 	    my $ipset = "${zone}_" . chain_base $physical;
-	    $nets = [ "+$ipset" ];
+	    $netsref = [ "+$ipset" ];
 	    $ipsets{$ipset} = 1;
 	}
 
@@ -936,8 +936,8 @@ sub process_interface( $ ) {
 			      };
 
     if ( $zone ) {
-	$nets ||= [ allip ];
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, $nets, $hostoptionsref );
+	$netsref ||= [ allip ];
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, $netsref, $hostoptionsref );
 	add_group_to_zone( $zone, 
 			   $zoneref->{type}, 
 			   $interface, 

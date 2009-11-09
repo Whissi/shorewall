@@ -220,7 +220,7 @@ sub process_one_masq( )
 		if ( $addresses =~ /^SAME/ ) {
 		    fatal_error "The SAME target is no longer supported";
 		} elsif ( $addresses eq 'detect' ) {
-		    my $variable = get_interface_address $interfaceref->{physical};
+		    my $variable = get_interface_address $interface;
 		    $target = "-j SNAT --to-source $variable";
 
 		    if ( interface_is_optional $interface ) {

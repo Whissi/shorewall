@@ -83,8 +83,8 @@ sub setup_tunnels() {
 	    for my $zone ( split_list $gatewayzones, 'zone' ) {
 		my $type = zone_type( $zone );
 		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type == FIREWALL || $type == BPORT;
-		$inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
-		$outchainref = ensure_filter_chain "${fw}2${zone}", 1;
+		$inchainref  = ensure_filter_chain canonical_chain( ${zone}, ${fw} ), 1;
+		$outchainref = ensure_filter_chain canonical_chain( ${fw}, ${zone} ), 1;
 
 		unless ( $capabilities{POLICY_MATCH} ) {
 		    add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
@@ -239,8 +239,8 @@ sub setup_tunnels() {
 
 	fatal_error "Invalid tunnel ZONE ($zone)" if $zonetype == FIREWALL || $zonetype == BPORT;
 
-	my $inchainref  = ensure_filter_chain "${zone}2${fw}", 1;
-	my $outchainref = ensure_filter_chain "${fw}2${zone}", 1;
+	my $inchainref  = ensure_filter_chain canonical_chain( ${zone}, ${fw} ), 1;
+	my $outchainref = ensure_filter_chain canonical_chain( ${fw}, ${zone} ), 1;
 
 	$gateway = ALLIP if $gateway eq '-';
 

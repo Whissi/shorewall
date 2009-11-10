@@ -441,6 +441,7 @@ sub initialize( $ ) {
 	      WIDE_TC_MARKS => undef,
 	      TRACK_PROVIDERS => undef,
 	      LOGICAL_NAMES => undef,
+	      ZONE2ZONE => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -549,6 +550,7 @@ sub initialize( $ ) {
 	      WIDE_TC_MARKS => undef,
 	      TRACK_PROVIDERS => undef,
 	      LOGICAL_NAMES => undef,
+	      ZONE2ZONE => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -2411,9 +2413,17 @@ sub get_configuration( $ ) {
     default_yes_no 'TRACK_PROVIDERS'            , '';
     default_yes_no 'LOGICAL_NAMES'              , '';
 
+    my $val;
+
+    if ( defined ( $val = $config{ZONE2ZONE} ) ) {
+	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;
+    } else {
+	$config{ZONE2ZONE} = '2';
+    }
+
     $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
-    default 'BLACKLIST_DISPOSITION'             , 'DROP';
+    default 'BLACKLIST_DISPOSITION'    , 'DROP';
 
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
     default_log_level 'MACLIST_LOG_LEVEL',   '';
@@ -2424,8 +2434,6 @@ sub get_configuration( $ ) {
 
     default_log_level 'SMURF_LOG_LEVEL',     '';
     default_log_level 'LOGALLNEW',           '';
-
-    my $val;
 
     $globals{MACLIST_TARGET} = 'reject';
 

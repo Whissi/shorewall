@@ -246,6 +246,21 @@ None.
     If you need to refer to a particular port on br1 (for example
     p1023), you write it as y1023; Shorewall will translate that name
     to p1023 when needed.
+
+    As shown in the above example, It is allowed to have a physical
+    name ending in '+' with a logical name that does not end with '+'.
+    The reverse is not allowed; that is, if the logical name ends in
+    '+' then the physical name must also end in '+'.
+
+4)  Previously, Shorewall has used the character '2' to form the name
+    of chains involving zones and/or the word 'all' (e.g., fw2net,
+    all2all). When zones names are given numeric suffixes, these
+    generated names are hard to read (e.g., foo1232bar). To make these
+    names clearer, a ZONE2ZONE option has been added.
+
+    ZONE2ZONE has a default value of "2" but can also be given the
+    value "-" (e.g., ZONE2ZONE="-") which causes Shorewall to separate
+    the two parts of the name with a hyphen (e.g., foo123-bar).
   
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0

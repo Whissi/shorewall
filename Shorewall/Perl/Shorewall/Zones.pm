@@ -904,8 +904,7 @@ sub process_interface( $ ) {
 		    }
 
 		    $physical{$value} = 1;
-		    my $wildphy = $value =~ /\+$/ ? 1 : 0;
-		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy == $wildcard;
+		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" if $wildcard && ! $value =~ /\+$/;
 		    $physical = $value;
 		} else {
 		    assert(0);

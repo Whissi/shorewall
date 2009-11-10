@@ -85,6 +85,7 @@ our %EXPORT_TAGS = (
 				       decr_cmd_level
 				       chain_base
 				       forward_chain
+				       canonical_chain
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -668,6 +669,13 @@ sub chain_base($) {
 }
 
 #
+# Name of canonical chain
+#
+sub canonical_chain ($$) {
+    join "$config{ZONE2ZONE}", @_;
+}
+
+#
 # Forward Chain for an interface
 #
 sub forward_chain($)
@@ -756,7 +764,7 @@ sub use_input_chain($) {
     #
     # Use the '<zone>2fw' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '' , $zone , '2' , firewall_zone )};
+    $chainref = $filter_table->{canonical_chain( $zone, firewall_zone )};
 
     ! ( $chainref->{referenced} || $chainref->{is_policy} )
 }
@@ -800,7 +808,7 @@ sub use_output_chain($) {
     #
     # Use the 'fw2<zone>' chain if it is referenced.
     #
-    $chainref = $filter_table->{join( '', firewall_zone , '2', $interfaceref->{zone} )};
+    $chainref = $filter_table->{canonical_chain( firewall_zone , $interfaceref->{zone} )};
 
     ! ( $chainref->{referenced} || $chainref->{is_policy} )
 }
@@ -1172,7 +1180,7 @@ sub finish_section ( $ ) {
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    my $chainref = $chain_table{'filter'}{"${zone}2${zone1}"};
+	    my $chainref = $chain_table{'filter'}{canonical_chain( $zone, $zone1 )};
 	    finish_chain_section $chainref, $sections if $chainref->{referenced};
 	}
     }
@@ -1199,12 +1207,12 @@ sub set_mss( $$$ ) {
 
     for my $z ( all_zones ) {
 	if ( $direction eq '_in' ) {
-	    set_mss1 "${zone}2${z}" , $mss;
+	    set_mss1 canonical_chain( ${zone}, ${z} ) , $mss;
 	} elsif ( $direction eq '_out' ) {
-	    set_mss1 "${z}2${zone}", $mss;
+	    set_mss1 canonical_chain( ${z}, ${zone} ) , $mss;
 	} else {
-	    set_mss1 "${z}2${zone}", $mss;
-	    set_mss1 "${zone}2${z}", $mss;
+	    set_mss1 canonical_chain( ${z}, ${zone} ) , $mss;
+	    set_mss1 canonical_chain( ${zone}, ${z} ) , $mss;
 	}
     }
 }

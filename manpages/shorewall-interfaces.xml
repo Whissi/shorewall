@@ -441,12 +441,21 @@ loc     eth2            -</programlisting>
 
               <listitem>
                 <para>Added in Shorewall 4.4.4. This option may only be used
-                when defining a bridge port (:port appeared in the INTERFACE
-                column). When specified, the port name in the INTERFACE column
-                is a logical name that refers to the name given in this
-                option. It is useful when you want to specify the same
-                wildcard port name on two or more bridges. See <ulink
+                when defining a bridge port (:<emphasis>port</emphasis>
+                appeared in the INTERFACE column). When specified, the port
+                name in the INTERFACE column is a logical name that refers to
+                the name given in this option. It is useful when you want to
+                specify the same wildcard port name on two or more bridges.
+                See <ulink
                 url="http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple">http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple</ulink>.</para>
+
+                <para>If the <emphasis>interface</emphasis> name is a wildcard
+                name (ends with '+'), then the physical
+                <emphasis>name</emphasis> must also end in '+'.</para>
+
+                <para>If <option>physical</option> is not specified, then it's
+                value defaults to the <emphasis>interface</emphasis>
+                name.</para>
               </listitem>
             </varlistentry>
 

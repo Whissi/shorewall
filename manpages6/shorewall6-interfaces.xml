@@ -187,6 +187,14 @@ loc     eth2            -</programlisting>
                 option. It is useful when you want to specify the same
                 wildcard port name on two or more bridges. See <ulink
                 url="http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple">http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple</ulink>.</para>
+
+                <para>If the <emphasis>interface</emphasis> name is a wildcard
+                name (ends with '+'), then the physical
+                <emphasis>name</emphasis> must also end in '+'.</para>
+
+                <para>If <option>physical</option> is not specified, then it's
+                value defaults to the <emphasis>interface</emphasis>
+                name.</para>
               </listitem>
             </varlistentry>
 
@@ -211,7 +219,7 @@ loc     eth2            -</programlisting>
                 <para>If this option is not specified for an interface, then
                 source-routed packets will not be accepted from that interface
                 (sets
-                /proc/sys/net/ipv6/conf/<emphasis>interface</emphasis>/accept_source_route
+                /proc/sys/net/ipv6/conf/<emphasis></emphasis>/accept_source_route
                 to 1). Only set this option if you know what you are doing.
                 This might represent a security risk and is not usually
                 needed.</para>

@@ -154,6 +154,7 @@ our @interfaces;
 our %interfaces;
 our @bport_zones;
 our %ipsets;
+our %physical;
 our $family;
 
 use constant { FIREWALL => 1,
@@ -199,6 +200,7 @@ sub initialize( $ ) {
     %interfaces = ();
     @bport_zones = ();
     %ipsets = ();
+    %physical = ();
 
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
@@ -895,7 +897,13 @@ sub process_interface( $ ) {
 
 		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
-		    fatal_error "The 'physical' option is only allowed on bridge ports" unless $port || $config{LOGICAL_NAMES};
+
+		    unless ( $port ) {
+			fatal_error "The 'physical' option is only allowed on bridge ports" unless  $config{LOGICAL_NAMES};
+			fatal_error "Duplicate physical interface name ($value)" if $physical{$value};
+		    }
+
+		    $physical{$value} = 1;
 		    my $wildphy = $value =~ /\+$/ ? 1 : 0;
 		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" unless $wildphy == $wildcard;
 		    $physical = $value;

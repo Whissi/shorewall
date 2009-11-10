@@ -673,7 +673,7 @@ sub chain_base($) {
 #
 sub forward_chain($)
 {
-    get_physical( $_[0] ) . '_fwd';
+    $_[0] . '_fwd';
 }
 
 #
@@ -709,7 +709,7 @@ sub use_forward_chain($) {
 #
 sub input_chain($)
 {
-    get_physical( $_[0] ) . '_in';
+    $_[0] . '_in';
 }
 
 #
@@ -767,7 +767,7 @@ sub use_input_chain($) {
 #
 sub output_chain($)
 {
-    get_physical( $_[0] ) . '_out';
+    $_[0] . '_out';
 }
 
 #
@@ -811,7 +811,7 @@ sub use_output_chain($) {
 #
 sub masq_chain($)
 {
-     get_physical( $_[0] ) . '_masq';
+     $_[0] . '_masq';
 }
 
 #
@@ -826,7 +826,7 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    get_physical( $_[0] ) . '_mac';
+     $_[0] . '_mac';
 }
 
 sub macrecent_target($)
@@ -871,7 +871,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c = get_physical $_[0];
+    my $c =  $_[0];
 
     ( $c . '_fwd', $c . '_in' );
 }

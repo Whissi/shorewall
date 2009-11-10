@@ -639,16 +639,15 @@ sub move_rules( $$ ) {
     my ($chain1, $chain2 ) = @_;
 
     if ( $chain1->{referenced} ) {
-	my @rules = @{$chain1->{rules}};
 	my $name  = $chain1->{name};
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
 	$name =~ s/\+/\\+/;
 
-	( s/\-([AI]) $name /-$1 $chain2->{name} / ) for @rules;
+	( s/\-([AI]) $name /-$1 $chain2->{name} / ) for @{$chain1->{rules}};
 
-	splice @{$chain2->{rules}}, 0, 0, @rules;
+	splice @{$chain2->{rules}}, 0, 0, @{$chain1->{rules}};
 
 	$chain2->{referenced} = 1;
 	$chain1->{referenced} = 0;

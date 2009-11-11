@@ -864,7 +864,7 @@ sub notrack_chain( $ )
 #
 sub snat_chain( $ )
 {
-    get_physical( $_[0] ) . '_snat';
+     $_[0] . '_snat';
 }
 
 #
@@ -872,7 +872,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    get_physical( $_[0] ) . '_ecn';
+     $_[0] . '_ecn';
 }
 
 #

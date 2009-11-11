@@ -175,6 +175,10 @@ sub copy_and_edit_table( $$$$ ) {
     # Map physical names to logical names in $copy
     #
     $copy = join( '|' , map( physical_name($_) , split( ',' , $copy ) ) );
+    #
+    # Shell and iptables use a different wildcard character
+    #
+    $copy =~ s/\+/*/;
 
     if ( $realm ) {
 	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )

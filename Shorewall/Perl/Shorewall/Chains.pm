@@ -248,6 +248,7 @@ our $iprangematch;
 our $chainseq;
 our $idiotcount;
 our $idiotcount1;
+our $warningcount;
 
 our $global_variables;
 
@@ -358,6 +359,7 @@ sub initialize( $ ) {
     $global_variables   = 0;
     $idiotcount         = 0;
     $idiotcount1        = 0;
+    $warningcount       = 0;
 
 }
 
@@ -369,7 +371,7 @@ sub process_comment() {
 	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
 	$comment =~ s/\s*$//;
     } else {
-	warning_message "COMMENT ignored -- requires comment support in iptables/Netfilter";
+	warning_message "COMMENTs ignored -- require comment support in iptables/Netfilter" unless $warningcount++;
     }
 }
 

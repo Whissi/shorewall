@@ -1032,7 +1032,7 @@ Shorewall has detected the following iptables/netfilter capabilities:
 
     <para>When dealing with ICMP, the DEST PORT specifies the type or type and
     code. You may specify the numeric type, the numeric type and code
-    separated by a slash (e.g., 3/4) or you may use a type name. </para>
+    separated by a slash (e.g., 3/4) or you may use a type name.</para>
 
     <para>Type names for IPv4 and their corresponding type or type/code
     are:</para>
@@ -1177,6 +1177,66 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       url="MAC_Validation.html">/etc/shorewall/maclist</ulink></filename>
       file.</para>
     </note>
+  </section>
+
+  <section id="Logical">
+    <title>Logical Interface Names</title>
+
+    <para>When dealing with a complex configuration, it is often awkward to
+    use physical interface names in the Shorewall configuration.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>You need to remember which interface is which.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you move the configuration to another firewall, the interface
+        names might not be the same.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Beginning with Shorewall 4.4.4, you can use logical interface names
+    which are mapped to the actual interface using the
+    <option>physical</option> option in <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfraces</ulink>
+    (5).</para>
+
+    <para>Here is an example:</para>
+
+    <programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
+net    COM_IF     detect    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0,physical=eth0
+net    EXT_IF     detect    dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartians=0,proxyarp=1,physical=eth2
+loc    INT_IF     detect    dhcp,logmartians=1,routefilter=1,tcpflags,nets=172.20.1.0/24,physical=eth1
+dmz    VPS_IF     detect    logmartians=1,routefilter=0,routeback,physical=venet0
+loc    TUN_IF     detect    physical=tun+</programlisting>
+
+    <para>In this example, COM_IF is a logical interface name that refers to
+    Ethernet interface <filename class="devicefile">eth0</filename>, EXT_IF is
+    a logical interface name that refers to Ethernet interface <filename
+    class="devicefile">eth2</filename>, and so on.</para>
+
+    <para>Here are a couple of more files from the same configuration:</para>
+
+    <para><ulink url="manpages/shorewall-masq.html">shorewall-masq</ulink>
+    (5):</para>
+
+    <programlisting>#INTERFACE SOURCE                    ADDRESS
+
+COMMENT Masquerade Local Network
+COM_IF     0.0.0.0/0
+EXT_IF     !206.124.146.0/24         206.124.146.179:persistent</programlisting>
+
+    <para><ulink
+    url="manpages/shorewall-providers.html">shorewall-providers</ulink>
+    (5)</para>
+
+    <programlisting>#NAME   NUMBER   MARK    DUPLICATE  INTERFACE  GATEWAY         OPTIONS               COPY
+Avvanta 1        0x10000 main       EXT_IF     206.124.146.254 loose,fallback        INT_IF,VPS_IF,TUN_IF
+Comcast 2        0x20000 main       COM_IF     detect          balance               INT_IF,VPS_IF,TUN_IF</programlisting>
+
+    <para>Note in particular that Shorewall translates TUN_IF to <filename
+    class="devicefile">tun*</filename> in the COPY column.</para>
   </section>
 
   <section id="Levels">

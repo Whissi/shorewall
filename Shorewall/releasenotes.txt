@@ -252,6 +252,15 @@ None.
     is, if the logical name ends in '+' then the physical name must
     also end in '+'.
 
+    This feature is not restricted to bridge ports. Beginning with this
+    release, the interface name in the INTERFACE column can be
+    considered a logical name for the interface where the actual
+    interface name is specified using the 'physical' option. If no
+    'physical' option is present, then the physical name is assumed to
+    be the same as the logical name. As before, the logical interface
+    name is used throughout the rest of the configuration to refer to
+    the interface.
+
 4)  Previously, Shorewall has used the character '2' to form the name
     of chains involving zones and/or the word 'all' (e.g., fw2net,
     all2all). When zones names are given numeric suffixes, these

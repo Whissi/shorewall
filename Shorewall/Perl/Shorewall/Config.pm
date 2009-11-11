@@ -440,7 +440,6 @@ sub initialize( $ ) {
 	      AUTOMAKE => undef ,
 	      WIDE_TC_MARKS => undef,
 	      TRACK_PROVIDERS => undef,
-	      LOGICAL_NAMES => undef,
 	      ZONE2ZONE => undef,
 	      #
 	      # Packet Disposition
@@ -549,7 +548,6 @@ sub initialize( $ ) {
 	      AUTOMAKE => undef ,
 	      WIDE_TC_MARKS => undef,
 	      TRACK_PROVIDERS => undef,
-	      LOGICAL_NAMES => undef,
 	      ZONE2ZONE => undef,
 	      #
 	      # Packet Disposition
@@ -2411,7 +2409,6 @@ sub get_configuration( $ ) {
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
-    default_yes_no 'LOGICAL_NAMES'              , '';
 
     my $val;
 

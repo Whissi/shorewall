@@ -898,12 +898,8 @@ sub process_interface( $ ) {
 		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]+\+?$/;
 
-		    unless ( $port ) {
-			fatal_error "The 'physical' option is only allowed on bridge ports" unless  $config{LOGICAL_NAMES};
-			fatal_error "Duplicate physical interface name ($value)" if $physical{$value};
-		    }
+		    fatal_error "Duplicate physical interface name ($value)" if ( $physical{$value} && ! $port );
 
-		    $physical{$value} = 1;
 		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" if $wildcard && ! $value =~ /\+$/;
 		    $physical = $value;
 		} else {
@@ -931,16 +927,16 @@ sub process_interface( $ ) {
 
     }
 
-    $interfaces{$interface} = { name       => $interface ,
-				bridge     => $bridge ,
-				nets       => 0 ,
-				number     => $nextinum ,
-				root       => $root ,
-				broadcasts => $broadcasts ,
-				options    => \%options ,
-			        zone       => '',
-				physical   => $physical
-			      };
+    $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
+						       bridge     => $bridge ,
+						       nets       => 0 ,
+						       number     => $nextinum ,
+						       root       => $root ,
+						       broadcasts => $broadcasts ,
+						       options    => \%options ,
+						       zone       => '',
+						       physical   => $physical
+						     };
 
     if ( $zone ) {
 	$netsref ||= [ allip ];

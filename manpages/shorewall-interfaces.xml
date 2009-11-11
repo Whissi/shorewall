@@ -63,10 +63,12 @@ loc     eth2            -</programlisting>
         role="bold">]</emphasis></term>
 
         <listitem>
-          <para>Name of interface. Each interface may be listed only once in
-          this file. You may NOT specify the name of a "virtual" interface
-          (e.g., eth0:0) here; see <ulink
-          url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink></para>
+          <para>Logical name of interface. Each interface may be listed only
+          once in this file. You may NOT specify the name of a "virtual"
+          interface (e.g., eth0:0) here; see <ulink
+          url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink>.
+          If the <option>physical</option> option is not specified, then the
+          logical name is also the name of the actual interface.</para>
 
           <para>You may use wildcards here by specifying a prefix followed by
           the plus sign ("+"). For example, if you want to make an entry that
@@ -440,13 +442,11 @@ loc     eth2            -</programlisting>
               role="bold"><emphasis>name</emphasis></emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall 4.4.4. This option may only be used
-                when defining a bridge port (:<emphasis>port</emphasis>
-                appeared in the INTERFACE column). When specified, the port
-                name in the INTERFACE column is a logical name that refers to
-                the name given in this option. It is useful when you want to
-                specify the same wildcard port name on two or more bridges.
-                See <ulink
+                <para>Added in Shorewall 4.4.4. When specified, the interface
+                or port name in the INTERFACE column is a logical name that
+                refers to the name given in this option. It is useful when you
+                want to specify the same wildcard port name on two or more
+                bridges. See <ulink
                 url="http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple">http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple</ulink>.</para>
 
                 <para>If the <emphasis>interface</emphasis> name is a wildcard

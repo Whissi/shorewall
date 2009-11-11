@@ -820,7 +820,7 @@ sub use_output_chain($) {
 #
 sub masq_chain($)
 {
-     $_[0] . '_masq';
+    $_[0] . '_masq';
 }
 
 #
@@ -835,7 +835,7 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-     $_[0] . '_mac';
+    $_[0] . '_mac';
 }
 
 sub macrecent_target($)
@@ -864,7 +864,7 @@ sub notrack_chain( $ )
 #
 sub snat_chain( $ )
 {
-     $_[0] . '_snat';
+    $_[0] . '_snat';
 }
 
 #
@@ -872,7 +872,7 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-     $_[0] . '_ecn';
+    $_[0] . '_ecn';
 }
 
 #

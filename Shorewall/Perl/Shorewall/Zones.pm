@@ -745,12 +745,12 @@ sub process_interface( $ ) {
 
     fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
 
-    if ( defined $port ) {
+    if ( defined $port && $port ne '' ) {
 	fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
 	fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
 
-	fatal_error "Invalid Interface Name ($interface:$port)" unless $port eq '' || $port =~ /^[\w.@%-]+\+?$/;
+	fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 
 	fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
@@ -763,8 +763,6 @@ sub process_interface( $ ) {
 		$zoneref->{bridge} = $interface;
 	    }
 	}
-
-	next if $port eq '';
 
 	$bridge = $interface;
 	$interface = $port;

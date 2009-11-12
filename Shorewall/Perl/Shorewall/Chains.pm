@@ -2889,15 +2889,6 @@ sub emitr( $ ) {
 }
 
 #
-# Simple version that only handles rules
-#
-sub emitr1( $ ) {
-    my $rule = $_[0];
-
-    emit_unindented $rule;
-}
-
-#
 # Generate the netfilter input
 #
 sub create_netfilter_load( $ ) {
@@ -3184,7 +3175,7 @@ sub create_stop_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr1 $_ for @{$chainref->{rules}};
+	    emit_unindented $_ for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table

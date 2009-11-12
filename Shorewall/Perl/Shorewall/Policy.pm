@@ -409,7 +409,7 @@ sub apply_policy_rules() {
 		ensure_filter_chain $name, 1;
 	    }
 
-	    if ( $name =~ /^all2|2all$|^all-|-all$/ ) {
+	    if ( $name =~ /^all[-2]|[-2]all$/ ) {
 		run_user_exit $chainref;
 		policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
 	    }

@@ -1924,7 +1924,7 @@ sub generate_matrix() {
 		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 		}
 
-		if ( $chain =~ /(2all|-all|_all)$/ ) {
+		if ( $chain =~ /(2all|-all)$/ ) {
 		    if ( $chain ne $last_chain ) {
 			$last_chain = $chain;
 			push @dest_zones, @temp_zones;

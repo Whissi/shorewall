@@ -110,12 +110,12 @@ sub setup_route_marking() {
 	my $interface = $providerref->{interface};
 	my $physical  = $providerref->{physical};
 	my $mark      = $providerref->{mark};
-	my $base      = uc chain_base $physical;
 
 	if ( $providerref->{optional} ) {
 	    if ( $providerref->{shared} ) {
 		add_commands( $chainref, qq(if [ interface_is_usable $physical -a -n "$providerref->{mac}" ]; then) );
 	    } else {
+		my $base = uc chain_base $physical;
 		add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
 	    }
 
@@ -172,7 +172,7 @@ sub copy_and_edit_table( $$$$ ) {
     #    
     my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
     #
-    # Map physical names to logical names in $copy
+    # Map physical names in $copy to logical names
     #
     $copy = join( '|' , map( physical_name($_) , split( ',' , $copy ) ) );
     #
@@ -181,7 +181,7 @@ sub copy_and_edit_table( $$$$ ) {
     $copy =~ s/\+/*/;
 
     if ( $realm ) {
-	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | while read net route; do" )
     } else {
 	emit  ( "\$IP -$family route show table $duplicate | ${filter}while read net route; do" )
     }

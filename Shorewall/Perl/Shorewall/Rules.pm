@@ -1132,7 +1132,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    }
 	}
 
-	$chain    = canonical_chain( ${sourcezone}, ${destzone} );
+	$chain    = rules_chain( ${sourcezone}, ${destzone} );
 	$chainref = ensure_chain 'filter', $chain;
 	$policy   = $chainref->{policy};
 
@@ -1619,7 +1619,7 @@ sub add_interface_jumps {
     # Loopback
     #
     my $fw = firewall_zone;
-    my $chainref = $filter_table->{canonical_chain( ${fw}, ${fw} )};
+    my $chainref = $filter_table->{rules_chain( ${fw}, ${fw} )};
 
     add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
     add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
@@ -1643,7 +1643,7 @@ sub generate_matrix() {
     #
     sub rules_target( $$ ) {
 	my ( $zone, $zone1 ) = @_;
-	my $chain = canonical_chain( ${zone}, ${zone1} );
+	my $chain = rules_chain( ${zone}, ${zone1} );
 	my $chainref = $filter_table->{$chain};
 
 	return $chain   if $chainref && $chainref->{referenced};
@@ -1776,7 +1776,7 @@ sub generate_matrix() {
 
 	    if ( $parenthasnat || $parenthasnotrack ) {
 		for my $zone1 ( all_zones ) {
-		    if ( $filter_table->{canonical_chain( ${zone}, ${zone1} )}->{policy} eq 'CONTINUE' ) {
+		    if ( $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy} eq 'CONTINUE' ) {
 			#
 			# This zone has a continue policy to another zone. We must
 			# send packets from this zone through the parent's DNAT/REDIRECT/NOTRACK chain.
@@ -1908,7 +1908,7 @@ sub generate_matrix() {
 
 	    for my $zone1 ( @zones )  {
 		my $zone1ref = find_zone( $zone1 );
-		my $policy = $filter_table->{canonical_chain( ${zone}, ${zone1} )}->{policy};
+		my $policy = $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy};
 
 		next if $policy eq 'NONE';
 
@@ -1958,7 +1958,7 @@ sub generate_matrix() {
 	for my $zone1 ( @dest_zones ) {
 	    my $zone1ref = find_zone( $zone1 );
 
-	    next if $filter_table->{canonical_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
+	    next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
 	    my $chain = rules_target $zone, $zone1;
 

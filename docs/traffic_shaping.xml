@@ -1195,6 +1195,188 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
 /sbin/shorewall refresh</programlisting>
     </section>
 
+    <section id="perIP">
+      <title>Per-IP Traffic Shaping</title>
+
+      <para>Some network administrators feel that they have to divy up their
+      available bandwidth by IP address rather than by prioritizing the
+      traffic based on the type of traffic. This gets really awkward when
+      there are a large number of local IP addresses.</para>
+
+      <para>This section describes the Shorewall facility for handling that
+      issue. Note that it requires that you <ulink
+      url="Dynamic.html#xtables-addons">install xtables-addons</ulink>. So
+      before you try this facility, we suggest that first you add the
+      following OPTION to each external interface described in
+      /etc/shorewall/tcdevices:</para>
+
+      <programlisting>flow=nfct-src</programlisting>
+
+      <para>If you shape traffic on your internal interface(s), then add this
+      to their entries:</para>
+
+      <programlisting>flow=dst</programlisting>
+
+      <para>You may find that this simple change is all that is needed to
+      control bandwidth hogs like Bit Torrent. If it doesn't, then proceed as
+      described in this section.</para>
+
+      <para>The facility has two components:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>An IPMARK MARKing command in
+          <filename>/etc/shorewall/tcrules</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>An <emphasis role="bold">occurs</emphasis> OPTION in
+          /etc/shorewall/tcclasses.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>The facility is currently only available with IPv4.</para>
+
+      <para>In a sense, the IPMARK target is more like an IPCLASSIFY target in
+      that the mark value is later interpreted as a class ID. A packet mark is
+      32 bits wide; so is a class ID. The <emphasis>major</emphasis> class
+      occupies the high-order 16 bits and the <emphasis>minor</emphasis> class
+      occupies the low-order 16 bits. So the class ID 1:4ff (remember that
+      class IDs are always in hex) is equivalent to a mark value of 0x104ff.
+      Remember that Shorewall uses the interface number as the
+      <emphasis>major</emphasis> number where the first interface in tcdevices
+      has <emphasis>major</emphasis> number 1, the second has
+      <emphasis>major</emphasis> number 2, and so on.</para>
+
+      <para>The IPMARK target assigns a mark to each matching packet based on
+      the either the source or destination IP address. By default, it assigns
+      a mark value equal to the low-order 8 bits of the source address.</para>
+
+      <para>The syntax is as follows:</para>
+
+      <blockquote>
+        <para><emphasis role="bold">IPMARK</emphasis>[<emphasis
+        role="bold">(</emphasis>[{<emphasis
+        role="bold">src</emphasis>|<emphasis
+        role="bold">dst</emphasis>}][<emphasis
+        role="bold">,</emphasis>[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][<emphasis
+        role="bold">,</emphasis>[<emphasis>shift</emphasis>]]]]<emphasis
+        role="bold">)</emphasis>]</para>
+      </blockquote>
+
+      <para>Default values are:</para>
+
+      <simplelist>
+        <member>src</member>
+
+        <member>mask1 = 0xFF</member>
+
+        <member>mask2 = 0x00</member>
+
+        <member>shift = 0</member>
+      </simplelist>
+
+      <para><emphasis role="bold">src</emphasis> and <emphasis
+      role="bold">dst</emphasis> specify whether the mark is to be based on
+      the source or destination address respectively. The selected address is
+      first shifted right by <emphasis>shift</emphasis>, then LANDed with
+      <emphasis>mask1</emphasis> and then LORed with
+      <emphasis>mask2</emphasis>. The <emphasis>shift</emphasis> argument is
+      intended to be used primarily with IPv6 addresses.</para>
+
+      <para>Example:</para>
+
+      <programlisting>IPMARK(src,0xff,0x10100)
+
+Source IP address is 192.168.4.3 = 0xc0a80403
+
+        0xc0a80403 &gt;&gt; 0         = 0xc0a80403
+        0xc0a80403 LAND 0xFF    = 0x03
+        0x03       LOR  0x10100 = 0x10103
+
+        So the mark value is 0x10103 which corresponds to class id 1:103.</programlisting>
+
+      <para>It is important to realize that, while class IDs are composed of a
+      <emphasis>major</emphasis> and a <emphasis>minor</emphasis> value, the
+      set of <emphasis>minor</emphasis> values must be unique. You must keep
+      this in mind when deciding how to map IP addresses to class IDs. For
+      example, suppose that your internal network is 192.168.1.0/29 (host IP
+      addresses 192.168.1.1 - 192.168.1.6). Your first notion might be to use
+      IPMARK(src,0xFF,0x10000) so as to produce class IDs 1:1 through 1:6. But
+      1:1 is the class ID of the base HTB class on interface 1. So you might
+      chose instead to use IPMARK(src,0xFF,0x10100) as shown in the example
+      above so as to avoid minor class 1.</para>
+
+      <para>The <emphasis role="bold">occurs</emphasis> option in
+      <filename>/etc/shorewall/tcclasses</filename> causes the class
+      definition to be replicated many times.</para>
+
+      <para>The synax is:</para>
+
+      <blockquote>
+        <para><emphasis
+        role="bold">occurs=</emphasis><emphasis>number</emphasis></para>
+      </blockquote>
+
+      <para>When <emphasis role="bold">occurs</emphasis> is used:</para>
+
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>The associated device may not have the <emphasis
+          role="bold">classify</emphasis> option.</para>
+        </listitem>
+
+        <listitem>
+          <para>The class may not be the default class.</para>
+        </listitem>
+
+        <listitem>
+          <para>The class may not have any <emphasis
+          role="bold">tos=</emphasis> options (including <emphasis
+          role="bold">tcp-ack</emphasis>).</para>
+        </listitem>
+      </orderedlist>
+
+      <para>The class should not specify a MARK value. Any MARK value given is
+      ignored with a warning. The RATE and CEIL parameters apply to each
+      instance of the class. So the total RATE represented by an entry with
+      <emphasis role="bold">occurs</emphasis> will be the listed RATE
+      multiplied by <emphasis>number</emphasis>.</para>
+
+      <para>Example:</para>
+
+      <para><filename>/etc/shorewall/tcdevices</filename>:</para>
+
+      <programlisting>#INTERFACE IN-BANDWIDTH OUT-BANDWIDTH
+eth0       100mbit      100mbit</programlisting>
+
+      <para><filename>/etc/shorewall/tcclasses</filename>:</para>
+
+      <programlisting>#DEVICE   MARK RATE     CEIL PRIORITY    OPTIONS
+eth0:101     - 1kbit 230kbit        4    occurs=6</programlisting>
+
+      <para>The above defines 6 classes with class IDs 0x101-0x106. Each class
+      has a guaranteed rate of 1kbit/second and a ceiling of 230kbit.</para>
+
+      <para><filename>/etc/shoreall/tcrules</filename>:</para>
+
+      <programlisting>#MARK                      SOURCE         DEST
+IPMARK(src,0xff,0x10100):F 192.168.1.0/29 eth0</programlisting>
+
+      <para>This facility also alters the way in which Shorewall generates a
+      class number when none is given. Prior to the implementation of this
+      facility, the class number was constructed by concatinating the MARK
+      value with the either '1' or '10'. '10' was used when there were more
+      than 10 devices defined in
+      <filename>/etc/shorewall/tcdevices</filename>.</para>
+
+      <para>With this facility, a new method is added; class numbers are
+      assigned sequentially beginning with 2. The WIDE_TC_MARKS option in
+      <filename>shorewall.conf</filename> selects which construction to use.
+      WIDE_TC_MARKS=No (the default) produces pre-Shorewall 4.4 behavior.
+      WIDE_TC_MARKS=Yes produces the new behavior.</para>
+    </section>
+
     <section id="Real">
       <title>Real life examples</title>
 

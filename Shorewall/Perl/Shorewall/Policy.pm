@@ -32,7 +32,7 @@ use Shorewall::Actions;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains );
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies );
 our @EXPORT_OK = qw(  );
 our $VERSION = '4.4_1';
 
@@ -272,6 +272,21 @@ sub process_a_policy() {
 	print_policy $client, $server, $policy, $chain;
     }
 }
+
+sub save_policies() {
+    for my $zone1 ( all_zones ) {
+	for my $zone2 ( all_zones ) {
+	    my $chainref  = $filter_table->{ rules_chain( $zone1, $zone2 ) };
+	    my $policyref = $filter_table->{ $chainref->{policychain} };
+
+	    if ( $policyref->{referenced} ) {
+		emit_unindented "$zone1 \t=> $zone2 is " . $policyref->{policy} . ' using chain ' . $policyref->{name};
+	    } else {
+		emit_unindented "$zone1 \t=> $zone2 is " . $policyref->{policy};
+	    }
+	}
+    }
+}	    
 
 sub validate_policy()
 {

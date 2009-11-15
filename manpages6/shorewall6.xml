@@ -410,6 +410,18 @@
 
       <arg choice="plain"><option>show</option></arg>
 
+      <arg choice="plain"><option>policies</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>show</option></arg>
+
       <arg choice="plain"><option>tc</option></arg>
     </cmdsynopsis>
 
@@ -1081,15 +1093,11 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">nat</emphasis></term>
+              <term><emphasis role="bold">policies</emphasis></term>
 
               <listitem>
-                <para>Displays the Netfilter nat table using the command
-                <emphasis role="bold">ip6tables -t nat -L -n -v</emphasis>.The
-                <emphasis role="bold">-x</emphasis> option is passed directly
-                through to ip6tables and causes actual packet and byte counts
-                to be displayed. Without this option, those counts are
-                abbreviated.</para>
+                <para>Added in Shorewall 4.4.4. Displays the applicable policy
+                between each pair of zones.</para>
               </listitem>
             </varlistentry>
 

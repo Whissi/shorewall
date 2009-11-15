@@ -459,6 +459,10 @@ sub generate_script_3($) {
     dump_zone_contents;
     emit_unindented '__EOF__';
 
+    emit 'cat > ${VARDIR}/policies << __EOF__';
+    save_policies;
+    emit_unindented '__EOF__';
+
     pop_indent;
 
     emit "fi\n";

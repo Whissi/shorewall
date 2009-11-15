@@ -560,6 +560,12 @@ show_command() {
 	vardir)
 	    echo $VARDIR;
 	    ;;
+	policies)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$PRODUCT $version Policies at $HOSTNAME - $(date)"
+	    echo
+	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
+	    ;;
 	*)
 	    if [ "$PRODUCT" = Shorewall ]; then
 		case $1 in

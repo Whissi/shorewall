@@ -190,6 +190,12 @@ Shorewall 4.4.4
 2)  The Shorewall operations log (specified by STARTUP_LOG) is now
     secured 0600.
 
+3)  Previously, the compiler generated an incorrect test for interface
+    availability in the generated code for adding route rules. The
+    result was that the rules were always added, regardless of the
+    state of the provider's interface. Now, the rules are only added
+    when the interface is available.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

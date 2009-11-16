@@ -534,8 +534,18 @@ sub add_a_provider( ) {
     progress_message "   Provider \"$currentline\" $done";
 }
 
+sub finish_if_statement() {
+    if ( our $last_base ) {
+	pop_indent;
+	emit ( "fi\n" );
+	$last_base = '';
+    }
+}
+
 sub add_an_rtrule( ) {
     my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
+
+    our $last_base;
 
     unless ( $providers{$provider} ) {
 	my $found = 0;
@@ -601,14 +611,22 @@ sub add_an_rtrule( ) {
 
     if ( $optional ) {
 	my $base = uc chain_base( $providers{$provider}{physical} );
-	emit ( '', qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
-	push_indent;
+
+	finish_if_statement if $base ne $last_base;
+
+	unless ( $last_base ) {
+	    emit ( '', qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
+	    push_indent;
+	    $last_base = $base;
+	}
+    } else {
+	finish_if_statement;
     }
 
     emit ( "run_ip rule add $source $dest $priority table $number",
 	   "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
 
-    pop_indent, emit ( "fi\n" ) if $optional;
+    finish_if_statement if $optional && $config{DELETE_THEN_ADD};
 
     progress_message "   Routing rule \"$currentline\" $done";
 }
@@ -743,12 +761,15 @@ sub setup_providers() {
 	my $fn = open_file 'route_rules';
 
 	if ( $fn ) {
+	    our $last_base = '';
 
 	    first_entry "$doing $fn...";
 
 	    emit '';
 
 	    add_an_rtrule while read_a_line;
+
+	    finish_if_statement;
 	}
 
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};

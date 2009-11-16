@@ -111,17 +111,6 @@ sub setup_route_marking() {
 	my $physical  = $providerref->{physical};
 	my $mark      = $providerref->{mark};
 
-	if ( $providerref->{optional} ) {
-	    if ( $providerref->{shared} ) {
-		add_commands( $chainref, qq(if [ interface_is_usable $physical -a -n "$providerref->{mac}" ]; then) );
-	    } else {
-		my $base = uc chain_base $physical;
-		add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
-	    }
-
-	    incr_cmd_level( $chainref );
-	}
-
 	unless ( $marked_interfaces{$interface} ) {
 	    add_rule $mangle_table->{PREROUTING} , "-i $physical -m mark --mark 0/$mask -j routemark";
 	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "! -i $physical -m mark --mark  $mark/$mask ";
@@ -134,8 +123,6 @@ sub setup_route_marking() {
 	} else {
 	    add_rule $chainref, match_source_dev( $interface ) . "-j MARK --set-mark $providerref->{mark}";
 	}
-
-	decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
     }
 
     add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
@@ -888,7 +875,6 @@ sub handle_stickiness( $ ) {
     if ( $havesticky ) {
 	fatal_error "There are SAME tcrules but no 'track' providers" unless @routemarked_providers;
 
-
 	for my $providerref ( @routemarked_providers ) {
 	    my $interface = $providerref->{physical};
 	    my $base      = uc chain_base $interface;
@@ -900,9 +886,6 @@ sub handle_stickiness( $ ) {
 		my $list = sprintf "sticky%03d" , $sticky++;
 
 		for my $chainref ( $stickyref, $setstickyref ) {
-
-		    add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-
 		    if ( $chainref->{name} eq 'sticky' ) {
 			$rule1 = $_;
 			$rule1 =~ s/-j sticky/-m recent --name $list --update --seconds 300 -j MARK --set-mark $mark/;
@@ -921,9 +904,6 @@ sub handle_stickiness( $ ) {
 			$rule2 =~ s/-A tcpre //;
 			add_rule $chainref, $rule2;
 		    }
-
-		    decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
-
 		}
 	    }
 
@@ -933,8 +913,6 @@ sub handle_stickiness( $ ) {
 		my $stickoref = ensure_mangle_chain 'sticko';
 
 		for my $chainref ( $stickoref, $setstickoref ) {
-		    add_commands( $chainref, qq(if [ -n "\$${base}_IS_USABLE" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-
 		    if ( $chainref->{name} eq 'sticko' ) {
 			$rule1 = $_;
 			$rule1 =~ s/-j sticko/-m recent --name $list --rdest --update --seconds 300 -j MARK --set-mark $mark/;
@@ -953,8 +931,6 @@ sub handle_stickiness( $ ) {
 			$rule2 =~ s/-A tcout //;
 			add_rule $chainref, $rule2;
 		    }
-
-		    decr_cmd_level( $chainref), add_commands( $chainref, "fi" ) if $providerref->{optional};
 		}
 	    }
 	}

@@ -280,9 +280,9 @@ sub save_policies() {
 	    my $policyref = $filter_table->{ $chainref->{policychain} };
 
 	    if ( $policyref->{referenced} ) {
-		emit_unindented "$zone1 \t=> $zone2 is " . $policyref->{policy} . ' using chain ' . $policyref->{name};
-	    } else {
-		emit_unindented "$zone1 \t=> $zone2 is " . $policyref->{policy};
+		emit_unindented "$zone1 \t=>\t$zone2\t" . $policyref->{policy} . ' using chain ' . $policyref->{name};
+	    } elsif ( $zone1 ne $zone2 ) {
+		emit_unindented "$zone1 \t=>\t$zone2\t" . $policyref->{policy};
 	    }
 	}
     }

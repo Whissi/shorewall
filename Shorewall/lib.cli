@@ -430,6 +430,10 @@ show_command() {
 			    option=
 			    shift
 			    ;;
+			l*)
+			    IPT_OPTIONS1="--line-numbers"
+			    option=${option#l}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -442,6 +446,8 @@ show_command() {
 		;;
 	esac
     done
+
+    IPT_OPTIONS="$IPT_OPTIONS $IPT_OPTIONS1"
 
     [ -n "$debugging" ] && set -x
     case "$1" in
@@ -679,6 +685,10 @@ dump_command() {
 			    SHOWMACS=Yes
 			    option=${option#m}
 			    ;;
+			l*)
+			    IPT_OPTIONS1="--line-numbers"
+			    option=${option#l}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -691,6 +701,8 @@ dump_command() {
 		;;
 	esac
     done
+
+    IPT_OPTIONS="$IPT_OPTIONS $IPT_OPTIONS1"
 
     [ $VERBOSE -lt 2 ] && VERBOSE=2
 

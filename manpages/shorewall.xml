@@ -135,6 +135,8 @@
 
       <arg><option>-x</option></arg>
 
+      <arg><option>-l</option></arg>
+
       <arg><option>-m</option></arg>
     </cmdsynopsis>
 
@@ -449,6 +451,8 @@
       <arg choice="plain"><option>show</option></arg>
 
       <arg><option>-x</option></arg>
+
+      <arg><option>-l</option></arg>
 
       <arg><option>-t</option>
       {<option>filter</option>|<option>mangle</option>|<option>nat</option>|<option>raw</option>}</arg>
@@ -794,6 +798,9 @@
           counts are abbreviated. The <emphasis role="bold">-m</emphasis>
           option causes any MAC addresses included in Shorewall log messages
           to be displayed.</para>
+
+          <para>The <emphasis role="bold">-l</emphasis> option causes the rule
+          number for each Netfilter rule to be displayed.</para>
         </listitem>
       </varlistentry>
 
@@ -1201,6 +1208,10 @@
                 Netfilter table to display. The default is <emphasis
                 role="bold">filter</emphasis>.</para>
 
+                <para>The <emphasis role="bold">-l</emphasis> option causes
+                the rule number for each Netfilter rule to be
+                displayed.</para>
+
                 <para>If the <emphasis role="bold">t</emphasis> option and the
                 <option>chain</option> keyword are both omitted and any of the
                 listed <replaceable>chain</replaceable>s do not exist, a usage
@@ -1292,7 +1303,7 @@
                 between each pair of zones. Note that implicit intrazone
                 ACCEPT policies are not displayed for zones associated with a
                 single network where that network doesn't specify
-                <option>routeback</option>. </para>
+                <option>routeback</option>.</para>
               </listitem>
             </varlistentry>
 

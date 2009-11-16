@@ -230,8 +230,8 @@ None.
        z1		br0:p+
        z2		br1:p+
 
-    That is because the Shorewall implementation requires each bridge
-    port to have a unique name.
+    This error occurs because the Shorewall implementation requires
+    that each bridge port must have a unique name.
 
     To work around this problem, a new 'physical' interface option has
     been created. The above configuration may be defined using the
@@ -252,13 +252,13 @@ None.
     to p1023 when needed.
 
     It is allowed to have a physical name ending in '+' with a logical
-    name that does not end with '+'. The reverse is not allowed; that
-    is, if the logical name ends in '+' then the physical name must
-    also end in '+'.
+    name that does not end with '+'. The reverse is not allowed; if the
+    logical name ends in '+' then the physical name must also end in
+    '+'.
 
     This feature is not restricted to bridge ports. Beginning with this
     release, the interface name in the INTERFACE column can be
-    considered a logical name for the interface where the actual
+    considered a logical name for the interface, and the actual
     interface name is specified using the 'physical' option. If no
     'physical' option is present, then the physical name is assumed to
     be the same as the logical name. As before, the logical interface
@@ -275,9 +275,9 @@ None.
     value "-" (e.g., ZONE2ZONE="-") which causes Shorewall to separate
     the two parts of the name with a hyphen (e.g., foo123-bar).
 
-5)  Only one instance of this warning is now generated; previously, one
-    instance of a similar warning was generated for each COMMENT
-    encountered.
+5)  Only one instance of the following warning is now generated;
+    previously, one instance of a similar warning was generated for
+    each COMMENT encountered.
 
 	COMMENTs ignored -- require comment support in iptables/Netfilter
 
@@ -290,7 +290,7 @@ None.
 
     Example:
 
-	net 	=>	loc	DROP using chain net2loc
+	net 	=>	loc	DROP using chain net2all
 
     Note that implicit intrazone ACCEPT policies are not displayed for
     zones associated with a single network where that network
@@ -311,7 +311,7 @@ None.
     The new packages are:
 
     - Shorewall.   Includes the former Shorewall-common and
-                   Shorewall-perl packages. Has everything needed
+                   Shorewall-perl packages. Includes everything needed
                    to create an IPv4 firewall.
 
 		   Shorewall-shell is no longer available.

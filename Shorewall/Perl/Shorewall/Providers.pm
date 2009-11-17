@@ -521,18 +521,31 @@ sub add_a_provider( ) {
     progress_message "   Provider \"$currentline\" $done";
 }
 
-sub finish_if_statement() {
-    if ( our $last_base ) {
+#
+# Begin an 'if' statement testing whether the passed interface is available
+#
+sub start_new_if( $ ) {
+    our $current_if = shift;
+
+    emit ( '', qq(if [ -n "\$${current_if}_IS_USABLE" ]; then) );
+    push_indent;
+}
+  
+#
+# Complete any current 'if' statement in the output script
+#
+sub finish_current_if() {
+    if ( our $current_if ) {
 	pop_indent;
 	emit ( "fi\n" );
-	$last_base = '';
+	$current_if = '';
     }
 }
 
 sub add_an_rtrule( ) {
     my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
 
-    our $last_base;
+    our $current_if;
 
     unless ( $providers{$provider} ) {
 	my $found = 0;
@@ -592,28 +605,20 @@ sub add_an_rtrule( ) {
 
     $priority = "priority $priority";
 
-    emit ( "qt \$IP -$family rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
+    finish_current_if, emit ( "qt \$IP -$family rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
 
     my ( $optional, $number ) = ( $providers{$provider}{optional} , $providers{$provider}{number} );
 
     if ( $optional ) {
 	my $base = uc chain_base( $providers{$provider}{physical} );
-
-	finish_if_statement if $base ne $last_base;
-
-	unless ( $last_base ) {
-	    emit ( '', qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
-	    push_indent;
-	    $last_base = $base;
-	}
-    } else {
-	finish_if_statement;
+	finish_current_if if $base ne $current_if;
+	start_new_if( $base ) unless $current_if;
+  } else {
+	finish_current_if;
     }
 
     emit ( "run_ip rule add $source $dest $priority table $number",
 	   "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
-
-    finish_if_statement if $optional && $config{DELETE_THEN_ADD};
 
     progress_message "   Routing rule \"$currentline\" $done";
 }
@@ -748,7 +753,7 @@ sub setup_providers() {
 	my $fn = open_file 'route_rules';
 
 	if ( $fn ) {
-	    our $last_base = '';
+	    our $current_if = '';
 
 	    first_entry "$doing $fn...";
 
@@ -756,7 +761,7 @@ sub setup_providers() {
 
 	    add_an_rtrule while read_a_line;
 
-	    finish_if_statement;
+	    finish_current_if;
 	}
 
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};

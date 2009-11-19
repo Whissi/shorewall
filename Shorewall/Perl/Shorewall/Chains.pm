@@ -1750,7 +1750,6 @@ sub match_dest_dev( $ ) {
     my $interface = shift;
     return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
-    my $physical     = $interfaceref ? $interfaceref->{physical} : $interface;
     $interface = $interfaceref->{physical} if $interfaceref;
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	if ( $capabilities{PHYSDEV_BRIDGE} ) {

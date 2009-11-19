@@ -147,6 +147,7 @@ our %EXPORT_TAGS = (
 				       addnatjump
 				       set_chain_variables
 				       mark_firewall_not_started
+				       mark_firewall6_not_started
 				       get_interface_address
 				       get_interface_addresses
 				       get_interface_bcasts
@@ -2125,7 +2126,11 @@ sub set_chain_variables() {
 # Emit code that marks the firewall as not started.
 #
 sub mark_firewall_not_started() {
-    emit ( 'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall' );
+    if ( $family == F_IPV4 ) {
+	emit ( 'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall' );
+    } else {
+	emit ( 'qt1 $IPTABLES6 -L shorewall -n && qt1 $IPTABLES6 -F shorewall && qt1 $IPTABLES6 -X shorewall' );
+    }
 }
 
 ####################################################################################################################

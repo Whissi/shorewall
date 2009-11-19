@@ -433,46 +433,7 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
         non-comment line in your macro file.</para>
 
         <para>If ACTION is DNAT[-] or REDIRECT[-] then if this column is
-        included and is different from the IP address given in the SERVER
-        column, then connections destined for that address will be forwarded
-        to the IP and port specified in the DEST column.</para>
-
-        <para>A comma-separated list of addresses may also be used. This is
-        most useful with the REDIRECT target where you want to redirect
-        traffic destined for particular set of hosts. Finally, if the list of
-        addresses begins with "!" (exclusion) then the rule will be followed
-        only if the original destination address in the connection request
-        does not match any of the addresses listed.</para>
-
-        <para>For other actions, this column may be included and may contain
-        one or more addresses (host or network) separated by commas. Address
-        ranges are not allowed. When this column is supplied, rules are
-        generated that require that the original destination address matches
-        one of the listed addresses. This feature is most useful when you want
-        to generate a filter rule that corresponds to a DNAT- or REDIRECT-
-        rule. In this usage, the list of addresses should not begin with
-        "!".</para>
-
-        <para>It is also possible to specify a set of addresses then exclude
-        part of those addresses. For example, 192.168.1.0/24!192.168.1.16/28
-        specifies the addresses 192.168.1.0-182.168.1.15 and
-        192.168.1.32-192.168.1.255. See <ulink
-        url="manpages/shorewall_exclusion.html">shorewall-exclusion</ulink>(5).</para>
-
-        <para>See <ulink
-        url="http://shorewall.net/PortKnocking.html">http://shorewall.net/PortKnocking.html</ulink>
-        for an example of using an entry in this column with a user-defined
-        action rule.</para>
-      </listitem>
-
-      <listitem>
-        <para>ORIGINAL DEST (Shorewall-perl 4.2.0 and later)</para>
-
-        <para>To use this column, you must include 'FORMAT 2' as the first
-        non-comment line in your macro file.</para>
-
-        <para>If ACTION is DNAT[-] or REDIRECT[-] then if this column is
-        included and is different from the IP address given in the SERVER
+        included and is different from the IP address given in the DEST
         column, then connections destined for that address will be forwarded
         to the IP and port specified in the DEST column.</para>
 
@@ -617,7 +578,7 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
         connections is then taken over all hosts in the subnet
         <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.
         When ! is specified, the rule matches when the number of connection
-        exceeds the limit. </para>
+        exceeds the limit.</para>
       </listitem>
 
       <listitem>

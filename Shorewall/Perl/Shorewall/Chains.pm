@@ -881,7 +881,7 @@ sub ecn_chain( $ )
 #
 sub first_chains( $ ) #$1 = interface
 {
-    my $c =  $_[0];
+    my $c = $_[0];
 
     ( $c . '_fwd', $c . '_in' );
 }
@@ -1735,11 +1735,11 @@ sub match_source_dev( $ ) {
     my $interface = shift;
     return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
-    my $physical     = $interfaceref ? $interfaceref->{physical} : $interface;
+    $interface = $interfaceref->{physical} if $interfaceref;
     if ( $interfaceref && $interfaceref->{options}{port} ) {
-	"-i $interfaceref->{bridge} -m physdev --physdev-in $physical ";
+	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
     } else {
-	"-i $physical ";
+	"-i $interface ";
     }
 }
 
@@ -1751,14 +1751,15 @@ sub match_dest_dev( $ ) {
     return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
     my $physical     = $interfaceref ? $interfaceref->{physical} : $interface;
+    $interface = $interfaceref->{physical} if $interfaceref;
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	if ( $capabilities{PHYSDEV_BRIDGE} ) {
-	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $physical ";
+	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";
 	} else {
-	    "-o $interfaceref->{bridge} -m physdev --physdev-out $physical ";
+	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
 	}
     } else {
-	"-o $physical ";
+	"-o $interface ";
     }
 }
 
@@ -2224,7 +2225,7 @@ sub get_interface_gateway ( $ ) {
     my ( $logical ) = $_[0];
 
     my $interface = get_physical $logical;
-    my $variable  = interface_gateway( $interface );
+    my $variable = interface_gateway( $interface );
 
     my $routine = $config{USE_DEFAULT_RT} ? 'detect_dynamic_gateway' : 'detect_gateway';
 
@@ -2256,7 +2257,7 @@ sub get_interface_addresses ( $ ) {
     my ( $logical ) = $_[0];
 
     my $interface = get_physical( $logical );
-    my $variable  = interface_addresses( $interface );
+    my $variable = interface_addresses( $interface );
 
     $global_variables |= NOT_RESTORE;
 
@@ -2286,7 +2287,7 @@ sub get_interface_nets ( $ ) {
     my ( $logical ) = $_[0];
 
     my $interface = get_physical( $logical );
-    my $variable  = interface_nets( $interface );
+    my $variable = interface_nets( $interface );
 
     $global_variables |= ALL_COMMANDS;
 
@@ -2317,7 +2318,7 @@ sub get_interface_mac( $$$ ) {
     my ( $ipaddr, $logical , $table ) = @_;
 
     my $interface = get_physical( $logical );
-    my $variable  = interface_mac( $interface , $table );
+    my $variable = interface_mac( $interface , $table );
 
     $global_variables |= NOT_RESTORE;
 

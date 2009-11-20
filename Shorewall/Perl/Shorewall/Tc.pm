@@ -153,7 +153,7 @@ our @deferred_rules;
 #
 # TCDevices Table
 #
-# %tcdevices { <interface> -> {in_bandwidth  => <value> ,
+# %tcdevices { <interface> => {in_bandwidth  => <value> ,
 #                              out_bandwidth => <value> ,
 #                              number        => <number>,
 #                              classify      => 0|1
@@ -656,7 +656,7 @@ sub validate_tc_class( ) {
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
 	    } else {
-		$classnumber = $config{WIDE_TC_MARKS} ? $tcref->{nextclass}++ : hex_value( $devnum . $markval );
+		$classnumber = $config{WIDE_TC_MARKS} ? $devref->{nextclass}++ : hex_value( $devnum . $markval );
 		fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	    }
 	}

@@ -28,4 +28,17 @@ None.
                 N E W   F E A T U R E S   I N   4 . 5 . 0
 ----------------------------------------------------------------------------
 
-None.
+1)  Previously, if EXPAND_POLICIES=Yes, the following sequence of
+    policies would produce a 'Duplicate Policy' error:
+
+    	     $FW             all             ACCEPT
+    	     $FW             dmz             REJECT          info
+
+    Begining with 4.5.0, this sequence produces the same result as this
+    one:
+
+    	     $FW             dmz             REJECT          info
+    	     $FW             all             ACCEPT
+
+  
+    

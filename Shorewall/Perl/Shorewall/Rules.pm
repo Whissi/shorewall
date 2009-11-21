@@ -2316,7 +2316,7 @@ EOF
 	}
     } else {
 	for my $interface ( all_bridges ) {
-	    emit "do_iptables -A FORWARD -p 58 " . match_source_interface( $interface ) . match_dest_interface( $interface ) . "-j ACCEPT";
+	    emit "do_iptables -A FORWARD -p 58 " . match_source_dev( $interface ) . match_dest_dev( $interface ) . "-j ACCEPT";
 	}
 
 	if ( $config{IP_FORWARDING} eq 'on' ) {

@@ -648,10 +648,10 @@ sub validate_tc_class( ) {
 	if ( $devref->{classify} ) {
 	    warning_message "INTERFACE $device has the 'classify' option - MARK value ($mark) ignored";
 	} else {
-	    fatal_error "Invalid Mark ($mark)" unless $mark =~ /^([0-9]+|0x[0-9a-fA-F]+)$/ && numeric_value( $mark ) <= 0xff;
-
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
+
+	    fatal_error "Invalid Mark ($mark)" unless $markval <= ( $config{WIDE_TC_MARKS} ? 0xffff : 0xff );
 
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};

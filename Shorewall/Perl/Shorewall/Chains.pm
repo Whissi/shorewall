@@ -202,8 +202,7 @@ our $VERSION = '4.4_4';
 #
 #       'provisional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
 #       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with provisional == 1. Similarly,
-#       'expanded' also applies only to policy chains; when true, indicates that the chain is a policy chain as a result of
-#       EXPAND_POLICIES=Yes.
+#       'expanded' is set when a policy is define by a wildcard policy.
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #

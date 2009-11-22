@@ -72,7 +72,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_5';
 
 #
 # Some IPv4/6 useful stuff
@@ -302,6 +302,7 @@ sub validate_port( $$ ) {
     my $value;
 
     if ( $port =~ /^(\d+)$/ ) {
+	fatal_error "Invalid Port Number (0)" unless $port;
 	return $port if $port <= 65535;
     } else {
 	$proto = proto_name $proto if $proto =~ /^(\d+)$/;

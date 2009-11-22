@@ -447,11 +447,25 @@ root@lists:~# </programlisting>
     <ulink url="FAQ.htm#faq17">Shorewall FAQ 17</ulink>, you can usually
     resolve the problem quickly.</para>
 
-    <para>Most commonly, Netfilter messages are logged to
-    <filename>/var/log/messages</filename>. Recent
-    <trademark>SuSE/OpenSuSE</trademark> releases come preconfigured with
-    syslog-ng and log Netfilter messages to
-    <filename>/var/log/firewall</filename>.</para>
+    <para>The Netfilter log location is distribution-dependent:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Debian and its derivatives log Netfilter messages to
+        <filename>/var/log/daemon.log</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Recent <trademark>SuSE/OpenSuSE</trademark> releases come
+        preconfigured with syslog-ng and log netfilter messages to
+        <filename>/var/log/firewall</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>For other distributions, Netfilter messages are most commonly
+        logged to <filename>/var/log/messages</filename>.</para>
+      </listitem>
+    </itemizedlist>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 

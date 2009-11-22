@@ -302,8 +302,7 @@ sub validate_port( $$ ) {
     my $value;
 
     if ( $port =~ /^(\d+)$/ ) {
-	fatal_error "Invalid Port Number (0)" unless $port;
-	return $port if $port <= 65535;
+	return $port if $port && $port <= 65535;
     } else {
 	$proto = proto_name $proto if $proto =~ /^(\d+)$/;
 	$value = getservbyname( $port, $proto );

@@ -322,7 +322,7 @@ sub process_routestopped() {
 
 	$seq++;
 
-	my $rule = do_proto( $proto, $ports, $sports, 1 );
+	my $rule = do_proto( $proto, $ports, $sports, 0 );
 
 	for my $host ( split /,/, $hosts ) {
 	    validate_host $host, 1;
@@ -2316,7 +2316,7 @@ EOF
 	}
     } else {
 	for my $interface ( all_bridges ) {
-	    emit "do_iptables -A FORWARD -p 58 " . match_source_interface( $interface ) . match_dest_interface( $interface ) . "-j ACCEPT";
+	    emit "do_iptables -A FORWARD -p 58 " . match_source_dev( $interface ) . match_dest_dev( $interface ) . "-j ACCEPT";
 	}
 
 	if ( $config{IP_FORWARDING} eq 'on' ) {

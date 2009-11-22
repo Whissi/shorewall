@@ -177,7 +177,15 @@ Shorewall 4.4.5
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5
 ----------------------------------------------------------------------------
 
-None.
+1)  The change which removed the 15 port limitation on
+    /etc/shorewall/routestopped was incomplete. The result was that if
+    more than 15 ports are listed, an error was generated.
+
+2)  If any interfaces have the 'bridge' option specified, compilation
+    fails with the error:
+
+    Undefined subroutine &Shorewall::Rules::match_source_interface called 
+    at /usr/share/shorewall/Shorewall/Rules.pm line 2319.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

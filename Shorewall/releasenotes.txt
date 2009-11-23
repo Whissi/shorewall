@@ -10,7 +10,19 @@ None.
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
 
-None.
+1)  The change which removed the 15 port limitation on
+    /etc/shorewall/routestopped was incomplete. The result was that if
+    more than 15 ports are listed, an error was generated.
+
+2)  If any interfaces have the 'bridge' option specified, compilation
+    fails with the error:
+
+    Undefined subroutine &Shorewall::Rules::match_source_interface called 
+    at /usr/share/shorewall/Shorewall/Rules.pm line 2319.
+
+3)  The compiler now flags port number 0 as an error. Previously, port
+    0 was allowed with the result that invalid iptables-restore input
+    could be generated.
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 0
@@ -22,7 +34,31 @@ None.
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
 
-None.
+1)  Shorewall now allows DNAT rules that change only the destination
+    port.
+
+    Example:
+
+	DNAT	loc	net::456	udp	234
+
+    That rule will modify the destination port in UDP packets received
+    from the 'loc' zone from 456 to 234. Note that if the destination
+    is the firewall itself, then the destination port will be rewritten
+    but that no ACCEPT rule from the loc zone to the $FW zone will have
+    been created to handle the request. So such rules should probably
+    exclude the firewall's IP addresses in the ORIGINAL DEST column.
+
+2)  Previously, the following sequence of policies would produce a
+    'Duplicate Policy' error:
+
+    	     $FW             all             ACCEPT
+    	     $FW             dmz             REJECT          info
+
+    Begining with 4.4.5, this sequence produces the same result as this
+    one:
+
+    	     $FW             dmz             REJECT          info
+    	     $FW             all             ACCEPT
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 5 . 0

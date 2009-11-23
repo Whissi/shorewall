@@ -201,7 +201,19 @@ None.
                 N E W   F E A T U R E S   I N   4 . 4 . 5
 ----------------------------------------------------------------------------
 
-None.
+1)  Shorewall now allows DNAT rules that change only the destination
+    port.
+
+    Example:
+
+	DNAT	loc	net::456	udp	234
+
+    That rule will modify the destination port in UDP packets received
+    from the 'loc' zone from 456 to 234. Note that if the destination
+    is the firewall itself, then the destination port will be rewritten
+    but that no ACCEPT rule from the loc zone to the $FW zone will have
+    been created to handle the request. So such rules should probably
+    exclude the firewall's IP addresses in the ORIGINAL DEST column.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0

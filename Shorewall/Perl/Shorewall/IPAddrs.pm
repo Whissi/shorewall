@@ -485,16 +485,12 @@ sub valid_6address( $ ) {
     return 0 unless ( @address == $max ) || $address =~ /::/;
     return 0 if $address =~ /:::/ || $address =~ /::.*::/;
 
-    if ( $address =~ /^:/ ) {
-	unless ( $address eq '::' ) {
-	    return 0 if $address =~ /:$/ || $address =~ /^:.*::/;
-	}
-    } elsif ( $address =~ /:$/ ) {
-	return 0 if $address =~ /::.*:$/;
-    }
+    unless ( $address eq '::' ) {
+	return 0 if $address =~ /^:/ || $address =~ /:$/;
 
-    for my $a ( @address ) {
-	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && oct "0x$a" < 65536 );
+	for my $a ( @address ) {
+	    return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && oct "0x$a" < 65536 );
+	}
     }
 
     1;
@@ -543,15 +539,26 @@ sub validate_6net( $$ ) {
 sub normalize_6addr( $ ) {
     my $addr = shift;
 
-    while ( $addr =~ tr/:/:/ < 6 ) {
-	$addr =~ s/::/:0::/;
+    if ( $addr eq '::' ) {
+	'0:0:0:0:0:0:0:0';
+    } else {
+	#
+	# Suppress leading zeros
+	#
+	$addr =~ s/^0+//;
+	$addr =~ s/:0+/:/g;
+	$addr =~ s/^:/0:/;
+	$addr =~ s/:$/:0/;
+
+	while ( $addr =~ tr/:/:/ < 7 ) {
+	    $addr =~ s/::/:0::/;
+	}
+	
+	$addr =~ s/::/:0:/;
+	$addr =~ s/^0+:/0:/;
+	
+	$addr;
     }
-
-    $addr =~ s/::/:0:/;
-    $addr =~ s/:0+/:0/g;
-    $addr =~ s/^0+:/0:/;
-
-    $addr;
 }
 
 sub validate_6range( $$ ) {

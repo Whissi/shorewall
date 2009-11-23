@@ -550,11 +550,12 @@ sub normalize_6addr( $ ) {
 	$addr =~ s/^:/0:/;
 	$addr =~ s/:$/:0/;
 
-	while ( $addr =~ tr/:/:/ < 7 ) {
-	    $addr =~ s/::/:0::/;
-	}
-	
-	$addr =~ s/::/:0:/;
+	$addr =~ s/::/:0::/ while $addr =~ tr/:/:/ < 7;
+	#
+	# Note: "s/::/:0:/g" doesn't work here
+	#
+	1 while $addr =~ s/::/:0:/;
+
 	$addr =~ s/^0+:/0:/;
 	
 	$addr;

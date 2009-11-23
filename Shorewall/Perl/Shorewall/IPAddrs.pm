@@ -485,12 +485,12 @@ sub valid_6address( $ ) {
     return 0 unless ( @address == $max ) || $address =~ /::/;
     return 0 if $address =~ /:::/ || $address =~ /::.*::/;
 
-    unless ( $address eq '::' ) {
+    unless ( $address =~ tr/:/:/ == 2 && ( $address =~ /^::/ || $address =~ /::$/  ) ) {
 	return 0 if $address =~ /^:/ || $address =~ /:$/;
+    }
 
-	for my $a ( @address ) {
-	    return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && oct "0x$a" < 65536 );
-	}
+    for my $a ( @address ) {
+	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && length $a < 5 );
     }
 
     1;

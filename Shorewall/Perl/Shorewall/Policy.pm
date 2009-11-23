@@ -107,6 +107,7 @@ sub set_policy_chain($$$$$)
 	    $chainref1->{policychain} = $chainref->{name};
 	}
 
+	$chainref1->{expanded} = 1;
 	$chainref1->{policy} = $policy;
 	$chainref1->{policypair} = [ $source, $dest ];
     }
@@ -221,11 +222,20 @@ sub process_a_policy() {
 	    if ( $chainref->{provisional} ) {
 		$chainref->{provisional} = 0;
 		$chainref->{policy} = $policy;
+	    } elsif ( $chainref->{expanded} ) {
+		$chainref->{expanded} = 0;
+		$chainref->{policy} = $policy;
 	    } else {
 		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 	    }
 	} elsif ( $chainref->{policy} ) {
-	    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
+	    if ( $chainref->{expanded} ) {
+		$chainref->{expanded} = 0;
+		convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
+		push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
+	    } else {
+		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
+	    }
 	} else {
 	    convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
 	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );

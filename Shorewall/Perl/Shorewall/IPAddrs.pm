@@ -573,7 +573,7 @@ sub validate_6range( $$ ) {
 }
 
 sub validate_6host( $$ ) {
-    my ( $host, $allow_name )  = $_[0];
+    my ( $host, $allow_name )  = @_;
 
     if ( $host =~ /^(.*:.*)-(.*:.*)$/ ) {
 	validate_6range $1, $2;

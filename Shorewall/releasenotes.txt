@@ -40,5 +40,18 @@ None.
     	     $FW             dmz             REJECT          info
     	     $FW             all             ACCEPT
 
-  
+2)  Shorewall now allows DNAT rules that change only the destination
+    port.
+
+    Example:
+
+	DNAT	loc	net::456	udp	234
+
+    That rule will modify the destination port in UDP packets received
+    from the 'loc' zone from 456 to 234. Note that if the destination
+    is the firewall itself, then the destination port will be rewritten
+    but that no ACCEPT rule from the loc zone to the $FW zone will have
+    been created to handle the request. So such rules should probably
+    exclude the firewall's IP addresses in the ORIGINAL DEST column.
+
     

@@ -1237,10 +1237,10 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		    $origdest = ALLIP;
 		}
 	    }
-	} else {
-	    fatal_error "A server must be specified in the DEST column in $action rules" if $server eq '';
-
-	    if ( $server =~ /^(.+)-(.+)$/ ) {
+	} else {            
+	    if ( $server eq '' ) {
+		fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
+	    } elsif ( $server =~ /^(.+)-(.+)$/ ) {
 		validate_range( $1, $2 );
 	    } else {
 		my @servers = validate_address $server, 1;
@@ -1249,9 +1249,13 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	    if ( $action eq 'DNAT' ) {
 		$target = '-j DNAT ';
-		$serverport = ":$serverport" if $serverport;
-		for my $serv ( split /,/, $server ) {
-		    $target .= "--to-destination ${serv}${serverport} ";
+		if ( $server ) {
+		    $serverport = ":$serverport" if $serverport;
+		    for my $serv ( split /,/, $server ) {
+			$target .= "--to-destination ${serv}${serverport} ";
+		    }
+		} else {
+		    $target .= "--to-destination :$serverport ";
 		}
 	    }
 

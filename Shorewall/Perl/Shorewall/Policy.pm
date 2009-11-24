@@ -156,12 +156,14 @@ sub process_a_policy() {
     $connlimit = '' if $connlimit eq '-';
 
     my $clientwild = ( "\L$client" eq 'all' );
+    my $clientref  = defined_zone( $client );
 
-    fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
+    fatal_error "Undefined zone ($client)" unless $clientwild || $clientref;
 
     my $serverwild = ( "\L$server" eq 'all' );
+    my $serverref  = defined_zone( $server );
 
-    fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
+    fatal_error "Undefined zone ($server)" unless $serverwild || $serverref;
 
     my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
 
@@ -169,7 +171,7 @@ sub process_a_policy() {
 
     fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
 
-    ( $policy , my $queue ) = get_target_param $policy;
+    ( $policy , my $param ) = get_target_param $policy;
 
     if ( $default ) {
 	if ( "\L$default" eq 'none' ) {
@@ -192,12 +194,45 @@ sub process_a_policy() {
 
     fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
 
-    if ( defined $queue ) {
-	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
-	require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' );
-	my $queuenum = numeric_value( $queue );
-	fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;
-	$policy = "NFQUEUE --queue-num $queuenum";
+    if ( defined $param ) {
+	if ( $policy eq 'NFQUEUE' ) {
+	    require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' );
+	    my $queuenum = numeric_value( $param );
+	    fatal_error "Invalid NFQUEUE queue number ($param)" unless defined( $queuenum) && $queuenum <= 65535;
+	    $policy = "NFQUEUE --queue-num $queuenum";
+	} elsif ( $policy eq 'CONTINUE' ) {
+	    my ( $source, $dest , $rest ) = split/,/, $param;
+	    fatal_error "Invalid CONTINUE parameter ($param)" if defined $rest || ! ( $source && $dest );
+	    my $sourcewild = ( $source eq 'all' );
+	    my $destwild   = ( $dest   eq 'all' );
+	    fatal_error "Invalid source zone ($source)" unless $sourcewild || defined_zone $source;
+	    fatal_error "Invalid dest zone ($dest)"     unless $destwild   || defined_zone $dest;
+	    my $continueref = $filter_table->{$policy = rules_chain( $source, $dest )};
+	    fatal_error "No policy defined for $source to $dest" unless $continueref && $continueref->{policy};
+	    fatal_error "The all to all policy may not be continued" if $clientwild && $serverwild;
+	    
+	    if ( $client ne $source ) {
+		unless ( $clientwild || $sourcewild ) {
+		    my $found = 0;
+		    for ( @{$clientref->{parents}} ) {
+			$found = 1 if $_ eq $source;
+		    }
+		    fatal_error "$source is not a parent of $client" unless $found;
+		}
+	    }
+
+	    if ( $server ne $dest ) {
+		unless ( $serverwild || $destwild ) {
+		    my $found = 0;
+		    for ( @{$serverref->{parents}} ) {
+			$found = 1 if $_ eq $dest;
+		    }
+		    fatal_error "$dest is not a parent of $server" unless $found;
+		}
+	    }
+	} else {
+	    fatal_error "Invalid policy ($policy($param))";
+	}
     } elsif ( $policy eq 'NONE' ) {
 	fatal_error "NONE policy not allowed with \"all\""
 	    if $clientwild || $serverwild;

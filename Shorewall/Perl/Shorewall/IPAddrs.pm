@@ -72,7 +72,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_4';
 
 #
 # Some IPv4/6 useful stuff
@@ -302,7 +302,7 @@ sub validate_port( $$ ) {
     my $value;
 
     if ( $port =~ /^(\d+)$/ ) {
-	return $port if $port <= 65535;
+	return $port if $port && $port <= 65535;
     } else {
 	$proto = proto_name $proto if $proto =~ /^(\d+)$/;
 	$value = getservbyname( $port, $proto );
@@ -485,16 +485,16 @@ sub valid_6address( $ ) {
     return 0 unless ( @address == $max ) || $address =~ /::/;
     return 0 if $address =~ /:::/ || $address =~ /::.*::/;
 
-    if ( $address =~ /^:/ ) {
-	unless ( $address eq '::' ) {
-	    return 0 if $address =~ /:$/ || $address =~ /^:.*::/;
-	}
-    } elsif ( $address =~ /:$/ ) {
-	return 0 if $address =~ /::.*:$/;
+    unless ( $address =~ /^::/ ) {
+	return 0 if $address =~ /^:/;
     }
 
+    unless ( $address =~ /::$/  ) {
+	return 0 if $address =~ /:$/;
+    }
+		 
     for my $a ( @address ) {
-	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && oct "0x$a" < 65536 );
+	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && length $a < 5 );
     }
 
     1;
@@ -543,13 +543,27 @@ sub validate_6net( $$ ) {
 sub normalize_6addr( $ ) {
     my $addr = shift;
 
-    while ( $addr =~ tr/:/:/ < 6 ) {
-	$addr =~ s/::/:0::/;
+    if ( $addr eq '::' ) {
+	'0:0:0:0:0:0:0:0';
+    } else {
+	#
+	# Suppress leading zeros
+	#
+	$addr =~ s/^0+//;
+	$addr =~ s/:0+/:/g;
+	$addr =~ s/^:/0:/;
+	$addr =~ s/:$/:0/;
+
+	$addr =~ s/::/:0::/ while $addr =~ tr/:/:/ < 7;
+	#
+	# Note: "s/::/:0:/g" doesn't work here
+	#
+	1 while $addr =~ s/::/:0:/;
+
+	$addr =~ s/^0+:/0:/;
+	
+	$addr;
     }
-
-    $addr =~ s/::/:0:/;
-
-    $addr;
 }
 
 sub validate_6range( $$ ) {

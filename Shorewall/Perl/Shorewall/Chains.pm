@@ -145,6 +145,8 @@ our %EXPORT_TAGS = (
 				       log_rule
 				       expand_rule
 				       addnatjump
+				       rules_target
+				       continuation_target
 				       set_chain_variables
 				       mark_firewall_not_started
 				       mark_firewall6_not_started
@@ -167,7 +169,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_4';
+our $VERSION = '4.4_5';
 
 #
 # Chain Table
@@ -2015,6 +2017,50 @@ sub addnatjump( $$$ ) {
     } else {
 	clearrule;
     }
+}
+
+#
+# Return the target for rules from $zone to $zone1.
+#
+sub continuation_target( $$ );
+
+sub rules_target( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+    my $chain = rules_chain( ${zone}, ${zone1} );
+    my $chainref = $filter_table->{$chain};
+
+    return $chain   if $chainref && $chainref->{referenced};
+    return 'ACCEPT' if $zone eq $zone1;
+
+    assert( $chainref );
+
+    if ( $chainref->{policy} ne 'CONTINUE' ) {
+	my $policyref = $filter_table->{$chainref->{policychain}};
+	assert( $policyref );
+	return $policyref->{name};
+    }
+
+    continuation_target $zone, $zone1
+}
+
+sub continuation_target( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+
+    my $zoneref = defined_zone( $zone );
+
+    my $chain;
+
+    for ( @{$zoneref->{parents}} ) {
+	return $chain if virtual_zone( $_ ) && ( $chain = rules_target( $_, $zone1 ) );
+    }
+
+    $zoneref = defined_zone( $zone1 );
+
+    for ( @{$zoneref->{parents}} ) {
+	return $chain if virtual_zone( $_) && ( $chain = rules_target( $zone, $_ ) );
+    }
+
+    '';
 }
 
 #

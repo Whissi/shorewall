@@ -341,20 +341,11 @@ sub validate_policy()
     for $zone ( all_zones ) {
 	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
 
-	if ( $config{IMPLICIT_CONTINUE} && ( @{defined_zone( $zone )->{parents}} ) ) {
+	if ( $config{IMPLICIT_CONTINUE} && ( @{find_zone( $zone )->{parents}} ) ) {
 	    for my $zone1 ( all_zones ) {
 		unless( $zone eq $zone1 ) {
 		    add_or_modify_policy_chain( $zone, $zone1 );
 		    add_or_modify_policy_chain( $zone1, $zone );
-		}
-	    }
-	} elsif ( virtual_zone( $zone ) ) {
-	    for my $zone1 ( @{defined_zone( $zone )->{children}} ) {
-		for my $zone2 ( all_zones ) {
-		    unless ( $zone1 eq $zone2 ) {
-			add_or_modify_policy_chain( $zone1, $zone2 );
-			add_or_modify_policy_chain( $zone2, $zone1 );
-		    }
 		}
 	    }
 	}
@@ -394,7 +385,7 @@ sub report_syn_flood_protection() {
 }
 
 sub default_policy( $$$ ) {
-    my ( $chainref, $zone, $zone1 ) = @_;
+    my $chainref   = $_[0];
     my $policyref  = $filter_table->{$chainref->{policychain}};
     my $synparams  = $policyref->{synparams};
     my $default    = $policyref->{default};
@@ -404,13 +395,7 @@ sub default_policy( $$$ ) {
     assert( $policyref );
 
     if ( $chainref eq $policyref ) {
-	policy_rules $chainref, $policy, $loglevel, $default, $config{MULTICAST};
-	if ( $policy eq 'CONTINUE' ) {
-	    if ( my $continuation = continuation_target( $zone, $zone1 ) ) {
-		add_jump( $chainref, $continuation, 1 );
-		$chainref = $filter_table->{$continuation};
-	    } 
-	}
+	policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
     } else {
 	if ( $policy eq 'ACCEPT' || $policy eq 'QUEUE' || $policy =~ /^NFQUEUE/ ) {
 	    if ( $synparams ) {
@@ -423,10 +408,6 @@ sub default_policy( $$$ ) {
 	} elsif ( $policy eq 'CONTINUE' ) {
 	    report_syn_flood_protection if $synparams;
 	    policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
-	    if ( my $continuation = continuation_target( $zone, $zone1 ) ) {
-		add_jump( $chainref, $continuation, 1 );
-		$chainref = $filter_table->{$continuation};
-	    }
 	} else {
 	    report_syn_flood_protection if $synparams;
 	    add_jump $chainref , $policyref, 1;
@@ -434,7 +415,7 @@ sub default_policy( $$$ ) {
 	}
     }
 
-    progress_message_nocompress "   Policy $policy from $zone to $zone1 using chain $chainref->{name}";
+    progress_message_nocompress "   Policy $policy from $_[1] to $_[2] using chain $chainref->{name}";
 
 }
 

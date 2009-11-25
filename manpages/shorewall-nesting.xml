@@ -154,14 +154,14 @@
     to change the 'net' interface to something other than ppp0. That way, it
     won't match ppp+.</para>
 
-    <para>A second way is to simply make the nested zones
-    explicit:<programlisting>        #ZONE    TYPE        OPTION
+    <para>If you are running Shorewall version 4.1.4 or later, a second way is
+    to simply make the nested zones explicit:<programlisting>        #ZONE    TYPE        OPTION
         fw       firewall
         loc      ipv4
         net:loc  ipv4
         dmz      ipv4</programlisting></para>
 
-    <para>If you take this approach, be sure to set IMPLICIT_CONTINUE=Yes in
+    <para>If you take this approach, be sure to set IMPLICIT_CONTINUE=No in
     <filename>shorewall.conf</filename>.</para>
 
     <para>When using other Shorewall versions, another way is to rewrite the
@@ -181,60 +181,6 @@
 
     <para><filename>/etc/shorewall/hosts</filename>:<programlisting>        #ZONE    HOST(S)             OPTIONS
         loc      ppp+:192.168.2.0/23</programlisting></para>
-  </refsect1>
-
-  <refsect1 id="Virtual">
-    <title>Virtual Zones</title>
-
-    <para>Beginning with Shorewall 4.4.5, Shorewall allows the declaration of
-    <firstterm>virtual</firstterm> zones. A virtual zone has no definition in
-    <filename>/etc/shorewall/interfaces</filename> or in
-    <filename>/etc/shorewall/hosts</filename>. Rather, it is used as a parent
-    zone for other zones in <filename>/etc/shorewall/zones</filename>.</para>
-
-    <para>Example:</para>
-
-    <para><filename>/etc/shorewall/zones</filename>:</para>
-
-    <programlisting>        #ZONE            TYPE          OPTIONS
-        fw               firewall
-        net              ipv4
-        loc              ipv4          virtual
-        loc1:loc         ipv4
-        loc2:loc         ipv4</programlisting>
-
-    <para><filename>/etc/shorewall/interfaces</filename>:</para>
-
-    <programlisting>        #ZONE   INTERFACE       BROADCAST       OPTIONS
-        net     eth0            detect          dhcp,tcpflags,nosmurfs,routefilter,logmartians
-        -       eth1            detect          tcpflags,nosmurfs,routefilter,logmartians</programlisting>
-
-    <para><filename>/etc/shorewall/hosts</filename>:</para>
-
-    <programlisting>        #ZONE   HOST(S)                         OPTIONS
-        loc1    eth1:192.168.1.0/24
-        loc2    eth1:192.168.2.0/24</programlisting>
-
-    <para>There are several restrictions on virtual zones:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>They must have type <option>ipv4</option>.</para>
-      </listitem>
-
-      <listitem>
-        <para>They may not themselves be nested.</para>
-      </listitem>
-
-      <listitem>
-        <para>They should not be used with IMPLICIT_CONTINUE=Yes in <ulink
-        url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>When a connection request to/from a sub-zone of a virtual zone does
-    not match the rules for the sub-zone, the connection is compared against
-    the rules (and policies) for the parent virtual zone.</para>
   </refsect1>
 
   <refsect1>

@@ -53,7 +53,6 @@ our @EXPORT = qw( NOTHING
 		  all_parent_zones
 		  complex_zones
 		  non_firewall_zones
-		  virtual_zone
 		  single_interface
 		  validate_interfaces_file
 		  all_interfaces
@@ -97,11 +96,9 @@ use constant { NOTHING    => 'NOTHING',
 #                        options =>    { complex => 0|1
 #                                        nested  => 0|1
 #                                        super   => 0|1
-#                                        in_out  => { ipsec   => < policy match string > ,
-#                                                     mss     => <mss>
-#                                                     virtual => 0|1 }
-#                                        in      => ...
-#                                        out     => ...
+#                                        in_out  => < policy match string >
+#                                        in      => < policy match string >
+#                                        out     => < policy match string >
 #                                      }
 #                        parents =>    [ <parents> ]      Parents, Children and interfaces are listed by name
 #                        children =>   [ <children> ]
@@ -272,7 +269,6 @@ sub initialize( $ ) {
 sub parse_zone_option_list($$)
 {
     my %validoptions = ( mss          => NUMERIC,
-			 virtual      => NOTHING,
 			 strict       => NOTHING,
 			 next         => NOTHING,
 			 reqid        => NUMERIC,
@@ -285,7 +281,7 @@ sub parse_zone_option_list($$)
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => 1 , virtual => 1 );
+    my %key = ( mss => 'mss' );
 
     my ( $list, $zonetype ) = @_;
     my %h;
@@ -318,7 +314,7 @@ sub parse_zone_option_list($$)
 	    }
 
 	    if ( $key{$e} ) {
-		$h{$e} = $val || 1;
+		$h{$e} = $val;
 	    } else {
 		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype == IPSEC;
 		$options .= $invert;
@@ -410,27 +406,20 @@ sub process_zone( \$ ) {
 	$_ = '' if $_ eq '-';
     }
 
-    my $zoneref = $zones{$zone} = { type       => $type,
-				    parents    => \@parents,
-				    bridge     => '',
-				    options    => $options = { in_out  => parse_zone_option_list( $options, $type ) ,
-							       in      => parse_zone_option_list( $in_options, $type ) ,
-							       out     => parse_zone_option_list( $out_options, $type ) ,
-							       complex => ($type == IPSEC || $options || $in_options || $out_options ? 1 : 0) ,
-							       nested  => @parents > 0 ,
-							       super   => 0 ,
-							     } ,
-				    interfaces => {} ,
-				    children   => [] ,
-				    hosts      => {}
-				  };
-
-    fatal_error "'virtual' is not permitted in IN OPTIONS or in OUT OPTIONS" if $options->{in}{virtual} || $options->{out}{virtual};
-
-    if ( $options->{in_out}{virtual} ) {
-	fatal_error "Nested virtual Zones are not supported" if $options->{nested};
-	fatal_error "Only IP zones are allowed to be virtual" unless $type == IP;
-    }
+    $zones{$zone} = { type       => $type,
+		      parents    => \@parents,
+		      bridge     => '',
+		      options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
+				      in      => parse_zone_option_list( $in_options || '', $type ) ,
+				      out     => parse_zone_option_list( $out_options || '', $type ) ,
+				      complex => ($type == IPSEC || $options || $in_options || $out_options ? 1 : 0) ,
+				      nested  => @parents > 0 ,
+				      super   => 0 ,
+				    } ,
+		      interfaces => {} ,
+		      children   => [] ,
+		      hosts      => {}
+		    };
 
     return $zone;
 
@@ -534,13 +523,14 @@ sub zone_report()
 			    $printed = 1;
 			}
 		    }
+
 		}
 	    }
 	}
 
 	unless ( $printed ) {
 	    fatal_error "No bridge has been associated with zone $zone" if $type == BPORT && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL || ( $optionref->{in_out}{virtual} && @{$zoneref->{children}} );
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL;
 	}
 
     }
@@ -597,12 +587,6 @@ sub dump_zone_contents()
 	    }
 	}
 
-	if ( $zoneref->{options}{in_out}{virtual} && @{$zoneref->{children}} ) {
-	    $entry .= " (";
-	    $entry .= "$_," for @{$zoneref->{children}};
-	    $entry =~ s/,$/) /;
-	}
-
 	emit_unindented $entry;
     }
 }
@@ -629,8 +613,6 @@ sub add_group_to_zone($$$$$)
     my $interfaceref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-
-    fatal_error "Zone $zone is virtual and may not be defined in the interfaces and hosts files" if $zoneref->{options}{in_out}{virtual};
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -735,10 +717,6 @@ sub complex_zones() {
 
 sub firewall_zone() {
     $firewall_zone;
-}
-
-sub virtual_zone( $ ) {
-    $zones{$_[0]}{options}{in_out}{virtual};
 }
 
 #

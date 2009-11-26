@@ -1692,7 +1692,7 @@ sub generate_matrix() {
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
 
-	next if @zones <= 2 && ! $zoneref->{options}{complex};
+	next if @zones <= 2 && ! ( $zoneref->{options}{complex} || $zoneref->{virtual} || $zoneref->{mark} );
 	#
 	# Complex zone and we have more than one non-firewall zone -- create a zone forwarding chain
 	#
@@ -1973,7 +1973,7 @@ sub generate_matrix() {
 	#
 	for my $zone1 ( @dest_zones ) {
 	    my $zone1ref = find_zone( $zone1 );
-	    my $virtual1 = $zone1ref->{virtual};
+	    my $virtual1 = $zone1ref->{virtual} << VIRTUAL_BITS;
 
 	    next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
@@ -2011,6 +2011,8 @@ sub generate_matrix() {
 			}
 		    }
 		}
+			
+		add_jump( $frwd_ref, $chain, 0, '-m mark ! --mark 0/' . in_hex( $virtual1 ) . ' ' ) if $virtual1;
 	    } else {
 		#
 		# More compilcated case. If the interface is associated with a single simple zone, we try to combine the interface's forwarding chain with the rules chain
@@ -2062,14 +2064,18 @@ sub generate_matrix() {
 								   match_source_net($net),
 								   match_dest_net($net1),
 								   $ipsec_out_match )
-							    );
-						    add_jump($excl3ref ,
-							     $exclusion,
-							     0,
-							     "-m mark ! --mark 0/" . in_hex($virtual1) . ' ') if $virtual1;
-							     
+							    );	     
 						}
 					    }
+
+					    add_rule ( $excl3ref, 
+						       $chain,
+						       join( '',
+							     $match_source_dev,
+							     match_source_net($net),
+							     '-m mark ! --mark 0/',
+							     in_hex( $virtual1 ),
+							     ' ' ) ) if $virtual1;
 					}
 				    }
 				}

@@ -1801,6 +1801,11 @@ sub generate_matrix() {
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
+	if ( $virtual ) {
+	    add_jump $filter_table->{OUTPUT}, $chain1, 0, "-m mark ! --mark 0/" . in_hex($virtual << VIRTUAL_BITS) . ' ' if $chain1; 
+	    add_jump $filter_table->{INPUT}, $chain2, 0, "-m mark ! --mark 0/" . in_hex($virtual) . ' '                  if $chain2; 
+	}
+
 	for my $typeref ( values %$source_hosts_ref ) {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		my $arrayref = $typeref->{$interface};
@@ -1824,8 +1829,6 @@ sub generate_matrix() {
 			    my $nextchain = dest_exclusion( $exclusions, $chain1 );
 			    my $outputref;
 			    my $interfacematch = '';
-
-			    add_jump $filter_table->{OUTPUT}, $chain1, 0, "-m mark --mark ! 0/" . in_hex($virtual) if $virtual; 
 
 			    if ( use_output_chain $interface ) {
 				$outputref = $filter_table->{output_chain $interface};
@@ -1885,7 +1888,6 @@ sub generate_matrix() {
 			}
 
 			if ( $chain2 ) {
-			    add_jump $filter_table->{INPUT}, $chain2, 0, "-m mark --mark ! 0/" . in_hex($virtual) if $virtual; 
 			    add_jump $inputchainref, source_exclusion( $exclusions, $chain2 ), 0, join( '', $interfacematch, $source, $ipsec_in_match );
 			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$chain2} ) unless use_input_chain $interface;
 			}
@@ -1960,7 +1962,7 @@ sub generate_matrix() {
 	}
 
 	if ( $frwd_ref ) {
-	    add_jump $filter_table->{FORWARD}, $frwd_ref, 0, "-m mark --mark ! 0/" . in_hex($virtual) if $virtual;
+	    add_jump $filter_table->{FORWARD}, $frwd_ref, 0, "-m mark ! --mark 0/" . in_hex($virtual) . ' ' if $virtual;
 	}
 
 	#
@@ -2064,7 +2066,7 @@ sub generate_matrix() {
 						    add_jump($excl3ref ,
 							     $exclusion,
 							     0,
-							     "-m mark ! --mark 0/" . in_hex($virtual1) ) if $virtual1;
+							     "-m mark ! --mark 0/" . in_hex($virtual1) . ' ') if $virtual1;
 							     
 						}
 					    }

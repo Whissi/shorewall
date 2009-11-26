@@ -129,8 +129,15 @@ sub add_or_modify_policy_chain( $$ ) {
 	    push @policy_chains, $chainref;
 	}
     } else {
-	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
+	push @policy_chains, ( $chainref = new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
     }
+
+    unless ( $chainref->{marked} ) {
+	my $mark  = defined_zone( $zone )->{mark} | ( defined_zone( $zone1 )->{mark} << VIRTUAL_BITS );
+	add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark)  if $mark;
+	$chainref->{marked} = 1;
+    }
+    
 }
 
 sub print_policy($$$$) {

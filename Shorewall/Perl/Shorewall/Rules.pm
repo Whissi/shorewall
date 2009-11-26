@@ -1698,6 +1698,8 @@ sub generate_matrix() {
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
+	add_rule $frwd_ref, '-j MARK --set-mark ' . in_hex( $zoneref->{mark} ) if $zoneref->{mark};
+
 	if ( $capabilities{POLICY_MATCH} ) {
 	    #
 	    # Because policy match only matches an 'in' or an 'out' policy (but not both), we have to place the

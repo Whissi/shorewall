@@ -133,8 +133,12 @@ sub add_or_modify_policy_chain( $$ ) {
     }
 
     unless ( $chainref->{marked} ) {
-	my $mark  = defined_zone( $zone )->{mark} | ( defined_zone( $zone1 )->{mark} << VIRTUAL_BITS );
-	add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark)  if $mark;
+	my $mark  = defined_zone( $zone )->{mark};
+	my $mark1 = defined_zone( $zone1 )->{mark} << VIRTUAL_BITS;
+
+	add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark)  if $mark && $zone1 eq firewall_zone;
+	add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark1) if $mark1;
+
 	$chainref->{marked} = 1;
     }
     

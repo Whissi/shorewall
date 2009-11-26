@@ -348,8 +348,16 @@ sub validate_policy()
 		    add_or_modify_policy_chain( $zone1, $zone );
 		}
 	    }
-	}
-    }
+ 	} elsif ( defined_zone( $zone )->{virtual} ) {
+	    for my $zone1 ( @{defined_zone( $zone )->{children}} ) {
+		for my $zone2 ( all_zones ) {
+		    unless ( $zone1 eq $zone2 ) {
+			add_or_modify_policy_chain( $zone1, $zone2 );
+			add_or_modify_policy_chain( $zone2, $zone1 );
+		    }
+		}
+	    }
+	}   }
 
     my $fn = open_file 'policy';
 

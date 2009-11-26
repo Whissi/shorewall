@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_4';
+our $VERSION = '4.4_5';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -1235,6 +1235,7 @@ sub setup_tc() {
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
 	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
+	    add_rule $mangle_table->{POSTROUTING},  '-j MARK --and-mark 0xffffff'; # Clear virtual marks
 	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
 	}
 
@@ -1246,7 +1247,7 @@ sub setup_tc() {
 	    # In POSTROUTING, we only want to clear routing mark and not IPMARK.
 	    #
 	    insert_rule1 $mangle_table->{POSTROUTING}, 0, $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFFFF -j MARK --and-mark 0' : '-m mark --mark 0/0xFF -j MARK --and-mark 0';
-	}
+	}	
     }
 
     if ( $globals{TC_SCRIPT} ) {

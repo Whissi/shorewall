@@ -1148,7 +1148,17 @@ sub finish_chain_section ($$) {
 
     $comment = '';
 
-    add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
+    unless ( $config{FASTACCEPT} ) {
+	if ( $chainref->{marked} ) {
+	    if ( $chainref->{marked} == @{$chainref->{rules}} ) {
+		insert_rule( $chainref, 0, "-m state --state $state -j ACCEPT" );
+	    } else {
+		add_rule $chainref, "-m state --state $state -j ACCEPT";
+	    }
+	} else {
+	    add_rule $chainref, "-m state --state $state -j ACCEPT";
+	}
+    }
 
     if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {

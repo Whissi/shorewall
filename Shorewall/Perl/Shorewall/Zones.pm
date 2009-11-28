@@ -183,7 +183,7 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	   };
 
 use constant { VIRTUAL_BASE       => 0x1000000 ,
-	       VIRTUAL_MASK       => 0xf000000 ,
+	       VIRTUAL_LIMIT      => 0x8000000 ,
 	       VIRTUAL_BITS       => 4            #Bits for virtual MASK numbers
 	   };
 
@@ -411,7 +411,7 @@ sub process_zone( \$ ) {
 	$type = FIREWALL;
     } elsif ( $type eq 'virtual' ) {
 	require_capability 'MARK_IN_FILTER' , 'virtual zones', '';
-	fatal_error "Too many virtual zones" unless $virtualmark & VIRTUAL_MASK;
+	fatal_error "Too many virtual zones" if $virtualmark == VIRTUAL_LIMIT;
 	$virtual = $virtualmark;
 	$virtualmark = $virtualmark << 1;
 	$type = VIRTUAL;

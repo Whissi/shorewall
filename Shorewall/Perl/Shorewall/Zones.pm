@@ -40,7 +40,6 @@ our @EXPORT = qw( NOTHING
 		  IP
 		  BPORT
 		  IPSEC
-		  VIRTUAL_BITS
 
 		  determine_zones
 		  zone_report
@@ -76,7 +75,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_5';
+our $VERSION = '4.4_4';
 
 #
 # IPSEC Option types
@@ -105,8 +104,6 @@ use constant { NOTHING    => 'NOTHING',
 #                        children =>   [ <children> ]
 #                        interfaces => { <interfaces1> => 1, ... }
 #                        bridge =>     <bridge>
-#                        virtual =>    <virtual zone mark>
-#                        mark =>       <LORed virtual zone marks of parent virtual zones>
 #                        hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
 #                                                                  options => { <option1> => <value1>
 #                                                                               ...
@@ -159,7 +156,6 @@ our @bport_zones;
 our %ipsets;
 our %physical;
 our $family;
-our $virtualmark;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -178,11 +174,6 @@ use constant { SIMPLE_IF_OPTION   => 1,
 
 	       IF_OPTION_ZONEONLY => 8,
 	       IF_OPTION_HOST     => 16,
-	   };
-
-use constant { VIRTUAL_BASE       => 0x1000000 ,
-	       VIRTUAL_LIMIT      => 0x8000000 ,
-	       VIRTUAL_BITS       => 4            #Bits for virtual MASK numbers
 	   };
 
 our %validinterfaceoptions;
@@ -210,7 +201,6 @@ sub initialize( $ ) {
     @bport_zones = ();
     %ipsets = ();
     %physical = ();
-    $virtualmark = VIRTUAL_BASE;
 
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
@@ -363,8 +353,6 @@ sub process_zone( \$ ) {
 
     my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
 
-    my $mark = 0;
-
     if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	$zone = $1;
 	@parents = split_list $2, 'zone';
@@ -373,7 +361,6 @@ sub process_zone( \$ ) {
 	    fatal_error "Invalid Parent List ($2)" unless $p;
 	    fatal_error "Unknown parent zone ($p)" unless $zones{$p};
 	    fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} == FIREWALL;
-	    $mark |= $zones{$p}{virtual};
 	    push @{$zones{$p}{children}}, $zone;
 	}
     }
@@ -415,17 +402,6 @@ sub process_zone( \$ ) {
 	}
     }
 
-    my $virtual = 0;
-
-    if ( $options eq 'virtual' ) {
-	require_capability 'MARK_IN_FILTER' , 'virtual zones', '';
-	fatal_error "Only ipv${family} zones may be virtual" unless $type == IP;
-	fatal_error "Too many virtual zones" if $virtualmark == VIRTUAL_LIMIT;
-	$virtual = $virtualmark;
-	$virtualmark = $virtualmark << 1;
-	$options = '';
-    }
-
     for ( $options, $in_options, $out_options ) {
 	$_ = '' if $_ eq '-';
     }
@@ -433,8 +409,6 @@ sub process_zone( \$ ) {
     $zones{$zone} = { type       => $type,
 		      parents    => \@parents,
 		      bridge     => '',
-		      virtual    => $virtual,
-		      mark       => $mark ,
 		      options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 				      in      => parse_zone_option_list( $in_options || '', $type ) ,
 				      out     => parse_zone_option_list( $out_options || '', $type ) ,
@@ -556,8 +530,9 @@ sub zone_report()
 
 	unless ( $printed ) {
 	    fatal_error "No bridge has been associated with zone $zone" if $type == BPORT && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL || ( $zoneref->{virtual} && @{$zoneref->{children}} );
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL;
 	}
+
     }
 }
 
@@ -610,12 +585,6 @@ sub dump_zone_contents()
 		    }
 		}
 	    }
-	}
-
-	if ( $zoneref->{virtual} && @{$zoneref->{children}} ) {
-	    $entry .= " (";
-	    $entry .= "$_," for @{$zoneref->{children}};
-	    $entry =~ s/,$/) /;
 	}
 
 	emit_unindented $entry;

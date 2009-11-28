@@ -30,7 +30,7 @@
 #
 
 SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40405
+SHOREWALL_CAPVERSION=40402
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -828,7 +828,6 @@ determine_capabilities() {
     IPMARK_TARGET=
     LOG_TARGET=Yes
     PERSISTENT_SNAT=
-    MARK_IN_FILTER=
 
     chain=fooX$$
 
@@ -959,7 +958,6 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
     qt $IPTABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
     qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
-    qt $IPTABLES -A $chain -j MARK --set-mark 1 && MARK_IN_FILTER=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1028,7 +1026,6 @@ report_capabilities() {
 	report_capability "IPMARK Target" $IPMARK_TARGET
 	report_capability "LOG Target" $LOG_TARGET
 	report_capability "Persistent SNAT" $PERSISTENT_SNAT
-	report_capability "Mark in Filter Table" $MARK_IN_FILTER
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1088,7 +1085,6 @@ report_capabilities1() {
     report_capability1 IPMARK_TARGET
     report_capability1 LOG_TARGET
     report_capability1 PERSISTENT_SNAT
-    report_capability1 MARK_IN_FILTER
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
 }

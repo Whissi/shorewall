@@ -423,9 +423,7 @@ sub add_commands ( $$;@ ) {
     my $chainref    = shift @_;
     my $indentation = '    ' x $chainref->{cmdlevel};
 
-    for ( @_ ) {
-	push @{$chainref->{rules}}, join ('', $indentation , $_ );
-    }
+    push @{$chainref->{rules}}, join ('', $indentation , $_ ) for @_;
 
     $chainref->{referenced} = 1;
 }

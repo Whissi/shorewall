@@ -651,7 +651,7 @@ sub validate_tc_class( ) {
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
 
-	    fatal_error "Invalid Mark ($mark)" unless $markval <= ( $config{WIDE_TC_MARKS} ? 0xffff : 0xff );
+	    fatal_error "Invalid Mark ($mark)" unless $markval <= ( $config{WIDE_TC_MARKS} ? 0x3fff : 0xff );
 
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};

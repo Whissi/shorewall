@@ -1990,8 +1990,9 @@ sub generate_matrix() {
 			    next if $hostref->{options}{sourceonly};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
+				my $dest_exclusion = dest_exclusion( $hostref->{exclusions}, $chain);
 				for my $net ( @{$hostref->{hosts}} ) {
-				    add_jump $frwd_ref, dest_exclusion( $hostref->{exclusions}, $chain), 0, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match );
+				    add_jump $frwd_ref, $dest_exclusion, 0, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match );
 				}
 			    }
 			}
@@ -2032,6 +2033,7 @@ sub generate_matrix() {
 					for my $host1ref ( @$array1ref ) {
 					    next if $host1ref->{options}{sourceonly};
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
+					    my $dest_exclusion  = dest_exclusion( $host1ref->{exclusions}, $chain );
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
 						    #
@@ -2039,7 +2041,7 @@ sub generate_matrix() {
 						    #
 						    add_jump(
 							     $excl3ref ,
-							     dest_exclusion( $host1ref->{exclusions}, $chain ),
+							     $dest_exclusion,
 							     0,
 							     join( '',
 								   $match_source_dev,

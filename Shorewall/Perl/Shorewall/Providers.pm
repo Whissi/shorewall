@@ -311,7 +311,6 @@ sub add_a_provider( ) {
 	    }
 	} else {
 	    fatal_error "Invalid Mark Value ($mark)" unless $config{HIGH_ROUTE_MARKS} && $config{WIDE_TC_MARKS};
-	    fatal_error "Invalid Mark Value ($mark)" if $val > 0xf0000;
 	}
 
 	for my $providerref ( values %providers  ) {

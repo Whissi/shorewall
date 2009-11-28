@@ -40,7 +40,6 @@ our @EXPORT = qw( NOTHING
 		  IP
 		  BPORT
 		  IPSEC
-		  VIRTUAL
 		  VIRTUAL_BITS
 
 		  determine_zones
@@ -165,8 +164,7 @@ our $virtualmark;
 use constant { FIREWALL => 1,
 	       IP       => 2,
 	       BPORT    => 3,
-	       IPSEC    => 4,
-	       VIRTUAL  => 5 };
+	       IPSEC    => 4 };
 
 use constant { SIMPLE_IF_OPTION   => 1,
 	       BINARY_IF_OPTION   => 2,
@@ -366,7 +364,6 @@ sub process_zone( \$ ) {
     my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
 
     my $mark = 0;
-    my $virtual = 0;
 
     if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	$zone = $1;
@@ -392,12 +389,6 @@ sub process_zone( \$ ) {
     } elsif ( $type =~ /^ipsec([46])?$/i ) {
 	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
 	$type = IPSEC;
-
-	for ( @parents ) {
-	    unless ( $zones{$_}{type} == IPSEC ) {
-		set_super( $zones{$_} );
-	    }
-	}
     } elsif ( $type =~ /^bport([46])?$/i ) {
 	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
 	warning_message "Bridge Port zones should have a parent zone" unless @parents;
@@ -409,17 +400,30 @@ sub process_zone( \$ ) {
 	$firewall_zone = $zone;
 	$ENV{FW} = $zone;
 	$type = FIREWALL;
-    } elsif ( $type eq 'virtual' ) {
-	require_capability 'MARK_IN_FILTER' , 'virtual zones', '';
-	fatal_error "Too many virtual zones" if $virtualmark == VIRTUAL_LIMIT;
-	$virtual = $virtualmark;
-	$virtualmark = $virtualmark << 1;
-	$type = VIRTUAL;
     } elsif ( $type eq '-' ) {
 	$type = IP;
 	$$ip = 1;
     } else {
 	fatal_error "Invalid zone type ($type)" ;
+    }
+
+    if ( $type eq IPSEC ) {
+	for ( @parents ) {
+	    unless ( $zones{$_}{type} == IPSEC ) {
+		set_super( $zones{$_} );
+	    }
+	}
+    }
+
+    my $virtual = 0;
+
+    if ( $options eq 'virtual' ) {
+	require_capability 'MARK_IN_FILTER' , 'virtual zones', '';
+	fatal_error "Only ipv${family} zones may be virtual" unless $type == IP;
+	fatal_error "Too many virtual zones" if $virtualmark == VIRTUAL_LIMIT;
+	$virtual = $virtualmark;
+	$virtualmark = $virtualmark << 1;
+	$options = '';
     }
 
     for ( $options, $in_options, $out_options ) {
@@ -507,9 +511,9 @@ sub zone_report()
     my @translate;
 
     if ( $family == F_IPV4 ) {
-	@translate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4', 'virtual' );
+	@translate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4' );
     } else {
-	@translate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6', 'virtual' );
+	@translate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6' );
     }
 
     for my $zone ( @zones )
@@ -552,7 +556,7 @@ sub zone_report()
 
 	unless ( $printed ) {
 	    fatal_error "No bridge has been associated with zone $zone" if $type == BPORT && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL || ( $type == VIRTUAL && @{$zoneref->{children}} );
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL || ( $zoneref->{virtual} && @{$zoneref->{children}} );
 	}
     }
 }
@@ -565,9 +569,9 @@ sub dump_zone_contents()
     my @xlate;
 
     if ( $family == F_IPV4 ) {
-	@xlate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4', 'virtual' );
+	@xlate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4' );
     } else {
-	@xlate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6', 'virtual' );
+	@xlate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6' );
     }
 
     for my $zone ( @zones )
@@ -608,7 +612,7 @@ sub dump_zone_contents()
 	    }
 	}
 
-	if ( $type == VIRTUAL && @{$zoneref->{children}} ) {
+	if ( $zoneref->{virtual} && @{$zoneref->{children}} ) {
 	    $entry .= " (";
 	    $entry .= "$_," for @{$zoneref->{children}};
 	    $entry =~ s/,$/) /;

@@ -231,12 +231,13 @@ None.
     	     $FW             all             ACCEPT
 
 3)  Shorewall 4.4.5 introduces 'virtual' zones. A virtual zone is used
-    to group together a set of sub-zones. A virtual zone is declared
-    as TYPE 'virtual' in /etc/shorewall/zones.
+    to group together a set of sub-zones. A virtual zone must by an
+    ipv4 zone (Shorewall) or an ipv6 zone (Shorewall6) and is declared
+    with the 'virtual' OPTION in /etc/shorewall/zones.
 
     Example:
 
-	virt		virtual
+	virt		ipv4	virtual
 
     The virtual zone must have no definition in
     /etc/shorewall/interfaces or /etc/shorewall/hosts. Virtual zones
@@ -250,7 +251,7 @@ None.
 
     Example:
 
-	virt			virtual
+	virt		ipv4	virtual
     	loc:virt		ipv4
     	vpn:virt		ipsec    
 

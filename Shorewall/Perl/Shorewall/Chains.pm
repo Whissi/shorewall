@@ -167,7 +167,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_4';
+our $VERSION = '4.4_5';
 
 #
 # Chain Table
@@ -1148,7 +1148,17 @@ sub finish_chain_section ($$) {
 
     $comment = '';
 
-    add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
+    unless ( $config{FASTACCEPT} ) {
+	if ( $chainref->{marked} ) {
+	    if ( $chainref->{marked} == @{$chainref->{rules}} ) {
+		insert_rule( $chainref, 0, "-m state --state $state -j ACCEPT" );
+	    } else {
+		add_rule $chainref, "-m state --state $state -j ACCEPT";
+	    }
+	} else {
+	    add_rule $chainref, "-m state --state $state -j ACCEPT";
+	}
+    }
 
     if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {
@@ -1187,6 +1197,7 @@ sub finish_section ( $ ) {
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
 	    my $chainref = $chain_table{'filter'}{rules_chain( $zone, $zone1 )};
+
 	    finish_chain_section $chainref, $sections if $chainref->{referenced};
 	}
     }

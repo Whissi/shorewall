@@ -129,8 +129,17 @@ sub add_or_modify_policy_chain( $$ ) {
 	    push @policy_chains, $chainref;
 	}
     } else {
-	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
+	push @policy_chains, ( $chainref = new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
     }
+
+    unless ( $chainref->{marked} ) {
+	my $mark  = defined_zone( $zone )->{mark};
+	my $mark1 = defined_zone( $zone1 )->{mark} << VIRTUAL_BITS;
+
+	$chainref->{marked} = 1, add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark)  if $mark && $zone1 eq firewall_zone;
+	$chainref->{marked}++  , add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark1) if $mark1;
+    }
+    
 }
 
 sub print_policy($$$$) {
@@ -348,8 +357,16 @@ sub validate_policy()
 		    add_or_modify_policy_chain( $zone1, $zone );
 		}
 	    }
-	}
-    }
+ 	} elsif ( zone_type( $zone ) == VIRTUAL ) {
+	    for my $zone1 ( @{defined_zone( $zone )->{children}} ) {
+		for my $zone2 ( all_zones ) {
+		    unless ( $zone1 eq $zone2 ) {
+			add_or_modify_policy_chain( $zone1, $zone2 );
+			add_or_modify_policy_chain( $zone2, $zone1 );
+		    }
+		}
+	    }
+	}   }
 
     my $fn = open_file 'policy';
 

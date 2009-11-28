@@ -1692,11 +1692,13 @@ sub generate_matrix() {
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
 
-	next if @zones <= 2 && ! $zoneref->{options}{complex};
+	next if @zones <= 2 && ! ( $zoneref->{options}{complex} || $zoneref->{virtual} || $zoneref->{mark} );
 	#
 	# Complex zone and we have more than one non-firewall zone -- create a zone forwarding chain
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
+
+	add_rule $frwd_ref, '-j MARK --set-mark ' . in_hex( $zoneref->{mark} ) if $zoneref->{mark};
 
 	if ( $capabilities{POLICY_MATCH} ) {
 	    #
@@ -1724,10 +1726,11 @@ sub generate_matrix() {
 
 		for my $hostref ( @{$arrayref} ) {
 		    my $ipsec_match = match_ipsec_in $zone , $hostref;
+		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $frwd_ref );
 		    for my $net ( @{$hostref->{hosts}} ) {
 			add_jump(
 				 $sourcechainref,
-				 source_exclusion( $hostref->{exclusions}, $frwd_ref ),
+				 $exclusion,
 				 ! @{$zoneref->{parents}},
 				 join( '', $interfacematch , match_source_net( $net ), $ipsec_match )
 				);
@@ -1759,6 +1762,7 @@ sub generate_matrix() {
 	my $nested           = $zoneref->{options}{nested};
 	my $parenthasnat     = 0;
 	my $parenthasnotrack = 0;
+	my $virtual          = $zoneref->{virtual};
 
 	if ( $nested ) {
 	    #
@@ -1799,6 +1803,11 @@ sub generate_matrix() {
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
+	if ( $virtual ) {
+	    add_jump $filter_table->{OUTPUT}, $chain1, 0, "-m mark ! --mark 0/" . in_hex($virtual << VIRTUAL_BITS) . ' ' if $chain1; 
+	    add_jump $filter_table->{INPUT}, $chain2, 0, "-m mark ! --mark 0/" . in_hex($virtual) . ' '                  if $chain2; 
+	}
+
 	for my $typeref ( values %$source_hosts_ref ) {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		my $arrayref = $typeref->{$interface};
@@ -1953,6 +1962,11 @@ sub generate_matrix() {
 	} else {
 	    @dest_zones =  @zones ;
 	}
+
+	if ( $frwd_ref ) {
+	    add_jump $filter_table->{FORWARD}, $frwd_ref, 0, "-m mark ! --mark 0/" . in_hex($virtual) . ' ' if $virtual;
+	}
+
 	#
 	# Here it is -- THE BIG UGLY!!!!!!!!!!!!
 	#
@@ -1961,6 +1975,7 @@ sub generate_matrix() {
 	#
 	for my $zone1 ( @dest_zones ) {
 	    my $zone1ref = find_zone( $zone1 );
+	    my $virtual1 = $zone1ref->{virtual} << VIRTUAL_BITS;
 
 	    next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
@@ -1990,13 +2005,16 @@ sub generate_matrix() {
 			    next if $hostref->{options}{sourceonly};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my $ipsec_out_match = match_ipsec_out $zone1 , $hostref;
+				my $exclusion = dest_exclusion( $hostref->{exclusions}, $chain);
 				for my $net ( @{$hostref->{hosts}} ) {
-				    add_jump $frwd_ref, dest_exclusion( $hostref->{exclusions}, $chain), 0, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match );
+				    add_jump( $frwd_ref, $exclusion, 0, join( '', match_dest_dev( $interface) , match_dest_net($net), $ipsec_out_match ) );
 				}
 			    }
 			}
 		    }
 		}
+			
+		add_jump( $frwd_ref, $chain, 0, '-m mark ! --mark 0/' . in_hex( $virtual1 ) . ' ' ) if $virtual1;
 	    } else {
 		#
 		# More compilcated case. If the interface is associated with a single simple zone, we try to combine the interface's forwarding chain with the rules chain
@@ -2032,6 +2050,7 @@ sub generate_matrix() {
 					for my $host1ref ( @$array1ref ) {
 					    next if $host1ref->{options}{sourceonly};
 					    my $ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
+					    my $exclusion = dest_exclusion( $host1ref->{exclusions}, $chain );
 					    for my $net1 ( @{$host1ref->{hosts}} ) {
 						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
 						    #
@@ -2039,7 +2058,7 @@ sub generate_matrix() {
 						    #
 						    add_jump(
 							     $excl3ref ,
-							     dest_exclusion( $host1ref->{exclusions}, $chain ),
+							     $exclusion,
 							     0,
 							     join( '',
 								   $match_source_dev,
@@ -2047,9 +2066,18 @@ sub generate_matrix() {
 								   match_source_net($net),
 								   match_dest_net($net1),
 								   $ipsec_out_match )
-							    );
+							    );	     
 						}
 					    }
+
+					    add_rule ( $excl3ref, 
+						       $chain,
+						       join( '',
+							     $match_source_dev,
+							     match_source_net($net),
+							     '-m mark ! --mark 0/',
+							     in_hex( $virtual1 ),
+							     ' ' ) ) if $virtual1;
 					}
 				    }
 				}

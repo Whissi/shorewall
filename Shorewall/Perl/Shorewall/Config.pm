@@ -127,7 +127,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_4';
+our $VERSION = '4.4_5';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -242,6 +242,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IPMARK_TARGET   => 'IPMARK Target',
 		 PERSISTENT_SNAT => 'Persistent SNAT',
 		 OLD_HL_MATCH    => 'Old Hash Limit Match',
+		 MARK_IN_FILTER  => 'MARK in Filter Table',
 		 CAPVERSION      => 'Capability Version',
 	       );
 #
@@ -619,6 +620,7 @@ sub initialize( $ ) {
 	       LOG_TARGET => 1,         # Assume that we have it.
 	       PERSISTENT_SNAT => undef,
 	       OLD_HL_MATCH => undef,
+	       MARK_IN_FILTER => undef,
 	       CAPVERSION => undef,
 	       );
     #
@@ -2031,6 +2033,7 @@ sub determine_capabilities( $ ) {
     $capabilities{LENGTH_MATCH}    = qt1( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
     $capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-admt-prohibited" );
     $capabilities{COMMENTS}        = qt1( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );
+    $capabilities{MARK_IN_FILTER}  = qt1( "$iptables -A $sillyname -j MARK --set-mark 1" );
 
     $capabilities{HASHLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
 

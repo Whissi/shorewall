@@ -230,6 +230,41 @@ None.
     	     $FW             dmz             REJECT          info
     	     $FW             all             ACCEPT
 
+3)  Shorewall 4.4.5 introduces 'virtual' zones. A virtual zone is used
+    to group together a set of sub-zones. A virtual zone is declared
+    as TYPE 'virtual' in /etc/shorewall/zones.
+
+    Example:
+
+	virt		virtual
+
+    The virtual zone must have no definition in
+    /etc/shorewall/interfaces or /etc/shorewall/hosts. Virtual zones
+    can themselves be nested in other virtual zones but there is a
+    limit of four virtual zones per configuration (that limitation
+    derives from the fact that each virtual zone requires 2 bits in the
+    packet mark).
+
+    Virtual zones are used as parent zones for other zones using the
+    <zone>:<parent> syntax in /etc/shorewall/zones:
+
+    Example:
+
+	virt			virtual
+    	loc:virt		ipv4
+    	vpn:virt		ipsec    
+
+    As shown in the example, a virtual zone may be a parent for
+    multiple zone types.
+    
+    Virtual zones are intended to be used with
+    IMPLICIT_CONTINUE=No. They provide semantic behavior similar to
+    IMPLICIT_CONTINUE=Yes in that connections that do not match rules
+    for the sub-zone are applied to the parent zone. 
+
+    For more information, see
+    http://www.shorewall.net/manpages/shorewall-nesting.html
+
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0
 ----------------------------------------------------------------------------

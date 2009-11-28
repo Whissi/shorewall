@@ -1185,10 +1185,18 @@ sub finish_section ( $ ) {
     $sections{$_} = 1 for split /,/, $sections;
 
     for my $zone ( all_zones ) {
+	my $mark = defined_zone( $zone )->{mark};
 	for my $zone1 ( all_zones ) {
+	    my $mark1 = ( defined_zone( $zone1 )->{mark} || 0 ) << VIRTUAL_BITS;
 	    my $chainref = $chain_table{'filter'}{rules_chain( $zone, $zone1 )};
 
-	    finish_chain_section $chainref, $sections if $chainref->{referenced};
+	    finish_chain_section $chainref, $sections if $chainref->{referenced} || $mark || $mark1;
+
+	    if ( $sections{RELATED} ) {
+		add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark)  if $mark;
+		add_rule $chainref, '-j MARK --or-mark ' . in_hex($mark1) if $mark1;
+	    }
+
 	}
     }
 }

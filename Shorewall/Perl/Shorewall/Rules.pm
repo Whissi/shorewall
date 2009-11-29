@@ -949,7 +949,7 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 
 }
 #
-# Once a rule has been expanded via wildcards (source and/or dest zone == 'all'), it is processed by this function. If
+# Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
 sub process_rule1 ( $$$$$$$$$$$$$ ) {
@@ -972,7 +972,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     my $actiontype = $targets{$basictarget} || find_macro( $basictarget );
 
     if ( $config{ MAPOLDACTIONS } ) {
-	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless ( $actiontype || $param );
+	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || $param;
     }
 
     fatal_error "Unknown action ($action)" unless $actiontype;
@@ -1092,7 +1092,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $destref = defined_zone( $destzone );
 
 	    if ( $destref ) {
-		warning_message "Destination zone ($destzone) ignored";
+		warning_message "The destination zone ($destzone) is ignored in $log_action rules";
 	    } else {
 		$dest = join ':', $destzone, $dest;
 		$destzone = '';

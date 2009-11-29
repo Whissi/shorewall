@@ -376,11 +376,11 @@ sub process_tc_rule( ) {
 
 	    validate_mark $mark;
 
-	    if ( $config{HIGH_ROUTE_MARKS} ) {
+	    if ( $config{PROVIDER_OFFSET} ) {
 		my $val = numeric_value( $cmd );
 		fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
-		my $limit = $config{WIDE_TC_MARKS} ? 65535 : 255;
-		fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
+		my $limit = $globals{TC_MASK};
+		fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when PROVIDER_OFFSET > 0"
 		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
 	    }
 	}
@@ -651,7 +651,7 @@ sub validate_tc_class( ) {
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
 
-	    fatal_error "Invalid Mark ($mark)" unless $markval <= ( $config{WIDE_TC_MARKS} ? 0x3fff : 0xff );
+	    fatal_error "Invalid Mark ($mark)" unless $markval <= $globals{TC_MAX};
 
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
@@ -755,7 +755,7 @@ sub validate_tc_class( ) {
 		fatal_error q(The 'occurs' option is only valid for IPv4)           if $family == F_IPV6;
 		fatal_error q(The 'occurs' option may not be used with 'classify')  if $devref->{classify};
 		fatal_error "Invalid 'occurs' ($val)"                               unless defined $occurs && $occurs > 1 && $occurs <= 256;
-		fatal_error "Invalid 'occurs' ($val)"                               if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
+		fatal_error "Invalid 'occurs' ($val)"                               if $occurs > $globals{TC_MAX};
 		fatal_error q(Duplicate 'occurs')                                   if $tcref->{occurs} > 1;
 		fatal_error q(The 'occurs' option is not valid with 'default')      if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')          if @{$tcref->{tos}};
@@ -1223,7 +1223,7 @@ sub setup_tc() {
 	my $mark_part = '';
 
 	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFF0000' : '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
+	    $mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} );
 
 	    for my $interface ( @routemarked_interfaces ) {
 		add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
@@ -1240,12 +1240,12 @@ sub setup_tc() {
 
 	if ( $config{HIGH_ROUTE_MARKS} ) {
 	    for my $chain qw(INPUT FORWARD) {
-		insert_rule1 $mangle_table->{$chain}, 0, $config{WIDE_TC_MARKS} ? '-j MARK --and-mark 0xFFFF' : '-j MARK --and-mark 0xFF';
+		insert_rule1( $mangle_table->{$chain}, 0, '-j MARK --and-mark ' . in_hex( $globals{PROVIDER_MASK} ) );
 	    }
 	    #
 	    # In POSTROUTING, we only want to clear routing mark and not IPMARK.
 	    #
-	    insert_rule1 $mangle_table->{POSTROUTING}, 0, $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFFFF -j MARK --and-mark 0' : '-m mark --mark 0/0xFF -j MARK --and-mark 0';
+	    insert_rule1( $mangle_table->{POSTROUTING}, 0, '-m mark --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j MARK --and-mark 0' );
 	}
     }
 

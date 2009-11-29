@@ -447,6 +447,13 @@ sub initialize( $ ) {
 	      MACLIST_DISPOSITION => undef,
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
+	      #
+	      # Mark Geometry
+	      #
+	      TC_BITS => undef,
+	      PROVIDER_BITS => undef,
+	      PROVIDER_OFFSET => undef,
+	      MASK_BITS => undef
 	    );
 
 	%validlevels = ( DEBUG   => 7,
@@ -554,6 +561,13 @@ sub initialize( $ ) {
 	      #
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
+	      #
+	      # Mark Geometry
+	      #
+	      TC_BITS => undef,
+	      PROVIDER_BITS => undef,
+	      PROVIDER_OFFSET => undef,
+	      MASK_BITS => undef
 	    );
 
 	%validlevels = ( DEBUG   => 7,
@@ -1733,6 +1747,31 @@ sub default_yes_no_ipv4 ( $$ ) {
     warning_message "$var=Yes is ignored for IPv6" if $family == F_IPV6 && $config{$var};
 }
 
+sub numeric_option( $$$ ) {
+    my ( $option, $default, $min ) = @_;
+
+    my $value = $config{$option};
+
+    my $val = $default;
+    
+    if ( defined $value && $value ne '' ) {
+	$val = numeric_value $value;
+	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val >= $min;
+    }
+
+    $config{$option} = $val;
+}
+
+sub make_mask( $ ) {
+    my $bits = $_[0];
+    my $mask = 1;
+
+    while ( --$bits > 0 ) {
+	$mask = ( $mask << 1 ) | 1;
+    }
+
+    $mask;
+}   
 
 my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
 
@@ -2410,7 +2449,23 @@ sub get_configuration( $ ) {
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
 
-    my $val;
+    numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 4;
+    numeric_option 'PROVIDER_BITS' ,   8, 0;
+    numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
+    numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
+    
+    if ( $config{PROVIDER_OFFSET} ) {
+	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
+    }
+
+    fatal_error 'PROVIDER_BITS + MASK_BITS > 32' if $config{PROVIDER_BITS} + $config{MASK_BITS} > 32;
+
+    my $val = 1;
+    
+    $globals{TC_MAX}                 = make_mask( $config{TC_BITS} );
+    $globals{TC_MASK}                = make_mask( $config{MASK_BITS} );
+    $globals{PROVIDER_MIN}           = 1 << $config{PROVIDER_OFFSET};
+    $globals{PROVIDER_MASK}          = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
 
     if ( defined ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;

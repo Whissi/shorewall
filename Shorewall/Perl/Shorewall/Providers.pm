@@ -94,7 +94,7 @@ sub initialize( $ ) {
 # Set up marking for 'tracked' interfaces.
 #
 sub setup_route_marking() {
-    my $mask = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
+    my $mask = in_hex( $globals{PROVIDER_MASK} );
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
@@ -304,14 +304,7 @@ sub add_a_provider( ) {
 
 	verify_mark $mark;
 
-	if ( $val < 65535 ) {
-	    if ( $config{HIGH_ROUTE_MARKS} ) {
-		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=Yes" if $config{WIDE_TC_MARKS};
-		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $val < 256;
-	    }
-	} else {
-	    fatal_error "Invalid Mark Value ($mark)" unless $config{HIGH_ROUTE_MARKS} && $config{WIDE_TC_MARKS};
-	}
+	fatal_error "Invalid Mark Value ($mark)" if $val < $globals{PROVIDER_MIN} || $val > $globals{PROVIDER_MASK};
 
 	for my $providerref ( values %providers  ) {
 	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
@@ -869,7 +862,7 @@ sub handle_optional_interfaces() {
 #
 sub handle_stickiness( $ ) {
     my $havesticky   = shift;
-    my $mask         = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
+    my $mask         = in_hex( $globals{PROVIDER_MASK} );
     my $setstickyref = $mangle_table->{setsticky};
     my $setstickoref = $mangle_table->{setsticko};
     my $tcpreref     = $mangle_table->{tcpre};

@@ -869,6 +869,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">MASK_BITS</emphasis>=<emphasis>bits</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. This option specifies the number of
+          <emphasis>bits</emphasis> to use as a mask for traffic shaping marks
+          and must be greater than or equal to TC_BITS. The default value
+          depends on the setting of WIDE_TC_MARKS:</para>
+
+          <simplelist>
+            <member>WIDE_TC_MARKS=No - 8 bits.</member>
+
+            <member>WIDE_TC_MARKS=Yes - 16 bits.</member>
+          </simplelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
         role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
         role="bold">"</emphasis>]</term>
@@ -952,10 +970,11 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">PROVIDER_BITS</emphasis>=<emphasis>bits</emphasis></term>
 
         <listitem>
-          <para>Specifies the number of bits of the packet/connection mark to
-          use for the provider (routing) mark. Provider mark values must be
-          &gt;= 2**PROVIDER_OFFSET and less than 2**(PROVIDER_OFFSET +
-          PROVIDER_BITS). The default value is 8 bits.</para>
+          <para>Added in Shorewall 4.5.0. Specifies the number of bits of the
+          packet/connection mark to use for the provider (routing) mark.
+          Provider mark values must be &gt;= 2**PROVIDER_OFFSET and less than
+          2**(PROVIDER_OFFSET + PROVIDER_BITS). The default value is 8
+          bits.</para>
         </listitem>
       </varlistentry>
 
@@ -964,10 +983,11 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">PROVIDER_OFFSET</emphasis>=<emphasis>offset</emphasis></term>
 
         <listitem>
-          <para>Specifies the <emphasis>offset</emphasis> in bits from the
-          least significate bit of the packet/connection mark where the
-          Provider Mark value is stored. The default is based on the settings
-          of HIGH_ROUTE_MARKS and WIDE_TC_MARKS:</para>
+          <para>Added in Shorewall 4.5.0. Specifies the
+          <emphasis>offset</emphasis> in bits from the least significate bit
+          of the packet/connection mark where the Provider Mark value is
+          stored. The default is based on the settings of HIGH_ROUTE_MARKS and
+          WIDE_TC_MARKS:</para>
 
           <simplelist>
             <member>HIGH_ROUTE_MARKS=No - 0 bits.</member>
@@ -1144,7 +1164,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">TC_BITS</emphasis>=<emphasis>bits</emphasis></term>
 
         <listitem>
-          <para>Added in Shorewall 2.5.0. This option replaces WIDE_TC_MARKS
+          <para>Added in Shorewall 4.5.0. This option replaces WIDE_TC_MARKS
           by allowing you to specify the number of <emphasis>bits</emphasis>
           of the 32-bit packet/connection mark to be used for traffic shaping.
           The default value is based on the settings of WIDE_TC_MARKS:</para>

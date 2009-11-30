@@ -558,11 +558,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           in to effectively divide the packet mark and connection mark into
           two mark fields.</para>
 
-          <note>
-            <para>This option is deprecated in Shorewall 4.5 and later in
-            favor of the PROVIDER_OFFSET option.</para>
-          </note>
-
           <para>The width of the fields are determined by the setting of
           WIDE_TC_MARKS. If WIDE_TC_MARKS=No (the default):</para>
 
@@ -1050,15 +1045,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">MASK_BITS</emphasis>=<emphasis
-        role="bold">bits</emphasis></term>
-
-        <listitem>
-          <para>Determines the number of bits </para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
         role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
         role="bold">"</emphasis>]</term>
@@ -1418,24 +1404,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis
-        role="bold">TC_BITS</emphasis>=<emphasis>bits</emphasis></term>
-
-        <listitem>
-          <para>Added in Shorewall 4.5.0. Determines the number of bits at the
-          low end of the packet/connection mark to use for traffic shaping
-          marks. The default is determined by the settings of WIDE_TC_MARKS as
-          follows:</para>
-
-          <simplelist>
-            <member>WIDE_TC_MARKS=No - 8</member>
-
-            <member>WIDE_TC_MARKS=Yes - 14</member>
-          </simplelist>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis
@@ -1604,11 +1572,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           traffic shaping marks are 14 bytes wide (values 1-16383). The
           setting of WIDE_TC_MARKS also has an effect on the HIGH_ROUTE_MARKS
           option (see above).</para>
-
-          <note>
-            <para>This option is deprecated in Shorewall 4.5 and later in
-            favor of the TC_BITS option.</para>
-          </note>
         </listitem>
       </varlistentry>
 

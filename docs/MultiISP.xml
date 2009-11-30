@@ -249,6 +249,34 @@
                     url="manpages/shorewall.conf.html">shorewall.conf
                     </ulink>(5) and use mark values in the range 0x10000 -
                     0xFF0000 with the low-order 16 bits being zero.</para>
+
+                    <note>
+                      <para>In Shorewall 4.5.0, WIDE_TC_MARKS and
+                      HIGH_ROUTE_MARKS were superseded by a new set of options
+                      in <ulink
+                      url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5):</para>
+
+                      <itemizedlist>
+                        <listitem>
+                          <para>TC_BITS - The number of bits occupied by the
+                          traffic shaping classification mark.</para>
+                        </listitem>
+
+                        <listitem>
+                          <para>PROVIDER_BITS - The number of bits occupied by
+                          the Provider mark value.</para>
+                        </listitem>
+
+                        <listitem>
+                          <para>PROVIDER_OFFSET - The number of bits to the
+                          right of the provider field.</para>
+                        </listitem>
+                      </itemizedlist>
+
+                      <para>The default values for these options are based on
+                      the settings of HIGH_ROUTE_MARKS and WIDE_TC_MARKS to
+                      provide upward compatability.</para>
+                    </note>
                   </listitem>
                 </itemizedlist>
               </listitem>

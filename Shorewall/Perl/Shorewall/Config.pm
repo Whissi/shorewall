@@ -1756,8 +1756,10 @@ sub numeric_option( $$$ ) {
     
     if ( defined $value && $value ne '' ) {
 	$val = numeric_value $value;
-	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val >= $min && $val <= 32;
+	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val <= 32;
     }
+
+    $val = $min if $val < $min;
 
     $config{$option} = $val;
 }
@@ -2450,9 +2452,9 @@ sub get_configuration( $ ) {
     default_yes_no 'TRACK_PROVIDERS'            , '';
 
     numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
+    numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
     numeric_option 'PROVIDER_BITS' ,   8, 0;
     numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
-    numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
     
     if ( $config{PROVIDER_OFFSET} ) {
 	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};

@@ -170,8 +170,8 @@ sub process_one_masq( )
     #
     # Handle Mark
     #
-    $baserule .= do_test( $mark, 0xFF) if $mark ne '-';
-    $baserule .= do_user( $user )      if $user ne '-';
+    $baserule .= do_test( $mark, $globals{TC_MASK} ) if $mark ne '-';
+    $baserule .= do_user( $user ) if $user ne '-';
 
     for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';

@@ -609,7 +609,7 @@ sub process_action( $$$$$$$$$$$ ) {
 
     expand_rule ( $chainref ,
 		  NO_RESTRICT ,
-		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user . do_test( $mark, 0xFF ) ,
+		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user . do_test( $mark, $globals{TC_MASK} ) ,
 		  $source ,
 		  $dest ,
 		  '', #Original Dest

@@ -1462,23 +1462,9 @@ sub mac_match( $ ) {
 #
 sub verify_mark( $ ) {
     my $mark  = $_[0];
-    my $limit;
-    my $mask;
+    my $limit = $globals{TC_MASK} | $globals{PROVIDER_MASK};
+    my $mask  = $globals{TC_MASK};
     my $value = numeric_value( $mark );
-
-    if ( $config{HIGH_ROUTE_MARKS} ) {
-	if ( $config{WIDE_TC_MARKS} ) {
-	    $limit = 0xFFFFFF;
-	    $mask  = 0xFFFF;
-	} else {
-	    $limit = 0xFFFF;
-	    $mask  = 0xFF;
-	}
-    } elsif ( $config{WIDE_TC_MARKS} ) {
-	$limit = $mask = 0x3FFF;
-    } else {
-	$limit = $mask = 0xFF;
-    }
 
     fatal_error "Invalid Mark or Mask value ($mark)"
 	unless defined( $value ) && $value <= $limit;
@@ -1489,7 +1475,7 @@ sub verify_mark( $ ) {
 
 sub verify_small_mark( $ ) {
     verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > ( $config{WIDE_TC_MARKS} ? 0x3FFF : 0xFF );
+    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > $globals{TC_MAX};
 }
 
 sub validate_mark( $ ) {

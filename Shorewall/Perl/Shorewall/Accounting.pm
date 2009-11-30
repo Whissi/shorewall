@@ -84,7 +84,7 @@ sub process_accounting_rule( ) {
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, 0xFF );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} );
     my $rule2 = 0;
 
     unless ( $action eq 'COUNT' ) {

@@ -79,48 +79,6 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
-our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
-		 target    => 'CONNMARK --save-mark --mask' ,
-		 mark      => SMALLMARK ,
-		 mask      => '0xFF' ,
-		 connmark  => 1
-	       } ,
-	      { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
-		target    => 'CONNMARK --restore-mark --mask' ,
-		mark      => SMALLMARK ,
-		mask      => '0xFF' ,
-		connmark  => 1
-		} ,
-	      { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
-		target    => 'RETURN' ,
-		mark      => NOMARK ,
-		mask      => '' ,
-		connmark  => 0
-		} ,
-	      { match     => sub ( $ ) { $_[0] eq 'SAME' },
-		target    => 'sticky' ,
-		mark      => NOMARK ,
-		mask      => '' ,
-		connmark  => 0
-		} ,
-	      { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
-		target    => 'IPMARK' ,
-		mark      => NOMARK,
-		mask      => '',
-		connmark  => 0
-	        } ,
-	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
-		target    => 'MARK --or-mark' ,
-		mark      => HIGHMARK ,
-		mask      => '' } ,
-	      { match     => sub ( $ ) { $_[0] =~ '&.*' },
-		target    => 'MARK --and-mark ' ,
-		mark      => HIGHMARK ,
-		mask      => '' ,
-		connmark  => 0
-		}
-	      );
-
 our %flow_keys = ( 'src'            => 1,
 		   'dst'            => 1,
 		   'proto'          => 1,
@@ -230,6 +188,8 @@ sub initialize( $ ) {
 sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
 
+    our @tccmd;
+
     if ( $originalmark eq 'COMMENT' ) {
 	process_comment;
 	return;
@@ -265,9 +225,9 @@ sub process_tc_rule( ) {
 		fatal_error "Invalid chain designator for source $fw" unless $tcsref->{fw};
 	    }
 
-	    $chain    = $tcsref->{chain}  if $tcsref->{chain};
-	    $target   = $tcsref->{target} if $tcsref->{target};
-	    $mark     = "$mark/0xFF"      if $connmark = $tcsref->{connmark};
+	    $chain    = $tcsref->{chain}          if $tcsref->{chain};
+	    $target   = $tcsref->{target}         if $tcsref->{target};
+	    $mark     = "$mark/$globals{TC_MASK}" if $connmark = $tcsref->{connmark};
 
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
@@ -284,8 +244,6 @@ sub process_tc_rule( ) {
 	    $target  = 'CLASSIFY --set-class';
 	}
     }
-
-    my $mask = 0xffff;
 
     my ($cmd, $rest) = split( '/', $mark, 2 );
 
@@ -390,7 +348,7 @@ sub process_tc_rule( ) {
 				     $restrictions{$chain} ,
 				     do_proto( $proto, $ports, $sports) .
 				     do_user( $user ) .
-				     do_test( $testval, $mask ) .
+				     do_test( $testval, $globals{TC_MASK} ) .
 				     do_length( $length ) .
 				     do_tos( $tos ) .
 				     do_connbytes( $connbytes ) .
@@ -1259,6 +1217,48 @@ sub setup_tc() {
     }
 
     if ( $config{TC_ENABLED} ) {
+	our  @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
+			  target    => 'CONNMARK --save-mark --mask' ,
+			  mark      => SMALLMARK ,
+			  mask      => in_hex( $globals{TC_MASK} ) ,
+			  connmark  => 1
+			} ,
+			{ match     => sub ( $ ) { $_[0] eq 'RESTORE' },
+			  target    => 'CONNMARK --restore-mark --mask' ,
+			  mark      => SMALLMARK ,
+			  mask      => in_hex( $globals{TC_MASK} ) ,
+			  connmark  => 1
+			} ,
+			{ match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
+			  target    => 'RETURN' ,
+			  mark      => NOMARK ,
+			  mask      => '' ,
+			  connmark  => 0
+			} ,
+			{ match     => sub ( $ ) { $_[0] eq 'SAME' },
+			  target    => 'sticky' ,
+			  mark      => NOMARK ,
+			  mask      => '' ,
+			  connmark  => 0
+			} ,
+			{ match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
+			  target    => 'IPMARK' ,
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			} ,
+			{ match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
+			  target    => 'MARK --or-mark' ,
+			  mark      => HIGHMARK ,
+			  mask      => '' } ,
+			{ match     => sub ( $ ) { $_[0] =~ '&.*' },
+			  target    => 'MARK --and-mark ' ,
+			  mark      => HIGHMARK ,
+			  mask      => '' ,
+			  connmark  => 0
+			}
+		      );
+
 	if ( my $fn = open_file 'tcrules' ) {
 
 	    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );

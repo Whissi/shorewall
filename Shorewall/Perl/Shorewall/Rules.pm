@@ -146,7 +146,7 @@ sub process_tos() {
 	    expand_rule
 		$chainref ,
 		$restriction ,
-		do_proto( $proto, $ports, $sports ) . do_test( $mark , 0xFF ) ,
+		do_proto( $proto, $ports, $sports ) . do_test( $mark , $globals{TC_MASK} ) ,
 		$src ,
 		$dst ,
 		'' ,
@@ -1160,7 +1160,13 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # Generate Fixed part of the rule
     #
-    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , 0xFF ) , do_connlimit( $connlimit ), do_time( $time ) );
+    $rule = join( '', 
+		  do_proto($proto, $ports, $sports),
+		  do_ratelimit( $ratelimit, $basictarget ) ,
+		  do_user( $user ) ,
+		  do_test( $mark , $globals{TC_MASK} ) ,
+		  do_connlimit( $connlimit ),
+		  do_time( $time ) );
 
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
@@ -1293,7 +1299,11 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#   - the target will be ACCEPT.
 	#
 	unless ( $actiontype & NATONLY ) {
-	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , 0xFF ) );
+	    $rule = join( '',
+			  do_proto( $proto, $ports, $sports ),
+			  do_ratelimit( $ratelimit, 'ACCEPT' ),
+			  do_user $user ,
+			  do_test( $mark , $globals{TC_MASK} ) );
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';

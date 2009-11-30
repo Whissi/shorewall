@@ -1756,7 +1756,7 @@ sub numeric_option( $$$ ) {
     
     if ( defined $value && $value ne '' ) {
 	$val = numeric_value $value;
-	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val >= $min;
+	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val >= $min && $val <= 32;
     }
 
     $config{$option} = $val;
@@ -1764,9 +1764,9 @@ sub numeric_option( $$$ ) {
 
 sub make_mask( $ ) {
     my $bits = $_[0];
-    my $mask = 1;
+    my $mask = 0;
 
-    while ( --$bits > 0 ) {
+    while ( $bits-- > 0 ) {
 	$mask = ( $mask << 1 ) | 1;
     }
 
@@ -2449,16 +2449,15 @@ sub get_configuration( $ ) {
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
 
-    numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 4;
+    numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
     numeric_option 'PROVIDER_BITS' ,   8, 0;
     numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
     
     if ( $config{PROVIDER_OFFSET} ) {
 	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
+	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 32' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 32;
     }
-
-    fatal_error 'PROVIDER_BITS + MASK_BITS > 32' if $config{PROVIDER_BITS} + $config{MASK_BITS} > 32;
 
     my $val = 1;
     

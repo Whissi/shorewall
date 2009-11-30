@@ -648,6 +648,8 @@ sub validate_tc_class( ) {
 	if ( $devref->{classify} ) {
 	    warning_message "INTERFACE $device has the 'classify' option - MARK value ($mark) ignored";
 	} else {
+	    fatal_error "MARK may not be specified when TC_BITS=0" unless $config{TC_BITS};
+
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
 

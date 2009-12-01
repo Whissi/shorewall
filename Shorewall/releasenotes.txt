@@ -53,14 +53,16 @@ None.
 			  between 2**PROVIDER_OFFSET and
 			  2**(PROVIDER_OFFSET + PROVIDER_BITS) - 1.
 
-	MASK_BITS	  Number of bits at the least-significant end
-			  of the mark that are retained after the
-			  packet is routed. This is distinct from
-			  TC_BITS because of a quirk in the pre-4.5
-			  Shorewall implementation. It must have a
-			  value >= TC_BITS. Shorewall will
-			  automatically adjust MASK_BITS to meet this
-			  requirement.
+	MASK_BITS	  Number of 1 bits in the default mask when
+			  specifying a test on the packet or connection
+			  mark. These tests appear in the TEST column
+			  of shorewall-tcrules (5) and in the MARK
+			  columns of shorewall-accounting (5),
+			  shorewall-masq (5) and shorewall-tos (5). The
+			  bits defined by the default mask are also
+			  retained after a packet is routed when
+			  PROVIDER_OFFSET is non-zero. The remaining
+			  bits are cleared.
 
     The default values of these new options depend on WIDE_TC_MARKS and
     HIGH_ROUTE_MARKS as follows:

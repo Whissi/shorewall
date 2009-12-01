@@ -1198,9 +1198,9 @@ sub setup_tc() {
 	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
 	}
 
-	if ( $config{HIGH_ROUTE_MARKS} ) {
+	if ( $config{PROVIDER_OFFSET} ) {
 	    for my $chain qw(INPUT FORWARD) {
-		insert_rule1( $mangle_table->{$chain}, 0, '-j MARK --and-mark ' . in_hex( $globals{PROVIDER_MASK} ) );
+		insert_rule1( $mangle_table->{$chain}, 0, '-j MARK --and-mark ' . in_hex( $globals{TC_MASK} ) );
 	    }
 	    #
 	    # In POSTROUTING, we only want to clear routing mark and not IPMARK.

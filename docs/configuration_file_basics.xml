@@ -1239,6 +1239,234 @@ Comcast 2        0x20000 main       COM_IF     detect          balance          
     class="devicefile">tun*</filename> in the COPY column.</para>
   </section>
 
+  <section id="Marks">
+    <title>Packet/Connection Marks</title>
+
+    <para>Shorewall makes use of Netfilter Packet/Connection Marks in two
+    ways:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>For <ulink url="traffic_shaping.htm">traffic
+        shaping</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>For <ulink url="MultiISP.html">policy routing</ulink> (Multi-ISP
+        support).</para>
+      </listitem>
+    </orderedlist>
+
+    <para>The use of marks for traffic shaping classification is optional.
+    Traffic shaping classes may be defined with the <emphasis
+    role="bold">classify</emphasis> option which avoids the need to assign a
+    mark value to the class. Each multi-ISP <firstterm>providers</firstterm>
+    must have a unique mark value assigned to it.</para>
+
+    <para>Historically, traffic shaping was implemented first. Packet and
+    connection marks were limited to the values 1-255.</para>
+
+    <para>When Multi-ISP support was added, packet marks assigned to providers
+    were also restricted to the range 1-255. This worked because the provider
+    mark is assigned in the <ulink url="NetfilterOverview.html">PREROUTING and
+    OUTPUT chains and is only needed until the packet is routed</ulink>.
+    Traffic shaping marks can then be assigned in the FORWARD or POSTROUTING
+    chains.</para>
+
+    <para>The <emphasis role="bold">track</emphasis> provider option requires
+    that the provider's mark be stored in the connection mark. So if <emphasis
+    role="bold">track</emphasis> was used, the user could not store the
+    traffic shaping mark in the connection because it would overwrite the
+    provider mark. To solve this problem, the HIGH_ROUTE_MARK option was added
+    to <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).
+    With HIGH_ROUTE_MARKS=Yes, the traffic shaping mark remained in the
+    low-order byte of the mark value while the traffic-shaping mark value was
+    stored in the next byte. </para>
+
+    <para>In the introduction of per-IP traffic-shaping classes Shorewall 4.4,
+    there was a need for more than 255 distinct mark-based traffic shaping
+    classes. To accomodate that need, the WIDE_TC_MARKS option was introduced.
+    With WIDE_TC_MARKS=Yes, the provider mark is moved left one additional
+    byte in the mark and the traffic-shaping mark is widened to 14 bits. The
+    two bits between the traffic-shaping mark and provider mark are
+    unused.</para>
+
+    <para>Netfilter marks are only 32 bits wide, even on 64-bit architectures.
+    So with WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=Yes, 22 of the 32 bits are
+    used and allocating bits for additional uses becomes difficult. To address
+    that issue, Shorewall 4.5 introduced the notion of
+    <firstterm>variable-width mark fields</firstterm>.</para>
+
+    <para>Variable-width marks are controlled by four options in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5):</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>TC_BITS</term>
+
+        <listitem>
+          <para>Number of bits reserved at the low-order end of of the mark
+          for traffic classification. May be zero (0) if traffic shaping marks
+          are not used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>MASK_BITS</term>
+
+        <listitem>
+          <para>Number of 1 bits in the default mask when specifying a test on
+          the packet or connection mark. These tests appear in the TEST column
+          of <ulink
+          url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink> (5)
+          and in the MARK columns of <ulink
+          url="manpages/shorewall-accounting.html">shorewall-accounting</ulink>
+          (5), <ulink
+          url="manpages/shorewall-masq.html">shorewall-masq</ulink> (5) and
+          <ulink url="manpages/shorewall-tos.html">shorewall-tos</ulink>
+          (5).</para>
+
+          <para>The bits defined by the default mask are also retained after a
+          packet is routed. The remaining bits are cleared.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROVIDER_BITS</term>
+
+        <listitem>
+          <para>Number of bits reserved in the mark for provider marks. May be
+          zero if policy routing is not used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROVIDER_OFFSET</term>
+
+        <listitem>
+          <para>The offset, in bits, of the provider mark value from the
+          low-order end of the mark. If zero, the provider mark and traffic
+          shaping mark occupy the same part of the mark.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>To make the transition to variable-width marks as transparent as
+    possible, the default values of the new options are derived from the
+    settings of the old ones.</para>
+
+    <table>
+      <title>Default Values of Variable-width Mark Fields</title>
+
+      <tgroup cols="6">
+        <tbody>
+          <row>
+            <entry><emphasis role="bold">HIGH_ROUTE_MARKS</emphasis></entry>
+
+            <entry><emphasis role="bold">WIDE_TC_MARKS</emphasis></entry>
+
+            <entry><emphasis role="bold">TC_BITS</emphasis></entry>
+
+            <entry><emphasis role="bold">MASK_BITS</emphasis></entry>
+
+            <entry><emphasis role="bold">PROVIDER_BITS</emphasis></entry>
+
+            <entry><emphasis role="bold">PROVIDER_OFFSET</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>No</entry>
+
+            <entry>No</entry>
+
+            <entry>8</entry>
+
+            <entry>8</entry>
+
+            <entry>8</entry>
+
+            <entry>0</entry>
+          </row>
+
+          <row>
+            <entry>Yes</entry>
+
+            <entry>No</entry>
+
+            <entry>8</entry>
+
+            <entry>8</entry>
+
+            <entry>8</entry>
+
+            <entry>8</entry>
+          </row>
+
+          <row>
+            <entry>No</entry>
+
+            <entry>Yes</entry>
+
+            <entry>14</entry>
+
+            <entry>16</entry>
+
+            <entry>8</entry>
+
+            <entry>0</entry>
+          </row>
+
+          <row>
+            <entry>Yes</entry>
+
+            <entry>Yes</entry>
+
+            <entry>14</entry>
+
+            <entry>16</entry>
+
+            <entry>8</entry>
+
+            <entry>16</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>These defaults may be overridden by explicitly setting the new
+    options.</para>
+
+    <para>There are a couple of restrictions regarding the setting of those
+    options.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>MASK_BITS must be greater than or equal to TC_BITS. Shorewall
+        will automatically adjust the value (given or defaulted) to meet this
+        requirment.</para>
+      </listitem>
+
+      <listitem>
+        <para>If PROVIDER_OFFSET is non-zero, then its value must be greater
+        than or equal to MASK_BITS. Shorewall will automatically adjust the
+        given value of PROVIDER_OFFSET to meet this requirement.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Under verbosity levels 1 and 2 (see VERBOSITY in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)), the
+    compiler reports on the effect of the settings.</para>
+
+    <para>Example (with HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=Yes and the new
+    options left at their default values):</para>
+
+    <programlisting>        ******** Packet/Connection Mark Information ********
+        TC Mark Values       = 1 - 16383 (0x3fff)
+        Default Mask         = /0xffff
+        Provider Mark Values = 0x10000 - 0xff0000
+        ****************************************************</programlisting>
+  </section>
+
   <section id="Levels">
     <title>Shorewall Configurations</title>
 

@@ -2468,6 +2468,15 @@ sub get_configuration( $ ) {
     $globals{PROVIDER_MIN}           = 1 << $config{PROVIDER_OFFSET};
     $globals{PROVIDER_MASK}          = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
 
+    progress_message2 "\n   ******** PACKET/CONNECTION MARK LAYOUT ********";
+    if ( $config{TC_BITS} ) {
+	progress_message2 "   TC MARKS                   = 1 - $globals{TC_MAX} (" . in_hex( $globals{TC_MAX} ) . ')';
+	progress_message2 '   TC MASK                    = ' . in_hex( $globals{TC_MASK} );
+    }
+
+    progress_message2( '   PROVIDER MARKS             = ' . in_hex( $globals{PROVIDER_MIN} ) . ' - ' . in_hex( $globals{PROVIDER_MASK} ) ) if $config{PROVIDER_BITS};
+    progress_message2 "   ***********************************************\n";
+
     if ( defined ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;
     } else {

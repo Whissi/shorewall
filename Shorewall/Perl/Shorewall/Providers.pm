@@ -302,11 +302,11 @@ sub add_a_provider( ) {
 
 	$val = numeric_value $mark;
 
-	fatal_error "Invalid Mark Value ($mark)" unless defined $val;
+	fatal_error "Invalid Mark Value ($mark)" unless defined $val && $val;
 
 	verify_mark $mark;
 
-	fatal_error "Invalid Mark Value ($mark)" if $val < $globals{PROVIDER_MIN} || $val > $globals{PROVIDER_MASK};
+	fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
 
 	for my $providerref ( values %providers  ) {
 	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;

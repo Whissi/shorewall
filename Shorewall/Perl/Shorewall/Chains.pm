@@ -1469,8 +1469,12 @@ sub verify_mark( $ ) {
     fatal_error "Invalid Mark or Mask value ($mark)"
 	unless defined( $value ) && $value <= $limit;
 
-    fatal_error "Invalid High Mark or Mask value ($mark)"
-	if ( $value > $mask && $value & $mask );
+    if ( $value > $mask ) {
+	#
+	# Not a valid TC mark -- must be a provider mark
+	#
+	fatal_error "Invalid Mark or Mask value ($mark)" unless ( $value & $globals{PROVIDER_MASK} ) == $value;
+    }
 }
 
 sub verify_small_mark( $ ) {

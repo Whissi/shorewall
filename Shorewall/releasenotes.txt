@@ -38,8 +38,8 @@ None.
        			  used for traffic shaping must have a value
        			  between 1 and 2**TC_BITS - 1.
 
-        PROVIDER_OFFSET   The offset from the least-significant end of
-       			  the mark where the provider mark field
+        PROVIDER_OFFSET   The offset in bits from the least-significant
+			  end of the mark where the provider mark field
        			  begins. If zero, the provider mark occupies
        			  the same area as the traffic shaping
        			  mark. Otherwise, the value specified must
@@ -65,44 +65,62 @@ None.
     The default values of these new options depend on WIDE_TC_MARKS and
     HIGH_ROUTE_MARKS as follows:
 
-    WIDE_TC_MARKS=No and HIGH_ROUTE_MARKS=No; both the traffic shaping
-    mark and the provider mark occupy the low-order 8 bits of the mark.
+        WIDE_TC_MARKS=No and HIGH_ROUTE_MARKS=No; both the traffic shaping
+    	mark and the provider mark occupy the low-order 8 bits of the mark.
 
-        TC_BITS	     	 8
-	PROVIDER_OFFSET	 0
-	PROVIDER_BITS	 8
-	MASK_BITS	 8
+             TC_BITS	     	 8
+	     PROVIDER_OFFSET	 0
+	     PROVIDER_BITS	 8
+	     MASK_BITS	 8
 
-   WIDE_TC_MARKS=No and HIGH_ROUTE_MARKS=Yes; the traffic shaping mark
-   occupies the low-order 8 bits of the mark and the provider mark
-   occupies the next 8 bits.
+   	WIDE_TC_MARKS=No and HIGH_ROUTE_MARKS=Yes; the traffic shaping
+   	mark occupies the low-order 8 bits of the mark and the provider
+   	mark occupies the next 8 bits.
 
-   	TC_BITS	    	 8
-	PROVIDER_OFFSET	 8
-	PROVIDER_BITS	 8
-	MASK_BITS	 8
+   	     TC_BITS	    	 8
+	     PROVIDER_OFFSET	 8
+	     PROVIDER_BITS	 8
+	     MASK_BITS	 8
 
-   WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=No; the traffic shaping mark
-   occupies the low-order 14 bits of the mark and the provider mark
-   occupies the low-order 8 bits.
+   	WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=No; the traffic shaping
+   	mark occupies the low-order 14 bits of the mark and the
+   	provider mark occupies the low-order 8 bits.
 
-   	TC_BITS	    	 14
-	PROVIDER_OFFSET	 0
-	PROVIDER_BITS	 8
-	MASK_BITS	 16
+   	     TC_BITS	    	 14
+	     PROVIDER_OFFSET	 0
+	     PROVIDER_BITS	 8
+	     MASK_BITS	 16
 
-   WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=Yes; the traffic shaping mark
-   occupies the low-order 14 bits of the mark followed by two unused
-   bits followed by the 8-bit provider mark.
+   	WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=Yes; the traffic shaping
+   	mark occupies the low-order 14 bits of the mark followed by two
+   	unused bits followed by the 8-bit provider mark.
  
-   	TC_BITS	    	 14
-	PROVIDER_OFFSET	 16
-	PROVIDER_BITS	 8
-	MASK_BITS	 16
+	     TC_BITS	    	 14
+	     PROVIDER_OFFSET	 16
+	     PROVIDER_BITS	 8
+	     MASK_BITS	 16
 
     These defaults provide behavior that is compatable with the earlier
     implementation. They may be overridden by setting the new options
     directly.
+
+    At verbosity levels 1 and 2, the compiler provides information as
+    follows (this example is with HIGH_ROUTE_MARKS=Yes and
+    WIDE_TC_MARKS=Yes and none of the new options set explicitly):
+
+	******** Packet/Connection Mark Information ********
+	TC Mark Values       = 1 - 16383 (0x3fff)
+   	Default Mask         = /0xffff
+   	Provider Mark Values = 0x10000 - 0xff0000
+   	****************************************************
+    
+    As shown, the information includes the range of acceptable TC mark
+    values, the default mask in MARK columns (TEST column in
+    /etc/shorewall/tcrules) and the range of acceptable provider mark
+    values. The default mask is determined by the setting of MASK_BITS.
+
+
+
 
     
 

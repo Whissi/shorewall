@@ -251,8 +251,6 @@ sub add_a_provider( ) {
 
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
-    fatal_error "Providers may not be defined when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
-
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
     my $num = numeric_value $number;
@@ -307,6 +305,8 @@ sub add_a_provider( ) {
 	verify_mark $mark;
 
 	fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
+
+	fatal_error "Provider MARK may not be specified when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
 
 	for my $providerref ( values %providers  ) {
 	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;

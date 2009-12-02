@@ -1260,11 +1260,13 @@ Comcast 2        0x20000 main       COM_IF     detect          balance          
     <para>The use of marks for traffic shaping classification is optional.
     Traffic shaping classes may be defined with the <emphasis
     role="bold">classify</emphasis> option which avoids the need to assign a
-    mark value to the class. Each multi-ISP <firstterm>providers</firstterm>
-    must have a unique mark value assigned to it.</para>
+    mark value to the class. The assignment of a unique mark value to each
+    <firstterm>provider</firstterm> is required in most Multi-ISP
+    configurations.</para>
 
-    <para>Historically, traffic shaping was implemented first. Packet and
-    connection marks were limited to the values 1-255.</para>
+    <para>Traffic shaping was implemented before policy routing. Traffic
+    shaping packet and connection marks were initially limited to the values
+    1-255.</para>
 
     <para>When Multi-ISP support was added, packet marks assigned to providers
     were also restricted to the range 1-255. This worked because the provider
@@ -1281,7 +1283,7 @@ Comcast 2        0x20000 main       COM_IF     detect          balance          
     to <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).
     With HIGH_ROUTE_MARKS=Yes, the traffic shaping mark remained in the
     low-order byte of the mark value while the traffic-shaping mark value was
-    stored in the next byte. </para>
+    stored in the next byte.</para>
 
     <para>In the introduction of per-IP traffic-shaping classes Shorewall 4.4,
     there was a need for more than 255 distinct mark-based traffic shaping
@@ -1356,7 +1358,7 @@ Comcast 2        0x20000 main       COM_IF     detect          balance          
     settings of the old ones.</para>
 
     <table>
-      <title>Default Values of Variable-width Mark Fields</title>
+      <title>Default Values of Variable-width Mark Field Options</title>
 
       <tgroup cols="6">
         <tbody>

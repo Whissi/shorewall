@@ -735,9 +735,9 @@ sub setup_providers() {
     my $fn = open_file 'providers';
 
     first_entry sub() {
+	progress_message2 "$doing $fn...";
 	emit "\nif [ -z \"\$NOROUTES\" ]; then";
 	push_indent;
-	progress_message2 "$doing $fn...";
 	start_providers; };
 
     add_a_provider, $providers++ while read_a_line;
@@ -762,7 +762,7 @@ sub setup_providers() {
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
 	#
-	# This completes the if block begun in the first_entry closure
+	# This completes the if-block begun in the first_entry closure above
 	#
 	pop_indent;
 	emit "fi\n";

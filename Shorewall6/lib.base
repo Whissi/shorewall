@@ -260,7 +260,7 @@ reload_kernel_modules() {
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
-    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter:/lib/modules/$(uname -r)/kernel/net/sched
     MODULES=$(lsmod | cut -d ' ' -f1)
 
     for directory in $(split $MODULESDIR); do
@@ -296,7 +296,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter:/lib/modules/$(uname -r)/kernel/net/sched
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"

@@ -255,7 +255,7 @@ reload_kernel_modules() {
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \
-	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
 
     MODULES=$(lsmod | cut -d ' ' -f1)
 
@@ -294,7 +294,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \
-	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"

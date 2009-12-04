@@ -73,7 +73,7 @@ get_config() {
 
 	    if [ -n "$(syslog_circular_buffer)" ]; then
 		LOGREAD="logread | tac"
-	    elif [ -f $LOGFILE ]; then
+	    elif [ -r $LOGFILE ]; then
 		LOGREAD="tac $LOGFILE"
 	    else
 		echo "LOGFILE ($LOGFILE) does not exist!" >&2

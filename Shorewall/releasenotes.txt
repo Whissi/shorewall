@@ -884,6 +884,41 @@ None.
     ip6tables in the same directory as the discovered iptables will be
     used.
 
+28) A 'flow=<keys>' option has been added to the
+    /etc/shorewall/tcclasses.
+
+    Shorewall attaches an SFQ queuing discipline to each leaf HTB
+    class. SFQ ensures that each flow gets equal access to the
+    interface. The default definition of a flow corresponds roughly to
+    a Netfilter connection. So if one internal system is running
+    BitTorrent, for example, it can have lots of 'flows' and can thus
+    take up a larger share of the bandwidth than a system having only a
+    single active connection. The flow classifier (module cls_flow)
+    works around this by letting you define what a 'flow' is.
+
+    The clasifier must be used carefully or it can block off all
+    traffic on an interface!
+
+    The flow option can be specified for an HTB leaf class (one that
+    has no sub-classes). We recommend that you use the following:
+
+    	Shaping internet-bound traffic: flow=nfct-src
+	Shaping traffic bound for your local net: flow=dst
+
+    These will cause a 'flow' to consists of the traffic to/from each
+    internal system.
+
+    When more than one key is give, they must be enclosed in
+    parenthesis and separated by commas.
+
+    To see a list of the possible flow keys, run this command:
+
+       tc filter add flow help
+
+    Those that begin with "nfct-" are Netfilter connection tracking
+    fields. As shown above, we recommend flow=nfct-src; that means that
+    we want to use the source IP address before SNAT as the key.
+
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
 ----------------------------------------------------------------------------

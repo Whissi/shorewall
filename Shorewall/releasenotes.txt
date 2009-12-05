@@ -919,6 +919,54 @@ None.
     fields. As shown above, we recommend flow=nfct-src; that means that
     we want to use the source IP address before SNAT as the key.
 
+    Note: Shorewall cannot determine ahead of time if the flow
+    classifier is available in your kernel (especially if it was built
+    into the kernel as opposed to being loaded as a
+    module). Consequently, you should check ahead of time to ensure
+    that both your kernel and 'tc' utility support the feature.
+
+    You can test the 'tc' utility by typing (as root):
+
+    	tc filter add flow help
+
+    If flow is supported, you will see:
+
+       Usage: ... flow ...
+
+       	      [mapping mode]: map key KEY [ OPS ] ...
+ 	      [hashing mode]: hash keys KEY-LIST ...
+
+       ...
+
+    If flow is not supported, you will see:
+
+       Unknown filter "flow", hence option "help" is unparsable
+    
+    If your kernel supports module autoloading, just type (as root):
+
+       modprobe cls_flow
+
+    If 'flow' is supported, no output is produced; otherwise, you will
+    see:
+
+       FATAL: Module cls_flow not found.
+    
+    If your kernel is not modularized or does not support module
+     autoloading, look at your kernel configuration (either
+    /proc/config.gz or the .config file in
+    /lib/modules/<kernel-version>/build/
+
+    If 'flow' is supported, you will see:
+
+       NET_CLS_FLOW=m 
+
+    or
+
+       NET_CLS_FLOW=y
+
+    For modularized kernels, Shorewall will attempt to load
+    /lib/modules/<kernel-version>/net/sched/cls_flow.ko by default.
+       
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
 ----------------------------------------------------------------------------

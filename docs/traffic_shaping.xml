@@ -659,6 +659,59 @@ ppp0           6000kbit         500kbit</programlisting>
               tracking fields. As shown above, we recommend flow=nfct-src;
               that means that we want to use the source IP address
               <emphasis>before SNAT</emphasis> as the key.</para>
+
+              <note>
+                <para> Shorewall cannot determine ahead of time if the flow
+                classifier is available in your kernel (especially if it was
+                built into the kernel as opposed to being loaded as a module).
+                Consequently, you should check ahead of time to ensure that
+                both your kernel and 'tc' utility support the feature.</para>
+
+                <para>You can test the 'tc' utility by typing (as
+                root):</para>
+
+                <blockquote>
+                  <para><command>tc filter add flow help</command></para>
+                </blockquote>
+
+                <para>If flow is supported, you will see:</para>
+
+                <programlisting>   Usage: ... flow ...
+
+      [mapping mode]: map key KEY [ OPS ] ...
+      [hashing mode]: hash keys KEY-LIST ...
+
+   ...</programlisting>
+
+                <para> If 'flow' is not supported, you will see:</para>
+
+                <programlisting>   Unknown filter "flow", hence option "help" is unparsable</programlisting>
+
+                <para>If your kernel supports module autoloading, just type
+                (as root):</para>
+
+                <blockquote>
+                  <para><command>modprobe cls_flow</command></para>
+                </blockquote>
+
+                <para>If 'flow' is supported, no output is produced;
+                otherwise, you will see:</para>
+
+                <programlisting>   FATAL: Module cls_flow not found.</programlisting>
+
+                <para>If your kernel is not modularized or does not support
+                module autoloading, look at your kernel configuration (either
+                <filename>/proc/config.gz</filename> or the
+                <filename>.config</filename> file in <filename
+                class="directory">/lib/modules/&lt;kernel-version&gt;/build/</filename></para>
+
+                <para>If 'flow' is supported, you will see: NET_CLS_FLOW=m or
+                NET_CLS_FLOW=y.</para>
+
+                <para>For modularized kernels, Shorewall will attempt to load
+                <filename>/lib/modules/&lt;kernel-version&gt;/net/sched/cls_flow.ko</filename>
+                by default. </para>
+              </note>
             </listitem>
 
             <listitem>

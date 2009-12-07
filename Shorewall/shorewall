@@ -1231,8 +1231,10 @@ reload_command() # $* = original arguments less the command.
 	    ensure_config_path
 	fi
 
+	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
+
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES /usr/share/shorewall-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" /usr/share/shorewall-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi

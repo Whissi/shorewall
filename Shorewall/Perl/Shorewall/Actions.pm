@@ -311,10 +311,10 @@ sub map_old_actions( $ ) {
 # Create and record a log action chain -- Log action chains have names
 # that are formed from the action name by prepending a "%" and appending
 # a 1- or 2-digit sequence number. In the functions that follow,
-# the CHAIN, LEVEL and TAG variable serves as arguments to the user's
+# the $chain, $level and $tag variable serves as arguments to the user's
 # exit. We call the exit corresponding to the name of the action but we
-# set CHAIN to the name of the iptables chain where rules are to be added.
-# Similarly, LEVEL and TAG contain the log level and log tag respectively.
+# set $chain to the name of the iptables chain where rules are to be added.
+# Similarly, $level and $tag contain the log level and log tag respectively.
 #
 # The maximum length of a chain name is 30 characters -- since the log
 # action chain name is 2-3 characters longer than the base chain name,

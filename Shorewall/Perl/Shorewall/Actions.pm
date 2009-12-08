@@ -88,6 +88,8 @@ our $family;
 
 our @builtins;
 
+our $oldmacros;
+
 #
 # Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
 #
@@ -120,6 +122,8 @@ sub initialize( $ ) {
     } else {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
     }
+
+    $oldmacros = 0;
 }
 
 #
@@ -248,7 +252,9 @@ sub isolate_basic_target( $ ) {
 sub get_target_param( $ ) {
     my ( $target, $param ) = split '/', $_[0];
 
-    unless ( defined $param ) {
+    if ( defined $param ) {
+	warning_message "The form <macro>/<param> is deprecated in favor of <macro>(<param>)" unless $oldmacros++;
+    } else {
 	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
     }
 

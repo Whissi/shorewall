@@ -646,6 +646,7 @@ sub move_rules( $$ ) {
 
     if ( $chain1->{referenced} ) {
 	my $name  = $chain1->{name};
+	my $rules = $chain2->{rules};
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
@@ -653,7 +654,12 @@ sub move_rules( $$ ) {
 
 	( s/\-([AI]) $name /-$1 $chain2->{name} / ) for @{$chain1->{rules}};
 
-	splice @{$chain2->{rules}}, 0, 0, @{$chain1->{rules}};
+	splice @{$rules}, 0, 0, @{$chain1->{rules}};
+	#
+	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
+	# This hack avoids that.
+	#
+	shift @{$rules} if @{$rules} > 1 && $rules->[0] eq $rules->[1];
 
 	$chain2->{referenced} = 1;
 	$chain1->{referenced} = 0;

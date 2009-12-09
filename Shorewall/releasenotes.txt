@@ -123,6 +123,16 @@ None.
     /etc/shorewall/tcrules) and the range of acceptable provider mark
     values. The default mask is determined by the setting of MASK_BITS.
 
+2)  The OPTIMIZE option is now a bit-map with each bit controlling a
+    separate set of optimizations. 
+
+    - The low-order bit (value 1) controls optimizations available in
+      earlier releases.
+
+    - The next bit (value 2) suppresses superfluous ACCEPT rules in a
+      policy chain that implements an ACCEPT policy. Any ACCEPT rules
+      that immediately preceed the final blanket ACCEPT rule in the
+      chain are now omitted.
 
 
 

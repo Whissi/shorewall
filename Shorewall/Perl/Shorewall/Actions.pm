@@ -580,7 +580,7 @@ sub process_actions2 () {
 	for my $target (keys %usedactions) {
 	    my ($action, $level) = split_action $target;
 	    my $actionref = $actions{$action};
-	    fatal_error "Null Action Reference in process_actions2" unless $actionref;
+	    assert( $actionref );
 	    for my $action1 ( keys %{$actionref->{requires}} ) {
 		my $action2 = merge_levels $target, $action1;
 		unless ( $usedactions{ $action2 } ) {

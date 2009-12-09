@@ -2578,10 +2578,9 @@ sub get_configuration( $ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
 
-    $val = $config{OPTIMIZE};
+    $val = numeric_value $config{OPTIMIZE};
 
-    fatal_error "Invalid OPTIMIZE value ($val)" unless ( $val eq '0' ) || ( $val eq '1' );
-
+    fatal_error "Invalid OPTIMIZE value ($val)" unless defined( $val ) && $val >= 0 && $val <= 3;
 
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 

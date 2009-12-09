@@ -958,7 +958,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
     my $actionchainref;
-    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;
+    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
 
     unless ( defined $param ) {
 	( $basictarget, $param ) = ( $1, $2 ) if $action =~ /^(\w+)[(](.*)[)]$/;
@@ -1917,7 +1917,7 @@ sub generate_matrix() {
 	my @dest_zones;
 	my $last_chain = '';
 
-	if ( $config{OPTIMIZE} > 0 ) {
+	if ( $config{OPTIMIZE} & 1 ) {
 	    my @temp_zones;
 
 	    for my $zone1 ( @zones )  {

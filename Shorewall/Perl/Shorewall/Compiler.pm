@@ -796,6 +796,10 @@ sub compiler {
 	# Generate the zone by zone matrix
 	#
 	generate_matrix;
+	#
+	# Optimize Policy Chains
+	#
+	optimize_policy_chains if $config{OPTIMIZE} & 2;
 
 	enable_script;
 	#

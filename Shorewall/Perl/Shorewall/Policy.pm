@@ -32,7 +32,7 @@ use Shorewall::Actions;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies );
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains);
 our @EXPORT_OK = qw(  );
 our $VERSION = '4.4_5';
 
@@ -370,7 +370,7 @@ sub validate_policy()
 sub policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
 
-    unless ( $target eq 'NONE' ) {
+    unless ( $target eq 'NONE' && ( $default eq 'none' || ! $default ) ) {
 	add_rule $chainref, "-d 224.0.0.0/4 -j RETURN" if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
 	add_rule $chainref, "-j $default" if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
@@ -494,6 +494,15 @@ sub setup_syn_flood_chains() {
 		if $level ne '';
 	    add_rule $synchainref, '-j DROP';
 	}
+    }
+}
+
+#
+# Optimize Policy chains with ACCEPT policy
+#
+sub optimize_policy_chains() {
+    for my $chainref ( grep $_->{policy} eq 'ACCEPT', @policy_chains ) {
+	optimize_chain ( $chainref );
     }
 }
 

@@ -113,6 +113,7 @@ our %EXPORT_TAGS = (
 				       new_nat_chain
 				       ensure_filter_chain
 				       finish_section
+				       optimize_chain
 				       setup_zone_mss
 				       newexclusionchain
 				       newnonatchain
@@ -1187,6 +1188,25 @@ sub finish_section ( $ ) {
 	    my $chainref = $chain_table{'filter'}{rules_chain( $zone, $zone1 )};
 	    finish_chain_section $chainref, $sections if $chainref->{referenced};
 	}
+    }
+}
+
+#
+# Delete redundant ACCEPT rules from the end of a policy chain whose policy is ACCEPT
+#
+sub optimize_chain( $ ) {
+    my $chainref = shift;
+
+    if ( $chainref->{referenced} ) {
+	my $rules    = $chainref->{rules};
+    
+	pop @$rules;
+
+	while ( @$rules && $rules->[-1] =~ /-j ACCEPT/ ) {
+	    pop @$rules;
+	}
+
+	add_rule $chainref, '-j ACCEPT';
     }
 }
 

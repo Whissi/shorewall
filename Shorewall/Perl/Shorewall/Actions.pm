@@ -390,7 +390,7 @@ sub createsimpleactionchain( $ ) {
 }
 
 #
-# Create an action chain and run it's associated user exit
+# Create an action chain and run its associated user exit
 #
 sub createactionchain( $ ) {
     my ( $action , $level ) = split_action $_[0];

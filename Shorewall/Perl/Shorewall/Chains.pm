@@ -2754,7 +2754,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	add_rule( $echainref, $exceptionrule . $target, 1 ) unless $disposition eq 'LOG';
     } else {
 	#
-	# No exclusions -- save original chain
+	# No exclusions
 	#
 	my $savechainref = $chainref;
 
@@ -2766,11 +2766,6 @@ sub expand_rule( $$$$$$$$$$;$ )
 		$source_match = match_source_net( $inet, $restriction ) if $capabilities{KLUDGEFREE};
 
 		for my $dnet ( mysplit $dnets ) {
-		    #
-		    # Restore original Chain
-		    #
-		    $chainref = $savechainref;
-
 		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet );
 		    my $predicates = join( '', $rule, $source_match, $dest_match, $onet );
@@ -2791,7 +2786,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 				#
 				log_rule_limit(
 					       $loglevel ,
-					       $chainref = $logchainref ,
+					       $logchainref ,
 					       $chain ,
 					       $disposition ,
 					       '',
@@ -2799,7 +2794,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 					       'add',
 					       '' );
 
-				add_rule( $chainref, $exceptionrule . $target );
+				add_rule( $logchainref, $exceptionrule . $target );
 			    } else {
 				log_rule_limit(
 					       $loglevel ,

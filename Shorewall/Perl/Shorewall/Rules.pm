@@ -425,11 +425,12 @@ sub add_common_rules() {
     my $list;
     my $chain;
 
-    new_standard_chain 'dynamic';
-
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
 
-    add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
+    if ( $config{DYNAMIC_BLOCKLIST} ) {
+	new_standard_chain 'dynamic';
+	add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
+    }
 
     setup_mss;
 

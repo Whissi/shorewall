@@ -878,6 +878,12 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
     local finished
     finished=$2
 
+    if ! chain_exists dynamic; then
+	echo "Dynamic blacklisting is not enabled in the current $PRODUCT configuration" >&2
+	[ -n "$nolock" ] || mutex_off
+	exit 2
+    fi
+
     shift 3
 
     while [ $# -gt 0 ]; do
@@ -999,6 +1005,11 @@ allow_command() {
     [ -n "$debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
     if shorewall6_is_started ; then
+	if ! chain_exists dynamic; then
+	    echo "Dynamic blacklisting is not enabled in the current $PRODUCT configuration" >&2
+	    exit 2
+	fi
+
 	[ -n "$nolock" ] || mutex_on
 	while [ $# -gt 1 ]; do
 	    shift

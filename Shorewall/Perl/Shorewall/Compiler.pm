@@ -789,7 +789,7 @@ sub compiler {
     #
     # Accounting.
     #
-    setup_accounting;
+    setup_accounting if $config{ACCOUNTING};
 
     if ( $scriptfilename ) {
 	#

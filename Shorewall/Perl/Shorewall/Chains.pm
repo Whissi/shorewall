@@ -196,6 +196,7 @@ our $VERSION = '4.4_4';
 #                                                                 <rule2>
 #                                                                 ...
 #                                                               ]
+#                                               logchains    => { <key1> = <chainref1>, ... }
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -1269,6 +1270,39 @@ sub newlogchain() {
     my $seq = $chainseq++;
     "log${seq}";
 }
+
+#
+# If there is already a logging chain associated with the passed rules chain that matches these
+# parameters, then return a reference to it.
+#
+# Otherwise, create such a chain and store a reference in chainref's 'logchains' hash. Return the
+# reference.
+#
+sub logchain( $$$$$$ ) {
+    my ( $chainref, $loglevel, $logtag, $exceptionrule, $disposition, $target ) = @_;
+    my $key = join( ':', $loglevel, $logtag, $exceptionrule, $disposition, $target );
+    my $logchainref = $chainref->{logchains}{$key};
+
+    unless ( $logchainref ) {
+	$logchainref = $chainref->{logchains}{$key} = new_chain $chainref->{table}, newlogchain;
+	#
+	# Now add the log rule and target rule without predicates to the log chain.
+	#
+	log_rule_limit(
+		       $loglevel ,
+		       $logchainref ,
+		       $chainref->{name} ,
+		       $disposition ,
+		       '',
+		       $logtag,
+		       'add',
+		       '' );
+	
+	add_rule( $logchainref, $exceptionrule . $target );
+    }
+
+    $logchainref;
+}   
 
 sub newnonatchain() {
     my $seq = $chainseq++;
@@ -2770,10 +2804,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	add_rule( $echainref, $exceptionrule . $target, 1 ) unless $disposition eq 'LOG';
     } else {
 	#
-	# No exclusions -- save original chain
+	# No exclusions
 	#
-	my $savechainref = $chainref;
-
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
 	    for my $inet ( mysplit $inets ) {
@@ -2782,11 +2814,6 @@ sub expand_rule( $$$$$$$$$$;$ )
 		$source_match = match_source_net( $inet, $restriction ) if $capabilities{KLUDGEFREE};
 
 		for my $dnet ( mysplit $dnets ) {
-		    #
-		    # Restore original Chain
-		    #
-		    $chainref = $savechainref;
-
 		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet );
 		    my $predicates = join( '', $rule, $source_match, $dest_match, $onet );
@@ -2795,27 +2822,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 			if ( $disposition ne 'LOG' ) {
 			    unless ( $logname ) {
 				#
-				# Create a chain that both logs and applies the target action
+				# Find/Create a chain that both logs and applies the target action
+				# and jump to the log chain if all of the rule's conditions are met
 				#
-				my $logchainref = new_chain $chainref->{table}, newlogchain;
-				#
-				# Jump to the log chain if all of the rule's conditions are met
-				#
-				add_jump( $chainref, $logchainref, $builtin_target{$disposition},  $predicates, 1 );
-				#
-				# Now add the log rule and target rule without predicates to the log chain.
-				#
-				log_rule_limit(
-					       $loglevel ,
-					       $chainref = $logchainref ,
-					       $chain ,
-					       $disposition ,
-					       '',
-					       $logtag,
-					       'add',
-					       '' );
-
-				add_rule( $chainref, $exceptionrule . $target );
+				add_jump( $chainref, 
+					  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ), 
+					  $builtin_target{$disposition},  
+					  $predicates,
+					  1 );
 			    } else {
 				log_rule_limit(
 					       $loglevel ,

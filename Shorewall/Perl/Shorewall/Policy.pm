@@ -504,6 +504,12 @@ sub optimize_policy_chains() {
     for my $chainref ( grep $_->{policy} eq 'ACCEPT', @policy_chains ) {
 	optimize_chain ( $chainref );
     }
+
+    my $outputrules = $filter_table->{OUTPUT}{rules};
+
+    if ( @{$outputrules} && $outputrules->[-1] =~ /-j ACCEPT/ ) {
+	optimize_chain( $filter_table->{OUTPUT} );
+    }
 }
 
 1;

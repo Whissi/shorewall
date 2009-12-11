@@ -105,8 +105,11 @@
       <title>Overview</title>
 
       <para>Let's assume that a firewall is connected via two separate
-      Ethernet interfaces to two different ISPs as in the following
-      diagram.</para>
+      Ethernet interfaces to two different ISPs.<footnote>
+          <para>While we describe a setup using different ISPs in this
+          article, the facility also works with two uplinks from the same
+          ISP.</para>
+        </footnote> as in the following diagram.</para>
 
       <graphic align="center" fileref="images/TwoISPs.png" valign="middle" />
 
@@ -1208,7 +1211,10 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       <title>Gateway Monitoring and Failover</title>
 
       <para>There are a couple of options available for monitoring the status
-      of provider links and taking action when a failure occurs.</para>
+      of provider links and taking action when a failure occurs. Both of these
+      options assume that each provider has a unique nexthop gateway; if two
+      or more providers use the same gateway router then neither option is
+      suitable.</para>
 
       <para>You specify the <option>optional</option> option in
       <filename>/etc/shorewall/interfaces</filename>:</para>

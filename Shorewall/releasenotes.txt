@@ -138,10 +138,11 @@ None.
     separate chain was created for each logging rule.
 
 4)  Beginning with Shorewall 4.5.0, accounting can be disabled by
-    setting ACCOUNTING=No in shorewall.conf.
+    setting ACCOUNTING=No in shorewall.conf. This allows you to keep a
+    set of accounting rules configured in /etc/shorewall/accounting and
+    to then enable and disable them by simply toggling the setting of
+    ACCOUTING.
 
     Similarly, dynamic blacklisting can be disabled by setting
-    DYNAMIC_BLACKLIST=No. 
-
-    Each of these settings saves a jump rule in each of the built-in
-    filter chains (INPUT, OUTPUT and FORWARD).
+    DYNAMIC_BLACKLIST=No. This saves a jump rule in filter chains INPUT
+    and FORWARD.

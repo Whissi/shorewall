@@ -504,7 +504,9 @@ sub optimize_policy_chains() {
     for my $chainref ( grep $_->{policy} eq 'ACCEPT', @policy_chains ) {
 	optimize_chain ( $chainref );
     }
-
+    #
+    # Often, fw->all has an ACCEPT policy. This code allows optimization in that case
+    #
     my $outputrules = $filter_table->{OUTPUT}{rules};
 
     if ( @{$outputrules} && $outputrules->[-1] =~ /-j ACCEPT/ ) {

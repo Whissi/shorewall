@@ -366,7 +366,9 @@ sub initialize( $ ) {
     $idiotcount         = 0;
     $idiotcount1        = 0;
     $warningcount       = 0;
-
+    #
+    # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
+    #
 }
 
 #

@@ -175,10 +175,10 @@ Shorewall 4.4.5
 
 1)  The change which removed the 15 port limitation on
     /etc/shorewall/routestopped was incomplete. The result was that if
-    more than 15 ports are listed, an error was generated.
+    more than 15 ports were listed, an error was generated.
 
-2)  If any interfaces have the 'bridge' option specified, compilation
-    fails with the error:
+2)  If any interfaces had the 'bridge' option specified, compilation
+    failed with the error:
 
     Undefined subroutine &Shorewall::Rules::match_source_interface called 
     at /usr/share/shorewall/Shorewall/Rules.pm line 2319.
@@ -196,11 +196,11 @@ Shorewall 4.4.5
     module; previously, only Shorewall attempts to load that module.
 
 6)  The Shorewall6-lite shorecap program was previously including the
-    incorrect library. Also, Shorewall6 capability detection was
-    determing the availablity of the mangle capability before it had
-    determined if ip6tables was installed.
+    IPv4 base library rather than the IPv6 version. Also, Shorewall6
+    capability detection was determing the availablity of the mangle
+    capability before it had determined if ip6tables was installed.
 
-7)  The setting of MODULE_SUFFIX was being ignored except when
+7)  The setting of MODULE_SUFFIX was previously ignored except when
     compiling for export.
 
 8)  Detection of the Enhanced Reject capability in the compiler was

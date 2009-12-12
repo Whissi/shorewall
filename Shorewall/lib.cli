@@ -453,9 +453,7 @@ show_command() {
     case "$1" in
 	connections)
 	    [ $# -gt 1 ] && usage 1
-	    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-	    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-	    echo "$PRODUCT $version Connections ($count out of $max) at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $version Connections at $HOSTNAME - $(date)"
 	    echo
 	    [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
 	    ;;
@@ -730,10 +728,7 @@ dump_command() {
     heading "Raw Table"
     $IPTABLES -t raw -L $IPT_OPTIONS
 
-    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-
-    heading "Conntrack Table ($count out of $max)"
+    heading "Conntrack Table"
     [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
 
     heading "IP Configuration"

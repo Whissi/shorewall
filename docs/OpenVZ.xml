@@ -233,7 +233,7 @@ vz       venet0             -              routeback,rp_filter=0</programlisting
     </variablelist>
 
     <para>if you see annoying error messages as shown below during
-    start/restart, remove the module-init-tools package.</para>
+    start/restart, remove the module-init-tools package from the VE.</para>
 
     <programlisting>server:/etc/shorewall # shorewall restart
 Compiling...
@@ -476,7 +476,7 @@ INT_IF=eth1
 net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0,<emphasis
             role="bold">proxyarp=1</emphasis>
 loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
-<emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=1,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
+<emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
 ...</programlisting>This is a multi-ISP configuration so entries are required
       in <filename>/etc/shorewall/route_rules</filename>:</para>
 

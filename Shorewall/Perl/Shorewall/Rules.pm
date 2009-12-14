@@ -1130,6 +1130,9 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	}
 
 	$chain    = rules_chain( ${sourcezone}, ${destzone} );
+	#
+	# Ensure that the chain exists but don't mark it as referenced until after optimization is checked
+	#
 	$chainref = ensure_chain 'filter', $chain;
 	$policy   = $chainref->{policy};
 

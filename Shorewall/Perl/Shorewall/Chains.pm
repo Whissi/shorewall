@@ -2756,8 +2756,6 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# No exclusions
 	#
-	my $savechainref = $chainref;
-
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;
 	    for my $inet ( mysplit $inets ) {

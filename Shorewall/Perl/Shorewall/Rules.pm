@@ -961,10 +961,6 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     my $actionchainref;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
 
-    unless ( defined $param ) {
-	( $basictarget, $param ) = ( $1, $2 ) if $action =~ /^(\w+)[(](.*)[)]$/;
-    }
-
     $param = '' unless defined $param;
 
     #

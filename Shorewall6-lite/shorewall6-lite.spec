@@ -1,6 +1,6 @@
 %define name shorewall6-lite
 %define version 4.4.5
-%define release 0base
+%define release 1
 
 Summary: Shoreline Firewall 6 Lite is an ip6tables-based firewall for Linux systems.
 Name: %{name}
@@ -91,6 +91,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Sat Dec 19 2009 Tom Eastep tom@shorewall.net
+- Updated to 4.4.5-1
 * Fri Nov 27 2009 Tom Eastep tom@shorewall.net
 - Updated to 4.4.5-0base
 * Sat Nov 21 2009 Tom Eastep tom@shorewall.net

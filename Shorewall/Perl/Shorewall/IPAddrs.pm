@@ -26,7 +26,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 F_IPV4 F_IPV6 );
+use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 );
 use Socket;
 
 use strict;
@@ -302,7 +302,8 @@ sub validate_port( $$ ) {
     my $value;
 
     if ( $port =~ /^(\d+)$/ ) {
-	return $port if $port && $port <= 65535;
+	$port = numeric_value $port;
+	return $port if defined $port && $port && $port <= 65535;
     } else {
 	$proto = proto_name $proto if $proto =~ /^(\d+)$/;
 	$value = getservbyname( $port, $proto );

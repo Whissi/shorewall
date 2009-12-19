@@ -170,6 +170,51 @@ Shorewall 4.4.5 Patch Release 1.
     then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5 . 1
+----------------------------------------------------------------------------
+1)  In kernel 2.6.31, the handling of the rp_filter interface option was
+    chan ged incompatibly. Previously, the effective value was determined
+    by the setting of net.ipv4.config.dev.proxy_arp logically ANDed with
+    the setting of net.ipv4.config.all.proxy_arp.
+
+    Beginning with kernel 2.6.31, the value is the arithmetic MAX of
+    those two values. 
+
+    Given that Shorewall sets net.ipv4.config.all.proxy_arp to 1 if
+    there are any interfaces specifying 'routefilter', specifying
+    'routefilter' on any interface has the effect of setting the option
+    on all interfaces.
+
+    To allow Shorewall to handle this issue, a number of changes were
+    necessary:
+
+    a)  There is no way to safely determine if a kernel supports the
+        new semantics or the old so the Shorewall compiler uses the
+        kernel version reported by uname.
+
+    b)  This means that the kernel version is now recorded in
+        the capabilities file. So if you use capabilities files, you
+        need to regenerate the file with Shorewall[-lite] 4.4.5.1.
+
+    c)  If the capabilities file does not contain a kernel version,
+        the compiler assumes version 2.6.30 (the old rp_filter
+        behavior).
+
+    d)  The ROUTE_FILTER option in shorewall.conf now accepts the
+    	following values:
+
+	0 or Off - Shorewall sets net.ipv4.config.all.rp_filter to 0.
+	1 or On  - Shorewall sets net.ipv4.config.all.rp_filter to 1.
+	2        - Shorewall sets net.ipv4.config.all.rp_filter to 2.
+	Empty	 - Shorewall does not change the setting of
+	           net.ipv4.config.all.rp_filter if the kernel version
+		   is 2.6.31 or later.
+
+    e)  The 'routefilter' interface option can have values 0,1 or 2. If
+    	'routefilter' is specified without a value, the value 1 is
+    	assumed. 
+
+----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5
 ----------------------------------------------------------------------------
 

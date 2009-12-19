@@ -234,22 +234,10 @@ None.
     been created to handle the request. So such rules should probably
     exclude the firewall's IP addresses in the ORIGINAL DEST column.
 
-2)  Previously, the following sequence of policies would produce a
-    'Duplicate Policy' error:
-
-    	     $FW             all             ACCEPT
-    	     $FW             dmz             REJECT          info
-
-    Beginning with 4.4.5, this sequence produces the same result as this
-    one:
-
-    	     $FW             dmz             REJECT          info
-    	     $FW             all             ACCEPT
-
-3)  Systems that do not log Netfilter messages locally can now set
+2)  Systems that do not log Netfilter messages locally can now set
     LOGFILE=/dev/null in shorewall.conf.
 
-4)  The 'shorewall show connections' and 'shorewall dump' commands now
+3)  The 'shorewall show connections' and 'shorewall dump' commands now
     display the current number of connections and the max supported
     connections.
 

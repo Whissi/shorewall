@@ -2239,8 +2239,8 @@ sub read_capabilities() {
     }
 
     unless ( $capabilities{KERNELVERSION} ) {
-	warning_message "Your capabilities file does not contain a Kernel Version -- using the local kernel's version";
-	determine_kernelversion;
+	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
+	$capabilities{KERNELVERSION} = 20630;
     }
 }
 
@@ -2349,7 +2349,26 @@ sub get_configuration( $ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
-    check_trivalue ( 'ROUTE_FILTER',  '' );    fatal_error "ROUTE_FILTER=On is not supported in IPv6" if $config{ROUTE_FILTER} eq 'on' && $family == F_IPV6;
+    
+    my $val;
+
+    if ( $capabilities{KERNELVERSION} < 20631 ) {
+	check_trivalue ( 'ROUTE_FILTER',  '' );
+    } else {
+	$val = $capabilities{ROUTE_FILTER};
+	if ( defined $val ) {
+	    if ( $val =~ /\d+/ ) {
+		fatal_error "Invalid value ($val) for ROUTE_FILTER" unless $val < 3;
+	    } else {
+		check_trivalue( 'ROUTE_FILTER', '' );
+	    }
+	}
+    }
+
+    if ( $family == F_IPV6 ) {
+	$val = $capabilities{ROUTE_FILTER};	
+	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" unless $val eq 'off' || $val eq '';
+    }
 
     if ( $family == F_IPV4 ) {
 	check_trivalue ( 'LOG_MARTIANS',  'on' );
@@ -2436,8 +2455,6 @@ sub get_configuration( $ ) {
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
-
-    my $val;
 
     if ( defined ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;

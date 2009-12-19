@@ -96,18 +96,16 @@ sub setup_arp_filtering() {
 sub setup_route_filtering() {
 
     my $interfaces = find_interfaces_by_option 'routefilter';
-    my $config     = $config{ROUTE_FILTER};
 
-    if ( @$interfaces || $config ) {
+    if ( @$interfaces || $config{ROUTE_FILTER} ) {
 
 	progress_message2 "$doing Kernel Route Filtering...";
 
 	save_progress_message "Setting up Route Filtering...";
 
-	my $val = '';
 
-	if ( $config{ROUTE_FILTER} ne '' ) {
-	    $val = $config eq 'on' ? 1 : $config eq 'off' ? 0 : $config;
+	if ( $config{ROUTE_FILTER} ) {
+	    my $val = $config{ROUTE_FILTER} eq 'on' ? 1 : 0;
 
 	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',
 		   "    [ -f \$file/rp_filter ] && echo $val > \$file/rp_filter",
@@ -130,13 +128,13 @@ sub setup_route_filtering() {
 	    emit   "fi\n";
 	}
 
-	if ( $capabilities{KERNELVERSION} < 20631 ) {
-	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
-	} elsif ( $val ne '' ) {
-	    emit "echo $val > /proc/sys/net/ipv4/conf/all/rp_filter";
-	}
+	emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 
-	emit "echo $val > /proc/sys/net/ipv4/conf/default/rp_filter" if $val ne '';
+	if ( $config{ROUTE_FILTER} eq 'on' ) {
+	    emit 'echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter';
+	} elsif (  $config{ROUTE_FILTER} eq 'off' ) {
+	    emit 'echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter';
+	}
 
 	emit "[ -n \"\$NOROUTES\" ] || \$IP -4 route flush cache";
     }

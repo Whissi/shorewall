@@ -178,10 +178,6 @@ use constant { SIMPLE_IF_OPTION   => 1,
 
 our %validinterfaceoptions;
 
-our %defaultinterfaceoptions = ( routefilter => 1 );
-
-our %maxoptionvalue = ( routefilter => 2, mss => 100000 );
-
 our %validhostoptions;
 
 #
@@ -854,10 +850,9 @@ sub process_interface( $ ) {
 		    assert( 0 );
 		}
 	    } elsif ( $type == NUMERIC_IF_OPTION ) {
-		$value = $defaultinterfaceoptions{$option} unless defined $value;
 		fatal_error "The '$option' option requires a value" unless defined $value;
 		my $numval = numeric_value $value;
-		fatal_error "Invalid value ($value) for option $option" unless defined $numval && $numval <= $maxoptionvalue{$option};
+		fatal_error "Invalid value ($value) for option $option" unless defined $numval;
 		$options{$option} = $numval;
 		$hostoptions{$option} = $numval if $hostopt;
 	    } elsif ( $type == IPLIST_IF_OPTION ) {

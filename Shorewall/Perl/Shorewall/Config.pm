@@ -2284,8 +2284,8 @@ sub read_capabilities() {
     }
 
     unless ( $capabilities{KERNELVERSION} ) {
-	warning_message "Your capabilities file does not contain a Kernel Version -- using the local kernel's version";
-	determine_kernelversion;
+	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
+	$capabilities{KERNELVERSION} = 20630;
     }
 }
 
@@ -2394,7 +2394,26 @@ sub get_configuration( $ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
-    check_trivalue ( 'ROUTE_FILTER',  '' );    fatal_error "ROUTE_FILTER=On is not supported in IPv6" if $config{ROUTE_FILTER} eq 'on' && $family == F_IPV6;
+    
+    my $val;
+
+    if ( $capabilities{KERNELVERSION} < 20631 ) {
+	check_trivalue ( 'ROUTE_FILTER',  '' );
+    } else {
+	$val = $capabilities{ROUTE_FILTER};
+	if ( defined $val ) {
+	    if ( $val =~ /\d+/ ) {
+		fatal_error "Invalid value ($val) for ROUTE_FILTER" unless $val < 3;
+	    } else {
+		check_trivalue( 'ROUTE_FILTER', '' );
+	    }
+	}
+    }
+
+    if ( $family == F_IPV6 ) {
+	$val = $capabilities{ROUTE_FILTER};	
+	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" unless $val eq 'off' || $val eq '';
+    }
 
     if ( $family == F_IPV4 ) {
 	check_trivalue ( 'LOG_MARTIANS',  'on' );
@@ -2494,7 +2513,7 @@ sub get_configuration( $ ) {
 	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 32' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 32;
     }
 
-    my $val = 1;
+    $val = 1;
     
     $globals{TC_MAX}                 = make_mask( $config{TC_BITS} );
     $globals{TC_MASK}                = make_mask( $config{MASK_BITS} );

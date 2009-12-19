@@ -176,7 +176,6 @@ our $VERSION = '4.4_4';
 #                                               table        => <table name>
 #                                               is_policy    => undef|1 -- if 1, this is a policy chain
 #                                               provisional  => undef|1 -- See below.
-#                                               expanded     => undef|1 -- See below.
 #                                               referenced   => undef|1 -- If 1, will be written to the iptables-restore-input.
 #                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
 #                                               manual       => undef|1 -- If 1, a manual chain.
@@ -201,9 +200,7 @@ our $VERSION = '4.4_4';
 #                 }
 #
 #       'provisional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
-#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with provisional == 1. Similarly,
-#       'expanded' is set when a specific policy is established by a wildcard policy. Such policies are similar to provisional
-#       policies in that they can be superseded by a specific policy.
+#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with provisional == 1.
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #

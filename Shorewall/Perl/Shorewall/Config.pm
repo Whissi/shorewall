@@ -621,6 +621,7 @@ sub initialize( $ ) {
 	       PERSISTENT_SNAT => undef,
 	       OLD_HL_MATCH => undef,
 	       CAPVERSION => undef,
+	       KERNELVERSION => undef,
 	       );
     #
     # Directories to search for configuration files

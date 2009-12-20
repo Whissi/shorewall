@@ -1,4 +1,4 @@
-Shorewall 4.4.5 Patch Release 1.
+Shorewall 4.4.5 Patch Release 2.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -170,8 +170,21 @@ Shorewall 4.4.5 Patch Release 1.
     then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5 . 2
+----------------------------------------------------------------------------
+
+1)  When using an up-to-date capabilities file with Shorewall 4.4.5.1, the
+    following warning messages were issued.
+
+       WARNING: Unknown capability (KERNELVERSION) 
+         ignored : /etc/shorewall2/capabilities (line 49)
+       WARNING: Your capabilities file does not contain a Kernel Version --
+         using 2.6.30
+
+----------------------------------------------------------------------------
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5 . 1
 ----------------------------------------------------------------------------
+
 1)  In kernel 2.6.31, the handling of the rp_filter interface option was
     changed incompatibly. Previously, the effective value was determined
     by the setting of net.ipv4.config.dev.rp_filter logically ANDed with

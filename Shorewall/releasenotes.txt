@@ -186,9 +186,9 @@ None.
 ----------------------------------------------------------------------------
 
 1)  In kernel 2.6.31, the handling of the rp_filter interface option was
-    chan ged incompatibly. Previously, the effective value was determined
-    by the setting of net.ipv4.config.dev.proxy_arp logically ANDed with
-    the setting of net.ipv4.config.all.proxy_arp.
+    changed incompatibly. Previously, the effective value was determined
+    by the setting of net.ipv4.config.dev.rp_filter logically ANDed with
+    the setting of net.ipv4.config.all.rp_filter.
 
     Beginning with kernel 2.6.31, the value is the arithmetic MAX of
     those two values. 
@@ -207,7 +207,7 @@ None.
 
     b)  This means that the kernel version is now recorded in
         the capabilities file. So if you use capabilities files, you
-        need to regenerate the file with Shorewall[-lite] 4.4.5.1 or
+        need to regenerate the files with Shorewall[-lite] 4.4.5.1 or
         later.
 
     c)  If the capabilities file does not contain a kernel version,
@@ -217,14 +217,14 @@ None.
     d)  The ROUTE_FILTER option in shorewall.conf now accepts the
     	following values:
 
-	0 or Yes - Shorewall sets net.ipv4.config.all.rp_filter to 0.
-	1 or No  - Shorewall sets net.ipv4.config.all.rp_filter to 1.
+	0 or No  - Shorewall sets net.ipv4.config.all.rp_filter to 0.
+	1 or Yes - Shorewall sets net.ipv4.config.all.rp_filter to 1.
 	2        - Shorewall sets net.ipv4.config.all.rp_filter to 2.
 	Keep	 - Shorewall does not change the setting of
 	           net.ipv4.config.all.rp_filter if the kernel version
 		   is 2.6.31 or later.
         
-	The default remains No.
+	The default remains Keep.
 
     e)  The 'routefilter' interface option can have values 0,1 or 2. If
     	'routefilter' is specified without a value, the value 1 is

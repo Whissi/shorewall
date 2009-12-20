@@ -2363,6 +2363,8 @@ sub get_configuration( $ ) {
 	    } else {
 		check_trivalue( 'ROUTE_FILTER', '' );
 	    }
+	} else {
+	    check_trivalue( 'ROUTE_FILTER' , '' );
 	}
     }
 

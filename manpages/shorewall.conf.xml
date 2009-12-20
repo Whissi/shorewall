@@ -1291,24 +1291,28 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
       <varlistentry>
         <term><emphasis role="bold">ROUTE_FILTER=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis
-        role="bold">No</emphasis>|Keep]</term>
+        role="bold">Yes</emphasis>|1|<emphasis
+        role="bold">No|0</emphasis>|2|Keep]</term>
 
         <listitem>
           <para>If this parameter is given the value <emphasis
           role="bold">Yes</emphasis> or <emphasis role="bold">yes</emphasis>
-          then route filtering (anti-spoofing) is enabled on all network
+          or 1 then route filtering (anti-spoofing) is enabled on all network
           interfaces which are brought up while Shorewall is in the started
-          state. The default value is <emphasis
-          role="bold">no</emphasis>.</para>
+          state. The default value is <emphasis role="bold">no</emphasis>
+          (0).</para>
 
           <para>The value <emphasis role="bold">Keep</emphasis> causes
           Shorewall to ignore the option. If the option is set to <emphasis
-          role="bold">Yes</emphasis>, then route filtering occurs on all
+          role="bold">Yes</emphasis> or 1, then route filtering occurs on all
           interfaces. If the option is set to <emphasis
           role="bold">No</emphasis>, then route filtering is disabled on all
           interfaces except those specified in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+
+          <para>The value 2 is only available with Shorewall 4.4.5.1 and later
+          running on kernel 2.6.31 or later. It specifies a looser form of
+          reverse path filtering than the value Yes (1).</para>
         </listitem>
       </varlistentry>
 

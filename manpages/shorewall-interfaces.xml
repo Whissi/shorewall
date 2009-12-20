@@ -499,7 +499,7 @@ loc     eth2            -</programlisting>
 
             <varlistentry>
               <term><emphasis
-              role="bold">routefilter[={0|1}]</emphasis></term>
+              role="bold">routefilter[={0|1|2}]</emphasis></term>
 
               <listitem>
                 <para>Turn on kernel route filtering for this interface
@@ -510,7 +510,10 @@ loc     eth2            -</programlisting>
                 changes; the value assigned to the setting will be the value
                 specified (if any) or 1 if no value is given.</para>
 
-                <para></para>
+                <para>The value 2 is only available with Shorewall 4.4.5.1 and
+                later when the kernel version is 2.6.31 or later. It specifies
+                a <firstterm>loose</firstterm> form of reverse path
+                filtering.</para>
 
                 <note>
                   <para>This option does not work with a wild-card

@@ -33,7 +33,7 @@
 #
 
 SHOREWALL_LIBVERSION=40300
-SHOREWALL_CAPVERSION=40402
+SHOREWALL_CAPVERSION=40406
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
@@ -872,6 +872,7 @@ determine_capabilities() {
     qt $IP6TABLES -X $chain1
 
     CAPVERSION=$SHOREWALL_CAPVERSION
+    KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
 }
 
 report_capabilities() {
@@ -988,6 +989,7 @@ report_capabilities1() {
     report_capability1 LOG_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
+    echo KERNELVERSION=$KERNELVERSION    
 }
 
 detect_gateway() # $1 = interface

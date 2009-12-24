@@ -1,4 +1,4 @@
-Shorewall 4.4.5 Patch Release 3.
+Shorewall 4.4.5 Patch Release 4.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -168,6 +168,23 @@ Shorewall 4.4.5 Patch Release 3.
     a zone could contain <interface>:0.0.0.0/0 along with other hosts;
     now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
     then it may have no additional members in /etc/shorewall/hosts.
+
+----------------------------------------------------------------------------
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5 . 4
+----------------------------------------------------------------------------
+
+1)  With Shorewall 4.4.5.3, using a capabilities file with Shorewall6
+    will result in the following warnings during compilation:
+
+       WARNING: Your capabilities file is out of date -- it does not
+          contain all of the capabilities defined by Shorewall6 version
+          4.4.5.3
+
+       WARNING: Your capabilities file does not contain a Kernel
+          Version -- using 2.6.30
+
+2)  The change in Shoreawll 4.4.5.1 broke the 'forward' interface
+    option in Shorewall6.
 
 ----------------------------------------------------------------------------
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5 . 3

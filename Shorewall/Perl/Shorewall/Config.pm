@@ -2401,7 +2401,7 @@ sub get_configuration( $ ) {
     if ( $capabilities{KERNELVERSION} < 20631 ) {
 	check_trivalue ( 'ROUTE_FILTER',  '' );
     } else {
-	$val = $capabilities{ROUTE_FILTER};
+	$val = $config{ROUTE_FILTER};
 	if ( defined $val ) {
 	    if ( $val =~ /\d+/ ) {
 		fatal_error "Invalid value ($val) for ROUTE_FILTER" unless $val < 3;
@@ -2414,7 +2414,7 @@ sub get_configuration( $ ) {
     }
 
     if ( $family == F_IPV6 ) {
-	$val = $capabilities{ROUTE_FILTER};	
+	$val = $config{ROUTE_FILTER};	
 	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" unless $val eq 'off' || $val eq '';
     }
 

@@ -59,6 +59,8 @@ our @providers;
 
 our $family;
 
+our $lastmark;
+
 use constant { ROUTEMARKED_SHARED => 1, ROUTEMARKED_UNSHARED => 2 };
 
 #
@@ -82,6 +84,7 @@ sub initialize( $ ) {
     $fallback            = 0;
     $first_default_route  = 1;
     $first_fallback_route = 1;
+    $lastmark             = 0;
 
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
@@ -293,29 +296,6 @@ sub add_a_provider( ) {
 	$gateway = '';
     }
 
-    my $val = 0;
-    my $pref;
-
-    if ( $mark ne '-' ) {
-
-	$val = numeric_value $mark;
-
-	fatal_error "Invalid Mark Value ($mark)" unless defined $val && $val;
-
-	verify_mark $mark;
-
-	fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
-
-	fatal_error "Provider MARK may not be specified when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
-
-	for my $providerref ( values %providers  ) {
-	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
-	}
-
-	$pref = 10000 + $number - 1;
-
-    }
-
     my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu ) = 
 	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), '' );
 
@@ -362,6 +342,33 @@ sub add_a_provider( ) {
 		fatal_error "Invalid option ($option)";
 	    }
 	}
+    }
+
+    my $val = 0;
+    my $pref;
+
+    $mark = ++$lastmark if $mark eq '-' && $track;
+
+    if ( $mark ne '-' ) {
+
+	$val = numeric_value $mark;
+
+	fatal_error "Invalid Mark Value ($mark)" unless defined $val && $val;
+
+	verify_mark $mark;
+
+	fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
+
+	fatal_error "Provider MARK may not be specified when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
+
+	for my $providerref ( values %providers  ) {
+	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
+	}
+
+	$pref = 10000 + $number - 1;
+
+	$lastmark = $val;
+
     }
 
     unless ( $loose ) {

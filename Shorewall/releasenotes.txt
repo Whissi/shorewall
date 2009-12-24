@@ -128,8 +128,8 @@ None.
     /etc/shorewall/tcrules) and the range of acceptable provider mark
     values. The default mask is determined by the setting of MASK_BITS.
 
-2)  The OPTIMIZE option is now a bit-map with each bit controlling a
-    separate set of optimizations.
+2)  The OPTIMIZE option value is now a bit-map with each bit
+    controlling a separate set of optimizations.
 
     - The low-order bit (value 1) controls optimizations available in
       earlier releases.
@@ -151,3 +151,11 @@ None.
     Similarly, dynamic blacklisting can be disabled by setting
     DYNAMIC_BLACKLIST=No. This saves a jump rule in filter chains INPUT
     and FORWARD.
+
+5)  Shorewall can now automatically assign mark values to providers in
+    cases where 'track' is specified (or TRACK_PROVIDERS=Yes) but
+    packet marking is otherwise not used for directing connections to a
+    particular provider. Simplly specify '-' in the MARK column and
+    Shorewall will automatically assign a mark value equal to the last
+    used mark value + 1.
+

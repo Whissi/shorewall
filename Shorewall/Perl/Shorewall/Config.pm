@@ -2415,7 +2415,7 @@ sub get_configuration( $ ) {
 
     if ( $family == F_IPV6 ) {
 	$val = $config{ROUTE_FILTER};	
-	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" unless $val eq 'off' || $val eq '';
+	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" if $val && $val ne 'off';
     }
 
     if ( $family == F_IPV4 ) {

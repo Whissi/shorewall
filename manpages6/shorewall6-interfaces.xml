@@ -134,6 +134,16 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
+              <term>forward[={0|1}]</term>
+
+              <listitem>
+                <para>Sets the /proc/sys/net/ipv6/conf/interface/forwarding
+                option to the specified value. If no value is supplied, then 1
+                is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis
               role="bold">mss</emphasis>=<emphasis>number</emphasis></term>
 
@@ -178,7 +188,7 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>physical=<emphasis
+              <term><emphasis role="bold">physical</emphasis>=<emphasis
               role="bold"><emphasis>name</emphasis></emphasis></term>
 
               <listitem>
@@ -220,7 +230,7 @@ loc     eth2            -</programlisting>
                 <para>If this option is not specified for an interface, then
                 source-routed packets will not be accepted from that interface
                 (sets
-                /proc/sys/net/ipv6/conf/<emphasis></emphasis>/accept_source_route
+                /proc/sys/net/ipv6/conf/<emphasis>interface</emphasis>/accept_source_route
                 to 1). Only set this option if you know what you are doing.
                 This might represent a security risk and is not usually
                 needed.</para>
@@ -251,7 +261,7 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>proxyndp[={0|1}]</term>
+              <term><emphasis role="bold">proxyndp</emphasis>[={0|1}]</term>
 
               <listitem>
                 <para>Sets

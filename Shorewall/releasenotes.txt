@@ -15,6 +15,11 @@ Shorewall 4.5.0
     Ping/ACCEPT) now causes a compiler warning to be generated. Only
     the first occurrance is flagged with a warning.
 
+2)  Prior versions of Shorewall applied PREROUTING marking rules to all
+    packets from 'tracked' provider interfaces when
+    TC_EXPERT=No. Beginning with Shorewall 4.5.0, packets from these
+    interfaces will only have those rules applied when TC_EXPERT=Yes.
+
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5
 ----------------------------------------------------------------------------

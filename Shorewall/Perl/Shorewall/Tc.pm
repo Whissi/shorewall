@@ -1182,13 +1182,7 @@ sub setup_tc() {
 
 	my $mark_part = '';
 
-	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} );
-
-	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
-	    }
-	}
+	$mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) if @routemarked_interfaces && ! $config{TC_EXPERT};
 
 	add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
 	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";

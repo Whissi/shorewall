@@ -87,8 +87,13 @@
           being zero). Otherwise, the value must be between 1 and 255. Each
           provider must be assigned a unique mark value. This column may be
           omitted if you don't use packet marking to direct connections to a
-          particular provider and you don't specify <option>track</option> in
-          the OPTIONS column.</para>
+          particular provider.</para>
+
+          <para>Note: If you are using a Shorewall version earlier that 4.5.0,
+          you must specify a MARK value if you specify the
+          <option>track</option> option or if you have set TRACK_PROVIDERS=Yes
+          in <ulink
+          url="shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
         </listitem>
       </varlistentry>
 

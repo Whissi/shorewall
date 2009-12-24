@@ -84,7 +84,6 @@ sub initialize( $ ) {
     $fallback            = 0;
     $first_default_route  = 1;
     $first_fallback_route = 1;
-    $lastmark             = 0;
 
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
@@ -738,6 +737,8 @@ sub finish_providers() {
 
 sub setup_providers() {
     my $providers = 0;
+
+    $lastmark = ( 1 << $config{PROVIDER_OFFSET} ) - 1;
 
     my $fn = open_file 'providers';
 

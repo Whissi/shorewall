@@ -427,7 +427,7 @@ sub add_common_rules() {
 
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
 
-    if ( $config{DYNAMIC_BLOCKLIST} ) {
+    if ( $config{DYNAMIC_BLACKLIST} ) {
 	new_standard_chain 'dynamic';
 	add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
     }

@@ -409,6 +409,89 @@ sub process_flow($) {
     $flow;
 }
 
+sub validate_simple_device() {
+    my ( $device , $type ) = split_line 1, 2, 'tcinterfaces';
+
+    my $devnumber;
+
+    if ( $device =~ /:/ ) {
+	( my $number, $device, my $rest )  = split /:/, $device, 3;
+
+	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
+
+	if ( defined $number ) {
+	    $devnumber = hex_value( $number );
+	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
+	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
+	    $devnum = $devnumber if $devnumber > $devnum;
+	} else {
+	    fatal_error "Missing interface NUMBER";
+	}
+    } else {
+	$devnumber = ++$devnum;
+    }
+
+    $devnums[ $devnumber ] = $device;
+
+    fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
+    fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
+
+    my $physical = physical_name $device;
+    my $dev       = chain_base( $physical );
+    
+
+    if ( $type ne '-' ) {
+	if ( lc $type eq 'external' ) {
+	    $type = 'nfct-src';
+	} elsif ( lc $type eq 'internal' ) {
+	    $type = 'dst';
+	} else {
+	    fatal_error "Invalid TYPE ($type)";
+	}
+    }
+
+    $tcdevices{$device} = { number   => $devnumber ,
+			    physical => physical_name $device ,
+			    type     => $type ,
+			  };
+
+    push @tcdevices, $device;
+
+    emit "if interface_is_up $physical; then";
+
+    push_indent;
+
+    emit ( "${dev}_exists=Yes",
+	   "qt \$TC qdisc del dev $device root",
+	   "qt \$TC qdisc del dev $device ingress"
+	 );
+	  
+    emit "run_tc qdisc add dev $physical root handle $devnum: prio bands 3";
+    
+    my $i;
+
+    for ( $i = 1, $i <= 3, $i++ ) {
+	emit "run_tc qdisc add dev $physical parent $devnum:$i sfq";
+	emit "run_tc filter add dev $physical parent $devnum: handle $i fw classid $devnum:$i";
+	emit "run_tc filter add dev $physical parent 800$i: handle 800$i flow hash keys $type divisor 1024" if $type ne '-';
+	emit '';
+    }
+
+    save_progress_message_short "   TC Device $physical defined.";
+    
+    pop_indent;
+
+    emit 'else';
+    push_indent;
+
+    emit qq(error_message "WARNING: Device $physical is not in the UP state -- traffic-shaping configuration skipped");
+    emit "${dev}_exists=";
+    pop_indent;
+    emit "fi\n";
+ 
+    progress_message "  Simple tcdevice \"$currentline\" $done.";
+}    
+
 sub validate_tc_device( ) {
     my ( $device, $inband, $outband , $options , $redirected ) = split_line 3, 5, 'tcdevices';
 
@@ -976,6 +1059,58 @@ sub process_tc_filter( ) {
 
 }
 
+sub validate_tc_band() {
+    my ( $band, $proto, $ports ) = split_line 1, 3, 'tcband';
+
+    my $val = numeric_value $band;
+
+    fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
+
+    my $postref = $mangle_table->{tcpost};
+
+    add_rule( $postref , 
+	      join( '', 
+		    do_proto( $proto, $ports, '-' , 0 ) ,
+		    '-j MARK --set-mark ',
+		    $band ,
+		    '/' ,
+		    $globals{TC_MASK} ) ,
+	      1 );
+	      
+    add_rule( $postref , 
+	      join( '' , 
+		    do_proto( $proto, '-', $ports, 0 ) ,
+		    '-j MARK --set-mark ',
+		    $band ,
+		    '/' ,
+		    $globals{TC_MASK} ) ,
+	      1 );
+}
+
+sub setup_simple_traffic_shaping() {
+    our $lastrule = '';
+
+    save_progress_message "Setting up Traffic Control...";
+
+    my $fn = open_file 'tcinterfaces';
+
+    if ( $fn ) {
+	first_entry "$doing $fn...";
+
+	validate_simple_device while read_a_line;
+    }
+
+    $fn = open_file 'tcbands';
+
+    if ( $fn ) {
+	first_entry "$doing $fn...";
+	
+	validate_tc_band while read_a_line;
+    }
+
+    
+}
+
 sub setup_traffic_shaping() {
     our $lastrule = '';
 
@@ -1208,6 +1343,8 @@ sub setup_tc() {
 	append_file $globals{TC_SCRIPT};
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
 	setup_traffic_shaping;
+    } elsif ( $config{TC_ENABLED} eq 'Simple' ) {
+	setup_simple_traffic_shaping;
     }
 
     if ( $config{TC_ENABLED} ) {

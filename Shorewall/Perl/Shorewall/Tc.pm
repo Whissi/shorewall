@@ -409,7 +409,7 @@ sub process_flow($) {
     $flow;
 }
 
-sub validate_simple_device() {
+sub process_simple_device() {
     my ( $device , $type ) = split_line 1, 2, 'tcinterfaces';
 
     my $devnumber;
@@ -433,12 +433,13 @@ sub validate_simple_device() {
 
     $devnums[ $devnumber ] = $device;
 
+    my $number = in_hexp $devnumber;
+
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
     fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
 
     my $physical = physical_name $device;
     my $dev       = chain_base( $physical );
-    
 
     if ( $type ne '-' ) {
 	if ( lc $type eq 'external' ) {
@@ -462,25 +463,24 @@ sub validate_simple_device() {
     push_indent;
 
     emit ( "${dev}_exists=Yes",
-	   "qt \$TC qdisc del dev $device root",
-	   "qt \$TC qdisc del dev $device ingress"
+	   "qt \$TC qdisc del dev $physical root",
+	   "qt \$TC qdisc del dev $physical ingress"
 	 );
 	  
-    emit "run_tc qdisc add dev $physical root handle $devnum: prio bands 3";
+    emit "run_tc qdisc add dev $physical root handle $number: prio bands 3";
     
-    my $i;
+    my $i = 0;
 
-    for ( $i = 1, $i <= 3, $i++ ) {
-	emit "run_tc qdisc add dev $physical parent $devnum:$i sfq";
-	emit "run_tc filter add dev $physical parent $devnum: handle $i fw classid $devnum:$i";
-	emit "run_tc filter add dev $physical parent 800$i: handle 800$i flow hash keys $type divisor 1024" if $type ne '-';
+    while ( ++$i <= 3 ) {
+	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq";
+	emit "run_tc filter add dev $physical parent $number: handle $i fw classid $devnum:$i";
+	emit "run_tc filter add dev $physical protocol all parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-';
 	emit '';
     }
 
     save_progress_message_short "   TC Device $physical defined.";
     
     pop_indent;
-
     emit 'else';
     push_indent;
 
@@ -1059,8 +1059,8 @@ sub process_tc_filter( ) {
 
 }
 
-sub validate_tc_band() {
-    my ( $band, $proto, $ports ) = split_line 1, 3, 'tcband';
+sub process_tc_priority() {
+    my ( $band, $proto, $ports ) = split_line 1, 3, 'tcpri';
 
     my $val = numeric_value $band;
 
@@ -1097,18 +1097,16 @@ sub setup_simple_traffic_shaping() {
     if ( $fn ) {
 	first_entry "$doing $fn...";
 
-	validate_simple_device while read_a_line;
+	process_simple_device while read_a_line;
     }
 
-    $fn = open_file 'tcbands';
+    $fn = open_file 'tcpri';
 
     if ( $fn ) {
 	first_entry "$doing $fn...";
 	
-	validate_tc_band while read_a_line;
+	process_tc_priority while read_a_line;
     }
-
-    
 }
 
 sub setup_traffic_shaping() {

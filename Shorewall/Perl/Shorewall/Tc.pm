@@ -1060,35 +1060,62 @@ sub process_tc_filter( ) {
 }
 
 sub process_tc_priority() {
-    my ( $band, $proto, $ports ) = split_line 1, 3, 'tcpri';
+    my ( $band, $proto, $ports , $address, $interface ) = split_line 1, 5, 'tcpri';
 
     my $val = numeric_value $band;
 
     fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
 
-    my $postref = $mangle_table->{tcpost};
+    my $rule = join( '', 
+		     "-j MARK --set-mark ",
+		     $band ,
+		     '/' ,
+		     $globals{TC_MASK} );
 
-    add_rule( $postref , 
-	      join( '', 
-		    do_proto( $proto, $ports, '-' , 0 ) ,
-		    '-j MARK --set-mark ',
-		    $band ,
-		    '/' ,
-		    $globals{TC_MASK} ) ,
-	      1 );
+    if ( $interface ne '-' ) {
+	fatal_error "Invalid combination of columns" unless $address eq '-' && $proto eq '-' && $ports eq '-';
+
+	my $forwardref = $mangle_table->{tcfor};
+
+	add_rule( $forwardref ,
+		  join( '', match_source_dev( $interface) , $rule ) ,
+		  1 );
+
+	add_rule( $forwardref ,
+		  join( '', match_dest_net( $interface) , $rule ) ,
+		  1 );
+    } else {
+
+	my $postref = $mangle_table->{tcpost};
+	
+	if ( $address ne '-' ) {
+	    fatal_error "Invalid combination of columns" unless $proto eq '-' && $ports eq '-';
+	    add_rule( $postref ,
+		      join( '', match_source_net( $address) , $rule ) ,
+		      1 );
+	    unless ( $address =~ /^!?~/ ) { 
+		add_rule( $postref ,
+			  join( '', match_dest_net( $address) , $rule ) ,
+			  1 );
+	    }
+	} else {
+	    add_rule( $postref , 
+		      join( '', 
+			    do_proto( $proto, $ports, '-' , 0 ) ,
+			    $rule ) ,
+		      1 );
 	      
-    add_rule( $postref , 
-	      join( '' , 
-		    do_proto( $proto, '-', $ports, 0 ) ,
-		    '-j MARK --set-mark ',
-		    $band ,
-		    '/' ,
-		    $globals{TC_MASK} ) ,
-	      1 );
+	    add_rule( $postref , 
+		      join( '' , 
+			    do_proto( $proto, '-', $ports, 0 ) ,
+			    $rule ) ,
+		      1 );
+	}
+    }
 }
 
 sub setup_simple_traffic_shaping() {
-    our $lastrule = '';
+    my $interfaces;
 
     save_progress_message "Setting up Traffic Control...";
 
@@ -1096,16 +1123,16 @@ sub setup_simple_traffic_shaping() {
 
     if ( $fn ) {
 	first_entry "$doing $fn...";
-
-	process_simple_device while read_a_line;
+	process_simple_device, $interfaces++ while read_a_line;
     }
 
-    $fn = open_file 'tcpri';
+    if ( $interfaces ) {
+	$fn = open_file 'tcpri';
 
-    if ( $fn ) {
-	first_entry "$doing $fn...";
-	
-	process_tc_priority while read_a_line;
+	if ( $fn ) {
+	    first_entry "$doing $fn...";
+	    process_tc_priority while read_a_line;
+	}
     }
 }
 

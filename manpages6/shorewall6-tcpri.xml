@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall6-tcpri</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>tcpri</refname>
+
+    <refpurpose>Shorewall6 file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall6/tcpri</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file is used to specify the priority band of traffic for simple
+    traffic shaping (TC_ENABLED=Simple in <ulink
+    url="shorewall6.conf.html">shorewall6.conf</ulink>(5)). The priority band
+    of each packet is determined by the <emphasis role="bold">last</emphasis>
+    entry that the packet matches. If a packet doesn't match any entry in this
+    file, then its priority will be determined by its TOS field. The default
+    mapping is as follows but can be changed by setting the TC_PRIOMAP option
+    in <ulink url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+
+    <programlisting>TOS     Bits  Means                    Linux Priority    BAND
+------------------------------------------------------------
+0x0     0     Normal Service           0 Best Effort     2
+0x2     1     Minimize Monetary Cost   1 Filler          3
+0x4     2     Maximize Reliability     0 Best Effort     2
+0x6     3     mmc+mr                   0 Best Effort     2
+0x8     4     Maximize Throughput      2 Bulk            3
+0xa     5     mmc+mt                   2 Bulk            3
+0xc     6     mr+mt                    2 Bulk            3
+0xe     7     mmc+mr+mt                2 Bulk            3
+0x10    8     Minimize Delay           6 Interactive     1
+0x12    9     mmc+md                   6 Interactive     1
+0x14    10    mr+md                    6 Interactive     1
+0x16    11    mmc+mr+md                6 Interactive     1
+0x18    12    mt+md                    4 Int. Bulk       2
+0x1a    13    mmc+mt+md                4 Int. Bulk       2
+0x1c    14    mr+mt+md                 4 Int. Bulk       2
+0x1e    15    mmc+mr+mt+md             4 Int. Bulk       2</programlisting>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">BAND</emphasis> - {<emphasis
+        role="bold">1</emphasis>|<emphasis role="bold">2</emphasis>|<emphasis
+        role="bold">3</emphasis>}</term>
+
+        <listitem>
+          <para>Classifies matching traffic as High Priority (1), Medium
+          Priority (2) or Low Priority (3). For those interfaces listed in
+          <ulink
+          url="shorewall6-tcinterfaces.html">shorewall6-tcinterfaces</ulink>(5),
+          Priority 2 traffic will be deferred so long and there is Priority 1
+          traffic queued and Priority 3 traffic will be deferred so long as
+          there is Priority 1 or Priority 2 traffic to send.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO</emphasis> -
+        <replaceable>protocol</replaceable></term>
+
+        <listitem>
+          <para>Optional. The name or number of an IPv4
+          <replaceable>protocol</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PORT(S) - <replaceable>port</replaceable> [,...]</term>
+
+        <listitem>
+          <para>Optional. May only be given if the the PROTO is tcp (6) or udp
+          (17). A list of one or more port numbers or service names from
+          /etc/services. Port ranges of the form
+          <replaceable>lowport</replaceable>:<replaceable>highport</replaceable>
+          may also be included.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ADDRESS - [<replaceable>address</replaceable>]</term>
+
+        <listitem>
+          <para>Optional. The IP or MAC address that the traffic originated
+          from. MAC addresses must be given in Shorewall format. If this
+          column contains an address, then the PROTO, PORT(S) and INTERFACE
+          column must be empty ("-").</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>INTERFACE - [<replaceable>interface</replaceable>]</term>
+
+        <listitem>
+          <para>Optional. The logical name of an
+          <replaceable>interface</replaceable> that traffic arrives from. If
+          given, the PROTO, PORT(S) and ADDRESS columns must be empty
+          ("-").</para>
+
+          <note>
+            <para>INTERFACE classification of packets occurs before
+            classification by PROTO/PORT(S)/ADDRESS. So it is highly
+            recommended to place entries that specify INTERFACE at the top of
+            the file so that the rule about <emphasis>last entry
+            matches</emphasis> is preserved.</para>
+          </note>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall6/tcpri</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>PRIO(8), shorewall6(8), shorewall6-accounting(5),
+    shorewall6-actions(5), shorewall6-blacklist(5), shorewall6-hosts(5),
+    shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-tcinterfaces(5), shorewall6-tos(5), shorewall6-tunnels(5),
+    shorewall6-zones(5) </para>
+  </refsect1>
+</refentry>

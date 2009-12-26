@@ -1514,8 +1514,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           role="bold">no</emphasis> then traffic shaping is not
           enabled.</para>
 
-          <para>If you set TC_ENABLED=Simple, simple traffic shaping using
-          <ulink
+          <para>If you set TC_ENABLED=Simple (Shorewall 4.5.0 and later),
+          simple traffic shaping using <ulink
           url="shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5)
           and <ulink url="shorewall-tcpri.html">shorewall-tcpri</ulink>(5) is
           enabled.</para>
@@ -1538,6 +1538,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>If you know what you are doing, you can set TC_EXPERT=Yes and
           Shorewall will not include these cautionary checks.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">TC_PRIOMAP</emphasis>=<emphasis>map</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. Determines the mapping of a packet's
+          TOS field to priority bands. See <ulink
+          url="shorewall-tcpri.html">shorewall-tcpri</ulink>(5). The
+          <emphasis>map</emphasis> consists of 16 space-separated digits with
+          values 1, 2 or 3. The first entry corresponds to Linux priority 9,
+          the second to Linux priority 1, the third to Linux Priority 2, and
+          so on. See tc-prio(8) for additional information.</para>
+
+          <para>The default setting is TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2
+          2 2".</para>
         </listitem>
       </varlistentry>
 

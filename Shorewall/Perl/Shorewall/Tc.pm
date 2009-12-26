@@ -1067,13 +1067,14 @@ sub process_tc_filter( ) {
 }
 
 sub process_tc_priority() {
-    my ( $band, $proto, $ports , $address, $interface ) = split_line 1, 5, 'tcpri';
+    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line 1, 6, 'tcpri';
 
     my $val = numeric_value $band;
 
     fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
 
-    my $rule = join( '', 
+    my $rule = join( '',
+		     do_helper( $helper ) ,
 		     "-j MARK --set-mark ",
 		     $band ,
 		     '/' ,

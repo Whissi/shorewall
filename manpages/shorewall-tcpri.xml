@@ -32,7 +32,7 @@
     mapping is as follows but can be changed by setting the TC_PRIOMAP option
     in <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
-    <programlisting>TOS     Bits  Means                    Linux Priority    PRIORITY
+    <programlisting>TOS     Bits  Means                    Linux Priority    BAND
 ------------------------------------------------------------
 0x0     0     Normal Service           0 Best Effort     2
 0x2     1     Minimize Monetary Cost   1 Filler          3
@@ -55,7 +55,7 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">PRIORITY</emphasis> - {<emphasis
+        <term><emphasis role="bold">BAND</emphasis> - {<emphasis
         role="bold">1</emphasis>|<emphasis role="bold">2</emphasis>|<emphasis
         role="bold">3</emphasis>}</term>
 
@@ -119,6 +119,19 @@
             the file so that the rule about <emphasis>last entry
             matches</emphasis> is preserved.</para>
           </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">HELPER</emphasis> -
+        [<replaceable>helper</replaceable>]</term>
+
+        <listitem>
+          <para>Optional. Names a Netfiler protocol helper module such as ftp,
+          sip, amanda, etc. A packet will match if it was accepted by the
+          named helper module. You can also append "-" and a port number to
+          the helper module name (e.g., ftp-21) to specify the port number
+          that the original connection was made on.</para>
         </listitem>
       </varlistentry>
     </variablelist>

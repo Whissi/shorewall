@@ -410,7 +410,7 @@ sub process_flow($) {
 }
 
 sub process_simple_device() {
-    my ( $device , $type ) = split_line 1, 2, 'tcinterfaces';
+    my ( $device , $type , $bandwidth ) = split_line 1, 3, 'tcinterfaces';
 
     my $devnumber;
 
@@ -454,6 +454,7 @@ sub process_simple_device() {
     $tcdevices{$device} = { number   => $devnumber ,
 			    physical => physical_name $device ,
 			    type     => $type ,
+			    in_bandwidth => $bandwidth = rate_to_kbit( $bandwidth ) ,
 			  };
 
     push @tcdevices, $device;
@@ -464,10 +465,16 @@ sub process_simple_device() {
 
     emit ( "${dev}_exists=Yes",
 	   "qt \$TC qdisc del dev $physical root",
-	   "qt \$TC qdisc del dev $physical ingress"
+	   "qt \$TC qdisc del dev $physical ingress\n"	   
 	 );
+
+    if ( $bandwidth ) {
+	emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
+	       "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${bandwidth}kbit burst 10k drop flowid :1\n"
+	     );
+    }
 	  
-    emit "run_tc qdisc add dev $physical root handle $number: prio bands 3";
+    emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
     
     my $i = 0;
 
@@ -1110,15 +1117,17 @@ sub setup_simple_traffic_shaping() {
     if ( $fn ) {
 	first_entry "$doing $fn...";
 	process_simple_device, $interfaces++ while read_a_line;
+    } else {
+	$fn = find_file 'tcinterfaces';
     }
 
-    if ( $interfaces ) {
-	$fn = open_file 'tcpri';
+    my $fn1 = open_file 'tcpri';
 
-	if ( $fn ) {
-	    first_entry "$doing $fn...";
-	    process_tc_priority while read_a_line;
-	}
+    if ( $fn1 ) {
+	first_entry sub { progress_message2 "$doing $fn1...";
+			  warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
+		      };
+	process_tc_priority while read_a_line;
     }
 }
 

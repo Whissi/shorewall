@@ -25,10 +25,12 @@
 
     <para>This file is used to specify the priority of traffic for simple
     traffic shaping (TC_ENABLED=Simple in <ulink
-    url="shorewall.conf.html">shorewall.conf</ulink>(5)). The priority of each
-    packet is determined by the <emphasis role="bold">last</emphasis> entry
-    that the packet matches. If a packet doesn't match any entry in this file,
-    then its priority will be determined by its TOS field:</para>
+    url="shorewall.conf.html">shorewall.conf</ulink>(5)). The priority band of
+    each packet is determined by the <emphasis role="bold">last</emphasis>
+    entry that the packet matches. If a packet doesn't match any entry in this
+    file, then its priority will be determined by its TOS field. The default
+    mapping is as follows but can be changed by setting the TC_PRIOMAP option
+    in <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
     <programlisting>TOS     Bits  Means                    Linux Priority    PRIORITY
 ------------------------------------------------------------
@@ -64,7 +66,7 @@
           url="shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5),
           Priority 2 traffic will be deferred so long and there is Priority 1
           traffic queued and Priority 3 traffic will be deferred so long as
-          there is Priority 1 or Priority 2 traffic to send. </para>
+          there is Priority 1 or Priority 2 traffic to send.</para>
         </listitem>
       </varlistentry>
 
@@ -109,6 +111,14 @@
           <replaceable>interface</replaceable> that traffic arrives from. If
           given, the PROTO, PORT(S) and ADDRESS columns must be empty
           ("-").</para>
+
+          <note>
+            <para>INTERFACE classification of packets occurs before
+            classification by PROTO/PORT(S)/ADDRESS. So it is highly
+            recommended to place entries that specify INTERFACE at the top of
+            the file so that the rule about <emphasis>last entry
+            matches</emphasis> is preserved.</para>
+          </note>
         </listitem>
       </varlistentry>
     </variablelist>

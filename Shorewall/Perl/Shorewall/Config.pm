@@ -402,6 +402,7 @@ sub initialize( $ ) {
 	      RETAIN_ALIASES => undef,
 	      TC_ENABLED => undef,
 	      TC_EXPERT => undef,
+	      TC_PRIOMAP => undef,
 	      CLEAR_TC => undef,
 	      MARK_IN_FORWARD_CHAIN => undef,
 	      CLAMPMSS => undef,
@@ -535,6 +536,7 @@ sub initialize( $ ) {
 	      IP_FORWARDING => undef,
 	      TC_ENABLED => undef,
 	      TC_EXPERT => undef,
+	      TC_PRIOMAP => undef,
 	      CLEAR_TC => undef,
 	      MARK_IN_FORWARD_CHAIN => undef,
 	      CLAMPMSS => undef,
@@ -2612,6 +2614,19 @@ sub get_configuration( $ ) {
     }
 
     fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" if $config{TC_ENABLED} && ! $config{MANGLE_ENABLED};
+
+    if ( $val = $config{TC_PRIOMAP} ) {
+	my @priomap = split ' ',$val;
+	fatal_error "Invalid TC_PRIOMAP ($val)" unless @priomap == 16;
+	for ( @priomap ) {
+	    fatal_error "Invalid TC_PRIOMAP entry ($_)" unless /[1-3]/;
+	    $_--;
+	}
+
+	$config{TC_PRIOMAP} = join ' ', @priomap;
+    } else {
+	$config{TC_PRIOMAP} = '1 2 2 2 1 2 0 0 1 1 1 1 1 1 1 1';
+    }
 
     default 'RESTOREFILE'           , 'restore';
     default 'IPSECFILE'             , 'zones';

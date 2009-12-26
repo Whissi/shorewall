@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Simple Traffic Shaping/Control</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2009</year>
+
+      <year>2010</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Traffic shaping and control was originally introduced into Shorewall
+    in version 2.2.5. That facility was based on Arne Bernin's
+    <firstterm>tc4shorewall</firstterm> and is generally felt to be complex
+    and difficult to use.</para>
+
+    <para>In Shorewall 4.5.0, a second traffic shaping facility that is simple
+    to understand and to configure was introduced. This newer facility is
+    described in this document while the original facility is documented in
+    <ulink url="traffic_shaping.htm">Complex Traffic
+    Shaping/Control</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Enabling Simple Traffic Shaping</title>
+
+    <para>Simple traffic shaping is enabled by setting TC_ENABLED=Simple in
+    <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5). You
+    then add an entry for your external interface to <ulink
+    url="manpages/shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5)
+    (<filename>/etc/shorewall/tcinterfaces</filename>).</para>
+
+    <para>Assuming that your external interface is eth0:</para>
+
+    <programlisting>#INTERFACE             TYPE          IN-BANDWIDTH
+eth0                   External</programlisting>
+
+    <para>With this simple contfiguration, packets to be sent through
+    interface eth0 will be assigned to a priority band based on the value of
+    their TOS field:</para>
+
+    <programlisting>TOS     Bits  Means                    Linux Priority    BAND
+------------------------------------------------------------
+0x0     0     Normal Service           0 Best Effort     2
+0x2     1     Minimize Monetary Cost   1 Filler          3
+0x4     2     Maximize Reliability     0 Best Effort     2
+0x6     3     mmc+mr                   0 Best Effort     2
+0x8     4     Maximize Throughput      2 Bulk            3
+0xa     5     mmc+mt                   2 Bulk            3
+0xc     6     mr+mt                    2 Bulk            3
+0xe     7     mmc+mr+mt                2 Bulk            3
+0x10    8     Minimize Delay           6 Interactive     1
+0x12    9     mmc+md                   6 Interactive     1
+0x14    10    mr+md                    6 Interactive     1
+0x16    11    mmc+mr+md                6 Interactive     1
+0x18    12    mt+md                    4 Int. Bulk       2
+0x1a    13    mmc+mt+md                4 Int. Bulk       2
+0x1c    14    mr+mt+md                 4 Int. Bulk       2
+0x1e    15    mmc+mr+mt+md             4 Int. Bulk       2</programlisting>
+
+    <para>When dequeueing, band 1 is tried first and only if it did not
+    deliver a packet does the system try band 2, and so onwards. Maximum
+    reliability packets should therefore go to band 1, minimum delay to band 2
+    and the rest to band 3.</para>
+
+    <note>
+      <para>If you run both an IPv4 and an IPv6 firewall on your system, you
+      should define each interface in only one of the two
+      configurations.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>Customizing Simple Traffic Shaping</title>
+
+    <para>The default mapping of TOS to bands can be changed using the
+    TC_PRIOMAP setting in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink>(5). The default
+    setting of this option is:</para>
+
+    <programlisting>TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"</programlisting>
+
+    <para>These entries map Linux Priority to priority BAND. So only entries
+    0, 1, 2, 4 and 6 in the map are relevant to TOS-&gt;BAND mapping.</para>
+
+    <para>Further customizations can be defined in <ulink
+    url="manpages/shorewall-tcpri.html">shorewall-tcpri</ulink>(5)
+    (<filename>/etc/shorewall/tcpri</filename>). Using that file, you
+    can:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Assign traffic entering the firewall on a particular interface
+        to a specific priority band:</para>
+
+        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+2               -             -                -                eth1</programlisting>
+
+        <para>In this example, traffic from eth1 will be assigned to priority
+        band 2.</para>
+
+        <note>
+          <para>When an INTERFACE is specified, the PROTO, PORT(S) and ADDRESS
+          column must contain '-'.</para>
+        </note>
+      </listitem>
+
+      <listitem>
+        <para>Assign traffic from a particular IP address to a specific
+        priority band:</para>
+
+        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+1               -             -             192.168.1.44</programlisting>
+
+        <para>In this example, traffic from 192.168.1.44 will be assigned to
+        priority band 1.</para>
+
+        <note>
+          <para>When an ADDRESS is specified, the PROTO, PORT(S) and INTERFACE
+          columns must be empty.</para>
+        </note>
+      </listitem>
+
+      <listitem>
+        <para>Assign traffic to/from a particular application to a specific
+        priority band:</para>
+
+        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+1             udp           1194</programlisting>
+
+        <para>In that example, OpenVPN traffic is assigned to priority band
+        1.</para>
+      </listitem>
+
+      <listitem>
+        <para>Assign traffic that uses a particular Netfilter helper to a
+        particular priority band:</para>
+
+        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+1               -             -             -                   -                sip</programlisting>
+
+        <para>In this example, SIP and associated RTP traffic will be assigned
+        to priority band 1 (assuming that the nf_conntrack_sip helper is
+        loaded).</para>
+      </listitem>
+    </orderedlist>
+
+    <para>It is suggested that entries specifying an INTERFACE be placed the
+    top of the file. That way, the band assigned to a particular packet will
+    be the <emphasis role="bold">last</emphasis> entry matched by the packet.
+    Packets which match no entry in <ulink
+    url="manpages/shorewall-tcpri.html">shorewall-tcpri</ulink>(5) are
+    assigned to priority bands using their TOS field as previously
+    described.</para>
+
+    <para>One cause of high latency on interactive traffic can be that queues
+    are building up at your ISP's gateway router. If you suspect that is
+    happening in your case, you can try to eliminate the problem by using the
+    IN-BANDWIDTH setting in <ulink
+    url="manpages/shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5).
+    The contents of the column are a <replaceable>rate</replaceable>. For
+    defining the rate, use <emphasis role="bold">kbit</emphasis> or <emphasis
+    role="bold">kbps</emphasis> (for Kilobytes per second) and make sure there
+    is NO space between the number and the unit (it is 100kbit not 100 kbit).
+    <emphasis role="bold">mbit</emphasis>, <emphasis
+    role="bold">mbps</emphasis> or a raw number (which means bytes) can be
+    used, but note that only integer numbers are supported (0.5 is not valid).
+    To pick an appropriate setting, we recommend that you start by setting
+    IN-BANDWIDTH significantly below your measured download bandwidth (20% or
+    so). While downloading, measure the ping response time from the firewall
+    to the upstream router as you gradually increase the setting. The optimal
+    setting is at the point beyond which the ping time increases sharply as
+    you increase the setting.</para>
+
+    <para>Simple Traffic Shaping is only appropriate on interfaces where
+    output queuing occurs. As a consequence, you usually only use it on
+    extermal interfaces. There are cases where you may need to use it on an
+    internal interface (a VPN interface, for example). If so, just add an
+    entry to <ulink
+    url="manpages/shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5):</para>
+
+    <programlisting>#INTERFACE             TYPE          IN-BANDWIDTH
+tun0                   Internal</programlisting>
+  </section>
+
+  <section>
+    <title>Additional Reading</title>
+
+    <para>The PRIO(8) (tc-prio) manpage has additional information on the
+    facility that Shorewall Simple Traffic Shaping is based on.</para>
+
+    <caution>
+      <para>Please note that Shorewall numbers the bands 1-3 whereas PRIO(8)
+      refers to them as bands 0-2.</para>
+    </caution>
+  </section>
+</article>

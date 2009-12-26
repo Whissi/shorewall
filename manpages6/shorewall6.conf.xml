@@ -168,6 +168,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">ACCOUNTING=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. If set to Yes, Shorewall6 accounting
+          is enabled (see <ulink
+          url="shorewall6-accounting.html">shorewall6-accounting</ulink>(5)).
+          If not specified or set to the empty value, ACCOUNTING=Yes is
+          assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">ADMINISABSENTMINDED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -869,6 +882,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">MASK_BITS</emphasis>=<emphasis>bits</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. This option specifies the number of
+          <emphasis>bits</emphasis> to use as a mask for traffic shaping marks
+          and must be greater than or equal to TC_BITS. The default value
+          depends on the setting of WIDE_TC_MARKS:</para>
+
+          <simplelist>
+            <member>WIDE_TC_MARKS=No - 8 bits.</member>
+
+            <member>WIDE_TC_MARKS=Yes - 16 bits.</member>
+          </simplelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
         role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
         role="bold">"</emphasis>]</term>
@@ -944,6 +975,42 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         <listitem>
           <para>Determines the order in which Shorewall6 searches directories
           for executable files.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">PROVIDER_BITS</emphasis>=<emphasis>bits</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. Specifies the number of bits of the
+          packet/connection mark to use for the provider (routing) mark.
+          Provider mark values must be &gt;= 2**PROVIDER_OFFSET and less than
+          2**(PROVIDER_OFFSET + PROVIDER_BITS). The default value is 8
+          bits.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">PROVIDER_OFFSET</emphasis>=<emphasis>offset</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. Specifies the
+          <emphasis>offset</emphasis> in bits from the least significate bit
+          of the packet/connection mark where the Provider Mark value is
+          stored. The default is based on the settings of HIGH_ROUTE_MARKS and
+          WIDE_TC_MARKS:</para>
+
+          <simplelist>
+            <member>HIGH_ROUTE_MARKS=No - 0 bits.</member>
+
+            <member>HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=No - 8
+            bits.</member>
+
+            <member>HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=Yes - 16
+            bits.</member>
+          </simplelist>
         </listitem>
       </varlistentry>
 
@@ -1106,6 +1173,28 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">TC_BITS</emphasis>=<emphasis>bits</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. This option replaces WIDE_TC_MARKS
+          by allowing you to specify the number of <emphasis>bits</emphasis>
+          of the 32-bit packet/connection mark to be used for traffic shaping.
+          The default value is based on the settings of WIDE_TC_MARKS:</para>
+
+          <simplelist>
+            <member>WIDE_TC_MARKS=No - 8 bits.</member>
+
+            <member>WIDE_TC_MARKS=Yes - 14 bits.</member>
+          </simplelist>
+
+          <para>Mark values specified in <ulink
+          url="shorewall6-tcclasses.html">shorewall6-tcclasses (5)</ulink>
+          must be &lt; 2**TC_BITS.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis
@@ -1147,6 +1236,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>If you know what you are doing, you can set TC_EXPERT=Yes and
           Shorewall6 will not include these cautionary checks.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">TC_PRIOMAP</emphasis>=<emphasis>map</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.0. Determines the mapping of a packet's
+          TOS field to priority bands. See <ulink
+          url="shorewall6-tcpri.html">shorewall6-tcpri</ulink>(5). The
+          <emphasis>map</emphasis> consists of 16 space-separated digits with
+          values 1, 2 or 3. The first entry corresponds to Linux priority 9,
+          the second to Linux priority 1, the third to Linux Priority 2, and
+          so on. See tc-prio(8) for additional information.</para>
+
+          <para>The default setting is TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2
+          2 2".</para>
         </listitem>
       </varlistentry>
 

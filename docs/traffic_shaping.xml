@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Traffic Shaping/Control</title>
+    <title>Complex Traffic Shaping/Control</title>
 
     <authorgroup>
       <author>
@@ -92,6 +92,14 @@
 
   <section id="Intro">
     <title>Introduction</title>
+
+    <para>Beginning with Shorewall 4.5.0, Shorewall includes two separate
+    implementations of traffic shaping. This document describes the original
+    implementation which is complex and difficult to configure. A much simpler
+    version is described in <ulink role="bold"
+    url="simple_traffic_shaping.html">Simple Traffic Shaping/Control</ulink>
+    and is highly recommended unless you really need to delay certain traffic
+    passing through your firewall.</para>
 
     <para>Shorewall has builtin support for traffic shaping and control. This
     support does not cover all options available (and especially all
@@ -183,6 +191,13 @@
         url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
         assign packet marks to different types of traffic using entries in the
         <filename>/etc/shorewall/tcrules</filename> file.</para>
+
+        <note>
+          <para>In Shorewall 4.5.0, WIDE_TC_MARKS was superseded by TC_BITS
+          which specifies the width in bits of the traffic shaping mark field.
+          The default is based on the setting of WIDE_TC_MARKS so as to
+          provide upward compatibility.</para>
+        </note>
       </listitem>
     </orderedlist>
 
@@ -479,6 +494,13 @@ ppp0           6000kbit         500kbit</programlisting>
           if the device specified in the INTERFACE column has the <emphasis
           role="bold">classify</emphasis> option in
           <filename>/etc/shorewall/tcdevices</filename>.</para>
+
+          <note>
+            <para>In Shorewall 4.5.0, WIDE_TC_MARKS was superseded by TC_BITS
+            which specifies the width in bits of the traffic shaping mark
+            field. The default is based on the setting of WIDE_TC_MARKS so as
+            to provide upward compatibility.</para>
+          </note>
         </listitem>
 
         <listitem>
@@ -647,7 +669,7 @@ ppp0           6000kbit         500kbit</programlisting>
               <emphasis>before SNAT</emphasis> as the key.</para>
 
               <note>
-                <para> Shorewall cannot determine ahead of time if the flow
+                <para>Shorewall cannot determine ahead of time if the flow
                 classifier is available in your kernel (especially if it was
                 built into the kernel as opposed to being loaded as a module).
                 Consequently, you should check ahead of time to ensure that
@@ -669,7 +691,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
    ...</programlisting>
 
-                <para> If 'flow' is not supported, you will see:</para>
+                <para>If 'flow' is not supported, you will see:</para>
 
                 <programlisting>   Unknown filter "flow", hence option "help" is unparsable</programlisting>
 
@@ -696,7 +718,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
                 <para>For modularized kernels, Shorewall will attempt to load
                 <filename>/lib/modules/&lt;kernel-version&gt;/net/sched/cls_flow.ko</filename>
-                by default. </para>
+                by default.</para>
               </note>
             </listitem>
 
@@ -808,12 +830,21 @@ ppp0           6000kbit         500kbit</programlisting>
           <para>MARK or CLASSIFY - MARK specifies the mark value is to be
           assigned in case of a match. This is an integer in the range 1-255
           (1-16383 if you set WIDE_TC_MARKS=Yes in <ulink
-          url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ).
-          This value may be optionally followed by <quote>:</quote> and either
-          <quote>F</quote>, <quote>P</quote> or "T" to designate that the
-          marking will occur in the FORWARD, PREROUTING or POSTROUTING chains
-          respectively. If this additional specification is omitted, the chain
-          used to mark packets will be determined as follows:</para>
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)
+          ).</para>
+
+          <note>
+            <para>In Shorewall 4.5.0, WIDE_TC_MARKS was superseded by TC_BITS
+            which specifies the width in bits of the traffic shaping mark
+            field. The default is based on the setting of WIDE_TC_MARKS so as
+            to provide upward compatibility.</para>
+          </note>
+
+          <para>This value may be optionally followed by <quote>:</quote> and
+          either <quote>F</quote>, <quote>P</quote> or "T" to designate that
+          the marking will occur in the FORWARD, PREROUTING or POSTROUTING
+          chains respectively. If this additional specification is omitted,
+          the chain used to mark packets will be determined as follows:</para>
 
           <itemizedlist>
             <listitem>

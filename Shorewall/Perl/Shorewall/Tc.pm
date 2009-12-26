@@ -480,7 +480,7 @@ sub process_simple_device() {
 
     while ( ++$i <= 3 ) {
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq";
-	emit "run_tc filter add dev $physical parent $number: handle $i fw classid $devnum:$i";
+	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $devnum:$i";
 	emit "run_tc filter add dev $physical protocol all parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-';
 	emit '';
     }
@@ -1344,18 +1344,9 @@ sub setup_tc() {
 	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
+	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' );
 	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
 	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
-	}
-
-	if ( $config{PROVIDER_OFFSET} ) {
-	    for my $chain qw(INPUT FORWARD) {
-		insert_rule1( $mangle_table->{$chain}, 0, '-j MARK --and-mark ' . in_hex( $globals{TC_MASK} ) );
-	    }
-	    #
-	    # In POSTROUTING, we only want to clear routing mark and not IPMARK.
-	    #
-	    insert_rule1( $mangle_table->{POSTROUTING}, 0, '-m mark --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j MARK --and-mark 0' );
 	}
     }
 

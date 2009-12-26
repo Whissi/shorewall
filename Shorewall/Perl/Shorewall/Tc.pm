@@ -1080,12 +1080,7 @@ sub process_tc_priority() {
 	add_rule( $forwardref ,
 		  join( '', match_source_dev( $interface) , $rule ) ,
 		  1 );
-
-	add_rule( $forwardref ,
-		  join( '', match_dest_net( $interface) , $rule ) ,
-		  1 );
     } else {
-
 	my $postref = $mangle_table->{tcpost};
 	
 	if ( $address ne '-' ) {
@@ -1093,22 +1088,13 @@ sub process_tc_priority() {
 	    add_rule( $postref ,
 		      join( '', match_source_net( $address) , $rule ) ,
 		      1 );
-	    unless ( $address =~ /^!?~/ ) { 
-		add_rule( $postref ,
-			  join( '', match_dest_net( $address) , $rule ) ,
-			  1 );
-	    }
 	} else {
 	    add_rule( $postref , 
-		      join( '', 
-			    do_proto( $proto, $ports, '-' , 0 ) ,
-			    $rule ) ,
+		      join( '', do_proto( $proto, $ports, '-' , 0 ) , $rule ) ,
 		      1 );
 	      
 	    add_rule( $postref , 
-		      join( '' , 
-			    do_proto( $proto, '-', $ports, 0 ) ,
-			    $rule ) ,
+		      join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
 		      1 );
 	}
     }

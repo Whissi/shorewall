@@ -1234,18 +1234,9 @@ sub setup_tc() {
 	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
+	    add_rule $mangle_table->{FORWARD} ,     '-j MARK --set-mark 0';
 	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
 	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
-	}
-
-	if ( $config{HIGH_ROUTE_MARKS} ) {
-	    for my $chain qw(INPUT FORWARD) {
-		insert_rule1 $mangle_table->{$chain}, 0, $config{WIDE_TC_MARKS} ? '-j MARK --and-mark 0xFFFF' : '-j MARK --and-mark 0xFF';
-	    }
-	    #
-	    # In POSTROUTING, we only want to clear routing mark and not IPMARK.
-	    #
-	    insert_rule1 $mangle_table->{POSTROUTING}, 0, $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFFFF -j MARK --and-mark 0' : '-m mark --mark 0/0xFF -j MARK --and-mark 0';
 	}
     }
 

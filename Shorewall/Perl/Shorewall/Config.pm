@@ -2613,7 +2613,10 @@ sub get_configuration( $ ) {
 	$config{TC_ENABLED} = '';
     }
 
-    fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" if $config{TC_ENABLED} && ! $config{MANGLE_ENABLED};
+    if ( $config{TC_ENABLED} ) {
+	fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
+	require_capability 'MANGLE_ENABLED', "TC_ENABLED=$config{TC_ENABLED}", 's';
+    }
 
     if ( $val = $config{TC_PRIOMAP} ) {
 	my @priomap = split ' ',$val;

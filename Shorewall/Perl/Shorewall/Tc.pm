@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_4';
+our $VERSION = '4.5_0';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -1327,7 +1327,7 @@ sub setup_traffic_shaping() {
 #
 sub setup_tc() {
 
-    if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
+    if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
 
@@ -1404,7 +1404,7 @@ sub setup_tc() {
 
 	if ( my $fn = open_file 'tcrules' ) {
 
-	    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );
+	    first_entry "$doing $fn...";
 
 	    process_tc_rule while read_a_line;
 

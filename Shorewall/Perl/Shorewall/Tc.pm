@@ -1100,10 +1100,15 @@ sub process_tc_priority() {
 	    add_rule( $postref , 
 		      join( '', do_proto( $proto, $ports, '-' , 0 ) , $rule ) ,
 		      1 );
-	      
-	    add_rule( $postref , 
-		      join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
-		      1 );
+
+	    if ( $proto ne '-' ) {
+		my $protocol = resolve_proto $proto;
+
+		add_rule( $postref , 
+			  join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
+			  1 )
+		    unless $protocol == ICMP || $protocol == IPv6_ICMP;
+	    }
 	}
     }
 }

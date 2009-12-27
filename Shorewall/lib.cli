@@ -177,9 +177,13 @@ show_tc() {
 	fi
     }
 
-    ip -o link list | while read inx interface details; do
-	show_one_tc ${interface%:}
-    done
+    if [ $# -gt 0 ]; then
+	show_one_tc $1
+    else
+	ip -o link list | while read inx interface details; do
+	    show_one_tc ${interface%:}
+	done
+    fi
 
 }
 
@@ -489,10 +493,11 @@ show_command() {
 	    packet_log 20
 	    ;;
 	tc)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 2 ] && usage 1
 	    echo "$PRODUCT $version Traffic Control at $HOSTNAME - $(date)"
 	    echo
-	    show_tc
+	    shift
+	    show_tc $1
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1

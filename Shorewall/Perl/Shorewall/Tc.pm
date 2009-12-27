@@ -439,7 +439,7 @@ sub process_simple_device() {
     fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
 
     my $physical = physical_name $device;
-    my $dev       = chain_base( $physical );
+    my $dev      = chain_base( $physical );
 
     if ( $type ne '-' ) {
 	if ( lc $type eq 'external' ) {

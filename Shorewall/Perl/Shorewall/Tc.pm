@@ -1101,7 +1101,7 @@ sub process_tc_priority() {
 		      join( '', do_proto( $proto, $ports, '-' , 0 ) , $rule ) ,
 		      1 );
 
-	    if ( $proto ne '-' ) {
+	    if ( $ports ne '-' ) {
 		my $protocol = resolve_proto $proto;
 
 		add_rule( $postref , 

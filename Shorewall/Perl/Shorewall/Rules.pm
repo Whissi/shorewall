@@ -1710,7 +1710,7 @@ sub generate_matrix() {
 		my $sourcechainref;
 		my $interfacematch = '';
 
-		if ( use_forward_chain( $interface ) || $forward_jump_added{$interface} ) {
+		if ( use_forward_chain( $interface ) ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
 		    add_jump $filter_table->{FORWARD} , $sourcechainref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 		} else {
@@ -1822,7 +1822,7 @@ sub generate_matrix() {
 			    my $outputref;
 			    my $interfacematch = '';
 
-			    if ( use_output_chain( $interface ) || $output_jump_added{$interface} ) {
+			    if ( use_output_chain $interface ) {
 				$outputref = $filter_table->{output_chain $interface};
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 			    } else {
@@ -1871,7 +1871,7 @@ sub generate_matrix() {
 			my $inputchainref;
 			my $interfacematch = '';
 
-			if ( use_input_chain( $interface ) || $input_jump_added{$interface} ) {
+			if ( use_input_chain $interface ) {
 			    $inputchainref = $filter_table->{input_chain $interface};
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			} else {
@@ -2007,7 +2007,7 @@ sub generate_matrix() {
 			my $match_source_dev = '';
 			my $forwardchainref = $filter_table->{forward_chain $interface};
 
-			if ( use_forward_chain $interface || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
+			if ( use_forward_chain( $interface ) || $forward_jump_added{$interface} || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
 			    #
 			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
 			    #

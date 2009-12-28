@@ -267,6 +267,30 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 #
 # Save currently running configuration
 #
+do_save() {
+    local status
+    status=0
+
+    if [ -f ${VARDIR}/firewall ]; then
+	if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
+	    cp -f ${VARDIR}/firewall $RESTOREPATH
+	    mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
+	    chmod +x $RESTOREPATH
+	    echo "   Currently-running Configuration Saved to $RESTOREPATH"
+	    run_user_exit save
+	else
+	    rm -f ${VARDIR}/restore-$$
+	    echo "   ERROR: Currently-running Configuration Not Saved" >&2
+	    status=1
+	fi
+    else
+	echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+	status=1
+    fi
+
+    return $status
+}
+
 save_config() {
 
     local result
@@ -289,24 +313,15 @@ save_config() {
 		*)
 		    validate_restorefile RESTOREFILE
 
-		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
-			echo "   Dynamic Rules Saved"
-			if [ -f ${VARDIR}/firewall ]; then
-			    if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
-				cp -f ${VARDIR}/firewall $RESTOREPATH
-				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
-				chmod +x $RESTOREPATH
-				echo "   Currently-running Configuration Saved to $RESTOREPATH"
-				run_user_exit save
-			    else
-			        rm -f ${VARDIR}/restore-$$
-				echo "   ERROR: Currently-running Configuration Not Saved" >&2
-			    fi
+		    if chain_exists dynamic; then
+			if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
+			    echo "   Dynamic Rules Saved"
+			    do_save
 			else
-			    echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+		            echo "Error Saving the Dynamic Rules" >&2
 			fi
 		    else
-		        echo "Error Saving the Dynamic Rules" >&2
+			do_save && rm ${VARDIR}/save
 		    fi
 		    ;;
 	    esac

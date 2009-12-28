@@ -2039,6 +2039,8 @@ sub generate_matrix() {
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;
 			    move_rules $forwardchainref, $chainref;
+			    purge_jump $filter_table->{FORWARD}, $forwardchainref;
+			    $forward_jump_added{$interface} = 0;
 			}
 
 			for my $hostref ( @{$typeref->{$interface}} ) {

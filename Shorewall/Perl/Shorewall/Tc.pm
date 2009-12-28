@@ -1067,7 +1067,7 @@ sub process_tc_filter( ) {
 }
 
 sub process_tc_priority() {
-    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line 1, 6, 'tcpri';
+    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line1 1, 6, 'tcpri';
 
     if ( $band eq 'COMMENT' ) {
 	process_comment;

@@ -1721,7 +1721,7 @@ sub generate_matrix() {
 		my $sourcechainref;
 		my $interfacematch = '';
 
-		if ( use_forward_chain( $interface ) ) {
+		if ( use_forward_chain( $interface ) || $forward_jump_added{$interface} ) {
 		    $sourcechainref = $filter_table->{forward_chain $interface};
 		    add_jump $filter_table->{FORWARD} , $sourcechainref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 		} else {
@@ -1833,7 +1833,7 @@ sub generate_matrix() {
 			    my $outputref;
 			    my $interfacematch = '';
 
-			    if ( use_output_chain $interface ) {
+			    if ( use_output_chain( $interface ) || $output_jump_added{$interface} ) {
 				$outputref = $filter_table->{output_chain $interface};
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 			    } else {
@@ -1882,7 +1882,7 @@ sub generate_matrix() {
 			my $inputchainref;
 			my $interfacematch = '';
 
-			if ( use_input_chain $interface ) {
+			if ( use_input_chain( $interface ) || $input_jump_added{$interface} ) {
 			    $inputchainref = $filter_table->{input_chain $interface};
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			} else {

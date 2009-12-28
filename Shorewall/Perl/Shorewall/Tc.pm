@@ -1069,6 +1069,11 @@ sub process_tc_filter( ) {
 sub process_tc_priority() {
     my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line 1, 6, 'tcpri';
 
+    if ( $band eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
+
     my $val = numeric_value $band;
 
     fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
@@ -1134,6 +1139,8 @@ sub setup_simple_traffic_shaping() {
 			  warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
 		      };
 	process_tc_priority while read_a_line;
+
+	clear_comment;
     }
 }
 

@@ -1,1 +1,18 @@
-There are no known problems in Shorewall version 4.4.5
+1)  There is a syntax error in /sbin/shorewall around line 1787. The
+    solution is to add the following line AFTER line 1787:
+
+    	     if shorewall_is_started; then
+
+2)  Specifying an ICMP type in the PORT(S) column of tcpri will result
+    in a compilation error. 
+
+    This can be corrected by applying the patches in GIT commits
+    6fa5af81645312bcb2aef842f99167687adb2341 and
+    759b4ee0f526ac5dc70ef667cda7bf63bcb3a533.
+
+3)  The 'save' command fails when DYNAMIC_BLACKLIST=No.
+
+    This can be corrected by applying the patches in GIT commit
+    783d6d6a6bfe3adbe983e8b5d8b8d3e9a5ca5d6f.
+
+    

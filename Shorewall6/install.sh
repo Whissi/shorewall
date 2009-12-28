@@ -372,6 +372,26 @@ if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcrules ]; then
 fi
 
 #
+# Install the TC Interfaces file
+#
+run_install $OWNERSHIP -m 0644 tcinterfaces ${PREFIX}/usr/share/shorewall6/configfiles/tcinterfaces
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcinterfaces ]; then
+    run_install $OWNERSHIP -m 0600 tcinterfaces ${PREFIX}/etc/shorewall6/tcinterfaces
+    echo "TC Interfaces file installed as ${PREFIX}/etc/shorewall6/tcinterfaces"
+fi
+
+#
+# Install the TC Priority file
+#
+run_install $OWNERSHIP -m 0644 tcpri ${PREFIX}/usr/share/shorewall6/configfiles/tcpri
+
+if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcpri ]; then
+    run_install $OWNERSHIP -m 0600 tcpri ${PREFIX}/etc/shorewall6/tcpri
+    echo "TC Priority file installed as ${PREFIX}/etc/shorewall6/tcpri"
+fi
+
+#
 # Install the TOS file
 #
 run_install $OWNERSHIP -m 0644 tos ${PREFIX}/usr/share/shorewall6/configfiles/tos

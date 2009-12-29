@@ -114,6 +114,7 @@ our %EXPORT_TAGS = (
 				       ensure_filter_chain
 				       finish_section
 				       optimize_chain
+				       delete_references
 				       setup_zone_mss
 				       newexclusionchain
 				       newnonatchain
@@ -1227,6 +1228,22 @@ sub optimize_chain( $ ) {
 	    $chainref->{referenced} = 0;
 	}
     }
+}
+
+#
+# Delete the references to the passed chain
+#
+
+sub delete_references( $ ) {
+    my $chainref = shift;
+    
+    for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	for ( @{$fromref->{rules}} ) {
+	    $_ = undef if defined && / -[jg] $chainref->{name}$/;
+	}
+    }
+
+    $chainref->{referenced} = 0;
 }
 
 #

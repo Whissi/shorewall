@@ -420,7 +420,7 @@ sub apply_policy_rules() {
 	my $name        = $chainref->{name};
 
 	if ( $policy ne 'NONE' ) {
-	    if ( ! $chainref->{referenced} && ( ! $provisional && $policy ne 'CONTINUE' ) ) {
+	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) { 
 		ensure_filter_chain $name, 1;
 	    }
 

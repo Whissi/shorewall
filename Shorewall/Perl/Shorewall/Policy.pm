@@ -418,10 +418,21 @@ sub apply_policy_rules() {
 	my $provisional = $chainref->{provisional};
 	my $default     = $chainref->{default};
 	my $name        = $chainref->{name};
+	my $synparms    = $chainref->{synparms};
 
 	if ( $policy ne 'NONE' ) {
-	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) { 
-		ensure_filter_chain $name, 1;
+	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) {
+		if ( $config{OPTIMIZE} & 2 ) {
+		    #
+		    # This policy chain is empty and the only thing that we would put in it is
+		    # the policy-related stuff. Don't create it if all we are going to put in it
+		    # is a single jump. Generate_matrix() will just use the policy target when
+		    # needed.
+		    #
+		    ensure_filter_chain $name, 1 if $default ne 'none' || $loglevel || $synparms || $config{MULTICAST} || ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} );
+		} else {
+		    ensure_filter_chain $name, 1;
+		}
 	    }
 
 	    if ( $name =~ /^all[-2]|[-2]all$/ ) {

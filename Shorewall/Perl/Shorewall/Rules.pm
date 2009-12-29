@@ -1668,7 +1668,8 @@ sub generate_matrix() {
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $filter_table->{$chainref->{policychain}};
 	    assert( $policyref );
-	    return $policyref->{name};
+	    return $policyref->{name} if $policyref ne $chainref;
+	    return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
 	}
 
 	''; # CONTINUE policy

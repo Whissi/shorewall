@@ -696,8 +696,8 @@ dump_command() {
 
     show_routing
 
-    heading "ARP"
-    arp -na
+    heading "Neighbors"
+    ip -6 neigh ls
 
     if qt mywhich lsmod; then
 	heading "Modules"

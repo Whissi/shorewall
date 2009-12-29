@@ -2007,7 +2007,7 @@ sub generate_matrix() {
 			my $match_source_dev = '';
 			my $forwardchainref = $filter_table->{forward_chain $interface};
 
-			if ( use_forward_chain( $interface ) || $forward_jump_added{$interface} || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
+			if ( use_forward_chain( $interface ) || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
 			    #
 			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
 			    #

@@ -1728,8 +1728,6 @@ sub generate_matrix() {
 		    $sourcechainref = $filter_table->{FORWARD};
 		    $interfacematch = match_source_dev $interface;
 		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
-		    purge_jump( $filter_table->{FORWARD} , $filter_table->{forward_chain $interface} );
-		    $forward_jump_added{$interface} = 0;
 		}
 
 		my $arrayref = $source_ref->{$interface};
@@ -1835,7 +1833,7 @@ sub generate_matrix() {
 			    my $outputref;
 			    my $interfacematch = '';
 
-			    if ( use_output_chain( $interface ) ) {
+			    if ( use_output_chain $interface ) {
 				$outputref = $filter_table->{output_chain $interface};
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 			    } else {
@@ -1848,11 +1846,7 @@ sub generate_matrix() {
 			    add_jump( $outputref , $nextchain, 0, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
 				if $hostref->{options}{broadcast};
 
-			    unless ( use_output_chain $interface ) {
-				move_rules( $filter_table->{output_chain $interface} , $filter_table->{$chain1} );
-				purge_jump( $filter_table->{OUTPUT}, $filter_table->{output_chain $interface} );
-				$output_jump_added{$interface} = 0;
-			    }
+			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$chain1} ) unless use_output_chain $interface;
 			}
 
 			clearrule;
@@ -1888,7 +1882,7 @@ sub generate_matrix() {
 			my $inputchainref;
 			my $interfacematch = '';
 
-			if ( use_input_chain( $interface ) ) {
+			if ( use_input_chain $interface ) {
 			    $inputchainref = $filter_table->{input_chain $interface};
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			} else {
@@ -1899,8 +1893,6 @@ sub generate_matrix() {
 			if ( $chain2 ) {
 			    add_jump $inputchainref, source_exclusion( $exclusions, $chain2 ), 0, join( '', $interfacematch, $source, $ipsec_in_match );
 			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$chain2} ) unless use_input_chain $interface;
-			    purge_jump( $filter_table->{INPUT}, $filter_table->{input_chain $interface} );
-			    $input_jump_added{$interface} = 0;
 			}
 
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
@@ -2026,7 +2018,7 @@ sub generate_matrix() {
 			my $match_source_dev = '';
 			my $forwardchainref = $filter_table->{forward_chain $interface};
 
-			if ( use_forward_chain( $interface ) || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
+			if ( use_forward_chain $interface || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
 			    #
 			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
 			    #
@@ -2039,8 +2031,6 @@ sub generate_matrix() {
 			    $chain3ref  = $filter_table->{FORWARD};
 			    $match_source_dev = match_source_dev $interface;
 			    move_rules $forwardchainref, $chainref;
-			    purge_jump $filter_table->{FORWARD}, $forwardchainref;
-			    $forward_jump_added{$interface} = 0;
 			}
 
 			for my $hostref ( @{$typeref->{$interface}} ) {

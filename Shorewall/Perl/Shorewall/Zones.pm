@@ -669,7 +669,7 @@ sub add_group_to_zone($$$$$)
 
     fatal_error "Duplicate Host Group ($interface:" . ALLIP . ") in zone $zone" if $allip && @$interfaceref;
 
-    $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions );
+    $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions ) || $options->{routeback};
 
     push @{$interfaceref}, { options => $options,
 			     hosts   => \@newnetworks,

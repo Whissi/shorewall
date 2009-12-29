@@ -182,6 +182,7 @@ our $VERSION = '4.4_4';
 #                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
 #                                               manual       => undef|1 -- If 1, a manual chain.
 #                                               accounting   => undef|1 -- If 1, an accounting chain
+#                                               emptyok      => undef|1
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain

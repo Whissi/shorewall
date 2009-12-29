@@ -114,7 +114,7 @@ our %EXPORT_TAGS = (
 				       ensure_filter_chain
 				       finish_section
 				       optimize_chain
-				       delete_references
+				       delete_useless_chains
 				       setup_zone_mss
 				       newexclusionchain
 				       newnonatchain
@@ -1245,6 +1245,67 @@ sub delete_references( $ ) {
     }
 
     $chainref->{referenced} = 0;
+}
+
+#
+# Replace jumps to the passed chain with jumps to the passed target
+#
+sub replace_references( $$ ) {
+    my ( $chainref, $target ) = @_;
+
+    if ( defined $filter_table->{$target} ) {
+	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	    if ( $fromref->{referenced} ) {
+		defined && s/ -([jg]) $chainref->{name}$/ -$1 $target/ for @{$fromref->{rules}};
+	    }
+	}
+    } else {
+	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	    if ( $fromref->{referenced} ) {
+		defined && s/ -[jg] $chainref->{name}$/-A $fromref->{name} -j $target/ for @{$fromref->{rules}};
+	    }
+	}
+    }
+
+    $chainref->{referenced} = 0;
+}
+
+#
+# Optimize away chains with < 2 rules
+#
+sub delete_useless_chains() {
+    my $progress = 1;
+
+    progress_message2 'Optimizing Ruleset...';
+
+    while ( $progress ) {
+	$progress = 0;
+
+	for my $chainref ( values %$filter_table ) {
+	    if ( $chainref->{referenced} && ! ( $chainref->{emptyok} || $chainref->{builtin} ) ) {
+		my $rules = $chainref->{rules};
+		my ( @rules , $rule );
+
+		while ( @$rules ) {
+		    $rule = shift @$rules;
+		    push @rules, $rule if defined $rule;
+		}
+
+		$chainref->{rules} = \@rules;
+
+		if ( @rules == 0 ) {
+		    delete_references $chainref;
+		    $progress = 1;
+		} elsif ( @rules == 1 ) {
+		    $rule = $rules[0];
+		    if ( $rule =~ /^-A $chainref->{name} -j (.*)$/ ) {
+			replace_references $chainref, $1;
+			$progress = 1;
+		    }
+		}
+	    }
+	}
+    }
 }
 
 #

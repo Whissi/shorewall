@@ -2080,15 +2080,6 @@ sub generate_matrix() {
 	add_jump $frwd_ref , $last_chain, 1 if $frwd_ref && $last_chain;
     }
 
-    #
-    # Delete references to empty zone-forward chains
-    #
-    for my $zone ( @zones ) {
-	my $frwd_ref = $filter_table->{ zone_forward_chain $zone };
-
-	delete_references $frwd_ref if $frwd_ref && ! @{$frwd_ref->{rules}};
-    }
-
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,

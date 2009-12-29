@@ -800,6 +800,10 @@ sub compiler {
 	# Optimize Policy Chains
 	#
 	optimize_policy_chains if $config{OPTIMIZE} & 2;
+	#
+	# More Optimization
+	#
+	delete_useless_chains if $config{OPTIMIZE} & 4;
 
 	enable_script;
 	#

@@ -866,7 +866,7 @@ sub allowInvalid ( $$$ ) {
 }
 
 sub forwardUPnP ( $$$ ) {
-    $filter_chain->{forwardUPnP}{emptyok} = 1;
+    $filter_table->{forwardUPnP}{emptyok} = 1;
 }
 
 sub allowinUPnP ( $$$ ) {

@@ -579,8 +579,6 @@ sub add_jump( $$$;$$ ) {
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
     add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
-
-    
 }
 
 #
@@ -1216,7 +1214,18 @@ sub optimize_chain( $ ) {
 	    pop @$rules;
 	}
 
-	add_rule $chainref, '-j ACCEPT';
+	if ( @${rules} ) {
+	    add_rule $chainref, '-j ACCEPT';
+	} else {
+	    #
+	    # The chain is now empty -- change all references to ACCEPT
+	    #
+	    for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+		defined && s/ -[jg] $chainref->{name}$/ -j ACCEPT/ for @{$fromref->{rules}};
+	    }
+
+	    $chainref->{referenced} = 0;
+	}
     }
 }
 

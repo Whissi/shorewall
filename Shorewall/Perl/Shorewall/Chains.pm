@@ -196,6 +196,7 @@ our $VERSION = '4.4_4';
 #                                                                 ...
 #                                                               ]
 #                                               logchains    => { <key1> = <chainref1>, ... }
+#                                               references   => { <ref1> => 1, <ref2> => 1, ... }
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -573,11 +574,13 @@ sub add_jump( $$$;$$ ) {
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1 if $toref;
+    $toref->{referenced} = 1, $toref->{references}{$fromref->{name}} = 1 if $toref;
 
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
     add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+
+    
 }
 
 #
@@ -903,12 +906,13 @@ sub new_chain($$)
 
     assert( $chain_table{$table} && ! ( $chain_table{$table}{$chain} || $builtin_target{ $chain } ) );
 
-    $chain_table{$table}{$chain} = { name      => $chain,
-				     rules     => [],
-				     table     => $table,
-				     loglevel  => '',
-				     log       => 1,
-				     cmdlevel  => 0 };
+    $chain_table{$table}{$chain} = { name       => $chain,
+				     rules      => [],
+				     table      => $table,
+				     loglevel   => '',
+				     log        => 1,
+				     cmdlevel   => 0,
+				     references => {} };
 }
 
 #

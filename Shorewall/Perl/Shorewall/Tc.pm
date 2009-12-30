@@ -1147,8 +1147,7 @@ sub setup_simple_traffic_shaping() {
 	clear_comment;
 
 	if ( $ipp2p && $config{PROVIDER_OFFSET} ) {
-	    insert_rule1 $mangle_table->{tcpost} , 0 , "-m connmark ! --mark 0/$globals{TC_MASK} -j CONNMARK --restore-mark --ctmask $globals{TC_MASK}";
-	    insert_rule1 $mangle_table->{tcpost} , 1 , "-m mark ! --mark 0/$globals{TC_MASK} -j RETURN";
+	    insert_rule1 $mangle_table->{tcpost} , 0 , "-m mark --mark 0/$globals{TC_MASK} -j CONNMARK --restore-mark --ctmask $globals{TC_MASK}";
 	    add_rule     $mangle_table->{tcpost} ,     "-m mark ! --mark 0/$globals{TC_MASK} -j CONNMARK --save-mark --ctmask $globals{TC_MASK}";
 	}
     }

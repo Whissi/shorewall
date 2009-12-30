@@ -843,7 +843,7 @@ sub dropNotSyn ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
     log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
-    add_rule $chainref , '-p tcp ! --syn -j DROP';
+    add_rule $chainref , '-p 6 ! --syn -j DROP';
 }
 
 sub rejNotSyn ( $$$ ) {

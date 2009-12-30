@@ -346,7 +346,7 @@ sub add_a_provider( ) {
     my $val = 0;
     my $pref;
 
-    $mark = ++$lastmark if $mark eq '-' && $track;
+    $mark = ( $lastmark += ( 1 << $config{PROVIDER_OFFSET} ) ) if $mark eq '-' && $track;
 
     if ( $mark ne '-' ) {
 
@@ -738,7 +738,7 @@ sub finish_providers() {
 sub setup_providers() {
     my $providers = 0;
 
-    $lastmark = ( 1 << $config{PROVIDER_OFFSET} ) - 1;
+    $lastmark = 0;
 
     my $fn = open_file 'providers';
 

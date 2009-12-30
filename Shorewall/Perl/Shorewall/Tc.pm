@@ -130,6 +130,7 @@ our %tcdevices;
 our @devnums;
 our $devnum;
 our $sticky;
+our $ipp2p;
 
 
 #
@@ -183,6 +184,7 @@ sub initialize( $ ) {
     @devnums   = ();
     $devnum = 0;
     $sticky = 0;
+    $ipp2p  = 0;
 }
 
 sub process_tc_rule( ) {
@@ -1109,10 +1111,12 @@ sub process_tc_priority() {
 	    if ( $ports ne '-' ) {
 		my $protocol = resolve_proto $proto;
 
+		$ipp2p = 1 if $proto =~ /^ipp2p/;
+
 		add_rule( $postref , 
 			  join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
 			  1 )
-		    unless $proto eq 'ipp2p' || $protocol == ICMP || $protocol == IPv6_ICMP;
+		    unless $proto =~ /^ipp2p/ || $protocol == ICMP || $protocol == IPv6_ICMP;
 	    }
 	}
     }
@@ -1141,6 +1145,12 @@ sub setup_simple_traffic_shaping() {
 	process_tc_priority while read_a_line;
 
 	clear_comment;
+
+	if ( $ipp2p && $config{PROVIDER_OFFSET} ) {
+	    insert_rule1 $mangle_table->{tcpost} , 0 , "-m connmark ! --mark 0/$globals{TC_MASK} -j CONNMARK --restore-mark --ctmask $globals{TC_MASK}";
+	    insert_rule1 $mangle_table->{tcpost} , 1 , "-m mark ! --mark 0/$globals{TC_MASK} -j RETURN";
+	    add_rule     $mangle_table->{tcpost} ,     "-m mark ! --mark 0/$globals{TC_MASK} -j CONNMARK --save-mark --ctmask $globals{TC_MASK}";
+	}
     }
 }
 

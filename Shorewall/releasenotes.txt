@@ -31,7 +31,10 @@ Shorewall 4.5.1
 2)  Previously, specifying an ICMP type in the PORT(S) column of tcpri
     would result in a compilation error.
 
-3)  Previously, the 'save' command failed when DYNAMIC_BLACKLIST=No
+3)  Previously, the 'save' command failed when DYNAMIC_BLACKLIST=No.
+
+4)  Automatic assignment of provider mark values didn't work when
+    PROVIDER_OFFSET > 0.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -64,6 +67,11 @@ None.
 	logdrop
 	logreject
 	forwardUPnP
+
+5)  The PROTO column in /etc/shorewall/tcpri may now contain
+    'ipp2p'. When such an entry is present AND PROVIDER_OFFSET is
+    non-zero, Shorewall will automatically generate SAVE/RESTORE rules
+    for the POSTROUTING chain.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 5

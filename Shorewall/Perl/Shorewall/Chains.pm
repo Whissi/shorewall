@@ -1276,7 +1276,7 @@ sub replace_references( $$ ) {
 
     if ( defined $filter_table->{$target}  && ! $filter_table->{target}{builtin} ) {
 	#
-	# The target is a chain -- use the jump type from the rule
+	# The target is a chain -- use the jump type from each referencing rule
 	#
 	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
@@ -1303,19 +1303,22 @@ sub replace_references( $$ ) {
 #
 sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
-
+    #
+    # Note: If $matches is non-empty, then it begins with white space
+    #
     my $result = 0;
 
     if ( defined $filter_table->{$target} && ! $filter_table->{target}{builtin} ) {
 	#
-	# The target is a chain -- use the jump type from the rule
+	# The target is a chain -- use the jump type from each referencing rule
 	#
 	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
-			my $trailer = $1 || ''; # Possible comment or white space
-
+			#
+			# Prevent multiple '-p' matches
+			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
 			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
 		    }
@@ -1330,6 +1333,9 @@ sub replace_references1( $$$ ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+			#
+			# Prevent multiple '-p' matches
+			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
 			s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
 		    }

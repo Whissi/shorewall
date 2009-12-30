@@ -842,15 +842,15 @@ sub allowBcast( $$$ ) {
 sub dropNotSyn ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
+    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
     add_rule $chainref , '-p tcp ! --syn -j DROP';
 }
 
 sub rejNotSyn ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
-    add_rule $chainref , '-p tcp ! --syn -j REJECT --reject-with tcp-reset';
+    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
+    add_rule $chainref , '-p 6 ! --syn -j REJECT --reject-with tcp-reset';
 }
 
 sub dropInvalid ( $$$ ) {
@@ -875,12 +875,12 @@ sub allowinUPnP ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
     if ( $level ne '' ) {
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
+	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 17 --dport 1900 ';
+	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 6 --dport 49152 ';
     }
 
-    add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
-    add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
+    add_rule $chainref, '-p 17 --dport 1900 -j ACCEPT';
+    add_rule $chainref, '-p 6 --dport 49152 -j ACCEPT';
 }
 
 sub Limit( $$$ ) {

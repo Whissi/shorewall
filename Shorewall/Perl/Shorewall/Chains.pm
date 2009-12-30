@@ -991,6 +991,7 @@ sub ensure_accounting_chain( $  )
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
+	$chainref->{emptyok}    = 1;
 
 	if ( $chain ne 'accounting' ) {
 	    my $file = find_file $chain;

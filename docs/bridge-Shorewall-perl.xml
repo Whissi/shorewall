@@ -101,7 +101,8 @@
 
       <listitem>
         <para>Your kernel must contain Netfilter physdev match support
-        (CONFIG_IP_NF_MATCH_PHYSDEV=m or CONFIG_IP_NF_MATCH_PHYSDEV=y).
+        (CONFIG_IP_NF_MATCH_PHYSDEV=m or CONFIG_IP_NF_MATCH_PHYSDEV=y --
+        recent kernels call this option CONFIG_NETFILTER_XT_MATCH_PHYSDEV).
         Physdev match is standard in the 2.6 kernel series but must be patched
         into the 2.4 kernels (see <ulink
         url="http://bridge.sf.net">http://bridge.sf.net</ulink>). Bering and
@@ -650,7 +651,7 @@ br0             192.168.1.0/24  routeback
     port to have a unique name. The <option>physical</option> interface option
     was added in Shorewall 4.4.4 to work around this problem. The above
     configuration may be defined using the following in
-    <filename>/etc/shorewall/interfaces</filename>: </para>
+    <filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>       #ZONE            INTERFACE       BROADCAST       OPTIONS
        world            br0             -               bridge

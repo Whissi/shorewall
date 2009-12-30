@@ -622,6 +622,7 @@ sub add_common_rules() {
 	    progress_message2 "$doing UPnP";
 
 	    new_nat_chain( 'UPnP' );
+	    emptyok $nat_table->{UPnP};
 
 	    $announced = 1;
 

@@ -559,7 +559,7 @@ sub add_rule($$;$)
 sub add_reference ( $$ ) {
     my ( $fromref, $to ) = @_;
 
-    my $toref = $filter_table->{$to};
+    my $toref = $chain_table{$fromref->{table}}{$to};
 
     $toref->{references}{$fromref->{name}} = 1;
 }
@@ -586,7 +586,7 @@ sub add_jump( $$$;$$ ) {
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1, add_reference $fromref, $toref->{name} if $toref;
+    $toref->{referenced} = 1, add_reference $fromref, $to if $toref;
 
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
@@ -1258,8 +1258,9 @@ sub optimize_chain( $ ) {
 
 sub delete_references( $ ) {
     my $chainref = shift;
+    my $table    = $chainref->{table};
     
-    for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+    for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	for ( @{$fromref->{rules}} ) {
 	    $_ = undef if defined && / -[jg] $chainref->{name}$/;
 	}
@@ -1273,12 +1274,13 @@ sub delete_references( $ ) {
 #
 sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
+    my $table    = $chainref->{table};
 
-    if ( defined $filter_table->{$target}  && ! $filter_table->{target}{builtin} ) {
+    if ( defined $chain_table{$table}{$target}  && ! $chain_table{$table}{target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#
-	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ for @{$fromref->{rules}};
 	    }
@@ -1287,9 +1289,9 @@ sub replace_references( $$ ) {
 	#
 	# The target is a builtin -- we must use '-j'
 	#
-	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -[jg] $chainref->{name}(\b)/-A $fromref->{name} -j ${target}$1/ for @{$fromref->{rules}};
+		defined && s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ for @{$fromref->{rules}};
 	    }
 	}
     }
@@ -1303,16 +1305,17 @@ sub replace_references( $$ ) {
 #
 sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
+    my $table    = $chainref->{table};
     #
     # Note: If $matches is non-empty, then it begins with white space
     #
     my $result = 0;
 
-    if ( defined $filter_table->{$target} && ! $filter_table->{target}{builtin} ) {
+    if ( defined $chain_table{$table}{$target} && ! $chain_table{$table}{$target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#
-	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
@@ -1329,7 +1332,7 @@ sub replace_references1( $$$ ) {
 	#
 	# The target is a builtin -- we must use '-j'
 	#
-	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
@@ -1351,7 +1354,6 @@ sub replace_references1( $$$ ) {
 # Perform Optimization
 #
 sub optimize_ruleset() {
-    my $progress = 1;
     #
     # Make repeated passes through the filter table looking for short chains (those with less than 2 entries)
     #
@@ -1361,37 +1363,40 @@ sub optimize_ruleset() {
     # The search continues until no short chains remain
     # Chains with 'emptyok = 1' are exempted from optimization
     #
-    while ( $progress ) {
-	$progress = 0;
+    for my $table ( qw/ raw mangle nat filter/ ) {
+	my $progress = 1;
+	while ( $progress ) {
+	    $progress = 0;
 
-	for my $chainref ( values %$filter_table ) {
-	    if ( $chainref->{referenced} && ! ( $chainref->{emptyok} || $chainref->{builtin} ) ) {
-		my $numrules = 0;
-		my $firstrule;
+	    for my $chainref ( values %{$chain_table{$table}} ) {
+		if ( $chainref->{referenced} && ! ( $chainref->{emptyok} || $chainref->{builtin} ) ) {
+		    my $numrules = 0;
+		    my $firstrule;
 
-		for ( @{$chainref->{rules}} ) {
-		    if ( defined ) {
-			$numrules++;
-			$firstrule = $_ unless defined $firstrule;
+		    for ( @{$chainref->{rules}} ) {
+			if ( defined ) {
+			    $numrules++;
+			    $firstrule = $_ unless defined $firstrule;
+			}
 		    }
-		}
 
-		if ( $numrules == 0 ) {
-		    delete_references $chainref;
-		    $progress = 1;
-		} elsif ( $numrules == 1 ) {
-		    if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
-			#
-			# Easy case -- the rule is a simple jump
-			#
-			replace_references $chainref, $1;
+		    if ( $numrules == 0 ) {
+			delete_references $chainref;
 			$progress = 1;
-		    } elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
-			#
-			# Not so easy -- the rule contains matches
-			#
-			replace_references1 $chainref, $2, $1;
-			$progress = 1;
+		    } elsif ( $numrules == 1 ) {
+			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+			    #
+			    # Easy case -- the rule is a simple jump
+			    #
+			    replace_references $chainref, $1;
+			    $progress = 1;
+			} elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
+			    #
+			    # Not so easy -- the rule contains matches
+			    #
+			    replace_references1 $chainref, $2, $1;
+			    $progress = 1;
+			}
 		    }
 		}
 	    }
@@ -2241,7 +2246,7 @@ sub addnatjump( $$$ ) {
     my $destref   = $nat_table->{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	add_rule $nat_table->{$source} , $matches . "-j $dest";
+	add_jump $nat_table->{$source} , $dest , 0, $matches;
     } else {
 	clearrule;
     }
@@ -2670,7 +2675,10 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     if ( $disposition ) {
 	my $targetref = $chain_table{$chainref->{table}}{$disposition};
-	$targetref->{referenced} = 1 if $targetref;
+	if ( $targetref ) {
+	    $targetref->{referenced} = 1; 
+	    add_reference $chainref, $disposition;
+	}
     }
 
     #

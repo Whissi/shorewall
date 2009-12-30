@@ -1359,15 +1359,15 @@ sub setup_tc() {
 
 	my $mark_part = '';
 
-	$mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) if @routemarked_interfaces && ! $config{TC_EXPERT};
+	$mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) . ' ' if @routemarked_interfaces && ! $config{TC_EXPERT};
 
-	add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
-	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";
+	add_jump $mangle_table->{PREROUTING} , 'tcpre', 0, $mark_part;
+	add_jump $mangle_table->{OUTPUT} ,     'tcout', 0, $mark_part;
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
 	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' );
-	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
-	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
+	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
+	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;
 	}
     }
 

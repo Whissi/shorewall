@@ -104,6 +104,8 @@ our %EXPORT_TAGS = (
 				       notrack_chain
 				       first_chains
 				       ensure_chain
+				       emptyok
+				       add_reference
 				       ensure_accounting_chain
 				       ensure_mangle_chain
 				       ensure_nat_chain
@@ -114,7 +116,7 @@ our %EXPORT_TAGS = (
 				       ensure_filter_chain
 				       finish_section
 				       optimize_chain
-				       delete_useless_chains
+				       optimize_ruleset
 				       setup_zone_mss
 				       newexclusionchain
 				       newnonatchain
@@ -554,6 +556,14 @@ sub add_rule($$;$)
 # optional 5th argument causes long port lists to be split.
 #
 
+sub add_reference ( $$ ) {
+    my ( $fromref, $to ) = @_;
+
+    my $toref = $filter_table->{$to};
+
+    $toref->{references}{$fromref->{name}} = 1;
+}
+
 sub add_jump( $$$;$$ ) {
     my ( $fromref, $to, $goto_ok, $predicate, $expandports ) = @_;
 
@@ -576,7 +586,7 @@ sub add_jump( $$$;$$ ) {
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1, $toref->{references}{$fromref->{name}} = 1 if $toref;
+    $toref->{referenced} = 1, add_reference $fromref, $toref->{name} if $toref;
 
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
@@ -929,6 +939,17 @@ sub ensure_chain($$)
     $ref ? $ref : new_chain $table, $chain;
 }
 
+#
+# Set the emptyok flag for a chain
+#
+sub emptyok( $ ) {
+    my $chain = shift;
+
+    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
+
+    $chainref->{emptyok} = 1;
+}
+
 sub finish_chain_section( $$ );
 
 #
@@ -1253,16 +1274,22 @@ sub delete_references( $ ) {
 sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
 
-    if ( defined $filter_table->{$target} ) {
+    if ( defined $filter_table->{$target}  && ! $filter_table->{target}{builtin} ) {
+	#
+	# The target is a chain -- use the jump type from the rule
+	#
 	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -([jg]) $chainref->{name}$/ -$1 $target/ for @{$fromref->{rules}};
+		defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ for @{$fromref->{rules}};
 	    }
 	}
     } else {
+	#
+	# The target is a builtin -- we must use '-j'
+	#
 	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -[jg] $chainref->{name}$/-A $fromref->{name} -j $target/ for @{$fromref->{rules}};
+		defined && s/ -[jg] $chainref->{name}(\b)/-A $fromref->{name} -j ${target}$1/ for @{$fromref->{rules}};
 	    }
 	}
     }
@@ -1271,35 +1298,93 @@ sub replace_references( $$ ) {
 }
 
 #
-# Optimize away chains with < 2 rules
+# Replace jumps to the passed chain with jumps to the passed target while
+# adding the passed matches to the rule.
 #
-sub delete_useless_chains() {
+sub replace_references1( $$$ ) {
+    my ( $chainref, $target, $matches ) = @_;
+
+    my $result = 0;
+
+    if ( defined $filter_table->{$target} && ! $filter_table->{target}{builtin} ) {
+	#
+	# The target is a chain -- use the jump type from the rule
+	#
+	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	    if ( $fromref->{referenced} ) {
+		for ( @{$fromref->{rules}} ) {
+		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+			my $trailer = $1 || ''; # Possible comment or white space
+
+			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
+			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
+		    }
+		}
+	    }
+	}
+    } else {
+	#
+	# The target is a builtin -- we must use '-j'
+	#
+	for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
+	    if ( $fromref->{referenced} ) {
+		for ( @{$fromref->{rules}} ) {
+		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
+			s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
+		    }
+		}
+	    }
+	}
+    }
+
+    $chainref->{referenced} = $result;
+}
+
+#
+# Perform Optimization
+#
+sub optimize_ruleset() {
     my $progress = 1;
-
-    progress_message2 'Optimizing Ruleset...';
-
+    #
+    # Make repeated passes through the filter table looking for short chains (those with less than 2 entries)
+    #
+    # When an empty chain is found, delete the references to it.
+    # When a chain with a single entry is found, replace it's references by its contents
+    #
+    # The search continues until no short chains remain
+    # Chains with 'emptyok = 1' are exempted from optimization
+    #
     while ( $progress ) {
 	$progress = 0;
 
 	for my $chainref ( values %$filter_table ) {
 	    if ( $chainref->{referenced} && ! ( $chainref->{emptyok} || $chainref->{builtin} ) ) {
-		my $rules = $chainref->{rules};
-		my ( @rules , $rule );
+		my $numrules = 0;
+		my $firstrule;
 
-		while ( @$rules ) {
-		    $rule = shift @$rules;
-		    push @rules, $rule if defined $rule;
+		for ( @{$chainref->{rules}} ) {
+		    if ( defined ) {
+			$numrules++;
+			$firstrule = $_ unless defined $firstrule;
+		    }
 		}
 
-		$chainref->{rules} = \@rules;
-
-		if ( @rules == 0 ) {
+		if ( $numrules == 0 ) {
 		    delete_references $chainref;
 		    $progress = 1;
-		} elsif ( @rules == 1 ) {
-		    $rule = $rules[0];
-		    if ( $rule =~ /^-A $chainref->{name} -j (.*)$/ ) {
+		} elsif ( $numrules == 1 ) {
+		    if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+			#
+			# Easy case -- the rule is a simple jump
+			#
 			replace_references $chainref, $1;
+			$progress = 1;
+		    } elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
+			#
+			# Not so easy -- the rule contains matches
+			#
+			replace_references1 $chainref, $2, $1;
 			$progress = 1;
 		    }
 		}
@@ -1377,7 +1462,7 @@ sub logchain( $$$$$$ ) {
     unless ( $logchainref ) {
 	$logchainref = $chainref->{logchains}{$key} = new_chain $chainref->{table}, newlogchain;
 	#
-	# Now add the log rule and target rule without predicates to the log chain.
+	# Now add the log rule and target rule without matches to the log chain.
 	#
 	log_rule_limit(
 		       $loglevel ,
@@ -2068,7 +2153,7 @@ sub match_ipsec_out( $$ ) {
 # Generate a log message
 #
 sub log_rule_limit( $$$$$$$$ ) {
-    my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, $predicates ) = @_;
+    my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, $matches ) = @_;
 
     my $prefix = '';
 
@@ -2076,11 +2161,11 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     return 1 if $level eq '';
 
-    $predicates .= ' ' if $predicates && substr( $predicates, -1, 1 ) ne ' ';
+    $matches .= ' ' if $matches && substr( $matches, -1, 1 ) ne ' ';
 
-    unless ( $predicates =~ /-m limit / ) {
+    unless ( $matches =~ /-m limit / ) {
 	$limit = $globals{LOGLIMIT} unless $limit && $limit ne '-';
-	$predicates .= $limit if $limit;
+	$matches .= $limit if $limit;
     }
 
     if ( $config{LOGFORMAT} =~ /^\s*$/ ) {
@@ -2129,28 +2214,28 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_rule ( $chainref, $predicates . $prefix , 1 );
+	add_rule ( $chainref, $matches . $prefix , 1 );
     } else {
-	insert_rule1 ( $chainref , 0 , $predicates . $prefix );
+	insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
 }
 
 sub log_rule( $$$$ ) {
-    my ( $level, $chainref, $disposition, $predicates ) = @_;
+    my ( $level, $chainref, $disposition, $matches ) = @_;
 
-    log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGLIMIT}, '', 'add', $predicates;
+    log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGLIMIT}, '', 'add', $matches;
 }
 
 #
 # If the destination chain exists, then at the end of the source chain add a jump to the destination.
 #
 sub addnatjump( $$$ ) {
-    my ( $source , $dest, $predicates ) = @_;
+    my ( $source , $dest, $matches ) = @_;
 
     my $destref   = $nat_table->{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	add_rule $nat_table->{$source} , $predicates . "-j $dest";
+	add_rule $nat_table->{$source} , $matches . "-j $dest";
     } else {
 	clearrule;
     }
@@ -2524,7 +2609,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	$origdest,     # ORIGINAL DEST
 	$target,       # Target ('-j' part of the rule)
 	$loglevel ,    # Log level (and tag)
-	$disposition,  # Primative part of the target (RETURN, ACCEPT, ...)
+	$disposition,  # Primtive part of the target (RETURN, ACCEPT, ...)
 	$exceptionrule,# Caller's matches used in exclusion case
 	$logname,      # Name of chain to name in log messages
        ) = @_;
@@ -2907,7 +2992,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		for my $dnet ( mysplit $dnets ) {
 		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet );
-		    my $predicates = join( '', $rule, $source_match, $dest_match, $onet );
+		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
@@ -2919,7 +3004,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 				add_jump( $chainref, 
 					  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ), 
 					  $builtin_target{$disposition},  
-					  $predicates,
+					  $matches,
 					  1 );
 			    } else {
 				log_rule_limit(
@@ -2930,13 +3015,13 @@ sub expand_rule( $$$$$$$$$$;$ )
 					       '',
 					       $logtag,
 					       'add',
-					       $predicates );
+					       $matches );
 
-				add_rule( $chainref, $predicates . $target, 1 );
+				add_rule( $chainref, $matches . $target, 1 );
 			    }
 			} else {
 			    #
-			    # The log rule must be added with predicates to the rule chain
+			    # The log rule must be added with matches to the rule chain
 			    #
 			    log_rule_limit(
 					   $loglevel ,
@@ -2946,14 +3031,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 					   '' ,
 					   $logtag ,
 					   'add' ,
-					   $predicates
+					   $matches
 					  );
 			}
 		    } else {
 			#
-			# No logging -- add the target rule with predicates to the rule chain
+			# No logging -- add the target rule with matches to the rule chain
 			#
-			add_rule( $chainref, $predicates . $target , 1 );
+			add_rule( $chainref, $matches . $target , 1 );
 		    }
 		}
 	    }

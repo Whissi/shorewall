@@ -946,24 +946,69 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OPTIMIZE=</emphasis>[<emphasis
-        role="bold">0</emphasis>|<emphasis role="bold">1</emphasis>]</term>
+        <term><emphasis
+        role="bold">OPTIMIZE=</emphasis>[<replaceable>value</replaceable>]</term>
 
         <listitem>
-          <para>Traditionally, Shorewall6 has created rules for <ulink
-          url="../ScalabilityAndPerformance.html">the complete matrix of host
-          groups defined by the zones, interfaces and hosts files</ulink>. Any
-          traffic that didn't correspond to an element of that matrix was
-          rejected in one of the built-in chains. When the matrix is sparse,
-          this results in lots of largely useless rules.</para>
+          <para>The specified <replaceable>value</replaceable> enables certain
+          optimizations where specific bits enable certain
+          optimizations:</para>
 
-          <para>These extra rules can be eliminated by setting
-          OPTIMIZE=1.</para>
+          <itemizedlist>
+            <listitem>
+              <para>1 bit - Traditionally, Shorewall has created rules for
+              <ulink url="../ScalabilityAndPerformance.html">the complete
+              matrix of host groups defined by the zones, interfaces and hosts
+              files</ulink>. Any traffic that didn't correspond to an element
+              of that matrix was rejected in one of the built-in chains. When
+              the matrix is sparse, this results in lots of largely useless
+              rules.</para>
 
-          <para>The OPTIMIZE setting also controls the suppression of
-          redundant wildcard rules (those specifying "all" in the SOURCE or
-          DEST column). A wildcard rule is considered to be redundant when it
-          has the same ACTION and Log Level as the applicable policy.</para>
+              <para>These extra rules can be eliminated by setting the 1 bit
+              in OPTIMIZE.</para>
+
+              <para>The 1 bit setting also controls the suppression of
+              redundant wildcard rules (those specifying "all" in the SOURCE
+              or DEST column). A wildcard rule is considered to be redundant
+              when it has the same ACTION and Log Level as the applicable
+              policy.</para>
+            </listitem>
+
+            <listitem>
+              <para>2 bit - Added in Shorewall 4.5.0. When set, suppresses
+              superfluous ACCEPT rules in a policy chain that implements an
+              ACCEPT policy. Any ACCEPT rules that immediately preceed the
+              final blanket ACCEPT rule in the chain are now omitted.</para>
+            </listitem>
+
+            <listitem>
+              <para>4 bit - Added in Shoreawll 4.5.1. When set, causes short
+              filter table chains (those with less than 2 rules) to be
+              optimized away. The following chains are excluded from
+              optimization:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>dynamic</para>
+                </listitem>
+
+                <listitem>
+                  <para>forwardUPnP</para>
+                </listitem>
+
+                <listitem>
+                  <para>logdrop</para>
+                </listitem>
+
+                <listitem>
+                  <para>logreject</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </itemizedlist>
+
+          <para>The default value is zero which disables all
+          optimizations.</para>
         </listitem>
       </varlistentry>
 

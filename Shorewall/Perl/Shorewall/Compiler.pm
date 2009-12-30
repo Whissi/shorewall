@@ -796,14 +796,18 @@ sub compiler {
 	# Generate the zone by zone matrix
 	#
 	generate_matrix;
-	#
-	# Optimize Policy Chains
-	#
-	optimize_policy_chains if $config{OPTIMIZE} & 2;
-	#
-	# More Optimization
-	#
-	delete_useless_chains if $config{OPTIMIZE} & 4;
+
+	if ( $config{OPTIMIZE} & 6 ) {
+	    progress_message2 'Optimizing Ruleset...';
+	    #
+	    # Optimize Policy Chains
+	    #
+	    optimize_policy_chains if $config{OPTIMIZE} & 2;
+	    #
+	    # More Optimization
+	    #
+	    optimize_ruleset if $config{OPTIMIZE} & 4;
+	}
 
 	enable_script;
 	#

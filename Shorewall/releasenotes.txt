@@ -55,9 +55,15 @@ None.
 4)  The '4' bit in the OPTIMIZE option now enables additional
     optimizations:
 
-    a) Empty Chains are optimized away.
-    b) Trampoline chains (those that do nothing but jump to another
-       chain) are optimized away.
+    a) Empty filter chains are optimized away.
+    b) Filter chains with one rule are optimized away.
+
+    The following chains are exempted from optimization:
+
+    	dynamic
+	logdrop
+	logreject
+	forwardUPnP
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 5

@@ -623,6 +623,8 @@ sub process_action( $$$$$$$$$$$ ) {
 		  $level ,
 		  $action ,
 		  '' );
+
+    add_reference ( $chainref, $action );
 }
 
 #
@@ -866,7 +868,7 @@ sub allowInvalid ( $$$ ) {
 }
 
 sub forwardUPnP ( $$$ ) {
-    $filter_table->{forwardUPnP}{emptyok} = 1;
+    emptyok 'forwardUPnP';
 }
 
 sub allowinUPnP ( $$$ ) {

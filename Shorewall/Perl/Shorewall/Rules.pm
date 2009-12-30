@@ -428,7 +428,7 @@ sub add_common_rules() {
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
-	new_standard_chain 'dynamic';
+	emptyok new_standard_chain 'dynamic';
 	add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
     }
 
@@ -444,6 +444,8 @@ sub add_common_rules() {
 
     add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
     add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
+    emptyok 'logdrop';
+    emptyok 'logreject';
 
     for $interface ( all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
@@ -1129,7 +1131,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    }
 	}
 
-	$chain    = rules_chain( ${sourcezone}, ${destzone} );
+	$chain = rules_chain( ${sourcezone}, ${destzone} );
 	#
 	# Ensure that the chain exists but don't mark it as referenced until after optimization is checked
 	#
@@ -1155,6 +1157,12 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	# Mark the chain as referenced and add appropriate rules from earlier sections.
 	#
 	$chainref = ensure_filter_chain $chain, 1;
+	#
+	# Add a reference if appropriate
+	#
+	if ( $actiontype & ( ACTION | CHAIN ) ) {
+	    add_reference $chainref, $action;
+	}
     }
 
     #

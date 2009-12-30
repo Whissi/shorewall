@@ -1112,7 +1112,7 @@ sub process_tc_priority() {
 		add_rule( $postref , 
 			  join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
 			  1 )
-		    unless $protocol == ICMP || $protocol == IPv6_ICMP;
+		    unless $proto eq 'ipp2p' || $protocol == ICMP || $protocol == IPv6_ICMP;
 	    }
 	}
     }

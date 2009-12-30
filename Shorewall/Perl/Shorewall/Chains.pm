@@ -42,6 +42,7 @@ our @EXPORT = qw(
 		  new_manual_chain
 		  ensure_manual_chain
 		  log_rule_limit
+		  emptyok
 
 		  %chain_table
 		  $raw_table
@@ -104,7 +105,6 @@ our %EXPORT_TAGS = (
 				       notrack_chain
 				       first_chains
 				       ensure_chain
-				       emptyok
 				       add_reference
 				       ensure_accounting_chain
 				       ensure_mangle_chain

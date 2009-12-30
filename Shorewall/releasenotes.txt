@@ -1,4 +1,4 @@
-Shorewall 4.5.1
+Shorewall 4.5.2
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 5  H I G H L I G H T S
@@ -23,18 +23,10 @@ Shorewall 4.5.1
     interfaces will only have those rules applied when TC_EXPERT=Yes.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 1
+          P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 2
 ----------------------------------------------------------------------------
 
-1)  A syntax error in /sbin/shorewall was corrected.
-
-2)  Previously, specifying an ICMP type in the PORT(S) column of tcpri
-    would result in a compilation error.
-
-3)  Previously, the 'save' command failed when DYNAMIC_BLACKLIST=No.
-
-4)  Automatic assignment of provider mark values didn't work when
-    PROVIDER_OFFSET > 0.
+None.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -43,35 +35,11 @@ Shorewall 4.5.1
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 5 . 1
+                N E W   F E A T U R E S   I N   4 . 5 . 2
 ----------------------------------------------------------------------------
 
-1)  You may now restrict the output of 'show tc' by specifying the name
-    of an interface (e.g., "show tc eth0").
-
-2)  COMMENT lines are now allowed in /etc/shorewall/tcpri.
-
-3)  Additional optimization is enabled when OPTIMIZE=2 or
-    OPTIMIZE=3. Chains that contain nothing but rules with ACCEPT
-    targets or that contain a single jump are now optimized away.
-
-4)  The '4' bit in the OPTIMIZE option now enables additional
-    optimizations:
-
-    a) Empty filter chains are optimized away.
-    b) Filter chains with one rule are optimized away.
-
-    The following chains are exempted from optimization:
-
-    	dynamic
-	logdrop
-	logreject
-	forwardUPnP
-
-5)  The PROTO column in /etc/shorewall/tcpri may now contain
-    'ipp2p'. When such an entry is present AND PROVIDER_OFFSET is
-    non-zero, Shorewall will automatically generate SAVE/RESTORE rules
-    for the POSTROUTING chain.
+1)  The OPTIMIZE bit 4 feature added in 4.5.1 is now extended to all
+    tables.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 5
@@ -205,3 +173,31 @@ None.
 
     See http://www.shorewall.net/simple_traffic_shaping.html for
     details.
+
+7)  You may now restrict the output of 'show tc' by specifying the name
+    of an interface (e.g., "show tc eth0").
+
+8)  COMMENT lines are now allowed in /etc/shorewall/tcpri.
+
+9)  Additional optimization is enabled when OPTIMIZE=2 or
+    OPTIMIZE=3. Chains that contain nothing but rules with ACCEPT
+    targets or that contain a single jump are now optimized away.
+
+10) The '4' bit in the OPTIMIZE option now enables additional
+    optimizations:
+
+    a) Empty chains are optimized away.
+    b) Chains with one rule are optimized away.
+
+    The following chains are exempted from optimization:
+
+    	dynamic
+	forwardUPnP
+	logdrop
+	logreject
+	UPnP (nat table).
+
+5)  The PROTO column in /etc/shorewall/tcpri may now contain
+    'ipp2p'. When such an entry is present AND PROVIDER_OFFSET is
+    non-zero, Shorewall will automatically generate SAVE/RESTORE rules
+    for the POSTROUTING chain.

@@ -42,7 +42,7 @@ our @EXPORT = qw(
 		  new_manual_chain
 		  ensure_manual_chain
 		  log_rule_limit
-		  emptyok
+		  dont_optimize
 
 		  %chain_table
 		  $raw_table
@@ -184,7 +184,7 @@ our $VERSION = '4.4_4';
 #                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
 #                                               manual       => undef|1 -- If 1, a manual chain.
 #                                               accounting   => undef|1 -- If 1, an accounting chain
-#                                               emptyok      => undef|1
+#                                               dont_optimize=> undef|1 -- Don't optimize away if this chain is 'short'
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
@@ -940,14 +940,14 @@ sub ensure_chain($$)
 }
 
 #
-# Set the emptyok flag for a chain
+# Set the dont_optimize flag for a chain
 #
-sub emptyok( $ ) {
+sub dont_optimize( $ ) {
     my $chain = shift;
 
     my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
 
-    $chainref->{emptyok} = 1;
+    $chainref->{dont_optimize} = 1;
 }
 
 sub finish_chain_section( $$ );
@@ -991,7 +991,7 @@ sub ensure_accounting_chain( $  )
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
-	$chainref->{emptyok}    = 1;
+	$chainref->{dont_optimize}    = 1;
 
 	if ( $chain ne 'accounting' ) {
 	    my $file = find_file $chain;
@@ -1387,7 +1387,7 @@ sub optimize_ruleset() {
     # When a chain with a single entry is found, replace it's references by its contents
     #
     # The search continues until no short chains remain
-    # Chains with 'emptyok = 1' are exempted from optimization
+    # Chains with 'dont_optimize = 1' are exempted from optimization
     #
     for my $table ( qw/ raw mangle nat filter/ ) {
 	my $progress = 1;
@@ -1395,7 +1395,7 @@ sub optimize_ruleset() {
 	    $progress = 0;
 
 	    for my $chainref ( values %{$chain_table{$table}} ) {
-		if ( $chainref->{referenced} && ! $chainref->{emptyok} ) {
+		if ( $chainref->{referenced} && ! $chainref->{dont_optimize} ) {
 		    #
 		    # First count the rules -- we must do that because 
 		    #                          we delete rules by setting them
@@ -1416,9 +1416,9 @@ sub optimize_ruleset() {
 			#
 			if ( $chainref->{builtin} ) {
 			    #
-			    # Built-in -- mark it 'emptyok' so we ignore it in follow-on passes
+			    # Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
 			    #
-			    $chainref->{emptyok} = 1;
+			    $chainref->{dont_optimize} = 1;
 			} else {
 			    #
 			    # Not a built-in -- we can delete it and it's references
@@ -1448,7 +1448,7 @@ sub optimize_ruleset() {
 				    #
 				    # Target was a built-in. Ignore this chain in follow-on passes
 				    #
-				    $chainref->{emptyok} = 1;
+				    $chainref->{dont_optimize} = 1;
 				}
 			    } else {
 				#
@@ -1466,7 +1466,7 @@ sub optimize_ruleset() {
 				# This case requires a new rule merging algorithm. Ignore this chain for
 				# now.
 				#
-				$chainref->{emptyok} = 1;
+				$chainref->{dont_optimize} = 1;
 			    } else {
 				#
 				# Replace references to this chain with the target and add the predicates

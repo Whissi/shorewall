@@ -428,7 +428,7 @@ sub add_common_rules() {
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
-	emptyok new_standard_chain 'dynamic';
+	dont_optimize new_standard_chain 'dynamic';
 	add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
     }
 
@@ -444,8 +444,8 @@ sub add_common_rules() {
 
     add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
     add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
-    emptyok 'logdrop';
-    emptyok 'logreject';
+    dont_optimize 'logdrop';
+    dont_optimize 'logreject';
 
     for $interface ( all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
@@ -621,8 +621,7 @@ sub add_common_rules() {
 	if ( @$list ) {
 	    progress_message2 "$doing UPnP";
 
-	    new_nat_chain( 'UPnP' );
-	    emptyok $nat_table->{UPnP};
+	    dont_optimize new_nat_chain( 'UPnP' );
 
 	    $announced = 1;
 

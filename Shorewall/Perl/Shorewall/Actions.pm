@@ -347,7 +347,7 @@ sub createlogactionchain( $$ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
-	$chainref->{emptyok} = 1;
+	dont_optimize $chainref;
 
 	my $file = find_file $chain;
 
@@ -375,7 +375,7 @@ sub createsimpleactionchain( $ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
-	$chainref->{emptyok} = 1;
+	dont_optimize $chainref;
 
 	my $file = find_file $action;
 
@@ -872,7 +872,7 @@ sub allowInvalid ( $$$ ) {
 }
 
 sub forwardUPnP ( $$$ ) {
-    emptyok 'forwardUPnP';
+    dont_optimize 'forwardUPnP';
 }
 
 sub allowinUPnP ( $$$ ) {

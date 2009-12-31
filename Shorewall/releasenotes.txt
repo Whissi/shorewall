@@ -33,6 +33,8 @@ Shorewall 4.5.2
     As part of this fix, accounting chains are now exempted from the
     optimizations enable with the 4-bit in OPTIMIZE is set.
 
+    User-defined action chains are similarly exempted.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -95,28 +97,28 @@ None.
         WIDE_TC_MARKS=No and HIGH_ROUTE_MARKS=No; both the traffic shaping
     	mark and the provider mark occupy the low-order 8 bits of the mark.
 
-             TC_BITS	     	 8
-	     PROVIDER_OFFSET	 0
-	     PROVIDER_BITS	 8
-	     MASK_BITS	 8
+             TC_BITS	     	  8
+	     PROVIDER_OFFSET	  0
+	     PROVIDER_BITS	  8
+	     MASK_BITS	          8
 
    	WIDE_TC_MARKS=No and HIGH_ROUTE_MARKS=Yes; the traffic shaping
    	mark occupies the low-order 8 bits of the mark and the provider
    	mark occupies the next 8 bits.
 
-   	     TC_BITS	    	 8
-	     PROVIDER_OFFSET	 8
-	     PROVIDER_BITS	 8
-	     MASK_BITS	 8
+   	     TC_BITS	    	  8
+	     PROVIDER_OFFSET	  8
+	     PROVIDER_BITS	  8
+	     MASK_BITS	          8
 
    	WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=No; the traffic shaping
    	mark occupies the low-order 14 bits of the mark and the
    	provider mark occupies the low-order 8 bits.
 
    	     TC_BITS	    	 14
-	     PROVIDER_OFFSET	 0
-	     PROVIDER_BITS	 8
-	     MASK_BITS	 16
+	     PROVIDER_OFFSET	  0
+	     PROVIDER_BITS	  8
+	     MASK_BITS	         16
 
    	WIDE_TC_MARKS=Yes and HIGH_ROUTE_MARKS=Yes; the traffic shaping
    	mark occupies the low-order 14 bits of the mark followed by two
@@ -124,8 +126,8 @@ None.
  
 	     TC_BITS	    	 14
 	     PROVIDER_OFFSET	 16
-	     PROVIDER_BITS	 8
-	     MASK_BITS	 16
+	     PROVIDER_BITS	  8
+	     MASK_BITS	         16
 
     These defaults provide behavior that is compatable with the earlier
     implementation. They may be overridden by setting the new options
@@ -188,11 +190,7 @@ None.
 
 8)  COMMENT lines are now allowed in /etc/shorewall/tcpri.
 
-9)  Additional optimization is enabled when OPTIMIZE=2 or
-    OPTIMIZE=3. Chains that contain nothing but rules with ACCEPT
-    targets or that contain a single jump are now optimized away.
-
-10) The '4' bit in the OPTIMIZE option now enables additional
+9)  The '4' bit in the OPTIMIZE option now enables additional
     optimizations:
 
     a) Empty chains are optimized away.
@@ -200,13 +198,15 @@ None.
 
     The following chains are exempted from optimization:
 
+    	action chains (user-created).
+    	accounting chains
     	dynamic
 	forwardUPnP
 	logdrop
 	logreject
 	UPnP (nat table).
 
-5)  The PROTO column in /etc/shorewall/tcpri may now contain
-    'ipp2p'. When such an entry is present AND PROVIDER_OFFSET is
+10) The PROTO column in /etc/shorewall/tcpri may now contain
+    'ipp2p'. When such an entry is present and PROVIDER_OFFSET is
     non-zero, Shorewall will automatically generate SAVE/RESTORE rules
     for the POSTROUTING chain.

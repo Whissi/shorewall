@@ -347,6 +347,8 @@ sub createlogactionchain( $$ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
+	$chainref->{emptyok} = 1;
+
 	my $file = find_file $chain;
 
 	if ( -f $file ) {
@@ -372,6 +374,8 @@ sub createsimpleactionchain( $ ) {
     $logactionchains{"$action:none"} = $chainref;
 
     unless ( $targets{$action} & BUILTIN ) {
+
+	$chainref->{emptyok} = 1;
 
 	my $file = find_file $action;
 

@@ -948,6 +948,8 @@ sub dont_optimize( $ ) {
     my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
 
     $chainref->{dont_optimize} = 1;
+
+    $chainref;
 }
 
 sub finish_chain_section( $$ );

@@ -442,10 +442,8 @@ sub add_common_rules() {
 
     $level = $config{BLACKLIST_LOGLEVEL};
 
-    add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
-    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
-    dont_optimize 'logdrop';
-    dont_optimize 'logreject';
+    add_rule_pair dont_optimize( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
+    add_rule_pair dont_optimize( new_standard_chain( 'logreject' ) ), ' ' , 'reject' , $level ;
 
     for $interface ( all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );

@@ -1111,7 +1111,10 @@ sub process_tc_priority() {
 	    if ( $ports ne '-' ) {
 		my $protocol = resolve_proto $proto;
 
-		$ipp2p = 1 if $proto =~ /^ipp2p/;
+		if ( $proto =~ /^ipp2p/ ) {
+		    fatal_error "ipp2p may not be used when there are tracked providers and PROVIDER_OFFSET=0" if @routemarked_interfaces && $config{PROVIDER_OFFSET} == 0;
+		    $ipp2p = 1;
+		}
 
 		add_rule( $postref , 
 			  join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
@@ -1146,7 +1149,7 @@ sub setup_simple_traffic_shaping() {
 
 	clear_comment;
 
-	if ( $ipp2p && $config{PROVIDER_OFFSET} ) {
+	if ( $ipp2p ) {
 	    insert_rule1 $mangle_table->{tcpost} , 0 , "-m mark --mark 0/$globals{TC_MASK} -j CONNMARK --restore-mark --ctmask $globals{TC_MASK}";
 	    add_rule     $mangle_table->{tcpost} ,     "-m mark ! --mark 0/$globals{TC_MASK} -j CONNMARK --save-mark --ctmask $globals{TC_MASK}";
 	}

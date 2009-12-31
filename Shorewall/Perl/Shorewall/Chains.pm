@@ -1366,6 +1366,9 @@ sub conditionally_move_rules( $$ ) {
 	my $targetref = $chain_table{$chainref->{table}}{$basictarget};
 	
 	if ( $targetref && ! $targetref->{builtin} ) {
+	    #
+	    # Move is safe -- start with an empty rule list
+	    #
 	    $chainref->{rules} = [];
 	    move_rules( $targetref, $chainref );
 	    1;
@@ -1393,6 +1396,10 @@ sub optimize_ruleset() {
 
 	    for my $chainref ( values %{$chain_table{$table}} ) {
 		if ( $chainref->{referenced} && ! $chainref->{emptyok} ) {
+		    #
+		    # First count the rules -- we must do that because 
+		    #                          we delete rules by setting them
+		    #                          to nil.
 		    my $numrules = 0;
 		    my $firstrule;
 
@@ -1402,26 +1409,51 @@ sub optimize_ruleset() {
 			    $firstrule = $_ unless defined $firstrule;
 			}
 		    }
-
+		    
 		    if ( $numrules == 0 ) {
+			#
+			# No rules in this chain
+			#
 			if ( $chainref->{builtin} ) {
+			    #
+			    # Built-in -- mark it 'emptyok' so we ignore it in follow-on passes
+			    #
 			    $chainref->{emptyok} = 1;
 			} else {
+			    #
+			    # Not a built-in -- we can delete it and it's references
+			    #
 			    delete_references $chainref;
 			    $progress = 1;
 			}
 		    } elsif ( $numrules == 1 ) {
+			#
+			# Chain has a single non-nil rule which is in $firstrule
+			#
 			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
 			    #
 			    # Easy case -- the rule is a simple jump
 			    #
 			    if ( $chainref->{builtin} ) {
+				#
+				# A built-in chain. If the target is a user chain,
+				# we can move its rules to the built-in
+				#
 				if ( conditionally_move_rules $chainref, $1 ) {
+				    #
+				    # Target was a user chain -- rules moved
+				    #
 				    $progress = 1;
 				} else {
+				    #
+				    # Target was a built-in. Ignore this chain in follow-on passes
+				    #
 				    $chainref->{emptyok} = 1;
 				}
 			    } else {
+				#
+				# Replace all references to this chain with references to the target
+				#
 				replace_references $chainref, $1;
 				$progress = 1;
 			    }
@@ -1430,8 +1462,15 @@ sub optimize_ruleset() {
 			    # Not so easy -- the rule contains matches
 			    #
 			    if ( $chainref->{builtin} ) {
+				#
+				# This case requires a new rule merging algorithm. Ignore this chain for
+				# now.
+				#
 				$chainref->{emptyok} = 1;
 			    } else {
+				#
+				# Replace references to this chain with the target and add the predicates
+				#
 				replace_references1 $chainref, $2, $1;
 				$progress = 1;
 			    }

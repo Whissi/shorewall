@@ -204,7 +204,7 @@ sub process_a_policy() {
 	    if ( zone_type( $client ) == FIREWALL ) || ( zone_type( $server ) == FIREWALL );
     }
 
-    unless ( $clientwild || $serverwild ) || $policy eq 'NONE' {
+    unless ( $clientwild || $serverwild || $policy eq 'NONE' ) {
 	if ( zone_type( $server ) == BPORT ) {
 	    fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
 		unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};

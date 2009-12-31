@@ -26,7 +26,12 @@ Shorewall 4.5.2
           P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 2
 ----------------------------------------------------------------------------
 
-None.
+1)  Previously, if there were entries in /etc/shorewall/accounting,
+    OPTIMIZE settings of 4, 5, 6 or 7 could cause a run-time failure
+    during 'shorewall start'. 
+
+    As part of this fix, accounting chains are now exempted from the
+    optimizations enable with the 4-bit in OPTIMIZE is set.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -40,6 +45,10 @@ None.
 
 1)  The OPTIMIZE bit 4 feature added in 4.5.1 is now extended to all
     tables.
+
+    Additionally, if a builtin chain has a single rule that branches to
+    another chain, then the rules from the target chain are moved to
+    the builtin chain and the target chain is omitted.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 5

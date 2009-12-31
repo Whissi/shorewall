@@ -1352,6 +1352,25 @@ sub replace_references1( $$$ ) {
 }
 
 #
+# The passed builtin chain has a single rule. If the target is a chain, move the rules from the 
+# chain to the builtin
+#
+sub try_move_rules( $$ ) {
+    my ( $chainref, $target ) = @_;
+
+    if ( $target =~ /^\s*([^\s]+)/ ) {
+	my $basictarget = $1;
+	my $targetref = $chain_table{$chainref->{table}}{$basictarget};
+	
+	if ( $targetref ) {
+	    $chainref->{rules} = [];
+	    move_rules( $targetref, $chainref );
+	    1;
+	}
+    }
+}
+
+#
 # Perform Optimization
 #
 sub optimize_ruleset() {
@@ -1370,7 +1389,7 @@ sub optimize_ruleset() {
 	    $progress = 0;
 
 	    for my $chainref ( values %{$chain_table{$table}} ) {
-		if ( $chainref->{referenced} && ! ( $chainref->{emptyok} || $chainref->{builtin} ) ) {
+		if ( $chainref->{referenced} && ! $chainref->{emptyok} ) {
 		    my $numrules = 0;
 		    my $firstrule;
 
@@ -1382,21 +1401,37 @@ sub optimize_ruleset() {
 		    }
 
 		    if ( $numrules == 0 ) {
-			delete_references $chainref;
-			$progress = 1;
+			if ( $chainref->{builtin} ) {
+			    $chainref->{emptyok} = 1;
+			} else {
+			    delete_references $chainref;
+			    $progress = 1;
+			}
 		    } elsif ( $numrules == 1 ) {
 			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
 			    #
 			    # Easy case -- the rule is a simple jump
 			    #
-			    replace_references $chainref, $1;
-			    $progress = 1;
+			    if ( $chainref->{builtin} ) {
+				if ( try_move_rules $chainref, $1 ) {
+				    $progress = 1;
+				} else {
+				    $chainref->{emptyok} = 1;
+				}
+			    } else {
+				replace_references $chainref, $1;
+				$progress = 1;
+			    }
 			} elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
 			    #
 			    # Not so easy -- the rule contains matches
 			    #
-			    replace_references1 $chainref, $2, $1;
-			    $progress = 1;
+			    if ( $chainref->{builtin} ) {
+				$chainref->{emptyok} = 1;
+			    } else {
+				replace_references1 $chainref, $2, $1;
+				$progress = 1;
+			    }
 			}
 		    }
 		}

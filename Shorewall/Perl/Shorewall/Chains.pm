@@ -1352,17 +1352,20 @@ sub replace_references1( $$$ ) {
 }
 
 #
-# The passed builtin chain has a single rule. If the target is a chain, move the rules from the 
-# chain to the builtin
+# The passed builtin chain has a single rule. If the target is a user chain, move the rules from the 
+# chain to the builtin and return true; otherwise, do nothing and return false.
 #
-sub try_move_rules( $$ ) {
+sub conditionally_move_rules( $$ ) {
     my ( $chainref, $target ) = @_;
 
     if ( $target =~ /^\s*([^\s]+)/ ) {
+	#
+	# The above test is simply to isolate the basic target in $1
+	#
 	my $basictarget = $1;
 	my $targetref = $chain_table{$chainref->{table}}{$basictarget};
 	
-	if ( $targetref ) {
+	if ( $targetref && ! $targetref->{builtin} ) {
 	    $chainref->{rules} = [];
 	    move_rules( $targetref, $chainref );
 	    1;
@@ -1413,7 +1416,7 @@ sub optimize_ruleset() {
 			    # Easy case -- the rule is a simple jump
 			    #
 			    if ( $chainref->{builtin} ) {
-				if ( try_move_rules $chainref, $1 ) {
+				if ( conditionally_move_rules $chainref, $1 ) {
 				    $progress = 1;
 				} else {
 				    $chainref->{emptyok} = 1;

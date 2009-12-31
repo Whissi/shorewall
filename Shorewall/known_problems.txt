@@ -1,1 +1,7 @@
-There are no known problems in Shorewall 4.5.2
+1)  If there are entries in /etc/shorewall/accounting, Shorewall may
+    fail to start when OPTIMIZE & 4 is non-zero.
+
+    Fixed in Git Commit 66d50c508b944e757001401914320eb648800aea.
+
+    Note: That fix exempts accounting chains from optimization under
+    OPTIMIZE & 4.

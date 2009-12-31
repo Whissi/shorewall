@@ -1277,7 +1277,7 @@ sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
     my $table    = $chainref->{table};
 
-    if ( defined $chain_table{$table}{$target}  && ! $chain_table{$table}{target}{builtin} ) {
+    if ( defined $chain_table{$table}{$target}  && ! $chain_table{$table}{$target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#

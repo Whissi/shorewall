@@ -910,7 +910,7 @@ sub Limit( $$$ ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
 	add_rule $xchainref, '-j DROP';
-	add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref->{name}";
+	add_jump $chainref,  $xchainref, 0, "-m recent --name $set --update --seconds $tag[2] --hitcount $count ";
     } else {
 	add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
     }

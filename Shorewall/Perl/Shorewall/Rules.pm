@@ -157,8 +157,8 @@ sub process_tos() {
 	}
 
 	unless ( $first_entry ) {
-	    add_rule $mangle_table->{$stdchain}, "-j $chain" if $pretosref->{referenced};
-	    add_rule $mangle_table->{OUTPUT},    "-j outtos" if $outtosref->{referenced};
+	    add_jump( $mangle_table->{$stdchain}, $chain,   0 ) if $pretosref->{referenced};
+	    add_jump( $mangle_table->{OUTPUT},    'outtos', 0 ) if $outtosref->{referenced};
 	}
     }
 }
@@ -214,7 +214,7 @@ sub add_rule_pair( $$$$ ) {
     my ($chainref , $predicate , $target , $level ) = @_;
 
     log_rule( $level, $chainref, "\U$target", $predicate )  if defined $level && $level ne '';
-    add_rule $chainref , "${predicate}-j $target";
+    add_jump( $chainref , $target, 0, $predicate );
 }
 
 sub setup_blacklist() {
@@ -232,7 +232,7 @@ sub setup_blacklist() {
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    add_rule $logchainref, "-j $target" ;
+	    add_jump $logchainref, $target, 1;
 
 	    $target = 'blacklog';
 	}
@@ -592,11 +592,11 @@ sub add_common_rules() {
 	    $disposition = $config{TCP_FLAGS_DISPOSITION};
 	}
 
-	add_rule $chainref , "-p tcp --tcp-flags ALL FIN,URG,PSH -j $disposition";
-	add_rule $chainref , "-p tcp --tcp-flags ALL NONE        -j $disposition";
-	add_rule $chainref , "-p tcp --tcp-flags SYN,RST SYN,RST -j $disposition";
-	add_rule $chainref , "-p tcp --tcp-flags SYN,FIN SYN,FIN -j $disposition";
-	add_rule $chainref , "-p tcp --syn --sport 0 -j $disposition";
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags ALL FIN,URG,PSH ';
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags ALL NONE ';
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags SYN,RST SYN,RST ';
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags SYN,FIN SYN,FIN ';
+	add_jump $chainref , $disposition, 1, '-p tcp --syn --sport 0 ';
 
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
@@ -624,7 +624,7 @@ sub add_common_rules() {
 	    $announced = 1;
 
 	    for $interface ( @$list ) {
-		add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
+		add_jump $nat_table->{PREROUTING} , 'UPnP', 0, match_source_dev ( $interface );
 	    }
 	}
 
@@ -707,7 +707,7 @@ sub setup_mac_lists( $ ) {
 		my $chain = $chainref->{name};
 
 		add_rule $chainref, "-m recent --rcheck --seconds $ttl --name $chain -j RETURN";
-		add_rule $chainref, "-j $chain1ref->{name}";
+		add_jump $chainref, $chain1ref, 0;
 		add_rule $chainref, "-m recent --update --name $chain -j RETURN";
 		add_rule $chainref, "-m recent --set --name $chain";
 	    }
@@ -748,12 +748,12 @@ sub setup_mac_lists( $ ) {
 			my $source = match_source_net $address;
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 			    if defined $level && $level ne '';
-			add_rule $chainref , "${mac}${source}-j $targetref->{target}";
+			add_jump $chainref , $targetref, 0, "${mac}${source}";
 		    }
 		} else {
 		    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			if defined $level && $level ne '';
-		    add_rule $chainref , "$mac-j $targetref->{target}";
+		    add_jump $chainref , $targetref, 0, $mac;
 		}
 
 		progress_message "      Maclist entry \"$currentline\" $done";
@@ -835,7 +835,7 @@ sub setup_mac_lists( $ ) {
 	    run_user_exit2( 'maclog', $chainref );
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
-	    add_rule $chainref, "-j $target";
+	    add_jump $chainref, $target, 0;
 	}
     }
 }
@@ -1757,7 +1757,7 @@ sub generate_matrix() {
     #
     # NOTRACK from firewall
     #
-    add_rule $raw_table->{OUTPUT}, "-j $notrackref->{name}" if $notrackref->{referenced};
+    add_jump $raw_table->{OUTPUT}, $notrackref, 0 if $notrackref->{referenced};
     #
     # Main source-zone matrix-generation loop
     #
@@ -2140,7 +2140,7 @@ sub setup_mss( ) {
 	#
 	# Send all forwarded SYN packets to the 'settcpmss' chain
 	#
-	add_rule $filter_table->{FORWARD} ,  "-p tcp --tcp-flags SYN,RST SYN -j settcpmss";
+	add_jump $filter_table->{FORWARD} , $chainref, 0, '-p tcp --tcp-flags SYN,RST SYN ';
 
 	my $in_match  = '';
 	my $out_match = '';

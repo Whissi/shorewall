@@ -362,7 +362,7 @@ sub policy_rules( $$$$$ ) {
 
     unless ( $target eq 'NONE' ) {
 	add_rule $chainref, "-d 224.0.0.0/4 -j RETURN" if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
-	add_rule $chainref, "-j $default" if $default && $default ne 'none';
+	add_jump $chainref, $default, 0 if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 

@@ -114,7 +114,7 @@ sub setup_route_marking() {
 	my $mark      = $providerref->{mark};
 
 	unless ( $marked_interfaces{$interface} ) {
-	    add_rule $mangle_table->{PREROUTING} , "-i $physical -m mark --mark 0/$mask -j routemark";
+	    add_jump $mangle_table->{PREROUTING} , $chainref,  0, "-i $physical -m mark --mark 0/$mask ";
 	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "! -i $physical -m mark --mark  $mark/$mask ";
 	    add_jump $mangle_table->{OUTPUT}     , $chainref2, 0, "-m mark --mark  $mark/$mask ";
 	    $marked_interfaces{$interface} = 1;

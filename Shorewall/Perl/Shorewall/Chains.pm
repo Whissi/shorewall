@@ -1403,99 +1403,97 @@ sub optimize_ruleset() {
 	    $progress = 0;
 	    $passes++;
 
-	    for my $chainref ( values %{$chain_table{$table}} ) {
-		if ( $chainref->{referenced} ) {
+	    for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+		#
+		# If the chain isn't branched to, then delete it
+		#
+		unless ( $chainref->{builtin} || keys %{$chainref->{references}} ) {
+		    $chainref->{referenced} = 0;
+		    next;
+		}
+
+		unless ( $chainref->{dont_optimize} ) {
 		    #
-		    # If the chain isn't branched to, then delete it
-		    #
-		    unless ( $chainref->{builtin} || keys %{$chainref->{references}} ) {
-			$chainref->{referenced} = 0;
-			next;
-		    }
-		    
-		    unless ( $chainref->{dont_optimize} ) {
-			#
-			# Next count the rules -- we must do that because 
-			#                          we delete rules by setting them
-			#                          to nil.
-			my $numrules = 0;
-			my $firstrule;
-			
-			for ( @{$chainref->{rules}} ) {
-			    if ( defined ) {
-				$numrules++;
-				$firstrule = $_ unless defined $firstrule;
-			    }
+		    # Next count the rules -- we must do that because 
+		    #                          we delete rules by setting them
+		    #                          to nil.
+		    my $numrules = 0;
+		    my $firstrule;
+
+		    for ( @{$chainref->{rules}} ) {
+			if ( defined ) {
+			    $numrules++;
+			    $firstrule = $_ unless defined $firstrule;
 			}
-			
-			if ( $numrules == 0 ) {
+		    }
+
+		    if ( $numrules == 0 ) {
+			#
+			# No rules in this chain
+			#
+			if ( $chainref->{builtin} ) {
 			    #
-			    # No rules in this chain
+			    # Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
+			    #
+			    $chainref->{dont_optimize} = 1;
+			} else {
+			    #
+			    # Not a built-in -- we can delete it and it's references
+			    #
+			    delete_references $chainref;
+			    $progress = 1;
+			    $chains++;
+			}
+		    } elsif ( $numrules == 1 ) {
+			#
+			# Chain has a single non-nil rule which is in $firstrule
+			#
+			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+			    #
+			    # Easy case -- the rule is a simple jump
 			    #
 			    if ( $chainref->{builtin} ) {
 				#
-				# Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
+				# A built-in chain. If the target is a user chain,
+				# we can move its rules to the built-in
+				#
+				if ( conditionally_move_rules $chainref, $1 ) {
+				    #
+				    # Target was a user chain -- rules moved
+				    #
+				    $progress = 1;
+				    $chains++;
+				} else {
+				    #
+				    # Target was a built-in. Ignore this chain in follow-on passes
+				    #
+				    $chainref->{dont_optimize} = 1;
+				}
+			    } else {
+				#
+				# Replace all references to this chain with references to the target
+				#
+				replace_references $chainref, $1;
+				$progress = 1;
+				$chains++;
+			    }
+			} elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
+			    #
+			    # Not so easy -- the rule contains matches
+			    #
+			    if ( $chainref->{builtin} ) {
+				#
+				# This case requires a new rule merging algorithm. Ignore this chain for
+				# now.
 				#
 				$chainref->{dont_optimize} = 1;
 			    } else {
 				#
-				# Not a built-in -- we can delete it and it's references
+				# Replace references to this chain with the target and add the predicates
 				#
-				delete_references $chainref;
+				replace_references1 $chainref, $2, $1;
 				$progress = 1;
 				$chains++;
-			    }
-			} elsif ( $numrules == 1 ) {
-			    #
-			    # Chain has a single non-nil rule which is in $firstrule
-			    #
-			    if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
-				#
-				# Easy case -- the rule is a simple jump
-				#
-				if ( $chainref->{builtin} ) {
-				    #
-				    # A built-in chain. If the target is a user chain,
-				    # we can move its rules to the built-in
-				    #
-				    if ( conditionally_move_rules $chainref, $1 ) {
-					#
-					# Target was a user chain -- rules moved
-					#
-					$progress = 1;
-					$chains++;
-				    } else {
-					#
-					# Target was a built-in. Ignore this chain in follow-on passes
-					#
-					$chainref->{dont_optimize} = 1;
-				    }
-				} else {
-				    #
-				    # Replace all references to this chain with references to the target
-				    #
-				    replace_references $chainref, $1;
-				    $progress = 1;
-				    $chains++;
-				}
-			    } elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
-				#
-				# Not so easy -- the rule contains matches
-				#
-				if ( $chainref->{builtin} ) {
-				    #
-				    # This case requires a new rule merging algorithm. Ignore this chain for
-				    # now.
-				    #
-				    $chainref->{dont_optimize} = 1;
-				} else {
-				    #
-				    # Replace references to this chain with the target and add the predicates
-				    #
-				    replace_references1 $chainref, $2, $1;
-				    $progress = 1;
-				    $chains++;
-				}
 			    }
 			}
 		    }

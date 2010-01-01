@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
 #
 #     Traffic Control is from tc4shorewall Version 0.5
 #     (c) 2005 Arne Bernin <arne@ucbering.de>
@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_5';
+our $VERSION = '4.4_6';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,

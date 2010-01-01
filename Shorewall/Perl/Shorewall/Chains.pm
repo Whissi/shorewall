@@ -549,13 +549,8 @@ sub add_rule($$;$)
 }
 
 #
-# Add a jump from the chain represented by the reference in the first argument to
-# the target in the second argument. The third argument determines if a GOTO may be
-# used rather than a jump. The optional fourth argument specifies any matches to be
-# included in the rule and must end with a space character if it is non-null. The
-# optional 5th argument causes long port lists to be split.
+# Make the first chain a referent of the second
 #
-
 sub add_reference ( $$ ) {
     my ( $fromref, $to ) = @_;
 
@@ -563,6 +558,14 @@ sub add_reference ( $$ ) {
 
     $toref->{references}{$fromref->{name}} = 1;
 }
+
+#
+# Add a jump from the chain represented by the reference in the first argument to
+# the target in the second argument. The third argument determines if a GOTO may be
+# used rather than a jump. The optional fourth argument specifies any matches to be
+# included in the rule and must end with a space character if it is non-null. The
+# optional 5th argument causes long port lists to be split.
+#
 
 sub add_jump( $$$;$$ ) {
     my ( $fromref, $to, $goto_ok, $predicate, $expandports ) = @_;
@@ -1383,7 +1386,7 @@ sub conditionally_move_rules( $$ ) {
 #
 sub optimize_ruleset() {
     #
-    # Make repeated passes through the filter table looking for short chains (those with less than 2 entries)
+    # Make repeated passes through each table looking for short chains (those with less than 2 entries)
     #
     # When an empty chain is found, delete the references to it.
     # When a chain with a single entry is found, replace it's references by its contents
@@ -1393,8 +1396,12 @@ sub optimize_ruleset() {
     #
     for my $table ( qw/ raw mangle nat filter/ ) {
 	my $progress = 1;
+	my $passes   = 0;
+	my $chains   = 0;
+
 	while ( $progress ) {
 	    $progress = 0;
+	    $passes++;
 
 	    for my $chainref ( values %{$chain_table{$table}} ) {
 		if ( $chainref->{referenced} && ! $chainref->{dont_optimize} ) {
@@ -1427,6 +1434,7 @@ sub optimize_ruleset() {
 			    #
 			    delete_references $chainref;
 			    $progress = 1;
+			    $chains++;
 			}
 		    } elsif ( $numrules == 1 ) {
 			#
@@ -1446,6 +1454,7 @@ sub optimize_ruleset() {
 				    # Target was a user chain -- rules moved
 				    #
 				    $progress = 1;
+				    $chains++;
 				} else {
 				    #
 				    # Target was a built-in. Ignore this chain in follow-on passes
@@ -1458,6 +1467,7 @@ sub optimize_ruleset() {
 				#
 				replace_references $chainref, $1;
 				$progress = 1;
+				$chains++;
 			    }
 			} elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
 			    #
@@ -1475,12 +1485,15 @@ sub optimize_ruleset() {
 				#
 				replace_references1 $chainref, $2, $1;
 				$progress = 1;
+				$chains++;
 			    }
 			}
 		    }
 		}
 	    }
 	}
+
+	progress_message "  Table $table Optimized -- Passes = $passes, Chains = $chains";
     }
 }
 

@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2009 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2009,2010 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_notrack );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.3_7';
+our $VERSION = '4.5_2';
 
 #
 # Notrack

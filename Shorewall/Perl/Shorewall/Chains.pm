@@ -663,6 +663,7 @@ sub move_rules( $$ ) {
     if ( $chain1->{referenced} ) {
 	my $name  = $chain1->{name};
 	my $rules = $chain2->{rules};
+	my $count = @{$chain1->{rules}};
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
@@ -680,6 +681,7 @@ sub move_rules( $$ ) {
 	$chain2->{referenced} = 1;
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
+	$count;
     }
 }
 
@@ -1236,23 +1238,26 @@ sub optimize_chain( $ ) {
 
     if ( $chainref->{referenced} ) {
 	my $rules    = $chainref->{rules};
+	my $count    = 0;
     
 	pop @$rules;
 
-	while ( @$rules && $rules->[-1] =~ /-j ACCEPT/ ) {
-	    pop @$rules;
-	}
+	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT/;
 
 	if ( @${rules} ) {
 	    add_rule $chainref, '-j ACCEPT';
+	    progress_message "  $count ACCEPT rules deleted from policy chain $chainref->{name}" if $count;
 	} else {
 	    #
 	    # The chain is now empty -- change all references to ACCEPT
 	    #
+	    $count = 0;
+
 	    for my $fromref ( map $filter_table->{$_} , keys %{$chainref->{references}} ) {
-		defined && s/ -[jg] $chainref->{name}$/ -j ACCEPT/ for @{$fromref->{rules}};
+		defined && s/ -[jg] $chainref->{name}$/ -j ACCEPT/ && $count++ for @{$fromref->{rules}};
 	    }
 
+	    progress_message "  $count references to ACCEPT policy chain $chainref->{name} replaced";
 	    $chainref->{referenced} = 0;
 	}
     }
@@ -1265,14 +1270,23 @@ sub optimize_chain( $ ) {
 sub delete_references( $ ) {
     my $chainref = shift;
     my $table    = $chainref->{table};
+    my $count    = 0;
     
     for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	for ( @{$fromref->{rules}} ) {
-	    $_ = undef if defined && / -[jg] $chainref->{name}$/;
+	    $_ = undef, $count++ if defined && / -[jg] $chainref->{name}$/;
 	}
     }
 
+    if ( $count ) {
+	progress_message "  $count references to empty chain $chainref->{name} deleted";
+    } else {
+	progress_message "  Empty chain $chainref->{name} deleted";
+    }
+
     $chainref->{referenced} = 0;
+
+    $count;
 }
 
 #
@@ -1281,6 +1295,7 @@ sub delete_references( $ ) {
 sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
     my $table    = $chainref->{table};
+    my $count    = 0;
 
     if ( defined $chain_table{$table}{$target}  && ! $chain_table{$table}{$target}{builtin} ) {
 	#
@@ -1288,7 +1303,7 @@ sub replace_references( $$ ) {
 	#
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ for @{$fromref->{rules}};
+		defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ && $count++ for @{$fromref->{rules}};
 	    }
 	}
     } else {
@@ -1297,10 +1312,12 @@ sub replace_references( $$ ) {
 	#
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ for @{$fromref->{rules}};
+		defined && s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ && $count++ for @{$fromref->{rules}};
 	    }
 	}
     }
+
+    progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
     $chainref->{referenced} = 0;
 }
@@ -1312,11 +1329,10 @@ sub replace_references( $$ ) {
 sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
     my $table    = $chainref->{table};
+    my $count    = 0;
     #
     # Note: If $matches is non-empty, then it begins with white space
     #
-    my $result = 0;
-
     if ( defined $chain_table{$table}{$target} && ! $chain_table{$table}{$target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
@@ -1330,6 +1346,7 @@ sub replace_references1( $$$ ) {
 			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
 			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
+			$count++;
 		    }
 		}
 	    }
@@ -1347,13 +1364,16 @@ sub replace_references1( $$$ ) {
 			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
 			s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
+			$count++;
 		    }
 		}
 	    }
 	}
     }
 
-    $chainref->{referenced} = $result;
+    progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
+
+    $chainref->{referenced} = 0;
 }
 
 #
@@ -1375,7 +1395,8 @@ sub conditionally_move_rules( $$ ) {
 	    # Move is safe -- start with an empty rule list
 	    #
 	    $chainref->{rules} = [];
-	    move_rules( $targetref, $chainref );
+	    my $count = move_rules( $targetref, $chainref );
+	    progress_message "  $count rules moved from chain $targetref->{name} to chain $chainref->{name}" if $count;
 	    1;
 	}
     }
@@ -1397,7 +1418,6 @@ sub optimize_ruleset() {
     for my $table ( qw/ raw mangle nat filter/ ) {
 	my $progress = 1;
 	my $passes   = 0;
-	my $chains   = 0;
 
 	while ( $progress ) {
 	    $progress = 0;
@@ -1409,6 +1429,7 @@ sub optimize_ruleset() {
 		#
 		unless ( $chainref->{builtin} || keys %{$chainref->{references}} ) {
 		    $chainref->{referenced} = 0;
+		    progress_message "  Unreferenced chain $chainref->{name} deleted";
 		    next;
 		}
 
@@ -1442,7 +1463,6 @@ sub optimize_ruleset() {
 			    #
 			    delete_references $chainref;
 			    $progress = 1;
-			    $chains++;
 			}
 		    } elsif ( $numrules == 1 ) {
 			#
@@ -1462,7 +1482,6 @@ sub optimize_ruleset() {
 				    # Target was a user chain -- rules moved
 				    #
 				    $progress = 1;
-				    $chains++;
 				} else {
 				    #
 				    # Target was a built-in. Ignore this chain in follow-on passes
@@ -1475,7 +1494,6 @@ sub optimize_ruleset() {
 				#
 				replace_references $chainref, $1;
 				$progress = 1;
-				$chains++;
 			    }
 			} elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
 			    #
@@ -1493,7 +1511,6 @@ sub optimize_ruleset() {
 				#
 				replace_references1 $chainref, $2, $1;
 				$progress = 1;
-				$chains++;
 			    }
 			}
 		    }
@@ -1501,7 +1518,8 @@ sub optimize_ruleset() {
 	    }
 	}
 
-	progress_message "  Table $table Optimized -- Passes = $passes, Chains = $chains";
+	progress_message "  Table $table Optimized -- Passes = $passes";
+	progress_message '';
     }
 }
 

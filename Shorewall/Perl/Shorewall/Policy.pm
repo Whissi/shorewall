@@ -513,6 +513,9 @@ sub optimize_policy_chains() {
     if ( @{$outputrules} && $outputrules->[-1] =~ /-j ACCEPT/ ) {
 	optimize_chain( $filter_table->{OUTPUT} );
     }
+
+    progress_message '  Policy chains optimized';
+    progress_message '';
 }
 
 1;

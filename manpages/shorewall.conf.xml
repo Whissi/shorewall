@@ -1208,11 +1208,19 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
             <listitem>
               <para>4 bit - Added in Shorewall 4.5.1. When set, causes short
-              filter table chains (those with less than 2 rules) to be
-              optimized away. The following chains are excluded from
-              optimization:</para>
+              chains (those with less than 2 rules) to be optimized away. The
+              following chains are excluded from optimization:</para>
 
               <itemizedlist>
+                <listitem>
+                  <para>accounting chains (unless
+                  OPTIMIZE_ACCOUNTING=Yes)</para>
+                </listitem>
+
+                <listitem>
+                  <para>action chains (user-defined)</para>
+                </listitem>
+
                 <listitem>
                   <para>dynamic</para>
                 </listitem>
@@ -1222,11 +1230,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
                 </listitem>
 
                 <listitem>
-                  <para>logdrop</para>
-                </listitem>
-
-                <listitem>
-                  <para>logreject</para>
+                  <para>UPnP (nat table)</para>
                 </listitem>
               </itemizedlist>
             </listitem>
@@ -1234,6 +1238,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>The default value is zero which disables all
           optimizations.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OPTIMIZE_ACCOUNTING=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.2. If set to Yes, Shorewall accounting
+          changes are subject to optimization (OPTIMIZE=4,5,6 or 7). If not
+          specified or set to the empty value, OPTIMIZE_ACCOUNTING=No is
+          assumed.</para>
         </listitem>
       </varlistentry>
 

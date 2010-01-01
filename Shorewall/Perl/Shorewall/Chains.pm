@@ -564,11 +564,12 @@ sub add_reference ( $$ ) {
 # the target in the second argument. The third argument determines if a GOTO may be
 # used rather than a jump. The optional fourth argument specifies any matches to be
 # included in the rule and must end with a space character if it is non-null. The
-# optional 5th argument causes long port lists to be split.
+# optional 5th argument causes long port lists to be split. The optional 6th 
+# argument, if passed, gives the 0-relative index where the jump is to be inserted.
 #
 
-sub add_jump( $$$;$$ ) {
-    my ( $fromref, $to, $goto_ok, $predicate, $expandports ) = @_;
+sub add_jump( $$$;$$$ ) {
+    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
 
     $predicate |= '';
 
@@ -593,7 +594,11 @@ sub add_jump( $$$;$$ ) {
 
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
-    add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+    if ( defined $index ) {
+	insert_rule( $fromref, $index, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+    } else {
+	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+    }
 }
 
 #
@@ -998,7 +1003,7 @@ sub ensure_accounting_chain( $  )
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
-	$chainref->{dont_optimize}    = 1;
+	$chainref->{dont_optimize}    = 1 unless $config{OPTIMIZE_ACCOUNTING};
 
 	if ( $chain ne 'accounting' ) {
 	    my $file = find_file $chain;

@@ -444,6 +444,7 @@ sub initialize( $ ) {
 	      TRACK_PROVIDERS => undef,
 	      ZONE2ZONE => undef,
 	      ACCOUNTING => undef,
+	      OPTIMIZE_ACCOUNTING => undef,
 	      DYNAMIC_BLACKLIST => undef,
 	      #
 	      # Packet Disposition
@@ -562,6 +563,7 @@ sub initialize( $ ) {
 	      TRACK_PROVIDERS => undef,
 	      ZONE2ZONE => undef,
 	      ACCOUNTING => undef,
+	      OPTIMIZE_ACCOUNTING => undef,
 	      DYNAMIC_BLACKLIST => undef,
 	      #
 	      # Packet Disposition
@@ -2506,6 +2508,7 @@ sub get_configuration( $ ) {
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
     default_yes_no 'ACCOUNTING'                 , 'Yes';
+    default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
 
     numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;

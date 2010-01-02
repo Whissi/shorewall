@@ -45,17 +45,24 @@ None.
                 N E W   F E A T U R E S   I N   4 . 5 . 2
 ----------------------------------------------------------------------------
 
-1)  The OPTIMIZE bit 4 feature added in 4.5.1 is now extended to all
+1)  The "optimize 4" feature added in 4.5.1 is now extended to all
     tables.
 
-    Additionally, if a builtin chain has a single rule that branches to
-    another chain, then the rules from the target chain are moved to
-    the builtin chain and the target chain is omitted.
+    Additionally:
 
-    Finally, chains with no references are deleted.
+    - if a built-in chain has a single rule that branches to a
+      second chain, then the rules from the second chain are moved to
+      the built-in chain and the target chain is omitted.
 
-    Accounting chains are subject to optimization if the new
-    OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
+    - Chains with no references are deleted.
+
+    - Accounting chains are subject to optimization if the new
+      OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
+
+    - If a chain ends with an unconditional branch to a second chain
+      (other than to 'reject'), then the branch is deleted from the
+      first chain and the rules from the second chain are appended to
+      it.
 
 2)  Shorewall now throws an error if:
 
@@ -163,12 +170,16 @@ None.
     controlling a separate set of optimizations.
 
     - The low-order bit (value 1) controls optimizations available in
-      earlier releases.
+      earlier releases. We refer to this optimization as "optimization
+      1".
 
     - The next bit (value 2) suppresses superfluous ACCEPT rules in a
       policy chain that implements an ACCEPT policy. Any ACCEPT rules
       that immediately preceed the final blanket ACCEPT rule in the
-      chain are now omitted.
+      chain are now omitted. We refer to this optimization as
+      "optimization 2".
+
+    To enable both types of optimization, set OPTIMIZE to 3 (1 + 2).
 
 3)  Shorewall now combines identical logging chains. Previously, a
     separate chain was created for each logging rule.
@@ -201,7 +212,8 @@ None.
 
 8)  COMMENT lines are now allowed in /etc/shorewall/tcpri.
 
-9)  The '4' bit in the OPTIMIZE option now enables additional
+9)  An "optimize 4" choice has been added to the OPTIMIZE option. 
+    Optimization 4 the enables the following additional
     optimizations:
 
     a) Empty chains are optimized away.
@@ -216,6 +228,9 @@ None.
 	logdrop
 	logreject
 	UPnP (nat table).
+
+    To enable all possible optimizations, set OPTIMIZE to 7 (1 + 2 +
+    4).
 
 10) The PROTO column in /etc/shorewall/tcpri may now contain
     'ipp2p'. When such an entry is present and PROVIDER_OFFSET is

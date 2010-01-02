@@ -951,14 +951,16 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
         <listitem>
           <para>The specified <replaceable>value</replaceable> enables certain
-          optimizations where specific bits enable certain
-          optimizations:</para>
+          optimizations. Each optimization category is associated with a power
+          of two. To enable multiple optimization categories, simply add their
+          corresponding numbers together.</para>
 
           <itemizedlist>
             <listitem>
-              <para>1 bit - Traditionally, Shorewall has created rules for
-              <ulink url="../ScalabilityAndPerformance.html">the complete
-              matrix of host groups defined by the zones, interfaces and hosts
+              <para>Optimization category 1 - Traditionally, Shorewall has
+              created rules for <ulink
+              url="../ScalabilityAndPerformance.html">the complete matrix of
+              host groups defined by the zones, interfaces and hosts
               files</ulink>. Any traffic that didn't correspond to an element
               of that matrix was rejected in one of the built-in chains. When
               the matrix is sparse, this results in lots of largely useless
@@ -975,16 +977,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
 
             <listitem>
-              <para>2 bit - Added in Shorewall 4.5.0. When set, suppresses
-              superfluous ACCEPT rules in a policy chain that implements an
-              ACCEPT policy. Any ACCEPT rules that immediately preceed the
-              final blanket ACCEPT rule in the chain are now omitted.</para>
+              <para>Optimization category 2 - Added in Shorewall 4.5.0. When
+              set, suppresses superfluous ACCEPT rules in a policy chain that
+              implements an ACCEPT policy. Any ACCEPT rules that immediately
+              preceed the final blanket ACCEPT rule in the chain are now
+              omitted.</para>
             </listitem>
 
             <listitem>
-              <para>4 bit - Added in Shoreawll 4.5.1. When set, causes short
-              chains (those with less than 2 rules) to be optimized away. The
-              following chains are excluded from optimization:</para>
+              <para>Optimization category 4 - Added in Shorewall 4.5.1. When
+              set, causes short chains (those with less than 2 rules) to be
+              optimized away. The following chains are excluded from
+              optimization:</para>
 
               <itemizedlist>
                 <listitem>
@@ -998,6 +1002,33 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
                 <listitem>
                   <para>dynamic</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>Additionally:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>If a built-in chain has a single rule that branches to
+                  a second chain, then the rules from the second chain are
+                  moved to the built-in chain and the target chain is
+                  omitted.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Chains with no references are deleted.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Accounting chains are subject to optimization if the
+                  OPTIMIZE_ACCOUNTING option is set to 'Yes'.</para>
+                </listitem>
+
+                <listitem>
+                  <para>If a chain ends with an unconditional branch to a
+                  second chain (other than to 'reject'), then the branch is
+                  deleted from the first chain and the rules from the second
+                  chain are appended to it.</para>
                 </listitem>
               </itemizedlist>
             </listitem>

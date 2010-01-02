@@ -170,7 +170,6 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       OBSOLETE_IF_OPTION => 5,
 	       IPLIST_IF_OPTION   => 6,
 	       STRING_IF_OPTION   => 7,
-	       IFLIST_IF_OPTION   => 8,
 
 	       MASK_IF_OPTION     => 15,
 

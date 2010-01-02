@@ -1775,14 +1775,7 @@ sub numeric_option( $$$ ) {
 }
 
 sub make_mask( $ ) {
-    my $bits = $_[0];
-    my $mask = 0;
-
-    while ( $bits-- > 0 ) {
-	$mask = ( $mask << 1 ) | 1;
-    }
-
-    $mask;
+    0xffffffff >> ( 32 - $_[0] );
 }   
 
 my @suffixes = qw(group range threshold nlgroup cprange qthreshold);

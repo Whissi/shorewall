@@ -556,7 +556,7 @@ sub add_reference ( $$ ) {
 
     my $toref = $chain_table{$fromref->{table}}{$to};
 
-    $toref->{references}{$fromref->{name}} = 1;
+    $toref->{references}{$fromref->{name}}++;
 }
 
 #
@@ -687,6 +687,37 @@ sub move_rules( $$ ) {
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
 	$count;
+    }
+}
+
+sub copy_rules( $$ ) {
+    my ($chain1, $chain2 ) = @_;
+
+    if ( $chain1->{referenced} ) {
+	my $name1 = $chain1->{name};
+	my $name2 = $chain2->{name};
+	my @rules = @{$chain1->{rules}};
+	my $rules = $chain2->{rules};
+	my $count = @{$chain1->{rules}};
+	#
+	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
+	#
+	$name1 =~ s/\+/\\+/;
+
+	( s/\-([AI]) $name1 /-$1 $name2 / ) for @rules;
+
+	pop @$rules; # Delete the jump to chain1
+
+	push @$rules, @rules;
+
+	$chain2->{references}{$_} += $chain1->{references}{$_} for keys %{$chain1->{references}}; 
+
+	progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
+
+	unless ( --$chain1->{references}{$name2} ) {
+	    delete $chain1->{references}{$name2};
+	    $chain1->{referenced} = 0, progress_message "  Unreferenced chain $name1 deleted"  unless keys %{$chain1->{references}};
+	}
     }
 }
 
@@ -1445,10 +1476,12 @@ sub optimize_ruleset() {
 		    #                          to nil.
 		    my $numrules = 0;
 		    my $firstrule;
+		    my $lastrule;
 
 		    for ( @{$chainref->{rules}} ) {
 			if ( defined ) {
 			    $numrules++;
+			    $lastrule  = $_;
 			    $firstrule = $_ unless defined $firstrule;
 			}
 		    }
@@ -1518,6 +1551,32 @@ sub optimize_ruleset() {
 				$progress = 1;
 			    }
 			}
+		    }
+		}
+	    }
+	}
+
+	$progress = 1;
+
+	while ( $progress ) {
+	    $progress = 0;
+	    $passes++;
+
+	    for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+		my $lastrule;
+
+		for ( @{$chainref->{rules}} ) {
+		    $lastrule  = $_ if defined;
+		}
+
+		if ( defined $lastrule && $lastrule  =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+		    #
+		    # Last rule is a simple branch
+		    my $targetref = $chain_table{$table}{$1};
+		    
+		    if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_optimize} ) ) {
+			copy_rules( $targetref, $chainref );
+			$progress = 1;
 		    }
 		}
 	    }

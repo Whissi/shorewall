@@ -438,7 +438,7 @@ sub add_common_rules() {
 	add_rule( $filter_table->{$_} , "-m state --state ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
     }
 
-    my $rejectref = new_standard_chain 'reject';
+    my $rejectref = dont_optimize new_standard_chain 'reject';
 
     $level = $config{BLACKLIST_LOGLEVEL};
 

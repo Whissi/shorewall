@@ -419,17 +419,20 @@ sub setup_mss();
 sub add_common_rules() {
     my $interface;
     my $chainref;
-    my $level;
     my $target;
     my $rule;
     my $list;
     my $chain;
 
-    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
+    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
+    my $level     = $config{BLACKLIST_LOGLEVEL};
+    my $rejectref = dont_optimize new_standard_chain 'reject';
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
-	dont_optimize new_standard_chain 'dynamic';
-	add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
+	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
+	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), ' ' , 'reject' , $level ;
+	$chainref = dont_optimize( new_standard_chain( 'dynamic' ) );
+	add_jump $filter_table->{$_}, $chainref, 0, $state for qw( INPUT FORWARD );
     }
 
     setup_mss;
@@ -437,13 +440,6 @@ sub add_common_rules() {
     if ( $config{FASTACCEPT} ) {
 	add_rule( $filter_table->{$_} , "-m state --state ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
     }
-
-    my $rejectref = dont_optimize new_standard_chain 'reject';
-
-    $level = $config{BLACKLIST_LOGLEVEL};
-
-    add_rule_pair dont_optimize( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
-    add_rule_pair dont_optimize( new_standard_chain( 'logreject' ) ), ' ' , 'reject' , $level ;
 
     for $interface ( all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );

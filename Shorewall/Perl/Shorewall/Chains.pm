@@ -43,6 +43,7 @@ our @EXPORT = qw(
 		  ensure_manual_chain
 		  log_rule_limit
 		  dont_optimize
+		  dont_delete
 
 		  %chain_table
 		  $raw_table
@@ -185,6 +186,7 @@ our $VERSION = '4.5_2';
 #                                               manual       => undef|1 -- If 1, a manual chain.
 #                                               accounting   => undef|1 -- If 1, an accounting chain
 #                                               dont_optimize=> undef|1 -- Don't optimize away if this chain is 'short'
+#                                               dont_delete  => undef|1 -- Don't delete if this chain is not referenced
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
@@ -993,6 +995,19 @@ sub dont_optimize( $ ) {
     $chainref;
 }
 
+#
+# Set the dont_optimize and dont_delete flags for a chain
+#
+sub dont_delete( $ ) {
+    my $chain = shift;
+
+    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
+
+    $chainref->{dont_optimize} = $chainref->{dont_delete} = 1;
+
+    $chainref;
+}
+
 sub finish_chain_section( $$ );
 
 #
@@ -1088,9 +1103,10 @@ sub new_builtin_chain($$$)
     my ( $table, $chain, $policy ) = @_;
 
     my $chainref = new_chain $table, $chain;
-    $chainref->{referenced} = 1;
-    $chainref->{policy}     = $policy;
-    $chainref->{builtin}    = 1;
+    $chainref->{referenced}  = 1;
+    $chainref->{policy}      = $policy;
+    $chainref->{builtin}     = 1;
+    $chainref->{dont_delete} = 1;
     $chainref;
 }
 
@@ -1452,6 +1468,9 @@ sub optimize_ruleset() {
     # Chains with 'dont_optimize = 1' are exempted from optimization
     #
     for my $table ( qw/ raw mangle nat filter/ ) {
+
+	next if $family == F_IPV6 && $table eq 'nat';
+
 	my $progress = 1;
 	my $passes   = 0;
 
@@ -1463,7 +1482,7 @@ sub optimize_ruleset() {
 		#
 		# If the chain isn't branched to, then delete it
 		#
-		unless ( $chainref->{builtin} || keys %{$chainref->{references}} ) {
+		unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
 		    $chainref->{referenced} = 0;
 		    progress_message "  Unreferenced chain $chainref->{name} deleted";
 		    next;

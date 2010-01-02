@@ -1151,12 +1151,6 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	# Mark the chain as referenced and add appropriate rules from earlier sections.
 	#
 	$chainref = ensure_filter_chain $chain, 1;
-	#
-	# Add a reference if appropriate
-	#
-	if ( $actiontype & ( ACTION | CHAIN ) ) {
-	    add_reference $chainref, $action;
-	}
     }
 
     #
@@ -1383,7 +1377,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     "-j $tgt",
 		     $loglevel ,
 		     $log_action ,
-		     ''
+		     $tgt ,
 		   );
 	#
 	# Possible optimization if the rule just generated was a simple jump to the nonat chain

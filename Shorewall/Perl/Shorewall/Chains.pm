@@ -106,7 +106,6 @@ our %EXPORT_TAGS = (
 				       notrack_chain
 				       first_chains
 				       ensure_chain
-				       add_reference
 				       ensure_accounting_chain
 				       ensure_mangle_chain
 				       ensure_nat_chain
@@ -556,7 +555,7 @@ sub add_rule($$;$)
 sub add_reference ( $$ ) {
     my ( $fromref, $to ) = @_;
 
-    my $toref = $chain_table{$fromref->{table}}{$to};
+    my $toref = reftype $to ? $to : $chain_table{$fromref->{table}}{$to};
 
     $toref->{references}{$fromref->{name}}++;
 }
@@ -592,7 +591,7 @@ sub add_jump( $$$;$$$ ) {
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1, add_reference $fromref, $to if $toref;
+    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
 
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
@@ -2888,7 +2887,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	my $targetref = $chain_table{$chainref->{table}}{$disposition};
 	if ( $targetref ) {
 	    $targetref->{referenced} = 1; 
-	    add_reference $chainref, $disposition;
+	    add_reference $chainref, $targetref;
 	}
     }
 

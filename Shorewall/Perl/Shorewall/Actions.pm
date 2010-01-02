@@ -627,8 +627,6 @@ sub process_action( $$$$$$$$$$$ ) {
 		  $level ,
 		  $action ,
 		  '' );
-
-    add_reference ( $chainref, $action );
 }
 
 #

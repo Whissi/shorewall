@@ -202,7 +202,7 @@ our $VERSION = '4.5_2';
 #                                                                 ...
 #                                                               ]
 #                                               logchains    => { <key1> = <chainref1>, ... }
-#                                               references   => { <ref1> => 1, <ref2> => 1, ... }
+#                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -692,34 +692,38 @@ sub move_rules( $$ ) {
     }
 }
 
+#
+# Replace the jump at the end of one chain (chain2) with the rules from another chain (chain1).
+#
+
 sub copy_rules( $$ ) {
     my ($chain1, $chain2 ) = @_;
 
-    if ( $chain1->{referenced} ) {
-	my $name1 = $chain1->{name};
-	my $name2 = $chain2->{name};
-	my @rules = @{$chain1->{rules}};
-	my $rules = $chain2->{rules};
-	my $count = @{$chain1->{rules}};
-	#
-	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
-	#
-	$name1 =~ s/\+/\\+/;
+    my $name1 = $chain1->{name};
+    my $name2 = $chain2->{name};
+    my @rules = @{$chain1->{rules}};
+    my $rules = $chain2->{rules};
+    my $count = @{$chain1->{rules}};
+    #
+    # We allow '+' in chain names and '+' is an RE meta-character. Escape it.
+    #
+    $name1 =~ s/\+/\\+/;
 
-	( s/\-([AI]) $name1 /-$1 $name2 / ) for @rules;
+    ( s/\-([AI]) $name1(\b)/-$1 ${name2}$2/ ) for @rules;
 
-	pop @$rules; # Delete the jump to chain1
+    pop @$rules; # Delete the jump to chain1
 
-	push @$rules, @rules;
+    push @$rules, @rules;
+    #
+    # Add chain1's references to $chain2
+    #
+    $chain2->{references}{$_} += $chain1->{references}{$_} for keys %{$chain1->{references}}; 
 
-	$chain2->{references}{$_} += $chain1->{references}{$_} for keys %{$chain1->{references}}; 
+    progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
 
-	progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
-
-	unless ( --$chain1->{references}{$name2} ) {
-	    delete $chain1->{references}{$name2};
-	    $chain1->{referenced} = 0, progress_message "  Unreferenced chain $name1 deleted"  unless keys %{$chain1->{references}};
-	}
+    unless ( --$chain1->{references}{$name2} ) {
+	delete $chain1->{references}{$name2};
+	$chain1->{referenced} = 0, progress_message "  Unreferenced chain $name1 deleted"  unless keys %{$chain1->{references}};
     }
 }
 
@@ -1461,6 +1465,7 @@ sub optimize_ruleset() {
     #
     # Make repeated passes through each table looking for short chains (those with less than 2 entries)
     #
+    # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
     # When an empty chain is found, delete the references to it.
     # When a chain with a single entry is found, replace it's references by its contents
     #
@@ -1574,7 +1579,11 @@ sub optimize_ruleset() {
 		}
 	    }
 	}
-
+	
+	#
+	# In this loop, we look for chains that end in an unconditional jump. If the target of the jump
+	# is subject to optimization (dont_optimize = false), the jump is replaced by target's rules.
+	#
 	$progress = 1;
 
 	while ( $progress ) {

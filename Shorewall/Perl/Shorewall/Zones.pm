@@ -147,6 +147,7 @@ our %reservedName = ( all => 1,
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                     number      => <ordinal position in the interfaces file>
 #                                     physical    => <physical interface name>
+#                                     include     => [ <if1>, ... ]
 #                                   }
 #                 }
 #
@@ -169,11 +170,12 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       OBSOLETE_IF_OPTION => 5,
 	       IPLIST_IF_OPTION   => 6,
 	       STRING_IF_OPTION   => 7,
+	       IFLIST_IF_OPTION   => 8,
 
-	       MASK_IF_OPTION     => 7,
+	       MASK_IF_OPTION     => 15,
 
-	       IF_OPTION_ZONEONLY => 8,
-	       IF_OPTION_HOST     => 16,
+	       IF_OPTION_ZONEONLY => 16,
+	       IF_OPTION_HOST     => 32,
 	   };
 
 our %validinterfaceoptions;

@@ -596,7 +596,7 @@ sub add_jump( $$$;$$$ ) {
     my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
 
     if ( defined $index ) {
-	insert_rule( $fromref, $index, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ), $expandports || 0 );
     } else {
 	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
     }

@@ -1378,7 +1378,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     "-j $tgt",
 		     $loglevel ,
 		     $log_action ,
-		     $tgt ,
+		     '' ,
 		   );
 	#
 	# Possible optimization if the rule just generated was a simple jump to the nonat chain

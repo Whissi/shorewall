@@ -1,4 +1,4 @@
-Shorewall 4.5.2
+Shorewall 4.5.3
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 5  H I G H L I G H T S
@@ -26,17 +26,11 @@ Shorewall 4.5.2
     interfaces will only have those rules applied when TC_EXPERT=Yes.
 
 ----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 2
+          P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 3
 ----------------------------------------------------------------------------
 
-1)  Previously, if there were entries in /etc/shorewall/accounting,
-    OPTIMIZE settings of 4, 5, 6 or 7 could cause a run-time failure
-    during 'shorewall start'. 
-
-    As part of this fix, accounting chains are now exempted from the
-    optimizations enabled with the 4-bit in OPTIMIZE is set.
-
-    User-defined action chains are similarly exempted.
+1)  Previously, Shorewall generated invalid iptables-restore input if
+    logging was specified on a NONAT rule.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -45,39 +39,10 @@ Shorewall 4.5.2
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 5 . 2
+                N E W   F E A T U R E S   I N   4 . 5 . 3
 ----------------------------------------------------------------------------
 
-1)  The "optimize 4" feature added in 4.5.1 is now extended to all
-    tables.
-
-    Additionally:
-
-    - if a built-in chain has a single rule that branches to a
-      second chain, then the rules from the second chain are moved to
-      the built-in chain and the target chain is omitted.
-
-    - Chains with no references are deleted.
-
-    - Accounting chains are subject to optimization if the new
-      OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
-
-    - If a chain ends with an unconditional branch to a second chain
-      (other than to 'reject'), then the branch is deleted from the
-      first chain and the rules from the second chain are appended to
-      it.
-
-2)  Shorewall now throws an error if:
-
-    a) There are tracked providers; and
-    b) PROVIDER_OFFSET is 0; and
-    c) 'ipp2p' is used as the PROTO in a tcpri entry.
-
-3)  You may now preview the generated ruleset by using the '-r' option
-    to the 'check' command (e.g., "shorewall check -r").
-
-    The output is a shell script fragment, similar to the way it
-    appears in the generated script.
+None.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 5
@@ -227,11 +192,21 @@ None.
 
     a) Empty chains are optimized away.
     b) Chains with one rule are optimized away.
+    c) if a built-in chain has a single rule that branches to a
+       second chain, then the rules from the second chain are moved to
+       the built-in chain and the target chain is omitted.
+    d) Chains with no references are deleted.
+    e) Accounting chains are subject to optimization if the new
+       OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
+    f) If a chain ends with an unconditional branch to a second chain
+       (other than to 'reject'), then the branch is deleted from the
+       first chain and the rules from the second chain are appended to
+       it.
 
     The following chains are exempted from optimization:
 
     	action chains (user-created).
-    	accounting chains
+    	accounting chains (unless OPTIMIZE_ACCOUNTING=Yes)
     	dynamic
 	forwardUPnP
 	logdrop
@@ -245,3 +220,16 @@ None.
     'ipp2p'. When such an entry is present and PROVIDER_OFFSET is
     non-zero, Shorewall will automatically generate SAVE/RESTORE rules
     for the POSTROUTING chain.
+
+
+11) Shorewall now throws an error if:
+
+    a) There are tracked providers; and
+    b) PROVIDER_OFFSET is 0; and
+    c) 'ipp2p' is used as the PROTO in a tcpri entry.
+
+12) You may now preview the generated ruleset by using the '-r' option
+    to the 'check' command (e.g., "shorewall check -r").
+
+    The output is a shell script fragment, similar to the way it
+    appears in the generated script.

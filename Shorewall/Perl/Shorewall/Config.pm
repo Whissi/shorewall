@@ -68,6 +68,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 		                       in_hex8
 		                       in_hexp
 				       emit
+				       emitstd
 				       emit_unindented
 				       save_progress_message
 				       save_progress_message_short
@@ -865,6 +866,25 @@ sub emit {
 		print $script "\n" unless $lastlineblank;
 		$lastlineblank = 1;
 	    }
+	}
+    }
+}
+
+#
+# Version of emit() that writes to standard out
+#
+sub emitstd {
+    for ( @_ ) {
+	unless ( /^\s*$/ ) {
+	    my $line = $_; # This copy is necessary because the actual arguments are almost always read-only.
+	    $line =~ s/^\n// if $lastlineblank;
+	    $line =~ s/^/$indent/gm if $indent;
+	    $line =~ s/        /\t/gm;
+	    print "$line\n";
+	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
+	} else {
+	    print "\n" unless $lastlineblank;
+	    $lastlineblank = 1;
 	}
     }
 }

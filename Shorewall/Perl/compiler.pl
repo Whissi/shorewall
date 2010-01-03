@@ -36,6 +36,7 @@
 #         --log=<filename>            # Log file
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
 #         --family=<number>           # IP family; 4 = IPv4 (default), 6 = IPv6
+#         --preview                   # Preview the ruleset.
 #
 use strict;
 use FindBin;
@@ -58,6 +59,7 @@ sub usage( $ ) {
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
     [ --test ]
+    [ --preview ]
     [ --family={4|6} ]
 ';
 
@@ -78,6 +80,7 @@ my $log_verbose   = 0;
 my $help          = 0;
 my $test          = 0;
 my $family        = 4; # F_IPV4
+my $preview       = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -98,6 +101,7 @@ my $result = GetOptions('h'               => \$help,
 			'l=s'             => \$log,
 			'log_verbosity=i' => \$log_verbose,
 			'test'            => \$test,
+			'preview'         => \$preview,
 			'f=i'             => \$family,
 			'family=i'        => \$family,
 		       );
@@ -115,4 +119,5 @@ compiler( script          => defined $ARGV[0] ? $ARGV[0] : '',
 	  log             => $log,
 	  log_verbosity   => $log_verbose,
 	  test            => $test,
+	  preview         => $preview,
 	  family          => $family );

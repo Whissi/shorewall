@@ -536,8 +536,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0 );
 
     $export = 0;
     $test   = 0;
@@ -569,6 +569,7 @@ sub compiler {
 		  log           => { store => \$log },
 		  log_verbosity => { store => \$log_verbosity, validate => \&validate_verbosity } ,
 		  test          => { store => \$test },
+		  preview       => { store => \$preview },
 		);
     #
     #                               P A R A M E T E R    P R O C E S S I N G
@@ -852,6 +853,23 @@ sub compiler {
 	#
 	enable_script, generate_aux_config if $export;
     } else {
+	if ( $preview ) {
+	    generate_matrix;
+
+	    if ( $config{OPTIMIZE} & 6 ) {
+		progress_message2 'Optimizing Ruleset...';
+		#
+		# Optimize Policy Chains
+		#
+		optimize_policy_chains if $config{OPTIMIZE} & 2;
+		#
+		# More Optimization
+		#
+		optimize_ruleset if $config{OPTIMIZE} & 4;
+	    }
+
+	    preview_netfilter_load;
+	}
 	#
 	# Re-initialize the chain table so that process_routestopped() has the same
 	# environment that it would when called by compile_stop_firewall().

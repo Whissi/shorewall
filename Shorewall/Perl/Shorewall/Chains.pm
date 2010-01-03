@@ -561,48 +561,6 @@ sub add_reference ( $$ ) {
 }
 
 #
-# Add a jump from the chain represented by the reference in the first argument to
-# the target in the second argument. The third argument determines if a GOTO may be
-# used rather than a jump. The optional fourth argument specifies any matches to be
-# included in the rule and must end with a space character if it is non-null. The
-# optional 5th argument causes long port lists to be split. The optional 6th 
-# argument, if passed, gives the 0-relative index where the jump is to be inserted.
-#
-
-sub add_jump( $$$;$$$ ) {
-    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
-
-    $predicate |= '';
-
-    my $toref;
-    #
-    # The second argument may be a scalar (chain name or builtin target) or a chain reference
-    #
-    if ( reftype $to ) {
-	$toref = $to;
-	$to    = $toref->{name};
-    } else {
-	#
-	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
-	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{ $to };
-    }
-
-    #
-    # If the destination is a chain, mark it referenced
-    #
-    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
-
-    my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
-
-    if ( defined $index ) {
-	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ), $expandports || 0 );
-    } else {
-	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
-    }
-}
-
-#
 # Purge jumps previously added via add_jump. If the target chain is empty, reset its
 # referenced flag
 #
@@ -644,6 +602,49 @@ sub insert_rule($$$) {
     my ($chainref, $number, $rule) = @_;
 
     insert_rule1( $chainref, $number - 1, $rule );
+}
+
+#
+# Add a jump from the chain represented by the reference in the first argument to
+# the target in the second argument. The third argument determines if a GOTO may be
+# used rather than a jump. The optional fourth argument specifies any matches to be
+# included in the rule and must end with a space character if it is non-null. The
+# optional 5th argument causes long port lists to be split. The optional 6th 
+# argument, if passed, gives the 0-relative index where the jump is to be inserted.
+#
+
+sub add_jump( $$$;$$$ ) {
+    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
+
+    $predicate |= '';
+
+    my $toref;
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{ $to };
+    }
+
+    #
+    # If the destination is a chain, mark it referenced
+    #
+    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
+
+    my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
+
+    if ( defined $index ) {
+	assert( ! $expandports );
+	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ));
+    } else {
+	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+    }
 }
 
 #

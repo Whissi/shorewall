@@ -72,6 +72,32 @@
         for normal processing.</para>
       </listitem>
     </itemizedlist>
+
+    <para>As shown in the following example, manual chains are created using a
+    call to &amp;Shorewall::Chains::new_manual_chain. That function returns a
+    reference to the newly-created chain.</para>
+
+    <para>By default, chains are subject to optimize 4 (see OPTIMIZE in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)). You can
+    exempt your chain from that optimization by calling one of two
+    functions:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>&amp;Shorewall::Chains::dont_delete - exempt the chain from all
+        optimizations.</para>
+      </listitem>
+
+      <listitem>
+        <para>&amp;Shorewall::Chains::dont_optimize - exempt the chain from
+        all optimizations except that the chain will be omitted from the
+        configuration if there are no branches to the chain.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Both functions accept the name of the chain or a reference to the
+    chain as a single argument and both return a reference to the chain (to
+    the chain's table entry).</para>
   </section>
 
   <section id="Example">

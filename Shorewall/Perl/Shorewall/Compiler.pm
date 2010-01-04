@@ -375,7 +375,7 @@ sub generate_script_3($) {
 		   '        $IPSET -X' ,
 		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
 		   '    fi' ,
-		   'elif [ "$COMMAND" = restart ]; then' ,
+		   'elif [ "$COMMAND" = restore ]; then' ,
 		   '    if [ -f $(my_pathname)-ipsets ]; then' ,
 		   '        if chain_exists shorewall; then' ,
 		   '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,

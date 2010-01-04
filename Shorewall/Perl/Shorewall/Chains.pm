@@ -2885,8 +2885,8 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Mark Target as referenced, if it's a chain
     #
-    if ( $disposition ) {
-	my $targetref = $chain_table{$chainref->{table}}{$disposition};
+    if ( $target =~ /-[jg]\s+([^\s]+)\b/ ) {
+	my $targetref = $chain_table{$chainref->{table}}{$1};
 	if ( $targetref ) {
 	    $targetref->{referenced} = 1; 
 	    add_reference $chainref, $targetref;

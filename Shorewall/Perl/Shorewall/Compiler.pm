@@ -355,8 +355,10 @@ sub generate_script_3($) {
     if ( $family == F_IPV4 ) {
 	my @ipsets = all_ipsets;
 
-	if ( @ipsets ) {
+	if ( @ipsets || $config{SAVE_IPSETS} ) {
 	    emit ( '',
+		   'local hack',
+		   '',
 		   'case $IPSET in',
 		   '    */*)',
 		   '        [ -x "$IPSET" ] || fatal_error "IPSET=$IPSET does not exist or is not executable"',
@@ -375,18 +377,30 @@ sub generate_script_3($) {
 		   '    fi' ,
 		   '' );
 
-	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    if ( @ipsets ) {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
-	    emit ( '' ,
-		   'elif [ "$COMMAND" = restart ]; then' ,
-		   '' );
+		emit ( '' ,
+		       'elif [ "$COMMAND" = restart ]; then' ,
+		       '' );
 
-	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
-	    emit ( '' ,
-		   '    if $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
-		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
-		   '    fi' );
+		emit ( '' ,
+		       '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
+		       '        #',
+		       '        # The \'grep -v\' is a hack for a bug in ipset\'s nethash implementation when xtables-addons is applied to Lenny' ,
+		       '        #',
+		       '        hack=\'| grep -v /31\'' ,
+		       '    else' ,
+		       '        hack=' ,
+		       '    fi' ,
+		       '',
+		       '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
+		       '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
+		       '    fi' );
+	    }
+
 	    emit ( 'fi',
 		   '' );
 	}

@@ -2422,9 +2422,9 @@ sub get_configuration( $ ) {
 
     unsupported_yes_no_warning 'DYNAMIC_ZONES';
     unsupported_yes_no         'BRIDGING';
-    unsupported_yes_no_warning 'SAVE_IPSETS';
     unsupported_yes_no_warning 'RFC1918_STRICT';
 
+    default_yes_no 'SAVE_IPSETS'                , '';
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
     default_yes_no 'MAPOLDACTIONS'              , 'Yes';

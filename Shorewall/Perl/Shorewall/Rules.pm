@@ -2171,6 +2171,7 @@ sub compile_stop_firewall( $ ) {
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
 stop_firewall() {
+    local hack
 EOF
 
     $output->{policy} = 'ACCEPT' if $config{ADMINISABSENTMINDED};
@@ -2353,13 +2354,35 @@ EOF
     if ( @ipsets ) {
 	emit <<'EOF';
 
-    if [ -n "$(mywhich ipset)" ]; then
-        if $IPSET -S > ${VARDIR}/ipsets.tmp; then
+    case $IPSET in
+        */*)
+            if [ ! -x "$IPSET" ]; then
+                error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
+                IPSET=
+            fi
+	    ;;
+	*)
+	    IPSET="$(mywhich $IPSET)"
+	    [ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
+	    ;;
+    esac
+
+    if [ -n "$IPSET" ]; then
+        if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
+            #
+            # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
+            #
+            hack='| grep -v /31'
+        else
+            hack=
+        fi
+
+        if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
             #
             # Don't save an 'empty' file
             #
             grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
-	fi
+        fi
     fi
 EOF
     }

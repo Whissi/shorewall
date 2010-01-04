@@ -794,7 +794,7 @@ sub compiler {
 
     if ( $scriptfilename ) {
 	#
-	# Generate the zone by zone matrix
+	# Compiling a script - generate the zone by zone matrix
 	#
 	generate_matrix;
 
@@ -853,7 +853,13 @@ sub compiler {
 	#
 	enable_script, generate_aux_config if $export;
     } else {
+	#
+	# Just checking the configuration
+	#
 	if ( $preview ) {
+	    #
+	    # User wishes to preview the ruleset -- generate the rule matrix
+	    #
 	    generate_matrix;
 
 	    if ( $config{OPTIMIZE} & 6 ) {
@@ -863,7 +869,7 @@ sub compiler {
 		#
 		optimize_policy_chains if $config{OPTIMIZE} & 2;
 		#
-		# More Optimization
+		# Ruleset Optimization
 		#
 		optimize_ruleset if $config{OPTIMIZE} & 4;
 	    }

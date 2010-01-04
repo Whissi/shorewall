@@ -375,9 +375,17 @@ sub generate_script_3($) {
 		   '        $IPSET -X' ,
 		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
 		   '    fi' ,
-		   '' );
+		   'elif [ "$COMMAND" = restart ]; then' ,
+		   '    if [ -f $(my_pathname)-ipsets ] && ! chain_exists shorewall; then' ,
+		   '        $IPSET -F' ,
+		   '        $IPSET -X' ,
+		   '        $IPSET -R < $(my_pathname)-ipsets' ,
+		   '    fi' ,
+		 );
 
 	    if ( @ipsets ) {
+		emit '';
+
 		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 
 		emit ( '' ,

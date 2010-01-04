@@ -288,6 +288,46 @@ do_save() {
 	status=1
     fi
 
+    case ${SAVE_IPSETS:=No} in 
+	[Yy]es)
+	    case ${IPSET:=ipset} in
+		*/*)
+		    if [ ! -x "$IPSET" ]; then
+			error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
+			IPSET=
+		    fi
+		    ;;
+		*)
+		    IPSET="$(mywhich $IPSET)"
+		    [ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
+		    ;;
+	    esac
+
+	    if [ -n "$IPSET" ]; then
+		if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
+                    #
+                    # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
+                    #
+		    hack='| grep -v /31'
+		else
+		    hack=
+		fi
+
+		if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
+                    #
+                    # Don't save an 'empty' file
+                    #
+		    grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${RESTOREPATH}-ipsets
+		fi
+	    fi
+	    ;;
+	[Nn]o)
+	    ;;
+	*)
+	    error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
+	    ;;
+    esac
+
     return $status
 }
 

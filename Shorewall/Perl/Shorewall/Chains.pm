@@ -3306,20 +3306,6 @@ sub enter_cmd_mode() {
 }
 
 #
-# These versions are used by 'preview'
-#
-sub enter_cat_mode1() {
-    print "\n";
-    emitstd "cat << __EOF__";
-    $mode = CAT_MODE;
-}
-
-sub enter_cmd_mode1() {
-    print "__EOF__\n\n" if $mode == CAT_MODE;
-    $mode = CMD_MODE;
-}
-
-#
 # Emits the passed rule (input to iptables-restore) or command
 #
 sub emitr( $ ) {
@@ -3338,6 +3324,20 @@ sub emitr( $ ) {
 	    emit $rule;
 	}
     }
+}
+
+#
+# These versions are used by 'preview'
+#
+sub enter_cat_mode1() {
+    print "\n";
+    emitstd "cat << __EOF__";
+    $mode = CAT_MODE;
+}
+
+sub enter_cmd_mode1() {
+    print "__EOF__\n\n" if $mode == CAT_MODE;
+    $mode = CMD_MODE;
 }
 
 sub emitr1( $ ) {

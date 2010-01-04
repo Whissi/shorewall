@@ -1632,7 +1632,7 @@ sub add_interface_jumps {
     my $fw = firewall_zone;
     my $chainref = $filter_table->{rules_chain( ${fw}, ${fw} )};
 
-    add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
+    add_jump $filter_table->{OUTPUT} ,  ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' ), 0, '-o lo ';
     add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
 }
 

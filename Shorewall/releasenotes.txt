@@ -1,4 +1,4 @@
-Shorewall 4.4.5
+Shorewall 4.4.6
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -239,8 +239,10 @@ None.
 
 2)  SAVE_IPSETS=Yes has been resurrected but in a different form. With
     this setting, the contents of your ipsets are saved during 'shorewall
-    stop' and they are restored during 'shorewall start' and 'shorewall
-    restore'.
+    stop' and 'shorewall save' and they are restored during 'shorewall
+    start' and 'shorewall restore'. Note that the contents may only be
+    restored during 'restore' if the firewall is currently in the
+    stopped state and there are no ipsets currently in use.
 
     When SAVE_IPSETS=Yes, you may not include ipsets in your
     /etc/shorewall/routestopped configuration.

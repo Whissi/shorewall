@@ -315,7 +315,6 @@ sub process_routestopped() {
 	my ($interface, $hosts, $options , $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
 
 	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
-
 	$hosts = ALLIP unless $hosts && $hosts ne '-';
 
 	my @hosts;
@@ -325,6 +324,7 @@ sub process_routestopped() {
 	my $rule = do_proto( $proto, $ports, $sports, 0 );
 
 	for my $host ( split /,/, $hosts ) {
+	    fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
 	    validate_host $host, 1;
 	    push @hosts, "$interface|$host|$seq";
 	    push @rule, $rule;
@@ -2351,7 +2351,7 @@ EOF
 
     my @ipsets = all_ipsets;
 
-    if ( @ipsets ) {
+    if ( @ipsets || $config{SAVE_IPSETS} ) {
 	emit <<'EOF';
 
     case $IPSET in

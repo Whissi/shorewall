@@ -227,9 +227,9 @@ sub process_tc_rule( ) {
 		fatal_error "Invalid chain designator for source $fw" unless $tcsref->{fw};
 	    }
 
-	    $chain    = $tcsref->{chain}          if $tcsref->{chain};
-	    $target   = $tcsref->{target}         if $tcsref->{target};
-	    $mark     = "$mark/$globals{TC_MASK}" if $connmark = $tcsref->{connmark};
+	    $chain    = $tcsref->{chain}                       if $tcsref->{chain};
+	    $target   = $tcsref->{target}                      if $tcsref->{target};
+	    $mark     = "$mark/" . in_hex( $globals{TC_MASK} ) if $connmark = $tcsref->{connmark};
 
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
@@ -1080,12 +1080,7 @@ sub process_tc_priority() {
 
     fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
 
-    my $rule = join( '',
-		     do_helper( $helper ) ,
-		     "-j MARK --set-mark ",
-		     $band ,
-		     '/' ,
-		     $globals{TC_MASK} );
+    my $rule = do_helper( $helper ) . "-j MARK --set-mark $band";
 
     if ( $interface ne '-' ) {
 	fatal_error "Invalid combination of columns" unless $address eq '-' && $proto eq '-' && $ports eq '-';
@@ -1150,8 +1145,8 @@ sub setup_simple_traffic_shaping() {
 	clear_comment;
 
 	if ( $ipp2p ) {
-	    insert_rule1 $mangle_table->{tcpost} , 0 , "-m mark --mark 0/$globals{TC_MASK} -j CONNMARK --restore-mark --ctmask $globals{TC_MASK}";
-	    add_rule     $mangle_table->{tcpost} ,     "-m mark ! --mark 0/$globals{TC_MASK} -j CONNMARK --save-mark --ctmask $globals{TC_MASK}";
+	    insert_rule1 $mangle_table->{tcpost} , 0 , '-m mark --mark 0/'   . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} );
+	    add_rule     $mangle_table->{tcpost} ,     '-m mark ! --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} );
 	}
     }
 }

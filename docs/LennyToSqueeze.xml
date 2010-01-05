@@ -895,6 +895,29 @@ insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
       composed of alphanumeric characters and underscores (_). When used in a
       Shorewall configuration file, the name must be preceded by a plus sign
       (+) as with the shell-based compiler.</para>
+
+      <para>Shorewall 4.4.6 re-introduced SAVE_IPSETS=Yes with slightly
+      different semantics:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The contents of the ipsets are saved during processing of the
+          <command>stop</command> command in addition to during processing of
+          the <command>save</command> command.</para>
+        </listitem>
+
+        <listitem>
+          <para>The contents of the ipsets are restored during processing of
+          the <command>start</command> command in addition to during
+          processing of the <command>restore</command> command.</para>
+        </listitem>
+
+        <listitem>
+          <para>Specifying an ipset in <ulink
+          url="manpages/shorewall-routestopped.html">shorewall-routestopped
+          </ulink>(5) is prohibited when SAVE_IPSETS=Yes.</para>
+        </listitem>
+      </itemizedlist>
     </section>
   </section>
 

@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Shorewall FAQs</title>
+    <title>Shorewall 4.4/4.5 FAQs</title>
 
     <authorgroup>
       <corpauthor>Shorewall Community</corpauthor>
@@ -20,7 +20,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2009</year>
+      <year>2001-2010</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -2007,8 +2007,8 @@ iptables: Invalid argument
       which requires them to be up and configured when Shorewall starts but
       Shorewall is being started before NetworkManager.</title>
 
-      <para>Answer: I faced a similar problem which I solved as
-      follows:</para>
+      <para><emphasis role="bold">Answer</emphasis>: I faced a similar problem
+      which I solved as follows:</para>
 
       <itemizedlist>
         <listitem>
@@ -2028,6 +2028,22 @@ shorewall status &gt; /dev/null 2&gt;&amp;1 || shorewall start # Start Shorewall
           <para>Be sure to secure the script for execute access.</para>
         </listitem>
       </itemizedlist>
+    </section>
+
+    <section id="faq87">
+      <title>(FAQ 87) My firewall starts and restarts fine but if I try
+      'shorewall restore', the script fails because none of my shell variables
+      from /etc/shorewall/params are set. Why?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: You probably need to set
+      EXPORTPARAMS=Yes. During <emphasis role="bold">start</emphasis> and
+      <emphasis role="bold">restart</emphasis>,
+      <filename>/etc/shorewall/params</filename> is processed by the shell
+      after <emphasis role="bold">set -a</emphasis>; as a result, all param
+      settings become part of the shell's environment and are inherited by the
+      running script. The shell does not process
+      <filename>/etc/shorewall/params</filename> when processing the <emphasis
+      role="bold">restore</emphasis> command. </para>
     </section>
   </section>
 

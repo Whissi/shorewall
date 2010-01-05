@@ -330,7 +330,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.6",
-		    CAPVERSION => 40406 ,
+		    CAPVERSION => 40407 ,
 		  );
 
     #

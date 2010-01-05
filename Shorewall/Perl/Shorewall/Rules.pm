@@ -426,7 +426,7 @@ sub add_common_rules() {
 
     my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
     my $level     = $config{BLACKLIST_LOGLEVEL};
-    my $rejectref = dont_optimize new_standard_chain 'reject';
+    my $rejectref = dont_move new_standard_chain 'reject';
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
 	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
@@ -1152,6 +1152,10 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	# Mark the chain as referenced and add appropriate rules from earlier sections.
 	#
 	$chainref = ensure_filter_chain $chain, 1;
+	#
+	# Don't let the rules in this chain be moved elsewhere
+	#
+	dont_move $chainref;
     }
 
     #

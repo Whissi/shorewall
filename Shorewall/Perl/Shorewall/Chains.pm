@@ -44,6 +44,7 @@ our @EXPORT = qw(
 		  log_rule_limit
 		  dont_optimize
 		  dont_delete
+		  dont_move
 
 		  %chain_table
 		  $raw_table
@@ -187,6 +188,7 @@ our $VERSION = '4.5_2';
 #                                               accounting   => undef|1 -- If 1, an accounting chain
 #                                               dont_optimize=> undef|1 -- Don't optimize away if this chain is 'short'
 #                                               dont_delete  => undef|1 -- Don't delete if this chain is not referenced
+#                                               dont_move    => undef|1 -- Don't copy the rules of this chain somewhere else
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
@@ -1013,6 +1015,19 @@ sub dont_delete( $ ) {
     $chainref;
 }
 
+#
+# Set the dont_move flag for a chain
+#
+sub dont_move( $ ) {
+    my $chain = shift;
+
+    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
+
+    $chainref->{dont_move} = 1;
+
+    $chainref;
+}
+
 sub finish_chain_section( $$ );
 
 #
@@ -1112,6 +1127,7 @@ sub new_builtin_chain($$$)
     $chainref->{policy}      = $policy;
     $chainref->{builtin}     = 1;
     $chainref->{dont_delete} = 1;
+    $chainref->{dont_move}   = 1;
     $chainref;
 }
 
@@ -1434,7 +1450,7 @@ sub replace_references1( $$$ ) {
 }
 
 #
-# The passed builtin chain has a single rule. If the target is a user chain, move the rules from the 
+# The passed builtin chain has a single rule. If the target is a user chain without 'dont"move', move the rules from the 
 # chain to the builtin and return true; otherwise, do nothing and return false.
 #
 sub conditionally_move_rules( $$ ) {
@@ -1447,7 +1463,7 @@ sub conditionally_move_rules( $$ ) {
 	my $basictarget = $1;
 	my $targetref = $chain_table{$chainref->{table}}{$basictarget};
 	
-	if ( $targetref && ! $targetref->{builtin} ) {
+	if ( $targetref && ! $targetref->{dont_move} ) {
 	    #
 	    # Move is safe -- start with an empty rule list
 	    #
@@ -1537,7 +1553,7 @@ sub optimize_ruleset() {
 			    #
 			    if ( $chainref->{builtin} ) {
 				#
-				# A built-in chain. If the target is a user chain,
+				# A built-in chain. If the target is a user chain without 'dont_move',
 				# we can move its rules to the built-in
 				#
 				if ( conditionally_move_rules $chainref, $1 ) {
@@ -1603,7 +1619,7 @@ sub optimize_ruleset() {
 		    # Last rule is a simple branch
 		    my $targetref = $chain_table{$table}{$1};
 		    
-		    if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_optimize} ) ) {
+		    if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
 			copy_rules( $targetref, $chainref );
 			$progress = 1;
 		    }

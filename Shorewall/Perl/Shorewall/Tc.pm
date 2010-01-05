@@ -1082,6 +1082,8 @@ sub process_tc_priority() {
 
     my $rule = do_helper( $helper ) . "-j MARK --set-mark $band";
 
+    $rule .= join('', '/', in_hex( $globals{TC_MASK} ) ) if $capabilities{EXMARK};
+
     if ( $interface ne '-' ) {
 	fatal_error "Invalid combination of columns" unless $address eq '-' && $proto eq '-' && $ports eq '-';
 

@@ -226,6 +226,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 KLUDGEFREE      => 'Repeat match',
 		 MARK            => 'MARK Target',
 		 XMARK           => 'Extended Mark Target',
+		 EXMARK          => 'Extended Mark Target 2',
 		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
 		 COMMENTS        => 'Comments',
 		 ADDRTYPE        => 'Address Type Match',
@@ -604,6 +605,7 @@ sub initialize( $ ) {
 	       KLUDGEFREE => undef,
 	       MARK => undef,
 	       XMARK => undef,
+	       EXMARK => undef,
 	       MANGLE_FORWARD => undef,
 	       COMMENTS => undef,
 	       ADDRTYPE => undef,
@@ -2068,6 +2070,7 @@ sub determine_capabilities( $ ) {
 	if ( qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" ) ) {
 	    $capabilities{MARK}  = 1;
 	    $capabilities{XMARK} = qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
+	    $capabilities{EXMARK} = qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
 	}
 
 	if ( qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" ) ) {

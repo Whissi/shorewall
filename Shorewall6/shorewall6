@@ -1494,7 +1494,8 @@ fi
 FIREWALL=${VARDIR}/firewall
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 VERSION_FILE=$SHAREDIR/version
-REFRESHCHAINS=
+RRECOVERING=
+export RECOVERING
 
 for library in $LIBRARIES; do
     if [ -f $library ]; then

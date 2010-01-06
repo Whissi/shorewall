@@ -242,7 +242,9 @@ None.
     stop' and 'shorewall save' and they are restored during 'shorewall
     start' and 'shorewall restore'. Note that the contents may only be
     restored during 'restore' if the firewall is currently in the
-    stopped state and there are no ipsets currently in use.
+    stopped state and there are no ipsets currently in use. In
+    particular, when 'restore' is being executed to recover from a
+    failed start/restart, the contents of the ipsets are not changed.
 
     When SAVE_IPSETS=Yes, you may not include ipsets in your
     /etc/shorewall/routestopped configuration.

@@ -43,7 +43,7 @@ use Shorewall::Raw;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.5_1';
+our $VERSION = '4.5_3';
 
 our $export;
 

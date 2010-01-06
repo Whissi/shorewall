@@ -2191,8 +2191,8 @@ EOF
 	        restart)
 	            logger -p kern.err "ERROR:$PRODUCT restart failed"
 	            ;;
-	        restore)
-	            logger -p kern.err "ERROR:$PRODUCT restore failed"
+	        refresh)
+	            logger -p kern.err "ERROR:$PRODUCT refresh failed"
 	            ;;
             esac
 

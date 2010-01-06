@@ -909,7 +909,11 @@ insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
         <listitem>
           <para>The contents of the ipsets are restored during processing of
           the <command>start</command> command in addition to during
-          processing of the <command>restore</command> command.</para>
+          processing of the <command>restore</command> command. When
+          <command>restore</command> is being run when Shorewall is not in the
+          stopped state (such as when it is run to recover from a failed
+          <command>start</command>, <command>restart</command> or
+          <command>refresh</command>) ipsets are not restored.</para>
         </listitem>
 
         <listitem>

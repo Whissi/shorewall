@@ -2221,6 +2221,9 @@ EOF
 
 	        if [ -x $RESTOREPATH ]; then
 		    echo Restoring ${PRODUCT:=Shorewall}...
+                    
+                    RECOVERING=Yes
+                    export RECOVERING
 
 		    if $RESTOREPATH restore; then
 		        echo "$PRODUCT restored from $RESTOREPATH"

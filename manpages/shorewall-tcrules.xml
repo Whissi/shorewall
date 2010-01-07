@@ -54,7 +54,8 @@
         role="bold">COMMENT</emphasis>|<emphasis
         role="bold">IPMARK</emphasis>[([(<emphasis
         role="bold">src</emphasis>|<emphasis
-        role="bold">dst</emphasis>}][,[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][,[<emphasis>shift</emphasis>]]]]])]}[<emphasis
+        role="bold">dst</emphasis>}][,[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][,[<emphasis>shift</emphasis>]]]]])]|<emphasis
+        role="bold">TPROXY</emphasis>(<emphasis>mark</emphasis>[/<emphasis>mask</emphasis>][,[<emphasis>port</emphasis>][,[<emphasis>address</emphasis>]]])<emphasis
         role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
         role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
         role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
@@ -378,6 +379,36 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               chose instent to use IPMARK(src,0xFF,0x10100) as in the example
               above so that all of your <replaceable>minor</replaceable>
               classes will have a value &gt; 256.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">TPROXY</emphasis> - Transparently
+              forwards a packet without altering the IP header. Requires a
+              local provider to be defined in <ulink
+              url="manpages/shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+
+              <para>There are three parameters to TPROXY:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><emphasis>mark</emphasis> - the MARK value
+                  corresponding to the local provider in <ulink
+                  url="manpages/shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis>address</emphasis> - a local (to the
+                  firewall) IP address on which the proxy server is listening.
+                  If omitted, the IP address of the interface on which the
+                  request arrives.</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis>port</emphasis> - the port on which the
+                  proxy server is listening. If omitted, the original
+                  destination port.</para>
+                </listitem>
+              </itemizedlist>
             </listitem>
           </orderedlist>
         </listitem>

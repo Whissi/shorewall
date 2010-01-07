@@ -33,7 +33,7 @@
 #
 
 SHOREWALL_LIBVERSION=40300
-SHOREWALL_CAPVERSION=40407
+SHOREWALL_CAPVERSION=40503
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
@@ -725,6 +725,7 @@ determine_capabilities() {
     MARK=
     XMARK=
     EXMARK=
+    TPROXY=
     MANGLE_FORWARD=
     COMMENTS=
     ADDRTYPE=
@@ -833,6 +834,7 @@ determine_capabilities() {
 
 	qt $IP6TABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
 	qt $IP6TABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
+	qt $IP6TABLES -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY=Yes
 	qt $IP6TABLES -t mangle -F $chain
 	qt $IP6TABLES -t mangle -X $chain
 	qt $IP6TABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
@@ -934,6 +936,7 @@ report_capabilities() {
 	report_capability "Goto Support" $GOTO_TARGET
 	report_capability "IPMARK Target" $IPMARK_TARGET
 	report_capability "LOG Target" $LOG_TARGET
+	report_capability "TPROXY Targt" $TPROXY
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -991,6 +994,7 @@ report_capabilities1() {
     report_capability1 GOTO_TARGET
     report_capability1 IPMARK_TARGET
     report_capability1 LOG_TARGET
+    report_capability1 TPROXY
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION    

@@ -315,6 +315,8 @@ sub process_tc_rule( ) {
 
 			$target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 		    } elsif ( $target eq 'TPROXY ' ) {
+			require_capability( 'TPROXY', 'Use of TPROXY', 's');
+
 			fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
 			
 			$chain = 'tcpre';
@@ -342,8 +344,7 @@ sub process_tc_rule( ) {
 			    $target .= " --on-ip $ip";
 			}
 
-			$target .= ' --tproxy-mark';
-			
+			$target .= ' --tproxy-mark';	
 		    }
 			
 

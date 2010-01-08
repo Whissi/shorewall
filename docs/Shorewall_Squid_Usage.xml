@@ -297,6 +297,9 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
     <ulink
     url="http://wiki.squid-cache.org/Features/Tproxy4">http://wiki.squid-cache.org/Features/Tproxy4</ulink>.</para>
 
+    <para>The following configuration works with Squid running on the firewall
+    itself.</para>
+
     <para><filename>/etc/shorewall/interfaces:</filename></para>
 
     <programlisting>#ZONE        INTERFACE        BROADCAST         OPTIONS
@@ -307,7 +310,7 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
     <programlisting>#NAME   NUMBER   MARK    DUPLICATE  INTERFACE  GATEWAY         OPTIONS               COPY
 Tproxy    1        1        -           lo        -            local</programlisting>
 
-    <para><filename>/etc/shorewall/tcrules</filename> (assume SZ interface is
+    <para><filename>/etc/shorewall/tcrules</filename> (assume Z interface is
     eth1):</para>
 
     <programlisting>MARK            SOURCE      DEST        PROTO      PORT(S)
@@ -316,7 +319,7 @@ TPROXY(1,3128)  eth1        0.0.0.0/0   tcp        80</programlisting>
     <para>/etc/shorewall/rules:</para>
 
     <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
-ACCEPT    Z        SZ     tcp     SP
-ACCEPT    SZ       net    tcp     80</programlisting>
+ACCEPT    Z        $FW    tcp     SP
+ACCEPT    $FW      net    tcp     80</programlisting>
   </section>
 </article>

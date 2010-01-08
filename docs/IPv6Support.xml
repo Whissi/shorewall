@@ -419,6 +419,15 @@ ACCEPT         net                 $FW:&lt;2002:ce7c:92b4::3&gt;     tcp        
           <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
 #                                                                             PORT(S)
 ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                         22</programlisting>
+
+          <para>Beginning with Shorewall 4.4.6 and 4.5.4, square brackets ("["
+          and "]") may also be used.</para>
+
+          <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
+
+          <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
+#                                                                             PORT(S)
+ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                         22</programlisting>
         </listitem>
       </varlistentry>
 

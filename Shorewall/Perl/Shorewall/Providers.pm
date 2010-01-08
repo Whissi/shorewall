@@ -589,7 +589,7 @@ sub add_an_rtrule( ) {
 	} else {
 	    $source = "iif $source";
 	}
-    } elsif ( $source =~  /^(.+?):<(.+)>\s*$/ ) {
+    } elsif ( $source =~  /^(.+?):<(.+)>\s*$/ ||  $source =~  /^(.+?):\[(.+)\]\s*$/ ) {
 	my ($interface, $source ) = ($1, $2);
 	validate_net ($source, 0);
 	$interface = physical_name $interface;

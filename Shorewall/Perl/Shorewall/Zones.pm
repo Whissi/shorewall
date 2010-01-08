@@ -1187,15 +1187,13 @@ sub process_host( ) {
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
+    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>\s*$/ || $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]\s*$/   ) {
+	$interface = $1;
+	$hosts = $2;
+	$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+	fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
     } else {
-	if ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>\s*$/ ) {
-	    $interface = $1;
-	    $hosts = $2;
-	    $zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
-	} else {
-	    fatal_error "Invalid HOST(S) column contents: $hosts";
-	}
+	fatal_error "Invalid HOST(S) column contents: $hosts";
     }
 
     if ( $type == BPORT ) {

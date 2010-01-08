@@ -217,7 +217,7 @@ sub merge_macro_source_dest( $$ ) {
     if ( $invocation ) {
 	if ( $body ) {
 	    return $body if $invocation eq '-';
-	    return "$body:$invocation" if $invocation =~ /.*?\.*?\.|^\+|^!+|^~|^!~|~</;
+	    return "$body:$invocation" if $invocation =~ /.*?\.*?\.|^\+|^!+|^~|^!~|~<|~\[/;
 	    return "$invocation:$body";
 	}
 

@@ -29,8 +29,8 @@
 #   and /usr/share/shorewall-lite/shorecap.
 #
 
-SHOREWALL_LIBVERSION=40000
-SHOREWALL_CAPVERSION=40407
+SHOREWALL_LIBVERSION=40406
+SHOREWALL_CAPVERSION=40406
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -813,7 +813,6 @@ determine_capabilities() {
     KLUDGEFREE=
     MARK=
     XMARK=
-    EXMARK=
     MANGLE_FORWARD=
     COMMENTS=
     ADDRTYPE=
@@ -915,7 +914,6 @@ determine_capabilities() {
 	if qt $IPTABLES -t mangle -A $chain -j MARK --set-mark 1; then
 	    MARK=Yes
 	    qt $IPTABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
-	    qt $IPTABLES -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
 	fi
 
 	if qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark; then
@@ -1013,7 +1011,6 @@ report_capabilities() {
 	report_capability "Repeat match" $KLUDGEFREE
 	report_capability "MARK Target" $MARK
 	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
-	[ -n "$XMARK" ] && report_capability "Extended MARK Target 2" $EXMARK
 	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
 	report_capability "Comments" $COMMENTS
 	report_capability "Address Type Match" $ADDRTYPE
@@ -1073,7 +1070,6 @@ report_capabilities1() {
     report_capability1 KLUDGEFREE
     report_capability1 MARK
     report_capability1 XMARK
-    report_capability1 EXMARK
     report_capability1 MANGLE_FORWARD
     report_capability1 COMMENTS
     report_capability1 ADDRTYPE

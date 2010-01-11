@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_4';
+our $VERSION = '4.4_6';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -58,6 +58,8 @@ our %providers;
 our @providers;
 
 our $family;
+
+our $lastmark;
 
 use constant { ROUTEMARKED_SHARED => 1, ROUTEMARKED_UNSHARED => 2 };
 
@@ -94,7 +96,7 @@ sub initialize( $ ) {
 # Set up marking for 'tracked' interfaces.
 #
 sub setup_route_marking() {
-    my $mask = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
+    my $mask = in_hex( $globals{PROVIDER_MASK} );
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
@@ -112,7 +114,7 @@ sub setup_route_marking() {
 	my $mark      = $providerref->{mark};
 
 	unless ( $marked_interfaces{$interface} ) {
-	    add_rule $mangle_table->{PREROUTING} , "-i $physical -m mark --mark 0/$mask -j routemark";
+	    add_jump $mangle_table->{PREROUTING} , $chainref,  0, "-i $physical -m mark --mark 0/$mask ";
 	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "! -i $physical -m mark --mark  $mark/$mask ";
 	    add_jump $mangle_table->{OUTPUT}     , $chainref2, 0, "-m mark --mark  $mark/$mask ";
 	    $marked_interfaces{$interface} = 1;
@@ -293,34 +295,6 @@ sub add_a_provider( ) {
 	$gateway = '';
     }
 
-    my $val = 0;
-    my $pref;
-
-    if ( $mark ne '-' ) {
-
-	$val = numeric_value $mark;
-
-	fatal_error "Invalid Mark Value ($mark)" unless defined $val;
-
-	verify_mark $mark;
-
-	if ( $val < 65535 ) {
-	    if ( $config{HIGH_ROUTE_MARKS} ) {
-		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=Yes" if $config{WIDE_TC_MARKS};
-		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes" if $val < 256;
-	    }
-	} else {
-	    fatal_error "Invalid Mark Value ($mark)" unless $config{HIGH_ROUTE_MARKS} && $config{WIDE_TC_MARKS};
-	}
-
-	for my $providerref ( values %providers  ) {
-	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
-	}
-
-	$pref = 10000 + $number - 1;
-
-    }
-
     my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu ) = 
 	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), '' );
 
@@ -367,6 +341,33 @@ sub add_a_provider( ) {
 		fatal_error "Invalid option ($option)";
 	    }
 	}
+    }
+
+    my $val = 0;
+    my $pref;
+
+    $mark = ( $lastmark += ( 1 << $config{PROVIDER_OFFSET} ) ) if $mark eq '-' && $track;
+
+    if ( $mark ne '-' ) {
+
+	$val = numeric_value $mark;
+
+	fatal_error "Invalid Mark Value ($mark)" unless defined $val && $val;
+
+	verify_mark $mark;
+
+	fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
+
+	fatal_error "Provider MARK may not be specified when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
+
+	for my $providerref ( values %providers  ) {
+	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
+	}
+
+	$pref = 10000 + $number - 1;
+
+	$lastmark = $val;
+
     }
 
     unless ( $loose ) {
@@ -737,12 +738,14 @@ sub finish_providers() {
 sub setup_providers() {
     my $providers = 0;
 
+    $lastmark = 0;
+
     my $fn = open_file 'providers';
 
     first_entry sub() {
+	progress_message2 "$doing $fn...";
 	emit "\nif [ -z \"\$NOROUTES\" ]; then";
 	push_indent;
-	progress_message2 "$doing $fn...";
 	start_providers; };
 
     add_a_provider, $providers++ while read_a_line;
@@ -767,7 +770,7 @@ sub setup_providers() {
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
 	#
-	# This completes the if block begun in the first_entry closure
+	# This completes the if-block begun in the first_entry closure above
 	#
 	pop_indent;
 	emit "fi\n";
@@ -869,7 +872,7 @@ sub handle_optional_interfaces() {
 #
 sub handle_stickiness( $ ) {
     my $havesticky   = shift;
-    my $mask         = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '0xFF0000' : '0xFF00' : '0xFF';
+    my $mask         = in_hex( $globals{PROVIDER_MASK} );
     my $setstickyref = $mangle_table->{setsticky};
     my $setstickoref = $mangle_table->{setsticko};
     my $tcpreref     = $mangle_table->{tcpre};

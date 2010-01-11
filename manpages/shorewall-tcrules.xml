@@ -16,7 +16,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/rules</command>
+      <command>/etc/shorewall/tcrules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -140,25 +140,10 @@
                 </varlistentry>
               </variablelist>
 
-              <para><emphasis role="bold">Special considerations for If
-              HIGH_ROUTE_MARKS=Yes in <ulink
-              url="shorewall.conf.html">shorewall.conf</ulink>(5</emphasis>).</para>
-
-              <para>If HIGH_ROUTE_MARKS=Yes, then you may also specify a value
-              in the range 0x0100-0xFF00 with the low-order byte being zero.
-              Such values may only be used in the PREROUTING chain (value
-              followed by <emphasis role="bold">:P</emphasis> or you have set
-              MARK_IN_FORWARD_CHAIN=No in <ulink
-              url="shorewall.conf.html">shorewall.conf</ulink>(5) and have not
-              followed the value with <option>:F</option>) or the OUTPUT chain
-              (SOURCE is <emphasis role="bold">$FW</emphasis>). With
-              HIGH_ROUTE_MARKS=Yes, non-zero mark values less that 256 are not
-              permitted. Shorewall prohibits non-zero mark values less that
-              256 in the OUTPUT chain when HIGH_ROUTE_MARKS=Yes. While earlier
-              versions allow such values in the OUTPUT chain, it is strongly
-              recommended that with HIGH_ROUTE_MARKS=Yes, you use the
-              POSTROUTING chain to apply traffic shaping
-              marks/classification.</para>
+              <para>When marking in the prerouting chain, the
+              <emphasis>value</emphasis> must fall within the proper range for
+              provider marks. See PROVIDER_OFFSET and PROVIDER_BITS in <ulink
+              url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
             </listitem>
 
             <listitem>

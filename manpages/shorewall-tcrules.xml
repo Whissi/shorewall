@@ -198,51 +198,51 @@
             <listitem>
               <para><emphasis
               role="bold">RESTORE</emphasis>[/<emphasis>mask</emphasis>][:{<emphasis
-              role="bold">P</emphasis>|<emphasis
-              role="bold">F</emphasis>}]</para>
+              role="bold">P</emphasis>|<emphasis role="bold">F|<emphasis
+              role="bold">T</emphasis></emphasis>}]</para>
 
               <para>Restore the packet's mark from the connection's mark using
               the supplied mask if any. Your kernel and iptables must include
               CONNMARK support.</para>
 
               <para>As in 1) above, may be followed by <emphasis
-              role="bold">:P</emphasis> or <emphasis
-              role="bold">:F</emphasis></para>
+              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
+              or <emphasis role="bold">:T</emphasis>.</para>
             </listitem>
 
             <listitem>
               <para><emphasis
               role="bold">SAVE</emphasis>[/<emphasis>mask</emphasis>][:{<emphasis
               role="bold">P</emphasis>|<emphasis
-              role="bold">F</emphasis>}]</para>
+              role="bold">F</emphasis>|<emphasis
+              role="bold">T</emphasis>}]</para>
 
               <para>Save the packet's mark to the connection's mark using the
               supplied mask if any. Your kernel and iptables must include
               CONNMARK support.</para>
 
               <para>As in 1) above, may be followed by <emphasis
-              role="bold">:P</emphasis> or <emphasis
-              role="bold">:F</emphasis></para>
+              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
+              or <emphasis role="bold">:T</emphasis>.</para>
             </listitem>
 
             <listitem>
               <para><emphasis role="bold">CONTINUE[:{<emphasis
-              role="bold">P</emphasis>|<emphasis
-              role="bold">F</emphasis>}]</emphasis></para>
+              role="bold">P</emphasis>|<emphasis role="bold">F|<emphasis
+              role="bold">T</emphasis></emphasis>}]</emphasis></para>
 
               <para>Don't process any more marking rules in the table.</para>
 
               <para>As in 1) above, may be followed by <emphasis
-              role="bold">:P</emphasis> or <emphasis
-              role="bold">:F</emphasis>. Currently, CONTINUE may not be used
-              with <emphasis>exclusion</emphasis> (see the SOURCE and DEST
-              columns below); that restriction will be removed when
+              role="bold">:P</emphasis>,<emphasis role="bold"> :F</emphasis>,
+              or <emphasis role="bold">:T</emphasis>. Currently, CONTINUE may
+              not be used with <emphasis>exclusion</emphasis> (see the SOURCE
+              and DEST columns below); that restriction will be removed when
               iptables/Netfilter provides the necessary support.</para>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">SAME[:<emphasis
-              role="bold">P</emphasis>]</emphasis></para>
+              <para><emphasis role="bold">SAME</emphasis></para>
 
               <para>Some websites run applications that require multiple
               connections from a client browser. Where multiple 'balanced'

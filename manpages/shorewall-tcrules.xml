@@ -43,31 +43,21 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">MARK/CLASSIFY</emphasis> -
-        {<emphasis>value</emphasis>|<emphasis>major</emphasis><emphasis
-        role="bold">:</emphasis><emphasis>minor</emphasis>|<emphasis
-        role="bold">RESTORE</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">SAVE</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>|<emphasis
-        role="bold">SAME</emphasis>|<emphasis
-        role="bold">COMMENT</emphasis>|<emphasis
-        role="bold">IPMARK</emphasis>[([(<emphasis
-        role="bold">src</emphasis>|<emphasis
-        role="bold">dst</emphasis>}][,[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][,[<emphasis>shift</emphasis>]]]]])]|<emphasis
-        role="bold">TPROXY</emphasis>(<emphasis>mark</emphasis>[/<emphasis>mask</emphasis>][,[<emphasis>port</emphasis>][,[<emphasis>address</emphasis>]]])<emphasis
-        role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
-        role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
-        role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
+        <emphasis>mark</emphasis><emphasis role="bold">[:</emphasis>{<emphasis
+        role="bold">C</emphasis>|<emphasis role="bold">F</emphasis>|<emphasis
+        role="bold">P</emphasis>|<emphasis role="bold">T</emphasis>|<emphasis
+        role="bold">CF</emphasis>|<emphasis
         role="bold">CP</emphasis>|<emphasis role="bold">CT</emphasis>}]</term>
 
         <listitem>
-          <para>May assume one of the following values.</para>
+          <para>Where mark is one of the following:</para>
 
           <orderedlist numeration="arabic">
             <listitem>
-              <para>A mark <emphasis>value</emphasis> which is an integer in
-              the range 1-255.</para>
+              <para><emphasis>value</emphasis></para>
+
+              <para>A mark <emphasis>value</emphasis> is an integer, expressed
+              either in decimal or in hex.</para>
 
               <para>Normally will set the mark value. If preceded by a
               vertical bar ("|"), the mark value will be logically ORed with
@@ -110,7 +100,7 @@
               <para>The mark value may be optionally followed by "/" and a
               mask value (used to determine those bits of the connection mark
               to actually be set). The mark and optional mask are then
-              followed by one of:+</para>
+              followed by one of:</para>
 
               <variablelist>
                 <varlistentry>
@@ -169,7 +159,9 @@
             </listitem>
 
             <listitem>
-              <para>A classification Id (classid) of the form
+              <para><emphasis>major</emphasis>:<emphasis>minor</emphasis></para>
+
+              <para>A classification Id (classid) takes the form
               <emphasis>major</emphasis>:<emphasis>minor</emphasis> where
               <emphasis>major</emphasis> and <emphasis>minor</emphasis> are
               integers. Corresponds to the 'class' specification in these
@@ -237,15 +229,17 @@
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">SAME</emphasis> Some websites run
-              applications that require multiple connections from a client
-              browser. Where multiple 'balanced' providers are configured,
-              this can lead to problems when some of the connections are
-              routed through one provider and some through another. The SAME
-              target allows you to work around that problem. SAME may be used
-              in the PREROUTING and OUTPUT chains. When used in PREROUTING, it
-              causes matching connections from an individual local system to
-              all use the same provider. For example: <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
+              <para><emphasis role="bold">SAME</emphasis></para>
+
+              <para>Some websites run applications that require multiple
+              connections from a client browser. Where multiple 'balanced'
+              providers are configured, this can lead to problems when some of
+              the connections are routed through one provider and some through
+              another. The SAME target allows you to work around that problem.
+              SAME may be used in the PREROUTING and OUTPUT chains. When used
+              in PREROUTING, it causes matching connections from an individual
+              local system to all use the same provider. For example:
+              <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
 #CLASSIFY                                                PORT(S)
 SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
               If a host in 192.168.1.0/24 attempts a connection on TCP port 80
@@ -267,22 +261,26 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">COMMENT</emphasis> -- the rest of
-              the line will be attached as a comment to the Netfilter rule(s)
-              generated by the following entries. The comment will appear
-              delimited by "/* ... */" in the output of <command>shorewall
-              show mangle</command></para>
+              <para><emphasis role="bold">COMMENT</emphasis></para>
+
+              <para>The rest of the line will be attached as a comment to the
+              Netfilter rule(s) generated by the following entries. The
+              comment will appear delimited by "/* ... */" in the output of
+              <command>shorewall show mangle</command></para>
 
               <para>To stop the comment from being attached to further rules,
               simply include COMMENT on a line by itself.</para>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">IPMARK</emphasis> ‒ Assigns a mark
-              to each matching packet based on the either the source or
-              destination IP address. By default, it assigns a mark value
-              equal to the low-order 8 bits of the source address. Default
-              values are:</para>
+              <para><emphasis role="bold">IPMARK</emphasis>[([(<emphasis
+              role="bold">src</emphasis>|<emphasis
+              role="bold">dst</emphasis>}][,[<emphasis>mask1</emphasis>][,[<emphasis>mask2</emphasis>][,[<emphasis>shift</emphasis>]]]]])]</para>
+
+              <para>Assigns a mark to each matching packet based on the either
+              the source or destination IP address. By default, it assigns a
+              mark value equal to the low-order 8 bits of the source address.
+              Default values are:</para>
 
               <simplelist>
                 <member>src</member>
@@ -382,9 +380,11 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">TPROXY</emphasis> - Transparently
-              redirects a packet without altering the IP header. Requires a
-              local provider to be defined in <ulink
+              <para><emphasis
+              role="bold">TPROXY</emphasis>(<emphasis>mark</emphasis>[/<emphasis>mask</emphasis>][,[<emphasis>port</emphasis>][,[<emphasis>address</emphasis>]]])</para>
+
+              <para>Transparently redirects a packet without altering the IP
+              header. Requires a local provider to be defined in <ulink
               url="manpages/shorewall-providers.html">shorewall-providers</ulink>(5).</para>
 
               <para>There are three parameters to TPROXY - only the first

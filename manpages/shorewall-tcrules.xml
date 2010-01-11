@@ -88,10 +88,11 @@
               role="bold">$FW</emphasis>[<emphasis
               role="bold">:</emphasis><emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...],
               then the rule is inserted into the OUTPUT chain. When
-              PROVIDER_OFFSET &gt; 0, only provider mark values may be
-              assigned there. Packet marking rules for traffic shaping of
-              packets originating on the firewall must be coded in the
-              POSTROUTING chain (see below).</para>
+              HIGH_ROUTE_MARKS=Yes (PROVIDER_OFFSET &gt; 0 in 4.5.0 and
+              later), only provider mark values may be assigned there. Packet
+              marking rules for traffic shaping of packets originating on the
+              firewall must be coded in the POSTROUTING chain (see
+              below).</para>
 
               <para>- Otherwise, the chain is determined by the setting of
               MARK_IN_FORWARD_CHAIN in <ulink

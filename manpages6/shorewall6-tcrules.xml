@@ -16,7 +16,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall6/rules</command>
+      <command>/etc/shorewall6/tcrules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -43,26 +43,24 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">MARK/CLASSIFY</emphasis> -
-        {<emphasis>value</emphasis>|<emphasis>major</emphasis><emphasis
-        role="bold">:</emphasis><emphasis>minor</emphasis>|<emphasis
-        role="bold">RESTORE</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">SAVE</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>|<emphasis
-        role="bold">COMMENT</emphasis>}[<emphasis
-        role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
-        role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
-        role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
-        role="bold">CP</emphasis>|<emphasis role="bold">CT</emphasis>}]</term>
+        <emphasis>mark</emphasis></term>
 
         <listitem>
-          <para>May assume one of the following values.</para>
+          <para>Where mark is one of the following:</para>
 
           <orderedlist numeration="arabic">
             <listitem>
-              <para>A mark <emphasis>value</emphasis> which is an integer in
-              the range 1-255.</para>
+              <para><emphasis>value</emphasis>[:{<emphasis
+              role="bold">C</emphasis>|<emphasis
+              role="bold">F</emphasis>|<emphasis
+              role="bold">P</emphasis>|<emphasis
+              role="bold">T</emphasis>|<emphasis
+              role="bold">CF</emphasis>|<emphasis
+              role="bold">CP</emphasis>|<emphasis
+              role="bold">CT</emphasis>}]</para>
+
+              <para>]A mark <emphasis>value</emphasis> is an integer,
+              expressed either in decimal or in hex.</para>
 
               <para>Normally will set the mark value. If preceded by a
               vertical bar ("|"), the mark value will be logically ORed with
@@ -89,11 +87,11 @@
               <para>- If the SOURCE is <emphasis
               role="bold">$FW</emphasis>[<emphasis
               role="bold">:</emphasis><emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...],
-              then the rule is inserted into the OUTPUT chain. The behavior
-              changed in Shorewall6-perl 4.1. Only high mark values may be
-              assigned in this case. Packet marking rules for traffic shaping
-              of packets originating on the firewall must be coded in the
-              POSTROUTING chain (see below).</para>
+              then the rule is inserted into the OUTPUT chain. When
+              PROVIDER_OFFSET&gt; 0, only provider mark values may be assigned
+              there. Packet marking rules for traffic shaping of packets
+              originating on the firewall must be coded in the POSTROUTING
+              chain (see below).</para>
 
               <para>- Otherwise, the chain is determined by the setting of
               MARK_IN_FORWARD_CHAIN in <ulink
@@ -105,7 +103,7 @@
               <para>The mark value may be optionally followed by "/" and a
               mask value (used to determine those bits of the connection mark
               to actually be set). The mark and optional mask are then
-              followed by one of:+</para>
+              followed by one of:</para>
 
               <variablelist>
                 <varlistentry>
@@ -137,34 +135,21 @@
                   <term>CT</term>
 
                   <listitem>
-                    <para>Mark the connecdtion in the POSTROUTING chain</para>
+                    <para>Mark the connection in the POSTROUTING chain</para>
                   </listitem>
                 </varlistentry>
               </variablelist>
 
-              <para><emphasis role="bold">Special considerations for If
-              HIGH_ROUTE_MARKS=Yes in <ulink
-              url="shorewall6.conf.html">shorewall6.conf</ulink>(5</emphasis>).</para>
-
-              <para>If HIGH_ROUTE_MARKS=Yes, then you may also specify a value
-              in the range 0x0100-0xFF00 with the low-order byte being zero.
-              Such values may only be used in the PREROUTING chain (value
-              followed by <emphasis role="bold">:P</emphasis> or you have set
-              MARK_IN_FORWARD_CHAIN=No in <ulink
-              url="shorewall6.conf.html">shorewall6.conf</ulink>(5) and have
-              not followed the value with <option>:F</option>) or the OUTPUT
-              chain (SOURCE is <emphasis role="bold">$FW</emphasis>). With
-              HIGH_ROUTE_MARKS=Yes, non-zero mark values less that 256 are not
-              permitted. Shorewall6 prohibits non-zero mark values less that
-              256 in the OUTPUT chain when HIGH_ROUTE_MARKS=Yes. While earlier
-              versions allow such values in the OUTPUT chain, it is strongly
-              recommended that with HIGH_ROUTE_MARKS=Yes, you use the
-              POSTROUTING chain to apply traffic shaping
-              marks/classification.</para>
+              <para>When marking in the prerouting chain, the
+              <emphasis>value</emphasis> must fall within the proper range for
+              provider marks. See PROVIDER_OFFSET and PROVIDER_BITS in <ulink
+              url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
             </listitem>
 
             <listitem>
-              <para>A classification Id (classid) of the form
+              <para><emphasis>major</emphasis>:<emphasis>minor</emphasis></para>
+
+              <para>A classification Id (classid) takes the form
               <emphasis>major</emphasis>:<emphasis>minor</emphasis> where
               <emphasis>major</emphasis> and <emphasis>minor</emphasis> are
               integers. Corresponds to the 'class' specification in these
@@ -197,43 +182,54 @@
 
             <listitem>
               <para><emphasis
-              role="bold">RESTORE</emphasis>[/<emphasis>mask</emphasis>] --
-              restore the packet's mark from the connection's mark using the
-              supplied mask if any. Your kernel and ip6tables must include
+              role="bold">RESTORE</emphasis>[/<emphasis>mask</emphasis>][:{<emphasis
+              role="bold">P</emphasis>|<emphasis role="bold">F|<emphasis
+              role="bold">T</emphasis></emphasis>}]</para>
+
+              <para>Restore the packet's mark from the connection's mark using
+              the supplied mask if any. Your kernel and ip6tables must include
               CONNMARK support.</para>
 
               <para>As in 1) above, may be followed by <emphasis
-              role="bold">:P</emphasis> or <emphasis
-              role="bold">:F</emphasis></para>
+              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
+              or <emphasis role="bold">:T</emphasis>.</para>
             </listitem>
 
             <listitem>
               <para><emphasis
-              role="bold">SAVE</emphasis>[/<emphasis>mask</emphasis>] -- save
-              the packet's mark to the connection's mark using the supplied
-              mask if any. Your kernel and ip6tables must include CONNMARK
-              support.</para>
+              role="bold">SAVE</emphasis>[/<emphasis>mask</emphasis>][:{<emphasis
+              role="bold">P</emphasis>|<emphasis
+              role="bold">F</emphasis>|<emphasis
+              role="bold">T</emphasis>}]</para>
+
+              <para>Save the packet's mark to the connection's mark using the
+              supplied mask if any. Your kernel and ip6tables must include
+              CONNMARK support.</para>
 
               <para>As in 1) above, may be followed by <emphasis
-              role="bold">:P</emphasis> or <emphasis
-              role="bold">:F</emphasis></para>
+              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
+              or <emphasis role="bold">:T</emphasis>.</para>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">CONTINUE</emphasis> Don't process
-              any more marking rules in the table.</para>
+              <para><emphasis role="bold">CONTINUE[:{<emphasis
+              role="bold">P</emphasis>|<emphasis role="bold">F|<emphasis
+              role="bold">T</emphasis></emphasis>}]</emphasis></para>
+
+              <para>Don't process any more marking rules in the table.</para>
 
               <para>As in 1) above, may be followed by <emphasis
-              role="bold">:P</emphasis> or <emphasis
-              role="bold">:F</emphasis>. Currently, CONTINUE may not be used
-              with <emphasis>exclusion</emphasis> (see the SOURCE and DEST
-              columns below); that restriction will be removed when
+              role="bold">:P</emphasis>,<emphasis role="bold"> :F</emphasis>,
+              or <emphasis role="bold">:T</emphasis>. Currently, CONTINUE may
+              not be used with <emphasis>exclusion</emphasis> (see the SOURCE
+              and DEST columns below); that restriction will be removed when
               ip6tables/Netfilter provides the necessary support.</para>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">SAME</emphasis> (Added in Shorewall
-              4.3.5) -- Some websites run applications that require multiple
+              <para><emphasis role="bold">SAME</emphasis></para>
+
+              <para>Some websites run applications that require multiple
               connections from a client browser. Where multiple 'balanced'
               providers are configured, this can lead to problems when some of
               the connections are routed through one provider and some through
@@ -241,9 +237,9 @@
               SAME may be used in the PREROUTING and OUTPUT chains. When used
               in PREROUTING, it causes matching connections from an individual
               local system to all use the same provider. For example:
-              <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
-#CLASSIFY                                                PORT(S)
-SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
+              <programlisting>#MARK/            SOURCE                 DEST         PROTO      DEST
+#CLASSIFY                                                        PORT(S)
+SAME:P            2002:ce7c:92b4::1/64   ::           tcp        80,443</programlisting>
               If a host in 192.168.1.0/24 attempts a connection on TCP port 80
               or 443 and it has sent a packet on either of those ports in the
               last five minutes then the new connection will use the same
@@ -254,7 +250,7 @@ SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
               connections to an individual remote system to all use the same
               provider. For example:<programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
 #CLASSIFY                                                PORT(S)
-SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
+SAME              $FW            ::           tcp        80,443</programlisting>
               If the firewall attempts a connection on TCP port 80 or 443 and
               it has sent a packet on either of those ports in the last five
               minutes to the same remote system then the new connection will
@@ -263,14 +259,48 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">COMMENT</emphasis> -- the rest of
-              the line will be attached as a comment to the Netfilter rule(s)
-              generated by the following entries. The comment will appear
-              delimited by "/* ... */" in the output of <command>shorewall6
-              show mangle</command></para>
+              <para><emphasis role="bold">COMMENT</emphasis></para>
+
+              <para>The rest of the line will be attached as a comment to the
+              Netfilter rule(s) generated by the following entries. The
+              comment will appear delimited by "/* ... */" in the output of
+              <command>shorewall6 show mangle</command></para>
 
               <para>To stop the comment from being attached to further rules,
               simply include COMMENT on a line by itself.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis
+              role="bold">TPROXY</emphasis>(<emphasis>mark</emphasis>[/<emphasis>mask</emphasis>][,[<emphasis>port</emphasis>][,[<emphasis>address</emphasis>]]])</para>
+
+              <para>Transparently redirects a packet without altering the IP
+              header. Requires a local provider to be defined in <ulink
+              url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
+
+              <para>There are three parameters to TPROXY - only the first
+              (<emphasis>mark</emphasis>) is required:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><emphasis>mark</emphasis> - the MARK value
+                  corresponding to the local provider in <ulink
+                  url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis>port</emphasis> - the port on which the
+                  proxy server is listening. If omitted, the original
+                  destination port.</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis>address</emphasis> - a local (to the
+                  firewall) IP address on which the proxy server is listening.
+                  If omitted, the IP address of the interface on which the
+                  request arrives.</para>
+                </listitem>
+              </itemizedlist>
             </listitem>
           </orderedlist>
         </listitem>
@@ -280,35 +310,47 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
         <term><emphasis role="bold">SOURCE</emphasis> - {<emphasis
         role="bold">-</emphasis>|{<emphasis>interface</emphasis>|<emphasis
         role="bold">$FW</emphasis>}|[{<emphasis>interface</emphasis>|<emphasis
-        role="bold">$FW</emphasis>}:]&lt;<emphasis>address-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]&gt;</term>
+        role="bold">$FW</emphasis>}:]<emphasis>address-or-range</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
-          <para>Source of the packet. A comma-separated list of interface
-          names, IP addresses, MAC addresses and/or subnets for packets being
-          routed through a common path. List elements may also consist of an
-          interface name followed by ":" and an address (e.g.,
-          eth1:&lt;2002:ce7c:92b4::/48&gt;). For example, all packets for
-          connections masqueraded to eth0 from other interfaces can be matched
-          in a single rule with several alternative SOURCE criteria. However,
-          a connection whose packets gets to eth0 in a different way, e.g.,
-          direct from the firewall itself, needs a different rule.</para>
+          <para>May be:</para>
 
-          <para>Accordingly, use $<emphasis role="bold">FW</emphasis> in its
-          own separate rule for packets originating on the firewall. In such a
-          rule, the MARK column may NOT specify either <emphasis
-          role="bold">:P</emphasis> or <emphasis role="bold">:F</emphasis>
-          because marking for firewall-originated packets always occurs in the
-          OUTPUT chain.</para>
+          <orderedlist>
+            <listitem>
+              <para>An interface name - matches traffic entering the firewall
+              on the specified interface. May not be used in classify rules or
+              in rules using the :T chain qualifier.</para>
+            </listitem>
+
+            <listitem>
+              <para>A comma-separated list of host or network IP addresses or
+              MAC addresses. <emphasis role="bold">This form will not match
+              traffic that originates on the firewall itself unless either
+              &lt;major&gt;&lt;minor&gt; or the :T chain qualifier is used in
+              the MARK column.</emphasis></para>
+            </listitem>
+
+            <listitem>
+              <para>An interface name followed by a colon (":") followed by a
+              comma-separated list of host or network IP addresses or MAC
+              addresses (e.g., eth1:&lt;2002:ce7c:92b4::/48&gt;). May not be
+              used in classify rules or in rules using the :T chain
+              qualifier.</para>
+            </listitem>
+
+            <listitem>
+              <para>$FW optionally followed by a colon (":") and a
+              comma-separated list of host or network IP addresses. Matches
+              packets originating on the firewall. May not be used with a
+              chain qualifier (:P, :F, etc.) in the MARK column.</para>
+            </listitem>
+          </orderedlist>
 
           <para>MAC addresses must be prefixed with "~" and use "-" as a
           separator.</para>
 
           <para>Example: ~00-A0-C9-15-39-78</para>
-
-          <para>When an interface is not specified, the angled brackets
-          ('&lt;' and '&gt;') surrounding the address(es) may be
-          omitted.</para>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
@@ -318,23 +360,28 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> - {<emphasis
-        role="bold">-</emphasis>|{<emphasis>interface</emphasis>|[<emphasis>interface</emphasis>:]&lt;<emphasis>address-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]&gt;</term>
+        role="bold">-</emphasis>|{<emphasis>interface</emphasis>|[<emphasis>interface</emphasis>:]<emphasis>address-or-range</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
-          <para>Destination of the packet. Comma separated list of IP
-          addresses and/or subnets. If your kernel and ip6tables include
-          iprange match support, IP address ranges are also allowed. List
-          elements may also consist of an interface name followed by ":" and
-          an address (e.g., eth1:&lt;2002:ce7c:92b4::/48&gt;). If the
-          <emphasis role="bold">MARK</emphasis> column specificies a
-          classification of the form
-          <emphasis>major</emphasis>:<emphasis>minor</emphasis> then this
-          column may also contain an interface name.</para>
+          <para>May be:</para>
 
-          <para>When an interface is not specified, the angled brackets
-          ('&lt;' and '&gt;') surrounding the address(es) may be
-          omitted.</para>
+          <orderedlist>
+            <listitem>
+              <para>An interface name. May not be used in the PREROUTING chain
+              (:P in the mark column or no chain qualifier and
+              MARK_IN_FORWARD_CHAIN=No in <ulink
+              url="manpages/shorewall.conf">shorewall.conf</ulink> (5)). The
+              interface name may be optionally followed by a colon (":") and
+              an IP address list.</para>
+            </listitem>
+
+            <listitem>
+              <para>A comma-separated list of host or network IP addresses.
+              The list may include ip address ranges if your kernel and
+              ip6tables include iprange support.</para>
+            </listitem>
+          </orderedlist>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
@@ -400,7 +447,8 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       <varlistentry>
         <term><emphasis role="bold">USER</emphasis> (Optional) - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
-        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>]</term>
+        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
+        role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
 
         <listitem>
           <para>This column may only be non-empty if the SOURCE is the
@@ -437,6 +485,19 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <listitem>
                 <para>program must not be run by a member of the 'kids'
                 group</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>+upnpd</term>
+
+              <listitem>
+                <para>#program named upnpd</para>
+
+                <important>
+                  <para>The ability to specify a program name was removed from
+                  Netfilter in kernel version 2.6.14.</para>
+                </important>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -550,8 +611,8 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <para><emphasis role="bold">O</emphasis> - The original
               direction of the connection.</para>
 
-              <para><emphasis role="bold">R</emphasis> - The opposite
-              direction from the original connection.</para>
+              <para>- The opposite direction from the original
+              connection.</para>
 
               <para><emphasis role="bold">B</emphasis> - The total of both
               directions.</para>
@@ -603,8 +664,8 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
         <term>Example 1:</term>
 
         <listitem>
-          <para>Mark all forwarded ICMP echo traffic with packet mark 1. Mark
-          all forwarded peer to peer traffic with packet mark 4.</para>
+          <para>Mark all ICMP echo traffic with packet mark 1. Mark all peer
+          to peer traffic with packet mark 4.</para>
 
           <para>This is a little more complex than otherwise expected. Since
           the ipp2p module is unable to determine all packets in a connection
@@ -634,7 +695,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall6/tcrules</para>
+    <para>/etc/shorewall/tcrules</para>
   </refsect1>
 
   <refsect1>

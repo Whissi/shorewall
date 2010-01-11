@@ -2523,31 +2523,10 @@ sub get_configuration( $ ) {
 	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 32' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 32;
     }
 
-    $val = 1;
-    
     $globals{TC_MAX}                 = make_mask( $config{TC_BITS} );
     $globals{TC_MASK}                = make_mask( $config{MASK_BITS} );
     $globals{PROVIDER_MIN}           = 1 << $config{PROVIDER_OFFSET};
     $globals{PROVIDER_MASK}          = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
-
-    if ( $config{TC_BITS} || $config{PROVIDER_BITS} ) {
-	progress_message2 "\n   ******** Packet/Connection Mark Information ********";
-	if ( $config{TC_BITS} ) {
-	    progress_message2 "   TC Mark Values       = 1 - $globals{TC_MAX} (" . in_hex( $globals{TC_MAX} ) . ')';
-	}
-
-	progress_message2 '   Default Mask         = /' . in_hex( $globals{TC_MASK} );
-    
-	if ( $config{PROVIDER_BITS} ) {
-	    if ( $config{PROVIDER_OFFSET} ) {
-		progress_message2( '   Provider Mark Values = ' . in_hex( $globals{PROVIDER_MIN} ) . ' - ' . in_hex( $globals{PROVIDER_MASK} ) );
-	    } else {
-		progress_message2( "   Provider Mark Values = 1 - $globals{PROVIDER_MASK} (" . in_hex( $globals{PROVIDER_MASK} ) . ')' );
-	    }
-	}
-    }
-
-    progress_message2 "   ****************************************************\n";
 
     if ( defined ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;

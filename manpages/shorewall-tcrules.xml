@@ -43,21 +43,24 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">MARK/CLASSIFY</emphasis> -
-        <emphasis>mark</emphasis><emphasis role="bold">[:</emphasis>{<emphasis
-        role="bold">C</emphasis>|<emphasis role="bold">F</emphasis>|<emphasis
-        role="bold">P</emphasis>|<emphasis role="bold">T</emphasis>|<emphasis
-        role="bold">CF</emphasis>|<emphasis
-        role="bold">CP</emphasis>|<emphasis role="bold">CT</emphasis>}]</term>
+        <emphasis>mark</emphasis></term>
 
         <listitem>
           <para>Where mark is one of the following:</para>
 
           <orderedlist numeration="arabic">
             <listitem>
-              <para><emphasis>value</emphasis></para>
+              <para><emphasis>value</emphasis>[:{<emphasis
+              role="bold">C</emphasis>|<emphasis
+              role="bold">F</emphasis>|<emphasis
+              role="bold">P</emphasis>|<emphasis
+              role="bold">T</emphasis>|<emphasis
+              role="bold">CF</emphasis>|<emphasis
+              role="bold">CP</emphasis>|<emphasis
+              role="bold">CT</emphasis>}]</para>
 
-              <para>A mark <emphasis>value</emphasis> is an integer, expressed
-              either in decimal or in hex.</para>
+              <para>]A mark <emphasis>value</emphasis> is an integer,
+              expressed either in decimal or in hex.</para>
 
               <para>Normally will set the mark value. If preceded by a
               vertical bar ("|"), the mark value will be logically ORed with
@@ -194,7 +197,9 @@
 
             <listitem>
               <para><emphasis
-              role="bold">RESTORE</emphasis>[/<emphasis>mask</emphasis>]</para>
+              role="bold">RESTORE</emphasis>[/<emphasis>mask</emphasis>][:{<emphasis
+              role="bold">P</emphasis>|<emphasis
+              role="bold">F</emphasis>}]</para>
 
               <para>Restore the packet's mark from the connection's mark using
               the supplied mask if any. Your kernel and iptables must include
@@ -207,7 +212,9 @@
 
             <listitem>
               <para><emphasis
-              role="bold">SAVE</emphasis>[/<emphasis>mask</emphasis>]</para>
+              role="bold">SAVE</emphasis>[/<emphasis>mask</emphasis>][:{<emphasis
+              role="bold">P</emphasis>|<emphasis
+              role="bold">F</emphasis>}]</para>
 
               <para>Save the packet's mark to the connection's mark using the
               supplied mask if any. Your kernel and iptables must include
@@ -219,7 +226,9 @@
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">CONTINUE</emphasis></para>
+              <para><emphasis role="bold">CONTINUE[:{<emphasis
+              role="bold">P</emphasis>|<emphasis
+              role="bold">F</emphasis>}]</emphasis></para>
 
               <para>Don't process any more marking rules in the table.</para>
 
@@ -232,7 +241,8 @@
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">SAME</emphasis></para>
+              <para><emphasis role="bold">SAME[:<emphasis
+              role="bold">P</emphasis>]</emphasis></para>
 
               <para>Some websites run applications that require multiple
               connections from a client browser. Where multiple 'balanced'

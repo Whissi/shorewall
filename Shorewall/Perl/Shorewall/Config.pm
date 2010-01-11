@@ -68,6 +68,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 		                       in_hex8
 		                       in_hexp
 				       emit
+				       emitstd
 				       emit_unindented
 				       save_progress_message
 				       save_progress_message_short
@@ -448,6 +449,13 @@ sub initialize( $ ) {
 	      MACLIST_DISPOSITION => undef,
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
+	      #
+	      # Mark Geometry
+	      #
+	      TC_BITS => undef,
+	      PROVIDER_BITS => undef,
+	      PROVIDER_OFFSET => undef,
+	      MASK_BITS => undef
 	    );
 
 	%validlevels = ( DEBUG   => 7,
@@ -555,6 +563,13 @@ sub initialize( $ ) {
 	      #
 	      TCP_FLAGS_DISPOSITION => undef,
 	      BLACKLIST_DISPOSITION => undef,
+	      #
+	      # Mark Geometry
+	      #
+	      TC_BITS => undef,
+	      PROVIDER_BITS => undef,
+	      PROVIDER_OFFSET => undef,
+	      MASK_BITS => undef
 	    );
 
 	%validlevels = ( DEBUG   => 7,
@@ -843,6 +858,25 @@ sub emit {
 		print $script "\n" unless $lastlineblank;
 		$lastlineblank = 1;
 	    }
+	}
+    }
+}
+
+#
+# Version of emit() that writes to standard out
+#
+sub emitstd {
+    for ( @_ ) {
+	unless ( /^\s*$/ ) {
+	    my $line = $_; # This copy is necessary because the actual arguments are almost always read-only.
+	    $line =~ s/^\n// if $lastlineblank;
+	    $line =~ s/^/$indent/gm if $indent;
+	    $line =~ s/        /\t/gm;
+	    print "$line\n";
+	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
+	} else {
+	    print "\n" unless $lastlineblank;
+	    $lastlineblank = 1;
 	}
     }
 }
@@ -1735,6 +1769,26 @@ sub default_yes_no_ipv4 ( $$ ) {
     warning_message "$var=Yes is ignored for IPv6" if $family == F_IPV6 && $config{$var};
 }
 
+sub numeric_option( $$$ ) {
+    my ( $option, $default, $min ) = @_;
+
+    my $value = $config{$option};
+
+    my $val = $default;
+    
+    if ( defined $value && $value ne '' ) {
+	$val = numeric_value $value;
+	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val <= 32;
+    }
+
+    $val = $min if $val < $min;
+
+    $config{$option} = $val;
+}
+
+sub make_mask( $ ) {
+    0xffffffff >> ( 32 - $_[0] );
+}   
 
 my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
 
@@ -2370,7 +2424,7 @@ sub get_configuration( $ ) {
 
     if ( $family == F_IPV6 ) {
 	$val = $config{ROUTE_FILTER};	
-	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" unless $val eq 'off' || $val eq '';
+	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" if $val && $val ne 'off';
     }
 
     if ( $family == F_IPV4 ) {
@@ -2459,6 +2513,42 @@ sub get_configuration( $ ) {
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
 
+    numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
+    numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
+    numeric_option 'PROVIDER_BITS' ,   8, 0;
+    numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
+    
+    if ( $config{PROVIDER_OFFSET} ) {
+	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
+	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 32' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 32;
+    }
+
+    $val = 1;
+    
+    $globals{TC_MAX}                 = make_mask( $config{TC_BITS} );
+    $globals{TC_MASK}                = make_mask( $config{MASK_BITS} );
+    $globals{PROVIDER_MIN}           = 1 << $config{PROVIDER_OFFSET};
+    $globals{PROVIDER_MASK}          = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
+
+    if ( $config{TC_BITS} || $config{PROVIDER_BITS} ) {
+	progress_message2 "\n   ******** Packet/Connection Mark Information ********";
+	if ( $config{TC_BITS} ) {
+	    progress_message2 "   TC Mark Values       = 1 - $globals{TC_MAX} (" . in_hex( $globals{TC_MAX} ) . ')';
+	}
+
+	progress_message2 '   Default Mask         = /' . in_hex( $globals{TC_MASK} );
+    
+	if ( $config{PROVIDER_BITS} ) {
+	    if ( $config{PROVIDER_OFFSET} ) {
+		progress_message2( '   Provider Mark Values = ' . in_hex( $globals{PROVIDER_MIN} ) . ' - ' . in_hex( $globals{PROVIDER_MASK} ) );
+	    } else {
+		progress_message2( "   Provider Mark Values = 1 - $globals{PROVIDER_MASK} (" . in_hex( $globals{PROVIDER_MASK} ) . ')' );
+	    }
+	}
+    }
+
+    progress_message2 "   ****************************************************\n";
+
     if ( defined ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;
     } else {
@@ -2526,7 +2616,10 @@ sub get_configuration( $ ) {
 	$config{TC_ENABLED} = '';
     }
 
-    fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" if $config{TC_ENABLED} && ! $config{MANGLE_ENABLED};
+    if ( $config{TC_ENABLED} ) {
+	fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
+	require_capability 'MANGLE_ENABLED', "TC_ENABLED=$config{TC_ENABLED}", 's';
+    }
 
     default 'RESTOREFILE'           , 'restore';
     default 'IPSECFILE'             , 'zones';
@@ -2544,10 +2637,9 @@ sub get_configuration( $ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
 
-    $val = $config{OPTIMIZE};
+    $val = numeric_value $config{OPTIMIZE};
 
-    fatal_error "Invalid OPTIMIZE value ($val)" unless ( $val eq '0' ) || ( $val eq '1' );
-
+    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless defined( $val ) && $val >= 0 && $val <= 1;
 
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 

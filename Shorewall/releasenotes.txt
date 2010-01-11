@@ -169,6 +169,11 @@ Shorewall 4.4.6
     now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
     then it may have no additional members in /etc/shorewall/hosts.
 
+13) Prior versions of Shorewall applied PREROUTING marking rules to all
+    packets from 'tracked' provider interfaces when
+    TC_EXPERT=No. Beginning with Shorewall 4.4.6, packets from these
+    interfaces will only have those rules applied when TC_EXPERT=Yes.
+
 ----------------------------------------------------------------------------
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 6
 ----------------------------------------------------------------------------
@@ -181,6 +186,11 @@ Shorewall 4.4.6
     As part of this change, the generated script is more careful about
     verifying the existence of the correct ipset utility before using
     it to save the contents of the sets.
+
+2)  Prior versions of Shorewall incorrectly applied PREROUTING marking
+    rules to all packets from 'tracked' provider interfaces when
+    TC_EXPERT=No. Beginning with Shorewall 4.4.6, packets from these
+    interfaces will only have those rules applied when TC_EXPERT=Yes.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

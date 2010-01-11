@@ -79,48 +79,6 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
-our @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
-		 target    => 'CONNMARK --save-mark --mask' ,
-		 mark      => SMALLMARK ,
-		 mask      => '0xFF' ,
-		 connmark  => 1
-	       } ,
-	      { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
-		target    => 'CONNMARK --restore-mark --mask' ,
-		mark      => SMALLMARK ,
-		mask      => '0xFF' ,
-		connmark  => 1
-		} ,
-	      { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
-		target    => 'RETURN' ,
-		mark      => NOMARK ,
-		mask      => '' ,
-		connmark  => 0
-		} ,
-	      { match     => sub ( $ ) { $_[0] eq 'SAME' },
-		target    => 'sticky' ,
-		mark      => NOMARK ,
-		mask      => '' ,
-		connmark  => 0
-		} ,
-	      { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
-		target    => 'IPMARK' ,
-		mark      => NOMARK,
-		mask      => '',
-		connmark  => 0
-	        } ,
-	      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
-		target    => 'MARK --or-mark' ,
-		mark      => HIGHMARK ,
-		mask      => '' } ,
-	      { match     => sub ( $ ) { $_[0] =~ '&.*' },
-		target    => 'MARK --and-mark ' ,
-		mark      => HIGHMARK ,
-		mask      => '' ,
-		connmark  => 0
-		}
-	      );
-
 our %flow_keys = ( 'src'            => 1,
 		   'dst'            => 1,
 		   'proto'          => 1,
@@ -230,6 +188,8 @@ sub initialize( $ ) {
 sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
 
+    our @tccmd;
+
     if ( $originalmark eq 'COMMENT' ) {
 	process_comment;
 	return;
@@ -265,9 +225,9 @@ sub process_tc_rule( ) {
 		fatal_error "Invalid chain designator for source $fw" unless $tcsref->{fw};
 	    }
 
-	    $chain    = $tcsref->{chain}  if $tcsref->{chain};
-	    $target   = $tcsref->{target} if $tcsref->{target};
-	    $mark     = "$mark/0xFF"      if $connmark = $tcsref->{connmark};
+	    $chain    = $tcsref->{chain}                       if $tcsref->{chain};
+	    $target   = $tcsref->{target}                      if $tcsref->{target};
+	    $mark     = "$mark/" . in_hex( $globals{TC_MASK} ) if $connmark = $tcsref->{connmark};
 
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
@@ -284,8 +244,6 @@ sub process_tc_rule( ) {
 	    $target  = 'CLASSIFY --set-class';
 	}
     }
-
-    my $mask = 0xffff;
 
     my ($cmd, $rest) = split( '/', $mark, 2 );
 
@@ -376,10 +334,10 @@ sub process_tc_rule( ) {
 
 	    validate_mark $mark;
 
-	    if ( $config{HIGH_ROUTE_MARKS} ) {
+	    if ( $config{PROVIDER_OFFSET} ) {
 		my $val = numeric_value( $cmd );
 		fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
-		my $limit = $config{WIDE_TC_MARKS} ? 65535 : 255;
+		my $limit = $globals{TC_MASK};
 		fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
 		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
 	    }
@@ -390,7 +348,7 @@ sub process_tc_rule( ) {
 				     $restrictions{$chain} ,
 				     do_proto( $proto, $ports, $sports) .
 				     do_user( $user ) .
-				     do_test( $testval, $mask ) .
+				     do_test( $testval, $globals{TC_MASK} ) .
 				     do_length( $length ) .
 				     do_tos( $tos ) .
 				     do_connbytes( $connbytes ) .
@@ -648,10 +606,12 @@ sub validate_tc_class( ) {
 	if ( $devref->{classify} ) {
 	    warning_message "INTERFACE $device has the 'classify' option - MARK value ($mark) ignored";
 	} else {
+	    fatal_error "MARK may not be specified when TC_BITS=0" unless $config{TC_BITS};
+
 	    $markval = numeric_value( $mark );
 	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
 
-	    fatal_error "Invalid Mark ($mark)" unless $markval <= ( $config{WIDE_TC_MARKS} ? 0x3fff : 0xff );
+	    fatal_error "Invalid Mark ($mark)" unless $markval <= $globals{TC_MAX};
 
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
@@ -755,7 +715,7 @@ sub validate_tc_class( ) {
 		fatal_error q(The 'occurs' option is only valid for IPv4)           if $family == F_IPV6;
 		fatal_error q(The 'occurs' option may not be used with 'classify')  if $devref->{classify};
 		fatal_error "Invalid 'occurs' ($val)"                               unless defined $occurs && $occurs > 1 && $occurs <= 256;
-		fatal_error "Invalid 'occurs' ($val)"                               if $occurs > ( $config{WIDE_TC_MARKS} ? 8191 : 255 );
+		fatal_error "Invalid 'occurs' ($val)"                               if $occurs > $globals{TC_MAX};
 		fatal_error q(Duplicate 'occurs')                                   if $tcref->{occurs} > 1;
 		fatal_error q(The 'occurs' option is not valid with 'default')      if $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')          if @{$tcref->{tos}};
@@ -1211,7 +1171,7 @@ sub setup_traffic_shaping() {
 #
 sub setup_tc() {
 
-    if ( $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED} ) {
+    if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
 
@@ -1222,21 +1182,15 @@ sub setup_tc() {
 
 	my $mark_part = '';
 
-	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? '-m mark --mark 0/0xFF0000' : '-m mark --mark 0/0xFF00' : '-m mark --mark 0/0xFF';
+	$mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) . ' ' if @routemarked_interfaces && ! $config{TC_EXPERT};
 
-	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
-	    }
-	}
-
-	add_rule $mangle_table->{PREROUTING} , "$mark_part -j tcpre";
-	add_rule $mangle_table->{OUTPUT} ,     "$mark_part -j tcout";
+	add_jump $mangle_table->{PREROUTING} , 'tcpre', 0, $mark_part;
+	add_jump $mangle_table->{OUTPUT} ,     'tcout', 0, $mark_part;
 
 	if ( $capabilities{MANGLE_FORWARD} ) {
-	    add_rule $mangle_table->{FORWARD} ,     '-j MARK --set-mark 0';
-	    add_rule $mangle_table->{FORWARD} ,     '-j tcfor';
-	    add_rule $mangle_table->{POSTROUTING} , '-j tcpost';
+	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' );
+	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
+	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;
 	}
     }
 
@@ -1248,9 +1202,51 @@ sub setup_tc() {
     }
 
     if ( $config{TC_ENABLED} ) {
+	our  @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
+			  target    => 'CONNMARK --save-mark --mask' ,
+			  mark      => SMALLMARK ,
+			  mask      => in_hex( $globals{TC_MASK} ) ,
+			  connmark  => 1
+			} ,
+			{ match     => sub ( $ ) { $_[0] eq 'RESTORE' },
+			  target    => 'CONNMARK --restore-mark --mask' ,
+			  mark      => SMALLMARK ,
+			  mask      => in_hex( $globals{TC_MASK} ) ,
+			  connmark  => 1
+			} ,
+			{ match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
+			  target    => 'RETURN' ,
+			  mark      => NOMARK ,
+			  mask      => '' ,
+			  connmark  => 0
+			} ,
+			{ match     => sub ( $ ) { $_[0] eq 'SAME' },
+			  target    => 'sticky' ,
+			  mark      => NOMARK ,
+			  mask      => '' ,
+			  connmark  => 0
+			} ,
+			{ match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
+			  target    => 'IPMARK' ,
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			} ,
+			{ match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
+			  target    => 'MARK --or-mark' ,
+			  mark      => HIGHMARK ,
+			  mask      => '' } ,
+			{ match     => sub ( $ ) { $_[0] =~ '&.*' },
+			  target    => 'MARK --and-mark ' ,
+			  mark      => HIGHMARK ,
+			  mask      => '' ,
+			  connmark  => 0
+			}
+		      );
+
 	if ( my $fn = open_file 'tcrules' ) {
 
-	    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'MANGLE_ENABLED' , 'a non-empty tcrules file' , 's'; } );
+	    first_entry "$doing $fn...";
 
 	    process_tc_rule while read_a_line;
 

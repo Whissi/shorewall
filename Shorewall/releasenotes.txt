@@ -71,7 +71,9 @@ None.
 	PROVIDER_BITS	  Number of bits reserved for routing
 			  marks. Provider marks must have a value
 			  between 2**PROVIDER_OFFSET and
-			  2**(PROVIDER_OFFSET + PROVIDER_BITS) - 1.
+			  2**(PROVIDER_OFFSET + PROVIDER_BITS) - 1 with
+			  the low-order PROVIDER_OFFSET bits containing
+			  zero.
 
 	MASK_BITS	  Number of 1 bits in the default mask when
 			  specifying a test on the packet or connection
@@ -154,7 +156,35 @@ None.
       chain are now omitted. We refer to this optimization as
       "optimization 2".
 
-    To enable both types of optimization, set OPTIMIZE to 3 (1 + 2).
+    - The next bit (value 4 or "optimization 4") enables the following
+      additional optimizations:
+
+      a) Empty chains are optimized away.
+      b) Chains with one rule are optimized away.
+      c) If a built-in chain has a single rule that branches to a
+         second chain, then the rules from the second chain are moved
+         to the built-in chain and the target chain is omitted.
+      d) Chains with no references are deleted.
+      e) Accounting chains are subject to optimization if the new
+         OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
+      f) If a chain ends with an unconditional branch to a second chain
+         (other than to 'reject'), then the branch is deleted from the
+         first chain and the rules from the second chain are appended
+         to it. 
+
+      The following chains are exempted from optimization 4:
+
+    	  action chains (user-created).
+    	  accounting chains (unless OPTIMIZE_ACCOUNTING=Yes)
+    	  dynamic
+	  forwardUPnP
+	  logdrop
+	  logreject
+	  rules chains (those of the form zonea2zoneb or zonea-zoneb).
+	  UPnP (nat table).
+
+    To enable all possible optimizations, set OPTIMIZE to 7 (1 + 2 +
+    4).
 
 3)  Shorewall now combines identical logging chains. Previously, a
     separate chain was created for each logging rule.
@@ -163,18 +193,18 @@ None.
     setting ACCOUNTING=No in shorewall.conf. This allows you to keep a
     set of accounting rules configured in /etc/shorewall/accounting and
     to then enable and disable them by simply toggling the setting of
-    ACCOUTING.
+    ACCOUNTING.
 
     Similarly, dynamic blacklisting can be disabled by setting
-    DYNAMIC_BLACKLIST=No. This saves a jump rule in filter chains INPUT
-    and FORWARD.
+    DYNAMIC_BLACKLIST=No. This saves a jump rule in the INPUT
+    and FORWARD filter chains..
 
 5)  Shorewall can now automatically assign mark values to providers in
     cases where 'track' is specified (or TRACK_PROVIDERS=Yes) but
     packet marking is otherwise not used for directing connections to a
-    particular provider. Simplly specify '-' in the MARK column and
+    particular provider. Simply specify '-' in the MARK column and
     Shorewall will automatically assign a mark value equal to the last
-    used mark value + 1.
+    used mark value + ( 1 << PROVIDER_OFFSET ).
 
 6)  It is now possible to enable a simplified traffic shaping
     facility by setting TC_ENABLED=Simple in shorewall.conf.
@@ -187,55 +217,23 @@ None.
 
 8)  COMMENT lines are now allowed in /etc/shorewall/tcpri.
 
-9)  An "optimize 4" choice has been added to the OPTIMIZE option. 
-    Optimization 4 the enables the following additional
-    optimizations:
-
-    a) Empty chains are optimized away.
-    b) Chains with one rule are optimized away.
-    c) if a built-in chain has a single rule that branches to a
-       second chain, then the rules from the second chain are moved to
-       the built-in chain and the target chain is omitted.
-    d) Chains with no references are deleted.
-    e) Accounting chains are subject to optimization if the new
-       OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
-    f) If a chain ends with an unconditional branch to a second chain
-       (other than to 'reject'), then the branch is deleted from the
-       first chain and the rules from the second chain are appended to
-       it. 
-
-    The following chains are exempted from optimization:
-
-    	action chains (user-created).
-    	accounting chains (unless OPTIMIZE_ACCOUNTING=Yes)
-    	dynamic
-	forwardUPnP
-	logdrop
-	logreject
-	rules chains (those of the form zonea2zoneb or zonea-zoneb).
-	UPnP (nat table).
-
-    To enable all possible optimizations, set OPTIMIZE to 7 (1 + 2 +
-    4).
-
-10) The PROTO column in /etc/shorewall/tcpri may now contain
+9)  The PROTO column in /etc/shorewall/tcpri may now contain
     'ipp2p'. When such an entry is present and PROVIDER_OFFSET is
     non-zero, Shorewall will automatically generate SAVE/RESTORE rules
     for the POSTROUTING chain.
 
-
-11) Shorewall now throws an error if:
+10) Shorewall now throws an error if:
 
     a) There are tracked providers; and
     b) PROVIDER_OFFSET is 0; and
     c) 'ipp2p' is used as the PROTO in a tcpri entry.
 
-12) You may now preview the generated ruleset by using the '-r' option
+11) You may now preview the generated ruleset by using the '-r' option
     to the 'check' command (e.g., "shorewall check -r").
 
     The output is a shell script fragment, similar to the way it
     appears in the generated script.
 
 
-13) Support for TPROXY has been added. See
+12) Support for TPROXY has been added. See
     http://www.shorewall.net/Shorewall_Squid_Usage.html#TPROXY.

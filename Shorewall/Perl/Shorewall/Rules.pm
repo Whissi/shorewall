@@ -2163,8 +2163,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall( $ ) {
-    my $test = shift;
+sub compile_stop_firewall( $$ ) {
+    my ( $test, $export ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};
@@ -2319,7 +2319,9 @@ EOF
 	    #
 	    # This might be a bridge
 	    #
-	    add_rule $forward, "-p udp " . match_source_dev( $interface ) . match_dest_dev( $interface ) . "--dport $ports -j ACCEPT";
+	    if ( $export || $test || is_bridge( get_physical( $interface ) ) ) {
+		add_rule $forward, "-p udp " . match_source_dev( $interface ) . match_dest_dev( $interface ) . "--dport $ports -j ACCEPT";
+	    }
 	}
     }
 

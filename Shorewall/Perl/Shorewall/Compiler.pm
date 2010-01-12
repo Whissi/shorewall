@@ -857,7 +857,7 @@ sub compiler {
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
 	#
-	compile_stop_firewall( $test );
+	compile_stop_firewall( $test, $export );
 	#
 	# Copy the footer to the script
 	#

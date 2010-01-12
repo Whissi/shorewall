@@ -2877,7 +2877,7 @@ sub generate_aux_config() {
 sub is_bridge( $ ) {
     my $dev = $_[0];
 
-    qt1( qq(brctl show $dev | tail -n +2 | grep -q "^$dev\b") );
+    which 'brctl' and qt1( qq(brctl show $dev | tail -n +2 | grep -q "^$dev\b") );
 }
 
 END {

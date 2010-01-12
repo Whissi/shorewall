@@ -151,8 +151,13 @@
       </listitem>
 
       <listitem>
-        <para>Allow UDP ports 67 and 68 ("67:68") from the client zone to the
-        server zone.</para>
+        <para>Allow UDP ports 67 and 68 ("67:68") between the client zone and
+        the server zone:</para>
+
+        <programlisting>#ACTION        SOURCE        DEST        PROTO       DEST
+#                                                    PORT(S)
+ACCEPT         ZONEA         ZONEB       udp         67:68
+ACCEPT         ZONEB         ZONEA       udp         67:68</programlisting>
       </listitem>
 
       <listitem>

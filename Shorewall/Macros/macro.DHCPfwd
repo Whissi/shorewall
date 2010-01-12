@@ -1,0 +1,12 @@
+#
+# Shorewall version 4 - DHCPfwd Macro
+#
+# /usr/share/shorewall/macro.DHCPfwd
+#
+#	This macro (bidirectional) handles forwarded DHCP traffic
+#
+###############################################################################
+#ACTION SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
+#				PORT(S) PORT(S) LIMIT	GROUP
+PARAM	-	-	udp	67:68	67:68	# DHCP
+PARAM	DEST	SOURCE	udp	67:68	67:68	# DHCP

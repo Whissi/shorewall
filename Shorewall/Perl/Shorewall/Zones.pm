@@ -727,8 +727,8 @@ sub firewall_zone() {
 #
 # Process a record in the interfaces file
 #
-sub process_interface( $ ) {
-    my $nextinum = $_[0];
+sub process_interface( $$ ) {
+    my ( $nextinum , $export ) = @_;
     my $netsref = '';
     my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file';
     my $zoneref;
@@ -930,6 +930,12 @@ sub process_interface( $ ) {
 	$hostoptionsref = \%hostoptions;
 
     }
+    #
+    # Automatically set 'routeback' for local bridges
+    #
+    unless ( $export || $options{routeback} ) {
+	$options{routeback} = $hostoptionsref->{routeback} = is_bridge $physical;
+    }
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
 						       bridge     => $bridge ,
@@ -971,7 +977,7 @@ sub validate_interfaces_file( $ ) {
 
     first_entry "$doing $fn...";
 
-    push @ifaces, process_interface( $nextinum++) while read_a_line;
+    push @ifaces, process_interface( $nextinum++, $export ) while read_a_line;
 
     #
     # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge

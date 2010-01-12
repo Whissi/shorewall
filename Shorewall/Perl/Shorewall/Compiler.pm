@@ -869,19 +869,6 @@ sub compiler {
     } else {
 	if ( $preview ) {
 	    generate_matrix;
-
-	    if ( $config{OPTIMIZE} & 6 ) {
-		progress_message2 'Optimizing Ruleset...';
-		#
-		# Optimize Policy Chains
-		#
-		optimize_policy_chains if $config{OPTIMIZE} & 2;
-		#
-		# More Optimization
-		#
-		optimize_ruleset if $config{OPTIMIZE} & 4;
-	    }
-
 	    preview_netfilter_load;
 	}
 	#

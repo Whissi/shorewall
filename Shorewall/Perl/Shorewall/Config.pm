@@ -108,6 +108,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
+				       is_bridge
 
 				       $product
 				       $Product
@@ -2871,6 +2872,12 @@ sub generate_aux_config() {
 
     finalize_aux_config;
 
+}
+
+sub is_bridge( $ ) {
+    my $dev = $_[0];
+
+    qt1( qq(brctl show $dev | tail -n +2 | grep -q "^$dev\b") );
 }
 
 END {

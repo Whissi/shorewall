@@ -279,6 +279,7 @@ compiler() {
     [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
     [ -n "$TIMESTAMP" ] && options="$options --timestamp"
     [ -n "$TEST" ] && options="$options --test"
+    [ -n "$PREVIEW" ] && options="$options --preview"
     [ "$debugging" = trace ] && options="$options --debug"
     [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
     [ -x $pc ] || startup_error "Shorewall6 requires the shorewall package which is not installed"
@@ -551,6 +552,10 @@ check_command() {
 			p*)
 			    PROFILE=Yes
 			    option=${option#p}
+			    ;;
+			r*)
+			    PREVIEW=Yes;
+			    option=${option#r}
 			    ;;
 			d*)
 			    DEBUG=Yes;
@@ -1267,7 +1272,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ <directory> ]"
+    echo "   check [ -e ] [ -r ] [ <directory> ]"
     echo "   clear [ -f ]"
     echo "   compile [ -e ] [ -d ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"

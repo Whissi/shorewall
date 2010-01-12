@@ -362,6 +362,7 @@ compiler() {
     [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
     [ -n "$TIMESTAMP" ] && options="$options --timestamp"
     [ -n "$TEST" ] && options="$options --test"
+    [ -n "$PREVIEW" ] && options="$options --preview"
     [ "$debugging" = trace ] && options="$options --debug"
     [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
     #
@@ -641,6 +642,10 @@ check_command() {
 			d*)
 			    DEBUG=Yes;
 			    option=${option#d}
+			    ;;
+			r*)
+			    PREVIEW=Yes;
+			    option=${option#r}
 			    ;;
 			*)
 			    usage 1
@@ -1351,7 +1356,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ <directory> ]"
+    echo "   check [ -e ] [ -r ] [ <directory> ]"
     echo "   clear [ -f ]"
     echo "   compile [ -e ] [ -d ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"

@@ -933,7 +933,7 @@ sub process_interface( $$ ) {
     #
     # Automatically set 'routeback' for local bridges
     #
-    unless ( $export || $options{routeback} ) {
+    unless ( $export || $wildcard || $options{routeback} ) {
 	$options{routeback} = $hostoptionsref->{routeback} = is_bridge $physical;
     }
 

@@ -661,6 +661,18 @@ show_command() {
 
 			return
 			;;
+		    macro)
+			[ $# -ne 2 ] && usage 1
+			for directory in $(split $CONFIG_PATH); do
+			    if [ -f ${directory}/macro.$2 ]; then
+				echo "Shorewall $version Macro $2 at $HOSTNAME - $(date)"
+				cat ${directory}/macro.$2
+				return
+			    fi
+			done
+			echo "   WARNING: Macro $2 not found" >&2
+			return
+			;;
 		    macros)
 			[ $# -gt 1 ] && usage 1
 

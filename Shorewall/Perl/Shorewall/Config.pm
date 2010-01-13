@@ -227,6 +227,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 KLUDGEFREE      => 'Repeat match',
 		 MARK            => 'MARK Target',
 		 XMARK           => 'Extended Mark Target',
+		 EXMARK          => 'Extended Mark Target 2',
 		 MANGLE_FORWARD  => 'Mangle FORWARD Chain',
 		 COMMENTS        => 'Comments',
 		 ADDRTYPE        => 'Address Type Match',
@@ -330,7 +331,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.6-Beta1",
-		    CAPVERSION => 40406 ,
+		    CAPVERSION => 40407 ,
 		  );
 
     #
@@ -403,6 +404,7 @@ sub initialize( $ ) {
 	      RETAIN_ALIASES => undef,
 	      TC_ENABLED => undef,
 	      TC_EXPERT => undef,
+	      TC_PRIOMAP => undef,
 	      CLEAR_TC => undef,
 	      MARK_IN_FORWARD_CHAIN => undef,
 	      CLAMPMSS => undef,
@@ -534,6 +536,7 @@ sub initialize( $ ) {
 	      IP_FORWARDING => undef,
 	      TC_ENABLED => undef,
 	      TC_EXPERT => undef,
+	      TC_PRIOMAP => undef,
 	      CLEAR_TC => undef,
 	      MARK_IN_FORWARD_CHAIN => undef,
 	      CLAMPMSS => undef,
@@ -619,6 +622,7 @@ sub initialize( $ ) {
 	       KLUDGEFREE => undef,
 	       MARK => undef,
 	       XMARK => undef,
+	       EXMARK => undef,
 	       MANGLE_FORWARD => undef,
 	       COMMENTS => undef,
 	       ADDRTYPE => undef,
@@ -2122,6 +2126,7 @@ sub determine_capabilities( $ ) {
 	if ( qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" ) ) {
 	    $capabilities{MARK}  = 1;
 	    $capabilities{XMARK} = qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
+	    $capabilities{EXMARK} = qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
 	}
 
 	if ( qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" ) ) {
@@ -2590,6 +2595,8 @@ sub get_configuration( $ ) {
 	$globals{TC_SCRIPT} = $file;
     } elsif ( $val eq 'internal' ) {
 	$config{TC_ENABLED} = 'Internal';
+    } elsif ( $val eq 'simple' ) {
+	$config{TC_ENABLED} = 'Simple';
     } else {
 	fatal_error "Invalid value ($config{TC_ENABLED}) for TC_ENABLED" unless $val eq 'no';
 	$config{TC_ENABLED} = '';
@@ -2598,6 +2605,19 @@ sub get_configuration( $ ) {
     if ( $config{TC_ENABLED} ) {
 	fatal_error "TC_ENABLED=$config{TC_ENABLED} is not allowed with MANGLE_ENABLED=No" unless $config{MANGLE_ENABLED};
 	require_capability 'MANGLE_ENABLED', "TC_ENABLED=$config{TC_ENABLED}", 's';
+    }
+
+    if ( $val = $config{TC_PRIOMAP} ) {
+	my @priomap = split ' ',$val;
+	fatal_error "Invalid TC_PRIOMAP ($val)" unless @priomap == 16;
+	for ( @priomap ) {
+	    fatal_error "Invalid TC_PRIOMAP entry ($_)" unless /[1-3]/;
+	    $_--;
+	}
+
+	$config{TC_PRIOMAP} = join ' ', @priomap;
+    } else {
+	$config{TC_PRIOMAP} = '1 2 2 2 1 2 0 0 1 1 1 1 1 1 1 1';
     }
 
     default 'RESTOREFILE'           , 'restore';

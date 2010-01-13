@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -33,7 +33,7 @@
 #
 
 SHOREWALL_LIBVERSION=40406
-SHOREWALL_CAPVERSION=40406
+SHOREWALL_CAPVERSION=40407
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
@@ -722,6 +722,7 @@ determine_capabilities() {
     KLUDGEFREE=
     MARK=
     XMARK=
+    EXMARK=
     MANGLE_FORWARD=
     COMMENTS=
     ADDRTYPE=
@@ -746,7 +747,7 @@ determine_capabilities() {
     fi
 
     qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
-    
+
     qt $IP6TABLES -F $chain
     qt $IP6TABLES -X $chain
     if ! $IP6TABLES -N $chain; then
@@ -822,6 +823,7 @@ determine_capabilities() {
 	if qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1; then
 	    MARK=Yes
 	    qt $IP6TABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
 	fi
 
 	if qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark; then
@@ -917,6 +919,7 @@ report_capabilities() {
 	report_capability "Repeat match" $KLUDGEFREE
 	report_capability "MARK Target" $MARK
 	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
+	[ -n "$XMARK" ] && report_capability "Extended MARK Target 2" $EXMARK
 	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
 	report_capability "Comments" $COMMENTS
 	report_capability "Address Type Match" $ADDRTYPE
@@ -973,6 +976,7 @@ report_capabilities1() {
     report_capability1 KLUDGEFREE
     report_capability1 MARK
     report_capability1 XMARK
+    report_capability1 EXMARK
     report_capability1 MANGLE_FORWARD
     report_capability1 COMMENTS
     report_capability1 ADDRTYPE

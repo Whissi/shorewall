@@ -130,6 +130,7 @@ our %tcdevices;
 our @devnums;
 our $devnum;
 our $sticky;
+our $ipp2p;
 
 
 #
@@ -183,6 +184,7 @@ sub initialize( $ ) {
     @devnums   = ();
     $devnum = 0;
     $sticky = 0;
+    $ipp2p  = 0;
 }
 
 sub process_tc_rule( ) {
@@ -408,6 +410,96 @@ sub process_flow($) {
 
     $flow;
 }
+
+sub process_simple_device() {
+    my ( $device , $type , $bandwidth ) = split_line 1, 3, 'tcinterfaces';
+
+    my $devnumber;
+
+    if ( $device =~ /:/ ) {
+	( my $number, $device, my $rest )  = split /:/, $device, 3;
+
+	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
+
+	if ( defined $number ) {
+	    $devnumber = hex_value( $number );
+	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
+	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
+	    $devnum = $devnumber if $devnumber > $devnum;
+	} else {
+	    fatal_error "Missing interface NUMBER";
+	}
+    } else {
+	$devnumber = ++$devnum;
+    }
+
+    $devnums[ $devnumber ] = $device;
+
+    my $number = in_hexp $devnumber;
+
+    fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
+    fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
+
+    my $physical = physical_name $device;
+    my $dev      = chain_base( $physical );
+
+    if ( $type ne '-' ) {
+	if ( lc $type eq 'external' ) {
+	    $type = 'nfct-src';
+	} elsif ( lc $type eq 'internal' ) {
+	    $type = 'dst';
+	} else {
+	    fatal_error "Invalid TYPE ($type)";
+	}
+    }
+
+    $tcdevices{$device} = { number   => $devnumber ,
+			    physical => physical_name $device ,
+			    type     => $type ,
+			    in_bandwidth => $bandwidth = rate_to_kbit( $bandwidth ) ,
+			  };
+
+    push @tcdevices, $device;
+
+    emit "if interface_is_up $physical; then";
+
+    push_indent;
+
+    emit ( "${dev}_exists=Yes",
+	   "qt \$TC qdisc del dev $physical root",
+	   "qt \$TC qdisc del dev $physical ingress\n"	   
+	 );
+
+    if ( $bandwidth ) {
+	emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
+	       "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${bandwidth}kbit burst 10k drop flowid :1\n"
+	     );
+    }
+	  
+    emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
+    
+    my $i = 0;
+
+    while ( ++$i <= 3 ) {
+	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1500 limit 127 perturb 10";
+	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $devnum:$i";
+	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-';
+	emit '';
+    }
+
+    save_progress_message_short "   TC Device $physical defined.";
+    
+    pop_indent;
+    emit 'else';
+    push_indent;
+
+    emit qq(error_message "WARNING: Device $physical is not in the UP state -- traffic-shaping configuration skipped");
+    emit "${dev}_exists=";
+    pop_indent;
+    emit "fi\n";
+ 
+    progress_message "  Simple tcdevice \"$currentline\" $done.";
+}    
 
 sub validate_tc_device( ) {
     my ( $device, $inband, $outband , $options , $redirected ) = split_line 3, 5, 'tcdevices';
@@ -976,6 +1068,91 @@ sub process_tc_filter( ) {
 
 }
 
+sub process_tc_priority() {
+    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line1 1, 6, 'tcpri';
+
+    if ( $band eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
+
+    my $val = numeric_value $band;
+
+    fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
+
+    my $rule = do_helper( $helper ) . "-j MARK --set-mark $band";
+
+    $rule .= join('', '/', in_hex( $globals{TC_MASK} ) ) if $capabilities{EXMARK};
+
+    if ( $interface ne '-' ) {
+	fatal_error "Invalid combination of columns" unless $address eq '-' && $proto eq '-' && $ports eq '-';
+
+	my $forwardref = $mangle_table->{tcfor};
+
+	add_rule( $forwardref ,
+		  join( '', match_source_dev( $interface) , $rule ) ,
+		  1 );
+    } else {
+	my $postref = $mangle_table->{tcpost};
+	
+	if ( $address ne '-' ) {
+	    fatal_error "Invalid combination of columns" unless $proto eq '-' && $ports eq '-';
+	    add_rule( $postref ,
+		      join( '', match_source_net( $address) , $rule ) ,
+		      1 );
+	} else {
+	    add_rule( $postref , 
+		      join( '', do_proto( $proto, $ports, '-' , 0 ) , $rule ) ,
+		      1 );
+
+	    if ( $ports ne '-' ) {
+		my $protocol = resolve_proto $proto;
+
+		if ( $proto =~ /^ipp2p/ ) {
+		    fatal_error "ipp2p may not be used when there are tracked providers and PROVIDER_OFFSET=0" if @routemarked_interfaces && $config{PROVIDER_OFFSET} == 0;
+		    $ipp2p = 1;
+		}
+
+		add_rule( $postref , 
+			  join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
+			  1 )
+		    unless $proto =~ /^ipp2p/ || $protocol == ICMP || $protocol == IPv6_ICMP;
+	    }
+	}
+    }
+}
+
+sub setup_simple_traffic_shaping() {
+    my $interfaces;
+
+    save_progress_message "Setting up Traffic Control...";
+
+    my $fn = open_file 'tcinterfaces';
+
+    if ( $fn ) {
+	first_entry "$doing $fn...";
+	process_simple_device, $interfaces++ while read_a_line;
+    } else {
+	$fn = find_file 'tcinterfaces';
+    }
+
+    my $fn1 = open_file 'tcpri';
+
+    if ( $fn1 ) {
+	first_entry sub { progress_message2 "$doing $fn1...";
+			  warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
+		      };
+	process_tc_priority while read_a_line;
+
+	clear_comment;
+
+	if ( $ipp2p ) {
+	    insert_rule1 $mangle_table->{tcpost} , 0 , '-m mark --mark 0/'   . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} );
+	    add_rule     $mangle_table->{tcpost} ,     '-m mark ! --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} );
+	}
+    }
+}
+
 sub setup_traffic_shaping() {
     our $lastrule = '';
 
@@ -1185,8 +1362,10 @@ sub setup_tc() {
 	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
 	    $mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) . ' ';
 
-	    for my $interface ( @routemarked_interfaces ) {
-		add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
+	    unless ( $config{TRACK_PROVIDERS} ) {
+		for my $interface ( @routemarked_interfaces ) {
+		    add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
+		}
 	    }
 	}
 
@@ -1205,6 +1384,8 @@ sub setup_tc() {
 	append_file $globals{TC_SCRIPT};
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
 	setup_traffic_shaping;
+    } elsif ( $config{TC_ENABLED} eq 'Simple' ) {
+	setup_simple_traffic_shaping;
     }
 
     if ( $config{TC_ENABLED} ) {

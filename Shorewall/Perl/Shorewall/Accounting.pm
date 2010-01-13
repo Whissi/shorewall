@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_1';
+our $VERSION = '4.4_6';
 
 #
 # Called by the compiler to [re-]initialize this module's state
@@ -84,7 +84,7 @@ sub process_accounting_rule( ) {
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, 0xFF );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} );
     my $rule2 = 0;
 
     unless ( $action eq 'COUNT' ) {

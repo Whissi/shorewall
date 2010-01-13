@@ -820,7 +820,7 @@ sub compiler {
 
     if ( $scriptfilename ) {
 	#
-	# Generate the zone by zone matrix
+	# Compiling a script - generate the zone by zone matrix
 	#
 	generate_matrix;
 
@@ -867,6 +867,9 @@ sub compiler {
 	#
 	enable_script, generate_aux_config if $export;
     } else {
+	#
+	# Checking the configuration only
+	#
 	if ( $preview ) {
 	    generate_matrix;
 	    preview_netfilter_load;

@@ -696,8 +696,6 @@ set_state () # $1 = state
 # Determine which optional facilities are supported by iptables/netfilter
 #
 determine_capabilities() {
-    qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
-
     CONNTRACK_MATCH=
     NEW_CONNTRACK_MATCH=
     OLD_CONNTRACK_MATCH=
@@ -748,6 +746,8 @@ determine_capabilities() {
 	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
 	exit 1
     fi
+
+    qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
     qt $IP6TABLES -F $chain
     qt $IP6TABLES -X $chain

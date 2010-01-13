@@ -20,6 +20,8 @@
     <copyright>
       <year>2005</year>
 
+      <year>2010</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -101,21 +103,9 @@ net     eth1            detect          dhcp,routefilter,tcpflags,<emphasis
     <para>If your fw-&gt;loc policy is not ACCEPT then you need this
     rule:</para>
 
-    <programlisting>#ACTION            SOURCE  DEST
-allowoutUPnP       $FW     loc</programlisting>
-
-    <note>
-      <para>To use 'allowoutUPnP', your iptables and kernel must support the
-      'owner match' feature (see the output of "shorewall show capabilities")
-      and you may not be running kernel version 2.6.14 or later. If you are
-      running 2.6.14 or later, then replace the above rule with:</para>
-    </note>
-
-    <blockquote>
-      <programlisting>#ACTION            SOURCE  DEST   PROTO     DEST PORT(S)     SOURCE     ORIGINAL     RATE     USER/
+    <programlisting>#ACTION            SOURCE  DEST   PROTO     DEST PORT(S)     SOURCE     ORIGINAL     RATE     USER/
 #                                                            PORT(S)    DESTINATION  LIMIT    GROUP
 ACCEPT             $FW     loc    all       -                -          -            -        root</programlisting>
-    </blockquote>
 
     <para>If your loc-&gt;fw policy is not ACCEPT then you need this
     rule:</para>
@@ -152,6 +142,6 @@ forwardUPnP        net     loc</programlisting>
     <para>The <emphasis role="bold">upnpclient</emphasis> option causes
     Shorewall to detect the default gateway through the interface and to
     accept UDP packets from that gateway. Note that, like all aspects of UPnP,
-    this is a security hole so use this option at your own risk. </para>
+    this is a security hole so use this option at your own risk.</para>
   </section>
 </article>

@@ -244,6 +244,30 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 #
 # Save currently running configuration
 #
+do_save() {
+    local status
+    status=0
+
+    if [ -f ${VARDIR}/firewall ]; then
+	if $iptables_save > ${VARDIR}/restore-$$; then
+	    cp -f ${VARDIR}/firewall $RESTOREPATH
+	    mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
+	    chmod +x $RESTOREPATH
+	    echo "   Currently-running Configuration Saved to $RESTOREPATH"
+	    run_user_exit save
+	else
+	    rm -f ${VARDIR}/restore-$$
+	    echo "   ERROR: Currently-running Configuration Not Saved" >&2
+	    status=1
+	fi
+    else
+	echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+	status=1
+    fi
+
+    return $status
+}
+
 save_config() {
 
     local result
@@ -266,24 +290,15 @@ save_config() {
 		*)
 		    validate_restorefile RESTOREFILE
 
-		    if $IP6TABLES -L dynamic -n > ${VARDIR}/save; then
-			echo "   Dynamic Rules Saved"
-			if [ -f ${VARDIR}/firewall ]; then
-			    if $iptables_save > ${VARDIR}/restore-$$; then
-				cp -f ${VARDIR}/firewall $RESTOREPATH
-				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
-				chmod +x $RESTOREPATH
-				echo "   Currently-running Configuration Saved to $RESTOREPATH"
-				run_user_exit save
-			    else
-			        rm -f ${VARDIR}/restore-$$
-				echo "   ERROR: Currently-running Configuration Not Saved" >&2
-			    fi
+		    if chain_exists dynamic; then
+			if $IP6TABLES -L dynamic -n > ${VARDIR}/save; then
+			    echo "   Dynamic Rules Saved"
+			    do_save
 			else
-			    echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+		            echo "Error Saving the Dynamic Rules" >&2
 			fi
 		    else
-		        echo "Error Saving the Dynamic Rules" >&2
+			do_save && rm -f ${VARDIR}/save
 		    fi
 		    ;;
 	    esac
@@ -883,6 +898,12 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
     local finished
     finished=$2
 
+    if ! chain_exists dynamic; then
+	echo "Dynamic blacklisting is not enabled in the current $PRODUCT configuration" >&2
+	[ -n "$nolock" ] || mutex_off
+	exit 2
+    fi
+
     shift 3
 
     while [ $# -gt 0 ]; do
@@ -1004,6 +1025,11 @@ allow_command() {
     [ -n "$debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
     if shorewall6_is_started ; then
+	if ! chain_exists dynamic; then
+	    echo "Dynamic blacklisting is not enabled in the current $PRODUCT configuration" >&2
+	    exit 2
+	fi
+
 	[ -n "$nolock" ] || mutex_on
 	while [ $# -gt 1 ]; do
 	    shift

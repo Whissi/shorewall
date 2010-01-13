@@ -177,9 +177,13 @@ show_tc() {
 	fi
     }
 
-    ip -o link list | while read inx interface details; do
-	show_one_tc ${interface%:}
-    done
+    if [ $# -gt 0 ]; then
+	show_one_tc $1
+    else
+	ip -o link list | while read inx interface details; do
+	    show_one_tc ${interface%:}
+	done
+    fi
 
 }
 
@@ -263,11 +267,74 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 #
 # Save currently running configuration
 #
+do_save() {
+    local status
+    status=0
+
+    if [ -f ${VARDIR}/firewall ]; then
+	if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
+	    cp -f ${VARDIR}/firewall $RESTOREPATH
+	    mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
+	    chmod +x $RESTOREPATH
+	    echo "   Currently-running Configuration Saved to $RESTOREPATH"
+	    run_user_exit save
+	else
+	    rm -f ${VARDIR}/restore-$$
+	    echo "   ERROR: Currently-running Configuration Not Saved" >&2
+	    status=1
+	fi
+    else
+	echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+	status=1
+    fi
+
+    case ${SAVE_IPSETS:=No} in 
+	[Yy]es)
+	    case ${IPSET:=ipset} in
+		*/*)
+		    if [ ! -x "$IPSET" ]; then
+			error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
+			IPSET=
+		    fi
+		    ;;
+		*)
+		    IPSET="$(mywhich $IPSET)"
+		    [ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
+		    ;;
+	    esac
+
+	    if [ -n "$IPSET" ]; then
+		if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
+                    #
+                    # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
+                    #
+		    hack='| grep -v /31'
+		else
+		    hack=
+		fi
+
+		if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
+                    #
+                    # Don't save an 'empty' file
+                    #
+		    grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${RESTOREPATH}-ipsets
+		fi
+	    fi
+	    ;;
+	[Nn]o)
+	    ;;
+	*)
+	    error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
+	    ;;
+    esac
+
+    return $status
+}
+
 save_config() {
 
     local result
     result=1
-    local hack
     
     iptables_save=${IPTABLES}-save
 
@@ -286,65 +353,15 @@ save_config() {
 		*)
 		    validate_restorefile RESTOREFILE
 
-		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
-			echo "   Dynamic Rules Saved"
-			if [ -f ${VARDIR}/firewall ]; then
-			    if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
-				cp -f ${VARDIR}/firewall $RESTOREPATH
-				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
-				chmod +x $RESTOREPATH
-				echo "   Currently-running Configuration Saved to $RESTOREPATH"
-    
-				case ${SAVE_IPSETS:=No} in 
-				    [Yy]es)
-					case ${IPSET:=ipset} in
-					    */*)
-						if [ ! -x "$IPSET" ]; then
-						    error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
-						    IPSET=
-						fi
-						;;
-					    *)
-						IPSET="$(mywhich $IPSET)"
-						[ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
-						;;
-					esac
-					
-					if [ -n "$IPSET" ]; then
-					    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
-                                                #
-                                                # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
-                                                #
-		                                hack='| grep -v /31'
-					    else
-						hack=
-					    fi
-
-					    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
-                                                #
-                                                # Don't save an 'empty' file
-                                                #
-						grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${RESTOREPATH}-ipsets && echo "   Ipsets Saved to ${RESTOREPATH}-ipsets"
-					    fi
-					fi
-					;;
-				    [Nn]o)
-					;;
-				    *)
-					error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
-					;;
-				esac
-
-				run_user_exit save
-			    else
-			        rm -f ${VARDIR}/restore-$$
-				echo "   ERROR: Currently-running Configuration Not Saved" >&2
-			    fi
+		    if chain_exists dynamic; then
+			if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
+			    echo "   Dynamic Rules Saved"
+			    do_save
 			else
-			    echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+		            echo "Error Saving the Dynamic Rules" >&2
 			fi
 		    else
-		        echo "Error Saving the Dynamic Rules" >&2
+			do_save && rm -f ${VARDIR}/save
 		    fi
 		    ;;
 	    esac
@@ -531,10 +548,11 @@ show_command() {
 	    packet_log 20
 	    ;;
 	tc)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 2 ] && usage 1
 	    echo "$PRODUCT $version Traffic Control at $HOSTNAME - $(date)"
 	    echo
-	    show_tc
+	    shift
+	    show_tc $1
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1
@@ -1001,6 +1019,12 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
     local finished
     finished=$2
 
+    if ! chain_exists dynamic; then
+	echo "Dynamic blacklisting is not enabled in the current $PRODUCT configuration" >&2
+	[ -n "$nolock" ] || mutex_off
+	exit 2
+    fi
+
     shift 3
 
     while [ $# -gt 0 ]; do
@@ -1107,7 +1131,7 @@ add_command() {
     local interface host hostlist zone ipset
     if ! shorewall_is_started ; then
 	echo "Shorewall Not Started" >&2
-	exit 2;
+	exit 2
     fi
 
     case "$IPSET" in
@@ -1313,6 +1337,11 @@ allow_command() {
     [ -n "$debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
     if shorewall_is_started ; then
+	if ! chain_exists dynamic; then
+	    echo "Dynamic blacklisting is not enabled in the current $PRODUCT configuration" >&2
+	    exit 2
+	fi
+
 	[ -n "$nolock" ] || mutex_on
 	while [ $# -gt 1 ]; do
 	    shift

@@ -1,7 +1,7 @@
 #
 # Shorewall version 4 - Multicast DNS Macro
 #
-# /usr/share/shorewall/macro.DNS
+# /usr/share/shorewall/macro.mDNS
 #
 #	This macro handles multicast DNS traffic.
 #
@@ -9,4 +9,6 @@
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	udp	5353
+PARAM	-	-	2
 PARAM	DEST	SOURCE	udp	5353
+PARAM	DEST	SOURCE	2

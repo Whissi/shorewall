@@ -7,12 +7,9 @@ Shorewall 4.5.4
 1)  It is now possible to control the layout of packet and connection
     marks.
 
-2)  A new simplified Traffic Shaping facility is now available.
+2)  TPROXY support has been added.
 
-3)  You may now preview the generated ruleset by using the '-r' option
-    to the 'check' command (e.g., "shorewall check -r").
-
-4)  TPROXY support has been added.
+3)  Additional ruleset optimization options are available.
 
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
@@ -21,11 +18,6 @@ Shorewall 4.5.4
 1)  The deprecated macro invocation form <macro>/<param> (e.g.,
     Ping/ACCEPT) now causes a compiler warning to be generated. Only
     the first occurrance is flagged with a warning.
-
-2)  Prior versions of Shorewall applied PREROUTING marking rules to all
-    packets from 'tracked' provider interfaces when
-    TC_EXPERT=No. Beginning with Shorewall 4.5.0, packets from these
-    interfaces will only have those rules applied when TC_EXPERT=Yes.
 
 ----------------------------------------------------------------------------
           P R O B L E M S   C O R R E C T E D   I N   4 . 5 . 4
@@ -214,28 +206,5 @@ None.
     See http://www.shorewall.net/simple_traffic_shaping.html for
     details.
 
-7)  You may now restrict the output of 'show tc' by specifying the name
-    of an interface (e.g., "show tc eth0").
-
-8)  COMMENT lines are now allowed in /etc/shorewall/tcpri.
-
-9)  The PROTO column in /etc/shorewall/tcpri may now contain
-    'ipp2p'. When such an entry is present and PROVIDER_OFFSET is
-    non-zero, Shorewall will automatically generate SAVE/RESTORE rules
-    for the POSTROUTING chain.
-
-10) Shorewall now throws an error if:
-
-    a) There are tracked providers; and
-    b) PROVIDER_OFFSET is 0; and
-    c) 'ipp2p' is used as the PROTO in a tcpri entry.
-
-11) You may now preview the generated ruleset by using the '-r' option
-    to the 'check' command (e.g., "shorewall check -r").
-
-    The output is a shell script fragment, similar to the way it
-    appears in the generated script.
-
-
-12) Support for TPROXY has been added. See
+7)  Support for TPROXY has been added. See
     http://www.shorewall.net/Shorewall_Squid_Usage.html#TPROXY.

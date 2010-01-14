@@ -26,6 +26,8 @@
 
       <year>2009</year>
 
+      <year>2010</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -619,7 +621,9 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
       <para>For those who are curious, the Limit action is implemented as
       follows:</para>
 
-      <programlisting>my @tag = split /,/, $tag;
+      <programlisting>use Shorewall::Chains;
+
+my @tag = split /,/, $tag;
 
 fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
     unless @tag == 3;

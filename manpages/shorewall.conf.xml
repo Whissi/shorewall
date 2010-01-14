@@ -1521,16 +1521,16 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           Previously, when TC_EXPERT=No, packets arriving through 'tracked'
           provider interfaces were unconditionally passed to the PREROUTING
           tcrules. This was done so that tcrules could reset the packet mark
-          to zero so that the packet would be routed using the 'main' routing
-          table. Using the main table allowed dynamic routes (such as those
-          added for VPNs) to be effective. The route_rules file was created to
-          provide a better alternative to clearing the packet mark. As a
-          consequence, passing these packets to PREROUTING complicates things
-          without providing any real benefit. Beginning with Shorewall 4.4.6,
-          when TRACK_PROVIDERS=Yes and TC_EXPERT=No, packets arriving through
-          'tracked' interfaces will not be passed to the PREROUTING rules.
-          Since TRACK_PROVIDERS was just introduced in 4.4.3, this change
-          should be transparent to most, if not all, users.</para>
+          to zero, thus allowing the packet to be routed using the 'main'
+          routing table. Using the main table allowed dynamic routes (such as
+          those added for VPNs) to be effective. The route_rules file was
+          created to provide a better alternative to clearing the packet mark.
+          As a consequence, passing these packets to PREROUTING complicates
+          things without providing any real benefit. Beginning with Shorewall
+          4.4.6, when TRACK_PROVIDERS=Yes and TC_EXPERT=No, packets arriving
+          through 'tracked' interfaces will not be passed to the PREROUTING
+          rules. Since TRACK_PROVIDERS was just introduced in 4.4.3, this
+          change should be transparent to most, if not all, users.</para>
         </listitem>
       </varlistentry>
 

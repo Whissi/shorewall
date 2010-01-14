@@ -178,10 +178,10 @@ Shorewall 4.4.6
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 6
 ----------------------------------------------------------------------------
 
-1)  A 'feature' of xtables-addons when applied to Lenny causes extra
-    /31 networks to appear for nethash sets in the output of "ipset
-    -L" and "ipset -S". A hack has been added to prevent these from
-    being saved when Shorewall is saving IPSETS during 'stop'.
+1)  A 'feature' of xtables-addons when applied to Debian Lenny causes
+    extra /31 networks to appear for nethash sets in the output of
+    "ipset -L" and "ipset -S". A hack has been added to prevent these
+    from being saved when Shorewall is saving IPSETS during 'stop'.
 
     As part of this change, the generated script is more careful about
     verifying the existence of the correct ipset utility before using
@@ -289,9 +289,9 @@ None.
 8)  Previously, when TC_EXPERT=No, packets arriving through 'tracked'
     provider interfaces were unconditionally passed to the PREROUTING
     tcrules. This was done so that tcrules could reset the packet mark
-    to zero so that the packet would be routed using the 'main' routing
-    table. Using the main table allowed dynamic routes (such as those
-    added for VPNs) to be effective.
+    to zero, thus allowing the packet to be routed using the 'main'
+    routing table. Using the main table allowed dynamic routes (such as
+    those added for VPNs) to be effective.
 
     The route_rules file was created to provide a better alternative
     to clearing the packet mark. As a consequence, passing these

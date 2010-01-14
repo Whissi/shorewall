@@ -1374,6 +1374,37 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">TRACK_PROVIDERS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.3. When set to Yes, causes the
+          <option>track</option> option to be assumed on all providers defined
+          in <ulink
+          url="shorewall6-providers.html">shorewall6-providers</ulink>(5). May
+          be overridden on an individual provider through use of the
+          <option>notrack</option> option. The default value is 'No'.</para>
+
+          <para>Beginning in Shorewall 4.4.6, setting this option to 'Yes'
+          also simplifies PREROUTING rules in <ulink
+          url="shorewall6-tcrules.html">shorewall6-tcrules</ulink>(5).
+          Previously, when TC_EXPERT=No, packets arriving through 'tracked'
+          provider interfaces were unconditionally passed to the PREROUTING
+          tcrules. This was done so that tcrules could reset the packet mark
+          to zero so that the packet would be routed using the 'main' routing
+          table. Using the main table allowed dynamic routes (such as those
+          added for VPNs) to be effective. The route_rules file was created to
+          provide a better alternative to clearing the packet mark. As a
+          consequence, passing these packets to PREROUTING complicates things
+          without providing any real benefit. Beginning with Shorewall 4.4.6,
+          when TRACK_PROVIDERS=Yes and TC_EXPERT=No, packets arriving through
+          'tracked' interfaces will not be passed to the PREROUTING rules.
+          Since TRACK_PROVIDERS was just introduced in 4.4.3, this change
+          should be transparent to most, if not all, users.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
 

@@ -54,6 +54,8 @@ Shorewall 4.4.7
 
 13) A new simplified Traffic Shaping facility is now available.
 
+14) Additional ruleset optimization options are available.
+
 ----------------------------------------------------------------------------
                     M I G R A T I O N   I S S U E S
 ----------------------------------------------------------------------------
@@ -190,7 +192,651 @@ None.
                 N E W   F E A T U R E S   I N   4 . 4 . 7
 ----------------------------------------------------------------------------
 
-None.
+1)  The OPTIMIZE option value is now a bit-map with each bit
+    controlling a separate set of optimizations.
+
+    - The low-order bit (value 1) controls optimizations available in
+      earlier releases. We refer to this optimization as "optimization
+      1".
+
+    - The next bit (value 2) suppresses superfluous ACCEPT rules in a
+      policy chain that implements an ACCEPT policy. Any ACCEPT rules
+      that immediately preceed the final blanket ACCEPT rule in the
+      chain are now omitted. We refer to this optimization as
+      "optimization 2".
+
+    - The next bit (value 4 or "optimization 4") enables the following
+      additional optimizations:
+
+      a) Empty chains are optimized away.
+      b) Chains with one rule are optimized away.
+      c) If a built-in chain has a single rule that branches to a
+         second chain, then the rules from the second chain are moved
+         to the built-in chain and the target chain is omitted.
+      d) Chains with no references are deleted.
+      e) Accounting chains are subject to optimization if the new
+         OPTIMIZE_ACCOUNTING option is set to 'Yes' (default is 'No').
+      f) If a chain ends with an unconditional branch to a second chain
+         (other than to 'reject'), then the branch is deleted from the
+         first chain and the rules from the second chain are appended
+         to it. 
+
+      The following chains are exempted from optimization 4:
+
+    	  action chains (user-created).
+    	  accounting chains (unless OPTIMIZE_ACCOUNTING=Yes)
+    	  dynamic
+	  forwardUPnP
+	  logdrop
+	  logreject
+	  rules chains (those of the form zonea2zoneb or zonea-zoneb).
+	  UPnP (nat table).
+
+    To enable all possible optimizations, set OPTIMIZE to 7 (1 + 2 +
+    4).
+
+2)  Shorewall now combines identical logging chains. Previously, a
+    separate chain was created for each logging rule.
+
+3)  Beginning with Shorewall 4.4.7, accounting can be disabled by
+    setting ACCOUNTING=No in shorewall.conf. This allows you to keep a
+    set of accounting rules configured in /etc/shorewall/accounting and
+    to then enable and disable them by simply toggling the setting of
+    ACCOUNTING.
+
+    Similarly, dynamic blacklisting can be disabled by setting
+    DYNAMIC_BLACKLIST=No. This saves a jump rule in the INPUT
+    and FORWARD filter chains..
+
+4)  Shorewall can now automatically assign mark values to providers in
+    cases where 'track' is specified (or TRACK_PROVIDERS=Yes) but
+    packet marking is otherwise not used for directing connections to a
+    particular provider. Simply specify '-' in the MARK column and
+    Shorewall will automatically assign a mark value.
+
+----------------------------------------------------------------------------
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 6
+----------------------------------------------------------------------------
+
+1)  A 'feature' of xtables-addons when applied to Debian Lenny causes
+    extra /31 networks to appear for nethash sets in the output of
+    "ipset -L" and "ipset -S". A hack has been added to prevent these
+    from being saved when Shorewall is saving IPSETS during 'stop'.
+
+    As part of this change, the generated script is more careful about
+    verifying the existence of the correct ipset utility before using
+    it to save the contents of the sets.
+
+2)  The mDNS macro previously did not include IGMP (protocol 2) and it
+    did not specify the mDNS multicast address (224.0.0.251). These
+    omissions have been corrected.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 6
+----------------------------------------------------------------------------
+
+1)  In kernel 2.6.31, the handling of the rp_filter interface option was
+    changed incompatibly. Previously, the effective value was determined
+    by the setting of net.ipv4.config.dev.rp_filter logically ANDed with
+    the setting of net.ipv4.config.all.rp_filter.
+
+    Beginning with kernel 2.6.31, the value is the arithmetic MAX of
+    those two values. 
+
+    Given that Shorewall sets net.ipv4.config.all.rp_filter to 1 if
+    there are any interfaces specifying 'routefilter', specifying
+    'routefilter' on any interface has the effect of setting the option
+    on all interfaces.
+
+    To allow Shorewall to handle this issue, a number of changes were
+    necessary:
+
+    a)  There is no way to safely determine if a kernel supports the
+        new semantics or the old so the Shorewall compiler uses the
+        kernel version reported by uname.
+
+    b)  This means that the kernel version is now recorded in
+        the capabilities file. So if you use capabilities files, you
+        need to regenerate the files with Shorewall[-lite] 4.4.6 or
+        later.
+
+    c)  If the capabilities file does not contain a kernel version,
+        the compiler assumes version 2.6.30 (the old rp_filter
+        behavior).
+
+    d)  The ROUTE_FILTER option in shorewall.conf now accepts the
+    	following values:
+
+	0 or No  - Shorewall sets net.ipv4.config.all.rp_filter to 0.
+	1 or Yes - Shorewall sets net.ipv4.config.all.rp_filter to 1.
+	2        - Shorewall sets net.ipv4.config.all.rp_filter to 2.
+	Keep	 - Shorewall does not change the setting of
+	           net.ipv4.config.all.rp_filter if the kernel version
+		   is 2.6.31 or later.
+        
+	The default remains Keep.
+
+    e)  The 'routefilter' interface option can have values 0,1 or 2. If
+    	'routefilter' is specified without a value, the value 1 is
+    	assumed.
+
+2)  SAVE_IPSETS=Yes has been resurrected but in a different form. With
+    this setting, the contents of your ipsets are saved during 'shorewall
+    stop' and 'shorewall save' and they are restored during 'shorewall
+    start' and 'shorewall restore'. Note that the contents may only be
+    restored during 'restore' if the firewall is currently in the
+    stopped state and there are no ipsets currently in use. In
+    particular, when 'restore' is being executed to recover from a
+    failed start/restart, the contents of the ipsets are not changed.
+
+    When SAVE_IPSETS=Yes, you may not include ipsets in your
+    /etc/shorewall/routestopped configuration.
+
+3)  IPv6 addresses following a colon (":") may either be surrounded by
+    <..> or by the more standard [..].
+
+4)  A DHCPfwd macro has been added that allows unicast DHCP traffic to
+    be forwarded through the firewall. Courtesy of Tuomo Soini.
+
+5)  Shorewall (/sbin/shorewall) now supports a 'show macro' command:
+
+    	      shorewall show macro <macro>
+
+    Example:
+
+    	      shorewall show macro LDAP
+
+    The command displays the contents of the macro.<macro> file.
+
+6)  You may now preview the generated ruleset by using the '-r' option
+    to the 'check' command (e.g., "shorewall check -r").
+
+    The output is a shell script fragment, similar to the way it
+    appears in the generated script.
+
+7)  It is now possible to enable a simplified traffic shaping
+    facility by setting TC_ENABLED=Simple in shorewall.conf.
+
+    See http://www.shorewall.net/simple_traffic_shaping.html for
+    details.
+
+8)  Previously, when TC_EXPERT=No, packets arriving through 'tracked'
+    provider interfaces were unconditionally passed to the PREROUTING
+    tcrules. This was done so that tcrules could reset the packet mark
+    to zero, thus allowing the packet to be routed using the 'main'
+    routing table. Using the main table allowed dynamic routes (such as
+    those added for VPNs) to be effective.
+
+    The route_rules file was created to provide a better alternative
+    to clearing the packet mark. As a consequence, passing these
+    packets to PREROUTING complicates things without providing any real
+    benefit.
+
+    Beginning with this release, when TRACK_PROVIDERS=Yes and TC_EXPERT=No,
+    packets arriving through 'tracked' interfaces will not be passed to
+    the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
+    4.4.3, this change should be transparent to most, if not all, users.
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5
+----------------------------------------------------------------------------
+
+1)  The change which removed the 15 port limitation on
+    /etc/shorewall/routestopped was incomplete. The result was that if
+    more than 15 ports were listed, an error was generated.
+
+2)  If any interfaces had the 'bridge' option specified, compilation
+    failed with the error:
+
+    Undefined subroutine &Shorewall::Rules::match_source_interface called 
+    at /usr/share/shorewall/Shorewall/Rules.pm line 2319.
+
+3)  The compiler now flags port number 0 as an error in all
+    contexts. Previously, port 0 was allowed with the result that
+    invalid iptables-restore input could be generated in some cases.
+
+4)  The 'show policies' command now works in Shorewall6 and
+    Shorewall6-lite.
+
+5)  Traffic shaping modules from /lib/modules/<version>/net/sched/ are
+    now correctly loaded. Previously, that directory was not
+    searched. Additionally, Shorewall6 now tries to load the cls_flow
+    module; previously, only Shorewall attempts to load that module.
+
+6)  The Shorewall6-lite shorecap program was previously including the
+    IPv4 base library rather than the IPv6 version. Also, Shorewall6
+    capability detection was determing the availablity of the mangle
+    capability before it had determined if ip6tables was installed.
+
+7)  The setting of MODULE_SUFFIX was previously ignored except when
+    compiling for export.
+
+8)  Detection of the Enhanced Reject capability in the compiler was
+    broken for IPv4 compilations.
+
+9)  The 'reload -c' command would ignore the setting of DONT_LOAD in
+    shorewall.conf. The 'reload' command without '-c' worked as
+    expected. 
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 5
+----------------------------------------------------------------------------
+
+1)  Shorewall now allows DNAT rules that change only the destination
+    port.
+
+    Example:
+
+	DNAT	loc	net::456	udp	234
+
+    That rule will modify the destination port in UDP packets received
+    from the 'loc' zone from 456 to 234. Note that if the destination
+    is the firewall itself, then the destination port will be rewritten
+    but that no ACCEPT rule from the loc zone to the $FW zone will have
+    been created to handle the request. So such rules should probably
+    exclude the firewall's IP addresses in the ORIGINAL DEST column.
+
+2)  Systems that do not log Netfilter messages locally can now set
+    LOGFILE=/dev/null in shorewall.conf.
+
+3)  The 'shorewall show connections' and 'shorewall dump' commands now
+    display the current number of connections and the max supported
+    connections.
+
+    Example:
+
+	shorewall show connections
+    	Shorewall 4.5.0 Connections (62 out of 65536) at gateway - Sat ...
+
+    In that case, there were 62 current connections out of a maximum
+    number supported of 65536.
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 4
+----------------------------------------------------------------------------
+
+1)  In some simple one-interface configurations, the following Perl
+    run-time error messages were issued:
+
+      Generating Rule Matrix...
+      Use of uninitialized value in concatenation (.) or string at
+      /usr/share/shorewall/Shorewall/Chains.pm line 649.
+      Use of uninitialized value in concatenation (.) or string at
+      /usr/share/shorewall/Shorewall/Chains.pm line 649.
+      Creating iptables-restore input...
+
+2)  The Shorewall operations log (specified by STARTUP_LOG) is now
+    secured 0600.
+
+3)  Previously, the compiler generated an incorrect test for interface
+    availability in the generated code for adding route rules. The
+    result was that the rules were always added, regardless of the
+    state of the provider's interface. Now, the rules are only added
+    when the interface is available.
+
+4)  When TC_WIDE_MARKS=Yes and class numbers are not explicitly
+    specified in /etc/shorewall/tcclasses, duplicate class numbers
+    result. A typical error message is:
+
+    	    ERROR: Command "tc class add dev eth3 parent 1:1 classid
+    	    1:1 htb rate 1024kbit ceil 100000kbit prio 1 quantum 1500"
+    	    Failed
+
+    Note that the class ID of the class being added is a duplicate of
+    the parent's class ID.
+
+    Also, when TC_WIDE_MARKS=Yes, values > 255 in the MARK column of
+    /etc/shorewall/tcclasses were rejected.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 4
+----------------------------------------------------------------------------
+
+1)  The Shorewall packages now include a logrotate configuration file.
+
+2)  The limit of 15 entries in a port list has been relaxed in
+    /etc/shorewall/routestopped.
+
+3)  The following seemingly valid configuration produces a fatal
+    error reporting "Duplicate interface name (p+)"
+
+    /etc/shorewall/zones:
+
+       #ZONE		TYPE	
+       fw		firewall
+       world		ipv4
+       z1:world		bport4
+       z2:world		bport4
+
+    /etc/shorewall/interfaces:
+
+       #ZONE		INTERFACE	BROADCAST	OPTIONS
+       world		br0		-		bridge
+       world		br1		-		bridge
+       z1		br0:p+
+       z2		br1:p+
+
+    This error occurs because the Shorewall implementation requires
+    that each bridge port must have a unique name.
+
+    To work around this problem, a new 'physical' interface option has
+    been created. The above configuration may be defined using the
+    following in /etc/shorewall/interfaces:
+
+       #ZONE		INTERFACE	BROADCAST	OPTIONS
+       world		br0		-		bridge
+       world		br1		-		bridge
+       z1		br0:x+		-		physical=p+
+       z2		br1:y+		-		physical=p+
+
+    In this configuration, 'x+' is the logical name for ports p+ on
+    bridge br0 while 'y+' is the logical name for ports p+ on bridge
+    br1.
+
+    If you need to refer to a particular port on br1 (for example
+    p1023), you write it as y1023; Shorewall will translate that name
+    to p1023 when needed.
+
+    It is allowed to have a physical name ending in '+' with a logical
+    name that does not end with '+'. The reverse is not allowed; if the
+    logical name ends in '+' then the physical name must also end in
+    '+'.
+
+    This feature is not restricted to bridge ports. Beginning with this
+    release, the interface name in the INTERFACE column can be
+    considered a logical name for the interface, and the actual
+    interface name is specified using the 'physical' option. If no
+    'physical' option is present, then the physical name is assumed to
+    be the same as the logical name. As before, the logical interface
+    name is used throughout the rest of the configuration to refer to
+    the interface.
+
+4)  Previously, Shorewall has used the character '2' to form the name
+    of chains involving zones and/or the word 'all' (e.g., fw2net,
+    all2all). When zones names are given numeric suffixes, these
+    generated names are hard to read (e.g., foo1232bar). To make these
+    names clearer, a ZONE2ZONE option has been added.
+
+    ZONE2ZONE has a default value of "2" but can also be given the
+    value "-" (e.g., ZONE2ZONE="-") which causes Shorewall to separate
+    the two parts of the name with a hyphen (e.g., foo123-bar).
+
+5)  Only one instance of the following warning is now generated;
+    previously, one instance of a similar warning was generated for
+    each COMMENT encountered.
+
+	COMMENTs ignored -- require comment support in iptables/Netfilter
+
+6)  The shorewall and shorewall6 utilities now support a 'show
+    policies' command. Once Shorewall or Shorewall6 has been restarted
+    using a script generated by this version, the 'show policies'
+    command will list each pair of zones and give the applicable
+    policy. If the policy is enforced in a chain, the name of the chain
+    is given.
+
+    Example:
+
+	net 	=>	loc	DROP using chain net2all
+
+    Note that implicit intrazone ACCEPT policies are not displayed for
+    zones associated with a single network where that network
+    doesn't specify 'routeback'.
+
+7)  The 'show' and 'dump' commands now support an '-l' option which
+    causes chain displays to include the rule number of each rule.
+
+    (Type 'iptables -h' and look for '--line-number')
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 3
+----------------------------------------------------------------------------
+
+1.  Previously, if 'routeback' was specified in /etc/shorewall/routestopped:
+
+    a) 'shorewall check' produced an internal error
+    b) The 'routeback' option didn't work
+
+2)  If an alias IP address was added and RETAIN_ALIASES=No in
+    shorewall.conf, then a compiler internal error resulted.
+
+3)  Previously, the generated script would try to detect the values
+    for all run-time variables (such as IP addresses), regardless of
+    what command was being executed. Now, this information is only
+    detected when it is needed.
+
+4)  Nested zones where the parent zone was defined by a wildcard
+    interface (name ends with +) in /etc/shorewall/interfaces did
+    not work correctly in some cases.
+
+5)  IPv4 addresses embedded in IPv6 (e.g., ::192.168.1.5) were
+    incorrectly reported as invalid.
+
+6)  Under certain circumstances, optional providers were not detected
+    as being usable.
+
+    Additionally, the messages issued when an optional provider was not
+    usable were confusing; the message intended to be issued when the
+    provider shared an interface ("WARNING: Gateway <gateway> is not
+    reachable -- Provider <name> (<number>) not Added") was being
+    issued when the provider did not share an interface. Similarly, the
+    message intended to be issued when the provider did not share an
+    interface ("WARNING: Interface <interface> is not usable --
+    Provider <name> (<number>) not Added") was being issued when the
+    provider did share an interface.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 3
+----------------------------------------------------------------------------
+
+1)  On Debian systems, a default installation will now set
+    INITLOG=/dev/null in /etc/default/shorewall. In all configurations,
+    the default values for the log variables are changed to:
+
+    	STARTUP_LOG=/var/log/shorewall-init.log
+	LOG_VERBOSITY=2
+
+    The effect is much the same as the old defaults, with the exception 
+    that:
+
+	a) Start, stop, etc. commands issued through /sbin/shorewall
+	   will be logged.
+	b) Logging will occur at maximum verbosity.
+	c) Log entries will be date/time stamped.
+
+    On non-Debian systems, new installs will now log all Shorewall 
+    commands to /var/log/shorewall-init.log.
+
+2)  A new TRACK_PROVIDERS option has been added in shorewall.conf.
+    The value of this option becomes the default for the 'track'
+    provider option in /etc/shorewall/providers.
+
+3)  A new 'limit' option has been added to
+    /etc/shorewall/tcclasses. This option specifies the number of
+    packets that are allowed to be queued within the class. Packets
+    exceeding this limit are dropped. The default value is 127 which is
+    the value that earlier versions of Shorewall used.  The option is
+    ignored with a warning if the 'pfifo' option has been specified.
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2
+----------------------------------------------------------------------------
+
+1)  Detection of Persistent SNAT was broken in the rules compiler. 
+
+2)  Initialization of the compiler's chain table was occurring before 
+    shorewall.conf had been read and before the capabilities had been
+    determined. This could lead to incorrect rules and Perl runtime
+    errors.
+
+3)  The 'shorewall check' command previously did not detect errors in
+    /etc/shorewall/routestopped.
+
+4)  In earlier versions, if a file with the same name as a built-in
+    action were present in the CONFIG_PATH, then the compiler would
+    process that file like it was an extension script.
+
+    The compiler now ignores the presence of such files.
+
+5)  Several configuration issues which previously produced an error or
+    warning are now handled differently.
+
+    a)  MAPOLDACTIONS=Yes and MAPOLDACTIONS= in shorewall.conf are now
+        handled as they were by the old shell-based compiler. That is,
+        they cause pre-3.0 built-in actions to be mapped automatically
+        to the corresponding macro invocation.
+
+    b)  SAVE_IPSETS=Yes no longer produces a fatal error -- it is now a
+        warning.
+
+    c)  DYNAMIC_ZONES=Yes no longer produces a fatal error -- it is now
+        a warning.
+
+    d)  RFC1918_STRICT=Yes no longer produces a fatal error -- it is now
+        a warning.
+
+6)  Previously, it was not possible to specify an IP address range in
+    the ADDRESS column of /etc/shorewall/masq. Thanks go to Jessee
+    Shrieve for the patch.
+
+7)  The 'wait4ifup' script included for Debian compatibility now runs
+    correctly with no PATH.
+
+8)  The new per-IP LIMIT feature now works with ancient iptables
+    releases (e.g., 1.3.5 as found on RHEL 5). This change required
+    testing for an additional capability which means that those who use
+    a capabilities file should regenerate that file after installing
+    4.4.2.
+
+9)  One unintended difference between Shorewall-shell and
+    Shorewall-perl was that Shorewall-perl did not support the MARK
+    column in action bodies. This has been corrected.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 2
+----------------------------------------------------------------------------
+
+1)  Prior to this release, line continuation has taken precedence over 
+    #-style comments. This prevented us from doing the following:
+
+    	    ACCEPT    net:206.124.146.176,\   #Gateway
+	    	          206.124.146.177,\   #Mail
+			  206.124.146.178\    #Server
+			  		      ...
+    
+    Now, unless a line ends with '\', any trailing comment is stripped
+    off (including any white-space preceding the '#'). Then if the line
+    ends with '\', it is treated as a continuation line as normal.
+
+2)  Three new columns have been added to FORMAT-2 macro bodies.
+
+    	  MARK
+	  CONNLIMIT
+	  TIME
+
+    These three columns correspond to the similar columns in
+    /etc/shorewall/rules and must be empty in macros invoked from an
+    action.
+
+3)  Accounting chains may now have extension scripts. Simply place your
+    Perl script in the file /etc/shorewall/<chain> and when the
+    accounting chain named <chain> is created, your script will be
+    invoked.
+
+    As usual, the variable $chainref will contain a reference to the
+    chain's table entry.
+
+----------------------------------------------------------------------------
+          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
+----------------------------------------------------------------------------
+
+1)  If ULOG was specified as the LOG LEVEL in the all->all policy, the
+    rules at the end of the INPUT and OUTPUT chains would still use the
+    LOG target rather than ULOG.
+
+2)  Using CONTINUE policies with a nested IPSEC zone was still broken
+    in some cases.
+
+3)  The setting of IP_FORWARDING has been change to Off in the
+    one-interface sample configuration since forwarding is typically
+    not required with only a single interface.
+
+4)  If MULTICAST=Yes in shorewall.conf, multicast traffic was
+    incorrectly exempted from ACCEPT policies.
+
+5)  Previously, the definition of a zone that specified "nets=" in
+    /etc/shorewall/interfaces could not be extended by entries in
+    /etc/shorewall/hosts.
+
+6)  Previously, "nets=" could be specified in a multi-zone interface
+    definition ("-" in the ZONES column) in /etc/shorewall/zones. This
+    now raises a fatal compilation error.
+
+7)  MULTICAST=Yes generates an incorrect rule that limits its
+    effectiveness to a small part of the multicast address space.
+
+8)  Checking for zone membership has been tighened up. Previously, 
+    a zone could contain <interface>:0.0.0.0/0 along with other hosts;
+    now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
+    then it may have no additional members in /etc/shorewall/hosts.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 1
+----------------------------------------------------------------------------
+
+1)  To replace the SAME keyword in /etc/shorewall/masq, support has
+    been added for 'persistent' SNAT. Persistent SNAT is required when
+    an address range is specified in the ADDRESS column and when you
+    want a client to always receive the same source/destination IP
+    pair. It replaces SAME: which was removed in Shorewall 4.4.0.
+
+    To specify persistence, follow the address range with
+    ":persistent".
+
+    Example:
+
+    #INTERFACE	SOURCE	   ADDRESS
+    eth0	0.0.0.0/0  206.124.146.177-206.124.146.179:persistent
+
+    This feature requires Persistent SNAT support in your kernel and
+    iptables. 
+
+    If you use a capabilities file, you will need to create a new one
+    as a result of this feature.
+
+    WARNING: Linux kernels beginning with 2.6.29 include persistent
+    SNAT support. If your iptables supports persistent SNAT but your
+    kernel does not, there is no way for Shorewall to determine that
+    persistent SNAT isn't going to work. The kernel SNAT code blindly
+    accepts all SNAT flags without verifying them and returns them to
+    iptables when asked.
+
+2)  A 'clean' target has been added to the Makefiles. It removes backup
+    files (*~ and .*~). 
+
+3)  The meaning of 'full' has been redefined when used in the context
+    of a traffic shaping sub-class. Previously, 'full' always meant the
+    OUT-BANDWIDTH of the device. In the case of a sub-class, however,
+    that definition is awkward to use because the sub-class is limited
+    by the parent class.
+
+    Beginning with this release, 'full' in a sub-class definition
+    refers to the specified rate defined for the parent class. So
+    'full' used in the RATE column refers to the parent class's RATE;
+    when used in the CEIL column, 'full' refers to the parent class's
+    CEIL.
+
+    As part of this change, the compiler now issues a warning if the
+    sum of the top-level classes' RATEs exceeds the OUT-BANDWIDTH of
+    the device. Similarly, a warning is issued if the sum of the RATEs
+    of a class's sub-classes exceeds the rate of the CLASS.
+
+4)  When 'nets=<network>' or 'nets=(<net1>,<net2>,...) is specified in
+    /etc/shorewall/interfaces, multicast traffic will now be sent to
+    the zone along with limited broadcasts.
+
+5)  A flaw in the parsing logic for the zones file allowed most zone
+    types containing the character string 'ip' to be accepted as a
+    synonym for 'ipv4' (or ipv6 if compiling an IPv6 configuration).
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0
@@ -925,585 +1571,3 @@ None.
     For modularized kernels, Shorewall will attempt to load
     /lib/modules/<kernel-version>/net/sched/cls_flow.ko by default.
        
-----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1
-----------------------------------------------------------------------------
-
-1)  If ULOG was specified as the LOG LEVEL in the all->all policy, the
-    rules at the end of the INPUT and OUTPUT chains would still use the
-    LOG target rather than ULOG.
-
-2)  Using CONTINUE policies with a nested IPSEC zone was still broken
-    in some cases.
-
-3)  The setting of IP_FORWARDING has been change to Off in the
-    one-interface sample configuration since forwarding is typically
-    not required with only a single interface.
-
-4)  If MULTICAST=Yes in shorewall.conf, multicast traffic was
-    incorrectly exempted from ACCEPT policies.
-
-5)  Previously, the definition of a zone that specified "nets=" in
-    /etc/shorewall/interfaces could not be extended by entries in
-    /etc/shorewall/hosts.
-
-6)  Previously, "nets=" could be specified in a multi-zone interface
-    definition ("-" in the ZONES column) in /etc/shorewall/zones. This
-    now raises a fatal compilation error.
-
-7)  MULTICAST=Yes generates an incorrect rule that limits its
-    effectiveness to a small part of the multicast address space.
-
-8)  Checking for zone membership has been tighened up. Previously, 
-    a zone could contain <interface>:0.0.0.0/0 along with other hosts;
-    now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
-    then it may have no additional members in /etc/shorewall/hosts.
-
-----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 1
-----------------------------------------------------------------------------
-
-1)  To replace the SAME keyword in /etc/shorewall/masq, support has
-    been added for 'persistent' SNAT. Persistent SNAT is required when
-    an address range is specified in the ADDRESS column and when you
-    want a client to always receive the same source/destination IP
-    pair. It replaces SAME: which was removed in Shorewall 4.4.0.
-
-    To specify persistence, follow the address range with
-    ":persistent".
-
-    Example:
-
-    #INTERFACE	SOURCE	   ADDRESS
-    eth0	0.0.0.0/0  206.124.146.177-206.124.146.179:persistent
-
-    This feature requires Persistent SNAT support in your kernel and
-    iptables. 
-
-    If you use a capabilities file, you will need to create a new one
-    as a result of this feature.
-
-    WARNING: Linux kernels beginning with 2.6.29 include persistent
-    SNAT support. If your iptables supports persistent SNAT but your
-    kernel does not, there is no way for Shorewall to determine that
-    persistent SNAT isn't going to work. The kernel SNAT code blindly
-    accepts all SNAT flags without verifying them and returns them to
-    iptables when asked.
-
-2)  A 'clean' target has been added to the Makefiles. It removes backup
-    files (*~ and .*~). 
-
-3)  The meaning of 'full' has been redefined when used in the context
-    of a traffic shaping sub-class. Previously, 'full' always meant the
-    OUT-BANDWIDTH of the device. In the case of a sub-class, however,
-    that definition is awkward to use because the sub-class is limited
-    by the parent class.
-
-    Beginning with this release, 'full' in a sub-class definition
-    refers to the specified rate defined for the parent class. So
-    'full' used in the RATE column refers to the parent class's RATE;
-    when used in the CEIL column, 'full' refers to the parent class's
-    CEIL.
-
-    As part of this change, the compiler now issues a warning if the
-    sum of the top-level classes' RATEs exceeds the OUT-BANDWIDTH of
-    the device. Similarly, a warning is issued if the sum of the RATEs
-    of a class's sub-classes exceeds the rate of the CLASS.
-
-4)  When 'nets=<network>' or 'nets=(<net1>,<net2>,...) is specified in
-    /etc/shorewall/interfaces, multicast traffic will now be sent to
-    the zone along with limited broadcasts.
-
-5)  A flaw in the parsing logic for the zones file allowed most zone
-    types containing the character string 'ip' to be accepted as a
-    synonym for 'ipv4' (or ipv6 if compiling an IPv6 configuration).
-
-----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2
-----------------------------------------------------------------------------
-
-1)  Detection of Persistent SNAT was broken in the rules compiler. 
-
-2)  Initialization of the compiler's chain table was occurring before 
-    shorewall.conf had been read and before the capabilities had been
-    determined. This could lead to incorrect rules and Perl runtime
-    errors.
-
-3)  The 'shorewall check' command previously did not detect errors in
-    /etc/shorewall/routestopped.
-
-4)  In earlier versions, if a file with the same name as a built-in
-    action were present in the CONFIG_PATH, then the compiler would
-    process that file like it was an extension script.
-
-    The compiler now ignores the presence of such files.
-
-5)  Several configuration issues which previously produced an error or
-    warning are now handled differently.
-
-    a)  MAPOLDACTIONS=Yes and MAPOLDACTIONS= in shorewall.conf are now
-        handled as they were by the old shell-based compiler. That is,
-        they cause pre-3.0 built-in actions to be mapped automatically
-        to the corresponding macro invocation.
-
-    b)  SAVE_IPSETS=Yes no longer produces a fatal error -- it is now a
-        warning.
-
-    c)  DYNAMIC_ZONES=Yes no longer produces a fatal error -- it is now
-        a warning.
-
-    d)  RFC1918_STRICT=Yes no longer produces a fatal error -- it is now
-        a warning.
-
-6)  Previously, it was not possible to specify an IP address range in
-    the ADDRESS column of /etc/shorewall/masq. Thanks go to Jessee
-    Shrieve for the patch.
-
-7)  The 'wait4ifup' script included for Debian compatibility now runs
-    correctly with no PATH.
-
-8)  The new per-IP LIMIT feature now works with ancient iptables
-    releases (e.g., 1.3.5 as found on RHEL 5). This change required
-    testing for an additional capability which means that those who use
-    a capabilities file should regenerate that file after installing
-    4.4.2.
-
-9)  One unintended difference between Shorewall-shell and
-    Shorewall-perl was that Shorewall-perl did not support the MARK
-    column in action bodies. This has been corrected.
-
-----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 2
-----------------------------------------------------------------------------
-
-1)  Prior to this release, line continuation has taken precedence over 
-    #-style comments. This prevented us from doing the following:
-
-    	    ACCEPT    net:206.124.146.176,\   #Gateway
-	    	          206.124.146.177,\   #Mail
-			  206.124.146.178\    #Server
-			  		      ...
-    
-    Now, unless a line ends with '\', any trailing comment is stripped
-    off (including any white-space preceding the '#'). Then if the line
-    ends with '\', it is treated as a continuation line as normal.
-
-2)  Three new columns have been added to FORMAT-2 macro bodies.
-
-    	  MARK
-	  CONNLIMIT
-	  TIME
-
-    These three columns correspond to the similar columns in
-    /etc/shorewall/rules and must be empty in macros invoked from an
-    action.
-
-3)  Accounting chains may now have extension scripts. Simply place your
-    Perl script in the file /etc/shorewall/<chain> and when the
-    accounting chain named <chain> is created, your script will be
-    invoked.
-
-    As usual, the variable $chainref will contain a reference to the
-    chain's table entry.
-
-----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 3
-----------------------------------------------------------------------------
-
-1.  Previously, if 'routeback' was specified in /etc/shorewall/routestopped:
-
-    a) 'shorewall check' produced an internal error
-    b) The 'routeback' option didn't work
-
-2)  If an alias IP address was added and RETAIN_ALIASES=No in
-    shorewall.conf, then a compiler internal error resulted.
-
-3)  Previously, the generated script would try to detect the values
-    for all run-time variables (such as IP addresses), regardless of
-    what command was being executed. Now, this information is only
-    detected when it is needed.
-
-4)  Nested zones where the parent zone was defined by a wildcard
-    interface (name ends with +) in /etc/shorewall/interfaces did
-    not work correctly in some cases.
-
-5)  IPv4 addresses embedded in IPv6 (e.g., ::192.168.1.5) were
-    incorrectly reported as invalid.
-
-6)  Under certain circumstances, optional providers were not detected
-    as being usable.
-
-    Additionally, the messages issued when an optional provider was not
-    usable were confusing; the message intended to be issued when the
-    provider shared an interface ("WARNING: Gateway <gateway> is not
-    reachable -- Provider <name> (<number>) not Added") was being
-    issued when the provider did not share an interface. Similarly, the
-    message intended to be issued when the provider did not share an
-    interface ("WARNING: Interface <interface> is not usable --
-    Provider <name> (<number>) not Added") was being issued when the
-    provider did share an interface.
-
-----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 3
-----------------------------------------------------------------------------
-
-1)  On Debian systems, a default installation will now set
-    INITLOG=/dev/null in /etc/default/shorewall. In all configurations,
-    the default values for the log variables are changed to:
-
-    	STARTUP_LOG=/var/log/shorewall-init.log
-	LOG_VERBOSITY=2
-
-    The effect is much the same as the old defaults, with the exception 
-    that:
-
-	a) Start, stop, etc. commands issued through /sbin/shorewall
-	   will be logged.
-	b) Logging will occur at maximum verbosity.
-	c) Log entries will be date/time stamped.
-
-    On non-Debian systems, new installs will now log all Shorewall 
-    commands to /var/log/shorewall-init.log.
-
-2)  A new TRACK_PROVIDERS option has been added in shorewall.conf.
-    The value of this option becomes the default for the 'track'
-    provider option in /etc/shorewall/providers.
-
-3)  A new 'limit' option has been added to
-    /etc/shorewall/tcclasses. This option specifies the number of
-    packets that are allowed to be queued within the class. Packets
-    exceeding this limit are dropped. The default value is 127 which is
-    the value that earlier versions of Shorewall used.  The option is
-    ignored with a warning if the 'pfifo' option has been specified.
-----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 4
-----------------------------------------------------------------------------
-
-1)  In some simple one-interface configurations, the following Perl
-    run-time error messages were issued:
-
-      Generating Rule Matrix...
-      Use of uninitialized value in concatenation (.) or string at
-      /usr/share/shorewall/Shorewall/Chains.pm line 649.
-      Use of uninitialized value in concatenation (.) or string at
-      /usr/share/shorewall/Shorewall/Chains.pm line 649.
-      Creating iptables-restore input...
-
-2)  The Shorewall operations log (specified by STARTUP_LOG) is now
-    secured 0600.
-
-3)  Previously, the compiler generated an incorrect test for interface
-    availability in the generated code for adding route rules. The
-    result was that the rules were always added, regardless of the
-    state of the provider's interface. Now, the rules are only added
-    when the interface is available.
-
-4)  When TC_WIDE_MARKS=Yes and class numbers are not explicitly
-    specified in /etc/shorewall/tcclasses, duplicate class numbers
-    result. A typical error message is:
-
-    	    ERROR: Command "tc class add dev eth3 parent 1:1 classid
-    	    1:1 htb rate 1024kbit ceil 100000kbit prio 1 quantum 1500"
-    	    Failed
-
-    Note that the class ID of the class being added is a duplicate of
-    the parent's class ID.
-
-    Also, when TC_WIDE_MARKS=Yes, values > 255 in the MARK column of
-    /etc/shorewall/tcclasses were rejected.
-
-----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 4
-----------------------------------------------------------------------------
-
-1)  The Shorewall packages now include a logrotate configuration file.
-
-2)  The limit of 15 entries in a port list has been relaxed in
-    /etc/shorewall/routestopped.
-
-3)  The following seemingly valid configuration produces a fatal
-    error reporting "Duplicate interface name (p+)"
-
-    /etc/shorewall/zones:
-
-       #ZONE		TYPE	
-       fw		firewall
-       world		ipv4
-       z1:world		bport4
-       z2:world		bport4
-
-    /etc/shorewall/interfaces:
-
-       #ZONE		INTERFACE	BROADCAST	OPTIONS
-       world		br0		-		bridge
-       world		br1		-		bridge
-       z1		br0:p+
-       z2		br1:p+
-
-    This error occurs because the Shorewall implementation requires
-    that each bridge port must have a unique name.
-
-    To work around this problem, a new 'physical' interface option has
-    been created. The above configuration may be defined using the
-    following in /etc/shorewall/interfaces:
-
-       #ZONE		INTERFACE	BROADCAST	OPTIONS
-       world		br0		-		bridge
-       world		br1		-		bridge
-       z1		br0:x+		-		physical=p+
-       z2		br1:y+		-		physical=p+
-
-    In this configuration, 'x+' is the logical name for ports p+ on
-    bridge br0 while 'y+' is the logical name for ports p+ on bridge
-    br1.
-
-    If you need to refer to a particular port on br1 (for example
-    p1023), you write it as y1023; Shorewall will translate that name
-    to p1023 when needed.
-
-    It is allowed to have a physical name ending in '+' with a logical
-    name that does not end with '+'. The reverse is not allowed; if the
-    logical name ends in '+' then the physical name must also end in
-    '+'.
-
-    This feature is not restricted to bridge ports. Beginning with this
-    release, the interface name in the INTERFACE column can be
-    considered a logical name for the interface, and the actual
-    interface name is specified using the 'physical' option. If no
-    'physical' option is present, then the physical name is assumed to
-    be the same as the logical name. As before, the logical interface
-    name is used throughout the rest of the configuration to refer to
-    the interface.
-
-4)  Previously, Shorewall has used the character '2' to form the name
-    of chains involving zones and/or the word 'all' (e.g., fw2net,
-    all2all). When zones names are given numeric suffixes, these
-    generated names are hard to read (e.g., foo1232bar). To make these
-    names clearer, a ZONE2ZONE option has been added.
-
-    ZONE2ZONE has a default value of "2" but can also be given the
-    value "-" (e.g., ZONE2ZONE="-") which causes Shorewall to separate
-    the two parts of the name with a hyphen (e.g., foo123-bar).
-
-5)  Only one instance of the following warning is now generated;
-    previously, one instance of a similar warning was generated for
-    each COMMENT encountered.
-
-	COMMENTs ignored -- require comment support in iptables/Netfilter
-
-6)  The shorewall and shorewall6 utilities now support a 'show
-    policies' command. Once Shorewall or Shorewall6 has been restarted
-    using a script generated by this version, the 'show policies'
-    command will list each pair of zones and give the applicable
-    policy. If the policy is enforced in a chain, the name of the chain
-    is given.
-
-    Example:
-
-	net 	=>	loc	DROP using chain net2all
-
-    Note that implicit intrazone ACCEPT policies are not displayed for
-    zones associated with a single network where that network
-    doesn't specify 'routeback'.
-
-7)  The 'show' and 'dump' commands now support an '-l' option which
-    causes chain displays to include the rule number of each rule.
-
-    (Type 'iptables -h' and look for '--line-number')
-
-----------------------------------------------------------------------------
-          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 5
-----------------------------------------------------------------------------
-
-1)  The change which removed the 15 port limitation on
-    /etc/shorewall/routestopped was incomplete. The result was that if
-    more than 15 ports were listed, an error was generated.
-
-2)  If any interfaces had the 'bridge' option specified, compilation
-    failed with the error:
-
-    Undefined subroutine &Shorewall::Rules::match_source_interface called 
-    at /usr/share/shorewall/Shorewall/Rules.pm line 2319.
-
-3)  The compiler now flags port number 0 as an error in all
-    contexts. Previously, port 0 was allowed with the result that
-    invalid iptables-restore input could be generated in some cases.
-
-4)  The 'show policies' command now works in Shorewall6 and
-    Shorewall6-lite.
-
-5)  Traffic shaping modules from /lib/modules/<version>/net/sched/ are
-    now correctly loaded. Previously, that directory was not
-    searched. Additionally, Shorewall6 now tries to load the cls_flow
-    module; previously, only Shorewall attempts to load that module.
-
-6)  The Shorewall6-lite shorecap program was previously including the
-    IPv4 base library rather than the IPv6 version. Also, Shorewall6
-    capability detection was determing the availablity of the mangle
-    capability before it had determined if ip6tables was installed.
-
-7)  The setting of MODULE_SUFFIX was previously ignored except when
-    compiling for export.
-
-8)  Detection of the Enhanced Reject capability in the compiler was
-    broken for IPv4 compilations.
-
-9)  The 'reload -c' command would ignore the setting of DONT_LOAD in
-    shorewall.conf. The 'reload' command without '-c' worked as
-    expected. 
-
-----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 5
-----------------------------------------------------------------------------
-
-1)  Shorewall now allows DNAT rules that change only the destination
-    port.
-
-    Example:
-
-	DNAT	loc	net::456	udp	234
-
-    That rule will modify the destination port in UDP packets received
-    from the 'loc' zone from 456 to 234. Note that if the destination
-    is the firewall itself, then the destination port will be rewritten
-    but that no ACCEPT rule from the loc zone to the $FW zone will have
-    been created to handle the request. So such rules should probably
-    exclude the firewall's IP addresses in the ORIGINAL DEST column.
-
-2)  Systems that do not log Netfilter messages locally can now set
-    LOGFILE=/dev/null in shorewall.conf.
-
-3)  The 'shorewall show connections' and 'shorewall dump' commands now
-    display the current number of connections and the max supported
-    connections.
-
-    Example:
-
-	shorewall show connections
-    	Shorewall 4.5.0 Connections (62 out of 65536) at gateway - Sat ...
-
-    In that case, there were 62 current connections out of a maximum
-    number supported of 65536.
-
-----------------------------------------------------------------------------
-        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 6
-----------------------------------------------------------------------------
-
-1)  A 'feature' of xtables-addons when applied to Debian Lenny causes
-    extra /31 networks to appear for nethash sets in the output of
-    "ipset -L" and "ipset -S". A hack has been added to prevent these
-    from being saved when Shorewall is saving IPSETS during 'stop'.
-
-    As part of this change, the generated script is more careful about
-    verifying the existence of the correct ipset utility before using
-    it to save the contents of the sets.
-
-2)  The mDNS macro previously did not include IGMP (protocol 2) and it
-    did not specify the mDNS multicast address (224.0.0.251). These
-    omissions have been corrected.
-
-----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 6
-----------------------------------------------------------------------------
-
-1)  In kernel 2.6.31, the handling of the rp_filter interface option was
-    changed incompatibly. Previously, the effective value was determined
-    by the setting of net.ipv4.config.dev.rp_filter logically ANDed with
-    the setting of net.ipv4.config.all.rp_filter.
-
-    Beginning with kernel 2.6.31, the value is the arithmetic MAX of
-    those two values. 
-
-    Given that Shorewall sets net.ipv4.config.all.rp_filter to 1 if
-    there are any interfaces specifying 'routefilter', specifying
-    'routefilter' on any interface has the effect of setting the option
-    on all interfaces.
-
-    To allow Shorewall to handle this issue, a number of changes were
-    necessary:
-
-    a)  There is no way to safely determine if a kernel supports the
-        new semantics or the old so the Shorewall compiler uses the
-        kernel version reported by uname.
-
-    b)  This means that the kernel version is now recorded in
-        the capabilities file. So if you use capabilities files, you
-        need to regenerate the files with Shorewall[-lite] 4.4.6 or
-        later.
-
-    c)  If the capabilities file does not contain a kernel version,
-        the compiler assumes version 2.6.30 (the old rp_filter
-        behavior).
-
-    d)  The ROUTE_FILTER option in shorewall.conf now accepts the
-    	following values:
-
-	0 or No  - Shorewall sets net.ipv4.config.all.rp_filter to 0.
-	1 or Yes - Shorewall sets net.ipv4.config.all.rp_filter to 1.
-	2        - Shorewall sets net.ipv4.config.all.rp_filter to 2.
-	Keep	 - Shorewall does not change the setting of
-	           net.ipv4.config.all.rp_filter if the kernel version
-		   is 2.6.31 or later.
-        
-	The default remains Keep.
-
-    e)  The 'routefilter' interface option can have values 0,1 or 2. If
-    	'routefilter' is specified without a value, the value 1 is
-    	assumed.
-
-2)  SAVE_IPSETS=Yes has been resurrected but in a different form. With
-    this setting, the contents of your ipsets are saved during 'shorewall
-    stop' and 'shorewall save' and they are restored during 'shorewall
-    start' and 'shorewall restore'. Note that the contents may only be
-    restored during 'restore' if the firewall is currently in the
-    stopped state and there are no ipsets currently in use. In
-    particular, when 'restore' is being executed to recover from a
-    failed start/restart, the contents of the ipsets are not changed.
-
-    When SAVE_IPSETS=Yes, you may not include ipsets in your
-    /etc/shorewall/routestopped configuration.
-
-3)  IPv6 addresses following a colon (":") may either be surrounded by
-    <..> or by the more standard [..].
-
-4)  A DHCPfwd macro has been added that allows unicast DHCP traffic to
-    be forwarded through the firewall. Courtesy of Tuomo Soini.
-
-5)  Shorewall (/sbin/shorewall) now supports a 'show macro' command:
-
-    	      shorewall show macro <macro>
-
-    Example:
-
-    	      shorewall show macro LDAP
-
-    The command displays the contents of the macro.<macro> file.
-
-6)  You may now preview the generated ruleset by using the '-r' option
-    to the 'check' command (e.g., "shorewall check -r").
-
-    The output is a shell script fragment, similar to the way it
-    appears in the generated script.
-
-7)  It is now possible to enable a simplified traffic shaping
-    facility by setting TC_ENABLED=Simple in shorewall.conf.
-
-    See http://www.shorewall.net/simple_traffic_shaping.html for
-    details.
-
-8)  Previously, when TC_EXPERT=No, packets arriving through 'tracked'
-    provider interfaces were unconditionally passed to the PREROUTING
-    tcrules. This was done so that tcrules could reset the packet mark
-    to zero, thus allowing the packet to be routed using the 'main'
-    routing table. Using the main table allowed dynamic routes (such as
-    those added for VPNs) to be effective.
-
-    The route_rules file was created to provide a better alternative
-    to clearing the packet mark. As a consequence, passing these
-    packets to PREROUTING complicates things without providing any real
-    benefit.
-
-    Beginning with this release, when TRACK_PROVIDERS=Yes and TC_EXPERT=No,
-    packets arriving through 'tracked' interfaces will not be passed to
-    the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
-    4.4.3, this change should be transparent to most, if not all, users.

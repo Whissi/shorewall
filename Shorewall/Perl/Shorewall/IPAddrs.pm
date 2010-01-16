@@ -309,7 +309,7 @@ sub validate_port( $$ ) {
 	$value = getservbyname( $port, $proto );
     }
 
-    fatal_error "Invalid/Unknown $proto port/service ($port)" unless defined $value;
+    fatal_error "Invalid/Unknown $proto port/service ($_[1])" unless defined $value;
 
     $value;
 }

@@ -1,4 +1,4 @@
-Shorewall 4.4.6
+Shorewall 4.4.7
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -175,21 +175,10 @@ Shorewall 4.4.6
     then it may have no additional members in /etc/shorewall/hosts.
 
 ----------------------------------------------------------------------------
-        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 6
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7
 ----------------------------------------------------------------------------
 
-1)  A 'feature' of xtables-addons when applied to Debian Lenny causes
-    extra /31 networks to appear for nethash sets in the output of
-    "ipset -L" and "ipset -S". A hack has been added to prevent these
-    from being saved when Shorewall is saving IPSETS during 'stop'.
-
-    As part of this change, the generated script is more careful about
-    verifying the existence of the correct ipset utility before using
-    it to save the contents of the sets.
-
-2)  The mDNS macro previously did not include IGMP (protocol 2) and it
-    did not specify the mDNS multicast address (224.0.0.251). These
-    omissions have been corrected.
+None.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -198,110 +187,10 @@ Shorewall 4.4.6
 None.
 
 ----------------------------------------------------------------------------
-                N E W   F E A T U R E S   I N   4 . 4 . 6
+                N E W   F E A T U R E S   I N   4 . 4 . 7
 ----------------------------------------------------------------------------
 
-1)  In kernel 2.6.31, the handling of the rp_filter interface option was
-    changed incompatibly. Previously, the effective value was determined
-    by the setting of net.ipv4.config.dev.rp_filter logically ANDed with
-    the setting of net.ipv4.config.all.rp_filter.
-
-    Beginning with kernel 2.6.31, the value is the arithmetic MAX of
-    those two values. 
-
-    Given that Shorewall sets net.ipv4.config.all.rp_filter to 1 if
-    there are any interfaces specifying 'routefilter', specifying
-    'routefilter' on any interface has the effect of setting the option
-    on all interfaces.
-
-    To allow Shorewall to handle this issue, a number of changes were
-    necessary:
-
-    a)  There is no way to safely determine if a kernel supports the
-        new semantics or the old so the Shorewall compiler uses the
-        kernel version reported by uname.
-
-    b)  This means that the kernel version is now recorded in
-        the capabilities file. So if you use capabilities files, you
-        need to regenerate the files with Shorewall[-lite] 4.4.6 or
-        later.
-
-    c)  If the capabilities file does not contain a kernel version,
-        the compiler assumes version 2.6.30 (the old rp_filter
-        behavior).
-
-    d)  The ROUTE_FILTER option in shorewall.conf now accepts the
-    	following values:
-
-	0 or No  - Shorewall sets net.ipv4.config.all.rp_filter to 0.
-	1 or Yes - Shorewall sets net.ipv4.config.all.rp_filter to 1.
-	2        - Shorewall sets net.ipv4.config.all.rp_filter to 2.
-	Keep	 - Shorewall does not change the setting of
-	           net.ipv4.config.all.rp_filter if the kernel version
-		   is 2.6.31 or later.
-        
-	The default remains Keep.
-
-    e)  The 'routefilter' interface option can have values 0,1 or 2. If
-    	'routefilter' is specified without a value, the value 1 is
-    	assumed.
-
-2)  SAVE_IPSETS=Yes has been resurrected but in a different form. With
-    this setting, the contents of your ipsets are saved during 'shorewall
-    stop' and 'shorewall save' and they are restored during 'shorewall
-    start' and 'shorewall restore'. Note that the contents may only be
-    restored during 'restore' if the firewall is currently in the
-    stopped state and there are no ipsets currently in use. In
-    particular, when 'restore' is being executed to recover from a
-    failed start/restart, the contents of the ipsets are not changed.
-
-    When SAVE_IPSETS=Yes, you may not include ipsets in your
-    /etc/shorewall/routestopped configuration.
-
-3)  IPv6 addresses following a colon (":") may either be surrounded by
-    <..> or by the more standard [..].
-
-4)  A DHCPfwd macro has been added that allows unicast DHCP traffic to
-    be forwarded through the firewall. Courtesy of Tuomo Soini.
-
-5)  Shorewall (/sbin/shorewall) now supports a 'show macro' command:
-
-    	      shorewall show macro <macro>
-
-    Example:
-
-    	      shorewall show macro LDAP
-
-    The command displays the contents of the macro.<macro> file.
-
-6)  You may now preview the generated ruleset by using the '-r' option
-    to the 'check' command (e.g., "shorewall check -r").
-
-    The output is a shell script fragment, similar to the way it
-    appears in the generated script.
-
-7)  It is now possible to enable a simplified traffic shaping
-    facility by setting TC_ENABLED=Simple in shorewall.conf.
-
-    See http://www.shorewall.net/simple_traffic_shaping.html for
-    details.
-
-8)  Previously, when TC_EXPERT=No, packets arriving through 'tracked'
-    provider interfaces were unconditionally passed to the PREROUTING
-    tcrules. This was done so that tcrules could reset the packet mark
-    to zero, thus allowing the packet to be routed using the 'main'
-    routing table. Using the main table allowed dynamic routes (such as
-    those added for VPNs) to be effective.
-
-    The route_rules file was created to provide a better alternative
-    to clearing the packet mark. As a consequence, passing these
-    packets to PREROUTING complicates things without providing any real
-    benefit.
-
-    Beginning with this release, when TRACK_PROVIDERS=Yes and TC_EXPERT=No,
-    packets arriving through 'tracked' interfaces will not be passed to
-    the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
-    4.4.3, this change should be transparent to most, if not all, users.
+None.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 0
@@ -1495,3 +1384,126 @@ None.
 
     In that case, there were 62 current connections out of a maximum
     number supported of 65536.
+
+----------------------------------------------------------------------------
+        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 6
+----------------------------------------------------------------------------
+
+1)  A 'feature' of xtables-addons when applied to Debian Lenny causes
+    extra /31 networks to appear for nethash sets in the output of
+    "ipset -L" and "ipset -S". A hack has been added to prevent these
+    from being saved when Shorewall is saving IPSETS during 'stop'.
+
+    As part of this change, the generated script is more careful about
+    verifying the existence of the correct ipset utility before using
+    it to save the contents of the sets.
+
+2)  The mDNS macro previously did not include IGMP (protocol 2) and it
+    did not specify the mDNS multicast address (224.0.0.251). These
+    omissions have been corrected.
+
+----------------------------------------------------------------------------
+                N E W   F E A T U R E S   I N   4 . 4 . 6
+----------------------------------------------------------------------------
+
+1)  In kernel 2.6.31, the handling of the rp_filter interface option was
+    changed incompatibly. Previously, the effective value was determined
+    by the setting of net.ipv4.config.dev.rp_filter logically ANDed with
+    the setting of net.ipv4.config.all.rp_filter.
+
+    Beginning with kernel 2.6.31, the value is the arithmetic MAX of
+    those two values. 
+
+    Given that Shorewall sets net.ipv4.config.all.rp_filter to 1 if
+    there are any interfaces specifying 'routefilter', specifying
+    'routefilter' on any interface has the effect of setting the option
+    on all interfaces.
+
+    To allow Shorewall to handle this issue, a number of changes were
+    necessary:
+
+    a)  There is no way to safely determine if a kernel supports the
+        new semantics or the old so the Shorewall compiler uses the
+        kernel version reported by uname.
+
+    b)  This means that the kernel version is now recorded in
+        the capabilities file. So if you use capabilities files, you
+        need to regenerate the files with Shorewall[-lite] 4.4.6 or
+        later.
+
+    c)  If the capabilities file does not contain a kernel version,
+        the compiler assumes version 2.6.30 (the old rp_filter
+        behavior).
+
+    d)  The ROUTE_FILTER option in shorewall.conf now accepts the
+    	following values:
+
+	0 or No  - Shorewall sets net.ipv4.config.all.rp_filter to 0.
+	1 or Yes - Shorewall sets net.ipv4.config.all.rp_filter to 1.
+	2        - Shorewall sets net.ipv4.config.all.rp_filter to 2.
+	Keep	 - Shorewall does not change the setting of
+	           net.ipv4.config.all.rp_filter if the kernel version
+		   is 2.6.31 or later.
+        
+	The default remains Keep.
+
+    e)  The 'routefilter' interface option can have values 0,1 or 2. If
+    	'routefilter' is specified without a value, the value 1 is
+    	assumed.
+
+2)  SAVE_IPSETS=Yes has been resurrected but in a different form. With
+    this setting, the contents of your ipsets are saved during 'shorewall
+    stop' and 'shorewall save' and they are restored during 'shorewall
+    start' and 'shorewall restore'. Note that the contents may only be
+    restored during 'restore' if the firewall is currently in the
+    stopped state and there are no ipsets currently in use. In
+    particular, when 'restore' is being executed to recover from a
+    failed start/restart, the contents of the ipsets are not changed.
+
+    When SAVE_IPSETS=Yes, you may not include ipsets in your
+    /etc/shorewall/routestopped configuration.
+
+3)  IPv6 addresses following a colon (":") may either be surrounded by
+    <..> or by the more standard [..].
+
+4)  A DHCPfwd macro has been added that allows unicast DHCP traffic to
+    be forwarded through the firewall. Courtesy of Tuomo Soini.
+
+5)  Shorewall (/sbin/shorewall) now supports a 'show macro' command:
+
+    	      shorewall show macro <macro>
+
+    Example:
+
+    	      shorewall show macro LDAP
+
+    The command displays the contents of the macro.<macro> file.
+
+6)  You may now preview the generated ruleset by using the '-r' option
+    to the 'check' command (e.g., "shorewall check -r").
+
+    The output is a shell script fragment, similar to the way it
+    appears in the generated script.
+
+7)  It is now possible to enable a simplified traffic shaping
+    facility by setting TC_ENABLED=Simple in shorewall.conf.
+
+    See http://www.shorewall.net/simple_traffic_shaping.html for
+    details.
+
+8)  Previously, when TC_EXPERT=No, packets arriving through 'tracked'
+    provider interfaces were unconditionally passed to the PREROUTING
+    tcrules. This was done so that tcrules could reset the packet mark
+    to zero, thus allowing the packet to be routed using the 'main'
+    routing table. Using the main table allowed dynamic routes (such as
+    those added for VPNs) to be effective.
+
+    The route_rules file was created to provide a better alternative
+    to clearing the packet mark. As a consequence, passing these
+    packets to PREROUTING complicates things without providing any real
+    benefit.
+
+    Beginning with this release, when TRACK_PROVIDERS=Yes and TC_EXPERT=No,
+    packets arriving through 'tracked' interfaces will not be passed to
+    the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
+    4.4.3, this change should be transparent to most, if not all, users.

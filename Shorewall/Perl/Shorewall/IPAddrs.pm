@@ -301,7 +301,7 @@ sub validate_port( $$ ) {
 
     my $value;
 
-    if ( $port =~ /^(\d+)$/ ) {
+    if ( $port =~ /^(\d+)$/ || $port =~ /^0x/ ) {
 	$port = numeric_value $port;
 	return $port if defined $port && $port && $port <= 65535;
     } else {
